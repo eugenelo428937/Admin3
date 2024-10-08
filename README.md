@@ -203,6 +203,7 @@ Additional Steps
 Set Up PostgreSQL: Make sure to configure your PostgreSQL database in the settings.py file of your Django project.
 
 Install Dependencies:
+pip install Django psycopg2
 
 For Django, run:
 Bash
