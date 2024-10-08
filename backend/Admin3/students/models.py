@@ -13,3 +13,11 @@ class Users(models.Model):
 
     class Meta:
         db_table = 'Users'  # Specify the custom table name
+
+
+class Students(models.Model):
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    student_ref = models.AutoField(primary_key=True)
+    
+    class Meta:
+        db_table = 'Students'  # Specify the custom table name
