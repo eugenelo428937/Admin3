@@ -1,14 +1,16 @@
 // src/App.js
 
-import React from 'react';
-import UserForm from './UserForm';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import StudentForm from "./StudentForm";
 
 const App = () => {
   return (
-    <div>
-      <h1>Create User</h1>
-      <UserForm />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<StudentForm />} />
+      </Routes>
+    </Router>
   );
 };
 
