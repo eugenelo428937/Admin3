@@ -3,28 +3,12 @@
 ## Django Project Setup
 
 ### 1. Create Django Project and App
-
 - Create a new Django project named "Admin3".
 - Create a new app within the project named "students".
 
-
-
-```bash
-npm install -g npm@10.9.0
-npx create-react-app admin3
- cd admin3
-npm install axios
-npm audit fix --force
-set NODE_OPTIONS=--openssl-legacy-provider
-npm install react-scripts@latest
-npm outdated
-npm update
-npm start
-```
-
-# settings.py
-
 ### 2. Configure Django Settings
-
 - Ensure the `students` app is added to the `INSTALLED_APPS` in `settings.py`.
 - Configure the PostgreSQL database settings in `settings.py`.
+
+```python
+# settings.py
