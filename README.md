@@ -118,7 +118,7 @@ This project is a Django application that demonstrates the use of custom and Dja
 
 ### Using Tables You Create Yourself
 
-#### Pros
+#### Pros1
 
 1. **Full Control**:
    - You have complete control over the table names, structure, and relationships. This can be important for performance tuning, compliance with existing database schemas, or specific naming conventions.
@@ -129,7 +129,7 @@ This project is a Django application that demonstrates the use of custom and Dja
 3. **Optimized Design**:
    - You can design the database schema to be as efficient as possible for your specific use case, without any unnecessary tables or columns.
 
-#### Cons
+#### Cons1
 
 1. **Manual Management**:
    - You need to manually manage the database schema, which can be error-prone and time-consuming. This includes creating, modifying, and deleting tables as your models change.
@@ -143,7 +143,7 @@ This project is a Django application that demonstrates the use of custom and Dja
 4. **Potential for Inconsistency**:
    - There's a higher risk of the database schema becoming out of sync with your Django models, leading to potential bugs and data integrity issues.
 
-## Example Workflow
+## Example Workflow1
 
 ### Using Django-Created Tables
 
