@@ -21,7 +21,7 @@ const StudentForm = () => {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		axios
-			.post("https://localhost:8888/students/create_student/", formData)
+			.post("http://localhost:8888/students/create_student/", formData)
 			.then((response) => {
 				alert(response.data.message);
 			})
