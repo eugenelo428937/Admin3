@@ -62,3 +62,12 @@ myenv/Lib/site-packages/setuptools-*.dist-info/
 myenv/Lib/site-packages/wheel/
 myenv/Lib/site-packages/wheel-*.dist-info/
 *.pyc
+.exe
+myenv/Scripts/*.exe
+myenv/Scripts/pip3.11.exe
+myenv/Scripts/pip.exe
+myenv/Lib/site-packages/urllib3/util/__pycache__/*.pyc
+myenv/Lib/site-packages/pygments/__pycache__/*
+/myenv
+/myenv/Lib/site-packages/certifi/__pycache__
+*.py
