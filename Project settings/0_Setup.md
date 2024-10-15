@@ -109,7 +109,7 @@ python manage.py runserver 8888
 
 ### Django Checkpoint
 
-1. Open a web browser and navigate to <http://127.0.0.1:8000/>. You should see the Django welcome page.
+1. Open a web browser and navigate to <http://127.0.0.1:8888/>. You should see the Django welcome page.
 2. Navigate to <http://127.0.0.1:8000/admin/> and log in with the superuser credentials to access the Django admin interface.
 
 ## 6: Set Up React Application
