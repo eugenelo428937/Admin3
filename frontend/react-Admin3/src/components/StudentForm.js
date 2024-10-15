@@ -38,7 +38,7 @@ const StudentForm = () => {
     e.preventDefault();
     const csrftoken = getCookie('csrftoken');
     console.log("CSRF Token:", csrftoken);  
-    
+
     try {
       const response = await fetch('http://localhost:8888/students/add_student/', {
         method: 'POST',
@@ -95,17 +95,7 @@ const StudentForm = () => {
           onChange={handleChange}
           required
         />
-      </div>
-      <div>
-        <label>Student Reference:</label>
-        <input
-          type="text"
-          name="student_ref"
-          value={formData.student_ref}
-          onChange={handleChange}
-          required
-        />
-      </div>
+      </div>      
       <div>
         <label>Student Type:</label>
         <input
