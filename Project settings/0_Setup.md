@@ -36,9 +36,11 @@ Navigate to the project directory and verify that the repository has been cloned
 1. Open VSCode.
 1. Go to the Extensions view by clicking on the Extensions icon in the Activity Bar on the side of the window or by pressing Ctrl+Shift+X.
 1. Search for and install the following extensions:
-   - Prettier - Code formatter
-   - Python
-   - PostgreSQL
+   - [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+   - [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python)
+   - [autopep8](https://marketplace.visualstudio.com/items?itemName=ms-python.autopep8)
+   - [postgreSQL](https://marketplace.visualstudio.com/items?itemName=ms-ossdata.vscode-postgresql)
+   - [PostgreSQL Client](https://marketplace.visualstudio.com/items?itemName=ckolkman.vscode-postgres)
 
 ## 3: Set Up Python Environment
 
@@ -66,7 +68,7 @@ python --version
 With the virtual environment activated, install the required Python packages:
 
 ```bash
-pip install -r ./Project-Setting/requirements.txt
+pip install -r '.\Project settings\requirements.txt'
 ```
 
 ### Python Checkpoint 2
@@ -82,7 +84,7 @@ pip list
 1. Navigate to the Django project directory:
 
 ```bash
-cd ./Admin3/backend/django-Admin3
+cd ./backend/django-Admin3
 ```
 
 1. Apply database migrations:
@@ -110,7 +112,7 @@ python manage.py runserver 8888
 ### Django Checkpoint
 
 1. Open a web browser and navigate to <http://127.0.0.1:8888/>. You should see the Django welcome page.
-2. Navigate to <http://127.0.0.1:8000/admin/> and log in with the superuser credentials to access the Django admin interface.
+2. Navigate to <http://127.0.0.1:8888/admin/> and log in with the superuser credentials to access the Django admin interface.
 
 ## 6: Set Up React Application
 
@@ -118,11 +120,11 @@ Navigate to the React project directory and run the following commands to instal
 
 ```bash
 # verifies the right Node.js version is in the environment
-node -v # should print `v20.18.0`
+node -v # should print `v20.18.0` or latest
 # verifies the right npm version is in the environment
-npm -v # should print `10.8.2`
+npm -v # should print `10.8.2` or latest
 
-cd ./Admin3/frontend/react-Admin3
+cd ./frontend/react-Admin3
 npm install # Install project dependencies
 npm start
 ```
@@ -133,7 +135,7 @@ npm start
 
 ## 7: Set Up PostgreSQL
 
-1. In PgAdmin 4, open the ACTEDDEV01.sql using the query tool, run the query to create a local database named "ACTEDDEV01".
+1. In PgAdmin4, Go to Restore and select ACTEDDBDEV01_create.sql.
 1. Update the Django settings.py (./Admin3/backend/Django-Admin3/settings.py) file with the PostgreSQL database configuration.
 
 ```python
