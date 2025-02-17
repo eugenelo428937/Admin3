@@ -47,7 +47,7 @@ Navigate to the project directory and verify that the repository has been cloned
 
 ```bash
 python -m venv venv # Create a virtual environment named 'venv'
-.\venv\Scripts\activate # activate the virtual environment 
+.\.venv\Scripts\activate # activate the virtual environment 
 python -m ensurepip --upgrade # Ensure pip is upgraded
 pip install --upgrade pip # Upgrade pip
 ```
