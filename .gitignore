@@ -75,3 +75,4 @@ venv2/Lib/site-packages/pip/_vendor/certifi/cacert.pem
 venv2/Lib/site-packages/pip/_vendor/distlib/t32.exe
 *.exe
 venv2/Lib/*
+frontend/react-Admin3/o/
