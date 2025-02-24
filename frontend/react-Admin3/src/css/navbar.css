@@ -1,18 +1,26 @@
-:root {
-	--bs-navbar-container-bg-color: #3c3c3b;	
+:root {	
+	--bs-navbar-container-bg-color: #3c3c3b;
+	--bs-navbar-container-color: #fdfdfd;
 	--bs-navbar-main-bg-color: #3c3c3b;
+	--bs-navbar-menu-expand-bg-color: #3c3c3b;
 	--bs-navbar-top-bg-color: #333334;
+	--bs-navbar-top-border-color: #5b5b5d;
 	--bs-toast-color: #3c3c3b;
 	--icon-light-color: #f8f9fa;
 	--icon-light-color-hover: #f8f9fa;
 	--icon-light-border-color-hover: #6b7177;
-	--icon-light-bg-color-hover: #464645 ;
+	--icon-light-bg-color-active: #994EBC;
+	--icon-light-bg-color-highlight: #3AF8F2;	
+	--icon-light-bg-color-hover: #464645;
 	--main-backgound-color: #fdfdfd;
 	--quick-link-text-decoration-color: #cdcdcb;
 	--bs-tooltip-bg: #707070 !important;
+    --default-font: Poppins, Helvetica, Arial, 
+        sans-serif;
 	/* text-decoration: underline solid #CDCDCB 1px;
   text-underline-offset: 2px; */
 }
+
 .navbar-container {    
     background-color: var(--bs-navbar-container-bg-color);
 }
@@ -45,6 +53,8 @@ button.navbar-toggler.menu-button:hover {
 .navbar-brand {
     padding: 0 0px;
     margin: 0;
+    max-width:128px;    
+    min-width:128px;
 }
 .nav-link {
     margin-left: 2px;
@@ -53,8 +63,10 @@ button.navbar-toggler.menu-button:hover {
 .nav-link .bi {
     color: var(--icon-light-color);
 }
+
 @media (max-width: 991px) {
-    .navbar-brand img {
-        max-width: 120px;
-    }
+    .navbar-brand {
+    max-width:42px;    
+    min-width:42px;
+}
 }
