@@ -22,14 +22,7 @@ function App() {
 			<Navbar />
 			<h1>The Acturial Education Company</h1>
 			<h2>E-Store</h2>
-			{isAuthenticated ? (
-				<>
-					<StudentForm />
-					<Logout setIsAuthenticated={setIsAuthenticated} />
-				</>
-			) : (
-				<Login />
-			)}
+			
 		</div>
   );
 }
