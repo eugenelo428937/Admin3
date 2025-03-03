@@ -67,6 +67,10 @@ button.navbar-toggler.menu-button:hover {
     color: var(--icon-light-color) !important;
     text-decoration: none;
 }
+.dropdown-toggle.nav-link{
+    display: flex !important;
+    align-items: center;
+}
 @media (min-width: 768px) {
     .navbar-brand {
     max-width:108px;    
