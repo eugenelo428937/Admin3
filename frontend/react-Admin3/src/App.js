@@ -1,7 +1,7 @@
 // src/App.js
 
 import React, { useEffect, useState } from 'react';
-import Navbar from "./components/ActEdNavbar";
+import ActEdNavbar from "./components/ActEdNavbar";
 import Login from './components/Login';
 import StudentForm from './components/StudentForm';
 import Logout from './components/Logout';
@@ -19,10 +19,9 @@ function App() {
 
   return (
 		<div className="App">
-			<Navbar />
+			<ActEdNavbar />
 			<h1>The Acturial Education Company</h1>
 			<h2>E-Store</h2>
-			
 		</div>
   );
 }
