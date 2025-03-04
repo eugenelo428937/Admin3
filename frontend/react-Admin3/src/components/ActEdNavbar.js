@@ -1,12 +1,14 @@
 // src/components/ActEdNavbar.js
 import React, { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { Container, Button, Col, Row, Nav, Navbar, Image, NavDropdown, Modal, Form, Alert } from "react-bootstrap";
+import { Container, Button, Nav, Navbar, Image, NavDropdown, Modal, Form, Alert } from "react-bootstrap";
+import InputGroup from "react-bootstrap/InputGroup"
 import { LinkContainer } from "react-router-bootstrap";
 import { House, QuestionCircle, Cart, PersonCircle, Download, Search } from "react-bootstrap-icons";
 import axios from "axios"; // Make sure to install axios: npm install axios
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../css/navbar.css";
+
 
 const ActEdNavbar = () => {
 	// State for authentication status
@@ -17,19 +19,16 @@ const ActEdNavbar = () => {
 		username: "",
 		password: "",
 	});
-	const [message, setMessage] = useState("");
 	const [registerData, setRegisterData] = useState({
-		name: "",
+		first_name: "",
+		last_name: "",
 		email: "",
 		password: "",
 		confirmPassword: "",
 	});
 
-	// Form states
-	const [registerEmail, setRegisterEmail] = useState("");
-	const [registerPassword, setRegisterPassword] = useState("");
-	const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
-	const [registerName, setRegisterName] = useState("");
+	const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+	const [message, setMessage] = useState("");
 
 	// Error and loading states
 	const [loginError, setLoginError] = useState("");
@@ -48,6 +47,13 @@ const ActEdNavbar = () => {
 			[e.target.name]: e.target.value,
 		});
 	};
+	const handleRegisterInputChange = (e) => {
+		setRegisterData({
+			...registerData,
+			[e.target.name]: e.target.value,
+		});
+	};
+
 	// Handle login
 	const handleLogin = async (e) => {
 		e.preventDefault();
@@ -67,19 +73,26 @@ const ActEdNavbar = () => {
 	const handleRegister = async (e) => {
 		e.preventDefault();
 		if (registerData.password !== registerData.confirmPassword) {
-			return; // Add error handling for password mismatch
+			setRegisterError("Passwords do not match");
+			return;
 		}
 		try {
-			await register(registerData);
+			await register({
+				first_name: registerData.first_name,
+				last_name: registerData.last_name,
+				email: registerData.email,
+				password: registerData.password,
+			});
 			setShowRegisterModal(false);
 			setRegisterData({
-				name: "",
+				first_name: "",
+				last_name: "",
 				email: "",
 				password: "",
 				confirmPassword: "",
 			});
 		} catch (err) {
-			// Error handling is managed by useAuth hook
+			setRegisterError(err.message || "Registration failed");
 		}
 	};
 
@@ -158,7 +171,7 @@ const ActEdNavbar = () => {
 								title={
 									<div className="d-flex align-items-center">
 										<PersonCircle className="bi d-flex flex-row align-items-center" />
-										<span className="d-none d-md-block mx-1 fst-normal">Welcome {user?.first_name || user?.username || "User"}</span>
+										<span className="d-none d-md-block mx-1 fst-normal">Welcome {user?.first_name || "User"}</span>
 									</div>
 								}
 								id="user-dropdown">
@@ -255,9 +268,10 @@ const ActEdNavbar = () => {
 					<Modal.Title>Login</Modal.Title>
 				</Modal.Header>
 				<Modal.Body>
+					{loginError && <Alert variant="danger">{loginError}</Alert>}
 					<Form onSubmit={handleLogin}>
 						<Form.Group className="mb-3">
-							<Form.Label>Username</Form.Label>
+							<Form.Label>Email</Form.Label>
 							<Form.Control
 								type="text"
 								name="username"
@@ -276,12 +290,19 @@ const ActEdNavbar = () => {
 								required
 							/>
 						</Form.Group>
-						{message && <div className={`alert ${message.includes("successful") ? "alert-success" : "alert-danger"}`}>{message}</div>}
-						<Button
-							variant="primary"
-							type="submit">
-							Login
-						</Button>
+						<div className="d-flex justify-content-between align-items-center">
+							<Button
+								variant="primary"
+								type="submit"
+								disabled={isLoading}>
+								{isLoading ? "Logging in..." : "Login"}
+							</Button>
+							<Button
+								variant="link"
+								onClick={switchToRegister}>
+								Need an account? Register
+							</Button>
+						</div>
 					</Form>
 				</Modal.Body>
 			</Modal>
@@ -296,59 +317,54 @@ const ActEdNavbar = () => {
 				<Modal.Body>
 					{registerError && <Alert variant="danger">{registerError}</Alert>}
 					<Form onSubmit={handleRegister}>
-						<Form.Group
-							className="mb-3"
-							controlId="registerName">
-							<Form.Label>Full Name</Form.Label>
+						<Form.Group className="mb-3">
+							<Form.Label>First Name</Form.Label>
 							<Form.Control
 								type="text"
-								placeholder="Enter your name"
-								value={registerName}
-								onChange={(e) => setRegisterName(e.target.value)}
+								name="first_name"
+								value={registerData.first_name}
+								onChange={handleRegisterInputChange}
+								required
+							/>
+							<Form.Label>Last Name</Form.Label>
+							<Form.Control
+								type="text"
+								name="last_name"
+								value={registerData.last_name}
+								onChange={handleRegisterInputChange}
 								required
 							/>
 						</Form.Group>
-
-						<Form.Group
-							className="mb-3"
-							controlId="registerEmail">
+						<Form.Group className="mb-3">
 							<Form.Label>Email address</Form.Label>
 							<Form.Control
 								type="email"
-								placeholder="Enter email"
-								value={registerEmail}
-								onChange={(e) => setRegisterEmail(e.target.value)}
+								name="email"
+								value={registerData.email}
+								onChange={handleRegisterInputChange}
 								required
 							/>
-							<Form.Text className="text-muted">We'll never share your email with anyone else.</Form.Text>
 						</Form.Group>
-
-						<Form.Group
-							className="mb-3"
-							controlId="registerPassword">
+						<Form.Group className="mb-3">
 							<Form.Label>Password</Form.Label>
 							<Form.Control
 								type="password"
-								placeholder="Password"
-								value={registerPassword}
-								onChange={(e) => setRegisterPassword(e.target.value)}
+								name="password"
+								value={registerData.password}
+								onChange={handleRegisterInputChange}
 								required
 							/>
 						</Form.Group>
-
-						<Form.Group
-							className="mb-3"
-							controlId="registerConfirmPassword">
+						<Form.Group className="mb-3">
 							<Form.Label>Confirm Password</Form.Label>
 							<Form.Control
 								type="password"
-								placeholder="Confirm Password"
-								value={registerConfirmPassword}
-								onChange={(e) => setRegisterConfirmPassword(e.target.value)}
+								name="confirmPassword"
+								value={registerData.confirmPassword}
+								onChange={handleRegisterInputChange}
 								required
 							/>
 						</Form.Group>
-
 						<div className="d-flex justify-content-between align-items-center">
 							<Button
 								variant="primary"
