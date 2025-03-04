@@ -1,6 +1,8 @@
 // src/hooks/useAuth.js
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createContext, useContext } from "react";
 import authService from '../services/authService';
+
+export const AuthContext = createContext(null);
 
 export const useAuth = () => {
 	const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
@@ -74,5 +76,5 @@ export const useAuth = () => {
 		login,
 		register,
 		logout,
-	};
+	}
 };

@@ -158,7 +158,7 @@ const ActEdNavbar = () => {
 								title={
 									<div className="d-flex align-items-center">
 										<PersonCircle className="bi d-flex flex-row align-items-center" />
-										<span className="d-none d-md-block mx-1 fst-normal">Welcome {user?.firstName || "User"}</span>
+										<span className="d-none d-md-block mx-1 fst-normal">Welcome {user?.first_name || user?.username || "User"}</span>
 									</div>
 								}
 								id="user-dropdown">
