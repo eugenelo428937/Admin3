@@ -57,7 +57,7 @@ const authService = {
 				localStorage.setItem("user", JSON.stringify(response.data.user));
 			}
 
-			return response.data;
+			return response.data.user;
 		} catch (error) {
 			throw error.response?.data || error;
 		}
@@ -67,11 +67,17 @@ const authService = {
 			// Get CSRF token first
 			await authService.getCsrfToken();
 
-			const response = await axiosInstance.post("/register/", userData);
+			const response = await axiosInstance.post("/register/", {
+				username: userData.username,
+				password: userData.password,
+				email: userData.email,
+				first_name: userData.first_name,
+				last_name: userData.last_name,
+			});
 
-			if (response.data.user) {
-				localStorage.setItem("isAuthenticated", "true");
+			if (response.data.status === "success") {
 				localStorage.setItem("user", JSON.stringify(response.data.user));
+				localStorage.setItem("isAuthenticated", "true");
 				if (response.data.token) {
 					localStorage.setItem("token", response.data.token);
 				}
@@ -95,8 +101,8 @@ const authService = {
 	},
 
 	getCurrentUser: () => {
-		const user = localStorage.getItem("user");				
-		return user ? JSON.parse(user) : null;
+		const userData = localStorage.getItem("user");
+		return userData ? JSON.parse(userData) : null;
 	},
 
 	isAuthenticated: () => {
@@ -104,9 +110,8 @@ const authService = {
 	},
 	getUserDetails: async () => {
 		try {
-			await authService.getCsrfToken();
 			const response = await axiosInstance.get("/session/");
-			return response.data;
+			return response.data.user;
 		} catch (error) {
 			throw error;
 		}
