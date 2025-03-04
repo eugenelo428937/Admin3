@@ -2,9 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import ActEdNavbar from "./components/ActEdNavbar";
-import Login from './components/Login';
-import StudentForm from './components/StudentForm';
-import Logout from './components/Logout';
+import { AuthProvider } from "./hooks/useAuth";
+
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -18,11 +17,13 @@ function App() {
   }, []);
 
   return (
-		<div className="App">
-			<ActEdNavbar />
-			<h1>The Acturial Education Company</h1>
-			<h2>E-Store</h2>
-		</div>
+		<AuthProvider>
+			<div className="App">
+				<ActEdNavbar />
+				<h1>The Acturial Education Company</h1>
+				<h2>E-Store</h2>
+			</div>
+		</AuthProvider>
   );
 }
 
