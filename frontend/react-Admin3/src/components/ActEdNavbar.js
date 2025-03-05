@@ -6,6 +6,7 @@ import InputGroup from "react-bootstrap/InputGroup"
 import { LinkContainer } from "react-router-bootstrap";
 import { House, QuestionCircle, Cart, PersonCircle, Download, Search } from "react-bootstrap-icons";
 import axios from "axios"; // Make sure to install axios: npm install axios
+import Link from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../css/navbar.css";
 
@@ -132,28 +133,28 @@ const ActEdNavbar = () => {
 			<div className="d-flex flex-row navbar-top px-3 px-lg-4 px-xl-5 pt-2 pb-1 justify-content-between align-content-end">
 				<div className="d-flex flex-row px-1 align-content-center flex-wrap">
 					<div className="me-1 d-flex flex-row align-content-center flex-wrap">
-						<Button
+						<LinkContainer
 							variant="link"
 							to="/Home"
 							className="p-0 mx-1 flex-wrap align-items-center d-flex flex-row">
 							<House className="bi d-flex flex-row align-items-center"></House>
 							<span className="d-none d-md-block mx-1 fst-normal">ActEd Home</span>
-						</Button>
+						</LinkContainer>
 					</div>
 					<div className="me-1 d-flex flex-row align-content-center flex-wrap">
-						<Button
+						<LinkContainer
 							variant="link"
-							to="/Home"
+							to="/Help"
 							className="p-0 mx-1 flex-wrap align-items-center d-flex flex-row">
 							<QuestionCircle className="bi d-flex flex-row align-items-center"></QuestionCircle>
 							<span className="d-none d-md-block mx-1 fst-normal">Help</span>
-						</Button>
+						</LinkContainer>
 					</div>
 				</div>
 
 				<div className="d-flex flex-row px-3">
 					<div className="me-lg-2 me-1 d-flex flex-row align-content-center">
-						<Button
+						<LinkContainer
 							variant="link"
 							to="/shopping-cart"
 							className="btn-search p-0 mx-1 flex-wrap align-items-center d-flex flex-row">
@@ -163,7 +164,7 @@ const ActEdNavbar = () => {
 								<span className="position-relative"></span>
 								<span className="visually-hidden">item(s) in shopping cart</span>
 							</span>
-						</Button>
+						</LinkContainer>
 					</div>
 					<div className="ms-lg-2 ms-1 d-flex flex-row align-content-center">
 						{isAuthenticated ? (
@@ -235,6 +236,9 @@ const ActEdNavbar = () => {
 							<Nav.Link href="#home">Distance Learning</Nav.Link>
 							<Nav.Link href="#home">Tutorials</Nav.Link>
 							<Nav.Link href="#home">Online Classroom</Nav.Link>
+							<LinkContainer to="/exam-sessions">
+								<Nav.Link>Exam Sessions</Nav.Link>
+							</LinkContainer>
 						</Nav>
 					</Navbar.Collapse>
 					<div className="d-flex justify-content-md-end justify-content-start align-content-center flex-row ps-md-2 order-0 order-md-4">

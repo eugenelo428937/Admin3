@@ -6,3 +6,6 @@ Django CORS headers documentation: <https://github.com/adamchainz/django-cors-he
 Django CSRF documentation: <https://docs.djangoproject.com/en/stable/ref/csrf/>
 Django authentication documentation: <https://docs.djangoproject.com/en/stable/topics/auth/>
 https://axios-http.com/docs/interceptors
+
+python manage.py startapp sessions
+python manage.py show_urls

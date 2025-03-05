@@ -56,7 +56,7 @@ const authService = {
 				localStorage.setItem("isAuthenticated", "true");
 				localStorage.setItem("user", JSON.stringify(response.data.user));
 			}
-
+			
 			return response.data.user;
 		} catch (error) {
 			throw error.response?.data || error;
