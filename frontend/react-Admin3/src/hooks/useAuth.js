@@ -1,11 +1,13 @@
 // src/hooks/useAuth.js
-import { useState, useEffect, createContext, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, createContext, useContext } from "react";
 import authService from '../services/authService';
 
 export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,6 +31,7 @@ export const AuthProvider = ({ children }) => {
       const userData = await authService.login(credentials);
       setUser(userData);
       setIsAuthenticated(true);
+      navigate("/");
       return userData;
     } catch (err) {
       setError(err.message);
@@ -45,6 +48,7 @@ export const AuthProvider = ({ children }) => {
       const data = await authService.register(userData);
       setUser(data.user);
       setIsAuthenticated(true);
+      navigate("/");
       return data;
     } catch (err) {
       setError(err.message);
@@ -59,6 +63,7 @@ export const AuthProvider = ({ children }) => {
       await authService.logout();
       setIsAuthenticated(false);
       setUser(null);
+      navigate("/");
     } catch (err) {
       setError(err.message);
     }
