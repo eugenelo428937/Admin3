@@ -1,11 +1,11 @@
 // src/App.js
 
 import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import ActEdNavbar from "./components/ActEdNavbar";
+import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import ExamSessionList from "./components/ExamSessionList";
 import ExamSessionForm from "./components/ExamSessionForm";
+import Home from "./pages/Home";
 
 function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -20,24 +20,26 @@ function App() {
 
 	return (
 		<AuthProvider>
-			<div className="App">
-				<ActEdNavbar />
-				<h1>The Acturial Education Company</h1>
-				<h2>E-Store</h2>
-
+			<div className="App">				
+				<Home/>
+				hi
 				<Routes>
 					<Route
-						path="/exam-sessions"
-						element={<ExamSessionList />}
-					/>
-					<Route
-						path="/exam-sessions/new"
-						element={<ExamSessionForm />}
-					/>
-					<Route
-						path="/exam-sessions/edit/:id"
-						element={<ExamSessionForm />}
-					/>
+						path="/"						
+						element={<Home />}>
+						<Route
+							path="/exam-sessions"
+							element={<ExamSessionList />}
+						/>
+						<Route
+							path="/exam-sessions/new"
+							element={<ExamSessionForm />}
+						/>
+						<Route
+							path="/exam-sessions/edit/:id"
+							element={<ExamSessionForm />}
+						/>
+					</Route>
 				</Routes>
 			</div>
 		</AuthProvider>
