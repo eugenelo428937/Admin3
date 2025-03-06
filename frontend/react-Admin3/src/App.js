@@ -6,6 +6,10 @@ import { AuthProvider } from "./hooks/useAuth";
 import ExamSessionList from "./components/ExamSessionList";
 import ExamSessionForm from "./components/ExamSessionForm";
 import Home from "./pages/Home";
+import Product from "./pages/Product";
+import ActEdNavbar from "./components/ActEdNavbar";
+import NoMatch from "./components/NoMatch";
+import { LinkContainer } from "react-router-bootstrap";
 
 function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -20,26 +24,33 @@ function App() {
 
 	return (
 		<AuthProvider>
-			<div className="App">				
-				<Home/>
-				hi
+			<div className="App">
+				<ActEdNavbar />				
 				<Routes>
 					<Route
-						path="/"						
-						element={<Home />}>
-						<Route
-							path="/exam-sessions"
-							element={<ExamSessionList />}
-						/>
-						<Route
-							path="/exam-sessions/new"
-							element={<ExamSessionForm />}
-						/>
-						<Route
-							path="/exam-sessions/edit/:id"
-							element={<ExamSessionForm />}
-						/>
-					</Route>
+						path="/Home"
+						element={<Home />}
+					/>
+					<Route
+						path="/Product"
+						element={<Product />}
+					/>
+					<Route
+						path="./exam-sessions"
+						element={<ExamSessionList />}
+					/>
+					<Route
+						path="./exam-sessions/new"
+						element={<ExamSessionForm />}
+					/>
+					<Route
+						path="./exam-sessions/edit/:id"
+						element={<ExamSessionForm />}
+					/>
+					<Route
+						path="*"
+						element={<NoMatch />}
+					/>
 				</Routes>
 			</div>
 		</AuthProvider>

@@ -2,14 +2,13 @@
 import React, { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { Container, Button, Nav, Navbar, Image, NavDropdown, Modal, Form, Alert } from "react-bootstrap";
-import InputGroup from "react-bootstrap/InputGroup"
+import InputGroup from "react-bootstrap/InputGroup";
 import { LinkContainer } from "react-router-bootstrap";
 import { Routes, Route } from "react-router-dom";
 import { House, QuestionCircle, Cart, PersonCircle, Download, Search } from "react-bootstrap-icons";
 import axios from "axios"; // Make sure to install axios: npm install axios
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../css/navbar.css";
-
 
 const ActEdNavbar = () => {
 	// State for authentication status
@@ -134,13 +133,16 @@ const ActEdNavbar = () => {
 				<div className="d-flex flex-row px-1 align-content-center flex-wrap">
 					<div className="me-1 d-flex flex-row align-content-center flex-wrap">
 						<LinkContainer to="/Home">
+							<House className="bi d-flex flex-row align-items-center"></House>
+						</LinkContainer>
+						{/* 
 							<Button
 								variant="link"
 								className="p-0 mx-1 flex-wrap align-items-center d-flex flex-row">
 								<House className="bi d-flex flex-row align-items-center"></House>
 								<span className="d-none d-md-block mx-1 fst-normal">ActEd Home</span>
 							</Button>
-						</LinkContainer>
+						</LinkContainer> */}
 					</div>
 					<div className="me-1 d-flex flex-row align-content-center flex-wrap">
 						{/* <LinkContainer to="/Help">
@@ -234,11 +236,11 @@ const ActEdNavbar = () => {
 						id="navbar-menu"
 						className="px-md-1 px-0 m-auto justify-content-lg-center justify-content-md-start order-4 order-md-2">
 						<Nav className="navbar-nav  px-md-2 px-lg-2 flex-wrap">
-							<Nav.Link href="#home">Home</Nav.Link>
-							<Nav.Link href="#home">Subjects</Nav.Link>
+							<Nav.Link to="/">Home</Nav.Link>
+							{/* <Nav.Link href="#home">Subjects</Nav.Link>
 							<Nav.Link href="#home">Distance Learning</Nav.Link>
 							<Nav.Link href="#home">Tutorials</Nav.Link>
-							<Nav.Link href="#home">Online Classroom</Nav.Link>
+							<Nav.Link href="#home">Online Classroom</Nav.Link> */}
 							{/* <LinkContainer to="/exam-sessions">
 								<Nav.Link>Exam Sessions</Nav.Link>
 							</LinkContainer> */}
