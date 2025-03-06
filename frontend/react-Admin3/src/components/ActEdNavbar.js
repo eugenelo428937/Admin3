@@ -4,9 +4,9 @@ import { useAuth } from "../hooks/useAuth";
 import { Container, Button, Nav, Navbar, Image, NavDropdown, Modal, Form, Alert } from "react-bootstrap";
 import InputGroup from "react-bootstrap/InputGroup"
 import { LinkContainer } from "react-router-bootstrap";
+import { Routes, Route } from "react-router-dom";
 import { House, QuestionCircle, Cart, PersonCircle, Download, Search } from "react-bootstrap-icons";
 import axios from "axios"; // Make sure to install axios: npm install axios
-import Link from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../css/navbar.css";
 
@@ -185,15 +185,13 @@ const ActEdNavbar = () => {
 								<NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
 							</NavDropdown>
 						) : (
-							
 							<Button
 								variant="link"
 								onClick={handleUserIconClick}
 								className="btn-search p-0 mx-1 flex-wrap align-items-center d-flex flex-row">
 								<PersonCircle className="bi d-flex flex-row align-items-center"></PersonCircle>
 								<span className="d-none d-md-block mx-1 fst-normal">Login</span>
-								</Button>
-							
+							</Button>
 						)}
 					</div>
 				</div>
