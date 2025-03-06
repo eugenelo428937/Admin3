@@ -3,12 +3,12 @@
 import React, { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
-import ExamSessionList from "./components/ExamSessionList";
-import ExamSessionForm from "./components/ExamSessionForm";
 import Home from "./pages/Home";
 import Product from "./pages/Product";
 import ActEdNavbar from "./components/ActEdNavbar";
 import NoMatch from "./components/NoMatch";
+import ExamSessionList from "./components/ExamSessionList";
+import ExamSessionForm from "./components/ExamSessionForm";
 
 function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -27,11 +27,6 @@ function App() {
 				<ActEdNavbar />
 				<Routes>
 					<Route
-						path="/"
-						index
-						element={<App />}
-					/>
-					<Route
 						path="/Home"
 						element={<Home />}
 					/>
@@ -40,7 +35,7 @@ function App() {
 						element={<Product />}
 					/>
 					<Route
-						path="./exam-sessions"
+						path="./Exam-sessions"
 						element={<ExamSessionList />}
 					/>
 					<Route

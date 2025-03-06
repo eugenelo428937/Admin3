@@ -24,6 +24,10 @@
 .navbar-container {    
     background-color: var(--bs-navbar-container-bg-color);
 }
+.navbar-container a {    
+    color: var(--icon-light-color);
+    text-decoration: none;
+}
 .navbar-top {
     background-color: var(--bs-navbar-top-bg-color);
 }
