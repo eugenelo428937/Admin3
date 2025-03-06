@@ -1,13 +1,12 @@
 import { Container, Button, Nav, Navbar, Image, NavDropdown, Modal, Form, Alert } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const Home = () => {
+const Product = () => {
 	return (
 		<div>
-			<h1>The Acturial Education Company</h1>
-			<h2>E-Store</h2>
+			<h1>Product</h1>			
 		</div>
 	);
 };
 
-export default Home;
+export default Product;
