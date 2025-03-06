@@ -1,5 +1,5 @@
 // src/components/ExamSessionForm.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Form, Button, Container, Alert } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import examSessionService from '../services/examSessionService';
@@ -9,19 +9,14 @@ const ExamSessionForm = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const [error, setError] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         session_code: '',
         start_date: '',
         end_date: ''
     });
 
-    useEffect(() => {
-        if (id) {
-            fetchExamSession();
-        }
-    }, [id]);
-
-    const fetchExamSession = async () => {
+    const fetchExamSession = useCallback(async () => {
         try {
             const data = await examSessionService.getById(id);
             setFormData({
@@ -32,10 +27,24 @@ const ExamSessionForm = () => {
         } catch (err) {
             setError('Failed to fetch exam session');
         }
-    };
+    }, [id]);
+
+    useEffect(() => {
+        if (id) {
+            fetchExamSession();
+        }
+    }, [id, fetchExamSession]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (formData.end_date <= formData.start_date) {
+            setError('End date must be after start date');
+            return;
+        }
+
+        setIsSubmitting(true);
+        setError(null);
+
         try {
             if (id) {
                 await examSessionService.update(id, formData);
@@ -45,6 +54,8 @@ const ExamSessionForm = () => {
             navigate('/exam-sessions');
         } catch (err) {
             setError('Failed to save exam session');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -71,6 +82,7 @@ const ExamSessionForm = () => {
                         value={formData.session_code}
                         onChange={handleChange}
                         required
+                        disabled={isSubmitting}
                     />
                 </Form.Group>
 
@@ -82,6 +94,7 @@ const ExamSessionForm = () => {
                         value={formData.start_date}
                         onChange={handleChange}
                         required
+                        disabled={isSubmitting}
                     />
                 </Form.Group>
 
@@ -93,16 +106,22 @@ const ExamSessionForm = () => {
                         value={formData.end_date}
                         onChange={handleChange}
                         required
+                        disabled={isSubmitting}
                     />
                 </Form.Group>
 
-                <Button variant="primary" type="submit">
-                    {id ? 'Update' : 'Create'} Exam Session
+                <Button 
+                    variant="primary" 
+                    type="submit"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? 'Saving...' : (id ? 'Update' : 'Create')} Exam Session
                 </Button>
                 <Button 
                     variant="secondary" 
                     className="ms-2"
                     onClick={() => navigate('/exam-sessions')}
+                    disabled={isSubmitting}
                 >
                     Cancel
                 </Button>
