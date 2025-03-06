@@ -9,7 +9,6 @@ import Home from "./pages/Home";
 import Product from "./pages/Product";
 import ActEdNavbar from "./components/ActEdNavbar";
 import NoMatch from "./components/NoMatch";
-import { LinkContainer } from "react-router-bootstrap";
 
 function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -25,8 +24,13 @@ function App() {
 	return (
 		<AuthProvider>
 			<div className="App">
-				<ActEdNavbar />				
+				<ActEdNavbar />
 				<Routes>
+					<Route
+						path="/"
+						index
+						element={<App />}
+					/>
 					<Route
 						path="/Home"
 						element={<Home />}
