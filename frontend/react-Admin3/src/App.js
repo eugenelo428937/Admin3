@@ -9,6 +9,9 @@ import ActEdNavbar from "./components/ActEdNavbar";
 import NoMatch from "./components/NoMatch";
 import ExamSessionList from "./components/ExamSessionList";
 import ExamSessionForm from "./components/ExamSessionForm";
+import SubjectList from "./components/subjects/SubjectList";
+import SubjectForm from "./components/subjects/SubjectForm";
+import SubjectDetail from "./components/subjects/SubjectDetail";
 
 function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -45,6 +48,22 @@ function App() {
 					<Route
 						path="/exam-sessions/edit/:id"
 						element={<ExamSessionForm />}
+					/>
+					<Route
+						path="/subjects"
+						element={<SubjectList />}
+					/>
+					<Route
+						path="/subjects/new"
+						element={<SubjectForm />}
+					/>
+					<Route
+						path="/subjects/:id"
+						element={<SubjectDetail />}
+					/>
+					<Route
+						path="/subjects/:id/edit"
+						element={<SubjectForm />}
 					/>
 					<Route
 						path="*"
