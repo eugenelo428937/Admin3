@@ -171,16 +171,10 @@ const ActEdNavbar = () => {
 									</div>
 								}
 								id="user-dropdown">
-								
-									<NavDropdown.Item
-										href="/profile"
-										>
-										My Profile
-									</NavDropdown.Item>
-									<NavDropdown.Item href="/orders">My Orders</NavDropdown.Item>
-									<NavDropdown.Divider />
-									<NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
-								
+								<NavDropdown.Item href="/profile">My Profile</NavDropdown.Item>
+								<NavDropdown.Item href="/orders">My Orders</NavDropdown.Item>
+								<NavDropdown.Divider />
+								<NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
 							</NavDropdown>
 						) : (
 							<Button
@@ -257,12 +251,31 @@ const ActEdNavbar = () => {
 								href="#home">
 								Online Classroom
 							</Nav.Link>
-							
-							<Nav.Link
-								as={NavLink}
-								to="/exam-sessions">
-								Exam Sessions
-							</Nav.Link>
+							<NavDropdown
+								title="Admin"
+								id="admin-nav-dropdown">
+								<NavDropdown.Item
+									as={NavLink}
+									to="/exam-sessions">
+									Exam Sessions
+								</NavDropdown.Item>
+								<NavDropdown.Item
+									as={NavLink}
+									to="/subjects">
+									Subjects
+								</NavDropdown.Item>
+								<NavDropdown.Item
+									as={NavLink}
+									to="/">
+									Products
+								</NavDropdown.Item>
+								{/* <NavDropdown.Divider />
+								<NavDropdown.Item
+									as={NavLink}
+									to="/">
+									Separated link
+								</NavDropdown.Item> */}
+							</NavDropdown>
 						</Nav>
 					</Navbar.Collapse>
 					<div className="d-flex justify-content-md-end justify-content-start align-content-center flex-row ps-md-2 order-0 order-md-4">
