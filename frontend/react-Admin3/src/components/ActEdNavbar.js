@@ -171,10 +171,16 @@ const ActEdNavbar = () => {
 									</div>
 								}
 								id="user-dropdown">
-								<NavDropdown.Item href="/profile">My Profile</NavDropdown.Item>
-								<NavDropdown.Item href="/orders">My Orders</NavDropdown.Item>
-								<NavDropdown.Divider />
-								<NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
+								
+									<NavDropdown.Item
+										href="/profile"
+										>
+										My Profile
+									</NavDropdown.Item>
+									<NavDropdown.Item href="/orders">My Orders</NavDropdown.Item>
+									<NavDropdown.Divider />
+									<NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
+								
 							</NavDropdown>
 						) : (
 							<Button
@@ -251,6 +257,7 @@ const ActEdNavbar = () => {
 								href="#home">
 								Online Classroom
 							</Nav.Link>
+							
 							<Nav.Link
 								as={NavLink}
 								to="/exam-sessions">
