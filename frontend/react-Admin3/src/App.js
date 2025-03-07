@@ -12,6 +12,7 @@ import ExamSessionForm from "./components/ExamSessionForm";
 import SubjectList from "./components/subjects/SubjectList";
 import SubjectForm from "./components/subjects/SubjectForm";
 import SubjectDetail from "./components/subjects/SubjectDetail";
+import SubjectImport from "./components/SubjectImport";
 
 function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -64,6 +65,10 @@ function App() {
 					<Route
 						path="/subjects/:id/edit"
 						element={<SubjectForm />}
+					/>
+					<Route
+						path="/subjects/import"
+						element={<SubjectImport />}
 					/>
 					<Route
 						path="*"
