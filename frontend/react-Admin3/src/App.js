@@ -27,23 +27,23 @@ function App() {
 				<ActEdNavbar />
 				<Routes>
 					<Route
-						path="/Home"
+						path="/home"
 						element={<Home />}
 					/>
 					<Route
-						path="/Product"
+						path="/product"
 						element={<Product />}
 					/>
 					<Route
-						path="./Exam-sessions"
+						path="/exam-sessions"
 						element={<ExamSessionList />}
 					/>
 					<Route
-						path="./exam-sessions/new"
+						path="/exam-sessions/new"
 						element={<ExamSessionForm />}
 					/>
 					<Route
-						path="./exam-sessions/edit/:id"
+						path="/exam-sessions/edit/:id"
 						element={<ExamSessionForm />}
 					/>
 					<Route

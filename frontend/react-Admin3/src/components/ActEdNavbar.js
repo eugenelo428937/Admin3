@@ -226,12 +226,36 @@ const ActEdNavbar = () => {
 						id="navbar-menu"
 						className="px-md-1 px-0 m-auto justify-content-lg-center justify-content-md-start order-4 order-md-2">
 						<Nav className="navbar-nav  px-md-2 px-lg-2 flex-wrap">
-							<NavLink to="/Home">Home</NavLink>
-							<NavLink to="/Product">Subjects</NavLink>
-							<Nav.Link href="#home">Distance Learning</Nav.Link>
-							<Nav.Link href="#home">Tutorials</Nav.Link>
-							<Nav.Link href="#home">Online Classroom</Nav.Link>
-							<NavLink to="/Exam-sessions">Exam Sessions</NavLink>
+							<Nav.Link
+								as={NavLink}
+								to="/home">
+								Home
+							</Nav.Link>
+							<Nav.Link
+								as={NavLink}
+								to="/product">
+								Subjects
+							</Nav.Link>
+							<Nav.Link
+								as={NavLink}
+								href="#home">
+								Distance Learning
+							</Nav.Link>
+							<Nav.Link
+								as={NavLink}
+								href="#home">
+								Tutorials
+							</Nav.Link>
+							<Nav.Link
+								as={NavLink}
+								href="#home">
+								Online Classroom
+							</Nav.Link>
+							<Nav.Link
+								as={NavLink}
+								to="/exam-sessions">
+								Exam Sessions
+							</Nav.Link>
 						</Nav>
 					</Navbar.Collapse>
 					<div className="d-flex justify-content-md-end justify-content-start align-content-center flex-row ps-md-2 order-0 order-md-4">
