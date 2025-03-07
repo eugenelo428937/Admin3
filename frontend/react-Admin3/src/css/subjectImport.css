@@ -1,0 +1,54 @@
+.subject-import-container {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.import-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.file-input {
+    flex: 1;
+}
+
+.import-button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.import-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.message {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+}
+
+.message.error {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ef9a9a;
+}
+
+.message.success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+}
+
+.import-instructions {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
