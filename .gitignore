@@ -76,3 +76,5 @@ venv2/Lib/site-packages/pip/_vendor/distlib/t32.exe
 *.exe
 venv2/Lib/*
 frontend/react-Admin3/o/
+venv/*
+frontend/react-Admin3/node_modules/*
