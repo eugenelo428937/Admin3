@@ -77,3 +77,4 @@ venv2/Lib/*
 frontend/react-Admin3/o/
 venv/*
 frontend/react-Admin3/node_modules/*
+frontend/react-Admin3/node_modules.OLD/*
