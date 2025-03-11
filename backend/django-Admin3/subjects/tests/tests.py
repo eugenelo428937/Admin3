@@ -13,7 +13,7 @@ class SubjectModelTests(TestCase):
     
     def setUp(self):
         self.subject_data = {
-            'code': 'MATH101',
+            'code': 'TEST101',
             'description': 'Basic mathematics concepts',
             'active': True
         }
@@ -101,19 +101,19 @@ class SubjectAPITests(APITestCase):
         # Authenticate the client
         self.client.force_authenticate(user=self.user)
         
-        # Create some subjects
+        # Create some subjects with unique codes
         self.subject1 = Subject.objects.create(
-            code='MATH101',
+            code='API101',  # Changed from MATH101
             description='Basic mathematics concepts'
         )
         
         self.subject2 = Subject.objects.create(
-            code='ENG101',
+            code='API102',  # Changed from ENG101
             description='Learn to write effectively'
         )
         
         # URL for subjects list
-        self.subjects_url = reverse('subjects:subject-list')
+        self.subjects_url = reverse('subject-list')
     
     def test_get_all_subjects(self):
         """Test retrieving all subjects."""
@@ -140,7 +140,7 @@ class SubjectAPITests(APITestCase):
     
     def test_get_single_subject(self):
         """Test retrieving a specific subject."""
-        url = reverse('subjects:subject-detail', args=[self.subject1.id])
+        url = reverse('subject-detail', args=[self.subject1.id])
         response = self.client.get(url)
         serializer = SubjectSerializer(self.subject1)
         
@@ -149,7 +149,7 @@ class SubjectAPITests(APITestCase):
     
     def test_update_subject(self):
         """Test updating a subject."""
-        url = reverse('subjects:subject-detail', args=[self.subject1.id])
+        url = reverse('subject-detail', args=[self.subject1.id])
         updated_data = {
             'code': 'MATH101',
             'description': 'Complex mathematics concepts',
@@ -164,7 +164,7 @@ class SubjectAPITests(APITestCase):
     
     def test_partial_update_subject(self):
         """Test partially updating a subject."""
-        url = reverse('subjects:subject-detail', args=[self.subject1.id])
+        url = reverse('subject-detail', args=[self.subject1.id])
         data = {'active': False}  # Only update active status
         
         response = self.client.patch(url, data, format='json')
@@ -175,7 +175,7 @@ class SubjectAPITests(APITestCase):
     
     def test_delete_subject(self):
         """Test deleting a subject."""
-        url = reverse('subjects:subject-detail', args=[self.subject1.id])
+        url = reverse('subject-detail', args=[self.subject1.id])
         response = self.client.delete(url)
         
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -184,7 +184,7 @@ class SubjectAPITests(APITestCase):
     def test_unique_code_constraint(self):
         """Test that subject code must be unique."""
         data = {
-            'code': 'MATH101',  # This code already exists
+            'code': 'API101',  # This code already exists
             'description': 'Another math course'
         }
         response = self.client.post(self.subjects_url, data, format='json')

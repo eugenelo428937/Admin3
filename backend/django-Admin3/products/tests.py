@@ -11,6 +11,12 @@ class ProductModelTests(TestCase):
     """Tests for the Product model"""
 
     def setUp(self):
+        # Create test user and authenticate
+        self.user = User.objects.create_user(
+            username="testuser", email="test@example.com", password="testpassword")
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
         # Create test product
         self.product = Product.objects.create(
             code="TEST001",
@@ -20,10 +26,10 @@ class ProductModelTests(TestCase):
         )
 
         # Update these URL patterns
-        self.list_url = reverse('product-list')  # This should now work
-        self.detail_url = reverse('product-detail', kwargs={'pk': self.product.pk})
-        # This should match your action name
-        self.bulk_import_url = reverse('product-bulk-import-products')
+        # Define API URLs - these should work with the router configuration
+        self.list_url = '/products/'  # Direct URL path instead of reverse
+        self.detail_url = f'/products/{self.product.pk}/'
+        self.bulk_import_url = '/products/bulk_import_products/'
 
 
     def test_product_creation(self):
