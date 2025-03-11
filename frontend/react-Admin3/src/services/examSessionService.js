@@ -4,9 +4,9 @@ const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8888/exam_ses
 
 const examSessionService = {
     getAll: async () => {
-        const response = await httpServiceProvider.get(`${API_URL}/exam-sessions/`);
-        return response.data;
-    },
+			const response = await httpServiceProvider.get(`${API_URL}/exam-sessions/`);
+			return response.data.results || response.data; // Return results array if paginated, otherwise the whole response
+		},
 
     getById: async (id) => {
         const response = await httpServiceProvider.get(`${API_URL}/exam-sessions/${id}/`);
