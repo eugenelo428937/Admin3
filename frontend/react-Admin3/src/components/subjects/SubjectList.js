@@ -97,12 +97,12 @@ const SubjectList = () => {
 								<td>{subject.active ? "Active" : "Inactive"}</td>
 								<td>
 									<Link
-										to={`/${subject.id}`}
+										to={`/subjects/${subject.id}`}
 										className="btn btn-info btn-sm me-2">
 										View
 									</Link>
 									<Link
-										to={`/${subject.id}/edit`}
+										to={`/subjects/${subject.id}/edit`}
 										className="btn btn-warning btn-sm me-2">
 										Edit
 									</Link>
