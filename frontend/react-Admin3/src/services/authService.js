@@ -1,42 +1,33 @@
 // src/services/authService.js
-import httpServiceProvider from "./httpService";
+import httpService from "./httpService";
 const API_URL = "http://localhost:8888/students";
 
 const authService = {
-	
 	login: async (credentials) => {
-		try {			
-			const response = await httpServiceProvider.post(`${API_URL}/login/`, credentials);
+		try {
+			const response = await httpService.post(`${API_URL}/login/`, credentials);
 
 			if (response.data.user) {
-				if (response.data.token) {
-					localStorage.setItem("token", response.data.token);
-				}
-				localStorage.setItem("isAuthenticated", "true");
+				localStorage.setItem("token", response.data.token);
+				localStorage.setItem("refreshToken", response.data.refresh);
 				localStorage.setItem("user", JSON.stringify(response.data.user));
+				localStorage.setItem("isAuthenticated", "true");
 			}
-			
+
 			return response.data.user;
 		} catch (error) {
 			throw error.response?.data || error;
 		}
 	},
 	register: async (userData) => {
-		try {		
-			const response = await httpServiceProvider.post(`${API_URL}/register/`, {
-				username: userData.username,
-				password: userData.password,
-				email: userData.email,
-				first_name: userData.first_name,
-				last_name: userData.last_name,
-			});
+		try {
+			const response = await httpService.post(`${API_URL}/register/`, userData);
 
 			if (response.data.status === "success") {
+				localStorage.setItem("token", response.data.token);
+				localStorage.setItem("refreshToken", response.data.refresh);
 				localStorage.setItem("user", JSON.stringify(response.data.user));
 				localStorage.setItem("isAuthenticated", "true");
-				if (response.data.token) {
-					localStorage.setItem("token", response.data.token);
-				}
 			}
 
 			return response.data;
@@ -45,15 +36,10 @@ const authService = {
 		}
 	},
 	logout: async () => {
-		try {
-			await httpServiceProvider.post(`${API_URL}/logout/`);
-		} catch (error) {
-			console.error("Logout error:", error);
-		} finally {
-			localStorage.removeItem("token");
-			localStorage.removeItem("user");
-			localStorage.removeItem("isAuthenticated");
-		}
+		localStorage.removeItem("token");
+		localStorage.removeItem("refreshToken");
+		localStorage.removeItem("user");
+		localStorage.removeItem("isAuthenticated");
 	},
 
 	getCurrentUser: () => {
@@ -62,11 +48,27 @@ const authService = {
 	},
 
 	isAuthenticated: () => {
-		return localStorage.getItem("isAuthenticated") === "true";
+		return localStorage.getItem("isAuthenticated") === "true" && localStorage.getItem("token") !== null;
+	},
+	refreshToken: async () => {
+		try {
+			const refreshToken = localStorage.getItem("refreshToken");
+			const response = await httpService.post(`${API_URL}/refresh/`, {
+				refresh: refreshToken,
+			});
+
+			if (response.data.token) {
+				localStorage.setItem("token", response.data.token);
+			}
+
+			return response.data;
+		} catch (error) {
+			throw error.response?.data || error;
+		}
 	},
 	getUserDetails: async () => {
 		try {
-			const response = await httpServiceProvider.get(`${API_URL}/session/`);
+			const response = await httpService.get(`${API_URL}/session/`);
 			return response.data.user;
 		} catch (error) {
 			throw error;
