@@ -13,6 +13,10 @@ import SubjectList from "./components/subjects/SubjectList";
 import SubjectForm from "./components/subjects/SubjectForm";
 import SubjectDetail from "./components/subjects/SubjectDetail";
 import SubjectImport from "./components/subjects/SubjectImport";
+import ProductList from "./components/products/ProductList";
+import ProductDetail from "./components/products/ProductDetail";
+import ProductForm from "./components/products/ProductForm";
+import ProductImport from "./components/products/ProductImport";
 
 function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -73,6 +77,26 @@ function App() {
 					<Route
 						path="*"
 						element={<NoMatch />}
+					/>
+					<Route
+						path="/products"
+						element={<ProductList />}
+					/>
+					<Route
+						path="/products/:id"
+						element={<ProductDetail />}
+					/>
+					<Route
+						path="/products/new"
+						element={<ProductForm />}
+					/>
+					<Route
+						path="/products/edit/:id"
+						element={<ProductForm />}
+					/>
+					<Route
+						path="/products/import"
+						element={<ProductImport />}
 					/>
 				</Routes>
 			</div>
