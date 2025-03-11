@@ -45,31 +45,43 @@ const ProductDetail = () => {
     if (!product) return <div>Product not found</div>;
 
     return (
-        <Container>
-            <h2>Product Details</h2>
-            <Card>
-                <Card.Body>
-                    <Card.Title>{product.name}</Card.Title>
-                    <Card.Text>
-                        <strong>Code:</strong> {product.code}<br />
-                        <strong>Description:</strong> {product.description || "No description"}<br />
-                        <strong>Status:</strong> {product.active ? "Active" : "Inactive"}<br />
-                        <strong>Created:</strong> {new Date(product.created_at).toLocaleString()}<br />
-                        <strong>Last Updated:</strong> {new Date(product.updated_at).toLocaleString()}
-                    </Card.Text>
-                    
-                    <Link to={`/products/edit/${product.id}`}>
-                        <Button variant="warning" className="me-2">Edit</Button>
-                    </Link>
-                    <Button variant="danger" onClick={handleDelete}>Delete</Button>
-                    {" "}
-                    <Link to="/products">
-                        <Button variant="secondary">Back to List</Button>
-                    </Link>
-                </Card.Body>
-            </Card>
-        </Container>
-    );
+			<Container>
+				<h2>Product Details</h2>
+				<Card>
+					<Card.Body>
+						<Card.Title>{product.fullname}</Card.Title>
+						<Card.Text>
+							<strong>Code:</strong> {product.code}
+							<br />
+							<strong>Short Name:</strong> {product.shortname}
+							<br />
+							<strong>Description:</strong> {product.description || "No description"}
+							<br />
+							<strong>Status:</strong> {product.active ? "Active" : "Inactive"}
+							<br />
+							<strong>Created:</strong> {new Date(product.created_at).toLocaleString()}
+							<br />
+							<strong>Last Updated:</strong> {new Date(product.updated_at).toLocaleString()}
+						</Card.Text>
+						<Link to={`/products/edit/${product.id}`}>
+							<Button
+								variant="warning"
+								className="me-2">
+								Edit
+							</Button>
+						</Link>
+						<Button
+							variant="danger"
+							onClick={handleDelete}>
+							Delete
+						</Button>{" "}
+						<Link to="/products">
+							<Button variant="secondary">Back to List</Button>
+						</Link>
+					</Card.Body>
+				</Card>
+			</Container>
+		);
 };
 
 export default ProductDetail;

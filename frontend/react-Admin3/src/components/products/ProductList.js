@@ -44,29 +44,31 @@ const ProductList = () => {
     if (error) return <div className="alert alert-danger">{error}</div>;
 
     return (
-        <Container>
-            <Row className="mb-3">
-                <Col>
-                    <h2>Products</h2>
-                </Col>
-                <Col className="text-end">
-                    <Link to="/products/new">
-                        <Button variant="primary">Add New Product</Button>
-                    </Link>
-                    {" "}
-                    <Link to="/products/import">
-                        <Button variant="secondary">Import Products</Button>
-                    </Link>
-                </Col>
-            </Row>
-            
-            {products.length === 0 ? (
-                <div>No products found</div>
-            ) : (
-                <ProductTable products={products} onDelete={handleDelete} />
-            )}
-        </Container>
-    );
+			<Container className="mt-4">
+				<Row className="mb-3">
+					<Col>
+						<h2>Products</h2>
+					</Col>
+					<Col className="text-end">
+						<Link to="/products/new">
+							<Button variant="primary">Add New Product</Button>
+						</Link>{" "}
+						<Link to="/products/import">
+							<Button variant="secondary">Import Products</Button>
+						</Link>
+					</Col>
+				</Row>
+
+				{products.length === 0 ? (
+					<div>No products found</div>
+				) : (
+					<ProductTable
+						products={products}
+						onDelete={handleDelete}
+					/>
+				)}
+			</Container>
+		);
 };
 
 export default ProductList;
