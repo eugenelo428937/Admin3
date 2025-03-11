@@ -273,3 +273,12 @@ To see the cookies stored in Chrome:
    1. View Cookies: Click on the domain (e.g., <http://localhost:8888>) to see the cookies stored for that domain.
 
 By following these steps, we successfully set up a login system with session management and addressed CORS issues to ensure smooth communication between the React frontend and Django backend.
+
+??
+Django ApiResponse API Response Standardization
+pw hash
+
+Authentication JWT token authService
+frontend/react-Admin3/src/components/ErrorBoundary.js Error Boundary Implementation
+// frontend/react-Admin3/src/hooks/useApi.js Custom Hook for Data Fetching
+// Frontend Service Layer Improvements httpService

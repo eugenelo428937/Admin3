@@ -3,11 +3,34 @@ import authService from "./authService";
 
 const httpService = axios.create({
 	baseURL: process.env.REACT_APP_API_URL,
+	withCredentials: true,
 	headers: { "Content-Type": "application/json" },
 });
 
+// Function to get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 httpService.interceptors.request.use(
 	(config) => {
+		// Add CSRF token
+		const csrfToken = getCookie("csrftoken");
+		if (csrfToken) {
+			config.headers["X-CSRFToken"] = csrfToken;
+		}
+
 		const token = localStorage.getItem("token");
 		if (token) {
 			config.headers.Authorization = `Bearer ${token}`;
@@ -28,12 +51,17 @@ httpService.interceptors.response.use(
             try {
                 const refreshToken = localStorage.getItem('refreshToken');
                 const response = await authService.refreshToken(refreshToken);
-                localStorage.setItem('token', response.data.token);
-                
+                const newToken = response.data.token;
+                localStorage.setItem("token", newToken);
+                originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
                 return httpService(originalRequest);
             } catch (refreshError) {
-                authService.logout();
-                window.location.href = '/login';
+                // If refresh fails, logout
+                localStorage.removeItem("token");
+                localStorage.removeItem("refreshToken");
+                localStorage.removeItem("user");
+                localStorage.removeItem("isAuthenticated");
+                window.location.href = "/login";
                 return Promise.reject(refreshError);
             }
         }

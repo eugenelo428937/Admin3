@@ -1,10 +1,13 @@
 // src/services/authService.js
 import httpService from "./httpService";
-const API_URL = "http://localhost:8888/students";
-
+const API_URL = "http://localhost:8888/api/auth";
+const API_STUDENT_URL = "http://localhost:8888/students";
 const authService = {
 	login: async (credentials) => {
 		try {
+			// First, get CSRF token if needed
+			await httpService.get(`${API_URL}/csrf/`);
+
 			const response = await httpService.post(`${API_URL}/login/`, credentials);
 
 			if (response.data.user) {
@@ -68,7 +71,7 @@ const authService = {
 	},
 	getUserDetails: async () => {
 		try {
-			const response = await httpService.get(`${API_URL}/session/`);
+			const response = await httpService.get(`${API_STUDENT_URL}/session/`);
 			return response.data.user;
 		} catch (error) {
 			throw error;
