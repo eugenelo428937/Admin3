@@ -135,6 +135,18 @@ class ImportSubjectsCommandTest(TestCase):
 
     def test_duplicate_handling(self):
         """Test handling of duplicate records."""
+
+        # First, create a subject
+        Subject.objects.create(
+            code='CMD101',  # Use a different code
+            description='Test subject'
+        )
+
+        # Try to create the same subject again through import
+        data = [
+            {'code': 'CMD101', 'description': 'Duplicate subject'}
+        ]
+
         # First import
         call_command('import_subjects', self.csv_file)
         

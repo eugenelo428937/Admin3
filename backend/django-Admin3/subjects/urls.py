@@ -3,9 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import SubjectViewSet
 
 router = DefaultRouter()
-router.register(r'', SubjectViewSet, basename='subject')
-
-app_name = 'subjects'
+router.register(r'subjects', SubjectViewSet)
 
 urlpatterns = [    
     path('', include(router.urls)),    
