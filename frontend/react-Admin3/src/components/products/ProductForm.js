@@ -11,7 +11,8 @@ const ProductForm = () => {
     
     const [formData, setFormData] = useState({
         code: "",
-        name: "",
+        fullname: "",    // Changed from name to fullname
+        shortname: "",   // Added shortname field
         description: "",
         active: true
     });
@@ -27,7 +28,8 @@ const ProductForm = () => {
                     const data = await productService.getById(id);
                     setFormData({
                         code: data.code || "",
-                        name: data.name || "",
+                        fullname: data.fullname || "",    // Match backend field names
+                        shortname: data.shortname || "",  // Match backend field names
                         description: data.description || "",
                         active: data.active
                     });
@@ -74,7 +76,7 @@ const ProductForm = () => {
             }
             navigate("/products");
         } catch (err) {
-            setError(`Failed to ${isEditMode ? "update" : "create"} product`);
+            setError(`Failed to ${isEditMode ? "update" : "create"} product: ${err.response?.data?.message || err.message}`);
             console.error(err);
         }
     };
@@ -104,16 +106,31 @@ const ProductForm = () => {
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                    <Form.Label>Name</Form.Label>
+                    <Form.Label>Full Name</Form.Label>
                     <Form.Control
                         type="text"
-                        name="name"
-                        value={formData.name}
+                        name="fullname"  // Changed from name to fullname
+                        value={formData.fullname}
                         onChange={handleChange}
                         required
                     />
                     <Form.Control.Feedback type="invalid">
-                        Please provide a product name.
+                        Please provide a full product name.
+                    </Form.Control.Feedback>
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                    <Form.Label>Short Name</Form.Label>
+                    <Form.Control
+                        type="text"
+                        name="shortname"  // New field for shortname
+                        value={formData.shortname}
+                        onChange={handleChange}
+                        required
+                        maxLength="20"
+                    />
+                    <Form.Control.Feedback type="invalid">
+                        Please provide a short product name.
                     </Form.Control.Feedback>
                 </Form.Group>
 
