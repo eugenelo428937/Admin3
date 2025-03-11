@@ -3,9 +3,10 @@ from rest_framework.routers import DefaultRouter
 from .views import ProductViewSet
 
 router = DefaultRouter()
-router.register('', ProductViewSet, basename='product')
+router.register('', ProductViewSet)  # No basename needed if queryset is defined
 
-app_name = 'products'
+# Remove the app_name to avoid namespace conflicts
+# app_name = 'products'  
 
 urlpatterns = [
     path('', include(router.urls)),
