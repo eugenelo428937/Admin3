@@ -5,39 +5,61 @@ import { Link } from 'react-router-dom';
 import subjectService from '../../services/subjectService';
 
 const SubjectList = () => {
-  const [subjects, setSubjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+	const [subjects, setSubjects] = useState([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchSubjects();
-  }, []);
+	useEffect(() => {
+		fetchSubjects();
+	}, []);
 
-  const fetchSubjects = async () => {
-    try {
-      const data = await subjectService.getAll();
-      setSubjects(data);
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to fetch subjects. Please try again later.');
-      setLoading(false);
-    }
-  };
+	// src/components/subjects/SubjectList.js
+	const fetchSubjects = async () => {
+		try {
+			const data = await subjectService.getAll();
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this subject?')) {
-      try {
-        await subjectService.delete(id);
-        setSubjects(subjects.filter(subject => subject.id !== id));
-      } catch (err) {
-        setError('Failed to delete subject. Please try again later.');
-      }
-    }
-  };
+			// Check what data structure is being returned
+			console.log("API Response:", data);
 
-  if (loading) return <div className="text-center mt-5">Loading...</div>;
+			// Ensure subjects is always an array
+			if (Array.isArray(data)) {
+				setSubjects(data);
+			} else if (data && data.results && Array.isArray(data.results)) {
+				// If data is wrapped in an object with a results property
+				setSubjects(data.results);
+			} else if (data && typeof data === "object") {
+				// If data is an object of subjects
+				setSubjects(Object.values(data));
+			} else {
+				// Default to empty array if data format is unrecognized
+				setSubjects([]);
+				setError("Unexpected data format received from server");
+				console.error("Unexpected data format:", data);
+			}
 
-  return (
+			setLoading(false);
+		} catch (err) {
+			console.error("Error fetching subjects:", err);
+			setError("Failed to fetch subjects. Please try again later.");
+			setSubjects([]); // Ensure subjects is an array even on error
+			setLoading(false);
+		}
+	};
+
+	const handleDelete = async (id) => {
+		if (window.confirm("Are you sure you want to delete this subject?")) {
+			try {
+				await subjectService.delete(id);
+				setSubjects(subjects.filter((subject) => subject.id !== id));
+			} catch (err) {
+				setError("Failed to delete subject. Please try again later.");
+			}
+		}
+	};
+
+	if (loading) return <div className="text-center mt-5">Loading...</div>;
+
+	return (
 		<Container className="mt-4">
 			<div className="d-flex justify-content-between align-items-center mb-4">
 				<h2>Subjects</h2>
@@ -75,12 +97,12 @@ const SubjectList = () => {
 								<td>{subject.active ? "Active" : "Inactive"}</td>
 								<td>
 									<Link
-										to={`/subjects/${subject.id}`}
+										to={`/${subject.id}`}
 										className="btn btn-info btn-sm me-2">
 										View
 									</Link>
 									<Link
-										to={`/subjects/${subject.id}/edit`}
+										to={`/${subject.id}/edit`}
 										className="btn btn-warning btn-sm me-2">
 										Edit
 									</Link>
@@ -97,7 +119,7 @@ const SubjectList = () => {
 				</Table>
 			)}
 		</Container>
-  );
+	);
 };
 
 export default SubjectList;
