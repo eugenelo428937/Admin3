@@ -19,6 +19,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),   
+    path('api/auth/', include('core_auth.urls')),
     path('students/', include('students.urls')),
     path('exam_sessions/', include('exam_sessions.urls')),
     # Now the endpoint will be at /api/auth/csrf/
