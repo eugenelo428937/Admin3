@@ -12,7 +12,7 @@ import ExamSessionForm from "./components/ExamSessionForm";
 import SubjectList from "./components/subjects/SubjectList";
 import SubjectForm from "./components/subjects/SubjectForm";
 import SubjectDetail from "./components/subjects/SubjectDetail";
-//import SubjectImport from "./components/SubjectImport";
+import SubjectImport from "./components/subjects/SubjectImport";
 
 function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -66,10 +66,10 @@ function App() {
 						path="/subjects/:id/edit"
 						element={<SubjectForm />}
 					/>
-					{/* <Route
+					<Route
 						path="/subjects/import"
 						element={<SubjectImport />}
-					/> */}
+					/>
 					<Route
 						path="*"
 						element={<NoMatch />}
