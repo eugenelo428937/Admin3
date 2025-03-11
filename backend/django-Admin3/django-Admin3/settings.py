@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'students',
     'subjects',
     'exam_sessions',
+    'products',
     'core_auth',
     'django.contrib.admin',
     'django.contrib.auth',
