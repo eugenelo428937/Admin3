@@ -5,7 +5,7 @@ const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8888/subjects
 const subjectService = {
 	getAll: async () => {
 		try {
-			const response = await httpServiceProvider.get(`${API_URL}/subjects/`);
+			const response = await httpServiceProvider.get(`${API_URL}/`);
 			// Ensure we're returning an array
 			if (!response.data) return [];
 			return Array.isArray(response.data) ? response.data : response.data.results || Object.values(response.data) || [];
