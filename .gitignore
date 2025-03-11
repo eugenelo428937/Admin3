@@ -26,7 +26,6 @@ build
 .vscode
 .idea
 .git
-.gitignore
 .gitattributes
 .gitmodules
 .gitlab-ci.yml
