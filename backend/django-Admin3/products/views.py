@@ -9,7 +9,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], url_path='bulk-import')
     def bulk_import_products(self, request):
         products_data = request.data.get('products', [])
         created = []

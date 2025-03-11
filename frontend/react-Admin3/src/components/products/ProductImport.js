@@ -90,80 +90,96 @@ const ProductImport = () => {
     };
 
     return (
-        <Container>
-            <h2>Import Products</h2>
-            
-            {error && <Alert variant="danger">{error}</Alert>}
-            {success && <Alert variant="success">{success}</Alert>}
-            
-            <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3">
-                    <Form.Label>Upload CSV File</Form.Label>
-                    <Form.Control 
-                        type="file" 
-                        accept=".csv" 
-                        onChange={handleFileChange}
-                        required
-                    />
-                    <Form.Text className="text-muted">
-                        The CSV file should include columns: code, name, description (optional), active (true/false).
-                    </Form.Text>
-                </Form.Group>
-                
-                {preview.length > 0 && (
-                    <div className="mb-3">
-                        <h5>Preview</h5>
-                        <div className="table-responsive">
-                            <table className="table table-sm table-bordered">
-                                <thead>
-                                    <tr>
-                                        {Object.keys(preview[0]).map((key) => (
-                                            <th key={key}>{key}</th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {preview.map((row, i) => (
-                                        <tr key={i}>
-                                            {Object.values(row).map((val, j) => (
-                                                <td key={j}>{val}</td>
-                                            ))}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                        <p className="text-muted">Showing first {preview.length} rows</p>
-                    </div>
-                )}
-                
-                <Button variant="primary" type="submit" disabled={loading || !file}>
-                    {loading ? "Importing..." : "Import Products"}
-                </Button>
-                {" "}
-                <Button variant="secondary" onClick={() => navigate("/products")}>
-                    Cancel
-                </Button>
-            </Form>
-            
-            <div className="mt-4">
-                <h4>CSV Format Guide</h4>
-                <p>Your CSV file should follow this format:</p>
-                <pre className="bg-light p-3 border rounded">
-                    code,name,description,active<br/>
-                    PRD001,Product One,This is product one,true<br/>
-                    PRD002,Product Two,This is product two,true<br/>
-                    PRD003,Product Three,This is product three,false
-                </pre>
-                <ul>
-                    <li><strong>code</strong> - Unique product code (required)</li>
-                    <li><strong>name</strong> - Product name (required)</li>
-                    <li><strong>description</strong> - Product description (optional)</li>
-                    <li><strong>active</strong> - Product status (true/false)</li>
-                </ul>
-            </div>
-        </Container>
-    );
+			<Container>
+				<h2>Import Products</h2>
+
+				{error && <Alert variant="danger">{error}</Alert>}
+				{success && <Alert variant="success">{success}</Alert>}
+
+				<Form onSubmit={handleSubmit}>
+					<Form.Group className="mb-3">
+						<Form.Label>Upload CSV File</Form.Label>
+						<Form.Control
+							type="file"
+							accept=".csv"
+							onChange={handleFileChange}
+							required
+						/>
+						<Form.Text className="text-muted">
+							The CSV file should include columns: code, name, description (optional), active (true/false).
+						</Form.Text>
+					</Form.Group>
+					{preview.length > 0 && (
+						<div className="mb-3">
+							<h5>Preview</h5>
+							<div className="table-responsive">
+								<table className="table table-sm table-bordered">
+									<thead>
+										<tr>
+											{Object.keys(preview[0]).map((key) => (
+												<th key={key}>{key}</th>
+											))}
+										</tr>
+									</thead>
+									<tbody>
+										{preview.map((row, i) => (
+											<tr key={i}>
+												{Object.values(row).map((val, j) => (
+													<td key={j}>{val}</td>
+												))}
+											</tr>
+										))}
+									</tbody>
+								</table>
+							</div>
+							<p className="text-muted">Showing first {preview.length} rows</p>
+						</div>
+					)}
+					<Button
+						variant="primary"
+						type="submit"
+						disabled={loading || !file}>
+						{loading ? "Importing..." : "Import Products"}
+					</Button>{" "}
+					<Button
+						variant="secondary"
+						onClick={() => navigate("/products")}>
+						Cancel
+					</Button>
+				</Form>
+
+				<div className="mt-4">
+					<h4>CSV Format Guide</h4>
+					<p>Your CSV file should follow this format:</p>
+					<pre className="bg-light p-3 border rounded">
+						code,fullname,shortname,description,active
+						<br />
+						PRD001,Product One Complete Name,Prod1,This is product one,true
+						<br />
+						PRD002,Product Two Complete Name,Prod2,This is product two,true
+						<br />
+						PRD003,Product Three Complete Name,Prod3,This is product three,false
+					</pre>
+					<ul>
+						<li>
+							<strong>code</strong> - Unique product identifier (required)
+						</li>
+						<li>
+							<strong>fullname</strong> - Complete product name (required)
+						</li>
+						<li>
+							<strong>shortname</strong> - Abbreviated product name (required)
+						</li>
+						<li>
+							<strong>description</strong> - Product description (optional)
+						</li>
+						<li>
+							<strong>active</strong> - Product status (true/false)
+						</li>
+					</ul>
+				</div>
+			</Container>
+		);
 };
 
 export default ProductImport;
