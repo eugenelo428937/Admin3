@@ -266,7 +266,7 @@ const ActEdNavbar = () => {
 								</NavDropdown.Item>
 								<NavDropdown.Item
 									as={NavLink}
-									to="/">
+									to="/products">
 									Products
 								</NavDropdown.Item>
 								{/* <NavDropdown.Divider />
