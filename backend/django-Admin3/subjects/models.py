@@ -11,7 +11,7 @@ class Subject(models.Model):
         return f"{self.code}: {self.description}"
     
     class Meta:
-        db_table = 'subjects'
+        db_table = 'acted_subjects'
         verbose_name = 'Subject'
         verbose_name_plural = 'Subjects'
         ordering = ['code']

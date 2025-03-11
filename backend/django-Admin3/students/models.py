@@ -36,7 +36,7 @@ class Student(models.Model):
     remarks = models.TextField(blank=True, null=True)
 
     class Meta:
-        db_table = 'students'
+        db_table = 'acted_students'
         verbose_name = 'Student'
         verbose_name_plural = 'Students'
 

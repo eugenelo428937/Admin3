@@ -24,4 +24,5 @@ urlpatterns = [
     # Now the endpoint will be at /api/auth/csrf/
     path('api/auth/', include('core_auth.urls')),
     path('subjects/', include('subjects.urls')),
+    path('products/', include('products.urls')),
 ]
