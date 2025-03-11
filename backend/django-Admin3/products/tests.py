@@ -19,6 +19,13 @@ class ProductModelTests(TestCase):
             description="Test product description"
         )
 
+        # Update these URL patterns
+        self.list_url = reverse('product-list')  # This should now work
+        self.detail_url = reverse('product-detail', kwargs={'pk': self.product.pk})
+        # This should match your action name
+        self.bulk_import_url = reverse('product-bulk-import-products')
+
+
     def test_product_creation(self):
         """Test that a product can be created successfully"""
         self.assertEqual(self.product.code, "TEST001")
