@@ -44,6 +44,9 @@ const SubjectList = () => {
 				<Link to="/subjects/new">
 					<Button variant="primary">Add New Subject</Button>
 				</Link>
+				<Link to="/subjects/import">
+					<Button variant="primary">Upload Subject</Button>
+				</Link>
 			</div>
 
 			{error && <Alert variant="danger">{error}</Alert>}
@@ -68,7 +71,7 @@ const SubjectList = () => {
 						{subjects.map((subject) => (
 							<tr key={subject.id}>
 								<td>{subject.code}</td>
-								<td>{subject.description}</td>								
+								<td>{subject.description}</td>
 								<td>{subject.active ? "Active" : "Inactive"}</td>
 								<td>
 									<Link
