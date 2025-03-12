@@ -20,10 +20,9 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),   
     path('api/auth/', include('core_auth.urls')),
-    path('students/', include('students.urls')),
-    path('exam_sessions/', include('exam_sessions.urls')),
-    # Now the endpoint will be at /api/auth/csrf/
-    path('api/auth/', include('core_auth.urls')),
-    path('subjects/', include('subjects.urls')),
-    path('products/', include('products.urls')),
+    path('api/users/', include('users.urls')),
+    path('api/students/', include('students.urls')),        
+    path('api/exam-sessions/', include('exam_sessions.urls')),
+    path('api/subjects/', include('subjects.urls')),
+    path('api/products/', include('products.urls')),
 ]

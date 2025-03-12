@@ -51,6 +51,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [    
+    'users',
     'students',
     'subjects',
     'exam_sessions',

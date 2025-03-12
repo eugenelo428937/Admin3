@@ -1,4 +1,3 @@
-# students/serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Student
@@ -6,18 +5,11 @@ from .models import Student
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email',
-                  'password', 'first_name', 'last_name')
-        read_only_fields = ('id',)
-        extra_kwargs = {
-            'username': {'required': True},
-            'email': {'required': True},
-            'first_name': {'required': False},
-            'last_name': {'required': False}
-        }
+        fields = ('id', 'username', 'email', 'first_name', 'last_name')
+        read_only_fields = ('id', 'username', 'email')  # Make these read-only since user management is moved
 
 class StudentSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = UserSerializer(read_only=True)  # Make user read-only since it's managed by users app
 
     class Meta:
         model = Student
@@ -30,29 +22,10 @@ class StudentSerializer(serializers.ModelSerializer):
             'remarks': {'required': False}
         }
 
-    def create(self, validated_data):
-        user_data = validated_data.pop('user')
-        password = user_data.pop('password')
-        # Create user first
-        user = User.objects.create(
-            username=user_data['email'],
-            email=user_data['email'],
-            first_name=user_data.get('first_name', ''),
-            last_name=user_data.get('last_name', '')
-        )
-        user.set_password(password)
-        user.save()
-
-        # Create student
-        student = Student.objects.create(
-            user=user
-        )
-        return student
-
     def update(self, instance, validated_data):
-        user_data = validated_data.pop('user', None)
-        if user_data:
-            user_serializer = UserSerializer(instance.user, data=user_data, partial=True)
-            if user_serializer.is_valid():
-                user_serializer.save()
-        return super().update(instance, validated_data)
+        # Only update student-specific fields
+        instance.student_type = validated_data.get('student_type', instance.student_type)
+        instance.apprentice_type = validated_data.get('apprentice_type', instance.apprentice_type)
+        instance.remarks = validated_data.get('remarks', instance.remarks)
+        instance.save()
+        return instance
