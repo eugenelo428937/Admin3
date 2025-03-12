@@ -8,18 +8,17 @@ const API_USER_URL = config.userUrl;
 const authService = {
 	login: async (credentials) => {
 		try {
-			
 			// First, get CSRF token if needed
-
-			await httpService.get(`${API_AUTH_URL}/csrf/`);
+			//await httpService.get(`${API_AUTH_URL}/csrf/`);
 
 			const response = await httpService.post(`${API_AUTH_URL}/login/`, credentials);
 
 			if (response.data.user) {
-				localStorage.setItem("token", response.data.token);
-				localStorage.setItem("refreshToken", response.data.refresh);
-				localStorage.setItem("user", JSON.stringify(response.data.user));
+				if (response.data.token) {
+					localStorage.setItem("token", response.data.token);
+				}
 				localStorage.setItem("isAuthenticated", "true");
+				localStorage.setItem("user", JSON.stringify(response.data.user));
 			}
 
 			return response.data.user;
@@ -29,13 +28,20 @@ const authService = {
 	},
 	register: async (userData) => {
 		try {
-			const response = await httpService.post(`${API_AUTH_URL}/register/`, userData);
+			const response = await httpService.post(`${API_AUTH_URL}/register/`, {
+				username: userData.email, // Changed to use email as username
+				password: userData.password,
+				email: userData.email,
+				first_name: userData.first_name,
+				last_name: userData.last_name,
+			});
 
 			if (response.data.status === "success") {
-				localStorage.setItem("token", response.data.token);
-				localStorage.setItem("refreshToken", response.data.refresh);
 				localStorage.setItem("user", JSON.stringify(response.data.user));
 				localStorage.setItem("isAuthenticated", "true");
+				if (response.data.token) {
+					localStorage.setItem("token", response.data.token);
+				}
 			}
 
 			return response.data;
