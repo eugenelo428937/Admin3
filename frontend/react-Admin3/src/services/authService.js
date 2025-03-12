@@ -1,14 +1,19 @@
 // src/services/authService.js
 import httpService from "./httpService";
-const API_URL = "http://localhost:8888/api/auth";
-const API_STUDENT_URL = "http://localhost:8888/students";
+import config from "../config";
+
+const API_AUTH_URL = config.authUrl;  
+const API_USER_URL = config.userUrl;  
+
 const authService = {
 	login: async (credentials) => {
 		try {
+			
 			// First, get CSRF token if needed
-			await httpService.get(`${API_URL}/csrf/`);
 
-			const response = await httpService.post(`${API_URL}/login/`, credentials);
+			await httpService.get(`${API_AUTH_URL}/csrf/`);
+
+			const response = await httpService.post(`${API_AUTH_URL}/login/`, credentials);
 
 			if (response.data.user) {
 				localStorage.setItem("token", response.data.token);
@@ -24,7 +29,7 @@ const authService = {
 	},
 	register: async (userData) => {
 		try {
-			const response = await httpService.post(`${API_URL}/register/`, userData);
+			const response = await httpService.post(`${API_AUTH_URL}/register/`, userData);
 
 			if (response.data.status === "success") {
 				localStorage.setItem("token", response.data.token);
@@ -56,7 +61,7 @@ const authService = {
 	refreshToken: async () => {
 		try {
 			const refreshToken = localStorage.getItem("refreshToken");
-			const response = await httpService.post(`${API_URL}/refresh/`, {
+			const response = await httpService.post(`${API_AUTH_URL}/refresh/`, {
 				refresh: refreshToken,
 			});
 
@@ -71,7 +76,7 @@ const authService = {
 	},
 	getUserDetails: async () => {
 		try {
-			const response = await httpService.get(`${API_STUDENT_URL}/session/`);
+			const response = await httpService.get(`${API_USER_URL}/`);
 			return response.data.user;
 		} catch (error) {
 			throw error;
