@@ -78,7 +78,7 @@ const ActEdNavbar = () => {
 		}
 		try {
 			await register({
-				username: registerData.username,
+				username: registerData.email,
 				first_name: registerData.first_name,
 				last_name: registerData.last_name,
 				email: registerData.email,
@@ -362,14 +362,14 @@ const ActEdNavbar = () => {
 					{registerError && <Alert variant="danger">{registerError}</Alert>}
 					<Form onSubmit={handleRegister}>
 						<Form.Group className="mb-3">
-							<Form.Label>Username</Form.Label>
+							{/* <Form.Label>Username</Form.Label>
 							<Form.Control
 								type="text"
 								name="username"
 								value={registerData.username}
 								onChange={handleRegisterInputChange}
 								required
-							/>
+							/>*/}
 							<Form.Label>First Name</Form.Label>
 
 							<Form.Control
