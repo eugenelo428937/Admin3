@@ -7,9 +7,10 @@ import { Routes, Route, NavLink, Link } from "react-router-dom";
 import { House, QuestionCircle, Cart, PersonCircle, Download, Search } from "react-bootstrap-icons";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../css/navbar.css";
-
+import config from "../config";
 
 const ActEdNavbar = () => {
+	
 	// State for authentication status
 	const { isAuthenticated, user, isLoading, error, login, register, logout } = useAuth();
 	const [showLoginModal, setShowLoginModal] = useState(false);
@@ -55,7 +56,7 @@ const ActEdNavbar = () => {
 	};
 
 	// Handle login
-	const handleLogin = async (e) => {
+	const handleLogin = async (e) => {		
 		e.preventDefault();
 		try {
 			await login(formData);
