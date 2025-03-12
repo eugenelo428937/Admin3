@@ -35,7 +35,7 @@ class StudentSerializer(serializers.ModelSerializer):
         password = user_data.pop('password')
         # Create user first
         user = User.objects.create(
-            username=user_data['username'],
+            username=user_data['email'],
             email=user_data['email'],
             first_name=user_data.get('first_name', ''),
             last_name=user_data.get('last_name', '')
