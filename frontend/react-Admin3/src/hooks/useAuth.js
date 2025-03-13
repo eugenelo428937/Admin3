@@ -15,7 +15,13 @@ export const AuthProvider = ({ children }) => {
 	// Clear authentication state without navigation
 	const clearAuthState = useCallback(async () => {
 		try {
-			await authService.logout({ redirect: false });
+			// Clear localStorage directly instead of calling authService.logout
+			localStorage.removeItem("token");
+			localStorage.removeItem("refreshToken");
+			localStorage.removeItem("user");
+			localStorage.removeItem("isAuthenticated");
+
+			//await authService.logout({ redirect: false });
 			setIsAuthenticated(false);
 			setUser(null);
 			setError(null);
@@ -26,10 +32,9 @@ export const AuthProvider = ({ children }) => {
 
 	const logout = useCallback(
 		async ({ redirect = true } = {}) => {
-			await clearAuthState();
-			alert(`redirect ${redirect}`);
+			await clearAuthState();			
 			if (redirect) {
-				//navigate("/");
+				navigate("/");
 			}
 		},
 		[navigate, clearAuthState]
@@ -37,11 +42,17 @@ export const AuthProvider = ({ children }) => {
 
 	const fetchUserDetails = useCallback(async () => {
 		try {
-			const userDetails = await authService.getUserDetails();
-			setUser(userDetails);
+			// Only fetch if we have a user in localStorage
+			const storedUser = localStorage.getItem("user");
+			if (!storedUser) {
+				await clearAuthState();
+				return;
+			}
+
+			//const userDetails = await authService.getUserDetails();
+			//setUser(userDetails);
 		} catch (err) {
-			console.error("Error fetching user details:", err);
-			// Clear auth state without redirect on error
+			console.error("Error fetching user details:", err);			
 			await clearAuthState();
 		}
 	}, [clearAuthState]);
@@ -80,6 +91,8 @@ export const AuthProvider = ({ children }) => {
 	const login = async (credentials) => {
 		setIsLoading(true);
 		setError(null);
+		await clearAuthState();
+
 		try {
 			const result = await authService.login(credentials);
 
@@ -87,16 +100,18 @@ export const AuthProvider = ({ children }) => {
 				setUser(result.user);
 				setIsAuthenticated(true);
 				setError(null);
-				//navigate("/");
+				navigate("/");
 				return result;
 			}
-			await clearAuthState();
-			setError(result.message);				
+			// login error
+			await clearAuthState();						
+			setError(result.message);
 			return result;
-		} catch (err) {			
-			await clearAuthState();
+		} catch (err) {
+			await clearAuthState();			
+						
 			const errorMessage = err.message || "Login failed";
-			setError(errorMessage);			
+			setError(errorMessage);
 			return {
 				status: "error",
 				message: errorMessage,
