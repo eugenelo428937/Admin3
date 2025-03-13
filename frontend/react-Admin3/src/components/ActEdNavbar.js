@@ -61,7 +61,7 @@ const ActEdNavbar = () => {
 	const handleLogin = async (e) => {
 		e.preventDefault();
 		try {
-			setLoginError(""); // Clear any previous errors
+			setLoginError(""); 
 			const result = await login(formData);
 			if (result.status === "error") {
 				setLoginError(result.message);
