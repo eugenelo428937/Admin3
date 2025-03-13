@@ -19,6 +19,7 @@ import ProductForm from "./components/products/ProductForm";
 import ProductImport from "./components/products/ProductImport";
 
 function App() {
+	// eslint-disable-next-line
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 
 	useEffect(() => {

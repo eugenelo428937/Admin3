@@ -1,36 +1,37 @@
 // src/services/examSessionService.js
-import httpServiceProvider from "./httpService";
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8888/exam_sessions";
+import config from "../config";
+import httpService from "./httpService";
+const API_URL = config.examSessionUrl;
 
 const examSessionService = {
     getAll: async () => {
-			const response = await httpServiceProvider.get(`${API_URL}/exam-sessions/`);
+			const response = await httpService.get(`${API_URL}`);
 			return response.data.results || response.data; // Return results array if paginated, otherwise the whole response
 		},
 
     getById: async (id) => {
-        const response = await httpServiceProvider.get(`${API_URL}/exam-sessions/${id}/`);
+        const response = await httpService.get(`${API_URL}${id}/`);
         return response.data;
     },
 
     create: async (examSession) => {
-        const response = await httpServiceProvider.post(
-            `${API_URL}/exam-sessions/`, 
+        const response = await httpService.post(
+            `${API_URL}`, 
             examSession
         );
         return response.data;
     },
 
     update: async (id, examSession) => {
-        const response = await httpServiceProvider.put(
-            `${API_URL}/exam-sessions/${id}/`, 
+        const response = await httpService.put(
+            `${API_URL}${id}/`, 
             examSession
         );
         return response.data;
     },
 
     delete: async (id) => {
-        await httpServiceProvider.delete(`${API_URL}/exam-sessions/${id}/`);
+        await httpService.delete(`${API_URL}/${id}/`);
     }
 };
 
