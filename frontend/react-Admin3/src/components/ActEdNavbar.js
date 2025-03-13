@@ -2,17 +2,14 @@
 import React, { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { Container, Button, Nav, Navbar, Image, NavDropdown, Modal, Form, Alert } from "react-bootstrap";
-import { LinkContainer } from "react-router-bootstrap";
-import { Routes, Route, NavLink, Link } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { House, QuestionCircle, Cart, PersonCircle, Download, Search } from "react-bootstrap-icons";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../css/navbar.css";
-import config from "../config";
 
 const ActEdNavbar = () => {
-	
 	// State for authentication status
-	const { isAuthenticated, user, isLoading, error, login, register, logout } = useAuth();
+	const { isAuthenticated, user, isLoading, login, register, logout } = useAuth();
 	const [showLoginModal, setShowLoginModal] = useState(false);
 	const [showRegisterModal, setShowRegisterModal] = useState(false);
 	const [formData, setFormData] = useState({
@@ -28,7 +25,7 @@ const ActEdNavbar = () => {
 		confirmPassword: "",
 	});
 
-	const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+	// eslint-disable-next-line
 	const [message, setMessage] = useState("");
 
 	// Error and loading states
@@ -40,7 +37,7 @@ const ActEdNavbar = () => {
 		setMessage("");
 	};
 
-	const handleShow = () => setShowLoginModal(true);
+	// const handleShow = () => setShowLoginModal(true);
 
 	const handleInputChange = (e) => {
 		setFormData({
@@ -56,7 +53,7 @@ const ActEdNavbar = () => {
 	};
 
 	// Handle login
-	const handleLogin = async (e) => {		
+	const handleLogin = async (e) => {
 		e.preventDefault();
 		try {
 			await login(formData);
@@ -65,6 +62,7 @@ const ActEdNavbar = () => {
 				...prevState,
 				password: "",
 			}));
+			setMessage("Login successful");
 		} catch (err) {
 			// Error handling is managed by useAuth hook
 		}

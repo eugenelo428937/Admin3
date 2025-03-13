@@ -20,21 +20,21 @@ const SubjectForm = () => {
   const [validated, setValidated] = useState(false);
 
   useEffect(() => {
-    if (isEditMode) {
-      fetchSubject();
-    }
-  }, [id]);
+		const fetchSubject = async () => {
+			try {
+				const data = await subjectService.getById(id);
+				setFormData(data);
+				setLoading(false);
+			} catch (err) {
+				setError("Failed to fetch subject details. Please try again.");
+				setLoading(false);
+			}
+		};
 
-  const fetchSubject = async () => {
-    try {
-      const data = await subjectService.getById(id);
-      setFormData(data);
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to fetch subject details. Please try again.');
-      setLoading(false);
-    }
-  };
+		if (isEditMode) {
+			fetchSubject();
+		}
+  }, [id, isEditMode]);  
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
