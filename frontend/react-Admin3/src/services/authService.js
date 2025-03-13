@@ -11,6 +11,12 @@ const authService = {
 		logger.debug("Attempting login", { email: credentials.email });
 
 		try {
+			// Clear any existing auth data before attempting login
+			localStorage.removeItem("token");
+			localStorage.removeItem("refreshToken");
+			localStorage.removeItem("user");
+			localStorage.removeItem("isAuthenticated");
+
 			// First, get CSRF token if needed
 			await httpService.get(`${API_AUTH_URL}csrf/`);
 
@@ -46,6 +52,12 @@ const authService = {
 				code: 500,
 			};
 		} catch (error) {
+			// Clear any existing auth data before attempting login
+			localStorage.removeItem("token");
+			localStorage.removeItem("refreshToken");
+			localStorage.removeItem("user");
+			localStorage.removeItem("isAuthenticated");
+			
 			logger.error("Login failed", {
 				error: error.response?.data || error,
 				status: error.response?.status,
