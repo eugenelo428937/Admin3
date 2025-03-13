@@ -6,22 +6,20 @@ const logLevels = {
     DEBUG: 'DEBUG'
 };
 
-const logger = {
-    debug: (message, data = null) => {
-        if (process.env.NODE_ENV === 'development') {
-            console.debug(`[DEBUG] ${message}`, data || '');
-        }
-    },
-    info: (message, data = null) => {
-        console.info(`[INFO] ${message}`, data || '');
-    },
-    warning: (message, data = null) => {
-        console.warn(`[WARNING] ${message}`, data || '');
-    },
-    error: (message, error = null) => {
-        console.error(`[ERROR] ${message}`, error || '');
-        // You could also send errors to an error tracking service like Sentry here
-    }
+const loggerService = {
+	debug: (message, data) => {
+		if (process.env.NODE_ENV !== "production") {
+			console.log(`${logLevels.DEBUG} ${message}`, data || "");
+		}
+	},
+	info: (message, data) => {
+		if (process.env.NODE_ENV !== "production") {
+			console.info(`${logLevels.INFO} ${message}`, data || "");
+		}
+	},
+	error: (message, data) => {
+		console.error(`${logLevels.ERROR} ${message}`, data || "");
+	},
 };
 
-export default logger;
+export default loggerService;
