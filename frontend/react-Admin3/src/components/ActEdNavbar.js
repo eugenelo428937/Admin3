@@ -107,9 +107,9 @@ const ActEdNavbar = () => {
 	};
 
 	// Handle logout
-	const handleLogout = async () => {
-		try {
-			// Optional: Call logout endpoint if your API requires it
+	const handleLogout = async (e) => {
+		e.preventDefault();
+		try {			
 			await logout();
 		} catch (error) {
 			console.error("Logout error:", error);
