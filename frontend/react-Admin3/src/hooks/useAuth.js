@@ -11,9 +11,9 @@ export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    // Define logout as useCallback to prevent unnecessary re-renders
+    
     const logout = useCallback(async () => {
+		alert("logout");
         try {
             await authService.logout();
             setIsAuthenticated(false);
@@ -23,23 +23,20 @@ export const AuthProvider = ({ children }) => {
         } catch (err) {
             setError(err.message);
         }
-    }, [navigate]); // Include navigate in dependencies
-
-    // Fetch user details function with useCallback
-    const fetchUserDetails = useCallback(async () => {
+    }, [navigate]); 
+    
+    const fetchUserDetails = useCallback(async () => {		
         try {
             const userDetails = await authService.getUserDetails();
             setUser(userDetails);
         } catch (err) {
-            console.error("Error fetching user details:", err);
-            // If we can't fetch user details, user might be logged out
+            console.error("Error fetching user details:", err);            
             logout();
         }
-    }, [logout]); // Include logout in dependencies
-
-    // Single initialization useEffect
+    }, [logout]); 
+    
     useEffect(() => {
-        const initializeAuth = async () => {
+        const initializeAuth = async () => {			
             setIsLoading(true);
             try {
                 const storedUser = localStorage.getItem("user");
@@ -67,42 +64,40 @@ export const AuthProvider = ({ children }) => {
         };
 
         initializeAuth();
-    }, [logout]); // Include logout in dependencies
+    }, [logout]); 
 
     const login = async (credentials) => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const result = await authService.login(credentials);
-            
-            if (result.status === 'success') {
-                setUser(result.user);
-                setIsAuthenticated(true);
-                navigate("/");
-                return result;
-            } 
-            
-            // Handle error response
-            setError(result.message);
-            setIsAuthenticated(false);
-            // Clear any potentially partially stored data
-            await logout();
-            return result;
-            
-        } catch (err) {
-            const errorMessage = err.message || "Login failed";
-            setError(errorMessage);
-            setIsAuthenticated(false);
-            // Clear any potentially partially stored data
-            await logout();
-            return {
-                status: 'error',
-                message: errorMessage
-            };
-        } finally {
-            setIsLoading(false);
-        }
-    };
+			setIsLoading(true);
+			setError(null);
+			try {
+				const result = await authService.login(credentials);
+
+				if (result.status === "success") {
+					setUser(result.user);
+					setIsAuthenticated(true);
+					setError(null);
+					navigate("/");
+					return result;
+				}
+
+				// Handle error response without throwing
+				setError(result.message);
+				setIsAuthenticated(false);
+				// Don't navigate on error
+				return result;
+			} catch (err) {
+				// This should rarely happen now since authService handles errors
+				const errorMessage = err.message || "Login failed";
+				setError(errorMessage);
+				setIsAuthenticated(false);
+				return {
+					status: "error",
+					message: errorMessage,
+				};
+			} finally {
+				setIsLoading(false);
+			}
+		};
 
     const register = async (userData) => {
         setIsLoading(true);

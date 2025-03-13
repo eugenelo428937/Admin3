@@ -16,39 +16,43 @@ const authService = {
 
 			const response = await httpService.post(`${API_AUTH_URL}login/`, credentials);
 			logger.debug("Login response received", response.data);
-			if (response.status === 200) {
-				if (response.data && response.data.token && response.data.user) {
-					
-					// Store tokens
-					localStorage.setItem("token", response.data.token);
-					localStorage.setItem("refreshToken", response.data.refresh);
-					logger.debug("Tokens stored in localStorage");
 
-					// Store user data
-					const userData = response.data.user;
-					localStorage.setItem("user", JSON.stringify(userData));
-					localStorage.setItem("isAuthenticated", "true");
-					logger.info("Login successful", {
-						userId: userData.id,
-						status: response.status,
-					});
+			if (response.status === 200 && response.data && response.data.token && response.data.user) {
+				// Store tokens
+				localStorage.setItem("token", response.data.token);
+				localStorage.setItem("refreshToken", response.data.refresh);
+				logger.debug("Tokens stored in localStorage");
 
-					return {
-						status: "success",
-						user: userData,
-						message: "Login successful",
-					};
-				}
+				// Store user data
+				const userData = response.data.user;
+				localStorage.setItem("user", JSON.stringify(userData));
+				localStorage.setItem("isAuthenticated", "true");
+				logger.info("Login successful", {
+					userId: userData.id,
+					status: response.status,
+				});
+
+				return {
+					status: "success",
+					user: userData,
+					message: "Login successful",
+				};
 			}
-			// If we reach here, throw an error
-			throw new Error("Invalid response format from server");
+
+			// If we reach here without returning, the response format was invalid
+			return {
+				status: "error",
+				message: "Invalid response format from server",
+				code: 500,
+			};
 		} catch (error) {
 			logger.error("Login failed", {
 				error: error.response?.data || error,
 				status: error.response?.status,
 				url: `${API_AUTH_URL}login/`,
 			});
-			// Handle different types of errors
+
+			// Don't throw errors, return error objects instead
 			if (error.response?.status === 401) {
 				return {
 					status: "error",
@@ -67,13 +71,13 @@ const authService = {
 					message: error.response.data.message,
 					code: error.response?.status,
 				};
-			} else {
-				return {
-					status: "error",
-					message: "Login failed. Please try again later.",
-					code: error.response?.status || 500,
-				};
 			}
+
+			return {
+				status: "error",
+				message: "Login failed. Please try again later.",
+				code: error.response?.status || 500,
+			};
 		}
 	},
 	register: async (userData) => {
@@ -118,10 +122,37 @@ const authService = {
 	},
 
 	logout: async () => {
-		localStorage.removeItem("token");
-		localStorage.removeItem("refreshToken");
-		localStorage.removeItem("user");
-		localStorage.removeItem("isAuthenticated");
+		try {
+			// Attempt to call logout endpoint if it exists
+			try {
+				await httpService.post(`${API_AUTH_URL}logout/`);
+			} catch (error) {
+				// Ignore logout endpoint errors
+				logger.debug("Logout endpoint error", error);
+			}
+
+			// Always clear local storage
+			localStorage.removeItem("token");
+			localStorage.removeItem("refreshToken");
+			localStorage.removeItem("user");
+			localStorage.removeItem("isAuthenticated");
+
+			return {
+				status: "success",
+				message: "Logged out successfully",
+			};
+		} catch (error) {
+			// Even if there's an error, ensure localStorage is cleared
+			localStorage.removeItem("token");
+			localStorage.removeItem("refreshToken");
+			localStorage.removeItem("user");
+			localStorage.removeItem("isAuthenticated");
+
+			return {
+				status: "error",
+				message: "Error during logout",
+			};
+		}
 	},
 
 	getCurrentUser: () => {
