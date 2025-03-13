@@ -55,6 +55,7 @@ const ActEdNavbar = () => {
 	// Handle login
 	const handleLogin = async (e) => {
 		e.preventDefault();
+		setLoginError("");
 		try {
 			await login(formData);
 			setShowLoginModal(false);
@@ -64,7 +65,7 @@ const ActEdNavbar = () => {
 			}));
 			setMessage("Login successful");
 		} catch (err) {
-			// Error handling is managed by useAuth hook
+			setLoginError(err.message || "Login failed. Please try again.");
 		}
 	};
 

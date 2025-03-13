@@ -3,63 +3,119 @@ import httpService from "./httpService";
 import config from "../config";
 import logger from "./loggerService";
 
-const API_AUTH_URL = config.authUrl;  
-const API_USER_URL = config.userUrl;  
+const API_AUTH_URL = config.authUrl;
+const API_USER_URL = config.userUrl;
 
 const authService = {
 	login: async (credentials) => {
 		logger.debug("Attempting login", { email: credentials.email });
-		
+
 		try {
 			// First, get CSRF token if needed
-			//await httpService.get(`${API_AUTH_URL}/csrf/`);
+			await httpService.get(`${API_AUTH_URL}csrf/`);
 
 			const response = await httpService.post(`${API_AUTH_URL}login/`, credentials);
 			logger.debug("Login response received", response.data);
-
-			if (response.data.user) {
-				if (response.data.token) {
+			if (response.status === 200) {
+				if (response.data && response.data.token && response.data.user) {
+					// Store tokens
 					localStorage.setItem("token", response.data.token);
-					logger.debug("Token stored in localStorage");
-				}				
-				localStorage.setItem("isAuthenticated", "true");
-				localStorage.setItem("user", JSON.stringify(response.data.user));
-				logger.info("Login successful", { userId: response.data.user.id });
-			}
+					localStorage.setItem("refreshToken", response.data.refresh);
+					logger.debug("Tokens stored in localStorage");
 
-			return response.data.user;
+					// Store user data
+					const userData = response.data.user;
+					localStorage.setItem("user", JSON.stringify(userData));
+					localStorage.setItem("isAuthenticated", "true");
+					logger.info("Login successful", {
+						userId: userData.id,
+						status: response.status,
+					});
+
+					return {
+						status: "success",
+						user: userData,
+						message: "Login successful",
+					};
+				}
+			}
+			// If we reach here, throw an error
+			throw new Error("Invalid response format from server");
 		} catch (error) {
 			logger.error("Login failed", {
 				error: error.response?.data || error,
 				status: error.response?.status,
 				url: `${API_AUTH_URL}login/`,
 			});
-			throw error.response?.data || error;
+			// Handle different types of errors
+			if (error.response?.status === 401) {
+				return {
+					status: "error",
+					message: "Invalid username or password",
+					code: 401,
+				};
+			} else if (error.response?.status === 403) {
+				return {
+					status: "error",
+					message: "Access forbidden",
+					code: 403,
+				};
+			} else if (error.response?.data?.message) {
+				return {
+					status: "error",
+					message: error.response.data.message,
+					code: error.response?.status,
+				};
+			} else {
+				return {
+					status: "error",
+					message: "Login failed. Please try again later.",
+					code: error.response?.status || 500,
+				};
+			}
 		}
 	},
 	register: async (userData) => {
 		try {
 			const response = await httpService.post(`${API_AUTH_URL}register/`, {
-				username: userData.email, // Changed to use email as username
+				username: userData.email,
 				password: userData.password,
 				email: userData.email,
 				first_name: userData.first_name,
 				last_name: userData.last_name,
 			});
 
-			if (response.data.status === "success") {
-				localStorage.setItem("user", JSON.stringify(response.data.user));
-				localStorage.setItem("isAuthenticated", "true");
-				if (response.data.token) {
-					localStorage.setItem("token", response.data.token);
+			if (response.status === 201 || response.status === 200) {
+				if (response.data.user) {
+					localStorage.setItem("user", JSON.stringify(response.data.user));
+					localStorage.setItem("isAuthenticated", "true");
+					if (response.data.token) {
+						localStorage.setItem("token", response.data.token);
+					}
+
+					return {
+						status: "success",
+						user: response.data.user,
+						message: "Registration successful",
+					};
 				}
 			}
 
-			return response.data;
+			throw new Error("Invalid registration response");
 		} catch (error) {
-			throw error.response?.data || error;
+			logger.error("Registration failed", {
+				error: error.response?.data || error,
+				status: error.response?.status,
+			});
+
+			return {
+				status: "error",
+				message: error.response?.data?.message || "Registration failed",
+				code: error.response?.status || 500,
+			};
 		}
 	},
+
 	logout: async () => {
 		localStorage.removeItem("token");
 		localStorage.removeItem("refreshToken");
