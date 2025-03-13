@@ -10,15 +10,15 @@ const authService = {
 	login: async (credentials) => {
 		logger.debug("Attempting login", { email: credentials.email });
 
-		try {
-			// Clear any existing auth data before attempting login
-			localStorage.removeItem("token");
-			localStorage.removeItem("refreshToken");
-			localStorage.removeItem("user");
-			localStorage.removeItem("isAuthenticated");
+		// Clear any existing auth data before attempting login
+		localStorage.removeItem("token");
+		localStorage.removeItem("refreshToken");
+		localStorage.removeItem("user");
+		localStorage.removeItem("isAuthenticated");
 
+		try {
 			// First, get CSRF token if needed
-			await httpService.get(`${API_AUTH_URL}csrf/`);
+			//await httpService.get(`${API_AUTH_URL}csrf/`);
 
 			const response = await httpService.post(`${API_AUTH_URL}login/`, credentials);
 			logger.debug("Login response received", response.data);
@@ -57,7 +57,7 @@ const authService = {
 			localStorage.removeItem("refreshToken");
 			localStorage.removeItem("user");
 			localStorage.removeItem("isAuthenticated");
-			
+
 			logger.error("Login failed", {
 				error: error.response?.data || error,
 				status: error.response?.status,
@@ -181,7 +181,7 @@ const authService = {
 			const response = await httpService.post(`${API_AUTH_URL}refresh/`, {
 				refresh: refreshToken,
 			});
-
+			console.log(response.data.token);
 			if (response.data.token) {
 				localStorage.setItem("token", response.data.token);
 			}
@@ -190,11 +190,21 @@ const authService = {
 		} catch (error) {
 			throw error.response?.data || error;
 		}
-	},
+	},	
 	getUserDetails: async () => {
 		try {
-			const response = await httpService.get(`${API_USER_URL}`);
-			return response.data.user;
+			// Get the current user ID from localStorage
+			const userData = localStorage.getItem("user");
+			if (!userData) {
+				throw new Error("No user data found");
+			}
+
+			const user = JSON.parse(userData);
+			const userId = user.id;
+
+			// Make request to get current user's details
+			const response = await httpService.get(`${API_USER_URL}${userId}/`);
+			return response.data;
 		} catch (error) {
 			throw error;
 		}

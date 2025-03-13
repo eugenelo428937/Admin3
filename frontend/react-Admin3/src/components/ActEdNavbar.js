@@ -70,7 +70,7 @@ const ActEdNavbar = () => {
 				setFormData((prevState) => ({
 					...prevState,
 					password: "",
-				}));
+				}));			
 			}
 		} catch (err) {
 			setLoginError(err.message || "Login failed");
