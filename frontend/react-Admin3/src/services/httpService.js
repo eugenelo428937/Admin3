@@ -1,7 +1,7 @@
 import axios from "axios";
 import authService from "./authService";
 import config from "../config";
-
+import logger from "./loggerService";
 const httpService = axios.create({
 	baseURL: config.apiUrl,
 	withCredentials: true,
@@ -23,13 +23,26 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-
+// Function to get CSRF token from the backend
+const fetchCsrfToken = async () => {
+    try {
+        const response = await axios.get(`${config.apiUrl}/api/auth/csrf/`, {
+            withCredentials: true
+        });
+        return response.data.csrfToken;
+    } catch (error) {
+        logger.error("Error fetching CSRF token:", error);
+        return null;
+    }
+};
 httpService.interceptors.request.use(
-	(config) => {
+	async (config) => {
 		// Add CSRF token
 		const csrfToken = getCookie("csrftoken");
 		if (csrfToken) {
 			config.headers["X-CSRFToken"] = csrfToken;
+		} else {
+			csrfToken = await fetchCsrfToken();
 		}
 
 		const token = localStorage.getItem("token");
@@ -48,7 +61,13 @@ httpService.interceptors.response.use(
         
         if (error.response.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
-            
+            if (error.response?.status === 401) {
+                logger.error("Unauthorized request", error);
+                // Clear auth data if unauthorized
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                localStorage.removeItem("isAuthenticated");
+            }
             try {
                 const refreshToken = localStorage.getItem('refreshToken');
                 const response = await authService.refreshToken(refreshToken);
