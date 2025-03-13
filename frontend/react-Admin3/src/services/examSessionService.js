@@ -1,13 +1,12 @@
-// src/services/examSessionService.js
-import config from "../config";
 import httpService from "./httpService";
+import config from "../config";
 const API_URL = config.examSessionUrl;
-
+console.log(API_URL);
 const examSessionService = {
     getAll: async () => {
-			const response = await httpService.get(`${API_URL}`);
-			return response.data.results || response.data; // Return results array if paginated, otherwise the whole response
-		},
+        const response = await httpService.get(`${API_URL}`);
+        return response.data;
+    },
 
     getById: async (id) => {
         const response = await httpService.get(`${API_URL}${id}/`);
@@ -31,7 +30,7 @@ const examSessionService = {
     },
 
     delete: async (id) => {
-        await httpService.delete(`${API_URL}/${id}/`);
+        await httpService.delete(`${API_URL}${id}/`);
     }
 };
 
