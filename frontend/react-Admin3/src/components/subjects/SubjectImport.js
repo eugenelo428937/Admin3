@@ -42,6 +42,9 @@ const SubjectImport = () => {
 					.filter((subject) => subject.code); // Filter out empty rows
 
 				const data = await subjectService.bulkImport(subjects);
+				if (data.error) {
+					throw new Error(data.error);
+				}
 				setMessage(`Successfully imported ${subjects.length} subjects`);
 			} catch (error) {
 				setMessage("Error processing file: " + error.message);

@@ -13,19 +13,21 @@ const SubjectDetail = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const fetchSubject = async () => {
+			try {
+				const data = await subjectService.getById(id);
+				setSubject(data);
+				setLoading(false);
+			} catch (err) {
+				setError("Failed to fetch subject details. Please try again.");
+				setLoading(false);
+			}
+		};
+    
     fetchSubject();
   }, [id]);
 
-  const fetchSubject = async () => {
-    try {
-      const data = await subjectService.getById(id);
-      setSubject(data);
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to fetch subject details. Please try again.');
-      setLoading(false);
-    }
-  };
+  
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this subject?')) {

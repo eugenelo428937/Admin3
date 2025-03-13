@@ -1,8 +1,9 @@
 import axios from "axios";
 import authService from "./authService";
+import config from "../config";
 
 const httpService = axios.create({
-	baseURL: process.env.REACT_APP_API_URL,
+	baseURL: config.apiUrl,
 	withCredentials: true,
 	headers: { "Content-Type": "application/json" },
 });
