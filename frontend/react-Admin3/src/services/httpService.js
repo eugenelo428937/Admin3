@@ -60,31 +60,32 @@ httpService.interceptors.response.use(
         const originalRequest = error.config;
         
         if (error.response.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
-            if (error.response?.status === 401) {
-                logger.error("Unauthorized request", error);
-                // Clear auth data if unauthorized
-                localStorage.removeItem("token");
-                localStorage.removeItem("user");
-                localStorage.removeItem("isAuthenticated");
-            }
-            try {
-                const refreshToken = localStorage.getItem('refreshToken');
-                const response = await authService.refreshToken(refreshToken);
-                const newToken = response.data.token;
-                localStorage.setItem("token", newToken);
-                originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
-                return httpService(originalRequest);
-            } catch (refreshError) {
-                // If refresh fails, logout
-                localStorage.removeItem("token");
-                localStorage.removeItem("refreshToken");
-                localStorage.removeItem("user");
-                localStorage.removeItem("isAuthenticated");
-                window.location.href = "/login";
-                return Promise.reject(refreshError);
-            }
-        }
+				originalRequest._retry = true;
+
+				// Clear auth data if unauthorized
+				localStorage.removeItem("token");
+				localStorage.removeItem("user");
+				localStorage.removeItem("isAuthenticated");
+
+				try {
+					const refreshToken = localStorage.getItem("refreshToken");
+                    if (!refreshToken) {
+                        return Promise.reject(error);
+                    }
+					const response = await authService.refreshToken(refreshToken);
+					const newToken = response.data.token;
+					localStorage.setItem("token", newToken);
+					originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+					return httpService(originalRequest);
+				} catch (refreshError) {
+					// If refresh fails, logout
+					localStorage.removeItem("token");
+					localStorage.removeItem("refreshToken");
+					localStorage.removeItem("user");
+					localStorage.removeItem("isAuthenticated");					
+					return Promise.reject(refreshError);
+				}
+			}
         
         return Promise.reject(error);
     }
