@@ -35,6 +35,11 @@ const ActEdNavbar = () => {
 	const handleClose = () => {
 		setShowLoginModal(false);
 		setMessage("");
+		setFormData({
+			// Reset form data
+			username: "",
+			password: "",
+		});
 	};
 
 	// const handleShow = () => setShowLoginModal(true);
@@ -55,17 +60,20 @@ const ActEdNavbar = () => {
 	// Handle login
 	const handleLogin = async (e) => {
 		e.preventDefault();
-		setLoginError("");
 		try {
-			await login(formData);
-			setShowLoginModal(false);
-			setFormData((prevState) => ({
-				...prevState,
-				password: "",
-			}));
-			setMessage("Login successful");
+			setLoginError(""); // Clear any previous errors
+			const result = await login(formData);
+			if (result.status === "error") {
+				setLoginError(result.message);
+			} else {
+				setShowLoginModal(false);
+				setFormData((prevState) => ({
+					...prevState,
+					password: "",
+				}));
+			}
 		} catch (err) {
-			setLoginError(err.message || "Login failed. Please try again.");
+			setLoginError(err.message || "Login failed");
 		}
 	};
 
@@ -313,7 +321,9 @@ const ActEdNavbar = () => {
 				</Modal.Header>
 				<Modal.Body>
 					{loginError && <Alert variant="danger">{loginError}</Alert>}
-					<Form onSubmit={handleLogin}>
+					<Form
+						onSubmit={handleLogin}
+						noValidate>
 						<Form.Group className="mb-3">
 							<Form.Label>Email</Form.Label>
 							<Form.Control
@@ -343,6 +353,7 @@ const ActEdNavbar = () => {
 							</Button>
 							<Button
 								variant="link"
+								type="button"
 								onClick={switchToRegister}>
 								Need an account? Register
 							</Button>
