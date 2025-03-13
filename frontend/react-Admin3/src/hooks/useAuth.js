@@ -1,7 +1,7 @@
 // src/hooks/useAuth.js
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect, createContext, useContext } from "react";
-import authService from '../services/authService';
+import authService from "../services/authService";
 
 export const AuthContext = createContext(null);
 
@@ -13,45 +13,46 @@ export const AuthProvider = ({ children }) => {
 	const [error, setError] = useState(null);
 	// Add error boundary state
 	const [authError, setAuthError] = useState(null);
-  useEffect(() => {
-        const initializeAuth = async () => {
-            setIsLoading(true);
-            try {
-                const storedUser = localStorage.getItem('user');
-                const storedAuth = localStorage.getItem('isAuthenticated');
-                
-                if (storedUser && storedAuth === 'true') {
-                    const userData = JSON.parse(storedUser);
-                    setUser(userData);
-                    setIsAuthenticated(true);
-                    
-                    // Verify token is still valid
-                    try {
-                        await authService.getUserDetails();
-                    } catch (e) {
-                        // If token is invalid, clear everything
-                        logout();
-                    }
-                }
-            } catch (err) {
-                setAuthError(err.message);
-                logout();
-            } finally {
-                setIsLoading(false);
-            }
-        };
+	
+	useEffect(() => {
+		const initializeAuth = async () => {
+			setIsLoading(true);
+			try {
+				const storedUser = localStorage.getItem("user");
+				const storedAuth = localStorage.getItem("isAuthenticated");
 
-        initializeAuth();
-    }, []);
-    
+				if (storedUser && storedAuth === "true") {
+					const userData = JSON.parse(storedUser);
+					setUser(userData);
+					setIsAuthenticated(true);
+
+					// Verify token is still valid
+					try {
+						await authService.getUserDetails();
+					} catch (e) {
+						// If token is invalid, clear everything
+						logout();
+					}
+				}
+			} catch (err) {
+				setAuthError(err.message);
+				logout();
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		initializeAuth();
+	}, []);
+
 	useEffect(() => {
 		const storedUser = localStorage.getItem("user");
 		const storedAuth = localStorage.getItem("isAuthenticated");
 
 		if (storedUser && storedAuth === "true") {
 			const userData = JSON.parse(storedUser);
-      setUser(JSON.parse(storedUser));
-			setIsAuthenticated(true);     
+			setUser(JSON.parse(storedUser));
+			setIsAuthenticated(true);
 		}
 
 		setIsLoading(false);
@@ -67,7 +68,6 @@ export const AuthProvider = ({ children }) => {
 			} else if (userData.status === "error") {
 				throw new Error(userData.message);
 			}
-		
 			setUser(userData);
 			setIsAuthenticated(true);
 			navigate("/");
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }) => {
 		} catch (err) {
 			const errorMessage = err.response?.data?.message || err.message || "Login failed";
 			setError(errorMessage);
-			setIsAuthenticated(false);			
+			setIsAuthenticated(false);
 			// Clear any potentially partially stored data
 			localStorage.removeItem("token");
 			localStorage.removeItem("user");
@@ -144,9 +144,9 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+	const context = useContext(AuthContext);
+	if (!context) {
+		throw new Error("useAuth must be used within an AuthProvider");
+	}
+	return context;
 };

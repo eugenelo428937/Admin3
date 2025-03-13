@@ -10,10 +10,9 @@ const config = {
 	enableDebugLogs: true,
 };
 
-if (config.isDevelopment) {
-	console.log("API Base URL:", config.apiBaseUrl);
-	console.log("Auth URL:", config.authUrl);
-	console.log("User URL:", config.userUrl);
+if (config.isDevelopment) {	
+	console.log("environment:", config.isDevelopment);
+	console.log("Debug logs enabled:", config.enableDebugLogs);	
 }
 
 export default config;

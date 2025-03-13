@@ -18,6 +18,7 @@ const authService = {
 			logger.debug("Login response received", response.data);
 			if (response.status === 200) {
 				if (response.data && response.data.token && response.data.user) {
+					
 					// Store tokens
 					localStorage.setItem("token", response.data.token);
 					localStorage.setItem("refreshToken", response.data.refresh);
