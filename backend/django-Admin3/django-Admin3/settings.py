@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'exam_sessions',
     'products',
     'core_auth',
+    'administrate',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -205,7 +206,7 @@ CORS_ALLOW_HEADERS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',  # Add this line
+        'rest_framework_simplejwt.authentication.JWTAuthentication', 
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
@@ -246,3 +247,11 @@ SIMPLE_JWT = {
 
     'JTI_CLAIM': 'jti',
 }
+
+# Administrate API Settings
+ADMINISTRATE_API_URL = 'https://api.getadministrate.com/graphql'
+ADMINISTRATE_API_KEY = 'your_api_key'
+
+# GraphQL Template Settings
+GRAPHQL_TEMPLATES_DIR = os.path.join(
+    BASE_DIR, 'administrate/templates/graphql')
