@@ -14,9 +14,25 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from datetime import timedelta
 import os
 from pathlib import Path
-import sys 
+import sys
+import environ
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Initialize environ
+env = environ.Env(
+    # Set default values
+    DEBUG=(bool, False),
+    SECRET_KEY=(str, 'default-secret-key-for-dev'),
+    DATABASE_URL=(str, "postgres://user:password@localhost:5432/dbname"),
+)
+
+# Read .env file if it exists
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+# Use environment variables
+SECRET_KEY = env('SECRET_KEY')
+DEBUG = env('DEBUG')
 
 # Paths to the certificate and key files
 CERT_FILE = os.path.join(BASE_DIR, 'certs', 'elo_cert.pem')
@@ -33,7 +49,6 @@ if os.getenv('DJANGO_DEVELOPMENT') == 'true':
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
 
 
 # Quick-start development settings - unsuitable for production
@@ -54,7 +69,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 
 # Application definition
 
-INSTALLED_APPS = [    
+INSTALLED_APPS = [
     'users',
     'students',
     'subjects',
@@ -70,7 +85,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'rest_framework',
-    'corsheaders',   
+    'corsheaders',
     'rest_framework_simplejwt',
 ]
 
@@ -82,7 +97,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
 ]
 
@@ -118,14 +133,14 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '5432',
     },
-        'default': {
+    'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('DB_NAME', 'ACTEDDBTEST01'),
         'USER': os.environ.get('DB_USER', 'eugenelo1030'),
         'PASSWORD': os.environ.get('DB_PASSWORD', ''),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', '5432'),
-    }    
+    }
 }
 # if 'test' in sys.argv:
 #     DATABASES = {
@@ -218,7 +233,7 @@ CORS_ALLOW_HEADERS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication', 
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
@@ -268,4 +283,3 @@ ADMINISTRATE_API_KEY = os.environ.get('ADMINISTRATE_API_KEY', '')
 # GraphQL Template Settings
 GRAPHQL_TEMPLATES_DIR = os.path.join(
     BASE_DIR, 'administrate/templates/graphql')
-
