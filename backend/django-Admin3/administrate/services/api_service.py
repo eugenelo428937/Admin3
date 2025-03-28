@@ -75,3 +75,46 @@ class AdministrateAPIService:
             )
 
         return response.json()
+
+    def get_custom_fields(self, entity_type=None):
+        """
+        Get custom fields from Administrate API
+        
+        Args:
+            entity_type (str, optional): Filter by entity type (EVENT, CONTACT, OPPORTUNITY)
+            
+        Returns:
+            list: List of custom fields
+        """
+        query = """
+        query GetCustomFields($entityType: String) {
+            customFields(entityType: $entityType) {
+                edges {
+                    node {
+                        id
+                        name
+                        type
+                        description
+                        isRequired
+                        isSystem
+                        entityType
+                        possibleValues {
+                            edges {
+                                node {
+                                    value
+                                    label
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        """
+        
+        variables = {"entityType": entity_type} if entity_type else {}
+        result = self.execute_query(query, variables)
+        
+        if 'data' in result and 'customFields' in result['data']:
+            return result['data']['customFields']['edges']
+        return []
