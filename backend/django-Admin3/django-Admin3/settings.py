@@ -15,8 +15,11 @@ from datetime import timedelta
 import os
 from pathlib import Path
 import sys 
+import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+env = environ.Env()
 
 # Paths to the certificate and key files
 CERT_FILE = os.path.join(BASE_DIR, 'certs', 'elo_cert.pem')
@@ -44,16 +47,12 @@ if os.getenv('DJANGO_DEVELOPMENT') == 'true':
 
 # Environment-based settings
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
-SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY', 'django-insecure-5rn#bj-51$-9c1fmwnn8yfguq#v@17a0z5-zi2a&+$u3&famf$')
-
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-5rn#bj-51$-9c1fmwnn8yfguq#v@17a0z5-zi2a&+$u3&famf$')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 
-
 # Application definition
-
 INSTALLED_APPS = [    
     'users',
     'students',
@@ -260,7 +259,11 @@ SIMPLE_JWT = {
     'JTI_CLAIM': 'jti',
 }
 
-# Administrate API Settings
+
+# settings/base.py or settings.py
+
+
+
 ADMINISTRATE_API_URL = os.environ.get(
     'ADMINISTRATE_API_URL', 'https://api.getadministrate.com/graphql')
 ADMINISTRATE_API_KEY = os.environ.get('ADMINISTRATE_API_KEY', '')

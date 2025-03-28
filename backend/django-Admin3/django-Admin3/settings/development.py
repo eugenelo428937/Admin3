@@ -1,39 +1,29 @@
 # development.py
 from .base import *
 
+
 DEBUG = True
 SECRET_KEY = 'development-secret-key'
 
+# HTTPS settings for development
+SECURE_SSL_REDIRECT = False
+SECURE_HSTS_SECONDS = 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ACTEDDBTEST01',
-        'USER': 'dev_user',
-        'PASSWORD': 'dev_password',
+        'NAME': 'ACTEDDBDEV01',
+        'USER': 'actedadmin@bpp.com',
+        'PASSWORD': 'Act3d@dm1n0EEoo',
         'HOST': 'localhost',
         'PORT': '5432',
     }
 }
 
-# production.py
-from .base import *
-
-DEBUG = False
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT'),
-    }
-}
-
-# Additional security settings for production
-SECURE_SSL_REDIRECT = True
-SECURE_HSTS_SECONDS = 31536000  # 1 year
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
