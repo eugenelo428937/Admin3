@@ -29,7 +29,7 @@ class AdministrateAPIService:
             'Authorization': f'Bearer {self.auth_service.get_access_token()}',
             'Content-Type': 'application/json',
         }
-
+        
         payload = {'query': query}
         if variables:
             payload['variables'] = variables
@@ -39,7 +39,7 @@ class AdministrateAPIService:
             headers=headers,
             json=payload
         )
-
+        
         if response.status_code != 200:
             raise AdministrateAPIError(
                 f"GraphQL query failed with status {response.status_code}: {response.text}"
@@ -76,45 +76,35 @@ class AdministrateAPIService:
 
         return response.json()
 
-    def get_custom_fields(self, entity_type=None):
+
+    def get_custom_field_definitions(self, entity_type=None):
         """
-        Get custom fields from Administrate API
+        Get custom field definitions from Administrate API
         
         Args:
             entity_type (str, optional): Filter by entity type (EVENT, CONTACT, OPPORTUNITY)
             
         Returns:
-            list: List of custom fields
+            list: List of custom field definitions
         """
         query = """
-        query GetCustomFields($entityType: String) {
-            customFields(entityType: $entityType) {
-                edges {
-                    node {
-                        id
-                        name
-                        type
+        query GetCustomFieldDefinitions($type: String) {
+                customFieldTemplate(type: $type) {
+                    customFieldDefinitions {
+                        key
+                        label
                         description
+                        type                        
                         isRequired
-                        isSystem
-                        entityType
-                        possibleValues {
-                            edges {
-                                node {
-                                    value
-                                    label
-                                }
-                            }
-                        }
+                        roles                        
                     }
                 }
             }
-        }
         """
-        
-        variables = {"entityType": entity_type} if entity_type else {}
+
+        variables = {"type": entity_type} if entity_type else {}
         result = self.execute_query(query, variables)
-        
-        if 'data' in result and 'customFields' in result['data']:
-            return result['data']['customFields']['edges']
+
+        if 'data' in result and 'customFieldDefinitions' in result['data']:
+            return result['data']['customFieldDefinitions']['edges']
         return []

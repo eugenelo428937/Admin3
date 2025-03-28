@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 
 class PriceLevel(models.Model):
     external_id = models.CharField(max_length=255, unique=True)
@@ -13,18 +14,17 @@ class PriceLevel(models.Model):
     
     def __str__(self):
         return self.name
-
-
+    
 class CustomField(models.Model):
-    external_id = models.CharField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
-    field_type = models.CharField(max_length=50)
-    description = models.TextField(blank=True, null=True)
-    is_required = models.BooleanField(default=False)
-    is_system = models.BooleanField(default=False)
-    # e.g., 'EVENT', 'CONTACT', etc.
+    external_id = models.CharField(
+        max_length=255, unique=True)  # maps to 'key'
+    label = models.CharField(max_length=255)  # maps to 'label'
+    field_type = models.CharField(max_length=50)  # maps to 'type'
+    description = models.TextField(blank=True, null=True)    
+    is_required = models.BooleanField(default=False)        
+    roles = ArrayField(models.CharField(max_length=255), blank=True, null=True)    
+    # Not directly in the schema but useful
     entity_type = models.CharField(max_length=50)
-    possible_values = models.JSONField(null=True, blank=True)
     last_synced = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -36,4 +36,4 @@ class CustomField(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.name} ({self.entity_type})"
+        return f"{self.label} ({self.entity_type})"
