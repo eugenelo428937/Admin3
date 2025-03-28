@@ -80,3 +80,4 @@ frontend/react-Admin3/node_modules.OLD/*
 frontend/react-Admin3/.env.*
 backend/django-Admin3/*.env
 backend/django-Admin3/.env*
+backend/django-Admin3/tokens/
