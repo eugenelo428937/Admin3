@@ -23,12 +23,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 env = environ.Env(
     # Set default values
     DEBUG=(bool, False),
-    SECRET_KEY=(str, 'default-secret-key-for-dev'),
-    DATABASE_URL=(str, "postgres://user:password@localhost:5432/dbname"),
+    DJANGO_ENV=(str, 'development'),
+    ALLOWED_HOSTS=(list, []),
+    DATABASE_URL=(str, 'postgres://user:pass@localhost:5432/dbname'),
 )
-
 # Read .env file if it exists
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+DJANGO_ENV = os.getenv('DJANGO_ENV', 'development')
+env_file = os.path.join(BASE_DIR, f'.env.{DJANGO_ENV}')
+if os.path.exists(env_file):
+    print(f'Loading environment from: {env_file}')
+    environ.Env.read_env(env_file)
+else:
+    print(f'Warning: {env_file} not found!')
+
+# environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Use environment variables
 SECRET_KEY = env('SECRET_KEY')
@@ -275,11 +283,14 @@ SIMPLE_JWT = {
     'JTI_CLAIM': 'jti',
 }
 
-# Administrate API Settings
-ADMINISTRATE_API_URL = os.environ.get(
-    'ADMINISTRATE_API_URL', 'https://api.getadministrate.com/graphql')
-ADMINISTRATE_API_KEY = os.environ.get('ADMINISTRATE_API_KEY', '')
 
 # GraphQL Template Settings
 GRAPHQL_TEMPLATES_DIR = os.path.join(
     BASE_DIR, 'administrate/templates/graphql')
+
+# Administrate API Settings
+ADMINISTRATE_INSTANCE_URL = env('ADMINISTRATE_INSTANCE_URL')
+ADMINISTRATE_API_URL = env('ADMINISTRATE_API_URL')
+ADMINISTRATE_API_KEY = env('ADMINISTRATE_API_KEY')
+ADMINISTRATE_API_SECRET = env('ADMINISTRATE_API_SECRET')
+ADMINISTRATE_REST_API_URL = env('ADMINISTRATE_REST_API_URL')

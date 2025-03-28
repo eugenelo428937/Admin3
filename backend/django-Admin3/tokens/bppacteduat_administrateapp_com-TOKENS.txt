@@ -1,0 +1,12 @@
+{
+    "access_token": "SwUXZ5pTujy16Hpcgp9djnJxHnRAjt",
+    "expires_in": 3600,
+    "token_type": "Bearer",
+    "scope": "instance",
+    "refresh_token": "E0QKfyIuLAKLQDPGyImbhyxfAc8OR2",
+    "time_retrieved": "2025-03-28 12:40:02.532635",
+    "expires_at": "2025-03-28 13:40:02.532635",
+    "client_id": "bJC4yEzW7dICQin2JbgwU0gsbN9kuaDC",
+    "client_secret": "9SCcBFTbquz7OL8qmg9cN5ky6yWQBxur",
+    "auth_user": "eugenelo@bpp.com"
+}

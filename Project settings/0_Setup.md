@@ -135,7 +135,11 @@ npm start
 
 ## 7: Set Up PostgreSQL
 
-1. In PgAdmin4, Go to Restore and select ACTEDDBDEV01_create.sql.
+1. Create localhost Server Group in PgAdmin4 if not exist.
+1. Update the password of "postgres" User to Login/Group Roles.
+1. Create a new user <actedadmin@bpp.com> with password and grant all privileges.
+1. In PgAdmin4, in localhost Server Group, create a new database "ACTEDDEV01".
+1. In ACTEDDBDEV01, open the query tool and run the ACTEDDBDEV01.sql file.
 1. Update the Django settings.py (./Admin3/backend/Django-Admin3/settings.py) file with the PostgreSQL database configuration.
 
 ```python

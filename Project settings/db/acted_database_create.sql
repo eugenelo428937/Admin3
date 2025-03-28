@@ -21,13 +21,13 @@ SET row_security = off;
 DROP DATABASE IF EXISTS "ACTEDDBDEV01";
 --
 -- TOC entry 4968 (class 1262 OID 16664)
--- Name: ACTEDDBDEV01; Type: DATABASE; Schema: -; Owner: eugenelo1030
+-- Name: ACTEDDBDEV01; Type: DATABASE; Schema: -; Owner: actedadmin@bpp.com
 --
 
 CREATE DATABASE "ACTEDDBDEV01" WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'English_United Kingdom.1252';
 
 
-ALTER DATABASE "ACTEDDBDEV01" OWNER TO "eugenelo1030";
+ALTER DATABASE "ACTEDDBDEV01" OWNER TO "actedadmin@bpp.com";
 
 \connect "ACTEDDBDEV01";
 
