@@ -9,7 +9,7 @@ class PriceLevel(models.Model):
     
     class Meta:
         app_label = 'administrate'
-        db_table = 'admpricelevels'
+        db_table = 'adm.pricelevels'
         verbose_name = 'Price Level'
         verbose_name_plural = 'Price Levels'
     
@@ -34,7 +34,7 @@ class CustomField(models.Model):
 
     class Meta:
         app_label = 'administrate'        
-        db_table = 'admcustomfields'
+        db_table = 'adm.custom_fields'
         verbose_name = 'Custom Field'
         verbose_name_plural = 'Custom Fields'
         indexes = [
