@@ -1,5 +1,5 @@
-query getAllInstructors {
-	contacts(filters: [{ field: isInstructor, operation: eq, value: "true" }]) {
+query getAllInstructors($first: Int!, $after: String) {
+	contacts(filters: [{ field: isInstructor, operation: eq, value: "true" }], first: $first, after: $after) {
 		pageInfo {
 			hasNextPage
 			endCursor
@@ -10,7 +10,7 @@ query getAllInstructors {
 				id
 				legacyId
 				firstName
-				lastName				
+				lastName
 			}
 		}
 	}
