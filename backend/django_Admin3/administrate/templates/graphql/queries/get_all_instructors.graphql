@@ -1,5 +1,5 @@
-query getAllInstructors($first: Int!, $after: String) {
-	contacts(filters: [{ field: isInstructor, operation: eq, value: "true" }], first: $first, after: $after) {
+query getAllInstructors($first: Int!, $offset: Int) {
+	contacts(filters: [{ field: isInstructor, operation: eq, value: "true" }], first: $first, offset: $offset) {
 		pageInfo {
 			hasNextPage
 			endCursor
