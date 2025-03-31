@@ -18,9 +18,17 @@ class Command(BaseCommand):
             action='store_true',
             help='Enable debug logging'
         )
+        parser.add_argument(
+            '--page-size',
+            type=int,
+            default=100,
+            help='Number of records per page'
+        )
 
     def handle(self, *args, **options):
         debug = options['debug']
+        page_size = options['page_size']
+         
         if debug:
             logger.setLevel(logging.DEBUG)
 
@@ -32,30 +40,46 @@ class Command(BaseCommand):
             
             self.stdout.write('Fetching locations...')
             
-            try:
-                result = api_service.execute_query(query)
-                
-                if not self._validate_response(result):
+            has_next_page = True
+            cursor = None
+            all_locations = []
+            while has_next_page:
+                try:
+                    # Add pagination variables to the query
+                    variables = {
+                        "first": page_size,
+                        "after": cursor
+                    }
+
+                    result = api_service.execute_query(query, variables)
+                    
+                    if not self._validate_response(result):
+                        self.stdout.write(
+                            self.style.WARNING('Invalid response format from API')
+                        )
+                        return
+                    
+                    page_info = result['data']['locations']['pageInfo']
+                    locations = result['data']['locations']['edges']
+
+                    all_locations.extend(locations)
+
+                    # Update pagination info
+                    has_next_page = page_info.get('hasNextPage', False)
+                    cursor = page_info.get('endCursor')
+
                     self.stdout.write(
-                        self.style.WARNING('Invalid response format from API')
+                        f'Fetched {len(locations)} locations. '
+                        f'Total so far: {len(all_locations)}'
+                    )(self.style.WARNING('No locations found to sync'))
+                    
+                except Exception as e:
+                    self.stdout.write(
+                        self.style.ERROR(f'Error processing locations: {str(e)}')
                     )
+                    if debug:
+                        logger.exception(e)
                     return
-                
-                locations = result['data']['locations']['edges']
-                
-                if locations:
-                    self.stdout.write(f'Syncing {len(locations)} locations...')
-                    self._sync_locations(locations, debug)
-                else:
-                    self.stdout.write(self.style.WARNING('No locations found to sync'))
-                
-            except Exception as e:
-                self.stdout.write(
-                    self.style.ERROR(f'Error processing locations: {str(e)}')
-                )
-                if debug:
-                    logger.exception(e)
-                return
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Unexpected error: {str(e)}'))
@@ -69,7 +93,8 @@ class Command(BaseCommand):
             'data' in result and
             'locations' in result['data'] and
             'edges' in result['data']['locations'] and
-            isinstance(result['data']['locations']['edges'], list)
+            isinstance(result['data']['locations']['edges'], list) and
+            'pageInfo' in result['data']['locations']
         )
 
     def _sync_locations(self, api_locations, debug=False):

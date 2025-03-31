@@ -18,6 +18,12 @@ class Command(BaseCommand):
             action='store_true',
             help='Enable debug logging'
         )
+        parser.add_argument(
+            '--page-size',
+            type=int,
+            default=100,
+            help='Number of records per page'
+        )
 
     def handle(self, *args, **options):
         debug = options['debug']
@@ -62,7 +68,7 @@ class Command(BaseCommand):
                     # Filter instructors
                     instructor_edges = [
                         edge for edge in current_edges 
-                        if edge.get('node', {}).get('isInstructor', False)
+                        if edge.get('node', {}).get()
                     ]
                     
                     all_instructors.extend(instructor_edges)
