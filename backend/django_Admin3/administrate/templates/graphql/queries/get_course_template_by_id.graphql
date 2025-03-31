@@ -1,0 +1,22 @@
+query GetCourseTemplateById($id: ID!) {
+    courseTemplate(id: $id) {
+        id
+        code
+        title
+        eventLearningMode
+        shortCode
+        learningCategories {          
+            edges {
+                node {
+                    name
+                }
+            }          
+        }
+        customFieldValues {
+            definition {
+                key
+            }
+            value
+        }
+    }
+}
