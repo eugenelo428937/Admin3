@@ -41,14 +41,15 @@ class Command(BaseCommand):
             self.stdout.write('Fetching locations...')
             
             has_next_page = True
-            cursor = None
+            offset = 0
             all_locations = []
+
             while has_next_page:
                 try:
                     # Add pagination variables to the query
                     variables = {
                         "first": page_size,
-                        "after": cursor
+                        "offset": offset
                     }
 
                     result = api_service.execute_query(query, variables)
@@ -61,17 +62,19 @@ class Command(BaseCommand):
                     
                     page_info = result['data']['locations']['pageInfo']
                     locations = result['data']['locations']['edges']
-
+                    self.stdout.write("BEFORE")
                     all_locations.extend(locations)
-
+                    
                     # Update pagination info
                     has_next_page = page_info.get('hasNextPage', False)
-                    cursor = page_info.get('endCursor')
-
+                    offset += page_size
+                    self.stdout.write("AFTER")
                     self.stdout.write(
                         f'Fetched {len(locations)} locations. '
                         f'Total so far: {len(all_locations)}'
-                    )(self.style.WARNING('No locations found to sync'))
+                    )
+                    if not locations:
+                        self.stdout.write(self.style.WARNING('No locations found to sync'))
                     
                 except Exception as e:
                     self.stdout.write(
