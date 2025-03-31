@@ -1,16 +1,16 @@
 query getAllInstructors {
-	contacts {
+	contacts(filters: [{ field: isInstructor, operation: eq, value: "true" }]) {
 		pageInfo {
 			hasNextPage
 			endCursor
+			totalRecords
 		}
 		edges {
 			node {
 				id
 				legacyId
 				firstName
-				lastName
-				isInstructor
+				lastName				
 			}
 		}
 	}
