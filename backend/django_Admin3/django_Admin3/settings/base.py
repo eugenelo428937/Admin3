@@ -113,7 +113,10 @@ ROOT_URLCONF = 'django_Admin3.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            # Add your templates directory
+            os.path.join(BASE_DIR, 'administrate', 'templates'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

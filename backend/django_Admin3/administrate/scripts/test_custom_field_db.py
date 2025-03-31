@@ -12,7 +12,7 @@ sys.path.append(str(project_root))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_Admin3.settings.development")
 django.setup()
 
-from administrate.models import CustomField
+from backend.django_Admin3.administrate.models.models import CustomField
 
 def test_custom_field_creation():
     """Test creating a custom field in the database"""
