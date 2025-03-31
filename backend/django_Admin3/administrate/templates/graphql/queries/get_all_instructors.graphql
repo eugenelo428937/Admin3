@@ -1,0 +1,17 @@
+query getAllInstructors {
+	contacts {
+		pageInfo {
+			hasNextPage
+			endCursor
+		}
+		edges {
+			node {
+				id
+				legacyId
+				firstName
+				lastName
+				isInstructor
+			}
+		}
+	}
+}
