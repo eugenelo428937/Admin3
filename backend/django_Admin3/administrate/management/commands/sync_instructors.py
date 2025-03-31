@@ -27,72 +27,73 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         debug = options['debug']
+        page_size = options['page_size']
+         
         if debug:
             logger.setLevel(logging.DEBUG)
 
         try:
             api_service = AdministrateAPIService()
             
-            # Base GraphQL query with pagination
-            query_template = load_graphql_query('get_all_insturctors')
-
+            # GraphQL query for instructors
+            query = load_graphql_query('get_all_instructors')
+            
             self.stdout.write('Fetching instructors...')
             
-            try:
-                all_instructors = []
-                has_next_page = True
-                after_cursor = None
-                page_count = 0
+            has_next_page = True
+            offset = 0
+            all_instructors = []
 
-                # Fetch all pages
-                while has_next_page:
-                    page_count += 1
-                    self.stdout.write(f'Fetching page {page_count}...')
+            while has_next_page:
+                try:
+                    # Add pagination variables to the query
+                    variables = {
+                        "first": page_size,
+                        "offset": offset
+                    }
 
-                    # Prepare variables for pagination
-                    variables = {"after": after_cursor} if after_cursor else {}
-                    
-                    # Execute query with pagination
-                    result = api_service.execute_query(query_template, variables)
+                    result = api_service.execute_query(query, variables)
                     
                     if not self._validate_response(result):
                         self.stdout.write(
-                            self.style.WARNING(f'Invalid response format from API on page {page_count}')
+                            self.style.WARNING('Invalid response format from API')
                         )
-                        break
-
-                    # Extract page info and edges
+                        return
+                    
                     page_info = result['data']['contacts']['pageInfo']
-                    current_edges = result['data']['contacts']['edges']
+                    instructors = result['data']['contacts']['edges']
                     
-                    # Filter instructors
-                    instructor_edges = [
-                        edge for edge in current_edges 
-                        if edge.get('node', {}).get()
-                    ]
-                    
-                    all_instructors.extend(instructor_edges)
+                    all_instructors.extend(instructors)
                     
                     # Update pagination info
-                    has_next_page = page_info['hasNextPage']
-                    after_cursor = page_info['endCursor'] if has_next_page else None
+                    has_next_page = page_info.get('hasNextPage', False)
+                    offset += page_size
                     
-                    self.stdout.write(f'Retrieved {len(instructor_edges)} instructors from page {page_count}')
+                    self.stdout.write(
+                        f'Fetched {len(instructors)} instructors. '
+                        f'Total so far: {len(all_instructors)}'
+                    )
+                    
+                    if not instructors:
+                        self.stdout.write(self.style.WARNING('No instructors found to sync'))
+                        break
+                    
+                except Exception as e:
+                    self.stdout.write(
+                        self.style.ERROR(f'Error processing instructors: {str(e)}')
+                    )
+                    if debug:
+                        logger.exception(e)
+                    return
 
-                if all_instructors:
-                    self.stdout.write(f'Syncing {len(all_instructors)} total instructors...')
-                    self._sync_instructors(all_instructors, debug)
-                else:
-                    self.stdout.write(self.style.WARNING('No instructors found to sync'))
-                
-            except Exception as e:
-                self.stdout.write(
-                    self.style.ERROR(f'Error processing instructors: {str(e)}')
-                )
-                if debug:
-                    logger.exception(e)
-                return
+            # After fetching all instructors, synchronize them with the database
+            if all_instructors:
+                self._sync_instructors(all_instructors, debug)
 
+        except AdministrateAPIError as e:
+            self.stdout.write(self.style.ERROR(f'API Error: {str(e)}'))
+            if debug:
+                logger.exception(e)
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Unexpected error: {str(e)}'))
             if debug:
@@ -105,14 +106,14 @@ class Command(BaseCommand):
             'data' in result and
             'contacts' in result['data'] and
             'edges' in result['data']['contacts'] and
-            'pageInfo' in result['data']['contacts'] and
-            isinstance(result['data']['contacts']['edges'], list)
+            isinstance(result['data']['contacts']['edges'], list) and
+            'pageInfo' in result['data']['contacts']
         )
 
     def _sync_instructors(self, api_instructors, debug=False):
         """Synchronize instructors with database"""
         existing_instructors = {
-            inst.external_id: inst for inst in Instructor.objects.all()
+            instr.external_id: instr for instr in Instructor.objects.all()
         }
         
         processed_ids = set()
@@ -132,12 +133,80 @@ class Command(BaseCommand):
             try:
                 with transaction.atomic():
                     instructor_data = {
-                        'legacy_id': instructor.get('legacyId'),
                         'first_name': instructor.get('firstName', ''),
                         'last_name': instructor.get('lastName', ''),
-                        'is_active': True
+                        'email': instructor.get('email', ''),
+                        'legacy_id': instructor.get('legacyId'),
+                        'is_active': True,
+                        'last_synced': timezone.now()
                     }
                     
                     logger.debug(f"Processing instructor: {external_id}")
                     if debug:
-                        logger.debug(f"Instructor
+                        logger.debug(f"instructor data: {external_id}")
+
+                    processed_ids.add(external_id)
+
+                    if external_id in existing_instructors:
+                        instructor_obj = existing_instructors[external_id]
+                        has_changed = False
+
+                        for key, value in instructor_data.items():
+                            current_value = getattr(instructor_obj, key)
+                            if current_value != value:
+                                logger.debug(
+                                    f"Updating {key}: {current_value} -> {value}")
+                                setattr(instructor_obj, key, value)
+                                has_changed = True
+
+                        if has_changed:
+                            instructor_obj.save()
+                            updated_count += 1
+                            self.stdout.write(
+                                f'Updated Instructor: {instructor_obj.name}')
+                        else:
+                            unchanged_count += 1
+                    else:
+                        instructor_obj = Instructor.objects.create(
+                            external_id=external_id,
+                            **instructor_data
+                        )
+                        created_count += 1
+                        self.stdout.write(
+                            f'Created Instructor: {instructor_obj.name}')
+
+            except Exception as e:
+                error_count += 1
+                self.stdout.write(
+                    self.style.ERROR(
+                        f"Error processing Instructor {external_id}: {str(e)}")
+                )
+                if debug:
+                    logger.exception(e)
+
+        # Handle deletions in separate transactions
+        for external_id, instructor_obj in existing_instructors.items():
+            if external_id not in processed_ids:
+                try:
+                    with transaction.atomic():
+                        instuctor_name = instructor_obj.name
+                        instructor_obj.delete()
+                        deleted_count += 1
+                        self.stdout.write(
+                            f'Deleted Instructor: {instuctor_name}')
+                except Exception as e:
+                    error_count += 1
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"Error deleting Instructor {external_id}: {str(e)}")
+                    )
+                    if debug:
+                        logger.exception(e)
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'Synchronization completed: {created_count} created, '
+                f'{updated_count} updated, {unchanged_count} unchanged, '
+                f'{deleted_count} deleted, {error_count} errors'
+            )
+        )
