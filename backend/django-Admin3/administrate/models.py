@@ -33,14 +33,15 @@ class CustomField(models.Model):
     last_synced = models.DateTimeField(auto_now=True)
 
     class Meta:
-        app_label = 'administrate'        
+        app_label = 'administrate'
         db_table = 'adm.custom_fields'
         verbose_name = 'Custom Field'
         verbose_name_plural = 'Custom Fields'
         indexes = [
-            models.Index(fields=['entity_type']),
-            models.Index(fields=['external_id']),
+            models.Index(fields=['entity_type'],
+                         name='custom_field_entity_idx'),
+            models.Index(fields=['external_id'],
+                         name='custom_field_extid_idx'),
         ]
-
     def __str__(self):
         return f"{self.label} ({self.entity_type})"
