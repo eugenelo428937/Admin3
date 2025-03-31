@@ -1,4 +1,4 @@
-// frontend/react-Admin3/src/hooks/useApi.js
+// frontend/react_Admin3/src/hooks/useApi.js
 import { useState, useCallback } from 'react';
 
 export const useApi = (apiFunc) => {

@@ -58,7 +58,7 @@ class TestManage(unittest.TestCase):
         main()
         self.assertEqual(
             os.environ.get('DJANGO_SETTINGS_MODULE'),
-            'django-Admin3.settings'
+            'django_Admin3.settings'
         )
 
     @patch('django.core.management')

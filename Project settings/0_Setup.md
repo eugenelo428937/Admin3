@@ -84,7 +84,7 @@ pip list
 1. Navigate to the Django project directory:
 
 ```bash
-cd ./backend/django-Admin3
+cd ./backend/django_Admin3
 ```
 
 1. Apply database migrations:
@@ -124,7 +124,7 @@ node -v # should print `v20.18.0` or latest
 # verifies the right npm version is in the environment
 npm -v # should print `10.8.2` or latest
 
-cd ./frontend/react-Admin3
+cd ./frontend/react_Admin3
 npm install # Install project dependencies
 npm start
 ```
@@ -140,7 +140,7 @@ npm start
 1. Create a new user <actedadmin@bpp.com> with password and grant all privileges.
 1. In PgAdmin4, in localhost Server Group, create a new database "ACTEDDEV01".
 1. In ACTEDDBDEV01, open the query tool and run the ACTEDDBDEV01.sql file.
-1. Update the Django settings.py (./Admin3/backend/Django-Admin3/settings.py) file with the PostgreSQL database configuration.
+1. Update the Django settings.py (./Admin3/backend/Django_Admin3/settings.py) file with the PostgreSQL database configuration.
 
 ```python
 DATABASES = {
@@ -171,14 +171,14 @@ LIMIT 10
 1. Open Terminal in VSCode and navigate to the Django project directory.
 
 ```bash
-cd ./Admin3/backend/Django-Admin3
+cd ./Admin3/backend/Django_Admin3
 python manage.py runserver 8888
 ```
 
 1. Open Another Terminal in VSCode and navigate to the React project directory and run the following command to start the React development server.
 
 ```bash
-cd ./Admin3/frontend/react-admin3
+cd ./Admin3/frontend/react_Admin3
 npm start
 ```
 

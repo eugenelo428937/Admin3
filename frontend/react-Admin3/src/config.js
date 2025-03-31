@@ -1,4 +1,4 @@
-// frontend/react-Admin3/src/config.js
+// frontend/react_Admin3/src/config.js
 const config = {
 	apiBaseUrl: process.env.REACT_APP_API_BASE_URL,
 	authUrl: process.env.REACT_APP_API_BASE_URL + process.env.REACT_APP_API_AUTH_URL,
