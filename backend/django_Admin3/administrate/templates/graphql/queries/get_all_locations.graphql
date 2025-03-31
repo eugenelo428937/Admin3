@@ -1,16 +1,16 @@
-query GetAllLocation {
-	locations {
-            pageInfo {
-                hasNextPage
-                endCursor
-            }
-          		edges {
-                node {
-                    id
-                    name
-                    code
-                    legacyId
-                }
-            }
+query GetAllLocation($first: Int!, $after: String) {
+	locations(first: $first, after: $after) {
+		pageInfo {
+			hasNextPage
+			endCursor
+		}
+		edges {
+			node {
+				id
+				name
+				code
+				legacyId
+			}
+		}
 	}
 }
