@@ -1,0 +1,22 @@
+query GetCourseTemplateByCode($code: String!) {
+	courseTemplate(code: $code) {
+		id
+		code
+		title
+		eventLearningMode
+		learningCategories {
+			edges {
+				node {
+					name
+				}
+			}
+		}
+		customFieldValues {
+			definition {
+				key
+				label
+			}
+			value
+		}
+	}
+}

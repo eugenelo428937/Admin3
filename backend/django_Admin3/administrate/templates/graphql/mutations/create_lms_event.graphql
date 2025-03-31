@@ -1,0 +1,30 @@
+mutation createLMSEvent($courseTemplateId:ID!, 
+                        $eventType:EventType!, 
+                        $classroomEndDateTime:TimeZonedDateTime,
+                        $classroomStartDateTime:TimeZonedDateTime, 
+                        $locationId:ID!, 
+                        $taxType:ID!,
+) {
+    event{
+        createLMS(input:{
+        courseTemplateId:$courseTemplateId
+        eventType:$eventType
+        timeZonedLmsEnd:$classroomEndDateTime
+        timeZonedLmsStart:$classroomStartDateTime
+        locationId:$locationId
+        taxType:$taxType
+        timeZoneName:"Europe/London"
+        }){
+            event { id legacyId sessions {
+                                    edges{
+                                        node{
+                                            id
+                                            legacyId
+                                            }
+                                        }
+                                    }
+                                    }
+            errors { label message value }
+        }
+    } 
+}

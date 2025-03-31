@@ -1,0 +1,28 @@
+mutation createEvent {
+  event {
+    createBlended(input:{
+        eventType:{_eventType}
+        locationId:"{_locationId}"
+        taxType:"{_taxType}"
+        courseTemplateId:"{_courseTemplateId}"
+        timeZoneName:"{_timeZoneName}"
+        classroomStartDateTime: "{_classroomStartDateTime}"
+        classroomEndDateTime: "{_classroomEndDateTime}"
+        lmsStartDateTime: "{_lmsStartDateTime}"
+        lmsEndDateTime: "{_lmsEndDateTime}"
+        maxPlaces:{_maxPlaces}
+        timeZone:"Europe/London"
+    }){
+      event { id legacyId sessions {
+                                edges{
+                                    node{
+                                        id
+                                        legacyId
+                                        }
+                                    }
+                                }
+                                }
+      errors { label message value }
+    }
+  }
+}
