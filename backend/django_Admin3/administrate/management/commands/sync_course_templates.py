@@ -27,7 +27,7 @@ class Command(BaseCommand):
         try:
             api_service = AdministrateAPIService()
             
-            query = query = load_graphql_query('get_course_templates')
+            query = query = load_graphql_query('get_all_course_templates')
             
             self.stdout.write('Fetching course templates...')
             
