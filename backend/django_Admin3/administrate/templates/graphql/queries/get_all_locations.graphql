@@ -1,5 +1,5 @@
-query GetAllLocation($first: Int!, $after: String) {
-	locations(first: $first, after: $after) {
+query GetAllLocation($first: Int!, $offset: Int) {
+	locations(first: $first, offset: $offset) {
 		pageInfo {
 			hasNextPage
 			endCursor
