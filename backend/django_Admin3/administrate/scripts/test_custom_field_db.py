@@ -9,7 +9,7 @@ project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(project_root))
 
 # Setup Django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_Admin3.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_Admin3.settings.development")
 django.setup()
 
 from administrate.models import CustomField

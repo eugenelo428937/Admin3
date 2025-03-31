@@ -39,9 +39,7 @@ class CustomField(models.Model):
         verbose_name_plural = 'Custom Fields'
         indexes = [
             models.Index(fields=['entity_type'],
-                         name='custom_field_entity_idx'),
-            models.Index(fields=['external_id'],
-                         name='custom_field_extid_idx'),
+                         name='custom_field_entity_idx'),            
         ]
     def __str__(self):
         return f"{self.label} ({self.entity_type})"

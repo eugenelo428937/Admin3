@@ -45,6 +45,10 @@ class Command(BaseCommand):
             "Session", "StockItem", "TokenIssue"
         ]
 
+        # Use specific entity type if provided
+        if options['entity_type'] != 'Account':
+            entity_types = [options['entity_type']]
+
         try:
             api_service = AdministrateAPIService()
             
@@ -99,7 +103,7 @@ class Command(BaseCommand):
 
             if all_custom_fields:
                 self.stdout.write(f'Syncing {len(all_custom_fields)} total custom fields...')
-                self._sync_custom_fields(all_custom_fields)
+                self._sync_custom_fields(all_custom_fields, debug)
             else:
                 self.stdout.write(self.style.WARNING('No custom fields found to sync'))
             
@@ -117,25 +121,26 @@ class Command(BaseCommand):
             'customFieldDefinitions' in result['data']['customFieldTemplate']
         )
 
-    @transaction.atomic
-    def _sync_custom_fields(self, api_custom_fields):
+    def _sync_custom_fields(self, api_custom_fields, debug=False):
         """Synchronize custom fields with database"""
-        try:
-            # Get existing custom fields
-            existing_fields = {
-                cf.external_id: cf for cf in CustomField.objects.all()
-            }
+        # Get existing custom fields outside transaction
+        existing_fields = {
+            cf.external_id: cf for cf in CustomField.objects.all()
+        }
+        
+        processed_ids = set()
+        created_count = 0
+        updated_count = 0
+        unchanged_count = 0
+        deleted_count = 0
+        error_count = 0
+        
+        # Process each field in its own transaction
+        for field in api_custom_fields:
+            external_id = field.get('key', 'unknown')
             
-            processed_ids = set()
-            created_count = 0
-            updated_count = 0
-            unchanged_count = 0
-            
-            for field in api_custom_fields:
-                try:
-                    external_id = field['key']
-                    processed_ids.add(external_id)
-                    
+            try:
+                with transaction.atomic():
                     field_data = {
                         'label': field['label'],
                         'field_type': field['type'],
@@ -146,7 +151,10 @@ class Command(BaseCommand):
                     }
                     
                     logger.debug(f"Processing field: {external_id}")
-                    logger.debug(f"Field data: {field_data}")
+                    if debug:
+                        logger.debug(f"Field data: {field_data}")
+                    
+                    processed_ids.add(external_id)
                     
                     if external_id in existing_fields:
                         custom_field = existing_fields[external_id]
@@ -172,27 +180,32 @@ class Command(BaseCommand):
                         )
                         created_count += 1
                         self.stdout.write(f'Created custom field: {custom_field.label}')
-                    
+            
+            except Exception as e:
+                error_count += 1
+                self.stdout.write(self.style.ERROR(f"Error processing field {external_id}: {str(e)}"))
+                if debug:
+                    logger.exception(e)
+        
+        # Handle deletions in separate transactions
+        for external_id, custom_field in existing_fields.items():
+            if external_id not in processed_ids:
+                try:
+                    with transaction.atomic():
+                        field_label = custom_field.label
+                        custom_field.delete()
+                        deleted_count += 1
+                        self.stdout.write(f'Deleted custom field: {field_label}')
                 except Exception as e:
-                    logger.error(f"Error processing field {field.get('key', 'unknown')}: {str(e)}")
-                    continue
-            
-            # Delete custom fields that no longer exist in the API
-            deleted_count = 0
-            for external_id, custom_field in existing_fields.items():
-                if external_id not in processed_ids:
-                    custom_field.delete()
-                    deleted_count += 1
-                    self.stdout.write(f'Deleted custom field: {custom_field.label}')
-            
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f'Synchronization completed: {created_count} created, '
-                    f'{updated_count} updated, {unchanged_count} unchanged, '
-                    f'{deleted_count} deleted'
-                )
+                    error_count += 1
+                    self.stdout.write(self.style.ERROR(f"Error deleting field {external_id}: {str(e)}"))
+                    if debug:
+                        logger.exception(e)
+        
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'Synchronization completed: {created_count} created, '
+                f'{updated_count} updated, {unchanged_count} unchanged, '
+                f'{deleted_count} deleted, {error_count} errors'
             )
-            
-        except Exception as e:
-            logger.error(f"Error in _sync_custom_fields: {str(e)}")
-            raise
+        )

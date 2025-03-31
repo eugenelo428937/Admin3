@@ -9,7 +9,7 @@ base_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(base_dir))
 
 # Set up Django environment
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_Admin3.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_Admin3.settings.development")
 django.setup()
 
 # Call the management command

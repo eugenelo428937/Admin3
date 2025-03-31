@@ -1,11 +1,9 @@
-# Create a script to reset migrations
 from django.db import connection
 import django
 import os
-#!/usr/bin/env python
 
 # Setup Django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_Admin3.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_Admin3.settings.development")
 django.setup()
 
 # Reset migration history for administrate app

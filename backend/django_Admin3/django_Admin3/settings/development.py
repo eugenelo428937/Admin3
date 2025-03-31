@@ -1,7 +1,6 @@
 # development.py
 from .base import *
 
-
 DEBUG = True
 SECRET_KEY = 'development-secret-key'
 
