@@ -279,6 +279,6 @@ Django ApiResponse API Response Standardization
 pw hash
 
 Authentication JWT token authService
-frontend/react-Admin3/src/components/ErrorBoundary.js Error Boundary Implementation
-// frontend/react-Admin3/src/hooks/useApi.js Custom Hook for Data Fetching
+frontend/react_Admin3/src/components/ErrorBoundary.js Error Boundary Implementation
+// frontend/react_Admin3/src/hooks/useApi.js Custom Hook for Data Fetching
 // Frontend Service Layer Improvements httpService
