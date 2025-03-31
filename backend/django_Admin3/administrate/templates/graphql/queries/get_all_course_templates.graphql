@@ -1,12 +1,15 @@
-query GetAllCourseTemplates($code: String) {
-	courseTemplates(filters: [{ field: code, operation: eq, value: $code }]) {
+query GetAllCourseTemplates {
+	courseTemplates {
+		pageInfo {
+			hasNextPage
+			endCursor
+		}
 		edges {
 			node {
 				id
 				code
 				title
 				eventLearningMode
-				shortCode
 				learningCategories {
 					edges {
 						node {
@@ -17,6 +20,7 @@ query GetAllCourseTemplates($code: String) {
 				customFieldValues {
 					definition {
 						key
+						label
 					}
 					value
 				}
