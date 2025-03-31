@@ -108,18 +108,10 @@ WSGI_APPLICATION = 'django-Admin3.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-DATABASES = {
+DATABASES = {    
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ACTEDDBTEST01',
-        'USER': 'eugenelo1030',
-        'PASSWORD': 'Suke428937!',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    },
-        'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'ACTEDDBTEST01'),
+        'NAME': os.environ.get('DB_NAME', 'ACTEDDBDEV01'),
         'USER': os.environ.get('DB_USER', 'eugenelo1030'),
         'PASSWORD': os.environ.get('DB_PASSWORD', ''),
         'HOST': os.environ.get('DB_HOST', 'localhost'),

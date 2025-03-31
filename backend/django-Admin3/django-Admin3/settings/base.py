@@ -21,12 +21,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Initialize environ
 env = environ.Env(
-    # Set default values
     DEBUG=(bool, False),
     DJANGO_ENV=(str, 'development'),
     ALLOWED_HOSTS=(list, []),
-    DATABASE_URL=(str, 'postgres://user:pass@localhost:5432/dbname'),
 )
+
 # Read .env file if it exists
 DJANGO_ENV = os.getenv('DJANGO_ENV', 'development')
 env_file = os.path.join(BASE_DIR, f'.env.{DJANGO_ENV}')
@@ -135,19 +134,14 @@ WSGI_APPLICATION = 'django-Admin3.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ACTEDDBTEST01',
-        'USER': 'eugenelo1030',
-        'PASSWORD': 'Suke428937!',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    },
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'ACTEDDBTEST01'),
-        'USER': os.environ.get('DB_USER', 'eugenelo1030'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'NAME': os.environ.get('DB_NAME', 'ACTEDDBDEV01'),
+        'USER': os.environ.get('DB_USER', 'actedadmin'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'Act3d@dm1n0EEoo'),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', '5432'),
+        'OPTIONS': {
+            'client_encoding': 'UTF8',
+        },
     }
 }
 # if 'test' in sys.argv:
