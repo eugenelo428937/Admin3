@@ -1,0 +1,26 @@
+query GetCourseTemplates($code: String) {
+	courseTemplates(filters: [{ field: code, operation: eq, value: $code }]) {
+		edges {
+			node {
+				id
+				code
+				title
+				eventLearningMode
+				shortCode
+				learningCategories {
+					edges {
+						node {
+							name
+						}
+					}
+				}
+				customFieldValues {
+					definition {
+						key
+					}
+					value
+				}
+			}
+		}
+	}
+}
