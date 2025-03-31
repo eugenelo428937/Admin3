@@ -26,8 +26,8 @@ class Command(BaseCommand):
 
         try:
             api_service = AdministrateAPIService()
-            
-            query = query = load_graphql_query('get_all_course_templates')
+                        
+            query = load_graphql_query('get_all_course_templates')
             
             self.stdout.write('Fetching course templates...')
             
@@ -68,7 +68,7 @@ class Command(BaseCommand):
             'data' in result and
             'courseTemplates' in result['data'] and
             'edges' in result['data']['courseTemplates'] and
-            'node' in result['data']['courseTemplates']['edges']
+            isinstance(result['data']['courseTemplates']['edges'], list)
         )
 
     def _get_custom_field_value(self, custom_fields, key):
@@ -77,6 +77,15 @@ class Command(BaseCommand):
             if field['definition']['key'] == key:
                 return field['value']
         return None
+
+    def _get_learning_categories(self, template):
+        """Extract learning categories from template"""
+        categories = []
+        if template.get('learningCategories', {}).get('edges'):
+            for edge in template['learningCategories']['edges']:
+                if edge.get('node', {}).get('name'):
+                    categories.append(edge['node']['name'])
+        return ', '.join(categories)
 
     def _sync_course_templates(self, api_course_templates, debug=False):
         """Synchronize course templates with database"""
@@ -91,32 +100,26 @@ class Command(BaseCommand):
         deleted_count = 0
         error_count = 0
         
-        for template in api_course_templates:
+        for edge in api_course_templates:
+            template = edge.get('node', {})
             external_id = template.get('id')
+            
+            if not external_id:
+                continue
             
             try:
                 with transaction.atomic():
-                    # Get categories as comma-separated string
-                    categories = ', '.join([
-                        cat['name'] for cat in template.get('categories', {}).get('node', [])
-                    ])
+                    # Get categories from learningCategories
+                    categories = self._get_learning_categories(template)
                     
                     # Get custom field values
                     custom_fields = template.get('customFieldValues', [])
-                    pricing_band = self._get_custom_field_value(custom_fields, 'pricing_band')
-                    learning_mode = self._get_custom_field_value(custom_fields, 'learning_mode')
-                    ocr_moodle_code = self._get_custom_field_value(
-                        custom_fields, 'OCR Moodle Code')
-                    subject = self._get_custom_field_value(custom_fields, 'Subject')
                     
                     template_data = {
-                        'course_code': template['code'],
-                        'title': template['title'],
+                        'code': template.get('code', ''),
+                        'title': template.get('title', ''),
                         'categories': categories,
-                        'pricing_band': pricing_band,
-                        'learning_mode': learning_mode,
-                        'ocr_moodle_code': ocr_moodle_code or '',
-                        'subject': subject or '',
+                        'event_learning_mode': template.get('eventLearningMode', ''),
                         'active': True
                     }
                     
@@ -140,7 +143,7 @@ class Command(BaseCommand):
                         if has_changed:
                             course_template.save()
                             updated_count += 1
-                            self.stdout.write(f'Updated course template: {course_template.course_code}')
+                            self.stdout.write(f'Updated course template: {course_template.code}')
                         else:
                             unchanged_count += 1
                     else:
@@ -149,7 +152,7 @@ class Command(BaseCommand):
                             **template_data
                         )
                         created_count += 1
-                        self.stdout.write(f'Created course template: {course_template.course_code}')
+                        self.stdout.write(f'Created course template: {course_template.code}')
             
             except Exception as e:
                 error_count += 1
@@ -164,7 +167,7 @@ class Command(BaseCommand):
             if external_id not in processed_ids:
                 try:
                     with transaction.atomic():
-                        template_code = course_template.course_code
+                        template_code = course_template.code
                         course_template.delete()
                         deleted_count += 1
                         self.stdout.write(f'Deleted course template: {template_code}')

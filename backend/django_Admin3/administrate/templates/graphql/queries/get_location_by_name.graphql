@@ -1,0 +1,12 @@
+query getLocationByName($location_name: String!) {
+	locations(filters: [{ field: name, operation: eq, value: $location_name }]) {
+		edges {
+			node {
+				id
+				code
+				name
+				legacyId
+			}
+		}
+	}
+}
