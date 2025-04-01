@@ -845,44 +845,6 @@ def update_session(query):
     else:
         return created_session_id
 
-def getCourseTemplateId(query):
-    response_json = makeGraphQLCall(query)
-    lookup_data = getNestedValueInDict(response_json, 'edges')
-    if lookup_data and len(lookup_data) == 1:
-        course_template_id = getNestedValueInDict(lookup_data[0], 'id')
-    else:
-        return None
-    
-    return course_template_id
-
-def getlocationLegacyId(query):
-    response_json = makeGraphQLCall(query)
-    lookup_data = getNestedValueInDict(response_json, 'edges')
-    if lookup_data and len(lookup_data) == 1:
-        location_id = getNestedValueInDict(lookup_data[0], 'legacyId')
-    else:
-        return None
-    
-    return location_id
-
-def getlocationId(query):
-    response_json = makeGraphQLCall(query)
-    lookup_data = getNestedValueInDict(response_json, 'edges')
-    if lookup_data and len(lookup_data) == 1:
-        location_id = getNestedValueInDict(lookup_data[0], 'id')
-    else:
-        return None
-    
-    return location_id
-
-def getTutorId(query):
-    response_json = makeGraphQLCall(query)
-    lookup_data = getNestedValueInDict(response_json, 'edges')
-    if lookup_data and len(lookup_data) == 1:
-        return getNestedValueInDict(lookup_data[0], 'legacyId')
-    else:
-        return None
-    
 def addVenue(eventId, venueId):
     data = {u'account_venue_id': int(venueId)}
 
