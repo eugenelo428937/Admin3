@@ -83,3 +83,4 @@ backend/django_Admin3/.env*
 backend/django_Admin3/tokens/
 backend/django_Admin3/tokens/*.*
 backend/django_Admin3/tokens/*
+backend/django_Admin3/administrate/src/*

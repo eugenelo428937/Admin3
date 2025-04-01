@@ -1,9 +1,10 @@
 import pandas as pd
 import os
 import logging
-from datetime import datetime
+from datetime import datetime,date,time
+
 from django.core.exceptions import ValidationError
-from administrate.models import Instructor, CourseTemplate
+from administrate.models import Instructor, CourseTemplate, Location
 from administrate.services.api_service import AdministrateAPIService
 from administrate.exceptions import AdministrateAPIError
 from administrate.utils.graphql_loader import load_graphql_query
@@ -39,78 +40,147 @@ def validate_and_process_event_excel(file_path, debug=False):
     try:
         # Load Excel file
         logger.info(f"Loading Excel file: {file_path}")
-        df = pd.read_excel(file_path, na_values=[''])
+        df = pd.read_excel(file_path, na_filter=False,
+                           skiprows=lambda x: 1 <= x <= 2)
         
         # Check required columns
         required_columns = [
-            '!Course Code',         # Course template code
-        #     'title',              # Event title
-        #     'location',           # Location name
-        #     'start_date',         # Start date (DD/MM/YYYY)
-        #     'start_time',         # Start time (HH:MM)
-        #     'end_date',           # End date (DD/MM/YYYY)
-        #     'end_time',           # End time (HH:MM)
-        #     'instructor',         # Instructor name
-        #     'price_level'         # Price level
+            'Course_template_code',
+            'Event_title',
+            'Session_title',
+            'Learning_mode',
+            'location',
+            'Venue',
+            'Time Zone',
+            'Classroom_start_date',
+            'Classroom_start_time',
+            'Classroom_end_date ',
+            'Classroom_end_time',
+            'LMS_start_date',
+            'LMS_start_time',
+            'LMS_end_date',
+            'LMS_end_time',
+            'Max_places',
+            'Instructor ',
+            'Session_instructor',
+            'Event_administrator',
+            'Day ',
+            'Event_url',
+            'Session_url',
+            'Finalisation_date',
+            'Web_sale',
+            'Sitting',
+            'OCR_moodle_code',
          ]
         
         missing_columns = [col for col in required_columns if col not in df.columns]
         if missing_columns:
             raise ValidationError(f"Missing required columns in Excel file: {', '.join(missing_columns)}")
-        
+        parent_lms_start_date = None
         # Process each row
-        for index, row in df.iterrows():
-            row_number = index + 3  # +2 because Excel is 1-indexed and has header row
+        for index, row in df.iterrows():                        
+            row_number = index + 5
             row_data = row.to_dict()
             row_data['row_number'] = row_number
-            row_errors = []
+            row_errors = []            
             
+            # if Course_template_code have value = Event row
+            # store the related info for creating subsequent sessions
+            if row['Course_template_code']:
+                parent_lms_start_date = row['LMS_start_date']
+
             # Validate Course Template
             try:
-                if not row['!Course Code']:
+                if row['Course_template_code']:
                     course_template = validate_course_template(
-                        api_service, row['!Course Code'])
+                        api_service, row['Course_template_code'])
                     if not course_template:
                         row_errors.append(
-                            f"Invalid course template code: {row['!Course Code']}")
+                            f"Invalid course template code: {row['Course_template_code']}")
                     else:
                         row_data['course_template_id'] = course_template['id']
             except Exception as e:
                 row_errors.append(f"Error validating course template: {str(e)}")
-            
+                        
             # Validate Location
-            # try:
-            #     location = validate_location(api_service, row['location'])
-            #     if not location:
-            #         row_errors.append(f"Invalid location: {row['location']}")
-            #     else:
-            #         row_data['location_id'] = location['id']
-            # except Exception as e:
-            #     row_errors.append(f"Error validating location: {str(e)}")
+            try:
+                if row['location']:
+                    location = validate_location(api_service, row['location'])
+                    if not location:
+                        row_errors.append(f"Invalid location: {row['location']}")
+                    else:
+                        row_data['location_id'] = location['id']
+            except Exception as e:
+                row_errors.append(f"Error validating location: {str(e)}")
             
             # Validate Dates
-            # try:
-            #     start_datetime = validate_and_format_datetime(row['start_date'], row['start_time'])
-            #     if not start_datetime:
-            #         row_errors.append(f"Invalid start date/time: {row['start_date']} {row['start_time']}")
-            #     else:
-            #         row_data['formatted_start_datetime'] = start_datetime
-            # except Exception as e:
-            #     row_errors.append(f"Error validating start date/time: {str(e)}")
+            # Classroom start date and time
+            try:
+                classroom_start_datetime = validate_and_format_datetime(
+                    row['Classroom_start_date'], row['Classroom_start_time'])
+                if not classroom_start_datetime:
+                    row_errors.append(
+                        f"Invalid classroom start date/time: {row['Classroom_start_date']} {row['Classroom_start_time']}")
+                else:
+                    row_data['formatted_classroom_start_datetime'] = classroom_start_datetime
+            except Exception as e:
+                row_errors.append(f"Error validating classroom start date/time: {str(e)}")
             
-            # try:
-            #     end_datetime = validate_and_format_datetime(row['end_date'], row['end_time'])
-            #     if not end_datetime:
-            #         row_errors.append(f"Invalid end date/time: {row['end_date']} {row['end_time']}")
-            #     else:
-            #         row_data['formatted_end_datetime'] = end_datetime
+            try:
+                classroom_end_datetime = validate_and_format_datetime(
+                    row['Classroom_end_date'], row['Classroom_end_time'])
+                print("classroom_end_datetime")
+                if not classroom_end_datetime:
+                    row_errors.append(
+                        f"Invalid end date/time: {row['Classroom_end_date']} {row['Classroom_end_time']}")
+                else:
+                    row_data['formatted_classroom_end_datetime'] = classroom_end_datetime
                 
-            #     # Check that end date is after start date
-            #     if start_datetime and end_datetime and end_datetime <= start_datetime:
-            #         row_errors.append(f"End date/time must be after start date/time")
-            # except Exception as e:
-            #     row_errors.append(f"Error validating end date/time: {str(e)}")
+                # Check that end date is after start date
+                if classroom_start_datetime and classroom_end_datetime and classroom_end_datetime <= classroom_start_datetime:
+                    row_errors.append(
+                        f"End date/time must be after start date/time")
+            except Exception as e:
+                row_errors.append(
+                    f"Error validating classroom end date/time: {str(type(e))}")
+                
             
+            
+            
+            # validate 
+            # 'LMS_start_date',
+            # 'LMS_start_time',
+            # 'LMS_end_date',
+            # 'LMS_end_time',
+            lms_start_date = row['LMS_start_date']
+            if not row['LMS_start_date']:
+                lms_start_date = parent_lms_start_date
+
+            try:
+                lms_start_datetime = validate_and_format_datetime(
+                    lms_start_date, row['LMS_start_time'])
+                if not lms_start_datetime:
+                    row_errors.append(
+                        f"Invalid LMS start date/time: {lms_start_date} {row['LMS_start_time']}")
+                else:
+                    row_data['formatted_lms_start_datetime'] = lms_start_datetime
+
+
+                lms_end_datetime = validate_and_format_datetime(
+                    row['LMS_end_date'], row['LMS_end_time'])
+                if not lms_end_datetime:
+                    row_errors.append(
+                        f"Invalid LMS end date/time: {row['LMS_end_date']} {row['LMS_end_time']}")
+                else:
+                    row_data['formatted_lms_end_datetime'] = lms_end_datetime
+
+                # Check that end date is after start date
+                if lms_start_datetime and lms_end_datetime and lms_end_datetime <= lms_start_datetime:
+                    row_errors.append(
+                        f"End date/time must be after start date/time")
+            except Exception as e:
+                row_errors.append(f"Error validating LMS end date/time: {str(e)}")
+
             # # Validate Instructor
             # try:
             #     instructor = validate_instructor(api_service, row['instructor'])
@@ -143,8 +213,7 @@ def validate_and_process_event_excel(file_path, debug=False):
                 logger.warning(f"Row {row_number} has validation errors: {row_errors}")
             else:
                 valid_data.append(row_data)
-                logger.debug(f"Row {row_number} passed validation")
-                print(row_number)
+                logger.debug(f"Row {row_number} passed validation")                
         
         logger.info(f"Validation complete. Valid rows: {len(valid_data)}, Error rows: {len(error_data)}")
         
@@ -166,33 +235,47 @@ def validate_and_format_datetime(date_value, time_value):
     Returns:
         str: ISO formatted datetime or None if invalid
     """
+    
     if pd.isna(date_value) or pd.isna(time_value):
         return None
-    
-    try:
+               
+    try:                
         # Handle different possible date formats
         if isinstance(date_value, datetime):
+            print(f"datetime {date_value}")
             date_obj = date_value
-        elif isinstance(date_value, str):
+        elif isinstance(date_value, str):            
             if '/' in date_value:
-                date_obj = datetime.strptime(date_value, "%d/%m/%Y")
+                print(f"str1 {date_value}")
+                date_obj = datetime.strptime(
+                    date_value, "%d/%m/%Y")
             else:
-                date_obj = datetime.strptime(date_value, "%Y-%m-%d")
-        else:
-            return None
-        
+                print(f"str2 {date_value}")
+                date_obj = datetime.strptime(
+                    date_value, "%d-%m-%Y")
+        else:            
+            return None                
+                
         # Handle time format
         if isinstance(time_value, str):
+            print(f"str {time_value}")
             hour, minute = map(int, time_value.split(':'))
-        else:
-            # If it's not a string (e.g., a timedelta)
+
+        elif isinstance(time_value, time):
+            print(f"time {time_value}")
+            hour = time_value.hour
+            minute = time_value.minute
+        else:                        
             return None
-            
+                        
         # Create a full datetime object
         dt = datetime(date_obj.year, date_obj.month, date_obj.day, hour, minute)
+        print(f"str {dt.isoformat()}")
         return dt.isoformat()
+    
     except (ValueError, TypeError) as e:
-        logger.warning(f"Invalid date/time format: {date_value} {time_value}, {str(e)}")
+        logger.warning(
+            f"Invalid date/time format: {date_value} {time_value}, {str(e)}")
         return None
 
 
@@ -252,6 +335,20 @@ def validate_location(api_service, location_name):
         dict: Location data or None if invalid
     """
     try:
+        # First try to find in our local database
+        locations = Location.objects.filter(
+            name__iexact=location_name
+        )
+
+        if locations.exists():
+            location = locations.first()
+            return {
+                'id': location.external_id,
+                'code': location.code,
+                'title': location.name
+            }
+        
+        # If not found locally, try the API
         query = load_graphql_query('get_location_by_name')
         variables = {"name": location_name}
         result = api_service.execute_query(query, variables)
