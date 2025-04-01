@@ -1,0 +1,12 @@
+query getAllInstructors($tutorname: String!) {
+	contacts(filters: [{ field: name, operation: like, value: $tutorname }, { field: isInstructor, operation: eq, value: "true" }]) {
+		edges {
+			node {
+				id
+				legacyId
+				firstName
+				lastName
+			}
+		}
+	}
+}
