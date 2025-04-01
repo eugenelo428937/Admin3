@@ -19,14 +19,13 @@ from administrate.utils.event_importer import validate_course_template, validate
 
 def test_course_template_validation():
     """Simple script to test the course template validation function"""
-    # Initialize API service
-    print("asdasd")
+    # Initialize API service    
     api_service = AdministrateAPIService()
     result = validate_and_process_event_excel(
         r"C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\administrate\src\EventSessionImportTemplate2025Stest.xlsx", "CB1_LO_6")
     if result:
         # print(f"✅ Found template: {result['title']} (ID: {result['id']})")
-        #  print(f"{result[0]}")
+        # print(f"{result}")
         print(f"result")
     else:
         print(f"❌ Template validation failed")
