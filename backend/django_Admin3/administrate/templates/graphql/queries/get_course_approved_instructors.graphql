@@ -1,0 +1,15 @@
+query GetCourseApprovedInstructors($courseId: String!) {
+	courseTemplates(filters: [{ field: id, operation: eq, value: $courseId }]) {
+		edges {
+			node {
+				approvedInstructors {
+					edges {
+						node {
+							id
+						}
+					}
+				}
+			}
+		}
+	}
+}
