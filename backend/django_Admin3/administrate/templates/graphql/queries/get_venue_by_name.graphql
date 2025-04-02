@@ -1,0 +1,10 @@
+query getVenueByName($venue_name: String!) {
+	venues(filters: [{ field: name, operation: wordlike, value: $venue_name }]) {
+		edges {
+			node {
+				id				
+				name				
+			}
+		}
+	}
+}

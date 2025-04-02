@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 from administrate.models import Location
+from administrate.models.venues import Venue
 from administrate.services.api_service import AdministrateAPIService
 from administrate.exceptions import AdministrateAPIError
 from administrate.utils.graphql_loader import load_graphql_query
@@ -10,7 +11,7 @@ from administrate.utils.graphql_loader import load_graphql_query
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
-    help = 'Synchronize locations from Administrate API to local database'
+    help = 'Synchronize venues from Administrate API to local database'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -35,14 +36,14 @@ class Command(BaseCommand):
         try:
             api_service = AdministrateAPIService()
             
-            # GraphQL query for locations
-            query = load_graphql_query('get_all_locations')
+            # GraphQL query for venues
+            query = load_graphql_query('get_all_venues')
             
-            self.stdout.write('Fetching locations...')
+            self.stdout.write('Fetching venues...')
             
             has_next_page = True
             offset = 0
-            all_locations = []
+            all_venues = []
 
             while has_next_page:
                 try:
@@ -60,32 +61,31 @@ class Command(BaseCommand):
                         )
                         return
                     
-                    page_info = result['data']['locations']['pageInfo']
-                    locations = result['data']['locations']['edges']
-                    
-                    all_locations.extend(locations)
+                    page_info = result['data']['venues']['pageInfo']
+                    venues = result['data']['venues']['edges']
+                    all_venues.extend(venues)
                     
                     # Update pagination info
                     has_next_page = page_info.get('hasNextPage', False)
                     offset += page_size
-                    self.stdout.write("AFTER")
-                    self.stdout.write(
-                        f'Fetched {len(locations)} locations. '
-                        f'Total so far: {len(all_locations)}'
-                    )
                     
-                    if not locations:
-                        self.stdout.write(self.style.WARNING('No locations found to sync'))
-                    else:
-                        self._sync_locations(locations, debug)                        
+                    self.stdout.write(
+                        f'Fetched {len(venues)} venues. '
+                        f'Total so far: {len(all_venues)}'
+                    )
                     
                 except Exception as e:
                     self.stdout.write(
-                        self.style.ERROR(f'Error processing locations: {str(e)}')
+                        self.style.ERROR(f'Error processing venues: {str(e)}')
                     )
                     if debug:
                         logger.exception(e)
                     return
+            
+            if not all_venues:
+                self.stdout.write(self.style.WARNING('No venues found to sync'))
+            else:
+                self._sync_venues(all_venues, debug)
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Unexpected error: {str(e)}'))
@@ -97,97 +97,99 @@ class Command(BaseCommand):
         return (
             isinstance(result, dict) and
             'data' in result and
-            'locations' in result['data'] and
-            'edges' in result['data']['locations'] and
-            isinstance(result['data']['locations']['edges'], list) and
-            'pageInfo' in result['data']['locations']
+            'venues' in result['data'] and
+            'edges' in result['data']['venues'] and
+            isinstance(result['data']['venues']['edges'], list) and
+            'pageInfo' in result['data']['venues']
         )
 
-    def _sync_locations(self, api_locations, debug=False):
-        """Synchronize locations with database"""
-        existing_locations = {
-            loc.external_id: loc for loc in Location.objects.all()
+
+    def _sync_venues(self, api_venues, debug=False):
+        """Synchronize venues with database"""
+        existing_venues = {
+            venue.external_id: venue for venue in Venue.objects.all()
         }
-        
+
         processed_ids = set()
         created_count = 0
         updated_count = 0
         unchanged_count = 0
         deleted_count = 0
         error_count = 0
-        
-        for edge in api_locations:
-            location = edge.get('node', {})
-            external_id = location.get('id')
-            
+
+        for edge in api_venues:
+            venue = edge.get('node', {})
+            external_id = venue.get('id')
+
             if not external_id:
                 continue
-            
+
             try:
                 with transaction.atomic():
-                    location_data = {
-                        'name': location.get('name', ''),
-                        'code': location.get('code', ''),
-                        'legacy_id': location.get('legacyId'),
-                        'active': True
+                    # Extract location ID from the nested object
+                    location_id = None
+                    if venue.get('location') and venue['location'].get('id'):
+                        location_id = venue['location']['id']
+
+                    venue_data = {
+                        'name': venue.get('name', ''),
+                        'description': venue.get('description', ''),
+                        'location_id': location_id
                     }
-                    
-                    logger.debug(f"Processing location: {external_id}")
-                    if debug:
-                        logger.debug(f"Location data: {location_data}")
-                    
+
                     processed_ids.add(external_id)
-                    
-                    if external_id in existing_locations:
-                        location_obj = existing_locations[external_id]
+
+                    if external_id in existing_venues:
+                        venue_obj = existing_venues[external_id]
                         has_changed = False
-                        
-                        for key, value in location_data.items():
-                            current_value = getattr(location_obj, key)
+
+                        for key, value in venue_data.items():
+                            current_value = getattr(venue_obj, key)
                             if current_value != value:
-                                logger.debug(f"Updating {key}: {current_value} -> {value}")
-                                setattr(location_obj, key, value)
+                                setattr(venue_obj, key, value)
                                 has_changed = True
-                        
+
                         if has_changed:
-                            location_obj.save()
+                            venue_obj.save()
                             updated_count += 1
-                            self.stdout.write(f'Updated location: {location_obj.name}')
+                            self.stdout.write(f'Updated venue: {venue_obj.name}')
                         else:
                             unchanged_count += 1
                     else:
-                        location_obj = Location.objects.create(
+                        venue_obj = Venue.objects.create(
                             external_id=external_id,
-                            **location_data
+                            **venue_data
                         )
                         created_count += 1
-                        self.stdout.write(f'Created location: {location_obj.name}')
-            
+                        self.stdout.write(f'Created venue: {venue_obj.name}')
+
             except Exception as e:
                 error_count += 1
                 self.stdout.write(
-                    self.style.ERROR(f"Error processing location {external_id}: {str(e)}")
+                    self.style.ERROR(
+                        f"Error processing venue {external_id}: {str(e)}")
                 )
                 if debug:
                     logger.exception(e)
-        
+
         # Handle deletions in separate transactions
-        for external_id, location_obj in existing_locations.items():
+        for external_id, venue_obj in existing_venues.items():
             if external_id not in processed_ids:
                 try:
                     with transaction.atomic():
-                        location_name = location_obj.name
-                        location_obj.delete()
+                        venue_name = venue_obj.name
+                        venue_obj.delete()
                         deleted_count += 1
-                        self.stdout.write(f'Deleted location: {location_name}')
+                        self.stdout.write(f'Deleted venue: {venue_name}')
                 except Exception as e:
                     error_count += 1
                     self.stdout.write(
-                        self.style.ERROR(f"Error deleting location {external_id}: {str(e)}")
+                        self.style.ERROR(
+                            f"Error deleting venue {external_id}: {str(e)}")
                     )
                     if debug:
                         logger.exception(e)
-        
+
         self.stdout.write(
             self.style.SUCCESS(
                 f'Synchronization completed: {created_count} created, '

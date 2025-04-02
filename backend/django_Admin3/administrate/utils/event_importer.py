@@ -5,6 +5,7 @@ import os
 import validators
 import django
 import logging
+
 sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')))
 project_root = Path(__file__).resolve().parent.parent.parent
@@ -13,15 +14,12 @@ sys.path.append(str(project_root))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE',
                       'django_Admin3.settings.development')
 django.setup()
-
 from datetime import datetime,date,time
-
 from django.core.exceptions import ValidationError
-from administrate.models import Instructor, CourseTemplate, Location
 from administrate.services.api_service import AdministrateAPIService
+from administrate.models import CourseTemplate, Location, Venue, Instructor
 from administrate.exceptions import AdministrateAPIError
 from administrate.utils.graphql_loader import load_graphql_query
-
 logger = logging.getLogger(__name__)
 
 
@@ -100,7 +98,8 @@ def validate_and_process_event_excel(file_path, debug=False):
             row_data = row.to_dict()
             row_data['row_number'] = row_number
             row_errors = []            
-            
+
+            lms_start_date = row['LMS_start_date']
             if not row['LMS_start_date']:
                 lms_start_date = parent_lms_start_date
 
@@ -113,14 +112,18 @@ def validate_and_process_event_excel(file_path, debug=False):
                         row['Event_title'], 
                         # row['Learning_mode'], 
                         row['location'], 
-                        # row['Venue'], 
+                        row['Venue'], 
                         row['Instructor'],  
                         #row['Event_administrator'],
                         row['Event_url'], 
                         row['Finalisation_date'],
                         row['Day'] )
                 )
-                if result:
+                row_errors.append(
+                    result['row_errors'] if result['row_errors'] is not None else [])
+                row_data.update(result['row_data'])
+
+                if result:                
                     if "OC" not in row['Course_template_code'] and "WAITLIST" not in row['Course_template_code']:
                         result=(
                             validate_blended_event(
@@ -129,24 +132,30 @@ def validate_and_process_event_excel(file_path, debug=False):
                                 row['Classroom_start_time'],
                                 row['Classroom_end_date'],
                                 row['Classroom_end_time'],
-                                row['LMS_start_date'], 
+                                lms_start_date,
                                 row['LMS_start_time'], 
                                 row['LMS_end_date'],                                 
                                 row['LMS_end_time'])
                             )
+                        row_errors.append(result['row_errors'] if result['row_errors'] is not None else [])
+                        row_data.update(result['row_data'])
                     else:
                         result = (
                             validate_lms_event(
                                 api_service, 
-                                row['LMS_start_date'],
+                                lms_start_date,
                                 row['LMS_start_time'],
                                 row['LMS_end_date'],
                                 row['LMS_end_time'])
                             )
+                        row_errors.append(result['row_errors'] if result['row_errors'] is not None else [])
+                        row_data.update(result['row_data'])
             else:
-                validate_session(row['Session_instructor'],
-                                 row['Day'], row['Session_url'])
-
+                result = validate_session(row['Session_instructor'],
+                                          row['Session_url'],
+                                          row['Day'])
+                row_errors.append(result['row_errors'] if result['row_errors'] is not None else [])                    
+                row_data.update(result['row_data'])
             
             # # Validate Price Level
             # try:
@@ -159,12 +168,7 @@ def validate_and_process_event_excel(file_path, debug=False):
             #     row_errors.append(f"Error validating price level: {str(e)}")
             
             #Validate Custom fields
-            
 
-            
-            
-            
-                    
             # Add to appropriate result list
             if row_errors:
                 row_data['errors'] = row_errors
@@ -183,7 +187,15 @@ def validate_and_process_event_excel(file_path, debug=False):
         raise
         
 
-def validate_event(api_service, course_template_code, event_title, location_name, instructor_name, event_url, finaliztion_date, session_day):
+def validate_event(api_service, 
+                   course_template_code, 
+                   event_title, 
+                   location_name, 
+                   venue_name, 
+                   instructor_name, 
+                   event_url, 
+                   finaliztion_date, 
+                   session_day):
     row_errors = []
     row_data = {}
     # Validate Course Template
@@ -195,7 +207,7 @@ def validate_event(api_service, course_template_code, event_title, location_name
                 row_errors.append(
                     f"Invalid course template code: {course_template_code}")
             else:
-                course_template_id = course_template['id']
+                row_data['course_template_id'] = course_template['id']                
     except Exception as e:
         row_errors.append(
             f"Error validating course template: {str(e)}")
@@ -205,6 +217,8 @@ def validate_event(api_service, course_template_code, event_title, location_name
         # if course template is not empty then it must have event title
         if not event_title and course_template_code:
             row_errors.append("Event title is required")
+        else:
+            row_data['event_title'] = event_title
     except Exception as e:
         row_errors.append(f"Error validating Event title: {str(e)}")
 
@@ -214,13 +228,27 @@ def validate_event(api_service, course_template_code, event_title, location_name
             location = validate_location(api_service, location_name)
             if not location:
                 row_errors.append(
-                    f"Invalid location: {location_name}")
+                    f"Invalid location: {location_name}")            
             else:
-                location_id = location['id']
+                row_data['location_id'] = location['id']
                 
     except Exception as e:
         row_errors.append(f"Error validating location: {str(e)}")
 
+    # Validate venues
+    try:
+        if venue_name and row_data['location_id']:
+            venue = validate_venue(
+                api_service, venue_name, row_data['location_id'])
+            if not venue:
+                row_errors.append(
+                    f"Invalid Venue: {venue_name}")
+            else:
+                row_data['venue_id'] = venue['id']
+
+    except Exception as e:
+        row_errors.append(f"Error validating location: {str(e)}")
+    
     # Validate Instructor and check if authorized for course
     try:
         if instructor_name:
@@ -230,13 +258,16 @@ def validate_event(api_service, course_template_code, event_title, location_name
                 row_errors.append(
                     f"Invalid instructor: {instructor_name}")
             else:
-                instructor_id = instructor['id']
+                row_data['instructor_id'] = instructor['id']
 
             # Also check if instructor is authorized for this course
-            if course_template_id and not instructor_authorized_for_course(
-                    api_service, instructor_id, course_template_id):
+            if (row_data['course_template_id'] and 
+                not instructor_authorized_for_course(
+                    api_service, 
+                    row_data['instructor_id'], 
+                    row_data['course_template_id'])):
                 row_errors.append(
-                    f"Instructor {instructor_name} is not authorized for course {row['Course_template_code']}")
+                    f"Instructor {instructor_name} is not authorized for course {row_data['course_template_id']}")
                 
     except Exception as e:
         row_errors.append(f"Error validating instructor: {str(e)}")
@@ -245,6 +276,8 @@ def validate_event(api_service, course_template_code, event_title, location_name
     try:
         if event_url and not validators.url(event_url):
             row_errors.append(f"Invalid Event_url: {event_url}")
+        else:
+            row_data['event_url'] = event_url
     except Exception as e:
         row_errors.append(f"Error validating Event_url: {str(e)}")
 
@@ -260,7 +293,8 @@ def validate_event(api_service, course_template_code, event_title, location_name
                         finalisation_datetime_str[0], finalisation_datetime_str[1])
                 else:
                     row_errors.append(
-                        f"Invalid Finalisation_date: {finaliztion_date}")                            
+                        f"Invalid Finalisation_date: {finaliztion_date}")
+                row_data['finalisation_datetime'] = finalisation_datetime
         except Exception as e:
             row_errors.append(
                 f"Error validating Finalisation_date: {str(e)}")
@@ -270,15 +304,19 @@ def validate_event(api_service, course_template_code, event_title, location_name
         if not isinstance(session_day, int):
             row_errors.append(
                 f"Invalid Day: {session_day}")
+        else:
+            row_data['session_day'] = session_day
     except Exception as e:
-        row_errors.append(f"Error validating Day: {str(e)}")
-
+        row_errors.append(f"Error validating Day: {str(e)}")    
+    return {'row_data': row_data, 
+            'row_errors': row_errors if len(row_errors) > 0 else None}
 
 def validate_lms_event():
     pass
 
 def validate_blended_event(api_service, classroom_start_date, classroom_start_time, classroom_end_date, classroom_end_time, lms_start_date, lms_start_time, lms_end_date, lms_end_time):
     row_errors = []
+    row_data = {}
 
     # Classroom start date and time
     try:
@@ -288,7 +326,7 @@ def validate_blended_event(api_service, classroom_start_date, classroom_start_ti
             row_errors.append(
                 f"Invalid classroom start date/time: {classroom_start_date} {classroom_start_time}")
         else:
-            formatted_classroom_start_datetime = classroom_start_datetime
+            row_data['formatted_classroom_start_datetime'] = classroom_start_datetime
     except Exception as e:
         row_errors.append(
             f"Error validating classroom start date/time: {str(e)}")
@@ -300,10 +338,12 @@ def validate_blended_event(api_service, classroom_start_date, classroom_start_ti
             row_errors.append(
                 f"Invalid end date/time: {classroom_end_date} {classroom_end_time}")
         else:
-            formatted_classroom_end_datetime = classroom_end_datetime
+            row_data['formatted_classroom_end_datetime'] = classroom_end_datetime
 
         # Check that end date is after start date
-        if classroom_start_datetime and classroom_end_datetime and classroom_end_datetime <= classroom_start_datetime:
+        if (row_data['formatted_classroom_start_datetime'] and 
+            row_data['formatted_classroom_end_datetime'] and 
+            row_data['formatted_classroom_end_datetime'] <= row_data['formatted_classroom_start_datetime']):
             row_errors.append(
                 f"End date/time must be after start date/time")
     except Exception as e:
@@ -319,7 +359,7 @@ def validate_blended_event(api_service, classroom_start_date, classroom_start_ti
             row_errors.append(
                 f"Invalid LMS start date/time: {lms_start_date} {lms_start_time}")
         else:
-            formatted_lms_start_datetime = lms_start_datetime
+            row_data['formatted_lms_start_datetime'] = lms_start_datetime
 
         lms_end_datetime = validate_and_format_datetime(
             lms_end_date, lms_end_time)
@@ -327,33 +367,39 @@ def validate_blended_event(api_service, classroom_start_date, classroom_start_ti
             row_errors.append(
                 f"Invalid LMS end date/time: {lms_end_date} {lms_end_time}")
         else:
-            formatted_lms_end_datetime = lms_end_datetime
+            row_data['formatted_lms_end_datetime'] = lms_end_datetime
 
         # Check that end date is after start date
-        if lms_start_datetime and lms_end_datetime and lms_end_datetime <= lms_start_datetime:
+        if (row_data['formatted_lms_start_datetime'] and 
+            row_data['formatted_lms_end_datetime'] and 
+            row_data['formatted_lms_end_datetime'] <= row_data['formatted_lms_start_datetime']):
             row_errors.append(
                 f"End date/time must be after start date/time")
     except Exception as e:
         row_errors.append(
             f"Error validating LMS end date/time: {str(e)}")
 
-    return row_errors
+    return {'row_data': row_data,
+            'row_errors': row_errors if len(row_errors) > 0 else None}
 
 def validate_waitlist_event():
     pass
 
-def validate_session(api_service,session_url,session_dayu):
+def validate_session(api_service,session_url,session_day):
     row_errors = []
-    
+    row_data = {}
+
     # session url
     try:
         if session_url and not validators.url(session_url):
             row_errors.append(
                 f"Invalid Session URL: {session_url}")
+            row_data['session_url'] = session_url
     except Exception as e:
         row_errors.append(f"Error validating Session URL: {str(e)}")
 
-    pass
+    return {'row_data': row_data,
+            'row_errors': row_errors if len(row_errors) > 0 else None}
 
 def validate_and_format_datetime(date_value, time_value):
     """
@@ -470,12 +516,12 @@ def validate_location(api_service, location_name):
             return {
                 'id': location.external_id,
                 'code': location.code,
-                'title': location.name
+                'name': location.name
             }
         
         # If not found locally, try the API
         query = load_graphql_query('get_location_by_name')
-        variables = {"name": location_name}
+        variables = {"location_name": location_name}
         result = api_service.execute_query(query, variables)
         
         if (result and 'data' in result and
@@ -488,6 +534,55 @@ def validate_location(api_service, location_name):
         logger.warning(f"API error validating location {location_name}: {str(e)}")
         return None
 
+
+def validate_venue(api_service, venue_name, location_id):
+    """
+    Validate that a venue exists with the given name 
+    and the given location
+    
+    Args:
+        api_service: AdministrateAPIService instance
+        venue_name: Venue name to validate
+        location_id: Location name to validate
+    
+    Returns:
+        dict: Location data or None if invalid
+    """
+    tbc_venue_name = map(str.lower, ["To be confirmed", "TBC", "TBD"])
+    try:
+        # First try to find in our local database
+        if (venue_name.casefold() in tbc_venue_name):
+            venues = Venue.objects.filter(
+                name__iexact=venue_name
+            )
+        else:            
+            venues = Venue.objects.filter(
+                name__iexact=venue_name,
+                location_id=location_id
+            )
+
+        if venues.exists():
+            venue = venues.first()
+            return {
+                'id': venue.external_id,                
+                'name': venue.name
+            }
+
+        # If not found locally, try the API
+        query = load_graphql_query('get_venue_by_name')
+        variables = {"venue_name": venue_name}
+        result = api_service.execute_query(query, variables)
+
+        if (result and 'data' in result and
+            'locations' in result['data'] and
+            'edges' in result['data']['locations'] and
+                len(result['data']['locations']['edges']) > 0):
+            return result['data']['locations']['edges'][0]['node']
+        return None
+    except AdministrateAPIError as e:
+        logger.warning(
+            f"API error validating location {venue_name}: {str(e)}")
+        return None    
 
 def validate_instructor(api_service, instructor_name):
     """
@@ -806,5 +901,5 @@ def generate_error_report(results, output_path=None):
 
 
 if __name__ == "__main__":
-    result = validate_and_process_event_excel(
+    result_data, result_error = validate_and_process_event_excel(
         r"C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\administrate\src\EventSessionImportTemplate2025Stest.xlsx")
