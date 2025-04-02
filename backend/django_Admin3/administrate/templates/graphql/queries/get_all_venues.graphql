@@ -1,0 +1,17 @@
+query GetVenues($first: Int!, $offset: Int!) {
+	venues(first: $first, offset: $offset) {
+		pageInfo {
+			hasNextPage
+		}
+		edges {
+			node {
+				id
+				name
+				description
+				location {
+					id
+				}
+			}
+		}
+	}
+}
