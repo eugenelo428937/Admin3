@@ -1,5 +1,5 @@
 query getLocationByName($location_name: String!) {
-	locations(filters: [{ field: name, operation: eq, value: $location_name }]) {
+	locations(filters: [{ field: name, operation: wordlike, value: $location_name }]) {
 		edges {
 			node {
 				id
