@@ -1,0 +1,37 @@
+mutation updateSession(
+	$sessionId: ID!
+	$sessionTitle: String!
+	$locationId: ID!
+	$venue_id: ID!
+    $timeZoneName: String!
+	$session_start_date: DateTime!
+	$session_end_date: DateTime!
+	$dayDefinitionKey: String!
+	$dayValue: String!
+	$urlDefinitionKey: String!
+	$urlValue: String!
+) {
+	session {
+		update(
+			sessionId: $sessionId
+			input: {
+				title: $sessionTitle
+				locationId: $locationId
+				venueId: $venue_id
+				timeZoneName: $timeZoneName
+				start: $session_start_date
+				end: $session_end_date
+				customFieldValues: [{ definitionKey: $dayDefinitionKey, value: $dayValue }, { definitionKey: $urlDefinitionKey, value: $urlValue }]
+			}
+		) {
+			session {
+				id
+			}
+			errors {
+				label
+				value
+				message
+			}
+		}
+	}
+}

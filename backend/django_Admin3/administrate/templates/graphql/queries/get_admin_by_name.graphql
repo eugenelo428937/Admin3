@@ -1,0 +1,12 @@
+query getAdminByName($name: String!) {
+	contacts(filters: [{ field: name, operation: like, value: $name }, { field: isAdmin, operation: eq, value: "true" }]) {
+		edges {
+			node {
+				id
+				legacyId
+				firstName
+				lastName
+			}
+		}
+	}
+}
