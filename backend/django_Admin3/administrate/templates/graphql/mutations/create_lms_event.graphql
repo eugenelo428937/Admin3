@@ -1,30 +1,40 @@
-mutation createLMSEvent($courseTemplateId:ID!, 
-                        $eventType:EventType!, 
-                        $classroomEndDateTime:TimeZonedDateTime,
-                        $classroomStartDateTime:TimeZonedDateTime, 
-                        $locationId:ID!, 
-                        $taxType:ID!,
+mutation createLMSEvent(
+	$courseTemplateId: ID!
+	$eventType: EventType!
+	$lmsEndDateTime: String!
+	$lmsStartDateTime: String!
+	$locationId: ID!
+	$taxType: TaxType!
 ) {
-    event{
-        createLMS(input:{
-        courseTemplateId:$courseTemplateId
-        eventType:$eventType
-        timeZonedLmsEnd:$classroomEndDateTime
-        timeZonedLmsStart:$classroomStartDateTime
-        locationId:$locationId
-        taxType:$taxType
-        timeZoneName:"Europe/London"
-        }){
-            event { id legacyId sessions {
-                                    edges{
-                                        node{
-                                            id
-                                            legacyId
-                                            }
-                                        }
-                                    }
-                                    }
-            errors { label message value }
-        }
-    } 
+	event {
+		createLMS(
+			input: {
+				courseTemplateId: $courseTemplateId
+				eventType: $eventType
+				timeZonedLmsEnd: $lmsEndDateTime
+				timeZonedLmsStart: $lmsStartDateTime
+				locationId: $locationId
+				taxType: $taxType
+				timeZoneName: $timeZoneName
+			}
+		) {
+			event {
+				id
+				legacyId
+				sessions {
+					edges {
+						node {
+							id
+							legacyId
+						}
+					}
+				}
+			}
+			errors {
+				label
+				message
+				value
+			}
+		}
+	}
 }

@@ -1,28 +1,65 @@
-mutation createEvent {
-  event {
-    createBlended(input:{
-        eventType:{_eventType}
-        locationId:"{_locationId}"
-        taxType:"{_taxType}"
-        courseTemplateId:"{_courseTemplateId}"
-        timeZoneName:"{_timeZoneName}"
-        classroomStartDateTime: "{_classroomStartDateTime}"
-        classroomEndDateTime: "{_classroomEndDateTime}"
-        lmsStartDateTime: "{_lmsStartDateTime}"
-        lmsEndDateTime: "{_lmsEndDateTime}"
-        maxPlaces:{_maxPlaces}
-        timeZone:"Europe/London"
-    }){
-      event { id legacyId sessions {
-                                edges{
-                                    node{
-                                        id
-                                        legacyId
-                                        }
-                                    }
-                                }
-                                }
-      errors { label message value }
-    }
-  }
+mutation createBlendedEvent(
+	$title: String!
+	$locationId: ID!
+	$venueId: ID!
+	$eventType: EventType!
+	$taxType: ID!
+	$courseTemplateId: ID!
+	$timeZoneName: String!
+	$classroomStartDateTime: LocalDateTime!
+	$classroomEndDateTime: LocalDateTime!
+	$lmsStartDateTime: LocalDateTime!
+	$lmsEndDateTime: LocalDateTime!
+	$maxPlaces: Int
+	$sittingCFKey: ID!
+	$sittingCFValue: String
+	$finalisationDateCFKey: ID!
+	$finalisationDateCFValue: String
+	$eventUrlCFKey: ID!
+	$eventUrlCFValue: String
+	$webSaleCFKey: ID!
+	$webSaleCFValue: String
+) {
+	event {
+		createBlended(
+			input: {
+				courseTemplateId: $courseTemplateId
+				title: $title
+				eventType: $eventType
+				locationId: $locationId
+				venueId: $venueId
+				taxType: $taxType
+				timeZoneName: $timeZoneName
+				classroomStartDateTime: $classroomStartDateTime
+				classroomEndDateTime: $classroomEndDateTime
+				lmsStartDateTime: $lmsStartDateTime
+				lmsEndDateTime: $lmsEndDateTime
+				maxPlaces: $maxPlaces
+				customFieldValues: [
+					{ definitionKey: $sittingCFKey, value: $sittingCFValue }
+					{ definitionKey: $finalisationDateCFKey, value: $finalisationDateCFValue }
+					{ definitionKey: $eventUrlCFKey, value: $eventUrlCFValue }
+					{ definitionKey: $webSaleCFKey, value: $webSaleCFValue }
+				]
+			}
+		) {
+			event {
+				id
+				legacyId
+				sessions {
+					edges {
+						node {
+							id
+							legacyId
+						}
+					}
+				}
+			}
+			errors {
+				label
+				message
+				value
+			}
+		}
+	}
 }

@@ -17,9 +17,9 @@ django.setup()
 from datetime import datetime,date,time
 from django.core.exceptions import ValidationError
 from administrate.services.api_service import AdministrateAPIService
-from administrate.models import CourseTemplate, Location, Venue, Instructor
+from administrate.models import CourseTemplate, Location, Venue, Instructor, CustomField
 from administrate.exceptions import AdministrateAPIError
-from administrate.utils.graphql_loader import load_graphql_query
+from administrate.utils.graphql_loader import load_graphql_query, load_graphql_mutation
 logger = logging.getLogger(__name__)
 
 
@@ -84,7 +84,7 @@ def validate_and_process_event_excel(file_path, debug=False):
             'Finalisation_date',
             'Web_sale',
             'Sitting',
-            'OCR_moodle_code',
+            'OCR_moodle_code',            
          ]
         
         missing_columns = [col for col in required_columns if col not in df.columns]
@@ -92,7 +92,8 @@ def validate_and_process_event_excel(file_path, debug=False):
             raise ValidationError(f"Missing required columns in Excel file: {', '.join(missing_columns)}")
         
         parent_lms_start_date = None
-        # Process each row
+        parent_course_template_id = None
+        
         for index, row in df.iterrows():                        
             row_number = index + 5
             row_data = row.to_dict()
@@ -102,29 +103,38 @@ def validate_and_process_event_excel(file_path, debug=False):
             lms_start_date = row['LMS_start_date']
             if not row['LMS_start_date']:
                 lms_start_date = parent_lms_start_date
-
             if row['Course_template_code']:
                 parent_lms_start_date = row['LMS_start_date']
+                
                 result = (
                     validate_event( 
                         api_service, 
                         row['Course_template_code'],
-                        row['Event_title'], 
-                        # row['Learning_mode'], 
+                        row['Event_title'],                         
                         row['location'], 
                         row['Venue'], 
-                        row['Instructor'],  
-                        #row['Event_administrator'],
-                        row['Event_url'], 
+                        row['Instructor'],                          
+                        row['Day'],
+                        row['Max_places'],
+                        row['Sitting'],
                         row['Finalisation_date'],
-                        row['Day'] )
+                        row['Event_url'],
+                        row['Web_sale'],
+                        row['Event_administrator'],
+                        )
                 )
-                row_errors.append(
-                    result['row_errors'] if result['row_errors'] is not None else [])
-                row_data.update(result['row_data'])
+                if result['row_errors']:
+                    row_errors.extend(result['row_errors'])
 
-                if result:                
-                    if "OC" not in row['Course_template_code'] and "WAITLIST" not in row['Course_template_code']:
+                row_data.update(result['row_data'])
+                row_data['event_or_session'] = "event"
+                if row['Event_title'].casefold() == "waitlist":
+                    row_data['subject'] = row['Event_title'].split('-')[0]
+                
+                parent_course_template_id = row_data['course_template_id']
+
+                if result:
+                    if "OC" not in row['Course_template_code'] and "WAITLIST" not in row['Course_template_code']:                        
                         result=(
                             validate_blended_event(
                                 api_service, 
@@ -137,9 +147,13 @@ def validate_and_process_event_excel(file_path, debug=False):
                                 row['LMS_end_date'],                                 
                                 row['LMS_end_time'])
                             )
-                        row_errors.append(result['row_errors'] if result['row_errors'] is not None else [])
+                        if result['row_errors']:
+                            row_errors.extend(result['row_errors'])
+
                         row_data.update(result['row_data'])
-                    else:
+                        row_data['event_mode'] = "blended"
+
+                    else:                        
                         result = (
                             validate_lms_event(
                                 api_service, 
@@ -148,16 +162,28 @@ def validate_and_process_event_excel(file_path, debug=False):
                                 row['LMS_end_date'],
                                 row['LMS_end_time'])
                             )
-                        row_errors.append(result['row_errors'] if result['row_errors'] is not None else [])
+                        if result['row_errors']:
+                            row_errors.extend(result['row_errors'])
                         row_data.update(result['row_data'])
-            else:
-                result = validate_session(row['Session_instructor'],
+                        row_data['event_mode'] = "lms"
+            else:                
+                result = validate_session(api_service,
+                                          parent_course_template_id,
+                                          row['Session_title'],
+                                          lms_start_date,
+                                          row['LMS_start_time'],
+                                          row['LMS_end_date'],
+                                          row['LMS_end_time'],
+                                          row['Session_instructor'],
                                           row['Session_url'],
                                           row['Day'])
-                row_errors.append(result['row_errors'] if result['row_errors'] is not None else [])                    
+                if result['row_errors']:
+                    row_errors.extend(result['row_errors'])
+
                 row_data.update(result['row_data'])
+                row_data['event_or_session'] = "session"
             
-            # # Validate Price Level
+            # Validate Price Level
             # try:
             #     price_level = validate_price_level(api_service, row['price_level'])
             #     if not price_level:
@@ -165,9 +191,7 @@ def validate_and_process_event_excel(file_path, debug=False):
             #     else:
             #         row_data['price_level_id'] = price_level['id']
             # except Exception as e:
-            #     row_errors.append(f"Error validating price level: {str(e)}")
-            
-            #Validate Custom fields
+            #     row_errors.append(f"Error validating price level: {str(e)}")            
 
             # Add to appropriate result list
             if row_errors:
@@ -185,17 +209,21 @@ def validate_and_process_event_excel(file_path, debug=False):
     except Exception as e:
         logger.exception(f"Error processing Excel file: {str(e)}")
         raise
-        
-
+    
 def validate_event(api_service, 
                    course_template_code, 
                    event_title, 
                    location_name, 
                    venue_name, 
                    instructor_name, 
-                   event_url, 
+                   session_day,
+                   max_places,
+                   sitting,
                    finaliztion_date, 
-                   session_day):
+                   event_url, 
+                   web_sale,
+                   event_administrator_name
+                   ):
     row_errors = []
     row_data = {}
     # Validate Course Template
@@ -294,7 +322,10 @@ def validate_event(api_service,
                 else:
                     row_errors.append(
                         f"Invalid Finalisation_date: {finaliztion_date}")
-                row_data['finalisation_datetime'] = finalisation_datetime
+                    
+            row_data['finalisation_datetime'] = finalisation_datetime.strftime(
+                "%Y-%m-%d")
+            
         except Exception as e:
             row_errors.append(
                 f"Error validating Finalisation_date: {str(e)}")
@@ -308,9 +339,61 @@ def validate_event(api_service,
             row_data['session_day'] = session_day
     except Exception as e:
         row_errors.append(f"Error validating Day: {str(e)}")    
-    return {'row_data': row_data, 
-            'row_errors': row_errors if len(row_errors) > 0 else None}
 
+    # max_places
+    try:
+        if max_places:
+            if not isinstance(max_places, int):
+                row_errors.append(
+                    f"Invalid max_places: {max_places}")
+            else:
+                row_data['max_places'] = max_places
+    except Exception as e:
+        row_errors.append(f"Error validating max_places: {str(e)}")
+
+    # sitting
+    try:
+        if not sitting:
+            row_errors.append(
+                    f"Sitting not provided: {sitting}")
+        else:
+            row_data['sitting'] = sitting
+    except Exception as e:
+        row_errors.append(f"Error validating Sitting: {str(e)}")
+    
+    # web_sale
+    try:
+        if web_sale:
+            web_sale = web_sale.upper().strip()
+            if web_sale not in ["Y","N"]:
+                row_errors.append(f"Error validating web_sale Y/N Only: {str(e)}")
+            else:     
+                if web_sale == "Y":
+                    web_sale_value = True
+                else:
+                    web_sale_value = False
+        else:
+            web_sale_value = False
+
+        row_data['web_sale'] = web_sale_value
+    except Exception as e:
+        row_errors.append(f"Error validating Sitting: {str(e)}")
+
+    # event_administrator
+    try:
+        if event_administrator_name:
+            event_administrator = validate_admin(api_service, event_administrator_name)
+            if not event_administrator:
+                row_errors.append(
+                    f"Invalid instructor: {event_administrator_name}")
+            else:
+                row_data['event_administrator_name'] = event_administrator['id']            
+    except Exception as e:
+        row_errors.append(f"Error validating instructor: {str(e)}")
+
+    return {'row_data': row_data, 
+            'row_errors': row_errors if len(row_errors) > 0 else None}    
+            
 def validate_lms_event():
     pass
 
@@ -385,9 +468,81 @@ def validate_blended_event(api_service, classroom_start_date, classroom_start_ti
 def validate_waitlist_event():
     pass
 
-def validate_session(api_service,session_url,session_day):
+
+def validate_session(api_service,
+                     course_template_id,
+                     session_title, 
+                     lms_start_date, 
+                     lms_start_time, 
+                     lms_end_date, 
+                     lms_end_time, 
+                     session_instructor, 
+                     session_url, 
+                     session_day):
     row_errors = []
     row_data = {}
+
+    # Validate session_title
+    try:
+        # if course template is not empty then it must have event title
+        if not session_title:
+            row_errors.append("Event title is required")
+        else:
+            row_data['event_title'] = session_title
+    except Exception as e:
+        row_errors.append(f"Error validating Event title: {str(e)}")
+
+    # validate 'LMS_start_date','LMS_start_time','LMS_end_date','LMS_end_time'
+
+    try:
+        lms_start_datetime = validate_and_format_datetime(
+            lms_start_date, lms_start_time)
+        if not lms_start_datetime:
+            row_errors.append(
+                f"Invalid LMS start date/time: {lms_start_date} {lms_start_time}")
+        else:
+            row_data['formatted_lms_start_datetime'] = lms_start_datetime
+
+        lms_end_datetime = validate_and_format_datetime(
+            lms_end_date, lms_end_time)
+        if not lms_end_datetime:
+            row_errors.append(
+                f"Invalid LMS end date/time: {lms_end_date} {lms_end_time}")
+        else:
+            row_data['formatted_lms_end_datetime'] = lms_end_datetime
+
+        # Check that end date is after start date
+        if (row_data['formatted_lms_start_datetime'] and 
+            row_data['formatted_lms_end_datetime'] and 
+            row_data['formatted_lms_end_datetime'] <= row_data['formatted_lms_start_datetime']):
+            row_errors.append(
+                f"End date/time must be after start date/time")
+    except Exception as e:
+        row_errors.append(
+            f"Error validating LMS end date/time: {str(e)}")
+
+    # Validate Instructor and check if authorized for course
+    try:
+        for instructor_name in session_instructor.split('/'):
+            if instructor_name:
+                instructor = validate_instructor(
+                    api_service, instructor_name.strip())
+                if not instructor:
+                    row_errors.append(
+                        f"Invalid instructor: {instructor_name}")
+                else:
+                    row_data['instructor_id'] = instructor['id']
+
+                # Also check if instructor is authorized for this course
+                if (not instructor_authorized_for_course(
+                        api_service,
+                        row_data['instructor_id'],
+                        course_template_id)):
+                    row_errors.append(
+                        f"Instructor {instructor_name} is not authorized for course {row_data['course_template_id']}")
+
+    except Exception as e:
+        row_errors.append(f"Error validating instructor: {str(e)}")
 
     # session url
     try:
@@ -397,6 +552,16 @@ def validate_session(api_service,session_url,session_day):
             row_data['session_url'] = session_url
     except Exception as e:
         row_errors.append(f"Error validating Session URL: {str(e)}")
+
+    # Day
+    try:
+        if not isinstance(session_day, int):
+            row_errors.append(
+                f"Invalid Day: {session_day}")
+        else:
+            row_data['session_day'] = session_day
+    except Exception as e:
+        row_errors.append(f"Error validating Day: {str(e)}")
 
     return {'row_data': row_data,
             'row_errors': row_errors if len(row_errors) > 0 else None}
@@ -638,7 +803,61 @@ def validate_instructor(api_service, instructor_name):
         logger.warning(f"API error validating instructor {instructor_name}: {str(e)}")
         return None
 
+def validate_admin(api_service, contact_name):
+    """
+        Validate that a contact exists with the given name
 
+        Args:
+            api_service: AdministrateAPIService instance
+            event_administrator_name: Contact name to validate
+        
+        Returns:
+            dict: Contact data or None if invalid
+    """
+    try:
+        # First try to find in our local database
+        name_parts = contact_name.strip().split()
+
+        # If there's only one part, return it as lastname with empty firstname
+        if len(name_parts) == 1:
+            return ("", name_parts[0])
+
+        # Last part is the lastname
+        last_name = name_parts[-1]
+
+        # All other parts are firstname
+        first_name = " ".join(name_parts[:-1])
+        # the "i" in iexact stands for "case-insensitive"
+        # contacts = Contact.objects.filter(
+        #     first_name__iexact=first_name,
+        #     last_name__iexact=last_name,
+        #     is_active=True
+        # )
+
+        # if contacts.exists():
+        #     contact = contacts.first()
+        #     return {
+        #         'id': contact.external_id,
+        #         'legacy_id': contact.legacy_id,
+        #         'name': contact.name
+        #     }
+
+        # If not found locally, try the API
+        query = load_graphql_query('get_admin_by_name')
+        variables = {"name": contact_name.replace(" ", "%")}
+        result = api_service.execute_query(query, variables)
+
+        if (result and 'data' in result and
+            'contacts' in result['data'] and
+            'edges' in result['data']['contacts'] and
+                len(result['data']['contacts']['edges']) > 0):
+            return result['data']['contacts']['edges'][0]['node']
+        return None
+    except AdministrateAPIError as e:
+        logger.warning(
+            f"API error validating instructor {instructor_name}: {str(e)}")
+        return None
+    pass
 def validate_price_level(api_service, price_level_name):
     """
     Validate that a price level exists with the given name
@@ -712,60 +931,74 @@ def create_administrate_events(api_service, valid_data, debug=False):
     """
     successful_events = []
     failed_events = []
-
-    query = load_graphql_query('create_event')
-
+    # constants
+    tax_type = "VGF4VHlwZTox"    
+    eventType="public"
+    timeZone="Europe/London"
+    # Get custom field keys
+    event_custom_field_keys = {}
+    session_custom_field_keys = {}
+    event_custom_field_keys = get_custom_field_keys_by_entity_type(
+        api_service, "Event", debug)
+    session_custom_field_keys = get_custom_field_keys_by_entity_type(
+        api_service, "Session", debug)
+    
     for row_data in valid_data:
         try:
-            # Prepare event creation variables
-            variables = {
-                "input": {
-                    "title": row_data['title'],
-                    "courseTemplateId": row_data['course_template_id'],
-                    "locationId": row_data['location_id'],
-                    "startTime": row_data['formatted_start_datetime'],
-                    "endTime": row_data['formatted_end_datetime'],
-                    "instructorIds": [row_data['instructor_id']],
-                    "priceLevelId": row_data['price_level_id']
-                }
-            }
+            if row_data['event_or_session'] == "event":
+                if "OC" not in row_data['Course_template_code'] and "WAITLIST" not in row_data['Course_template_code']:            
+                    # create blended event 
+                    event_id, result = create_blended_event(
+                        api_service, row_data, event_custom_field_keys, session_custom_field_keys, eventType, tax_type, timeZone, debug)
+                    
+                    if result:                        
+                        parent_event_id = event_id
+                        successful_events.append(row_data)
 
-            # Add optional fields if present
-            if 'capacity' in row_data and not pd.isna(row_data['capacity']):
-                variables["input"]["capacity"] = int(row_data['capacity'])
-
-            if 'description' in row_data and not pd.isna(row_data['description']):
-                variables["input"]["description"] = str(
-                    row_data['description'])
-
-            if 'active' in row_data:
-                variables["input"]["active"] = bool(
-                    row_data.get('active', True))
+                        
+                else:
+                    # create LMS event - includes OC and WAITLIST
+                    query = load_graphql_query('create_lms_event')
+                    variables = {                        
+                        "title": row_data['Event_title'],
+                        "locationId": row_data['location_id'],
+                        "venueId": row_data['venue_id'],
+                        "eventType": eventType,
+                        "taxType": tax_type,
+                        "courseTemplateId": row_data['course_template_id'],
+                        "timeZoneName": timeZone,
+                        "classroomStartDateTime": row_data['formatted_classroom_start_datetime'],
+                        "classroomEndDateTime": row_data['formatted_classroom_end_datetime'],
+                        "lmsStartDateTime": row_data['formatted_lms_start_datetime'],
+                        "lmsEndDateTime": row_data['formatted_lms_end_datetime'],
+                        "maxPlaces": row_data['max_places'],                        
+                    }
+                    pass
             else:
-                variables["input"]["active"] = True
-
-            logger.debug(f"Creating event with variables: {variables}")
-
+                # create session                
+                pass            
             result = api_service.execute_query(query, variables)
-
+            
             if (result and 'data' in result and
-                'createEvent' in result['data'] and
-                    'event' in result['data']['createEvent']):
+                    'createEvent' in result['data'] and
+                        'event' in result['data']['createBlendedEvent']):
 
-                event = result['data']['createEvent']['event']
-                row_data['event_id'] = event['id']
-                successful_events.append(row_data)
-                logger.info(
-                    f"Successfully created event '{row_data['title']}' with ID {event['id']}")
+                    event = result['data']['createBlendedEvent']['event']
+                    row_data['event_id'] = event['id']
+                    parent_event_id = event['id']
+
+                    successful_events.append(row_data)
+                    logger.info(
+                        f"Successfully created event '{row_data['Event_title']}' with ID {event['id']}")
             else:
                 # Check for errors
                 errors = []
                 if 'errors' in result:
                     errors = [error.get('message', 'Unknown error')
-                              for error in result.get('errors', [])]
+                            for error in result.get('errors', [])]
                 elif 'data' in result and 'createEvent' in result['data'] and 'errors' in result['data']['createEvent']:
                     errors = [error.get('message', 'Unknown error')
-                              for error in result['data']['createEvent'].get('errors', [])]
+                            for error in result['data']['createEvent'].get('errors', [])]
 
                 error_message = ', '.join(
                     errors) if errors else "Unknown error creating event"
@@ -781,13 +1014,149 @@ def create_administrate_events(api_service, valid_data, debug=False):
             row_data['error'] = str(e)
             failed_events.append(row_data)
             logger.error(
-                f"Exception creating event '{row_data['title']}': {str(e)}")
+                f"Exception creating event '{row_data['Event_title']}': {str(e)}")
             if debug:
                 logger.exception(e)
 
     return successful_events, failed_events
 
 
+def create_blended_event(api_service, row_data, event_custom_field_keys, session_custom_field_keys, eventType, tax_type, timeZone, debug):
+    """
+    Create a blended event using the provided API service and row data.
+    """
+    # try:
+    query = load_graphql_mutation('create_blended_event')
+    variables = {        
+        "title": row_data['Event_title'],
+        "locationId": row_data['location_id'],
+        "venueId": row_data['venue_id'],                        
+        "eventType": eventType,
+        "taxType": tax_type,
+        "courseTemplateId": row_data['course_template_id'],
+        "timeZoneName": timeZone,
+        "classroomStartDateTime": row_data['formatted_classroom_start_datetime'],
+        "classroomEndDateTime": row_data['formatted_classroom_end_datetime'],                       
+        "lmsStartDateTime": row_data['formatted_lms_start_datetime'],
+        "lmsEndDateTime": row_data['formatted_lms_end_datetime'],
+        "maxPlaces": row_data['max_places'],
+        "sittingCFKey": event_custom_field_keys['Sitting'],
+        "sittingCFValue": row_data['Sitting'],
+        "finalisationDateCFKey": event_custom_field_keys['Finalisation date'],
+        "finalisationDateCFValue": row_data['finalisation_datetime'],
+        "eventUrlCFKey": event_custom_field_keys['URL'],
+        "eventUrlCFValue": row_data['event_url'],
+        "webSaleCFKey": event_custom_field_keys['Web sale'],
+        "webSaleCFValue": row_data['web_sale'],        
+    }
+    logger.debug(f"Creating blended event with variables: {variables}")
+
+    result = api_service.execute_query(query, variables)
+            
+    if (result and 'data' in result and
+        'createBlended' in result['data'] and
+            'event' in result['data']['createBlended']):
+
+        event = result['data']['createBlendedEvent']['event']
+        row_data['event_id'] = event['id']
+
+        # Add Instructors to event
+        add_course_staff(api_service, row_data['event_id'],
+                            row_data['instructor_ids'], "instructor", debug)
+
+        # Add Instructors to event
+        add_course_staff(api_service, row_data['event_id'],
+                        row_data['administrator_ids'], "administrator", debug)
+        
+        logger.info(
+            f"Successfully created event '{row_data['title']}' with ID {event['id']}")
+        
+    else:
+        # Check for errors
+        errors = []
+        if 'errors' in result:
+            errors = [error.get('message', 'Unknown error')
+                    for error in result.get('errors', [])]
+        elif 'data' in result and 'createEvent' in result['data'] and 'errors' in result['data']['createEvent']:
+            errors = [error.get('message', 'Unknown error')
+                    for error in result['data']['createEvent'].get('errors', [])]
+
+        error_message = ', '.join(
+            errors) if errors else "Unknown error creating event"
+        row_data['error'] = error_message            
+        logger.error(
+            f"Failed to create event '{row_data['Event_title']}': {error_message}")
+
+        if debug:
+            logger.debug(f"Failed event creation response: {result}")
+
+    # except Exception as e:
+    #     row_data['error'] = str(e)        
+    #     logger.error(
+    #         f"Exception creating event '{row_data['Event_title']}': {str(e)}")
+    #     if debug:
+    #         logger.exception(e)
+
+def add_course_staff(api_service, event_id, contacts, staffType, debug):
+    """Add course staff to an event."""
+    staff_error=[]
+    staff_added=[]
+    query = load_graphql_mutation('add_course_staff')
+    try:            
+        for contact in contacts:
+            variables = {
+                "eventId": event_id,
+                "contactId": contact['id'],
+                "staffType": staffType
+            }
+            result = api_service.execute_query(query, variables)
+            if (result and 'data' in result and
+            'addStaff' in result['data'] and
+                'event' in result['data']['addStaff']):
+                # staff_added = result['data']['addStaff']['event']
+                staff_added.extend(result['data']['addStaff']['event'])    
+            else:
+                logger.error(f"Failed to add instructors {contacts} to event {event_id}")
+                staff_error.extend(contact['id'])
+    except Exception as e:
+        # row_data['error'] = str(e)
+        # failed_events.append(row_data)
+        logger.error(
+            f"Exception add staff {contacts} with staffType {staffType} to event {event_id}: {str(e)}")
+        if debug:
+            logger.exception(e)    
+        return None
+
+
+def get_custom_field_keys_by_entity_type(api_service, entity_type, debug):
+    """
+    Get the definition keys for custom fields needed for event creation
+    
+    Returns:
+        dict: Dictionary mapping field labels to their definition keys
+    """
+    from django.db import connections
+    
+    custom_field_keys = {}
+        
+    try:
+        custom_fields = CustomField.objects.filter(
+            entity_type=entity_type
+        )
+
+        for cf in custom_fields:
+            custom_field_keys[cf.label] = cf.external_id
+
+        if debug:
+            logger.info(
+                f"Retrieved {len(custom_field_keys)} custom field keys for {entity_type}")
+            
+        return custom_field_keys
+    
+    except Exception as e:
+        logger.error(f"Error retrieving custom field keys: {str(e)}")
+        return {}
+                    
 def bulk_upload_events_from_excel(file_path, debug=False, dry_run=False):
     """
     Main function to handle the bulk upload of events from Excel file
@@ -903,3 +1272,7 @@ def generate_error_report(results, output_path=None):
 if __name__ == "__main__":
     result_data, result_error = validate_and_process_event_excel(
         r"C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\administrate\src\EventSessionImportTemplate2025Stest.xlsx")
+    api_service = AdministrateAPIService()
+    create_administrate_events(api_service, result_data[:1], debug=True)
+    print(result_data)
+    print(result_data)

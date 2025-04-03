@@ -1,0 +1,9 @@
+mutation addCourseStaff($contactId: ID!,$eventId: ID!,$staffType: StaffType!){
+  event{
+		addStaff{
+      contactId:$contactId
+      eventId:$eventId
+      staffType:$staffType
+    }
+  }  
+}
