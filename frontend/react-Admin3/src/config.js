@@ -1,4 +1,5 @@
 // frontend/react_Admin3/src/config.js
+
 const config = {
 	apiBaseUrl: process.env.REACT_APP_API_BASE_URL,
 	authUrl: process.env.REACT_APP_API_BASE_URL + process.env.REACT_APP_API_AUTH_URL,
@@ -13,6 +14,8 @@ const config = {
 if (config.isDevelopment) {	
 	console.log("environment:", config.isDevelopment);
 	console.log("Debug logs enabled:", config.enableDebugLogs);	
-}
+	console.log("API Base URL:", config.apiBaseUrl);
+	console.log("API Base authUrl:", config.authUrl);
+}	
 
 export default config;
