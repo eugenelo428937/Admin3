@@ -3,7 +3,7 @@ import authService from "./authService";
 import config from "../config";
 import logger from "./loggerService";
 const httpService = axios.create({
-	baseURL: config.apiUrl,
+	baseURL: config.apiBaseUrl,
 	withCredentials: true,
 	headers: { "Content-Type": "application/json" },
 });
@@ -26,7 +26,7 @@ function getCookie(name) {
 // Function to get CSRF token from the backend
 const fetchCsrfToken = async () => {
     try {
-        const response = await axios.get(`${config.apiUrl}/api/auth/csrf/`, {
+        const response = await axios.get(`${config.authUrl}/csrf/`, {
             withCredentials: true
         });
         return response.data.csrfToken;
