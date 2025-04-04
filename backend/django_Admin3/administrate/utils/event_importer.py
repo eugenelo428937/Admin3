@@ -5,7 +5,8 @@ import os
 import validators
 import django
 import logging
-
+import json
+from enum import Enum
 sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')))
 project_root = Path(__file__).resolve().parent.parent.parent
@@ -21,7 +22,15 @@ from administrate.models import CourseTemplate, Location, Venue, Instructor, Cus
 from administrate.exceptions import AdministrateAPIError
 from administrate.utils.graphql_loader import load_graphql_query, load_graphql_mutation
 logger = logging.getLogger(__name__)
+file_path = r"C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\administrate\src\EventSessionImportTemplate2025Stest.xlsx"
+queryFilePath = r"C:\Administrate\Result\query"+datetime.now().strftime("%Y%m%d")+"FINAL.txt"
+resultFilePath = r"C:\Administrate\Result\importResult"+datetime.now().strftime("%Y%m%d")+"FINAL.txt"
+tbc_venue_name = list(map(str.casefold, ["To be confirmed", "TBC", "TBD"]))
 
+class EventLifecycleState(Enum):
+    DRAFT = "draft"
+    PUBLISHED = "published"
+    CANCELLED = "cancelled"
 
 def validate_and_process_event_excel(file_path, debug=False):
     """
@@ -99,7 +108,7 @@ def validate_and_process_event_excel(file_path, debug=False):
             row_data = row.to_dict()
             row_data['row_number'] = row_number
             row_errors = []            
-
+            print(row_number)
             lms_start_date = row['LMS_start_date']
             if not row['LMS_start_date']:
                 lms_start_date = parent_lms_start_date
@@ -113,7 +122,8 @@ def validate_and_process_event_excel(file_path, debug=False):
                         row['Event_title'],                         
                         row['location'], 
                         row['Venue'], 
-                        row['Instructor'],                          
+                        row['Instructor'],
+                        row['Session_instructor'],
                         row['Day'],
                         row['Max_places'],
                         row['Sitting'],
@@ -160,7 +170,8 @@ def validate_and_process_event_excel(file_path, debug=False):
                                 lms_start_date,
                                 row['LMS_start_time'],
                                 row['LMS_end_date'],
-                                row['LMS_end_time'])
+                                row['LMS_end_time'],
+                                row['Sitting'])
                             )
                         if result['row_errors']:
                             row_errors.extend(result['row_errors'])
@@ -170,10 +181,10 @@ def validate_and_process_event_excel(file_path, debug=False):
                 result = validate_session(api_service,
                                           parent_course_template_id,
                                           row['Session_title'],
-                                          lms_start_date,
-                                          row['LMS_start_time'],
-                                          row['LMS_end_date'],
-                                          row['LMS_end_time'],
+                                          row['Classroom_start_date'],
+                                          row['Classroom_start_time'],
+                                          row['Classroom_end_date'],
+                                          row['Classroom_end_time'],
                                           row['Session_instructor'],
                                           row['Session_url'],
                                           row['Day'])
@@ -215,14 +226,15 @@ def validate_event(api_service,
                    event_title, 
                    location_name, 
                    venue_name, 
-                   instructor_name, 
+                   instructor_names, 
+                   session_instructor_names,
                    session_day,
                    max_places,
                    sitting,
                    finaliztion_date, 
                    event_url, 
                    web_sale,
-                   event_administrator_name
+                   administrator_names
                    ):
     row_errors = []
     row_data = {}
@@ -264,39 +276,67 @@ def validate_event(api_service,
         row_errors.append(f"Error validating location: {str(e)}")
 
     # Validate venues
-    try:
-        if venue_name and row_data['location_id']:
-            venue = validate_venue(
-                api_service, venue_name, row_data['location_id'])
-            if not venue:
-                row_errors.append(
-                    f"Invalid Venue: {venue_name}")
-            else:
-                row_data['venue_id'] = venue['id']
+    try:        
+        if venue_name:
+            if (venue_name.casefold() not in tbc_venue_name):            
+                if venue_name and row_data['location_id']:
+                    venue = validate_venue(
+                        api_service, venue_name, row_data['location_id'])
+                    if not venue:
+                        row_errors.append(
+                            f"Invalid Venue: {venue_name}")
+                    else:
+                        row_data['venue_id'] = venue['id']
 
     except Exception as e:
-        row_errors.append(f"Error validating location: {str(e)}")
+        row_errors.append(f"Error validating venue: {str(e)}")
     
     # Validate Instructor and check if authorized for course
     try:
-        if instructor_name:
-            instructor = validate_instructor(
-                api_service, instructor_name)
-            if not instructor:
-                row_errors.append(
-                    f"Invalid instructor: {instructor_name}")
-            else:
-                row_data['instructor_id'] = instructor['id']
+        row_data['instructor_ids'] = []
+        if instructor_names:
+            for instructor_name in instructor_names.split('/'):
+                instructor = validate_instructor(
+                    api_service, instructor_name)
+                if not instructor:
+                    row_errors.append(
+                        f"Invalid instructor: {instructor_name}")
+                else:
+                # Also check if instructor is authorized for this course
+                    if (row_data['course_template_id'] and 
+                        instructor_authorized_for_course(
+                            api_service, 
+                            instructor['id'], 
+                            row_data['course_template_id'])):
+                        row_data['instructor_ids'].append(instructor['id'])
+                    else:
+                        row_errors.append(
+                            f"Instructor {instructor_name} is not authorized for course {row_data['course_template_id']}")
+                    
+    except Exception as e:
+        row_errors.append(f"Error validating instructor: {str(e)}")
 
-            # Also check if instructor is authorized for this course
-            if (row_data['course_template_id'] and 
-                not instructor_authorized_for_course(
-                    api_service, 
-                    row_data['instructor_id'], 
-                    row_data['course_template_id'])):
-                row_errors.append(
-                    f"Instructor {instructor_name} is not authorized for course {row_data['course_template_id']}")
-                
+    # Validate Instructor and check if authorized for course
+    try:
+        row_data['session_instructor_ids'] = []
+        for instructor_name in session_instructor_names.split('/|;|,'):
+            if instructor_name:
+                instructor = validate_instructor(
+                    api_service, instructor_name.strip())
+                if not instructor:
+                    row_errors.append(
+                        f"Invalid instructor: {instructor_name}")                    
+                else:
+                    # Also check if instructor is authorized for this course
+                    if (instructor_authorized_for_course(
+                            api_service,
+                            instructor['id'],
+                            row_data['course_template_id'])):
+                        row_data['session_instructor_ids'].append(instructor['id'])
+                    else:
+                        row_errors.append(
+                            f"Instructor {instructor_name} is not authorized for course {row_data['course_template_id']}")
+                             
     except Exception as e:
         row_errors.append(f"Error validating instructor: {str(e)}")
 
@@ -331,14 +371,15 @@ def validate_event(api_service,
                 f"Error validating Finalisation_date: {str(e)}")
     
     # Day
-    try:
-        if not isinstance(session_day, int):
-            row_errors.append(
-                f"Invalid Day: {session_day}")
-        else:
-            row_data['session_day'] = session_day
-    except Exception as e:
-        row_errors.append(f"Error validating Day: {str(e)}")    
+    if session_day:
+        try:
+            if not isinstance(session_day, int):
+                row_errors.append(
+                    f"Invalid Day: {session_day}")
+            else:
+                row_data['session_day'] = session_day
+        except Exception as e:
+            row_errors.append(f"Error validating Day: {str(e)}")    
 
     # max_places
     try:
@@ -381,21 +422,67 @@ def validate_event(api_service,
 
     # event_administrator
     try:
-        if event_administrator_name:
-            event_administrator = validate_admin(api_service, event_administrator_name)
-            if not event_administrator:
-                row_errors.append(
-                    f"Invalid instructor: {event_administrator_name}")
-            else:
-                row_data['event_administrator_name'] = event_administrator['id']            
+        row_data['administrator_ids'] = []
+        for administrator_name in administrator_names.split('/'):
+            if administrator_name:
+                event_administrator = validate_admin(api_service, administrator_name)
+                if not event_administrator:
+                    row_errors.append(
+                        f"Invalid instructor: {administrator_name}")
+                else:
+                    row_data['administrator_ids'].append(
+                        event_administrator['id'])
+
     except Exception as e:
         row_errors.append(f"Error validating instructor: {str(e)}")
 
     return {'row_data': row_data, 
             'row_errors': row_errors if len(row_errors) > 0 else None}    
             
-def validate_lms_event():
-    pass
+def validate_lms_event(api_service, lms_start_date, lms_start_time, lms_end_date, lms_end_time, sitting):
+    row_errors = []
+    row_data = {}
+    
+    # validate 'LMS_start_date','LMS_start_time','LMS_end_date','LMS_end_time'
+    try:
+        lms_start_datetime = validate_and_format_datetime(
+            lms_start_date, lms_start_time)
+        if not lms_start_datetime:
+            row_errors.append(
+                f"Invalid LMS start date/time: {lms_start_date} {lms_start_time}")
+        else:
+            row_data['formatted_lms_start_datetime'] = lms_start_datetime
+
+        lms_end_datetime = validate_and_format_datetime(
+            lms_end_date, lms_end_time)
+        if not lms_end_datetime:
+            row_errors.append(
+                f"Invalid LMS end date/time: {lms_end_date} {lms_end_time}")
+        else:
+            row_data['formatted_lms_end_datetime'] = lms_end_datetime
+
+        # Check that end date is after start date
+        if (row_data['formatted_lms_start_datetime'] and
+            row_data['formatted_lms_end_datetime'] and
+                row_data['formatted_lms_end_datetime'] <= row_data['formatted_lms_start_datetime']):
+            row_errors.append(
+                f"End date/time must be after start date/time")
+    except Exception as e:
+        row_errors.append(
+            f"Error validating LMS end date/time: {str(e)}")
+    
+    # sitting
+    try:
+        if not sitting:
+            row_errors.append(
+                    f"Sitting not provided: {sitting}")
+        else:
+            row_data['sitting'] = sitting
+    except Exception as e:
+        row_errors.append(f"Error validating Sitting: {str(e)}")
+        
+    return {'row_data': row_data,
+            'row_errors': row_errors if len(row_errors) > 0 else None}
 
 def validate_blended_event(api_service, classroom_start_date, classroom_start_time, classroom_end_date, classroom_end_time, lms_start_date, lms_start_time, lms_end_date, lms_end_time):
     row_errors = []
@@ -468,14 +555,13 @@ def validate_blended_event(api_service, classroom_start_date, classroom_start_ti
 def validate_waitlist_event():
     pass
 
-
 def validate_session(api_service,
                      course_template_id,
                      session_title, 
-                     lms_start_date, 
-                     lms_start_time, 
-                     lms_end_date, 
-                     lms_end_time, 
+                     start_date, 
+                     start_time, 
+                     end_date, 
+                     end_time, 
                      session_instructor, 
                      session_url, 
                      session_day):
@@ -492,29 +578,29 @@ def validate_session(api_service,
     except Exception as e:
         row_errors.append(f"Error validating Event title: {str(e)}")
 
-    # validate 'LMS_start_date','LMS_start_time','LMS_end_date','LMS_end_time'
+    # validate 'start_date','start_time','end_date','end_time'
 
     try:
-        lms_start_datetime = validate_and_format_datetime(
-            lms_start_date, lms_start_time)
-        if not lms_start_datetime:
+        start_datetime = validate_and_format_datetime(
+            start_date, start_time)
+        if not start_datetime:
             row_errors.append(
-                f"Invalid LMS start date/time: {lms_start_date} {lms_start_time}")
+                f"Invalid LMS start date/time: {start_date} {start_time}")
         else:
-            row_data['formatted_lms_start_datetime'] = lms_start_datetime
+            row_data['formatted_classroom_start_datetime'] = start_datetime
 
-        lms_end_datetime = validate_and_format_datetime(
-            lms_end_date, lms_end_time)
-        if not lms_end_datetime:
+        end_datetime = validate_and_format_datetime(
+            end_date, end_time)
+        if not end_datetime:
             row_errors.append(
-                f"Invalid LMS end date/time: {lms_end_date} {lms_end_time}")
+                f"Invalid LMS end date/time: {end_date} {end_time}")
         else:
-            row_data['formatted_lms_end_datetime'] = lms_end_datetime
+            row_data['formatted_classroom_end_datetime'] = end_datetime
 
         # Check that end date is after start date
-        if (row_data['formatted_lms_start_datetime'] and 
-            row_data['formatted_lms_end_datetime'] and 
-            row_data['formatted_lms_end_datetime'] <= row_data['formatted_lms_start_datetime']):
+        if (row_data['formatted_classroom_start_datetime'] and 
+            row_data['formatted_classroom_end_datetime'] and 
+                row_data['formatted_classroom_end_datetime'] <= row_data['formatted_classroom_start_datetime']):
             row_errors.append(
                 f"End date/time must be after start date/time")
     except Exception as e:
@@ -523,24 +609,25 @@ def validate_session(api_service,
 
     # Validate Instructor and check if authorized for course
     try:
-        for instructor_name in session_instructor.split('/'):
+        row_data['session_instructor_ids'] = []
+        for instructor_name in session_instructor.split('/|;|,'):
             if instructor_name:
                 instructor = validate_instructor(
                     api_service, instructor_name.strip())
                 if not instructor:
                     row_errors.append(
-                        f"Invalid instructor: {instructor_name}")
+                        f"Invalid instructor: {instructor_name}")                    
                 else:
-                    row_data['instructor_id'] = instructor['id']
-
-                # Also check if instructor is authorized for this course
-                if (not instructor_authorized_for_course(
-                        api_service,
-                        row_data['instructor_id'],
-                        course_template_id)):
-                    row_errors.append(
-                        f"Instructor {instructor_name} is not authorized for course {row_data['course_template_id']}")
-
+                    # Also check if instructor is authorized for this course
+                    if (instructor_authorized_for_course(
+                            api_service,
+                            instructor['id'],
+                            course_template_id)):
+                        row_data['session_instructor_ids'].append(instructor['id'])
+                    else:
+                        row_errors.append(
+                            f"Instructor {instructor_name} is not authorized for course {row_data['course_template_id']}")
+                             
     except Exception as e:
         row_errors.append(f"Error validating instructor: {str(e)}")
 
@@ -614,7 +701,6 @@ def validate_and_format_datetime(date_value, time_value):
             f"Invalid date/time format: {date_value} {time_value}, {str(e)}")
         return None
 
-
 def validate_course_template(api_service, course_code):
     """
     Validate that a course template exists with the given code
@@ -658,7 +744,6 @@ def validate_course_template(api_service, course_code):
             f"Error validating course template {course_code}: {str(e)}")
         return None
 
-
 def validate_location(api_service, location_name):
     """
     Validate that a location exists with the given name
@@ -699,7 +784,6 @@ def validate_location(api_service, location_name):
         logger.warning(f"API error validating location {location_name}: {str(e)}")
         return None
 
-
 def validate_venue(api_service, venue_name, location_id):
     """
     Validate that a venue exists with the given name 
@@ -713,18 +797,13 @@ def validate_venue(api_service, venue_name, location_id):
     Returns:
         dict: Location data or None if invalid
     """
-    tbc_venue_name = map(str.lower, ["To be confirmed", "TBC", "TBD"])
+    
     try:
-        # First try to find in our local database
-        if (venue_name.casefold() in tbc_venue_name):
-            venues = Venue.objects.filter(
-                name__iexact=venue_name
-            )
-        else:            
-            venues = Venue.objects.filter(
-                name__iexact=venue_name,
-                location_id=location_id
-            )
+        # First try to find in our local database    
+        venues = Venue.objects.filter(
+            name__iexact=venue_name,
+            location_id=location_id
+        )
 
         if venues.exists():
             venue = venues.first()
@@ -855,9 +934,10 @@ def validate_admin(api_service, contact_name):
         return None
     except AdministrateAPIError as e:
         logger.warning(
-            f"API error validating instructor {instructor_name}: {str(e)}")
+            f"API error validating instructor {contact_name}: {str(e)}")
         return None
     pass
+
 def validate_price_level(api_service, price_level_name):
     """
     Validate that a price level exists with the given name
@@ -883,7 +963,6 @@ def validate_price_level(api_service, price_level_name):
     except AdministrateAPIError as e:
         logger.warning(f"API error validating price level {price_level_name}: {str(e)}")
         return None
-
 
 def instructor_authorized_for_course(api_service, instructor_id, course_template_id):
     """
@@ -916,7 +995,6 @@ def instructor_authorized_for_course(api_service, instructor_id, course_template
         logger.warning(f"API error checking instructor authorization: {str(e)}")
         return False
 
-
 def create_administrate_events(api_service, valid_data, debug=False):
     """
     Create events in Administrate based on validated data
@@ -929,6 +1007,7 @@ def create_administrate_events(api_service, valid_data, debug=False):
     Returns:
         tuple: (successful_events, failed_events) - Lists of successful and failed event creations
     """
+    rownum = 0
     successful_events = []
     failed_events = []
     # constants
@@ -941,85 +1020,70 @@ def create_administrate_events(api_service, valid_data, debug=False):
     event_custom_field_keys = get_custom_field_keys_by_entity_type(
         api_service, "Event", debug)
     session_custom_field_keys = get_custom_field_keys_by_entity_type(
-        api_service, "Session", debug)
-    
+        api_service, "Session", debug)    
     for row_data in valid_data:
-        try:
-            if row_data['event_or_session'] == "event":
-                if "OC" not in row_data['Course_template_code'] and "WAITLIST" not in row_data['Course_template_code']:            
-                    # create blended event 
-                    event_id, result = create_blended_event(
-                        api_service, row_data, event_custom_field_keys, session_custom_field_keys, eventType, tax_type, timeZone, debug)
-                    
-                    if result:                        
-                        parent_event_id = event_id
-                        successful_events.append(row_data)
+        rownum+=1        
+        # try:
+        if row_data['event_or_session'] == "event":
+            parent_event = None
+            if "OC" not in row_data['Course_template_code'] and "WAITLIST" not in row_data['Course_template_code']:            
+                # create blended event 
+                result = create_blended_event(
+                    api_service, row_data, event_custom_field_keys, session_custom_field_keys, eventType, tax_type, timeZone, debug)
 
+                if result:                        
+                    parent_event = result
+                    successful_events.append(result)
+                    session = parent_event['sessions']['edges'][0]['node']
+                    session_result = update_session(api_service, parent_event, row_data, session['id'], session_custom_field_keys, timeZone, debug)
+
+            else:
+                # create LMS event - includes OC and WAITLIST
+                result = create_lms_event(
+                    api_service, row_data, event_custom_field_keys, eventType, tax_type, timeZone, debug)                                
                         
-                else:
-                    # create LMS event - includes OC and WAITLIST
-                    query = load_graphql_query('create_lms_event')
-                    variables = {                        
-                        "title": row_data['Event_title'],
-                        "locationId": row_data['location_id'],
-                        "venueId": row_data['venue_id'],
-                        "eventType": eventType,
-                        "taxType": tax_type,
-                        "courseTemplateId": row_data['course_template_id'],
-                        "timeZoneName": timeZone,
-                        "classroomStartDateTime": row_data['formatted_classroom_start_datetime'],
-                        "classroomEndDateTime": row_data['formatted_classroom_end_datetime'],
-                        "lmsStartDateTime": row_data['formatted_lms_start_datetime'],
-                        "lmsEndDateTime": row_data['formatted_lms_end_datetime'],
-                        "maxPlaces": row_data['max_places'],                        
-                    }
-                    pass
-            else:
-                # create session                
-                pass            
-            result = api_service.execute_query(query, variables)
-            
-            if (result and 'data' in result and
-                    'createEvent' in result['data'] and
-                        'event' in result['data']['createBlendedEvent']):
+        else:
+            # session are created automatically when creating with a valid course template
+            # so use update session mutation to update the session details
+            if parent_event:
+                session = parent_event['sessions']['edges'][row_data['session_day']-1]['node']
+                session_result = update_session(api_service, parent_event, row_data, session['id'],
+                               session_custom_field_keys, timeZone, debug)
+                            
+        print(f"END : ROW {str(rownum)}")
+        if (result):                                
+                successful_events.append(row_data)
+                logger.info(
+                    f"Successfully created event '{row_data['Event_title']}'")
+        else:
+            # Check for errors
+            # errors = []
+            # if 'errors' in result:
+            #     errors = [error.get('message', 'Unknown error')
+            #             for error in result.get('errors', [])]
+            # elif 'data' in result and 'createEvent' in result['data'] and 'errors' in result['data']['createEvent']:
+            #     errors = [error.get('message', 'Unknown error')
+            #             for error in result['data']['createEvent'].get('errors', [])]
 
-                    event = result['data']['createBlendedEvent']['event']
-                    row_data['event_id'] = event['id']
-                    parent_event_id = event['id']
-
-                    successful_events.append(row_data)
-                    logger.info(
-                        f"Successfully created event '{row_data['Event_title']}' with ID {event['id']}")
-            else:
-                # Check for errors
-                errors = []
-                if 'errors' in result:
-                    errors = [error.get('message', 'Unknown error')
-                            for error in result.get('errors', [])]
-                elif 'data' in result and 'createEvent' in result['data'] and 'errors' in result['data']['createEvent']:
-                    errors = [error.get('message', 'Unknown error')
-                            for error in result['data']['createEvent'].get('errors', [])]
-
-                error_message = ', '.join(
-                    errors) if errors else "Unknown error creating event"
-                row_data['error'] = error_message
-                failed_events.append(row_data)
-                logger.error(
-                    f"Failed to create event '{row_data['title']}': {error_message}")
-
-                if debug:
-                    logger.debug(f"Failed event creation response: {result}")
-
-        except Exception as e:
-            row_data['error'] = str(e)
+            # error_message = ', '.join(
+            #     errors) if errors else "Unknown error creating event"
+            # row_data['error'] = error_message
             failed_events.append(row_data)
             logger.error(
-                f"Exception creating event '{row_data['Event_title']}': {str(e)}")
+                f"Failed to create event '{row_data['Event_title']}'")
+
             if debug:
-                logger.exception(e)
+                logger.debug(f"Failed event creation response: {result}")
+
+        # except Exception as e:
+        #     row_data['error'] = str(e)
+        #     failed_events.append(row_data)
+        #     logger.error(
+        #         f"Exception creating event '{row_data['Event_title']}': {str(e)}")
+        #     if debug:
+        #         logger.exception(e)
 
     return successful_events, failed_events
-
 
 def create_blended_event(api_service, row_data, event_custom_field_keys, session_custom_field_keys, eventType, tax_type, timeZone, debug):
     """
@@ -1030,7 +1094,7 @@ def create_blended_event(api_service, row_data, event_custom_field_keys, session
     variables = {        
         "title": row_data['Event_title'],
         "locationId": row_data['location_id'],
-        "venueId": row_data['venue_id'],                        
+        "venueId": row_data.get('venue_id'),                        
         "eventType": eventType,
         "taxType": tax_type,
         "courseTemplateId": row_data['course_template_id'],
@@ -1047,37 +1111,40 @@ def create_blended_event(api_service, row_data, event_custom_field_keys, session
         "eventUrlCFKey": event_custom_field_keys['URL'],
         "eventUrlCFValue": row_data['event_url'],
         "webSaleCFKey": event_custom_field_keys['Web sale'],
-        "webSaleCFValue": row_data['web_sale'],        
+        "webSaleCFValue": str(row_data['web_sale']),        
     }
     logger.debug(f"Creating blended event with variables: {variables}")
 
     result = api_service.execute_query(query, variables)
-            
+    writeQueryToFile(query)        
+    writeQueryToFile(variables)          
     if (result and 'data' in result and
-        'createBlended' in result['data'] and
-            'event' in result['data']['createBlended']):
+        'event' in result['data'] and
+            'createBlended' in result['data']['event']):
 
-        event = result['data']['createBlendedEvent']['event']
+        event = result['data']['event']['createBlended']['event']
         row_data['event_id'] = event['id']
+        
 
         # Add Instructors to event
-        add_course_staff(api_service, row_data['event_id'],
-                            row_data['instructor_ids'], "instructor", debug)
+        # add_course_staff(api_service, event['id'],
+        #                     row_data['instructor_ids'], "instructor", debug)
 
         # Add Instructors to event
-        add_course_staff(api_service, row_data['event_id'],
+        add_course_staff(api_service, "event", event['id'],
                         row_data['administrator_ids'], "administrator", debug)
-        
+                
         logger.info(
-            f"Successfully created event '{row_data['title']}' with ID {event['id']}")
-        
+            f"Successfully created event '{row_data['Event_title']}' with ID {event['id']}")
+        writeResultToFile(f"{event['legacyId']}||{event['id']}")
+        return event
     else:
         # Check for errors
         errors = []
-        if 'errors' in result:
+        if 'data' in result and 'errors' in result['data']:
             errors = [error.get('message', 'Unknown error')
                     for error in result.get('errors', [])]
-        elif 'data' in result and 'createEvent' in result['data'] and 'errors' in result['data']['createEvent']:
+        elif 'data' in result and 'event' in result['data'] and 'errors' in result['data']['event']['createEvent']:
             errors = [error.get('message', 'Unknown error')
                     for error in result['data']['createEvent'].get('errors', [])]
 
@@ -1089,7 +1156,7 @@ def create_blended_event(api_service, row_data, event_custom_field_keys, session
 
         if debug:
             logger.debug(f"Failed event creation response: {result}")
-
+        return None
     # except Exception as e:
     #     row_data['error'] = str(e)        
     #     logger.error(
@@ -1097,36 +1164,163 @@ def create_blended_event(api_service, row_data, event_custom_field_keys, session
     #     if debug:
     #         logger.exception(e)
 
-def add_course_staff(api_service, event_id, contacts, staffType, debug):
+def create_lms_event(api_service, row_data, event_custom_field_keys, eventType, tax_type, timeZone, debug):
+    try:
+        query = load_graphql_mutation('create_lms_event')
+        variables = {    
+            "courseTemplateId": row_data['course_template_id'],
+            "eventType": eventType,
+            "title": row_data['Event_title'],
+            "lmsStartDateTime": row_data['formatted_lms_start_datetime'],
+            "lmsEndDateTime": row_data['formatted_lms_end_datetime'],                       
+            "locationId": row_data.get('location_id'),
+            "taxType": tax_type,
+            "timeZoneName": timeZone,
+            "sittingCFKey": event_custom_field_keys['Sitting'],
+            "sittingCFValue": row_data['Sitting'],
+            "ocrMoodleCodeCFKey": event_custom_field_keys['OCR Moodle Code'],
+            "ocrMoodleCodeCFValue": row_data.get('OCR_moodle_code'),
+            "webSaleCFKey": event_custom_field_keys['Web sale'],
+            "webSaleCFValue": row_data['web_sale'],        
+        }
+        logger.debug(f"Creating lms event with variables: {variables}")
+
+        result = api_service.execute_query(query, variables)
+        writeQueryToFile(query)        
+        writeQueryToFile(variables)  
+        if (result and 'data' in result and
+            'event' in result['data'] and
+                'createLMS' in result['data']['event']):
+
+            event = result['data']['event']['createLMS']['event']
+            row_data['event_id'] = event['id']
+            
+            logger.info(
+                f"Successfully created event '{row_data['Event_title']}' with ID {event['id']}")
+             
+            writeResultToFile(event['legacyId'])
+            return event
+        else:
+            # Check for errors
+            errors = []
+            if 'data' in result and 'errors' in result['data']:
+                errors = [error.get('message', 'Unknown error')
+                        for error in result.get('errors', [])]
+            elif 'data' in result and 'event' in result['data'] and 'errors' in result['data']['event']['createEvent']:
+                errors = [error.get('message', 'Unknown error')
+                        for error in result['data']['createEvent'].get('errors', [])]
+
+            error_message = ', '.join(
+                errors) if errors else "Unknown error creating event"
+            row_data['error'] = error_message            
+            logger.error(
+                f"Failed to create event '{row_data['Event_title']}': {error_message}")
+
+            if debug:
+                logger.debug(f"Failed event creation response: {result}")
+            return None
+    except Exception as e:
+        row_data['error'] = str(e)        
+        logger.error(
+            f"Exception creating event '{row_data['Event_title']}': {str(e)}")
+        if debug:
+            logger.exception(e)
+    
+def update_session(api_service, parent_event, row_data, session_id, session_custom_field_keys, timeZone, debug):
+    query = load_graphql_mutation('update_session')
+    variables = {        
+        "sessionId": session_id,
+        "sessionCode": row_data["Session_title"],
+        "locationId": parent_event["location"]["id"],
+        "venue_id": parent_event["venue"]["id"] if parent_event.get("venue") else None,
+        "timeZoneName": timeZone,
+        "session_start_date": row_data["formatted_classroom_start_datetime"],
+        "session_end_date": row_data["formatted_classroom_end_datetime"],
+        "dayDefinitionKey": session_custom_field_keys["Day"],
+        "dayValue": row_data["session_day"],
+        "urlDefinitionKey": session_custom_field_keys["URL"],
+        "urlValue": row_data['Session_url']
+    }
+    result = api_service.execute_query(query, variables)
+    writeQueryToFile(query)        
+    writeQueryToFile(variables)  
+    if result:
+        # Add Instructors to event
+        add_course_staff(api_service, "session", session_id,
+                         row_data['session_instructor_ids'], "instructor", debug)
+    return result
+
+def add_course_staff(api_service, event_or_session, event_id, contact_ids, staffType, debug):
     """Add course staff to an event."""
     staff_error=[]
     staff_added=[]
-    query = load_graphql_mutation('add_course_staff')
-    try:            
-        for contact in contacts:
-            variables = {
-                "eventId": event_id,
-                "contactId": contact['id'],
-                "staffType": staffType
-            }
-            result = api_service.execute_query(query, variables)
-            if (result and 'data' in result and
-            'addStaff' in result['data'] and
-                'event' in result['data']['addStaff']):
-                # staff_added = result['data']['addStaff']['event']
-                staff_added.extend(result['data']['addStaff']['event'])    
-            else:
-                logger.error(f"Failed to add instructors {contacts} to event {event_id}")
-                staff_error.extend(contact['id'])
-    except Exception as e:
-        # row_data['error'] = str(e)
-        # failed_events.append(row_data)
-        logger.error(
-            f"Exception add staff {contacts} with staffType {staffType} to event {event_id}: {str(e)}")
-        if debug:
-            logger.exception(e)    
-        return None
-
+    if event_or_session == "event":
+        query = load_graphql_mutation('add_event_staff')
+        
+    else:
+        query = load_graphql_mutation('add_session_staff')
+    # try:            
+    for contact_id in contact_ids:
+        variables = {
+            "eventId": event_id,
+            "contactId": contact_id,
+            "staffType": staffType
+        }
+        writeQueryToFile("=======================================================")
+        writeQueryToFile(query)        
+        writeQueryToFile(variables)
+        result = api_service.execute_query(query, variables)
+        
+        writeQueryToFile(result)
+        writeQueryToFile("=======================================================")
+        if result['data'].get('event'):  
+            if result['data']['event']['addStaff']['errors']:
+                    if (result['data']['event']['addStaff']['errors'][0]['message'] and 
+                        result['data']['event']['addStaff']['errors'][0]['message'] != "The input Contact already exists as staff on the Event"):
+                        logger.error(
+                            f"Failed to add instructors {contact_ids} to event {event_id}")
+                        staff_error.extend(contact_ids)
+                    elif (result['data']['event']['addStaff']['errors'][1]['message'] and 
+                        result['data']['event']['addStaff']['errors'][1]['message'] != "The input Contact already exists as staff on the Event"):
+                        logger.error(
+                            f"Failed to add instructors {contact_ids} to event {event_id}")
+                        staff_error.extend(contact_ids)
+            elif (result and 'data' in result and
+                    'event' in result['data'] and
+                    'addStaff' in result['data']['event']):
+                        # staff_added = result['data']['addStaff']['event']
+                        staff_added.extend(
+                            result['data']['event']['addStaff']['event'])                        
+        elif result['data'].get('session'):
+            if result['data']['session']['addStaff']['errors']:
+                if (result['data']['session']['addStaff']['errors'][0]['message'] and 
+                    result['data']['session']['addStaff']['errors'][0]['message'] != "The input Contact already exists as staff on the Event"):
+                    logger.error(
+                        f"Failed to add instructors {contact_ids} to session {event_id}")
+                    staff_error.extend(contact_ids)
+                elif (result['data']['session']['addStaff']['errors'][1]['message'] and 
+                    result['data']['session']['addStaff']['errors'][1]['message'] != "The input Contact already exists as staff on the Event"):
+                    logger.error(
+                        f"Failed to add instructors {contact_ids} to session {event_id}")
+                    staff_error.extend(contact_ids)
+        elif (result and 'data' in result and
+                'session' in result['data'] and
+                'addStaff' in result['data']['session']):
+                    # staff_added = result['data']['addStaff']['event']
+                    staff_added.extend(
+                        result['data']['session']['addStaff']['session'])
+        
+            
+        
+                
+    # except Exception as e:
+    #     # row_data['error'] = str(e)
+    #     # failed_events.append(row_data)
+    #     logger.error(
+    #         f"Exception add staff {contact_ids} with staffType {staffType} to event {event_id}: {str(e)}")
+    #     if debug:
+    #         logger.exception(e)    
+    #     return None
 
 def get_custom_field_keys_by_entity_type(api_service, entity_type, debug):
     """
@@ -1181,38 +1375,37 @@ def bulk_upload_events_from_excel(file_path, debug=False, dry_run=False):
         valid_data, error_data = validate_and_process_event_excel(
             file_path, debug)
 
-        results = {
-            "total_rows": len(valid_data) + len(error_data),
-            "valid_rows": len(valid_data),
-            "error_rows": len(error_data),
-            "validation_errors": error_data,
-            "created_events": [],
-            "failed_events": []
-        }
+        # results = {
+        #     "total_rows": len(valid_data) + len(error_data),
+        #     "valid_rows": len(valid_data),
+        #     "error_rows": len(error_data),
+        #     "validation_errors": error_data,
+        #     "created_events": [],
+        #     "failed_events": []
+        # }
 
         # Step 2: Create events if not a dry run
         if not dry_run and valid_data:
             logger.info(f"Creating {len(valid_data)} events in Administrate")
-            successful_events, failed_events = create_administrate_events(
+            create_administrate_events(
                 api_service, valid_data, debug)
 
-            results["created_count"] = len(successful_events)
-            results["failed_count"] = len(failed_events)
-            results["created_events"] = successful_events
-            results["failed_events"] = failed_events
+            # results["created_count"] = len(successful_events)
+            # results["failed_count"] = len(failed_events)
+            # results["created_events"] = successful_events
+            # results["failed_events"] = failed_events
 
             logger.info(
-                f"Event creation complete. Created: {len(successful_events)}, Failed: {len(failed_events)}")
+                f"Event creation complete.")
         elif dry_run:
             logger.info("Dry run - not creating events")
-            results["dry_run"] = True
+            # results["dry_run"] = True
 
-        return results
+        # return results
 
     except Exception as e:
         logger.exception(f"Error in bulk upload process: {str(e)}")
         raise
-
 
 def generate_error_report(results, output_path=None):
     """
@@ -1268,11 +1461,41 @@ def generate_error_report(results, output_path=None):
         logger.info("No errors to report")
         return None
 
+def writeQueryToFile(query):
+    f = open(queryFilePath, "a")
+    f.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+"\n")
+    f.write(str(query)+"\n")
+    f.close()
+    return 
+
+def writeResultToFile(contentList):
+    f = open(resultFilePath, "a")    
+    f.write(contentList+"\n")
+    f.close()
+    return 
+
+def get_events(api_service,current_sitting,state):
+    events = []    
+    query = load_graphql_query('get_events_by_sitting_and_lifecycle')
+    variables = {"current_sitting": current_sitting,
+                    "state": state}
+    result = api_service.execute_query(query,variables)
+    if (result and 'data' in result and
+            'events' in result['data'] and
+            'edges' in result['data']['events']):
+        for event in result['data']['events']['edges']:
+            events.append(event['node']['id'])
+    return events
+
+def delete_events(api_service,events):
+    query = load_graphql_mutation('delete_events')
+    variables = {"eventids": events}
+    result = api_service.execute_query(query, variables)
+    return result
 
 if __name__ == "__main__":
-    result_data, result_error = validate_and_process_event_excel(
-        r"C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\administrate\src\EventSessionImportTemplate2025Stest.xlsx")
     api_service = AdministrateAPIService()
-    create_administrate_events(api_service, result_data[:1], debug=True)
-    print(result_data)
-    print(result_data)
+    result = get_events(api_service,"25S",EventLifecycleState.DRAFT)
+    # delete_events(api_service,result)
+    bulk_upload_events_from_excel(file_path, debug=True)
+    

@@ -1,21 +1,35 @@
 mutation createLMSEvent(
 	$courseTemplateId: ID!
 	$eventType: EventType!
-	$lmsEndDateTime: String!
-	$lmsStartDateTime: String!
+	$lmsEndDateTime: LocalDateTime!
+	$lmsStartDateTime: LocalDateTime!
+	$title: String!
 	$locationId: ID!
-	$taxType: TaxType!
+	$taxType: ID!
+	$timeZoneName: String!
+	$ocrMoodleCodeCFKey: ID!
+	$ocrMoodleCodeCFValue: String!
+	$sittingCFKey: ID!
+	$sittingCFValue: String
+	$webSaleCFKey: ID!
+	$webSaleCFValue: String
 ) {
 	event {
 		createLMS(
 			input: {
 				courseTemplateId: $courseTemplateId
 				eventType: $eventType
-				timeZonedLmsEnd: $lmsEndDateTime
-				timeZonedLmsStart: $lmsStartDateTime
+				title: $title
+				lmsEndDateTime: $lmsEndDateTime
+				lmsStartDateTime: $lmsStartDateTime
 				locationId: $locationId
 				taxType: $taxType
 				timeZoneName: $timeZoneName
+				customFieldValues: [
+					{ definitionKey: $sittingCFKey, value: $sittingCFValue }
+					{ definitionKey: $ocrMoodleCodeCFKey, value: $ocrMoodleCodeCFValue }
+					{ definitionKey: $webSaleCFKey, value: $webSaleCFValue }
+				]
 			}
 		) {
 			event {

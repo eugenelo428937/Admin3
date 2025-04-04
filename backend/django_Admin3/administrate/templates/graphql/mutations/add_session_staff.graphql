@@ -1,0 +1,14 @@
+mutation addSessionStaff($contactId: ID!, $eventId: ID!, $staffType: StaffType!) {
+	session {
+		addStaff(input: { contactIds: [$contactId], sessionId: $eventId, staffType: $staffType }) {
+			errors {
+				label
+				message
+				value
+			}
+			session {
+				id
+			}
+		}
+	}
+}
