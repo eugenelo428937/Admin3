@@ -1,0 +1,11 @@
+mutation ($staffId: ID!) {
+	event {
+		removeStaff(input: { staffId: $staffId, notifyStaff: False }) {
+			errors {
+				label
+				message
+				value
+			}
+		}
+	}
+}

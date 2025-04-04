@@ -1,21 +1,21 @@
 mutation updateSession(
 	$sessionId: ID!
-	$sessionTitle: String!
+	$sessionCode: String!
 	$locationId: ID!
-	$venue_id: ID!
-    $timeZoneName: String!
-	$session_start_date: DateTime!
-	$session_end_date: DateTime!
-	$dayDefinitionKey: String!
+	$venue_id: ID
+	$timeZoneName: String!
+	$session_start_date: LocalDateTime!
+	$session_end_date: LocalDateTime!
+	$dayDefinitionKey: ID!
 	$dayValue: String!
-	$urlDefinitionKey: String!
+	$urlDefinitionKey: ID!
 	$urlValue: String!
 ) {
 	session {
 		update(
 			sessionId: $sessionId
 			input: {
-				title: $sessionTitle
+				code: $sessionCode
 				locationId: $locationId
 				venueId: $venue_id
 				timeZoneName: $timeZoneName
