@@ -1,7 +1,7 @@
 mutation createBlendedEvent(
 	$title: String!
 	$locationId: ID!
-	$venueId: ID!
+	$venueId: ID
 	$eventType: EventType!
 	$taxType: ID!
 	$courseTemplateId: ID!
@@ -46,6 +46,12 @@ mutation createBlendedEvent(
 			event {
 				id
 				legacyId
+				location{
+					id
+				}
+				venue{
+					id
+				}
 				sessions {
 					edges {
 						node {

@@ -76,7 +76,6 @@ class AdministrateAPIService:
 
         return response.json()
 
-
     def get_custom_field_definitions(self, entity_type=None):
         """
         Get custom field definitions from Administrate API

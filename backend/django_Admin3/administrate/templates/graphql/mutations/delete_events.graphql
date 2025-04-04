@@ -1,0 +1,11 @@
+mutation deleteEvents($eventids: [ID]!) {
+	event {
+		delete(input: { eventIds: $eventids }) {
+			errors {
+				label
+				message
+				value
+			}
+		}
+	}
+}

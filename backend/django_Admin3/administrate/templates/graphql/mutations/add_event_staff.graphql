@@ -1,0 +1,14 @@
+mutation addEventStaff($contactId: ID!, $eventId: ID!, $staffType: StaffType!) {
+	event {
+		addStaff(input: { contactId: $contactId, eventId: $eventId, staffType: $staffType }) {
+			errors {
+				label
+				message
+				value
+			}
+			event {
+				id
+			}
+		}
+	}
+}
