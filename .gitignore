@@ -85,3 +85,4 @@ backend/django_Admin3/tokens/*.*
 backend/django_Admin3/tokens/*
 backend/django_Admin3/administrate/src/*
 backend/django_Admin3/administrate/src/*.xlsx
+backend/django_Admin3/administrate/src/EventSessionImportTemplate2025Stest.xlsx
