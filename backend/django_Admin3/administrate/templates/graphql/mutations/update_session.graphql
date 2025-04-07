@@ -15,7 +15,7 @@ mutation updateSession(
 		update(
 			sessionId: $sessionId
 			input: {
-				code: $sessionCode
+				title: $sessionTitle
 				locationId: $locationId
 				venueId: $venue_id
 				timeZoneName: $timeZoneName
