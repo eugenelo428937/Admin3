@@ -9,7 +9,7 @@ class ExamSession(models.Model):
     modified_date = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'exam_sessions'
+        db_table = 'acted_exam_sessions'
         verbose_name = 'Exam Session'
         verbose_name_plural = 'Exam Sessions'
 
