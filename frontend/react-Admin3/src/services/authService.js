@@ -20,7 +20,7 @@ const authService = {
 			// First, get CSRF token if needed
 			//await httpService.get(`${API_AUTH_URL}csrf/`);
 
-			const response = await httpService.post(`${API_AUTH_URL}login/`, credentials);
+			const response = await httpService.post(`${API_AUTH_URL}/login/`, credentials);
 			logger.debug("Login response received", response.data);
 
 			if (response.status === 200 && response.data && response.data.token && response.data.user) {
@@ -61,7 +61,7 @@ const authService = {
 			logger.error("Login failed", {
 				error: error.response?.data || error,
 				status: error.response?.status,
-				url: `${API_AUTH_URL}login/`,
+				url: `${API_AUTH_URL}/login/`,
 			});
 
 			// Don't throw errors, return error objects instead
@@ -94,7 +94,7 @@ const authService = {
 	},
 	register: async (userData) => {
 		try {
-			const response = await httpService.post(`${API_AUTH_URL}register/`, {
+			const response = await httpService.post(`${API_AUTH_URL}/register/`, {
 				username: userData.email,
 				password: userData.password,
 				email: userData.email,
@@ -137,7 +137,7 @@ const authService = {
 		try {
 			// Attempt to call logout endpoint if it exists
 			try {
-				await httpService.post(`${API_AUTH_URL}logout/`);
+				await httpService.post(`${API_AUTH_URL}/logout/`);
 			} catch (error) {
 				// Ignore logout endpoint errors
 				logger.debug("Logout endpoint error", error);
@@ -178,7 +178,7 @@ const authService = {
 	refreshToken: async () => {
 		try {
 			const refreshToken = localStorage.getItem("refreshToken");
-			const response = await httpService.post(`${API_AUTH_URL}refresh/`, {
+			const response = await httpService.post(`${API_AUTH_URL}/refresh/`, {
 				refresh: refreshToken,
 			});
 			console.log(response.data.token);
@@ -203,7 +203,7 @@ const authService = {
 			const userId = user.id;
 
 			// Make request to get current user's details
-			const response = await httpService.get(`${API_USER_URL}${userId}/`);
+			const response = await httpService.get(`${API_USER_URL}/${userId}/`);
 			return response.data;
 		} catch (error) {
 			throw error;
