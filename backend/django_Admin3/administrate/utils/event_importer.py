@@ -6,15 +6,24 @@ import validators
 import django
 import logging
 import json
+import environ
+from dotenv import load_dotenv
+
 from enum import Enum
 sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')))
 project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(project_root))
+
 # Configure Django settings
+
+# Load the production environment file
+env_path = os.path.join(project_root, '.env.production')
+load_dotenv(env_path)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE',
                       'django_Admin3.settings')
 django.setup()
+
 from datetime import datetime,date,time
 from django.core.exceptions import ValidationError
 from administrate.services.api_service import AdministrateAPIService
@@ -22,9 +31,9 @@ from administrate.models import CourseTemplate, Location, Venue, Instructor, Cus
 from administrate.exceptions import AdministrateAPIError
 from administrate.utils.graphql_loader import load_graphql_query, load_graphql_mutation
 logger = logging.getLogger(__name__)
-file_path = r"C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\administrate\src\EventSessionImportTemplate2025Swait.xlsx"
-queryFilePath = r"C:\Administrate\Result\query"+datetime.now().strftime("%Y%m%d")+"FINAL.txt"
-resultFilePath = r"C:\Administrate\Result\importResult"+datetime.now().strftime("%Y%m%d")+"FINAL.txt"
+file_path = r"C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\administrate\src\EventSessionImportTemplate2025SFinal.xlsx"
+queryFilePath = r"C:\Administrate\Result\query"+datetime.now().strftime("%Y%m%d")+"FINALLIVE.txt"
+resultFilePath = r"C:\Administrate\Result\importResult"+datetime.now().strftime("%Y%m%d")+"FINALLIVE.txt"
 tbc_venue_name = list(map(str.casefold, ["To be confirmed", "TBC", "TBD"]))
 
 class EventLifecycleState(Enum):
@@ -1495,7 +1504,8 @@ def delete_events(api_service,events):
 
 if __name__ == "__main__":
     api_service = AdministrateAPIService()
-    result = get_events(api_service,"25S",EventLifecycleState.DRAFT.value)
+    # result = get_events(api_service,"25A",EventLifecycleState.PUBLISHED.value)
+    # print(result)
     # delete_events(api_service,result)
-    # bulk_upload_events_from_excel(file_path, debug=True)
+    bulk_upload_events_from_excel(file_path, debug=True)
     
