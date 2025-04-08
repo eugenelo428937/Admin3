@@ -52,8 +52,10 @@ class AdministrateAuthService:
         token_time = datetime.datetime.utcnow()
         
         # Get credentials from settings if not in token_data
-        client_id = token_data.get('client_id') or settings.ADMINISTRATE_CLIENT_ID
-        client_secret = token_data.get('client_secret') or settings.ADMINISTRATE_CLIENT_SECRET
+        client_id = token_data.get(
+            'client_id') or settings.ADMINISTRATE_API_KEY
+        client_secret = token_data.get(
+            'client_secret') or settings.ADMINISTRATE_API_SECRET
         auth_user = token_data.get('auth_user') or settings.ADMINISTRATE_AUTH_USER
 
         if not all([client_id, client_secret, auth_user]):
