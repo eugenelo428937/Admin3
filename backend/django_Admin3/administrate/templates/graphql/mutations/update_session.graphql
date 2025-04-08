@@ -1,6 +1,6 @@
 mutation updateSession(
 	$sessionId: ID!
-	$sessionCode: String!
+	$sessionTitle: String!
 	$locationId: ID!
 	$venue_id: ID
 	$timeZoneName: String!
