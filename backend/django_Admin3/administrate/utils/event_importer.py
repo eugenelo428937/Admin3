@@ -13,7 +13,7 @@ project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(project_root))
 # Configure Django settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE',
-                      'django_Admin3.settings.development')
+                      'django_Admin3.settings')
 django.setup()
 from datetime import datetime,date,time
 from django.core.exceptions import ValidationError
@@ -22,7 +22,7 @@ from administrate.models import CourseTemplate, Location, Venue, Instructor, Cus
 from administrate.exceptions import AdministrateAPIError
 from administrate.utils.graphql_loader import load_graphql_query, load_graphql_mutation
 logger = logging.getLogger(__name__)
-file_path = r"C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\administrate\src\EventSessionImportTemplate2025SWAIT.xlsx"
+file_path = r"C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\administrate\src\EventSessionImportTemplate2025Swait.xlsx"
 queryFilePath = r"C:\Administrate\Result\query"+datetime.now().strftime("%Y%m%d")+"FINAL.txt"
 resultFilePath = r"C:\Administrate\Result\importResult"+datetime.now().strftime("%Y%m%d")+"FINAL.txt"
 tbc_venue_name = list(map(str.casefold, ["To be confirmed", "TBC", "TBD"]))
@@ -1494,8 +1494,8 @@ def delete_events(api_service,events):
     return result
 
 if __name__ == "__main__":
-    # api_service = AdministrateAPIService()
-    # result = get_events(api_service,"25S",EventLifecycleState.DRAFT.value)
+    api_service = AdministrateAPIService()
+    result = get_events(api_service,"25S",EventLifecycleState.DRAFT.value)
     # delete_events(api_service,result)
-    bulk_upload_events_from_excel(file_path, debug=True)
+    # bulk_upload_events_from_excel(file_path, debug=True)
     
