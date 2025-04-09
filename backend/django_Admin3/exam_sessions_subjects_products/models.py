@@ -1,9 +1,11 @@
 from django.db import models
 from products.models import Product
-from .exam_session_subjects import ExamSessionSubject
+from exam_sessions_subjects.models import ExamSessionSubject
+
 
 class ExamSessionSubjectProduct(models.Model):
-    exam_session_subject = models.ForeignKey(ExamSessionSubject, on_delete=models.CASCADE)
+    exam_session_subject = models.ForeignKey(
+        ExamSessionSubject, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -74,12 +74,13 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'users',
     'students',
     'subjects',
     'exam_sessions',
+    'exam_sessions_subjects',
+    'exam_sessions_subjects_products',
     'products',
     'core_auth',    
     'administrate.apps.AdministrateConfig',
