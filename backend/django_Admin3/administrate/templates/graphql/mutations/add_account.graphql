@@ -1,0 +1,16 @@
+mutation {
+  account{
+    create(input:{
+      name: "Training Corp"
+    }){
+      account{
+        id
+      }
+      errors{
+        label 
+        message 
+        value
+      }
+    }
+  }
+}
