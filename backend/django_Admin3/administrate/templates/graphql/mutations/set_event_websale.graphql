@@ -1,0 +1,15 @@
+mutation setEventWebsale($eventId: ID!, $websale: String!, $websaleCFKey: ID!,$lifecycleState: EventLifecycleState!) {
+	event {
+		update(eventId: $eventId, 
+			input: { 
+				lifecycleState: $lifecycleState,
+				customFieldValues: [{ definitionKey: $websaleCFKey, value: $websale }] 
+			}) {
+			errors {
+				label
+				value
+				message
+			}
+		}
+	}
+}

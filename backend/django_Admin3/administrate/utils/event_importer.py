@@ -18,7 +18,8 @@ sys.path.append(str(project_root))
 # Configure Django settings
 
 # Load the production environment file
-env_path = os.path.join(project_root, '.env.production')
+# env_path = os.path.join(project_root, '.env.production')
+env_path = os.path.join(project_root, '.env.development')
 load_dotenv(env_path)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE',
                       'django_Admin3.settings')
@@ -1502,10 +1503,41 @@ def delete_events(api_service,events):
     result = api_service.execute_query(query, variables)
     return result
 
+
+def set_event_websale(api_service, event_id, websaleCFKey, websale, lifecycleState):
+    """
+    Set the web sale status of an event
+    
+    Args:
+        api_service: AdministrateAPIService instance
+        event_id: Event ID to update
+        websale: Web sale status (True/False)
+    
+    Returns:
+        dict: Result of the update operation
+    """
+    
+    query = load_graphql_mutation('set_event_websale')
+    variables = {
+        "eventId": event_id,
+        "websale": websale,
+        "websaleCFKey": websaleCFKey,
+        "lifecycleState": lifecycleState,
+    }
+    result = api_service.execute_query(query, variables)
+    return result
+
 if __name__ == "__main__":
+
     api_service = AdministrateAPIService()
-    # result = get_events(api_service,"25A",EventLifecycleState.PUBLISHED.value)
+    event_custom_field_keys = get_custom_field_keys_by_entity_type(
+        api_service, "Event", False)
+    result = get_events(api_service,"25S",EventLifecycleState.DRAFT.value)
+    for event_id in result:
+        set_event_websale(api_service, event_id, event_custom_field_keys["Web sale"], "True",
+                          EventLifecycleState.PUBLISHED.value)
+
     # print(result)
     # delete_events(api_service,result)
-    bulk_upload_events_from_excel(file_path, debug=True)
+    # bulk_upload_events_from_excel(file_path, debug=True)
     
