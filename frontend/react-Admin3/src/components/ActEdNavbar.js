@@ -13,9 +13,10 @@ const ActEdNavbar = () => {
 	const [showLoginModal, setShowLoginModal] = useState(false);
 	const [showRegisterModal, setShowRegisterModal] = useState(false);
 	const [formData, setFormData] = useState({
-		username: "",
+		email: "",
 		password: "",
 	});
+	
 	const [registerData, setRegisterData] = useState({
 		username: "",
 		first_name: "",
@@ -37,7 +38,7 @@ const ActEdNavbar = () => {
 		setMessage("");
 		setFormData({
 			// Reset form data
-			username: "",
+			email: "",
 			password: "",
 		});
 	};
@@ -327,9 +328,9 @@ const ActEdNavbar = () => {
 						<Form.Group className="mb-3">
 							<Form.Label>Email</Form.Label>
 							<Form.Control
-								type="text"
-								name="username"
-								value={formData.username}
+								type="email"
+								name="email"
+								value={formData.email}
 								onChange={handleInputChange}
 								required
 							/>

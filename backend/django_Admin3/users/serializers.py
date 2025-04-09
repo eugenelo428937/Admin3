@@ -14,8 +14,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop('password')
+        # Pop username so it doesn't get passed twice
+        username = validated_data.pop('username', validated_data.get('email'))
+        
+        # Create user with email as username
         user = User.objects.create(
-            username=validated_data['email'],
+            username=username,
             **validated_data
         )
         user.set_password(password)

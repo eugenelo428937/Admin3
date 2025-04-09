@@ -3,10 +3,28 @@ from django.contrib.auth.models import User
 from .models import Student
 
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name')
-        read_only_fields = ('id', 'username', 'email')  # Make these read-only since user management is moved
+        fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name')
+        write_only_fields = ('password',)
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data.get('email', ''),
+            password=validated_data['password'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', '')
+        )
+        return user
+
+    def update(self, instance, validated_data):
+        if 'password' in validated_data:
+            password = validated_data.pop('password')
+            instance.set_password(password)
+        return super().update(instance, validated_data)
 
 class StudentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)  # Make user read-only since it's managed by users app

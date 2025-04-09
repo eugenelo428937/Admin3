@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.middleware.csrf import get_token
-from students.serializers import UserSerializer
+from users.serializers import UserRegistrationSerializer
 
 class AuthViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
@@ -26,39 +26,51 @@ class AuthViewSet(viewsets.ViewSet):
         """
         Login user and return JWT tokens
         """
-        username = request.data.get('username')
+        email = request.data.get('email')
         password = request.data.get('password')
-        
-        user = authenticate(username=username, password=password)
-        if user:
-            refresh = RefreshToken.for_user(user)
-            serializer = UserSerializer(user)
-            return Response({
-                'token': str(refresh.access_token),
-                'refresh': str(refresh),
-                'user': serializer.data
-            })
-        return Response(
-            {'error': 'Invalid credentials'}, 
-            status=status.HTTP_401_UNAUTHORIZED
-        )
+
+        try:
+            # First try to find user by email
+            user = User.objects.get(email=email)
+            # Then authenticate with their username and password
+            user = authenticate(username=user.username, password=password)
+            if user:
+                refresh = RefreshToken.for_user(user)
+                serializer = UserRegistrationSerializer(user)
+                return Response({
+                    'token': str(refresh.access_token),
+                    'refresh': str(refresh),
+                    'user': serializer.data
+                })
+            return Response(
+                {'error': 'Invalid credentials'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'Invalid credentials'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
     @action(detail=False, methods=['post'])
     def register(self, request):
         """
         Register a new user and return JWT tokens
         """
-        serializer = UserSerializer(data=request.data)
+        serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
+            user = serializer.save()  # This will now properly handle password hashing
             refresh = RefreshToken.for_user(user)
             return Response({
                 'status': 'success',
                 'token': str(refresh.access_token),
                 'refresh': str(refresh),
                 'user': serializer.data
-            })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            }, status=status.HTTP_201_CREATED)
+        return Response(
+            {'status': 'error', 'errors': serializer.errors}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(detail=False, methods=['post'])
     def refresh_token(self, request):
