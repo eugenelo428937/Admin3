@@ -97,15 +97,14 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Must be before CommonMiddleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware'
 ]
 
 ROOT_URLCONF = 'django_Admin3.urls'
@@ -200,28 +199,27 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost:8888",
+    "http://127.0.0.1:8888"
 ]
-CORS_ALLOW_ALL_ORIGINS = False
 
-# CSRF settings
+CORS_ALLOW_CREDENTIALS = True
+
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost:8888",
+    "http://127.0.0.1:8888"
 ]
 
-AUTH_USER_MODEL = 'auth.User'
-
 # Allow credentials (cookies) to be included in requests
-CORS_ALLOW_CREDENTIALS = True
-
-# Optionally, specify allowed methods and headers
 CORS_ALLOW_METHODS = [
     "DELETE",
     "GET",
     "OPTIONS",
     "PATCH",
     "POST",
-    "PUT",
+    "PUT"
 ]
 
 CORS_ALLOW_HEADERS = [
@@ -233,8 +231,10 @@ CORS_ALLOW_HEADERS = [
     "origin",
     "user-agent",
     "x-csrftoken",
-    "x-requested-with",
+    "x-requested-with"
 ]
+
+AUTH_USER_MODEL = 'auth.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [

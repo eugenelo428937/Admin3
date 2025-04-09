@@ -17,16 +17,23 @@ const authService = {
 		localStorage.removeItem("isAuthenticated");
 
 		try {
-			// First, get CSRF token if needed
-			//await httpService.get(`${API_AUTH_URL}csrf/`);
+			// First, get CSRF token
+			await httpService.get(`${API_AUTH_URL}/csrf/`);
 
-			const response = await httpService.post(`${API_AUTH_URL}/login/`, credentials);
+			// Send login request with email as username
+			const response = await httpService.post(`${API_AUTH_URL}/login/`, {
+				username: credentials.email, // Use email as username
+				password: credentials.password
+			});
+			
 			logger.debug("Login response received", response.data);
 
 			if (response.status === 200 && response.data && response.data.token && response.data.user) {
 				// Store tokens
 				localStorage.setItem("token", response.data.token);
-				localStorage.setItem("refreshToken", response.data.refresh);
+				if (response.data.refresh) {
+					localStorage.setItem("refreshToken", response.data.refresh);
+				}
 				logger.debug("Tokens stored in localStorage");
 
 				// Store user data
@@ -52,7 +59,7 @@ const authService = {
 				code: 500,
 			};
 		} catch (error) {
-			// Clear any existing auth data before attempting login
+			// Clear any existing auth data on error
 			localStorage.removeItem("token");
 			localStorage.removeItem("refreshToken");
 			localStorage.removeItem("user");
