@@ -6,7 +6,7 @@ const API_URL = config.productUrl;
 const productService = {
     getAll: async () => {
         try {
-            const response = await httpService.get(`${API_URL}`);
+            const response = await httpService.get(`${API_URL}/`);
             // Ensure we're returning an array
             if (!response.data) return [];
             return Array.isArray(response.data) ? response.data : response.data.results || Object.values(response.data) || [];
@@ -22,7 +22,7 @@ const productService = {
     },
 
     create: async (product) => {
-        const response = await httpService.post(`${API_URL}`, product);
+        const response = await httpService.post(`${API_URL}/`, product);
         return response.data;
     },
 

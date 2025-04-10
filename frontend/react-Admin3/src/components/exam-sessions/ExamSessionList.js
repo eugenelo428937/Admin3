@@ -15,9 +15,10 @@ const ExamSessionList = () => {
 
     const fetchExamSessions = async () => {
         try {
-            const data = await examSessionService.getAll();
+            const data = await examSessionService.getAll();            
             setExamSessions(data);
         } catch (err) {
+            console.error('Error fetching exam sessions:', err);
             setError('Failed to fetch exam sessions');
         }
     };
@@ -52,7 +53,7 @@ const ExamSessionList = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {examSessions.map(session => (
+                    {Array.isArray(examSessions) && examSessions.map(session => (
                         <tr key={session.id}>
                             <td>{session.session_code}</td>
                             <td>{moment(session.start_date).format('YYYY-MM-DD HH:mm')}</td>
