@@ -32,7 +32,7 @@ class ExamSessionSubjectViewSet(viewsets.ModelViewSet):
             'created': created,
             'errors': errors
         }, status=status.HTTP_400_BAD_REQUEST if errors else status.HTTP_201_CREATED)
-    
+
     @action(detail=False, methods=['post'], url_path='insert-subjects')
     def insert_subjects_by_session(self, request):
         """
