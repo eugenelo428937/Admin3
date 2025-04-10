@@ -1,7 +1,7 @@
 query getCurrentEventsBySittingAndLifecycle($current_sitting: String!, $state: String!) {
 	events(
 		filters: [{ field: title, operation: wordlike, value: $current_sitting }, { field: lifecycleState, operation: eq, value: $state }]
-		first: 1000
+		first: 500
 	) {
 		pageInfo {
 			totalRecords
