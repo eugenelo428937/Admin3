@@ -26,7 +26,7 @@ class AuthViewSet(viewsets.ViewSet):
         """
         Login user and return JWT tokens
         """
-        email = request.data.get('email')
+        email = request.data.get('username')
         password = request.data.get('password')
 
         try:
