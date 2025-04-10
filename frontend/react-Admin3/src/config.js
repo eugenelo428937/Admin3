@@ -7,6 +7,7 @@ const config = {
 	examSessionUrl: process.env.REACT_APP_API_BASE_URL + process.env.REACT_APP_API_EXAM_SESSION_URL,
 	productUrl: process.env.REACT_APP_API_BASE_URL + process.env.REACT_APP_API_PRODUCT_URL,
 	subjectUrl: process.env.REACT_APP_API_BASE_URL + process.env.REACT_APP_API_SUBJECT_URL,
+	examSessionSubjectUrl: process.env.REACT_APP_API_BASE_URL + process.env.REACT_APP_API_EXAM_SESSION_SUBJECT_URL,
 	isDevelopment: process.env.NODE_ENV === "development",
 	enableDebugLogs: true,
 };
