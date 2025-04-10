@@ -46,11 +46,12 @@ class AdministrateAPIService:
             )
 
         result = response.json()
+
         if not ignore_errors and 'errors' in result:
             raise AdministrateAPIError(
                 f"GraphQL query returned errors: {result['errors']}"
             )
-
+        
         return result
 
     def execute_rest_call(self, method, endpoint, data=None):

@@ -18,8 +18,8 @@ sys.path.append(str(project_root))
 # Configure Django settings
 
 # Load the production environment file
-# env_path = os.path.join(project_root, '.env.production')
-env_path = os.path.join(project_root, '.env.development')
+env_path = os.path.join(project_root, '.env.production')
+# env_path = os.path.join(project_root, '.env.development')
 load_dotenv(env_path)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE',
                       'django_Admin3.settings')
@@ -1490,6 +1490,9 @@ def get_events(api_service,current_sitting,state):
     variables = {"current_sitting": current_sitting,
                     "state": state}
     result = api_service.execute_query(query,variables)
+    while result['data']['events']['pageInfo']['hasNextPage']:
+        result = result.udpate(api_service.execute_query(query, variables))
+
     if (result and 'data' in result and
             'events' in result['data'] and
             'edges' in result['data']['events']):
@@ -1525,17 +1528,23 @@ def set_event_websale(api_service, event_id, websaleCFKey, websale, lifecycleSta
         "lifecycleState": lifecycleState,
     }
     result = api_service.execute_query(query, variables)
+   
     return result
 
 if __name__ == "__main__":
-
+    count=0
     api_service = AdministrateAPIService()
     event_custom_field_keys = get_custom_field_keys_by_entity_type(
         api_service, "Event", False)
-    result = get_events(api_service,"25S",EventLifecycleState.DRAFT.value)
-    for event_id in result:
-        set_event_websale(api_service, event_id, event_custom_field_keys["Web sale"], "True",
-                          EventLifecycleState.PUBLISHED.value)
+    
+    result = get_events(api_service,"25S",EventLifecycleState.PUBLISHED.value)
+    print(result)
+
+    # for event_id in result:
+    #     print(count)
+    #     set_event_websale(api_service, event_id, event_custom_field_keys["Web sale"], "True",
+    #                       EventLifecycleState.PUBLISHED.value)
+    #     count += 1
 
     # print(result)
     # delete_events(api_service,result)
