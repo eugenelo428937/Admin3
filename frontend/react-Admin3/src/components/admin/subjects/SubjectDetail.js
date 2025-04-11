@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Button, Alert } from 'react-bootstrap';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import subjectService from '../../services/subjectService';
+import subjectService from "../../../services/subjectService";
 //asdasd
 const SubjectDetail = () => {
   const { id } = useParams();
