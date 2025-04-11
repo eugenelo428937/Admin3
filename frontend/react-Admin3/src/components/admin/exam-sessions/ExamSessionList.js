@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Container, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import examSessionService from '../../services/examSessionService';
+import examSessionService from '../../../services/examSessionService';
 import moment from 'moment';
 
 const ExamSessionList = () => {
