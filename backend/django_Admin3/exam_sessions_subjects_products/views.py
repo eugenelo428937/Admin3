@@ -2,12 +2,15 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from .models import ExamSessionSubjectProduct
 from .serializers import ExamSessionSubjectProductSerializer, ProductListSerializer
 from exam_sessions_subjects.models import ExamSessionSubject
 from products.models import Product
 
 class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
+
     queryset = ExamSessionSubjectProduct.objects.all()
     serializer_class = ExamSessionSubjectProductSerializer
 
@@ -120,8 +123,8 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 'error': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=False, methods=['get'], url_path='products-list')
-    def list(self, request):
+    @action(detail=False, methods=['get'], url_path='get-available-products')
+    def get_available_products(self, request):
         """
         Get list of all products with their subject details
         """

@@ -43,7 +43,7 @@ const productService = {
 
     getAvailableProducts: async () => {
         const response = await httpService.get(
-				`${API_URL}/available-products/`
+				`${API_URL}/current/get-available-products`
 			);
 			return response.data;
     }
