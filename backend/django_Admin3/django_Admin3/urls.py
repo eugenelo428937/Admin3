@@ -26,4 +26,5 @@ urlpatterns = [
     path('api/subjects/', include('subjects.urls')),
     path('api/products/', include('products.urls')),
     path('api/exam-sessions-subjects/', include('exam_sessions_subjects.urls')),
+    path('api/exam-sessions-subjects-products/', include('exam_sessions_subjects_products.urls')),
 ]
