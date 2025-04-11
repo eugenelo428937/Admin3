@@ -146,7 +146,9 @@ const ActEdNavbar = () => {
 						<Link to="/Home">
 							<div className="p-0 mx-1 flex-wrap align-items-center d-flex flex-row">
 								<House className="bi d-flex flex-row align-items-center" />
-								<span className="d-none d-md-block mx-1 fst-normal">ActEd Home</span>
+								<span className="d-none d-md-block mx-1 fst-normal">
+									ActEd Home
+								</span>
 							</div>
 						</Link>
 					</div>
@@ -154,7 +156,9 @@ const ActEdNavbar = () => {
 						<Link to="/Help">
 							<div className="p-0 mx-1 flex-wrap align-items-center d-flex flex-row">
 								<QuestionCircle className="bi d-flex flex-row align-items-center"></QuestionCircle>
-								<span className="d-none d-md-block mx-1 fst-normal">Help</span>
+								<span className="d-none d-md-block mx-1 fst-normal">
+									Help
+								</span>
 							</div>
 						</Link>
 					</div>
@@ -166,10 +170,14 @@ const ActEdNavbar = () => {
 							variant="link"
 							className="btn-search p-0 mx-1 flex-wrap align-items-center d-flex flex-row">
 							<Cart className="bi d-flex flex-row align-items-center"></Cart>
-							<span className="d-none d-md-block mx-1 fst-normal">Shopping Cart</span>
+							<span className="d-none d-md-block mx-1 fst-normal">
+								Shopping Cart
+							</span>
 							<span className="position-absolute translate-middle badge rounded-circle bg-danger p-1 notification-dot">
 								<span className="position-relative"></span>
-								<span className="visually-hidden">item(s) in shopping cart</span>
+								<span className="visually-hidden">
+									item(s) in shopping cart
+								</span>
 							</span>
 						</Button>
 					</div>
@@ -179,14 +187,22 @@ const ActEdNavbar = () => {
 								title={
 									<div className="d-flex align-items-center">
 										<PersonCircle className="bi d-flex flex-row align-items-center" />
-										<span className="d-none d-md-block mx-1 fst-normal">Welcome {user?.first_name || "User"}</span>
+										<span className="d-none d-md-block mx-1 fst-normal">
+											Welcome {user?.first_name || "User"}
+										</span>
 									</div>
 								}
 								id="user-dropdown">
-								<NavDropdown.Item href="/profile">My Profile</NavDropdown.Item>
-								<NavDropdown.Item href="/orders">My Orders</NavDropdown.Item>
+								<NavDropdown.Item href="/profile">
+									My Profile
+								</NavDropdown.Item>
+								<NavDropdown.Item href="/orders">
+									My Orders
+								</NavDropdown.Item>
 								<NavDropdown.Divider />
-								<NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
+								<NavDropdown.Item onClick={handleLogout}>
+									Logout
+								</NavDropdown.Item>
 							</NavDropdown>
 						) : (
 							<Button
@@ -194,7 +210,9 @@ const ActEdNavbar = () => {
 								onClick={handleUserIconClick}
 								className="btn-search p-0 mx-1 flex-wrap align-items-center d-flex flex-row">
 								<PersonCircle className="bi d-flex flex-row align-items-center"></PersonCircle>
-								<span className="d-none d-md-block mx-1 fst-normal">Login</span>
+								<span className="d-none d-md-block mx-1 fst-normal">
+									Login
+								</span>
 							</Button>
 						)}
 					</div>
@@ -238,56 +256,35 @@ const ActEdNavbar = () => {
 						id="navbar-menu"
 						className="px-md-1 px-0 m-auto justify-content-lg-center justify-content-md-start order-4 order-md-2">
 						<Nav className="navbar-nav  px-md-2 px-lg-2 flex-wrap">
-							<Nav.Link
-								as={NavLink}
-								to="/home">
+							<Nav.Link as={NavLink} to="/home">
 								Home
 							</Nav.Link>
-							<Nav.Link
-								as={NavLink}
-								to="/product">
+							<Nav.Link as={NavLink} to="/product">
 								Subjects
 							</Nav.Link>
-							<Nav.Link
-								as={NavLink}
-								href="#home">
+							<Nav.Link as={NavLink} href="#home">
 								Distance Learning
 							</Nav.Link>
-							<Nav.Link
-								as={NavLink}
-								href="#home">
+							<Nav.Link as={NavLink} href="#home">
 								Tutorials
 							</Nav.Link>
-							<Nav.Link
-								as={NavLink}
-								href="#home">
+							<Nav.Link as={NavLink} href="#home">
 								Online Classroom
 							</Nav.Link>
-							<NavDropdown
-								title="Admin"
-								id="admin-nav-dropdown">
-								<NavDropdown.Item
-									as={NavLink}
-									to="/exam-sessions">
-									Exam Sessions
-								</NavDropdown.Item>
-								<NavDropdown.Item
-									as={NavLink}
-									to="/subjects">
-									Subjects
-								</NavDropdown.Item>
-								<NavDropdown.Item
-									as={NavLink}
-									to="/products">
-									Products
-								</NavDropdown.Item>
-								{/* <NavDropdown.Divider />
-								<NavDropdown.Item
-									as={NavLink}
-									to="/">
-									Separated link
-								</NavDropdown.Item> */}
-							</NavDropdown>
+							{isAuthenticated ? (
+								<NavDropdown title="Admin" id="admin-nav-dropdown">
+									<NavDropdown.Item as={NavLink} to="/exam-sessions">
+										Exam Sessions
+									</NavDropdown.Item>
+									<NavDropdown.Item as={NavLink} to="/subjects">
+										Subjects
+									</NavDropdown.Item>
+									<NavDropdown.Item as={NavLink} to="/products">
+										Products
+									</NavDropdown.Item>
+									
+								</NavDropdown>
+							) : null}
 						</Nav>
 					</Navbar.Collapse>
 					<div className="d-flex justify-content-md-end justify-content-start align-content-center flex-row ps-md-2 order-0 order-md-4">
@@ -297,7 +294,9 @@ const ActEdNavbar = () => {
 								to="/Brochure"
 								className="nav-link btn-search p-0 ms-2 align-items-center d-flex flex-row">
 								<Download className="bi d-flex flex-row align-items-center"></Download>
-								<span className="d-none d-md-block mx-1 fst-normal">Brochure</span>
+								<span className="d-none d-md-block mx-1 fst-normal">
+									Brochure
+								</span>
 							</Button>
 						</div>
 						<div>
@@ -306,7 +305,9 @@ const ActEdNavbar = () => {
 								to="/Search"
 								className="nav-link btn-search p-0 ms-2 align-items-center d-flex flex-row">
 								<Search className="bi d-flex flex-row align-items-center"></Search>
-								<span className="d-none d-md-block mx-1 fst-normal">Search</span>
+								<span className="d-none d-md-block mx-1 fst-normal">
+									Search
+								</span>
 							</Button>
 						</div>
 					</div>
@@ -314,17 +315,13 @@ const ActEdNavbar = () => {
 			</Navbar>
 
 			{/* Login Modal */}
-			<Modal
-				show={showLoginModal}
-				onHide={handleClose}>
+			<Modal show={showLoginModal} onHide={handleClose}>
 				<Modal.Header closeButton>
 					<Modal.Title>Login</Modal.Title>
 				</Modal.Header>
 				<Modal.Body>
 					{loginError && <Alert variant="danger">{loginError}</Alert>}
-					<Form
-						onSubmit={handleLogin}
-						noValidate>
+					<Form onSubmit={handleLogin} noValidate>
 						<Form.Group className="mb-3">
 							<Form.Label>Email</Form.Label>
 							<Form.Control
@@ -371,7 +368,9 @@ const ActEdNavbar = () => {
 					<Modal.Title>Register</Modal.Title>
 				</Modal.Header>
 				<Modal.Body>
-					{registerError && <Alert variant="danger">{registerError}</Alert>}
+					{registerError && (
+						<Alert variant="danger">{registerError}</Alert>
+					)}
 					<Form onSubmit={handleRegister}>
 						<Form.Group className="mb-3">
 							{/* <Form.Label>Username</Form.Label>
@@ -437,9 +436,7 @@ const ActEdNavbar = () => {
 								disabled={isLoading}>
 								{isLoading ? "Registering..." : "Register"}
 							</Button>
-							<Button
-								variant="link"
-								onClick={switchToLogin}>
+							<Button variant="link" onClick={switchToLogin}>
 								Already have an account? Login
 							</Button>
 						</div>
