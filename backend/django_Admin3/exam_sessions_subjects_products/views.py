@@ -3,7 +3,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import ExamSessionSubjectProduct
-from .serializers import ExamSessionSubjectProductSerializer
+from .serializers import ExamSessionSubjectProductSerializer, ProductListSerializer
 from exam_sessions_subjects.models import ExamSessionSubject
 from products.models import Product
 
@@ -119,3 +119,21 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             return Response({
                 'error': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['get'], url_path='products-list')
+    def list(self, request):
+        """
+        Get list of all products with their subject details
+        """
+        queryset = ExamSessionSubjectProduct.objects.select_related(
+            'exam_session_subject__subject',
+            'product'
+        ).all()
+        
+        # Optional filtering by subject code
+        subject_code = request.query_params.get('subject_code', None)
+        if subject_code:
+            queryset = queryset.filter(exam_session_subject__subject__code=subject_code)
+
+        serializer = ProductListSerializer(queryset, many=True)
+        return Response(serializer.data)
