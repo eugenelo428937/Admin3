@@ -3,7 +3,7 @@ from .models import ExamSessionSubjectProduct
 from exam_sessions_subjects.serializers import ExamSessionSubjectSerializer
 from products.serializers import ProductSerializer
 from subjects.models import Subject
-from products.models import Product
+from products.models.products import Product
 
 class ExamSessionSubjectProductSerializer(serializers.ModelSerializer):
     exam_session_subject_details = ExamSessionSubjectSerializer(source='exam_session_subject', read_only=True)

@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from products.models import ProductType, ProductSubtype
+from .product_types import ProductType
+from .product_subtypes import ProductSubtype
 
 class Product(models.Model):
     PRODUCT_TYPE_CHOICES = [

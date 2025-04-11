@@ -1,6 +1,6 @@
 from django.db import models
 from subjects.models import Subject
-from products.models import Product
+from products.models.products import Product
 from exam_sessions.models import ExamSession
 
 

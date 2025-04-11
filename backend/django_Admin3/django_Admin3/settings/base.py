@@ -81,7 +81,7 @@ INSTALLED_APPS = [
     'exam_sessions',
     'exam_sessions_subjects',
     'exam_sessions_subjects_products',
-    'products',
+    'products.apps.ProductsConfig',
     'core_auth',    
     'administrate.apps.AdministrateConfig',
     'django.contrib.admin',
