@@ -1,22 +1,29 @@
 // src/components/ActEdNavbar.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { Container, Button, Nav, Navbar, Image, NavDropdown, Modal, Form, Alert } from "react-bootstrap";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { House, QuestionCircle, Cart, PersonCircle, Download, Search } from "react-bootstrap-icons";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../css/navbar.css";
+import productService from "../services/productService";
 
 const ActEdNavbar = () => {
 	// State for authentication status
-	const { isAuthenticated, user, isLoading, login, register, logout } = useAuth();
+	const { isAuthenticated, user, isLoading, login, register, logout } =
+		useAuth();
 	const [showLoginModal, setShowLoginModal] = useState(false);
 	const [showRegisterModal, setShowRegisterModal] = useState(false);
+	const [subjects, setSubjects] = useState([]); // New state for storing subjects
+	const [loadingSubjects, setLoadingSubjects] = useState(true); // Track loading state
+	const navigate = useNavigate();
+	
+
 	const [formData, setFormData] = useState({
 		email: "",
 		password: "",
 	});
-	
+
 	const [registerData, setRegisterData] = useState({
 		username: "",
 		first_name: "",
@@ -33,6 +40,49 @@ const ActEdNavbar = () => {
 	const [loginError, setLoginError] = useState("");
 	const [registerError, setRegisterError] = useState("");
 
+	// Fetch available subjects when component mounts
+	useEffect(() => {
+		fetchSubjects();
+	}, []);
+
+	// Function to fetch subjects
+	const fetchSubjects = async () => {
+		try {
+			setLoadingSubjects(true);
+			// Fetch products from the API
+			const data = await productService.getAvailableProducts();
+
+			// Extract unique subjects from the products
+			let uniqueSubjects = [];
+			if (Array.isArray(data)) {
+				// Create a map to store unique subjects by ID
+				const subjectMap = new Map();
+				data.forEach((product) => {
+					if (!subjectMap.has(product.subject_id)) {
+						subjectMap.set(product.subject_id, {
+							id: product.subject_id,
+							code: product.subject_code,
+							description: product.subject_description,
+						});
+					}
+				});
+				uniqueSubjects = Array.from(subjectMap.values());
+			}
+
+			setSubjects(uniqueSubjects);
+			setLoadingSubjects(false);
+		} catch (error) {
+			console.error("Error fetching subjects:", error);
+			setLoadingSubjects(false);
+		}
+	};
+
+	// Handle navigating to product list with subject filter
+	const handleSubjectClick = (subjectCode) => {
+		navigate(`/products?subject=${subjectCode}`);
+	};
+
+	// Handle closing the modal and resetting form data
 	const handleClose = () => {
 		setShowLoginModal(false);
 		setMessage("");
@@ -62,7 +112,7 @@ const ActEdNavbar = () => {
 	const handleLogin = async (e) => {
 		e.preventDefault();
 		try {
-			setLoginError(""); 
+			setLoginError("");
 			const result = await login(formData);
 			if (result.status === "error") {
 				setLoginError(result.message);
@@ -71,7 +121,7 @@ const ActEdNavbar = () => {
 				setFormData((prevState) => ({
 					...prevState,
 					password: "",
-				}));			
+				}));
 			}
 		} catch (err) {
 			setLoginError(err.message || "Login failed");
@@ -110,7 +160,7 @@ const ActEdNavbar = () => {
 	// Handle logout
 	const handleLogout = async (e) => {
 		e.preventDefault();
-		try {			
+		try {
 			await logout();
 		} catch (error) {
 			console.error("Logout error:", error);
@@ -259,9 +309,30 @@ const ActEdNavbar = () => {
 							<Nav.Link as={NavLink} to="/home">
 								Home
 							</Nav.Link>
-							<Nav.Link as={NavLink} to="/product">
+							<Nav.Link as={NavLink} to="/products">
 								Products
 							</Nav.Link>
+							<NavDropdown title="Subjects">
+								{loadingSubjects ? (
+									<NavDropdown.Item disabled>
+										Loading subjects...
+									</NavDropdown.Item>
+								) : subjects.length > 0 ? (
+									subjects.map((subject) => (
+										<NavDropdown.Item
+											key={subject.id}
+											onClick={() =>
+												handleSubjectClick(subject.code)
+											}>
+											{subject.code} - {subject.description}
+										</NavDropdown.Item>
+									))
+								) : (
+									<NavDropdown.Item disabled>
+										No subjects available
+									</NavDropdown.Item>
+								)}
+							</NavDropdown>
 							<Nav.Link as={NavLink} href="#home">
 								Distance Learning
 							</Nav.Link>
@@ -282,7 +353,6 @@ const ActEdNavbar = () => {
 									<NavDropdown.Item as={NavLink} to="/products">
 										Products
 									</NavDropdown.Item>
-									
 								</NavDropdown>
 							) : null}
 						</Nav>

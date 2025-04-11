@@ -39,7 +39,7 @@ function App() {
 					<ActEdNavbar />
 					<Routes>
 						<Route path="/home" element={<Home />} />
-						<Route path="/product" element={<ProductList />} />
+						<Route path="/products" element={<ProductList />} />
 						<Route
 							path="/exam-sessions"
 							element={<AdminExamSessionList />}
