@@ -8,16 +8,17 @@ import Home from "./pages/Home";
 import Product from "./pages/Product";
 import ActEdNavbar from "./components/ActEdNavbar";
 import NoMatch from "./components/NoMatch";
-import ExamSessionList from "./components/exam-sessions/ExamSessionList";
-import ExamSessionForm from "./components/exam-sessions/ExamSessionForm";
-import SubjectList from "./components/subjects/SubjectList";
-import SubjectForm from "./components/subjects/SubjectForm";
-import SubjectDetail from "./components/subjects/SubjectDetail";
-import SubjectImport from "./components/subjects/SubjectImport";
-import ProductList from "./components/products/ProductList";
-import ProductDetail from "./components/products/ProductDetail";
-import ProductForm from "./components/products/ProductForm";
-import ProductImport from "./components/products/ProductImport";
+import AdminExamSessionList from "./components/admin/exam-sessions/ExamSessionList";
+import AdminExamSessionForm from "./components/admin/exam-sessions/ExamSessionForm";
+import AdminSubjectList from "./components/admin/subjects/SubjectList";
+import AdminSubjectForm from "./components/admin/subjects/SubjectForm";
+import AdminSubjectDetail from "./components/admin/subjects/SubjectDetail";
+import AdminSubjectImport from "./components/admin/subjects/SubjectImport";
+import AdminProductList from "./components/admin/products/ProductList";
+import AdminProductDetail from "./components/admin/products/ProductDetail";
+import AdminProductForm from "./components/admin/products/ProductForm";
+import AdminProductImport from "./components/admin/products/ProductImport";
+import ProductList from "./components/ProductList";
 
 function App() {
 	// eslint-disable-next-line
@@ -37,69 +38,48 @@ function App() {
 				<div className="App">
 					<ActEdNavbar />
 					<Routes>
-						<Route
-							path="/home"
-							element={<Home />}
-						/>
-						<Route
-							path="/product"
-							element={<Product />}
-						/>
+						<Route path="/home" element={<Home />} />
+						<Route path="/product" element={<ProductList />} />
 						<Route
 							path="/exam-sessions"
-							element={<ExamSessionList />}
+							element={<AdminExamSessionList />}
 						/>
 						<Route
 							path="/exam-sessions/new"
-							element={<ExamSessionForm />}
+							element={<AdminExamSessionForm />}
 						/>
 						<Route
 							path="/exam-sessions/edit/:id"
-							element={<ExamSessionForm />}
+							element={<AdminExamSessionForm />}
 						/>
-						<Route
-							path="/subjects"
-							element={<SubjectList />}
-						/>
-						<Route
-							path="/subjects/new"
-							element={<SubjectForm />}
-						/>
+						<Route path="/subjects" element={<AdminSubjectList />} />
+						<Route path="/subjects/new" element={<AdminSubjectForm />} />
 						<Route
 							path="/subjects/:id"
-							element={<SubjectDetail />}
+							element={<AdminSubjectDetail />}
 						/>
 						<Route
 							path="/subjects/:id/edit"
-							element={<SubjectForm />}
+							element={<AdminSubjectForm />}
 						/>
 						<Route
 							path="/subjects/import"
-							element={<SubjectImport />}
+							element={<AdminSubjectImport />}
 						/>
-						<Route
-							path="*"
-							element={<NoMatch />}
-						/>
-						<Route
-							path="/products"
-							element={<ProductList />}
-						/>
+						<Route path="*" element={<NoMatch />} />
+						<Route path="/products" element={<AdminProductList />} />
 						<Route
 							path="/products/:id"
-							element={<ProductDetail />}
+							element={<AdminProductDetail />}
 						/>
-						<Route
-							path="/products/new"
-							element={<ProductForm />}
-						/>
+						<Route path="/products/new" element={<AdminProductForm />} />
 						<Route
 							path="/products/edit/:id"
-							element={<ProductForm />}
+							element={<AdminProductForm />}
 						/>
 						<Route
 							path="/products/import"
-							element={<ProductImport />}
+							element={<AdminProductImport />}
 						/>
 					</Routes>
 				</div>

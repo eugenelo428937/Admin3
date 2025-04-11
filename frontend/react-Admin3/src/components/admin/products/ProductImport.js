@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Form, Button, Container, Alert } from "react-bootstrap";
 import Papa from "papaparse"; // You'll need to install this: npm install papaparse
-import productService from "../../services/productService";
+import productService from "../../../services/productService";
 
 const ProductImport = () => {
     const navigate = useNavigate();

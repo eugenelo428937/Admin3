@@ -17,7 +17,7 @@ const productService = {
     },
 
     getById: async (id) => {
-        const response = await httpService.get(`${API_URL}${id}/`);
+        const response = await httpService.get(`${API_URL}/${id}/`);
         return response.data;
     },
 
@@ -27,7 +27,7 @@ const productService = {
     },
 
     update: async (id, product) => {
-        const response = await httpService.put(`${API_URL}${id}/`, product);
+        const response = await httpService.put(`${API_URL}/${id}/`, product);
         return response.data;
     },
 
@@ -40,6 +40,13 @@ const productService = {
         const response = await httpService.post(`${API_URL}bulk-import/`, { products });
         return response.data;
     },
+
+    getAvailableProducts: async () => {
+        const response = await httpService.get(
+				`${API_URL}/available-products/`
+			);
+			return response.data;
+    }
 };
 
 export default productService;
