@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny
 from .models import ExamSessionSubjectProduct
 from .serializers import ExamSessionSubjectProductSerializer, ProductListSerializer
 from exam_sessions_subjects.models import ExamSessionSubject
-from products.models import Product
+from products.models.products import Product
 
 class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]

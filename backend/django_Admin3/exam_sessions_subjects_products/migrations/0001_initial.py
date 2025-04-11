@@ -9,8 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('exam_sessions_subjects', '0001_initial'),
-        ('products', '0003_alter_product_table'),
+        ('exam_sessions_subjects', '0001_initial'),        
     ]
 
     operations = [
