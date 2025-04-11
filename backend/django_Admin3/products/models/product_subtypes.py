@@ -1,6 +1,5 @@
-
 from django.db import models
-from products.models import ProductType
+from .product_types import ProductType
 
 class ProductSubtype(models.Model):
     product_type = models.ForeignKey(

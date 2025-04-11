@@ -1,5 +1,5 @@
 from django.db import models
-from products.models import Product
+from products.models.products import Product
 from exam_sessions_subjects.models import ExamSessionSubject
 
 
