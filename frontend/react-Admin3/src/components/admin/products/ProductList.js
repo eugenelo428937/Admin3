@@ -1,7 +1,7 @@
 // src/components/products/ProductList.js
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import productService from "../../services/productService";
+import productService from "../../../services/productService";
 import ProductTable from "./ProductTable";
 import { Button, Container, Row, Col } from "react-bootstrap";
 
