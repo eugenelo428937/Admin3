@@ -260,7 +260,7 @@ const ActEdNavbar = () => {
 								Home
 							</Nav.Link>
 							<Nav.Link as={NavLink} to="/product">
-								Subjects
+								Products
 							</Nav.Link>
 							<Nav.Link as={NavLink} href="#home">
 								Distance Learning

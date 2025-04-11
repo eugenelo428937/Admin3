@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Form, Button, Container } from "react-bootstrap";
-import productService from "../../services/productService";
+import productService from "../../../services/productService";
 
 const ProductForm = () => {
     const { id } = useParams();

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Form, Button, Container, Alert } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
-import examSessionService from '../../services/examSessionService';
+import examSessionService from "../../../services/examSessionService";
 import moment from 'moment';
 
 const ExamSessionForm = () => {
