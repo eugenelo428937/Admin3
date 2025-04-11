@@ -134,7 +134,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         ).all()
         
         # Optional filtering by subject code
-        subject_code = request.query_params.get('subject_code', None)
+        subject_code = request.query_params.get('subject', None)
         if subject_code:
             queryset = queryset.filter(exam_session_subject__subject__code=subject_code)
 
