@@ -7,6 +7,9 @@ from .models import ExamSessionSubjectProduct
 from .serializers import ExamSessionSubjectProductSerializer, ProductListSerializer
 from exam_sessions_subjects.models import ExamSessionSubject
 from products.models.products import Product
+from products.models import ProductType, ProductSubtype
+from subjects.models import Subject
+from subjects.serializers import SubjectSerializer
 
 class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
@@ -126,17 +129,63 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='get-available-products')
     def get_available_products(self, request):
         """
-        Get list of all products with their subject details
+        Get list of all products with their subject details, product type and subtype
+        Supports filtering by subject (id, code, name), product type, and product subtype
         """
         queryset = ExamSessionSubjectProduct.objects.select_related(
             'exam_session_subject__subject',
-            'product'
+            'product',
+            'product__product_type',
+            'product__product_subtype'
         ).all()
-        
-        # Optional filtering by subject code
-        subject_code = request.query_params.get('subject', None)
-        if subject_code:
-            queryset = queryset.filter(exam_session_subject__subject__code=subject_code)
 
+        # Subject filtering - multiple options
+        subject_id = request.query_params.get('subject_id', None)
+        subject_code = request.query_params.get('subject_code', None)
+        subject_name = request.query_params.get('subject_name', None)
+        subject = request.query_params.get('subject', None)  # Legacy support
+
+        # Apply subject filters
+        if subject_id:
+            queryset = queryset.filter(
+                exam_session_subject__subject__id=subject_id)
+        if subject_code:
+            queryset = queryset.filter(
+                exam_session_subject__subject__code=subject_code)
+        if subject_name:
+            queryset = queryset.filter(
+                exam_session_subject__subject__name__icontains=subject_name)
+        if subject:  # Legacy support for subject parameter
+            queryset = queryset.filter(
+                exam_session_subject__subject__code=subject
+            )
+
+        # Product type and subtype filtering
+        product_type = request.query_params.get('type', None)
+        if product_type:
+            queryset = queryset.filter(product__product_type__name=product_type)
+
+        product_subtype = request.query_params.get('subtype', None)
+        if product_subtype:
+            queryset = queryset.filter(
+                product__product_subtype__name=product_subtype)
+
+        # Also return all available subjects for filtering dropdown
+        subjects = Subject.objects.all().order_by('name')
+        subject_serializer = SubjectSerializer(subjects, many=True)
+
+        # Return products with added metadata for dropdowns
         serializer = ProductListSerializer(queryset, many=True)
-        return Response(serializer.data)
+
+        # Get unique product types and subtypes for dropdown filters
+        product_types = ProductType.objects.all().values_list('name', flat=True)
+        product_subtypes = ProductSubtype.objects.all().values_list('name', flat=True)
+
+        return Response({
+            'products': serializer.data,
+            'filters': {
+                'subjects': subject_serializer.data,
+                'product_types': list(product_types),
+                'product_subtypes': list(product_subtypes)
+            }
+        })
