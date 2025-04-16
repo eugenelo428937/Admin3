@@ -1,0 +1,14 @@
+mutation setEventActive($eventId: ID!, $lifecycleState: EventLifecycleState!) {
+	event {
+		update(eventId: $eventId, 
+			input: { 
+				lifecycleState: $lifecycleState,				
+			}) {
+			errors {
+				label
+				value
+				message
+			}
+		}
+	}
+}
