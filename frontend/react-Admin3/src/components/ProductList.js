@@ -1,66 +1,100 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
 	Container,
 	Row,
 	Col,
 	Card,
-	Button,
+	Form,
 	Alert,
-	Spinner,
+	Button,
 } from "react-bootstrap";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import productService from "../services/productService";
 
 const ProductList = () => {
 	const [products, setProducts] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
-	const location = useLocation();
+	const [productTypes, setProductTypes] = useState([]);
+	const [productSubtypes, setProductSubtypes] = useState([]);
+	const [subjects, setSubjects] = useState([]);
+	const [selectedType, setSelectedType] = useState("");
+	const [selectedSubtype, setSelectedSubtype] = useState("");
+	const [selectedSubject, setSelectedSubject] = useState("");
 
+	const navigate = useNavigate();
+	const location = useLocation();
 	const queryParams = new URLSearchParams(location.search);
 	const subjectFilter = queryParams.get("subject");
 
-	useEffect(() => {
-		fetchAvailableProducts();
-	}, [subjectFilter]);
-
-	const fetchAvailableProducts = async () => {
+	// Fetch all available products and filter options
+	const fetchAvailableProducts = useCallback(async () => {
 		try {
 			setLoading(true);
-			const data = await productService.getAvailableProducts();
 
-			let filteredProducts = [];
-			// Check what data structure is being returned
-			console.log("API Response:", data);
-			// Ensure subjects is always an array
-			if (Array.isArray(data)) {
-				filteredProducts = data;
-			} else if (data && data.results && Array.isArray(data.results)) {
-				// If data is wrapped in an object with a results property
-				filteredProducts = data.results;
-			} else if (data && typeof data === "object") {
-				// If data is an object of subjects
-				filteredProducts = Object.values(data);
-			} else {
-				// Default to empty array if data format is unrecognized
-				setError("Unexpected data format received from server");
-				console.error("Unexpected data format:", data);
-				return;
+			// Build query parameters
+			const params = new URLSearchParams();
+			if (selectedSubject) params.append("subject_code", selectedSubject);
+			if (selectedType) params.append("type", selectedType);
+			if (selectedSubtype) params.append("subtype", selectedSubtype);
+
+			// If there's a subject param in the URL, use it instead
+			if (subjectFilter && !selectedSubject) {
+				params.set("subject_code", subjectFilter);
+				setSelectedSubject(subjectFilter);
 			}
 
-			// Apply subject filter if provided
-			if (subjectFilter) {
-				filteredProducts = filteredProducts.filter(
-					(product) => product.subject_code === subjectFilter
-				);
+			const response = await productService.getAvailableProducts(params);
+
+			// Handle the new response structure
+			setProducts(response.products || []);
+
+			// Set filter options from the response
+			if (response.filters) {
+				setSubjects(response.filters.subjects || []);
+				setProductTypes(response.filters.product_types || []);
+
+				// If a type is selected, filter subtypes based on that type
+				// But we're now using the full list from the server
+				setProductSubtypes(response.filters.product_subtypes || []);
 			}
-			setProducts(filteredProducts);
+
 			setLoading(false);
-		} catch (error) {
-			console.error("Error fetching products:", error);
-			setError("Failed to load products. Please try again later.");
+		} catch (err) {
+			setError("Failed to fetch products");
 			setLoading(false);
+			console.error(err);
 		}
+	}, [selectedType, selectedSubtype, selectedSubject, subjectFilter]);
+
+	useEffect(() => {
+		fetchAvailableProducts();
+	}, [fetchAvailableProducts]);
+
+	// Handle subject selection change
+	const handleSubjectChange = (event) => {
+		setSelectedSubject(event.target.value);
+	};
+
+	// Handle type selection change
+	const handleTypeChange = (event) => {
+		const newType = event.target.value;
+		setSelectedType(newType);
+		setSelectedSubtype(""); // Reset subtype when type changes
+	};
+
+	// Handle subtype selection change
+	const handleSubtypeChange = (event) => {
+		setSelectedSubtype(event.target.value);
+	};
+
+	// Filter products based on selected filters (now handled by the server)
+	// This is a client-side backup in case we need additional filtering
+	const filteredProducts = products;
+
+	// Handle product selection
+	const handleProductSelect = (productId) => {
+		navigate(`/products/${productId}`);
 	};
 
 	const handleAddToCart = (product) => {
@@ -71,44 +105,98 @@ const ProductList = () => {
 		alert(`Added ${product.product_name} to cart!`);
 	};
 
-	if (loading) {
-		return (
-			<Container className="d-flex justify-content-center mt-5">
-				<Spinner animation="border" role="status">
-					<span className="visually-hidden">Loading...</span>
-				</Spinner>
-			</Container>
-		);
-	}
-
-	if (error) {
-		return (
-			<Container className="mt-4">
-				<Alert variant="danger">{error}</Alert>
-			</Container>
-		);
-	}
+	if (loading) return <div>Loading products...</div>;
+	if (error) return <div>Error: {error}</div>;
 
 	return (
-		<Container className="mt-4">
-			<h2 className="mb-4">Products</h2>
+		<Container>
+			<h2>Available Products</h2>
 
-			{products.length === 0 ? (
-				<Alert variant="info">No products available at the moment.</Alert>
+			{/* Filter Dropdowns */}
+			<Row className="mb-4">
+				{/* Subject Filter */}
+				<Col md={4}>
+					<Form.Group>
+						<Form.Label>Filter by Subject</Form.Label>
+						<Form.Control
+							as="select"
+							value={selectedSubject}
+							onChange={handleSubjectChange}>
+							<option value="">All Subjects</option>
+							{subjects.map((subject) => (
+								<option key={subject.id} value={subject.code}>
+									{subject.name}
+								</option>
+							))}
+						</Form.Control>
+					</Form.Group>
+				</Col>
+
+				{/* Product Type Filter */}
+				<Col md={4}>
+					<Form.Group>
+						<Form.Label>Filter by Product Type</Form.Label>
+						<Form.Control
+							as="select"
+							value={selectedType}
+							onChange={handleTypeChange}>
+							<option value="">All Types</option>
+							{productTypes.map((type, index) => (
+								<option key={index} value={type}>
+									{type}
+								</option>
+							))}
+						</Form.Control>
+					</Form.Group>
+				</Col>
+
+				{/* Product Subtype Filter */}
+				<Col md={4}>
+					<Form.Group>
+						<Form.Label>Filter by Product Subtype</Form.Label>
+						<Form.Control
+							as="select"
+							value={selectedSubtype}
+							onChange={handleSubtypeChange}
+							disabled={!selectedType} // Disable if no type is selected
+						>
+							<option value="">All Subtypes</option>
+							{productSubtypes
+								.filter(
+									(subtype) =>
+										!selectedType || subtype.includes(selectedType)
+								)
+								.map((subtype, index) => (
+									<option key={index} value={subtype}>
+										{subtype}
+									</option>
+								))}
+						</Form.Control>
+					</Form.Group>
+				</Col>
+			</Row>
+
+			{/* Product Cards */}
+			{filteredProducts.length === 0 ? (
+				<Alert variant="info">
+					No products available based on selected filters.
+				</Alert>
 			) : (
 				<Row xs={1} md={2} lg={5} className="g-4">
-					{products.map((product) => (
+					{filteredProducts.map((product) => (
 						<Col key={product.id}>
 							<Card className="h-100 shadow-sm">
 								<Card.Header className="bg-primary text-white">
-									<h5 className="mb-0">
-										{product.subject_code}
-									</h5>
+									<h5 className="mb-0">{product.subject_code}</h5>
 								</Card.Header>
 								<Card.Body>
 									<Card.Title>{product.product_name}</Card.Title>
 									<Card.Text>
 										Product Code: {product.product_code}
+										<br />
+										Type: {product.product_type}
+										<br />
+										Subtype: {product.product_subtype}
 									</Card.Text>
 								</Card.Body>
 								<Card.Footer className="bg-white border-0">
@@ -127,4 +215,5 @@ const ProductList = () => {
 		</Container>
 	);
 };
+
 export default ProductList;
