@@ -1,8 +1,8 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.decorators import action, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import ExamSessionSubjectProduct
 from .serializers import ExamSessionSubjectProductSerializer, ProductListSerializer
 from exam_sessions_subjects.models import ExamSessionSubject
@@ -11,13 +11,18 @@ from products.models import ProductType, ProductSubtype
 from subjects.models import Subject
 from subjects.serializers import SubjectSerializer
 
-class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
-
+class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):    
     queryset = ExamSessionSubjectProduct.objects.all()
     serializer_class = ExamSessionSubjectProductSerializer
 
+    # Override get_permissions method to handle permissions for specific actions
+    def get_permissions(self):
+        if self.action == 'get_available_products':
+            return [AllowAny()]
+        return super().get_permissions()
+    
     @action(detail=False, methods=['post'], url_path='bulk-create')
+    @permission_classes([IsAuthenticated])
     def bulk_create(self, request):
         """
         Bulk create exam session subject products.
@@ -53,6 +58,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         }, status=status.HTTP_400_BAD_REQUEST if errors else status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['post'], url_path='add-products')
+    @permission_classes([IsAuthenticated])
     def add_products_to_session_subject(self, request):
         """
         Add products to an exam session subject.
@@ -126,12 +132,14 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 'error': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=False, methods=['get'], url_path='get-available-products')
+    @permission_classes([AllowAny])
+    @action(detail=False, methods=['get'], url_path='get-available-products')    
     def get_available_products(self, request):
         """
         Get list of all products with their subject details, product type and subtype
         Supports filtering by subject (id, code, name), product type, and product subtype
         """
+                
         queryset = ExamSessionSubjectProduct.objects.select_related(
             'exam_session_subject__subject',
             'product',
@@ -141,8 +149,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
 
         # Subject filtering - multiple options
         subject_id = request.query_params.get('subject_id', None)
-        subject_code = request.query_params.get('subject_code', None)
-        subject_name = request.query_params.get('subject_name', None)
+        subject_code = request.query_params.get('subject_code', None)        
         subject = request.query_params.get('subject', None)  # Legacy support
 
         # Apply subject filters
@@ -151,10 +158,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 exam_session_subject__subject__id=subject_id)
         if subject_code:
             queryset = queryset.filter(
-                exam_session_subject__subject__code=subject_code)
-        if subject_name:
-            queryset = queryset.filter(
-                exam_session_subject__subject__name__icontains=subject_name)
+                exam_session_subject__subject__code=subject_code)        
         if subject:  # Legacy support for subject parameter
             queryset = queryset.filter(
                 exam_session_subject__subject__code=subject
@@ -171,7 +175,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 product__product_subtype__name=product_subtype)
 
         # Also return all available subjects for filtering dropdown
-        subjects = Subject.objects.all().order_by('name')
+        subjects = Subject.objects.all().order_by('code')
         subject_serializer = SubjectSerializer(subjects, many=True)
 
         # Return products with added metadata for dropdowns
@@ -189,3 +193,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 'product_subtypes': list(product_subtypes)
             }
         })
+
+
+ExamSessionSubjectProductViewSet.get_available_products.permission_classes = [
+    AllowAny]

@@ -1,5 +1,5 @@
 // src/components/ActEdNavbar.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { Container, Button, Nav, Navbar, Image, NavDropdown, Modal, Form, Alert } from "react-bootstrap";
 import { NavLink, Link, useNavigate } from "react-router-dom";
@@ -46,36 +46,26 @@ const ActEdNavbar = () => {
 	}, []);
 
 	// Function to fetch subjects
-	const fetchSubjects = async () => {
+	const fetchSubjects = useCallback(async () => {
 		try {
+			const params = new URLSearchParams();
 			setLoadingSubjects(true);
 			// Fetch products from the API
-			const data = await productService.getAvailableProducts();
-
-			// Extract unique subjects from the products
-			let uniqueSubjects = [];
-			if (Array.isArray(data)) {
-				// Create a map to store unique subjects by ID
-				const subjectMap = new Map();
-				data.forEach((product) => {
-					if (!subjectMap.has(product.subject_id)) {
-						subjectMap.set(product.subject_id, {
-							id: product.subject_id,
-							code: product.subject_code,
-							description: product.subject_description,
-						});
-					}
-				});
-				uniqueSubjects = Array.from(subjectMap.values());
+			const data = await productService.getAvailableProducts(params);
+			console.log(data);
+			if (data.filters) {
+				setSubjects(data.filters.subjects || []);
+			} else {
+				console.log("No filters data returned from API");
+				setSubjects([]); // Set empty array if no filters
 			}
-
-			setSubjects(uniqueSubjects);
+			console.log(data.filters.subjects);
 			setLoadingSubjects(false);
 		} catch (error) {
 			console.error("Error fetching subjects:", error);
 			setLoadingSubjects(false);
 		}
-	};
+	}, []);
 
 	// Handle navigating to product list with subject filter
 	const handleSubjectClick = (subjectCode) => {

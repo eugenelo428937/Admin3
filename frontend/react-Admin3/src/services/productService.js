@@ -45,10 +45,11 @@ const productService = {
 		return response.data;
 	},
 
-	getAvailableProducts: function (params = new URLSearchParams()) {
-		return httpService.get(
-			`${API_URL}/get-available-products/?${params.toString()}`
+	getAvailableProducts: async (params = new URLSearchParams()) => {
+		const response = await httpService.get(
+			`${API_URL}/current/get-available-products/?${params.toString()}`
 		);
+		return response.data;
 	},
 };
 
