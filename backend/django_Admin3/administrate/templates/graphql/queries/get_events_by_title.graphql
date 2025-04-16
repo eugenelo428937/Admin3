@@ -1,0 +1,21 @@
+query getCurrentEventsBySittingAndLifecycle(
+	$title: String!
+	$first: Int!
+	$offset: Int
+) {
+	events(
+		filters: [{ field: title, operation: wordlike, value: $title }]
+		first: $first
+		offset: $offset
+	) {
+		pageInfo {
+			totalRecords
+			hasNextPage
+		}
+		edges {
+			node {
+				id
+			}
+		}
+	}
+}

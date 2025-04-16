@@ -1,0 +1,11 @@
+mutation ($learnerId: ID!) {
+	learner {
+		reactivate(input: { learnerId: $learnerId }) {
+			errors {
+				label
+				value
+				message
+			}
+		}
+	}
+}

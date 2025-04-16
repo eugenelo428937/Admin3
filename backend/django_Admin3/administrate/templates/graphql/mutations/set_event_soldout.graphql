@@ -1,0 +1,14 @@
+mutation setEventSoldOut($eventId: ID!, $isSoldOut: Boolean!) {
+	event {
+		update(eventId: $eventId, input: { isSoldOut: $isSoldOut }) {
+			event {
+				id
+			}
+			errors {
+				label
+				value
+				message
+			}
+		}
+	}
+}
