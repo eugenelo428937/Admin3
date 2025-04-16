@@ -115,7 +115,7 @@ const ProductList = () => {
 			{/* Filter Dropdowns */}
 			<Row className="mb-4">
 				{/* Subject Filter */}
-				<Col md={4}>
+				<Col md={2}>
 					<Form.Group>
 						<Form.Label>Filter by Subject</Form.Label>
 						<Form.Control
@@ -133,7 +133,7 @@ const ProductList = () => {
 				</Col>
 
 				{/* Product Type Filter */}
-				<Col md={4}>
+				<Col md={2}>
 					<Form.Group>
 						<Form.Label>Filter by Product Type</Form.Label>
 						<Form.Control
@@ -151,7 +151,7 @@ const ProductList = () => {
 				</Col>
 
 				{/* Product Subtype Filter */}
-				<Col md={4}>
+				<Col md={2}>
 					<Form.Group>
 						<Form.Label>Filter by Product Subtype</Form.Label>
 						<Form.Control

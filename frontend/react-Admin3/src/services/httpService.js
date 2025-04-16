@@ -2,6 +2,7 @@ import axios from "axios";
 import authService from "./authService";
 import config from "../config";
 import logger from "./loggerService";
+
 const httpService = axios.create({
 	baseURL: config.apiBaseUrl,
 	withCredentials: true,
