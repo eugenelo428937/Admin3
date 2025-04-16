@@ -39,21 +39,16 @@ const productService = {
 
 	// Bulk import function for products
 	bulkImport: async (products) => {
-		const response = await httpService.post(`${API_URL}bulk-import/`, {
+		const response = await httpService.post(`${API_URL}/bulk-import/`, {
 			products,
 		});
 		return response.data;
 	},
 
-	getAvailableProducts: async (filters = {}) => {
-		const queryParams = new URLSearchParams();
-		if (filters.subject) queryParams.append("subject", filters.subject);
-
-		const response = await httpService.get(
-			`${API_URL}/current/get-available-products?${queryParams.toString()}`
+	getAvailableProducts: function (params = new URLSearchParams()) {
+		return httpService.get(
+			`${API_URL}/get-available-products/?${params.toString()}`
 		);
-
-		return response.data;
 	},
 };
 
