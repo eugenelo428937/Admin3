@@ -61,6 +61,8 @@ const ProductList = () => {
 				// If a type is selected, filter subtypes based on that type
 				// But we're now using the full list from the server
 				setProductSubtypes(response.filters.product_subtypes || []);
+
+				updateFilteredSubtypes(productSubtypes, selectedType);
 			}
 
 			setLoading(false);
@@ -71,7 +73,30 @@ const ProductList = () => {
 		}
 	}, [selectedType, selectedSubtype, selectedSubject, subjectFilter]);
 
-	
+	// Update filtered subtypes whenever product type selection changes
+	useEffect(() => {
+		updateFilteredSubtypes(productSubtypes, selectedType);
+	}, [selectedType, productSubtypes]);
+
+	// Helper function to update filtered subtypes
+	const updateFilteredSubtypes = (subtypes, type) => {
+		if (!type) {
+			// If no type is selected, show all subtypes
+			setProductSubtypes(subtypes);
+		} else {
+			// Filter subtypes based on selected type
+			// This assumes subtypes might be in format "Type:Subtype" or just "Subtype"
+			const filtered = subtypes.filter((subtype) => {
+				// Try different matching strategies
+				return (
+					subtype.startsWith(type + ":") ||
+					subtype.includes(type) ||
+					subtype.toLowerCase().includes(type.toLowerCase())
+				);
+			});
+			setProductSubtypes(filtered);
+		}
+	};
 
 	useEffect(() => {
 		fetchAvailableProducts();
@@ -103,98 +128,101 @@ const ProductList = () => {
 		navigate(`/products/${productId}`);
 	};
 
-	 const handleAddToCart = (product) => {
-        console.log("Added to cart:", product);
-        alert(`Added ${product.product_name} to cart!`);
-    };
+	const handleAddToCart = (product) => {
+		console.log("Added to cart:", product);
+		alert(`Added ${product.product_name} to cart!`);
+	};
 
-    if (loading) return <div>Loading products...</div>;
-    if (error) return <div>Error: {error}</div>;
+	if (loading) return <div>Loading products...</div>;
+	if (error) return <div>Error: {error}</div>;
 
-    return (
-			<Container>
-				<h2>Available Products</h2>
+	return (
+		<Container>
+			<h2>Available Products</h2>
 
-				{/* Filter Dropdowns */}
-				<Row className="mb-4">
-					<div>Filter by:</div>
-					{/* Your existing filter dropdowns... */}
-					<Col md={2}>
-						<Form.Group>
-							<Form.Label>Subject</Form.Label>
-							<Form.Control
-								as="select"
-								value={selectedSubject}
-								onChange={handleSubjectChange}>
-								<option value="">All Subjects</option>
-								{subjects.map((subject) => (
-									<option key={subject.id} value={subject.code}>
-										{subject.code}
+			{/* Filter Dropdowns */}
+			<Row className="mb-4">
+				<div>Filter by:</div>
+				{/* Your existing filter dropdowns... */}
+				<Col md={2}>
+					<Form.Group>
+						<Form.Label>Subject</Form.Label>
+						<Form.Control
+							as="select"
+							value={selectedSubject}
+							onChange={handleSubjectChange}
+							className="filter-dropdown">
+							<option value="">All Subjects</option>
+							{subjects.map((subject) => (
+								<option key={subject.id} value={subject.code}>
+									{subject.code}
+								</option>
+							))}
+						</Form.Control>
+					</Form.Group>
+				</Col>
+
+				<Col md={2}>
+					<Form.Group>
+						<Form.Label>Product Type</Form.Label>
+						<Form.Control
+							as="select"
+							value={selectedType}
+							onChange={handleTypeChange}
+							className="filter-dropdown">
+							<option value="">All Types</option>
+							{productTypes.map((type, index) => (
+								<option key={index} value={type}>
+									{type}
+								</option>
+							))}
+						</Form.Control>
+					</Form.Group>
+				</Col>
+
+				<Col md={2}>
+					<Form.Group>
+						<Form.Label>Product Subtype</Form.Label>
+						<Form.Control
+							as="select"
+							value={selectedSubtype}
+							onChange={handleSubtypeChange}
+							disabled={!selectedType}
+							className="filter-dropdown">
+							<option value="">All Subtypes</option>
+							{productSubtypes
+								.filter(
+									(subtype) =>
+										!selectedType || subtype.includes(selectedType)
+								)
+								.map((subtype, index) => (
+									<option key={index} value={subtype}>
+										{subtype}
 									</option>
 								))}
-							</Form.Control>
-						</Form.Group>
-					</Col>
+						</Form.Control>
+					</Form.Group>
+				</Col>
+			</Row>
 
-					<Col md={2}>
-						<Form.Group>
-							<Form.Label>Product Type</Form.Label>
-							<Form.Control
-								as="select"
-								value={selectedType}
-								onChange={handleTypeChange}>
-								<option value="">All Types</option>
-								{productTypes.map((type, index) => (
-									<option key={index} value={type}>
-										{type}
-									</option>
-								))}
-							</Form.Control>
-						</Form.Group>
-					</Col>
-
-					<Col md={2}>
-						<Form.Group>
-							<Form.Label>Product Subtype</Form.Label>
-							<Form.Control
-								as="select"
-								value={selectedSubtype}
-								onChange={handleSubtypeChange}
-								disabled={!selectedType}>
-								<option value="">All Subtypes</option>
-								{productSubtypes
-									.filter(
-										(subtype) =>
-											!selectedType || subtype.includes(selectedType)
-									)
-									.map((subtype, index) => (
-										<option key={index} value={subtype}>
-											{subtype}
-										</option>
-									))}
-							</Form.Control>
-						</Form.Group>
-					</Col>
+			{/* Product Cards */}
+			{products.length === 0 ? (
+				<Alert variant="info">
+					No products available based on selected filters.
+				</Alert>
+			) : (
+				<Row xs={1} md={2} lg={5} className="g-4">
+					{products.map((product) => (
+						<ProductCard
+							key={product.id}
+							product={product}
+							onAddToCart={handleAddToCart}
+						/>
+					))}
 				</Row>
-
-				{/* Product Cards */}
-				{products.length === 0 ? (
-					<Alert variant="info">
-						No products available based on selected filters.
-					</Alert>
-				) : (
-					<Row xs={1} md={2} lg={5} className="g-4">
-						{products.map((product) => (
-							<ProductCard
-								key={product.id}
-								product={product}
-								onAddToCart={handleAddToCart}
-							/>
-						))}
-					</Row>
-				)}
-			</Container>
-		);
+			)}
+		</Container>
+	);
 };
 
 export default ProductList;
