@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { readString } from 'react-papaparse';
 import subjectService from "../../../services/subjectService";
-import "../../../css/navbar.css";
+import "../../../styles/navbar.css";
 
 const SubjectImport = () => {
 	const [file, setFile] = useState(null);

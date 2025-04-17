@@ -5,7 +5,7 @@ import { Container, Button, Nav, Navbar, Image, NavDropdown, Modal, Form, Alert 
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { House, QuestionCircle, Cart, PersonCircle, Download, Search } from "react-bootstrap-icons";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../css/navbar.css";
+import "../styles/navbar.css";
 import productService from "../services/productService";
 
 const ActEdNavbar = () => {
