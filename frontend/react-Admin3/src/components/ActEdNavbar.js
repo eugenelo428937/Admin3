@@ -17,7 +17,6 @@ const ActEdNavbar = () => {
 	const [subjects, setSubjects] = useState([]); // New state for storing subjects
 	const [loadingSubjects, setLoadingSubjects] = useState(true); // Track loading state
 	const navigate = useNavigate();
-	
 
 	const [formData, setFormData] = useState({
 		email: "",
@@ -69,9 +68,16 @@ const ActEdNavbar = () => {
 
 	// Handle navigating to product list with subject filter
 	const handleSubjectClick = (subjectCode) => {
-		navigate(`/products?subject=${subjectCode}`);
+		const searchParams = new URLSearchParams(window.location.search);
+		searchParams.set("subject", subjectCode);
+		console.log("Navigating with subject:", searchParams.toString());
+		navigate(`/products?${searchParams.toString()}`);
 	};
 
+	// Handle navigating to product list with subject filter
+	const handleProductClick = () => {
+		navigate(`/products`);
+	};
 	// Handle closing the modal and resetting form data
 	const handleClose = () => {
 		setShowLoginModal(false);
@@ -299,7 +305,10 @@ const ActEdNavbar = () => {
 							<Nav.Link as={NavLink} to="/home">
 								Home
 							</Nav.Link>
-							<Nav.Link as={NavLink} to="/products">
+							<Nav.Link
+								as={NavLink}
+								to="/products"
+								onClick={() => handleProductClick()}>
 								Products
 							</Nav.Link>
 							<NavDropdown title="Subjects">
