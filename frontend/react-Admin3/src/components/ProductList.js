@@ -10,7 +10,7 @@ import {
 } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import productService from "../services/productService";
-import "../styles/ProductList.css";
+import "../styles/product_list.css";
 
 const ProductList = () => {
 	const [products, setProducts] = useState([]);
