@@ -10,6 +10,7 @@ import {
 } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import productService from "../services/productService";
+import "../styles/ProductList.css";
 
 const ProductList = () => {
 	const [products, setProducts] = useState([]);
@@ -27,6 +28,14 @@ const ProductList = () => {
 	const queryParams = new URLSearchParams(location.search);
 	const subjectFilter = queryParams.get("subject");
 
+	useEffect(() => {
+		if (subjectFilter) {
+			setSelectedSubject(subjectFilter);
+		} else {
+			setSelectedSubject(""); // Reset when no subject in URL
+		}
+	}, [subjectFilter]);
+
 	// Fetch all available products and filter options
 	const fetchAvailableProducts = useCallback(async () => {
 		try {
@@ -37,12 +46,6 @@ const ProductList = () => {
 			if (selectedSubject) params.append("subject_code", selectedSubject);
 			if (selectedType) params.append("type", selectedType);
 			if (selectedSubtype) params.append("subtype", selectedSubtype);
-
-			// If there's a subject param in the URL, use it instead
-			if (subjectFilter && !selectedSubject) {
-				params.set("subject_code", subjectFilter);
-				setSelectedSubject(subjectFilter);
-			}
 
 			const response = await productService.getAvailableProducts(params);
 
@@ -66,6 +69,8 @@ const ProductList = () => {
 			console.error(err);
 		}
 	}, [selectedType, selectedSubtype, selectedSubject, subjectFilter]);
+
+	
 
 	useEffect(() => {
 		fetchAvailableProducts();
@@ -111,13 +116,13 @@ const ProductList = () => {
 	return (
 		<Container>
 			<h2>Available Products</h2>
-
 			{/* Filter Dropdowns */}
 			<Row className="mb-4">
+				<div>Filter by:</div>
 				{/* Subject Filter */}
 				<Col md={2}>
 					<Form.Group>
-						<Form.Label>Filter by Subject</Form.Label>
+						<Form.Label>Subjects</Form.Label>
 						<Form.Control
 							as="select"
 							value={selectedSubject}
@@ -125,7 +130,7 @@ const ProductList = () => {
 							<option value="">All Subjects</option>
 							{subjects.map((subject) => (
 								<option key={subject.id} value={subject.code}>
-									{subject.name}
+									{subject.code}
 								</option>
 							))}
 						</Form.Control>
@@ -135,7 +140,7 @@ const ProductList = () => {
 				{/* Product Type Filter */}
 				<Col md={2}>
 					<Form.Group>
-						<Form.Label>Filter by Product Type</Form.Label>
+						<Form.Label>Product Type</Form.Label>
 						<Form.Control
 							as="select"
 							value={selectedType}
@@ -153,7 +158,7 @@ const ProductList = () => {
 				{/* Product Subtype Filter */}
 				<Col md={2}>
 					<Form.Group>
-						<Form.Label>Filter by Product Subtype</Form.Label>
+						<Form.Label>Product Subtype</Form.Label>
 						<Form.Control
 							as="select"
 							value={selectedSubtype}
