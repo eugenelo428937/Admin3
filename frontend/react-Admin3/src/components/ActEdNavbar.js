@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { Container, Button, Nav, Navbar, Image, NavDropdown } from "react-bootstrap";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { House, QuestionCircle, Cart, PersonCircle, Download, Search } from "react-bootstrap-icons";
+import { House, QuestionCircle, Cart, PersonCircle, Download, Search, Circle } from "react-bootstrap-icons";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/navbar.css";
 import productService from "../services/productService";
@@ -222,17 +222,30 @@ const ActEdNavbar = () => {
 							variant="link"
 							className="btn-search p-0 mx-1 flex-wrap align-items-center d-flex flex-row"
 							onClick={() => setShowCartPanel(true)}>
-							<Cart className="bi d-flex flex-row align-items-center"></Cart>
+							<div style={{ position: "relative", display: "inline-block" }}>
+								<Cart className="bi d-flex flex-row align-items-center" />
+								{cartCount > 0 && (
+									<span
+										style={{
+											position: "absolute",
+											top: -2,
+											right: -4,
+											width: 6,
+											height: 6,
+											background: "red",
+											borderRadius: "50%",
+											boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+											zIndex: 2,
+											display: "block"
+										}}
+									/>
+								)}
+							</div>
 							<span className="d-none d-md-block mx-1 fst-normal">
 								Shopping Cart
 							</span>
 							{cartCount > 0 && (
-								<span className="position-absolute translate-middle badge rounded-circle bg-danger p-1 notification-dot">
-									{/* Red dot overlay */}
-								</span>
-							)}
-							{cartCount > 0 && (
-								<span className="ms-1 fw-bold text-danger">{cartCount}</span>
+								<span className="ms-1">({cartCount})</span>
 							)}
 						</Button>
 					</div>
@@ -419,7 +432,10 @@ const ActEdNavbar = () => {
 			/>
 
 			{/* Cart Panel */}
-			<CartPanel show={showCartPanel} handleClose={() => setShowCartPanel(false)} />
+			<CartPanel
+				show={showCartPanel}
+				handleClose={() => setShowCartPanel(false)}
+			/>
 		</div>
 	);
 };
