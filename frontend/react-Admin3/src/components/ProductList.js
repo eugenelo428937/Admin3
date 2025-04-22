@@ -3,10 +3,8 @@ import {
 	Container,
 	Row,
 	Col,
-	Card,
 	Form,
 	Alert,
-	Button,
 } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import productService from "../services/productService";
@@ -19,6 +17,7 @@ const ProductList = () => {
 	const [error, setError] = useState(null);
 	const [productTypes, setProductTypes] = useState([]);
 	const [productSubtypes, setProductSubtypes] = useState([]);
+	const [filteredSubtypes, setFilteredSubtypes] = useState([]); // Separate state for filtered subtypes
 	const [subjects, setSubjects] = useState([]);
 	const [selectedType, setSelectedType] = useState("");
 	const [selectedSubtype, setSelectedSubtype] = useState("");
@@ -57,12 +56,10 @@ const ProductList = () => {
 			if (response.filters) {
 				setSubjects(response.filters.subjects || []);
 				setProductTypes(response.filters.product_types || []);
-
-				// If a type is selected, filter subtypes based on that type
-				// But we're now using the full list from the server
+				console.log(response.filters.product_subtypes);
 				setProductSubtypes(response.filters.product_subtypes || []);
-
-				updateFilteredSubtypes(productSubtypes, selectedType);
+                
+				// Don't call updateFilteredSubtypes here - let the useEffect handle it
 			}
 
 			setLoading(false);
@@ -71,32 +68,23 @@ const ProductList = () => {
 			setLoading(false);
 			console.error(err);
 		}
-	}, [selectedType, selectedSubtype, selectedSubject, subjectFilter]);
+	}, [selectedType, selectedSubtype, selectedSubject]);
 
-	// Update filtered subtypes whenever product type selection changes
+	// Update filtered subtypes whenever product type selection or subtypes list changes
 	useEffect(() => {
-		updateFilteredSubtypes(productSubtypes, selectedType);
-	}, [selectedType, productSubtypes]);
-
-	// Helper function to update filtered subtypes
-	const updateFilteredSubtypes = (subtypes, type) => {
-		if (!type) {
-			// If no type is selected, show all subtypes
-			setProductSubtypes(subtypes);
+		// If no type is selected, show all subtypes
+		if (!selectedType) {
+			setFilteredSubtypes(productSubtypes);
 		} else {
 			// Filter subtypes based on selected type
-			// This assumes subtypes might be in format "Type:Subtype" or just "Subtype"
-			const filtered = subtypes.filter((subtype) => {
-				// Try different matching strategies
-				return (
-					subtype.startsWith(type + ":") ||
-					subtype.includes(type) ||
-					subtype.toLowerCase().includes(type.toLowerCase())
-				);
-			});
-			setProductSubtypes(filtered);
+			const filtered = productSubtypes.filter((subtype) => 
+				subtype.startsWith(selectedType + ":") ||
+				subtype.includes(selectedType) ||
+				subtype.toLowerCase().includes(selectedType.toLowerCase())
+			);
+			setFilteredSubtypes(filtered);
 		}
-	};
+	}, [selectedType, productSubtypes]);
 
 	useEffect(() => {
 		fetchAvailableProducts();
@@ -119,15 +107,6 @@ const ProductList = () => {
 		setSelectedSubtype(event.target.value);
 	};
 
-	// Filter products based on selected filters (now handled by the server)
-	// This is a client-side backup in case we need additional filtering
-	const filteredProducts = products;
-
-	// Handle product selection
-	const handleProductSelect = (productId) => {
-		navigate(`/products/${productId}`);
-	};
-
 	const handleAddToCart = (product) => {
 		console.log("Added to cart:", product);
 		alert(`Added ${product.product_name} to cart!`);
@@ -143,7 +122,6 @@ const ProductList = () => {
 			{/* Filter Dropdowns */}
 			<Row className="mb-4">
 				<div>Filter by:</div>
-				{/* Your existing filter dropdowns... */}
 				<Col md={2}>
 					<Form.Group>
 						<Form.Label>Subject</Form.Label>
@@ -190,16 +168,11 @@ const ProductList = () => {
 							disabled={!selectedType}
 							className="filter-dropdown">
 							<option value="">All Subtypes</option>
-							{productSubtypes
-								.filter(
-									(subtype) =>
-										!selectedType || subtype.includes(selectedType)
-								)
-								.map((subtype, index) => (
-									<option key={index} value={subtype}>
-										{subtype}
-									</option>
-								))}
+							{filteredSubtypes.map((subtype, index) => (
+								<option key={index} value={subtype}>
+									{subtype}
+								</option>
+							))}
 						</Form.Control>
 					</Form.Group>
 				</Col>

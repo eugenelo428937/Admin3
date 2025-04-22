@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Form, Button, Container } from "react-bootstrap";
 import productService from "../../../services/productService";
 
-const ProductForm = () => {
+const AdminProductForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const isEditMode = !!id;
@@ -167,4 +167,4 @@ const ProductForm = () => {
     );
 };
 
-export default ProductForm;
+export default AdminProductForm;

@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Table, Button } from "react-bootstrap";
 
-const ProductTable = ({ products, onDelete }) => {
+const AdminProductTable = ({ products, onDelete }) => {
     return (
         <Table striped bordered hover>
             <thead>
@@ -48,4 +48,4 @@ const ProductTable = ({ products, onDelete }) => {
     );
 };
 
-export default ProductTable;
+export default AdminProductTable;

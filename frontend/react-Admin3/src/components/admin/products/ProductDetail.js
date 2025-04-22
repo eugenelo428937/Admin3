@@ -4,7 +4,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button, Card, Container } from "react-bootstrap";
 import productService from "../../../services/productService";
 
-const ProductDetail = () => {
+const AdminProductDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [product, setProduct] = useState(null);
@@ -84,4 +84,4 @@ const ProductDetail = () => {
 		);
 };
 
-export default ProductDetail;
+export default AdminProductDetail;

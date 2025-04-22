@@ -4,7 +4,7 @@ import { Container, Table, Button, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import subjectService from '../../../services/subjectService';
 
-const SubjectList = () => {
+const AdminSubjectList = () => {
 	const [subjects, setSubjects] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
@@ -122,4 +122,4 @@ const SubjectList = () => {
 	);
 };
 
-export default SubjectList;
+export default AdminSubjectList;
