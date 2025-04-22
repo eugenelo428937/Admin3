@@ -6,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import Home from "./pages/Home";
 import ActEdNavbar from "./components/ActEdNavbar";
 import NoMatch from "./components/NoMatch";
+import { CartProvider } from "./CartContext";
 import AdminExamSessionList from "./components/admin/exam-sessions/ExamSessionList";
 import AdminExamSessionForm from "./components/admin/exam-sessions/ExamSessionForm";
 import AdminSubjectList from "./components/admin/subjects/SubjectList";
@@ -32,62 +33,70 @@ function App() {
 
 	return (
 		<ErrorBoundary>
-			<AuthProvider>
-				<div className="App">
-					<ActEdNavbar />
-					<Routes>
-						<Route path="/home" element={<Home />} />
-						<Route path="/products" element={<ProductList />} />
-						<Route
-							path="admin/exam-sessions"
-							element={<AdminExamSessionList />}
-						/>
-						<Route
-							path="admin/exam-sessions/new"
-							element={<AdminExamSessionForm />}
-						/>
-						<Route
-							path="/exam-sessions/edit/:id"
-							element={<AdminExamSessionForm />}
-						/>
-						<Route path="admin/subjects" element={<AdminSubjectList />} />
-						<Route
-							path="admin/subjects/new"
-							element={<AdminSubjectForm />}
-						/>
-						<Route
-							path="admin/subjects/:id"
-							element={<AdminSubjectDetail />}
-						/>
-						<Route
-							path="admin/subjects/:id/edit"
-							element={<AdminSubjectForm />}
-						/>
-						<Route
-							path="admin/subjects/import"
-							element={<AdminSubjectImport />}
-						/>
-						<Route path="*" element={<NoMatch />} />
-						<Route path="admin/products" element={<AdminProductList />} />
-						<Route
-							path="admin/products/:id"
-							element={<AdminProductDetail />}
-						/>
-						<Route
-							path="admin/products/new"
-							element={<AdminProductForm />}
-						/>
-						<Route
-							path="admin/products/edit/:id"
-							element={<AdminProductForm />}
-						/>
-						<Route
-							path="admin/products/import"
-							element={<AdminProductImport />}
-						/>
-					</Routes>
-				</div>
-			</AuthProvider>
+			<CartProvider>
+				<AuthProvider>
+					<div className="App">
+						<ActEdNavbar />
+						<Routes>
+							<Route path="/home" element={<Home />} />
+							<Route path="/products" element={<ProductList />} />
+							<Route
+								path="admin/exam-sessions"
+								element={<AdminExamSessionList />}
+							/>
+							<Route
+								path="admin/exam-sessions/new"
+								element={<AdminExamSessionForm />}
+							/>
+							<Route
+								path="/exam-sessions/edit/:id"
+								element={<AdminExamSessionForm />}
+							/>
+							<Route
+								path="admin/subjects"
+								element={<AdminSubjectList />}
+							/>
+							<Route
+								path="admin/subjects/new"
+								element={<AdminSubjectForm />}
+							/>
+							<Route
+								path="admin/subjects/:id"
+								element={<AdminSubjectDetail />}
+							/>
+							<Route
+								path="admin/subjects/:id/edit"
+								element={<AdminSubjectForm />}
+							/>
+							<Route
+								path="admin/subjects/import"
+								element={<AdminSubjectImport />}
+							/>
+							<Route path="*" element={<NoMatch />} />
+							<Route
+								path="admin/products"
+								element={<AdminProductList />}
+							/>
+							<Route
+								path="admin/products/:id"
+								element={<AdminProductDetail />}
+							/>
+							<Route
+								path="admin/products/new"
+								element={<AdminProductForm />}
+							/>
+							<Route
+								path="admin/products/edit/:id"
+								element={<AdminProductForm />}
+							/>
+							<Route
+								path="admin/products/import"
+								element={<AdminProductImport />}
+							/>
+						</Routes>
+					</div>
+				</AuthProvider>
+			</CartProvider>
 		</ErrorBoundary>
 	);
 }

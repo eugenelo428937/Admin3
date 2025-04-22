@@ -9,6 +9,8 @@ import "../styles/navbar.css";
 import productService from "../services/productService";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
+import { useCart } from "../CartContext";
+import CartPanel from "./CartPanel";
 
 const ActEdNavbar = () => {
 	// State for authentication status
@@ -19,6 +21,7 @@ const ActEdNavbar = () => {
 	const [subjects, setSubjects] = useState([]); // New state for storing subjects
 	const [loadingSubjects, setLoadingSubjects] = useState(true); // Track loading state
 	const navigate = useNavigate();
+	const [showCartPanel, setShowCartPanel] = useState(false);
 
 	const [formData, setFormData] = useState({
 		email: "",
@@ -53,14 +56,14 @@ const ActEdNavbar = () => {
 			setLoadingSubjects(true);
 			// Fetch products from the API
 			const data = await productService.getAvailableProducts(params);
-			console.log(data);
+			
 			if (data.filters) {
 				setSubjects(data.filters.subjects || []);
 			} else {
 				console.log("No filters data returned from API");
 				setSubjects([]); // Set empty array if no filters
 			}
-			console.log(data.filters.subjects);
+			
 			setLoadingSubjects(false);
 		} catch (error) {
 			console.error("Error fetching subjects:", error);
@@ -71,8 +74,7 @@ const ActEdNavbar = () => {
 	// Handle navigating to product list with subject filter
 	const handleSubjectClick = (subjectCode) => {
 		const searchParams = new URLSearchParams(window.location.search);
-		searchParams.set("subject", subjectCode);
-		console.log("Navigating with subject:", searchParams.toString());
+		searchParams.set("subject", subjectCode);		
 		navigate(`/products?${searchParams.toString()}`);
 	};
 
@@ -186,6 +188,8 @@ const ActEdNavbar = () => {
 		// If authenticated, the dropdown will handle showing logout option
 	};
 
+	const { cartCount } = useCart();
+
 	return (
 		<div className="navbar-container">
 			<div className="d-flex flex-row navbar-top px-3 px-lg-4 px-xl-5 pt-2 pb-1 justify-content-between align-content-end">
@@ -216,17 +220,20 @@ const ActEdNavbar = () => {
 					<div className="me-lg-2 me-1 d-flex flex-row align-content-center">
 						<Button
 							variant="link"
-							className="btn-search p-0 mx-1 flex-wrap align-items-center d-flex flex-row">
+							className="btn-search p-0 mx-1 flex-wrap align-items-center d-flex flex-row"
+							onClick={() => setShowCartPanel(true)}>
 							<Cart className="bi d-flex flex-row align-items-center"></Cart>
 							<span className="d-none d-md-block mx-1 fst-normal">
 								Shopping Cart
 							</span>
-							<span className="position-absolute translate-middle badge rounded-circle bg-danger p-1 notification-dot">
-								<span className="position-relative"></span>
-								<span className="visually-hidden">
-									item(s) in shopping cart
+							{cartCount > 0 && (
+								<span className="position-absolute translate-middle badge rounded-circle bg-danger p-1 notification-dot">
+									{/* Red dot overlay */}
 								</span>
-							</span>
+							)}
+							{cartCount > 0 && (
+								<span className="ms-1 fw-bold text-danger">{cartCount}</span>
+							)}
 						</Button>
 					</div>
 					<div className="ms-lg-2 ms-1 d-flex flex-row align-content-center">
@@ -410,6 +417,9 @@ const ActEdNavbar = () => {
 				isLoading={isLoading}
 				switchToLogin={switchToLogin}
 			/>
+
+			{/* Cart Panel */}
+			<CartPanel show={showCartPanel} handleClose={() => setShowCartPanel(false)} />
 		</div>
 	);
 };

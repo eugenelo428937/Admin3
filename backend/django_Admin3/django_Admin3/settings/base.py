@@ -76,6 +76,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 # Application definition
 INSTALLED_APPS = [
     'users',
+    'cart',
     'students',
     'subjects',
     'exam_sessions',

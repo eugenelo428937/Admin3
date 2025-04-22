@@ -1,12 +1,13 @@
 import React from 'react';
 import { Col, Card, Button } from 'react-bootstrap';
 import "../styles/product_card.css";
+import { useCart } from "../CartContext";
 
 const ProductCard = ({ product, onAddToCart }) => {
     return (
         <Col>
             <Card className="h-100 shadow-sm">
-                <Card.Header className="bg-primary text-white">
+                <Card.Header className="bg-primary text-white product-card-header">
                     <h5 className="mb-0">{product.subject_code}</h5>
                 </Card.Header>
                 <Card.Body>
