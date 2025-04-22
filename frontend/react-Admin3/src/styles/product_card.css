@@ -1,3 +1,6 @@
 .product-card-header {    
     background-color: var(--product-card-header-bg-color) !important;
 }
+.product-add-to-cart-button {
+  border-radius: 2rem;
+}
