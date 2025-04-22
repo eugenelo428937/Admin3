@@ -5,7 +5,7 @@ import productService from "../../../services/productService";
 import ProductTable from "./ProductTable";
 import { Button, Container, Row, Col } from "react-bootstrap";
 
-const ProductList = () => {
+const AdminProductList = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -71,4 +71,4 @@ const ProductList = () => {
 		);
 };
 
-export default ProductList;
+export default AdminProductList;

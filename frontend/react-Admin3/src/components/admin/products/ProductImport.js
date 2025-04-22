@@ -5,7 +5,7 @@ import { Form, Button, Container, Alert } from "react-bootstrap";
 import Papa from "papaparse"; // You'll need to install this: npm install papaparse
 import productService from "../../../services/productService";
 
-const ProductImport = () => {
+const AdminProductImport = () => {
     const navigate = useNavigate();
     const [file, setFile] = useState(null);
     const [preview, setPreview] = useState([]);
@@ -182,4 +182,4 @@ const ProductImport = () => {
 		);
 };
 
-export default ProductImport;
+export default AdminProductImport;

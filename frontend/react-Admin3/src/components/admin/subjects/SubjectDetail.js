@@ -4,7 +4,7 @@ import { Container, Card, Button, Alert } from 'react-bootstrap';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import subjectService from "../../../services/subjectService";
 //asdasd
-const SubjectDetail = () => {
+const AdminSubjectDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
@@ -80,4 +80,4 @@ const SubjectDetail = () => {
   );
 };
 
-export default SubjectDetail;
+export default AdminSubjectDetail;
