@@ -17,10 +17,7 @@ const AdminSubjectList = () => {
 	const fetchSubjects = async () => {
 		try {
 			const data = await subjectService.getAll();
-
-			// Check what data structure is being returned
-			console.log("API Response:", data);
-
+						
 			// Ensure subjects is always an array
 			if (Array.isArray(data)) {
 				setSubjects(data);
