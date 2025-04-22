@@ -93,3 +93,8 @@ button.navbar-toggler.menu-button:hover {
     min-width:128px;
     }
  }
+
+ .notification-dot{
+    width: 8px;
+    height: 8px;
+ }
