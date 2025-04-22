@@ -10,6 +10,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import productService from "../services/productService";
 import "../styles/product_list.css";
 import ProductCard from "./ProductCard";
+import { useCart } from "../CartContext";
 
 const ProductList = () => {
 	const [products, setProducts] = useState([]);
@@ -27,6 +28,8 @@ const ProductList = () => {
 	const location = useLocation();
 	const queryParams = new URLSearchParams(location.search);
 	const subjectFilter = queryParams.get("subject");
+
+	const { addToCart } = useCart();
 
 	useEffect(() => {
 		if (subjectFilter) {
@@ -55,8 +58,7 @@ const ProductList = () => {
 			// Set filter options from the response
 			if (response.filters) {
 				setSubjects(response.filters.subjects || []);
-				setProductTypes(response.filters.product_types || []);
-				console.log(response.filters.product_subtypes);
+				setProductTypes(response.filters.product_types || []);				
 				setProductSubtypes(response.filters.product_subtypes || []);
                 
 				// Don't call updateFilteredSubtypes here - let the useEffect handle it
@@ -108,8 +110,7 @@ const ProductList = () => {
 	};
 
 	const handleAddToCart = (product) => {
-		console.log("Added to cart:", product);
-		alert(`Added ${product.product_name} to cart!`);
+		addToCart(product);
 	};
 
 	if (loading) return <div>Loading products...</div>;
