@@ -8,6 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.middleware.csrf import get_token
 from users.serializers import UserRegistrationSerializer
+from cart.views import CartViewSet
 
 class AuthViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
@@ -35,6 +36,8 @@ class AuthViewSet(viewsets.ViewSet):
             # Then authenticate with their username and password
             user = authenticate(username=user.username, password=password)
             if user:
+                # Merge guest cart into user cart after successful login
+                CartViewSet().merge_guest_cart(request, user)
                 refresh = RefreshToken.for_user(user)
                 serializer = UserRegistrationSerializer(user)
                 return Response({

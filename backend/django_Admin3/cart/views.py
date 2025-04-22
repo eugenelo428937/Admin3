@@ -4,8 +4,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
-from .models import Cart, CartItem
-from .serializers import CartSerializer, CartItemSerializer
+from django.db import transaction
+from .models import Cart, CartItem, ActedOrder, ActedOrderItem
+from .serializers import CartSerializer, CartItemSerializer, ActedOrderSerializer
 from products.models import Product
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
 
@@ -75,3 +76,44 @@ class CartViewSet(viewsets.ViewSet):
         cart = self.get_cart(request)
         cart.items.all().delete()
         return Response(CartSerializer(cart).data)
+
+    @action(detail=False, methods=['post'], url_path='checkout', permission_classes=[IsAuthenticated])
+    def checkout(self, request):
+        """POST /cart/checkout/ - Create an order from the authenticated user's cart"""
+        user = request.user
+        cart = self.get_cart(request)
+        if not cart.items.exists():
+            return Response({'detail': 'Cart is empty.'}, status=status.HTTP_400_BAD_REQUEST)
+        with transaction.atomic():
+            order = ActedOrder.objects.create(user=user)
+            for item in cart.items.all():
+                ActedOrderItem.objects.create(
+                    order=order,
+                    product=item.product,
+                    quantity=item.quantity
+                )
+            cart.items.all().delete()
+        serializer = ActedOrderSerializer(order)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def merge_guest_cart(self, request, user):
+        """
+        Merge guest cart (by session_key) into user's cart after login.
+        Call this after successful login.
+        """
+        session_key = request.session.session_key
+        if not session_key:
+            return
+        try:
+            guest_cart = Cart.objects.get(session_key=session_key, user__isnull=True)
+        except Cart.DoesNotExist:
+            return
+        user_cart, _ = Cart.objects.get_or_create(user=user)
+        for item in guest_cart.items.all():
+            user_item, created = CartItem.objects.get_or_create(cart=user_cart, product=item.product)
+            if not created:
+                user_item.quantity += item.quantity
+            else:
+                user_item.quantity = item.quantity
+            user_item.save()
+        guest_cart.delete()

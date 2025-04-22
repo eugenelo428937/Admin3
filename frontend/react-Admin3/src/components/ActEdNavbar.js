@@ -49,6 +49,27 @@ const ActEdNavbar = () => {
 		fetchSubjects();
 	}, []);
 
+	// Listen for checkout event to show login modal if not authenticated
+	useEffect(() => {
+		const handleShowLoginModal = () => setShowLoginModal(true);
+		window.addEventListener("show-login-modal", handleShowLoginModal);
+		return () => {
+			window.removeEventListener("show-login-modal", handleShowLoginModal);
+		};
+	}, []);
+
+	// Redirect after login if postLoginRedirect is set
+	useEffect(() => {
+		if (isAuthenticated) {
+			const redirectPath = localStorage.getItem("postLoginRedirect");
+			if (redirectPath) {
+				localStorage.removeItem("postLoginRedirect");
+				setShowCartPanel(false); // Hide the cart panel after login
+				navigate(redirectPath);
+			}
+		}
+	}, [isAuthenticated, navigate]);
+
 	// Function to fetch subjects
 	const fetchSubjects = useCallback(async () => {
 		try {

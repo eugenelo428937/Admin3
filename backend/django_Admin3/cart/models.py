@@ -36,3 +36,30 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.product} in cart {self.cart.id}"
+
+class ActedOrder(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'acted_orders'
+        verbose_name = 'Order'
+        verbose_name_plural = 'Orders'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Order #{self.id} by {self.user.username}"
+
+class ActedOrderItem(models.Model):
+    order = models.ForeignKey(ActedOrder, related_name="items", on_delete=models.CASCADE)
+    product = models.ForeignKey(ExamSessionSubjectProduct, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        db_table = 'acted_order_items'
+        verbose_name = 'Order Item'
+        verbose_name_plural = 'Order Items'
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product} (Order #{self.order.id})"
