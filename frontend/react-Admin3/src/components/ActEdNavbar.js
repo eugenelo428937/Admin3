@@ -1,12 +1,14 @@
 // src/components/ActEdNavbar.js
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { Container, Button, Nav, Navbar, Image, NavDropdown, Modal, Form, Alert } from "react-bootstrap";
+import { Container, Button, Nav, Navbar, Image, NavDropdown } from "react-bootstrap";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { House, QuestionCircle, Cart, PersonCircle, Download, Search } from "react-bootstrap-icons";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/navbar.css";
 import productService from "../services/productService";
+import LoginForm from "./LoginForm";
+import RegisterForm from "./RegisterForm";
 
 const ActEdNavbar = () => {
 	// State for authentication status
@@ -343,13 +345,15 @@ const ActEdNavbar = () => {
 							</Nav.Link>
 							{isAuthenticated ? (
 								<NavDropdown title="Admin" id="admin-nav-dropdown">
-									<NavDropdown.Item as={NavLink} to="/exam-sessions">
+									<NavDropdown.Item
+										as={NavLink}
+										to="admin/exam-sessions">
 										Exam Sessions
 									</NavDropdown.Item>
-									<NavDropdown.Item as={NavLink} to="/subjects">
+									<NavDropdown.Item as={NavLink} to="admin/subjects">
 										Subjects
 									</NavDropdown.Item>
-									<NavDropdown.Item as={NavLink} to="/products">
+									<NavDropdown.Item as={NavLink} to="admin/products">
 										Products
 									</NavDropdown.Item>
 								</NavDropdown>
@@ -384,134 +388,28 @@ const ActEdNavbar = () => {
 			</Navbar>
 
 			{/* Login Modal */}
-			<Modal show={showLoginModal} onHide={handleClose}>
-				<Modal.Header closeButton>
-					<Modal.Title>Login</Modal.Title>
-				</Modal.Header>
-				<Modal.Body>
-					{loginError && <Alert variant="danger">{loginError}</Alert>}
-					<Form onSubmit={handleLogin} noValidate>
-						<Form.Group className="mb-3">
-							<Form.Label>Email</Form.Label>
-							<Form.Control
-								type="email"
-								name="email"
-								value={formData.email}
-								onChange={handleInputChange}
-								required
-							/>
-						</Form.Group>
-						<Form.Group className="mb-3">
-							<Form.Label>Password</Form.Label>
-							<Form.Control
-								type="password"
-								name="password"
-								value={formData.password}
-								onChange={handleInputChange}
-								required
-							/>
-						</Form.Group>
-						<div className="d-flex justify-content-between align-items-center">
-							<Button
-								variant="primary"
-								type="submit"
-								disabled={isLoading}>
-								{isLoading ? "Logging in..." : "Login"}
-							</Button>
-							<Button
-								variant="link"
-								type="button"
-								onClick={switchToRegister}>
-								Need an account? Register
-							</Button>
-						</div>
-					</Form>
-				</Modal.Body>
-			</Modal>
+			<LoginForm
+				show={showLoginModal}
+				onHide={handleClose}
+				formData={formData}
+				handleInputChange={handleInputChange}
+				handleLogin={handleLogin}
+				loginError={loginError}
+				isLoading={isLoading}
+				switchToRegister={switchToRegister}
+			/>
 
 			{/* Register Modal */}
-			<Modal
+			<RegisterForm
 				show={showRegisterModal}
-				onHide={() => setShowRegisterModal(false)}>
-				<Modal.Header closeButton>
-					<Modal.Title>Register</Modal.Title>
-				</Modal.Header>
-				<Modal.Body>
-					{registerError && (
-						<Alert variant="danger">{registerError}</Alert>
-					)}
-					<Form onSubmit={handleRegister}>
-						<Form.Group className="mb-3">
-							{/* <Form.Label>Username</Form.Label>
-							<Form.Control
-								type="text"
-								name="username"
-								value={registerData.username}
-								onChange={handleRegisterInputChange}
-								required
-							/>*/}
-							<Form.Label>First Name</Form.Label>
-
-							<Form.Control
-								type="text"
-								name="first_name"
-								value={registerData.first_name}
-								onChange={handleRegisterInputChange}
-								required
-							/>
-							<Form.Label>Last Name</Form.Label>
-							<Form.Control
-								type="text"
-								name="last_name"
-								value={registerData.last_name}
-								onChange={handleRegisterInputChange}
-								required
-							/>
-						</Form.Group>
-						<Form.Group className="mb-3">
-							<Form.Label>Email address</Form.Label>
-							<Form.Control
-								type="email"
-								name="email"
-								value={registerData.email}
-								onChange={handleRegisterInputChange}
-								required
-							/>
-						</Form.Group>
-						<Form.Group className="mb-3">
-							<Form.Label>Password</Form.Label>
-							<Form.Control
-								type="password"
-								name="password"
-								value={registerData.password}
-								onChange={handleRegisterInputChange}
-								required
-							/>
-						</Form.Group>
-						<Form.Group className="mb-3">
-							<Form.Label>Confirm Password</Form.Label>
-							<Form.Control
-								type="password"
-								name="confirmPassword"
-								value={registerData.confirmPassword}
-								onChange={handleRegisterInputChange}
-								required
-							/>
-						</Form.Group>
-						<div className="d-flex justify-content-between align-items-center">
-							<Button
-								variant="primary"
-								type="submit"
-								disabled={isLoading}>
-								{isLoading ? "Registering..." : "Register"}
-							</Button>
-							<Button variant="link" onClick={switchToLogin}>
-								Already have an account? Login
-							</Button>
-						</div>
-					</Form>
-				</Modal.Body>
-			</Modal>
+				onHide={() => setShowRegisterModal(false)}
+				registerData={registerData}
+				handleRegisterInputChange={handleRegisterInputChange}
+				handleRegister={handleRegister}
+				registerError={registerError}
+				isLoading={isLoading}
+				switchToLogin={switchToLogin}
+			/>
 		</div>
 	);
 };

@@ -4,7 +4,7 @@ import { Form, Button, Container, Alert } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import subjectService from "../../../services/subjectService";
 
-const SubjectForm = () => {
+const AdminSubjectForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditMode = !!id;
@@ -122,4 +122,4 @@ const SubjectForm = () => {
   );
 };
 
-export default SubjectForm;
+export default AdminSubjectForm;

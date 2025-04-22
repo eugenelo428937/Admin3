@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import examSessionService from '../../../services/examSessionService';
 import moment from 'moment';
 
-const ExamSessionList = () => {
+const AdminExamSessionList = () => {
     const [examSessions, setExamSessions] = useState([]);
     const [error, setError] = useState(null);
 
@@ -81,4 +81,4 @@ const ExamSessionList = () => {
     );
 };
 
-export default ExamSessionList;
+export default AdminExamSessionList;

@@ -3,7 +3,7 @@ import { readString } from 'react-papaparse';
 import subjectService from "../../../services/subjectService";
 import "../../../styles/navbar.css";
 
-const SubjectImport = () => {
+const AdminSubjectImport = () => {
 	const [file, setFile] = useState(null);
 	const [message, setMessage] = useState("");
 	const [loading, setLoading] = useState(false);
@@ -88,4 +88,4 @@ const SubjectImport = () => {
 	);
 };
 
-export default SubjectImport;
+export default AdminSubjectImport;
