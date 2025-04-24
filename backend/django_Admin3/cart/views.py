@@ -96,6 +96,14 @@ class CartViewSet(viewsets.ViewSet):
         serializer = ActedOrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @action(detail=False, methods=['get'], url_path='orders', permission_classes=[IsAuthenticated])
+    def orders(self, request):
+        """GET /cart/orders/ - Get order history for the authenticated user"""
+        user = request.user
+        orders = ActedOrder.objects.filter(user=user).order_by('-created_at')
+        serializer = ActedOrderSerializer(orders, many=True)
+        return Response(serializer.data)
+
     def merge_guest_cart(self, request, user):
         """
         Merge guest cart (by session_key) into user's cart after login.

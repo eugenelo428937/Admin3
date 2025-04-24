@@ -19,6 +19,7 @@ import AdminProductForm from "./components/admin/products/ProductForm";
 import AdminProductImport from "./components/admin/products/ProductImport";
 import ProductList from "./components/ProductList";
 import CheckoutPage from "./components/CheckoutPage";
+import OrderHistory from "./components/OrderHistory";
 
 function App() {
 	// eslint-disable-next-line
@@ -95,6 +96,7 @@ function App() {
 								element={<AdminProductImport />}
 							 />
 							<Route path="/checkout" element={<CheckoutPage />} />
+							<Route path="/orders" element={<OrderHistory />} />
 						</Routes>
 					</div>
 				</AuthProvider>

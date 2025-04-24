@@ -16,6 +16,7 @@ const cartService = {
 		httpService.delete(`${API_BASE}/remove/`, { data: { item_id: itemId } }),
 	clearCart: () => httpService.post(`${API_BASE}/clear/`),
 	checkout: () => httpService.post(`${API_BASE}/checkout/`),
+	fetchOrders: () => httpService.get(`${API_BASE}/orders/`),
 };
 
 export default cartService;
