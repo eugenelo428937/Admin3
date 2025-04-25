@@ -42,7 +42,7 @@ const LoginForm = ({
           <Button variant="primary" type="submit" disabled={isLoading}>
             {isLoading ? "Logging in..." : "Login"}
           </Button>
-          <Button variant="link" type="button" onClick={switchToRegister}>
+          <Button variant="link" type="button" onClick={() => { onHide(); window.location.href = '/register'; }}>
             Need an account? Register
           </Button>
         </div>
