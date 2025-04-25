@@ -20,6 +20,7 @@ import AdminProductImport from "./components/admin/products/ProductImport";
 import ProductList from "./components/ProductList";
 import CheckoutPage from "./components/CheckoutPage";
 import OrderHistory from "./components/OrderHistory";
+import RegisterForm from "./components/RegisterForm";
 
 function App() {
 	// eslint-disable-next-line
@@ -97,6 +98,7 @@ function App() {
 							 />
 							<Route path="/checkout" element={<CheckoutPage />} />
 							<Route path="/orders" element={<OrderHistory />} />
+							<Route path="/register" element={<RegisterForm />} />
 						</Routes>
 					</div>
 				</AuthProvider>
