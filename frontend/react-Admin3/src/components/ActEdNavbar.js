@@ -8,7 +8,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/navbar.css";
 import productService from "../services/productService";
 import LoginForm from "./LoginForm";
-import RegisterForm from "./RegisterForm";
 import { useCart } from "../CartContext";
 import CartPanel from "./CartPanel";
 
@@ -17,7 +16,6 @@ const ActEdNavbar = () => {
 	const { isAuthenticated, user, isLoading, login, register, logout } =
 		useAuth();
 	const [showLoginModal, setShowLoginModal] = useState(false);
-	const [showRegisterModal, setShowRegisterModal] = useState(false);
 	const [subjects, setSubjects] = useState([]); // New state for storing subjects
 	const [loadingSubjects, setLoadingSubjects] = useState(true); // Track loading state
 	const navigate = useNavigate();
@@ -28,21 +26,11 @@ const ActEdNavbar = () => {
 		password: "",
 	});
 
-	const [registerData, setRegisterData] = useState({
-		username: "",
-		first_name: "",
-		last_name: "",
-		email: "",
-		password: "",
-		confirmPassword: "",
-	});
-
 	// eslint-disable-next-line
 	const [message, setMessage] = useState("");
 
 	// Error and loading states
 	const [loginError, setLoginError] = useState("");
-	const [registerError, setRegisterError] = useState("");
 
 	// Fetch available subjects when component mounts
 	useEffect(() => {
@@ -114,17 +102,11 @@ const ActEdNavbar = () => {
 		});
 	};
 
-	// const handleShow = () => setShowLoginModal(true);
+	// const handleShow = () => setShowLoginModal(true;
 
 	const handleInputChange = (e) => {
 		setFormData({
 			...formData,
-			[e.target.name]: e.target.value,
-		});
-	};
-	const handleRegisterInputChange = (e) => {
-		setRegisterData({
-			...registerData,
 			[e.target.name]: e.target.value,
 		});
 	};
@@ -149,35 +131,6 @@ const ActEdNavbar = () => {
 		}
 	};
 
-	// Handle register
-	const handleRegister = async (e) => {
-		e.preventDefault();
-		if (registerData.password !== registerData.confirmPassword) {
-			setRegisterError("Passwords do not match");
-			return;
-		}
-		try {
-			await register({
-				username: registerData.email,
-				first_name: registerData.first_name,
-				last_name: registerData.last_name,
-				email: registerData.email,
-				password: registerData.password,
-			});
-			setShowRegisterModal(false);
-			setRegisterData({
-				username: "",
-				first_name: "",
-				last_name: "",
-				email: "",
-				password: "",
-				confirmPassword: "",
-			});
-		} catch (err) {
-			setRegisterError(err.message || "Registration failed");
-		}
-	};
-
 	// Handle logout
 	const handleLogout = async (e) => {
 		e.preventDefault();
@@ -192,13 +145,7 @@ const ActEdNavbar = () => {
 	const switchToRegister = () => {
 		setLoginError("");
 		setShowLoginModal(false);
-		setShowRegisterModal(true);
-	};
-
-	const switchToLogin = () => {
-		setRegisterError("");
-		setShowRegisterModal(false);
-		setShowLoginModal(true);
+		navigate("/register");
 	};
 
 	// Handle user icon click
@@ -438,18 +385,6 @@ const ActEdNavbar = () => {
 				loginError={loginError}
 				isLoading={isLoading}
 				switchToRegister={switchToRegister}
-			/>
-
-			{/* Register Modal */}
-			<RegisterForm
-				show={showRegisterModal}
-				onHide={() => setShowRegisterModal(false)}
-				registerData={registerData}
-				handleRegisterInputChange={handleRegisterInputChange}
-				handleRegister={handleRegister}
-				registerError={registerError}
-				isLoading={isLoading}
-				switchToLogin={switchToLogin}
 			/>
 
 			{/* Cart Panel */}
