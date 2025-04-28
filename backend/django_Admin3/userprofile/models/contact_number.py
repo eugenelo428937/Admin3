@@ -1,7 +1,7 @@
 from django.db import models
 from .user_profile import UserProfile
 
-class ActedUserProfileContactNumber(models.Model):
+class UserProfileContactNumber(models.Model):
     CONTACT_TYPE_CHOICES = [
         ('HOME', 'Home'),
         ('WORK', 'Work'),

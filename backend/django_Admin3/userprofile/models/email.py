@@ -1,7 +1,7 @@
 from django.db import models
 from .user_profile import UserProfile
 
-class ActedUserProfileEmail(models.Model):
+class UserProfileEmail(models.Model):
     EMAIL_TYPE_CHOICES = [
         ('PERSONAL', 'Personal'),
         ('WORK', 'Work'),

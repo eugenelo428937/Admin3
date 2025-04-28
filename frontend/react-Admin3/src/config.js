@@ -9,6 +9,7 @@ const config = {
 	subjectUrl: process.env.REACT_APP_API_BASE_URL + process.env.REACT_APP_API_SUBJECT_URL,
 	examSessionSubjectUrl: process.env.REACT_APP_API_BASE_URL + process.env.REACT_APP_API_EXAM_SESSION_SUBJECT_URL,
 	cartUrl: process.env.REACT_APP_API_BASE_URL + process.env.REACT_APP_API_CART_URL,
+	countryUrl: process.env.REACT_APP_API_BASE_URL + process.env.REACT_APP_API_COUNTRIES_URL,
 	isDevelopment: process.env.NODE_ENV === "development",
 	enableDebugLogs: true,
 };

@@ -29,4 +29,6 @@ urlpatterns = [
     path('api/products/current/',
          include('exam_sessions_subjects_products.urls')),
     path('api/cart/', include('cart.urls')),
+    path('api/utils/', include('utils.urls')),
+    path('api/countries/', include('country.urls')),
 ]

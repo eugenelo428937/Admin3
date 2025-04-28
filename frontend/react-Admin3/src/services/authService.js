@@ -101,50 +101,13 @@ const authService = {
 	},
 	register: async (userData) => {
 		try {
-			// Compose the nested profile object for backend
-			const profile = {
-				title: userData.title,
-				send_invoices_to: userData.send_invoices_to,
-				send_study_material_to: userData.send_study_material_to,
-				home_address: {
-					building: userData.home_address.building,
-					street: userData.home_address.street,
-					district: userData.home_address.district,
-					town: userData.home_address.town,
-					county: userData.home_address.county,
-					postcode: userData.home_address.postcode,
-					state: userData.home_address.state,
-					country: userData.home_address.country,
-				},
-				work_address: userData.work_company
-					? {
-							company: userData.work_address.company,
-							department: userData.work_address.department,
-							building: userData.work_address.building,
-							street: userData.work_address.street,
-							district: userData.work_address.district,
-							town: userData.work_address.town,
-							county: userData.work_address.county,
-							postcode: userData.work_address.postcode,
-							state: userData.work_address.state,
-							country: userData.work_address.country,
-					  }
-					: {},
-				home_phone: userData.home_phone,
-				work_phone: userData.work_company ? userData.work_phone : "",
-				mobile_phone: userData.mobile_phone,
-			};
-			const payload = {
-				username: userData.email,
-				email: userData.email,
-				password: userData.password,
-				first_name: userData.first_name,
-				last_name: userData.last_name,
-				profile,
-			};
-			console.log(" userData:", userData);
-			console.log(" payload2:", payload);
-			const response = await httpService.post(`${API_AUTH_URL}/register/`, payload);
+			// Defensive: ensure all fields exist to avoid undefined errors
+			console.log("Registering user:", userData);
+						
+			const response = await httpService.post(
+				`${API_AUTH_URL}/register/`,
+				userData
+			);
 
 			if (response.status === 201 || response.status === 200) {
 				if (response.data.user) {

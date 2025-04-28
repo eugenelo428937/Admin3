@@ -1,7 +1,7 @@
 from django.db import models
 from .user_profile import UserProfile
 
-class ActedUserProfileAddress(models.Model):
+class UserProfileAddress(models.Model):
     ADDRESS_TYPE_CHOICES = [
         ('HOME', 'Home'),
         ('WORK', 'Work'),
