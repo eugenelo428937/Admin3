@@ -31,11 +31,12 @@ class ProductListSerializer(serializers.ModelSerializer):
     product_type = serializers.CharField(source='product.product_type.name')
     product_subtype = serializers.CharField(
         source='product.product_subtype.name')
+    type = serializers.CharField(source='product.product_type.name', read_only=True)
 
     class Meta:
         model = ExamSessionSubjectProduct
         fields = [
             'id', 'product_id', 'product_code', 'product_name', 'product_short_name',
             'product_description', 'subject_id', 'subject_code', 'subject_description',
-            'product_type', 'product_subtype'
+            'product_type', 'product_subtype', 'type'
         ]

@@ -2,6 +2,7 @@
 import config from "../config";
 import httpService from "./httpService";
 const API_URL = config.productUrl;
+const MARKING_API_URL = config.markingUrl;
 
 const productService = {
 	getAll: async () => {
@@ -48,6 +49,13 @@ const productService = {
 	getAvailableProducts: async (params = new URLSearchParams()) => {
 		const response = await httpService.get(
 			`${API_URL}/current/get-available-products/?${params.toString()}`
+		);
+		return response.data;
+	},
+
+	getMarkingDeadlines: async (esspId) => {
+		const response = await httpService.get(
+			`${MARKING_API_URL}/papers/by_product/?essp_id=${esspId}`
 		);
 		return response.data;
 	},

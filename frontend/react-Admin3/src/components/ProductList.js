@@ -51,7 +51,7 @@ const ProductList = () => {
 			if (selectedSubtype) params.append("subtype", selectedSubtype);
 
 			const response = await productService.getAvailableProducts(params);
-
+			console.log("Response from API:", response.products); // Debugging line
 			// Handle the new response structure
 			setProducts(response.products || []);
 
