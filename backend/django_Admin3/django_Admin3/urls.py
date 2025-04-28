@@ -31,4 +31,5 @@ urlpatterns = [
     path('api/cart/', include('cart.urls')),
     path('api/utils/', include('utils.urls')),
     path('api/countries/', include('country.urls')),
+    path('api/markings/', include('marking.urls')),
 ]
