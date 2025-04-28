@@ -15,13 +15,7 @@ const ProductCard = ({ product, onAddToCart }) => {
 					</Card.Header>
 					<Card.Body>
 						<Card.Title>{product.product_name}</Card.Title>
-						<Card.Text>
-							Product Code: {product.product_code}
-							<br />
-							Type: {product.product_type}
-							<br />
-							Subtype: {product.product_subtype}
-						</Card.Text>
+						
 					</Card.Body>
 					<Card.Footer className="bg-white border-0 d-flex flex-row flex-wrap justify-content-end">
 						<Button
