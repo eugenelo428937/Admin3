@@ -6,9 +6,9 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 import { House, QuestionCircle, Cart, PersonCircle, Download, Search, Circle } from "react-bootstrap-icons";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/navbar.css";
-import productService from "../services/productService";
+import { useProducts } from "../contexts/ProductContext";
 import LoginForm from "./LoginForm";
-import { useCart } from "../CartContext";
+import { useCart } from "../contexts/CartContext";
 import CartPanel from "./CartPanel";
 
 const ActEdNavbar = () => {
@@ -16,8 +16,7 @@ const ActEdNavbar = () => {
 	const { isAuthenticated, user, isLoading, login, register, logout } =
 		useAuth();
 	const [showLoginModal, setShowLoginModal] = useState(false);
-	const [subjects, setSubjects] = useState([]); // New state for storing subjects
-	const [loadingSubjects, setLoadingSubjects] = useState(true); // Track loading state
+	const { products, loading: loadingProducts } = useProducts();
 	const navigate = useNavigate();
 	const [showCartPanel, setShowCartPanel] = useState(false);
 
@@ -32,20 +31,6 @@ const ActEdNavbar = () => {
 	// Error and loading states
 	const [loginError, setLoginError] = useState("");
 
-	// Fetch available subjects when component mounts
-	useEffect(() => {
-		fetchSubjects();
-	}, []);
-
-	// Listen for checkout event to show login modal if not authenticated
-	useEffect(() => {
-		const handleShowLoginModal = () => setShowLoginModal(true);
-		window.addEventListener("show-login-modal", handleShowLoginModal);
-		return () => {
-			window.removeEventListener("show-login-modal", handleShowLoginModal);
-		};
-	}, []);
-
 	// Redirect after login if postLoginRedirect is set
 	useEffect(() => {
 		if (isAuthenticated) {
@@ -58,27 +43,21 @@ const ActEdNavbar = () => {
 		}
 	}, [isAuthenticated, navigate]);
 
-	// Function to fetch subjects
-	const fetchSubjects = useCallback(async () => {
-		try {
-			const params = new URLSearchParams();
-			setLoadingSubjects(true);
-			// Fetch products from the API
-			const data = await productService.getAvailableProducts(params);
-			
-			if (data.filters) {
-				setSubjects(data.filters.subjects || []);
-			} else {
-				console.log("No filters data returned from API");
-				setSubjects([]); // Set empty array if no filters
+	// Extract subjects from products
+	const subjects = React.useMemo(() => {
+		// Extract unique subjects from products
+		const subjectMap = {};
+		(products || []).forEach((p) => {
+			if (p.subject_code && p.subject_description) {
+				subjectMap[p.subject_code] = p.subject_description;
 			}
-			
-			setLoadingSubjects(false);
-		} catch (error) {
-			console.error("Error fetching subjects:", error);
-			setLoadingSubjects(false);
-		}
-	}, []);
+		});
+		return Object.entries(subjectMap).map(([code, description], idx) => ({
+			id: idx,
+			code,
+			description,
+		}));
+	}, [products]);
 
 	// Handle navigating to product list with subject filter
 	const handleSubjectClick = (subjectCode) => {
@@ -302,7 +281,7 @@ const ActEdNavbar = () => {
 								Products
 							</Nav.Link>
 							<NavDropdown title="Subjects">
-								{loadingSubjects ? (
+								{loadingProducts ? (
 									<NavDropdown.Item disabled>
 										Loading subjects...
 									</NavDropdown.Item>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
 	Container,
 	Row,
@@ -7,14 +7,14 @@ import {
 	Alert,
 } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
-import productService from "../services/productService";
+import { useProducts } from "../contexts/ProductContext";
 import "../styles/product_list.css";
 import ProductCard from "./ProductCard";
-import { useCart } from "../CartContext";
+import { useCart } from "../contexts/CartContext";
+import productService from "../services/productService";
 
 const ProductList = () => {
-	const [products, setProducts] = useState([]);
-	const [loading, setLoading] = useState(true);
+	const { products, loading } = useProducts();
 	const [error, setError] = useState(null);
 	const [productTypes, setProductTypes] = useState([]);
 	const [productSubtypes, setProductSubtypes] = useState([]);
@@ -40,38 +40,6 @@ const ProductList = () => {
 		}
 	}, [subjectFilter]);
 
-	// Fetch all available products and filter options
-	const fetchAvailableProducts = useCallback(async () => {
-		try {
-			setLoading(true);
-
-			// Build query parameters
-			const params = new URLSearchParams();
-			if (selectedSubject) params.append("subject_code", selectedSubject);
-			if (selectedType) params.append("type", selectedType);
-			if (selectedSubtype) params.append("subtype", selectedSubtype);
-
-			const response = await productService.getAvailableProducts(params);			
-			// Handle the new response structure
-			setProducts(response.products || []);
-
-			// Set filter options from the response
-			if (response.filters) {
-				setSubjects(response.filters.subjects || []);
-				setProductTypes(response.filters.product_types || []);				
-				setProductSubtypes(response.filters.product_subtypes || []);
-                
-				// Don't call updateFilteredSubtypes here - let the useEffect handle it
-			}
-
-			setLoading(false);
-		} catch (err) {
-			setError("Failed to fetch products");
-			setLoading(false);
-			console.error(err);
-		}
-	}, [selectedType, selectedSubtype, selectedSubject]);
-
 	// Update filtered subtypes whenever product type selection or subtypes list changes
 	useEffect(() => {
 		// If no type is selected, show all subtypes
@@ -87,10 +55,6 @@ const ProductList = () => {
 			setFilteredSubtypes(filtered);
 		}
 	}, [selectedType, productSubtypes]);
-
-	useEffect(() => {
-		fetchAvailableProducts();
-	}, [fetchAvailableProducts]);
 
 	// Fetch bulk deadlines whenever products change
 	useEffect(() => {
