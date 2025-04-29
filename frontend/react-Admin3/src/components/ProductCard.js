@@ -5,7 +5,7 @@ import {
 	CartPlus,
 	ExclamationCircle
 } from "react-bootstrap-icons";
-import { useCart } from "../CartContext";
+import { useCart } from "../contexts/CartContext";
 import MarkingProductCard from "./MarkingProductCard";
 
 const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {

@@ -1,6 +1,6 @@
 import React from "react";
 import { Offcanvas, Button, ListGroup, Row, Col } from "react-bootstrap";
-import { useCart } from "../CartContext";
+import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { X, Trash3, CartCheck } from "react-bootstrap-icons";

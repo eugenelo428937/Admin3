@@ -37,8 +37,8 @@ def main(input_path):
         for row in reader:
             if len(row) < 4:
                 continue
-            module, code, start_str, end_str = row[:4]
-            start = parse_date(start_str)
+            module, code, reccomend_date_str, deadline_date_str = row[:4]
+            start = parse_date(deadline_date_str)
             if not start:
                 continue
             # Find the module group (e.g., CM1, CM2, etc.)
