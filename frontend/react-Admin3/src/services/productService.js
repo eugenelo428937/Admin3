@@ -54,11 +54,18 @@ const productService = {
 	},
 
 	getMarkingDeadlines: async (esspId) => {
-		console.log(`${MARKING_API_URL}/papers/deadlines/?essp_id=${esspId}`);
 		const response = await httpService.get(
 			`${MARKING_API_URL}/papers/deadlines/?essp_id=${esspId}`
+		);		
+		return response.data;
+	},
+
+	// Add a new function for bulk deadlines
+	getBulkMarkingDeadlines: async (esspIds) => {
+		const response = await httpService.post(
+			`${MARKING_API_URL}/papers/bulk-deadlines/`,
+			{ essp_ids: esspIds }
 		);
-		console.log(response);
 		return response.data;
 	},
 };
