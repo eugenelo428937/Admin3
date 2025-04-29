@@ -17,7 +17,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
 
     # Override get_permissions method to handle permissions for specific actions
     def get_permissions(self):
-        if self.action == 'get_available_products':
+        if self.action == 'list':
             return [AllowAny()]
         return super().get_permissions()
     
@@ -133,8 +133,8 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @permission_classes([AllowAny])
-    @action(detail=False, methods=['get'], url_path='get-available-products')    
-    def get_available_products(self, request):
+    @action(detail=False, methods=['get'], url_path='list')    
+    def list(self, request):
         """
         Get list of all products with their subject details, product type and subtype
         Supports filtering by subject (id, code, name), product type, and product subtype
@@ -195,5 +195,5 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         })
 
 
-ExamSessionSubjectProductViewSet.get_available_products.permission_classes = [
+ExamSessionSubjectProductViewSet.list.permission_classes = [
     AllowAny]

@@ -48,15 +48,17 @@ const productService = {
 
 	getAvailableProducts: async (params = new URLSearchParams()) => {
 		const response = await httpService.get(
-			`${API_URL}/current/get-available-products/?${params.toString()}`
+			`${API_URL}/current/list/?${params.toString()}`
 		);
 		return response.data;
 	},
 
 	getMarkingDeadlines: async (esspId) => {
+		console.log(`${MARKING_API_URL}/papers/deadlines/?essp_id=${esspId}`);
 		const response = await httpService.get(
-			`${MARKING_API_URL}/papers/by_product/?essp_id=${esspId}`
+			`${MARKING_API_URL}/papers/deadlines/?essp_id=${esspId}`
 		);
+		console.log(response);
 		return response.data;
 	},
 };
