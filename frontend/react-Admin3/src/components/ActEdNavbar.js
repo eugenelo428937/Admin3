@@ -1,7 +1,7 @@
 // src/components/ActEdNavbar.js
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { Container, Button, Nav, Navbar, Image, NavDropdown } from "react-bootstrap";
+import { Container, Button, Nav, Navbar, Image, NavDropdown, Row, Col } from "react-bootstrap";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { House, QuestionCircle, Cart, PersonCircle, Download, Search, Circle } from "react-bootstrap-icons";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -10,6 +10,7 @@ import { useProducts } from "../contexts/ProductContext";
 import LoginForm from "./LoginForm";
 import { useCart } from "../contexts/CartContext";
 import CartPanel from "./CartPanel";
+import productService from "../services/productService";
 
 const ActEdNavbar = () => {
 	// State for authentication status
@@ -31,6 +32,10 @@ const ActEdNavbar = () => {
 	// Error and loading states
 	const [loginError, setLoginError] = useState("");
 
+	// State for subjects
+	const [subjects, setSubjects] = useState([]);
+	const [loadingSubjects, setLoadingSubjects] = useState(true);
+
 	// Redirect after login if postLoginRedirect is set
 	useEffect(() => {
 		if (isAuthenticated) {
@@ -43,21 +48,13 @@ const ActEdNavbar = () => {
 		}
 	}, [isAuthenticated, navigate]);
 
-	// Extract subjects from products
-	const subjects = React.useMemo(() => {
-		// Extract unique subjects from products
-		const subjectMap = {};
-		(products || []).forEach((p) => {
-			if (p.subject_code && p.subject_description) {
-				subjectMap[p.subject_code] = p.subject_description;
-			}
+	// Fetch subjects from the new endpoint
+	useEffect(() => {
+		productService.getSubjects().then((data) => {
+			setSubjects(data);
+			setLoadingSubjects(false);
 		});
-		return Object.entries(subjectMap).map(([code, description], idx) => ({
-			id: idx,
-			code,
-			description,
-		}));
-	}, [products]);
+	}, []);
 
 	// Handle navigating to product list with subject filter
 	const handleSubjectClick = (subjectCode) => {
@@ -169,7 +166,11 @@ const ActEdNavbar = () => {
 							variant="link"
 							className="btn-search p-0 mx-1 flex-wrap align-items-center d-flex flex-row"
 							onClick={() => setShowCartPanel(true)}>
-							<div style={{ position: "relative", display: "inline-block" }}>
+							<div
+								style={{
+									position: "relative",
+									display: "inline-block",
+								}}>
 								<Cart className="bi d-flex flex-row align-items-center" />
 								{cartCount > 0 && (
 									<span
@@ -183,7 +184,7 @@ const ActEdNavbar = () => {
 											borderRadius: "50%",
 											boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
 											zIndex: 2,
-											display: "block"
+											display: "block",
 										}}
 									/>
 								)}
@@ -274,33 +275,87 @@ const ActEdNavbar = () => {
 							<Nav.Link as={NavLink} to="/home">
 								Home
 							</Nav.Link>
+							<NavDropdown
+								title="Subjects"
+								menuVariant="light"
+								renderMenuOnMount={true}
+								align="start"
+								style={{ position: "relative" }}>
+								<div className="dropdown-submenu">
+									<Row>
+										<Col>
+											<div className="fw-bold mb-2">
+												Core Principles
+											</div>
+											{subjects
+												.filter((s) => /^(CB|CS|CM)/.test(s.code))
+												.map((subject) => (
+													<NavDropdown.Item
+														key={subject.id}
+														onClick={() =>
+															handleSubjectClick(subject.code)
+														}>
+														{subject.code} - {subject.description}
+													</NavDropdown.Item>
+												))}
+										</Col>
+										<Col>
+											<div className="fw-bold mb-2">
+												Core Practices
+											</div>
+											{subjects
+												.filter((s) => /^CP[1-3]$/.test(s.code))
+												.map((subject) => (
+													<NavDropdown.Item
+														key={subject.id}
+														onClick={() =>
+															handleSubjectClick(subject.code)
+														}>
+														{subject.code} - {subject.description}
+													</NavDropdown.Item>
+												))}
+										</Col>
+										<Col>
+											<div className="fw-bold mb-2">
+												Specialist Principles
+											</div>
+											{subjects
+												.filter((s) => /^SP/.test(s.code))
+												.map((subject) => (
+													<NavDropdown.Item
+														key={subject.id}
+														onClick={() =>
+															handleSubjectClick(subject.code)
+														}>
+														{subject.code} - {subject.description}
+													</NavDropdown.Item>
+												))}
+										</Col>
+										<Col>
+											<div className="fw-bold mb-2">
+												Specialist Advanced
+											</div>
+											{subjects
+												.filter((s) => /^SA/.test(s.code))
+												.map((subject) => (
+													<NavDropdown.Item
+														key={subject.id}
+														onClick={() =>
+															handleSubjectClick(subject.code)
+														}>
+														{subject.code} - {subject.description}
+													</NavDropdown.Item>
+												))}
+										</Col>
+									</Row>
+								</div>
+							</NavDropdown>
 							<Nav.Link
 								as={NavLink}
 								to="/products"
 								onClick={() => handleProductClick()}>
 								Products
 							</Nav.Link>
-							<NavDropdown title="Subjects">
-								{loadingProducts ? (
-									<NavDropdown.Item disabled>
-										Loading subjects...
-									</NavDropdown.Item>
-								) : subjects.length > 0 ? (
-									subjects.map((subject) => (
-										<NavDropdown.Item
-											key={subject.id}
-											onClick={() =>
-												handleSubjectClick(subject.code)
-											}>
-											{subject.code} - {subject.description}
-										</NavDropdown.Item>
-									))
-								) : (
-									<NavDropdown.Item disabled>
-										No subjects available
-									</NavDropdown.Item>
-								)}
-							</NavDropdown>
 							<Nav.Link as={NavLink} href="#home">
 								Distance Learning
 							</Nav.Link>

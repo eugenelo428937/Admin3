@@ -68,6 +68,21 @@ const productService = {
 		);
 		return response.data;
 	},
+
+	getSubjects: async () => {
+		const response = await httpService.get(`/api/subjects/`);
+		return response.data.results;
+	},
+
+	getProductTypes: async () => {
+		const response = await httpService.get(`/api/product-types/`);
+		return response.data.results || response.data;
+	},
+
+	getProductSubtypes: async (typeId) => {
+		const response = await httpService.get(`/api/product-types/${typeId}/subtypes/`);
+		return response.data.results || response.data;
+	},
 };
 
 export default productService;
