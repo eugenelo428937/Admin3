@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useCart } from "../CartContext";
+import { useCart } from "../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 import cartService from "../services/cartService";
 import { Button, Container, ListGroup, Alert, Spinner } from "react-bootstrap";
