@@ -16,10 +16,6 @@ import productService from "../services/productService";
 const ProductList = () => {
 	const { products, loading } = useProducts();
 	const [error, setError] = useState(null);
-	const [productTypes, setProductTypes] = useState([]);
-	const [productSubtypes, setProductSubtypes] = useState([]);
-	const [filteredSubtypes, setFilteredSubtypes] = useState([]); // Separate state for filtered subtypes
-	const [subjects, setSubjects] = useState([]);
 	const [selectedType, setSelectedType] = useState("");
 	const [selectedSubtype, setSelectedSubtype] = useState("");
 	const [selectedSubject, setSelectedSubject] = useState("");
@@ -39,22 +35,22 @@ const ProductList = () => {
 			setSelectedSubject(""); // Reset when no subject in URL
 		}
 	}, [subjectFilter]);
-
-	// Update filtered subtypes whenever product type selection or subtypes list changes
-	useEffect(() => {
-		// If no type is selected, show all subtypes
-		if (!selectedType) {
-			setFilteredSubtypes(productSubtypes);
-		} else {
-			// Filter subtypes based on selected type
-			const filtered = productSubtypes.filter((subtype) => 
-				subtype.startsWith(selectedType + ":") ||
-				subtype.includes(selectedType) ||
-				subtype.toLowerCase().includes(selectedType.toLowerCase())
-			);
-			setFilteredSubtypes(filtered);
-		}
-	}, [selectedType, productSubtypes]);
+	console.log("Sample product:", products[0]);
+	// Compute available filter options from products (not filteredProducts)
+	const availableSubjects = Array.from(new Set(products.map(p => p.subject_code))).filter(Boolean).map(code => {
+		const prod = products.find(p => p.subject_code === code);
+		return { id: code, code, description: prod?.subject_description || code };
+	});
+	// Use correct mapping for product type and subtype (flat strings)
+	const availableTypes = Array.from(new Set(products.map(p => p.product_type))).filter(Boolean);
+	const availableSubtypes = Array.from(new Set(
+		products
+			.filter(p =>
+				(!selectedType || p.product_type === selectedType) &&
+				(!selectedSubject || p.subject_code === selectedSubject)
+			)
+			.map(p => p.product_subtype)
+	)).filter(Boolean);
 
 	// Fetch bulk deadlines whenever products change
 	useEffect(() => {
@@ -90,6 +86,14 @@ const ProductList = () => {
 		addToCart(product);
 	};
 
+	const filteredProducts = products.filter((product) => {
+		let match = true;
+		if (selectedSubject && product.subject_code !== selectedSubject) match = false;
+		if (selectedType && product.product_type !== selectedType) match = false;
+		if (selectedSubtype && product.product_subtype !== selectedSubtype) match = false;
+		return match;
+	});
+
 	if (loading) return <div>Loading products...</div>;
 	if (error) return <div>Error: {error}</div>;
 
@@ -109,7 +113,7 @@ const ProductList = () => {
 							onChange={handleSubjectChange}
 							className="filter-dropdown">
 							<option value="">All Subjects</option>
-							{subjects.map((subject) => (
+								{availableSubjects.map((subject) => (
 								<option key={subject.id} value={subject.code}>
 									{subject.code}
 								</option>
@@ -127,7 +131,7 @@ const ProductList = () => {
 							onChange={handleTypeChange}
 							className="filter-dropdown">
 							<option value="">All Types</option>
-							{productTypes.map((type, index) => (
+							{availableTypes.map((type, index) => (
 								<option key={index} value={type}>
 									{type}
 								</option>
@@ -146,7 +150,7 @@ const ProductList = () => {
 							disabled={!selectedType}
 							className="filter-dropdown">
 							<option value="">All Subtypes</option>
-							{filteredSubtypes.map((subtype, index) => (
+							{availableSubtypes.map((subtype, index) => (
 								<option key={index} value={subtype}>
 									{subtype}
 								</option>
@@ -157,18 +161,18 @@ const ProductList = () => {
 			</Row>
 
 			{/* Product Cards */}
-			{products.length === 0 ? (
+				{filteredProducts.length === 0 ? (
 				<Alert variant="info">
 					No products available based on selected filters.
 				</Alert>
 			) : (
 				<Row xs={1} md={2} lg={5} className="g-4">
-					{products.map((product) => (
+					{filteredProducts.map((product) => (
 						<ProductCard
 							key={product.id}
 							product={product}
 							onAddToCart={handleAddToCart}
-							allEsspIds={products.filter((p) => p.type === "Markings").map((p) => p.id || p.product_id)}
+							allEsspIds={filteredProducts.filter((p) => p.type === "Markings").map((p) => p.id || p.product_id)}
 							bulkDeadlines={bulkDeadlines}
 						/>
 					))}
