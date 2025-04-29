@@ -8,9 +8,9 @@ import {
 import { useCart } from "../CartContext";
 import MarkingProductCard from "./MarkingProductCard";
 
-const ProductCard = ({ product, onAddToCart }) => {
+const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
     if (product.type === 'Markings') {
-        return <MarkingProductCard product={product} onAddToCart={onAddToCart} />;
+        return <MarkingProductCard product={product} onAddToCart={onAddToCart} allEsspIds={allEsspIds} bulkDeadlines={bulkDeadlines} />;
     }
 
     return (
