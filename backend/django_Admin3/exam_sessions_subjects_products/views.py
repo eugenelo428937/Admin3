@@ -14,13 +14,7 @@ from subjects.serializers import SubjectSerializer
 class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):    
     queryset = ExamSessionSubjectProduct.objects.all()
     serializer_class = ExamSessionSubjectProductSerializer
-
-    # Override get_permissions method to handle permissions for specific actions
-    def get_permissions(self):
-        if self.action == 'list':
-            return [AllowAny()]
-        return super().get_permissions()
-    
+     
     @action(detail=False, methods=['post'], url_path='bulk-create')
     @permission_classes([IsAuthenticated])
     def bulk_create(self, request):
@@ -132,9 +126,8 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 'error': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @permission_classes([AllowAny])
-    @action(detail=False, methods=['get'], url_path='list')    
-    def list(self, request):
+    @action(detail=False, methods=['get'], url_path='list', permission_classes=[AllowAny])
+    def list_products(self, request):
         """
         Get list of all products with their subject details, product type and subtype
         Supports filtering by subject (id, code, name), product type, and product subtype
@@ -193,7 +186,3 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 'product_subtypes': list(product_subtypes)
             }
         })
-
-
-ExamSessionSubjectProductViewSet.list.permission_classes = [
-    AllowAny]

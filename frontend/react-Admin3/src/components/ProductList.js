@@ -23,6 +23,7 @@ const ProductList = () => {
 	const [selectedType, setSelectedType] = useState("");
 	const [selectedSubtype, setSelectedSubtype] = useState("");
 	const [selectedSubject, setSelectedSubject] = useState("");
+	const [bulkDeadlines, setBulkDeadlines] = useState({});
 
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -50,8 +51,7 @@ const ProductList = () => {
 			if (selectedType) params.append("type", selectedType);
 			if (selectedSubtype) params.append("subtype", selectedSubtype);
 
-			const response = await productService.getAvailableProducts(params);
-			console.log("Response from API:", response.products); // Debugging line
+			const response = await productService.getAvailableProducts(params);			
 			// Handle the new response structure
 			setProducts(response.products || []);
 
@@ -91,6 +91,19 @@ const ProductList = () => {
 	useEffect(() => {
 		fetchAvailableProducts();
 	}, [fetchAvailableProducts]);
+
+	// Fetch bulk deadlines whenever products change
+	useEffect(() => {
+		const markingProducts = products.filter((p) => p.type === "Markings");
+		const allEsspIds = markingProducts.map((p) => p.id || p.product_id);
+		if (allEsspIds.length > 0) {
+			productService.getBulkMarkingDeadlines(allEsspIds).then((deadlines) => {
+				setBulkDeadlines(deadlines);
+			});
+		} else {
+			setBulkDeadlines({});
+		}
+	}, [products]);
 
 	// Handle subject selection change
 	const handleSubjectChange = (event) => {
@@ -191,6 +204,8 @@ const ProductList = () => {
 							key={product.id}
 							product={product}
 							onAddToCart={handleAddToCart}
+							allEsspIds={products.filter((p) => p.type === "Markings").map((p) => p.id || p.product_id)}
+							bulkDeadlines={bulkDeadlines}
 						/>
 					))}
 				</Row>

@@ -30,3 +30,21 @@ class MarkingPaperViewSet(viewsets.ReadOnlyModelViewSet):
         papers = MarkingPaper.objects.filter(exam_session_subject_product=essp)
         serializer = MarkingPaperSerializer(papers, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], url_path='bulk-deadlines', permission_classes=[AllowAny])
+    def bulk_deadlines(self, request):
+        """
+        Get marking deadlines for a list of exam_session_subject_product ids (POST with {"essp_ids": [id1, id2, ...]})
+        Returns a mapping of essp_id to list of deadlines.
+        """
+        essp_ids = request.data.get('essp_ids', [])
+        if not essp_ids or not isinstance(essp_ids, list):
+            return Response({'error': 'essp_ids is required and must be a list'}, status=400)
+        papers = MarkingPaper.objects.filter(exam_session_subject_product_id__in=essp_ids)
+        result = {}
+        for paper in papers:
+            eid = paper.exam_session_subject_product_id
+            if eid not in result:
+                result[eid] = []
+            result[eid].append(MarkingPaperSerializer(paper).data)
+        return Response(result)
