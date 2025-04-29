@@ -23,13 +23,25 @@ class Command(BaseCommand):
                 subject_col, paper_name, recommended_date, deadline_date = row[:4]
                 # Split multiple subjects (remove quotes, split by comma, strip spaces)
                 subjects = [s.strip().replace('"','').replace("'","") for s in subject_col.replace('"','').split(',')]
-                # Determine product_subtype by paper_name prefix
+                # Determine product_subtype and product_code by paper_name prefix
                 if paper_name.startswith('X'):
                     subtype_name = 'Series X Marking'
+                    product_code = None  # Will match any X marking product
                 elif paper_name.startswith('Y'):
                     subtype_name = 'Series Y Marking'
+                    product_code = None
                 elif paper_name.startswith('M'):
                     subtype_name = 'Mock Exam Marking'
+                    # Map M1/M2/M3 to MM1/MM2/MM3
+                    if paper_name == 'M1':
+                        product_code = 'MM1'
+                    elif paper_name == 'M2':
+                        product_code = 'MM2'
+                    elif paper_name == 'M3':
+                        product_code = 'MM3'
+                    else:
+                        self.stderr.write(f"Row {row_num}: Unknown mock paper name {paper_name}. Stopping import.")
+                        raise CommandError(f"Unknown mock paper name {paper_name}")
                 else:
                     self.stderr.write(f"Row {row_num}: Unknown paper type for {paper_name}. Stopping import.")
                     raise CommandError(f"Unknown paper type for {paper_name}")
@@ -45,12 +57,15 @@ class Command(BaseCommand):
                     raise CommandError(f"ProductSubtype '{subtype_name}' not found")
                 # Find product
                 try:
-                    product = Product.objects.filter(product_type=product_type, product_subtype=product_subtype, is_active=True).order_by('-id').first()
+                    product_qs = Product.objects.filter(product_type=product_type, product_subtype=product_subtype, is_active=True)
+                    if product_code:
+                        product_qs = product_qs.filter(code=product_code)
+                    product = product_qs.order_by('-id').first()
                     if not product:
                         raise Product.DoesNotExist
                 except Product.DoesNotExist:
-                    self.stderr.write(f"Row {row_num}: No active Product for type 'Markings' and subtype '{subtype_name}'. Stopping import.")
-                    raise CommandError(f"No active Product for type 'Markings' and subtype '{subtype_name}'")
+                    self.stderr.write(f"Row {row_num}: No active Product for type 'Markings', subtype '{subtype_name}', code '{product_code}'. Stopping import.")
+                    raise CommandError(f"No active Product for type 'Markings', subtype '{subtype_name}', code '{product_code}'")
                 # Parse dates (expecting DD/MM/YYYY)
                 try:
                     recommended = datetime.strptime(recommended_date.strip(), "%d/%m/%Y")

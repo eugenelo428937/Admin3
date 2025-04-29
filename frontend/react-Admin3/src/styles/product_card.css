@@ -4,3 +4,10 @@
 .product-add-to-cart-button {
   border-radius: 2rem;
 }
+.expanded-width {
+  width: 700px !important; /* or any width you prefer */
+  max-width: 100%;
+  transition: width 0.3s;
+  z-index: 10;
+  position: relative;
+}

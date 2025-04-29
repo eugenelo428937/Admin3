@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from marking.models import MarkingPaper
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
@@ -12,8 +13,10 @@ class MarkingPaperViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = MarkingPaper.objects.all()
     serializer_class = MarkingPaperSerializer
 
+
+    permission_classes = [AllowAny]
     @action(detail=False, methods=['get'])
-    def by_product(self, request):
+    def deadlines(self, request):
         """
         Get marking deadlines for a given exam_session_subject_product id (passed as ?essp_id=)
         """
