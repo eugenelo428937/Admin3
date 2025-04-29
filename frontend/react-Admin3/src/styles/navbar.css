@@ -1,100 +1,110 @@
-:root {	
+:root {
 	--bs-navbar-container-bg-color: #3c3c3b;
 	--bs-navbar-container-color: #fdfdfd;
 	--bs-navbar-main-bg-color: #3c3c3b;
 	--bs-navbar-menu-expand-bg-color: #3c3c3b;
 	--bs-navbar-top-bg-color: #333334;
 	--bs-navbar-top-border-color: #5b5b5d;
-    --user-dropdown-bg-color: #474748;
+	--user-dropdown-bg-color: #474748;
 	--bs-toast-color: #3c3c3b;
 	--icon-light-color: #f8f9fa;
 	--icon-light-color-hover: #f8f9fa;
 	--icon-light-border-color-hover: #6b7177;
-	--icon-light-bg-color-active: #994EBC;
-	--icon-light-bg-color-highlight: #3AF8F2;	
+	--icon-light-bg-color-active: #994ebc;
+	--icon-light-bg-color-highlight: #3af8f2;
 	--icon-light-bg-color-hover: #464645;
 	--main-backgound-color: #fdfdfd;
 	--quick-link-text-decoration-color: #cdcdcb;
 	--bs-tooltip-bg: #707070 !important;
-    --default-font: Poppins, Helvetica, Arial, 
-        sans-serif;
+	--default-font: Poppins, Helvetica, Arial, sans-serif;
 	/* text-decoration: underline solid #CDCDCB 1px;
   text-underline-offset: 2px; */
 }
 
-.navbar-container {    
-    background-color: var(--bs-navbar-container-bg-color);
+.navbar-container {
+	background-color: var(--bs-navbar-container-bg-color);
 }
-.navbar-container a {    
-    color: var(--icon-light-color);
-    text-decoration: none;
+.navbar-container a {
+	color: var(--icon-light-color);
+	text-decoration: none;
 }
 .navbar-top {
-    background-color: var(--bs-navbar-top-bg-color);
+	background-color: var(--bs-navbar-top-bg-color);
 }
 .navbar-main {
-    background-color: var(--bs-navbar-main-bg-color);
+	background-color: var(--bs-navbar-main-bg-color);
 }
 button.navbar-toggler.menu-button {
-    border: 0px;
-	padding:4px;
+	border: 0px;
+	padding: 4px;
 }
 button.navbar-toggler.menu-button:hover {
-	padding:4px;
-    border-radius: 8px;
-	border:1px solid var(--icon-light-border-color-hover);
+	padding: 4px;
+	border-radius: 8px;
+	border: 1px solid var(--icon-light-border-color-hover);
 	background-color: var(--icon-light-bg-color-hover);
 	transition: all 0.2s ease-in-out;
 }
 .navbar-toggler-icon {
-    color: var(--icon-light-color);
+	color: var(--icon-light-color);
 }
 .navbar-toggler-icon {
-    /* background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(253, 253, 253, 1)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E"); */
-    width: 1.8em;
-    height: 1.8em;
+	/* background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(253, 253, 253, 1)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E"); */
+	width: 1.8em;
+	height: 1.8em;
 }
 .navbar-brand {
-    padding: 0 0px;
-    margin: 0;
-    max-width:42px;    
-    min-width:42px;
+	padding: 0 0px;
+	margin: 0;
+	max-width: 42px;
+	min-width: 42px;
 }
 .nav-link {
-    margin-left: 2px; 
-    color: var(--icon-light-color) !important;
-    padding: 2px 6px !important;
+	margin-left: 2px;
+	color: var(--icon-light-color) !important;
+	padding: 2px 6px !important;
 }
 .nav-link .bi {
-    color: var(--icon-light-color);
+	color: var(--icon-light-color);
 }
-.navbar-top button{
-    color: var(--icon-light-color) !important;
-    text-decoration: none;
+.navbar-top button {
+	color: var(--icon-light-color) !important;
+	text-decoration: none;
 }
-.dropdown-toggle.nav-link{
-    display: flex !important;
-    align-items: center;
+.dropdown-toggle.nav-link {
+	display: flex !important;
+	align-items: center;
 }
 
-.dropdown-menu{
-    background-color: var(--user-dropdown-bg-color);
+.dropdown-menu {
+	background-color: var(--user-dropdown-bg-color);
 }
 @media (min-width: 768px) {
-    .navbar-brand {
-    max-width:108px;    
-    min-width:108px;
-    }
+	.navbar-brand {
+		max-width: 108px;
+		min-width: 108px;
+	}
 }
 
-@media (min-width: 992px) { 
-    .navbar-brand {
-    max-width:128px;    
-    min-width:128px;
-    }
- }
+@media (min-width: 992px) {
+	.navbar-brand {
+		max-width: 128px;
+		min-width: 128px;
+	}
+}
 
- .notification-dot{
-    width: 8px;
-    height: 8px;
- }
+.notification-dot {
+	width: 8px;
+	height: 8px;
+}
+.dropdown-submenu {
+	position: fixed;
+	left: 0;
+	top: 106px;
+	width: 100vw;
+	max-width: 100vw;
+	z-index: 1050;
+	padding: 24px;
+	box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+	background-color: #333333;
+}
