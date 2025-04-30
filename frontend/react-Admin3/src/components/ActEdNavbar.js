@@ -36,6 +36,10 @@ const ActEdNavbar = () => {
 	const [subjects, setSubjects] = useState([]);
 	const [loadingSubjects, setLoadingSubjects] = useState(true);
 
+	// State for product categories
+	const [productCategories, setProductCategories] = useState([]);
+	const [loadingCategories, setLoadingCategories] = useState(true);
+
 	// Redirect after login if postLoginRedirect is set
 	useEffect(() => {
 		if (isAuthenticated) {
@@ -56,6 +60,14 @@ const ActEdNavbar = () => {
 		});
 	}, []);
 
+	// Fetch product categories from the new endpoint
+	useEffect(() => {
+		productService.getProductCategories && productService.getProductCategories().then((data) => {
+			setProductCategories(data.filter((cat) => cat.is_display));
+			setLoadingCategories(false);
+		});
+	}, []);
+
 	// Handle navigating to product list with subject filter
 	const handleSubjectClick = (subjectCode) => {
 		const searchParams = new URLSearchParams(window.location.search);
@@ -67,6 +79,14 @@ const ActEdNavbar = () => {
 	const handleProductClick = () => {
 		navigate(`/products`);
 	};
+
+	// Handle navigating to product list with category filter
+	const handleProductCategoryClick = (categoryId) => {
+		const searchParams = new URLSearchParams(window.location.search);
+		searchParams.set("category", categoryId);
+		navigate(`/products?${searchParams.toString()}`);
+	};
+
 	// Handle closing the modal and resetting form data
 	const handleClose = () => {
 		setShowLoginModal(false);
@@ -344,6 +364,60 @@ const ActEdNavbar = () => {
 															handleSubjectClick(subject.code)
 														}>
 														{subject.code} - {subject.description}
+													</NavDropdown.Item>
+												))}
+										</Col>
+									</Row>
+								</div>
+							</NavDropdown>
+							<NavDropdown
+								title="Products"
+								menuVariant="light"
+								renderMenuOnMount={true}
+								align="start"
+								style={{ position: "relative" }}
+							>
+								<div className="dropdown-submenu">
+									<Row>
+										<Col>
+											<div className="fw-bold mb-2">Core Study Material</div>
+											{productCategories
+												.filter((cat) => cat.is_core)
+												.sort((a, b) => a.order_sequence - b.order_sequence)
+												.map((cat) => (
+													<NavDropdown.Item
+														key={cat.id}
+														onClick={() => handleProductCategoryClick(cat.id)}
+													>
+														{cat.name}
+													</NavDropdown.Item>
+												))}
+										</Col>
+										<Col>
+											<div className="fw-bold mb-2">Revision Materials</div>
+											{productCategories
+												.filter((cat) => cat.is_revision)
+												.sort((a, b) => a.order_sequence - b.order_sequence)
+												.map((cat) => (
+													<NavDropdown.Item
+														key={cat.id}
+														onClick={() => handleProductCategoryClick(cat.id)}
+													>
+														{cat.name}
+													</NavDropdown.Item>
+												))}
+										</Col>
+										<Col>
+											<div className="fw-bold mb-2">Marking</div>
+											{productCategories
+												.filter((cat) => cat.is_marking)
+												.sort((a, b) => a.order_sequence - b.order_sequence)
+												.map((cat) => (
+													<NavDropdown.Item
+														key={cat.id}
+														onClick={() => handleProductCategoryClick(cat.id)}
+													>
+														{cat.name}
 													</NavDropdown.Item>
 												))}
 										</Col>
