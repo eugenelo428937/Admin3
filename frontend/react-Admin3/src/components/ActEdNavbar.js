@@ -11,6 +11,7 @@ import LoginForm from "./LoginForm";
 import { useCart } from "../contexts/CartContext";
 import CartPanel from "./CartPanel";
 import productService from "../services/productService";
+import subjectService from "../services/subjectService";
 
 const ActEdNavbar = () => {
 	// State for authentication status
@@ -46,18 +47,25 @@ const ActEdNavbar = () => {
 			const redirectPath = localStorage.getItem("postLoginRedirect");
 			if (redirectPath) {
 				localStorage.removeItem("postLoginRedirect");
-				setShowCartPanel(false); // Hide the cart panel after login
+				setShowCartPanel(false);
 				navigate(redirectPath);
 			}
 		}
 	}, [isAuthenticated, navigate]);
 
-	// Fetch subjects from the new endpoint
+	// Fetch subjects from the new endpoint (fix: use async/await)
 	useEffect(() => {
-		productService.getSubjects().then((data) => {
-			setSubjects(data);
-			setLoadingSubjects(false);
-		});
+		const fetchSubjects = async () => {
+			try {
+				const data = await subjectService.getSubjects();
+				setSubjects(data);
+			} catch (err) {
+				setSubjects([]);
+			} finally {
+				setLoadingSubjects(false);
+			}
+		};
+		fetchSubjects();
 	}, []);
 
 	// Fetch product categories from the new endpoint
@@ -70,21 +78,19 @@ const ActEdNavbar = () => {
 
 	// Handle navigating to product list with subject filter
 	const handleSubjectClick = (subjectCode) => {
-		const searchParams = new URLSearchParams(window.location.search);
-		searchParams.set("subject", subjectCode);		
-		navigate(`/products?${searchParams.toString()}`);
+		// Only set the subject filter, clear all others
+		navigate(`/products?subject=${subjectCode}`);
+	};
+
+	// Handle navigating to product list with category filter
+	const handleProductCategoryClick = (categoryId) => {
+		// Only set the category filter, clear all others
+		navigate(`/products?category=${categoryId}`);
 	};
 
 	// Handle navigating to product list with subject filter
 	const handleProductClick = () => {
 		navigate(`/products`);
-	};
-
-	// Handle navigating to product list with category filter
-	const handleProductCategoryClick = (categoryId) => {
-		const searchParams = new URLSearchParams(window.location.search);
-		searchParams.set("category", categoryId);
-		navigate(`/products?${searchParams.toString()}`);
 	};
 
 	// Handle closing the modal and resetting form data
