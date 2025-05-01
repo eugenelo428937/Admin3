@@ -4,6 +4,12 @@ import httpService from "./httpService";
 const API_URL = config.productUrl;
 const MARKING_API_URL = config.markingUrl;
 
+// Fetch product categories for navbar dropdown
+const getProductCategories = async () => {
+    const response = await httpService.get(`/api/product-categories/`);
+    return response.data.results || response.data;
+};
+
 const productService = {
 	getAll: async () => {
 		try {
@@ -70,7 +76,7 @@ const productService = {
 	},
 
 	getSubjects: async () => {
-		const response = await httpService.get(`/api/subjects/`);
+		const response = await httpService.get(`${API_URL}/api/subjects/`);
 		return response.data.results;
 	},
 
@@ -83,6 +89,21 @@ const productService = {
 		const response = await httpService.get(`/api/product-types/${typeId}/subtypes/`);
 		return response.data.results || response.data;
 	},
+
+	/**
+	 * Get products filtered by category
+	 * @param {string|number} categoryId - The category id to filter by
+	 * @param {object} otherParams - Optional additional query params
+	 */
+	getByCategory: async (categoryId, otherParams = {}) => {
+		const params = new URLSearchParams({ ...otherParams, category: categoryId });
+		const response = await httpService.get(
+			`${API_URL}/current/list/?${params.toString()}`
+		);
+		return response.data;
+	},
+
+	getProductCategories,
 };
 
 export default productService;

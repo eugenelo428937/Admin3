@@ -15,7 +15,10 @@ const subjectService = {
 			return []; // Return empty array on error
 		}
 	},
-
+	getSubjects: async () => {
+		const response = await httpService.get(`${API_URL}/`);
+		return response.data.results;
+	},
 	getById: async (id) => {
 		const response = await httpService.get(`${API_URL}/${id}/`);
 		return response.data;

@@ -7,24 +7,27 @@ import {
 	Alert,
 } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useProducts } from "../contexts/ProductContext";
-import "../styles/product_list.css";
-import ProductCard from "./ProductCard";
 import { useCart } from "../contexts/CartContext";
 import productService from "../services/productService";
+import "../styles/product_list.css";
+import ProductCard from "./ProductCard";
 
 const ProductList = () => {
-	const { products, loading } = useProducts();
+	const navigate = useNavigate();
+	const location = useLocation();
+	const queryParams = new URLSearchParams(location.search);
+	const subjectFilter = queryParams.get("subject");
+	const categoryFilter = queryParams.get("category");
+
+	const [products, setProducts] = useState([]);
+	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [selectedType, setSelectedType] = useState("");
 	const [selectedSubtype, setSelectedSubtype] = useState("");
 	const [selectedSubject, setSelectedSubject] = useState("");
 	const [bulkDeadlines, setBulkDeadlines] = useState({});
-
-	const navigate = useNavigate();
-	const location = useLocation();
-	const queryParams = new URLSearchParams(location.search);
-	const subjectFilter = queryParams.get("subject");
+	const [productCategories, setProductCategories] = useState([]);
+	const [selectedCategory, setSelectedCategory] = useState(categoryFilter || "");
 
 	const { addToCart } = useCart();
 
@@ -35,21 +38,61 @@ const ProductList = () => {
 			setSelectedSubject(""); // Reset when no subject in URL
 		}
 	}, [subjectFilter]);
-	console.log("Sample product:", products[0]);
+
+	useEffect(() => {
+		if (categoryFilter) {
+			setSelectedCategory(categoryFilter);
+		} else {
+			setSelectedCategory(""); // Reset when no category in URL
+		}
+	}, [categoryFilter]);
+
+	// Reset all filters when subject or category changes from navbar
+	useEffect(() => {
+		setSelectedType("");
+		setSelectedSubtype("");
+		setSelectedSubject(subjectFilter || "");
+		setSelectedCategory(categoryFilter || "");
+	}, [subjectFilter, categoryFilter]);
+
+	// Fetch products from backend when category or subject changes
+	useEffect(() => {
+		setLoading(true);
+		setError(null);
+		const params = {};
+		if (categoryFilter) params.category = categoryFilter;
+		if (subjectFilter) params.subject = subjectFilter;
+		productService.getAvailableProducts(new URLSearchParams(params))
+			.then((data) => {
+				setProducts(data.products || []);
+				setLoading(false);
+			})
+			.catch((err) => {
+				setError("Failed to load products");
+				setLoading(false);
+			});
+	}, [categoryFilter, subjectFilter]);
+
+	// Fetch product categories from backend
+	useEffect(() => {
+		productService.getProductCategories().then((data) => {
+			setProductCategories(data.filter((cat) => cat.is_display));
+		});
+	}, []);
+
 	// Compute available filter options from products (not filteredProducts)
 	const availableSubjects = Array.from(new Set(products.map(p => p.subject_code))).filter(Boolean).map(code => {
 		const prod = products.find(p => p.subject_code === code);
 		return { id: code, code, description: prod?.subject_description || code };
 	});
-	// Use correct mapping for product type and subtype (flat strings)
-	const availableTypes = Array.from(new Set(products.map(p => p.product_type))).filter(Boolean);
+	const availableTypes = Array.from(new Set(products.flatMap(p => p.product_types || []))).filter(Boolean);
 	const availableSubtypes = Array.from(new Set(
 		products
 			.filter(p =>
-				(!selectedType || p.product_type === selectedType) &&
+				(!selectedType || (p.product_types || []).includes(selectedType)) &&
 				(!selectedSubject || p.subject_code === selectedSubject)
 			)
-			.map(p => p.product_subtype)
+			.flatMap(p => p.product_subtypes || [])
 	)).filter(Boolean);
 
 	// Fetch bulk deadlines whenever products change
@@ -82,6 +125,19 @@ const ProductList = () => {
 		setSelectedSubtype(event.target.value);
 	};
 
+	// Handle category selection change
+	const handleCategoryChange = (event) => {
+		const newCategory = event.target.value;
+		setSelectedCategory(newCategory);
+		const params = new URLSearchParams(location.search);
+		if (newCategory) {
+			params.set("category", newCategory);
+		} else {
+			params.delete("category");
+		}
+		navigate(`/products?${params.toString()}`);
+	};
+
 	const handleAddToCart = (product) => {
 		addToCart(product);
 	};
@@ -89,8 +145,8 @@ const ProductList = () => {
 	const filteredProducts = products.filter((product) => {
 		let match = true;
 		if (selectedSubject && product.subject_code !== selectedSubject) match = false;
-		if (selectedType && product.product_type !== selectedType) match = false;
-		if (selectedSubtype && product.product_subtype !== selectedSubtype) match = false;
+		if (selectedType && !(product.product_types || []).includes(selectedType)) match = false;
+		if (selectedSubtype && !(product.product_subtypes || []).includes(selectedSubtype)) match = false;
 		return match;
 	});
 
@@ -104,6 +160,24 @@ const ProductList = () => {
 			{/* Filter Dropdowns */}
 			<Row className="mb-4">
 				<div>Filter by:</div>
+				<Col md={2}>
+					<Form.Group>
+						<Form.Label>Product Category</Form.Label>
+						<Form.Control
+							as="select"
+							value={selectedCategory}
+							onChange={handleCategoryChange}
+							className="filter-dropdown">
+							<option value="">All Categories</option>
+							{productCategories.map((cat) => (
+								<option key={cat.id} value={cat.id}>
+									{cat.name}
+								</option>
+							))}
+						</Form.Control>
+					</Form.Group>
+				</Col>
+
 				<Col md={2}>
 					<Form.Group>
 						<Form.Label>Subject</Form.Label>

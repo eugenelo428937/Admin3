@@ -16,27 +16,28 @@ class ExamSessionSubjectProductSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at']
 
 class ProductListSerializer(serializers.ModelSerializer):
-    subject_id = serializers.IntegerField(
-        source='exam_session_subject.subject.id')
-    subject_code = serializers.CharField(
-        source='exam_session_subject.subject.code')
-    subject_description = serializers.CharField(
-        source='exam_session_subject.subject.description')
-    
+    product_types = serializers.SerializerMethodField()
+    product_subtypes = serializers.SerializerMethodField()
+
+    def get_product_types(self, obj):
+        return [t.name for t in obj.product.product_types.all()]
+
+    def get_product_subtypes(self, obj):
+        return [s.name for s in obj.product.product_subtypes.all()]
+
+    subject_id = serializers.IntegerField(source='exam_session_subject.subject.id')
+    subject_code = serializers.CharField(source='exam_session_subject.subject.code')
+    subject_description = serializers.CharField(source='exam_session_subject.subject.description')
     product_id = serializers.IntegerField(source='product.id')
     product_code = serializers.CharField(source='product.code')
     product_name = serializers.CharField(source='product.fullname')
     product_short_name = serializers.CharField(source='product.shortname')
     product_description = serializers.CharField(source='product.description')
-    product_type = serializers.CharField(source='product.product_type.name')
-    product_subtype = serializers.CharField(
-        source='product.product_subtype.name')
-    type = serializers.CharField(source='product.product_type.name', read_only=True)
 
     class Meta:
         model = ExamSessionSubjectProduct
         fields = [
             'id', 'product_id', 'product_code', 'product_name', 'product_short_name',
             'product_description', 'subject_id', 'subject_code', 'subject_description',
-            'product_type', 'product_subtype', 'type'
+            'product_types', 'product_subtypes'
         ]

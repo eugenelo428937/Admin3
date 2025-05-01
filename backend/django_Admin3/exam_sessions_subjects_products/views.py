@@ -7,7 +7,7 @@ from .models import ExamSessionSubjectProduct
 from .serializers import ExamSessionSubjectProductSerializer, ProductListSerializer
 from exam_sessions_subjects.models import ExamSessionSubject
 from products.models.products import Product
-from products.models import ProductType, ProductSubtype
+from products.models import ProductMainCategory, ProductCategory, ProductSubcategory
 from subjects.models import Subject
 from subjects.serializers import SubjectSerializer
 
@@ -135,9 +135,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 
         queryset = ExamSessionSubjectProduct.objects.select_related(
             'exam_session_subject__subject',
-            'product',
-            'product__product_type',
-            'product__product_subtype'
+            'product'
         ).all()
 
         # Subject filtering - multiple options
@@ -167,6 +165,11 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(
                 product__product_subtype__name=product_subtype)
 
+        # Product category filtering
+        category = request.query_params.get('category', None)
+        if category:
+            queryset = queryset.filter(product__product_categories__id=category)
+
         # Also return all available subjects for filtering dropdown
         subjects = Subject.objects.all().order_by('code')
         subject_serializer = SubjectSerializer(subjects, many=True)
@@ -175,8 +178,8 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         serializer = ProductListSerializer(queryset, many=True)
 
         # Get unique product types and subtypes for dropdown filters
-        product_types = ProductType.objects.all().values_list('name', flat=True)
-        product_subtypes = ProductSubtype.objects.all().values_list('name', flat=True)
+        product_types = ProductMainCategory.objects.all().values_list('name', flat=True)
+        product_subtypes = ProductSubcategory.objects.all().values_list('name', flat=True)
 
         return Response({
             'products': serializer.data,
