@@ -2,14 +2,21 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from .models import Product, ProductType, ProductSubtype
-from .serializers import ProductSerializer, ProductTypeSerializer, ProductSubtypeSerializer
+from .models import Product, ProductCategory, ProductSubcategory
+from .serializers import ProductSerializer, ProductCategorySerializer, ProductSubcategorySerializer
 from rest_framework import status
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        category_id = self.request.query_params.get('category')
+        if category_id:
+            queryset = queryset.filter(product_category_id=category_id)
+        return queryset
     
     @action(detail=False, methods=['post'], url_path='bulk-import')
     def bulk_import_products(self, request):
@@ -33,18 +40,18 @@ class ProductViewSet(viewsets.ModelViewSet):
             'errors': errors
         }, status=status.HTTP_400_BAD_REQUEST if errors else status.HTTP_201_CREATED)
 
-class ProductTypeViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ProductType.objects.all()
-    serializer_class = ProductTypeSerializer
+class ProductCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ProductCategory.objects.all()
+    serializer_class = ProductCategorySerializer
     permission_classes = [AllowAny]
 
-    @action(detail=True, methods=['get'], url_path='subtypes')
-    def subtypes(self, request, pk=None):
-        subtypes = ProductSubtype.objects.filter(product_type_id=pk)
-        serializer = ProductSubtypeSerializer(subtypes, many=True)
+    @action(detail=True, methods=['get'], url_path='subcategories')
+    def subcategories(self, request, pk=None):
+        subcategories = ProductSubcategory.objects.filter(product_category_id=pk)
+        serializer = ProductSubcategorySerializer(subcategories, many=True)
         return Response(serializer.data)
 
-class ProductSubtypeViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ProductSubtype.objects.all()
-    serializer_class = ProductSubtypeSerializer
+class ProductSubcategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ProductSubcategory.objects.all()
+    serializer_class = ProductSubcategorySerializer
     permission_classes = [AllowAny]

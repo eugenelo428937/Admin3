@@ -6,6 +6,7 @@ class ProductsConfig(AppConfig):
     name = 'products'
 
     def ready(self):
-        import products.models.product_types
+        import products.models.product_category
         import products.models.product_subtypes
         import products.models.products
+        import products.models.product_main_category
