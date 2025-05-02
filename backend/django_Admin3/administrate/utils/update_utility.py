@@ -32,7 +32,7 @@ from administrate.utils.graphql_loader import load_graphql_query, load_graphql_m
 logger = logging.getLogger(__name__)
 
 file_path = r"C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\administrate\src\OCRCancelledtest.csv"
-class EventLifecycleState(Enum):
+class LifecycleState(Enum):
     DRAFT = "draft"
     PUBLISHED = "published"
     CANCELLED = "cancelled"
@@ -84,31 +84,69 @@ def reactive_learner(api_service, learner_id):
 
     return result
 
+
+def get_drafted_sessions_by_sitting(api_service, title, eventLifeCycleState, sessionLifecycleState, first=100, offset=0):
+    query = load_graphql_query('get_drafted_sessions_by_sitting')
+    variables = {"title": title, 
+                 "eventLifecycleState": str(eventLifeCycleState),
+                 "sessionLifecycleState": str(sessionLifecycleState), 
+                 "first": first, "offset": offset}
+    result = api_service.execute_query(query, variables)
+    return result
+
+
+def set_session_active(api_service, session_id, lifecycleState):
+    """
+    Set the active status of a session
+    Args:
+        api_service: AdministrateAPIService instance
+        session_id: Session ID to update
+        lifecycleState: Lifecycle state to set (draft/published/cancelled)
+        Returns:
+        dict: Result of the update operation
+    """
+    query = load_graphql_mutation('set_session_active')
+    variables = {
+        "sessionId": session_id,
+        "lifecycleState": lifecycleState,
+    }
+    result = api_service.execute_query(query, variables)
+
+    return result
 def main():
     eventids=[]
+    sessionids=[]
     api_service = AdministrateAPIService()
     first = 100
     offset = 0
-    title = "25A"            
-    
+    title = "25S"            
+
+    eventLifecycleState = LifecycleState.PUBLISHED.value
+    sessionLifecycleState = LifecycleState.DRAFT.value
+
     while True:                      
-        result = get_events(api_service, title, first, offset)
+        result = get_drafted_sessions_by_sitting(
+            api_service, title, eventLifecycleState, sessionLifecycleState, first, offset)
         offset += first   
-        if (result and 'data' in result and
-            'events' in result['data'] and
-                'edges' in result['data']['events']):        
+        if (result 
+            and 'data' in result 
+            and 'events' in result['data'] 
+            and 'edges' in result['data']['events']):
             for event in result['data']['events']['edges']:
-                eventids.append(event['node']['id'])
+                for session in event['node']['sessions']['edges']:
+                    sessionids.append(session['node']['id'])
 
         if not result['data']['events']['pageInfo']['hasNextPage']:
             break
 
-    print(len(eventids))
+    print(len(sessionids))
     count = 0       
-    for e in eventids:
-        print(f"{count} : Event ID: {e}")
+    for e in sessionids:
+        print(f"{count} : Session ID: {e}")
         count += 1
-        set_event_soldout(api_service, e, isSoldOut=True)
+        set_session_active(
+            api_service, e, LifecycleState.PUBLISHED.value)
+        # set_event_soldout(api_service, e, isSoldOut=True)
         # set_event_active(api_service, e, EventLifecycleState.PUBLISHED.value)
 
     # with open(file_path, newline='') as csvfile:

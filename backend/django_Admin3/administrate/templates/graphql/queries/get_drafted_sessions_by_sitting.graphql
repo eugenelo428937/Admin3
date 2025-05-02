@@ -1,0 +1,44 @@
+
+query getDraftedSessionsBySitting(
+	$title: String!
+	$eventLifecycleState: String!
+	$sessionLifecycleState: String!
+	$first: Int
+	$offset: Int
+) {
+	events(
+		filters: [
+			{ field: title, operation: wordlike, value: $title }
+			{ field: lifecycleState, operation: eq, value: $eventLifecycleState }
+		]
+		first: $first
+		offset: $offset
+	) {
+		pageInfo {
+			totalRecords
+			hasNextPage
+		}
+		edges {
+			node {
+				code
+				title
+				lifecycleState
+				sessions(
+					filters: [
+						{
+							field: lifecycleState
+							operation: eq
+							value: $sessionLifecycleState
+						}
+					]
+				) {
+					edges {
+						node {
+							id
+						}
+					}
+				}
+			}
+		}
+	}
+}
