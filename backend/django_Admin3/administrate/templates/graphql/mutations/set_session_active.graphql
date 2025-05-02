@@ -1,0 +1,17 @@
+mutation setSessionActive(
+	$sessionId: ID!
+	$lifecycleState: SessionLifecycleState!
+) {
+	session {
+		update(
+			sessionId: $sessionId
+			input: { lifecycleState: $lifecycleState }
+		) {
+			errors {
+				label
+				value
+				message
+			}
+		}
+	}
+}
