@@ -1,5 +1,5 @@
 # products/models/__init__.py
-from .product_types import ProductCategory
+from .product_category import ProductCategory
 from .product_subtypes import ProductSubcategory
 from .products import Product, ProductVariation
 from .product_main_category import ProductMainCategory
