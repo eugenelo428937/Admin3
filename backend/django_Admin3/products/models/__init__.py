@@ -1,6 +1,6 @@
 # products/models/__init__.py
 from .product_category import ProductCategory
-from .product_subtypes import ProductSubcategory
+from .product_subcategory import ProductSubcategory
 from .products import Product, ProductVariation
 from .product_main_category import ProductMainCategory
 from django.db import models

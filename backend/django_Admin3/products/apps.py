@@ -7,6 +7,6 @@ class ProductsConfig(AppConfig):
 
     def ready(self):
         import products.models.product_category
-        import products.models.product_subtypes
+        import products.models.product_subcategory
         import products.models.products
         import products.models.product_main_category

@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from .product_category import ProductCategory
-from .product_subtypes import ProductSubcategory
+from .product_subcategory import ProductSubcategory
 from .product_variation import ProductVariation
 from .product_main_category import ProductMainCategory
 
