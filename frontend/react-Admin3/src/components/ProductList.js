@@ -75,7 +75,7 @@ const ProductList = () => {
 
 	// Fetch product categories from backend
 	useEffect(() => {
-		productService.getProductCategories().then((data) => {
+		productService.getAllProductCategories().then((data) => {
 			setProductCategories(data.filter((cat) => cat.is_display));
 		});
 	}, []);
