@@ -6,7 +6,7 @@ class ProductSubcategory(models.Model):
     product_category = models.ForeignKey(
         ProductCategory,
         on_delete=models.PROTECT,
-        related_name='subcategories'
+        related_name='subcategory'
     )
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True, null=True)
@@ -14,7 +14,7 @@ class ProductSubcategory(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'acted_product_subcategories'
+        db_table = 'acted_product_subcategory'
         verbose_name = 'Product Subcategory'
         verbose_name_plural = 'Product Subcategories'
         unique_together = ['product_category', 'name']
