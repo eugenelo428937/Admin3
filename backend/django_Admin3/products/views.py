@@ -1,9 +1,10 @@
 from rest_framework import viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from .models import Product, ProductCategory, ProductSubcategory
-from .serializers import ProductSerializer, ProductCategorySerializer, ProductSubcategorySerializer
+from .models.product_main_category import ProductMainCategory
+from .serializers import ProductSerializer, ProductCategorySerializer, ProductSubcategorySerializer, ProductMainCategoryHierarchySerializer
 from rest_framework import status
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -55,3 +56,10 @@ class ProductSubcategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductSubcategory.objects.all()
     serializer_class = ProductSubcategorySerializer
     permission_classes = [AllowAny]
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def all_product_categories(request):
+    queryset = ProductMainCategory.objects.order_by('name')
+    serializer = ProductMainCategoryHierarchySerializer(queryset, many=True)
+    return Response({'results': serializer.data})

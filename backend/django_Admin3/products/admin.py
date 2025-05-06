@@ -6,7 +6,7 @@ from .models.product_main_category import ProductMainCategory
 
 @admin.register(ProductMainCategory)
 class ProductMainCategoryAdmin(admin.ModelAdmin):
-    list_display = ("name", "order_sequence")
+    list_display = ("name",)
     search_fields = ("name",)
 
 @admin.register(ProductCategory)

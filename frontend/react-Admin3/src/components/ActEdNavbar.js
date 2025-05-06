@@ -70,10 +70,11 @@ const ActEdNavbar = () => {
 
 	// Fetch product categories from the new endpoint
 	useEffect(() => {
-		productService.getProductCategories && productService.getProductCategories().then((data) => {
-			setProductCategories(data.filter((cat) => cat.is_display));
-			setLoadingCategories(false);
-		});
+		productService.getAllProductCategories &&
+			productService.getAllProductCategories().then((data) => {
+				setProductCategories(data.filter((cat) => cat.is_display));
+				setLoadingCategories(false);
+			});
 	}, []);
 
 	// Handle navigating to product list with subject filter

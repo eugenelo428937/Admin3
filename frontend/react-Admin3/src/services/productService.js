@@ -4,9 +4,9 @@ import httpService from "./httpService";
 const API_URL = config.productUrl;
 const MARKING_API_URL = config.markingUrl;
 
-// Fetch product categories for navbar dropdown
-const getProductCategories = async () => {
-    const response = await httpService.get(`/api/product-categories/`);
+// Fetch all product categories for navbar dropdown
+const getAllProductCategories = async () => {
+    const response = await httpService.get(`/api/product-categories/all/`);
     return response.data.results || response.data;
 };
 
@@ -103,7 +103,7 @@ const productService = {
 		return response.data;
 	},
 
-	getProductCategories,
+	getAllProductCategories,
 };
 
 export default productService;
