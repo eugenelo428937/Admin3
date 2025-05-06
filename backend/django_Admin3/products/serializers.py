@@ -30,16 +30,20 @@ class ProductSubcategoryNestedSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description']
 
 class ProductCategoryNestedSerializer(serializers.ModelSerializer):
-    subcategories = ProductSubcategoryNestedSerializer(many=True, source='subcategories')
+    subcategories = serializers.SerializerMethodField()
     class Meta:
         model = ProductCategory
         fields = ['id', 'name', 'description', 'subcategories']
+    def get_subcategories(self, obj):
+        # Use the correct related_name from ProductSubcategory FK
+        subcategories = obj.subcategory.all()  # related_name is 'subcategory' per migration 0003
+        return ProductSubcategoryNestedSerializer(subcategories, many=True).data
 
 class ProductMainCategoryHierarchySerializer(serializers.ModelSerializer):
     categories = serializers.SerializerMethodField()
     class Meta:
         model = ProductMainCategory
-        fields = ['id', 'name', 'categories']
+        fields = ['id', 'name', 'order_sequence', 'categories']
     def get_categories(self, obj):
-        categories = ProductCategory.objects.filter(main_category=obj)
+        categories = obj.categories.all()
         return ProductCategoryNestedSerializer(categories, many=True).data
