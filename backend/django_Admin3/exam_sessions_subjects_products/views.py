@@ -7,7 +7,6 @@ from .models import ExamSessionSubjectProduct
 from .serializers import ExamSessionSubjectProductSerializer, ProductListSerializer
 from exam_sessions_subjects.models import ExamSessionSubject
 from products.models.products import Product
-from products.models import ProductMainCategory, ProductCategory, ProductSubcategory
 from subjects.models import Subject
 from subjects.serializers import SubjectSerializer
 
@@ -129,10 +128,9 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='list', permission_classes=[AllowAny])
     def list_products(self, request):
         """
-        Get list of all products with their subject details, product type and subtype
-        Supports filtering by subject (id, code, name), product type, and product subtype
+        Get list of all products with their subject details.
+        Supports filtering by subject (id, code, name) and product groups.
         """
-                
         queryset = ExamSessionSubjectProduct.objects.select_related(
             'exam_session_subject__subject',
             'product'
@@ -140,52 +138,35 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
 
         # Subject filtering - multiple options
         subject_id = request.query_params.get('subject_id', None)
-        subject_code = request.query_params.get('subject_code', None)        
+        subject_code = request.query_params.get('subject_code', None)
         subject = request.query_params.get('subject', None)  # Legacy support
 
         # Apply subject filters
-        if subject_id:
+        if subject_id and str(subject_id).isdigit():
             queryset = queryset.filter(
                 exam_session_subject__subject__id=subject_id)
         if subject_code:
             queryset = queryset.filter(
-                exam_session_subject__subject__code=subject_code)        
-        if subject:  # Legacy support for subject parameter
+                exam_session_subject__subject__code=subject_code)
+        if subject and not str(subject).isdigit():
             queryset = queryset.filter(
                 exam_session_subject__subject__code=subject
             )
 
-        # Product type and subtype filtering
-        product_type = request.query_params.get('type', None)
-        if product_type:
-            queryset = queryset.filter(product__product_type__name=product_type)
+        # Product group filtering (for MAIN_CATEGORY and DELIVERY_METHOD only)
+        group_ids = request.query_params.getlist('group')
+        if group_ids:
+            queryset = queryset.filter(product__groups__id__in=group_ids).distinct()
 
-        product_subtype = request.query_params.get('subtype', None)
-        if product_subtype:
-            queryset = queryset.filter(
-                product__product_subtype__name=product_subtype)
-
-        # Product category filtering
-        category = request.query_params.get('category', None)
-        if category:
-            queryset = queryset.filter(product__product_categories__id=category)
-
-        # Also return all available subjects for filtering dropdown
+        # Always load subjects from Subject model for filter dropdown
         subjects = Subject.objects.all().order_by('code')
         subject_serializer = SubjectSerializer(subjects, many=True)
 
-        # Return products with added metadata for dropdowns
         serializer = ProductListSerializer(queryset, many=True)
-
-        # Get unique product types and subtypes for dropdown filters
-        product_types = ProductMainCategory.objects.all().values_list('name', flat=True)
-        product_subtypes = ProductSubcategory.objects.all().values_list('name', flat=True)
 
         return Response({
             'products': serializer.data,
             'filters': {
-                'subjects': subject_serializer.data,
-                'product_types': list(product_types),
-                'product_subtypes': list(product_subtypes)
+                'subjects': subject_serializer.data
             }
         })

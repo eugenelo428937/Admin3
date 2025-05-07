@@ -3,6 +3,7 @@ from .product_category import ProductCategory
 from .product_subcategory import ProductSubcategory
 from .products import Product, ProductVariation
 from .product_main_category import ProductMainCategory
+from .product_group import ProductGroup
 from django.db import models
 
 class ProductProductCategory(models.Model):
@@ -33,4 +34,4 @@ class ProductProductVariation(models.Model):
         unique_together = ("product", "product_variation")
         db_table = "acted_product_productvariation"
 
-__all__ = ['ProductCategory', 'ProductSubcategory', 'Product', 'ProductVariation', 'ProductMainCategory']
+__all__ = ['ProductGroup', 'Product', 'ProductVariation']
