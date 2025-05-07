@@ -1,8 +1,9 @@
 # products/admin.py
 from django.contrib import admin
-from .models import Product, ProductCategory, ProductSubcategory
+from .models import Product, ProductCategory, ProductSubcategory, ProductGroup
 from .models.products import ProductVariation
 from .models.product_main_category import ProductMainCategory
+from .models.product_group_filter import ProductGroupFilter
 
 @admin.register(ProductMainCategory)
 class ProductMainCategoryAdmin(admin.ModelAdmin):
@@ -20,11 +21,23 @@ class ProductSubcategoryAdmin(admin.ModelAdmin):
     list_filter = ('product_category',)
     search_fields = ('name', 'product_category__name')
 
+@admin.register(ProductGroup)
+class ProductGroupAdmin(admin.ModelAdmin):
+    list_display = ("name", "parent")
+    search_fields = ("name",)
+    list_filter = ("parent",)
+
+@admin.register(ProductGroupFilter)
+class ProductGroupFilterAdmin(admin.ModelAdmin):
+    list_display = ("name", "filter_type")
+    list_filter = ("filter_type",)
+    search_fields = ("name",)
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('shortname', 'is_active')
     list_filter = ('is_active',)
-    search_fields = ('fullname', 'shortname')
+    search_fields = ('fullname', 'shortname', 'code')
     readonly_fields = ('created_at', 'updated_at')
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):

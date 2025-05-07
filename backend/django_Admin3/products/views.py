@@ -2,9 +2,10 @@ from rest_framework import viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from .models import Product, ProductCategory, ProductSubcategory
-from .models.product_main_category import ProductMainCategory
-from .serializers import ProductSerializer, ProductCategorySerializer, ProductSubcategorySerializer, ProductMainCategoryHierarchySerializer
+from .models import Product 
+from .models.product_group import ProductGroup
+from .models.product_group_filter import ProductGroupFilter
+from .serializers import ProductSerializer, ProductGroupSerializer, ProductGroupThreeLevelSerializer, ProductGroupFilterSerializer
 from rest_framework import status
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -14,9 +15,9 @@ class ProductViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         queryset = super().get_queryset()
-        category_id = self.request.query_params.get('category')
-        if category_id:
-            queryset = queryset.filter(product_category_id=category_id)
+        group_ids = self.request.query_params.getlist('group')
+        if group_ids:
+            queryset = queryset.filter(groups__id__in=group_ids).distinct()
         return queryset
     
     @action(detail=False, methods=['post'], url_path='bulk-import')
@@ -41,25 +42,49 @@ class ProductViewSet(viewsets.ModelViewSet):
             'errors': errors
         }, status=status.HTTP_400_BAD_REQUEST if errors else status.HTTP_201_CREATED)
 
-class ProductCategoryViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ProductCategory.objects.all()
-    serializer_class = ProductCategorySerializer
-    permission_classes = [AllowAny]
-
-    @action(detail=True, methods=['get'], url_path='subcategories')
-    def subcategories(self, request, pk=None):
-        subcategories = ProductSubcategory.objects.filter(product_category_id=pk)
-        serializer = ProductSubcategorySerializer(subcategories, many=True)
-        return Response(serializer.data)
-
-class ProductSubcategoryViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ProductSubcategory.objects.all()
-    serializer_class = ProductSubcategorySerializer
-    permission_classes = [AllowAny]
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def product_group_tree(request):
+    """
+    Returns the full product group tree (with children) for navigation/filtering.
+    """
+    roots = ProductGroup.objects.filter(parent__isnull=True)
+    serializer = ProductGroupSerializer(roots, many=True)
+    return Response({'results': serializer.data})
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def all_product_categories(request):
-    queryset = ProductMainCategory.objects.order_by('name')
-    serializer = ProductMainCategoryHierarchySerializer(queryset, many=True)
+def product_group_three_level_tree(request):
+    """
+    Returns the product group tree up to three levels deep.
+    """
+    roots = ProductGroup.objects.filter(parent__isnull=True)
+    serializer = ProductGroupThreeLevelSerializer(roots, many=True)
+    return Response({'results': serializer.data})
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def products_by_group(request, group_id):
+    """
+    Returns all products in the given group and all its descendants.
+    """
+    def get_descendant_ids(group):
+        ids = [group.id]
+        for child in group.children.all():
+            ids.extend(get_descendant_ids(child))
+        return ids
+    try:
+        group = ProductGroup.objects.get(id=group_id)
+    except ProductGroup.DoesNotExist:
+        return Response({'error': 'Group not found'}, status=404)
+    group_ids = get_descendant_ids(group)
+    products = Product.objects.filter(groups__in=group_ids).distinct()
+    serializer = ProductSerializer(products, many=True)
+    return Response({'results': serializer.data})
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def product_group_filters(request):
+    filters = ProductGroupFilter.objects.prefetch_related('groups').all()
+    serializer = ProductGroupFilterSerializer(filters, many=True)
     return Response({'results': serializer.data})

@@ -10,6 +10,12 @@ const getAllProductCategories = async () => {
     return response.data.results || response.data;
 };
 
+// Fetch product group filters from backend
+const getProductGroupFilters = async () => {
+    const response = await httpService.get(`/api/product-group-filters/`);
+    return response.data.results || response.data;
+};
+
 const productService = {
 	getAll: async () => {
 		try {
@@ -104,6 +110,7 @@ const productService = {
 	},
 
 	getAllProductCategories,
+	getProductGroupFilters,
 };
 
 export default productService;
