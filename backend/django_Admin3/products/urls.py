@@ -1,13 +1,13 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ProductViewSet, ProductCategoryViewSet, ProductSubcategoryViewSet, all_product_categories
+from .views import ProductViewSet, product_group_tree, product_group_three_level_tree, product_group_filters
 
 router = DefaultRouter()
 router.register(r'products', ProductViewSet, basename='product')
-router.register(r'product-categories', ProductCategoryViewSet, basename='product-category')
-router.register(r'product-subcategories', ProductSubcategoryViewSet, basename='product-subcategory')
 
-urlpatterns = [
-    path('product-categories/all/', all_product_categories, name='all-product-categories'),
+urlpatterns = [    
+    path('product-categories/all/', product_group_three_level_tree, name='product-group-three-level-tree'),
+    path('product-groups/tree/', product_group_tree, name='product-group-tree'),
     path('', include(router.urls)),
+    path('product-group-filters/', product_group_filters, name='product-group-filters'),
 ]
