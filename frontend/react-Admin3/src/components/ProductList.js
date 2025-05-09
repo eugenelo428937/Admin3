@@ -9,9 +9,12 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import productService from "../services/productService";
+import subjectService from "../services/subjectService";
 import "../styles/product_list.css";
 import ProductCard from "./ProductCard";
 import Select from "react-select";
+import { FilterCircle } from "react-bootstrap-icons";
+import Accordion from 'react-bootstrap/Accordion';
 
 const ProductList = () => {
 	const navigate = useNavigate();
@@ -27,8 +30,11 @@ const ProductList = () => {
 	const [mainCategory, setMainCategory] = useState([]);
 	const [subjectGroup, setSubjectGroup] = useState([]);
 	const [deliveryMethod, setDeliveryMethod] = useState([]);
-	const [groupFilters, setGroupFilters] = useState({ MAIN_CATEGORY: [], SUBJECT: [], DELIVERY_METHOD: [] });
-	const [groupOptions, setGroupOptions] = useState({ MAIN_CATEGORY: [], SUBJECT: [], DELIVERY_METHOD: [] });
+	const [groupFilters, setGroupFilters] = useState({ MAIN_CATEGORY: [], DELIVERY_METHOD: [] });
+	const [groupOptions, setGroupOptions] = useState({ MAIN_CATEGORY: [], DELIVERY_METHOD: [] });
+	const [subjectOptions, setSubjectOptions] = useState([]);
+	const [showFilters, setShowFilters] = useState(true);
+	const [isMobile, setIsMobile] = useState(false);
 
 	const { addToCart } = useCart();
 
@@ -60,9 +66,12 @@ const ProductList = () => {
 		setLoading(true);
 		setError(null);
 		const params = new URLSearchParams();
-		mainCategory.forEach(id => params.append('group', id));
-		subjectGroup.forEach(id => params.append('group', id));
-		deliveryMethod.forEach(id => params.append('group', id));
+		mainCategory.forEach(id => params.append('main_category', id));
+		deliveryMethod.forEach(id => params.append('delivery_method', id));
+		 // Allow multiple subjects for union within subject filter
+		subjectGroup.forEach(id => params.append('subject', id));
+		// Debug: log the params being sent
+		console.debug('Product filter params:', params.toString());
 		productService.getAvailableProducts(params)
 			.then((data) => {
 				setProducts(data.products || []);
@@ -74,23 +83,24 @@ const ProductList = () => {
 			});
 	}, [mainCategory, subjectGroup, deliveryMethod]);
 
-	// Fetch product group filters for MAIN_CATEGORY, SUBJECT, DELIVERY_METHOD
+	// Fetch all subjects for the Subject filter
+	useEffect(() => {
+		subjectService.getAll().then((subjects) => {
+			setSubjectOptions(
+				(subjects || []).map((s) => ({ value: s.id, label: s.name || s.code }))
+			);
+		});
+	}, []);
+
+	// Fetch product group filters for MAIN_CATEGORY and DELIVERY_METHOD only
 	useEffect(() => {
 		productService.getProductGroupFilters().then((filters) => {
-			const filterMap = { MAIN_CATEGORY: [], SUBJECT: [], DELIVERY_METHOD: [] };
-			const optionMap = { MAIN_CATEGORY: [], SUBJECT: [], DELIVERY_METHOD: [] };
+			const filterMap = { MAIN_CATEGORY: [], DELIVERY_METHOD: [] };
+			const optionMap = { MAIN_CATEGORY: [], DELIVERY_METHOD: [] };
 			filters.forEach((f) => {
 				if (f.filter_type === "MAIN_CATEGORY") {
 					filterMap.MAIN_CATEGORY.push(...f.groups);
 					optionMap.MAIN_CATEGORY.push(
-						...f.groups
-							.filter(g => g && g.id !== undefined && g.name)
-							.map(g => ({ value: g.id, label: g.name }))
-					);
-				}
-				if (f.filter_type === "SUBJECT") {
-					filterMap.SUBJECT.push(...f.groups);
-					optionMap.SUBJECT.push(
 						...f.groups
 							.filter(g => g && g.id !== undefined && g.name)
 							.map(g => ({ value: g.id, label: g.name }))
@@ -123,18 +133,27 @@ const ProductList = () => {
 		}
 	}, [products]);
 
-	// Handle main category selection change
+	useEffect(() => {
+		const handleResize = () => {
+			setIsMobile(window.innerWidth <= 991); // Bootstrap lg breakpoint
+			if (window.innerWidth > 991) setShowFilters(true);
+		};
+		window.addEventListener('resize', handleResize);
+		handleResize();
+		return () => window.removeEventListener('resize', handleResize);
+	}, []);
+
 	const handleMainCategoryChange = (selected) => setMainCategory(selected ? selected.map(opt => opt.value) : []);
 
-	// Handle subject group selection change
 	const handleSubjectGroupChange = (selected) => setSubjectGroup(selected ? selected.map(opt => opt.value) : []);
 
-	// Handle delivery method selection change
 	const handleDeliveryMethodChange = (selected) => setDeliveryMethod(selected ? selected.map(opt => opt.value) : []);
 
 	const handleAddToCart = (product) => {
 		addToCart(product);
 	};
+
+	const handleFilterToggle = () => setShowFilters((prev) => !prev);
 
 	const filteredProducts = products;
 
@@ -142,73 +161,219 @@ const ProductList = () => {
 	if (error) return <div>Error: {error}</div>;
 
 	return (
-		<Container>
-			<h2>Available Products</h2>
-
-			{/* Filter Dropdowns */}
-			<Row className="mb-4">
-				<div>Filter by:</div>
-				<Col md={3}>
-					<Form.Group>
-						<Form.Label>Main Category</Form.Label>
-						<Select
-							isMulti
-							options={groupOptions.MAIN_CATEGORY}
-							value={groupOptions.MAIN_CATEGORY.filter(opt => mainCategory.includes(opt.value))}
-							onChange={handleMainCategoryChange}
-							placeholder="All Main Categories"
-							classNamePrefix="filter-dropdown"
-						/>
-					</Form.Group>
+		<Container fluid className="product-list-container mx-3">
+			<h2 className="my-3">Product List</h2>
+			<div className="d-flex align-items-center mb-3">
+				<button
+					className="filter-toggle-btn"
+					onClick={handleFilterToggle}
+					aria-label="Toggle Filters"
+					style={{
+						border: 0,
+						backgroundColor: "var(--main-backgound-color)",
+					}}>
+					<FilterCircle size={20} style={{ marginRight: 8 }} />
+					<span>Filter</span>
+				</button>
+			</div>
+			<Row
+				className={`gx-4${isMobile ? " flex-column" : ""}`}
+				style={{ position: "relative", minHeight: "80vh" }}>
+				{/* Filter Panel */}
+				<Col
+					xs={12}
+					md={2}
+					lg={1}
+					className={`filter-panel${showFilters ? " show" : " hide"}${
+						isMobile ? " mobile" : ""
+					}`}
+					style={{
+						position: isMobile ? "static" : "absolute",
+						left: 0,
+						top: 0,
+						height: isMobile ? "auto" : "100vh",
+						zIndex: 3,
+						width: isMobile ? "100%" : showFilters ? "25%" : 0,
+						minWidth: isMobile ? undefined : showFilters ? "300px" : 0,
+						maxWidth: isMobile ? undefined : showFilters ? "400px" : 0,
+						background: isMobile ? undefined : "white",
+						boxShadow:
+							showFilters && !isMobile
+								? "2px 0 8px rgba(0,0,0,0.08)"
+								: "none",
+						transition: "all 0.5s cubic-bezier(.5,.5,.5,.5)",
+						overflow: "hidden",
+						display: showFilters || isMobile ? "block" : "none",
+					}}>
+					<div
+						className="filters-wrapper p-3 bg-light rounded shadow-sm mb-4 rf-searchfilters"
+						id="rf-searchfilters">
+						<Accordion
+							defaultActiveKey={[
+								"subject",
+								"main_category",
+								"delivery_method",
+							]}
+							alwaysOpen>
+							<Accordion.Item eventKey="subject">
+								<Accordion.Header>Subject</Accordion.Header>
+								<Accordion.Body>
+									<fieldset className="rf-facetlist">
+										<ul className="rf-facetlist-list">
+											{subjectOptions.map((opt) => (
+												<li
+													className="rf-facetlist-item"
+													key={opt.value}>
+													<input
+														type="checkbox"
+														id={`subject-${opt.value}`}
+														checked={subjectGroup.includes(
+															opt.value
+														)}
+														onChange={(e) => {
+															if (e.target.checked) {
+																setSubjectGroup([
+																	...subjectGroup,
+																	opt.value,
+																]);
+															} else {
+																setSubjectGroup(
+																	subjectGroup.filter(
+																		(id) => id !== opt.value
+																	)
+																);
+															}
+														}}
+													/>
+													<label htmlFor={`subject-${opt.value}`}>
+														{opt.label}
+													</label>
+												</li>
+											))}
+										</ul>
+									</fieldset>
+								</Accordion.Body>
+							</Accordion.Item>
+							<Accordion.Item eventKey="main_category">
+								<Accordion.Header>Main Category</Accordion.Header>
+								<Accordion.Body>
+									<fieldset className="rf-facetlist">
+										<ul className="rf-facetlist-list">
+											{groupOptions.MAIN_CATEGORY.map((opt) => (
+												<li
+													className="rf-facetlist-item"
+													key={opt.value}>
+													<input
+														type="checkbox"
+														id={`maincat-${opt.value}`}
+														checked={mainCategory.includes(
+															opt.value
+														)}
+														onChange={(e) => {
+															if (e.target.checked) {
+																setMainCategory([
+																	...mainCategory,
+																	opt.value,
+																]);
+															} else {
+																setMainCategory(
+																	mainCategory.filter(
+																		(id) => id !== opt.value
+																	)
+																);
+															}
+														}}
+													/>
+													<label htmlFor={`maincat-${opt.value}`}>
+														{opt.label}
+													</label>
+												</li>
+											))}
+										</ul>
+									</fieldset>
+								</Accordion.Body>
+							</Accordion.Item>
+							<Accordion.Item eventKey="delivery_method">
+								<Accordion.Header>Mode of Delivery</Accordion.Header>
+								<Accordion.Body>
+									<fieldset className="rf-facetlist">
+										<ul className="rf-facetlist-list">
+											{groupOptions.DELIVERY_METHOD.map((opt) => (
+												<li
+													className="rf-facetlist-item"
+													key={opt.value}>
+													<input
+														type="checkbox"
+														id={`delivery-${opt.value}`}
+														checked={deliveryMethod.includes(
+															opt.value
+														)}
+														onChange={(e) => {
+															if (e.target.checked) {
+																setDeliveryMethod([
+																	...deliveryMethod,
+																	opt.value,
+																]);
+															} else {
+																setDeliveryMethod(
+																	deliveryMethod.filter(
+																		(id) => id !== opt.value
+																	)
+																);
+															}
+														}}
+													/>
+													<label htmlFor={`delivery-${opt.value}`}>
+														{opt.label}
+													</label>
+												</li>
+											))}
+										</ul>
+									</fieldset>
+								</Accordion.Body>
+							</Accordion.Item>
+						</Accordion>
+					</div>
 				</Col>
-
-				<Col md={3}>
-					<Form.Group>
-						<Form.Label>Subject Group</Form.Label>
-						<Select
-							isMulti
-							options={groupOptions.SUBJECT}
-							value={groupOptions.SUBJECT.filter(opt => subjectGroup.includes(opt.value))}
-							onChange={handleSubjectGroupChange}
-							placeholder="All Subject Groups"
-							classNamePrefix="filter-dropdown"
-						/>
-					</Form.Group>
-				</Col>
-
-				<Col md={3}>
-					<Form.Group>
-						<Form.Label>Delivery Method</Form.Label>
-						<Select
-							isMulti
-							options={groupOptions.DELIVERY_METHOD}
-							value={groupOptions.DELIVERY_METHOD.filter(opt => deliveryMethod.includes(opt.value))}
-							onChange={handleDeliveryMethodChange}
-							placeholder="All Delivery Methods"
-							classNamePrefix="filter-dropdown"
-						/>
-					</Form.Group>
+				{/* Product Cards Panel */}
+				<Col
+					xs={12}
+					md={10}
+					lg={10}
+					className={`product-cards-panel${
+						showFilters && !isMobile ? " with-filter" : " full-width"
+					}${isMobile ? " mobile" : ""}`}
+					style={{
+						marginLeft:
+							showFilters && !isMobile ? (isMobile ? 0 : "25%") : 0,
+						width: showFilters && !isMobile ? "75%" : "100%",
+						transition: "all 0.5s cubic-bezier(.5,.5,.5,.5)",
+						minWidth: 0,
+						position: isMobile ? "static" : "relative",
+						zIndex: 2,
+						minHeight: isMobile ? undefined : "100vh",
+					}}>
+					{filteredProducts.length === 0 ? (
+						<Alert variant="info" className="mt-3">
+							No products available based on selected filters.
+						</Alert>
+					) : (
+						<Row xs={1} md={3} lg={4} className="g-4">
+							{filteredProducts.map((product) => (
+								<ProductCard
+									key={product.id}
+									product={product}
+									onAddToCart={handleAddToCart}
+									allEsspIds={filteredProducts
+										.filter((p) => p.type === "Markings")
+										.map((p) => p.id || p.product_id)}
+									bulkDeadlines={bulkDeadlines}
+								/>
+							))}
+						</Row>
+					)}
 				</Col>
 			</Row>
-
-			{/* Product Cards */}
-			{filteredProducts.length === 0 ? (
-				<Alert variant="info">
-					No products available based on selected filters.
-				</Alert>
-			) : (
-				<Row xs={1} md={2} lg={5} className="g-4">
-					{filteredProducts.map((product) => (
-						<ProductCard
-							key={product.id}
-							product={product}
-							onAddToCart={handleAddToCart}
-							allEsspIds={filteredProducts.filter((p) => p.type === "Markings").map((p) => p.id || p.product_id)}
-							bulkDeadlines={bulkDeadlines}
-						/>
-					))}
-				</Row>
-			)}
 		</Container>
 	);
 };
