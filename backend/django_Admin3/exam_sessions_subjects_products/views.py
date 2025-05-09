@@ -1,3 +1,4 @@
+import logging
 from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -9,6 +10,8 @@ from exam_sessions_subjects.models import ExamSessionSubject
 from products.models.products import Product
 from subjects.models import Subject
 from subjects.serializers import SubjectSerializer
+
+logger = logging.getLogger(__name__)
 
 class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):    
     queryset = ExamSessionSubjectProduct.objects.all()
@@ -130,40 +133,60 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         """
         Get list of all products with their subject details.
         Supports filtering by subject (id, code, name) and product groups.
+        Main Category and Delivery Method filters are unioned within themselves, then intersected between each other.
+        Only products available in ExamSessionSubjectProduct are included.
         """
+        logger.info('--- list_products called ---')
+        logger.info(f'Query params: {request.query_params}')
         queryset = ExamSessionSubjectProduct.objects.select_related(
             'exam_session_subject__subject',
             'product'
         ).all()
 
         # Subject filtering - multiple options
-        subject_id = request.query_params.get('subject_id', None)
+        subject_ids = request.query_params.getlist('subject')
         subject_code = request.query_params.get('subject_code', None)
-        subject = request.query_params.get('subject', None)  # Legacy support
-
-        # Apply subject filters
-        if subject_id and str(subject_id).isdigit():
+        logger.info(f'Filtering subject_ids: {subject_ids}, subject_code: {subject_code}')
+        if subject_ids:
             queryset = queryset.filter(
-                exam_session_subject__subject__id=subject_id)
+                exam_session_subject__subject__id__in=subject_ids)
+            logger.info(f'After subject_ids filter, queryset count: {queryset.count()}')
         if subject_code:
             queryset = queryset.filter(
                 exam_session_subject__subject__code=subject_code)
-        if subject and not str(subject).isdigit():
-            queryset = queryset.filter(
-                exam_session_subject__subject__code=subject
-            )
+            logger.info(f'After subject_code filter, queryset count: {queryset.count()}')
 
-        # Product group filtering (for MAIN_CATEGORY and DELIVERY_METHOD only)
-        group_ids = request.query_params.getlist('group')
-        if group_ids:
-            queryset = queryset.filter(product__groups__id__in=group_ids).distinct()
+        # --- Product group filtering logic ---
+        main_category_ids = request.query_params.getlist('main_category')
+        delivery_method_ids = request.query_params.getlist('delivery_method')
+        logger.info(f'Filtering main_category_ids: {main_category_ids}, delivery_method_ids: {delivery_method_ids}')
+        from products.models.products import Product
+        main_products = set()
+        delivery_products = set()
+        if main_category_ids:
+            main_products = set(Product.objects.filter(groups__id__in=main_category_ids).values_list('id', flat=True))
+            logger.info(f'Main category product ids: {main_products}')
+        if delivery_method_ids:
+            delivery_products = set(Product.objects.filter(groups__id__in=delivery_method_ids).values_list('id', flat=True))
+            logger.info(f'Delivery method product ids: {delivery_products}')
+        if main_category_ids and delivery_method_ids:
+            product_ids = main_products & delivery_products
+            logger.info(f'Intersection of main and delivery: {product_ids}')
+        elif main_category_ids:
+            product_ids = main_products
+        elif delivery_method_ids:
+            product_ids = delivery_products
+        else:
+            product_ids = set(Product.objects.values_list('id', flat=True))
+        logger.info(f'Final product_ids for filter: {product_ids}')
+        queryset = queryset.filter(product__id__in=product_ids)
+        logger.info(f'After product group filter, queryset count: {queryset.count()}')
+        # --- End product group filtering logic ---
 
-        # Always load subjects from Subject model for filter dropdown
         subjects = Subject.objects.all().order_by('code')
         subject_serializer = SubjectSerializer(subjects, many=True)
-
         serializer = ProductListSerializer(queryset, many=True)
-
+        logger.info(f'Final queryset count: {queryset.count()}')
         return Response({
             'products': serializer.data,
             'filters': {

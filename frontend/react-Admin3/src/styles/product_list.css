@@ -1,3 +1,17 @@
 .filter-dropdown {    
     border-radius: 2rem;
 }
+.rf-facetlist-item{
+    list-style-type: none;
+}
+.rf-facetlist-list{
+    padding-left: 1rem;
+}
+.accordion-button:not(.collapsed) {
+    background-color: #f8f9fa;    
+}
+.accordion-button:focus {
+    z-index: 3;
+    outline: 0;
+    box-shadow: red !important;
+}
