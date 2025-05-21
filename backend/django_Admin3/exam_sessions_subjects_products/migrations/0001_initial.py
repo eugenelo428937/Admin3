@@ -10,7 +10,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('exam_sessions_subjects', '0001_initial'),
-        ('products', '0001_initial'),
     ]
 
     operations = [

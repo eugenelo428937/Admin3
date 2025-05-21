@@ -68,19 +68,10 @@ const ActEdNavbar = () => {
 		fetchSubjects();
 	}, []);
 
-	// Fetch product categories from the new endpoint
-	useEffect(() => {
-		productService.getAllProductCategories &&
-			productService.getAllProductCategories().then((data) => {
-				setProductCategories(data.filter((cat) => cat.is_display));
-				setLoadingCategories(false);
-			});
-	}, []);
-
 	// Handle navigating to product list with subject filter
 	const handleSubjectClick = (subjectCode) => {
 		// Only set the subject filter, clear all others
-		navigate(`/products?subject=${subjectCode}`);
+		navigate(`/products?subject_code=${subjectCode}`);
 	};
 
 	// Handle navigating to product list with category filter

@@ -122,8 +122,9 @@ const ProductList = () => {
 
 	// Fetch bulk deadlines whenever products change
 	useEffect(() => {
+		// For marking products, use the correct ExamSessionSubjectProduct id (essp_id)
 		const markingProducts = products.filter((p) => p.type === "Markings");
-		const allEsspIds = markingProducts.map((p) => p.id || p.product_id);
+		const allEsspIds = markingProducts.map((p) => p.essp_id || p.id || p.product_id);
 		if (allEsspIds.length > 0) {
 			productService.getBulkMarkingDeadlines(allEsspIds).then((deadlines) => {
 				setBulkDeadlines(deadlines);
@@ -361,12 +362,12 @@ const ProductList = () => {
 						<Row xs={1} md={3} lg={4} className="g-4">
 							{filteredProducts.map((product) => (
 								<ProductCard
-									key={product.id}
+									key={product.essp_id || product.id || product.product_id}
 									product={product}
 									onAddToCart={handleAddToCart}
 									allEsspIds={filteredProducts
 										.filter((p) => p.type === "Markings")
-										.map((p) => p.id || p.product_id)}
+										.map((p) => p.essp_id || p.id || p.product_id)}
 									bulkDeadlines={bulkDeadlines}
 								/>
 							))}
