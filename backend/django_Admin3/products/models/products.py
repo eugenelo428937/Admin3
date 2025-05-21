@@ -4,12 +4,7 @@ from .product_group import ProductGroup
 from .product_variation import ProductVariation
 
 class Product(models.Model):
-    PRODUCT_TYPE_CHOICES = [
-        ('Materials', 'Materials'),
-        ('Tutorials', 'Tutorials'),
-        ('Marking', 'Marking'),
-    ]
-
+    
     fullname = models.CharField(max_length=255)
     shortname = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
