@@ -17,15 +17,8 @@ class ExamSessionSubjectProductSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at']
 
 class ProductListSerializer(serializers.ModelSerializer):
-    # product_types = serializers.SerializerMethodField()
-    # product_subtypes = serializers.SerializerMethodField()
-
-    # def get_product_types(self, obj):
-    #     return [t.name for t in obj.product_main_category.all()]
-
-    # def get_product_subtypes(self, obj):
-    #     return [s.name for s in obj.product_category.all()]
-
+    essp_id = serializers.IntegerField(source='id', read_only=True)
+    type = serializers.SerializerMethodField()
     subject_id = serializers.IntegerField(source='exam_session_subject.subject.id')
     subject_code = serializers.CharField(source='exam_session_subject.subject.code')
     subject_description = serializers.CharField(source='exam_session_subject.subject.description')
@@ -38,7 +31,11 @@ class ProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExamSessionSubjectProduct
         fields = [
-            'id', 'product_id', 'product_code', 'product_name', 'product_short_name',
+            'id', 'essp_id', 'type', 'product_id', 'product_code', 'product_name', 'product_short_name',
             'product_description', 'subject_id', 'subject_code', 'subject_description',
-            # 'product_types', 'product_subtypes'
         ]
+
+    def get_type(self, obj):
+        if 'mark' in obj.product.code.lower() or 'mark' in obj.product.fullname.lower():
+            return 'Markings'
+        return 'Other'
