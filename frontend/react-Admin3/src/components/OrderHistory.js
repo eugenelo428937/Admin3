@@ -46,7 +46,10 @@ const OrderHistory = () => {
                 <ul className="mb-0">
                   {order.items && order.items.map((item) => (
                     <li key={item.id}>
-                      {item.product_name || item.product} x {item.quantity}
+                      {item.product_name || item.product}
+                      <br />
+                      <span className="text-muted" style={{fontSize: '0.9em'}}>Product Code: {item.product_code}</span>
+                      x {item.quantity}
                     </li>
                   ))}
                 </ul>

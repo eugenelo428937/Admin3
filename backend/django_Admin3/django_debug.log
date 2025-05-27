@@ -1222,3 +1222,1304 @@ ValueError: Field 'id' expected a number but got 'CB2'.
 [2025-05-21 11:10:50,821] INFO exam_sessions_subjects_products.views Final product_ids for filter: {83, 78, 79}
 [2025-05-21 11:10:50,823] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 2
 [2025-05-21 11:10:50,825] INFO exam_sessions_subjects_products.views Final queryset count: 2
+[2025-05-21 11:18:30,033] INFO django.utils.autoreload C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\serializers.py changed, reloading.
+[2025-05-21 11:18:32,246] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-21 11:20:58,153] INFO django.utils.autoreload C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\products\models\product_variation.py changed, reloading.
+[2025-05-21 11:20:59,287] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-21 11:21:05,155] INFO django.utils.autoreload C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\products\models\product_variation.py changed, reloading.
+[2025-05-21 11:21:06,239] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-21 11:24:40,429] INFO django.utils.autoreload C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\products\models\product_variation.py changed, reloading.
+[2025-05-21 11:24:41,678] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-21 11:25:04,470] WARNING django.request Not Found: /favicon.ico
+[2025-05-21 11:25:20,430] ERROR django.request Internal Server Error: /admin/login/
+Traceback (most recent call last):
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\utils\decorators.py", line 48, in _wrapper
+    return bound_method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\views\decorators\cache.py", line 80, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\contrib\admin\sites.py", line 444, in login
+    return LoginView.as_view(**defaults)(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\utils\decorators.py", line 48, in _wrapper
+    return bound_method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\utils\decorators.py", line 48, in _wrapper
+    return bound_method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\views\decorators\debug.py", line 143, in sensitive_post_parameters_wrapper
+    return view(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\utils\decorators.py", line 48, in _wrapper
+    return bound_method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\utils\decorators.py", line 188, in _view_wrapper
+    result = _process_exception(request, e)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\utils\decorators.py", line 186, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\utils\decorators.py", line 48, in _wrapper
+    return bound_method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\views\decorators\cache.py", line 80, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\contrib\auth\views.py", line 89, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\views\generic\edit.py", line 151, in post
+    return self.form_valid(form)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\contrib\auth\views.py", line 108, in form_valid
+    auth_login(self.request, form.get_user())
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\contrib\auth\__init__.py", line 152, in login
+    user_logged_in.send(sender=user.__class__, request=request, user=user)
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\dispatch\dispatcher.py", line 189, in send
+    response = receiver(signal=self, sender=sender, **named)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\contrib\auth\models.py", line 24, in update_last_login
+    user.save(update_fields=["last_login"])
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\contrib\auth\base_user.py", line 62, in save
+    super().save(*args, **kwargs)
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\db\models\base.py", line 891, in save
+    self.save_base(
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\db\models\base.py", line 1012, in save_base
+    post_save.send(
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\dispatch\dispatcher.py", line 189, in send
+    response = receiver(signal=self, sender=sender, **named)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\userprofile\signals.py", line 13, in save_user_profile
+    instance.userprofile.save()
+    ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\.venv\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 531, in __get__
+    raise self.RelatedObjectDoesNotExist(
+django.contrib.auth.models.User.userprofile.RelatedObjectDoesNotExist: User has no userprofile.
+[2025-05-21 11:27:16,381] WARNING django.security.csrf Forbidden (CSRF token from POST incorrect.): /admin/login/
+[2025-05-21 11:36:29,655] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 11:36:29,656] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'main_category': ['2', '1'], 'subject': ['10', '11']}>
+[2025-05-21 11:36:29,656] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['10', '11'], subject_code: None
+[2025-05-21 11:36:29,669] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 26
+[2025-05-21 11:36:29,669] INFO exam_sessions_subjects_products.views Filtering main_category_ids: ['2', '1'], delivery_method_ids: []
+[2025-05-21 11:36:29,680] INFO exam_sessions_subjects_products.views Main category product ids: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-21 11:36:29,681] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-21 11:36:29,683] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 24
+[2025-05-21 11:36:29,685] INFO exam_sessions_subjects_products.views Final queryset count: 24
+[2025-05-21 11:42:29,942] INFO django.utils.autoreload C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\models.py changed, reloading.
+[2025-05-21 11:42:31,145] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-21 11:43:28,755] INFO django.utils.autoreload C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\models.py changed, reloading.
+[2025-05-21 11:43:31,267] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-21 11:47:01,808] INFO django.utils.autoreload C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\models.py changed, reloading.
+[2025-05-21 11:47:04,868] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-21 11:54:47,876] INFO django.utils.autoreload C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\serializers.py changed, reloading.
+[2025-05-21 11:54:48,845] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-21 12:01:22,376] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 12:01:22,382] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 12:01:22,395] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 12:01:22,398] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 12:01:22,403] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 12:01:22,425] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 12:01:22,426] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 12:01:23,969] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 12:01:23,995] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 12:01:24,002] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 12:01:24,002] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 12:01:24,012] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 12:01:24,033] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 12:01:24,039] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 12:01:25,030] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 12:01:25,030] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 12:01:25,031] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 12:01:25,032] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 12:01:25,036] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 12:01:25,042] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 12:01:25,044] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 12:01:25,793] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 12:01:25,793] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 12:01:25,799] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 12:01:25,799] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 12:01:25,803] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 12:01:25,810] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 12:01:25,812] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 12:01:26,819] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 12:01:26,831] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 12:01:26,834] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 12:01:26,844] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 12:01:26,851] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 12:01:26,859] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 12:01:26,866] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 12:16:28,330] INFO django.utils.autoreload C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\serializers.py changed, reloading.
+[2025-05-21 12:16:29,656] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-21 12:40:17,107] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 12:40:17,110] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 12:40:17,110] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 12:40:17,110] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 12:40:17,110] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 12:40:17,123] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 12:40:17,127] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 12:40:17,701] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 12:40:17,701] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 12:40:17,701] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 12:40:17,701] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 12:40:17,716] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 12:40:17,718] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 12:40:17,718] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 12:40:18,494] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 12:40:18,495] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 12:40:18,495] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 12:40:18,495] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 12:40:18,497] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 12:40:18,500] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 12:40:18,501] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 12:40:19,060] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 12:40:19,060] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 12:40:19,060] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 12:40:19,060] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 12:40:19,065] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 12:40:19,065] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 12:40:19,065] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 12:40:19,880] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 12:40:19,880] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 12:40:19,880] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 12:40:19,880] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 12:40:19,895] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 12:40:19,898] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 12:40:19,899] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 12:47:06,357] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 12:47:06,357] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 12:47:06,357] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 12:47:06,357] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 12:47:06,373] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 12:47:06,380] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 12:47:06,382] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 12:47:07,082] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 12:47:07,082] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 12:47:07,082] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 12:47:07,082] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 12:47:07,082] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 12:47:07,093] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 12:47:07,096] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 12:47:07,912] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 12:47:07,912] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 12:47:07,912] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 12:47:07,912] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 12:47:07,912] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 12:47:07,912] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 12:47:07,912] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 12:47:08,824] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 12:47:08,824] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 12:47:08,824] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 12:47:08,824] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 12:47:08,824] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 12:47:08,824] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 12:47:08,837] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 12:47:09,697] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 12:47:09,697] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 12:47:09,697] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 12:47:09,697] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 12:47:09,697] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 12:47:09,697] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 12:47:09,697] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 16:20:07,289] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 16:20:07,289] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 16:20:07,289] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 16:20:07,289] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 16:20:07,305] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 16:20:07,312] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 16:20:07,315] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 16:20:08,354] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 16:20:08,355] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 16:20:08,355] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 16:20:08,357] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 16:20:08,359] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 16:20:08,362] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 16:20:08,364] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 16:20:09,335] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 16:20:09,335] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 16:20:09,336] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 16:20:09,336] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 16:20:09,339] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 16:20:09,342] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 16:20:09,344] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 16:20:10,454] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 16:20:10,454] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 16:20:10,454] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 16:20:10,454] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 16:20:10,470] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 16:20:10,471] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 16:20:10,471] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 16:20:11,504] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 16:20:11,504] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-21 16:20:11,504] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-21 16:20:11,504] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 16:20:11,509] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 16:20:11,509] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-21 16:20:11,514] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-21 16:21:43,820] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-21 16:21:43,821] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['7']}>
+[2025-05-21 16:21:43,821] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['7'], subject_code: None
+[2025-05-21 16:21:43,822] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 16
+[2025-05-21 16:21:43,822] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-21 16:21:43,822] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-21 16:21:43,827] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 16
+[2025-05-21 16:21:43,829] INFO exam_sessions_subjects_products.views Final queryset count: 16
+[2025-05-21 16:38:24,949] INFO django.utils.autoreload C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\models.py changed, reloading.
+[2025-05-21 16:38:26,487] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-21 16:47:06,863] INFO django.utils.autoreload C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\models.py changed, reloading.
+[2025-05-21 16:47:08,006] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-21 16:50:15,476] INFO django.utils.autoreload C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\products\models\product_variation.py changed, reloading.
+[2025-05-21 16:50:16,397] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-21 16:50:26,892] INFO django.utils.autoreload C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\models.py changed, reloading.
+[2025-05-21 16:50:27,919] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-21 17:07:08,513] INFO django.utils.autoreload C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\products\models\product_variation.py changed, reloading.
+[2025-05-21 17:07:09,705] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-22 11:21:33,837] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-22 11:22:10,101] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 11:22:10,102] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 11:22:10,103] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 11:22:10,103] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 11:22:10,106] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 11:22:10,106] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 11:22:10,123] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 11:22:11,207] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 11:22:11,208] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 11:22:11,209] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 11:22:11,209] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 11:22:11,211] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 11:22:11,214] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 11:22:11,216] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 11:26:56,621] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 11:26:56,621] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 11:26:56,621] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 11:26:56,621] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 11:26:56,635] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 11:26:56,641] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 11:26:56,645] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 11:26:57,673] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 11:26:57,673] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 11:26:57,673] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 11:26:57,687] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 11:26:57,688] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 11:26:57,695] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 11:26:57,698] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 11:26:58,799] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 11:26:58,799] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 11:26:58,799] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 11:26:58,800] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 11:26:58,801] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 11:26:58,804] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 11:26:58,805] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 12:01:54,570] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 12:01:54,571] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['10']}>
+[2025-05-22 12:01:54,571] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['10'], subject_code: None
+[2025-05-22 12:01:54,646] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 13
+[2025-05-22 12:01:54,647] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 12:01:54,649] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 12:01:54,651] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 13
+[2025-05-22 12:01:54,654] INFO exam_sessions_subjects_products.views Final queryset count: 13
+[2025-05-22 12:11:32,694] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 12:11:32,694] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 12:11:32,703] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 12:11:32,703] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 12:11:32,703] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 12:11:32,704] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 12:11:32,704] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 12:11:32,705] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 12:11:32,830] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 12:11:32,833] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 12:11:32,835] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 12:11:32,835] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 12:11:32,842] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 12:11:32,846] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 12:11:32,849] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 12:11:32,877] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 12:11:32,877] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 12:11:32,887] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 12:11:33,002] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 12:11:33,056] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 12:11:33,125] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 12:11:33,125] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 12:11:33,136] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 12:11:33,184] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 12:11:33,190] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 12:11:33,275] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 12:11:33,280] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 12:11:33,283] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 12:11:33,286] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 12:11:33,321] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 12:11:33,334] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 12:11:33,346] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 12:11:33,408] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 12:11:33,408] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 12:11:33,426] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 12:20:39,158] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 12:20:39,159] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 12:20:39,160] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 12:20:39,161] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 12:20:39,167] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 12:20:39,172] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 12:20:39,175] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 12:20:41,197] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 12:20:41,198] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 12:20:41,198] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 12:20:41,198] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 12:20:41,201] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 12:20:41,205] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 12:20:41,207] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 12:22:49,086] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 12:22:49,087] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 12:22:49,087] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 12:22:49,088] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 12:22:49,090] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 12:22:49,096] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 12:22:49,218] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 12:22:50,297] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 12:22:50,306] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 12:22:50,306] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 12:22:50,306] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 12:22:50,306] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 12:22:50,306] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 12:22:50,314] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 12:22:51,280] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 12:22:51,280] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 12:22:51,280] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 12:22:51,283] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 12:22:51,285] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 12:22:51,285] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 12:22:51,290] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:17:07,465] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:17:07,480] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:17:07,480] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:17:07,496] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:17:07,539] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:17:07,539] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:17:07,539] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:17:07,546] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:17:07,548] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:17:07,554] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:17:07,554] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:17:07,556] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:17:07,556] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:17:07,579] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:20:32,354] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:20:32,358] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:20:32,358] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:20:32,358] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:20:32,358] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:20:32,394] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:20:32,397] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:20:32,397] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:20:32,397] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:20:32,397] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:20:32,397] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:20:32,405] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:20:32,413] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:20:32,418] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:21:12,045] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:21:12,045] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:21:12,045] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:21:12,045] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:21:12,048] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:21:12,054] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:21:12,055] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:21:12,055] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:21:12,055] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:21:12,055] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:21:12,055] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:21:12,061] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:21:12,062] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:21:12,071] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:22:33,339] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:22:33,339] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:22:33,339] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:22:33,339] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:22:33,347] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:22:33,418] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:22:33,436] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:22:33,521] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:22:33,521] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:22:33,521] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:22:33,521] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:22:33,521] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:22:33,537] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:22:33,540] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:22:59,559] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:22:59,562] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:22:59,569] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:22:59,570] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:22:59,571] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:22:59,575] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:22:59,578] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:22:59,586] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:22:59,587] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:22:59,589] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:22:59,589] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:22:59,608] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:22:59,611] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:22:59,611] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:23:30,910] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:23:30,914] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:23:30,918] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:23:30,923] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:23:30,942] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:23:30,947] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:23:30,983] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:23:31,122] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:23:31,122] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:23:31,126] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:23:31,126] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:23:31,126] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:23:31,126] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:23:31,134] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:24:00,598] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:24:00,599] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:24:00,599] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:24:00,599] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:24:00,601] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:24:00,604] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:24:00,608] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:24:00,657] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:24:00,657] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:24:00,657] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:24:00,657] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:24:00,657] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:24:00,657] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:24:00,667] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:25:59,578] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:25:59,581] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:25:59,581] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:25:59,583] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:25:59,584] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:25:59,609] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:25:59,616] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:25:59,616] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:25:59,620] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:25:59,639] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:25:59,645] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:25:59,663] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:25:59,717] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:25:59,734] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:25:59,809] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:25:59,814] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:25:59,831] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:25:59,835] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:25:59,838] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:25:59,846] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:25:59,851] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:25:59,944] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:25:59,948] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:25:59,948] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:25:59,957] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:25:59,977] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:25:59,988] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:26:00,000] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:26:00,091] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:26:00,091] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:26:00,098] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:26:00,098] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:26:00,101] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:26:00,108] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:26:00,111] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:34:13,004] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:34:13,004] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:34:13,004] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:34:13,004] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:34:13,004] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:34:13,020] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:34:13,043] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:34:13,046] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:34:13,049] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:34:13,051] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:34:13,052] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:34:13,060] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:34:13,064] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:34:13,070] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:34:13,170] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:34:13,175] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:34:13,175] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:34:13,175] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:34:13,175] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:34:13,183] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:34:13,183] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:34:13,274] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:34:13,281] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:34:13,281] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:34:13,281] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:34:13,289] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:34:13,289] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:34:13,298] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:34:13,442] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:34:13,442] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:34:13,442] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:34:13,442] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:34:13,451] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:34:13,459] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:34:13,461] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:47:43,371] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:47:43,371] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:47:43,375] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:47:43,377] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:47:43,381] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:47:43,385] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:47:43,387] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:47:43,391] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:47:43,399] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:47:43,404] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:47:43,404] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:47:43,411] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:47:43,420] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:47:43,421] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:47:43,421] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:47:43,430] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:47:43,435] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:47:43,436] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:47:43,493] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:47:43,498] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:47:43,498] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:47:43,704] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:47:43,704] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:47:43,704] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:47:43,720] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:47:43,720] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:47:43,736] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:47:43,752] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 17:47:44,021] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 17:47:44,021] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 17:47:44,039] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 17:47:44,040] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 17:47:44,040] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 17:47:44,069] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 17:47:44,070] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 23:21:20,390] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 23:21:20,395] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 23:21:20,398] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 23:21:20,399] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 23:21:20,402] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 23:21:20,402] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 23:21:20,402] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 23:21:20,405] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 23:21:20,407] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 23:21:20,412] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 23:21:20,418] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 23:21:20,419] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 23:21:20,428] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 23:21:20,428] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 23:21:20,478] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 23:21:20,478] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 23:21:20,494] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 23:21:20,494] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 23:21:20,494] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 23:21:20,499] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 23:21:20,499] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 23:21:20,622] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 23:21:20,622] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 23:21:20,629] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 23:21:20,631] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 23:21:20,634] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 23:21:20,642] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 23:21:20,647] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 23:21:20,680] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 23:21:20,695] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 23:21:20,695] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 23:21:20,699] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 23:21:20,711] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 23:21:20,711] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 23:21:20,726] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 23:23:38,308] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 23:23:38,308] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 23:23:38,309] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 23:23:38,309] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 23:23:38,312] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 23:23:38,315] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 23:23:38,318] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-22 23:23:39,433] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-22 23:23:39,433] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-22 23:23:39,433] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-22 23:23:39,433] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-22 23:23:39,433] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-22 23:23:39,449] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-22 23:23:39,451] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:35:55,749] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-25 21:37:15,892] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:37:15,892] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:37:15,892] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:37:15,892] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:37:15,981] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:37:15,982] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:37:15,989] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:37:16,917] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:37:16,917] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:37:16,917] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:37:16,922] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:37:17,005] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:37:17,015] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:37:17,015] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:37:19,016] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:37:19,016] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:37:19,016] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:37:19,016] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:37:19,016] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:37:19,031] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:37:19,031] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:37:19,898] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:37:19,898] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:37:19,903] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:37:19,903] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:37:19,903] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:37:19,903] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:37:19,903] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:37:20,832] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:37:20,832] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:37:20,832] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:37:20,832] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:37:20,840] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:37:20,843] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:37:20,847] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:37:24,452] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:37:24,469] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:37:24,476] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:37:24,480] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:37:24,494] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:37:24,498] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:37:24,514] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:37:24,686] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:37:24,686] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:37:24,686] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:37:24,694] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:37:24,705] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:37:24,715] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:37:24,723] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:37:24,796] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:37:24,802] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:37:24,802] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:37:24,802] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:37:24,821] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:37:24,829] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:37:24,840] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:37:25,065] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:37:25,079] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:37:25,082] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:37:25,083] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:37:25,095] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:37:25,104] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:37:25,110] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:37:28,146] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:37:28,157] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:37:28,161] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:37:28,162] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:37:28,169] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:37:28,178] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:37:28,185] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:37:54,955] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:37:54,955] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:37:54,970] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:37:55,002] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:37:55,011] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:37:55,041] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:37:55,043] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:37:55,048] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:37:55,048] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:37:55,066] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:37:55,066] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:37:55,068] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:37:55,074] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:37:55,078] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:37:55,327] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:37:55,327] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:37:55,334] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:37:55,335] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:37:55,335] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:37:55,407] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:37:55,407] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:37:55,407] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:37:55,407] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:37:55,415] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:37:55,424] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:37:55,440] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:37:55,442] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:37:55,452] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:37:55,513] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:37:55,513] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:37:55,521] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:37:55,521] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:37:55,534] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:37:55,543] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:37:55,548] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:38:04,224] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:38:04,224] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['10']}>
+[2025-05-25 21:38:04,224] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['10'], subject_code: None
+[2025-05-25 21:38:04,224] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 13
+[2025-05-25 21:38:04,232] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:38:04,234] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:38:04,234] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 13
+[2025-05-25 21:38:04,242] INFO exam_sessions_subjects_products.views Final queryset count: 13
+[2025-05-25 21:43:05,297] INFO django.utils.autoreload C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\serializers.py changed, reloading.
+[2025-05-25 21:43:06,929] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-25 21:45:22,433] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:45:22,452] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:45:22,452] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:45:22,452] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:45:22,458] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:45:22,469] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:45:22,480] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:45:22,493] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:45:22,498] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:45:22,501] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:45:22,503] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:45:22,520] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:45:22,539] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:45:22,542] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:45:22,591] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:45:22,591] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:45:22,596] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:45:22,600] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:45:22,603] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:45:22,615] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:45:22,621] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:45:22,699] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:45:22,700] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:45:22,702] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:45:22,702] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:45:22,709] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:45:22,717] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:45:22,721] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:45:22,949] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:45:22,949] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:45:22,949] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:45:22,949] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:45:22,967] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:45:22,980] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:45:22,997] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:51:37,940] INFO django.utils.autoreload C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\serializers.py changed, reloading.
+[2025-05-25 21:51:39,450] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-25 21:51:46,252] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:51:46,261] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:51:46,263] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:51:46,267] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:51:46,283] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:51:46,295] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:51:46,312] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:51:46,313] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:51:46,320] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:51:46,326] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:51:46,346] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:51:46,362] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:51:46,362] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:51:46,377] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:51:46,454] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:51:46,468] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:51:46,479] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:51:46,491] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:51:46,491] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:51:46,502] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:51:46,509] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:51:46,604] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:51:46,620] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:51:46,636] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 21:51:46,656] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:51:46,682] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 21:51:46,684] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:51:46,691] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 21:51:46,695] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 21:51:46,701] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:51:46,714] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 21:51:46,718] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:51:46,729] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 21:51:46,734] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 21:51:46,747] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 22:00:00,583] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 22:00:00,588] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 22:00:00,588] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 22:00:00,591] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 22:00:00,593] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 22:00:00,599] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 22:00:00,605] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 22:00:00,637] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 22:00:00,643] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 22:00:00,646] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 22:00:00,654] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 22:00:00,673] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 22:00:00,684] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 22:00:00,690] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 22:00:00,734] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 22:00:00,751] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 22:00:00,762] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 22:00:00,770] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 22:00:00,780] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 22:00:00,795] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 22:00:00,808] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 22:00:00,984] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 22:00:00,984] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 22:00:01,002] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 22:00:01,009] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 22:00:01,023] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 22:00:01,033] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 22:00:01,049] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 22:00:01,233] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 22:00:01,238] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 22:00:01,238] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 22:00:01,254] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 22:00:01,254] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 22:00:01,270] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 22:00:01,302] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 22:00:39,611] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 22:00:39,616] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 22:00:39,623] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 22:00:39,635] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 22:00:39,637] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 22:00:39,637] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 22:00:39,639] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 22:00:39,645] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 22:00:39,645] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 22:00:39,658] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 22:00:39,658] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 22:00:39,658] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 22:00:39,658] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 22:00:39,670] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 22:00:39,853] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 22:00:39,853] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 22:00:39,870] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 22:00:39,873] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 22:00:39,879] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 22:00:39,909] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 22:00:39,913] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 22:00:39,995] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 22:00:39,996] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 22:00:40,001] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 22:00:40,006] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 22:00:40,025] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 22:00:40,046] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 22:00:40,059] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 22:00:40,172] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 22:00:40,182] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-25 22:00:40,198] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-25 22:00:40,198] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 22:00:40,213] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 22:00:40,229] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-25 22:00:40,229] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-25 22:03:27,955] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-25 22:03:27,955] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['19']}>
+[2025-05-25 22:03:27,956] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['19'], subject_code: None
+[2025-05-25 22:03:27,961] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 13
+[2025-05-25 22:03:27,962] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-25 22:03:27,962] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-25 22:03:27,967] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 13
+[2025-05-25 22:03:27,967] INFO exam_sessions_subjects_products.views Final queryset count: 13
+[2025-05-27 15:01:14,547] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-05-27 15:01:15,986] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:01:15,987] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:01:15,987] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:01:15,988] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:01:16,062] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:01:16,078] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:01:16,081] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:01:17,298] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:01:17,299] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:01:17,300] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:01:17,300] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:01:17,494] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:01:17,497] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:01:17,499] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:42:23,084] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:42:23,085] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:42:23,086] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:42:23,086] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:42:23,089] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:42:23,092] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:42:23,096] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:42:24,277] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:42:24,277] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:42:24,278] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:42:24,278] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:42:24,280] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:42:24,284] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:42:24,286] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:42:26,013] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:42:26,015] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:42:26,016] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:42:26,016] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:42:26,020] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:42:26,026] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:42:26,029] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:43:07,673] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:43:07,673] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:43:07,680] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:43:07,681] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:43:07,689] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:43:07,711] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:43:07,726] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:43:09,260] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:43:09,261] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:43:09,262] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:43:09,262] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:43:09,264] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:43:09,273] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:43:09,276] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:43:11,505] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:43:11,506] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:43:11,507] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:43:11,507] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:43:11,510] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:43:11,513] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:43:11,515] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:43:13,046] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:43:13,046] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:43:13,047] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:43:13,048] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:43:13,050] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:43:13,058] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:43:13,072] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:43:14,866] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:43:14,868] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:43:14,870] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:43:14,878] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:43:14,889] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:43:14,894] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:43:14,897] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:43:20,427] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:43:20,427] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:43:20,428] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:43:20,428] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:43:20,429] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:43:20,433] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:43:20,435] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:43:21,646] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:43:21,647] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:43:21,647] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:43:21,647] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:43:21,648] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:43:21,653] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:43:21,654] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:45:28,440] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:45:28,449] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:45:28,465] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:45:28,471] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:45:28,477] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:45:28,483] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:45:28,494] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:45:28,599] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:45:28,601] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:45:28,604] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:45:28,606] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:45:28,610] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:45:28,616] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:45:28,625] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:45:28,831] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:45:28,838] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:45:28,842] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:45:28,845] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:45:28,856] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:45:28,873] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:45:28,893] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:45:28,955] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:45:28,968] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:45:28,977] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:45:28,980] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:45:28,997] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:45:29,004] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:45:29,015] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:45:29,055] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:45:29,062] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 15:45:29,066] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 15:45:29,077] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:45:29,083] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:45:29,093] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 15:45:29,110] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 15:45:41,830] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:45:41,831] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['19']}>
+[2025-05-27 15:45:41,831] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['19'], subject_code: None
+[2025-05-27 15:45:41,834] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 13
+[2025-05-27 15:45:41,834] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:45:41,837] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:45:41,839] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 13
+[2025-05-27 15:45:41,841] INFO exam_sessions_subjects_products.views Final queryset count: 13
+[2025-05-27 15:57:58,804] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 15:57:58,807] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['19', '11']}>
+[2025-05-27 15:57:58,808] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['19', '11'], subject_code: None
+[2025-05-27 15:57:58,812] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 26
+[2025-05-27 15:57:58,813] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 15:57:58,815] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 15:57:58,818] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 26
+[2025-05-27 15:57:58,821] INFO exam_sessions_subjects_products.views Final queryset count: 26
+[2025-05-27 16:05:57,836] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:05:57,838] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:05:57,841] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:05:57,843] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:05:57,852] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:05:57,856] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:05:57,858] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:05:58,986] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:05:58,986] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:05:58,986] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:05:58,986] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:05:58,988] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:05:58,990] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:05:58,990] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:06:05,354] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:06:05,355] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:06:05,355] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:06:05,355] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:06:05,357] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:06:05,360] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:06:05,362] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:06:06,552] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:06:06,553] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:06:06,553] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:06:06,553] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:06:06,556] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:06:06,558] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:06:06,559] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:06:08,283] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:06:08,289] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:06:08,323] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:06:08,344] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:06:08,350] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:06:08,354] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:06:08,357] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:06:13,117] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:06:13,117] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['11']}>
+[2025-05-27 16:06:13,117] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['11'], subject_code: None
+[2025-05-27 16:06:13,120] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 13
+[2025-05-27 16:06:13,121] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:06:13,123] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:06:13,126] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 13
+[2025-05-27 16:06:13,129] INFO exam_sessions_subjects_products.views Final queryset count: 13
+[2025-05-27 16:20:45,108] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:20:45,119] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:20:45,121] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:20:45,128] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:20:45,133] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:20:45,139] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:20:45,144] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:20:46,884] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:20:46,885] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:20:46,886] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:20:46,892] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:20:46,898] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:20:46,904] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:20:46,908] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:20:49,681] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:20:49,682] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:20:49,683] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:20:49,684] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:20:49,689] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:20:49,694] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:20:49,699] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:20:52,473] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:20:52,474] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:20:52,474] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:20:52,475] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:20:52,477] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:20:52,480] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:20:52,488] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:20:55,368] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:20:55,370] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:20:55,371] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:20:55,373] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:20:55,379] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:20:55,383] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:20:55,387] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:34:46,680] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:34:46,682] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:34:46,685] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:34:46,685] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:34:46,692] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:34:46,694] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:34:46,694] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:34:46,697] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:34:46,698] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:34:46,701] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:34:46,706] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:34:46,709] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:34:46,713] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:34:46,714] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:34:46,779] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:34:46,783] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:34:46,786] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:34:46,794] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:34:46,801] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:34:46,805] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:34:46,812] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:34:46,995] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:34:47,003] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:34:47,003] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:34:47,003] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:34:47,011] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:34:47,011] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:34:47,015] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:34:47,015] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:34:47,015] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:34:47,020] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:34:47,020] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:34:47,027] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:34:47,042] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:34:47,045] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:44:22,702] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:44:22,722] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:44:22,735] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:44:22,762] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:44:22,798] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:44:22,869] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:44:22,887] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:44:22,889] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:44:22,949] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:44:22,982] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:44:22,995] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:44:23,000] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:44:23,048] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:44:23,057] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:44:23,059] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:44:23,061] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:44:23,070] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:44:23,086] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:44:23,106] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:44:23,116] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:44:23,121] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:44:23,196] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:44:23,196] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:44:23,206] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:44:23,206] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:44:23,216] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:44:23,227] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:44:23,231] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:44:23,564] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:44:23,564] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:44:23,564] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:44:23,564] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:44:23,583] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:44:23,589] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:44:23,600] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:46:57,221] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:46:57,221] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'main_category': ['2']}>
+[2025-05-27 16:46:57,222] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:46:57,222] INFO exam_sessions_subjects_products.views Filtering main_category_ids: ['2'], delivery_method_ids: []
+[2025-05-27 16:46:57,226] INFO exam_sessions_subjects_products.views Main category product ids: {83, 78, 79}
+[2025-05-27 16:46:57,226] INFO exam_sessions_subjects_products.views Final product_ids for filter: {83, 78, 79}
+[2025-05-27 16:46:57,229] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 26
+[2025-05-27 16:46:57,230] INFO exam_sessions_subjects_products.views Final queryset count: 26
+[2025-05-27 16:58:14,796] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:58:14,812] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 16:58:14,812] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:58:14,812] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 16:58:14,812] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 16:58:14,812] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 16:58:14,820] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 16:58:20,699] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:58:20,700] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'main_category': ['1']}>
+[2025-05-27 16:58:20,701] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 16:58:20,701] INFO exam_sessions_subjects_products.views Filtering main_category_ids: ['1'], delivery_method_ids: []
+[2025-05-27 16:58:20,706] INFO exam_sessions_subjects_products.views Main category product ids: {71, 72, 73, 74, 75, 76, 77, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-27 16:58:20,707] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-27 16:58:20,711] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 248
+[2025-05-27 16:58:20,714] INFO exam_sessions_subjects_products.views Final queryset count: 248
+[2025-05-27 16:58:34,354] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:58:34,354] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'main_category': ['1'], 'subject': ['10']}>
+[2025-05-27 16:58:34,354] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['10'], subject_code: None
+[2025-05-27 16:58:34,354] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 13
+[2025-05-27 16:58:34,354] INFO exam_sessions_subjects_products.views Filtering main_category_ids: ['1'], delivery_method_ids: []
+[2025-05-27 16:58:34,365] INFO exam_sessions_subjects_products.views Main category product ids: {71, 72, 73, 74, 75, 76, 77, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-27 16:58:34,365] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-27 16:58:34,367] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 11
+[2025-05-27 16:58:34,369] INFO exam_sessions_subjects_products.views Final queryset count: 11
+[2025-05-27 16:58:39,915] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:58:39,916] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'main_category': ['1'], 'subject': ['10', '11']}>
+[2025-05-27 16:58:39,916] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['10', '11'], subject_code: None
+[2025-05-27 16:58:39,916] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 26
+[2025-05-27 16:58:39,916] INFO exam_sessions_subjects_products.views Filtering main_category_ids: ['1'], delivery_method_ids: []
+[2025-05-27 16:58:39,916] INFO exam_sessions_subjects_products.views Main category product ids: {71, 72, 73, 74, 75, 76, 77, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-27 16:58:39,916] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-27 16:58:39,916] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 22
+[2025-05-27 16:58:39,916] INFO exam_sessions_subjects_products.views Final queryset count: 22
+[2025-05-27 16:58:41,117] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:58:41,117] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'main_category': ['1'], 'subject': ['11']}>
+[2025-05-27 16:58:41,117] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['11'], subject_code: None
+[2025-05-27 16:58:41,117] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 13
+[2025-05-27 16:58:41,117] INFO exam_sessions_subjects_products.views Filtering main_category_ids: ['1'], delivery_method_ids: []
+[2025-05-27 16:58:41,117] INFO exam_sessions_subjects_products.views Main category product ids: {71, 72, 73, 74, 75, 76, 77, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-27 16:58:41,117] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-27 16:58:41,117] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 11
+[2025-05-27 16:58:41,117] INFO exam_sessions_subjects_products.views Final queryset count: 11
+[2025-05-27 16:58:49,085] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:58:49,085] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'main_category': ['1'], 'subject': ['11', '6']}>
+[2025-05-27 16:58:49,085] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['11', '6'], subject_code: None
+[2025-05-27 16:58:49,085] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 29
+[2025-05-27 16:58:49,085] INFO exam_sessions_subjects_products.views Filtering main_category_ids: ['1'], delivery_method_ids: []
+[2025-05-27 16:58:49,085] INFO exam_sessions_subjects_products.views Main category product ids: {71, 72, 73, 74, 75, 76, 77, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-27 16:58:49,085] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-27 16:58:49,094] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 24
+[2025-05-27 16:58:49,094] INFO exam_sessions_subjects_products.views Final queryset count: 24
+[2025-05-27 16:58:51,552] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:58:51,552] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'main_category': ['1'], 'subject': ['11', '6', '7']}>
+[2025-05-27 16:58:51,552] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['11', '6', '7'], subject_code: None
+[2025-05-27 16:58:51,552] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 45
+[2025-05-27 16:58:51,552] INFO exam_sessions_subjects_products.views Filtering main_category_ids: ['1'], delivery_method_ids: []
+[2025-05-27 16:58:51,565] INFO exam_sessions_subjects_products.views Main category product ids: {71, 72, 73, 74, 75, 76, 77, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-27 16:58:51,565] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-27 16:58:51,565] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 37
+[2025-05-27 16:58:51,565] INFO exam_sessions_subjects_products.views Final queryset count: 37
+[2025-05-27 16:58:52,948] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:58:52,948] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'main_category': ['1'], 'subject': ['6', '7']}>
+[2025-05-27 16:58:52,948] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['6', '7'], subject_code: None
+[2025-05-27 16:58:52,964] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 32
+[2025-05-27 16:58:52,964] INFO exam_sessions_subjects_products.views Filtering main_category_ids: ['1'], delivery_method_ids: []
+[2025-05-27 16:58:52,964] INFO exam_sessions_subjects_products.views Main category product ids: {71, 72, 73, 74, 75, 76, 77, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-27 16:58:52,964] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-27 16:58:52,964] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 26
+[2025-05-27 16:58:52,964] INFO exam_sessions_subjects_products.views Final queryset count: 26
+[2025-05-27 16:58:54,599] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 16:58:54,599] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'main_category': ['1'], 'subject': ['7']}>
+[2025-05-27 16:58:54,599] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['7'], subject_code: None
+[2025-05-27 16:58:54,599] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 16
+[2025-05-27 16:58:54,599] INFO exam_sessions_subjects_products.views Filtering main_category_ids: ['1'], delivery_method_ids: []
+[2025-05-27 16:58:54,615] INFO exam_sessions_subjects_products.views Main category product ids: {71, 72, 73, 74, 75, 76, 77, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-27 16:58:54,615] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 112, 113, 114, 115}
+[2025-05-27 16:58:54,615] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 13
+[2025-05-27 16:58:54,615] INFO exam_sessions_subjects_products.views Final queryset count: 13
+[2025-05-27 17:12:09,695] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 17:12:09,696] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 17:12:09,700] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 17:12:09,704] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 17:12:09,707] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 17:12:09,715] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 17:12:09,721] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 17:12:09,767] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 17:12:09,775] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 17:12:09,775] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 17:12:09,775] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 17:12:09,775] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 17:12:09,775] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 17:12:09,783] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 17:12:09,801] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 17:12:09,803] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 17:12:09,805] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 17:12:09,808] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 17:12:09,812] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 17:12:09,822] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 17:12:09,829] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 17:12:09,873] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 17:12:09,885] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 17:12:09,888] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 17:12:09,891] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 17:12:09,895] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 17:12:09,896] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 17:12:09,901] INFO exam_sessions_subjects_products.views Final queryset count: 297
+[2025-05-27 17:12:09,976] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-05-27 17:12:09,976] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-05-27 17:12:09,989] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-05-27 17:12:09,992] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-05-27 17:12:09,992] INFO exam_sessions_subjects_products.views Final product_ids for filter: {71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117}
+[2025-05-27 17:12:10,003] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 297
+[2025-05-27 17:12:10,010] INFO exam_sessions_subjects_products.views Final queryset count: 297

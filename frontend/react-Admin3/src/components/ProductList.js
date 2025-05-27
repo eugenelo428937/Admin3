@@ -183,7 +183,7 @@ const ProductList = () => {
 				{/* Filter Panel */}
 				<Col
 					xs={12}
-					md={2}
+					md={1}
 					lg={1}
 					className={`filter-panel${showFilters ? " show" : " hide"}${
 						isMobile ? " mobile" : ""
@@ -192,11 +192,10 @@ const ProductList = () => {
 						position: isMobile ? "static" : "absolute",
 						left: 0,
 						top: 0,
-						height: isMobile ? "auto" : "100vh",
 						zIndex: 3,
-						width: isMobile ? "100%" : showFilters ? "25%" : 0,
-						minWidth: isMobile ? undefined : showFilters ? "300px" : 0,
-						maxWidth: isMobile ? undefined : showFilters ? "400px" : 0,
+						width: isMobile ? "100%" : showFilters ? "20%" : 0,
+						minWidth: isMobile ? undefined : showFilters ? "200px" : 0,
+						maxWidth: isMobile ? undefined : showFilters ? "300px" : 0,
 						background: isMobile ? undefined : "white",
 						boxShadow:
 							showFilters && !isMobile
@@ -339,15 +338,15 @@ const ProductList = () => {
 				{/* Product Cards Panel */}
 				<Col
 					xs={12}
-					md={10}
-					lg={10}
+					md={11}
+					lg={11}
 					className={`product-cards-panel${
 						showFilters && !isMobile ? " with-filter" : " full-width"
 					}${isMobile ? " mobile" : ""}`}
 					style={{
 						marginLeft:
-							showFilters && !isMobile ? (isMobile ? 0 : "25%") : 0,
-						width: showFilters && !isMobile ? "75%" : "100%",
+							showFilters && !isMobile ? (isMobile ? 0 : "20%") : 0,
+						width: showFilters && !isMobile ? "80%" : "100%",
 						transition: "all 0.5s cubic-bezier(.5,.5,.5,.5)",
 						minWidth: 0,
 						position: isMobile ? "static" : "relative",
@@ -359,7 +358,7 @@ const ProductList = () => {
 							No products available based on selected filters.
 						</Alert>
 					) : (
-						<Row xs={1} md={3} lg={4} className="g-4">
+						<Row xs={1} md={3} lg={3} xl={5} className="g-4">
 							{filteredProducts.map((product) => (
 								<ProductCard
 									key={product.essp_id || product.id || product.product_id}
