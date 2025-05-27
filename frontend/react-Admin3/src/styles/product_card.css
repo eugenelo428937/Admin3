@@ -1,3 +1,7 @@
+.product-card{
+  width: 300px;
+  height: 250px;
+}
 .product-card-header {    
     background-color: var(--product-card-header-bg-color) !important;
 }

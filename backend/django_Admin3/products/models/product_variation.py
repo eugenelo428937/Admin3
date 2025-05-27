@@ -2,13 +2,16 @@ from django.db import models
 
 class ProductVariation(models.Model):
     VARIATION_TYPE_CHOICES = [
-        ("format", "Format"),
-        ("delivery", "Delivery Method"),
+        ("eBook", "eBook"),
+        ("Hub", "Hub"),
+        ("Printed", "Printed"),
+        ("Marking", "Marking"),
+        ("Tutorial", "Tutorial"),
     ]
     variation_type = models.CharField(max_length=32, choices=VARIATION_TYPE_CHOICES)
     name = models.CharField(max_length=64)
     description = models.TextField(blank=True, null=True)
-    code = models.CharField(max_length=50, unique=True)
+    code = models.CharField(max_length=50, unique=True, blank=True, null=True)
 
     def __str__(self):
         return f"{self.get_variation_type_display()}: {self.name}"
