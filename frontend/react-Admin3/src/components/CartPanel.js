@@ -43,7 +43,9 @@ const CartPanel = ({ show, handleClose }) => {
 												{item.subject_code
 													? `${item.subject_code} - `
 													: ""}
-												{item.product_name || item.product_code}
+												{item.product_name}
+												<br />
+												<span className="text-muted" style={{fontSize: '0.9em'}}>Product Code: {item.product_code}</span>
 											</strong>
 											<br />
 											Quantity: {item.quantity}
