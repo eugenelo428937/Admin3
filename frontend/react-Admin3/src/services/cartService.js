@@ -5,8 +5,13 @@ const API_BASE = config.cartUrl;
 
 const cartService = {
 	fetchCart: () => httpService.get(API_BASE),
-	addToCart: (product, quantity = 1) =>
-		httpService.post(`${API_BASE}/add/`, { product: product.id, quantity }),
+	addToCart: (product, quantity = 1, priceInfo = {}) =>
+		httpService.post(`${API_BASE}/add/`, { 
+			product: product.essp_id || product.id, 
+			quantity,
+			price_type: priceInfo.priceType || 'standard',
+			actual_price: priceInfo.actualPrice 
+		}),
 	updateItem: (itemId, quantity) =>
 		httpService.patch(`${API_BASE}/update_item/`, {
 			item_id: itemId,

@@ -37,8 +37,7 @@ const CartPanel = ({ show, handleClose }) => {
 						<ListGroup variant="flush">
 							{cartItems.map((item) => (
 								<ListGroup.Item key={item.id}>
-									<div className="d-flex justify-content-between align-items-center">
-										<div>
+									<div className="d-flex justify-content-between align-items-center">										<div>
 											<strong>
 												{item.subject_code
 													? `${item.subject_code} - `
@@ -49,6 +48,22 @@ const CartPanel = ({ show, handleClose }) => {
 											</strong>
 											<br />
 											Quantity: {item.quantity}
+											{item.price_type && item.price_type !== 'standard' && (
+												<>
+													<br />
+													<span className="badge bg-secondary">
+														{item.price_type === 'retaker' ? 'Retaker' : 
+														 item.price_type === 'additional' ? 'Additional Copy' : 
+														 item.price_type}
+													</span>
+												</>
+											)}
+											{item.actual_price && (
+												<>
+													<br />
+													<span className="text-success fw-bold">£{item.actual_price}</span>
+												</>
+											)}
 										</div>
 										<Button
 											variant=""

@@ -42,14 +42,30 @@ const OrderHistory = () => {
             <tr key={order.id}>
               <td>{order.id}</td>
               <td>{new Date(order.created_at).toLocaleString()}</td>
-              <td>
-                <ul className="mb-0">
+              <td>                <ul className="mb-0">
                   {order.items && order.items.map((item) => (
                     <li key={item.id}>
                       {item.product_name || item.product}
                       <br />
                       <span className="text-muted" style={{fontSize: '0.9em'}}>Product Code: {item.product_code}</span>
-                      x {item.quantity}
+                      <br />
+                      Quantity: {item.quantity}
+                      {item.price_type && item.price_type !== 'standard' && (
+                        <>
+                          <br />
+                          <span className="badge bg-secondary">
+                            {item.price_type === 'retaker' ? 'Retaker' : 
+                             item.price_type === 'additional' ? 'Additional Copy' : 
+                             item.price_type}
+                          </span>
+                        </>
+                      )}
+                      {item.actual_price && (
+                        <>
+                          <br />
+                          <span className="text-success fw-bold">£{item.actual_price}</span>
+                        </>
+                      )}
                     </li>
                   ))}
                 </ul>

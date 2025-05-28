@@ -41,13 +41,23 @@ class CartViewSet(viewsets.ViewSet):
         cart = self.get_cart(request)
         product_id = request.data.get('product')
         quantity = int(request.data.get('quantity', 1))
+        price_type = request.data.get('price_type', 'standard')
+        actual_price = request.data.get('actual_price')
+        
         product = get_object_or_404(ExamSessionSubjectProduct, id=product_id)
-        item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+        
+        # Check if item with same product and price_type exists
+        item, created = CartItem.objects.get_or_create(
+            cart=cart, 
+            product=product,
+            price_type=price_type,
+            defaults={'quantity': quantity, 'actual_price': actual_price}
+        )
+        
         if not created:
             item.quantity += quantity
-        else:
-            item.quantity = quantity
-        item.save()
+            item.save()
+        
         return Response(CartSerializer(cart).data)
 
     @action(detail=False, methods=['patch'], url_path='update_item')
@@ -84,15 +94,19 @@ class CartViewSet(viewsets.ViewSet):
         cart = self.get_cart(request)
         if not cart.items.exists():
             return Response({'detail': 'Cart is empty.'}, status=status.HTTP_400_BAD_REQUEST)
+        
         with transaction.atomic():
             order = ActedOrder.objects.create(user=user)
             for item in cart.items.all():
                 ActedOrderItem.objects.create(
                     order=order,
                     product=item.product,
-                    quantity=item.quantity
+                    quantity=item.quantity,
+                    price_type=item.price_type,
+                    actual_price=item.actual_price
                 )
             cart.items.all().delete()
+        
         serializer = ActedOrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -112,16 +126,22 @@ class CartViewSet(viewsets.ViewSet):
         session_key = request.session.session_key
         if not session_key:
             return
+        
         try:
             guest_cart = Cart.objects.get(session_key=session_key, user__isnull=True)
         except Cart.DoesNotExist:
             return
+        
         user_cart, _ = Cart.objects.get_or_create(user=user)
         for item in guest_cart.items.all():
-            user_item, created = CartItem.objects.get_or_create(cart=user_cart, product=item.product)
+            user_item, created = CartItem.objects.get_or_create(
+                cart=user_cart, 
+                product=item.product,
+                price_type=item.price_type,
+                defaults={'quantity': item.quantity, 'actual_price': item.actual_price}
+            )
             if not created:
                 user_item.quantity += item.quantity
-            else:
-                user_item.quantity = item.quantity
-            user_item.save()
+                user_item.save()
+        
         guest_cart.delete()

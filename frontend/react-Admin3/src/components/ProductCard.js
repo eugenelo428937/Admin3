@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Col, Card, Button, Modal, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { CartPlus, ExclamationCircle, InfoCircle } from "react-bootstrap-icons";
 import { useCart } from "../contexts/CartContext";
@@ -11,6 +11,28 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 	const [selectedPriceType, setSelectedPriceType] = useState("standard");
 	const [showDiscounts, setShowDiscounts] = useState(false);
 
+	const hasVariations = product.variations && product.variations.length > 0;
+	const singleVariation =
+		product.variations && product.variations.length === 1
+			? product.variations[0]
+			: null;	const currentVariation = hasVariations
+		? product.variations.find((v) => v.id === parseInt(selectedVariation)) || singleVariation || product.variations[0]
+		: singleVariation;
+
+	const hasPriceType = (variation, priceType) => {
+		if (!variation || !variation.prices) return false;
+		return variation.prices.some((p) => p.price_type === priceType);
+	};
+
+	// Reset price type to standard if current selection is not available for the current variation
+	useEffect(() => {
+		if (currentVariation && selectedPriceType !== "standard") {
+			if (!hasPriceType(currentVariation, selectedPriceType)) {
+				setSelectedPriceType("standard");
+			}
+		}
+	}, [currentVariation, selectedPriceType]);
+
 	if (product.type === "Markings") {
 		return (
 			<MarkingProductCard
@@ -20,15 +42,7 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 				bulkDeadlines={bulkDeadlines}
 			/>
 		);
-	}
-
-	const hasVariations = product.variations && product.variations.length > 0;
-	const singleVariation =
-		product.variations && product.variations.length === 1
-			? product.variations[0]
-			: null;	const currentVariation = hasVariations
-		? product.variations.find((v) => v.id === parseInt(selectedVariation)) || singleVariation || product.variations[0]
-		: singleVariation;	const getPrice = (variation, priceType) => {
+	}	const getPrice = (variation, priceType) => {
 		if (!variation || !variation.prices) return null;
 		const priceObj = variation.prices.find((p) => p.price_type === priceType);
 		return priceObj ? `£${priceObj.amount}` : null;
@@ -163,8 +177,7 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 									<span className="text-muted">
 										{showDiscounts ? "▼" : "▶"}
 									</span>
-								</div>
-								{showDiscounts && (
+								</div>								{showDiscounts && (
 									<div className="mt-2 ps-3">
 										<div className="form-check">
 											<input
@@ -176,12 +189,17 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 													product.product_id
 												}`}
 												checked={selectedPriceType === "retaker"}
+												disabled={!hasPriceType(currentVariation, "retaker")}
 												onChange={() =>
 													handlePriceTypeChange("retaker")
 												}
 											/>
 											<label
-												className="form-check-label"
+												className={`form-check-label ${
+													!hasPriceType(currentVariation, "retaker")
+														? "text-muted"
+														: ""
+												}`}
 												htmlFor={`retaker-${
 													product.essp_id ||
 													product.id ||
@@ -202,12 +220,17 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 												checked={
 													selectedPriceType === "additional"
 												}
+												disabled={!hasPriceType(currentVariation, "additional")}
 												onChange={() =>
 													handlePriceTypeChange("additional")
 												}
 											/>
 											<label
-												className="form-check-label"
+												className={`form-check-label ${
+													!hasPriceType(currentVariation, "additional")
+														? "text-muted"
+														: ""
+												}`}
 												htmlFor={`additional-${
 													product.essp_id ||
 													product.id ||
@@ -219,12 +242,18 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 									</div>
 								)}
 							</div>
-						</div>
-						<div>
+						</div>						<div>
 							<Button
 								variant="success"
 								className="d-flex flex-row flex-wrap align-items-center justify-content-center product-add-to-cart-button p-2"
-								onClick={() => onAddToCart(product)}
+								onClick={() => {
+									const priceObj = currentVariation?.prices?.find(p => p.price_type === selectedPriceType);
+									onAddToCart(product, {
+										variationId: currentVariation?.id,
+										priceType: selectedPriceType,
+										actualPrice: priceObj?.amount
+									});
+								}}
 								disabled={
 									hasVariations &&
 									!singleVariation &&

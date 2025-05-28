@@ -21,10 +21,9 @@ export const CartProvider = ({ children }) => {
     };
     fetchCart();
   }, []);
-
-  const addToCart = async (product) => {
+  const addToCart = async (product, priceInfo = {}) => {
     try {
-      const res = await cartService.addToCart(product, 1);
+      const res = await cartService.addToCart(product, 1, priceInfo);
       setCartItems(res.data.items || []);
     } catch (err) {
       // Optionally handle error
