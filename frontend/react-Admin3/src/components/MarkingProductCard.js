@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
 	Card,
 	Button,
@@ -71,6 +71,20 @@ const MarkingProductCard = ({
 		  singleVariation ||
 		  product.variations[0]
 		: singleVariation;
+
+	const hasPriceType = (variation, priceType) => {
+		if (!variation || !variation.prices) return false;
+		return variation.prices.some((p) => p.price_type === priceType);
+	};
+
+	// Reset price type to standard if current selection is not available for the current variation
+	useEffect(() => {
+		if (currentVariation && selectedPriceType !== "standard") {
+			if (!hasPriceType(currentVariation, selectedPriceType)) {
+				setSelectedPriceType("standard");
+			}
+		}
+	}, [currentVariation, selectedPriceType]);
 	const getPrice = (variation, priceType) => {
 		if (!variation || !variation.prices) return null;
 		const priceObj = variation.prices.find(
@@ -203,8 +217,7 @@ const MarkingProductCard = ({
 									<span className="text-muted">
 										{showDiscounts ? '▼' : '▶'}
 									</span>
-								</div>
-								{showDiscounts && (
+								</div>								{showDiscounts && (
 									<div className="mt-2 ps-3">
 										<div className="form-check">
 											<input
@@ -212,9 +225,16 @@ const MarkingProductCard = ({
 												type="checkbox"
 												id={`retaker-${product.essp_id || product.id || product.product_id}`}
 												checked={selectedPriceType === "retaker"}
+												disabled={!hasPriceType(currentVariation, "retaker")}
 												onChange={() => handlePriceTypeChange("retaker")}
 											/>
-											<label className="form-check-label" htmlFor={`retaker-${product.essp_id || product.id || product.product_id}`}>
+											<label 
+												className={`form-check-label ${
+													!hasPriceType(currentVariation, "retaker")
+														? "text-muted"
+														: ""
+												}`}
+												htmlFor={`retaker-${product.essp_id || product.id || product.product_id}`}>
 												Retaker
 											</label>
 										</div>
@@ -223,22 +243,35 @@ const MarkingProductCard = ({
 												className="form-check-input"
 												type="checkbox"
 												id={`additional-${product.essp_id || product.id || product.product_id}`}
-												checked={selectedPriceType === "additional_copy"}
-												onChange={() => handlePriceTypeChange("additional_copy")}
+												checked={selectedPriceType === "additional"}
+												disabled={!hasPriceType(currentVariation, "additional")}
+												onChange={() => handlePriceTypeChange("additional")}
 											/>
-											<label className="form-check-label" htmlFor={`additional-${product.essp_id || product.id || product.product_id}`}>
+											<label 
+												className={`form-check-label ${
+													!hasPriceType(currentVariation, "additional")
+														? "text-muted"
+														: ""
+												}`}
+												htmlFor={`additional-${product.essp_id || product.id || product.product_id}`}>
 												Additional Copy
 											</label>
 										</div>
 									</div>
 								)}
 							</div>
-						</div>
-						<div>
+						</div>						<div>
 							<Button
 								variant="success"
 								className="d-flex flex-row flex-wrap align-items-center justify-content-center product-add-to-cart-button p-2"
-								onClick={() => onAddToCart(product)}>
+								onClick={() => {
+									const priceObj = currentVariation?.prices?.find(p => p.price_type === selectedPriceType);
+									onAddToCart(product, {
+										variationId: currentVariation?.id,
+										priceType: selectedPriceType,
+										actualPrice: priceObj?.amount
+									});
+								}}>
 								<CartPlus className="bi d-flex flex-row align-items-center" />
 							</Button>
 						</div>
@@ -316,12 +349,16 @@ const MarkingProductCard = ({
 				<Modal.Footer>
 					<Button variant="secondary" onClick={() => setShowModal(false)}>
 						Close
-					</Button>
-					<Button
+					</Button>					<Button
 						variant="success"
 						className="d-flex flex-row flex-wrap align-items-center justify-content-center product-add-to-cart-button p-2 ms-2"
 						onClick={() => {
-							onAddToCart(product);
+							const priceObj = currentVariation?.prices?.find(p => p.price_type === selectedPriceType);
+							onAddToCart(product, {
+								variationId: currentVariation?.id,
+								priceType: selectedPriceType,
+								actualPrice: priceObj?.amount
+							});
 							setShowModal(false);
 						}}>
 						<CartPlus className="bi d-flex flex-row align-items-center" />

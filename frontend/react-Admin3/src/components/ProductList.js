@@ -149,9 +149,8 @@ const ProductList = () => {
 	const handleSubjectGroupChange = (selected) => setSubjectGroup(selected ? selected.map(opt => opt.value) : []);
 
 	const handleDeliveryMethodChange = (selected) => setDeliveryMethod(selected ? selected.map(opt => opt.value) : []);
-
-	const handleAddToCart = (product) => {
-		addToCart(product);
+	const handleAddToCart = (product, priceInfo) => {
+		addToCart(product, priceInfo);
 	};
 
 	const handleFilterToggle = () => setShowFilters((prev) => !prev);
