@@ -34,4 +34,5 @@ urlpatterns = [
     path('api/utils/', include('utils.urls')),
     path('api/countries/', include('country.urls')),
     path('api/markings/', include('marking.urls')),
+    path('api/tutorials/', include('tutorials.urls')),
 ]

@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     'cart',
     'students',
     'subjects',
+    'tutorials',
     'exam_sessions',
     'exam_sessions_subjects',
     'exam_sessions_subjects_products',    

@@ -10,6 +10,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import productService from "../services/productService";
 import subjectService from "../services/subjectService";
+import TutorialProductCard from './TutorialProductCard';
+import tutorialService from '../services/tutorialService';
 import "../styles/product_list.css";
 import ProductCard from "./ProductCard";
 import Select from "react-select";
@@ -35,6 +37,9 @@ const ProductList = () => {
 	const [subjectOptions, setSubjectOptions] = useState([]);
 	const [showFilters, setShowFilters] = useState(true);
 	const [isMobile, setIsMobile] = useState(false);
+	const [tutorialGroups, setTutorialGroups] = useState([]);
+	const [tutorialLoading, setTutorialLoading] = useState(true);
+	const [tutorialError, setTutorialError] = useState(null);
 
 	const { addToCart } = useCart();
 
@@ -157,12 +162,53 @@ const ProductList = () => {
 
 	const filteredProducts = products;
 
+	useEffect(() => {
+		setTutorialLoading(true);
+		setTutorialError(null);
+		tutorialService.getEvents()
+			.then((events) => {
+				// Group by subject+location+mode
+				const groups = {};
+				events.forEach(event => {
+					const key = `${event.subject}||${event.location}||${event.learning_mode_display}`;
+					if (!groups[key]) {
+						groups[key] = {
+							title: `${event.subject} Tutorials`,
+							location: event.location,
+							mode: event.learning_mode_display,
+							events: [],
+						};
+					}
+					groups[key].events.push(event);
+				});
+				setTutorialGroups(Object.values(groups));
+				setTutorialLoading(false);
+			})
+			.catch(() => {
+				setTutorialError('Failed to load tutorials');
+				setTutorialLoading(false);
+			});
+	}, []);
+
 	if (loading) return <div>Loading products...</div>;
 	if (error) return <div>Error: {error}</div>;
 
 	return (
 		<Container fluid className="product-list-container mx-3">
 			<h2 className="my-3">Product List</h2>
+			{/* Tutorials Section */}
+			<h3 className="mt-4">Tutorials</h3>
+			{tutorialLoading ? (
+				<div>Loading tutorials...</div>
+			) : tutorialError ? (
+				<Alert variant="danger">{tutorialError}</Alert>
+			) : (
+				<Row xs={1} md={3} lg={3} xl={5} className="g-4 mb-4">
+					{tutorialGroups.map((group, idx) => (
+						<TutorialProductCard key={idx} {...group} />
+					))}
+				</Row>
+			)}
 			<div className="d-flex align-items-center mb-3">
 				<button
 					className="filter-toggle-btn"
