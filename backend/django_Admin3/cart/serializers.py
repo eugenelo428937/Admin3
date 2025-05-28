@@ -8,7 +8,7 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CartItem
-        fields = ['id', 'product', 'product_name', 'product_code', 'subject_code', 'quantity']
+        fields = ['id', 'product', 'product_name', 'product_code', 'subject_code', 'quantity', 'price_type', 'actual_price']
 
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
@@ -24,7 +24,7 @@ class ActedOrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ActedOrderItem
-        fields = ['id', 'product', 'product_name', 'product_code', 'subject_code', 'quantity']
+        fields = ['id', 'product', 'product_name', 'product_code', 'subject_code', 'quantity', 'price_type', 'actual_price']
 
 class ActedOrderSerializer(serializers.ModelSerializer):
     items = ActedOrderItemSerializer(many=True, read_only=True)

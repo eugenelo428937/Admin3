@@ -25,17 +25,19 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, related_name="items", on_delete=models.CASCADE)
     product = models.ForeignKey(ExamSessionSubjectProduct, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    price_type = models.CharField(max_length=20, default="standard")  # standard, retaker, additional
+    actual_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("cart", "product")
+        unique_together = ("cart", "product", "price_type")  # Allow same product with different price types
         db_table = 'acted_cart_items'
         verbose_name = 'Cart Item'
         verbose_name_plural = 'Cart Items'
         ordering = ['added_at']
 
     def __str__(self):
-        return f"{self.quantity} x {self.product} in cart {self.cart.id}"
+        return f"{self.quantity} x {self.product} ({self.price_type}) in cart {self.cart.id}"
 
 class ActedOrder(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -55,6 +57,8 @@ class ActedOrderItem(models.Model):
     order = models.ForeignKey(ActedOrder, related_name="items", on_delete=models.CASCADE)
     product = models.ForeignKey(ExamSessionSubjectProduct, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    price_type = models.CharField(max_length=20, default="standard")  # standard, retaker, additional
+    actual_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     class Meta:
         db_table = 'acted_order_items'
@@ -62,4 +66,4 @@ class ActedOrderItem(models.Model):
         verbose_name_plural = 'Order Items'
 
     def __str__(self):
-        return f"{self.quantity} x {self.product} (Order #{self.order.id})"
+        return f"{self.quantity} x {self.product} ({self.price_type}) (Order #{self.order.id})"
