@@ -26,6 +26,9 @@ const config = {
 	markingUrl:
 		process.env.REACT_APP_API_BASE_URL +
 		process.env.REACT_APP_API_MARKING_URL,
+	tutorialUrl:
+		process.env.REACT_APP_API_BASE_URL +
+		process.env.REACT_APP_API_TUTORIAL_URL,
 	isDevelopment: process.env.NODE_ENV === "development",
 	enableDebugLogs: true,
 };
