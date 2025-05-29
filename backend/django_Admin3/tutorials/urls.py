@@ -6,6 +6,6 @@ router = DefaultRouter()
 router.register(r'events', EventViewSet)
 router.register(r'sessions', SessionViewSet)
 
-urlpatterns = router.urls + [
-    path('events/', TutorialEventListView.as_view(), name='tutorial-event-list'),
-]
+urlpatterns = [
+    path('list/', TutorialEventListView.as_view(), name='tutorial-event-list'),
+] + router.urls
