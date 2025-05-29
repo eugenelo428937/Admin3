@@ -4,6 +4,7 @@ from administrate.models.course_templates import CourseTemplate
 from administrate.models.locations import Location
 from administrate.models.venues import Venue
 from administrate.models.instructors import Instructor
+from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
 
 class Event(models.Model):
     """
@@ -29,12 +30,19 @@ class Event(models.Model):
         ('BUNDLE_5', '5-day Bundle'),
         ('BUNDLE_6', '6-day Bundle'),
     ]
+    
     LIFECYCLE_STATE_CHOICES = [
         ('DRAFT', 'Draft'),
         ('PUBLISHED', 'Published'),
         ('CANCELLED', 'Cancelled'),
     ]
     external_id = models.CharField(max_length=50, null=True, blank=True, unique=True)
+    exam_session_subject_product = models.ForeignKey(
+        ExamSessionSubjectProduct, 
+        on_delete=models.CASCADE,
+        related_name='tutorial_events',
+        help_text='Related exam session subject product for this tutorial event'
+    )
     course_template = models.ForeignKey(CourseTemplate, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     session_title = models.CharField(max_length=255, blank=True)
@@ -86,6 +94,7 @@ class Event(models.Model):
 
     class Meta:
         app_label = 'tutorials'
+        db_table = 'acted_tutorial_events'
         ordering = ['title', 'lms_start_date']
         verbose_name = 'Tutorial Event'
         verbose_name_plural = 'Tutorial Events'

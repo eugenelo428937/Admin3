@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import tutorialService from '../services/tutorialService';
 import TutorialProductCard from './TutorialProductCard';
 import { Box, Typography, CircularProgress, Alert } from '@mui/material';
 
@@ -13,17 +13,16 @@ const TutorialProductList = () => {
   const [groupedTutorials, setGroupedTutorials] = useState([]);
 
   useEffect(() => {
-    // Replace with your actual API endpoint
-    axios.get('/api/tutorials/events/')
-      .then((res) => {
+    const fetchTutorials = async () => {
+      try {
+        const events = await tutorialService.getAllEvents();
         // Group events by subject+location+mode
         const groups = {};
-        res.data.forEach(event => {
-          const key = `${event.subject}||${event.location}||${event.learning_mode}`;
+        (events || []).forEach(event => {          const key = `${event.course_code}||${event.location_name}||${event.learning_mode}`;
           if (!groups[key]) {
             groups[key] = {
-              title: `${event.subject} Tutorials`,
-              location: event.location,
+              title: `${event.course_code} Tutorials`,
+              location: event.location_name,
               mode: event.learning_mode_display,
               events: [],
             };
@@ -32,11 +31,14 @@ const TutorialProductList = () => {
         });
         setGroupedTutorials(Object.values(groups));
         setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
+        console.error('Error fetching tutorials:', err);
         setError('Failed to load tutorials');
         setLoading(false);
-      });
+      }
+    };
+
+    fetchTutorials();
   }, []);
 
   if (loading) return <CircularProgress />;
