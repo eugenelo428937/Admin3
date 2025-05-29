@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Card, CardContent, Typography, Collapse, Button, List, ListItem, ListItemText } from '@mui/material';
+import { Card, Collapse, Button } from 'react-bootstrap';
 
 /**
  * TutorialProductCard
@@ -15,34 +15,40 @@ const TutorialProductCard = ({ title, location, mode, events }) => {
   };
 
   return (
-    <Card sx={{ marginBottom: 2 }}>
-      <CardContent>
-        <Typography variant="h6">{title}</Typography>
-        <Typography variant="subtitle1" color="text.secondary">
+    <Card className="h-100 shadow-sm">
+      <Card.Header className="bg-primary text-white">
+        <h5 className="mb-0">{title}</h5>
+      </Card.Header>
+      <Card.Body>
+        <Card.Subtitle className="mb-2 text-muted">
           {location} &mdash; {mode}
-        </Typography>
-        <Button onClick={handleExpandClick} sx={{ mt: 1 }}>
+        </Card.Subtitle>
+        <Button 
+          variant={expanded ? "outline-primary" : "primary"}
+          size="sm"
+          onClick={handleExpandClick}
+        >
           {expanded ? 'Hide Events' : 'Show Events'}
         </Button>
-        <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <List>
+        <Collapse in={expanded}>
+          <div className="mt-3">
             {events.map((event) => (
-              <ListItem key={event.id} alignItems="flex-start">
-                <ListItemText
-                  primary={event.title}
-                  secondary={
-                    <>
-                      <div>Start: {event.lms_start_date || event.classroom_start_date}</div>
-                      <div>Instructor: {event.primary_instructor_name}</div>
-                      <div>Venue: {event.venue}</div>
-                    </>
-                  }
-                />
-              </ListItem>
+              <div key={event.id} className="border-bottom py-2">
+                <h6 className="mb-1">{event.title}</h6>
+                <small className="text-muted d-block">
+                  Start: {event.lms_start_date || event.classroom_start_date}
+                </small>
+                <small className="text-muted d-block">
+                  Instructor: {event.primary_instructor_name}
+                </small>
+                <small className="text-muted d-block">
+                  Venue: {event.venue}
+                </small>
+              </div>
             ))}
-          </List>
+          </div>
         </Collapse>
-      </CardContent>
+      </Card.Body>
     </Card>
   );
 };

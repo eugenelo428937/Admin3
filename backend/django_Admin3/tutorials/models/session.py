@@ -27,6 +27,7 @@ class Session(models.Model):
 
     class Meta:
         app_label = 'tutorials'
+        db_table = 'acted_tutorial_sessions'
         ordering = ['event', 'day_number']
         verbose_name = 'Tutorial Session'
         verbose_name_plural = 'Tutorial Sessions'
