@@ -1,2 +1,2 @@
-from .event import Event
-from .session import Session
+from django.db import models
+from .tutorial_event import TutorialEvent

@@ -1,10 +1,9 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path
-from .views import EventViewSet, SessionViewSet, TutorialEventListView
+from .views import TutorialEventViewSet, TutorialEventListView
 
 router = DefaultRouter()
-router.register(r'events', EventViewSet)
-router.register(r'sessions', SessionViewSet)
+router.register(r'events', TutorialEventViewSet)
 
 urlpatterns = [
     path('list/', TutorialEventListView.as_view(), name='tutorial-event-list'),
