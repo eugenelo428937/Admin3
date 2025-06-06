@@ -42,8 +42,8 @@ class ProductListSerializer(serializers.ModelSerializer):
         return 'Other'
 
     def get_variations(self, obj):
-        # Get all ExamSessionSubjectProductVariation for this product
-        esspvs = ExamSessionSubjectProductVariation.objects.filter(exam_session_subject_product=obj)
+        # Get all ExamSessionSubjectProductVariation for this product using the correct related name
+        esspvs = obj.variations.all()
         # Return a list of dicts with variation info and all prices
         return [
             {

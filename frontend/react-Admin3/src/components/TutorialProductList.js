@@ -1,56 +1,108 @@
 import React, { useEffect, useState } from 'react';
 import tutorialService from '../services/tutorialService';
 import TutorialProductCard from './TutorialProductCard';
-import { Box, Typography, CircularProgress, Alert } from '@mui/material';
+import { Container, Row, Col, Alert, Spinner, Button } from 'react-bootstrap';
 
 /**
  * TutorialProductList
- * Fetches and groups tutorial events by subject/location/mode for display
+ * Fetches and displays tutorial products grouped by subject and location
  */
 const TutorialProductList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [groupedTutorials, setGroupedTutorials] = useState([]);
+  const [tutorialProducts, setTutorialProducts] = useState([]);
+  const [retryCount, setRetryCount] = useState(0);
+
+  const fetchTutorialProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Fetch all tutorial products without specific parameters
+      const products = await tutorialService.getAllTutorialProducts();
+      setTutorialProducts(products || []);
+      setRetryCount(0); // Reset retry count on success
+    } catch (err) {
+      console.error('Error fetching tutorial products:', err);
+      
+      // Provide more specific error messages based on error type
+      let errorMessage = 'Failed to load tutorial products';
+      if (err.response?.status === 500) {
+        errorMessage = 'Server error occurred. Please try again later or contact support if the issue persists.';
+      } else if (err.response?.status === 404) {
+        errorMessage = 'Tutorial products service not found. Please contact support.';
+      } else if (err.code === 'NETWORK_ERROR' || !err.response) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    fetchTutorialProducts();
+  };
 
   useEffect(() => {
-    const fetchTutorials = async () => {
-      try {
-        const events = await tutorialService.getAllEvents();
-        // Group events by subject+location+mode
-        const groups = {};
-        (events || []).forEach(event => {          const key = `${event.course_code}||${event.location_name}||${event.learning_mode}`;
-          if (!groups[key]) {
-            groups[key] = {
-              title: `${event.course_code} Tutorials`,
-              location: event.location_name,
-              mode: event.learning_mode_display,
-              events: [],
-            };
-          }
-          groups[key].events.push(event);
-        });
-        setGroupedTutorials(Object.values(groups));
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching tutorials:', err);
-        setError('Failed to load tutorials');
-        setLoading(false);
-      }
-    };
-
-    fetchTutorials();
+    fetchTutorialProducts();
   }, []);
 
-  if (loading) return <CircularProgress />;
-  if (error) return <Alert severity="error">{error}</Alert>;
+  if (loading) {
+    return (
+      <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '200px' }}>
+        <div className="text-center">
+          <Spinner animation="border" role="status" />
+          <div className="mt-2">Loading tutorials...</div>
+          {retryCount > 0 && (
+            <small className="text-muted">Retry attempt {retryCount}</small>
+          )}
+        </div>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container>
+        <Alert variant="danger">
+          <Alert.Heading>Unable to Load Tutorial Products</Alert.Heading>
+          <p>{error}</p>
+          <hr />
+          <div className="d-flex justify-content-end">
+            <Button variant="outline-danger" onClick={handleRetry}>
+              Try Again
+            </Button>
+          </div>
+        </Alert>
+      </Container>
+    );
+  }
+
+  if (tutorialProducts.length === 0) {
+    return (
+      <Container>
+        <Alert variant="info">No tutorial products available at this time.</Alert>
+      </Container>
+    );
+  }
 
   return (
-    <Box>
-      <Typography variant="h4" sx={{ mb: 3 }}>Tutorials</Typography>
-      {groupedTutorials.map((group, idx) => (
-        <TutorialProductCard key={idx} {...group} />
-      ))}
-    </Box>
+    <Container fluid>
+      <Row xs={1} md={2} lg={3} xl={4} className="g-4">
+        {tutorialProducts.map((product) => (
+          <TutorialProductCard
+            key={`${product.subject_code}_${product.location}_${product.product_id}`}
+            subjectCode={product.subject_code}
+            subjectName={product.subject_name}
+            location={product.location}
+            productId={product.product_id}
+          />
+        ))}
+      </Row>
+    </Container>
   );
 };
 
