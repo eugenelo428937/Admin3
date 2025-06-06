@@ -87,3 +87,4 @@ backend/django_Admin3/administrate/src/*
 backend/django_Admin3/administrate/src/*.xlsx
 frontend/react-Admin3/.env.*
 frontend/react-Admin3/Sandbox/*
+*.log
