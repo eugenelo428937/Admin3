@@ -134,10 +134,16 @@ For non-standard price items:
    - [ ] Price doesn't change when clicking disabled options
    - [ ] UI clearly indicates unavailable options
 
-#### Test 7.2: No Variations
-1. Test products without variations
-2. Verify price type selection works correctly
-3. Verify add to cart works properly
+#### Test 7.2: Products Without Variations
+1. Navigate to the products list page
+2. Look for products that show no variation options (empty variations array)
+3. Verify these products still display correctly:
+   - [ ] Product information is shown properly
+   - [ ] No variation dropdown/selection appears
+   - [ ] Price is displayed (if available at product level)
+   - [ ] Add to cart functionality works (if applicable)
+4. Check the API response contains empty variations array: `"variations": []`
+5. Verify no JavaScript errors occur when rendering products without variations
 
 #### Test 7.3: Marking Products
 1. Test marking products specifically

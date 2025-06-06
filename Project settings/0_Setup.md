@@ -124,7 +124,7 @@ node -v # should print `v20.18.0` or latest
 # verifies the right npm version is in the environment
 npm -v # should print `10.8.2` or latest
 
-cd ./frontend/react_Admin3
+cd ./frontend/react-Admin3
 npm install # Install project dependencies
 npm start
 ```
@@ -183,3 +183,16 @@ npm start
 ```
 
 1. Open a web browser and navigate to <http://localhost:3000/>. You should see the Admin3  running. ^_^
+
+**Important**: Ensure the Django backend server is running on port 8888 before starting the React frontend:
+
+```bash
+# In the backend directory
+cd ./backend/django_Admin3
+python manage.py runserver 8888
+```
+
+### Backend Checkpoint
+
+1. Open a web browser and navigate to <http://localhost:8888/admin/>. You should see the Django admin interface.
+2. Test API endpoints: <http://localhost:8888/api/subjects/>, <http://localhost:8888/api/products/>, etc.
