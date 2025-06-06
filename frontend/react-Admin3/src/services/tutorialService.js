@@ -1,7 +1,8 @@
 import config from "../config";
 import httpService from "./httpService";
 
-const TUTORIAL_API_URL = config.tutorialUrl;
+// Add validation for tutorial URL
+const TUTORIAL_API_URL = config.tutorialUrl || `${config.apiBaseUrl || config.apiUrl}/tutorials`;
 
 const tutorialService = {
   getEvents: async () => {
@@ -51,11 +52,63 @@ const tutorialService = {
 
   getSessionsByEvent: async (eventId) => {
     try {
-      const response = await httpService.get(`/api/tutorials/sessions/?event=${eventId}`);
+      const response = await httpService.get(
+			`${TUTORIAL_API_URL}/sessions/?event=${eventId}`
+		);
       return response.data.results || response.data;
     } catch (error) {
       console.error("Error fetching sessions by event:", error);
       return [];
+    }
+  },
+
+  getAllTutorialProducts: async () => {
+    try {
+      if (!TUTORIAL_API_URL) {
+        throw new Error('Tutorial API URL not configured');
+      }
+      const response = await httpService.get(`${TUTORIAL_API_URL}/products/all/`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching all tutorial products:', error);
+      // Return empty array instead of throwing for better UX
+      return [];
+    }
+  },
+
+  getTutorialProducts: async (examSessionId, subjectCode) => {
+    try {
+      if (!examSessionId || !subjectCode) {
+        throw new Error('exam_session and subject_code parameters are required');
+      }
+      
+      const response = await httpService.get(`${TUTORIAL_API_URL}/products/`, {
+        params: {
+          exam_session: examSessionId,
+          subject_code: subjectCode
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching tutorial products:', error);
+      throw error;
+    }
+  },
+
+  getTutorialVariations: async (productId, subjectCode) => {
+    try {
+      const response = await httpService.get(
+			`${TUTORIAL_API_URL}/products/${productId}/variations/`,
+			{
+				params: {
+					subject_code: subjectCode,
+				},
+			}
+		);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching tutorial variations:', error);
+      throw error;
     }
   },
 };

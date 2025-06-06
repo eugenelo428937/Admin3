@@ -1,5 +1,6 @@
 import logging
 from django.shortcuts import render, get_object_or_404
+from django.core.cache import cache
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action, permission_classes
@@ -132,16 +133,34 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
     def list_products(self, request):
         """
         Get list of all products with their subject details.
-        Supports filtering by subject (id, code, name) and product groups.
-        Main Category and Delivery Method filters are unioned within themselves, then intersected between each other.
-        Only products available in ExamSessionSubjectProduct are included.
+        Optimized with caching and better query optimization.
         """
         logger.info('--- list_products called ---')
         logger.info(f'Query params: {request.query_params}')
+        
+        # Create cache key based on query parameters
+        cache_key_params = {
+            'subject_ids': request.query_params.getlist('subject'),
+            'subject_code': request.query_params.get('subject_code'),
+            'main_category_ids': request.query_params.getlist('main_category'),
+            'delivery_method_ids': request.query_params.getlist('delivery_method')
+        }
+        cache_key = f"products_list_{hash(str(sorted(cache_key_params.items())))}"
+        
+        # Try to get from cache first
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            logger.info('Returning cached products data')
+            return Response(cached_data)
+        
+        # Optimize queryset with select_related and prefetch_related
         queryset = ExamSessionSubjectProduct.objects.select_related(
             'exam_session_subject__subject',
             'product'
-        ).all()
+        ).prefetch_related(
+            'variations__product_product_variation__product_variation',
+            'variations__prices'
+        )
 
         # Subject filtering - multiple options
         subject_ids = request.query_params.getlist('subject')
@@ -160,36 +179,46 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         main_category_ids = request.query_params.getlist('main_category')
         delivery_method_ids = request.query_params.getlist('delivery_method')
         logger.info(f'Filtering main_category_ids: {main_category_ids}, delivery_method_ids: {delivery_method_ids}')
-        from products.models.products import Product
-        main_products = set()
-        delivery_products = set()
-        if main_category_ids:
-            main_products = set(Product.objects.filter(groups__id__in=main_category_ids).values_list('id', flat=True))
-            logger.info(f'Main category product ids: {main_products}')
-        if delivery_method_ids:
-            delivery_products = set(Product.objects.filter(groups__id__in=delivery_method_ids).values_list('id', flat=True))
-            logger.info(f'Delivery method product ids: {delivery_products}')
-        if main_category_ids and delivery_method_ids:
-            product_ids = main_products & delivery_products
-            logger.info(f'Intersection of main and delivery: {product_ids}')
-        elif main_category_ids:
-            product_ids = main_products
-        elif delivery_method_ids:
-            product_ids = delivery_products
-        else:
-            product_ids = set(Product.objects.values_list('id', flat=True))
-        logger.info(f'Final product_ids for filter: {product_ids}')
-        queryset = queryset.filter(product__id__in=product_ids)
+        
+        # Use more efficient filtering approach
+        if main_category_ids or delivery_method_ids:
+            product_filters = Q()
+            
+            if main_category_ids:
+                product_filters |= Q(product__groups__id__in=main_category_ids)
+            
+            if delivery_method_ids:
+                if main_category_ids:
+                    # Intersection: products must be in both categories
+                    product_filters &= Q(product__groups__id__in=delivery_method_ids)
+                else:
+                    product_filters |= Q(product__groups__id__in=delivery_method_ids)
+            
+            queryset = queryset.filter(product_filters).distinct()
+            
         logger.info(f'After product group filter, queryset count: {queryset.count()}')
-        # --- End product group filtering logic ---
 
-        subjects = Subject.objects.all().order_by('code')
-        subject_serializer = SubjectSerializer(subjects, many=True)
+        # Get subjects for filters (cache this separately)
+        subjects_cache_key = 'all_subjects_ordered'
+        subjects_data = cache.get(subjects_cache_key)
+        if not subjects_data:
+            subjects = Subject.objects.all().order_by('code')
+            subject_serializer = SubjectSerializer(subjects, many=True)
+            subjects_data = subject_serializer.data
+            cache.set(subjects_cache_key, subjects_data, 1800)  # 30 minutes
+        
+        # Serialize the main data
         serializer = ProductListSerializer(queryset, many=True)
-        logger.info(f'Final queryset count: {queryset.count()}')
-        return Response({
+        
+        response_data = {
             'products': serializer.data,
             'filters': {
-                'subjects': subject_serializer.data
+                'subjects': subjects_data
             }
-        })
+        }
+        
+        # Cache the result for 10 minutes
+        cache.set(cache_key, response_data, 600)
+        logger.info(f'Final queryset count: {queryset.count()}, cached with key: {cache_key}')
+        
+        return Response(response_data)

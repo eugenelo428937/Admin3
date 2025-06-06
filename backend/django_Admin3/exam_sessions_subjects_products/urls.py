@@ -6,5 +6,6 @@ router = DefaultRouter()
 router.register('', ExamSessionSubjectProductViewSet)
 
 urlpatterns = [
+    path('current/list/', ExamSessionSubjectProductViewSet.as_view({'get': 'list_products'}), name='current-products-list'),
     path('', include(router.urls)),
 ]

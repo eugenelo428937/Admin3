@@ -9,7 +9,7 @@ const config = {
 	examSessionUrl:
 		process.env.REACT_APP_API_BASE_URL +
 		process.env.REACT_APP_API_EXAM_SESSION_URL,
-	productUrl:
+	productsUrl:
 		process.env.REACT_APP_API_BASE_URL +
 		process.env.REACT_APP_API_PRODUCT_URL,
 	subjectUrl:
@@ -38,6 +38,7 @@ if (config.isDevelopment) {
 	console.log("Debug logs enabled:", config.enableDebugLogs);	
 	console.log("API Base URL:", config.apiBaseUrl);
 	console.log("API Base authUrl:", config.authUrl);
+	console.log("Products URL:", config.productsUrl);
 }	
 
 export default config;

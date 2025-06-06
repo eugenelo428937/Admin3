@@ -27,5 +27,10 @@ class TutorialEvent(models.Model):
         verbose_name = 'Tutorial Event'
         verbose_name_plural = 'Tutorial Events'
 
+    @property
+    def subject_code(self):
+        """Get subject code through relationship chain"""
+        return self.exam_session_subject_product_variation.exam_session_subject_product.exam_session_subject.subject.code
+
     def __str__(self):
         return f"{self.code} - {self.venue}"
