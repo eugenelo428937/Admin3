@@ -34,10 +34,13 @@ Successfully implemented functionality to store and display selected price types
 - `addToCart()` function updated to pass price information
 - Maintains backward compatibility
 
-### 3. Product Cards (Already Complete)
-- Both `ProductCard` and `MarkingProductCard` support price type selection
+### 3. Product Cards (Updated)
+- Unified `ProductCard` component handles all product types (materials, markings, tutorials)
+- Color-coded headers: Tutorial (green), Marking (orange), Materials (blue)
 - Price type checkboxes for retaker and additional copy
+- Tutorial products include expandable event selection with choice preferences
 - Proper handling of price information when adding to cart
+- Improved accessibility with ARIA labels and high contrast support
 
 ### 4. Cart Panel (Updated)
 - Displays price type badges for non-standard price types

@@ -111,6 +111,20 @@ const tutorialService = {
       throw error;
     }
   },
+
+  // New method to fetch all tutorial data in one call
+  getComprehensiveTutorialData: async () => {
+    try {
+      if (!TUTORIAL_API_URL) {
+        throw new Error('Tutorial API URL not configured');
+      }
+      const response = await httpService.get(`${TUTORIAL_API_URL}/data/comprehensive/`);
+      return response.data || [];
+    } catch (error) {
+      console.error('Error fetching comprehensive tutorial data:', error);
+      return [];
+    }
+  },
 };
 
 export default tutorialService;
