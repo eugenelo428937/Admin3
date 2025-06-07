@@ -10,7 +10,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import productService from "../services/productService";
 import subjectService from "../services/subjectService";
-import TutorialProductList from './TutorialProductList';
 import "../styles/product_list.css";
 import ProductCard from "./ProductCard";
 import Select from "react-select";
@@ -160,17 +159,6 @@ const ProductList = () => {
 	return (
 		<Container fluid className="product-list-container mx-3">
 			<h2 className="my-3">Product List</h2>
-			
-			{/* Tutorials Section */}
-			<div className="mb-5">
-				<h3 className="mt-4 mb-3">Tutorials</h3>
-				<TutorialProductList />
-			</div>
-
-			{/* Other Products Section */}
-			<div className="mb-3">
-				<h3 className="mt-4 mb-3">Other Products</h3>
-			</div>
 
 			<div className="d-flex align-items-center mb-3">
 				<button
@@ -368,7 +356,7 @@ const ProductList = () => {
 							No products available based on selected filters.
 						</Alert>
 					) : (
-						<Row xs={1} md={3} lg={3} xl={5} className="g-4">
+						<Row xs={1} md={3} lg={3} xl={4} className="g-4">
 							{filteredProducts.map((product) => (
 								<ProductCard
 									key={product.essp_id || product.id || product.product_id}

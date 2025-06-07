@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Card, Row, Col, Form, Button, Badge, Alert } from 'react-bootstrap';
+import { Card, Row, Col, Form, Button, Badge, Alert, Modal } from 'react-bootstrap';
+import { Button as MuiButton, Dialog, DialogTitle, DialogContent, DialogActions, Card as MuiCard, CardContent, Typography, Chip, Box } from '@mui/material';
 import { useCart } from '../contexts/CartContext';
 import tutorialService from '../services/tutorialService';
 
@@ -9,34 +10,39 @@ import tutorialService from '../services/tutorialService';
  * Shows tutorial products for a specific subject and location
  * Allows users to select tutorial variations with choice preferences (1st, 2nd, 3rd)
  */
-const TutorialProductCard = ({ subjectCode, subjectName, location, productId }) => {
-  const [variations, setVariations] = useState([]);
-  const [loading, setLoading] = useState(true);
+const TutorialProductCard = ({ subjectCode, subjectName, location, productId, variations: preloadedVariations }) => {
+  const [variations, setVariations] = useState(preloadedVariations || []);
+  const [loading, setLoading] = useState(!preloadedVariations);
   const [error, setError] = useState(null);
   const [selectedChoices, setSelectedChoices] = useState({});
   const [expanded, setExpanded] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   
   const { addToCart } = useCart();
 
   useEffect(() => {
-    const fetchTutorialVariations = async () => {
-      try {
-        setLoading(true);
-        const data = await tutorialService.getTutorialVariations(productId, subjectCode);
-        setVariations(data || []);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching tutorial variations:', err);
-        setError('Failed to load tutorial variations');
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Only fetch if variations weren't preloaded
+    if (!preloadedVariations && productId && subjectCode) {
+      const fetchTutorialVariations = async () => {
+        try {
+          setLoading(true);
+          const data = await tutorialService.getTutorialVariations(productId, subjectCode);
+          setVariations(data || []);
+          setError(null);
+        } catch (err) {
+          console.error('Error fetching tutorial variations:', err);
+          setError('Failed to load tutorial variations');
+        } finally {
+          setLoading(false);
+        }
+      };
 
-    if (productId && subjectCode) {
       fetchTutorialVariations();
+    } else if (preloadedVariations) {
+      setVariations(preloadedVariations);
+      setLoading(false);
     }
-  }, [productId, subjectCode]);
+  }, [productId, subjectCode, preloadedVariations]);
 
   const handleChoiceChange = (variationId, eventId, choice) => {
     setSelectedChoices(prev => ({
@@ -99,6 +105,52 @@ const TutorialProductCard = ({ subjectCode, subjectName, location, productId }) 
     }
   };
 
+  // Calculate summary information
+  const getSummaryInfo = () => {
+    const allEvents = variations.flatMap(v => v.events || []);
+    const totalEvents = allEvents.length;
+    const distinctDescriptions = [...new Set(variations.map(v => v.description).filter(Boolean))];
+    const distinctVenues = [...new Set(allEvents.map(e => e.venue).filter(Boolean))];
+    
+    return {
+      totalEvents,
+      distinctDescriptions,
+      distinctVenues
+    };
+  };
+
+  const summaryInfo = getSummaryInfo();
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'N/A';
+    }
+  };
+
+  const formatDateOnly = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch (error) {
+      return 'N/A';
+    }
+  };
+
   if (loading) {
     return (
       <Col>
@@ -124,142 +176,195 @@ const TutorialProductCard = ({ subjectCode, subjectName, location, productId }) 
   }
 
   return (
-    <Col>
-      <Card className="h-100 shadow-sm tutorial-product-card">
-        <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
-          <div>
-            <h5 className="mb-0">Subject {subjectCode}: {location}</h5>
-            <small className="text-light">{subjectName}</small>
-          </div>
-          <Button 
-            variant="outline-light" 
-            size="sm"
-            onClick={() => setExpanded(!expanded)}
-          >
-            {expanded ? 'Collapse' : 'Expand'}
-          </Button>
-        </Card.Header>
-        
-        <Card.Body className="p-0">
-          {variations.length === 0 ? (
-            <div className="p-3 text-center text-muted">
-              No tutorial variations available for this subject and location.
+    <>
+      <Col>
+        <Card className="h-100 shadow-sm product-card tutorial-product-card">
+          <Card.Header className="d-flex justify-content-between align-items-center tutorial-product-card-header">
+            <div className="py-1">
+              <h5 className="mb-0">Subject {subjectCode}</h5>
+              <h6 className="mb-0">{location}</h6>
             </div>
-          ) : (
-            <div className={`tutorial-variations ${expanded ? 'expanded' : 'collapsed'}`}>
-              {variations.map((variation) => (
-                <div key={variation.id} className="variation-section border-bottom">
-                  <div className="variation-header bg-light p-3">
-                    <h6 className="mb-1 text-primary">{variation.name}</h6>
-                    <small className="text-muted">{variation.description}</small>
+          </Card.Header>
+
+          <Card.Body className="p-3">
+            {variations.length === 0 ? (
+              <div className="text-center text-muted">
+                No tutorial variations available for this subject and location.
+              </div>
+            ) : (
+              <div className="tutorial-summary">
+                <div className="mb-3">
+                  <h6 className="text-primary mb-2">Tutorial Summary</h6>
+                  
+                  <div className="summary-item mb-2">
+                    <strong>Number of Events:</strong> {summaryInfo.totalEvents}
                   </div>
                   
-                  {variation.events && variation.events.length > 0 ? (
-                    <div className="events-list">
-                      {variation.events.map((event) => (
-                        <div key={event.id} className="event-item p-3 border-bottom">
-                          <Row className="align-items-center">
-                            <Col md={6}>
-                              <div className="event-details">
-                                <h6 className="mb-1">{event.title}</h6>
-                                <div className="small text-muted">
-                                  <div>Start: {event.start_date}</div>
-                                  <div>End: {event.end_date}</div>
-                                  {event.instructor && <div>Instructor: {event.instructor}</div>}
-                                  {event.venue && <div>Venue: {event.venue}</div>}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col md={3} className="text-center">
-                              {event.price && (
-                                <div className="price-display">
-                                  <strong>£{event.price}</strong>
-                                </div>
-                              )}
-                            </Col>
-                            <Col md={3}>
-                              <Form.Select
-                                size="sm"
-                                value={selectedChoices[`${variation.id}_${event.id}`] || ''}
-                                onChange={(e) => handleChoiceChange(variation.id, event.id, e.target.value)}
-                                className="choice-selector"
-                              >
-                                <option value="">Select Choice</option>
-                                <option value="1st">1st Choice</option>
-                                <option value="2nd">2nd Choice</option>
-                                <option value="3rd">3rd Choice</option>
-                              </Form.Select>
-                              {selectedChoices[`${variation.id}_${event.id}`] && (
-                                <Badge 
-                                  bg={getChoiceColor(selectedChoices[`${variation.id}_${event.id}`])}
-                                  className="mt-1"
-                                >
-                                  {selectedChoices[`${variation.id}_${event.id}`]} Choice
-                                </Badge>
-                              )}
-                            </Col>
-                          </Row>
-                        </div>
+                  <div className="summary-item mb-2">
+                    <strong>Tutorial Types:</strong>
+                    <div className="mt-1">
+                      {summaryInfo.distinctDescriptions.map((desc, index) => (
+                        <Badge key={index} bg="info" className="me-1">
+                          {desc}
+                        </Badge>
                       ))}
                     </div>
-                  ) : (
-                    <div className="p-3 text-center text-muted">
-                      No events available for this variation.
+                  </div>
+                  
+                  <div className="summary-item mb-3">
+                    <strong>Venues:</strong>
+                    <div className="mt-1">
+                      {summaryInfo.distinctVenues.map((venue, index) => (
+                        <Badge key={index} bg="secondary" className="me-1">
+                          {venue}
+                        </Badge>
+                      ))}
                     </div>
-                  )}
+                  </div>
                 </div>
-              ))}
-            </div>
+
+                <div className="d-flex justify-content-center mb-3">
+                  <MuiButton
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => setShowDetailModal(true)}
+                  >
+                    Tutorial Details
+                  </MuiButton>
+                </div>
+
+                {/* Quick selection area for choices */}
+                <div className="quick-selection">
+                  <h6 className="text-muted mb-2">Quick Selection</h6>
+                  {variations.map((variation) => (
+                    variation.events && variation.events.map((event) => (
+                      <Row key={`${variation.id}_${event.id}`} className="align-items-center mb-2 p-2 border rounded">
+                        <Col xs={8}>
+                          <small className="fw-bold">{variation.name}</small>
+                          <br />
+                          <small className="text-muted">{event.title}</small>
+                          {event.price && (
+                            <div className="text-success fw-bold">£{event.price}</div>
+                          )}
+                        </Col>
+                        <Col xs={4}>
+                          <Form.Select
+                            size="sm"
+                            value={selectedChoices[`${variation.id}_${event.id}`] || ""}
+                            onChange={(e) => handleChoiceChange(variation.id, event.id, e.target.value)}
+                          >
+                            <option value="">Choice</option>
+                            <option value="1st">1st</option>
+                            <option value="2nd">2nd</option>
+                            <option value="3rd">3rd</option>
+                          </Form.Select>
+                        </Col>
+                      </Row>
+                    ))
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card.Body>
+
+          {variations.length > 0 && (
+            <Card.Footer className="bg-white border-top-0">
+              <div className="d-flex justify-content-between align-items-center">
+                <small className="text-muted">
+                  {Object.keys(selectedChoices).filter(key => selectedChoices[key]).length} selection(s) made
+                </small>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  disabled={!hasAnySelection()}
+                  onClick={handleAddToCart}
+                >
+                  Add Selected to Cart
+                </Button>
+              </div>
+            </Card.Footer>
           )}
-        </Card.Body>
-        
-        {variations.length > 0 && (
-          <Card.Footer className="bg-white border-top-0">
-            <div className="d-flex justify-content-between align-items-center">
-              <small className="text-muted">
-                {Object.keys(selectedChoices).filter(key => selectedChoices[key]).length} selection(s) made
-              </small>
-              <Button 
-                variant="primary" 
-                size="sm"
-                disabled={!hasAnySelection()}
-                onClick={handleAddToCart}
-              >
-                Add Selected to Cart
-              </Button>
-            </div>
-          </Card.Footer>
-        )}
-      </Card>
-      
-      <style jsx>{`
-        .tutorial-product-card .tutorial-variations.collapsed {
-          max-height: 300px;
-          overflow: hidden;
-        }
-        
-        .tutorial-product-card .tutorial-variations.expanded {
-          max-height: none;
-        }
-        
-        .variation-section:last-child {
-          border-bottom: none !important;
-        }
-        
-        .event-item:last-child {
-          border-bottom: none !important;
-        }
-        
-        .choice-selector {
-          min-width: 120px;
-        }
-        
-        .price-display {
-          font-size: 1.1em;
-          color: #28a745;
-        }
-      `}</style>
-    </Col>
+        </Card>
+      </Col>
+
+      {/* Tutorial Details Modal */}
+      <Dialog
+        open={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>
+          <Typography variant="h5">
+            Tutorial Details - {subjectCode} ({location})
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+            {variations.map((variation) => (
+              <div key={variation.id}>
+                <Typography variant="h6" color="primary" gutterBottom>
+                  {variation.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  {variation.description}
+                </Typography>
+                
+                <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' } }}>
+                  {variation.events && variation.events.map((event) => (
+                    <MuiCard key={event.id} variant="outlined" sx={{ p: 1 }}>
+                      <CardContent sx={{ pb: '8px !important' }}>
+                        <Typography variant="h6" component="h3" gutterBottom>
+                          {event.title || event.code}
+                        </Typography>
+                        
+                        <Box sx={{ mb: 1 }}>
+                          <Typography variant="body2">
+                            <strong>Code:</strong> {event.code || 'N/A'}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Venue:</strong> {event.venue || 'N/A'}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Start Date:</strong> {formatDate(event.start_date)}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>End Date:</strong> {formatDate(event.end_date)}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Finalisation Date:</strong> {formatDateOnly(event.finalisation_date)}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Remaining Spaces:</strong> {event.remain_space ?? 'N/A'}
+                          </Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+                          {event.is_soldout && (
+                            <Chip label="Sold Out" color="error" size="small" />
+                          )}
+                          {event.price && (
+                            <Chip label={`£${event.price}`} color="success" size="small" />
+                          )}
+                          {event.remain_space !== null && event.remain_space <= 5 && event.remain_space > 0 && (
+                            <Chip label={`Only ${event.remain_space} spaces left`} color="warning" size="small" />
+                          )}
+                        </Box>
+                      </CardContent>
+                    </MuiCard>
+                  ))}
+                </Box>
+              </div>
+            ))}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <MuiButton onClick={() => setShowDetailModal(false)}>
+            Close
+          </MuiButton>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 
@@ -268,6 +373,11 @@ TutorialProductCard.propTypes = {
   subjectName: PropTypes.string.isRequired,
   location: PropTypes.string.isRequired,
   productId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  variations: PropTypes.array, // Optional pre-loaded variations
+};
+
+TutorialProductCard.defaultProps = {
+  variations: null,
 };
 
 export default TutorialProductCard;
