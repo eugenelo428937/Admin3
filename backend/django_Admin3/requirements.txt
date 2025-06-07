@@ -1,0 +1,41 @@
+# Django and REST framework
+Django>=5.1
+# Use the latest DRF compatible with Django 5.1
+# See: https://www.django-rest-framework.org/community/release-notes/
+djangorestframework>=3.15.2
+
+django-cors-headers>=4.3.1
+# For environment variable management
+django-environ>=0.11.2
+django-extensions>=3.2.3
+djangorestframework-simplejwt>=5.3.1
+
+# Database
+psycopg2-binary>=2.9.9
+
+# Testing and Development
+pytest>=8.2.1
+pytest-django>=4.8.0
+coverage>=7.5.0
+
+# Security
+python-dotenv>=1.0.1
+django-debug-toolbar>=4.3.0
+
+# Utilities
+pandas>=2.2.2  # For data import functionality
+openpyxl>=3.1.2  # For Excel file handling
+python-dateutil>=2.9.0
+
+# WSGI Server
+gunicorn>=22.0.0
+
+# Linting and formatting (recommended for development)
+black>=24.3.0
+flake8>=7.0.0
+
+# For API documentation (optional, but recommended)
+drf-yasg>=1.21.7
+
+# For CORS and CSRF support
+requests>=2.31.0
