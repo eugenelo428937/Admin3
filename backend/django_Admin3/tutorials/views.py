@@ -150,6 +150,81 @@ class TutorialProductVariationListView(APIView):
         
         return Response(results)
 
+class TutorialComprehensiveDataView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        """Get all tutorial data including events, variations, and product details in one call"""
+        cache_key = 'tutorial_comprehensive_data'
+        cached_data = cache.get(cache_key)
+        
+        if cached_data:
+            return Response(cached_data)
+        
+        # Get all tutorial events with related data
+        tutorial_events = TutorialEvent.objects.select_related(
+            'exam_session_subject_product_variation__exam_session_subject_product__exam_session_subject__subject',
+            'exam_session_subject_product_variation__exam_session_subject_product__product',
+            'exam_session_subject_product_variation__product_product_variation__product_variation'
+        ).all()
+        
+        # Group data by subject and product
+        results = {}
+        
+        for event in tutorial_events:
+            essp = event.exam_session_subject_product_variation.exam_session_subject_product
+            subject = essp.exam_session_subject.subject
+            product = essp.product
+            variation = event.exam_session_subject_product_variation.product_product_variation.product_variation
+            
+            # Create unique key for subject-product combination
+            key = f"{subject.code}_{product.id}"
+            
+            if key not in results:
+                results[key] = {
+                    'subject_id': subject.id,
+                    'subject_code': subject.code,
+                    'subject_name': subject.description,
+                    'product_id': product.id,
+                    'location': product.fullname,
+                    'variations': {}
+                }
+            
+            # Group events by variation
+            variation_key = variation.id
+            if variation_key not in results[key]['variations']:
+                results[key]['variations'][variation_key] = {
+                    'id': variation.id,
+                    'name': variation.name,
+                    'description': variation.description,
+                    'events': []
+                }
+            
+            # Add event data
+            results[key]['variations'][variation_key]['events'].append({
+                'id': event.id,
+                'code': event.code,
+                'venue': event.venue,
+                'is_soldout': event.is_soldout,
+                'finalisation_date': event.finalisation_date,
+                'remain_space': event.remain_space,
+                'start_date': event.start_date,
+                'end_date': event.end_date,
+                'title': f"{event.code}",
+                'price': None  # Add price logic if available
+            })
+        
+        # Convert to list format
+        final_results = []
+        for data in results.values():
+            # Convert variations dict to list
+            data['variations'] = list(data['variations'].values())
+            final_results.append(data)
+        
+        # Cache for 10 minutes
+        cache.set(cache_key, final_results, 600)
+        return Response(final_results)
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_all_tutorial_products(request):

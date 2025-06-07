@@ -147,7 +147,13 @@ const MarkingProductCard = ({
 	return (
 		<Col>
 			<Card className="h-100 shadow-sm product-card">
-				<Card.Header className="bg-primary text-white product-card-header">
+				<Card.Header 
+					className="product-card-header marking-header" 
+					style={{
+						backgroundColor: 'rgba(255, 247, 237, 1)',
+						color: '#92400e',
+						border: '1px solid #fed7aa'
+					}}>
 					<h5 className="mb-0">{product.subject_code}</h5>
 				</Card.Header>				<Card.Body>
 					<div className="d-flex justify-content-between align-items-center">
