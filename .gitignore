@@ -87,4 +87,5 @@ backend/django_Admin3/administrate/src/*
 backend/django_Admin3/administrate/src/*.xlsx
 frontend/react-Admin3/.env.*
 frontend/react-Admin3/Sandbox/*
-*.log
+frontend/react-Admin3/package-lock.json
+backend/django_Admin3/django_debug.log
