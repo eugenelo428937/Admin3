@@ -1,0 +1,220 @@
+# Cursor Rules for Admin3 Project
+
+## Project Context
+Admin3 is a Django REST API backend with React frontend for educational administration data management, integrating with the Administrate API for course management, tutorials, events, and student administration.
+
+## Technology Stack
+- Backend: Django 5.1, Django REST Framework, PostgreSQL
+- Frontend: React 18, Axios, Material-UI
+- Integration: GraphQL queries to Administrate API
+- Authentication: JWT tokens with refresh mechanism
+- Database: PostgreSQL (ACTEDDBTEST01)
+
+## Django Backend Rules
+
+### Models
+- Use snake_case for field names and model methods
+- Store external API IDs as `external_id` fields
+- Include proper `__str__` methods for all models
+- Use proper model relationships (ForeignKey, ManyToMany)
+- Add validation methods with `clean()` where needed
+- Use `active` boolean fields for soft deletes
+
+### Views and Serializers
+- Use class-based views with Django REST Framework
+- Follow model-view-serializer pattern
+- Include proper pagination for list views
+- Use select_related/prefetch_related for query optimization
+- Handle errors gracefully with proper HTTP status codes
+
+### Management Commands
+- Store in `management/commands/` directories
+- Include `--debug` flags for verbose output
+- Use transactions for data consistency
+- Add progress indicators for long-running operations
+
+## React Frontend Rules
+
+### Components
+- Use functional components with hooks
+- PascalCase for component names
+- camelCase for props and state variables
+- Use Material-UI components consistently
+- Implement proper loading states and error handling
+
+### Services
+- Centralize API calls in service layer
+- Use async/await for API calls
+- Handle authentication token refresh automatically
+- Include proper error handling and logging
+
+### Styling
+- Use CSS modules or component-specific CSS files
+- Follow kebab-case for CSS class names
+- Implement responsive design patterns
+- Use Material-UI theme consistently
+
+## API Integration Rules
+
+### GraphQL Queries
+- Store GraphQL queries in separate files under `administrate/queries/`
+- Use descriptive file names (e.g., `get_all_locations.graphql`)
+- Handle base64 encoded IDs from Administrate API
+- Include proper error handling for API timeouts
+
+### External API Calls
+- Use `AdministrateAPIService` for external API calls
+- Implement retry mechanisms for failed requests
+- Add rate limiting considerations
+- Validate data before processing
+
+## Database Rules
+
+### Schema Design
+- Use proper foreign key constraints
+- Index frequently queried fields
+- Follow the established model relationships:
+  - Products -> ProductVariations
+  - ExamSessions -> ExamSessionSubjects -> ExamSessionSubjectProducts
+  - Orders -> OrderItems
+  - Cart -> CartItems
+
+### Migrations
+- Always create migrations for model changes
+- Use descriptive migration names
+- Test migrations on development data first
+
+## Security Rules
+
+### Environment Variables
+- Store sensitive data in .env files
+- Never commit credentials to version control
+- Use environment-specific configurations
+
+### Authentication
+- Use JWT tokens with proper refresh mechanism
+- Implement CORS configuration for React frontend
+- Enable CSRF protection where appropriate
+- Validate all user inputs
+
+## Testing Rules
+
+### Django Tests
+- Use Django REST Framework's APITestCase
+- Include test data setup in setUp() methods
+- Use force_authenticate() for authenticated tests
+- Test both success and error scenarios
+- Mock external API calls in tests
+
+### React Tests
+- Test component rendering and user interactions
+- Mock API calls in component tests
+- Test form validation and error handling
+- Use descriptive test names
+
+## File Organization
+
+### Backend Structure
+```
+backend/django_Admin3/
+├── django_Admin3/          # Main project settings
+├── subjects/               # Subject management
+├── tutorials/              # Tutorial events
+├── administrate/           # External API integration
+├── core_auth/              # Authentication
+└── manage.py
+```
+
+### Frontend Structure
+```
+frontend/react-Admin3/
+├── src/
+│   ├── components/         # React components
+│   ├── services/           # API service layer
+│   └── styles/             # CSS styling
+└── public/
+```
+
+## Code Quality Rules
+
+### Python Code
+- Follow PEP 8 style guidelines
+- Use type hints where appropriate
+- Include docstrings for classes and methods
+- Limit line length to 88 characters (Black formatter)
+- Use f-strings for string formatting
+
+### JavaScript Code
+- Use ES6+ features consistently
+- Include proper error boundaries
+- Use destructuring for props and state
+- Implement proper cleanup in useEffect hooks
+- Follow ESLint and Prettier configurations
+
+## Common Patterns to Follow
+
+### Error Handling
+```python
+try:
+    # API call or database operation
+    result = api_service.execute_query(query, variables)
+except Exception as e:
+    logger.error(f"Operation failed: {str(e)}")
+    return Response({"error": "Operation failed"}, status=500)
+```
+
+### React Component Structure
+```javascript
+const ComponentName = () => {
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    
+    useEffect(() => {
+        fetchData();
+    }, []);
+    
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const response = await apiService.getData();
+            setData(response.data);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    if (loading) return <CircularProgress />;
+    if (error) return <Alert severity="error">{error}</Alert>;
+    
+    return <div>{/* Component content */}</div>;
+};
+```
+
+## Commit Message Format
+- Use conventional commits format
+- Include scope when applicable (e.g., "feat(auth): add JWT refresh")
+- Keep first line under 50 characters
+- Include detailed description for complex changes
+
+## Documentation Requirements
+- Update README files for setup changes
+- Document API endpoints with examples
+- Include inline comments for complex business logic
+- Maintain up-to-date requirements files
+
+## Performance Considerations
+- Use pagination for large datasets
+- Implement lazy loading where appropriate
+- Cache frequently accessed data
+- Optimize database queries with proper indexing
+- Use React.memo for expensive components
+
+## Debugging Guidelines
+- Use Django's logging framework for backend
+- Include debug flags in management commands
+- Use React Developer Tools for frontend debugging
+- Log API requests and responses in development mode
+- Include structured error messages with context
