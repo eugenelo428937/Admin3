@@ -1,0 +1,74 @@
+.vat-toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vat-toggle-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+}
+
+.vat-toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vat-switch {
+  margin: 0;
+}
+
+.vat-switch .form-check-input {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.vat-switch .form-check-input:checked {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.vat-switch .form-check-input:focus {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.vat-toggle-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #333;
+  min-width: 65px;
+  text-align: left;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .vat-toggle-container {
+    gap: 6px;
+  }
+  
+  .vat-toggle-label {
+    font-size: 0.8rem;
+  }
+  
+  .vat-toggle-text {
+    font-size: 0.8rem;
+    min-width: 60px;
+  }
+}
+
+/* Compact version for smaller spaces */
+.vat-toggle-container.compact {
+  gap: 4px;
+}
+
+.vat-toggle-container.compact .vat-toggle-label {
+  font-size: 0.8rem;
+}
+
+.vat-toggle-container.compact .vat-toggle-text {
+  font-size: 0.8rem;
+  min-width: 55px;
+} 

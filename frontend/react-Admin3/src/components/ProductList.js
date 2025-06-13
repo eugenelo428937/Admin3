@@ -8,10 +8,12 @@ import {
 } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
+import { useVAT } from "../contexts/VATContext";
 import productService from "../services/productService";
 import subjectService from "../services/subjectService";
 import "../styles/product_list.css";
 import ProductCard from "./ProductCard";
+import VATToggle from "./VATToggle";
 import Select from "react-select";
 import { FilterCircle } from "react-bootstrap-icons";
 import Accordion from 'react-bootstrap/Accordion';
@@ -158,7 +160,10 @@ const ProductList = () => {
 
 	return (
 		<Container fluid className="product-list-container mx-3">
-			<h2 className="my-3">Product List</h2>
+			<div className="d-flex justify-content-between align-items-center my-3">
+				<h2 className="mb-0">Product List</h2>
+				<VATToggle />
+			</div>
 
 			<div className="d-flex align-items-center mb-3">
 				<button

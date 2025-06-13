@@ -81,6 +81,7 @@ class ProductListSerializer(serializers.ModelSerializer):
                 'variation_type': esspv.product_product_variation.product_variation.variation_type,
                 'name': esspv.product_product_variation.product_variation.name,
                 'description': esspv.product_product_variation.product_variation.description,
+                'description_short': esspv.product_product_variation.product_variation.description_short,
                 'prices': [
                     {
                         'id': price.id,

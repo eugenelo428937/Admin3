@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useCart } from "../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 import cartService from "../services/cartService";
-import { Button, Container, ListGroup, Alert, Spinner } from "react-bootstrap";
+import { Container, Alert } from "react-bootstrap";
+import rulesEngineService from "../services/rulesEngineService";
+import CheckoutSteps from "./CheckoutSteps";
 
 const CheckoutPage = () => {
   const { cartItems, clearCart } = useCart();
@@ -10,9 +12,44 @@ const CheckoutPage = () => {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [checkoutComplete, setCheckoutComplete] = useState(false);
+  const [rulesMessages, setRulesMessages] = useState([]);
   const navigate = useNavigate();
 
-  const handleConfirm = async () => {
+  // Evaluate checkout rules when component mounts
+  useEffect(() => {
+    const evaluateCheckoutRules = async () => {
+      if (cartItems.length > 0) {
+        try {
+          const result = await rulesEngineService.validateCheckout();
+          if (result.success) {
+            // Convert acknowledgments to messages if there are any
+            const messages = result.messages || [];
+            if (result.acknowledgments && result.acknowledgments.length > 0) {
+              // Add acknowledgment messages to the messages array
+              result.acknowledgments.forEach(ack => {
+                messages.push({
+                  type: 'acknowledgment',
+                  message_type: 'terms',
+                  title: 'Terms and Conditions',
+                  content: 'Please review and acknowledge the terms and conditions to proceed with your order.',
+                  requires_acknowledgment: true,
+                  rule_id: ack.rule_id,
+                  template_id: ack.template_id
+                });
+              });
+            }
+            setRulesMessages(messages);
+          }
+        } catch (err) {
+          console.error("Error evaluating checkout rules:", err);
+        }
+      }
+    };
+
+    evaluateCheckoutRules();
+  }, [cartItems]);
+
+  const handleCheckoutComplete = async () => {
     setLoading(true);
     setError("");
     setSuccess("");
@@ -44,43 +81,13 @@ const CheckoutPage = () => {
   return (
     <Container className="mt-4">
       <h2>Checkout</h2>
-      <ListGroup className="mb-3">
-        {cartItems.map(item => (
-          <ListGroup.Item key={item.id}>
-            <div className="d-flex justify-content-between align-items-center">              <div>
-                <strong>
-                  {item.subject_code ? `${item.subject_code} - ` : ""}
-                  {item.product_name}
-                  <br />
-                  <span className="text-muted" style={{fontSize: '0.9em'}}>Product Code: {item.product_code}</span>
-                </strong>
-                <br />Quantity: {item.quantity}
-                {item.price_type && item.price_type !== 'standard' && (
-                  <>
-                    <br />
-                    <span className="badge bg-secondary">
-                      {item.price_type === 'retaker' ? 'Retaker' : 
-                       item.price_type === 'additional' ? 'Additional Copy' : 
-                       item.price_type}
-                    </span>
-                  </>
-                )}
-                {item.actual_price && (
-                  <>
-                    <br />
-                    <span className="text-success fw-bold">£{item.actual_price}</span>
-                  </>
-                )}
-              </div>
-            </div>
-          </ListGroup.Item>
-        ))}
-      </ListGroup>
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
-      <Button variant="primary" onClick={handleConfirm} disabled={loading}>
-        {loading ? <Spinner animation="border" size="sm" /> : "Confirm Order"}
-      </Button>
+      
+      <CheckoutSteps 
+        onComplete={handleCheckoutComplete}
+        rulesMessages={rulesMessages}
+      />
     </Container>
   );
 };

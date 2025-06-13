@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 # Cursor Rules for Admin3 Project
 
 ## Project Context
@@ -8,7 +13,13 @@ Admin3 is a Django REST API backend with React frontend for educational administ
 - Frontend: React 18, Axios, Material-UI
 - Integration: GraphQL queries to Administrate API
 - Authentication: JWT tokens with refresh mechanism
-- Database: PostgreSQL (ACTEDDBTEST01)
+- Database: PostgreSQL (ACTEDDBDEV01)
+
+## Development Environment Setting
+- Windows 11
+- Powershell for command prompt
+- Django server is always running on Port 8888.
+- React Server is running on default 3000 Port.
 
 ## Django Backend Rules
 
@@ -218,3 +229,4 @@ const ComponentName = () => {
 - Use React Developer Tools for frontend debugging
 - Log API requests and responses in development mode
 - Include structured error messages with context
+

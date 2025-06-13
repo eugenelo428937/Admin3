@@ -1,24 +1,35 @@
 import React, { useState, useEffect } from "react";
-import { Col, Card, Button, Modal, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { CartPlus, InfoCircle } from "react-bootstrap-icons";
+import { Col, Card, Modal, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { 
+	Button, 
+	Checkbox, 
+	FormControlLabel, 
+	FormControl, 
+	FormLabel, 
+} from "@mui/material";
+import { InfoCircle } from "react-bootstrap-icons";
+import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import { useCart } from "../contexts/CartContext";
+import { useVAT } from "../contexts/VATContext";
 import MarkingProductCard from "./MarkingProductCard";
 import TutorialProductCard from "./TutorialProductCard";
 import "../styles/product_card.css";
 
 const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
-	const [selectedVariation, setSelectedVariation] = useState("");
+	const [selectedVariations, setSelectedVariations] = useState([]);
 	const [showPriceModal, setShowPriceModal] = useState(false);
 	const [selectedPriceType, setSelectedPriceType] = useState("standard");
 	const [showDiscounts, setShowDiscounts] = useState(false);
 
 	const { addToCart } = useCart();
+	const { getPriceDisplay, formatPrice, isProductVATExempt } = useVAT();
 
-	// Handle product type logic
-	console.log("Product Card Rendered for:", product.product_name);
-	console.log("Product Type:", product.type);
+	// Handle product type logic	
 	const isTutorial = product.type === 'Tutorial';
 	const isMarking = product.type === 'Markings';
+	const isOnlineClassroom = product.product_name?.toLowerCase().includes('online classroom') || 
+	                         product.product_name?.toLowerCase().includes('recording') ||
+	                         product.learning_mode === 'LMS';
 	const isMaterial = !isTutorial && !isMarking;
 
 	const hasVariations = product.variations && product.variations.length > 0;
@@ -28,7 +39,9 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 			: null;
 
 	const currentVariation = hasVariations
-		? product.variations.find((v) => v.id === parseInt(selectedVariation)) || singleVariation || product.variations[0]
+		? (selectedVariations.length > 0 
+			? product.variations.find((v) => selectedVariations.includes(v.id)) 
+			: singleVariation || product.variations[0])
 		: singleVariation;
 
 	const hasPriceType = (variation, priceType) => {
@@ -52,7 +65,8 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 				subjectCode={product.subject_code}
 				subjectName={product.subject_name || product.product_name}
 				location={product.location || product.product_name}
-				productId={product.product_id}
+				productId={product.essp_id || product.id || product.product_id}
+				product={product}
 				variations={product.variations}
 			/>
 		);
@@ -70,19 +84,18 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 		);
 	}
 
-	// Get header background color for material products
-	const getHeaderStyle = () => {
-		return { 
-			backgroundColor: 'rgba(239, 246, 255, 1)',
-			color: '#1e40af',
-			border: '1px solid #bfdbfe'
-		};
-	};
-
 	const getPrice = (variation, priceType) => {
 		if (!variation || !variation.prices) return null;
 		const priceObj = variation.prices.find((p) => p.price_type === priceType);
-		return priceObj ? `£${priceObj.amount}` : null;
+		if (!priceObj) return null;
+
+		// Check if this product is VAT exempt
+		const isVATExempt = isProductVATExempt(product.type);
+		
+		// Get price display info from VAT context
+		const priceDisplay = getPriceDisplay(priceObj.amount, 0.20, isVATExempt);
+		
+		return `${formatPrice(priceDisplay.displayPrice)} ${priceDisplay.label}`;
 	};
 
 	const handlePriceTypeChange = (priceType) => {
@@ -90,6 +103,14 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 			setSelectedPriceType("standard");
 		} else {
 			setSelectedPriceType(priceType);
+		}
+	};
+
+	const handleVariationChange = (variationId, checked) => {
+		if (checked) {
+			setSelectedVariations(prev => [...prev, variationId]);
+		} else {
+			setSelectedVariations(prev => prev.filter(id => id !== variationId));
 		}
 	};
 
@@ -121,7 +142,7 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 										<tr key={`${variation.id}-${price.price_type}`}>
 											<td>{variation.name}</td>
 											<td>{price.price_type}</td>
-											<td>£{price.amount}</td>
+											<td>{getPrice(variation, price.price_type)}</td>
 										</tr>
 									))
 								)}
@@ -143,38 +164,54 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 
 			<Card.Footer className="bg-white border-0 d-flex flex-column">
 				<div className="d-flex flex-column align-items-start mb-2">
-					<div>
-						<span className="form-label mb-1">Product Variation:</span>
-					</div>
-					<div>
-						{singleVariation && (
-							<span className="form-label mb-0">
-								<b>{singleVariation.name}</b>
-							</span>
-						)}
-						{hasVariations && !singleVariation && (
-							<select
-								id={`variation-select-${product.essp_id || product.id || product.product_id}`}
-								className="form-select me-2"
-								style={{ minWidth: 150 }}
-								value={selectedVariation}
-								onChange={(e) => setSelectedVariation(e.target.value)}
-								aria-label="Select product variation">
-								<option value="">Please select</option>
+					{singleVariation && (
+						<div>
+							<span className="form-label mb-1">Product Variation:</span>
+							<div>
+								<span className="form-label mb-0">
+									<b>{singleVariation.name}</b>
+								</span>
+							</div>
+						</div>
+					)}
+					{hasVariations && !singleVariation && (
+						<FormControl component="fieldset" size="small">
+							<FormLabel 
+								component="legend" 
+								sx={{ fontSize: '0.875rem', mb: 1, color: 'text.primary' }}>
+								Product Variations:
+							</FormLabel>
+							<div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
 								{product.variations.map((variation) => (
-									<option key={variation.id} value={variation.id}>
-										{variation.name}
-									</option>
+									<FormControlLabel
+										key={variation.id}
+										control={
+											<Checkbox 
+												size="small" 
+												checked={selectedVariations.includes(variation.id)}
+												onChange={(e) => handleVariationChange(variation.id, e.target.checked)}
+											/>
+										}
+										label={variation.name}
+										sx={{ 
+											margin: 0,
+											'& .MuiFormControlLabel-label': { 
+												fontSize: '0.875rem' 
+											} 
+										}}
+									/>
 								))}
-							</select>
-						)}
-					</div>
+							</div>
+						</FormControl>
+					)}
 				</div>
 
 				<div className="d-flex justify-content-between align-items-end">
 					<div className="d-flex flex-column">
 						<div className="d-flex align-items-center mb-2">
-							<span className="fw-bold me-3" style={{ fontSize: "1.2em" }}>
+							<span
+								className="fw-bold me-3"
+								style={{ fontSize: "1.2em" }}>
 								{getPrice(currentVariation, selectedPriceType) || "-"}
 							</span>
 							<div className="d-flex justify-content-between align-items-center">
@@ -212,14 +249,30 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 										<input
 											className="form-check-input"
 											type="checkbox"
-											id={`retaker-${product.essp_id || product.id || product.product_id}`}
+											id={`retaker-${
+												product.essp_id ||
+												product.id ||
+												product.product_id
+											}`}
 											checked={selectedPriceType === "retaker"}
-											disabled={!hasPriceType(currentVariation, "retaker")}
-											onChange={() => handlePriceTypeChange("retaker")}
+											disabled={
+												!hasPriceType(currentVariation, "retaker")
+											}
+											onChange={() =>
+												handlePriceTypeChange("retaker")
+											}
 										/>
 										<label
-											className={`form-check-label ${!hasPriceType(currentVariation, "retaker") ? "text-muted" : ""}`}
-											htmlFor={`retaker-${product.essp_id || product.id || product.product_id}`}>
+											className={`form-check-label ${
+												!hasPriceType(currentVariation, "retaker")
+													? "text-muted"
+													: ""
+											}`}
+											htmlFor={`retaker-${
+												product.essp_id ||
+												product.id ||
+												product.product_id
+											}`}>
 											Retaker
 										</label>
 									</div>
@@ -227,14 +280,36 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 										<input
 											className="form-check-input"
 											type="checkbox"
-											id={`additional-${product.essp_id || product.id || product.product_id}`}
+											id={`additional-${
+												product.essp_id ||
+												product.id ||
+												product.product_id
+											}`}
 											checked={selectedPriceType === "additional"}
-											disabled={!hasPriceType(currentVariation, "additional")}
-											onChange={() => handlePriceTypeChange("additional")}
+											disabled={
+												!hasPriceType(
+													currentVariation,
+													"additional"
+												)
+											}
+											onChange={() =>
+												handlePriceTypeChange("additional")
+											}
 										/>
 										<label
-											className={`form-check-label ${!hasPriceType(currentVariation, "additional") ? "text-muted" : ""}`}
-											htmlFor={`additional-${product.essp_id || product.id || product.product_id}`}>
+											className={`form-check-label ${
+												!hasPriceType(
+													currentVariation,
+													"additional"
+												)
+													? "text-muted"
+													: ""
+											}`}
+											htmlFor={`additional-${
+												product.essp_id ||
+												product.id ||
+												product.product_id
+											}`}>
 											Additional Copy
 										</label>
 									</div>
@@ -244,19 +319,48 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 					</div>
 					<div>
 						<Button
-							variant="success"
+							color="success"
+							variant="contained"
+							size="small"
 							className="d-flex flex-row flex-wrap align-items-center justify-content-center product-add-to-cart-button p-2"
 							onClick={() => {
-								const priceObj = currentVariation?.prices?.find(p => p.price_type === selectedPriceType);
-								onAddToCart(product, {
-									variationId: currentVariation?.id,
-									priceType: selectedPriceType,
-									actualPrice: priceObj?.amount
-								});
+								if (singleVariation) {
+									// Handle single variation
+									const priceObj = singleVariation.prices?.find(
+										(p) => p.price_type === selectedPriceType
+									);
+									onAddToCart(product, {
+										variationId: singleVariation.id,
+										variationName: singleVariation.name,
+										priceType: selectedPriceType,
+										actualPrice: priceObj?.amount,
+									});
+								} else if (selectedVariations.length > 0) {
+									// Handle multiple variations - add each as separate cart item
+									selectedVariations.forEach(variationId => {
+										const variation = product.variations.find(v => v.id === variationId);
+										const priceObj = variation?.prices?.find(
+											(p) => p.price_type === selectedPriceType
+										);
+										onAddToCart(product, {
+											variationId: variation.id,
+											variationName: variation.name,
+											priceType: selectedPriceType,
+											actualPrice: priceObj?.amount,
+										});
+									});
+								}
 							}}
-							disabled={hasVariations && !singleVariation && !selectedVariation}
-							aria-label="Add product to cart">
-							<CartPlus className="bi d-flex flex-row align-items-center" />
+							disabled={hasVariations && !singleVariation && selectedVariations.length === 0}
+							aria-label="Add product to cart"
+							sx={{
+								borderRadius: "50%",
+								minWidth: "2rem",
+								width: "2rem",
+								height: "2rem",
+								padding: "4px",
+							}}>
+							<AddShoppingCartIcon sx={{ fontSize: "1.1rem" }} />
 						</Button>
 					</div>
 				</div>
@@ -264,14 +368,22 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 		</>
 	);
 
+	// Determine header class based on product type
+	const getHeaderClass = () => {
+		if (isOnlineClassroom) return "tutorial-product-card-header";
+		if (isMarking) return "marking-header";
+		return "material-header";
+	};
+
 	return (
 		<Col>
 			<Card className="h-100 shadow-sm product-card">
-				<Card.Header 
-					className="product-card-header d-flex justify-content-between align-items-center" 
-					style={getHeaderStyle()}>
+				<Card.Header className={`product-card-header d-flex justify-content-between align-items-center ${getHeaderClass()}`}>
 					<div>
-						<h5 className="mb-0">{product.subject_code}</h5>
+						<h5 className="mb-0">Subject {product.subject_code}</h5>
+						{isOnlineClassroom && (
+							<h6 className="mb-0">Online Classroom</h6>
+						)}
 					</div>
 				</Card.Header>
 
