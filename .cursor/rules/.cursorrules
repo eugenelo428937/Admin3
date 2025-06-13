@@ -1,5 +1,7 @@
 # Cursor Rules for Admin3 Project
 
+## start every answer with "Milord"
+
 ## Project Context
 Admin3 is a Django REST API backend with React frontend for educational administration data management, integrating with the Administrate API for course management, tutorials, events, and student administration.
 
@@ -11,10 +13,10 @@ Admin3 is a Django REST API backend with React frontend for educational administ
 - Database: PostgreSQL (ACTEDDBDEV01)
 
 ## Development Environment Setting
-
 - Windows 11
 - Powershell for command prompt
 - Django server is always running on Port 8888.
+- React Server is running on default 3000 Port.
 
 ## Django Backend Rules
 
@@ -121,6 +123,7 @@ Admin3 is a Django REST API backend with React frontend for educational administ
 ## File Organization
 
 ### Backend Structure
+
 ```
 backend/django_Admin3/
 ├── django_Admin3/          # Main project settings
@@ -132,6 +135,7 @@ backend/django_Admin3/
 ```
 
 ### Frontend Structure
+
 ```
 frontend/react-Admin3/
 ├── src/
@@ -144,6 +148,7 @@ frontend/react-Admin3/
 ## Code Quality Rules
 
 ### Python Code
+
 - Follow PEP 8 style guidelines
 - Use type hints where appropriate
 - Include docstrings for classes and methods
@@ -151,6 +156,7 @@ frontend/react-Admin3/
 - Use f-strings for string formatting
 
 ### JavaScript Code
+
 - Use ES6+ features consistently
 - Include proper error boundaries
 - Use destructuring for props and state
@@ -160,6 +166,7 @@ frontend/react-Admin3/
 ## Common Patterns to Follow
 
 ### Error Handling
+
 ```python
 try:
     # API call or database operation
@@ -170,6 +177,7 @@ except Exception as e:
 ```
 
 ### React Component Structure
+
 ```javascript
 const ComponentName = () => {
     const [data, setData] = useState([]);
@@ -200,6 +208,7 @@ const ComponentName = () => {
 ```
 
 ## Commit Message Format
+
 - Use conventional commits format
 - Include scope when applicable (e.g., "feat(auth): add JWT refresh")
 - Keep first line under 50 characters
@@ -212,6 +221,7 @@ const ComponentName = () => {
 - Maintain up-to-date requirements files
 
 ## Performance Considerations
+
 - Use pagination for large datasets
 - Implement lazy loading where appropriate
 - Cache frequently accessed data
@@ -219,8 +229,10 @@ const ComponentName = () => {
 - Use React.memo for expensive components
 
 ## Debugging Guidelines
+
 - Use Django's logging framework for backend
 - Include debug flags in management commands
 - Use React Developer Tools for frontend debugging
 - Log API requests and responses in development mode
 - Include structured error messages with context
+

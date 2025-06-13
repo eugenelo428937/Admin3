@@ -1,0 +1,64 @@
+:root {
+  /* Primary Color Customization */
+  --bs-primary: #333334;     
+  --bs-primary-rgb: 51, 51, 52;
+  --text-primary: #333334;
+  --text-primary-light: #fdfdfd;
+    
+  /* Primary color variations */
+  /* --bs-primary-bg-subtle: #d4edda;
+  --bs-primary-border-subtle: #9fdf9f;
+  --bs-primary-text-emphasis: #1e3a20; */
+  
+  /* Additional primary shades */
+  /* --bs-primary-100: #e8f5e8;
+  --bs-primary-200: #d1f2d1;
+  --bs-primary-300: #a3e4a3;
+  --bs-primary-400: #75d675;
+  --bs-primary-500: #2c5530;  
+  --bs-primary-600: #234429;
+  --bs-primary-700: #1a3320;
+  --bs-primary-800: #112218;
+  --bs-primary-900: #081110; */
+  
+  /* You can also customize other colors */
+  /* --bs-secondary: #6c757d;
+  --bs-success: #198754;
+  --bs-info: #0dcaf0;
+  --bs-warning: #ffc107;
+  --bs-danger: #dc3545;
+  --bs-light: #fdfdfd;
+  --bs-dark: #333334; */
+}
+
+/* Additional custom classes */
+/* .text-primary {
+  color: var(--bs-primary) !important;
+}
+
+.bg-primary {
+  background-color: var(--bs-primary) !important;
+}
+
+.btn-primary {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--bs-primary-600);
+  border-color: var(--bs-primary-600);
+} */
+
+/* Custom utility classes */
+/* .text-custom-primary {
+  color: #2c5530 !important;
+}
+
+.text-brand {
+  color: #1e4d72 !important;
+}
+
+.text-accent {
+  color: #ff6b35 !important;
+}  */

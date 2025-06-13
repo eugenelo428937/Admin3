@@ -25,6 +25,9 @@ import OrderHistory from "./components/OrderHistory";
 import RegisterForm from "./components/RegisterForm";
 import TutorialProductList from "./components/TutorialProductList";
 
+// Import custom Bootstrap CSS overrides
+import "./styles/custom-bootstrap.css";
+
 function App() {
 	// eslint-disable-next-line
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -45,6 +48,7 @@ function App() {
 						<VATProvider>
 							<div className="App">
 								<ActEdNavbar />
+								<div className="px-3 px-lg-4 px-xl-5">
 								<Routes>
 									<Route path="/home" element={<Home />} />
 									<Route path="/products" element={<ProductList />} />
@@ -109,7 +113,7 @@ function App() {
 										element={<TutorialProductList />}
 									/>
 								</Routes>
-							</div>
+							</div></div>
 						</VATProvider>
 					</ProductProvider>
 				</AuthProvider>

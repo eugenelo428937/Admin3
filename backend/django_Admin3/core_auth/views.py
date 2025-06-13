@@ -1,14 +1,15 @@
 # backend/django_Admin3/core_auth/views.py
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.middleware.csrf import get_token
 from users.serializers import UserRegistrationSerializer
 from cart.views import CartViewSet
+from .email_service import EmailService
 
 class AuthViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
@@ -103,3 +104,28 @@ class AuthViewSet(viewsets.ViewSet):
             return Response({'status': 'success'})
         except Exception:
             return Response({'status': 'success'})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def send_test_email(request):
+    """Test endpoint to send a test email"""
+    try:
+        recipient_email = request.data.get('email', 'eugenelo1030@gmail.com')
+        success = EmailService.send_test_email(recipient_email)
+        
+        if success:
+            return Response({
+                'message': f'Test email sent successfully to {recipient_email}',
+                'success': True
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'message': 'Failed to send test email',
+                'success': False
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+    except Exception as e:
+        return Response({
+            'message': f'Error: {str(e)}',
+            'success': False
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -291,6 +291,19 @@ SIMPLE_JWT = {
 GRAPHQL_TEMPLATES_DIR = os.path.join(
     BASE_DIR, 'administrate/templates/graphql')
 
+# Email Settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.backend'
+EMAIL_HOST = 'smtp.gmail.com'  # Use Gmail SMTP for testing
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', '')  # Your email address
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', '')  # Your app password
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', 'noreply@acted.com')
+
+# For development, you can use console backend for testing
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 # Administrate API Settings
 # ADMINISTRATE_INSTANCE_URL = env('ADMINISTRATE_INSTANCE_URL')
 # ADMINISTRATE_API_URL = env('ADMINISTRATE_API_URL')

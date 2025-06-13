@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
 	Card,
 	Spinner,
@@ -20,13 +20,15 @@ import {
 import { ExclamationCircle, InfoCircle } from "react-bootstrap-icons";
 import productService from "../services/productService";
 import "../styles/product_card.css";
+import { useVAT } from "../contexts/VATContext";
 
-const MarkingProductCard = ({
+const MarkingProductCard = React.memo(({
 	product,
 	onAddToCart,
 	allEsspIds,
 	bulkDeadlines,
-}) => {	const [deadlines, setDeadlines] = React.useState([]);
+}) => {
+	const [deadlines, setDeadlines] = React.useState([]);
 	const [loading, setLoading] = React.useState(true);
 	const [showModal, setShowModal] = React.useState(false);
 	const [showPriceModal, setShowPriceModal] = React.useState(false);
@@ -34,6 +36,42 @@ const MarkingProductCard = ({
 	const [selectedPriceType, setSelectedPriceType] = React.useState("standard");
 	const [showDiscounts, setShowDiscounts] = React.useState(false);
 	const [showExpiredWarning, setShowExpiredWarning] = React.useState(false);
+
+	const { getPriceDisplay, formatPrice, isProductVATExempt, showVATInclusive } = useVAT();
+
+	// Memoize variation calculations for performance
+	const variationInfo = useMemo(() => {
+		const hasVariations = product.variations && product.variations.length > 0;
+		const singleVariation = product.variations && product.variations.length === 1
+			? product.variations[0]
+			: null;
+		const currentVariation = hasVariations
+			? (selectedVariations.length > 0 
+				? product.variations.find((v) => selectedVariations.includes(v.id)) 
+				: singleVariation || product.variations[0])
+			: singleVariation;
+
+		return { hasVariations, singleVariation, currentVariation };
+	}, [product.variations, selectedVariations]);
+
+	const { hasVariations, singleVariation, currentVariation } = variationInfo;
+
+	// Memoize price calculation
+	const getPrice = useMemo(() => {
+		return (variation, priceType) => {
+			if (!variation || !variation.prices) return null;
+			const priceObj = variation.prices.find((p) => p.price_type === priceType);
+			if (!priceObj) return null;
+
+			// Check if this product is VAT exempt
+			const isVATExempt = isProductVATExempt(product.type);
+			
+			// Get price display info from VAT context
+			const priceDisplay = getPriceDisplay(priceObj.amount, 0.20, isVATExempt);
+			
+			return `${formatPrice(priceDisplay.displayPrice)} ${priceDisplay.label}`;
+		};
+	}, [getPriceDisplay, formatPrice, isProductVATExempt, product.type, showVATInclusive]);
 
 	React.useEffect(() => {
 		setLoading(true);
@@ -72,16 +110,6 @@ const MarkingProductCard = ({
 	const allExpired =
 		deadlines.length > 0 && expired.length === deadlines.length;
 
-	const hasVariations = product.variations && product.variations.length > 0;
-	const singleVariation =
-		product.variations && product.variations.length === 1
-			? product.variations[0]
-			: null;	const currentVariation = hasVariations
-		? (selectedVariations.length > 0 
-			? product.variations.find((v) => selectedVariations.includes(v.id)) 
-			: singleVariation || product.variations[0])
-		: singleVariation;
-
 	const hasPriceType = (variation, priceType) => {
 		if (!variation || !variation.prices) return false;
 		return variation.prices.some((p) => p.price_type === priceType);
@@ -95,13 +123,6 @@ const MarkingProductCard = ({
 			}
 		}
 	}, [currentVariation, selectedPriceType]);
-	const getPrice = (variation, priceType) => {
-		if (!variation || !variation.prices) return null;
-		const priceObj = variation.prices.find(
-			(p) => p.price_type === priceType
-		);
-		return priceObj ? `£${priceObj.amount}` : null;
-	};
 
 	const handlePriceTypeChange = (priceType) => {
 		if (selectedPriceType === priceType) {
@@ -574,6 +595,6 @@ const MarkingProductCard = ({
 			</Modal>
 		</Col>
 	);
-};
+});
 
 export default MarkingProductCard;

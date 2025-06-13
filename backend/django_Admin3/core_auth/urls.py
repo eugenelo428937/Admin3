@@ -1,6 +1,6 @@
 # backend/django_Admin3/core_auth/urls.py
 from django.urls import path
-from .views import AuthViewSet
+from .views import AuthViewSet, send_test_email
 from rest_framework_simplejwt.views import TokenRefreshView
 
 auth_viewset = AuthViewSet.as_view({
@@ -31,4 +31,5 @@ urlpatterns = [
     path('logout/', auth_logout, name='auth-logout'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
     path('csrf/', auth_csrf, name='auth-csrf'),
+    path('test-email/', send_test_email, name='test-email'),
 ]

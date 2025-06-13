@@ -9074,3 +9074,1092 @@ LINE 1: ...ules_user_acknowledgments"."message_template_id", "acted_rul...
 [2025-06-13 14:57:54,104] INFO exam_sessions_subjects_products.views --- list_products called ---
 [2025-06-13 14:57:54,105] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
 [2025-06-13 14:57:54,116] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 14:59:57,648] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\cart\models.py changed, reloading.
+[2025-06-13 14:59:59,781] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-13 15:27:52,792] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-13 15:28:54,573] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:28:54,575] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-06-13 15:28:54,575] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 15:28:54,575] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 15:28:54,609] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 15:28:55,901] INFO exam_sessions_subjects_products.views Final queryset count: 393, cached with key: products_list_1190803674677700921
+[2025-06-13 15:28:56,020] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:28:56,020] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-06-13 15:28:56,023] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:29:37,357] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:29:37,357] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-06-13 15:29:37,361] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:29:37,634] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:29:37,635] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-06-13 15:29:37,714] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:29:37,886] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:29:37,887] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-06-13 15:29:37,891] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:42:21,631] WARNING django.request Unauthorized: /api/products/current/list/
+[2025-06-13 15:42:21,631] WARNING django.request Unauthorized: /api/products/product-group-filters/
+[2025-06-13 15:42:21,631] WARNING django.request Unauthorized: /api/subjects/
+[2025-06-13 15:42:21,631] WARNING django.request Unauthorized: /api/users/12/
+[2025-06-13 15:42:21,640] WARNING django.request Unauthorized: /api/subjects/
+[2025-06-13 15:42:21,640] WARNING django.request Unauthorized: /api/products/current/list/
+[2025-06-13 15:42:21,651] WARNING django.request Unauthorized: /api/subjects/
+[2025-06-13 15:42:21,653] WARNING django.request Unauthorized: /api/products/current/list/
+[2025-06-13 15:42:21,654] WARNING django.request Unauthorized: /api/subjects/
+[2025-06-13 15:42:21,660] WARNING django.request Unauthorized: /api/products/product-group-filters/
+[2025-06-13 15:42:21,662] WARNING django.request Unauthorized: /api/users/12/
+[2025-06-13 15:42:21,688] WARNING django.request Unauthorized: /api/products/current/list/
+[2025-06-13 15:42:21,690] WARNING django.request Unauthorized: /api/products/current/list/
+[2025-06-13 15:42:22,026] WARNING django.request Unauthorized: /api/cart/
+[2025-06-13 15:42:22,028] WARNING django.request Unauthorized: /api/cart/
+[2025-06-13 15:43:10,299] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:43:10,300] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-06-13 15:43:10,305] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 15:43:10,306] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 15:43:10,311] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 15:43:10,317] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:43:10,318] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-06-13 15:43:10,320] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 15:43:10,322] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 15:43:10,327] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 15:43:10,514] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:43:10,568] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-06-13 15:43:10,570] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 15:43:10,573] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 15:43:10,591] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 15:43:10,752] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:43:10,755] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-06-13 15:43:10,756] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 15:43:10,762] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 15:43:10,770] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 15:43:11,053] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:43:11,062] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {}>
+[2025-06-13 15:43:11,088] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 15:43:11,091] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 15:43:11,122] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 15:43:12,463] INFO exam_sessions_subjects_products.views Final queryset count: 393, cached with key: products_list_1190803674677700921
+[2025-06-13 15:43:12,583] INFO exam_sessions_subjects_products.views Final queryset count: 393, cached with key: products_list_1190803674677700921
+[2025-06-13 15:43:12,730] INFO exam_sessions_subjects_products.views Final queryset count: 393, cached with key: products_list_1190803674677700921
+[2025-06-13 15:43:12,771] INFO exam_sessions_subjects_products.views Final queryset count: 393, cached with key: products_list_1190803674677700921
+[2025-06-13 15:43:12,980] INFO exam_sessions_subjects_products.views Final queryset count: 393, cached with key: products_list_1190803674677700921
+[2025-06-13 15:51:44,360] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:51:44,361] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:51:44,371] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:51:44,558] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:51:44,559] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:51:44,569] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:51:44,896] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:51:44,897] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:51:44,907] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:51:44,959] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:51:44,959] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:51:44,970] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:52:27,581] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:52:27,582] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:52:27,590] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:52:27,690] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:52:27,691] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:52:27,698] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:52:28,191] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:52:28,192] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:52:28,199] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:52:28,261] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:52:28,283] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:52:28,293] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:52:28,846] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:52:28,848] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:52:28,855] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:53:00,526] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\views.py changed, reloading.
+[2025-06-13 15:53:08,838] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-13 15:53:10,848] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:53:10,848] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:53:10,865] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:53:10,866] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 15:53:10,867] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 15:53:10,869] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 15:53:11,081] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:53:11,111] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:53:11,208] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:53:11,258] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 15:53:11,265] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 15:53:11,276] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 15:53:12,880] INFO exam_sessions_subjects_products.views Final queryset count: 393, cached with key: products_list_5975186891754458697
+[2025-06-13 15:53:12,981] INFO exam_sessions_subjects_products.views Final queryset count: 393, cached with key: products_list_5975186891754458697
+[2025-06-13 15:53:19,523] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\views.py changed, reloading.
+[2025-06-13 15:53:20,924] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-13 15:53:27,189] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:53:27,190] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:53:27,190] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:53:27,191] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 15:53:27,191] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 15:53:27,195] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 15:53:27,199] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 15:53:27,374] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:53:27,375] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:53:27,375] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:53:27,376] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 15:53:27,376] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 15:53:27,381] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 15:53:27,384] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 15:53:27,467] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_7792945668573694019
+[2025-06-13 15:53:27,662] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_7792945668573694019
+[2025-06-13 15:53:27,731] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:53:27,733] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:53:27,736] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:53:27,738] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:53:31,459] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:53:31,460] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:53:31,460] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:53:31,461] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:53:31,595] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:53:31,601] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:53:31,601] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:53:31,602] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:53:31,876] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:53:31,876] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:53:31,878] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:53:31,879] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:53:38,560] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:53:38,567] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:53:38,568] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:53:38,569] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:53:38,669] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:53:38,670] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:53:38,670] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:53:38,671] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:53:38,856] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:53:38,856] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:53:38,857] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:53:38,857] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:53:48,312] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:53:48,312] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['10'], 'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:53:48,312] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:53:48,314] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['10'], subject_code: None
+[2025-06-13 15:53:48,320] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 18
+[2025-06-13 15:53:48,320] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 15:53:48,322] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 18
+[2025-06-13 15:53:48,324] INFO exam_sessions_subjects_products.views Pagination: total=18, start=0, end=50, page_size=50
+[2025-06-13 15:53:48,381] INFO exam_sessions_subjects_products.views Paginated queryset count: 18, total: 18, cached with key: products_list_-7189656493008389926
+[2025-06-13 15:53:53,756] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:53:53,756] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:53:53,757] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:53:53,758] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:53:53,792] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:53:53,793] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:53:53,794] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:53:53,795] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:53:53,936] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:53:53,936] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:53:53,937] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:53:53,938] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:54:17,715] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:54:17,715] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:54:17,717] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:54:17,719] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:54:17,751] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:54:17,753] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:54:17,755] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:54:17,756] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:54:17,908] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:54:17,909] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:54:17,910] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:54:17,911] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:54:18,018] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:54:18,018] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:54:18,019] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:54:18,019] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:54:18,030] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:54:18,030] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:54:18,030] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:54:18,032] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:55:23,530] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:55:23,530] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['2'], 'page_size': ['50']}>
+[2025-06-13 15:55:23,530] INFO exam_sessions_subjects_products.views Pagination: page=2, page_size=50
+[2025-06-13 15:55:23,530] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 15:55:23,530] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 15:55:23,530] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 15:55:23,530] INFO exam_sessions_subjects_products.views Pagination: total=393, start=50, end=100, page_size=50
+[2025-06-13 15:55:23,680] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-5819688930068772784
+[2025-06-13 15:58:17,763] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\views.py changed, reloading.
+[2025-06-13 15:58:18,578] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-13 15:59:36,361] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\views.py changed, reloading.
+[2025-06-13 15:59:37,237] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-13 15:59:40,001] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:59:40,001] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:59:40,001] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:59:40,001] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 15:59:40,001] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 15:59:40,001] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 15:59:40,012] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 15:59:40,080] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:59:40,095] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:59:40,103] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:59:40,103] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 15:59:40,104] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 15:59:40,108] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 15:59:40,109] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 15:59:40,180] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:59:40,180] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:59:40,180] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:59:40,180] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 15:59:40,180] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 15:59:40,196] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 15:59:40,203] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 15:59:40,261] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:59:40,265] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:59:40,265] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_3800016604184494164
+[2025-06-13 15:59:40,277] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:59:40,297] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 15:59:40,397] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_3800016604184494164
+[2025-06-13 15:59:40,484] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_3800016604184494164
+[2025-06-13 15:59:40,528] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 15:59:40,529] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 15:59:40,529] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 15:59:40,530] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:00:01,705] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\views.py changed, reloading.
+[2025-06-13 16:00:04,599] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-13 16:01:48,791] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:01:48,815] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:01:48,816] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:01:48,816] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:01:48,816] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:01:48,816] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:01:48,826] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 16:01:48,932] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:01:48,932] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:01:48,932] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:01:48,932] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:01:48,932] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:01:48,947] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:01:48,952] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 16:01:49,185] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:01:49,201] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:01:49,204] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:01:49,204] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:01:49,204] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:01:49,219] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:01:49,233] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 16:01:49,242] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-7239973953721769574
+[2025-06-13 16:01:49,457] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-7239973953721769574
+[2025-06-13 16:01:49,655] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-7239973953721769574
+[2025-06-13 16:02:42,967] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:02:42,967] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['http://localhost:8888/api/markings']}>
+[2025-06-13 16:02:43,065] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:02:43,056] ERROR django.request Internal Server Error: /api/products/current/list/
+Traceback (most recent call last):
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\views.py", line 143, in list_products
+    page_size = int(request.query_params.get('page_size', 50))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: 'http://localhost:8888/api/markings'
+[2025-06-13 16:02:43,068] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['http://localhost:8888/api/markings']}>
+[2025-06-13 16:02:43,208] ERROR django.request Internal Server Error: /api/products/current/list/
+Traceback (most recent call last):
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\views.py", line 143, in list_products
+    page_size = int(request.query_params.get('page_size', 50))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: 'http://localhost:8888/api/markings'
+[2025-06-13 16:03:32,920] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:03:32,921] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['http://localhost:8888/api/markings']}>
+[2025-06-13 16:03:32,999] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:03:33,002] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:03:33,002] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:03:33,018] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:03:32,994] ERROR django.request Internal Server Error: /api/products/current/list/
+Traceback (most recent call last):
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\views.py", line 143, in list_products
+    page_size = int(request.query_params.get('page_size', 50))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: 'http://localhost:8888/api/markings'
+[2025-06-13 16:03:33,549] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:03:33,551] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['http://localhost:8888/api/markings']}>
+[2025-06-13 16:03:33,634] ERROR django.request Internal Server Error: /api/products/current/list/
+Traceback (most recent call last):
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\views.py", line 143, in list_products
+    page_size = int(request.query_params.get('page_size', 50))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: 'http://localhost:8888/api/markings'
+[2025-06-13 16:03:33,811] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:03:33,811] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:03:33,812] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:03:33,814] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:03:33,917] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:03:33,919] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['http://localhost:8888/api/markings']}>
+[2025-06-13 16:03:34,033] ERROR django.request Internal Server Error: /api/products/current/list/
+Traceback (most recent call last):
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\views.py", line 143, in list_products
+    page_size = int(request.query_params.get('page_size', 50))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: 'http://localhost:8888/api/markings'
+[2025-06-13 16:03:50,294] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-13 16:04:29,998] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:04:29,999] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:04:30,002] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:04:30,003] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:04:30,003] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:04:30,009] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:04:30,012] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 16:04:30,258] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-5531838426980873116
+[2025-06-13 16:04:30,458] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:04:30,458] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:04:30,458] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:04:30,462] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:04:40,871] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:04:40,871] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:04:40,872] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:04:40,872] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:04:40,872] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:04:40,874] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:04:40,875] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=20, page_size=20
+[2025-06-13 16:04:40,929] INFO exam_sessions_subjects_products.views Paginated queryset count: 20, total: 393, cached with key: products_list_1674870691118231468
+[2025-06-13 16:04:41,025] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:04:41,026] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:04:41,026] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:04:41,027] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:04:41,114] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:04:41,114] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:04:41,114] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:04:41,115] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:09:37,452] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:09:37,453] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:09:37,454] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:09:37,455] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:09:37,882] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:09:37,888] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:09:37,891] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:09:37,909] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:09:37,911] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:09:37,925] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:09:37,930] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 16:09:38,070] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:09:38,071] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:09:38,072] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:09:38,073] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:09:38,395] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:09:38,396] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:09:38,396] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:09:38,397] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:09:38,399] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:09:38,410] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:09:38,420] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 16:09:38,438] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-5531838426980873116
+[2025-06-13 16:09:38,644] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:09:38,645] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:09:38,645] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:09:38,651] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:09:38,986] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-5531838426980873116
+[2025-06-13 16:10:07,396] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:10:07,396] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:10:07,403] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:10:07,403] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:10:07,403] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:10:07,408] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:10:07,408] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:10:07,411] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=20, page_size=20
+[2025-06-13 16:10:07,411] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:10:07,414] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:10:07,416] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:10:07,416] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:10:07,419] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:10:07,424] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=20, page_size=20
+[2025-06-13 16:10:07,579] INFO exam_sessions_subjects_products.views Paginated queryset count: 20, total: 393, cached with key: products_list_1674870691118231468
+[2025-06-13 16:10:07,603] INFO exam_sessions_subjects_products.views Paginated queryset count: 20, total: 393, cached with key: products_list_1674870691118231468
+[2025-06-13 16:22:56,825] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:22:56,825] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:22:56,839] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:22:56,840] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:22:56,840] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:22:56,840] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:22:56,840] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=20, page_size=20
+[2025-06-13 16:22:56,888] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:22:56,892] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:22:56,892] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:22:56,893] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:22:56,893] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:22:56,900] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:22:56,903] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=20, page_size=20
+[2025-06-13 16:22:56,951] INFO exam_sessions_subjects_products.views Paginated queryset count: 20, total: 393, cached with key: products_list_1674870691118231468
+[2025-06-13 16:22:57,024] INFO exam_sessions_subjects_products.views Paginated queryset count: 20, total: 393, cached with key: products_list_1674870691118231468
+[2025-06-13 16:22:57,093] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:22:57,094] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:22:57,094] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:22:57,095] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:22:57,095] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:22:57,099] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:22:57,101] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 16:22:57,155] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:22:57,159] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:22:57,159] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:22:57,160] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:22:57,160] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:22:57,164] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:22:57,167] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 16:22:57,242] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:22:57,251] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:22:57,256] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:22:57,257] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:22:57,429] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-5531838426980873116
+[2025-06-13 16:22:57,537] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-5531838426980873116
+[2025-06-13 16:26:06,747] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:26:06,749] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:26:06,752] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:26:06,753] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:26:07,700] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:26:07,700] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:26:07,701] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:26:07,702] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:26:07,920] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:26:07,921] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:26:07,921] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:26:07,923] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:26:08,376] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:26:08,378] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:26:08,379] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:26:08,380] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:26:08,438] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:26:08,439] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:26:08,440] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:26:08,442] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:45:40,964] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:45:40,965] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:45:40,966] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:45:40,968] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:45:40,969] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:45:40,976] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:45:40,978] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=20, page_size=20
+[2025-06-13 16:45:41,074] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:45:41,082] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:45:41,084] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:45:41,086] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:45:41,086] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:45:41,095] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:45:41,099] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=20, page_size=20
+[2025-06-13 16:45:41,303] INFO exam_sessions_subjects_products.views Paginated queryset count: 20, total: 393, cached with key: products_list_1674870691118231468
+[2025-06-13 16:45:41,428] INFO exam_sessions_subjects_products.views Paginated queryset count: 20, total: 393, cached with key: products_list_1674870691118231468
+[2025-06-13 16:45:41,430] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:45:41,436] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:45:41,437] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:45:41,440] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:45:41,440] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:45:41,443] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:45:41,451] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 16:45:41,943] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-5531838426980873116
+[2025-06-13 16:45:42,084] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:45:42,085] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:45:42,087] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:45:42,088] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:45:42,240] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:45:42,241] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 16:45:42,242] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 16:45:42,251] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:46:26,014] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:46:26,015] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:46:26,015] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:46:26,016] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:46:26,145] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:46:26,145] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:46:26,145] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:46:26,146] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 16:52:43,977] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:52:43,977] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:52:43,981] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:52:43,981] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:52:43,981] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:52:43,987] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:52:43,992] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 16:52:44,027] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 16:52:44,029] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 16:52:44,033] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 16:52:44,076] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 16:52:44,088] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 16:52:44,099] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 16:52:44,102] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 16:52:44,463] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-5531838426980873116
+[2025-06-13 16:52:44,540] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-5531838426980873116
+[2025-06-13 17:08:30,384] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:08:30,384] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 17:08:30,385] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 17:08:30,385] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 17:08:30,386] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 17:08:30,389] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 17:08:30,391] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 17:08:30,417] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:08:30,417] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 17:08:30,418] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 17:08:30,419] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 17:08:30,419] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 17:08:30,422] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 17:08:30,424] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 17:08:30,624] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-5531838426980873116
+[2025-06-13 17:08:30,661] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-5531838426980873116
+[2025-06-13 17:14:33,482] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:14:33,483] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 17:14:33,483] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 17:14:33,487] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 17:14:33,487] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 17:14:33,496] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 17:14:33,506] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 17:14:33,547] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:14:33,547] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 17:14:33,555] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 17:14:33,558] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 17:14:33,559] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 17:14:33,580] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 17:14:33,580] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 17:14:34,056] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-5531838426980873116
+[2025-06-13 17:14:34,150] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-5531838426980873116
+[2025-06-13 17:14:34,575] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:14:34,579] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:14:34,580] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:14:34,580] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 17:14:34,580] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 17:14:34,586] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 17:14:34,591] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=20, page_size=20
+[2025-06-13 17:14:34,655] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:14:34,655] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:14:34,655] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:14:34,655] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 17:14:34,655] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 17:14:34,667] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 17:14:34,674] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=20, page_size=20
+[2025-06-13 17:14:34,815] INFO exam_sessions_subjects_products.views Paginated queryset count: 20, total: 393, cached with key: products_list_1674870691118231468
+[2025-06-13 17:14:34,897] INFO exam_sessions_subjects_products.views Paginated queryset count: 20, total: 393, cached with key: products_list_1674870691118231468
+[2025-06-13 17:14:35,085] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:14:35,086] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:14:35,087] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:14:35,089] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:21:52,064] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:21:52,065] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:21:52,065] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:21:52,065] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 17:21:52,066] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 17:21:52,069] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 17:21:52,071] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=20, page_size=20
+[2025-06-13 17:21:52,155] INFO exam_sessions_subjects_products.views Paginated queryset count: 20, total: 393, cached with key: products_list_1674870691118231468
+[2025-06-13 17:21:52,290] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:21:52,291] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['SP6'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:21:52,291] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:21:52,291] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['SP6'], subject_code: None
+[2025-06-13 17:21:52,526] ERROR django.request Internal Server Error: /api/products/current/list/
+Traceback (most recent call last):
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\fields\__init__.py", line 2128, in get_prep_value
+    return int(value)
+           ^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: 'SP6'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\views.py", line 177, in list_products
+    queryset = queryset.filter(
+               ^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\query.py", line 1493, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\query.py", line 1511, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\query.py", line 1518, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1646, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1588, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1415, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\lookups.py", line 38, in __init__
+    self.rhs = self.get_prep_lookup()
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\lookups.py", line 536, in get_prep_lookup
+    return super().get_prep_lookup()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\lookups.py", line 321, in get_prep_lookup
+    rhs_value = self.lhs.output_field.get_prep_value(rhs_value)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\fields\__init__.py", line 2130, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'id' expected a number but got 'SP6'.
+[2025-06-13 17:22:10,551] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:22:10,551] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['SP6'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:22:10,551] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:22:10,554] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['SP6'], subject_code: None
+[2025-06-13 17:22:10,629] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:22:10,630] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['SP6'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:22:10,631] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:22:10,633] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['SP6'], subject_code: None
+[2025-06-13 17:22:10,777] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:22:10,777] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['19'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:22:10,787] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:22:10,787] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['19'], subject_code: None
+[2025-06-13 17:22:10,799] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 15
+[2025-06-13 17:22:10,801] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 17:22:10,807] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 15
+[2025-06-13 17:22:10,812] INFO exam_sessions_subjects_products.views Pagination: total=15, start=0, end=20, page_size=20
+[2025-06-13 17:22:10,879] INFO exam_sessions_subjects_products.views Paginated queryset count: 15, total: 15, cached with key: products_list_-9164198657870754604
+[2025-06-13 17:22:11,023] ERROR django.request Internal Server Error: /api/products/current/list/
+Traceback (most recent call last):
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\fields\__init__.py", line 2128, in get_prep_value
+    return int(value)
+           ^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: 'SP6'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\views.py", line 177, in list_products
+    queryset = queryset.filter(
+               ^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\query.py", line 1493, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\query.py", line 1511, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\query.py", line 1518, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1646, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1588, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1415, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\lookups.py", line 38, in __init__
+    self.rhs = self.get_prep_lookup()
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\lookups.py", line 536, in get_prep_lookup
+    return super().get_prep_lookup()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\lookups.py", line 321, in get_prep_lookup
+    rhs_value = self.lhs.output_field.get_prep_value(rhs_value)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\fields\__init__.py", line 2130, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'id' expected a number but got 'SP6'.
+[2025-06-13 17:22:11,189] ERROR django.request Internal Server Error: /api/products/current/list/
+Traceback (most recent call last):
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\fields\__init__.py", line 2128, in get_prep_value
+    return int(value)
+           ^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: 'SP6'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\views.py", line 177, in list_products
+    queryset = queryset.filter(
+               ^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\query.py", line 1493, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\query.py", line 1511, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\query.py", line 1518, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1646, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1588, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1415, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\lookups.py", line 38, in __init__
+    self.rhs = self.get_prep_lookup()
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\lookups.py", line 536, in get_prep_lookup
+    return super().get_prep_lookup()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\lookups.py", line 321, in get_prep_lookup
+    rhs_value = self.lhs.output_field.get_prep_value(rhs_value)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\fields\__init__.py", line 2130, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'id' expected a number but got 'SP6'.
+[2025-06-13 17:22:18,038] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:22:18,039] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:22:18,039] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:22:18,041] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:22:18,164] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:22:18,164] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:22:18,168] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:22:18,169] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:22:18,239] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:22:18,239] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['SP6'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:22:18,239] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:22:18,241] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['SP6'], subject_code: None
+[2025-06-13 17:22:18,520] ERROR django.request Internal Server Error: /api/products/current/list/
+Traceback (most recent call last):
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\fields\__init__.py", line 2128, in get_prep_value
+    return int(value)
+           ^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: 'SP6'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Code\Admin3\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\backend\django_Admin3\exam_sessions_subjects_products\views.py", line 177, in list_products
+    queryset = queryset.filter(
+               ^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\query.py", line 1493, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\query.py", line 1511, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\query.py", line 1518, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1646, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1588, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1415, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\lookups.py", line 38, in __init__
+    self.rhs = self.get_prep_lookup()
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\lookups.py", line 536, in get_prep_lookup
+    return super().get_prep_lookup()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\lookups.py", line 321, in get_prep_lookup
+    rhs_value = self.lhs.output_field.get_prep_value(rhs_value)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Code\Admin3\.venv\Lib\site-packages\django\db\models\fields\__init__.py", line 2130, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'id' expected a number but got 'SP6'.
+[2025-06-13 17:22:18,819] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:22:18,819] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['19'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:22:18,821] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:22:18,821] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:22:18,972] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:22:18,972] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['19'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:22:18,974] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:22:18,974] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:22:29,402] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:22:29,402] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['19'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:22:29,403] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:22:29,403] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:22:29,468] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:22:29,470] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['19'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:22:29,471] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:22:29,472] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:22:30,173] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:22:30,174] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['19'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:22:30,174] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:22:30,177] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:24:52,549] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:24:52,557] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:24:52,558] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:24:52,558] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:24:52,559] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:24:52,560] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:24:52,560] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:24:52,563] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:24:52,702] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:24:52,702] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:24:52,702] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:24:52,703] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:25:16,123] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:25:16,123] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['10'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:25:16,139] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:25:16,139] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['10'], subject_code: None
+[2025-06-13 17:25:16,140] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 18
+[2025-06-13 17:25:16,140] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 17:25:16,146] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 18
+[2025-06-13 17:25:16,148] INFO exam_sessions_subjects_products.views Pagination: total=18, start=0, end=20, page_size=20
+[2025-06-13 17:25:16,223] INFO exam_sessions_subjects_products.views Paginated queryset count: 18, total: 18, cached with key: products_list_6024321261986658043
+[2025-06-13 17:25:22,029] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:25:22,029] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['14'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:25:22,029] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:25:22,029] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['14'], subject_code: None
+[2025-06-13 17:25:22,029] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 19
+[2025-06-13 17:25:22,029] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 17:25:22,036] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 19
+[2025-06-13 17:25:22,037] INFO exam_sessions_subjects_products.views Pagination: total=19, start=0, end=20, page_size=20
+[2025-06-13 17:25:22,157] INFO exam_sessions_subjects_products.views Paginated queryset count: 19, total: 19, cached with key: products_list_-102833284939375571
+[2025-06-13 17:25:58,581] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:25:58,581] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['18'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:25:58,581] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:25:58,581] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['18'], subject_code: None
+[2025-06-13 17:25:58,594] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 18
+[2025-06-13 17:25:58,595] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 17:25:58,598] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 18
+[2025-06-13 17:25:58,600] INFO exam_sessions_subjects_products.views Pagination: total=18, start=0, end=20, page_size=20
+[2025-06-13 17:25:58,678] INFO exam_sessions_subjects_products.views Paginated queryset count: 18, total: 18, cached with key: products_list_-1125738066966053384
+[2025-06-13 17:26:03,901] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:26:03,902] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 17:26:03,902] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 17:26:03,903] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-13 17:26:03,904] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 17:26:03,909] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-13 17:26:03,912] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-13 17:26:04,109] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:26:04,109] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:26:04,109] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:26:04,116] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:26:04,401] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_-5531838426980873116
+[2025-06-13 17:26:04,804] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:26:04,806] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:26:04,807] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:26:04,807] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:26:04,962] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:26:04,962] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-13 17:26:04,963] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-13 17:26:04,967] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:26:05,380] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:26:05,381] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:26:05,382] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:26:05,385] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:26:05,614] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:26:05,616] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['18'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:26:05,616] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:26:05,617] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:26:06,563] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:26:06,564] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['18'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:26:06,565] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:26:06,566] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:26:16,039] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:26:16,040] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['19'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:26:16,041] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:26:16,042] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-13 17:26:22,243] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:26:22,243] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['22'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:26:22,243] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:26:22,243] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['22'], subject_code: None
+[2025-06-13 17:26:22,247] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 17
+[2025-06-13 17:26:22,247] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 17:26:22,249] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 17
+[2025-06-13 17:26:22,251] INFO exam_sessions_subjects_products.views Pagination: total=17, start=0, end=20, page_size=20
+[2025-06-13 17:26:22,289] INFO exam_sessions_subjects_products.views Paginated queryset count: 17, total: 17, cached with key: products_list_6653825986257284302
+[2025-06-13 17:26:28,701] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:26:28,701] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['25'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:26:28,701] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:26:28,703] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['25'], subject_code: None
+[2025-06-13 17:26:28,706] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 19
+[2025-06-13 17:26:28,707] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 17:26:28,709] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 19
+[2025-06-13 17:26:28,712] INFO exam_sessions_subjects_products.views Pagination: total=19, start=0, end=20, page_size=20
+[2025-06-13 17:26:28,799] INFO exam_sessions_subjects_products.views Paginated queryset count: 19, total: 19, cached with key: products_list_-1024778655928915694
+[2025-06-13 17:26:31,930] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-13 17:26:31,930] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'subject': ['29'], 'page': ['1'], 'page_size': ['20']}>
+[2025-06-13 17:26:31,930] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-13 17:26:31,930] INFO exam_sessions_subjects_products.views Filtering subject_ids: ['29'], subject_code: None
+[2025-06-13 17:26:31,944] INFO exam_sessions_subjects_products.views After subject_ids filter, queryset count: 0
+[2025-06-13 17:26:31,944] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-13 17:26:31,949] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 0
+[2025-06-13 17:26:31,950] INFO exam_sessions_subjects_products.views Pagination: total=0, start=0, end=20, page_size=20
+[2025-06-13 17:26:31,956] INFO exam_sessions_subjects_products.views Paginated queryset count: 0, total: 0, cached with key: products_list_1859211677202863304
+[2025-06-13 17:29:26,540] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\django_Admin3\settings\base.py changed, reloading.

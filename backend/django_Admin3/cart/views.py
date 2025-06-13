@@ -9,6 +9,7 @@ from .models import Cart, CartItem, ActedOrder, ActedOrderItem
 from .serializers import CartSerializer, CartItemSerializer, ActedOrderSerializer
 from products.models import Product
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+from core_auth.email_service import EmailService
 
 class CartViewSet(viewsets.ViewSet):
     """
@@ -256,6 +257,15 @@ class CartViewSet(viewsets.ViewSet):
                     metadata=item.metadata
                 )
             cart.items.all().delete()
+            
+            # Send order confirmation email
+            try:
+                EmailService.send_order_confirmation(order)
+            except Exception as e:
+                # Log the error but don't fail the order
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to send order confirmation email for order #{order.id}: {str(e)}")
         
         serializer = ActedOrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
