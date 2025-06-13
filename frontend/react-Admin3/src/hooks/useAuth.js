@@ -100,7 +100,15 @@ export const AuthProvider = ({ children }) => {
 				setUser(result.user);
 				setIsAuthenticated(true);
 				setError(null);
-				navigate("/");
+				
+				// Check for post-login redirect
+				const redirectPath = localStorage.getItem("postLoginRedirect");
+				if (redirectPath) {
+					localStorage.removeItem("postLoginRedirect");
+					navigate(redirectPath);
+				} else {
+					navigate("/");
+				}
 				return result;
 			}
 			// login error

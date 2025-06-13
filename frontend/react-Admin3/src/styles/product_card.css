@@ -8,10 +8,6 @@
   min-height: 250px;
 }
 
-.product-card-header {    
-    background-color: var(--product-card-header-bg-color) !important;
-}
-
 /* Tutorial product header */
 .product-card-header.tutorial-header {
     background-color: rgba(240, 253, 244, 1) !important;
@@ -21,16 +17,17 @@
 
 /* Marking product header */
 .product-card-header.marking-header {
-    background-color: rgba(255, 247, 237, 1) !important;
-    color: #92400e !important;
+    background-color: rgba(255, 247, 237, 1) !important;    
     border: 1px solid #fed7aa !important;
+    background-color: 'rgba(255, 247, 237, 1)';
+    border: '1px solid #fed7aa'
 }
 
 /* Material product header */
 .product-card-header.material-header {
-    background-color: rgba(239, 246, 255, 1) !important;
-    color: #1e40af !important;
-    border: 1px solid #bfdbfe !important;
+    background-color: rgba(239, 246, 255, 1) !important;    
+    border: 1px solid #bfdbfe !important;    
+		border: '1px solid #bfdbfe';
 }
 
 .product-add-to-cart-button {

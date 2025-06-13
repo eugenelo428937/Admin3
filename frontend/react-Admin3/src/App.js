@@ -8,6 +8,7 @@ import ActEdNavbar from "./components/ActEdNavbar";
 import NoMatch from "./components/NoMatch";
 import { CartProvider } from "./contexts/CartContext";
 import { ProductProvider } from "./contexts/ProductContext";
+import { VATProvider } from "./contexts/VATContext";
 import AdminExamSessionList from "./components/admin/exam-sessions/ExamSessionList";
 import AdminExamSessionForm from "./components/admin/exam-sessions/ExamSessionForm";
 import AdminSubjectList from "./components/admin/subjects/SubjectList";
@@ -41,73 +42,75 @@ function App() {
 			<CartProvider>
 				<AuthProvider>
 					<ProductProvider>
-						<div className="App">
-							<ActEdNavbar />
-							<Routes>
-								<Route path="/home" element={<Home />} />
-								<Route path="/products" element={<ProductList />} />
-								<Route
-									path="admin/exam-sessions"
-									element={<AdminExamSessionList />}
-								/>
-								<Route
-									path="admin/exam-sessions/new"
-									element={<AdminExamSessionForm />}
-								/>
-								<Route
-									path="/exam-sessions/edit/:id"
-									element={<AdminExamSessionForm />}
-								/>
-								<Route
-									path="admin/subjects"
-									element={<AdminSubjectList />}
-								/>
-								<Route
-									path="admin/subjects/new"
-									element={<AdminSubjectForm />}
-								/>
-								<Route
-									path="admin/subjects/:id"
-									element={<AdminSubjectDetail />}
-								/>
-								<Route
-									path="admin/subjects/:id/edit"
-									element={<AdminSubjectForm />}
-								/>
-								<Route
-									path="admin/subjects/import"
-									element={<AdminSubjectImport />}
-								/>
-								<Route path="*" element={<NoMatch />} />
-								<Route
-									path="admin/products"
-									element={<AdminProductList />}
-								/>
-								<Route
-									path="admin/products/:id"
-									element={<AdminProductDetail />}
-								/>
-								<Route
-									path="admin/products/new"
-									element={<AdminProductForm />}
-								/>
-								<Route
-									path="admin/products/edit/:id"
-									element={<AdminProductForm />}
-								/>
-								<Route
-									path="admin/products/import"
-									element={<AdminProductImport />}
-								/>
-								<Route path="/checkout" element={<CheckoutPage />} />
-								<Route path="/orders" element={<OrderHistory />} />
-								<Route path="/register" element={<RegisterForm />} />
-								<Route
-									path="/tutorials"
-									element={<TutorialProductList />}
-								/>
-							</Routes>
-						</div>
+						<VATProvider>
+							<div className="App">
+								<ActEdNavbar />
+								<Routes>
+									<Route path="/home" element={<Home />} />
+									<Route path="/products" element={<ProductList />} />
+									<Route
+										path="admin/exam-sessions"
+										element={<AdminExamSessionList />}
+									/>
+									<Route
+										path="admin/exam-sessions/new"
+										element={<AdminExamSessionForm />}
+									/>
+									<Route
+										path="/exam-sessions/edit/:id"
+										element={<AdminExamSessionForm />}
+									/>
+									<Route
+										path="admin/subjects"
+										element={<AdminSubjectList />}
+									/>
+									<Route
+										path="admin/subjects/new"
+										element={<AdminSubjectForm />}
+									/>
+									<Route
+										path="admin/subjects/:id"
+										element={<AdminSubjectDetail />}
+									/>
+									<Route
+										path="admin/subjects/:id/edit"
+										element={<AdminSubjectForm />}
+									/>
+									<Route
+										path="admin/subjects/import"
+										element={<AdminSubjectImport />}
+									/>
+									<Route path="*" element={<NoMatch />} />
+									<Route
+										path="admin/products"
+										element={<AdminProductList />}
+									/>
+									<Route
+										path="admin/products/:id"
+										element={<AdminProductDetail />}
+									/>
+									<Route
+										path="admin/products/new"
+										element={<AdminProductForm />}
+									/>
+									<Route
+										path="admin/products/edit/:id"
+										element={<AdminProductForm />}
+									/>
+									<Route
+										path="admin/products/import"
+										element={<AdminProductImport />}
+									/>
+									<Route path="/checkout" element={<CheckoutPage />} />
+									<Route path="/orders" element={<OrderHistory />} />
+									<Route path="/register" element={<RegisterForm />} />
+									<Route
+										path="/tutorials"
+										element={<TutorialProductList />}
+									/>
+								</Routes>
+							</div>
+						</VATProvider>
 					</ProductProvider>
 				</AuthProvider>
 			</CartProvider>

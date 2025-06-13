@@ -145,6 +145,7 @@ class TutorialProductVariationListView(APIView):
                 'variation_type': variation.product_product_variation.product_variation.variation_type,
                 'name': variation.product_product_variation.product_variation.name,
                 'description': variation.product_product_variation.product_variation.description,
+                'description_short': variation.product_product_variation.product_variation.description_short,
                 'product_code': variation.product_code,
             })
         
@@ -197,6 +198,7 @@ class TutorialComprehensiveDataView(APIView):
                     'id': variation.id,
                     'name': variation.name,
                     'description': variation.description,
+                    'description_short': variation.description_short,
                     'events': []
                 }
             
