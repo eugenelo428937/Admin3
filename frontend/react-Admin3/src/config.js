@@ -30,6 +30,7 @@ const config = {
 		process.env.REACT_APP_API_BASE_URL +
 		process.env.REACT_APP_API_TUTORIAL_URL,
 	isDevelopment: process.env.NODE_ENV === "development",
+	pageSize: process.env.REACT_APP_API_PAGE_SIZE,
 	enableDebugLogs: true,
 };
 

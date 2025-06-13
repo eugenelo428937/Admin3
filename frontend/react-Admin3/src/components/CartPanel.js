@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Offcanvas, Button, ListGroup, Row, Col } from "react-bootstrap";
 import { useCart } from "../contexts/CartContext";
 import { useVAT } from "../contexts/VATContext";
@@ -9,9 +9,9 @@ import { generateProductCode } from "../utils/productCodeGenerator";
 import VATToggle from "./VATToggle";
 import "../styles/cart_panel.css";
 
-const CartPanel = ({ show, handleClose }) => {
+const CartPanel = React.memo(({ show, handleClose }) => {
   const { cartItems, clearCart, removeFromCart } = useCart();
-  const { getPriceDisplay, formatPrice, isProductVATExempt } = useVAT();
+  const { getPriceDisplay, formatPrice, isProductVATExempt, showVATInclusive } = useVAT();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -28,8 +28,8 @@ const CartPanel = ({ show, handleClose }) => {
     }
   };
 
-  // Calculate cart totals with VAT
-  const calculateCartTotals = () => {
+  // Memoize cart calculations to avoid recalculating on every render
+  const cartTotals = useMemo(() => {
     let subtotal = 0;
     let totalVAT = 0;
     
@@ -49,18 +49,18 @@ const CartPanel = ({ show, handleClose }) => {
       totalVAT,
       total: subtotal + totalVAT
     };
-  };
+  }, [cartItems, getPriceDisplay, isProductVATExempt, showVATInclusive]);
 
-  const cartTotals = calculateCartTotals();
-
-  // Get individual item price display
-  const getItemPriceDisplay = (item) => {
-    const itemPrice = parseFloat(item.actual_price) || 0;
-    const isVATExempt = isProductVATExempt(item.product_type);
-    const priceDisplay = getPriceDisplay(itemPrice, 0.20, isVATExempt);
-    
-    return `${formatPrice(priceDisplay.displayPrice)} ${priceDisplay.label}`;
-  };
+  // Memoize individual item price display calculation
+  const getItemPriceDisplay = useMemo(() => {
+    return (item) => {
+      const itemPrice = parseFloat(item.actual_price) || 0;
+      const isVATExempt = isProductVATExempt(item.product_type);
+      const priceDisplay = getPriceDisplay(itemPrice, 0.20, isVATExempt);
+      
+      return `${formatPrice(priceDisplay.displayPrice)} ${priceDisplay.label}`;
+    };
+  }, [getPriceDisplay, formatPrice, isProductVATExempt, showVATInclusive]);
 
   return (
 		<Offcanvas show={show} onHide={handleClose} placement="end">
@@ -417,6 +417,6 @@ const CartPanel = ({ show, handleClose }) => {
 			</Offcanvas.Body>
 		</Offcanvas>
   );
-};
+});
 
 export default CartPanel;

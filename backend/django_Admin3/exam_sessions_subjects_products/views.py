@@ -133,17 +133,24 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
     def list_products(self, request):
         """
         Get list of all products with their subject details.
-        Optimized with caching and better query optimization.
+        Optimized with caching and pagination support.
         """
         logger.info('--- list_products called ---')
         logger.info(f'Query params: {request.query_params}')
         
-        # Create cache key based on query parameters
+        # Get pagination parameters
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 50))
+        logger.info(f'Pagination: page={page}, page_size={page_size}')
+        
+        # Create cache key based on query parameters (including pagination)
         cache_key_params = {
             'subject_ids': request.query_params.getlist('subject'),
             'subject_code': request.query_params.get('subject_code'),
             'main_category_ids': request.query_params.getlist('main_category'),
-            'delivery_method_ids': request.query_params.getlist('delivery_method')
+            'delivery_method_ids': request.query_params.getlist('delivery_method'),
+            'page': page,
+            'page_size': page_size
         }
         cache_key = f"products_list_{hash(str(sorted(cache_key_params.items())))}"
         
@@ -198,27 +205,49 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             
         logger.info(f'After product group filter, queryset count: {queryset.count()}')
 
-        # Get subjects for filters (cache this separately)
-        subjects_cache_key = 'all_subjects_ordered'
-        subjects_data = cache.get(subjects_cache_key)
-        if not subjects_data:
-            subjects = Subject.objects.all().order_by('code')
-            subject_serializer = SubjectSerializer(subjects, many=True)
-            subjects_data = subject_serializer.data
-            cache.set(subjects_cache_key, subjects_data, 1800)  # 30 minutes
+        # Apply pagination
+        total_count = queryset.count()
+        start_index = (page - 1) * page_size
+        end_index = start_index + page_size
+        paginated_queryset = queryset[start_index:end_index]
+        
+        logger.info(f'Pagination: total={total_count}, start={start_index}, end={end_index}, page_size={page_size}')
+        
+        # Get subjects for filters (cache this separately - only on first page)
+        subjects_data = []
+        if page == 1:
+            subjects_cache_key = 'all_subjects_ordered'
+            subjects_data = cache.get(subjects_cache_key)
+            if not subjects_data:
+                subjects = Subject.objects.all().order_by('code')
+                subject_serializer = SubjectSerializer(subjects, many=True)
+                subjects_data = subject_serializer.data
+                cache.set(subjects_cache_key, subjects_data, 1800)  # 30 minutes
         
         # Serialize the main data
-        serializer = ProductListSerializer(queryset, many=True)
+        serializer = ProductListSerializer(paginated_queryset, many=True)
+        
+        # Calculate pagination info
+        has_next = end_index < total_count
+        has_previous = page > 1
         
         response_data = {
             'products': serializer.data,
+            'pagination': {
+                'count': total_count,
+                'page': page,
+                'page_size': page_size,
+                'has_next': has_next,
+                'has_previous': has_previous,
+                'total_pages': (total_count + page_size - 1) // page_size  # Ceiling division
+            },
             'filters': {
                 'subjects': subjects_data
-            }
+            } if page == 1 else {}  # Only include subjects on first page
         }
         
-        # Cache the result for 10 minutes
-        cache.set(cache_key, response_data, 600)
-        logger.info(f'Final queryset count: {queryset.count()}, cached with key: {cache_key}')
+        # Cache the result for 5 minutes (shorter cache for paginated results)
+        cache.set(cache_key, response_data, 300)
+        logger.info(f'Paginated queryset count: {len(serializer.data)}, total: {total_count}, cached with key: {cache_key}')
         
         return Response(response_data)

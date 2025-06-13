@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import {
 	Card,
@@ -35,6 +35,7 @@ import {
 } from "@mui/material";
 import { useCart } from "../contexts/CartContext";
 import tutorialService from "../services/tutorialService";
+import { useVAT } from "../contexts/VATContext";
 
 /**
  * TutorialProductCard
@@ -42,7 +43,7 @@ import tutorialService from "../services/tutorialService";
  * Allows users to select tutorial variations with choice preferences (1st, 2nd, 3rd)
  * For Online Classroom products (recordings), uses the same layout as normal ProductCard
  */
-const TutorialProductCard = ({
+const TutorialProductCard = React.memo(({
 	subjectCode,
 	subjectName,
 	location,
@@ -64,26 +65,61 @@ const TutorialProductCard = ({
 	const [showDiscounts, setShowDiscounts] = useState(false);
 
 	const { addToCart } = useCart();
+	const { getPriceDisplay, formatPrice, isProductVATExempt, showVATInclusive } = useVAT();
 
-	// Check if this is an Online Classroom product (recordings without events)
-	const isOnlineClassroom = product.product_name?.toLowerCase().includes('online classroom') || 
-	                         product.product_name?.toLowerCase().includes('recording') ||
-	                         product.learning_mode === 'LMS' ||
-	                         !variations.some(v => v.events && v.events.length > 0);
+	// Memoize expensive calculations
+	const productChecks = useMemo(() => ({
+		isOnlineClassroom: product.product_name?.toLowerCase().includes('online classroom') || 
+		                  product.product_name?.toLowerCase().includes('recording') ||
+		                  product.learning_mode === 'LMS' ||
+		                  !variations.some(v => v.events && v.events.length > 0)
+	}), [product.product_name, product.learning_mode, variations]);
 
-	// Regular product card logic (from ProductCard.js)
-	const hasVariations = variations && variations.length > 0;
-	const singleVariation = variations && variations.length === 1 ? variations[0] : null;
-	const currentVariation = hasVariations
-		? (selectedVariations.length > 0 
-			? variations.find((v) => selectedVariations.includes(v.id)) 
-			: singleVariation || variations[0])
-		: singleVariation;
+	const { isOnlineClassroom } = productChecks;
+
+	// Memoize variation info
+	const variationInfo = useMemo(() => {
+		const hasVariations = variations && variations.length > 0;
+		const singleVariation = variations && variations.length === 1 ? variations[0] : null;
+		const currentVariation = hasVariations
+			? (selectedVariations.length > 0 
+				? variations.find((v) => selectedVariations.includes(v.id)) 
+				: singleVariation || variations[0])
+			: singleVariation;
+
+		return { hasVariations, singleVariation, currentVariation };
+	}, [variations, selectedVariations]);
+
+	const { hasVariations, singleVariation, currentVariation } = variationInfo;
 
 	const hasPriceType = (variation, priceType) => {
 		if (!variation || !variation.prices) return false;
 		return variation.prices.some((p) => p.price_type === priceType);
 	};
+
+	// Memoize price calculation functions
+	const getPrice = useMemo(() => {
+		return (variation, priceType) => {
+			if (!variation || !variation.prices) return null;
+			const priceObj = variation.prices.find((p) => p.price_type === priceType);
+			if (!priceObj) return null;
+
+			// Check if this product is VAT exempt
+			const isVATExempt = isProductVATExempt(product.type);
+			
+			// Get price display info from VAT context
+			const priceDisplay = getPriceDisplay(priceObj.amount, 0.20, isVATExempt);
+			
+			return `${formatPrice(priceDisplay.displayPrice)} ${priceDisplay.label}`;
+		};
+	}, [getPriceDisplay, formatPrice, isProductVATExempt, product.type, showVATInclusive]);
+
+	const getEventPrice = useMemo(() => {
+		return (event) => {
+			if (!event || !event.price) return null;
+			return `£${parseFloat(event.price).toFixed(2)}`;
+		};
+	}, []);
 
 	// Reset price type to standard if current selection is not available for the current variation
 	useEffect(() => {
@@ -256,19 +292,6 @@ const TutorialProductCard = ({
 			default:
 				return "secondary";
 		}
-	};
-
-	// Get price for variation (same logic as ProductCard)
-	const getPrice = (variation, priceType) => {
-		if (!variation || !variation.prices) return null;
-		const priceObj = variation.prices.find((p) => p.price_type === priceType);
-		return priceObj ? `£${priceObj.amount}` : null;
-	};
-
-	// For tutorials, get price from event (tutorials store price in event.price)
-	const getEventPrice = (event) => {
-		if (!event || !event.price) return null;
-		return `£${event.price}`;
 	};
 
 	// Get price for tutorial variation + event combination
@@ -849,9 +872,7 @@ const TutorialProductCard = ({
 				maxWidth="lg"
 				fullWidth>
 				<DialogTitle>
-					<Typography variant="h5">
-						{subjectCode} {location}
-					</Typography>
+					{subjectCode} {location}
 				</DialogTitle>
 				<DialogContent>
 					<Box
@@ -1021,7 +1042,7 @@ const TutorialProductCard = ({
 			</Dialog>
 		</>
 	);
-};
+});
 
 TutorialProductCard.propTypes = {
 	subjectCode: PropTypes.string.isRequired,

@@ -108,3 +108,7 @@ button.navbar-toggler.menu-button:hover {
 	box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 	background-color: #333333;
 }
+
+.dropdown-submenu .text-primary{
+	color: var(--text-primary-light) !important;
+}

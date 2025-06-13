@@ -49,11 +49,16 @@ const productService = {
 	},
 
 	// Get available products from exam_sessions_subjects_products
-	getAvailableProducts: async (params = {}) => {
+	getAvailableProducts: async (params = {}, page = 1, pageSize = 50) => {
 		try {
+			// Add pagination parameters
+			const paginationParams = new URLSearchParams(params);
+			paginationParams.append('page', page);
+			paginationParams.append('page_size', pageSize);
+
 			const response = await httpService.get(
 				`${PRODUCTS_API_URL}/current/list/`,
-				{ params }
+				{ params: paginationParams }
 			);
 			return response.data;
 		} catch (error) {

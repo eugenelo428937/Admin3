@@ -4,6 +4,7 @@ import { useCart } from '../contexts/CartContext';
 import { generateProductCode } from '../utils/productCodeGenerator';
 import RulesEngineDisplay from './RulesEngineDisplay';
 import rulesEngineService from '../services/rulesEngineService';
+import httpService from '../services/httpService';
 
 const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
   const { cartItems } = useCart();
@@ -72,6 +73,26 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
     loadUserSelections();
   }, []);
 
+  // Test email functionality
+  const handleTestEmail = async () => {
+    try {
+      setLoading(true);
+      const response = await httpService.post('/auth/test-email/', {
+        email: 'eugenelo1030@gmail.com'
+      });
+      
+      if (response.data.success) {
+        setSuccess('Test email sent successfully! Check your email.');
+      } else {
+        setError('Failed to send test email.');
+      }
+    } catch (err) {
+      setError('Error sending test email: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const steps = [
     { title: 'Cart Review', description: 'Review your items' },
     { title: 'Important Notes & Options', description: 'Review optional preferences' },
@@ -123,6 +144,21 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
         return (
           <div className="cart-review">
             <h4>Review Your Order</h4>
+            
+            {/* Test Email Button - for development/testing */}
+            <div className="mb-3 p-3 border rounded bg-light">
+              <h6>Email Test (Development)</h6>
+              <p className="text-muted small">Test the email functionality before completing your order</p>
+              <Button 
+                variant="outline-primary" 
+                size="sm"
+                onClick={handleTestEmail}
+                disabled={loading}
+              >
+                {loading ? 'Sending...' : 'Send Test Email'}
+              </Button>
+            </div>
+            
             {cartItems.length === 0 ? (
               <Alert variant="info">Your cart is empty.</Alert>
             ) : (

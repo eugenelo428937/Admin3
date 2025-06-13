@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from "react";
+import config from "../config";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
 	Container,
 	Row,
 	Col,
 	Form,
 	Alert,
+	Button,
+	Spinner,
 } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
@@ -16,37 +19,51 @@ import ProductCard from "./ProductCard";
 import VATToggle from "./VATToggle";
 import Select from "react-select";
 import { FilterCircle } from "react-bootstrap-icons";
-import Accordion from 'react-bootstrap/Accordion';
+import Accordion from "react-bootstrap/Accordion";
 
-const ProductList = () => {
+const ProductList = React.memo(() => {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const queryParams = new URLSearchParams(location.search);
-	const subjectFilter = queryParams.get("subject");
-	const categoryFilter = queryParams.get("category");
+	const subjectFilter = queryParams.get("subject_code") || queryParams.get("subject");
+	const categoryFilter = queryParams.get("main_category") || queryParams.get("category");
 
 	const [products, setProducts] = useState([]);
 	const [loading, setLoading] = useState(true);
+	const [loadingMore, setLoadingMore] = useState(false);
 	const [error, setError] = useState(null);
 	const [bulkDeadlines, setBulkDeadlines] = useState({});
 	const [mainCategory, setMainCategory] = useState([]);
 	const [subjectGroup, setSubjectGroup] = useState([]);
 	const [deliveryMethod, setDeliveryMethod] = useState([]);
-	const [groupFilters, setGroupFilters] = useState({ MAIN_CATEGORY: [], DELIVERY_METHOD: [] });
-	const [groupOptions, setGroupOptions] = useState({ MAIN_CATEGORY: [], DELIVERY_METHOD: [] });
+	const [groupFilters, setGroupFilters] = useState({
+		MAIN_CATEGORY: [],
+		DELIVERY_METHOD: [],
+	});
+	const [groupOptions, setGroupOptions] = useState({
+		MAIN_CATEGORY: [],
+		DELIVERY_METHOD: [],
+	});
 	const [subjectOptions, setSubjectOptions] = useState([]);
 	const [showFilters, setShowFilters] = useState(true);
 	const [isMobile, setIsMobile] = useState(false);
 
-	const { addToCart } = useCart();
+	// Pagination state
+	const [currentPage, setCurrentPage] = useState(1);
+	const [hasNextPage, setHasNextPage] = useState(false);
+	const [totalProducts, setTotalProducts] = useState(0);
+	const PAGE_SIZE = config.pageSize;
 
-	useEffect(() => {
-		if (subjectFilter) {
-			setSubjectGroup([subjectFilter]);
-		} else {
-			setSubjectGroup([]); // Reset when no subject in URL
-		}
-	}, [subjectFilter]);
+	const { addToCart } = useCart();
+	const { showVATInclusive } = useVAT();
+
+	// Memoize expensive calculations
+	const allEsspIds = useMemo(() => {
+		const markingProducts = products.filter((p) => p.type === "Markings");
+		return markingProducts.map((p) => p.essp_id || p.id || p.product_id);
+	}, [products]);
+
+	// Note: Subject handling moved to subjects fetch useEffect to handle code to ID conversion
 
 	useEffect(() => {
 		if (categoryFilter) {
@@ -56,42 +73,98 @@ const ProductList = () => {
 		}
 	}, [categoryFilter]);
 
-	// Reset all filters when subject or category changes from navbar
+	// Reset category filter when it changes from navbar (subject handled in subjects fetch useEffect)
 	useEffect(() => {
 		setMainCategory(categoryFilter ? [categoryFilter] : []);
-		setSubjectGroup(subjectFilter ? [subjectFilter] : []);
 		setDeliveryMethod([]);
-	}, [subjectFilter, categoryFilter]);
+	}, [categoryFilter]);
 
-	// Fetch products from backend when group filters change
-	useEffect(() => {
-		setLoading(true);
-		setError(null);
-		const params = new URLSearchParams();
-		mainCategory.forEach(id => params.append('main_category', id));
-		deliveryMethod.forEach(id => params.append('delivery_method', id));
-		subjectGroup.forEach(id => params.append('subject', id));
-		
-		console.debug('Product filter params:', params.toString());
-		productService.getAvailableProducts(params)
-			.then((data) => {
-				setProducts(data.products || []);
-				setLoading(false);
-			})
-			.catch((err) => {
+	// Function to fetch products with pagination
+	const fetchProducts = useCallback(
+		async (page = 1, resetProducts = true) => {
+			if (page === 1) {
+				setLoading(true);
+			} else {
+				setLoadingMore(true);
+			}
+			setError(null);
+
+			const params = new URLSearchParams();
+			mainCategory.forEach((id) => params.append("main_category", id));
+			deliveryMethod.forEach((id) => params.append("delivery_method", id));
+			subjectGroup.forEach((id) => params.append("subject", id));
+
+			console.debug(
+				"Product filter params:",
+				params.toString(),
+				"Page:",
+				page
+			);
+
+			try {
+				const data = await productService.getAvailableProducts(
+					params,
+					page,
+					PAGE_SIZE
+				);
+
+				// Handle paginated response
+				const newProducts = data.products || data.results || [];
+				const pagination = data.pagination || {};
+
+				if (resetProducts || page === 1) {
+					setProducts(newProducts);
+				} else {
+					setProducts((prev) => [...prev, ...newProducts]);
+				}
+
+				// Update pagination state
+				setHasNextPage(pagination.has_next || false);
+				setTotalProducts(pagination.count || newProducts.length);
+				setCurrentPage(page);
+			} catch (err) {
 				setError("Failed to load products");
+			} finally {
 				setLoading(false);
-			});
+				setLoadingMore(false);
+			}
+		},
+		[mainCategory, subjectGroup, deliveryMethod, PAGE_SIZE]
+	);
+
+	// Load more products function
+	const loadMoreProducts = useCallback(() => {
+		if (hasNextPage && !loadingMore) {
+			fetchProducts(currentPage + 1, false);
+		}
+	}, [hasNextPage, loadingMore, currentPage, fetchProducts]);
+
+	// Reset and fetch products when filters change
+	useEffect(() => {
+		setCurrentPage(1);
+		fetchProducts(1, true);
 	}, [mainCategory, subjectGroup, deliveryMethod]);
 
 	// Fetch all subjects for the Subject filter
 	useEffect(() => {
 		subjectService.getAll().then((subjects) => {
 			setSubjectOptions(
-				(subjects || []).map((s) => ({ value: s.id, label: s.name || s.code }))
+				(subjects || []).map((s) => ({
+					value: s.id,
+					label: s.name || s.code,
+				}))
 			);
+			
+			// If we have a subject_code from URL, convert it to subject ID
+			if (subjectFilter && typeof subjectFilter === 'string' && isNaN(parseInt(subjectFilter))) {
+				const foundSubject = subjects.find(s => s.code === subjectFilter);
+				if (foundSubject) {
+					console.log(`Converting subject_code ${subjectFilter} to ID ${foundSubject.id}`);
+					setSubjectGroup([foundSubject.id]);
+				}
+			}
 		});
-	}, []);
+	}, [subjectFilter]);
 
 	// Fetch product group filters for MAIN_CATEGORY and DELIVERY_METHOD only
 	useEffect(() => {
@@ -103,16 +176,16 @@ const ProductList = () => {
 					filterMap.MAIN_CATEGORY.push(...f.groups);
 					optionMap.MAIN_CATEGORY.push(
 						...f.groups
-							.filter(g => g && g.id !== undefined && g.name)
-							.map(g => ({ value: g.id, label: g.name }))
+							.filter((g) => g && g.id !== undefined && g.name)
+							.map((g) => ({ value: g.id, label: g.name }))
 					);
 				}
 				if (f.filter_type === "DELIVERY_METHOD") {
 					filterMap.DELIVERY_METHOD.push(...f.groups);
 					optionMap.DELIVERY_METHOD.push(
 						...f.groups
-							.filter(g => g && g.id !== undefined && g.name)
-							.map(g => ({ value: g.id, label: g.name }))
+							.filter((g) => g && g.id !== undefined && g.name)
+							.map((g) => ({ value: g.id, label: g.name }))
 					);
 				}
 			});
@@ -123,43 +196,43 @@ const ProductList = () => {
 
 	// Fetch bulk deadlines whenever products change
 	useEffect(() => {
-		// For marking products, use the correct ExamSessionSubjectProduct id (essp_id)
-		const markingProducts = products.filter((p) => p.type === "Markings");
-		const allEsspIds = markingProducts.map((p) => p.essp_id || p.id || p.product_id);
 		if (allEsspIds.length > 0) {
-			productService.getBulkMarkingDeadlines(allEsspIds).then((deadlines) => {
-				setBulkDeadlines(deadlines);
-			});
+			productService
+				.getBulkMarkingDeadlines(allEsspIds)
+				.then((deadlines) => {
+					setBulkDeadlines(deadlines);
+				});
 		} else {
 			setBulkDeadlines({});
 		}
-	}, [products]);
+	}, [allEsspIds]);
 
 	useEffect(() => {
 		const handleResize = () => {
 			setIsMobile(window.innerWidth <= 991); // Bootstrap lg breakpoint
 			if (window.innerWidth > 991) setShowFilters(true);
 		};
-		window.addEventListener('resize', handleResize);
+		window.addEventListener("resize", handleResize);
 		handleResize();
-		return () => window.removeEventListener('resize', handleResize);
+		return () => window.removeEventListener("resize", handleResize);
 	}, []);
 
-	const handleMainCategoryChange = (selected) => setMainCategory(selected ? selected.map(opt => opt.value) : []);
-	const handleSubjectGroupChange = (selected) => setSubjectGroup(selected ? selected.map(opt => opt.value) : []);
-	const handleDeliveryMethodChange = (selected) => setDeliveryMethod(selected ? selected.map(opt => opt.value) : []);
+	const handleMainCategoryChange = (selected) =>
+		setMainCategory(selected ? selected.map((opt) => opt.value) : []);
+	const handleSubjectGroupChange = (selected) =>
+		setSubjectGroup(selected ? selected.map((opt) => opt.value) : []);
+	const handleDeliveryMethodChange = (selected) =>
+		setDeliveryMethod(selected ? selected.map((opt) => opt.value) : []);
 	const handleAddToCart = (product, priceInfo) => {
 		addToCart(product, priceInfo);
 	};
 	const handleFilterToggle = () => setShowFilters((prev) => !prev);
 
-	const filteredProducts = products;
-
 	if (loading) return <div>Loading products...</div>;
 	if (error) return <div>Error: {error}</div>;
 
 	return (
-		<Container fluid className="product-list-container mx-3">
+		<Container fluid className="product-list-container">
 			<div className="d-flex justify-content-between align-items-center my-3">
 				<h2 className="mb-0">Product List</h2>
 				<VATToggle />
@@ -178,7 +251,7 @@ const ProductList = () => {
 					<span>Filter</span>
 				</button>
 			</div>
-			
+
 			<Row
 				className={`gx-4${isMobile ? " flex-column" : ""}`}
 				style={{ position: "relative", minHeight: "80vh" }}>
@@ -337,7 +410,7 @@ const ProductList = () => {
 						</Accordion>
 					</div>
 				</Col>
-				
+
 				{/* Product Cards Panel */}
 				<Col
 					xs={12}
@@ -356,29 +429,85 @@ const ProductList = () => {
 						zIndex: 2,
 						minHeight: isMobile ? undefined : "100vh",
 					}}>
-					{filteredProducts.length === 0 ? (
+					{products.length === 0 && !loading ? (
 						<Alert variant="info" className="mt-3">
 							No products available based on selected filters.
 						</Alert>
 					) : (
-						<Row xs={1} md={3} lg={3} xl={4} className="g-4">
-							{filteredProducts.map((product) => (
-								<ProductCard
-									key={product.essp_id || product.id || product.product_id}
-									product={product}
-									onAddToCart={handleAddToCart}
-									allEsspIds={filteredProducts
-										.filter((p) => p.type === "Markings")
-										.map((p) => p.essp_id || p.id || p.product_id)}
-									bulkDeadlines={bulkDeadlines}
-								/>
-							))}
-						</Row>
+						<>
+							{/* Product count display */}
+							<div className="d-flex justify-content-between align-items-center mb-3">
+								<div className="text-muted">
+									Showing {products.length} of {totalProducts} products
+								</div>
+								{hasNextPage && (
+									<small className="text-muted">
+										{PAGE_SIZE * (currentPage - 1) + products.length}{" "}
+										loaded, more available
+									</small>
+								)}
+							</div>
+
+							<Row xs={1} md={3} lg={3} xl={4} className="g-4">
+								{products.map((product) => (
+									<ProductCard
+										key={
+											product.essp_id ||
+											product.id ||
+											product.product_id
+										}
+										product={product}
+										onAddToCart={handleAddToCart}
+										allEsspIds={allEsspIds}
+										bulkDeadlines={bulkDeadlines}
+									/>
+								))}
+							</Row>
+
+							{/* Load More Button */}
+							{hasNextPage && (
+								<div className="text-center mt-4 mb-4">
+									<Button
+										variant="primary"
+										size="lg"
+										onClick={loadMoreProducts}
+										disabled={loadingMore}
+										className="d-flex align-items-center mx-auto">
+										{loadingMore ? (
+											<>
+												<Spinner
+													as="span"
+													animation="border"
+													size="sm"
+													role="status"
+													className="me-2"
+												/>
+												Loading more products...
+											</>
+										) : (
+											`Load More Products (${
+												totalProducts - products.length
+											} remaining)`
+										)}
+									</Button>
+								</div>
+							)}
+
+							{/* End of products message */}
+							{!hasNextPage && products.length > 0 && (
+								<div className="text-center mt-4 mb-4">
+									<div className="text-muted">
+										<strong>End of products</strong> - All{" "}
+										{products.length} products loaded
+									</div>
+								</div>
+							)}
+						</>
 					)}
 				</Col>
 			</Row>
 		</Container>
 	);
-};
+});
 
 export default ProductList;
