@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Col, Card, Modal, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { 
 	Button, 
@@ -15,34 +15,60 @@ import MarkingProductCard from "./MarkingProductCard";
 import TutorialProductCard from "./TutorialProductCard";
 import "../styles/product_card.css";
 
-const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
+const ProductCard = React.memo(({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 	const [selectedVariations, setSelectedVariations] = useState([]);
 	const [showPriceModal, setShowPriceModal] = useState(false);
 	const [selectedPriceType, setSelectedPriceType] = useState("standard");
 	const [showDiscounts, setShowDiscounts] = useState(false);
 
 	const { addToCart } = useCart();
-	const { getPriceDisplay, formatPrice, isProductVATExempt } = useVAT();
+	const { getPriceDisplay, formatPrice, isProductVATExempt, showVATInclusive } = useVAT();
 
-	// Handle product type logic	
-	const isTutorial = product.type === 'Tutorial';
-	const isMarking = product.type === 'Markings';
-	const isOnlineClassroom = product.product_name?.toLowerCase().includes('online classroom') || 
-	                         product.product_name?.toLowerCase().includes('recording') ||
-	                         product.learning_mode === 'LMS';
-	const isMaterial = !isTutorial && !isMarking;
+	// Memoize expensive calculations
+	const productTypeCheck = useMemo(() => ({
+		isTutorial: product.type === 'Tutorial',
+		isMarking: product.type === 'Markings',
+		isOnlineClassroom: product.product_name?.toLowerCase().includes('online classroom') || 
+		                  product.product_name?.toLowerCase().includes('recording') ||
+		                  product.learning_mode === 'LMS',
+	}), [product.type, product.product_name, product.learning_mode]);
 
-	const hasVariations = product.variations && product.variations.length > 0;
-	const singleVariation =
-		product.variations && product.variations.length === 1
+	// Memoize variation calculations
+	const variationInfo = useMemo(() => {
+		const hasVariations = product.variations && product.variations.length > 0;
+		const singleVariation = product.variations && product.variations.length === 1
 			? product.variations[0]
 			: null;
 
-	const currentVariation = hasVariations
-		? (selectedVariations.length > 0 
-			? product.variations.find((v) => selectedVariations.includes(v.id)) 
-			: singleVariation || product.variations[0])
-		: singleVariation;
+		const currentVariation = hasVariations
+			? (selectedVariations.length > 0 
+				? product.variations.find((v) => selectedVariations.includes(v.id)) 
+				: singleVariation || product.variations[0])
+			: singleVariation;
+
+		return { hasVariations, singleVariation, currentVariation };
+	}, [product.variations, selectedVariations]);
+
+	// Memoize price calculation to avoid recalculating on every render
+	const getPrice = useMemo(() => {
+		return (variation, priceType) => {
+			if (!variation || !variation.prices) return null;
+			const priceObj = variation.prices.find((p) => p.price_type === priceType);
+			if (!priceObj) return null;
+
+			// Check if this product is VAT exempt
+			const isVATExempt = isProductVATExempt(product.type);
+			
+			// Get price display info from VAT context
+			const priceDisplay = getPriceDisplay(priceObj.amount, 0.20, isVATExempt);
+			
+			return `${formatPrice(priceDisplay.displayPrice)} ${priceDisplay.label}`;
+		};
+	}, [getPriceDisplay, formatPrice, isProductVATExempt, product.type, showVATInclusive]);
+
+	const { isTutorial, isMarking, isOnlineClassroom } = productTypeCheck;
+	const isMaterial = !isTutorial && !isMarking;
+	const { hasVariations, singleVariation, currentVariation } = variationInfo;
 
 	const hasPriceType = (variation, priceType) => {
 		if (!variation || !variation.prices) return false;
@@ -83,20 +109,6 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 			/>
 		);
 	}
-
-	const getPrice = (variation, priceType) => {
-		if (!variation || !variation.prices) return null;
-		const priceObj = variation.prices.find((p) => p.price_type === priceType);
-		if (!priceObj) return null;
-
-		// Check if this product is VAT exempt
-		const isVATExempt = isProductVATExempt(product.type);
-		
-		// Get price display info from VAT context
-		const priceDisplay = getPriceDisplay(priceObj.amount, 0.20, isVATExempt);
-		
-		return `${formatPrice(priceDisplay.displayPrice)} ${priceDisplay.label}`;
-	};
 
 	const handlePriceTypeChange = (priceType) => {
 		if (selectedPriceType === priceType) {
@@ -392,6 +404,6 @@ const ProductCard = ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 			</Card>
 		</Col>
 	);
-};
+});
 
 export default ProductCard;

@@ -1,0 +1,69 @@
+// // Custom Bootstrap SCSS Variables Override
+// // This approach requires installing node-sass or sass
+
+// // Define your custom colors BEFORE importing Bootstrap
+// $primary: #2c5530 !default;
+// $secondary: #6c757d !default;
+// $success: #198754 !default;
+// $info: #0dcaf0 !default;
+// $warning: #ffc107 !default;
+// $danger: #dc3545 !default;
+// $light: #f8f9fa !default;
+// $dark: #212529 !default;
+
+// // Custom color palette
+// $brand-primary: #1e4d72;
+// $brand-accent: #ff6b35;
+// $brand-success: #28a745;
+
+// // Typography
+// $font-family-sans-serif: 'Roboto', 'Helvetica Neue', Arial, sans-serif !default;
+// $font-size-base: 1rem !default;
+// $line-height-base: 1.5 !default;
+
+// // Spacing
+// $spacer: 1rem !default;
+
+// // Border radius
+// $border-radius: 0.375rem !default;
+// $border-radius-sm: 0.25rem !default;
+// $border-radius-lg: 0.5rem !default;
+
+// // Import Bootstrap after defining variables
+// @import '~bootstrap/scss/bootstrap';
+
+// // Additional custom styles after Bootstrap
+// .text-brand {
+//   color: $brand-primary !important;
+// }
+
+// .text-accent {
+//   color: $brand-accent !important;
+// }
+
+// .btn-brand {
+//   background-color: $brand-primary;
+//   border-color: $brand-primary;
+//   color: white;
+  
+//   &:hover {
+//     background-color: darken($brand-primary, 10%);
+//     border-color: darken($brand-primary, 10%);
+//   }
+// }
+
+// // Custom component styles
+// .navbar-brand {
+//   font-weight: 600;
+//   color: $brand-primary !important;
+// }
+
+// .card-custom {
+//   border: 1px solid lighten($primary, 30%);
+//   border-radius: $border-radius-lg;
+  
+//   .card-header {
+//     background-color: lighten($primary, 45%);
+//     border-bottom: 1px solid lighten($primary, 30%);
+//   }
+// } 

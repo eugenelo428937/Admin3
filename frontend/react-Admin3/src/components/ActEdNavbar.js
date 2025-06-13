@@ -3,7 +3,14 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { Container, Button, Nav, Navbar, Image, NavDropdown, Row, Col } from "react-bootstrap";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { House, QuestionCircle, Cart, PersonCircle, Download, Search, Circle } from "react-bootstrap-icons";
+import { 
+	Home as HomeIcon, 
+	HelpOutline as HelpIcon, 
+	ShoppingCart as CartIcon, 
+	AccountCircle as PersonIcon, 
+	Download as DownloadIcon, 
+	Search as SearchIcon 
+} from "@mui/icons-material";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/navbar.css";
 import { useProducts } from "../contexts/ProductContext";
@@ -76,16 +83,49 @@ const ActEdNavbar = () => {
 		fetchSubjects();
 	}, []);
 
+	// Fetch product categories from product group filters
+	useEffect(() => {
+		const fetchProductCategories = async () => {
+			try {
+				const filters = await productService.getProductGroupFilters();
+				console.log('Product Group Filters:', filters); // Debug log
+				
+				// Extract all groups from MAIN_CATEGORY filters
+				const categoryGroups = [];
+				filters.forEach((filter) => {
+					if (filter.filter_type === "MAIN_CATEGORY") {
+						categoryGroups.push(...filter.groups.map(group => ({
+							...group,
+							is_core: filter.name.toLowerCase().includes('core'),
+							is_revision: filter.name.toLowerCase().includes('revision'),
+							is_marking: filter.name.toLowerCase().includes('marking'),
+							order_sequence: group.id // Use ID as order sequence for now
+						})));
+					}
+				});
+				
+				console.log('Processed Product Categories:', categoryGroups); // Debug log
+				setProductCategories(categoryGroups);
+			} catch (err) {
+				console.error('Error fetching product categories:', err);
+				setProductCategories([]);
+			} finally {
+				setLoadingCategories(false);
+			}
+		};
+		fetchProductCategories();
+	}, []);
+
 	// Handle navigating to product list with subject filter
 	const handleSubjectClick = (subjectCode) => {
-		// Only set the subject filter, clear all others
+		// Navigate with subject_code parameter to match backend expectations
 		navigate(`/products?subject_code=${subjectCode}`);
 	};
 
 	// Handle navigating to product list with category filter
 	const handleProductCategoryClick = (categoryId) => {
-		// Only set the category filter, clear all others
-		navigate(`/products?category=${categoryId}`);
+		// Navigate with main_category parameter to match ProductList expectations
+		navigate(`/products?main_category=${categoryId}`);
 	};
 
 	// Handle navigating to product list with subject filter
@@ -167,7 +207,7 @@ const ActEdNavbar = () => {
 					<div className="me-1 d-flex flex-row align-content-center flex-wrap">
 						<Link to="/Home">
 							<div className="p-0 mx-1 flex-wrap align-items-center d-flex flex-row">
-								<House className="bi d-flex flex-row align-items-center" />
+								<HomeIcon className="bi d-flex flex-row align-items-center" />
 								<span className="d-none d-md-block mx-1 fst-normal">
 									ActEd Home
 								</span>
@@ -177,7 +217,7 @@ const ActEdNavbar = () => {
 					<div className="me-1 d-flex flex-row align-content-center flex-wrap">
 						<Link to="/Help">
 							<div className="p-0 mx-1 flex-wrap align-items-center d-flex flex-row">
-								<QuestionCircle className="bi d-flex flex-row align-items-center"></QuestionCircle>
+								<HelpIcon className="bi d-flex flex-row align-items-center"></HelpIcon>
 								<span className="d-none d-md-block mx-1 fst-normal">
 									Help
 								</span>
@@ -197,7 +237,7 @@ const ActEdNavbar = () => {
 									position: "relative",
 									display: "inline-block",
 								}}>
-								<Cart className="bi d-flex flex-row align-items-center" />
+								<CartIcon className="bi d-flex flex-row align-items-center" />
 								{cartCount > 0 && (
 									<span
 										style={{
@@ -228,7 +268,7 @@ const ActEdNavbar = () => {
 							<NavDropdown
 								title={
 									<div className="d-flex align-items-center">
-										<PersonCircle className="bi d-flex flex-row align-items-center" />
+										<PersonIcon className="bi d-flex flex-row align-items-center" />
 										<span className="d-none d-md-block mx-1 fst-normal">
 											Welcome {user?.first_name || "User"}
 										</span>
@@ -251,7 +291,7 @@ const ActEdNavbar = () => {
 								variant="link"
 								onClick={handleUserIconClick}
 								className="btn-search p-0 mx-1 flex-wrap align-items-center d-flex flex-row">
-								<PersonCircle className="bi d-flex flex-row align-items-center"></PersonCircle>
+								<PersonIcon className="bi d-flex flex-row align-items-center"></PersonIcon>
 								<span className="d-none d-md-block mx-1 fst-normal">
 									Login
 								</span>
@@ -310,7 +350,7 @@ const ActEdNavbar = () => {
 								<div className="dropdown-submenu">
 									<Row>
 										<Col>
-											<div className="fw-bold mb-2">
+											<div className="fw-bold mb-2 text-primary text-primary">
 												Core Principles
 											</div>
 											{subjects
@@ -326,7 +366,7 @@ const ActEdNavbar = () => {
 												))}
 										</Col>
 										<Col>
-											<div className="fw-bold mb-2">
+											<div className="fw-bold mb-2 text-primary">
 												Core Practices
 											</div>
 											{subjects
@@ -342,7 +382,7 @@ const ActEdNavbar = () => {
 												))}
 										</Col>
 										<Col>
-											<div className="fw-bold mb-2">
+											<div className="fw-bold mb-2 text-primary">
 												Specialist Principles
 											</div>
 											{subjects
@@ -358,7 +398,7 @@ const ActEdNavbar = () => {
 												))}
 										</Col>
 										<Col>
-											<div className="fw-bold mb-2">
+											<div className="fw-bold mb-2 text-primary">
 												Specialist Advanced
 											</div>
 											{subjects
@@ -381,48 +421,65 @@ const ActEdNavbar = () => {
 								menuVariant="light"
 								renderMenuOnMount={true}
 								align="start"
-								style={{ position: "relative" }}
-							>
+								style={{ position: "relative" }}>
 								<div className="dropdown-submenu">
 									<Row>
 										<Col>
-											<div className="fw-bold mb-2">Core Study Material</div>
+											<div className="fw-bold mb-2 text-primary">
+												Core Study Material
+											</div>
 											{productCategories
 												.filter((cat) => cat.is_core)
-												.sort((a, b) => a.order_sequence - b.order_sequence)
+												.sort(
+													(a, b) =>
+														a.order_sequence - b.order_sequence
+												)
 												.map((cat) => (
 													<NavDropdown.Item
 														key={cat.id}
-														onClick={() => handleProductCategoryClick(cat.id)}
-													>
+														onClick={() =>
+															handleProductCategoryClick(cat.id)
+														}>
 														{cat.name}
 													</NavDropdown.Item>
 												))}
 										</Col>
 										<Col>
-											<div className="fw-bold mb-2">Revision Materials</div>
+											<div className="fw-bold mb-2 text-primary">
+												Revision Materials
+											</div>
 											{productCategories
 												.filter((cat) => cat.is_revision)
-												.sort((a, b) => a.order_sequence - b.order_sequence)
+												.sort(
+													(a, b) =>
+														a.order_sequence - b.order_sequence
+												)
 												.map((cat) => (
 													<NavDropdown.Item
 														key={cat.id}
-														onClick={() => handleProductCategoryClick(cat.id)}
-													>
+														onClick={() =>
+															handleProductCategoryClick(cat.id)
+														}>
 														{cat.name}
 													</NavDropdown.Item>
 												))}
 										</Col>
 										<Col>
-											<div className="fw-bold mb-2">Marking</div>
+											<div className="fw-bold mb-2 text-primary">
+												Marking
+											</div>
 											{productCategories
 												.filter((cat) => cat.is_marking)
-												.sort((a, b) => a.order_sequence - b.order_sequence)
+												.sort(
+													(a, b) =>
+														a.order_sequence - b.order_sequence
+												)
 												.map((cat) => (
 													<NavDropdown.Item
 														key={cat.id}
-														onClick={() => handleProductCategoryClick(cat.id)}
-													>
+														onClick={() =>
+															handleProductCategoryClick(cat.id)
+														}>
 														{cat.name}
 													</NavDropdown.Item>
 												))}
@@ -443,7 +500,10 @@ const ActEdNavbar = () => {
 								Tutorials
 							</Nav.Link>
 							<Nav.Link as={NavLink} href="#home">
-								Online Classroom
+								Apprenticeships
+							</Nav.Link>
+							<Nav.Link as={NavLink} href="#home">
+								Study Plus
 							</Nav.Link>
 							{isAuthenticated ? (
 								<NavDropdown title="Admin" id="admin-nav-dropdown">
@@ -468,7 +528,7 @@ const ActEdNavbar = () => {
 								variant="link"
 								to="/Brochure"
 								className="nav-link btn-search p-0 ms-2 align-items-center d-flex flex-row">
-								<Download className="bi d-flex flex-row align-items-center"></Download>
+								<DownloadIcon className="bi d-flex flex-row align-items-center"></DownloadIcon>
 								<span className="d-none d-md-block mx-1 fst-normal">
 									Brochure
 								</span>
@@ -479,7 +539,7 @@ const ActEdNavbar = () => {
 								variant="link"
 								to="/Search"
 								className="nav-link btn-search p-0 ms-2 align-items-center d-flex flex-row">
-								<Search className="bi d-flex flex-row align-items-center"></Search>
+								<SearchIcon className="bi d-flex flex-row align-items-center"></SearchIcon>
 								<span className="d-none d-md-block mx-1 fst-normal">
 									Search
 								</span>
