@@ -41,17 +41,25 @@ const ActEdNavbar = () => {
 	const [productCategories, setProductCategories] = useState([]);
 	const [loadingCategories, setLoadingCategories] = useState(true);
 
-	// Redirect after login if postLoginRedirect is set
+	// Close cart panel when user authenticates
 	useEffect(() => {
 		if (isAuthenticated) {
-			const redirectPath = localStorage.getItem("postLoginRedirect");
-			if (redirectPath) {
-				localStorage.removeItem("postLoginRedirect");
-				setShowCartPanel(false);
-				navigate(redirectPath);
-			}
+			setShowCartPanel(false);
 		}
-	}, [isAuthenticated, navigate]);
+	}, [isAuthenticated]);
+
+	// Listen for show-login-modal event from CartPanel
+	useEffect(() => {
+		const handleShowLoginModal = () => {
+			setShowLoginModal(true);
+		};
+
+		window.addEventListener("show-login-modal", handleShowLoginModal);
+
+		return () => {
+			window.removeEventListener("show-login-modal", handleShowLoginModal);
+		};
+	}, []);
 
 	// Fetch subjects from the new endpoint (fix: use async/await)
 	useEffect(() => {

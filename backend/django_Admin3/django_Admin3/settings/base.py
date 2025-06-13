@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     'marking',
     'core_auth',    
     'administrate.apps.AdministrateConfig',
+    'rules_engine.apps.RulesEngineConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
