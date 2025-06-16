@@ -64,7 +64,7 @@ if os.getenv('DJANGO_DEVELOPMENT') == 'true':
 # SECRET_KEY = 'django-insecure-5rn#bj-51$-9c1fmwnn8yfguq#v@17a0z5-zi2a&+$u3&famf$'
 
 # Environment-based settings
-DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'  # Default to True for development
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY', 'django-insecure-5rn#bj-51$-9c1fmwnn8yfguq#v@17a0z5-zi2a&+$u3&famf$')
 
@@ -292,13 +292,14 @@ GRAPHQL_TEMPLATES_DIR = os.path.join(
     BASE_DIR, 'administrate/templates/graphql')
 
 # Email Settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.backend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'  # Use Gmail SMTP for testing
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = env('EMAIL_HOST_USER', '')  # Your email address
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', '')  # Your app password
-DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', 'noreply@acted.com')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')  # Your email address
+EMAIL_HOST_PASSWORD = os.environ.get(
+    'EMAIL_HOST_PASSWORD', '')  # Your app password
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@acted.com')
 
 # For development, you can use console backend for testing
 if DEBUG:

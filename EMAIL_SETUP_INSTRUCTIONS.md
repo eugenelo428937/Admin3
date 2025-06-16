@@ -52,8 +52,8 @@ DEFAULT_FROM_EMAIL=noreply@acted.com
 
 2. For Gmail, you need an "App Password":
    - Go to Google Account settings
-   - Enable 2-factor authentication
-   - Generate an App Password for "Mail"
+   - Enable 2-factor authentication 
+   - Generate an App Password for "Mail" 
    - Use that password in EMAIL_HOST_PASSWORD
 
 3. Update `backend/django_Admin3/django_Admin3/settings/base.py`:

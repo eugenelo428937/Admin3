@@ -216,8 +216,7 @@ class RulesEngineViewSet(viewsets.ViewSet):
             context = {
                 'user_country': user_country,
                 'customer_type': customer_type,
-                'is_business_customer': customer_type == 'business',
-                'user': request.user
+                'is_business_customer': customer_type == 'business'
             }
             
             # Evaluate checkout rules to get calculations

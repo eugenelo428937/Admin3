@@ -146,6 +146,8 @@ class RuleCondition(models.Model):
             elif isinstance(value, dict) and key in value:
                 value = value[key]
             else:
+                # Log the missing field for debugging
+                logger.debug(f"Field '{key}' not found in path '{path}', returning None")
                 return None
         return value
 
@@ -163,16 +165,35 @@ class RuleCondition(models.Model):
         elif self.operator == 'not_equals':
             return field_value != comparison_value
         elif self.operator == 'contains':
+            if field_value is None:
+                return False
             return str(comparison_value) in str(field_value)
         elif self.operator == 'not_contains':
+            if field_value is None:
+                return True
             return str(comparison_value) not in str(field_value)
         elif self.operator == 'greater_than':
-            return float(field_value) > float(comparison_value)
+            if field_value is None:
+                return False
+            try:
+                return float(field_value) > float(comparison_value)
+            except (ValueError, TypeError):
+                return False
         elif self.operator == 'less_than':
-            return float(field_value) < float(comparison_value)
+            if field_value is None:
+                return False
+            try:
+                return float(field_value) < float(comparison_value)
+            except (ValueError, TypeError):
+                return False
         elif self.operator == 'between':
-            if isinstance(comparison_value, list) and len(comparison_value) == 2:
-                return comparison_value[0] <= float(field_value) <= comparison_value[1]
+            if field_value is None:
+                return False
+            try:
+                if isinstance(comparison_value, list) and len(comparison_value) == 2:
+                    return comparison_value[0] <= float(field_value) <= comparison_value[1]
+            except (ValueError, TypeError):
+                pass
             return False
         elif self.operator == 'in_list':
             if isinstance(comparison_value, list):
@@ -183,6 +204,8 @@ class RuleCondition(models.Model):
                 return field_value not in comparison_value
             return field_value != comparison_value
         elif self.operator == 'regex':
+            if field_value is None:
+                return False
             import re
             return bool(re.search(str(comparison_value), str(field_value)))
         return False
