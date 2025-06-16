@@ -89,4 +89,4 @@ frontend/react-Admin3/.env.*
 frontend/react-Admin3/Sandbox/*
 frontend/react-Admin3/package-lock.json
 backend/django_Admin3/django_debug.log
-backend/django_Admin3/django_debug.log
+

@@ -86,23 +86,23 @@ def calculate_vat_standard(cart_items, params):
         logger.info(f"DEBUG: cart_items: {cart_items}")
         logger.info(f"DEBUG: params: {params}")
         
-        vat_rate = float(params.get('vat_rate', 0.20))  # Default 20% VAT
+        vat_rate = float(params.get('vat_rate') or 0.20)  # Default 20% VAT
         exempt_types = params.get('exempt_product_types', [])
-        threshold = float(params.get('threshold_amount', 0))
+        threshold = float(params.get('threshold_amount') or 0)
         
         total_net = 0
         total_vat = 0
         item_calculations = []
         
         for item in cart_items:
-            item_price = float(item.get('actual_price', 0))
-            quantity = int(item.get('quantity', 1))
+            item_price = float(item.get('actual_price') or 0)
+            quantity = int(item.get('quantity') or 1)
             product_type = item.get('product_type', '')
             
             line_net = item_price * quantity
             
             # Check if item is VAT exempt
-            is_exempt = product_type.lower() in [t.lower() for t in exempt_types]
+            is_exempt = (product_type or '').lower() in [t.lower() for t in exempt_types]
             
             if is_exempt:
                 line_vat = 0
@@ -175,10 +175,10 @@ def calculate_vat_by_location(cart_items, params):
         
         country_rates = params.get('country_rates', {})
         user_country = params.get('user_country', 'GB')
-        default_rate = float(params.get('default_rate', 0.20))
+        default_rate = float(params.get('default_rate') or 0.20)
         
         # Get VAT rate for user's country
-        vat_rate = float(country_rates.get(user_country, default_rate))
+        vat_rate = float(country_rates.get(user_country) or default_rate)
         
         # Use standard VAT calculation with location-specific rate
         modified_params = {

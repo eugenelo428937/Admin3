@@ -41,7 +41,7 @@ class Command(BaseCommand):
             RuleCondition.objects.create(
                 rule=standard_vat_rule,
                 condition_type='custom_field',
-                field_name='user.country',
+                field_name='user_country',
                 operator='equals',
                 value='GB'
             )
@@ -97,7 +97,7 @@ class Command(BaseCommand):
             RuleCondition.objects.create(
                 rule=eu_vat_rule,
                 condition_type='custom_field',
-                field_name='user.country',
+                field_name='user_country',
                 operator='in_list',
                 value=eu_countries
             )
@@ -105,7 +105,7 @@ class Command(BaseCommand):
             RuleCondition.objects.create(
                 rule=eu_vat_rule,
                 condition_type='custom_field',
-                field_name='user.country',
+                field_name='user_country',
                 operator='not_equals',
                 value='GB'
             )
