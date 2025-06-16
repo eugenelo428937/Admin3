@@ -77,9 +77,12 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
   const handleTestEmail = async () => {
     try {
       setLoading(true);
-      const response = await httpService.post('/auth/test-email/', {
-        email: 'eugenelo1030@gmail.com'
-      });
+      const response = await httpService.post(
+			"http://localhost:8888/api/auth/test-email/",
+			{
+				email: "eugenelo1030@gmail.com",
+			}
+		);
       
       if (response.data.success) {
         setSuccess('Test email sent successfully! Check your email.');

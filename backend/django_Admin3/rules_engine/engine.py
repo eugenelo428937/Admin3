@@ -203,9 +203,36 @@ rules_engine = RulesEngine()
 
 def evaluate_checkout_rules(user, cart_items=None, **kwargs):
     """Convenience function for checkout rule evaluation"""
+    
+    # Extract user_country from kwargs for context
+    user_country = kwargs.get('user_country', 'GB')
+    
+    # Add holiday context data
+    from datetime import timedelta
+    from django.utils import timezone
+    from .models import HolidayCalendar
+    
+    now = timezone.now().date()
+    upcoming_holidays = HolidayCalendar.objects.filter(
+        date__gte=now,
+        date__lte=now + timedelta(days=30)
+    ).order_by('date')
+    
+    # Calculate business days until next holiday
+    business_days_to_next_holiday = 0
+    if upcoming_holidays.exists():
+        next_holiday = upcoming_holidays.first()
+        current_date = now
+        while current_date < next_holiday.date:
+            if current_date.weekday() < 5:  # Monday = 0, Sunday = 6
+                business_days_to_next_holiday += 1
+            current_date += timedelta(days=1)
+    
     context = {
         'cart_items': cart_items or [],
         'cart_item_count': len(cart_items) if cart_items else 0,
+        'business_days_to_next_holiday': business_days_to_next_holiday,
+        'user_country': user_country,  # Make user_country directly accessible
         **kwargs
     }
     
