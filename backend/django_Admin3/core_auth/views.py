@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.middleware.csrf import get_token
 from users.serializers import UserRegistrationSerializer
 from cart.views import CartViewSet
-from .email_service import EmailService
+from utils.email_service import email_service
 
 class AuthViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
@@ -111,7 +111,22 @@ def send_test_email(request):
     """Test endpoint to send a test email"""
     try:
         recipient_email = request.data.get('email', 'eugenelo1030@gmail.com')
-        success = EmailService.send_test_email(recipient_email)
+        # Send a test order confirmation email
+        test_order_data = {
+            'customer_name': 'Test User',
+            'order_number': 'TEST-001',
+            'total_amount': 99.99,
+            'created_at': '2024-01-01',
+            'items': [{
+                'product_name': 'Test Product',
+                'subject_code': 'TEST',
+                'session_code': 'DEC24',
+                'quantity': 1,
+                'actual_price': 99.99,
+                'line_total': 99.99,
+            }]
+        }
+        success = email_service.send_order_confirmation(recipient_email, test_order_data)
         
         if success:
             return Response({

@@ -1,0 +1,62 @@
+ADMIN3 - ORDER CONFIRMATION
+============================
+
+Hello {{ customer_name }}!
+
+Thank you for your order! We're excited to confirm that your order has been successfully placed and is being processed.
+
+ORDER SUMMARY
+-------------
+Order Number: #{{ order_number }}
+Order Date: {{ order.created_at|date:"F d, Y" }}
+Total Amount: £{{ order_total|floatformat:2 }}
+
+ORDER DETAILS
+=============
+{% if order_items %}
+{% for item in order_items %}
+Product: {{ item.product_name }}
+Subject: {{ item.subject_code|default:"N/A" }}
+Session: {{ item.session_code|default:"N/A" }}
+Quantity: {{ item.quantity }}
+Price: £{{ item.actual_price|floatformat:2 }}
+Line Total: £{{ item.line_total|floatformat:2 }}
+-------------------------------------------
+{% endfor %}
+
+TOTALS
+------
+Subtotal: £{{ order.subtotal|floatformat:2 }}
+{% if order.vat_amount %}VAT ({{ order.vat_rate|floatformat:1 }}%): £{{ order.vat_amount|floatformat:2 }}{% endif %}
+{% if order.discount_amount %}Discount: -£{{ order.discount_amount|floatformat:2 }}{% endif %}
+TOTAL: £{{ order_total|floatformat:2 }}
+{% endif %}
+
+WHAT'S NEXT?
+============
+Your order is now being processed by our team. Here's what you can expect:
+
+1. Processing: We'll prepare your order and materials within 1-2 business days.
+2. Access: Digital materials will be available in your account portal.
+3. Shipping: Physical materials (if any) will be dispatched via our preferred courier.
+4. Updates: You'll receive email notifications at each step of the process.
+
+View your order details online:
+{{ base_url }}/orders/{{ order_number }}
+
+NEED HELP?
+==========
+If you have any questions about your order or need assistance, please contact our support team:
+
+Email: support@admin3.com
+Phone: +44 (0) 20 1234 5678
+Hours: Monday - Friday, 9:00 AM - 6:00 PM GMT
+
+Thank you for choosing Admin3 for your professional education needs. We're committed to helping you achieve your learning goals!
+
+Best regards,
+The Admin3 Team
+
+--
+© 2024 Admin3. All rights reserved.
+This email was sent to you because you have an account with Admin3. 

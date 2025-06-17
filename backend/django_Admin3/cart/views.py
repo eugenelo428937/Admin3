@@ -9,7 +9,7 @@ from .models import Cart, CartItem, ActedOrder, ActedOrderItem
 from .serializers import CartSerializer, CartItemSerializer, ActedOrderSerializer
 from products.models import Product
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
-from core_auth.email_service import EmailService
+from utils.email_service import email_service
 
 class CartViewSet(viewsets.ViewSet):
     """
@@ -260,7 +260,25 @@ class CartViewSet(viewsets.ViewSet):
             
             # Send order confirmation email
             try:
-                EmailService.send_order_confirmation(order)
+                # Prepare order data for email service
+                order_data = {
+                    'customer_name': user.get_full_name() or user.username,
+                    'order_number': str(order.id),
+                    'total_amount': order.total_amount,
+                    'created_at': order.created_at,
+                    'items': [
+                        {
+                            'product_name': item.product.product.fullname,
+                            'subject_code': getattr(item.product.exam_session_subject.subject, 'code', 'N/A'),
+                            'session_code': getattr(item.product.exam_session_subject.exam_session, 'session_code', 'N/A'),
+                            'quantity': item.quantity,
+                            'actual_price': item.actual_price,
+                            'line_total': item.actual_price * item.quantity,
+                        }
+                        for item in order.items.all()
+                    ]
+                }
+                email_service.send_order_confirmation(user.email, order_data)
             except Exception as e:
                 # Log the error but don't fail the order
                 import logging

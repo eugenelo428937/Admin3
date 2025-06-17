@@ -1,0 +1,208 @@
+<mjml>
+  <mj-head>
+    <mj-title>Order Confirmation - Admin3</mj-title>
+    <mj-preview>Thank you for your order! Your purchase has been confirmed.</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" />
+      <mj-text font-size="16px" line-height="1.6" color="#333333" />
+      <mj-button background-color="#667eea" border-radius="6px" font-weight="600" />
+    </mj-attributes>
+    <mj-style inline="inline">
+      .total-row { 
+        display: flex; 
+        justify-content: space-between; 
+        margin: 8px 0; 
+        padding: 5px 0;
+      }
+      .final-total { 
+        font-weight: 600; 
+        font-size: 18px; 
+        border-top: 2px solid #e0e0e0; 
+        padding-top: 12px; 
+        margin-top: 12px;
+      }
+    </mj-style>
+  </mj-head>
+  
+  <mj-body background-color="#f4f4f4">
+    <!-- Header Section -->
+    <mj-section background-color="#667eea" padding="30px 20px">
+      <mj-column>
+        <mj-text align="center" color="#ffffff" font-size="28px" font-weight="600">
+          Order Confirmed!
+        </mj-text>
+        <mj-text align="center" color="#e0e7ff" font-size="16px">
+          Thank you for your purchase
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Main Content -->
+    <mj-section background-color="#ffffff" padding="40px 30px">
+      <mj-column>
+        <!-- Greeting -->
+        <mj-text font-size="24px" font-weight="600" color="#333333">
+          Hello {{ customer_name }}!
+        </mj-text>
+        
+        <mj-text>
+          Thank you for your order! We're excited to confirm that your order has been successfully placed and is being processed.
+        </mj-text>
+
+        <!-- Order Summary Box -->
+        <mj-section background-color="#e8f5e8" border-left="4px solid #28a745" border-radius="6px" padding="20px">
+          <mj-column>
+            <mj-text color="#155724" font-size="18px" font-weight="600">
+              Order Summary
+            </mj-text>
+            <mj-text color="#155724" font-size="14px">
+              <strong>Order Number:</strong> #{{ order_number }}<br/>
+              <strong>Order Date:</strong> {{ order.created_at|date:"F d, Y" }}<br/>
+              <strong>Total Amount:</strong> £{{ order_total|floatformat:2 }}
+            </mj-text>
+          </mj-column>
+        </mj-section>
+
+        <!-- Order Details -->
+        <mj-text font-size="18px" font-weight="600" color="#555555" padding-top="25px">
+          Order Details
+        </mj-text>
+
+        {% if order_items %}
+        <!-- Order Items Table -->
+        <mj-table>
+          <tr style="background-color: #f8f9fa;">
+            <th style="padding: 12px; border-bottom: 2px solid #e0e0e0; font-weight: 600; color: #333333;">Product</th>
+            <th style="padding: 12px; border-bottom: 2px solid #e0e0e0; font-weight: 600; color: #333333;">Subject</th>
+            <th style="padding: 12px; border-bottom: 2px solid #e0e0e0; font-weight: 600; color: #333333;">Session</th>
+            <th style="padding: 12px; border-bottom: 2px solid #e0e0e0; font-weight: 600; color: #333333; text-align: center;">Qty</th>
+            <th style="padding: 12px; border-bottom: 2px solid #e0e0e0; font-weight: 600; color: #333333; text-align: right;">Price</th>
+            <th style="padding: 12px; border-bottom: 2px solid #e0e0e0; font-weight: 600; color: #333333; text-align: right;">Total</th>
+          </tr>
+          {% for item in order_items %}
+          <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #e0e0e0; color: #555555;">
+              <strong>{{ item.product_name }}</strong>
+            </td>
+            <td style="padding: 12px; border-bottom: 1px solid #e0e0e0; color: #555555;">
+              {{ item.subject_code|default:"N/A" }}
+            </td>
+            <td style="padding: 12px; border-bottom: 1px solid #e0e0e0; color: #555555;">
+              {{ item.session_code|default:"N/A" }}
+            </td>
+            <td style="padding: 12px; border-bottom: 1px solid #e0e0e0; color: #555555; text-align: center;">
+              {{ item.quantity }}
+            </td>
+            <td style="padding: 12px; border-bottom: 1px solid #e0e0e0; color: #555555; text-align: right;">
+              £{{ item.actual_price|floatformat:2 }}
+            </td>
+            <td style="padding: 12px; border-bottom: 1px solid #e0e0e0; color: #555555; text-align: right;">
+              £{{ item.line_total|floatformat:2 }}
+            </td>
+          </tr>
+          {% endfor %}
+        </mj-table>
+
+        <!-- Order Total Section -->
+        <mj-section background-color="#f8f9fa" border-left="4px solid #667eea" border-radius="6px" padding="20px">
+          <mj-column>
+            <mj-text>
+              <div class="total-row">
+                <span>Subtotal:</span>
+                <span>£{{ order.subtotal|floatformat:2 }}</span>
+              </div>
+              {% if order.vat_amount %}
+              <div class="total-row">
+                <span>VAT ({{ order.vat_rate|floatformat:1 }}%):</span>
+                <span>£{{ order.vat_amount|floatformat:2 }}</span>
+              </div>
+              {% endif %}
+              {% if order.discount_amount %}
+              <div class="total-row">
+                <span>Discount:</span>
+                <span>-£{{ order.discount_amount|floatformat:2 }}</span>
+              </div>
+              {% endif %}
+              <div class="total-row final-total">
+                <span><strong>Total:</strong></span>
+                <span><strong>£{{ order_total|floatformat:2 }}</strong></span>
+              </div>
+            </mj-text>
+          </mj-column>
+        </mj-section>
+        {% endif %}
+
+        <!-- What's Next Section -->
+        <mj-text font-size="18px" font-weight="600" color="#555555" padding-top="25px">
+          What's Next?
+        </mj-text>
+        
+        <mj-text>
+          Your order is now being processed by our team. Here's what you can expect:
+        </mj-text>
+
+        <mj-section background-color="#f8f9fa" border-radius="6px" padding="20px">
+          <mj-column>
+            <mj-text>
+              <ol style="margin: 0; padding-left: 20px; color: #555555;">
+                <li style="margin-bottom: 10px;"><strong>Processing:</strong> We'll prepare your order and materials within 1-2 business days.</li>
+                <li style="margin-bottom: 10px;"><strong>Access:</strong> Digital materials will be available in your account portal.</li>
+                <li style="margin-bottom: 10px;"><strong>Shipping:</strong> Physical materials (if any) will be dispatched via our preferred courier.</li>
+                <li style="margin-bottom: 10px;"><strong>Updates:</strong> You'll receive email notifications at each step of the process.</li>
+              </ol>
+            </mj-text>
+          </mj-column>
+        </mj-section>
+
+        <!-- Call to Action Button -->
+        <mj-button href="{{ base_url }}/orders/{{ order_number }}" 
+                   background-color="#667eea" 
+                   border-radius="6px" 
+                   font-weight="600"
+                   padding="14px 28px"
+                   font-size="16px">
+          View Order Details
+        </mj-button>
+
+        <!-- Support Section -->
+        <mj-text font-size="18px" font-weight="600" color="#555555" padding-top="25px">
+          Need Help?
+        </mj-text>
+        
+        <mj-text>
+          If you have any questions about your order or need assistance, please don't hesitate to contact our support team:
+        </mj-text>
+
+        <mj-section background-color="#f0f8ff" border-left="4px solid #007bff" border-radius="6px" padding="20px">
+          <mj-column>
+            <mj-text color="#333333">
+              <strong>Email:</strong> <a href="mailto:support@admin3.com" style="color: #007bff;">support@admin3.com</a><br/>
+              <strong>Phone:</strong> +44 (0) 20 1234 5678<br/>
+              <strong>Hours:</strong> Monday - Friday, 9:00 AM - 6:00 PM GMT
+            </mj-text>
+          </mj-column>
+        </mj-section>
+
+        <mj-text>
+          Thank you for choosing Admin3 for your professional education needs. We're committed to helping you achieve your learning goals!
+        </mj-text>
+
+        <mj-text padding-top="30px">
+          Best regards,<br/>
+          <strong>The Admin3 Team</strong>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer -->
+    <mj-section background-color="#f8f9fa" padding="30px 20px" border-top="1px solid #e0e0e0">
+      <mj-column>
+        <mj-text align="center" color="#666666" font-size="14px">
+          Admin3 - Professional Education Platform<br/>
+          <a href="{{ base_url }}/unsubscribe" style="color: #667eea; text-decoration: none;">Unsubscribe</a> | 
+          <a href="{{ base_url }}/privacy" style="color: #667eea; text-decoration: none;">Privacy Policy</a>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml> 

@@ -12459,3 +12459,357 @@ NameError: name 'Q' is not defined
 [2025-06-16 11:33:33,381] INFO rules_engine.custom_functions DEBUG: Final result: False
 [2025-06-16 11:44:01,587] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\django_Admin3\settings\base.py changed, reloading.
 [2025-06-16 11:44:08,149] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-16 17:20:56,681] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-16 17:22:27,231] WARNING django.request Unauthorized: /api/subjects/
+[2025-06-16 17:22:27,231] WARNING django.request Unauthorized: /api/products/product-group-filters/
+[2025-06-16 17:22:27,231] WARNING django.request Unauthorized: /api/products/current/list/
+[2025-06-16 17:22:27,231] WARNING django.request Unauthorized: /api/users/12/
+[2025-06-16 17:22:27,242] WARNING django.request Unauthorized: /api/cart/
+[2025-06-16 17:22:27,243] WARNING django.request Unauthorized: /api/subjects/
+[2025-06-16 17:22:27,245] WARNING django.request Unauthorized: /api/users/12/
+[2025-06-16 17:22:27,250] WARNING django.request Unauthorized: /api/products/product-group-filters/
+[2025-06-16 17:22:27,258] WARNING django.request Unauthorized: /api/products/current/list/
+[2025-06-16 17:22:27,277] WARNING django.request Unauthorized: /api/cart/
+[2025-06-16 17:23:32,574] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-16 17:23:32,574] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-16 17:23:32,577] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-16 17:23:32,577] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-16 17:23:32,577] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-16 17:23:32,681] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-16 17:23:32,688] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=20, page_size=20
+[2025-06-16 17:23:32,812] INFO exam_sessions_subjects_products.views Paginated queryset count: 20, total: 393, cached with key: products_list_5978473709558140571
+[2025-06-16 17:23:32,837] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-16 17:23:32,838] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-16 17:23:32,838] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-16 17:23:32,839] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-16 17:23:32,855] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-16 17:23:32,855] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-16 17:23:32,856] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-16 17:23:32,856] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-16 17:23:41,155] INFO rules_engine.custom_functions DEBUG: calculate_vat_standard called
+[2025-06-16 17:23:41,155] INFO rules_engine.custom_functions DEBUG: calculate_vat_standard called
+[2025-06-16 17:23:41,155] INFO rules_engine.custom_functions DEBUG: calculate_vat_standard called
+[2025-06-16 17:23:41,155] INFO rules_engine.custom_functions DEBUG: cart_items: []
+[2025-06-16 17:23:41,155] INFO rules_engine.custom_functions DEBUG: cart_items: [{'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}]
+[2025-06-16 17:23:41,155] INFO rules_engine.custom_functions DEBUG: cart_items: []
+[2025-06-16 17:23:41,155] INFO rules_engine.custom_functions DEBUG: params: {'function': 'calculate_vat_standard', 'vat_rate': 0.2, 'description': 'Standard UK VAT at 20%', 'threshold_amount': 0, 'exempt_product_types': ['book', 'educational_material']}
+[2025-06-16 17:23:41,155] INFO rules_engine.custom_functions DEBUG: params: {'function': 'calculate_vat_standard', 'vat_rate': 0.2, 'description': 'Standard UK VAT at 20%', 'threshold_amount': 0, 'exempt_product_types': ['book', 'educational_material']}
+[2025-06-16 17:23:41,155] INFO rules_engine.custom_functions DEBUG: params: {'function': 'calculate_vat_standard', 'vat_rate': 0.2, 'description': 'Standard UK VAT at 20%', 'threshold_amount': 0, 'exempt_product_types': ['book', 'educational_material']}
+[2025-06-16 17:23:41,155] INFO rules_engine.custom_functions VAT calculation completed
+[2025-06-16 17:23:41,155] INFO rules_engine.custom_functions VAT calculation completed
+[2025-06-16 17:23:41,155] INFO rules_engine.custom_functions VAT calculation completed
+[2025-06-16 17:23:41,155] INFO rules_engine.custom_functions DEBUG: VAT calculation result: {'calculation_type': 'standard_vat', 'vat_rate': 0.2, 'total_net': 0, 'total_vat': 0, 'total_gross': 0, 'meets_threshold': True, 'threshold_amount': 0.0, 'item_calculations': [], 'calculation_timestamp': None}
+[2025-06-16 17:23:41,155] INFO rules_engine.custom_functions DEBUG: VAT calculation result: {'calculation_type': 'standard_vat', 'vat_rate': 0.2, 'total_net': 84.0, 'total_vat': 16.8, 'total_gross': 100.8, 'meets_threshold': True, 'threshold_amount': 0.0, 'item_calculations': [{'item_id': 123, 'product_name': 'Additional Mock Pack', 'net_amount': 84.0, 'vat_amount': 16.8, 'gross_amount': 100.8, 'vat_rate': 0.2, 'is_exempt': False}], 'calculation_timestamp': None}
+[2025-06-16 17:23:41,155] INFO rules_engine.custom_functions DEBUG: VAT calculation result: {'calculation_type': 'standard_vat', 'vat_rate': 0.2, 'total_net': 0, 'total_vat': 0, 'total_gross': 0, 'meets_threshold': True, 'threshold_amount': 0.0, 'item_calculations': [], 'calculation_timestamp': None}
+[2025-06-16 17:23:41,171] DEBUG rules_engine.models Field 'cart_value' not found in path 'cart_value', returning None
+[2025-06-16 17:23:41,173] DEBUG rules_engine.models Field 'cart_value' not found in path 'cart_value', returning None
+[2025-06-16 17:23:41,184] INFO rules_engine.custom_functions DEBUG: check_same_subject_products called
+[2025-06-16 17:23:41,186] INFO rules_engine.custom_functions DEBUG: check_same_subject_products called
+[2025-06-16 17:23:41,186] INFO rules_engine.custom_functions DEBUG: cart_items type: <class 'list'>
+[2025-06-16 17:23:41,186] INFO rules_engine.custom_functions DEBUG: check_same_subject_products called
+[2025-06-16 17:23:41,186] INFO rules_engine.custom_functions DEBUG: cart_items type: <class 'list'>
+[2025-06-16 17:23:41,186] INFO rules_engine.custom_functions DEBUG: cart_items: [{'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}]
+[2025-06-16 17:23:41,187] INFO rules_engine.custom_functions DEBUG: cart_items type: <class 'list'>
+[2025-06-16 17:23:41,187] INFO rules_engine.custom_functions DEBUG: cart_items: []
+[2025-06-16 17:23:41,187] INFO rules_engine.custom_functions DEBUG: params: {'assignment_ids': [85, 89], 'marking_ids': [117, 79]}
+[2025-06-16 17:23:41,188] INFO rules_engine.custom_functions DEBUG: cart_items: []
+[2025-06-16 17:23:41,188] INFO rules_engine.custom_functions DEBUG: params: {'assignment_ids': [85, 89], 'marking_ids': [117, 79]}
+[2025-06-16 17:23:41,188] INFO rules_engine.custom_functions DEBUG: assignment_ids: [85, 89]
+[2025-06-16 17:23:41,188] INFO rules_engine.custom_functions DEBUG: params: {'assignment_ids': [85, 89], 'marking_ids': [117, 79]}
+[2025-06-16 17:23:41,189] INFO rules_engine.custom_functions DEBUG: assignment_ids: [85, 89]
+[2025-06-16 17:23:41,189] INFO rules_engine.custom_functions DEBUG: marking_ids: [117, 79]
+[2025-06-16 17:23:41,189] INFO rules_engine.custom_functions DEBUG: assignment_ids: [85, 89]
+[2025-06-16 17:23:41,189] INFO rules_engine.custom_functions DEBUG: marking_ids: [117, 79]
+[2025-06-16 17:23:41,189] INFO rules_engine.custom_functions DEBUG: Processing item: {'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}
+[2025-06-16 17:23:41,189] INFO rules_engine.custom_functions DEBUG: marking_ids: [117, 79]
+[2025-06-16 17:23:41,190] INFO rules_engine.custom_functions DEBUG: assignment_subjects: set()
+[2025-06-16 17:23:41,190] INFO rules_engine.custom_functions DEBUG: product_id: 71, subject_code: CB1
+[2025-06-16 17:23:41,191] INFO rules_engine.custom_functions DEBUG: assignment_subjects: set()
+[2025-06-16 17:23:41,191] INFO rules_engine.custom_functions DEBUG: marking_subjects: set()
+[2025-06-16 17:23:41,191] INFO rules_engine.custom_functions DEBUG: assignment_subjects: set()
+[2025-06-16 17:23:41,191] INFO rules_engine.custom_functions DEBUG: marking_subjects: set()
+[2025-06-16 17:23:41,191] INFO rules_engine.custom_functions DEBUG: Final result: False
+[2025-06-16 17:23:41,191] INFO rules_engine.custom_functions DEBUG: marking_subjects: set()
+[2025-06-16 17:23:41,191] INFO rules_engine.custom_functions DEBUG: Final result: False
+[2025-06-16 17:23:41,196] INFO rules_engine.custom_functions DEBUG: Final result: False
+[2025-06-16 17:23:41,303] INFO rules_engine.custom_functions DEBUG: calculate_vat_standard called
+[2025-06-16 17:23:41,303] INFO rules_engine.custom_functions DEBUG: cart_items: [{'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}]
+[2025-06-16 17:23:41,307] INFO rules_engine.custom_functions DEBUG: params: {'function': 'calculate_vat_standard', 'vat_rate': 0.2, 'description': 'Standard UK VAT at 20%', 'threshold_amount': 0, 'exempt_product_types': ['book', 'educational_material']}
+[2025-06-16 17:23:41,307] INFO rules_engine.custom_functions VAT calculation completed
+[2025-06-16 17:23:41,308] INFO rules_engine.custom_functions DEBUG: VAT calculation result: {'calculation_type': 'standard_vat', 'vat_rate': 0.2, 'total_net': 84.0, 'total_vat': 16.8, 'total_gross': 100.8, 'meets_threshold': True, 'threshold_amount': 0.0, 'item_calculations': [{'item_id': 123, 'product_name': 'Additional Mock Pack', 'net_amount': 84.0, 'vat_amount': 16.8, 'gross_amount': 100.8, 'vat_rate': 0.2, 'is_exempt': False}], 'calculation_timestamp': None}
+[2025-06-16 17:23:41,320] INFO rules_engine.custom_functions DEBUG: check_same_subject_products called
+[2025-06-16 17:23:41,320] INFO rules_engine.custom_functions DEBUG: cart_items type: <class 'list'>
+[2025-06-16 17:23:41,320] INFO rules_engine.custom_functions DEBUG: cart_items: [{'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}]
+[2025-06-16 17:23:41,321] INFO rules_engine.custom_functions DEBUG: params: {'assignment_ids': [85, 89], 'marking_ids': [117, 79]}
+[2025-06-16 17:23:41,321] INFO rules_engine.custom_functions DEBUG: assignment_ids: [85, 89]
+[2025-06-16 17:23:41,322] INFO rules_engine.custom_functions DEBUG: marking_ids: [117, 79]
+[2025-06-16 17:23:41,322] INFO rules_engine.custom_functions DEBUG: Processing item: {'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}
+[2025-06-16 17:23:41,323] INFO rules_engine.custom_functions DEBUG: product_id: 71, subject_code: CB1
+[2025-06-16 17:23:41,323] INFO rules_engine.custom_functions DEBUG: assignment_subjects: set()
+[2025-06-16 17:23:41,323] INFO rules_engine.custom_functions DEBUG: marking_subjects: set()
+[2025-06-16 17:23:41,323] INFO rules_engine.custom_functions DEBUG: Final result: False
+[2025-06-16 17:23:46,748] ERROR django.request Internal Server Error: /api/auth/test-email/
+[2025-06-16 17:23:53,926] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-16 17:23:53,928] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-16 17:23:53,929] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-16 17:23:53,937] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-16 17:23:53,939] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-16 17:23:53,942] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-16 17:23:53,947] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-16 17:23:54,091] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-16 17:23:54,092] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['50']}>
+[2025-06-16 17:23:54,097] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=50
+[2025-06-16 17:23:54,098] INFO exam_sessions_subjects_products.views Filtering subject_ids: [], subject_code: None
+[2025-06-16 17:23:54,100] INFO exam_sessions_subjects_products.views Filtering main_category_ids: [], delivery_method_ids: []
+[2025-06-16 17:23:54,106] INFO exam_sessions_subjects_products.views After product group filter, queryset count: 393
+[2025-06-16 17:23:54,107] INFO exam_sessions_subjects_products.views Pagination: total=393, start=0, end=50, page_size=50
+[2025-06-16 17:23:54,219] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_2988012675615816041
+[2025-06-16 17:23:54,344] INFO exam_sessions_subjects_products.views Paginated queryset count: 50, total: 393, cached with key: products_list_2988012675615816041
+[2025-06-16 17:23:54,622] INFO rules_engine.custom_functions DEBUG: calculate_vat_standard called
+[2025-06-16 17:23:54,629] INFO rules_engine.custom_functions DEBUG: cart_items: [{'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}]
+[2025-06-16 17:23:54,643] INFO rules_engine.custom_functions DEBUG: calculate_vat_standard called
+[2025-06-16 17:23:54,646] INFO rules_engine.custom_functions DEBUG: cart_items: [{'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}]
+[2025-06-16 17:23:54,646] INFO rules_engine.custom_functions DEBUG: params: {'function': 'calculate_vat_standard', 'vat_rate': 0.2, 'description': 'Standard UK VAT at 20%', 'threshold_amount': 0, 'exempt_product_types': ['book', 'educational_material']}
+[2025-06-16 17:23:54,644] INFO rules_engine.custom_functions DEBUG: calculate_vat_standard called
+[2025-06-16 17:23:54,653] INFO rules_engine.custom_functions DEBUG: params: {'function': 'calculate_vat_standard', 'vat_rate': 0.2, 'description': 'Standard UK VAT at 20%', 'threshold_amount': 0, 'exempt_product_types': ['book', 'educational_material']}
+[2025-06-16 17:23:54,655] INFO rules_engine.custom_functions VAT calculation completed
+[2025-06-16 17:23:54,655] INFO rules_engine.custom_functions DEBUG: cart_items: [{'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}]
+[2025-06-16 17:23:54,657] INFO rules_engine.custom_functions VAT calculation completed
+[2025-06-16 17:23:54,657] INFO rules_engine.custom_functions DEBUG: VAT calculation result: {'calculation_type': 'standard_vat', 'vat_rate': 0.2, 'total_net': 84.0, 'total_vat': 16.8, 'total_gross': 100.8, 'meets_threshold': True, 'threshold_amount': 0.0, 'item_calculations': [{'item_id': 123, 'product_name': 'Additional Mock Pack', 'net_amount': 84.0, 'vat_amount': 16.8, 'gross_amount': 100.8, 'vat_rate': 0.2, 'is_exempt': False}], 'calculation_timestamp': None}
+[2025-06-16 17:23:54,658] INFO rules_engine.custom_functions DEBUG: params: {'function': 'calculate_vat_standard', 'vat_rate': 0.2, 'description': 'Standard UK VAT at 20%', 'threshold_amount': 0, 'exempt_product_types': ['book', 'educational_material']}
+[2025-06-16 17:23:54,661] INFO rules_engine.custom_functions DEBUG: VAT calculation result: {'calculation_type': 'standard_vat', 'vat_rate': 0.2, 'total_net': 84.0, 'total_vat': 16.8, 'total_gross': 100.8, 'meets_threshold': True, 'threshold_amount': 0.0, 'item_calculations': [{'item_id': 123, 'product_name': 'Additional Mock Pack', 'net_amount': 84.0, 'vat_amount': 16.8, 'gross_amount': 100.8, 'vat_rate': 0.2, 'is_exempt': False}], 'calculation_timestamp': None}
+[2025-06-16 17:23:54,669] INFO rules_engine.custom_functions VAT calculation completed
+[2025-06-16 17:23:54,695] INFO rules_engine.custom_functions DEBUG: VAT calculation result: {'calculation_type': 'standard_vat', 'vat_rate': 0.2, 'total_net': 84.0, 'total_vat': 16.8, 'total_gross': 100.8, 'meets_threshold': True, 'threshold_amount': 0.0, 'item_calculations': [{'item_id': 123, 'product_name': 'Additional Mock Pack', 'net_amount': 84.0, 'vat_amount': 16.8, 'gross_amount': 100.8, 'vat_rate': 0.2, 'is_exempt': False}], 'calculation_timestamp': None}
+[2025-06-16 17:23:54,697] INFO rules_engine.custom_functions DEBUG: check_same_subject_products called
+[2025-06-16 17:23:54,706] INFO rules_engine.custom_functions DEBUG: cart_items type: <class 'list'>
+[2025-06-16 17:23:54,708] INFO rules_engine.custom_functions DEBUG: check_same_subject_products called
+[2025-06-16 17:23:54,711] INFO rules_engine.custom_functions DEBUG: cart_items: [{'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}]
+[2025-06-16 17:23:54,712] INFO rules_engine.custom_functions DEBUG: calculate_vat_standard called
+[2025-06-16 17:23:54,713] INFO rules_engine.custom_functions DEBUG: cart_items type: <class 'list'>
+[2025-06-16 17:23:54,717] INFO rules_engine.custom_functions DEBUG: params: {'assignment_ids': [85, 89], 'marking_ids': [117, 79]}
+[2025-06-16 17:23:54,719] INFO rules_engine.custom_functions DEBUG: cart_items: [{'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}]
+[2025-06-16 17:23:54,720] INFO rules_engine.custom_functions DEBUG: check_same_subject_products called
+[2025-06-16 17:23:54,720] INFO rules_engine.custom_functions DEBUG: cart_items: [{'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}]
+[2025-06-16 17:23:54,720] INFO rules_engine.custom_functions DEBUG: assignment_ids: [85, 89]
+[2025-06-16 17:23:54,721] INFO rules_engine.custom_functions DEBUG: params: {'function': 'calculate_vat_standard', 'vat_rate': 0.2, 'description': 'Standard UK VAT at 20%', 'threshold_amount': 0, 'exempt_product_types': ['book', 'educational_material']}
+[2025-06-16 17:23:54,721] INFO rules_engine.custom_functions DEBUG: cart_items type: <class 'list'>
+[2025-06-16 17:23:54,722] INFO rules_engine.custom_functions DEBUG: params: {'assignment_ids': [85, 89], 'marking_ids': [117, 79]}
+[2025-06-16 17:23:54,722] INFO rules_engine.custom_functions DEBUG: marking_ids: [117, 79]
+[2025-06-16 17:23:54,722] INFO rules_engine.custom_functions VAT calculation completed
+[2025-06-16 17:23:54,722] INFO rules_engine.custom_functions DEBUG: cart_items: [{'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}]
+[2025-06-16 17:23:54,724] INFO rules_engine.custom_functions DEBUG: assignment_ids: [85, 89]
+[2025-06-16 17:23:54,724] INFO rules_engine.custom_functions DEBUG: Processing item: {'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}
+[2025-06-16 17:23:54,724] INFO rules_engine.custom_functions DEBUG: VAT calculation result: {'calculation_type': 'standard_vat', 'vat_rate': 0.2, 'total_net': 84.0, 'total_vat': 16.8, 'total_gross': 100.8, 'meets_threshold': True, 'threshold_amount': 0.0, 'item_calculations': [{'item_id': 123, 'product_name': 'Additional Mock Pack', 'net_amount': 84.0, 'vat_amount': 16.8, 'gross_amount': 100.8, 'vat_rate': 0.2, 'is_exempt': False}], 'calculation_timestamp': None}
+[2025-06-16 17:23:54,725] INFO rules_engine.custom_functions DEBUG: params: {'assignment_ids': [85, 89], 'marking_ids': [117, 79]}
+[2025-06-16 17:23:54,725] INFO rules_engine.custom_functions DEBUG: marking_ids: [117, 79]
+[2025-06-16 17:23:54,726] INFO rules_engine.custom_functions DEBUG: product_id: 71, subject_code: CB1
+[2025-06-16 17:23:54,729] INFO rules_engine.custom_functions DEBUG: assignment_ids: [85, 89]
+[2025-06-16 17:23:54,730] INFO rules_engine.custom_functions DEBUG: Processing item: {'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}
+[2025-06-16 17:23:54,737] INFO rules_engine.custom_functions DEBUG: assignment_subjects: set()
+[2025-06-16 17:23:54,740] INFO rules_engine.custom_functions DEBUG: marking_ids: [117, 79]
+[2025-06-16 17:23:54,741] INFO rules_engine.custom_functions DEBUG: product_id: 71, subject_code: CB1
+[2025-06-16 17:23:54,741] INFO rules_engine.custom_functions DEBUG: marking_subjects: set()
+[2025-06-16 17:23:54,743] INFO rules_engine.custom_functions DEBUG: Processing item: {'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}
+[2025-06-16 17:23:54,744] INFO rules_engine.custom_functions DEBUG: assignment_subjects: set()
+[2025-06-16 17:23:54,744] INFO rules_engine.custom_functions DEBUG: check_same_subject_products called
+[2025-06-16 17:23:54,745] INFO rules_engine.custom_functions DEBUG: Final result: False
+[2025-06-16 17:23:54,746] INFO rules_engine.custom_functions DEBUG: product_id: 71, subject_code: CB1
+[2025-06-16 17:23:54,749] INFO rules_engine.custom_functions DEBUG: marking_subjects: set()
+[2025-06-16 17:23:54,751] INFO rules_engine.custom_functions DEBUG: cart_items type: <class 'list'>
+[2025-06-16 17:23:54,756] INFO rules_engine.custom_functions DEBUG: assignment_subjects: set()
+[2025-06-16 17:23:54,757] INFO rules_engine.custom_functions DEBUG: Final result: False
+[2025-06-16 17:23:54,758] INFO rules_engine.custom_functions DEBUG: cart_items: [{'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}]
+[2025-06-16 17:23:54,759] INFO rules_engine.custom_functions DEBUG: marking_subjects: set()
+[2025-06-16 17:23:54,776] INFO rules_engine.custom_functions DEBUG: params: {'assignment_ids': [85, 89], 'marking_ids': [117, 79]}
+[2025-06-16 17:23:54,778] INFO rules_engine.custom_functions DEBUG: Final result: False
+[2025-06-16 17:23:54,790] INFO rules_engine.custom_functions DEBUG: assignment_ids: [85, 89]
+[2025-06-16 17:23:54,795] INFO rules_engine.custom_functions DEBUG: marking_ids: [117, 79]
+[2025-06-16 17:23:54,802] INFO rules_engine.custom_functions DEBUG: Processing item: {'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}
+[2025-06-16 17:23:54,807] INFO rules_engine.custom_functions DEBUG: product_id: 71, subject_code: CB1
+[2025-06-16 17:23:54,807] INFO rules_engine.custom_functions DEBUG: assignment_subjects: set()
+[2025-06-16 17:23:54,808] INFO rules_engine.custom_functions DEBUG: marking_subjects: set()
+[2025-06-16 17:23:54,812] INFO rules_engine.custom_functions DEBUG: Final result: False
+[2025-06-16 17:23:55,018] INFO rules_engine.custom_functions DEBUG: calculate_vat_standard called
+[2025-06-16 17:23:55,018] INFO rules_engine.custom_functions DEBUG: cart_items: [{'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}]
+[2025-06-16 17:23:55,019] INFO rules_engine.custom_functions DEBUG: params: {'function': 'calculate_vat_standard', 'vat_rate': 0.2, 'description': 'Standard UK VAT at 20%', 'threshold_amount': 0, 'exempt_product_types': ['book', 'educational_material']}
+[2025-06-16 17:23:55,019] INFO rules_engine.custom_functions VAT calculation completed
+[2025-06-16 17:23:55,019] INFO rules_engine.custom_functions DEBUG: VAT calculation result: {'calculation_type': 'standard_vat', 'vat_rate': 0.2, 'total_net': 84.0, 'total_vat': 16.8, 'total_gross': 100.8, 'meets_threshold': True, 'threshold_amount': 0.0, 'item_calculations': [{'item_id': 123, 'product_name': 'Additional Mock Pack', 'net_amount': 84.0, 'vat_amount': 16.8, 'gross_amount': 100.8, 'vat_rate': 0.2, 'is_exempt': False}], 'calculation_timestamp': None}
+[2025-06-16 17:23:55,029] INFO rules_engine.custom_functions DEBUG: check_same_subject_products called
+[2025-06-16 17:23:55,029] INFO rules_engine.custom_functions DEBUG: cart_items type: <class 'list'>
+[2025-06-16 17:23:55,030] INFO rules_engine.custom_functions DEBUG: cart_items: [{'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}]
+[2025-06-16 17:23:55,030] INFO rules_engine.custom_functions DEBUG: params: {'assignment_ids': [85, 89], 'marking_ids': [117, 79]}
+[2025-06-16 17:23:55,031] INFO rules_engine.custom_functions DEBUG: assignment_ids: [85, 89]
+[2025-06-16 17:23:55,031] INFO rules_engine.custom_functions DEBUG: marking_ids: [117, 79]
+[2025-06-16 17:23:55,032] INFO rules_engine.custom_functions DEBUG: Processing item: {'id': 123, 'product_id': 71, 'subject_code': 'CB1', 'product_name': 'Additional Mock Pack', 'product_code': 'AMP', 'product_type': None, 'quantity': 4, 'price_type': 'standard', 'actual_price': '21.00', 'metadata': {'variationId': 1, 'variationName': 'Vitalsource eBook'}}
+[2025-06-16 17:23:55,033] INFO rules_engine.custom_functions DEBUG: product_id: 71, subject_code: CB1
+[2025-06-16 17:23:55,033] INFO rules_engine.custom_functions DEBUG: assignment_subjects: set()
+[2025-06-16 17:23:55,033] INFO rules_engine.custom_functions DEBUG: marking_subjects: set()
+[2025-06-16 17:23:55,033] INFO rules_engine.custom_functions DEBUG: Final result: False
+[2025-06-16 17:23:56,306] ERROR django.request Internal Server Error: /api/auth/test-email/
+[2025-06-16 17:24:33,618] ERROR cart.views Failed to send order confirmation email for order #17: EmailService.send_order_confirmation() missing 2 required positional arguments: 'user_email' and 'order_data'
+[2025-06-16 17:24:35,952] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-16 17:24:35,953] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-16 17:24:35,953] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-16 17:24:35,954] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-16 17:24:35,964] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-16 17:24:35,964] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-16 17:24:35,964] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-16 17:24:35,965] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-16 17:24:36,061] INFO exam_sessions_subjects_products.views --- list_products called ---
+[2025-06-16 17:24:36,061] INFO exam_sessions_subjects_products.views Query params: <QueryDict: {'page': ['1'], 'page_size': ['20']}>
+[2025-06-16 17:24:36,061] INFO exam_sessions_subjects_products.views Pagination: page=1, page_size=20
+[2025-06-16 17:24:36,062] INFO exam_sessions_subjects_products.views Returning cached products data
+[2025-06-16 17:26:27,579] ERROR core_auth.email_testing Failed to preview template order_confirmation: emails/order_confirmation.html
+[2025-06-16 17:32:54,529] ERROR core_auth.email_service Failed to send email to ['your@email.com']: emails/password_reset.html
+[2025-06-16 17:33:06,059] ERROR core_auth.email_service Failed to send email to ['eugenelo@bpp.com']: emails/password_reset.html
+[2025-06-16 17:33:27,145] ERROR core_auth.email_testing Failed to preview template order_confirmation: emails/order_confirmation.html
+[2025-06-16 17:33:27,146] ERROR core_auth.email_testing Failed to preview template order_confirmation: emails/order_confirmation.html
+[2025-06-16 17:33:27,147] ERROR core_auth.email_testing Failed to preview template password_reset: emails/password_reset.html
+[2025-06-16 17:33:27,147] ERROR core_auth.email_testing Failed to preview template password_reset: emails/password_reset.html
+[2025-06-16 17:33:27,148] ERROR core_auth.email_testing Failed to preview template account_activation: emails/account_activation.html
+[2025-06-16 17:33:27,148] ERROR core_auth.email_testing Failed to preview template account_activation: emails/account_activation.html
+[2025-06-16 17:35:11,314] ERROR core_auth.email_testing Failed to preview template order_confirmation: emails/order_confirmation.html
+[2025-06-17 10:59:23,869] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\django_Admin3\settings\base.py changed, reloading.
+[2025-06-17 10:59:24,896] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 11:00:23,232] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\cart\views.py changed, reloading.
+[2025-06-17 11:00:24,106] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 11:00:55,341] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\cart\views.py changed, reloading.
+[2025-06-17 11:00:57,267] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 11:01:52,360] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\core_auth\views.py changed, reloading.
+[2025-06-17 11:01:53,461] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 11:02:23,779] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\core_auth\views.py changed, reloading.
+[2025-06-17 11:02:25,057] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 11:03:38,636] WARNING CSSUTILS Property: Unknown Property name. [4:13: -webkit-text-size-adjust]
+[2025-06-17 11:03:38,637] WARNING CSSUTILS Property: Unknown Property name. [5:13: -ms-text-size-adjust]
+[2025-06-17 11:03:38,639] WARNING CSSUTILS Property: Unknown Property name. [8:13: mso-table-lspace]
+[2025-06-17 11:03:38,640] WARNING CSSUTILS Property: Unknown Property name. [9:13: mso-table-rspace]
+[2025-06-17 11:03:38,641] WARNING CSSUTILS Property: Unknown Property name. [12:13: -ms-interpolation-mode]
+[2025-06-17 11:03:38,775] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #667eea 0%, #764ba2 100%) [41:13: background]
+[2025-06-17 11:03:38,780] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #667eea 0%, #764ba2 100%) [82:13: background]
+[2025-06-17 11:03:38,784] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #5a6fd8 0%, #6b4190 100%) [93:13: background]
+[2025-06-17 11:03:38,793] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: flex [132:13: display]
+[2025-06-17 11:03:38,794] WARNING CSSUTILS Property: Unknown Property name. [133:13: justify-content]
+[2025-06-17 11:03:38,832] WARNING CSSUTILS Property: Unknown Property name. [1:1: -webkit-text-size-adjust]
+[2025-06-17 11:03:38,834] WARNING CSSUTILS Property: Unknown Property name. [1:31: -ms-text-size-adjust]
+[2025-06-17 11:03:38,838] WARNING CSSUTILS Property: Unknown Property name. [1:1: mso-table-lspace]
+[2025-06-17 11:03:38,840] WARNING CSSUTILS Property: Unknown Property name. [1:20: mso-table-rspace]
+[2025-06-17 11:03:38,845] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #667eea 0%, #764ba2 100%) [1:1: background]
+[2025-06-17 11:03:38,847] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #667eea 0%, #764ba2 100%) [1:40: background]
+[2025-06-17 11:03:38,859] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: flex [1:1: display]
+[2025-06-17 11:03:38,860] WARNING CSSUTILS Property: Unknown Property name. [1:14: justify-content]
+[2025-06-17 11:03:52,165] WARNING CSSUTILS Property: Unknown Property name. [4:13: -webkit-text-size-adjust]
+[2025-06-17 11:03:52,166] WARNING CSSUTILS Property: Unknown Property name. [5:13: -ms-text-size-adjust]
+[2025-06-17 11:03:52,168] WARNING CSSUTILS Property: Unknown Property name. [8:13: mso-table-lspace]
+[2025-06-17 11:03:52,171] WARNING CSSUTILS Property: Unknown Property name. [9:13: mso-table-rspace]
+[2025-06-17 11:03:52,173] WARNING CSSUTILS Property: Unknown Property name. [12:13: -ms-interpolation-mode]
+[2025-06-17 11:03:52,325] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #667eea 0%, #764ba2 100%) [41:13: background]
+[2025-06-17 11:03:52,330] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #667eea 0%, #764ba2 100%) [82:13: background]
+[2025-06-17 11:03:52,333] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #5a6fd8 0%, #6b4190 100%) [93:13: background]
+[2025-06-17 11:03:52,341] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: flex [132:13: display]
+[2025-06-17 11:03:52,342] WARNING CSSUTILS Property: Unknown Property name. [133:13: justify-content]
+[2025-06-17 11:03:52,376] WARNING CSSUTILS Property: Unknown Property name. [1:1: -webkit-text-size-adjust]
+[2025-06-17 11:03:52,376] WARNING CSSUTILS Property: Unknown Property name. [1:31: -ms-text-size-adjust]
+[2025-06-17 11:03:52,378] WARNING CSSUTILS Property: Unknown Property name. [1:1: mso-table-lspace]
+[2025-06-17 11:03:52,379] WARNING CSSUTILS Property: Unknown Property name. [1:20: mso-table-rspace]
+[2025-06-17 11:03:52,387] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #667eea 0%, #764ba2 100%) [1:1: background]
+[2025-06-17 11:03:52,393] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #667eea 0%, #764ba2 100%) [1:40: background]
+[2025-06-17 11:03:52,402] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: flex [1:1: display]
+[2025-06-17 11:03:52,404] WARNING CSSUTILS Property: Unknown Property name. [1:14: justify-content]
+[2025-06-17 11:03:52,456] ERROR utils.email_testing Failed to preview template account_activation: utils/emails/account_activation.html
+[2025-06-17 11:03:52,456] ERROR utils.email_testing Failed to preview template account_activation: utils/emails/account_activation.html
+[2025-06-17 11:04:31,548] INFO utils.email_testing Saved preview: ./email_previews/password_reset_html.html
+[2025-06-17 11:04:31,550] INFO utils.email_testing Saved preview: ./email_previews/password_reset_text.txt
+[2025-06-17 11:04:31,555] WARNING CSSUTILS Property: Unknown Property name. [4:13: -webkit-text-size-adjust]
+[2025-06-17 11:04:31,556] WARNING CSSUTILS Property: Unknown Property name. [5:13: -ms-text-size-adjust]
+[2025-06-17 11:04:31,557] WARNING CSSUTILS Property: Unknown Property name. [8:13: mso-table-lspace]
+[2025-06-17 11:04:31,559] WARNING CSSUTILS Property: Unknown Property name. [9:13: mso-table-rspace]
+[2025-06-17 11:04:31,560] WARNING CSSUTILS Property: Unknown Property name. [12:13: -ms-interpolation-mode]
+[2025-06-17 11:04:31,744] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #667eea 0%, #764ba2 100%) [41:13: background]
+[2025-06-17 11:04:31,750] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #667eea 0%, #764ba2 100%) [82:13: background]
+[2025-06-17 11:04:31,757] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #5a6fd8 0%, #6b4190 100%) [93:13: background]
+[2025-06-17 11:04:31,778] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: flex [132:13: display]
+[2025-06-17 11:04:31,778] WARNING CSSUTILS Property: Unknown Property name. [133:13: justify-content]
+[2025-06-17 11:04:31,813] WARNING CSSUTILS Property: Unknown Property name. [1:1: -webkit-text-size-adjust]
+[2025-06-17 11:04:31,814] WARNING CSSUTILS Property: Unknown Property name. [1:31: -ms-text-size-adjust]
+[2025-06-17 11:04:31,815] WARNING CSSUTILS Property: Unknown Property name. [1:1: mso-table-lspace]
+[2025-06-17 11:04:31,815] WARNING CSSUTILS Property: Unknown Property name. [1:20: mso-table-rspace]
+[2025-06-17 11:04:31,823] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #667eea 0%, #764ba2 100%) [1:1: background]
+[2025-06-17 11:04:31,826] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #667eea 0%, #764ba2 100%) [1:40: background]
+[2025-06-17 11:04:31,858] INFO utils.email_testing Saved preview: ./email_previews/password_reset_inlined.html
+[2025-06-17 11:16:28,181] WARNING django.request Unauthorized: /api/subjects/
+[2025-06-17 11:16:28,181] WARNING django.request Unauthorized: /api/products/current/list/
+[2025-06-17 11:16:28,181] WARNING django.request Unauthorized: /api/products/product-group-filters/
+[2025-06-17 11:16:28,181] WARNING django.request Unauthorized: /api/users/12/
+[2025-06-17 11:16:28,190] WARNING django.request Unauthorized: /api/cart/
+[2025-06-17 11:16:28,197] WARNING django.request Unauthorized: /api/subjects/
+[2025-06-17 11:16:28,200] WARNING django.request Unauthorized: /api/products/current/list/
+[2025-06-17 11:16:28,203] WARNING django.request Unauthorized: /api/products/product-group-filters/
+[2025-06-17 11:16:28,210] WARNING django.request Unauthorized: /api/users/12/
+[2025-06-17 11:16:28,214] WARNING django.request Unauthorized: /api/cart/
+[2025-06-17 11:21:20,553] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\utils\apps.py changed, reloading.
+[2025-06-17 11:21:22,890] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 11:21:29,318] ERROR utils.email_testing Failed to preview template order_confirmation: utils/emails/order_confirmation.html
+[2025-06-17 11:22:39,650] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\utils\email_service.py changed, reloading.
+[2025-06-17 11:22:40,587] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 11:22:51,169] ERROR utils.email_testing Failed to preview template order_confirmation: utils/emails/order_confirmation.html
+[2025-06-17 11:24:17,241] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\utils\email_service.py changed, reloading.
+[2025-06-17 11:24:18,266] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 11:24:21,276] ERROR utils.email_testing Failed to preview template order_confirmation: utils/emails/order_confirmation.html
+[2025-06-17 11:24:38,248] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\utils\email_service.py changed, reloading.
+[2025-06-17 11:24:39,577] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 11:24:42,694] ERROR utils.email_testing Failed to preview template order_confirmation: utils/emails/order_confirmation.html
+[2025-06-17 11:24:58,295] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\utils\email_service.py changed, reloading.
+[2025-06-17 11:24:59,663] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 11:25:02,499] ERROR utils.email_testing Failed to preview template order_confirmation: utils/emails/order_confirmation.html
+[2025-06-17 11:26:24,778] ERROR utils.email_testing Failed to preview template order_confirmation: templates/emails/order_confirmation.html
+[2025-06-17 11:26:46,638] ERROR utils.email_testing Failed to preview template order_confirmation: utils/emails/base_email.html
+[2025-06-17 11:27:20,489] ERROR utils.email_testing Failed to preview template order_confirmation: utils/templates/emails/order_confirmation.html
+[2025-06-17 11:28:16,398] ERROR utils.email_testing Failed to preview template order_confirmation: utils/emails/order_confirmation.html
+[2025-06-17 11:28:35,686] ERROR utils.email_testing Failed to preview template order_confirmation: utils/emails/base_email.html
+[2025-06-17 11:29:50,376] ERROR utils.email_testing Failed to preview template order_confirmation: templates/emails/order_confirmation.html
+[2025-06-17 11:30:22,408] ERROR utils.email_testing Failed to preview template order_confirmation: utils/templates/emails/order_confirmation.html
+[2025-06-17 11:32:22,229] ERROR utils.email_testing Failed to preview template order_confirmation: utils/emails/base_email.html
+[2025-06-17 11:32:52,276] ERROR utils.email_testing Failed to preview template order_confirmation: utils/emails/base_email.html
+[2025-06-17 11:34:39,495] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\utils\email_service.py changed, reloading.
+[2025-06-17 11:34:41,760] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 11:39:17,563] ERROR utils.email_testing Failed to preview template order_confirmation: utils/emails/base_email.html
+[2025-06-17 11:41:15,106] WARNING CSSUTILS Property: Unknown Property name. [4:13: -webkit-text-size-adjust]
+[2025-06-17 11:41:15,106] WARNING CSSUTILS Property: Unknown Property name. [5:13: -ms-text-size-adjust]
+[2025-06-17 11:41:15,106] WARNING CSSUTILS Property: Unknown Property name. [8:13: mso-table-lspace]
+[2025-06-17 11:41:15,106] WARNING CSSUTILS Property: Unknown Property name. [9:13: mso-table-rspace]
+[2025-06-17 11:41:15,106] WARNING CSSUTILS Property: Unknown Property name. [12:13: -ms-interpolation-mode]
+[2025-06-17 11:41:15,295] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #667eea 0%, #764ba2 100%) [41:13: background]
+[2025-06-17 11:41:15,301] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #667eea 0%, #764ba2 100%) [82:13: background]
+[2025-06-17 11:41:15,308] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #5a6fd8 0%, #6b4190 100%) [93:13: background]
+[2025-06-17 11:41:15,316] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: flex [132:13: display]
+[2025-06-17 11:41:15,316] WARNING CSSUTILS Property: Unknown Property name. [133:13: justify-content]
+[2025-06-17 11:41:15,356] WARNING CSSUTILS Property: Unknown Property name. [1:1: -webkit-text-size-adjust]
+[2025-06-17 11:41:15,356] WARNING CSSUTILS Property: Unknown Property name. [1:31: -ms-text-size-adjust]
+[2025-06-17 11:41:15,356] WARNING CSSUTILS Property: Unknown Property name. [1:1: mso-table-lspace]
+[2025-06-17 11:41:15,356] WARNING CSSUTILS Property: Unknown Property name. [1:20: mso-table-rspace]
+[2025-06-17 11:41:15,369] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #667eea 0%, #764ba2 100%) [1:1: background]
+[2025-06-17 11:41:15,376] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: linear-gradient(135deg, #667eea 0%, #764ba2 100%) [1:40: background]
+[2025-06-17 11:41:15,380] ERROR CSSUTILS Property: Invalid value for "CSS Level 2.1" property: flex [1:1: display]
+[2025-06-17 11:41:15,380] WARNING CSSUTILS Property: Unknown Property name. [1:14: justify-content]
+[2025-06-17 11:43:31,289] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\utils\email_service.py changed, reloading.
+[2025-06-17 11:43:32,176] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 11:47:54,476] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\utils\email_service.py changed, reloading.
+[2025-06-17 11:47:55,331] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 11:48:03,447] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\utils\email_service.py changed, reloading.
+[2025-06-17 11:48:04,535] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 11:48:31,871] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\utils\email_service.py changed, reloading.
+[2025-06-17 11:48:32,935] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 11:48:51,689] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\utils\email_service.py changed, reloading.
+[2025-06-17 11:48:52,995] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 11:56:40,373] INFO utils.email_testing MJML template not found for order_confirmation, falling back to HTML
+[2025-06-17 11:57:41,353] INFO utils.email_testing MJML template not found for order_confirmation, falling back to HTML
+[2025-06-17 11:58:06,213] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\utils\email_service.py changed, reloading.
+[2025-06-17 11:58:07,390] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 12:02:02,603] INFO utils.email_testing MJML template not found for order_confirmation: CSS inlining is an optional feature. Run `pip install -e ".[css_inlining]"` to install the required dependencies., falling back to HTML
+[2025-06-17 12:02:43,337] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\utils\email_service.py changed, reloading.
+[2025-06-17 12:02:44,692] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-06-17 12:03:33,883] INFO utils.email_testing MJML template not found for order_confirmation: CSS inlining is an optional feature. Run `pip install -e ".[css_inlining]"` to install the required dependencies., falling back to HTML
+[2025-06-17 12:07:22,013] INFO utils.email_testing MJML template not found for account_activation: emails/mjml/account_activation.mjml, falling back to HTML
+[2025-06-17 12:07:22,020] ERROR utils.email_testing Failed to preview template account_activation: emails/account_activation.html
+[2025-06-17 12:07:22,020] INFO utils.email_testing MJML template not found for account_activation: emails/mjml/account_activation.mjml, falling back to HTML
+[2025-06-17 12:07:22,020] ERROR utils.email_testing Failed to preview template account_activation: emails/account_activation.html

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{% block title %}Admin3 Email{% endblock %}</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style type="text/css">
+        /* Reset styles for email clients */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            outline: none;
+            text-decoration: none;
+        }
+        
+        /* Base styles */
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333333;
+        }
+        
+        /* Container styles */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Header styles */
+        .email-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .email-header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .email-header .subtitle {
+            color: #e0e7ff;
+            margin: 10px 0 0 0;
+            font-size: 16px;
+        }
+        
+        /* Content styles */
+        .email-content {
+            padding: 40px 30px;
+        }
+        .email-content h2 {
+            color: #333333;
+            font-size: 24px;
+            margin: 0 0 20px 0;
+            font-weight: 600;
+        }
+        .email-content h3 {
+            color: #555555;
+            font-size: 18px;
+            margin: 25px 0 15px 0;
+            font-weight: 600;
+        }
+        .email-content p {
+            margin: 0 0 16px 0;
+            line-height: 1.6;
+        }
+        
+        /* Button styles */
+        .btn {
+            display: inline-block;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .btn:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6b4190 100%);
+        }
+        
+        /* Table styles for order items */
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .order-table th {
+            background-color: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .order-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #555555;
+        }
+        .order-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Total summary styles */
+        .order-total {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+        .total-row.final {
+            font-weight: 600;
+            font-size: 18px;
+            color: #333333;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 12px;
+            margin-top: 12px;
+        }
+        
+        /* Footer styles */
+        .email-footer {
+            background-color: #f8f9fa;
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid #e0e0e0;
+        }
+        .email-footer p {
+            margin: 0 0 10px 0;
+            color: #666666;
+            font-size: 14px;
+        }
+        .email-footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        /* Responsive styles */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+            }
+            .email-content {
+                padding: 20px !important;
+            }
+            .email-header {
+                padding: 20px !important;
+            }
+            .email-header h1 {
+                font-size: 24px !important;
+            }
+            .btn {
+                display: block !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            .order-table {
+                font-size: 14px !important;
+            }
+            .order-table th,
+            .order-table td {
+                padding: 8px !important;
+            }
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .email-container {
+                background-color: #1a1a1a !important;
+            }
+            .email-content {
+                background-color: #1a1a1a !important;
+                color: #ffffff !important;
+            }
+            .email-content h2,
+            .email-content h3 {
+                color: #ffffff !important;
+            }
+            .order-table {
+                background-color: #2a2a2a !important;
+                border-color: #444444 !important;
+            }
+            .order-table th {
+                background-color: #333333 !important;
+                color: #ffffff !important;
+            }
+            .order-table td {
+                color: #cccccc !important;
+                border-color: #444444 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div style="padding: 20px 0;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+            <tr>
+                <td align="center">
+                    <div class="email-container">
+                        <!-- Header -->
+                        <div class="email-header">
+                            <h1>{% block header_title %}Admin3{% endblock %}</h1>
+                            <p class="subtitle">{% block header_subtitle %}Professional Education Management{% endblock %}</p>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="email-content">
+                            {% block content %}
+                            <!-- Email content goes here -->
+                            {% endblock %}
+                        </div>
+                        
+                        <!-- Footer -->
+                        <div class="email-footer">
+                            <p><strong>Admin3 Education Management</strong></p>
+                            <p>Need help? Contact our support team at <a href="mailto:support@admin3.com">support@admin3.com</a></p>
+                            <p>© 2024 Admin3. All rights reserved.</p>
+                            <p style="font-size: 12px; color: #999999; margin-top: 20px;">
+                                This email was sent to you because you have an account with Admin3. 
+                                If you believe you received this email in error, please contact us.
+                            </p>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html> 

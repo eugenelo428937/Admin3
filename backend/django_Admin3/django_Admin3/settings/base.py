@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     'core_auth',    
     'administrate.apps.AdministrateConfig',
     'rules_engine.apps.RulesEngineConfig',
+    'utils.apps.UtilsConfig',  # Added utils app for email functionality
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
