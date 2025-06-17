@@ -2,12 +2,15 @@
   <mj-head>
     <mj-title>Order Confirmation - Admin3</mj-title>
     <mj-preview>Thank you for your order! Your purchase has been confirmed.</mj-preview>
+    
     <mj-attributes>
       <mj-all font-family="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" />
-      <mj-text font-size="16px" line-height="1.6" color="#333333" />
+      <mj-text font-size="16px" line-height="106%" color="#333333" />
       <mj-button background-color="#667eea" border-radius="6px" font-weight="600" />
     </mj-attributes>
-    <mj-style inline="inline">
+    <mj-style inline="inline">      
+      
+      
       .total-row { 
         display: flex; 
         justify-content: space-between; 
@@ -22,20 +25,11 @@
         margin-top: 12px;
       }
     </mj-style>
-  </mj-head>
-  
-  <mj-body background-color="#f4f4f4">
-    <!-- Header Section -->
-    <mj-section background-color="#667eea" padding="30px 20px">
-      <mj-column>
-        <mj-text align="center" color="#ffffff" font-size="28px" font-weight="600">
-          Order Confirmed!
-        </mj-text>
-        <mj-text align="center" color="#e0e7ff" font-size="16px">
-          Thank you for your purchase
-        </mj-text>
-      </mj-column>
-    </mj-section>
+  </mj-head>   
+  <mj-body background-color="#f3f3f3">
+    <mj-include path="./styles.css" type="css" />
+    
+    <mj-include path="./email_header.mjml" />
 
     <!-- Main Content -->
     <mj-section background-color="#ffffff" padding="40px 30px">

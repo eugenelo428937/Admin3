@@ -1,0 +1,9 @@
+<!-- Header Section -->
+<mj-section css-class="banner">
+	<mj-column>
+		<mj-text font-size="22px">BPP</mj-text>
+		<mj-text>Acturial</mj-text>
+		<mj-text>Education</mj-text>
+		<mj-text>Company</mj-text>
+	</mj-column>
+</mj-section>
