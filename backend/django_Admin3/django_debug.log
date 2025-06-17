@@ -12457,3 +12457,5 @@ NameError: name 'Q' is not defined
 [2025-06-16 11:33:33,380] INFO rules_engine.custom_functions DEBUG: assignment_subjects: set()
 [2025-06-16 11:33:33,380] INFO rules_engine.custom_functions DEBUG: marking_subjects: set()
 [2025-06-16 11:33:33,381] INFO rules_engine.custom_functions DEBUG: Final result: False
+[2025-06-16 11:44:01,587] INFO django.utils.autoreload C:\Code\Admin3\backend\django_Admin3\django_Admin3\settings\base.py changed, reloading.
+[2025-06-16 11:44:08,149] INFO django.utils.autoreload Watching for file changes with StatReloader
