@@ -34,6 +34,14 @@ ADMINISTRATE_API_SECRET = env('ADMINISTRATE_API_SECRET')
 ADMINISTRATE_REST_API_URL = env('ADMINISTRATE_REST_API_URL')
 GETADDRESS_API_KEY     = env('GETADDRESS_API_KEY')
 
+# Development Email Override Settings
+# Redirect all emails to these addresses in development environment
+DEV_EMAIL_OVERRIDE = True
+DEV_EMAIL_RECIPIENTS = [
+    'eugenelo@bpp.com',
+    'eugene.lo1030@gmail.com',
+]
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

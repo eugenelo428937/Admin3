@@ -95,6 +95,318 @@ Admin3 is a Django REST API backend with React frontend for educational administ
 - Use descriptive migration names
 - Test migrations on development data first
 
+## Email System Rules
+
+### Email Architecture Overview
+Admin3 uses a sophisticated email system with master template approach, queue processing, and comprehensive logging for cross-client compatibility and debugging.
+
+### Database Schema (utils app)
+
+#### EmailTemplate Model
+Manages email template configurations and routing logic:
+```python
+- name (CharField): Template identifier (e.g., 'order_confirmation')
+- subject (CharField): Default email subject
+- description (TextField): Template purpose description
+- use_master_template (BooleanField): Whether to use master template system
+- content_template_name (CharField): Content template filename for master system
+- enable_queue (BooleanField): Whether emails should be queued
+- priority (CharField): Default priority (low/normal/high/urgent)
+- is_active (BooleanField): Template availability status
+- created_at/updated_at: Timestamps
+```
+
+#### EmailQueue Model
+Manages email queue processing with retry logic:
+```python
+- queue_id (UUIDField): Unique queue identifier
+- template_name (CharField): Reference to EmailTemplate
+- to_emails (JSONField): Recipient email addresses
+- subject (CharField): Email subject (can override template default)
+- context_data (JSONField): Template context variables
+- priority (CharField): Processing priority
+- status (CharField): pending/processing/sent/failed/retry/cancelled
+- scheduled_at (DateTimeField): When to send email
+- max_retry_attempts (IntegerField): Maximum retry count (default: 3)
+- retry_count (IntegerField): Current retry attempts
+- error_details (JSONField): Failure information for debugging
+- user (ForeignKey): User who initiated the email
+- created_at/updated_at/processed_at: Timestamps
+```
+
+#### EmailLog Model
+Comprehensive logging for debugging and monitoring:
+```python
+- log_id (UUIDField): Unique log identifier
+- queue_item (ForeignKey): Optional reference to EmailQueue
+- template_name (CharField): Template used
+- to_emails (JSONField): Recipients
+- subject (CharField): Email subject
+- status (CharField): sent/failed/opened/clicked
+- esp_response (JSONField): Detailed server response with SMTP codes
+- esp_message_id (CharField): Email service provider message ID
+- error_details (JSONField): Structured error information
+- processing_time_ms (IntegerField): Email processing duration
+- user (ForeignKey): User who initiated email
+- created_at/updated_at: Timestamps
+```
+
+#### EmailAttachment Model
+File attachments for email templates:
+```python
+- template (ForeignKey): Associated EmailTemplate
+- file_path (CharField): Path to attachment file
+- filename (CharField): Display name for attachment
+- content_type (CharField): MIME type
+- is_active (BooleanField): Attachment availability
+```
+
+### Master Template System
+
+#### Architecture
+Uses a hierarchical template structure with dynamic content injection:
+
+```
+utils/templates/emails/mjml/
+├── master_template.mjml              # Base template with banner, footer, styles
+├── styles.mjml                       # Shared CSS includes
+├── banner.mjml                       # Header component
+├── footer.mjml                       # Footer component
+├── order_confirmation_content.mjml   # Order-specific content
+├── password_reset_content.mjml       # Password reset content
+└── account_activation_content.mjml   # Activation content
+```
+
+#### Master Template Structure
+```mjml
+<mjml>
+  <mj-head>
+    <mj-title>{{ email_title|default:"Email from ActEd" }}</mj-title>
+    <mj-preview>{{ email_preview|default:"Email from ActEd" }}</mj-preview>
+    <mj-include path="./styles.mjml" />
+  </mj-head>
+  
+  <mj-body background-color="#f3f3f3" width="600px">
+    {% if dev_mode_active %}
+    <!-- Development Mode Warning -->
+    <mj-section background-color="#fadede">
+      <mj-column>
+        <mj-text>🚧 DEVELOPMENT MODE 🚧<br/>
+          Original recipient: {{ dev_original_recipients|join:", " }}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    {% endif %}
+    
+    <mj-wrapper>
+      <mj-include path="./banner.mjml" />
+      
+      <!-- Dynamic Content Section -->
+      {{ email_content|safe }}
+      
+      <mj-include path="./footer.mjml" />
+    </mj-wrapper>
+  </mj-body>
+</mjml>
+```
+
+#### Content Template Pattern
+Each email type has its own content template:
+```mjml
+<!-- order_confirmation_content.mjml -->
+<mj-section background-color="#ffffff">
+  <mj-column padding="24px">
+    <mj-text>
+      Dear {{ first_name }},<br/>
+      Your order {{ order_number }} has been confirmed.
+    </mj-text>
+    <!-- Order-specific content -->
+  </mj-column>
+</mj-section>
+```
+
+### Email Service Usage
+
+#### Core Email Types
+Three main email types use the master template system:
+
+1. **Order Confirmation**
+   - Template: `order_confirmation`
+   - Content: `order_confirmation_content.mjml`
+   - Context: order data, customer info, items list
+   - Priority: high
+
+2. **Password Reset**
+   - Template: `password_reset`
+   - Content: `password_reset_content.mjml`
+   - Context: user data, reset URL, expiry time
+   - Priority: urgent
+
+3. **Account Activation**
+   - Template: `account_activation`
+   - Content: `account_activation_content.mjml`
+   - Context: user data, activation URL
+   - Priority: high
+
+#### Sending Emails
+```python
+from utils.email_service import email_service
+
+# Order confirmation with queue
+success = email_service.send_order_confirmation(
+    user_email='customer@example.com',
+    order_data={
+        'order_number': 'ORD-000123',
+        'customer_name': 'John Doe',
+        'total_amount': 299.99,
+        'items': [...],
+        'created_at': datetime.now()
+    },
+    use_queue=True,
+    priority='high'
+)
+
+# Immediate send (bypass queue)
+success = email_service.send_password_reset(
+    user_email='user@example.com',
+    reset_data={
+        'user': user_obj,
+        'reset_url': 'https://example.com/reset?token=abc123',
+        'expiry_hours': 24
+    },
+    use_queue=False
+)
+```
+
+### Queue Processing
+
+#### Management Command
+Process emails from queue using management command:
+```bash
+# Process up to 50 emails
+python manage.py process_email_queue
+
+# Process specific number
+python manage.py process_email_queue --max-emails 100
+
+# Force process failed emails
+python manage.py process_email_queue --retry-failed
+
+# Debug mode with verbose output
+python manage.py process_email_queue --debug
+```
+
+#### Queue Service Features
+- **Batch Processing**: Processes multiple emails efficiently
+- **Retry Logic**: Automatic retry for failed emails with exponential backoff
+- **Priority Handling**: Processes urgent emails first
+- **Error Recovery**: Detailed error capture and logging
+- **Development Mode**: Email redirection for testing
+- **Rate Limiting**: Prevents overwhelming email providers
+
+#### Queue Processing Flow
+1. Fetch pending emails by priority and scheduled time
+2. Render email templates with context data
+3. Send via SMTP with detailed response capture
+4. Log comprehensive results including server responses
+5. Update queue status and retry failed items
+6. Generate processing statistics
+
+### Development Features
+
+#### Email Override for Testing
+```python
+# settings/development.py
+DEV_EMAIL_OVERRIDE = True
+DEV_EMAIL_RECIPIENTS = ['developer@example.com']
+```
+All emails redirect to developer addresses with original recipient info shown in email header.
+
+#### Email Testing Commands
+```bash
+# Send test email
+python manage.py test_emails send --template order_confirmation --email test@example.com
+
+# Generate preview files
+python manage.py test_emails preview --template password_reset --save
+
+# Validate template compatibility
+python manage.py test_emails validate --template account_activation
+
+# Generate comprehensive report
+python manage.py test_emails report
+
+# Test Outlook compatibility
+python manage.py test_emails outlook-test --template order_confirmation
+```
+
+### Email Response Logging
+
+The system captures detailed server responses instead of basic success/failure:
+
+#### Response Structure
+```json
+{
+  "success": true,
+  "response_code": "250",
+  "response_message": "Email sent successfully to 2 recipients",
+  "esp_response": {
+    "backend": "django.core.mail.backends.smtp.EmailBackend",
+    "send_result": 1,
+    "recipients_count": 2,
+    "message_size": 15420,
+    "timestamp": "2025-06-19T15:30:00Z"
+  },
+  "esp_message_id": "message_id_if_available",
+  "error_details": {
+    "exception_type": "SMTPException",
+    "processing_stage": "smtp_sending"
+  }
+}
+```
+
+#### Error Debugging
+- **Template Errors**: "Invalid block tag on line 86: 'endif'"
+- **SMTP Errors**: Authentication failures, connection issues
+- **Processing Stage**: Know exactly where failures occur
+- **Performance Metrics**: Processing times, message sizes
+
+### Cross-Client Compatibility
+
+#### MJML + Premailer Enhancement
+- **MJML**: Responsive email framework with reliable table layouts
+- **Premailer**: CSS inlining and Outlook-specific optimizations
+- **Combined Approach**: Best of both worlds for maximum compatibility
+
+#### Outlook Specific Features
+- Enhanced DOCTYPE declarations
+- MSO conditional comments
+- Table attribute fixes (cellpadding, cellspacing)
+- Border fixes for images
+- Line-height inheritance corrections
+
+### Email Template Rules
+
+#### Template Development
+- Use MJML for responsive layouts and cross-client compatibility
+- Keep content templates focused on specific email content only
+- Use master template for consistent branding and structure
+- Apply proper CSS classes for styling consistency
+- Include proper alt text for images
+
+#### Context Data Formatting
+- Pre-format dates in Python (avoid Django template filters in MJML)
+- Use structured data objects for template compatibility
+- Include all necessary context for email rendering
+- Handle missing data gracefully with defaults
+
+#### Testing Requirements
+- Test in multiple email clients (Outlook, Gmail, Apple Mail)
+- Validate HTML/CSS compatibility
+- Check responsive design on mobile devices
+- Verify all template variables render correctly
+- Test queue processing and retry mechanisms
+
 ## Security Rules
 
 ### Environment Variables

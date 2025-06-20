@@ -54,13 +54,28 @@ const CheckoutPage = () => {
     setError("");
     setSuccess("");
     try {
-      await cartService.checkout();
-      setSuccess("Order placed successfully! Thank you for your purchase.");
+      const response = await cartService.checkout();
+      
+      // Check if the response includes order information
+      const orderInfo = response.data;
+      const orderNumber = orderInfo?.id ? `ORD-${String(orderInfo.id).padStart(6, '0')}` : 'your order';
+      
+      setSuccess(
+        `Order placed successfully! Thank you for your purchase. ` +
+        `Order confirmation details have been sent to your email address. ` +
+        `Order Number: ${orderNumber}`
+      );
       setCheckoutComplete(true);
       await clearCart();
-      setTimeout(() => navigate("/products"), 2000);
+      
+      // Redirect to orders page after a delay to show the order
+      setTimeout(() => navigate("/orders"), 3000);
     } catch (err) {
-      setError("Failed to place order. Please try again.");
+      console.error('Checkout error:', err);
+      const errorMessage = err.response?.data?.detail || 
+                          err.response?.data?.message || 
+                          'Failed to place order. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -69,7 +84,21 @@ const CheckoutPage = () => {
   if (checkoutComplete) {
     return (
       <Container className="mt-4">
-        <Alert variant="success">Order placed successfully! Thank you for your purchase.</Alert>
+        <Alert variant="success">
+          <h4>Order Completed Successfully! 🎉</h4>
+          <p>Thank you for your purchase. Your order has been processed and you should receive a confirmation email shortly.</p>
+          <p>
+            <strong>What's next?</strong>
+            <br />
+            • Check your email for order confirmation details
+            <br />
+            • You can view your order history in the Orders section
+            <br />
+            • If you have any questions, please contact our support team
+          </p>
+          <hr />
+          <p className="mb-0">You will be redirected to your order history in a few seconds...</p>
+        </Alert>
       </Container>
     );
   }
