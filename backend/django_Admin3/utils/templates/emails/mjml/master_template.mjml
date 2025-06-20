@@ -1,0 +1,47 @@
+<mjml>
+  <mj-head>
+    <mj-title>{{ email_title|default:"Email from ActEd" }}</mj-title>
+    <mj-preview>{{ email_preview|default:"Email from ActEd" }}</mj-preview>
+    
+    <!-- Global Attributes -->
+    <mj-attributes>
+      <mj-all font-family="'Poppins', Helvetica, Arial, sans-serif" />
+      <mj-text font-size="16px" line-height="20px" color="#555555" />
+      <mj-section padding="0" />
+      <mj-column padding="0" />
+    </mj-attributes>
+    
+    <!-- Include CSS Styles -->
+    {% include "emails/mjml/styles.mjml" %}
+  </mj-head>
+  
+  <mj-body background-color="#f3f3f3" width="600px">
+    
+    {% if dev_mode_active %}
+    <!-- Development Mode Warning -->
+    <mj-section full-width="full-width" background-color="#fadede" >
+      <mj-column width="100%">
+        <mj-text 
+          align="center" 
+          color="#000000" 
+          font-size="12px" 
+          font-weight="bold"           
+        >
+          🚧 DEVELOPMENT MODE 🚧<br/>
+          Original recipient: {{ dev_original_recipients|join:", " }}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    {% endif %}
+    <mj-wrapper>
+      <!-- Include Banner -->    
+      {% include "emails/mjml/banner.mjml" %}
+          
+      <!-- Dynamic Content Section -->
+      {{ email_content|safe }}
+          
+      <!-- Include Footer -->
+      {% include "emails/mjml/footer.mjml" %}
+    </mj-wrapper>
+  </mj-body>
+</mjml> 

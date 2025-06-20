@@ -8,29 +8,38 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             'action',
-            choices=['preview', 'send', 'validate', 'report'],
-            help='Action to perform: preview, send, validate, or report'
+            choices=['preview', 'send', 'validate', 'report', 'outlook-test'],
+            help='Action to perform: preview, send, validate, report, or outlook-test'
         )
         
         parser.add_argument(
             '--template',
             type=str,
-            choices=['order_confirmation', 'password_reset', 'account_activation'],
+            choices=[
+                'master_template', 'order_confirmation', 'password_reset', 'account_activation', 'sample_email',
+                'order_confirmation_content', 'password_reset_content', 'account_activation_content'
+            ],
             help='Email template to test'
         )
         
         parser.add_argument(
             '--format',
             type=str,
-            choices=['html', 'text', 'inlined', 'mjml'],
+            choices=['html', 'text', 'inlined', 'mjml', 'outlook'],
             default='html',
-            help='Output format for preview (default: html)'
+            help='Output format for preview (default: html). Use "outlook" for MJML + Premailer enhanced version'
         )
         
         parser.add_argument(
             '--use-html',
             action='store_true',
             help='Force use of HTML templates instead of MJML'
+        )
+        
+        parser.add_argument(
+            '--enhance-outlook',
+            action='store_true',
+            help='Apply Outlook compatibility enhancements to MJML output (combines MJML + Premailer)'
         )
         
         parser.add_argument(
@@ -65,6 +74,8 @@ class Command(BaseCommand):
                 self.handle_validate(options)
             elif action == 'report':
                 self.handle_report(options)
+            elif action == 'outlook-test':
+                self.handle_outlook_test(options)
                 
         except Exception as e:
             raise CommandError(f'Email testing failed: {str(e)}')
@@ -78,21 +89,24 @@ class Command(BaseCommand):
         format_type = options.get('format', 'html')
         save_to_file = options.get('save', False)
         use_mjml = not options.get('use_html', False)  # Use MJML unless --use-html is specified
+        enhance_outlook = options.get('enhance_outlook', False) or format_type == 'outlook'
         
         template_type = "MJML" if use_mjml else "HTML"
-        self.stdout.write(f'Previewing template: {template} (format: {format_type}, type: {template_type})')
+        enhancement_note = " + Premailer" if enhance_outlook else ""
+        
+        self.stdout.write(f'Previewing template: {template} (format: {format_type}, type: {template_type}{enhancement_note})')
         
         try:
-            content = email_tester.preview_template(template, format_type, use_mjml)
+            content = email_tester.preview_template(template, format_type, use_mjml, enhance_outlook)
             
             if save_to_file:
-                email_tester.save_preview_to_file(template, options.get('output'), use_mjml)
+                email_tester.save_preview_to_file(template, options.get('output'), use_mjml, include_outlook_enhanced=True)
                 self.stdout.write(
                     self.style.SUCCESS(f'Preview saved to {options.get("output")}')
                 )
             else:
                 self.stdout.write('\n' + '='*80)
-                self.stdout.write(f'PREVIEW: {template}.{format_type} ({template_type})')
+                self.stdout.write(f'PREVIEW: {template}.{format_type} ({template_type}{enhancement_note})')
                 self.stdout.write('='*80)
                 self.stdout.write(content)
                 self.stdout.write('='*80 + '\n')
@@ -233,4 +247,48 @@ class Command(BaseCommand):
             self.stdout.write('='*80 + '\n')
             
         except Exception as e:
-            raise CommandError(f'Failed to generate test report: {str(e)}') 
+            raise CommandError(f'Failed to generate test report: {str(e)}')
+
+    def handle_outlook_test(self, options):
+        """Handle Outlook compatibility testing."""
+        template = options.get('template')
+        if not template:
+            raise CommandError('Template name is required for outlook-test action')
+        
+        self.stdout.write(f'Testing Outlook compatibility for template: {template}')
+        
+        try:
+            results = email_tester.test_outlook_compatibility(template)
+            
+            if 'error' in results:
+                raise CommandError(f'Outlook test failed: {results["error"]}')
+            
+            # Display comparison results
+            comparison = results.get('comparison', {})
+            
+            self.stdout.write('\n' + '='*80)
+            self.stdout.write('OUTLOOK COMPATIBILITY TEST RESULTS')
+            self.stdout.write('='*80)
+            self.stdout.write(f'Template: {template}')
+            self.stdout.write(f'Regular MJML size: {comparison.get("regular_size", 0)} characters')
+            self.stdout.write(f'Enhanced size: {comparison.get("enhanced_size", 0)} characters')
+            self.stdout.write(f'Size difference: +{comparison.get("size_difference", 0)} characters')
+            self.stdout.write(f'Enhancement applied: {"Yes" if comparison.get("enhancement_applied", False) else "No"}')
+            self.stdout.write('='*80)
+            
+            # Save both versions to files for comparison
+            output_dir = options.get('output', './email_previews/')
+            
+            # Save regular version
+            with open(f'{output_dir}/{template}_mjml_regular.html', 'w', encoding='utf-8') as f:
+                f.write(results['mjml_regular'])
+                
+            # Save enhanced version  
+            with open(f'{output_dir}/{template}_mjml_outlook_enhanced.html', 'w', encoding='utf-8') as f:
+                f.write(results['mjml_outlook_enhanced'])
+            
+            self.stdout.write(self.style.SUCCESS(f'Comparison files saved to {output_dir}'))
+            self.stdout.write(self.style.WARNING('Test both versions in desktop Outlook to compare rendering quality'))
+            
+        except Exception as e:
+            raise CommandError(f'Failed to test Outlook compatibility: {str(e)}') 
