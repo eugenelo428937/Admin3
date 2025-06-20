@@ -10,6 +10,10 @@ from .serializers import CartSerializer, CartItemSerializer, ActedOrderSerialize
 from products.models import Product
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
 from utils.email_service import email_service
+import logging
+from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 class CartViewSet(viewsets.ViewSet):
     """
@@ -205,30 +209,39 @@ class CartViewSet(viewsets.ViewSet):
                     )
                     created = True
         
-        # Note: Quantity updates are now handled within each specific branch above
-        # No need for additional quantity updates here
+        if not created:
+            # If item already exists but we didn't create new one, 
+            # we may need to update the price if provided
+            if actual_price is not None:
+                item.actual_price = actual_price
+                item.save()
         
-        return Response(CartSerializer(cart).data)
+        # Get updated cart and return response
+        cart = self.get_cart(request)
+        serializer = CartSerializer(cart)
+        return Response(serializer.data)
 
     @action(detail=False, methods=['patch'], url_path='update_item')
     def update_item(self, request):
-        """PATCH /cart/update_item/ - Update quantity of a cart item"""
-        cart = self.get_cart(request)
+        """PATCH /cart/update_item/ - Update quantity of an item in cart"""
         item_id = request.data.get('item_id')
         quantity = int(request.data.get('quantity', 1))
-        item = get_object_or_404(CartItem, id=item_id, cart=cart)
+        item = get_object_or_404(CartItem, id=item_id)
         item.quantity = quantity
         item.save()
-        return Response(CartSerializer(cart).data)
+        cart = self.get_cart(request)
+        serializer = CartSerializer(cart)
+        return Response(serializer.data)
 
     @action(detail=False, methods=['delete'], url_path='remove')
     def remove(self, request):
         """DELETE /cart/remove/ - Remove item from cart"""
-        cart = self.get_cart(request)
         item_id = request.data.get('item_id')
-        item = get_object_or_404(CartItem, id=item_id, cart=cart)
+        item = get_object_or_404(CartItem, id=item_id)
         item.delete()
-        return Response(CartSerializer(cart).data)
+        cart = self.get_cart(request)
+        serializer = CartSerializer(cart)
+        return Response(serializer.data)
 
     @action(detail=False, methods=['post'], url_path='clear')
     def clear(self, request):
@@ -244,11 +257,14 @@ class CartViewSet(viewsets.ViewSet):
         cart = self.get_cart(request)
         if not cart.items.exists():
             return Response({'detail': 'Cart is empty.'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         with transaction.atomic():
+            # Create order and items first
             order = ActedOrder.objects.create(user=user)
+            order_items = []
+            
             for item in cart.items.all():
-                ActedOrderItem.objects.create(
+                order_item = ActedOrderItem.objects.create(
                     order=order,
                     product=item.product,
                     quantity=item.quantity,
@@ -256,34 +272,180 @@ class CartViewSet(viewsets.ViewSet):
                     actual_price=item.actual_price,
                     metadata=item.metadata
                 )
+                order_items.append(order_item)
+            
+            # Calculate totals using the rules engine (same as frontend)
+            try:
+                from rules_engine.engine import evaluate_checkout_rules
+                from rules_engine.custom_functions import calculate_vat_standard
+                
+                # Format cart items for VAT calculation 
+                cart_items_for_vat = [
+                    {
+                        'id': item.id,
+                        'product_id': item.product.product.id,
+                        'subject_code': item.product.exam_session_subject.subject.code,
+                        'product_name': item.product.product.fullname,
+                        'product_code': item.product.product.code,
+                        'product_type': getattr(item.product, 'type', None),
+                        'quantity': item.quantity,
+                        'price_type': item.price_type,
+                        'actual_price': str(item.actual_price) if item.actual_price else '0',
+                        'metadata': item.metadata
+                    }
+                    for item in cart.items.all()
+                ]
+                
+                # Calculate VAT using standard UK VAT rate (20%)
+                vat_params = {
+                    'function': 'calculate_vat_standard',
+                    'vat_rate': 0.2,
+                    'description': 'Standard UK VAT at 20%',
+                    'threshold_amount': 0,
+                    'exempt_product_types': ['book', 'educational_material']
+                }
+                
+                vat_result = calculate_vat_standard(cart_items_for_vat, vat_params)
+                
+                # Update order with calculated totals
+                order.subtotal = vat_result['total_net']
+                order.vat_amount = vat_result['total_vat']
+                order.total_amount = vat_result['total_gross']
+                order.vat_rate = vat_result['vat_rate']
+                order.vat_country = 'GB'
+                order.vat_calculation_type = 'standard_vat'
+                order.calculations_applied = {'vat_calculation': vat_result}
+                order.save()
+                
+                # Update individual order items with VAT details
+                item_calculations = {calc['item_id']: calc for calc in vat_result['item_calculations']}
+                for order_item in order_items:
+                    cart_item_id = None
+                    # Find corresponding cart item ID
+                    for cart_item in cart.items.all():
+                        if (cart_item.product_id == order_item.product_id and 
+                            cart_item.quantity == order_item.quantity and
+                            cart_item.price_type == order_item.price_type):
+                            cart_item_id = cart_item.id
+                            break
+                    
+                    if cart_item_id and cart_item_id in item_calculations:
+                        calc = item_calculations[cart_item_id]
+                        order_item.net_amount = calc['net_amount']
+                        order_item.vat_amount = calc['vat_amount']
+                        order_item.gross_amount = calc['gross_amount']
+                        order_item.vat_rate = calc['vat_rate']
+                        order_item.is_vat_exempt = calc['is_exempt']
+                        order_item.save()
+                        
+            except Exception as e:
+                logger.warning(f"VAT calculation failed during checkout: {str(e)}, using basic totals")
+                # Fallback: calculate basic totals without VAT
+                subtotal = sum(float(item.actual_price or 0) * item.quantity for item in cart.items.all())
+                order.subtotal = subtotal
+                order.total_amount = subtotal  # No VAT if calculation fails
+                order.save()
+                
+            # Clear cart after successful order creation
             cart.items.all().delete()
             
-            # Send order confirmation email
+            # Send order confirmation email with enhanced email management system
             try:
-                # Prepare order data for email service
+                # Get user country for dynamic content rules
+                user_country = None
+                try:
+                    if hasattr(user, 'userprofile'):
+                        home_address = user.userprofile.addresses.filter(address_type='HOME').first()
+                        if home_address:
+                            user_country = home_address.country
+                except Exception as e:
+                    logger.warning(f"Could not get user country: {str(e)}")
+                
+                # Fallback to default country if no address found (for testing dynamic content rules)
+                if not user_country:
+                    user_country = "United Kingdom"  # Default for testing
+                    logger.info(f"Using default country '{user_country}' for user {user.username}")
+                
+                # Prepare comprehensive order data for email service
                 order_data = {
                     'customer_name': user.get_full_name() or user.username,
-                    'order_number': str(order.id),
-                    'total_amount': order.total_amount,
+                    'first_name': user.first_name or user.username,
+                    'last_name': user.last_name or '',
+                    'student_number': getattr(user, 'student_number', None) or str(user.id),
+                    'order_number': f"ORD-{order.id:06d}",  # Format as ORD-000001
+                    'total_amount': float(order.total_amount),  # Now correctly calculated
                     'created_at': order.created_at,
-                    'items': [
-                        {
-                            'product_name': item.product.product.fullname,
-                            'subject_code': getattr(item.product.exam_session_subject.subject, 'code', 'N/A'),
-                            'session_code': getattr(item.product.exam_session_subject.exam_session, 'session_code', 'N/A'),
-                            'quantity': item.quantity,
-                            'actual_price': item.actual_price,
-                            'line_total': item.actual_price * item.quantity,
-                        }
-                        for item in order.items.all()
-                    ]
+                    'user': {  # Add user object for dynamic content rules
+                        'country': user_country,
+                        'first_name': user.first_name,
+                        'last_name': user.last_name,
+                        'username': user.username,
+                        'email': user.email
+                    },
+                    'items': []
                 }
-                email_service.send_order_confirmation(user.email, order_data)
+                
+                # Prepare detailed item information
+                for item in order.items.all():
+                    # Get product groups for product type information
+                    product_groups = item.product.product.groups.all()
+                    product_type = product_groups.first().name if product_groups.exists() else None
+                    
+                    item_data = {
+                        'name': item.product.product.fullname,
+                        'product_name': item.product.product.fullname,
+                        'product_code': item.product.product.code,  # Add full product code (e.g., CB1/CC/25A)
+                        'product_type': product_type,  # Add product type from ProductGroup
+                        'subject_code': getattr(item.product.exam_session_subject.subject, 'code', 'N/A'),
+                        'session_code': getattr(item.product.exam_session_subject.exam_session, 'session_code', 'N/A'),
+                        'quantity': item.quantity,
+                        'actual_price': float(item.actual_price),
+                        'line_total': float(item.actual_price * item.quantity),
+                        'price_type': item.price_type,
+                        'metadata': item.metadata or {}
+                    }
+                    
+                    # Add tutorial-specific information if applicable
+                    if item.metadata and item.metadata.get('type') == 'tutorial':
+                        item_data.update({
+                            'is_tutorial': True,
+                            'tutorial_title': item.metadata.get('title', ''),
+                            'tutorial_locations': item.metadata.get('locations', []),
+                            'total_choices': item.metadata.get('totalChoiceCount', 0)
+                        })
+                    
+                    # Add variation information if applicable
+                    if item.metadata and item.metadata.get('variationName'):
+                        item_data['variation'] = item.metadata.get('variationName')
+                    
+                    order_data['items'].append(item_data)
+                
+                # Use calculated totals from the order (not recalculating)
+                order_data['subtotal'] = float(order.subtotal)
+                order_data['vat_amount'] = float(order.vat_amount)
+                order_data['discount_amount'] = 0  # No discount system yet
+                order_data['item_count'] = len(order_data['items'])
+                order_data['total_items'] = sum(item['quantity'] for item in order_data['items'])
+                
+                # Send email using enhanced email service with queue support
+                success = email_service.send_order_confirmation(
+                    user_email=user.email,
+                    order_data=order_data,
+                    use_mjml=True,
+                    enhance_outlook=True,
+                    use_queue=True,  # Use queue for better performance
+                    user=user
+                )
+                
+                if success:
+                    logger.info(f"Order confirmation email queued successfully for order {order_data['order_number']} to {user.email}")
+                else:
+                    logger.warning(f"Order confirmation email failed to queue for order {order_data['order_number']} to {user.email}")
+                    
             except Exception as e:
                 # Log the error but don't fail the order
-                import logging
-                logger = logging.getLogger(__name__)
                 logger.error(f"Failed to send order confirmation email for order #{order.id}: {str(e)}")
+                # Could also add this to an email retry queue here if needed
         
         serializer = ActedOrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -295,6 +457,104 @@ class CartViewSet(viewsets.ViewSet):
         orders = ActedOrder.objects.filter(user=user).order_by('-created_at')
         serializer = ActedOrderSerializer(orders, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], url_path='test-order-email', permission_classes=[IsAuthenticated])
+    def test_order_email(self, request):
+        """POST /cart/test-order-email/ - Send test order confirmation email for development"""
+        user = request.user
+        test_email = request.data.get('email', user.email)
+        
+        # Get user country for testing dynamic content rules
+        user_country = None
+        try:
+            if hasattr(user, 'userprofile'):
+                home_address = user.userprofile.addresses.filter(address_type='HOME').first()
+                if home_address:
+                    user_country = home_address.country
+        except Exception as e:
+            logger.warning(f"Could not get user country for test: {str(e)}")
+        
+        # Create sample order data for testing
+        test_order_data = {
+            'customer_name': user.get_full_name() or user.username,
+            'first_name': user.first_name or 'Test',
+            'last_name': user.last_name or 'Customer',
+            'student_number': getattr(user, 'student_number', None) or str(user.id),
+            'order_number': f"ORD-TEST-{user.id:06d}",
+            'total_amount': 299.99,
+            'created_at': timezone.now(),
+            'user': {  # Add user object for dynamic content rules testing
+                'country': user_country or 'United Kingdom',  # Default for testing
+                'first_name': user.first_name or 'Test',
+                'last_name': user.last_name or 'Customer',
+                'username': user.username,
+                'email': user.email
+            },
+            'items': [
+                {
+                    'name': 'Advanced Financial Reporting',
+                    'product_name': 'Advanced Financial Reporting',
+                    'product_code': 'AFR/ST/25A',  # Add product code
+                    'product_type': 'Study Text',  # Add product type
+                    'subject_code': 'AFR',
+                    'session_code': 'DEC24',
+                    'quantity': 1,
+                    'actual_price': 149.99,
+                    'line_total': 149.99,
+                    'price_type': 'standard',
+                    'metadata': {},
+                    'is_tutorial': False
+                },
+                {
+                    'name': 'Strategic Business Management',
+                    'product_name': 'Strategic Business Management',
+                    'product_code': 'SBM/ST/25A',  # Add product code
+                    'product_type': 'Study Text',  # Add product type
+                    'subject_code': 'SBM',
+                    'session_code': 'DEC24',
+                    'quantity': 1,
+                    'actual_price': 150.00,
+                    'line_total': 150.00,
+                    'price_type': 'standard',
+                    'metadata': {},
+                    'is_tutorial': False
+                }
+            ],
+            'subtotal': 299.99,
+            'item_count': 2,
+            'total_items': 2
+        }
+        
+        try:
+            # Send test email
+            success = email_service.send_order_confirmation(
+                user_email=test_email,
+                order_data=test_order_data,
+                use_mjml=True,
+                enhance_outlook=True,
+                use_queue=False,  # Send immediately for testing
+                user=user
+            )
+            
+            if success:
+                logger.info(f"Test order confirmation email sent successfully to {test_email}")
+                return Response({
+                    'success': True,
+                    'message': f'Test order confirmation email sent successfully to {test_email}',
+                    'order_data': test_order_data
+                })
+            else:
+                return Response({
+                    'success': False,
+                    'message': 'Failed to send test order confirmation email'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
+        except Exception as e:
+            logger.error(f"Error sending test order confirmation email: {str(e)}")
+            return Response({
+                'success': False,
+                'message': f'Error sending test email: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def merge_guest_cart(self, request, user):
         """

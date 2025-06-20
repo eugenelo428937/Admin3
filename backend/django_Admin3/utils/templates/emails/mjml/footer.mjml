@@ -1,0 +1,60 @@
+<mj-section background-color="#ffffff" padding="0" padding-bottom="24px" >
+  <mj-column width="100%" padding="0" background-color="#ffffff" >
+    <mj-text align="left" padding="0" background-color="#ffffff" css-class="signature-section">      
+      Mctimoney House<br/>
+      1 Kimber Road<br/>
+      Abingdon<br/>
+      OX14 1BZ
+    </mj-text>
+  </mj-column>
+</mj-section>
+
+<mj-section css-class="footer" padding="0" background-color="#EBEBEB">
+  <mj-column width="200px">
+    <mj-text align="center" font-size="12px">
+      <a href="https://www.acted.co.uk" style="text-decoration: none; color: #0a0a0a;">www.acted.co.uk</a>
+    </mj-text>
+  </mj-column>
+  <mj-column width="200px">
+    <mj-text align="center" font-size="12px">
+      <a href="mailto:acted@bpp.com" style="text-decoration: none; color: #0a0a0a;">acted@bpp.com</a>
+    </mj-text>
+  </mj-column>
+  <mj-column width="200px">
+    <mj-text align="center" font-size="12px">
+      <span style="text-decoration: none; color: #0a0a0a;">+44 (0) 1235 550005</span>
+    </mj-text>
+  </mj-column>
+</mj-section>
+
+<mj-section css-class="footer" background-color="#EBEBEB" padding="0" >
+  <mj-column width="100%" padding="0">
+    <mj-text align="left" font-size="10px" line-height="12px" padding-bottom="8px">
+      BPP Holdings Limited - owned by private equity firm TDR
+    </mj-text>
+    
+    <mj-text align="left" font-size="10px" line-height="12px" padding-bottom="8px">
+      <b>Safeguarding</b>
+    </mj-text>
+    
+    <mj-text align="left" font-size="10px" line-height="12px" padding-bottom="8px">
+      • To report a safeguarding concern, or contact any of the student welfare and support services, including Learning Support and Mental Health and Wellbeing Teams, please click here.<br/>
+      • If you are concerned about a student or would like further information about Safeguarding within BPP please contact safeguarding@bpp.com or see info here. All BPP support services can be found here.<br/>
+      • If you need to find a local NHS urgent mental health helpline for 24 hour support, please visit this page.<br/>
+      • Please consider the environment before printing this email.
+    </mj-text>
+    
+    <mj-text align="left" font-size="10px" line-height="12px" padding-bottom="8px">
+      This email originates from Actuarial Education Company Limited - registered number 3062375.
+    </mj-text>
+    
+    <mj-text align="left" font-size="10px" line-height="12px" padding-bottom="8px">
+      BPP is Europe's leading provider of professional education: actively supporting professionals to achieve their aspirations for over 30 years. This message, its contents and any attachments are private, confidential and may contain information that is subject to copyright. You may not disclose, use or disseminate all or part of this message without our prior written consent. If you are not the intended recipient, please notify us immediately by replying to this message and then delete it from your system. Whilst we take reasonable precautions to prevent computer viruses, we cannot accept responsibility for viruses transmitted to your computer and it is your responsibility to make all necessary checks. We may monitor email traffic data and the content of emails to ensure efficient operation of our business, for security, for staff training and for other administrative purposes.
+    </mj-text>
+    
+    <mj-text align="left" font-size="10px" line-height="12px" padding-top="8px">
+      This email was sent from either BPP Holdings Limited (Registered number: 1245304) or the particular subsidiary of BPP Holdings Limited identified above. BPP Holdings Limited and its UK subsidiaries are registered in England and Wales. Registered office: BPP House, Aldine Place, 142-144 Uxbridge Road, London W12 8AA.
+    </mj-text>
+  </mj-column>
+</mj-section>
+  

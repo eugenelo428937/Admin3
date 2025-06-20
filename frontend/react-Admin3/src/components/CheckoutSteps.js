@@ -72,30 +72,7 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
 
     loadUserSelections();
   }, []);
-
-  // Test email functionality
-  const handleTestEmail = async () => {
-    try {
-      setLoading(true);
-      const response = await httpService.post(
-			"http://localhost:8888/api/auth/test-email/",
-			{
-				email: "eugenelo1030@gmail.com",
-			}
-		);
-      
-      if (response.data.success) {
-        setSuccess('Test email sent successfully! Check your email.');
-      } else {
-        setError('Failed to send test email.');
-      }
-    } catch (err) {
-      setError('Error sending test email: ' + (err.response?.data?.message || err.message));
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  
   const steps = [
     { title: 'Cart Review', description: 'Review your items' },
     { title: 'Important Notes & Options', description: 'Review optional preferences' },
@@ -147,21 +124,7 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
         return (
           <div className="cart-review">
             <h4>Review Your Order</h4>
-            
-            {/* Test Email Button - for development/testing */}
-            <div className="mb-3 p-3 border rounded bg-light">
-              <h6>Email Test (Development)</h6>
-              <p className="text-muted small">Test the email functionality before completing your order</p>
-              <Button 
-                variant="outline-primary" 
-                size="sm"
-                onClick={handleTestEmail}
-                disabled={loading}
-              >
-                {loading ? 'Sending...' : 'Send Test Email'}
-              </Button>
-            </div>
-            
+                       
             {cartItems.length === 0 ? (
               <Alert variant="info">Your cart is empty.</Alert>
             ) : (
@@ -369,34 +332,42 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
           const isUpcoming = stepNumber > currentStep;
 
           return (
-            <React.Fragment key={stepNumber}>
-              <div className="step-item text-center">
-                <div 
-                  className={`step-circle mx-auto mb-2 d-flex align-items-center justify-content-center ${
-                    isCompleted ? 'bg-success text-white' : 
-                    isCurrent ? 'bg-primary text-white' : 
-                    'bg-light text-muted'
-                  }`}
-                  style={{ width: '40px', height: '40px', borderRadius: '50%' }}
-                >
-                  {isCompleted ? '✓' : stepNumber}
-                </div>
-                <h6 className={`step-title mb-1 ${isCurrent ? 'text-primary' : ''}`}>
-                  {step.title}
-                </h6>
-                <small className="text-muted">{step.description}</small>
-              </div>
-              
-              {index < steps.length - 1 && (
-                <div 
-                  className={`step-connector flex-grow-1 mx-3 ${
-                    isCompleted ? 'bg-success' : 'bg-light'
-                  }`}
-                  style={{ height: '2px', marginTop: '20px' }}
-                />
-              )}
-            </React.Fragment>
-          );
+					<React.Fragment key={stepNumber}>
+						<div className="step-item text-center">
+							<div
+								className={`step-circle mx-auto mb-2 d-flex align-items-center justify-content-center ${
+									isCompleted
+										? "bg-success text-light opacity-50"
+										: isCurrent
+										? "bg-primary text-dark border border-1 border-black-50 "
+										: "bg-light text-muted"
+								}`}
+								style={{
+									width: "40px",
+									height: "40px",
+									borderRadius: "50%",
+								}}>
+								{isCompleted ? "✓" : stepNumber}
+							</div>
+							<h6
+								className={`step-title mb-1 ${
+									isCurrent ? "text-primary" : isCompleted ? "text-muted" : ""
+								}`}>
+								{step.title}
+							</h6>
+							<small className="text-muted">{step.description}</small>
+						</div>
+
+						{index < steps.length - 1 && (
+							<div
+								className={`step-connector flex-grow-1 mx-3 ${
+									isCompleted ? "bg-success" : "bg-light"
+								}`}
+								style={{ height: "2px", marginTop: "20px" }}
+							/>
+						)}
+					</React.Fragment>
+				);
         })}
       </div>
     </div>

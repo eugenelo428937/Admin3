@@ -1,0 +1,223 @@
+<mj-section css-class="content-section" text-align="center" background-color="#ffffff">
+	<mj-column width="100%" padding="0" css-class="content-column">
+		<!-- Header Section -->
+		<mj-text
+			padding-top="32px"
+			padding-bottom="16px"
+			align="center"
+			css-class="email-title"
+			font-size="21px">
+			<span
+				style="
+					color: #2c3e50;
+					margin: 0;
+					font-size: 21px;
+					font-weight: 600;
+				">
+				Order Confirmation
+			</span>
+		</mj-text>
+
+		<!-- Customer Information -->
+		<mj-text padding-bottom="24px" align="left" css-class="customer-info">
+			<span>
+				<strong>Name:</strong>
+				{{ first_name }} {{ last_name }}
+			</span>
+			<br />
+			<span>
+				<strong>ActEd Student Number:</strong>
+				{{ student_number }}
+			</span>
+			<br />
+			<span>
+				<strong>Order Reference:</strong>
+				{{ order_number }}
+			</span>
+			<br />
+			<span>
+				<strong>Order Date:</strong>
+				{{ order.created_at_formatted }}
+			</span>
+		</mj-text>
+		<mj-text padding-bottom="24px" align="left" css-class="content-text">
+			<span>Dear {{ first_name }},</span>
+		</mj-text>
+		<!-- Thank You Message -->
+		<mj-text align="left" css-class="content-text">
+			<span>This email confirms your order of the following items:</span>
+		</mj-text>
+
+		<!-- Order Items -->
+		<mj-text padding="0 24px 24px 24px" align="left" css-class="order-items">
+			<table style="width: 100%; border-collapse: collapse; margin: 0">
+				<thead>
+					<tr style="background-color: #ececee; color: #2c3e50">
+						<th style="padding: 12px; text-align: left; border: none; width: 50%;">
+							
+						</th>
+						<th style="padding: 12px; text-align: center; border: none; width: 10%;">
+							Qty
+						</th>
+						<th style="padding: 12px; text-align: center; border: none; width: 20%;">
+							Price
+						</th>
+						<th style="padding: 12px; text-align: center; border: none; width: 20%;">
+							Total
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for item in items %}
+					<tr style="border-bottom: 1px solid #dee2e6">
+						<td
+							style="padding: 15px 12px; border: none; text-align: left">
+							<div>
+								<strong>{{ item.name }}</strong>
+								<br />
+								<small style="color: #6c757d">
+									{{ item.subject_code }} | Session: {{ item.session_code }}
+									{% if item.variation %}
+									<br />
+									Variation: {{ item.variation }}
+									{% endif %}
+									{% if item.is_tutorial %}
+									<br />
+									Tutorial - {{ item.total_choices }} choice{{ item.total_choices|pluralize }}
+									{% endif %}
+									{% if item.price_type != 'standard' %}
+									<br />
+									<span
+										style="
+											background-color: #6c757d;
+											color: white;
+											padding: 2px 6px;
+											border-radius: 3px;
+											font-size: 11px;
+										">
+										{{ item.price_type|title }}
+									</span>
+									{% endif %}
+								</small>
+							</div>
+						</td>
+						<td align="right"
+							style="
+								padding: 15px 12px;
+								text-align: right;
+								border: none;
+							">
+							<span style="text-align: right;padding: 15px 12px;">{{ item.quantity }}</span>
+						</td>
+						<td align="right"
+							style="
+								padding: 15px 12px;
+								text-align: right;
+								border: none;
+							">
+							<span style="text-align: right;padding: 15px 12px;">£{{ item.actual_price|floatformat:2 }}</span>
+						</td>
+						<td align="right"
+							style="
+								padding: 15px 12px;
+								text-align: right;
+								border: none;
+								font-weight: 600;
+							">
+							<span style="text-align: right;padding: 15px 12px;">£{{ item.line_total|floatformat:2 }}</span>
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+				<tfoot>
+					<tr style="background-color: #f8f9fa; font-size: 16px">
+						<td align="left"
+							colspan="3"
+							style="padding: 15px 12px; text-align: left; border: none">
+							<span style="text-align: left;"><strong>Total Amount:</strong></span>
+						</td>
+						<td align="right"
+							style="
+								padding: 15px 12px;
+								text-align: right;
+								border: none;
+								color: #2c3e50;
+							">
+							<span style="text-align: right;padding: 15px 12px;"><strong>£{{ total_amount|floatformat:2 }}</strong></span>
+						</td>
+					</tr>
+				</tfoot>
+			</table>
+		</mj-text>
+
+		<!-- Dynamic Content Placeholders -->
+		{{TUTORIAL_CONTENT}}
+		
+		{{REGIONAL_CONTENT}}
+		
+		{{PRODUCT_SPECIFIC_CONTENT}}
+
+		<mj-text align="left" css-class="content-text">
+			<span>Thank you for your debit/credit card payment.</span>
+		</mj-text>
+		<mj-text align="left" css-class="content-text">
+			<span>
+				If any amendments are required to this order please email
+				acted@bpp.com.
+			</span>
+		</mj-text>
+		<mj-text align="left" css-class="content-text">
+			<span>
+				Your order will be checked and processed as soon as possible, after
+				which you will receive a second email to confirm your order. In most
+				cases study material arrives within 4-6 working days of ordering in
+				the UK, assuming that the relevant availability date has passed.
+				Orders from outside the UK may take considerably longer to arrive.
+			</span>
+		</mj-text>
+		<mj-text align="left" css-class="content-text">
+			<span>
+				Our relevant Terms and Conditions are attached to this email and are
+				also available on our website at
+				https://www.acted.co.uk/further-info.html#terms-and-conditions.
+				Also attached is our Complaints Handling Policy. You can, subject to
+				certain exceptions,cancel your order and obtain a full refund if you 
+				request it within a specified timeframe. In order to cancel your place, refer to our Terms
+				and Conditions, which contains full details of our cancellation and
+				refund policies and our cancellation form.				
+			</span>
+		</mj-text>
+		<mj-text align="left" css-class="content-text">
+			<span>
+				Please email us at acted@bpp.com or call +44 1235 550005 if you have
+				any queries about your order. To help us answer your query quickly,
+				please quote your 
+				{% if student_number %}
+					student number <b>{{ student_number }}</b>, and your 
+				{% endif %}
+				order number <b>{{ order_number }}</b> in any correspondence.
+			</span>
+		</mj-text>
+		<mj-text align="left" css-class="content-text">
+			<span>
+				Please let us know if you change your email address so that we can
+				keep you up-to-date with details of your order and course booking.
+			</span>
+		</mj-text>
+
+		<!-- Closing -->
+		<mj-text align="left" css-class="content-text">
+			<span>
+				Thank you for choosing ActEd for your professional development.
+			</span>
+		</mj-text>
+	</mj-column>
+</mj-section>
+<mj-section background-color="#ffffff">
+  <mj-column width="100%" padding="0" background-color="#ffffff">
+    <mj-text align="left" background-color="#ffffff"  css-class="signature-section" padding="12px 24px">
+      Kind Regards,<br/>
+      <b>THE ACTUARIAL EDUCATION COMPANY (ActEd)</b><br/>
+	  </mj-text>
+	</mj-column>
+</mj-section>

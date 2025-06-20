@@ -27,7 +27,6 @@ import TutorialProductList from "./components/TutorialProductList";
 
 // Import custom Bootstrap CSS overrides
 import "./styles/custom-bootstrap.css";
-import liftkit from "@chainlift/liftkit-css";
 
 function App() {
 	// eslint-disable-next-line

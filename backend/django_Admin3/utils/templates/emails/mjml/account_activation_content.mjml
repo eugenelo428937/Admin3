@@ -1,0 +1,58 @@
+<mj-section background-color="#ffffff" css-class="content-section">
+	<mj-column width="100%" padding="11px 22px">
+		<mj-text padding-bottom="16px" align="left">
+			<h2 style="color: #333333; font-size: 24px; font-weight: 600; margin: 0 0 16px 0;">Welcome to ActEd!</h2>
+		</mj-text>
+		
+		<mj-text padding="16px" align="left">
+			Hello {{ user.first_name|default:"" }},
+		</mj-text>
+		
+		<mj-text padding="16px" align="left">
+			Thank you for creating an account with ActEd! We're excited to have you join our community of actuarial professionals and students.
+		</mj-text>
+		
+		<mj-text padding="16px" align="left">
+			To get started and activate your account, please click the button below:
+		</mj-text>
+		
+		<mj-button 
+			background-color="#28a745" 
+			color="#ffffff" 
+			font-size="16px" 
+			font-weight="600" 
+			border-radius="4px" 
+			padding="12px 24px"
+			href="{{ activation_url }}"
+			align="center">
+			Activate My Account
+		</mj-button>
+		
+		<mj-text padding="16px" align="left">
+			If the button above doesn't work, you can copy and paste the following link into your browser:
+		</mj-text>
+		
+		<mj-text padding="16px" align="left">
+			<a href="{{ activation_url }}" style="color: #007bff; word-break: break-all;">{{ activation_url }}</a>
+		</mj-text>
+		
+		<mj-text padding="16px" align="left">
+			Once your account is activated, you'll be able to:
+			<ul>
+				<li>Access your study materials and resources</li>
+				<li>Track your progress and exam schedules</li>
+				<li>Connect with tutors and fellow students</li>
+				<li>Manage your course enrollments</li>
+			</ul>
+		</mj-text>
+		
+		<mj-text padding="16px" align="left">
+			If you did not create this account, please ignore this email or contact our support team.
+		</mj-text>
+		
+		<mj-text padding="16px" align="left">
+			Welcome aboard!<br/>
+			The ActEd Team
+		</mj-text>
+	</mj-column>
+</mj-section> 
