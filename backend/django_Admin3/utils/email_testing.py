@@ -30,6 +30,11 @@ class EmailTester:
             'subtotal': 249.99,
             'vat_amount': 50.00,
             'discount_amount': 0,
+            'is_digital': True,  # Add is_digital flag to test DIGITAL_CONTENT placeholder
+            'is_invoice': False,  # Add is_invoice flag
+            'is_tutorial': False,  # Add is_tutorial flag
+            'payment_method': 'card',  # Add payment method
+            'employer_code': None,  # Add employer code
             'user': {  # Add user object for dynamic content rules
                 'country': 'United Kingdom',
                 'first_name': 'Eugene',
@@ -39,7 +44,7 @@ class EmailTester:
             },
             'items': [
                 {
-                    'name': 'Advanced Financial Reporting',
+                    'name': 'Advanced Financial Reporting eBook',
                     'product_code': 'AFR/ST/25A',  # Add product code for dynamic content rules
                     'product_type': 'Study Text',  # Add product type for dynamic content rules
                     'subject_code': 'AFR',
@@ -47,8 +52,9 @@ class EmailTester:
                     'quantity': 1,
                     'actual_price': 149.99,
                     'line_total': 149.99,
-                    'variation': None,
+                    'variation': 'eBook Version',
                     'is_tutorial': False,
+                    'is_digital': True,  # Make this item digital
                     'price_type': 'standard',
                 },
                 {
@@ -62,6 +68,7 @@ class EmailTester:
                     'line_total': 100.00,
                     'variation': None,
                     'is_tutorial': False,
+                    'is_digital': False,  # Keep this item as physical
                     'price_type': 'standard',
                 }
             ],

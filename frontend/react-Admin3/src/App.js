@@ -24,6 +24,8 @@ import CheckoutPage from "./components/CheckoutPage";
 import OrderHistory from "./components/OrderHistory";
 import RegisterForm from "./components/RegisterForm";
 import TutorialProductList from "./components/TutorialProductList";
+import ForgotPasswordForm from "./components/ForgotPasswordForm";
+import ResetPasswordForm from "./components/ResetPasswordForm";
 
 // Import custom Bootstrap CSS overrides
 import "./styles/custom-bootstrap.css";
@@ -123,6 +125,14 @@ function App() {
 										<Route
 											path="/tutorials"
 											element={<TutorialProductList />}
+										/>
+										<Route
+											path="/auth/forgot-password"
+											element={<ForgotPasswordForm />}
+										/>
+										<Route
+											path="/auth/reset-password"
+											element={<ResetPasswordForm />}
 										/>
 									</Routes>
 								</div>

@@ -49,22 +49,22 @@ const CheckoutPage = () => {
     evaluateCheckoutRules();
   }, [cartItems]);
 
-  const handleCheckoutComplete = async () => {
+  const handleCheckoutComplete = async (paymentData = {}) => {
     setLoading(true);
     setError("");
     setSuccess("");
     try {
-      const response = await cartService.checkout();
+      const response = await cartService.checkout(paymentData);
       
       // Check if the response includes order information
       const orderInfo = response.data;
       const orderNumber = orderInfo?.id ? `ORD-${String(orderInfo.id).padStart(6, '0')}` : 'your order';
       
-      setSuccess(
-        `Order placed successfully! Thank you for your purchase. ` +
-        `Order confirmation details have been sent to your email address. ` +
-        `Order Number: ${orderNumber}`
-      );
+      const successMessage = paymentData?.is_invoice 
+        ? `Order placed successfully! An invoice will be sent to your email address. Order Number: ${orderNumber}`
+        : `Order placed successfully! Thank you for your purchase. Order confirmation details have been sent to your email address. Order Number: ${orderNumber}`;
+      
+      setSuccess(successMessage);
       setCheckoutComplete(true);
       await clearCart();
       

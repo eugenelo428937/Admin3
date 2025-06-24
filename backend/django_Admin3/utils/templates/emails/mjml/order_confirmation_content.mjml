@@ -39,6 +39,8 @@
 				<strong>Order Date:</strong>
 				{{ order.created_at_formatted }}
 			</span>
+			
+			
 		</mj-text>
 		<mj-text padding-bottom="24px" align="left" css-class="content-text">
 			<span>Dear {{ first_name }},</span>
@@ -150,16 +152,11 @@
 			</table>
 		</mj-text>
 
-		<!-- Dynamic Content Placeholders -->
-		{{TUTORIAL_CONTENT}}
+		<!-- Dynamic Content Placeholders -->	
+		{{INVOICE_PAYMENT}}
+		{{BANK_PAYMENT}}
+		{{EMPLOYER_REVIEW}}
 		
-		{{REGIONAL_CONTENT}}
-		
-		{{PRODUCT_SPECIFIC_CONTENT}}
-
-		<mj-text align="left" css-class="content-text">
-			<span>Thank you for your debit/credit card payment.</span>
-		</mj-text>
 		<mj-text align="left" css-class="content-text">
 			<span>
 				If any amendments are required to this order please email
@@ -203,8 +200,9 @@
 				Please let us know if you change your email address so that we can
 				keep you up-to-date with details of your order and course booking.
 			</span>
-		</mj-text>
-
+		</mj-text>	
+		{{DIGITAL_CONTENT}}
+		{{TUTORIAL_CONTENT}}
 		<!-- Closing -->
 		<mj-text align="left" css-class="content-text">
 			<span>

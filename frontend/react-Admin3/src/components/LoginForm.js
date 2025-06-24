@@ -42,12 +42,21 @@ const LoginForm = ({
               required
             />
           </Form.Group>
-          <div className="d-flex justify-content-between align-items-center">
+          <div className="d-flex justify-content-between align-items-center mb-3">
             <Button variant="primary" type="submit" disabled={isLoading}>
               {isLoading ? "Logging in..." : "Login"}
             </Button>
             <Button variant="link" type="button" onClick={() => { onHide(); navigate('/register'); }}>
               Need an account? Register
+            </Button>
+          </div>
+          <div className="text-center">
+            <Button 
+              variant="link" 
+              size="sm"
+              onClick={() => { onHide(); navigate('/auth/forgot-password'); }}
+            >
+              Forgot Password?
             </Button>
           </div>
         </Form>

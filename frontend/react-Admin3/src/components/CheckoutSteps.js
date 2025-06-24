@@ -17,6 +17,10 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
   const [userSelections, setUserSelections] = useState({});
   const [vatCalculations, setVatCalculations] = useState(null);
   const [vatLoading, setVatLoading] = useState(false);
+  
+  // Payment method state
+  const [paymentMethod, setPaymentMethod] = useState('card'); // 'card' or 'invoice'
+  const [employerCode, setEmployerCode] = useState('');
 
   // Separate optional and mandatory rules
   const optionalRules = rulesMessages.filter(msg => !msg.requires_acknowledgment);
@@ -116,6 +120,26 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
     // Check if all mandatory rules have been acknowledged
     return mandatoryRules.length === 0 || 
            mandatoryRules.every(rule => userSelections[rule.rule_id]?.acknowledgment_type === 'required');
+  };
+
+  const handleCheckoutComplete = () => {
+    // Prepare payment data to send to checkout
+    const paymentData = {
+      employer_code: employerCode.trim() || null,
+      is_invoice: paymentMethod === 'invoice',
+      payment_method: paymentMethod
+    };
+    
+    // Call the parent's onComplete function with payment data
+    onComplete(paymentData);
+  };
+
+  // Helper function to check if any items are digital (Tutorial products)
+  const hasDigitalItems = () => {
+    return cartItems.some(item => 
+      item.product_type === 'Tutorial' || 
+      item.metadata?.type === 'tutorial'
+    );
   };
 
   const renderStepContent = () => {
@@ -301,9 +325,101 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
       case 4:
         return (
           <div className="payment">
-            <h4>Payment</h4>
-            {/* Add your payment form/component here */}
-            <p>Payment integration will go here</p>
+            <h4>Payment Options</h4>
+            
+            {/* Order Summary */}
+            {vatCalculations && (
+              <Card className="mb-4">
+                <Card.Header>
+                  <h6 className="mb-0">Order Summary</h6>
+                </Card.Header>
+                <Card.Body>
+                  <div className="d-flex justify-content-between">
+                    <span>Subtotal:</span>
+                    <span>£{vatCalculations.totals?.subtotal?.toFixed(2) || '0.00'}</span>
+                  </div>
+                  <div className="d-flex justify-content-between">
+                    <span>VAT ({vatCalculations.user_country || 'UK'}):</span>
+                    <span>£{vatCalculations.totals?.total_vat?.toFixed(2) || '0.00'}</span>
+                  </div>
+                  <hr />
+                  <div className="d-flex justify-content-between fw-bold fs-5">
+                    <span>Total:</span>
+                    <span>£{vatCalculations.totals?.total_gross?.toFixed(2) || '0.00'}</span>
+                  </div>
+                </Card.Body>
+              </Card>
+            )}
+
+            {/* Payment Method Selection */}
+            <Card className="mb-4">
+              <Card.Header>
+                <h6 className="mb-0">Select Payment Method</h6>
+              </Card.Header>
+              <Card.Body>
+                <Form>
+                  {/* Employer Code Field */}
+                  <Form.Group className="mb-3">
+                    <Form.Label>Employer Code (Optional)</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Enter your employer code if your employer will pay"
+                      value={employerCode}
+                      onChange={(e) => setEmployerCode(e.target.value)}
+                    />
+                    <Form.Text className="text-muted">
+                      Enter this if your employer is paying for this order
+                    </Form.Text>
+                  </Form.Group>
+
+                  {/* Payment Method Options */}
+                  <Form.Group className="mb-3">
+                    <Form.Label>Payment Method</Form.Label>
+                    
+                    <div className="mb-2">
+                      <Form.Check
+                        type="radio"
+                        id="payment-card"
+                        name="paymentMethod"
+                        label="Pay by Card/Bank Transfer"
+                        checked={paymentMethod === 'card'}
+                        onChange={() => setPaymentMethod('card')}
+                      />
+                    </div>
+                    
+                    <div className="mb-2">
+                      <Form.Check
+                        type="radio"
+                        id="payment-invoice"
+                        name="paymentMethod"
+                        label="Pay by Invoice"
+                        checked={paymentMethod === 'invoice'}
+                        onChange={() => setPaymentMethod('invoice')}
+                      />
+                    </div>
+                  </Form.Group>
+
+                  {/* Payment Method Information */}
+                  {paymentMethod === 'card' && (
+                    <Alert variant="info">
+                      <strong>Card/Bank Transfer Payment</strong>
+                      <p className="mb-0 mt-2">
+                        Your order will be processed immediately and payment will be collected via card or bank transfer.
+                      </p>
+                    </Alert>
+                  )}
+
+                  {paymentMethod === 'invoice' && (
+                    <Alert variant="info">
+                      <strong>Invoice Payment</strong>
+                      <p className="mb-0 mt-2">
+                        An invoice will be sent to you for payment. Your order will be processed once payment is received.
+                      </p>
+                    </Alert>
+                  )}
+                </Form>
+              </Card.Body>
+            </Card>
           </div>
         );
 
@@ -390,13 +506,13 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
         {currentStep < steps.length ? (
           <Button 
             variant="primary" 
-            onClick={currentStep === 4 ? onComplete : handleNext}
+            onClick={currentStep === 4 ? handleCheckoutComplete : handleNext}
             disabled={
               loading || 
               (currentStep === 3 && !canProceedToPayment())
             }
           >
-            {loading ? 'Processing...' : currentStep === 4 ? 'Complete Order' : 'Next'}
+            {loading ? 'Processing...' : currentStep === 4 ? (paymentMethod === 'invoice' ? 'Send me an Invoice' : 'Complete Order') : 'Next'}
           </Button>
         ) : (
           <Button variant="success" onClick={() => window.location.href = '/products'}>

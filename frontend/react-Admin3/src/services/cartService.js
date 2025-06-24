@@ -40,7 +40,7 @@ const cartService = {
 	removeItem: (itemId) =>
 		httpService.delete(`${API_BASE}/remove/`, { data: { item_id: itemId } }),
 	clearCart: () => httpService.post(`${API_BASE}/clear/`),
-	checkout: () => httpService.post(`${API_BASE}/checkout/`),
+	checkout: (paymentData = {}) => httpService.post(`${API_BASE}/checkout/`, paymentData),
 	fetchOrders: () => httpService.get(`${API_BASE}/orders/`),
 };
 
