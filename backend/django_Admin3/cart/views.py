@@ -258,6 +258,12 @@ class CartViewSet(viewsets.ViewSet):
         if not cart.items.exists():
             return Response({'detail': 'Cart is empty.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Extract payment data from request
+        payment_data = request.data
+        employer_code = payment_data.get('employer_code', None)
+        is_invoice = payment_data.get('is_invoice', False)
+        payment_method = payment_data.get('payment_method', 'card')
+
         with transaction.atomic():
             # Create order and items first
             order = ActedOrder.objects.create(user=user)
@@ -371,7 +377,7 @@ class CartViewSet(viewsets.ViewSet):
                     'customer_name': user.get_full_name() or user.username,
                     'first_name': user.first_name or user.username,
                     'last_name': user.last_name or '',
-                    'student_number': getattr(user, 'student_number', None) or str(user.id),
+                    'student_number': getattr(user, 'student_number', None) or str(user.id),                    
                     'order_number': f"ORD-{order.id:06d}",  # Format as ORD-000001
                     'total_amount': float(order.total_amount),  # Now correctly calculated
                     'created_at': order.created_at,
@@ -426,6 +432,81 @@ class CartViewSet(viewsets.ViewSet):
                 order_data['discount_amount'] = 0  # No discount system yet
                 order_data['item_count'] = len(order_data['items'])
                 order_data['total_items'] = sum(item['quantity'] for item in order_data['items'])
+                
+                # Add new payment and order fields
+                order_data['employer_code'] = employer_code
+                order_data['is_invoice'] = is_invoice
+                order_data['payment_method'] = payment_method
+                
+                # Check if any items are digital based on specific variation types, not product groups
+                has_digital_items = False
+                for item in order.items.all():
+                    # Check if this item has a variation that is digital
+                    if item.metadata and item.metadata.get('variationId'):
+                        try:
+                            # Get the ProductProductVariation from the variationId stored in metadata
+                            from products.models import ProductProductVariation
+                            ppv = ProductProductVariation.objects.select_related('product_variation').get(
+                                id=item.metadata.get('variationId')
+                            )
+                            # Check if this specific variation is digital
+                            variation_type = ppv.product_variation.variation_type.lower()
+                            if variation_type in ['ebook', 'hub']:  # Digital variation types
+                                has_digital_items = True
+                                break
+                        except ProductProductVariation.DoesNotExist:
+                            # Fallback to checking product groups if variation not found
+                            if item.product.product.groups.filter(id__in=[14, 11]).exists():
+                                has_digital_items = True
+                                break
+                    else:
+                        # Fallback to product groups for items without variations
+                        if item.product.product.groups.filter(id__in=[14, 11]).exists():
+                            has_digital_items = True
+                            break
+                
+                order_data['is_digital'] = has_digital_items
+                
+                # Check if any items are tutorials
+                has_tutorial_items = False
+                for item in order.items.all():
+                    if item.metadata and item.metadata.get('type') == 'tutorial':
+                        has_tutorial_items = True
+                        break
+                
+                order_data['is_tutorial'] = has_tutorial_items
+                
+                # Add is_digital flag to each individual item based on specific variation type
+                for item_data in order_data['items']:
+                    # Find corresponding order item to check variation type
+                    order_item = None
+                    for oi in order.items.all():
+                        if (oi.product.product.fullname == item_data['name'] and 
+                            oi.quantity == item_data['quantity']):
+                            order_item = oi
+                            break
+                    
+                    is_item_digital = False
+                    if order_item:
+                        # Check if this item has a digital variation
+                        if order_item.metadata and order_item.metadata.get('variationId'):
+                            try:
+                                # Get the ProductProductVariation from the variationId stored in metadata
+                                from products.models import ProductProductVariation
+                                ppv = ProductProductVariation.objects.select_related('product_variation').get(
+                                    id=order_item.metadata.get('variationId')
+                                )
+                                # Check if this specific variation is digital
+                                variation_type = ppv.product_variation.variation_type.lower()
+                                is_item_digital = variation_type in ['ebook', 'hub']  # Digital variation types
+                            except ProductProductVariation.DoesNotExist:
+                                # Fallback to checking product groups if variation not found
+                                is_item_digital = order_item.product.product.groups.filter(id__in=[14, 11]).exists()
+                        else:
+                            # Fallback to product groups for items without variations
+                            is_item_digital = order_item.product.product.groups.filter(id__in=[14, 11]).exists()
+                    
+                    item_data['is_digital'] = is_item_digital
                 
                 # Send email using enhanced email service with queue support
                 success = email_service.send_order_confirmation(

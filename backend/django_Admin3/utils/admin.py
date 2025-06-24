@@ -448,19 +448,19 @@ class EmailTemplateContentRuleInline(admin.TabularInline):
 @admin.register(EmailContentRule)
 class EmailContentRuleAdmin(admin.ModelAdmin):
     list_display = [
-        'name', 'rule_type', 'placeholder_name', 'condition_field', 
+        'name', 'rule_type', 'placeholder', 'condition_field', 
         'condition_operator', 'priority', 'is_active', 'is_exclusive'
     ]
     list_filter = [
-        'rule_type', 'condition_operator', 'placeholder_name', 
+        'rule_type', 'condition_operator', 'placeholder', 
         'is_active', 'is_exclusive', 'created_at'
     ]
-    search_fields = ['name', 'description', 'condition_field', 'placeholder_name']
+    search_fields = ['name', 'description', 'condition_field', 'placeholder__name']
     readonly_fields = ['created_at', 'updated_at']
     
     fieldsets = (
         ('Basic Information', {
-            'fields': ('name', 'description', 'rule_type')
+            'fields': ('name', 'description', 'rule_type', 'placeholder')
         }),
         ('Condition Configuration', {
             'fields': (
@@ -468,10 +468,8 @@ class EmailContentRuleAdmin(admin.ModelAdmin):
                 'additional_conditions', 'custom_logic'
             )
         }),
-        ('Content Configuration', {
-            'fields': (
-                'content_template', 'content_variables', 'placeholder_name', 'insert_position'
-            )
+        ('Content Template', {
+            'fields': ('content_template',)
         }),
         ('Priority and Behavior', {
             'fields': ('priority', 'is_exclusive', 'is_active')
@@ -507,7 +505,7 @@ class EmailTemplateContentRuleAdmin(admin.ModelAdmin):
             'fields': ('template', 'content_rule', 'is_enabled')
         }),
         ('Rule Overrides', {
-            'fields': ('priority_override', 'content_override', 'variables_override')
+            'fields': ('priority_override', 'content_override')
         }),
         ('Metadata', {
             'fields': ('created_at', 'effective_priority'),
@@ -537,9 +535,12 @@ class EmailContentPlaceholderAdmin(admin.ModelAdmin):
         ('Basic Information', {
             'fields': ('name', 'display_name', 'description')
         }),
-        ('Configuration', {
+        ('Content Template Configuration', {
+            'fields': ('default_content_template', 'content_variables', 'insert_position')
+        }),
+        ('Placeholder Configuration', {
             'fields': (
-                'default_content', 'is_required', 'allow_multiple_rules', 'content_separator'
+                'is_required', 'allow_multiple_rules', 'content_separator'
             )
         }),
         ('Metadata', {

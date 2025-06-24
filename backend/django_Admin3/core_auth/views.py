@@ -10,6 +10,15 @@ from django.middleware.csrf import get_token
 from users.serializers import UserRegistrationSerializer
 from cart.views import CartViewSet
 from utils.email_service import email_service
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
+import logging
+
+logger = logging.getLogger(__name__)
 
 class AuthViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
@@ -104,6 +113,134 @@ class AuthViewSet(viewsets.ViewSet):
             return Response({'status': 'success'})
         except Exception:
             return Response({'status': 'success'})
+
+    @action(detail=False, methods=['post'])
+    def password_reset_request(self, request):
+        """
+        Request password reset - send email with reset link
+        """
+        email = request.data.get('email')
+        
+        if not email:
+            return Response(
+                {'error': 'Email is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            user = User.objects.get(email=email)
+            
+            # Generate reset token using Django's built-in token generator (secure)
+            token = default_token_generator.make_token(user)
+            
+            # Create URL-safe user ID
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            # Create reset URL
+            frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')
+            reset_url = f"{frontend_url}/auth/reset-password?uid={uid}&token={token}"
+            
+            # Set expiry time (24 hours by default)
+            expiry_hours = getattr(settings, 'PASSWORD_RESET_TIMEOUT_HOURS', 24)
+            
+            # Prepare email data
+            reset_data = {
+                'user': user,
+                'reset_url': reset_url,
+                'expiry_hours': expiry_hours
+            }
+            
+            # Send password reset email using existing email service
+            success = email_service.send_password_reset(
+                user_email=user.email,
+                reset_data=reset_data,
+                use_mjml=True,
+                enhance_outlook=True,
+                use_queue=True,  # Queue for better performance
+                user=user
+            )
+            
+            if success:
+                logger.info(f"Password reset email queued successfully for user {user.email}")
+                return Response({
+                    'success': True,
+                    'message': f'Password reset instructions have been sent to {email}. The link will expire in {expiry_hours} hours.',
+                    'expiry_hours': expiry_hours
+                })
+            else:
+                logger.error(f"Failed to queue password reset email for user {user.email}")
+                return Response(
+                    {'error': 'Failed to send password reset email. Please try again later.'}, 
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+                
+        except User.DoesNotExist:
+            # For security, don't reveal if email exists or not
+            # Return success message anyway
+            logger.warning(f"Password reset requested for non-existent email: {email}")
+            return Response({
+                'success': True,
+                'message': f'If an account with email {email} exists, password reset instructions have been sent.',
+                'expiry_hours': 24  # Default expiry
+            })
+        except Exception as e:
+            logger.error(f"Error during password reset request: {str(e)}")
+            return Response(
+                {'error': 'An error occurred. Please try again later.'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=False, methods=['post'])
+    def password_reset_confirm(self, request):
+        """
+        Confirm password reset with token and set new password
+        """
+        uid = request.data.get('uid')
+        token = request.data.get('token')
+        new_password = request.data.get('new_password')
+        
+        if not all([uid, token, new_password]):
+            return Response(
+                {'error': 'UID, token, and new password are required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            # Decode user ID
+            user_id = force_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(pk=user_id)
+            
+            # Verify token using Django's built-in token generator
+            if default_token_generator.check_token(user, token):
+                # Token is valid, set new password
+                user.set_password(new_password)
+                user.save()
+                
+                logger.info(f"Password successfully reset for user {user.email}")
+                
+                return Response({
+                    'success': True,
+                    'message': 'Password has been reset successfully. You can now login with your new password.'
+                })
+            else:
+                logger.warning(f"Invalid or expired token used for password reset: user {user.email}")
+                return Response(
+                    {'error': 'Invalid or expired reset token. Please request a new password reset.'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            logger.warning(f"Invalid password reset attempt with uid: {uid}")
+            return Response(
+                {'error': 'Invalid reset link. Please request a new password reset.'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            logger.error(f"Error during password reset confirmation: {str(e)}")
+            return Response(
+                {'error': 'An error occurred. Please try again later.'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
