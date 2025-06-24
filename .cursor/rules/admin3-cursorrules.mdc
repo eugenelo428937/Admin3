@@ -407,6 +407,67 @@ The system captures detailed server responses instead of basic success/failure:
 - Verify all template variables render correctly
 - Test queue processing and retry mechanisms
 
+### Digital Content Logic
+
+#### Product Variation-Based Digital Detection
+The system correctly determines `is_digital` flag based on specific product variations rather than product groups:
+
+```python
+# Check variation type instead of product groups
+if item.metadata and item.metadata.get('variationId'):
+    try:
+        ppv = ProductProductVariation.objects.select_related('product_variation').get(
+            id=item.metadata.get('variationId')
+        )
+        variation_type = ppv.product_variation.variation_type.lower()
+        is_digital = variation_type in ['ebook', 'hub']  # Digital variation types
+    except ProductProductVariation.DoesNotExist:
+        # Fallback to checking product groups if variation not found
+        is_digital = item.product.product.groups.filter(id__in=[14, 11]).exists()
+```
+
+#### Digital Content Testing Commands
+```bash
+# Test specific variation
+python manage.py test_digital_content --variation-id 2
+
+# Test all variations to see digital vs physical
+python manage.py test_digital_content
+
+# Test cart item logic
+python manage.py test_digital_content --cart-item-id 123
+```
+
+#### Variation Types
+- **Digital Types**: eBook, Hub (is_digital = True)
+- **Physical Types**: Printed, Tutorial, Marking (is_digital = False)
+
+### Dynamic Content Rules
+
+#### Content Placeholders and Rules
+The email system uses dynamic content insertion based on order context:
+
+**Available Placeholders:**
+- `{{DIGITAL_CONTENT}}` - Digital access instructions (shows when is_digital = true)
+- `{{BANK_PAYMENT}}` - Credit card payment confirmation (shows when is_invoice = false)
+- `{{INVOICE_PAYMENT}}` - Invoice payment notification (shows when is_invoice = true)
+- `{{EMPLOYER_REVIEW}}` - Employer sponsorship messaging (shows when employer_code exists)
+- `{{TUTORIAL_CONTENT}}` - Tutorial-specific information (shows when is_tutorial = true)
+
+#### Content Rule Testing
+```bash
+# Test content insertion system
+python manage.py test_content_insertion --scenario digital_order
+
+# Test specific scenarios
+python manage.py test_content_insertion --scenario invoice_order
+python manage.py test_content_insertion --scenario employer_sponsored
+python manage.py test_content_insertion --scenario tutorial_booking
+
+# Debug rule evaluation
+python manage.py test_rule_evaluation
+```
+
 ## Security Rules
 
 ### Environment Variables

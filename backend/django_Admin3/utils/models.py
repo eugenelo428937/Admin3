@@ -593,8 +593,9 @@ class EmailCampaign(models.Model):
         return self.sent_count / total_processed * 100
 
 
+
 class EmailContentRule(models.Model):
-    """Rules for dynamic content insertion in email templates."""
+    """Rules for triggering dynamic content insertion. Focuses purely on conditions and triggering logic."""
     
     RULE_TYPES = [
         ('product_based', 'Product-Based Content'),
@@ -628,31 +629,25 @@ class EmailContentRule(models.Model):
     description = models.TextField(blank=True, help_text="Rule description and purpose")
     rule_type = models.CharField(max_length=30, choices=RULE_TYPES, help_text="Type of rule condition")
     
+    # Target placeholder (replaces placeholder_name string)
+    placeholder = models.ForeignKey(
+        'EmailContentPlaceholder',  # String reference to avoid forward reference issue
+        on_delete=models.CASCADE, 
+        related_name='content_rules',
+        help_text="Placeholder that this rule targets"
+    )
+    
     # Associated templates
     templates = models.ManyToManyField(EmailTemplate, through='EmailTemplateContentRule', related_name='content_rules')
     
-    # Condition configuration
-    condition_field = models.CharField(max_length=100, help_text="Field name to evaluate (e.g., 'items.product_id', 'user.country')")
+    # Condition configuration (core responsibility of this model)
+    condition_field = models.CharField(max_length=100, help_text="Field name to evaluate (e.g., 'items.product_code', 'user.country')")
     condition_operator = models.CharField(max_length=20, choices=CONDITION_OPERATORS, help_text="Comparison operator")
     condition_value = models.JSONField(help_text="Value(s) to compare against")
     
     # Advanced conditions
     additional_conditions = models.JSONField(default=list, blank=True, help_text="Additional AND/OR conditions")
     custom_logic = models.TextField(blank=True, help_text="Custom Python logic for complex conditions")
-    
-    # Content to insert
-    content_template = models.TextField(help_text="MJML/HTML content template to insert when rule matches")
-    content_variables = models.JSONField(default=dict, blank=True, help_text="Variables available in content template")
-    
-    # Insertion configuration
-    placeholder_name = models.CharField(max_length=100, help_text="Placeholder name in main template (e.g., 'TUTORIAL_CONTENT')")
-    insert_position = models.CharField(max_length=20, choices=[
-        ('replace', 'Replace Placeholder'),
-        ('before', 'Before Placeholder'),
-        ('after', 'After Placeholder'),
-        ('append', 'Append to End'),
-        ('prepend', 'Prepend to Beginning'),
-    ], default='replace', help_text="How to insert content relative to placeholder")
     
     # Priority and ordering
     priority = models.IntegerField(default=0, help_text="Rule priority (higher numbers processed first)")
@@ -671,7 +666,7 @@ class EmailContentRule(models.Model):
         verbose_name_plural = 'Email Content Rules'
     
     def __str__(self):
-        return f"{self.name} ({self.rule_type})"
+        return f"{self.name} → {self.placeholder.name} ({self.rule_type})"
     
     def evaluate_condition(self, context):
         """
@@ -729,7 +724,7 @@ class EmailContentRule(models.Model):
     
     def _evaluate_product_condition(self, items):
         """Evaluate product-based conditions against order items."""
-        # Extract the field name from condition_field (e.g., 'items.is_tutorial' -> 'is_tutorial')
+        # Extract the field name from condition_field (e.g., 'items.product_code' -> 'product_code')
         field_parts = self.condition_field.split('.')
         if len(field_parts) > 1 and field_parts[0] == 'items':
             field_name = field_parts[1]
@@ -796,18 +791,26 @@ class EmailContentRule(models.Model):
         try:
             from django.template import Template, Context
             
-            # Merge rule-specific variables with context
-            render_context = {**context, **self.content_variables}
+            # Get content template from placeholder
+            content_template = self.placeholder.default_content_template
+            if not content_template:
+                logger.warning(f"No default content template found for placeholder {self.placeholder.name}")
+                return ""
             
-            # Create Django template and render
-            template = Template(self.content_template)
-            django_context = Context(render_context)
+            # Combine placeholder variables with context
+            combined_context = {
+                **self.placeholder.content_variables,
+                **context
+            }
             
-            return template.render(django_context)
+            template = Template(content_template)
+            rendered_content = template.render(Context(combined_context))
+            
+            return rendered_content
             
         except Exception as e:
             logger.error(f"Error rendering content for rule {self.name}: {str(e)}")
-            return f"<!-- Error rendering content rule: {self.name} -->"
+            return ""
 
 
 class EmailTemplateContentRule(models.Model):
@@ -820,9 +823,8 @@ class EmailTemplateContentRule(models.Model):
     is_enabled = models.BooleanField(default=True, help_text="Enable this rule for this template")
     priority_override = models.IntegerField(null=True, blank=True, help_text="Override rule priority for this template")
     
-    # Template-specific content overrides
+    # Template-specific content overrides (simplified since content config is now in placeholder)
     content_override = models.TextField(blank=True, help_text="Override content template for this specific template")
-    variables_override = models.JSONField(default=dict, blank=True, help_text="Override variables for this template")
     
     created_at = models.DateTimeField(auto_now_add=True)
     
@@ -834,22 +836,20 @@ class EmailTemplateContentRule(models.Model):
         verbose_name_plural = 'Template Content Rules'
     
     def __str__(self):
-        return f"{self.template.name} - {self.content_rule.name}"
+        return f"{self.template.name} - {self.content_rule.name} → {self.content_rule.placeholder.name}"
     
     @property
     def effective_priority(self):
-        """Get the effective priority for this rule association."""
+        """Get the effective priority (override or rule default)."""
         return self.priority_override if self.priority_override is not None else self.content_rule.priority
     
     def get_content_template(self):
-        """Get the effective content template (override or original)."""
-        return self.content_override if self.content_override else self.content_rule.content_template
+        """Get the effective content template (override or placeholder default)."""
+        return self.content_override if self.content_override else self.content_rule.placeholder.default_content_template
     
     def get_content_variables(self):
-        """Get the effective content variables (merged override and original)."""
-        base_variables = self.content_rule.content_variables or {}
-        override_variables = self.variables_override or {}
-        return {**base_variables, **override_variables}
+        """Get the content variables from the associated placeholder."""
+        return self.content_rule.placeholder.content_variables
 
 
 class EmailContentPlaceholder(models.Model):
@@ -859,8 +859,18 @@ class EmailContentPlaceholder(models.Model):
     display_name = models.CharField(max_length=200, help_text="Human-readable placeholder name")
     description = models.TextField(blank=True, help_text="Description of what this placeholder is for")
     
-    # Default content
-    default_content = models.TextField(blank=True, help_text="Default content when no rules match")
+    # Content template configuration (moved from EmailContentRule)
+    default_content_template = models.TextField(blank=True, help_text="Default MJML/HTML content template when no rules match")
+    content_variables = models.JSONField(default=dict, blank=True, help_text="Variables available in content templates for this placeholder")
+    
+    # Insertion configuration (moved from EmailContentRule)
+    insert_position = models.CharField(max_length=20, choices=[
+        ('replace', 'Replace Placeholder'),
+        ('before', 'Before Placeholder'),
+        ('after', 'After Placeholder'),
+        ('append', 'Append to End'),
+        ('prepend', 'Prepend to Beginning'),
+    ], default='replace', help_text="How to insert content relative to placeholder")
     
     # Associated templates
     templates = models.ManyToManyField(EmailTemplate, related_name='placeholders', blank=True)
@@ -882,4 +892,4 @@ class EmailContentPlaceholder(models.Model):
         verbose_name_plural = 'Email Content Placeholders'
     
     def __str__(self):
-        return f"{{ {self.name} }} - {self.display_name}" 
+        return f"{self.display_name} ({self.name})" 

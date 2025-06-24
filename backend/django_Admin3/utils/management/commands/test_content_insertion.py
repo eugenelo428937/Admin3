@@ -159,7 +159,7 @@ class Command(BaseCommand):
             rule = association.content_rule
             self.stdout.write(f'\nRule: {rule.name} ({rule.rule_type})')
             self.stdout.write(f'  Condition: {rule.condition_field} {rule.condition_operator} {rule.condition_value}')
-            self.stdout.write(f'  Placeholder: {rule.placeholder_name}')
+            self.stdout.write(f'  Placeholder: {rule.placeholder.name}')
             
             try:
                 # Test the condition evaluation

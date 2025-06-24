@@ -628,6 +628,45 @@ class EmailService:
             logger.error(f"Failed to send HTML email to {to_emails}: {str(e)}")
             return False
     
+    def _get_template_placeholders(self, template_name: str) -> Dict[str, str]:
+        """
+        Get dynamic content placeholders for a specific template.
+        
+        Args:
+            template_name: Name of the email template
+            
+        Returns:
+            Dict: Placeholder names mapped to their placeholder strings
+        """
+        try:
+            from .models import EmailTemplate, EmailContentPlaceholder
+            
+            # Get template
+            template = EmailTemplate.objects.get(name=template_name, is_active=True)
+            
+            # Get all active placeholders associated with this template
+            placeholders = EmailContentPlaceholder.objects.filter(
+                templates=template,
+                is_active=True
+            ).values_list('name', flat=True)
+            
+            # Create a dictionary mapping placeholder names to their template strings
+            placeholder_context = {}
+            for placeholder_name in placeholders:
+                placeholder_context[placeholder_name] = f'{{{{{placeholder_name}}}}}'
+                
+            logger.debug(f"Found {len(placeholder_context)} placeholders for template {template_name}: {list(placeholder_context.keys())}")
+            return placeholder_context
+            
+        except Exception as e:
+            logger.warning(f"Failed to get placeholders for template {template_name}: {str(e)}")
+            # Fallback to common placeholders if database query fails
+            return {
+                'TUTORIAL_CONTENT': '{{TUTORIAL_CONTENT}}',
+                'REGIONAL_CONTENT': '{{REGIONAL_CONTENT}}', 
+                'PRODUCT_SPECIFIC_CONTENT': '{{PRODUCT_SPECIFIC_CONTENT}}',
+            }
+
     def _render_email_with_master_template(self, content_template: str, context: Dict, email_title: str = None, email_preview: str = None) -> str:
         """
         Render email content using the master template with dynamic content injection.
@@ -642,11 +681,15 @@ class EmailService:
             str: Rendered MJML content with master template
         """
         try:
-            # Add dynamic content placeholders to context to prevent Django from removing them
+            # Determine template name from content template
+            template_name = content_template.replace('_content', '') if content_template.endswith('_content') else content_template
+            
+            # Get dynamic content placeholders for this template
+            template_placeholders = self._get_template_placeholders(template_name)
+            
+            # Add placeholders to context to prevent Django from removing them
             placeholder_context = {
-                'TUTORIAL_CONTENT': '{{TUTORIAL_CONTENT}}',
-                'REGIONAL_CONTENT': '{{REGIONAL_CONTENT}}', 
-                'PRODUCT_SPECIFIC_CONTENT': '{{PRODUCT_SPECIFIC_CONTENT}}',
+                **template_placeholders,  # Dynamic placeholders from database
                 **context  # Original context takes precedence
             }
             
@@ -657,9 +700,6 @@ class EmailService:
             # Process dynamic content insertion for placeholders
             try:
                 from .services.content_insertion_service import content_insertion_service
-                
-                # Determine template name from content template
-                template_name = content_template.replace('_content', '') if content_template.endswith('_content') else content_template
                 
                 rendered_content = content_insertion_service.process_template_content(
                     template_name=template_name,
@@ -725,7 +765,12 @@ class EmailService:
             'items': order_data.get('items', []),  # Template expects 'items', not 'order_items'
             'item_count': order_data.get('item_count', len(order_data.get('items', []))),
             'total_items': order_data.get('total_items', len(order_data.get('items', []))),
-            'base_url': getattr(settings, 'FRONTEND_URL', 'http://localhost:3000'),
+            'base_url': getattr(settings, 'FRONTEND_URL', 'http://localhost:3000'),            
+            'is_invoice': order_data.get('is_invoice', False),
+            'employer_code': order_data.get('employer_code', None),
+            'is_digital': order_data.get('is_digital', False),
+            'is_tutorial': order_data.get('is_tutorial', False),
+            'payment_method': order_data.get('payment_method', 'card'),
         }
         
         # Try to send using the template system - it will automatically handle master template vs standalone
@@ -880,6 +925,56 @@ class EmailService:
             use_queue=use_queue,
             user=user
         )
+
+    def add_placeholder_to_template(self, template_name: str, placeholder_name: str, placeholder_display_name: str = None, description: str = None) -> bool:
+        """
+        Helper method to add a new placeholder to a template.
+        Useful for extending the dynamic content system.
+        
+        Args:
+            template_name: Name of the email template
+            placeholder_name: Name of the placeholder (e.g., 'NEW_CONTENT')
+            placeholder_display_name: Human-readable name for the placeholder
+            description: Description of what this placeholder is for
+            
+        Returns:
+            bool: True if placeholder was created/associated successfully
+        """
+        try:
+            from .models import EmailTemplate, EmailContentPlaceholder
+            
+            # Get or create template
+            template, created = EmailTemplate.objects.get_or_create(
+                name=template_name,
+                defaults={
+                    'display_name': template_name.replace('_', ' ').title(),
+                    'description': f'Email template for {template_name}',
+                    'subject_template': f'{template_name.replace("_", " ").title()} - ActEd',
+                    'content_template_name': f'{template_name}_content',
+                    'use_master_template': True,
+                    'is_active': True
+                }
+            )
+            
+            # Get or create placeholder
+            placeholder, created = EmailContentPlaceholder.objects.get_or_create(
+                name=placeholder_name,
+                defaults={
+                    'display_name': placeholder_display_name or placeholder_name.replace('_', ' ').title(),
+                    'description': description or f'Dynamic content placeholder for {placeholder_name}',
+                    'is_active': True
+                }
+            )
+            
+            # Associate placeholder with template
+            template.placeholders.add(placeholder)
+            
+            logger.info(f"Successfully associated placeholder '{placeholder_name}' with template '{template_name}'")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to add placeholder '{placeholder_name}' to template '{template_name}': {str(e)}")
+            return False
 
 # Global email service instance
 email_service = EmailService() 
