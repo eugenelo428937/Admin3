@@ -33,6 +33,7 @@ ADMINISTRATE_API_KEY = env('ADMINISTRATE_API_KEY')
 ADMINISTRATE_API_SECRET = env('ADMINISTRATE_API_SECRET')
 ADMINISTRATE_REST_API_URL = env('ADMINISTRATE_REST_API_URL')
 GETADDRESS_API_KEY     = env('GETADDRESS_API_KEY')
+GETADDRESS_ADMIN_KEY   = env('GETADDRESS_ADMIN_KEY')
 
 # Development Email Override Settings
 # Redirect all emails to these addresses in development environment
@@ -41,6 +42,13 @@ DEV_EMAIL_RECIPIENTS = [
     'eugenelo@bpp.com',
     'eugene.lo1030@gmail.com',
 ]
+
+# Token Expiry Configuration (in hours)
+# These can be overridden in database via EmailSettings model
+TOKEN_EXPIRY_PASSWORD_RESET_HOURS = 24        # 24 hours (1 day)
+TOKEN_EXPIRY_ACCOUNT_ACTIVATION_HOURS = 168   # 168 hours (7 days)  
+TOKEN_EXPIRY_EMAIL_VERIFICATION_HOURS = 24    # 24 hours (1 day)
+TOKEN_EXPIRY_RESEND_ACTIVATION_HOURS = 168    # 168 hours (7 days)
 
 LOGGING = {
     'version': 1,

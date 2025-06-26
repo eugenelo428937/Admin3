@@ -10,7 +10,7 @@ DATABASES = {
         'NAME': 'ACTEDDBTEST01',
         'USER': 'dev_user',
         'PASSWORD': 'dev_password',
-        'HOST': 'localhost',
+        'HOST': '127.0.0.1',
         'PORT': '5432',
     }
 }

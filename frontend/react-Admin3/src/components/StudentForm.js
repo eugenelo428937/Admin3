@@ -40,7 +40,7 @@ const StudentForm = () => {
     console.log("CSRF Token:", csrftoken);  
 
     try {
-      const response = await fetch('http://localhost:8888/students/add_student/', {
+      const response = await fetch('http://127.0.0.1:8888/students/add_student/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

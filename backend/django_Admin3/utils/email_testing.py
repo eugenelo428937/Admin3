@@ -74,7 +74,7 @@ class EmailTester:
             ],
             'item_count': 2,
             'total_items': 2,
-            'base_url': 'http://localhost:3000',
+            'base_url': 'http://127.0.0.1:3000',
         }
         
         return {
@@ -85,34 +85,72 @@ class EmailTester:
                     'first_name': 'Jane',
                     'username': 'jane.smith@example.com',
                 },
-                'reset_url': 'http://localhost:3000/auth/reset-password?token=abc123xyz789',
+                'reset_url': 'http://127.0.0.1:3000/auth/reset-password?token=abc123xyz789',
                 'expiry_hours': 24,
-                'base_url': 'http://localhost:3000',
+                'base_url': 'http://127.0.0.1:3000',
             },
             'password_reset_content': {
                 'user': {
                     'first_name': 'Jane',
                     'username': 'jane.smith@example.com',
                 },
-                'reset_url': 'http://localhost:3000/auth/reset-password?token=abc123xyz789',
+                'reset_url': 'http://127.0.0.1:3000/auth/reset-password?token=abc123xyz789',
                 'expiry_hours': 24,
-                'base_url': 'http://localhost:3000',
+                'base_url': 'http://127.0.0.1:3000',
+            },
+            'password_reset_completed': {
+                'user': {
+                    'first_name': 'Jane',
+                    'username': 'jane.smith@example.com',
+                },
+                'reset_timestamp': timezone.now(),
+                'base_url': 'http://127.0.0.1:3000',
+            },
+            'password_reset_completed_content': {
+                'user': {
+                    'first_name': 'Jane',
+                    'username': 'jane.smith@example.com',
+                },
+                'reset_timestamp': timezone.now(),
+                'base_url': 'http://127.0.0.1:3000',
             },
             'account_activation': {
                 'user': {
                     'first_name': 'Mike',
                     'username': 'mike.johnson@example.com',
                 },
-                'activation_url': 'http://localhost:3000/auth/activate?token=def456uvw012',
-                'base_url': 'http://localhost:3000',
+                'activation_url': 'http://127.0.0.1:3000/auth/activate?token=def456uvw012',
+                'base_url': 'http://127.0.0.1:3000',
             },
             'account_activation_content': {
                 'user': {
                     'first_name': 'Mike',
                     'username': 'mike.johnson@example.com',
                 },
-                'activation_url': 'http://localhost:3000/auth/activate?token=def456uvw012',
-                'base_url': 'http://localhost:3000',
+                'activation_url': 'http://127.0.0.1:3000/auth/activate?token=def456uvw012',
+                'base_url': 'http://127.0.0.1:3000',
+            },
+            'email_verification': {
+                'user': {
+                    'first_name': 'Sarah',
+                    'username': 'sarah.wilson@example.com',
+                },
+                'verification_email': 'sarah.new@example.com',
+                'verification_url': 'http://127.0.0.1:3000/auth/verify-email?token=ghi789zab345',
+                'expiry_hours': 24,
+                'verification_timestamp': timezone.now(),
+                'base_url': 'http://127.0.0.1:3000',
+            },
+            'email_verification_content': {
+                'user': {
+                    'first_name': 'Sarah',
+                    'username': 'sarah.wilson@example.com',
+                },
+                'verification_email': 'sarah.new@example.com',
+                'verification_url': 'http://127.0.0.1:3000/auth/verify-email?token=ghi789zab345',
+                'expiry_hours': 24,
+                'verification_timestamp': timezone.now(),
+                'base_url': 'http://127.0.0.1:3000',
             },
             'master_template': {
                 'student' : 
@@ -149,7 +187,7 @@ class EmailTester:
                         'line_total': 100.00,
                     }
                 ],
-                'base_url': 'http://localhost:3000',
+                'base_url': 'http://127.0.0.1:3000',
             },
         }
     
@@ -196,12 +234,15 @@ class EmailTester:
                 if use_mjml:
                     try:
                         # Check if we should use the master template system for core email types
-                        if template_name in ['order_confirmation', 'password_reset', 'account_activation']:
+                        if template_name in ['order_confirmation', 'password_reset', 'password_reset_completed', 'account_activation', 'email_verification']:
                             # Use the new master template system
                             content_template_map = {
                                 'order_confirmation': 'order_confirmation_content',
                                 'password_reset': 'password_reset_content',
-                                'account_activation': 'account_activation_content'
+                                'password_reset_completed': 'password_reset_completed_content',
+                                'account_activation': 'account_activation_content',
+                                'email_verification': 'email_verification_content',
+                                'email_verification': 'email_verification_content'
                             }
                             
                             # For order_confirmation, apply the same date formatting logic as send_order_confirmation
@@ -307,7 +348,7 @@ class EmailTester:
                     if output_format in ['inlined', 'outlook']:
                         html_content = transform(
                             html_content,
-                            base_url='http://localhost:8888',
+                            base_url='http://127.0.0.1:8888',
                             remove_classes=True,
                             strip_important=False,
                             keep_style_tags=False,
@@ -389,8 +430,17 @@ class EmailTester:
             elif template_name == 'password_reset':
                 return email_service.send_password_reset(recipient_email, context)
             
+            elif template_name == 'password_reset_completed':
+                return email_service.send_password_reset_completed(recipient_email, context)
+            
             elif template_name == 'account_activation':
                 return email_service.send_account_activation(recipient_email, context)
+            
+            elif template_name == 'email_verification':
+                return email_service.send_email_verification(recipient_email, context)
+            
+            elif template_name == 'email_verification':
+                return email_service.send_email_verification(recipient_email, context)
             
             elif template_name == 'sample_email':
                 return email_service.send_sample_email(recipient_email, context)

@@ -20,7 +20,7 @@ const UserForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post('http://localhost:8888/students/create_user/', formData)
+    axios.post('http://127.0.0.1:8888/students/create_user/', formData)
       .then(response => {
         alert(response.data.message);
       })

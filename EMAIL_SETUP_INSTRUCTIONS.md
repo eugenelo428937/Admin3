@@ -34,7 +34,7 @@ This guide explains how to set up and test the email functionality for order con
 ### Option 1: Console Output (Current Default)
 Since `DEBUG=True`, emails are printed to the Django console:
 
-1. Start the Django server: `python manage.py runserver localhost:8888`
+1. Start the Django server: `python manage.py runserver 127.0.0.1:8888`
 2. Go to checkout page in the frontend
 3. Click "Send Test Email" button
 4. Check the Django console for email output

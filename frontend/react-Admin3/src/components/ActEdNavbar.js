@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { Container, Button, Nav, Navbar, Image, NavDropdown, Row, Col } from "react-bootstrap";
-import { NavLink, Link, useNavigate } from "react-router-dom";
+import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { 
 	Home as HomeIcon, 
 	HelpOutline as HelpIcon, 
@@ -27,6 +27,7 @@ const ActEdNavbar = () => {
 	const [showLoginModal, setShowLoginModal] = useState(false);
 	const { products, loading: loadingProducts } = useProducts();
 	const navigate = useNavigate();
+	const location = useLocation();
 	const [showCartPanel, setShowCartPanel] = useState(false);
 
 	const [formData, setFormData] = useState({
@@ -48,25 +49,21 @@ const ActEdNavbar = () => {
 	const [productCategories, setProductCategories] = useState([]);
 	const [loadingCategories, setLoadingCategories] = useState(true);
 
+	// Listen for navigation state to auto-trigger login modal
+	useEffect(() => {
+		if (location.state?.showLogin && !isAuthenticated) {
+			setShowLoginModal(true);
+			// Clear the state to prevent repeated triggering
+			navigate(location.pathname, { replace: true, state: null });
+		}
+	}, [location, isAuthenticated, navigate]);
+
 	// Close cart panel when user authenticates
 	useEffect(() => {
 		if (isAuthenticated) {
 			setShowCartPanel(false);
 		}
 	}, [isAuthenticated]);
-
-	// Listen for show-login-modal event from CartPanel
-	useEffect(() => {
-		const handleShowLoginModal = () => {
-			setShowLoginModal(true);
-		};
-
-		window.addEventListener("show-login-modal", handleShowLoginModal);
-
-		return () => {
-			window.removeEventListener("show-login-modal", handleShowLoginModal);
-		};
-	}, []);
 
 	// Fetch subjects from the new endpoint (fix: use async/await)
 	useEffect(() => {
@@ -275,10 +272,10 @@ const ActEdNavbar = () => {
 									</div>
 								}
 								id="user-dropdown">
-								<NavDropdown.Item href="/profile">
+								<NavDropdown.Item onClick={() => navigate('/profile')}>
 									My Profile
 								</NavDropdown.Item>
-								<NavDropdown.Item href="/orders">
+								<NavDropdown.Item onClick={() => navigate('/orders')}>
 									My Orders
 								</NavDropdown.Item>
 								<NavDropdown.Divider />

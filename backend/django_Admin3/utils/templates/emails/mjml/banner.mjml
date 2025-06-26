@@ -1,7 +1,7 @@
 <!-- Banner Section -->
 <mj-section background-color="#3c3c3c" css-class="banner-section" text-align="center" padding="0" >
 	<mj-column background-color="#3c333c" vertical-align="middle" padding="0"> 
-		<mj-text css-class="banner" padding="11px 22px" align="left" color="#fdfdfd" >
+		<mj-text css-class="banner" padding="11px 32px" align="left" color="#fdfdfd" >
 			<span class="logo-text-BPP">BPP</span><br/>
 			<span class="logo-text-acted">ACTURIAL</span><br/>
 			<span class="logo-text-acted">EDUCATION</span>

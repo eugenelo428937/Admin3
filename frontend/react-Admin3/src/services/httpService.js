@@ -94,7 +94,7 @@ httpService.interceptors.response.use(
 
 // Create an axios instance with default configuration 
 // const httpService = axios.create({
-// 	baseURL: process.env.REACT_APP_API_URL || "http://localhost:8888",
+// 	baseURL: process.env.REACT_APP_API_URL || "http://127.0.0.1:8888",
 // 	withCredentials: true,
 // 	headers: { "Content-Type": "application/json" },
 // });

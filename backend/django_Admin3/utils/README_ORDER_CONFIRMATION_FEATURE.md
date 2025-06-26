@@ -82,7 +82,7 @@ python manage.py process_email_queue --limit=10
 ```javascript
 // Frontend test button
 const response = await httpService.post(
-  "http://localhost:8888/api/cart/test-order-email/",
+  "http://127.0.0.1:8888/api/cart/test-order-email/",
   { email: "test@example.com" }
 );
 ```
