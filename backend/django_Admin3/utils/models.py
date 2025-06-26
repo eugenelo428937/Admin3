@@ -12,6 +12,7 @@ class EmailTemplate(models.Model):
     TEMPLATE_TYPES = [
         ('order_confirmation', 'Order Confirmation'),
         ('password_reset', 'Password Reset'),
+        ('password_reset_completed', 'Password Reset Completed'),
         ('account_activation', 'Account Activation'),
         ('newsletter', 'Newsletter'),
         ('welcome', 'Welcome Email'),

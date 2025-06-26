@@ -194,7 +194,7 @@ EMAIL_USE_TLS = True
 
 # Default addresses
 DEFAULT_FROM_EMAIL = 'noreply@admin3.com'
-FRONTEND_URL = 'http://localhost:3000'
+FRONTEND_URL = 'http://127.0.0.1:3000'
 
 # Development email override
 DEV_EMAIL_OVERRIDE = True

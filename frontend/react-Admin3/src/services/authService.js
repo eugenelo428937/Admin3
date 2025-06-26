@@ -216,6 +216,149 @@ const authService = {
 			throw error;
 		}
 	},
+
+	activateAccount: async (uid, token) => {
+		try {
+			logger.debug("Attempting account activation", { uid });
+
+			const response = await httpService.post(`${API_AUTH_URL}/activate/`, {
+				uid: uid,
+				token: token
+			});
+
+			logger.debug("Account activation response received", response.data);
+
+			if (response.status === 200 && response.data) {
+				logger.info("Account activation successful", { uid });
+				return {
+					status: "success",
+					message: response.data.message || "Account activated successfully"
+				};
+			}
+
+			return {
+				status: "error",
+				message: "Invalid response format from server"
+			};
+		} catch (error) {
+			logger.error("Account activation failed", {
+				error: error.response?.data || error,
+				status: error.response?.status,
+				uid: uid
+			});
+
+			if (error.response?.status === 400) {
+				return {
+					status: "error",
+					message: error.response.data.error || "Invalid or expired activation link"
+				};
+			} else if (error.response?.data?.error) {
+				return {
+					status: "error",
+					message: error.response.data.error
+				};
+			}
+
+			return {
+				status: "error",
+				message: "Account activation failed. Please try again later."
+			};
+		}
+	},
+
+	resendActivationEmail: async (email) => {
+		try {
+			logger.debug("Attempting to resend activation email", { email });
+
+			const response = await httpService.post(`${API_AUTH_URL}/send_activation/`, {
+				email: email
+			});
+
+			logger.debug("Resend activation response received", response.data);
+
+			if (response.status === 200 && response.data) {
+				logger.info("Activation email resent successfully", { email });
+				return {
+					status: "success",
+					message: response.data.message || "Activation email sent successfully"
+				};
+			}
+
+			return {
+				status: "error",
+				message: "Invalid response format from server"
+			};
+		} catch (error) {
+			logger.error("Resend activation email failed", {
+				error: error.response?.data || error,
+				status: error.response?.status,
+				email: email
+			});
+
+			if (error.response?.data?.error) {
+				return {
+					status: "error",
+					message: error.response.data.error
+				};
+			}
+
+			return {
+				status: "error",
+				message: "Failed to send activation email. Please try again later."
+			};
+		}
+	},
+
+	verifyEmailChange: async (verificationData) => {
+		try {
+			logger.debug("Attempting email change verification", { 
+				uid: verificationData.uid,
+				newEmail: verificationData.new_email 
+			});
+
+			const response = await httpService.post(`${API_AUTH_URL}/verify_email_change/`, verificationData);
+
+			logger.debug("Email verification response received", response.data);
+
+			if (response.status === 200 && response.data) {
+				logger.info("Email verification successful", { 
+					newEmail: verificationData.new_email 
+				});
+				return {
+					status: "success",
+					message: response.data.message || "Email verified and updated successfully"
+				};
+			}
+
+			return {
+				status: "error",
+				message: "Invalid response format from server"
+			};
+		} catch (error) {
+			logger.error("Email verification failed", {
+				error: error.response?.data || error,
+				status: error.response?.status,
+				newEmail: verificationData.new_email
+			});
+
+			if (error.response?.status === 400) {
+				return {
+					status: "error",
+					message: error.response.data.error || "Invalid or expired verification link"
+				};
+			} else if (error.response?.data?.error) {
+				return {
+					status: "error",
+					message: error.response.data.error
+				};
+			}
+
+			return {
+				status: "error",
+				message: "Email verification failed. Please try again later."
+			};
+		}
+	},
 };
 
 export default authService;

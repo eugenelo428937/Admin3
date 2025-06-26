@@ -262,7 +262,7 @@ EMAIL_HOST_PASSWORD = 'password'
 DEFAULT_FROM_EMAIL = 'noreply@admin3.com'
 
 # Frontend URL for email links
-FRONTEND_URL = 'http://localhost:3000'
+FRONTEND_URL = 'http://127.0.0.1:3000'
 ```
 
 ### Environment Variables

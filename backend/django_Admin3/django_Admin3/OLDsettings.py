@@ -114,7 +114,7 @@ DATABASES = {
         'NAME': os.environ.get('DB_NAME', 'ACTEDDBDEV01'),
         'USER': os.environ.get('DB_USER', 'eugenelo1030'),
         'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
         'PORT': os.environ.get('DB_PORT', '5432'),
     }    
 }
@@ -169,14 +169,14 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+    "http://127.0.0.1:3000",
     "http://127.0.0.1:3000",
 ]
 CORS_ALLOW_ALL_ORIGINS = False
 
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
+    "http://127.0.0.1:3000",
     "http://127.0.0.1:3000",
 ]
 

@@ -8,7 +8,7 @@ This is the React frontend for the Admin3 educational administration system.
 
 - Node.js 20.18.0 or later
 - npm 10.8.2 or later
-- Django backend running on http://localhost:8888
+- Django backend running on http://127.0.0.1:8888
 
 ### Installation
 
@@ -22,7 +22,7 @@ npm install
 npm start
 ```
 
-Runs the app in development mode. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Runs the app in development mode. Open [http://127.0.0.1:3000](http://127.0.0.1:3000) to view it in the browser.
 
 The page will reload when you make changes.\
 You may also see any lint errors in the console.

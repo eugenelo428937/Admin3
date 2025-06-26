@@ -272,7 +272,7 @@ success = email_service.send_password_reset(
     reset_data={
         'user': user_obj,
         'reset_url': 'https://example.com/reset?token=abc123',
-        'expiry_hours': 24
+        'expiry_minutes': 15
     },
     use_queue=False
 )

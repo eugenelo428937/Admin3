@@ -127,7 +127,7 @@
         ```tsx
             // src/services/subjectService.js
             import httpServiceProvider from "./httpService";
-            const API_URL = process.env.REACT_APP_API_URL || "<http://localhost:8888/subjects>";
+            const API_URL = process.env.REACT_APP_API_URL || "<http://127.0.0.1:8888/subjects>";
 
             const subjectService = {
                 getAll: async () => {
