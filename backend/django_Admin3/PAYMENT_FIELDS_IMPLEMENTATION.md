@@ -203,7 +203,7 @@ tail -f django_debug.log
 ### API Testing
 ```bash
 # Test checkout endpoint with payment data
-curl -X POST http://localhost:8888/api/cart/checkout/ \
+curl -X POST http://127.0.0.1:8888/api/cart/checkout/ \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -d '{

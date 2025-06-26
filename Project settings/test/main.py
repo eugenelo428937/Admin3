@@ -6,7 +6,7 @@ db_params = {
     'dbname': 'ACTEDDBTEST01',
     'user': 'eugenelo1030',
     'password': 'Suke428937!',
-    'host': 'localhost',
+    'host': '127.0.0.1',
     'port': '5432',
 }
 

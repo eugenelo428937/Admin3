@@ -99,7 +99,7 @@ const ResetPasswordForm = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8888/api/auth/password_reset_confirm/', {
+      const response = await axios.post('http://127.0.0.1:8888/api/auth/password_reset_confirm/', {
         uid: uid,
         token: token,
         new_password: passwords.newPassword
@@ -123,7 +123,8 @@ const ResetPasswordForm = () => {
   };
 
   const handleBackToLogin = () => {
-    navigate('/login');
+    // Navigate to home and trigger login modal
+    navigate('/home', { state: { showLogin: true } });
   };
 
   const getPasswordStrengthColor = () => {

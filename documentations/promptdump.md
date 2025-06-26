@@ -38,7 +38,7 @@ MIDDLEWARE = [
 
 # Allow requests from your React app's origin
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
 
 # Allow credentials (cookies) to be included in requests
@@ -128,7 +128,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8888/students/login/', {
+      const response = await fetch('http://127.0.0.1:8888/students/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -270,7 +270,7 @@ To see the cookies stored in Chrome:
    1. Open Developer Tools: Right-click on the page and select "Inspect" or press Ctrl+Shift+I (Windows/Linux) or Cmd+Opt+I (Mac).
    1. Go to the Application Tab: Click on the "Application" tab in the Developer Tools panel.
    1. Navigate to Cookies: Click on "Cookies" under the "Storage" section in the left sidebar.
-   1. View Cookies: Click on the domain (e.g., <http://localhost:8888>) to see the cookies stored for that domain.
+   1. View Cookies: Click on the domain (e.g., <http://127.0.0.1:8888>) to see the cookies stored for that domain.
 
 By following these steps, we successfully set up a login system with session management and addressed CORS issues to ensure smooth communication between the React frontend and Django backend.
 

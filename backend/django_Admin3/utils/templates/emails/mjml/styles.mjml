@@ -85,7 +85,7 @@
   }
   .banner {
     background-color: #3c3c3c !important;
-    padding: 11px 22px !important;
+    padding: 11px 32px !important;
   }
   
   /* Footer Styles */

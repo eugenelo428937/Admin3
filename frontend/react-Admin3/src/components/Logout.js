@@ -5,7 +5,7 @@ import React from 'react';
 const Logout = ({ setIsAuthenticated }) => {
   const handleLogout = async () => {
     try {
-      const response = await fetch('http://localhost:8888/students/logout/', {
+      const response = await fetch('http://127.0.0.1:8888/students/logout/', {
         method: 'POST',
         credentials: 'include', // Include credentials (cookies) in the request
       });

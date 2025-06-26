@@ -36,3 +36,36 @@
     transform: rotate(360deg);
   }
 }
+
+/* reCAPTCHA v3 Badge Styling */
+.grecaptcha-badge {
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  bottom: auto !important;
+  right: auto !important;
+  transform: none !important;
+  margin: 10px auto !important;
+  display: block !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+/* Alternative: Show reCAPTCHA badge inline in forms */
+.recaptcha-inline .grecaptcha-badge {
+  position: static !important;
+  display: inline-block !important;
+  margin: 0 !important;
+}
+
+/* Custom reCAPTCHA notice styling */
+.recaptcha-notice {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.recaptcha-notice:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}

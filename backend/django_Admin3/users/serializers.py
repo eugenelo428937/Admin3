@@ -26,6 +26,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
         user = User.objects.create(
             username=username,
+            is_active=False,  # Require email activation
             **validated_data
         )
         user.set_password(password)

@@ -109,7 +109,9 @@ class EmailService:
                 core_email_types = {
                     'order_confirmation': 'order_confirmation_content',
                     'password_reset': 'password_reset_content',
-                    'account_activation': 'account_activation_content'
+                    'password_reset_completed': 'password_reset_completed_content',
+                    'account_activation': 'account_activation_content',
+                    'email_verification': 'email_verification_content'
                 }
                 
                 if template_name in core_email_types:
@@ -220,7 +222,9 @@ class EmailService:
             core_email_types = {
                 'order_confirmation': 'order_confirmation_content',
                 'password_reset': 'password_reset_content',
-                'account_activation': 'account_activation_content'
+                'password_reset_completed': 'password_reset_completed_content',
+                'account_activation': 'account_activation_content',
+                'email_verification': 'email_verification_content'
             }
             
             if template_name in core_email_types:
@@ -493,7 +497,7 @@ class EmailService:
             # Apply Premailer with Outlook-specific settings
             enhanced_html = transform(
                 html_content,
-                base_url=getattr(settings, 'BASE_URL', 'http://localhost:8888'),
+                base_url=getattr(settings, 'BASE_URL', 'http://127.0.0.1:8888'),
                 
                 # CSS Processing
                 remove_classes=False,  # Keep classes for non-Outlook clients
@@ -593,7 +597,7 @@ class EmailService:
             # Inline CSS for better email client compatibility
             html_content = transform(
                 html_content,
-                base_url=getattr(settings, 'BASE_URL', 'http://localhost:8888'),
+                base_url=getattr(settings, 'BASE_URL', 'http://127.0.0.1:8888'),
                 remove_classes=True,  # Remove class attributes after inlining
                 strip_important=False,  # Keep !important declarations
                 keep_style_tags=False,  # Remove <style> tags after inlining
@@ -765,7 +769,7 @@ class EmailService:
             'items': order_data.get('items', []),  # Template expects 'items', not 'order_items'
             'item_count': order_data.get('item_count', len(order_data.get('items', []))),
             'total_items': order_data.get('total_items', len(order_data.get('items', []))),
-            'base_url': getattr(settings, 'FRONTEND_URL', 'http://localhost:3000'),            
+            'base_url': getattr(settings, 'FRONTEND_URL', 'http://127.0.0.1:3000'),            
             'is_invoice': order_data.get('is_invoice', False),
             'employer_code': order_data.get('employer_code', None),
             'is_digital': order_data.get('is_digital', False),
@@ -838,7 +842,7 @@ class EmailService:
             'user': reset_data.get('user'),
             'reset_url': reset_data.get('reset_url'),
             'expiry_hours': reset_data.get('expiry_hours', 24),
-            'base_url': getattr(settings, 'FRONTEND_URL', 'http://localhost:3000'),
+            'base_url': getattr(settings, 'FRONTEND_URL', 'http://127.0.0.1:3000'),
         }
         
         return self.send_templated_email(
@@ -853,12 +857,60 @@ class EmailService:
             user=user
         )
     
+    def send_password_reset_completed(self, user_email: str, completion_data: Dict, use_mjml: bool = True, enhance_outlook: bool = False, use_queue: bool = None, user = None) -> bool:
+        """Send password reset completion confirmation email using master template with dynamic content."""
+        from django.utils import timezone
+        
+        # Format the reset timestamp for display
+        reset_timestamp = completion_data.get('reset_timestamp') or timezone.now()
+        if hasattr(reset_timestamp, 'strftime'):
+            formatted_timestamp = reset_timestamp.strftime("%B %d, %Y at %I:%M %p")
+        else:
+            formatted_timestamp = str(reset_timestamp)
+        
+        context = {
+            'user': completion_data.get('user'),
+            'login_url': f"{getattr(settings, 'FRONTEND_URL', 'http://127.0.0.1:3000')}/auth/login",
+            'reset_timestamp': formatted_timestamp,
+            'base_url': getattr(settings, 'FRONTEND_URL', 'http://127.0.0.1:3000'),
+        }
+        
+        return self.send_templated_email(
+            template_name='password_reset_completed',
+            context=context,
+            to_emails=[user_email],
+            subject="Password Successfully Reset - ActEd",
+            use_mjml=use_mjml,
+            enhance_outlook_compatibility=enhance_outlook,
+            use_queue=use_queue,
+            priority='high',
+            user=user
+        )
+    
     def send_account_activation(self, user_email: str, activation_data: Dict, use_mjml: bool = True, enhance_outlook: bool = False, use_queue: bool = None, user = None) -> bool:
         """Send account activation email using master template with dynamic content."""
+        
+        # Extract user object and convert to serializable format
+        user_obj = activation_data.get('user')
+        user_data = {}
+        if user_obj:
+            user_data = {
+                'id': getattr(user_obj, 'id', None),
+                'username': getattr(user_obj, 'username', ''),
+                'email': getattr(user_obj, 'email', ''),
+                'first_name': getattr(user_obj, 'first_name', ''),
+                'last_name': getattr(user_obj, 'last_name', ''),
+                'is_active': getattr(user_obj, 'is_active', False),
+                'date_joined': getattr(user_obj, 'date_joined', None)
+            }
+            # Handle datetime serialization
+            if user_data['date_joined']:
+                user_data['date_joined'] = user_data['date_joined'].isoformat()
+        
         context = {
-            'user': activation_data.get('user'),
+            'user': user_data,
             'activation_url': activation_data.get('activation_url'),
-            'base_url': getattr(settings, 'FRONTEND_URL', 'http://localhost:3000'),
+            'base_url': getattr(settings, 'FRONTEND_URL', 'http://127.0.0.1:3000'),
         }
         
         return self.send_templated_email(
@@ -866,6 +918,38 @@ class EmailService:
             context=context,
             to_emails=[user_email],
             subject="Activate Your ActEd Account",
+            use_mjml=use_mjml,
+            enhance_outlook_compatibility=enhance_outlook,
+            use_queue=use_queue,
+            priority='high',
+            user=user
+        )
+    
+    def send_email_verification(self, user_email: str, verification_data: Dict, use_mjml: bool = True, enhance_outlook: bool = False, use_queue: bool = None, user = None) -> bool:
+        """Send email verification email when user updates their profile with a new email address."""
+        from django.utils import timezone
+        
+        # Format the verification timestamp for display
+        verification_timestamp = verification_data.get('verification_timestamp') or timezone.now()
+        if hasattr(verification_timestamp, 'strftime'):
+            formatted_timestamp = verification_timestamp.strftime("%B %d, %Y at %I:%M %p")
+        else:
+            formatted_timestamp = str(verification_timestamp)
+        
+        context = {
+            'user': verification_data.get('user'),
+            'verification_email': verification_data.get('verification_email'),
+            'verification_url': verification_data.get('verification_url'),
+            'expiry_hours': verification_data.get('expiry_hours', 24),
+            'verification_timestamp': formatted_timestamp,
+            'base_url': getattr(settings, 'FRONTEND_URL', 'http://127.0.0.1:3000'),
+        }
+        
+        return self.send_templated_email(
+            template_name='email_verification',
+            context=context,
+            to_emails=[user_email],
+            subject="Verify Your New Email Address - ActEd",
             use_mjml=use_mjml,
             enhance_outlook_compatibility=enhance_outlook,
             use_queue=use_queue,

@@ -6,14 +6,14 @@ This guide provides step-by-step instructions to test the complete price type fu
 ## Prerequisites
 - ✅ Django backend running on port 8888
 - ✅ React frontend running on port 3000
-- ✅ Application accessible at http://localhost:3000
+- ✅ Application accessible at http://127.0.0.1:3000
 
 ## Test Scenarios
 
 ### 1. Product Browsing and Price Type Selection
 
 #### Test 1.1: Browse Products
-1. Navigate to http://localhost:3000
+1. Navigate to http://127.0.0.1:3000
 2. Browse through the product catalog
 3. Look for products that have "Discounts" section
 4. Click on the "Discounts ▶" link to expand price options
@@ -114,7 +114,7 @@ For non-standard price items:
 ### 6. Admin Interface Testing
 
 #### Test 6.1: Django Admin Access
-1. Navigate to http://localhost:8888/admin/
+1. Navigate to http://127.0.0.1:8888/admin/
 2. Log in with admin credentials
 3. Look for "Acted Orders" and "Acted Order Items" sections
 

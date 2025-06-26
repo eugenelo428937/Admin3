@@ -146,7 +146,7 @@ DATABASES = {
         'NAME': os.environ.get('DB_NAME', 'ACTEDDBDEV01'),
         'USER': os.environ.get('DB_USER', 'actedadmin'),
         'PASSWORD': os.environ.get('DB_PASSWORD', 'Act3d@dm1n0EEoo'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
         'PORT': os.environ.get('DB_PORT', '5432'),
         'OPTIONS': {
             'client_encoding': 'UTF8',
@@ -204,18 +204,18 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://localhost:8888",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8888",
     "http://127.0.0.1:8888"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://localhost:8888",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8888",
     "http://127.0.0.1:8888"
 ]
 
@@ -307,8 +307,24 @@ if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Password Reset Settings
-FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
-PASSWORD_RESET_TIMEOUT_HOURS = int(os.environ.get('PASSWORD_RESET_TIMEOUT_HOURS', '24'))
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://127.0.0.1:3000')
+PASSWORD_RESET_TIMEOUT_HOURS = float(os.environ.get('PASSWORD_RESET_TIMEOUT_HOURS', '0.25'))  # 0.25 hours = 15 minutes
+PASSWORD_RESET_TIMEOUT = 900  # 15 minutes in seconds for Django's token validation
+
+# reCAPTCHA v3 Settings
+RECAPTCHA_SITE_KEY = os.environ.get('RECAPTCHA_SITE_KEY', '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI')  # Test key for development
+RECAPTCHA_SECRET_KEY = os.environ.get('RECAPTCHA_SECRET_KEY', '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe')  # Test secret key for development
+RECAPTCHA_VERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify'
+
+# reCAPTCHA v3 Configuration
+RECAPTCHA_VERSION = '3'  # Specify version 3
+RECAPTCHA_DEFAULT_MIN_SCORE = float(os.environ.get('RECAPTCHA_MIN_SCORE', '0.5'))  # Default minimum score
+RECAPTCHA_ACTIONS = {
+    'password_reset': 'password_reset',
+    'login': 'login', 
+    'registration': 'registration',
+    'contact_form': 'contact'
+}
 
 # Administrate API Settings
 # ADMINISTRATE_INSTANCE_URL = env('ADMINISTRATE_INSTANCE_URL')

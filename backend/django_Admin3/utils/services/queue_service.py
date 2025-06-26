@@ -402,8 +402,11 @@ class EmailQueueService:
         try:
             template_map = {
                 'order_confirmation': 'order_confirmation_content',
-                'password_reset': 'password_reset_content', 
-                'account_activation': 'account_activation_content'
+                'password_reset': 'password_reset_content',
+                'password_reset_completed': 'password_reset_completed_content',
+                'account_activation': 'account_activation_content',
+                'email_verification': 'email_verification_content',
+                'email_verification': 'email_verification_content'
             }
             
             if queue_item.template.name in template_map:

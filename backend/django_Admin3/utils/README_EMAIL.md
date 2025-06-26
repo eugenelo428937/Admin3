@@ -42,7 +42,7 @@ email_service.send_order_confirmation('customer@email.com', order_data)
 reset_data = {
     'user': user,
     'reset_url': 'https://yoursite.com/reset?token=...',
-    'expiry_hours': 24
+    'expiry_minutes': 15
 }
 email_service.send_password_reset('user@email.com', reset_data)
 ```
@@ -99,8 +99,8 @@ Add to your Django settings:
 ```python
 # Email settings
 DEFAULT_FROM_EMAIL = 'noreply@admin3.com'
-BASE_URL = 'http://localhost:8888'
-FRONTEND_URL = 'http://localhost:3000'
+BASE_URL = 'http://127.0.0.1:8888'
+FRONTEND_URL = 'http://127.0.0.1:3000'
 
 # Add utils to INSTALLED_APPS if not already present
 INSTALLED_APPS = [

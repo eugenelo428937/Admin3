@@ -29,26 +29,26 @@
 
 <mj-section css-class="footer" background-color="#EBEBEB" padding="0" >
   <mj-column width="100%" padding="0">
-    <mj-text align="left" font-size="10px" line-height="12px" padding-bottom="8px">
+    <mj-text align="left" font-size="10px" line-height="12px" padding-bottom="0">
       BPP Holdings Limited - owned by private equity firm TDR
     </mj-text>
     
-    <mj-text align="left" font-size="10px" line-height="12px" padding-bottom="8px">
+    <mj-text align="left" font-size="10px" line-height="12px" padding-bottom="0">
       <b>Safeguarding</b>
     </mj-text>
     
-    <mj-text align="left" font-size="10px" line-height="12px" padding-bottom="8px">
+    <mj-text align="left" font-size="10px" line-height="12px" padding-bottom="0">
       • To report a safeguarding concern, or contact any of the student welfare and support services, including Learning Support and Mental Health and Wellbeing Teams, please click here.<br/>
       • If you are concerned about a student or would like further information about Safeguarding within BPP please contact safeguarding@bpp.com or see info here. All BPP support services can be found here.<br/>
       • If you need to find a local NHS urgent mental health helpline for 24 hour support, please visit this page.<br/>
       • Please consider the environment before printing this email.
     </mj-text>
     
-    <mj-text align="left" font-size="10px" line-height="12px" padding-bottom="8px">
+    <mj-text align="left" font-size="10px" line-height="12px" padding-bottom="0">
       This email originates from Actuarial Education Company Limited - registered number 3062375.
     </mj-text>
     
-    <mj-text align="left" font-size="10px" line-height="12px" padding-bottom="8px">
+    <mj-text align="left" font-size="10px" line-height="12px" padding-bottom="0">
       BPP is Europe's leading provider of professional education: actively supporting professionals to achieve their aspirations for over 30 years. This message, its contents and any attachments are private, confidential and may contain information that is subject to copyright. You may not disclose, use or disseminate all or part of this message without our prior written consent. If you are not the intended recipient, please notify us immediately by replying to this message and then delete it from your system. Whilst we take reasonable precautions to prevent computer viruses, we cannot accept responsibility for viruses transmitted to your computer and it is your responsibility to make all necessary checks. We may monitor email traffic data and the content of emails to ensure efficient operation of our business, for security, for staff training and for other administrative purposes.
     </mj-text>
     

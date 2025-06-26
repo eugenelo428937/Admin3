@@ -16,8 +16,8 @@ class Command(BaseCommand):
             '--template',
             type=str,
             choices=[
-                'master_template', 'order_confirmation', 'password_reset', 'account_activation', 'sample_email',
-                'order_confirmation_content', 'password_reset_content', 'account_activation_content'
+                'master_template', 'order_confirmation', 'password_reset', 'password_reset_completed', 'account_activation', 'email_verification', 'sample_email',
+                'order_confirmation_content', 'password_reset_content', 'password_reset_completed_content', 'account_activation_content', 'email_verification_content', 'email_verification_content'
             ],
             help='Email template to test'
         )

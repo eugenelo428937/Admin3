@@ -131,14 +131,14 @@ npm start
 
 ### React Checkpoint
 
-1. Open a web browser and navigate to <http://localhost:3000/>. You should see the React application running.
+1. Open a web browser and navigate to <http://127.0.0.1:3000/>. You should see the React application running.
 
 ## 7: Set Up PostgreSQL
 
-1. Create localhost Server Group in PgAdmin4 if not exist.
+1. Create 127.0.0.1 Server Group in PgAdmin4 if not exist.
 1. Update the password of "postgres" User to Login/Group Roles.
 1. Create a new user <actedadmin@bpp.com> with password and grant all privileges.
-1. In PgAdmin4, in localhost Server Group, create a new database "ACTEDDEV01".
+1. In PgAdmin4, in 127.0.0.1 Server Group, create a new database "ACTEDDEV01".
 1. In ACTEDDBDEV01, open the query tool and run the ACTEDDBDEV01.sql file.
 1. Update the Django settings.py (./Admin3/backend/Django_Admin3/settings.py) file with the PostgreSQL database configuration.
 
@@ -149,7 +149,7 @@ DATABASES = {
         'NAME': 'ACTEDDEV01',
         'USER': 'your_username',
         'PASSWORD': 'your_password',
-        'HOST': 'localhost', # or your PostgreSQL server address
+        'HOST': '127.0.0.1', # or your PostgreSQL server address
         'PORT': '5432', # default PostgreSQL port
     }
 }
@@ -182,7 +182,7 @@ cd ./Admin3/frontend/react_Admin3
 npm start
 ```
 
-1. Open a web browser and navigate to <http://localhost:3000/>. You should see the Admin3  running. ^_^
+1. Open a web browser and navigate to <http://127.0.0.1:3000/>. You should see the Admin3  running. ^_^
 
 **Important**: Ensure the Django backend server is running on port 8888 before starting the React frontend:
 
@@ -194,5 +194,5 @@ python manage.py runserver 8888
 
 ### Backend Checkpoint
 
-1. Open a web browser and navigate to <http://localhost:8888/admin/>. You should see the Django admin interface.
-2. Test API endpoints: <http://localhost:8888/api/subjects/>, <http://localhost:8888/api/products/>, etc.
+1. Open a web browser and navigate to <http://127.0.0.1:8888/admin/>. You should see the Django admin interface.
+2. Test API endpoints: <http://127.0.0.1:8888/api/subjects/>, <http://127.0.0.1:8888/api/products/>, etc.

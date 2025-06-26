@@ -96,6 +96,21 @@ class Command(BaseCommand):
                 'enhance_outlook_compatibility': True
             },
             {
+                'name': 'email_verification',
+                'template_type': 'email_verification',
+                'display_name': 'Email Verification',
+                'description': 'Email sent to verify new email addresses when users update their profile',
+                'subject_template': 'Verify Your New Email Address - ActEd',
+                'content_template_name': 'email_verification_content',
+                'use_master_template': True,
+                'default_priority': 'high',
+                'enable_tracking': True,
+                'enable_queue': True,
+                'max_retry_attempts': 3,
+                'retry_delay_minutes': 5,
+                'enhance_outlook_compatibility': True
+            },
+            {
                 'name': 'welcome',
                 'template_type': 'welcome',
                 'display_name': 'Welcome Email',
@@ -224,7 +239,7 @@ class Command(BaseCommand):
                 'setting_type': 'tracking',
                 'display_name': 'Tracking Pixel URL',
                 'description': 'Base URL for email tracking pixels',
-                'value': 'http://localhost:8888/api/email/track',
+                'value': 'http://127.0.0.1:8888/api/email/track',
                 'is_required': False,
                 'is_sensitive': False
             },
@@ -269,7 +284,7 @@ class Command(BaseCommand):
                 'setting_type': 'template',
                 'display_name': 'Unsubscribe URL',
                 'description': 'URL for email unsubscribe page',
-                'value': 'http://localhost:3000/unsubscribe',
+                'value': 'http://127.0.0.1:3000/unsubscribe',
                 'is_required': False,
                 'is_sensitive': False
             },
@@ -278,7 +293,7 @@ class Command(BaseCommand):
                 'setting_type': 'template',
                 'display_name': 'Privacy Policy URL',
                 'description': 'URL for privacy policy page',
-                'value': 'http://localhost:3000/privacy',
+                'value': 'http://127.0.0.1:3000/privacy',
                 'is_required': False,
                 'is_sensitive': False
             }
