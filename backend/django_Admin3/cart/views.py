@@ -263,6 +263,11 @@ class CartViewSet(viewsets.ViewSet):
         employer_code = payment_data.get('employer_code', None)
         is_invoice = payment_data.get('is_invoice', False)
         payment_method = payment_data.get('payment_method', 'card')
+        card_data = payment_data.get('card_data', None)
+
+        # Get client information
+        client_ip = self._get_client_ip(request)
+        user_agent = request.META.get('HTTP_USER_AGENT', '')
 
         with transaction.atomic():
             # Create order and items first
@@ -351,8 +356,25 @@ class CartViewSet(viewsets.ViewSet):
                 order.subtotal = subtotal
                 order.total_amount = subtotal  # No VAT if calculation fails
                 order.save()
-                
-            # Clear cart after successful order creation
+
+            # Process payment based on payment method
+            from .services import payment_service
+            payment_result = None
+            if payment_method == 'card':
+                if not card_data:
+                    return Response({'detail': 'Card data is required for card payments.'}, 
+                                  status=status.HTTP_400_BAD_REQUEST)
+                payment_result = payment_service.process_card_payment(order, card_data, client_ip, user_agent)
+                if not payment_result['success']:
+                    # Payment failed - rollback order creation
+                    raise Exception(f"Payment failed: {payment_result.get('error_message', 'Unknown error')}")
+            elif payment_method == 'invoice':
+                payment_result = payment_service.process_invoice_payment(order, client_ip, user_agent)
+                if not payment_result['success']:
+                    # Invoice creation failed - rollback order creation
+                    raise Exception(f"Invoice creation failed: {payment_result.get('error_message', 'Unknown error')}")
+
+            # Clear cart after successful order creation and payment processing
             cart.items.all().delete()
             
             # Send order confirmation email with enhanced email management system
@@ -449,9 +471,8 @@ class CartViewSet(viewsets.ViewSet):
                             ppv = ProductProductVariation.objects.select_related('product_variation').get(
                                 id=item.metadata.get('variationId')
                             )
-                            # Check if this specific variation is digital
                             variation_type = ppv.product_variation.variation_type.lower()
-                            if variation_type in ['ebook', 'hub']:  # Digital variation types
+                            if variation_type in ['ebook', 'hub']:
                                 has_digital_items = True
                                 break
                         except ProductProductVariation.DoesNotExist:
@@ -460,53 +481,12 @@ class CartViewSet(viewsets.ViewSet):
                                 has_digital_items = True
                                 break
                     else:
-                        # Fallback to product groups for items without variations
+                        # Fallback to checking product groups for items without variations
                         if item.product.product.groups.filter(id__in=[14, 11]).exists():
                             has_digital_items = True
                             break
                 
-                order_data['is_digital'] = has_digital_items
-                
-                # Check if any items are tutorials
-                has_tutorial_items = False
-                for item in order.items.all():
-                    if item.metadata and item.metadata.get('type') == 'tutorial':
-                        has_tutorial_items = True
-                        break
-                
-                order_data['is_tutorial'] = has_tutorial_items
-                
-                # Add is_digital flag to each individual item based on specific variation type
-                for item_data in order_data['items']:
-                    # Find corresponding order item to check variation type
-                    order_item = None
-                    for oi in order.items.all():
-                        if (oi.product.product.fullname == item_data['name'] and 
-                            oi.quantity == item_data['quantity']):
-                            order_item = oi
-                            break
-                    
-                    is_item_digital = False
-                    if order_item:
-                        # Check if this item has a digital variation
-                        if order_item.metadata and order_item.metadata.get('variationId'):
-                            try:
-                                # Get the ProductProductVariation from the variationId stored in metadata
-                                from products.models import ProductProductVariation
-                                ppv = ProductProductVariation.objects.select_related('product_variation').get(
-                                    id=order_item.metadata.get('variationId')
-                                )
-                                # Check if this specific variation is digital
-                                variation_type = ppv.product_variation.variation_type.lower()
-                                is_item_digital = variation_type in ['ebook', 'hub']  # Digital variation types
-                            except ProductProductVariation.DoesNotExist:
-                                # Fallback to checking product groups if variation not found
-                                is_item_digital = order_item.product.product.groups.filter(id__in=[14, 11]).exists()
-                        else:
-                            # Fallback to product groups for items without variations
-                            is_item_digital = order_item.product.product.groups.filter(id__in=[14, 11]).exists()
-                    
-                    item_data['is_digital'] = is_item_digital
+                order_data['has_digital_items'] = has_digital_items
                 
                 # Send email using enhanced email service with queue support
                 success = email_service.send_order_confirmation(
@@ -529,7 +509,20 @@ class CartViewSet(viewsets.ViewSet):
                 # Could also add this to an email retry queue here if needed
         
         serializer = ActedOrderSerializer(order)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response({
+            'order': serializer.data,
+            'payment': payment_result,
+            'message': 'Order created successfully'
+        }, status=status.HTTP_201_CREATED)
+
+    def _get_client_ip(self, request):
+        """Get client IP address from request"""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
 
     @action(detail=False, methods=['get'], url_path='orders', permission_classes=[IsAuthenticated])
     def orders(self, request):
