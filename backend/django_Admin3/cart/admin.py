@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cart, CartItem, ActedOrder, ActedOrderItem
+from .models import Cart, CartItem, ActedOrder, ActedOrderItem, ActedOrderPayment
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
@@ -26,3 +26,33 @@ class ActedOrderItemAdmin(admin.ModelAdmin):
     search_fields = ('order__user__username', 'product__product_name')
     list_filter = ('price_type',)
     readonly_fields = ('order', 'product', 'quantity', 'price_type', 'actual_price')
+
+@admin.register(ActedOrderPayment)
+class ActedOrderPaymentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'order', 'payment_method', 'amount', 'status', 'created_at', 'transaction_id')
+    list_filter = ('payment_method', 'status', 'created_at')
+    search_fields = ('order__user__username', 'transaction_id')
+    readonly_fields = ('created_at', 'updated_at', 'processed_at')
+    fieldsets = (
+        ('Order Information', {
+            'fields': ('order', 'payment_method', 'amount', 'currency')
+        }),
+        ('Transaction Details', {
+            'fields': ('transaction_id', 'status', 'processed_at')
+        }),
+        ('Client Information', {
+            'fields': ('client_ip', 'user_agent')
+        }),
+        ('Opayo Response', {
+            'fields': ('opayo_response', 'opayo_status_code', 'opayo_status_detail')
+        }),
+        ('Error Information', {
+            'fields': ('error_message', 'error_code')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at')
+        }),
+        ('Additional Data', {
+            'fields': ('metadata',)
+        })
+    )

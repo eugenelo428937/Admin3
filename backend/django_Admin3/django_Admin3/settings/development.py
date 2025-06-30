@@ -35,6 +35,15 @@ ADMINISTRATE_REST_API_URL = env('ADMINISTRATE_REST_API_URL')
 GETADDRESS_API_KEY     = env('GETADDRESS_API_KEY')
 GETADDRESS_ADMIN_KEY   = env('GETADDRESS_ADMIN_KEY')
 
+# Opayo Payment Gateway Settings (Development)
+OPAYO_TEST_MODE = True
+OPAYO_VENDOR_NAME = env('OPAYO_VENDOR_NAME', default='testvendor')
+OPAYO_INTEGRATION_KEY = env('OPAYO_INTEGRATION_KEY', default='test_key')
+OPAYO_INTEGRATION_PASSWORD = env('OPAYO_INTEGRATION_PASSWORD', default='test_password')
+
+# Use dummy payment gateway for local development
+USE_DUMMY_PAYMENT_GATEWAY = True
+
 # Development Email Override Settings
 # Redirect all emails to these addresses in development environment
 DEV_EMAIL_OVERRIDE = True
