@@ -65,6 +65,21 @@ const ActEdNavbar = () => {
 		}
 	}, [isAuthenticated]);
 
+	// Listen for custom event to show login modal (from CartPanel checkout)
+	useEffect(() => {
+		const handleShowLoginModal = () => {
+			if (!isAuthenticated) {
+				setShowLoginModal(true);
+			}
+		};
+
+		window.addEventListener("show-login-modal", handleShowLoginModal);
+
+		return () => {
+			window.removeEventListener("show-login-modal", handleShowLoginModal);
+		};
+	}, [isAuthenticated]);
+
 	// Fetch subjects from the new endpoint (fix: use async/await)
 	useEffect(() => {
 		const fetchSubjects = async () => {

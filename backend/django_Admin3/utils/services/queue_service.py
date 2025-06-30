@@ -591,7 +591,7 @@ class EmailQueueService:
                     # Method 4: Default to materials if not tutorial or marking
                     else:
                         # If we have product info but it's not tutorial/marking, assume materials
-                        product_type = 'materials'
+                        product_type = 'material'
                     
                     if product_type:
                         found_types.append(product_type.lower())
