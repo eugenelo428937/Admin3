@@ -504,7 +504,8 @@ class AuthViewSet(viewsets.ViewSet):
         """
         uid = request.data.get('uid')
         token = request.data.get('token')
-        new_email = request.data.get('email')
+        # Accept both 'email' and 'new_email' for flexibility
+        new_email = request.data.get('email') or request.data.get('new_email')
         
         if not uid or not token or not new_email:
             return Response(
@@ -516,6 +517,16 @@ class AuthViewSet(viewsets.ViewSet):
             # Decode user ID
             user_id = force_str(urlsafe_base64_decode(uid))
             user = User.objects.get(pk=user_id)
+            
+            logger.info(f"Email verification attempt - User: {user.username}, Token: {token[:10]}..., New Email: {new_email}")
+            
+            # Check if email is already in use by another user
+            if User.objects.filter(email=new_email).exclude(pk=user.pk).exists():
+                logger.warning(f"Email verification failed - {new_email} already in use")
+                return Response(
+                    {'error': 'Email address is already in use by another account'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             
             # Verify token (we can reuse the same token generator for simplicity)
             if default_token_generator.check_token(user, token):
@@ -532,6 +543,8 @@ class AuthViewSet(viewsets.ViewSet):
                     # This depends on your specific UserProfile email structure
                 except UserProfile.DoesNotExist:
                     pass
+                except Exception as profile_error:
+                    logger.warning(f"Could not update UserProfile for {user.username}: {str(profile_error)}")
                 
                 logger.info(f"Email updated successfully from {old_email} to {new_email} for user: {user.username}")
                 
@@ -540,14 +553,23 @@ class AuthViewSet(viewsets.ViewSet):
                     'message': 'Email address verified and updated successfully'
                 })
             else:
+                logger.warning(f"Token validation failed for user {user.username} with token {token[:10]}...")
+                
+                # Check if this might be a timing issue - tokens are only valid for a limited time
+                from django.conf import settings
+                timeout_hours = getattr(settings, 'PASSWORD_RESET_TIMEOUT_HOURS', 24)
+                
                 return Response(
-                    {'error': 'Invalid or expired verification token'}, 
+                    {
+                        'error': f'Invalid or expired verification token. Please request a new verification email. Tokens expire after {timeout_hours} hours.'
+                    }, 
                     status=status.HTTP_400_BAD_REQUEST
                 )
         
-        except (ValueError, User.DoesNotExist):
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            logger.warning(f"Invalid verification link with uid: {uid}")
             return Response(
-                {'error': 'Invalid verification link'}, 
+                {'error': 'Invalid verification link. Please request a new verification email.'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
@@ -590,14 +612,23 @@ class AuthViewSet(viewsets.ViewSet):
             frontend_url = getattr(settings, 'FRONTEND_URL', 'http://127.0.0.1:3000')
             verification_url = f"{frontend_url}/auth/verify-email?uid={uid}&token={token}&email={new_email}"
             
+            # Get expiry hours from settings
+            try:
+                from utils.models import EmailSettings
+                expiry_hours = EmailSettings.get_setting('email_verification_timeout_hours') or getattr(settings, 'EMAIL_VERIFICATION_TIMEOUT_HOURS', 24)
+            except Exception:
+                expiry_hours = getattr(settings, 'EMAIL_VERIFICATION_TIMEOUT_HOURS', 24)
+            
             # Prepare email data
             verification_data = {
                 'user': user,
                 'verification_email': new_email,
                 'verification_url': verification_url,
-                'expiry_hours': 24,
+                'expiry_hours': expiry_hours,
                 'verification_timestamp': timezone.now()
             }
+            
+            logger.info(f"Generating email verification for user {user.username} - Token: {token[:10]}..., New Email: {new_email}")
             
             # Send email verification to the NEW email address
             success = email_service.send_email_verification(
@@ -613,7 +644,8 @@ class AuthViewSet(viewsets.ViewSet):
                 logger.info(f"Email verification sent successfully to: {new_email} for user: {user.email}")
                 return Response({
                     'status': 'success',
-                    'message': f'Verification email sent to {new_email}. Please check your inbox.'
+                    'message': f'Verification email sent to {new_email}. Please check your inbox. The link will expire in {expiry_hours} hours.',
+                    'expiry_hours': expiry_hours
                 })
             else:
                 logger.error(f"Failed to send email verification to: {new_email} for user: {user.email}")

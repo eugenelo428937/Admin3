@@ -117,6 +117,8 @@ const ProfileForm = ({
 
   // Populate form in profile mode
   useEffect(() => {
+    console.log("ProfileForm: useEffect triggered", { isProfileMode, hasInitialData: !!initialData });
+    
     if (isProfileMode && initialData) {
       console.log("Profile mode: Populating form with initial data", initialData);
       
@@ -162,6 +164,7 @@ const ProfileForm = ({
         confirmPassword: ""
       };
       
+      console.log("ProfileForm: Setting form data", newForm);
       setForm(newForm);
       
       // Set work address visibility
@@ -170,6 +173,7 @@ const ProfileForm = ({
         initialData.work_address.street || 
         initialData.work_address.town
       );
+      console.log("ProfileForm: Work address visibility", hasWorkAddress);
       setShowWork(!!hasWorkAddress);
       
       // Auto-show address fields if we have address data
@@ -177,7 +181,10 @@ const ProfileForm = ({
         initialData.home_address.street || 
         initialData.home_address.town
       );
+      console.log("ProfileForm: Home address visibility", hasHomeAddress);
       setShowHomeAddressFields(!!hasHomeAddress);
+    } else {
+      console.log("ProfileForm: Not populating form", { isProfileMode, hasInitialData: !!initialData });
     }
   }, [isProfileMode, initialData]);
 

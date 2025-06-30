@@ -435,7 +435,8 @@ class EmailQueueService:
                     to_emails=[to_email],
                     subject=queue_item.subject,
                     from_email=queue_item.from_email,
-                    enhance_outlook_compatibility=queue_item.template.enhance_outlook_compatibility
+                    enhance_outlook_compatibility=queue_item.template.enhance_outlook_compatibility,
+                    attachments=attachments
                 )
             else:
                 # Use regular template with detailed response
@@ -538,20 +539,93 @@ class EmailQueueService:
         """Check if an attachment should be included based on conditions."""
         # If no conditions, always include
         if not template_attachment.include_condition:
+            logger.debug(f"No conditions for attachment {template_attachment.attachment.name}, including by default")
             return True
         
         try:
-            # Simple condition evaluation (can be extended for complex rules)
             conditions = template_attachment.include_condition
+            condition_type = conditions.get('type', 'no_condition')
             
-            for key, expected_value in conditions.items():
-                if key not in context or context[key] != expected_value:
+            logger.debug(f"Evaluating attachment condition for {template_attachment.attachment.name}: {condition_type}")
+            
+            # Always include condition
+            if condition_type == 'always_include':
+                logger.debug(f"Always include condition met for {template_attachment.attachment.name}")
+                return True
+            
+            # Product type-based condition
+            elif condition_type == 'product_type_based':
+                required_product_types = conditions.get('product_types', [])
+                logic = conditions.get('logic', 'any')  # 'any' or 'all'
+                
+                # Get order items from context
+                items = context.get('items', [])
+                if not items:
+                    logger.debug(f"No items in context for product type condition")
                     return False
+                
+                # Check product types in order items
+                found_types = []
+                for item in items:
+                    # Check different ways the product type might be stored
+                    product_type = None
+                    
+                    # Method 1: Direct product_type field
+                    if hasattr(item, 'product_type'):
+                        product_type = getattr(item, 'product_type', None)
+                    elif isinstance(item, dict) and 'product_type' in item:
+                        product_type = item['product_type']
+                    
+                    # Method 2: Check if it's a tutorial (for tutorial products)
+                    elif hasattr(item, 'is_tutorial') or (isinstance(item, dict) and item.get('is_tutorial')):
+                        is_tutorial = getattr(item, 'is_tutorial', None) if hasattr(item, 'is_tutorial') else item.get('is_tutorial')
+                        if is_tutorial:
+                            product_type = 'tutorial'
+                    
+                    # Method 3: Check if it's marking (for marking products)
+                    elif hasattr(item, 'is_marking') or (isinstance(item, dict) and item.get('is_marking')):
+                        is_marking = getattr(item, 'is_marking', None) if hasattr(item, 'is_marking') else item.get('is_marking')
+                        if is_marking:
+                            product_type = 'marking'
+                    
+                    # Method 4: Default to materials if not tutorial or marking
+                    else:
+                        # If we have product info but it's not tutorial/marking, assume materials
+                        product_type = 'materials'
+                    
+                    if product_type:
+                        found_types.append(product_type.lower())
+                        logger.debug(f"Found product type: {product_type} for item")
+                
+                # Normalize required types to lowercase
+                required_product_types = [t.lower() for t in required_product_types]
+                
+                logger.debug(f"Required types: {required_product_types}, Found types: {found_types}")
+                
+                # Check logic
+                if logic == 'any':
+                    # Include if ANY product matches required types
+                    include = any(found_type in required_product_types for found_type in found_types)
+                else:  # logic == 'all'
+                    # Include if ALL required types are found
+                    include = all(req_type in found_types for req_type in required_product_types)
+                
+                logger.info(f"Product type condition for {template_attachment.attachment.name}: {'INCLUDE' if include else 'EXCLUDE'} (Required: {required_product_types}, Found: {found_types}, Logic: {logic})")
+                return include
             
-            return True
+            # Simple key-value condition (backward compatibility)
+            else:
+                for key, expected_value in conditions.items():
+                    if key not in context or context[key] != expected_value:
+                        logger.debug(f"Simple condition not met: {key}={context.get(key)} != {expected_value}")
+                        return False
+                
+                logger.debug(f"Simple conditions met for {template_attachment.attachment.name}")
+                return True
             
         except Exception as e:
-            logger.warning(f"Failed to evaluate attachment condition: {str(e)}")
+            logger.warning(f"Failed to evaluate attachment condition for {template_attachment.attachment.name}: {str(e)}")
+            # If condition evaluation fails, include if required, exclude if optional
             return template_attachment.is_required
     
     def process_pending_queue(self, limit: int = 50) -> Dict:
