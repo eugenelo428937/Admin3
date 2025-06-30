@@ -316,7 +316,7 @@ const authService = {
 				newEmail: verificationData.new_email 
 			});
 
-			const response = await httpService.post(`${API_AUTH_URL}/verify_email_change/`, verificationData);
+			const response = await httpService.post(`${API_AUTH_URL}/verify_email/`, verificationData);
 
 			logger.debug("Email verification response received", response.data);
 
