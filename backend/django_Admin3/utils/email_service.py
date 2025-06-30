@@ -301,7 +301,8 @@ class EmailService:
         to_emails: List[str],
         subject: str,
         from_email: Optional[str] = None,
-        enhance_outlook_compatibility: bool = False
+        enhance_outlook_compatibility: bool = False,
+        attachments: List[Dict] = None
     ) -> Dict:
         """
         Send email from pre-rendered MJML content and return detailed response information.
@@ -383,6 +384,10 @@ class EmailService:
             
             # Attach HTML version
             email.attach_alternative(html_content, "text/html")
+            
+            # Add file attachments if provided
+            if attachments:
+                self._attach_files_to_email(email, attachments)
             
             # Send email and capture detailed response
             try:
@@ -956,6 +961,53 @@ class EmailService:
             priority='high',
             user=user
         )
+    
+    def _attach_files_to_email(self, email, attachments: List[Dict]) -> None:
+        """
+        Attach files to an EmailMultiAlternatives object.
+        
+        Args:
+            email: EmailMultiAlternatives instance
+            attachments: List of attachment dictionaries with file info
+        """
+        import os
+        from django.conf import settings
+        
+        for attachment in attachments:
+            try:
+                file_path = attachment.get('path') or attachment.get('file_path')
+                display_name = attachment.get('name') or attachment.get('display_name')
+                mime_type = attachment.get('mime_type', 'application/octet-stream')
+                
+                if not file_path or not display_name:
+                    logger.warning(f"Attachment missing required fields: {attachment}")
+                    continue
+                
+                # Handle different path formats
+                if file_path.startswith('static/'):
+                    # Convert relative static path to absolute
+                    full_path = os.path.join(settings.BASE_DIR, file_path)
+                elif os.path.isabs(file_path):
+                    # Already absolute path
+                    full_path = file_path
+                else:
+                    # Assume it's relative to BASE_DIR
+                    full_path = os.path.join(settings.BASE_DIR, file_path)
+                
+                # Check if file exists
+                if os.path.exists(full_path):
+                    with open(full_path, 'rb') as f:
+                        email.attach(display_name, f.read(), mime_type)
+                    logger.info(f"Attached file: {display_name} ({mime_type})")
+                else:
+                    logger.error(f"Attachment file not found: {full_path}")
+                    if attachment.get('is_required'):
+                        raise FileNotFoundError(f"Required attachment not found: {full_path}")
+                    
+            except Exception as e:
+                logger.error(f"Failed to attach file {attachment.get('name', 'unknown')}: {str(e)}")
+                if attachment.get('is_required'):
+                    raise  # Re-raise if it's a required attachment
     
     def _html_to_text(self, html_content: str) -> str:
         """Convert HTML to plain text for email fallback."""

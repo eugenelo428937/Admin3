@@ -5,6 +5,7 @@ import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import { AuthProvider } from "./hooks/useAuth";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Home from "./pages/Home";
+import UserProfile from "./pages/UserProfile";
 import ActEdNavbar from "./components/ActEdNavbar";
 import NoMatch from "./components/NoMatch";
 import { CartProvider } from "./contexts/CartContext";
@@ -101,10 +102,7 @@ function App() {
 												element={<Navigate to="/home" replace />}
 											/>
 											<Route path="/home" element={<Home />} />
-											<Route
-												path="/profile"
-												element={<ProfileForm mode="profile" />}
-											/>
+											<Route path="/profile" element={<UserProfile />} />
 											<Route
 												path="/products"
 												element={<ProductList />}
@@ -192,6 +190,10 @@ function App() {
 											/>
 											<Route
 												path="/auth/activate"
+												element={<AccountActivation />}
+											/>
+											<Route
+												path="/auth/verify-email"
 												element={<AccountActivation />}
 											/>
 											<Route
