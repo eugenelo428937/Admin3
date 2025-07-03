@@ -54,3 +54,23 @@ class ProductGroupFilterSerializer(serializers.ModelSerializer):
             }
             for group in obj.groups.all()
         ]
+
+class ProductGroupWithProductsSerializer(serializers.ModelSerializer):
+    products = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ProductGroup
+        fields = ['id', 'name', 'products']
+    
+    def get_products(self, obj):
+        # Get active products in this group
+        products = obj.products.filter(is_active=True).order_by('shortname')
+        return [
+            {
+                'id': product.id,
+                'shortname': product.shortname,
+                'fullname': product.fullname,
+                'code': product.code,
+            }
+            for product in products
+        ]

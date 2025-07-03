@@ -9,7 +9,7 @@ const VATToggle = ({ size = 'sm', className = '', showLabel = true }) => {
   return (
 		<div className={`vat-toggle-container ${className}`}>			
 			<div className="vat-toggle-switch">
-				<span className="vat-toggle-text">
+				<span className="vat-toggle-text fw-normal">
 					{showVATInclusive ? "Inc. VAT" : "Ex. VAT"}
 				</span>
 				<Form.Check
