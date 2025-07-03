@@ -1,5 +1,6 @@
 import config from "../config";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { Typography } from "@mui/material";
 import {
 	Container,
 	Row,
@@ -27,6 +28,8 @@ const ProductList = React.memo(() => {
 	const queryParams = new URLSearchParams(location.search);
 	const subjectFilter = queryParams.get("subject_code") || queryParams.get("subject");
 	const categoryFilter = queryParams.get("main_category") || queryParams.get("category");
+	const groupFilter = queryParams.get("group");
+	const productFilter = queryParams.get("product");
 
 	const [products, setProducts] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -47,6 +50,8 @@ const ProductList = React.memo(() => {
 	const [subjectOptions, setSubjectOptions] = useState([]);
 	const [showFilters, setShowFilters] = useState(true);
 	const [isMobile, setIsMobile] = useState(false);
+	const [navbarGroupFilter, setNavbarGroupFilter] = useState(null);
+	const [navbarProductFilter, setNavbarProductFilter] = useState(null);
 
 	// Pagination state
 	const [currentPage, setCurrentPage] = useState(1);
@@ -73,6 +78,33 @@ const ProductList = React.memo(() => {
 		}
 	}, [categoryFilter]);
 
+	// Handle navbar group filter
+	useEffect(() => {
+		if (groupFilter) {
+			setNavbarGroupFilter(groupFilter);
+			// Clear other filters when group filter is applied
+			setMainCategory([]);
+			setSubjectGroup([]);
+			setDeliveryMethod([]);
+		} else {
+			setNavbarGroupFilter(null);
+		}
+	}, [groupFilter]);
+
+	// Handle navbar product filter
+	useEffect(() => {
+		if (productFilter) {
+			setNavbarProductFilter(productFilter);
+			// Clear other filters when product filter is applied
+			setMainCategory([]);
+			setSubjectGroup([]);
+			setDeliveryMethod([]);
+			setNavbarGroupFilter(null);
+		} else {
+			setNavbarProductFilter(null);
+		}
+	}, [productFilter]);
+
 	// Reset category filter when it changes from navbar (subject handled in subjects fetch useEffect)
 	useEffect(() => {
 		setMainCategory(categoryFilter ? [categoryFilter] : []);
@@ -90,9 +122,21 @@ const ProductList = React.memo(() => {
 			setError(null);
 
 			const params = new URLSearchParams();
-			mainCategory.forEach((id) => params.append("main_category", id));
-			deliveryMethod.forEach((id) => params.append("delivery_method", id));
-			subjectGroup.forEach((id) => params.append("subject", id));
+			
+			// Add navbar filters if present
+			if (navbarGroupFilter) {
+				params.append("group", navbarGroupFilter);
+			}
+			if (navbarProductFilter) {
+				params.append("product", navbarProductFilter);
+			}
+			
+			// Add regular filters (only if navbar filters are not active)
+			if (!navbarGroupFilter && !navbarProductFilter) {
+				mainCategory.forEach((id) => params.append("main_category", id));
+				deliveryMethod.forEach((id) => params.append("delivery_method", id));
+				subjectGroup.forEach((id) => params.append("subject", id));
+			}
 
 			console.debug(
 				"Product filter params:",
@@ -129,7 +173,7 @@ const ProductList = React.memo(() => {
 				setLoadingMore(false);
 			}
 		},
-		[mainCategory, subjectGroup, deliveryMethod, PAGE_SIZE]
+		[mainCategory, subjectGroup, deliveryMethod, navbarGroupFilter, navbarProductFilter, PAGE_SIZE]
 	);
 
 	// Load more products function
@@ -143,7 +187,7 @@ const ProductList = React.memo(() => {
 	useEffect(() => {
 		setCurrentPage(1);
 		fetchProducts(1, true);
-	}, [mainCategory, subjectGroup, deliveryMethod]);
+	}, [mainCategory, subjectGroup, deliveryMethod, navbarGroupFilter, navbarProductFilter]);
 
 	// Fetch all subjects for the Subject filter
 	useEffect(() => {
@@ -232,9 +276,23 @@ const ProductList = React.memo(() => {
 	if (error) return <div>Error: {error}</div>;
 
 	return (
-		<Container fluid className="product-list-container">
-			<div className="d-flex justify-content-between align-items-center my-3">
-				<h2 className="mb-0">Product List</h2>
+		<Container fluid className="product-list-container px-xl-5 px-lg-4 px-md-3 px-sm-2 px-xs-1">
+			<div className="d-flex justify-content-between align-items-center my-3 mt-4">
+				<div>
+					<Typography variant="h4" className="mb-0">
+						Product List
+					</Typography>
+					{navbarGroupFilter && (
+						<div className="text-muted small">
+							Filtered by: <strong>{navbarGroupFilter}</strong>
+						</div>
+					)}
+					{navbarProductFilter && (
+						<div className="text-muted small">
+							Showing specific product
+						</div>
+					)}
+				</div>
 				<VATToggle />
 			</div>
 
@@ -242,14 +300,29 @@ const ProductList = React.memo(() => {
 				<button
 					className="filter-toggle-btn"
 					onClick={handleFilterToggle}
-					aria-label="Toggle Filters"
+					aria-label="Toggle Filters"					
 					style={{
 						border: 0,
-						backgroundColor: "var(--main-backgound-color)",
+						backgroundColor: "var(--main-backgound-color)",						
 					}}>
-					<FilterCircle size={20} style={{ marginRight: 8 }} />
-					<span>Filter</span>
+					<FilterCircle size={18} style={{ marginRight: 6 }} />
+					<span>
+						<Typography variant="button" color="text-primary">
+							Filter
+						</Typography>
+					</span>
 				</button>
+				{(navbarGroupFilter || navbarProductFilter) && (
+					<Button
+						variant="outline-secondary"
+						size="sm"
+						className="ms-3"
+						onClick={() => {
+							navigate("/products");
+						}}>
+						Clear Filter
+					</Button>
+				)}
 			</div>
 
 			<Row
@@ -319,6 +392,7 @@ const ProductList = React.memo(() => {
 																);
 															}
 														}}
+														className="me-1"
 													/>
 													<label htmlFor={`subject-${opt.value}`}>
 														{opt.label}
@@ -450,17 +524,18 @@ const ProductList = React.memo(() => {
 
 							<Row xs={1} md={3} lg={3} xl={4} className="g-4">
 								{products.map((product) => (
-									<ProductCard
-										key={
-											product.essp_id ||
-											product.id ||
-											product.product_id
-										}
-										product={product}
-										onAddToCart={handleAddToCart}
-										allEsspIds={allEsspIds}
-										bulkDeadlines={bulkDeadlines}
-									/>
+									<Col key={
+										product.essp_id ||
+										product.id ||
+										product.product_id
+									}>
+										<ProductCard
+											product={product}
+											onAddToCart={handleAddToCart}
+											allEsspIds={allEsspIds}
+											bulkDeadlines={bulkDeadlines}
+										/>
+									</Col>
 								))}
 							</Row>
 

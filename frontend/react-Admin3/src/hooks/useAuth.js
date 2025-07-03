@@ -11,6 +11,24 @@ export const AuthProvider = ({ children }) => {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState(null);
+	// New state variables for user roles
+	const [isSuperuser, setIsSuperuser] = useState(false);
+	const [isApprentice, setIsApprentice] = useState(false); // To be implemented
+	const [isStudyPlus, setIsStudyPlus] = useState(false); // To be implemented
+
+	// Helper function to update user role states
+	const updateUserRoles = useCallback((userData) => {
+		if (userData) {
+			setIsSuperuser(userData.is_superuser || false);
+			// TODO: Implement logic for isApprentice and isStudyPlus when backend support is ready
+			setIsApprentice(false);
+			setIsStudyPlus(false);
+		} else {
+			setIsSuperuser(false);
+			setIsApprentice(false);
+			setIsStudyPlus(false);
+		}
+	}, []);
 
 	// Clear authentication state without navigation
 	const clearAuthState = useCallback(async () => {
@@ -25,10 +43,12 @@ export const AuthProvider = ({ children }) => {
 			setIsAuthenticated(false);
 			setUser(null);
 			setError(null);
+			// Clear user role states
+			updateUserRoles(null);
 		} catch (err) {
 			setError(err.message);
 		}
-	}, []);
+	}, [updateUserRoles]);
 
 	const logout = useCallback(
 		async ({ redirect = true } = {}) => {
@@ -51,11 +71,12 @@ export const AuthProvider = ({ children }) => {
 
 			//const userDetails = await authService.getUserDetails();
 			//setUser(userDetails);
+			//updateUserRoles(userDetails);
 		} catch (err) {
 			console.error("Error fetching user details:", err);			
 			await clearAuthState();
 		}
-	}, [clearAuthState]);
+	}, [clearAuthState, updateUserRoles]);
 
 	useEffect(() => {
 		const initializeAuth = async () => {
@@ -68,6 +89,8 @@ export const AuthProvider = ({ children }) => {
 					const userData = JSON.parse(storedUser);
 					setUser(userData);
 					setIsAuthenticated(true);
+					// Update user role states based on stored user data
+					updateUserRoles(userData);
 
 					// Verify token is still valid
 					try {
@@ -86,7 +109,7 @@ export const AuthProvider = ({ children }) => {
 		};
 
 		initializeAuth();
-	}, [clearAuthState]);
+	}, [clearAuthState, updateUserRoles]);
 
 	const login = async (credentials) => {
 		setIsLoading(true);
@@ -100,6 +123,8 @@ export const AuthProvider = ({ children }) => {
 				setUser(result.user);
 				setIsAuthenticated(true);
 				setError(null);
+				// Update user role states based on login result
+				updateUserRoles(result.user);
 				
 				// Check for post-login redirect
 				const redirectPath = localStorage.getItem("postLoginRedirect");
@@ -137,6 +162,8 @@ export const AuthProvider = ({ children }) => {
 			if (result.status === "success") {
 				setUser(result.user);
 				setIsAuthenticated(true);
+				// Update user role states based on registration result
+				updateUserRoles(result.user);
 				//navigate("/");
 				return result;
 			}
@@ -170,6 +197,10 @@ export const AuthProvider = ({ children }) => {
 		login,
 		register,
 		logout,
+		// User role states
+		isSuperuser,
+		isApprentice,
+		isStudyPlus,
 	};
 
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

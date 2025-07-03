@@ -4,7 +4,7 @@
   --bs-primary-rgb: 51, 51, 52;
   --text-primary: #333334;
   --text-primary-light: #fdfdfd;
-    
+  font-family: 'Poppins', sans-serif;
   /* Primary color variations */
   /* --bs-primary-bg-subtle: #d4edda;
   --bs-primary-border-subtle: #9fdf9f;

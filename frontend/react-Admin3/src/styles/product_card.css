@@ -1,54 +1,49 @@
 .product-card{
-  width: 300px;
-  height: 250px;
+  width: 100%;
+  height: 100%;
 }
 
-.product-card.tutorial-card {
+/* .product-card.tutorial-card {
   height: auto;
   min-height: 250px;
-}
+} */
 
 /* Tutorial product header */
-.product-card-header.tutorial-header {
+/* .product-card-header.tutorial-header {
     background-color: rgba(240, 253, 244, 1) !important;
     color: #065f46 !important;
-    border: 1px solid #a7f3d0 !important;
-}
+    
+} */
 
 /* Marking product header */
 .product-card-header.marking-header {
-    background-color: rgba(255, 247, 237, 1) !important;    
-    border: 1px solid #fed7aa !important;
-    background-color: 'rgba(255, 247, 237, 1)';
-    border: '1px solid #fed7aa'
-}
+    background-color: rgba(255, 247, 237, 1) !important;        
+} 
 
 /* Material product header */
 .product-card-header.material-header {
-    background-color: rgba(239, 246, 255, 1) !important;    
-    border: 1px solid #bfdbfe !important;    
-		border: '1px solid #bfdbfe';
+    background-color: rgba(239, 246, 255, 1) !important;        
 }
 
-.product-add-to-cart-button {
+/* .product-add-to-cart-button {
   border-radius: 2rem;
-}
+} */
 
-.expanded-width {
+/* .expanded-width {
   width: 700px !important;
   max-width: 100%;
   transition: width 0.3s;
   z-index: 10;
   position: relative;
-}
+} */
 
 /* Tutorial-specific styles */
-.tutorial-variations.collapsed {
+/* .tutorial-variations.collapsed {
   max-height: 300px;
   overflow: hidden;
-}
+} */
 
-.tutorial-variations.expanded {
+/* .tutorial-variations.expanded {
   max-height: none;
 }
 
@@ -71,9 +66,9 @@
 
 .variation-header {
   background-color: #f8f9fa !important;
-}
+} */
 
-.event-details h6 {
+/* .event-details h6 {
   font-size: 0.9rem;
   margin-bottom: 0.25rem;
 }
@@ -81,7 +76,7 @@
 .event-details .small {
   font-size: 0.8rem;
   line-height: 1.3;
-}
+} */
 
 /* Accessibility improvements */
 .product-card-header button:focus,

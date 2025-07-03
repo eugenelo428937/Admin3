@@ -1,15 +1,24 @@
 // src/components/ActEdNavbar.js
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { Container, Button, Nav, Navbar, Image, NavDropdown, Row, Col } from "react-bootstrap";
+import {
+	Container,
+	Button,
+	Nav,
+	Navbar,
+	Image,
+	NavDropdown,
+	Row,
+	Col,
+} from "react-bootstrap";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
-import { 
-	Home as HomeIcon, 
-	HelpOutline as HelpIcon, 
-	ShoppingCart as CartIcon, 
-	AccountCircle as PersonIcon, 
-	Download as DownloadIcon, 
-	Search as SearchIcon 
+import {
+	Home as HomeIcon,
+	HelpOutline as HelpIcon,
+	ShoppingCart as CartIcon,
+	AccountCircle as PersonIcon,
+	Download as DownloadIcon,
+	Search as SearchIcon,
 } from "@mui/icons-material";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/navbar.css";
@@ -22,8 +31,17 @@ import subjectService from "../services/subjectService";
 
 const ActEdNavbar = () => {
 	// State for authentication status
-	const { isAuthenticated, user, isLoading, login, register, logout } =
-		useAuth();
+	const {
+		isAuthenticated,
+		user,
+		isLoading,
+		login,
+		register,
+		logout,
+		isSuperuser,
+		isApprentice,
+		isStudyPlus,
+	} = useAuth();
 	const [showLoginModal, setShowLoginModal] = useState(false);
 	const { products, loading: loadingProducts } = useProducts();
 	const navigate = useNavigate();
@@ -45,9 +63,17 @@ const ActEdNavbar = () => {
 	const [subjects, setSubjects] = useState([]);
 	const [loadingSubjects, setLoadingSubjects] = useState(true);
 
-	// State for product categories
-	const [productCategories, setProductCategories] = useState([]);
-	const [loadingCategories, setLoadingCategories] = useState(true);
+	// State for navbar product groups
+	const [navbarProductGroups, setNavbarProductGroups] = useState([]);
+	const [loadingProductGroups, setLoadingProductGroups] = useState(true);
+
+	// State for distance learning dropdown
+	const [distanceLearningData, setDistanceLearningData] = useState([]);
+	const [loadingDistanceLearning, setLoadingDistanceLearning] = useState(true);
+
+	// State for tutorial dropdown
+	const [tutorialData, setTutorialData] = useState(null);
+	const [loadingTutorial, setLoadingTutorial] = useState(true);
 
 	// Listen for navigation state to auto-trigger login modal
 	useEffect(() => {
@@ -95,54 +121,87 @@ const ActEdNavbar = () => {
 		fetchSubjects();
 	}, []);
 
-	// Fetch product categories from product group filters
+	// Fetch navbar product groups with their products
 	useEffect(() => {
-		const fetchProductCategories = async () => {
+		const fetchNavbarProductGroups = async () => {
 			try {
-				const filters = await productService.getProductGroupFilters();
-				console.log('Product Group Filters:', filters); // Debug log
-				
-				// Extract all groups from MAIN_CATEGORY filters
-				const categoryGroups = [];
-				filters.forEach((filter) => {
-					if (filter.filter_type === "MAIN_CATEGORY") {
-						categoryGroups.push(...filter.groups.map(group => ({
-							...group,
-							is_core: filter.name.toLowerCase().includes('core'),
-							is_revision: filter.name.toLowerCase().includes('revision'),
-							is_marking: filter.name.toLowerCase().includes('marking'),
-							order_sequence: group.id // Use ID as order sequence for now
-						})));
-					}
-				});
-				
-				console.log('Processed Product Categories:', categoryGroups); // Debug log
-				setProductCategories(categoryGroups);
+				const data = await productService.getNavbarProductGroups();
+				setNavbarProductGroups(data);
 			} catch (err) {
-				console.error('Error fetching product categories:', err);
-				setProductCategories([]);
+				console.error("Error fetching navbar product groups:", err);
+				setNavbarProductGroups([]);
 			} finally {
-				setLoadingCategories(false);
+				setLoadingProductGroups(false);
 			}
 		};
-		fetchProductCategories();
+		fetchNavbarProductGroups();
+	}, []);
+
+	// Fetch distance learning dropdown data
+	useEffect(() => {
+		const fetchDistanceLearningData = async () => {
+			try {
+				const data = await productService.getDistanceLearningDropdown();
+				setDistanceLearningData(data);
+			} catch (err) {
+				console.error("Error fetching distance learning dropdown:", err);
+				setDistanceLearningData([]);
+			} finally {
+				setLoadingDistanceLearning(false);
+			}
+		};
+		fetchDistanceLearningData();
+	}, []);
+
+	// Fetch tutorial dropdown data
+	useEffect(() => {
+		const fetchTutorialData = async () => {
+			try {
+				const data = await productService.getTutorialDropdown();
+				setTutorialData(data);
+			} catch (err) {
+				console.error("Error fetching tutorial dropdown:", err);
+				setTutorialData(null);
+			} finally {
+				setLoadingTutorial(false);
+			}
+		};
+		fetchTutorialData();
 	}, []);
 
 	// Handle navigating to product list with subject filter
 	const handleSubjectClick = (subjectCode) => {
-		// Navigate with subject_code parameter to match backend expectations
 		navigate(`/products?subject_code=${subjectCode}`);
 	};
 
 	// Handle navigating to product list with category filter
 	const handleProductCategoryClick = (categoryId) => {
-		// Navigate with main_category parameter to match ProductList expectations
 		navigate(`/products?main_category=${categoryId}`);
 	};
 
 	// Handle navigating to product list with subject filter
 	const handleProductClick = () => {
 		navigate(`/products`);
+	};
+
+	// Handle navigating to specific product
+	const handleProductItemClick = (productId) => {
+		navigate(`/products/${productId}`);
+	};
+
+	// Handle navigating to product list with product group filter
+	const handleProductGroupClick = (groupName) => {
+		navigate(`/products?group=${encodeURIComponent(groupName)}`);
+	};
+
+	// Handle navigating to product list with specific product filter
+	const handleSpecificProductClick = (productId) => {
+		navigate(`/products?product=${productId}`);
+	};
+
+	// Handle navigating to product variation
+	const handleProductVariationClick = (variationId) => {
+		navigate(`/products?variation=${variationId}`);
 	};
 
 	// Handle closing the modal and resetting form data
@@ -215,10 +274,10 @@ const ActEdNavbar = () => {
 	return (
 		<div className="navbar-container">
 			<div className="d-flex flex-row navbar-top px-3 px-lg-4 px-xl-5 pt-2 pb-1 justify-content-between align-content-end">
-				<div className="d-flex flex-row px-1 align-content-center flex-wrap">
+				<div className="d-flex flex-row px-1 align-content-center flex-wrap px-xl-5 px-lg-4 px-md-3 px-sm-2 px-xs-1">
 					<div className="me-1 d-flex flex-row align-content-center flex-wrap">
 						<Link to="/Home">
-							<div className="p-0 mx-1 flex-wrap align-items-center d-flex flex-row">
+							<div className="p-0 me-1 flex-wrap align-items-center d-flex flex-row">
 								<HomeIcon className="bi d-flex flex-row align-items-center" />
 								<span className="d-none d-md-block mx-1 fst-normal">
 									ActEd Home
@@ -228,7 +287,7 @@ const ActEdNavbar = () => {
 					</div>
 					<div className="me-1 d-flex flex-row align-content-center flex-wrap">
 						<Link to="/Help">
-							<div className="p-0 mx-1 flex-wrap align-items-center d-flex flex-row">
+							<div className="p-0 me-1 flex-wrap align-items-center d-flex flex-row">
 								<HelpIcon className="bi d-flex flex-row align-items-center"></HelpIcon>
 								<span className="d-none d-md-block mx-1 fst-normal">
 									Help
@@ -238,7 +297,7 @@ const ActEdNavbar = () => {
 					</div>
 				</div>
 
-				<div className="d-flex flex-row px-3">
+				<div className="d-flex flex-row px-3 px-xl-5 px-lg-4 px-md-3 px-sm-2 px-xs-1">
 					<div className="me-lg-2 me-1 d-flex flex-row align-content-center">
 						<Button
 							variant="link"
@@ -287,10 +346,10 @@ const ActEdNavbar = () => {
 									</div>
 								}
 								id="user-dropdown">
-								<NavDropdown.Item onClick={() => navigate('/profile')}>
+								<NavDropdown.Item onClick={() => navigate("/profile")}>
 									My Profile
 								</NavDropdown.Item>
-								<NavDropdown.Item onClick={() => navigate('/orders')}>
+								<NavDropdown.Item onClick={() => navigate("/orders")}>
 									My Orders
 								</NavDropdown.Item>
 								<NavDropdown.Divider />
@@ -317,7 +376,7 @@ const ActEdNavbar = () => {
 				className="navbar navbar-expand-md navbar-main align-content-center justify-content-between px-3 px-lg-4 px-xl-5 pt-md-2 py-2">
 				<Container
 					fluid
-					className="d-flex flex-row justify-content-between align-items-center">
+					className="d-flex flex-row justify-content-between align-items-center px-xl-5 px-lg-4 px-md-3 px-sm-2 px-xs-1">
 					<Navbar.Brand
 						href="#home"
 						className="navbar-brand pe-md-2 order-1 order-md-0">
@@ -362,7 +421,7 @@ const ActEdNavbar = () => {
 								<div className="dropdown-submenu">
 									<Row>
 										<Col>
-											<div className="fw-bold mb-2 text-primary text-primary">
+											<div className="fw-bolder mb-2 text-primary text-primary">
 												Core Principles
 											</div>
 											{subjects
@@ -378,7 +437,7 @@ const ActEdNavbar = () => {
 												))}
 										</Col>
 										<Col>
-											<div className="fw-bold mb-2 text-primary">
+											<div className="fw-bolder mb-2 text-primary">
 												Core Practices
 											</div>
 											{subjects
@@ -394,7 +453,7 @@ const ActEdNavbar = () => {
 												))}
 										</Col>
 										<Col>
-											<div className="fw-bold mb-2 text-primary">
+											<div className="fw-bolder mb-2 text-primary">
 												Specialist Principles
 											</div>
 											{subjects
@@ -410,7 +469,7 @@ const ActEdNavbar = () => {
 												))}
 										</Col>
 										<Col>
-											<div className="fw-bold mb-2 text-primary">
+											<div className="fw-bolder mb-2 text-primary">
 												Specialist Advanced
 											</div>
 											{subjects
@@ -436,88 +495,305 @@ const ActEdNavbar = () => {
 								style={{ position: "relative" }}>
 								<div className="dropdown-submenu">
 									<Row>
-										<Col>
-											<div className="fw-bold mb-2 text-primary">
-												Core Study Material
-											</div>
-											{productCategories
-												.filter((cat) => cat.is_core)
-												.sort(
-													(a, b) =>
-														a.order_sequence - b.order_sequence
-												)
-												.map((cat) => (
-													<NavDropdown.Item
-														key={cat.id}
-														onClick={() =>
-															handleProductCategoryClick(cat.id)
-														}>
-														{cat.name}
-													</NavDropdown.Item>
-												))}
-										</Col>
-										<Col>
-											<div className="fw-bold mb-2 text-primary">
-												Revision Materials
-											</div>
-											{productCategories
-												.filter((cat) => cat.is_revision)
-												.sort(
-													(a, b) =>
-														a.order_sequence - b.order_sequence
-												)
-												.map((cat) => (
-													<NavDropdown.Item
-														key={cat.id}
-														onClick={() =>
-															handleProductCategoryClick(cat.id)
-														}>
-														{cat.name}
-													</NavDropdown.Item>
-												))}
-										</Col>
-										<Col>
-											<div className="fw-bold mb-2 text-primary">
-												Marking
-											</div>
-											{productCategories
-												.filter((cat) => cat.is_marking)
-												.sort(
-													(a, b) =>
-														a.order_sequence - b.order_sequence
-												)
-												.map((cat) => (
-													<NavDropdown.Item
-														key={cat.id}
-														onClick={() =>
-															handleProductCategoryClick(cat.id)
-														}>
-														{cat.name}
-													</NavDropdown.Item>
-												))}
-										</Col>
+										<Nav.Link
+											as={NavLink}
+											to="/products"
+											onClick={() => handleProductClick()}
+											className="fw-normal mb-2 text-primary ms-1 border border-light w-auto fs-5">
+											View All Products
+										</Nav.Link>
+									</Row>
+									<Row>
+										{loadingProductGroups ? (
+											<Col>
+												<div className="text-muted">
+													Loading products...
+												</div>
+											</Col>
+										) : (
+											navbarProductGroups.map((group) => {
+												// Special handling for Tutorial group - split into two columns
+												if (
+													group.name === "Tutorial" &&
+													group.products &&
+													group.products.length > 0
+												) {
+													const midPoint = Math.ceil(
+														group.products.length / 2
+													);
+													const leftColumn = group.products.slice(
+														0,
+														midPoint
+													);
+													const rightColumn =
+														group.products.slice(midPoint);
+
+													return (
+														<React.Fragment
+															key={group.id || group.name}>
+															<Col className="col-lg-1">
+																<div
+																	className="fw-bolder mb-2 text-primary"
+																	style={{ cursor: "pointer" }}
+																	onClick={() =>
+																		handleProductGroupClick(
+																			group.name
+																		)
+																	}>
+																	{group.name}
+																</div>
+																{leftColumn.map((product) => (
+																	<NavDropdown.Item
+																		key={product.id}
+																		onClick={() =>
+																			handleSpecificProductClick(
+																				product.id
+																			)
+																		}>
+																		{product.shortname}
+																	</NavDropdown.Item>
+																))}
+															</Col>
+															<Col>
+																<div className="fw-bolder mb-2 text-primary w-50">
+																	&nbsp;
+																</div>
+																{rightColumn.map((product) => (
+																	<NavDropdown.Item
+																		key={product.id}
+																		onClick={() =>
+																			handleSpecificProductClick(
+																				product.id
+																			)
+																		}>
+																		{product.shortname}
+																	</NavDropdown.Item>
+																))}
+															</Col>
+														</React.Fragment>
+													);
+												}
+
+												// Regular single column display for other groups
+												return (
+													<Col key={group.id || group.name}>
+														<div
+															className="fw-bolder mb-2 text-primary"
+															style={{ cursor: "pointer" }}
+															onClick={() =>
+																handleProductGroupClick(
+																	group.name
+																)
+															}>
+															{group.name}
+														</div>
+														{group.products &&
+														group.products.length > 0 ? (
+															group.products.map((product) => (
+																<NavDropdown.Item
+																	key={product.id}
+																	onClick={() =>
+																		handleSpecificProductClick(
+																			product.id
+																		)
+																	}>
+																	{product.shortname}
+																</NavDropdown.Item>
+															))
+														) : (
+															<div className="text-muted small">
+																No products available
+															</div>
+														)}
+													</Col>
+												);
+											})
+										)}
 									</Row>
 								</div>
 							</NavDropdown>
-							<Nav.Link
-								as={NavLink}
-								to="/products"
-								onClick={() => handleProductClick()}>
-								Products
-							</Nav.Link>
-							<Nav.Link as={NavLink} href="#home">
-								Distance Learning
-							</Nav.Link>
-							<Nav.Link as={NavLink} href="#home">
-								Tutorials
-							</Nav.Link>
-							<Nav.Link as={NavLink} href="#home">
-								Apprenticeships
-							</Nav.Link>
-							<Nav.Link as={NavLink} href="#home">
-								Study Plus
-							</Nav.Link>
-							{isAuthenticated ? (
+							<NavDropdown
+								title="Distance Learning"
+								menuVariant="light"
+								renderMenuOnMount={true}
+								align="start"
+								style={{ position: "relative" }}>
+								<div className="dropdown-submenu">
+									<Row>
+										<Nav.Link
+											as={NavLink}
+											to="/products?distance_learning=true"
+											onClick={() => navigate("/products?distance_learning=true")}
+											className="fw-normal mb-2 text-primary ms-1 border border-light w-auto fs-5">
+											View All Distance Learning
+										</Nav.Link>
+									</Row>
+									<Row>
+										{loadingDistanceLearning ? (
+											<Col>
+												<div className="text-muted">
+													Loading distance learning...
+												</div>
+											</Col>
+										) : (
+											distanceLearningData.map((group) => (
+												<Col key={group.id || group.name}>
+													<div
+														className="fw-bolder mb-2 text-primary"
+														style={{ cursor: "pointer" }}
+														onClick={() =>
+															handleProductGroupClick(group.name)
+														}>
+														{group.name}
+													</div>
+													{group.products &&
+													group.products.length > 0 ? (
+														group.products.map((product) => (
+															<NavDropdown.Item
+																key={product.id}
+																onClick={() =>
+																	handleSpecificProductClick(
+																		product.id
+																	)
+																}>
+																{product.shortname}
+															</NavDropdown.Item>
+														))
+													) : (
+														<div className="text-muted small">
+															No products available
+														</div>
+													)}
+												</Col>
+											))
+										)}
+									</Row>
+								</div>
+							</NavDropdown>
+							<NavDropdown
+								title="Tutorials"
+								menuVariant="light"
+								renderMenuOnMount={true}
+								align="start"
+								style={{ position: "relative" }}>
+								<div className="dropdown-submenu">
+									<Row>
+										<Nav.Link
+											as={NavLink}
+											to="/products?tutorial=true"
+											onClick={() => navigate("/products?tutorial=true")}
+											className="fw-normal mb-2 text-primary ms-1 border border-light w-auto fs-5">
+											View All Tutorials
+										</Nav.Link>
+									</Row>
+									<Row>
+										{loadingTutorial ? (
+											<Col>
+												<div className="text-muted">
+													Loading tutorials...
+												</div>
+											</Col>
+										) : tutorialData ? (
+											<>
+												<Col>
+													<div className="fw-bolder mb-2 text-primary">
+														Products
+													</div>
+													{tutorialData.products &&
+													tutorialData.products.length > 0 ? (
+														tutorialData.products.map((product) => (
+															<NavDropdown.Item
+																key={product.id}
+																onClick={() =>
+																	handleSpecificProductClick(
+																		product.id
+																	)
+																}>
+																{product.shortname}
+															</NavDropdown.Item>
+														))
+													) : (
+														<div className="text-muted small">
+															No products available
+														</div>
+													)}
+												</Col>
+												<Col>
+													<div className="fw-bolder mb-2 text-primary">
+														Variations
+													</div>
+													{tutorialData.variations &&
+													tutorialData.variations.length > 0 ? (
+														tutorialData.variations.map((variation) => (
+															<NavDropdown.Item
+																key={variation.id}
+																onClick={() =>
+																	handleProductVariationClick(
+																		variation.id
+																	)
+																}>
+																{variation.name}
+															</NavDropdown.Item>
+														))
+													) : (
+														<div className="text-muted small">
+															No variations available
+														</div>
+													)}
+												</Col>
+												<Col>
+													<div className="fw-bolder mb-2 text-primary">
+														Online Classroom
+													</div>
+													{tutorialData.online_classroom &&
+													tutorialData.online_classroom.length > 0 ? (
+														tutorialData.online_classroom.map((variation) => (
+															<NavDropdown.Item
+																key={variation.id}
+																onClick={() =>
+																	handleProductVariationClick(
+																		variation.id
+																	)
+																}>
+																{variation.name}
+															</NavDropdown.Item>
+														))
+													) : (
+														<div className="text-muted small">
+															No online classroom available
+														</div>
+													)}
+												</Col>
+											</>
+										) : (
+											<Col>
+												<div className="text-muted">
+													No tutorial data available
+												</div>
+											</Col>
+										)}
+									</Row>
+								</div>
+							</NavDropdown>
+							{isApprentice ? (
+								<Nav.Link
+									as={NavLink}
+									href="#home"
+									disabled={!isApprentice}
+									className="text-muted">
+									Apprenticeships
+								</Nav.Link>
+							) : null}
+							{isStudyPlus ? (
+								<Nav.Link
+									as={NavLink}
+									href="#home"
+									disabled={!isStudyPlus}
+									className="text-muted">
+									Study Plus
+								</Nav.Link>
+							) : null}
+							{isSuperuser ? (
 								<NavDropdown title="Admin" id="admin-nav-dropdown">
 									<NavDropdown.Item
 										as={NavLink}
@@ -552,7 +828,7 @@ const ActEdNavbar = () => {
 								to="/Search"
 								className="nav-link btn-search p-0 ms-2 align-items-center d-flex flex-row">
 								<SearchIcon className="bi d-flex flex-row align-items-center"></SearchIcon>
-								<span className="d-none d-md-block mx-1 fst-normal">
+								<span className="d-none d-md-block fst-normal">
 									Search
 								</span>
 							</Button>
