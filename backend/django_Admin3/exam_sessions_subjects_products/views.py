@@ -1,6 +1,7 @@
 import logging
 from django.shortcuts import render, get_object_or_404
 from django.core.cache import cache
+from django.db.models import Q
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action, permission_classes
@@ -9,6 +10,7 @@ from .models import ExamSessionSubjectProduct
 from .serializers import ExamSessionSubjectProductSerializer, ProductListSerializer
 from exam_sessions_subjects.models import ExamSessionSubject
 from products.models.products import Product
+from products.models.product_group import ProductGroup
 from subjects.models import Subject
 from subjects.serializers import SubjectSerializer
 
@@ -149,6 +151,8 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             'subject_code': request.query_params.get('subject_code'),
             'main_category_ids': request.query_params.getlist('main_category'),
             'delivery_method_ids': request.query_params.getlist('delivery_method'),
+            'group': request.query_params.get('group'),
+            'product': request.query_params.get('product'),
             'page': page,
             'page_size': page_size
         }
@@ -204,6 +208,31 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(product_filters).distinct()
             
         logger.info(f'After product group filter, queryset count: {queryset.count()}')
+
+        # --- Navbar filtering logic ---
+        group_filter = request.query_params.get('group')
+        product_filter = request.query_params.get('product')
+        logger.info(f'Navbar filtering: group={group_filter}, product={product_filter}')
+        
+        if group_filter:
+            # Filter by product group name
+            try:
+                group = ProductGroup.objects.get(name=group_filter)
+                queryset = queryset.filter(product__groups=group)
+                logger.info(f'After group filter "{group_filter}", queryset count: {queryset.count()}')
+            except ProductGroup.DoesNotExist:
+                logger.warning(f'Product group "{group_filter}" not found')
+                queryset = queryset.none()  # Return empty result if group doesn't exist
+        
+        if product_filter:
+            # Filter by specific product ID
+            try:
+                product_id = int(product_filter)
+                queryset = queryset.filter(product__id=product_id)
+                logger.info(f'After product filter ID {product_id}, queryset count: {queryset.count()}')
+            except (ValueError, TypeError):
+                logger.warning(f'Invalid product ID: {product_filter}')
+                queryset = queryset.none()  # Return empty result if product ID is invalid
 
         # Apply pagination
         total_count = queryset.count()

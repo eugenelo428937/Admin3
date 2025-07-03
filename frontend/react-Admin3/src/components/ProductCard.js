@@ -1,409 +1,586 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Col, Card, Modal, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { 
-	Button, 
-	Checkbox, 
-	FormControlLabel, 
-	FormControl, 
-	FormLabel, 
+import {
+	Button,
+	Card,
+	CardHeader,
+	CardContent,
+	Checkbox,
+	CardActions,
+	FormControlLabel,
+	FormControl,
+	Grid,
+	Typography,
+	Box,
+	Divider,
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogActions,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableRow,
+	Tooltip,
 } from "@mui/material";
-import { InfoCircle } from "react-bootstrap-icons";
-import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
+import {
+	InfoOutline,
+	AddShoppingCart,
+	ArrowRight,
+	ArrowDropDown,
+	Close,
+} from "@mui/icons-material";
 import { useCart } from "../contexts/CartContext";
 import { useVAT } from "../contexts/VATContext";
 import MarkingProductCard from "./MarkingProductCard";
 import TutorialProductCard from "./TutorialProductCard";
 import "../styles/product_card.css";
 
-const ProductCard = React.memo(({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
-	const [selectedVariations, setSelectedVariations] = useState([]);
-	const [showPriceModal, setShowPriceModal] = useState(false);
-	const [selectedPriceType, setSelectedPriceType] = useState("standard");
-	const [showDiscounts, setShowDiscounts] = useState(false);
+const ProductCard = React.memo(
+	({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
+		const [selectedVariations, setSelectedVariations] = useState([]);
+		const [showPriceModal, setShowPriceModal] = useState(false);
+		const [selectedPriceType, setSelectedPriceType] = useState("standard");
+		const [showDiscounts, setShowDiscounts] = useState(false);
 
-	const { addToCart } = useCart();
-	const { getPriceDisplay, formatPrice, isProductVATExempt, showVATInclusive } = useVAT();
+		const { addToCart } = useCart();
+		const {
+			getPriceDisplay,
+			formatPrice,
+			isProductVATExempt,
+			showVATInclusive,
+		} = useVAT();
 
-	// Memoize expensive calculations
-	const productTypeCheck = useMemo(() => ({
-		isTutorial: product.type === 'Tutorial',
-		isMarking: product.type === 'Markings',
-		isOnlineClassroom: product.product_name?.toLowerCase().includes('online classroom') || 
-		                  product.product_name?.toLowerCase().includes('recording') ||
-		                  product.learning_mode === 'LMS',
-	}), [product.type, product.product_name, product.learning_mode]);
+		// Memoize expensive calculations
+		const productTypeCheck = useMemo(
+			() => ({
+				isTutorial: product.type === "Tutorial",
+				isMarking: product.type === "Markings",
+				isOnlineClassroom:
+					product.product_name
+						?.toLowerCase()
+						.includes("online classroom") ||
+					product.product_name?.toLowerCase().includes("recording") ||
+					product.learning_mode === "LMS",
+			}),
+			[product.type, product.product_name, product.learning_mode]
+		);
 
-	// Memoize variation calculations
-	const variationInfo = useMemo(() => {
-		const hasVariations = product.variations && product.variations.length > 0;
-		const singleVariation = product.variations && product.variations.length === 1
-			? product.variations[0]
-			: null;
+		// Memoize variation calculations
+		const variationInfo = useMemo(() => {
+			const hasVariations =
+				product.variations && product.variations.length > 0;
+			const singleVariation =
+				product.variations && product.variations.length === 1
+					? product.variations[0]
+					: null;
 
-		const currentVariation = hasVariations
-			? (selectedVariations.length > 0 
-				? product.variations.find((v) => selectedVariations.includes(v.id)) 
-				: singleVariation || product.variations[0])
-			: singleVariation;
+			const currentVariation = hasVariations
+				? selectedVariations.length > 0
+					? product.variations.find((v) =>
+							selectedVariations.includes(v.id)
+					  )
+					: singleVariation || product.variations[0]
+				: singleVariation;
 
-		return { hasVariations, singleVariation, currentVariation };
-	}, [product.variations, selectedVariations]);
+			return { hasVariations, singleVariation, currentVariation };
+		}, [product.variations, selectedVariations]);
 
-	// Memoize price calculation to avoid recalculating on every render
-	const getPrice = useMemo(() => {
-		return (variation, priceType) => {
-			if (!variation || !variation.prices) return null;
-			const priceObj = variation.prices.find((p) => p.price_type === priceType);
-			if (!priceObj) return null;
+		// Memoize price calculation to avoid recalculating on every render
+		const getPrice = useMemo(() => {
+			return (variation, priceType) => {
+				if (!variation || !variation.prices) return null;
+				const priceObj = variation.prices.find(
+					(p) => p.price_type === priceType
+				);
+				if (!priceObj) return null;
 
-			// Check if this product is VAT exempt
-			const isVATExempt = isProductVATExempt(product.type);
-			
-			// Get price display info from VAT context
-			const priceDisplay = getPriceDisplay(priceObj.amount, 0.20, isVATExempt);
-			
-			return `${formatPrice(priceDisplay.displayPrice)} ${priceDisplay.label}`;
+				// Check if this product is VAT exempt
+				const isVATExempt = isProductVATExempt(product.type);
+
+				// Get price display info from VAT context
+				const priceDisplay = getPriceDisplay(
+					priceObj.amount,
+					0.2,
+					isVATExempt
+				);
+
+				return (
+					<div className="d-flex flex-row align-items-end">
+						<Typography variant="h6" className="fw-lighter w-100">
+							{formatPrice(priceDisplay.displayPrice)}
+						</Typography>
+
+						<Tooltip
+							title="Show all price types"
+							placement="top"
+							className="d-flex flex-row align-self-start">
+							<InfoOutline
+								role="button"
+								className="text-secondary mx-1 fw-light"
+								onClick={() => setShowPriceModal(true)}
+								style={{
+									cursor: "pointer",
+									fontSize: "1rem",
+								}}
+								aria-label="Show price information"
+							/>
+						</Tooltip>						
+						<Typography
+							variant="caption"
+							className="fw-light w-100 align-self-center">
+							{priceDisplay.label}
+						</Typography>
+					</div>
+				);
+			};
+		}, [
+			getPriceDisplay,
+			formatPrice,
+			isProductVATExempt,
+			product.type,
+			showVATInclusive,
+		]);
+
+		const { isTutorial, isMarking, isOnlineClassroom } = productTypeCheck;
+		const isMaterial = !isTutorial && !isMarking;
+		const { hasVariations, singleVariation, currentVariation } =
+			variationInfo;
+
+		const hasPriceType = (variation, priceType) => {
+			if (!variation || !variation.prices) return false;
+			return variation.prices.some((p) => p.price_type === priceType);
 		};
-	}, [getPriceDisplay, formatPrice, isProductVATExempt, product.type, showVATInclusive]);
 
-	const { isTutorial, isMarking, isOnlineClassroom } = productTypeCheck;
-	const isMaterial = !isTutorial && !isMarking;
-	const { hasVariations, singleVariation, currentVariation } = variationInfo;
-
-	const hasPriceType = (variation, priceType) => {
-		if (!variation || !variation.prices) return false;
-		return variation.prices.some((p) => p.price_type === priceType);
-	};
-
-	// Reset price type to standard if current selection is not available for the current variation
-	useEffect(() => {
-		if (currentVariation && selectedPriceType !== "standard") {
-			if (!hasPriceType(currentVariation, selectedPriceType)) {
-				setSelectedPriceType("standard");
+		// Reset price type to standard if current selection is not available for the current variation
+		useEffect(() => {
+			if (currentVariation && selectedPriceType !== "standard") {
+				if (!hasPriceType(currentVariation, selectedPriceType)) {
+					setSelectedPriceType("standard");
+				}
 			}
+		}, [currentVariation, selectedPriceType]);
+
+		// For Tutorial products, use the specialized component
+		if (isTutorial) {
+			return (
+				<TutorialProductCard
+					subjectCode={product.subject_code}
+					subjectName={product.subject_name || product.product_name}
+					location={product.location || product.product_name}
+					productId={product.essp_id || product.id || product.product_id}
+					product={product}
+					variations={product.variations}
+				/>
+			);
 		}
-	}, [currentVariation, selectedPriceType]);
 
-	// For Tutorial products, use the specialized component
-	if (isTutorial) {
-		return (
-			<TutorialProductCard
-				subjectCode={product.subject_code}
-				subjectName={product.subject_name || product.product_name}
-				location={product.location || product.product_name}
-				productId={product.essp_id || product.id || product.product_id}
-				product={product}
-				variations={product.variations}
-			/>
-		);
-	}
-
-	// For Markings products, use the specialized component
-	if (isMarking) {
-		return (
-			<MarkingProductCard
-				product={product}
-				onAddToCart={onAddToCart}
-				allEsspIds={allEsspIds}
-				bulkDeadlines={bulkDeadlines}
-			/>
-		);
-	}
-
-	const handlePriceTypeChange = (priceType) => {
-		if (selectedPriceType === priceType) {
-			setSelectedPriceType("standard");
-		} else {
-			setSelectedPriceType(priceType);
+		// For Markings products, use the specialized component
+		if (isMarking) {
+			return (
+				<MarkingProductCard
+					product={product}
+					onAddToCart={onAddToCart}
+					allEsspIds={allEsspIds}
+					bulkDeadlines={bulkDeadlines}
+				/>
+			);
 		}
-	};
 
-	const handleVariationChange = (variationId, checked) => {
-		if (checked) {
-			setSelectedVariations(prev => [...prev, variationId]);
-		} else {
-			setSelectedVariations(prev => prev.filter(id => id !== variationId));
-		}
-	};
+		const handlePriceTypeChange = (priceType) => {
+			if (selectedPriceType === priceType) {
+				setSelectedPriceType("standard");
+			} else {
+				setSelectedPriceType(priceType);
+			}
+		};
 
-	const renderPriceModal = () => (
-		<Modal show={showPriceModal} onHide={() => setShowPriceModal(false)} size="lg" centered>
-			<Modal.Header closeButton>
-				<Modal.Title>Price Information</Modal.Title>
-			</Modal.Header>
-			<Modal.Body>
-				<div className="mb-2">
-					<strong>Subject:</strong> {product.subject_code}
-					<br />
-					<strong>Product Name:</strong> {product.product_name}
-				</div>
-				<div className="table-responsive">
-					<table className="table table-bordered table-sm">
-						<thead>
-							<tr>
-								<th>Variation</th>
-								<th>Price Type</th>
-								<th>Price</th>
-							</tr>
-						</thead>
-						<tbody>
+		const handleVariationChange = (variationId, checked) => {
+			if (checked) {
+				setSelectedVariations((prev) => [...prev, variationId]);
+			} else {
+				setSelectedVariations((prev) =>
+					prev.filter((id) => id !== variationId)
+				);
+			}
+		};
+
+		const renderPriceModal = () => (
+			<Dialog
+				open={showPriceModal}
+				onClose={() => setShowPriceModal(false)}
+				maxWidth="md"
+				fullWidth>
+				<DialogTitle>
+					<Typography variant="h6">Price Information</Typography>
+				</DialogTitle>
+				<DialogContent>
+					<Box sx={{ mb: 2 }}>
+						<Typography variant="body2" color="text.secondary">
+							Subject: {product.subject_code}
+						</Typography>
+						<Typography variant="body2" color="text.secondary">
+							Product Name: {product.product_name}
+						</Typography>
+					</Box>
+					<Table size="small">
+						<TableHead>
+							<TableRow>
+								<TableCell>Variation</TableCell>
+								<TableCell>Price Type</TableCell>
+								<TableCell>Price</TableCell>
+							</TableRow>
+						</TableHead>
+						<TableBody>
 							{product.variations &&
-								product.variations.map((variation) =>
-									variation.prices &&
-									variation.prices.map((price) => (
-										<tr key={`${variation.id}-${price.price_type}`}>
-											<td>{variation.name}</td>
-											<td>{price.price_type}</td>
-											<td>{getPrice(variation, price.price_type)}</td>
-										</tr>
-									))
+								product.variations.map(
+									(variation) =>
+										variation.prices &&
+										variation.prices.map((price) => (
+											<TableRow
+												key={`${variation.id}-${price.price_type}`}>
+												<TableCell>{variation.name}</TableCell>
+												<TableCell>{price.price_type}</TableCell>
+												<TableCell>
+													{(() => {
+														const priceDisplay = getPrice(
+															variation,
+															price.price_type
+														);
+														if (priceDisplay) {
+															return priceDisplay;
+														}
+														return formatPrice(price.amount);
+													})()}
+												</TableCell>
+											</TableRow>
+										))
 								)}
-						</tbody>
-					</table>
-				</div>
-			</Modal.Body>
-		</Modal>
-	);
+						</TableBody>
+					</Table>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={() => setShowPriceModal(false)}>Close</Button>
+				</DialogActions>
+			</Dialog>
+		);
 
-	// Render Regular Product Content
-	const renderRegularContent = () => (
-		<>
-			<Card.Body>
-				<div className="d-flex justify-content-between align-items-center mt-2">
-					<Card.Title className="mb-0">{product.product_name}</Card.Title>
-				</div>
-			</Card.Body>
+		// Render Regular Product Content
+		const renderRegularContent = () => (
+			<>
+				<CardContent
+					className="d-flex flex-column pb-0"
+					sx={{ marginTop: "0" }}>
+					<Box
+						sx={{ height: "5rem" }}
+						className="d-flex align-items-center">
+						<Typography variant="h5" className="mb-0">
+							{product.product_name}
+						</Typography>
+					</Box>
 
-			<Card.Footer className="bg-white border-0 d-flex flex-column">
-				<div className="d-flex flex-column align-items-start mb-2">
-					{singleVariation && (
-						<div>
-							<span className="form-label mb-1">Product Variation:</span>
-							<div>
-								<span className="form-label mb-0">
-									<b>{singleVariation.name}</b>
-								</span>
-							</div>
-						</div>
-					)}
-					{hasVariations && !singleVariation && (
-						<FormControl component="fieldset" size="small">
-							<FormLabel 
-								component="legend" 
-								sx={{ fontSize: '0.875rem', mb: 1, color: 'text.primary' }}>
-								Product Variations:
-							</FormLabel>
-							<div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-								{product.variations.map((variation) => (
-									<FormControlLabel
-										key={variation.id}
-										control={
-											<Checkbox 
-												size="small" 
-												checked={selectedVariations.includes(variation.id)}
-												onChange={(e) => handleVariationChange(variation.id, e.target.checked)}
-											/>
-										}
-										label={variation.name}
-										sx={{ 
-											margin: 0,
-											'& .MuiFormControlLabel-label': { 
-												fontSize: '0.875rem' 
-											} 
-										}}
-									/>
-								))}
-							</div>
-						</FormControl>
-					)}
-				</div>
+					{/* Variation Section - Fixed height for alignment */}
+					<Box sx={{ width: "100%", height: "5.5rem", mt: 2 }}>
+						<Typography
+							variant="subtitle2"
+							color="text.secondary"
+							sx={{ mb: 1 }}>
+							Variation:
+						</Typography>
 
-				<div className="d-flex justify-content-between align-items-end">
-					<div className="d-flex flex-column">
-						<div className="d-flex align-items-center mb-2">
-							<span
-								className="fw-bold me-3"
-								style={{ fontSize: "1.2em" }}>
-								{getPrice(currentVariation, selectedPriceType) || "-"}
-							</span>
-							<div className="d-flex justify-content-between align-items-center">
-								<div className="d-flex align-items-center">
-									<OverlayTrigger
-										placement="top"
-										overlay={<Tooltip>Show all price types</Tooltip>}>
-										<InfoCircle
-											role="button"
-											className="text-info me-2"
-											onClick={() => setShowPriceModal(true)}
-											style={{ cursor: "pointer" }}
-											aria-label="Show price information"
+						{singleVariation && (
+							<FormControl
+								component="fieldset"
+								size="small"
+								sx={{ width: "100%" }}>
+								<FormControlLabel
+									control={
+										<Checkbox
+											size="small"
+											checked={true}
+											disabled={true}
+											className="m-0 align-items-center p-0 me-2"
+											sx={{
+												"& .MuiSvgIcon-root": {
+													fontSize: 14,
+												},
+											}}
 										/>
-									</OverlayTrigger>
-								</div>
-							</div>
-						</div>
-						<div className="mb-2">
-							<div
-								className="d-flex align-items-center"
-								style={{ cursor: "pointer" }}
+									}
+									label={singleVariation.name}
+									sx={{
+										margin: 0,
+										"& .MuiFormControlLabel-label": {
+											fontSize: "0.875rem",
+										},
+									}}
+								/>
+							</FormControl>
+						)}
+
+						{hasVariations && !singleVariation && (
+							<FormControl
+								component="fieldset"
+								size="small"
+								sx={{ width: "100%" }}>
+								<Box className="d-flex flex-column">
+									{product.variations.map((variation) => (
+										<FormControlLabel
+											key={variation.id}
+											className="d-flex flex-row"
+											control={
+												<Checkbox
+													size="small"
+													checked={selectedVariations.includes(
+														variation.id
+													)}
+													onChange={(e) =>
+														handleVariationChange(
+															variation.id,
+															e.target.checked
+														)
+													}
+													sx={{
+														"& .MuiSvgIcon-root": {
+															fontSize: 14,
+														},
+													}}
+													className="m-0 align-items-center p-0 me-2"
+												/>
+											}
+											label={variation.name}
+											sx={{
+												margin: 0,
+												"& .MuiFormControlLabel-label": {
+													fontSize: "0.875rem",
+												},
+											}}
+										/>
+									))}
+								</Box>
+							</FormControl>
+						)}
+					</Box>
+				</CardContent>
+
+				<Divider />
+
+				<CardActions sx={{ px: 2, py: 1 }} className="d-flex w-100">
+					<Grid container spacing={0} className="w-100 mb-3">
+						<Grid size={12} sx={{ height: "4rem" }}>
+							<Typography
+								variant="body2"
+								color="text-primary"
+								sx={{ cursor: "pointer" }}
 								onClick={() => setShowDiscounts(!showDiscounts)}
 								role="button"
 								aria-expanded={showDiscounts}
 								aria-label="Toggle discount options">
-								<span className="me-2 text-primary">Discounts:</span>
-								<span className="text-muted">
-									{showDiscounts ? "▼" : "▶"}
-								</span>
-							</div>
+								Discounts:
+								{showDiscounts ? <ArrowDropDown /> : <ArrowRight />}
+							</Typography>
+
 							{showDiscounts && (
-								<div className="mt-2 ps-3">
-									<div className="form-check">
-										<input
-											className="form-check-input"
-											type="checkbox"
-											id={`retaker-${
-												product.essp_id ||
-												product.id ||
-												product.product_id
-											}`}
-											checked={selectedPriceType === "retaker"}
-											disabled={
-												!hasPriceType(currentVariation, "retaker")
+								<>
+									<Box className="d-flex flex-row ps-2">
+										<FormControlLabel
+											control={
+												<Checkbox
+													size="small"
+													className="p-0 mx-1"
+													checked={selectedPriceType === "retaker"}
+													disabled={
+														!hasPriceType(
+															currentVariation,
+															"retaker"
+														)
+													}
+													onChange={() =>
+														handlePriceTypeChange("retaker")
+													}
+													sx={{
+														"& .MuiSvgIcon-root": {
+															fontSize: 14,
+														},
+													}}
+												/>
 											}
-											onChange={() =>
-												handlePriceTypeChange("retaker")
-											}
+											label="Retaker"
+											sx={{
+												"& .MuiFormControlLabel-label": {
+													fontSize: "0.875rem",
+													color: !hasPriceType(
+														currentVariation,
+														"retaker"
+													)
+														? "text.disabled"
+														: "inherit",
+												},
+											}}
 										/>
-										<label
-											className={`form-check-label ${
-												!hasPriceType(currentVariation, "retaker")
-													? "text-muted"
-													: ""
-											}`}
-											htmlFor={`retaker-${
-												product.essp_id ||
-												product.id ||
-												product.product_id
-											}`}>
-											Retaker
-										</label>
-									</div>
-									<div className="form-check">
-										<input
-											className="form-check-input"
-											type="checkbox"
-											id={`additional-${
-												product.essp_id ||
-												product.id ||
-												product.product_id
-											}`}
-											checked={selectedPriceType === "additional"}
-											disabled={
-												!hasPriceType(
-													currentVariation,
-													"additional"
-												)
+
+										<br />
+
+										<FormControlLabel
+											control={
+												<Checkbox
+													size="small"
+													checked={
+														selectedPriceType === "additional"
+													}
+													disabled={
+														!hasPriceType(
+															currentVariation,
+															"additional"
+														)
+													}
+													onChange={() =>
+														handlePriceTypeChange("additional")
+													}
+													className="p-0 mx-1"
+													sx={{
+														"& .MuiSvgIcon-root": {
+															fontSize: 14,
+														},
+													}}
+												/>
 											}
-											onChange={() =>
-												handlePriceTypeChange("additional")
-											}
+											label="Additional Copy"
+											sx={{
+												"& .MuiFormControlLabel-label": {
+													fontSize: "0.875rem",
+													color: !hasPriceType(
+														currentVariation,
+														"additional"
+													)
+														? "text.disabled"
+														: "inherit",
+												},
+											}}
 										/>
-										<label
-											className={`form-check-label ${
-												!hasPriceType(
-													currentVariation,
-													"additional"
-												)
-													? "text-muted"
-													: ""
-											}`}
-											htmlFor={`additional-${
-												product.essp_id ||
-												product.id ||
-												product.product_id
-											}`}>
-											Additional Copy
-										</label>
-									</div>
-								</div>
+									</Box>
+								</>
 							)}
-						</div>
-					</div>
-					<div>
-						<Button
-							color="success"
-							variant="contained"
-							size="small"
-							className="d-flex flex-row flex-wrap align-items-center justify-content-center product-add-to-cart-button p-2"
-							onClick={() => {
-								if (singleVariation) {
-									// Handle single variation
-									const priceObj = singleVariation.prices?.find(
-										(p) => p.price_type === selectedPriceType
-									);
-									onAddToCart(product, {
-										variationId: singleVariation.id,
-										variationName: singleVariation.name,
-										priceType: selectedPriceType,
-										actualPrice: priceObj?.amount,
-									});
-								} else if (selectedVariations.length > 0) {
-									// Handle multiple variations - add each as separate cart item
-									selectedVariations.forEach(variationId => {
-										const variation = product.variations.find(v => v.id === variationId);
-										const priceObj = variation?.prices?.find(
+						</Grid>
+						<Grid size={8} className="d-flex justify-content-start">
+							<Box
+								sx={{
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "flex-start",
+								}}>
+								<Box
+									sx={{
+										display: "flex",
+										alignItems: "center",
+										mb: 1,
+									}}>
+									{getPrice(currentVariation, selectedPriceType) || (
+										<Typography variant="h6" className="fw-bolder">
+											-
+										</Typography>
+									)}
+								</Box>
+							</Box>
+						</Grid>
+						<Grid size={4} className="d-flex justify-content-end">
+							<Button
+								color="success"
+								variant="contained"
+								size="small"
+								onClick={() => {
+									if (singleVariation) {
+										// Handle single variation
+										const priceObj = singleVariation.prices?.find(
 											(p) => p.price_type === selectedPriceType
 										);
 										onAddToCart(product, {
-											variationId: variation.id,
-											variationName: variation.name,
+											variationId: singleVariation.id,
+											variationName: singleVariation.name,
 											priceType: selectedPriceType,
 											actualPrice: priceObj?.amount,
 										});
-									});
+									} else if (selectedVariations.length > 0) {
+										// Handle multiple variations - add each as separate cart item
+										selectedVariations.forEach((variationId) => {
+											const variation = product.variations.find(
+												(v) => v.id === variationId
+											);
+											const priceObj = variation?.prices?.find(
+												(p) => p.price_type === selectedPriceType
+											);
+											onAddToCart(product, {
+												variationId: variation.id,
+												variationName: variation.name,
+												priceType: selectedPriceType,
+												actualPrice: priceObj?.amount,
+											});
+										});
+									}
+								}}
+								disabled={
+									hasVariations &&
+									!singleVariation &&
+									selectedVariations.length === 0
 								}
-							}}
-							disabled={hasVariations && !singleVariation && selectedVariations.length === 0}
-							aria-label="Add product to cart"
-							sx={{
-								borderRadius: "50%",
-								minWidth: "2rem",
-								width: "2rem",
-								height: "2rem",
-								padding: "4px",
-							}}>
-							<AddShoppingCartIcon sx={{ fontSize: "1.1rem" }} />
-						</Button>
-					</div>
-				</div>
-			</Card.Footer>
-		</>
-	);
+								aria-label="Add product to cart"
+								sx={{
+									borderRadius: "50%",
+									minWidth: "2rem",
+									width: "2rem",
+									height: "2rem",
+									padding: "4px",
+								}}>
+								<AddShoppingCart sx={{ fontSize: "1.1rem" }} />
+							</Button>
+						</Grid>
+					</Grid>
+				</CardActions>
+			</>
+		);
 
-	// Determine header class based on product type
-	const getHeaderClass = () => {
-		if (isOnlineClassroom) return "tutorial-product-card-header";
-		if (isMarking) return "marking-header";
-		return "material-header";
-	};
+		// Determine header class based on product type
+		const getHeaderClass = () => {
+			if (isOnlineClassroom) return "tutorial-product-card-header";
+			if (isMarking) return "marking-header";
+			return "material-header";
+		};
 
-	return (
-		<Col>
-			<Card className="h-100 shadow-sm product-card">
-				<Card.Header className={`product-card-header d-flex justify-content-between align-items-center ${getHeaderClass()}`}>
-					<div>
-						<h5 className="mb-0">Subject {product.subject_code}</h5>
-						{isOnlineClassroom && (
-							<h6 className="mb-0">Online Classroom</h6>
-						)}
-					</div>
-				</Card.Header>
+		return (
+			<Card elevation={2} className="product-card d-flex flex-column justify-content-between">
+				<CardHeader
+					title={
+						<Typography variant="h6" className="mb-0">
+							{product.subject_code}
+						</Typography>
+					}
+					subheader={
+						isOnlineClassroom && (
+							<Typography variant="body2" color="text.secondary">
+								Online Classroom
+							</Typography>
+						)
+					}
+					className={`product-card-header d-flex  align-items-center ${getHeaderClass()}`}
+					sx={{
+						backgroundColor: (theme) => {
+							if (isOnlineClassroom) return theme.palette.primary.main;
+							if (isMarking) return theme.palette.secondary.main;
+							return theme.palette.grey[100];
+						},
+						color: (theme) => {
+							if (isOnlineClassroom || isMarking)
+								return theme.palette.common.white;
+							return theme.palette.text.primary;
+						},
+					}}
+				/>
 
 				{renderRegularContent()}
 				{renderPriceModal()}
 			</Card>
-		</Col>
-	);
-});
+		);
+	}
+);
 
 export default ProductCard;
