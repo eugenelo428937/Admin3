@@ -13,3 +13,6 @@ code {
   --bs-accordion-btn-focus-box-shadow: 0 0 0 0.25rem rgba(14, 68, 149, 0.25) !important;
   --bs-primary-rgb: red !important;
 }
+.body-container {
+  padding-top: 6.6rem;
+}

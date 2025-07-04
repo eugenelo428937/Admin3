@@ -24,6 +24,7 @@
 
 .navbar-container {
 	background-color: var(--bs-navbar-container-bg-color);
+	height: 6.6rem;
 }
 .navbar-container a {
 	color: var(--icon-light-color);

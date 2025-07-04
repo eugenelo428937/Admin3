@@ -272,7 +272,7 @@ const ActEdNavbar = () => {
 	const { cartCount } = useCart();
 
 	return (
-		<div className="navbar-container">
+		<div className="navbar-container fixed-top">
 			<div className="d-flex flex-row navbar-top px-3 px-lg-4 px-xl-5 pt-2 pb-1 justify-content-between align-content-end">
 				<div className="d-flex flex-row px-1 align-content-center flex-wrap px-xl-5 px-lg-4 px-md-3 px-sm-2 px-xs-1">
 					<div className="me-1 d-flex flex-row align-content-center flex-wrap">
@@ -623,7 +623,9 @@ const ActEdNavbar = () => {
 										<Nav.Link
 											as={NavLink}
 											to="/products?distance_learning=true"
-											onClick={() => navigate("/products?distance_learning=true")}
+											onClick={() =>
+												navigate("/products?distance_learning=true")
+											}
 											className="fw-normal mb-2 text-primary ms-1 border border-light w-auto fs-5">
 											View All Distance Learning
 										</Nav.Link>
@@ -681,7 +683,9 @@ const ActEdNavbar = () => {
 										<Nav.Link
 											as={NavLink}
 											to="/products?tutorial=true"
-											onClick={() => navigate("/products?tutorial=true")}
+											onClick={() =>
+												navigate("/products?tutorial=true")
+											}
 											className="fw-normal mb-2 text-primary ms-1 border border-light w-auto fs-5">
 											View All Tutorials
 										</Nav.Link>
@@ -695,69 +699,126 @@ const ActEdNavbar = () => {
 											</Col>
 										) : tutorialData ? (
 											<>
+												{/* Location Column - Split into 2 sub-columns */}
 												<Col>
 													<div className="fw-bolder mb-2 text-primary">
-														Products
+														Location
 													</div>
-													{tutorialData.products &&
-													tutorialData.products.length > 0 ? (
-														tutorialData.products.map((product) => (
-															<NavDropdown.Item
-																key={product.id}
-																onClick={() =>
-																	handleSpecificProductClick(
-																		product.id
+													<div className="row">
+														<div className="col-6">
+															{tutorialData.Location &&
+															tutorialData.Location.left &&
+															tutorialData.Location.left.length > 0 ? (
+																tutorialData.Location.left.map(
+																	(product) => (
+																		<NavDropdown.Item
+																			key={product.id}
+																			onClick={() =>
+																				handleSpecificProductClick(
+																					product.id
+																				)
+																			}>
+																			{product.shortname}
+																		</NavDropdown.Item>
 																	)
-																}>
-																{product.shortname}
-															</NavDropdown.Item>
-														))
-													) : (
-														<div className="text-muted small">
-															No products available
+																)
+															) : (
+																<div className="text-muted small">
+																	No locations
+																</div>
+															)}
 														</div>
-													)}
+														<div className="col-6">
+															{tutorialData.Location &&
+															tutorialData.Location.right &&
+															tutorialData.Location.right.length > 0 ? (
+																tutorialData.Location.right.map(
+																	(product) => (
+																		<NavDropdown.Item
+																			key={product.id}
+																			onClick={() =>
+																				handleSpecificProductClick(
+																					product.id
+																				)
+																			}>
+																			{product.shortname}
+																		</NavDropdown.Item>
+																	)
+																)
+															) : null}
+														</div>
+													</div>
 												</Col>
+												{/* Format Column - Split into 2 sub-columns */}
 												<Col>
 													<div className="fw-bolder mb-2 text-primary">
-														Variations
+														Format
 													</div>
-													{tutorialData.variations &&
-													tutorialData.variations.length > 0 ? (
-														tutorialData.variations.map((variation) => (
-															<NavDropdown.Item
-																key={variation.id}
-																onClick={() =>
-																	handleProductVariationClick(
-																		variation.id
+													<div className="row">
+														<div className="col-6">
+															{tutorialData.Format &&
+															tutorialData.Format.left &&
+															tutorialData.Format.left.length > 0 ? (
+																tutorialData.Format.left.map(
+																	(variation) => (
+																		<NavDropdown.Item
+																			key={variation.id}
+																			onClick={() =>
+																				handleProductVariationClick(
+																					variation.id
+																				)
+																			}>
+																			{variation.description || variation.name}
+																		</NavDropdown.Item>
 																	)
-																}>
-																{variation.name}
-															</NavDropdown.Item>
-														))
-													) : (
-														<div className="text-muted small">
-															No variations available
+																)
+															) : (
+																<div className="text-muted small">
+																	No formats
+																</div>
+															)}
 														</div>
-													)}
+														<div className="col-6">
+															{tutorialData.Format &&
+															tutorialData.Format.right &&
+															tutorialData.Format.right.length > 0 ? (
+																tutorialData.Format.right.map(
+																	(variation) => (
+																		<NavDropdown.Item
+																			key={variation.id}
+																			onClick={() =>
+																				handleProductVariationClick(
+																					variation.id
+																				)
+																			}>
+																			{variation.description || variation.name}
+																		</NavDropdown.Item>
+																	)
+																)
+															) : null}
+														</div>
+													</div>
 												</Col>
+												{/* Online Classroom Column */}
 												<Col>
 													<div className="fw-bolder mb-2 text-primary">
 														Online Classroom
 													</div>
-													{tutorialData.online_classroom &&
-													tutorialData.online_classroom.length > 0 ? (
-														tutorialData.online_classroom.map((variation) => (
-															<NavDropdown.Item
-																key={variation.id}
-																onClick={() =>
-																	handleProductVariationClick(
-																		variation.id
-																	)
-																}>
-																{variation.name}
-															</NavDropdown.Item>
-														))
+													{tutorialData["Online Classroom"] &&
+													tutorialData["Online Classroom"].length > 0 ? (
+														tutorialData["Online Classroom"].map(
+															(product) => (
+																<NavDropdown.Item
+																	key={product.id}
+																	onClick={() =>
+																		handleSpecificProductClick(
+																			product.id
+																		)
+																	}>
+																	{product.shortname}
+																</NavDropdown.Item>
+															)
+														)
 													) : (
 														<div className="text-muted small">
 															No online classroom available
