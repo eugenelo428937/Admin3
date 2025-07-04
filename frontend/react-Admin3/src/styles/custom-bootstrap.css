@@ -30,7 +30,9 @@
   --bs-light: #fdfdfd;
   --bs-dark: #333334; */
 }
-
+.body-container {
+  padding-top: 6.6rem;
+}
 /* Additional custom classes */
 /* .text-primary {
   color: var(--bs-primary) !important;
