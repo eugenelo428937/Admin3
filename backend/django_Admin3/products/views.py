@@ -170,10 +170,10 @@ def tutorial_dropdown(request):
     """
     Returns data for Tutorial dropdown menu with three columns:
     1. Location: Products where product_group = "Tutorial" and exclude product_group = "Online Classroom" (split into 2 sub-columns)
-    2. Format: Product variations split by type (split into 2 sub-columns)
-       - Left: Face to Face variations (code contains 'f2f')
-       - Right: Live Online variations (code contains 'LO')
-    3. Online Classroom: All products where product_group = "Online Classroom"
+    2. Format: Simple filter links for tutorial formats
+       - "Face to Face" (filters products where product_group = "Face-to-face")
+       - "Live Online" (filters products where product_group = "Live Online")
+    3. Online Classroom: Product variations of products in "Online Classroom" group
     """
     try:
         # Get product group IDs
@@ -216,54 +216,43 @@ def tutorial_dropdown(request):
             for product in location_products[mid_point:]
         ]
         
-        # Column 2: Format - Split by Face to Face (f2f) and Live Online (LO)
-        # Left sub-column: Face to Face variations (code contains 'f2f')
-        format_f2f_variations = ProductVariation.objects.filter(
-            code__icontains='f2f'
-        ).order_by('description')
-        
-        format_data_left = [
+        # Column 2: Format - Simple links for filtering
+        format_data = [
             {
-                'id': variation.id,
-                'name': variation.name,
-                'variation_type': variation.variation_type,
-                'description': variation.description,
-                'code': variation.code,
+                'name': 'Face to Face',
+                'filter_type': 'face_to_face',
+                'group_name': 'Face-to-face'
+            },
+            {
+                'name': 'Live Online', 
+                'filter_type': 'live_online',
+                'group_name': 'Live Online'
             }
-            for variation in format_f2f_variations
         ]
         
-        # Right sub-column: Live Online variations (code contains 'LO')
-        format_lo_variations = ProductVariation.objects.filter(
-            code__icontains='LO'
-        ).order_by('description')
-        
-        format_data_right = [
-            {
-                'id': variation.id,
-                'name': variation.name,
-                'variation_type': variation.variation_type,
-                'description': variation.description,
-                'code': variation.code,
-            }
-            for variation in format_lo_variations
-        ]
-        
-        # Column 3: Online Classroom - Products in Online Classroom group
-        online_classroom_products = Product.objects.filter(
-            is_active=True,
-            groups=online_classroom_group
-        ).order_by('shortname') if online_classroom_group else Product.objects.none()
-        
-        online_classroom_data = [
-            {
-                'id': product.id,
-                'shortname': product.shortname,
-                'fullname': product.fullname,
-                'code': product.code,
-            }
-            for product in online_classroom_products
-        ]
+        # Column 3: Online Classroom - Product variations of products in Online Classroom group
+        if online_classroom_group:
+            # Get products that are in Online Classroom group
+            online_classroom_product_ids = Product.objects.filter(
+                groups=online_classroom_group
+            ).values_list('id', flat=True)
+            
+            # Get variations that are linked to Online Classroom products
+            online_classroom_variations = ProductVariation.objects.filter(
+                products__id__in=online_classroom_product_ids
+            ).distinct().order_by('description')
+            
+            online_classroom_data = [
+                {
+                    'id': variation.id,
+                    'name': variation.name,
+                    'variation_type': variation.variation_type,
+                    'description': variation.description,
+                }
+                for variation in online_classroom_variations
+            ]
+        else:
+            online_classroom_data = []
         
         return Response({
             'results': {
@@ -271,10 +260,7 @@ def tutorial_dropdown(request):
                     'left': location_data_left,
                     'right': location_data_right
                 },
-                'Format': {
-                    'left': format_data_left,
-                    'right': format_data_right
-                },
+                'Format': format_data,
                 'Online Classroom': online_classroom_data
             }
         })
