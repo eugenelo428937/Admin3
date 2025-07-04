@@ -35,34 +35,6 @@ import EmailVerification from "./components/EmailVerification";
 // Import custom Bootstrap CSS overrides
 import "./styles/custom-bootstrap.css";
 
-// Registration page component using ProfileForm
-const RegistrationPage = () => {
-	return (
-		<div className="container py-4">
-			<div className="row justify-content-center">
-				<div className="col-md-12 col-lg-10 col-xl-8">
-					<div className="card">
-						<div className="card-header bg-success text-white">
-							<h4 className="mb-0">
-								<i className="bi bi-person-plus me-2"></i>
-								Create Your Account
-							</h4>
-						</div>
-						<div className="card-body">
-							<ProfileForm
-								mode="registration"
-								title="Create Your ActEd Account"
-								subtitle="Join thousands of students studying with ActEd. Create your account to access study materials, book tutorials, and track your progress."
-								showSuccessMessage={true}
-							/>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	);
-};
-
 function App() {
 	// eslint-disable-next-line
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -95,7 +67,7 @@ function App() {
 							<VATProvider>
 								<div className="App">
 									<ActEdNavbar />
-									<div className="px-3 px-lg-4 px-xl-5">
+									<div className="px-3 px-lg-4 px-xl-5 body-container">
 										<Routes>
 											<Route
 												path="/"

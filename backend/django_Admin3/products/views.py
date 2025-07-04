@@ -169,63 +169,117 @@ def distance_learning_dropdown(request):
 def tutorial_dropdown(request):
     """
     Returns data for Tutorial dropdown menu with three columns:
-    1. Products.shortname excluding Online Classroom
-    2. Product variations excluding Online Classroom  
-    3. Online classroom product variations
+    1. Location: Products where product_group = "Tutorial" and exclude product_group = "Online Classroom" (split into 2 sub-columns)
+    2. Format: Product variations.description excluding "Online Classroom" product group (split into 2 sub-columns)
+    3. Online Classroom: All products where product_group = "Online Classroom"
     """
     try:
-        # Column 1: Product shortnames excluding Online Classroom
-        products_excluding_online = Product.objects.filter(
-            is_active=True
-        ).exclude(
-            shortname__icontains='Online Classroom'
-        ).order_by('shortname')
+        # Get product group IDs
+        try:
+            tutorial_group = ProductGroup.objects.get(name='Tutorial')
+            online_classroom_group = ProductGroup.objects.get(name='Online Classroom')
+        except ProductGroup.DoesNotExist:
+            tutorial_group = None
+            online_classroom_group = None
         
-        products_data = [
+        # Column 1: Location - Products in Tutorial group, excluding Online Classroom group
+        location_products = Product.objects.filter(
+            is_active=True,
+            groups=tutorial_group
+        ).exclude(
+            groups=online_classroom_group
+        ).order_by('shortname') if tutorial_group and online_classroom_group else Product.objects.none()
+        
+        # Split into 2 sub-columns
+        location_count = location_products.count()
+        mid_point = (location_count + 1) // 2
+        
+        location_data_left = [
             {
                 'id': product.id,
                 'shortname': product.shortname,
                 'fullname': product.fullname,
                 'code': product.code,
             }
-            for product in products_excluding_online
+            for product in location_products[:mid_point]
         ]
         
-        # Column 2: Product variations excluding Online Classroom
-        variations_excluding_online = ProductVariation.objects.exclude(
-            name__icontains='Online Classroom'
-        ).order_by('name')
+        location_data_right = [
+            {
+                'id': product.id,
+                'shortname': product.shortname,
+                'fullname': product.fullname,
+                'code': product.code,
+            }
+            for product in location_products[mid_point:]
+        ]
         
-        variations_data = [
+        # Column 2: Format - Product variations excluding those associated with Online Classroom group
+        # Get product variations that are NOT associated with products in Online Classroom group
+        if online_classroom_group:
+            # Get products that are in Online Classroom group
+            online_classroom_product_ids = Product.objects.filter(
+                groups=online_classroom_group
+            ).values_list('id', flat=True)
+            
+            # Get variations that are NOT linked to Online Classroom products
+            format_variations = ProductVariation.objects.exclude(
+                products__id__in=online_classroom_product_ids
+            ).order_by('description')
+        else:
+            format_variations = ProductVariation.objects.all().order_by('description')
+        
+        # Split variations into 2 sub-columns
+        format_count = format_variations.count()
+        mid_point_format = (format_count + 1) // 2
+        
+        format_data_left = [
             {
                 'id': variation.id,
                 'name': variation.name,
                 'variation_type': variation.variation_type,
                 'description': variation.description,
             }
-            for variation in variations_excluding_online
+            for variation in format_variations[:mid_point_format]
         ]
         
-        # Column 3: Online Classroom product variations
-        online_classroom_variations = ProductVariation.objects.filter(
-            name__icontains='Online Classroom'
-        ).order_by('name')
+        format_data_right = [
+            {
+                'id': variation.id,
+                'name': variation.name,
+                'variation_type': variation.variation_type,
+                'description': variation.description,
+            }
+            for variation in format_variations[mid_point_format:]
+        ]
+        
+        # Column 3: Online Classroom - Products in Online Classroom group
+        online_classroom_products = Product.objects.filter(
+            is_active=True,
+            groups=online_classroom_group
+        ).order_by('shortname') if online_classroom_group else Product.objects.none()
         
         online_classroom_data = [
             {
-                'id': variation.id,
-                'name': variation.name,
-                'variation_type': variation.variation_type,
-                'description': variation.description,
+                'id': product.id,
+                'shortname': product.shortname,
+                'fullname': product.fullname,
+                'code': product.code,
             }
-            for variation in online_classroom_variations
+            for product in online_classroom_products
         ]
         
         return Response({
             'results': {
-                'products': products_data,
-                'variations': variations_data,
-                'online_classroom': online_classroom_data
+                'Location': {
+                    'left': location_data_left,
+                    'right': location_data_right
+                },
+                'Format': {
+                    'left': format_data_left,
+                    'right': format_data_right
+                },
+                'Online Classroom': online_classroom_data
             }
         })
     except Exception as e:
