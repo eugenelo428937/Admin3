@@ -204,6 +204,11 @@ const ActEdNavbar = () => {
 		navigate(`/products?variation=${variationId}`);
 	};
 
+	// Handle navigating to tutorial format filters
+	const handleTutorialFormatClick = (groupName) => {
+		navigate(`/products?tutorial_format=${encodeURIComponent(groupName)}`);
+	};
+
 	// Handle closing the modal and resetting form data
 	const handleClose = () => {
 		setShowLoginModal(false);
@@ -749,55 +754,26 @@ const ActEdNavbar = () => {
 														</div>
 													</div>
 												</Col>
-												{/* Format Column - Split into 2 sub-columns */}
+												{/* Format Column - Simple filter links */}
 												<Col>
 													<div className="fw-bolder mb-2 text-primary">
 														Format
 													</div>
-													<div className="row">
-														<div className="col-6">
-															{tutorialData.Format &&
-															tutorialData.Format.left &&
-															tutorialData.Format.left.length > 0 ? (
-																tutorialData.Format.left.map(
-																	(variation) => (
-																		<NavDropdown.Item
-																			key={variation.id}
-																			onClick={() =>
-																				handleProductVariationClick(
-																					variation.id
-																				)
-																			}>
-																			{variation.description || variation.name}
-																		</NavDropdown.Item>
-																	)
-																)
-															) : (
-																<div className="text-muted small">
-																	No formats
-																</div>
-															)}
+													{tutorialData.Format && tutorialData.Format.length > 0 ? (
+														tutorialData.Format.map((format) => (
+															<NavDropdown.Item
+																key={format.filter_type}
+																onClick={() =>
+																	handleTutorialFormatClick(format.group_name)
+																}>
+																{format.name}
+															</NavDropdown.Item>
+														))
+													) : (
+														<div className="text-muted small">
+															No formats available
 														</div>
-														<div className="col-6">
-															{tutorialData.Format &&
-															tutorialData.Format.right &&
-															tutorialData.Format.right.length > 0 ? (
-																tutorialData.Format.right.map(
-																	(variation) => (
-																		<NavDropdown.Item
-																			key={variation.id}
-																			onClick={() =>
-																				handleProductVariationClick(
-																					variation.id
-																				)
-																			}>
-																			{variation.description || variation.name}
-																		</NavDropdown.Item>
-																	)
-																)
-															) : null}
-														</div>
-													</div>
+													)}
 												</Col>
 												{/* Online Classroom Column */}
 												<Col>
@@ -807,15 +783,15 @@ const ActEdNavbar = () => {
 													{tutorialData["Online Classroom"] &&
 													tutorialData["Online Classroom"].length > 0 ? (
 														tutorialData["Online Classroom"].map(
-															(product) => (
+															(variation) => (
 																<NavDropdown.Item
-																	key={product.id}
+																	key={variation.id}
 																	onClick={() =>
-																		handleSpecificProductClick(
-																			product.id
+																		handleProductVariationClick(
+																			variation.id
 																		)
 																	}>
-																	{product.shortname}
+																	{variation.description || variation.name}
 																</NavDropdown.Item>
 															)
 														)
