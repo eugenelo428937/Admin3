@@ -170,7 +170,9 @@ def tutorial_dropdown(request):
     """
     Returns data for Tutorial dropdown menu with three columns:
     1. Location: Products where product_group = "Tutorial" and exclude product_group = "Online Classroom" (split into 2 sub-columns)
-    2. Format: Product variations.description excluding "Online Classroom" product group (split into 2 sub-columns)
+    2. Format: Product variations split by type (split into 2 sub-columns)
+       - Left: Face to Face variations (code contains 'f2f')
+       - Right: Live Online variations (code contains 'LO')
     3. Online Classroom: All products where product_group = "Online Classroom"
     """
     try:
@@ -214,24 +216,11 @@ def tutorial_dropdown(request):
             for product in location_products[mid_point:]
         ]
         
-        # Column 2: Format - Product variations excluding those associated with Online Classroom group
-        # Get product variations that are NOT associated with products in Online Classroom group
-        if online_classroom_group:
-            # Get products that are in Online Classroom group
-            online_classroom_product_ids = Product.objects.filter(
-                groups=online_classroom_group
-            ).values_list('id', flat=True)
-            
-            # Get variations that are NOT linked to Online Classroom products
-            format_variations = ProductVariation.objects.exclude(
-                products__id__in=online_classroom_product_ids
-            ).order_by('description')
-        else:
-            format_variations = ProductVariation.objects.all().order_by('description')
-        
-        # Split variations into 2 sub-columns
-        format_count = format_variations.count()
-        mid_point_format = (format_count + 1) // 2
+        # Column 2: Format - Split by Face to Face (f2f) and Live Online (LO)
+        # Left sub-column: Face to Face variations (code contains 'f2f')
+        format_f2f_variations = ProductVariation.objects.filter(
+            code__icontains='f2f'
+        ).order_by('description')
         
         format_data_left = [
             {
@@ -239,9 +228,15 @@ def tutorial_dropdown(request):
                 'name': variation.name,
                 'variation_type': variation.variation_type,
                 'description': variation.description,
+                'code': variation.code,
             }
-            for variation in format_variations[:mid_point_format]
+            for variation in format_f2f_variations
         ]
+        
+        # Right sub-column: Live Online variations (code contains 'LO')
+        format_lo_variations = ProductVariation.objects.filter(
+            code__icontains='LO'
+        ).order_by('description')
         
         format_data_right = [
             {
@@ -249,8 +244,9 @@ def tutorial_dropdown(request):
                 'name': variation.name,
                 'variation_type': variation.variation_type,
                 'description': variation.description,
+                'code': variation.code,
             }
-            for variation in format_variations[mid_point_format:]
+            for variation in format_lo_variations
         ]
         
         # Column 3: Online Classroom - Products in Online Classroom group
