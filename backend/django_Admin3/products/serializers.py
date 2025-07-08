@@ -4,10 +4,39 @@ from .models.product_group_filter import ProductGroupFilter
 from .models.product_group import ProductGroup
 
 class ProductSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='shortname', read_only=True)
+    type = serializers.SerializerMethodField()
+    variations = serializers.SerializerMethodField()
+    
     class Meta:
         model = Product
-        fields = ['id', 'fullname', 'shortname', 'description', 'code', 'created_at', 'updated_at', 'is_active']
+        fields = ['id', 'fullname', 'shortname', 'product_name', 'description', 'code', 
+                 'type', 'variations', 'created_at', 'updated_at', 'is_active']
         read_only_fields = ['created_at', 'updated_at']
+    
+    def get_type(self, obj):
+        """Determine product type based on product groups"""
+        group_names = [group.name for group in obj.groups.all()]
+        
+        if 'Tutorial' in group_names:
+            return 'Tutorial'
+        elif 'Marking' in group_names:
+            return 'Markings'
+        else:
+            return 'Material'  # Default type
+    
+    def get_variations(self, obj):
+        """Get product variations with their details"""
+        variations = []
+        for variation in obj.product_variations.all():
+            variations.append({
+                'id': variation.id,
+                'name': variation.name,
+                'variation_type': variation.variation_type,
+                'description': variation.description,
+                'prices': []  # Add prices if needed
+            })
+        return variations
 
 class ProductGroupSerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()

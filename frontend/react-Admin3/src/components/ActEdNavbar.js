@@ -19,13 +19,25 @@ import {
 	AccountCircle as PersonIcon,
 	Download as DownloadIcon,
 	Search as SearchIcon,
+	Close as CloseIcon,
 } from "@mui/icons-material";
+import {
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	IconButton,
+	Typography,
+	Box,
+	Paper,
+} from "@mui/material";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/navbar.css";
 import { useProducts } from "../contexts/ProductContext";
 import LoginForm from "./LoginForm";
 import { useCart } from "../contexts/CartContext";
 import CartPanel from "./CartPanel";
+import SearchBox from "./SearchBox";
+import SearchResults from "./SearchResults";
 import productService from "../services/productService";
 import subjectService from "../services/subjectService";
 
@@ -75,6 +87,19 @@ const ActEdNavbar = () => {
 	const [tutorialData, setTutorialData] = useState(null);
 	const [loadingTutorial, setLoadingTutorial] = useState(true);
 
+	// State for search modal
+	const [showSearchModal, setShowSearchModal] = useState(false);
+	const [searchResults, setSearchResults] = useState(null);
+	const [searchQuery, setSearchQuery] = useState('');
+	const [selectedFilters, setSelectedFilters] = useState({
+		subjects: [],
+		product_groups: [],
+		variations: [],
+		products: []
+	});
+	const [searchLoading, setSearchLoading] = useState(false);
+	const [searchError, setSearchError] = useState(null);
+
 	// Listen for navigation state to auto-trigger login modal
 	useEffect(() => {
 		if (location.state?.showLogin && !isAuthenticated) {
@@ -105,6 +130,29 @@ const ActEdNavbar = () => {
 			window.removeEventListener("show-login-modal", handleShowLoginModal);
 		};
 	}, [isAuthenticated]);
+
+	// Add keyboard shortcut for search modal (Ctrl+K / Cmd+K)
+	useEffect(() => {
+		const handleKeyDown = (event) => {
+			// Ctrl+K or Cmd+K to open search modal
+			if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+				event.preventDefault();
+				if (!showSearchModal) {
+					setShowSearchModal(true);
+				}
+			}
+			// Escape key to close search modal
+			if (event.key === 'Escape' && showSearchModal) {
+				handleCloseSearchModal();
+			}
+		};
+
+		document.addEventListener('keydown', handleKeyDown);
+
+		return () => {
+			document.removeEventListener('keydown', handleKeyDown);
+		};
+	}, [showSearchModal]);
 
 	// Fetch subjects from the new endpoint (fix: use async/await)
 	useEffect(() => {
@@ -275,6 +323,105 @@ const ActEdNavbar = () => {
 	};
 
 	const { cartCount } = useCart();
+
+	// Handle search results from SearchBox
+	const handleSearchResults = (results, query) => {
+		setSearchResults(results);
+		setSearchQuery(query || '');
+		setSearchError(null);
+	};
+
+	// Handle filter selection from SearchResults
+	const handleFilterSelect = (filterType, item) => {
+		const isSelected = isFilterSelected(filterType, item);
+		
+		if (isSelected) {
+			// Remove filter
+			setSelectedFilters(prev => ({
+				...prev,
+				[filterType]: prev[filterType].filter(selected => selected.id !== item.id)
+			}));
+		} else {
+			// Add filter
+			setSelectedFilters(prev => ({
+				...prev,
+				[filterType]: [...prev[filterType], item]
+			}));
+		}
+	};
+
+	// Check if filter is selected
+	const isFilterSelected = (filterType, item) => {
+		return selectedFilters[filterType].some(selected => selected.id === item.id);
+	};
+
+	// Remove filter
+	const handleFilterRemove = (filterType, itemId) => {
+		setSelectedFilters(prev => ({
+			...prev,
+			[filterType]: prev[filterType].filter(item => item.id !== itemId)
+		}));
+	};
+
+	// Handle "Show Matching Products" button click from SearchResults
+	const handleShowMatchingProducts = (results, filters, query) => {
+		console.log('🚀 [Navbar] Navigating to search results from modal');
+		
+		// Use current state if parameters are not provided
+		const searchQueryToUse = query || searchQuery;
+		const filtersToUse = filters || selectedFilters;
+		
+		const searchParams = new URLSearchParams();
+		
+		if (searchQueryToUse?.trim()) {
+			searchParams.append('q', searchQueryToUse.trim());
+		}
+		
+		// Add selected filters
+		filtersToUse.subjects.forEach(subject => {
+			searchParams.append('subjects', subject.code || subject.id);
+		});
+		
+		filtersToUse.product_groups.forEach(group => {
+			searchParams.append('groups', group.id);
+		});
+		
+		filtersToUse.variations.forEach(variation => {
+			searchParams.append('variations', variation.id);
+		});
+		
+		filtersToUse.products.forEach(product => {
+			searchParams.append('products', product.id);
+		});
+
+		const finalUrl = `/products?${searchParams.toString()}`;
+		
+		// Close the modal and navigate
+		handleCloseSearchModal();
+		navigate(finalUrl);
+	};
+
+	// Handle opening the search modal
+	const handleOpenSearchModal = () => {
+		setShowSearchModal(true);
+	};
+
+	// Handle closing the search modal and resetting state
+	const handleCloseSearchModal = () => {
+		setShowSearchModal(false);
+		// Reset search state after a brief delay to avoid visual glitches
+		setTimeout(() => {
+			setSearchResults(null);
+			setSearchQuery('');
+			setSelectedFilters({
+				subjects: [],
+				product_groups: [],
+				variations: [],
+				products: []
+			});
+			setSearchError(null);
+		}, 300);
+	};
 
 	return (
 		<div className="navbar-container fixed-top">
@@ -536,44 +683,58 @@ const ActEdNavbar = () => {
 													return (
 														<React.Fragment
 															key={group.id || group.name}>
-															<Col className="col-lg-1">
-																<div
-																	className="fw-bolder mb-2 text-primary"
-																	style={{ cursor: "pointer" }}
-																	onClick={() =>
-																		handleProductGroupClick(
-																			group.name
-																		)
-																	}>
-																	{group.name}
-																</div>
-																{leftColumn.map((product) => (
-																	<NavDropdown.Item
-																		key={product.id}
-																		onClick={() =>
-																			handleSpecificProductClick(
-																				product.id
+															<Col lg={3}>
+																<Row>
+																	<Col lg={6}>
+																		<div
+																			className="fw-bolder mb-2 text-primary"
+																			style={{
+																				cursor: "pointer",
+																			}}
+																			onClick={() =>
+																				handleProductGroupClick(
+																					group.name
+																				)
+																			}>
+																			{group.name}
+																		</div>
+																		{leftColumn.map(
+																			(product) => (
+																				<NavDropdown.Item
+																					key={product.id}
+																					onClick={() =>
+																						handleSpecificProductClick(
+																							product.id
+																						)
+																					}>
+																					{
+																						product.shortname
+																					}
+																				</NavDropdown.Item>
 																			)
-																		}>
-																		{product.shortname}
-																	</NavDropdown.Item>
-																))}
-															</Col>
-															<Col>
-																<div className="fw-bolder mb-2 text-primary w-50">
-																	&nbsp;
-																</div>
-																{rightColumn.map((product) => (
-																	<NavDropdown.Item
-																		key={product.id}
-																		onClick={() =>
-																			handleSpecificProductClick(
-																				product.id
+																		)}
+																	</Col>
+																	<Col lg={6}>
+																		<div className="fw-bolder mb-2 text-primary w-50">
+																			&nbsp;
+																		</div>
+																		{rightColumn.map(
+																			(product) => (
+																				<NavDropdown.Item
+																					key={product.id}
+																					onClick={() =>
+																						handleSpecificProductClick(
+																							product.id
+																						)
+																					}>
+																					{
+																						product.shortname
+																					}
+																				</NavDropdown.Item>
 																			)
-																		}>
-																		{product.shortname}
-																	</NavDropdown.Item>
-																))}
+																		)}
+																	</Col>
+																</Row>
 															</Col>
 														</React.Fragment>
 													);
@@ -713,7 +874,8 @@ const ActEdNavbar = () => {
 														<div className="col-6">
 															{tutorialData.Location &&
 															tutorialData.Location.left &&
-															tutorialData.Location.left.length > 0 ? (
+															tutorialData.Location.left.length >
+																0 ? (
 																tutorialData.Location.left.map(
 																	(product) => (
 																		<NavDropdown.Item
@@ -736,21 +898,22 @@ const ActEdNavbar = () => {
 														<div className="col-6">
 															{tutorialData.Location &&
 															tutorialData.Location.right &&
-															tutorialData.Location.right.length > 0 ? (
-																tutorialData.Location.right.map(
-																	(product) => (
-																		<NavDropdown.Item
-																			key={product.id}
-																			onClick={() =>
-																				handleSpecificProductClick(
-																					product.id
-																				)
-																			}>
-																			{product.shortname}
-																		</NavDropdown.Item>
-																	)
-																)
-															) : null}
+															tutorialData.Location.right
+																.length > 0
+																? tutorialData.Location.right.map(
+																		(product) => (
+																			<NavDropdown.Item
+																				key={product.id}
+																				onClick={() =>
+																					handleSpecificProductClick(
+																						product.id
+																					)
+																				}>
+																				{product.shortname}
+																			</NavDropdown.Item>
+																		)
+																  )
+																: null}
 														</div>
 													</div>
 												</Col>
@@ -759,12 +922,15 @@ const ActEdNavbar = () => {
 													<div className="fw-bolder mb-2 text-primary">
 														Format
 													</div>
-													{tutorialData.Format && tutorialData.Format.length > 0 ? (
+													{tutorialData.Format &&
+													tutorialData.Format.length > 0 ? (
 														tutorialData.Format.map((format) => (
 															<NavDropdown.Item
 																key={format.filter_type}
 																onClick={() =>
-																	handleTutorialFormatClick(format.group_name)
+																	handleTutorialFormatClick(
+																		format.group_name
+																	)
 																}>
 																{format.name}
 															</NavDropdown.Item>
@@ -781,7 +947,8 @@ const ActEdNavbar = () => {
 														Online Classroom
 													</div>
 													{tutorialData["Online Classroom"] &&
-													tutorialData["Online Classroom"].length > 0 ? (
+													tutorialData["Online Classroom"].length >
+														0 ? (
 														tutorialData["Online Classroom"].map(
 															(variation) => (
 																<NavDropdown.Item
@@ -791,7 +958,8 @@ const ActEdNavbar = () => {
 																			variation.id
 																		)
 																	}>
-																	{variation.description || variation.name}
+																	{variation.description ||
+																		variation.name}
 																</NavDropdown.Item>
 															)
 														)
@@ -862,12 +1030,13 @@ const ActEdNavbar = () => {
 						<div>
 							<Button
 								variant="link"
-								to="/Search"
-								className="nav-link btn-search p-0 ms-2 align-items-center d-flex flex-row">
+								onClick={handleOpenSearchModal}
+								className="nav-link btn-search p-0 ms-2 align-items-center d-flex flex-row"
+								title="Search Products">
 								<SearchIcon className="bi d-flex flex-row align-items-center"></SearchIcon>
 								<span className="d-none d-md-block fst-normal">
 									Search
-								</span>
+								</span>								
 							</Button>
 						</div>
 					</div>
@@ -891,6 +1060,95 @@ const ActEdNavbar = () => {
 				show={showCartPanel}
 				handleClose={() => setShowCartPanel(false)}
 			/>
+
+			{/* Search Modal */}
+			<Dialog
+				open={showSearchModal}
+				onClose={handleCloseSearchModal}
+				aria-labelledby="search-modal-title"
+				aria-describedby="search-modal-description"
+				maxWidth="lg"
+				fullWidth
+				className="search-modal"
+				elevation={2}				
+				disableEscapeKeyDown={false}
+				keepMounted={false}>
+				<DialogTitle
+					id="search-modal-title"
+					sx={{
+						background: "#dee2e6",
+						color: "#495057",
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "space-between",
+						paddingY: 2,
+						paddingX: 3,
+					}}>
+					<Box sx={{ display: "flex", alignItems: "center" }}>
+						<SearchIcon sx={{ marginRight: 1 }} />
+						<Typography variant="h6" component="span">
+							Search Products
+						</Typography>
+						<Typography
+							variant="caption"
+							component="span"
+							sx={{ marginLeft: 2, opacity: 0.8 }}></Typography>
+					</Box>
+					<IconButton
+						edge="end"
+						color="#495057"
+						onClick={handleCloseSearchModal}
+						aria-label="close"
+						sx={{ color: "#495057" }}>
+						<CloseIcon />
+					</IconButton>
+				</DialogTitle>
+				<DialogContent
+					sx={{												
+						backgroundColor: "#f8f9fa",
+						padding: 3,
+					}}>
+					<Paper
+						elevation={0}
+						sx={{
+							paddingTop: 4,
+							alignItems: "center",
+							marginBottom: 2,							
+							backgroundColor: "#E9ECEF00",
+						}}
+						className="search-box-container">
+						<SearchBox
+							onSearchResults={handleSearchResults}
+							onShowMatchingProducts={handleShowMatchingProducts}
+							autoFocus={true}
+							placeholder="Search for products, subjects, categories..."
+						/>
+					</Paper>
+					<Paper
+						elevation={0}
+						sx={{
+							paddingY: 0,
+							marginLeft: 5,
+							marginRight: 5,
+							borderRadius: 2,
+							backgroundColor: "#E9ECEF00",
+						}}
+						className="search-results-container">
+						<SearchResults
+							searchResults={searchResults}
+							searchQuery={searchQuery}
+							selectedFilters={selectedFilters}
+							onFilterSelect={handleFilterSelect}
+							onFilterRemove={handleFilterRemove}
+							onShowMatchingProducts={handleShowMatchingProducts}
+							isFilterSelected={isFilterSelected}
+							loading={searchLoading}
+							error={searchError}
+							maxSuggestions={5}
+						/>
+					</Paper>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 };

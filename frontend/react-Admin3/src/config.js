@@ -35,11 +35,8 @@ const config = {
 };
 
 if (config.isDevelopment) {	
-	console.log("environment:", config.isDevelopment);
-	console.log("Debug logs enabled:", config.enableDebugLogs);	
-	console.log("API Base URL:", config.apiBaseUrl);
-	console.log("API Base authUrl:", config.authUrl);
-	console.log("Products URL:", config.productsUrl);
+	console.log("Development environment:", config.isDevelopment);
+	console.log("Debug logs enabled:", config.enableDebugLogs);		
 }	
 
 export default config;

@@ -5,7 +5,12 @@ alwaysApply: true
 ---
 # Cursor Rules for Admin3 Project
 
-Always use Powershell when running scripts. When joinning command use ";;" instead of "&&"
+- Always use Powershell when running scripts. When joinning command use ";;" instead of "&&"
+- The django and react server are always running. Do not try to start those server when testing.
+- For running Django test scripts, cd ./backend/django_Admin3
+- For running react test scripts, cd ./frontend/react-Admin3
+- Seek confirmation when perform file deletion
+
 
 ## Project Context
 Admin3 is a Django REST API backend with React frontend for educational administration data management, integrating with the Administrate API for course management, tutorials, events, and student administration.

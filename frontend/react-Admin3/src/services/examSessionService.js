@@ -1,7 +1,6 @@
 import httpService from "./httpService";
 import config from "../config";
 const API_URL = config.examSessionUrl;
-console.log("API Base examSessionUrl:", API_URL);
 const examSessionService = {
 	getAll: async () => {
 		try {			

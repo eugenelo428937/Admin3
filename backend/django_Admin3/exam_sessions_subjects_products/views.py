@@ -8,6 +8,7 @@ from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import ExamSessionSubjectProduct
 from .serializers import ExamSessionSubjectProductSerializer, ProductListSerializer
+from .services import FuzzySearchService
 from exam_sessions_subjects.models import ExamSessionSubject
 from products.models.products import Product
 from products.models.product_group import ProductGroup
@@ -153,6 +154,10 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             'delivery_method_ids': request.query_params.getlist('delivery_method'),
             'group': request.query_params.get('group'),
             'product': request.query_params.get('product'),
+            'tutorial_format': request.query_params.get('tutorial_format'),
+            'variation': request.query_params.get('variation'),
+            'distance_learning': request.query_params.get('distance_learning'),
+            'tutorial': request.query_params.get('tutorial'),
             'page': page,
             'page_size': page_size
         }
@@ -234,6 +239,56 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 logger.warning(f'Invalid product ID: {product_filter}')
                 queryset = queryset.none()  # Return empty result if product ID is invalid
 
+        # --- New navbar dropdown filtering logic ---
+        tutorial_format_filter = request.query_params.get('tutorial_format')
+        variation_filter = request.query_params.get('variation')
+        distance_learning_filter = request.query_params.get('distance_learning')
+        tutorial_filter = request.query_params.get('tutorial')
+        
+        logger.info(f'New navbar filtering: tutorial_format={tutorial_format_filter}, variation={variation_filter}, distance_learning={distance_learning_filter}, tutorial={tutorial_filter}')
+        
+        if tutorial_format_filter:
+            # Filter by tutorial format (product group name)
+            try:
+                format_group = ProductGroup.objects.get(name=tutorial_format_filter)
+                queryset = queryset.filter(product__groups=format_group)
+                logger.info(f'After tutorial_format filter "{tutorial_format_filter}", queryset count: {queryset.count()}')
+            except ProductGroup.DoesNotExist:
+                logger.warning(f'Tutorial format group "{tutorial_format_filter}" not found')
+                queryset = queryset.none()
+        
+        if variation_filter:
+            # Filter by product variation ID
+            try:
+                variation_id = int(variation_filter)
+                queryset = queryset.filter(product__product_variations__id=variation_id)
+                logger.info(f'After variation filter ID {variation_id}, queryset count: {queryset.count()}')
+            except (ValueError, TypeError):
+                logger.warning(f'Invalid variation ID: {variation_filter}')
+                queryset = queryset.none()
+        
+        if distance_learning_filter:
+            # Filter by distance learning groups
+            distance_learning_groups = ['Core Study Materials', 'Revision Materials', 'Marking']
+            try:
+                dl_groups = ProductGroup.objects.filter(name__in=distance_learning_groups)
+                queryset = queryset.filter(product__groups__in=dl_groups).distinct()
+                logger.info(f'After distance_learning filter, queryset count: {queryset.count()}')
+            except Exception as e:
+                logger.warning(f'Error applying distance learning filter: {e}')
+                queryset = queryset.none()
+        
+        if tutorial_filter:
+            # Filter by tutorial group excluding online classroom
+            try:
+                tutorial_group = ProductGroup.objects.get(name='Tutorial')
+                online_classroom_group = ProductGroup.objects.get(name='Online Classroom')
+                queryset = queryset.filter(product__groups=tutorial_group).exclude(product__groups=online_classroom_group).distinct()
+                logger.info(f'After tutorial filter, queryset count: {queryset.count()}')
+            except ProductGroup.DoesNotExist as e:
+                logger.warning(f'Tutorial group not found: {e}')
+                queryset = queryset.none()
+
         # Apply pagination
         total_count = queryset.count()
         start_index = (page - 1) * page_size
@@ -280,3 +335,128 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         logger.info(f'Paginated queryset count: {len(serializer.data)}, total: {total_count}, cached with key: {cache_key}')
         
         return Response(response_data)
+
+    @action(detail=False, methods=['get'], url_path='fuzzy-search', permission_classes=[AllowAny])
+    def fuzzy_search(self, request):
+        """
+        Perform fuzzy search using FuzzyWuzzy library.
+        Query parameters:
+        - q: Search query string
+        - min_score: Minimum fuzzy match score (default: 60)
+        - limit: Maximum number of results (default: 50)
+        """
+        logger.info('🔍 [API] Fuzzy search endpoint called')
+        
+        # Get search parameters
+        query = request.query_params.get('q', '').strip()
+        min_score = int(request.query_params.get('min_score', 60))
+        limit = int(request.query_params.get('limit', 50))
+        
+        logger.info(f'🔍 [API] Search params - query: "{query}", min_score: {min_score}, limit: {limit}')
+        
+        if not query or len(query) < 2:
+            return Response({
+                'error': 'Query parameter "q" is required and must be at least 2 characters long'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Initialize search service
+            search_service = FuzzySearchService(min_score=min_score)
+            
+            # Perform search
+            search_results = search_service.search_products(query, limit=limit)
+            
+            # Serialize the products
+            serializer = ProductListSerializer(search_results['products'], many=True)
+            
+            # Prepare response
+            response_data = {
+                'products': serializer.data,
+                'total_count': search_results['total_count'],
+                'suggested_filters': search_results['suggested_filters'],
+                'search_info': search_results['search_info']
+            }
+            
+            logger.info(f'🔍 [API] Fuzzy search completed - {len(serializer.data)} products returned')
+            return Response(response_data)
+            
+        except Exception as e:
+            logger.error(f'🔍 [API] Fuzzy search error: {str(e)}')
+            return Response({
+                'error': 'Search failed',
+                'details': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['get'], url_path='advanced-fuzzy-search', permission_classes=[AllowAny])
+    def advanced_fuzzy_search(self, request):
+        """
+        Perform advanced fuzzy search with filters.
+        Query parameters:
+        - q: Search query string (optional)
+        - subjects: Subject IDs to filter by (comma-separated)
+        - categories: Category IDs to filter by (comma-separated)  
+        - min_score: Minimum fuzzy match score (default: 60)
+        - limit: Maximum number of results (default: 50)
+        """
+        logger.info('🔍 [API] Advanced fuzzy search endpoint called')
+        
+        # Get search parameters
+        query = request.query_params.get('q', '').strip()
+        subject_ids_param = request.query_params.get('subjects', '')
+        category_ids_param = request.query_params.get('categories', '')
+        min_score = int(request.query_params.get('min_score', 60))
+        limit = int(request.query_params.get('limit', 50))
+        
+        # Parse subject and category IDs
+        subject_ids = []
+        if subject_ids_param:
+            try:
+                subject_ids = [int(id.strip()) for id in subject_ids_param.split(',') if id.strip()]
+            except ValueError:
+                return Response({
+                    'error': 'Invalid subject IDs format. Use comma-separated integers.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        category_ids = []
+        if category_ids_param:
+            try:
+                category_ids = [int(id.strip()) for id in category_ids_param.split(',') if id.strip()]
+            except ValueError:
+                return Response({
+                    'error': 'Invalid category IDs format. Use comma-separated integers.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        logger.info(f'🔍 [API] Advanced search params - query: "{query}", subjects: {subject_ids}, categories: {category_ids}')
+        
+        try:
+            # Initialize search service
+            search_service = FuzzySearchService(min_score=min_score)
+            
+            # Perform advanced search
+            search_results = search_service.advanced_search(
+                query=query or None,
+                subject_ids=subject_ids if subject_ids else None,
+                category_ids=category_ids if category_ids else None,
+                limit=limit
+            )
+            
+            # Serialize the products
+            serializer = ProductListSerializer(search_results['products'], many=True)
+            
+            # Prepare response
+            response_data = {
+                'products': serializer.data,
+                'total_count': search_results['total_count'],
+                'suggested_filters': search_results['suggested_filters'],
+                'search_info': search_results['search_info']
+            }
+            
+            logger.info(f'🔍 [API] Advanced fuzzy search completed - {len(serializer.data)} products returned')
+            return Response(response_data)
+            
+        except Exception as e:
+            logger.error(f'🔍 [API] Advanced fuzzy search error: {str(e)}')
+            return Response({
+                'error': 'Advanced search failed',
+                'details': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
