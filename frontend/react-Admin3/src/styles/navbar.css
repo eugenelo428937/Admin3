@@ -121,3 +121,45 @@ button.navbar-toggler.menu-button:hover {
 	background-color: var(--bs-navbar-main-bg-color);
 	border: 0;
 }
+
+/* Add styles at the end of the file for search modal */
+
+/* Search Modal Styles for Material-UI Dialog */
+.search-modal .MuiDialog-paper {
+    border-radius: 12px;
+    max-width: 70vw;    
+    max-height: 70vh;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.search-modal .MuiDialogTitle-root {
+    border-radius: 12px 12px 0 0;
+}
+
+.search-modal .MuiDialogContent-root {
+    border-radius: 0 0 12px 12px;
+}
+
+/* Material-UI Dialog backdrop customization */
+.search-modal .MuiBackdrop-root {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Responsive adjustments for search modal */
+@media (max-width: 768px) {
+    .search-modal .MuiDialog-paper {
+        max-width: 95vw;
+        width: 95vw;
+        margin: 0.5rem;
+        max-height: 95vh;
+    }
+    
+    .search-modal .MuiDialogContent-root {
+        padding: 1rem !important;
+    }
+}
+
+/* Smooth transition for dialog */
+.search-modal .MuiDialog-paper {
+    transition: transform 0.225s cubic-bezier(0, 0, 0.2, 1);
+}
