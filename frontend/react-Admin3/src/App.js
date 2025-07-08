@@ -67,7 +67,7 @@ function App() {
 							<VATProvider>
 								<div className="App">
 									<ActEdNavbar />
-									<div className="px-3 px-lg-4 px-xl-5 body-container">
+									<div className="body-container">
 										<Routes>
 											<Route
 												path="/"

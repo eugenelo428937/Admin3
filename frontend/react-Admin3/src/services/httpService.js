@@ -60,33 +60,40 @@ httpService.interceptors.response.use(
     async error => {
         const originalRequest = error.config;
         
-        if (error.response.status === 401 && !originalRequest._retry) {
-				originalRequest._retry = true;
+        // Check if error.response exists and is a 401 error
+        if (error.response && error.response.status === 401 && !originalRequest._retry) {
+			originalRequest._retry = true;
 
-				// Clear auth data if unauthorized
+			// Clear auth data if unauthorized
+			localStorage.removeItem("token");
+			localStorage.removeItem("user");
+			localStorage.removeItem("isAuthenticated");
+
+			try {
+				const refreshToken = localStorage.getItem("refreshToken");
+                if (!refreshToken) {
+                    return Promise.reject(error);
+                }
+				const response = await authService.refreshToken(refreshToken);
+				const newToken = response.data.token;
+				localStorage.setItem("token", newToken);
+				originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+				return httpService(originalRequest);
+			} catch (refreshError) {
+				// If refresh fails, logout
 				localStorage.removeItem("token");
+				localStorage.removeItem("refreshToken");
 				localStorage.removeItem("user");
-				localStorage.removeItem("isAuthenticated");
-
-				try {
-					const refreshToken = localStorage.getItem("refreshToken");
-                    if (!refreshToken) {
-                        return Promise.reject(error);
-                    }
-					const response = await authService.refreshToken(refreshToken);
-					const newToken = response.data.token;
-					localStorage.setItem("token", newToken);
-					originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
-					return httpService(originalRequest);
-				} catch (refreshError) {
-					// If refresh fails, logout
-					localStorage.removeItem("token");
-					localStorage.removeItem("refreshToken");
-					localStorage.removeItem("user");
-					localStorage.removeItem("isAuthenticated");					
-					return Promise.reject(refreshError);
-				}
+				localStorage.removeItem("isAuthenticated");					
+				return Promise.reject(refreshError);
 			}
+		}
+        
+        // Handle network errors or other errors without response
+        if (!error.response) {
+            // Network error - server is likely not running
+            console.error('Network Error: Could not connect to server. Please ensure the Django server is running on', config.apiBaseUrl);
+        }
         
         return Promise.reject(error);
     }
