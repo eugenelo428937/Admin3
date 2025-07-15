@@ -19,6 +19,7 @@ from subjects.serializers import SubjectSerializer
 from .models import ProductBundle, ProductBundleProduct
 from exam_sessions_subjects_products.models import ExamSessionSubjectBundle, ExamSessionSubjectBundleProduct
 from exam_sessions_subjects.models import ExamSessionSubject
+from .services.filter_service import get_product_filter_service
 
 class BundleViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -406,6 +407,35 @@ def product_group_filters(request):
     filters = ProductGroupFilter.objects.prefetch_related('groups').all()
     serializer = ProductGroupFilterSerializer(filters, many=True)
     return Response({'results': serializer.data})
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def filter_configuration(request):
+    """
+    Returns dynamic filter configuration and options for the frontend.
+    Supports extensible filtering with configurable filter types.
+    """
+    filter_service = get_product_filter_service()
+    
+    # Get requested filter types or return all
+    filter_types = request.query_params.getlist('types')
+    
+    # Get filter configuration
+    config = filter_service.get_filter_configuration()
+    
+    # Get filter options
+    options = filter_service.get_filter_options(filter_types if filter_types else None)
+    
+    # Combine configuration and options
+    result = {}
+    for filter_type, filter_config in config.items():
+        if not filter_types or filter_type in filter_types:
+            result[filter_type] = {
+                **filter_config,
+                'options': options.get(filter_type, [])
+            }
+    
+    return Response(result)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
