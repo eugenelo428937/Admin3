@@ -67,6 +67,192 @@ def check_same_subject_products(cart_items, params):
         return False
 
 
+def check_tutorial_only_credit_card(cart_items, params):
+    """
+    Check if cart contains only tutorial products and payment method is credit card.
+    
+    Args:
+        cart_items: List of cart items (can be empty for testing)
+        params: Dictionary containing payment_method and other context including test_cart_items
+        
+    Returns:
+        bool: True if conditions are met, False otherwise
+    """
+    try:
+        logger.info(f"DEBUG: check_tutorial_only_credit_card called")
+        logger.info(f"DEBUG: cart_items: {cart_items}")
+        logger.info(f"DEBUG: params: {params}")
+        
+        # For testing, use test_cart_items if available, otherwise use cart_items
+        items_to_check = params.get('test_cart_items', cart_items)
+        
+        # Check payment method
+        payment_method = params.get('payment_method', '').lower()
+        is_credit_card = payment_method in ['credit_card', 'card', 'creditcard']
+        
+        logger.info(f"DEBUG: payment_method: {payment_method}, is_credit_card: {is_credit_card}")
+        logger.info(f"DEBUG: items_to_check: {items_to_check}")
+        
+        if not is_credit_card:
+            logger.info("DEBUG: Not paying by credit card, condition not met")
+            return False
+        
+        # Check if all items are tutorials
+        tutorial_count = 0
+        non_tutorial_count = 0
+        
+        for item in items_to_check:
+            # Check different possible fields for product type
+            product_type = (
+                item.get('product_type') or 
+                item.get('type') or 
+                ''
+            ).lower()
+            
+            logger.info(f"DEBUG: Item {item.get('id')}: product_type = {product_type}")
+            
+            # Skip booking fee items (they shouldn't count against tutorial-only check)
+            if 'booking' in product_type and 'fee' in product_type:
+                logger.info(f"DEBUG: Skipping booking fee item")
+                continue
+            
+            if 'tutorial' in product_type:
+                tutorial_count += 1
+            else:
+                non_tutorial_count += 1
+        
+        logger.info(f"DEBUG: tutorial_count: {tutorial_count}, non_tutorial_count: {non_tutorial_count}")
+        
+        # Must have at least one tutorial and no non-tutorial items
+        result = tutorial_count > 0 and non_tutorial_count == 0
+        logger.info(f"DEBUG: Final result: {result}")
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error in check_tutorial_only_credit_card: {str(e)}")
+        return False
+
+
+def apply_tutorial_booking_fee(cart_items, params):
+    """
+    Apply tutorial booking fee to the cart.
+    
+    Args:
+        cart_items: List of cart items or cart object (can be empty for testing)
+        params: Dictionary containing fee parameters including cart_id and rule_id
+        
+    Returns:
+        dict: Fee application result
+    """
+    try:
+        logger.info(f"DEBUG: apply_tutorial_booking_fee called")
+        logger.info(f"DEBUG: params: {params}")
+        
+        fee_amount = params.get('fee_amount', 1.00)  # Default £1
+        fee_description = params.get('fee_description', 'Tutorial Booking Fee')
+        cart_id = params.get('cart_id')
+        rule_id = params.get('rule_id')
+        
+        # For testing, if no cart_id provided, return a mock success
+        if not cart_id:
+            logger.info("DEBUG: No cart_id provided - returning mock fee application for testing")
+            return {
+                'success': True,
+                'fee_applied': True,
+                'fee_amount': fee_amount,
+                'fee_description': fee_description,
+                'fee_id': 'test_fee_id',
+                'fee_details': {
+                    'id': 'test_fee_id',
+                    'name': fee_description,
+                    'amount': fee_amount,
+                    'type': 'tutorial_booking_fee',
+                    'description': 'One-time booking fee for tutorial reservations (TEST MODE)',
+                    'refundable': False,
+                    'currency': 'GBP'
+                },
+                'message': f'{fee_description} of £{fee_amount} applied to cart (TEST MODE)'
+            }
+        
+        # Import here to avoid circular imports
+        from cart.models import Cart, CartFee
+        
+        try:
+            cart = Cart.objects.get(id=cart_id)
+        except Cart.DoesNotExist:
+            logger.error(f"DEBUG: Cart {cart_id} not found")
+            return {
+                'success': False,
+                'error': f'Cart {cart_id} not found',
+                'fee_applied': False,
+                'fee_amount': 0
+            }
+        
+        # Check if fee already exists
+        existing_fee = CartFee.objects.filter(
+            cart=cart,
+            fee_type='tutorial_booking_fee'
+        ).first()
+        
+        if existing_fee:
+            logger.info("DEBUG: Tutorial booking fee already applied")
+            return {
+                'success': True,
+                'fee_applied': False,
+                'message': 'Tutorial booking fee already exists in cart',
+                'fee_amount': existing_fee.amount,
+                'fee_id': existing_fee.id
+            }
+        
+        # Create the fee
+        cart_fee = CartFee.objects.create(
+            cart=cart,
+            fee_type='tutorial_booking_fee',
+            name=fee_description,
+            description='One-time booking fee for tutorial reservations. This charge cannot be refunded but will be deducted from your final tutorial booking charge.',
+            amount=fee_amount,
+            currency='GBP',
+            is_refundable=False,
+            applied_by_rule=rule_id,
+            metadata={
+                'applied_by_rule_name': params.get('rule_name', 'Tutorial Booking Fee'),
+                'payment_method': params.get('payment_method', 'credit_card'),
+                'application_timestamp': params.get('timestamp')
+            }
+        )
+        
+        result = {
+            'success': True,
+            'fee_applied': True,
+            'fee_amount': fee_amount,
+            'fee_description': fee_description,
+            'fee_id': cart_fee.id,
+            'fee_details': {
+                'id': cart_fee.id,
+                'name': fee_description,
+                'amount': fee_amount,
+                'type': 'tutorial_booking_fee',
+                'description': cart_fee.description,
+                'refundable': False,
+                'currency': 'GBP'
+            },
+            'message': f'{fee_description} of £{fee_amount} applied to cart'
+        }
+        
+        logger.info(f"DEBUG: Fee application result: {result}")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error in apply_tutorial_booking_fee: {str(e)}")
+        return {
+            'success': False,
+            'error': str(e),
+            'fee_applied': False,
+            'fee_amount': 0
+        }
+
+
 def calculate_vat_standard(cart_items, params):
     """
     Calculate standard VAT for cart items.

@@ -1,19 +1,23 @@
 .product-card{
-  width: 100%;
-  height: 100%;
+  width: 21rem;  
 }
 
-/* .product-card.tutorial-card {
-  height: auto;
-  min-height: 250px;
-} */
-
-/* Tutorial product header */
-/* .product-card-header.tutorial-header {
-    background-color: rgba(240, 253, 244, 1) !important;
-    color: #065f46 !important;
-    
-} */
+.product-card-header{
+  height: 6rem;
+}
+.tutorial-header{
+  background-color: rgba(240, 253, 244, 1);
+}
+.tutorial-header h6{
+  background-color: rgba(240, 253, 244, 1);
+}
+.product-card-actions{
+  background-color:#Fbfbfb !important;
+  height: 6rem;
+}
+.product-card{
+  border: 1px solid rgb(229, 231, 235) !important;
+}
 
 /* Marking product header */
 .product-card-header.marking-header {
@@ -25,59 +29,50 @@
     background-color: rgba(239, 246, 255, 1) !important;        
 }
 
-/* .product-add-to-cart-button {
-  border-radius: 2rem;
-} */
-
-/* .expanded-width {
-  width: 700px !important;
-  max-width: 100%;
-  transition: width 0.3s;
-  z-index: 10;
-  position: relative;
-} */
-
-/* Tutorial-specific styles */
-/* .tutorial-variations.collapsed {
-  max-height: 300px;
-  overflow: hidden;
-} */
-
-/* .tutorial-variations.expanded {
-  max-height: none;
+/* Bundle product header */
+.product-card-header.bundle-header {
+    background-color: rgba(255, 248, 220, 1) !important;        
 }
 
-.variation-section:last-child {
-  border-bottom: none !important;
+/* Exam session bundle header */
+.bundle-header {
+    background: linear-gradient(135deg, rgba(240, 253, 244, 1) 0%, rgba(187, 247, 208, 0.8) 100%) !important;
+    border: 1px solid rgba(34, 197, 94, 0.3) !important;
 }
 
-.event-item:last-child {
-  border-bottom: none !important;
+/* Default bundle header */
+.bundle-header-default {
+    background: linear-gradient(135deg, rgba(249, 250, 251, 1) 0%, rgba(229, 231, 235, 0.8) 100%) !important;
+    border: 1px solid rgba(156, 163, 175, 0.3) !important;
 }
 
-.choice-selector {
-  min-width: 120px;
+/* Bundle card header specific styles */
+.bundle-card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+    padding-bottom: 8px !important;
 }
 
-.price-display {
-  font-size: 1.1em;
-  color: #28a745;
+/* Bundle card hover effects */
+.bundle-header-master:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.15) !important;
+    transition: all 0.3s ease;
 }
 
-.variation-header {
-  background-color: #f8f9fa !important;
-} */
-
-/* .event-details h6 {
-  font-size: 0.9rem;
-  margin-bottom: 0.25rem;
+.bundle-header-exam-session:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15) !important;
+    transition: all 0.3s ease;
 }
 
-.event-details .small {
-  font-size: 0.8rem;
-  line-height: 1.3;
-} */
-
+.bundle-header-default:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(156, 163, 175, 0.15) !important;
+    transition: all 0.3s ease;
+}
+.product-card-header.online-classroom-header{
+  background-color: rgb(251, 240, 253) !important;        
+}
 /* Accessibility improvements */
 .product-card-header button:focus,
 .choice-selector:focus,
@@ -89,13 +84,8 @@
 .product-card-header button:hover {
   opacity: 0.8;
 }
-
-.tutorial-product-card-header{
-  background-color: rgba(240, 253, 244, 1);
-}
-
-.product-card{
-  border: 1px solid rgb(229, 231, 235) !important;
+.product-card-content{
+  min-height: 12rem;
 }
 /* High contrast support */
 @media (prefers-contrast: high) {
@@ -115,6 +105,12 @@
     background-color: #dbeafe !important;
     color: #1e3a8a !important;
     border: 2px solid #3b82f6 !important;
+  }
+  
+  .product-card-header.bundle-header {
+    background-color: #fef3c7 !important;
+    color: #78350f !important;
+    border: 2px solid #f59e0b !important;
   }
 }
 

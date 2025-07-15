@@ -1,9 +1,10 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ProductViewSet, product_group_tree, product_group_three_level_tree, product_group_filters, products_by_group, navbar_product_groups, distance_learning_dropdown, tutorial_dropdown, fuzzy_search, advanced_product_search
+from .views import ProductViewSet, BundleViewSet, product_group_tree, product_group_three_level_tree, product_group_filters, products_by_group, navbar_product_groups, distance_learning_dropdown, tutorial_dropdown, fuzzy_search, advanced_product_search
 
 router = DefaultRouter()
 router.register(r'products', ProductViewSet, basename='product')
+router.register(r'bundles', BundleViewSet, basename='bundle')
 
 urlpatterns = [    
     path('product-categories/all/', product_group_three_level_tree, name='product-group-three-level-tree'),

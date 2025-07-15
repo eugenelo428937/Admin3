@@ -311,6 +311,14 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
                           <p className="text-muted mb-1">
                             Subject: {item.subject_code} | Session: {item.exam_session_code}
                           </p>
+                          {/* Show bundle information if item was added via bundle */}
+                          {item.metadata?.addedViaBundle && (
+                            <p className="text-muted mb-1">
+                              <span className="badge bg-info text-white me-2" style={{ fontSize: "0.75em" }}>
+                                📦 From Bundle: {item.metadata.addedViaBundle.bundleName}
+                              </span>
+                            </p>
+                          )}
                           <Badge variant="secondary" className="me-2">
                             {item.product_type}
                           </Badge>

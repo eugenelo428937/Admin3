@@ -6,12 +6,127 @@ from .models import Product
 from .models.product_group import ProductGroup
 from .models.product_group_filter import ProductGroupFilter
 from .models import ProductVariation
-from .serializers import ProductSerializer, ProductGroupSerializer, ProductGroupThreeLevelSerializer, ProductGroupFilterSerializer, ProductGroupWithProductsSerializer, ProductVariationSerializer
+from .serializers import (
+    ProductSerializer, ProductGroupSerializer, ProductGroupThreeLevelSerializer, 
+    ProductGroupFilterSerializer, ProductGroupWithProductsSerializer, ProductVariationSerializer,
+    ProductBundleSerializer, ExamSessionSubjectBundleSerializer, ExamSessionSubjectBundleProductSerializer
+)
 from rest_framework import status
 from django.db.models import Q
 from django.contrib.postgres.search import TrigramSimilarity
 from subjects.models import Subject
 from subjects.serializers import SubjectSerializer
+from .models import ProductBundle, ProductBundleProduct
+from exam_sessions_subjects_products.models import ExamSessionSubjectBundle, ExamSessionSubjectBundleProduct
+from exam_sessions_subjects.models import ExamSessionSubject
+
+class BundleViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet for managing exam session bundles.
+    Provides read-only access to bundles available for specific exam sessions.
+    """
+    queryset = ExamSessionSubjectBundle.objects.filter(is_active=True)
+    serializer_class = ExamSessionSubjectBundleSerializer
+    permission_classes = [AllowAny]
+    
+    def list(self, request):
+        """List all active exam session bundles"""
+        # Get query parameters for filtering
+        exam_session = request.query_params.get('exam_session')
+        subject_code = request.query_params.get('subject')
+        
+        queryset = self.get_queryset().select_related(
+            'bundle__subject',
+            'exam_session_subject__exam_session',
+            'exam_session_subject__subject'
+        )
+        
+        # Filter by exam session if provided
+        if exam_session:
+            queryset = queryset.filter(exam_session_subject__exam_session__session_code=exam_session)
+        
+        # Filter by subject if provided
+        if subject_code:
+            queryset = queryset.filter(exam_session_subject__subject__code=subject_code)
+        
+        bundles = queryset.order_by('display_order', 'bundle__bundle_name')
+        
+        bundles_data = []
+        for exam_session_bundle in bundles:
+            bundle_data = {
+                'id': exam_session_bundle.id,
+                'bundle_id': exam_session_bundle.bundle.id,
+                'bundle_name': exam_session_bundle.bundle.bundle_name,
+                'subject_code': exam_session_bundle.exam_session_subject.subject.code,
+                'exam_session_code': exam_session_bundle.exam_session_subject.exam_session.session_code,
+                'bundle_description': exam_session_bundle.bundle.bundle_description,
+                'is_featured': exam_session_bundle.bundle.is_featured,
+                'display_order': exam_session_bundle.display_order,
+                'created_at': exam_session_bundle.created_at,
+            }
+            bundles_data.append(bundle_data)
+        
+        return Response({
+            'results': bundles_data,
+            'count': len(bundles_data)
+        })
+    
+    def retrieve(self, request, pk=None):
+        """Get a specific exam session bundle with its contents"""
+        try:
+            exam_session_bundle = self.get_queryset().select_related(
+                'bundle__subject',
+                'exam_session_subject__exam_session',
+                'exam_session_subject__subject'
+            ).get(pk=pk)
+            
+            # Get all active bundle components for this exam session
+            bundle_components = ExamSessionSubjectBundleProduct.objects.filter(
+                bundle=exam_session_bundle,
+                is_active=True
+            ).select_related(
+                'exam_session_subject_product_variation__exam_session_subject_product__product',
+                'exam_session_subject_product_variation__product_product_variation__product_variation'
+            ).order_by('sort_order', 'exam_session_subject_product_variation__exam_session_subject_product__product__shortname')
+            
+            # Use the proper serializer for bundle components
+            component_serializer = ExamSessionSubjectBundleProductSerializer(
+                bundle_components, 
+                many=True, 
+                context={'request': request}
+            )
+            components_data = component_serializer.data
+            
+            # Bundle metadata  
+            bundle_metadata = {
+                'bundle_description': exam_session_bundle.bundle.bundle_description,
+                'is_featured': exam_session_bundle.bundle.is_featured,
+                'exam_session_code': exam_session_bundle.exam_session_subject.exam_session.session_code
+            }
+            
+            return Response({
+                'bundle_product': {
+                    'id': exam_session_bundle.id,
+                    'bundle_id': exam_session_bundle.bundle.id,
+                    'name': exam_session_bundle.bundle.bundle_name,
+                    'subject_code': exam_session_bundle.exam_session_subject.subject.code,
+                    'exam_session_code': exam_session_bundle.exam_session_subject.exam_session.session_code,
+                    'metadata': bundle_metadata
+                },
+                'components': components_data,
+                'total_components': len(components_data)
+            })
+            
+        except ExamSessionSubjectBundle.DoesNotExist:
+            return Response(
+                {'error': 'Exam session bundle not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to get bundle contents: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
@@ -86,6 +201,164 @@ class ProductViewSet(viewsets.ModelViewSet):
             'created': created,
             'errors': errors
         }, status=status.HTTP_400_BAD_REQUEST if errors else status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['get'], url_path='bundle-contents')
+    def get_bundle_contents(self, request, pk=None):
+        """
+        Get all products included in a bundle by bundle ID.
+        Returns the actual product data that should be added to cart when bundle is selected.
+        """
+        try:
+            # For now, we'll look up bundles by subject code (assuming pk is a bundle ID)
+            # In the future, this should be moved to a separate BundleViewSet
+            try:
+                bundle = ProductBundle.objects.get(id=pk)
+            except ProductBundle.DoesNotExist:
+                return Response(
+                    {'error': 'Bundle not found'}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Get all active bundle components
+            bundle_components = ProductBundleProduct.objects.filter(
+                bundle=bundle,
+                is_active=True
+            ).select_related(
+                'product',
+                'product_variation'
+            ).order_by('sort_order', 'product__shortname')
+            
+            # Serialize the component products
+            components_data = []
+            for bundle_component in bundle_components:
+                component_product = bundle_component.product
+                
+                # Get the full product data using the existing serializer
+                product_serializer = ProductSerializer(component_product, context={'request': request})
+                component_data = product_serializer.data
+                
+                # Add bundle-specific metadata
+                component_data['bundle_info'] = {
+                    'default_price_type': bundle_component.default_price_type,
+                    'quantity': bundle_component.quantity,
+                    'sort_order': bundle_component.sort_order,
+                    'variation_id': bundle_component.product_variation.id if bundle_component.product_variation else None,
+                    'variation_name': bundle_component.product_variation.name if bundle_component.product_variation else None
+                }
+                
+                components_data.append(component_data)
+            
+            # Bundle metadata is now part of the ProductBundle model
+            bundle_metadata = {
+                'estimated_savings_percentage': float(bundle.estimated_savings_percentage) if bundle.estimated_savings_percentage else None,
+                'estimated_savings_amount': float(bundle.estimated_savings_amount) if bundle.estimated_savings_amount else None,
+                'bundle_description': bundle.bundle_description,
+                'marketing_tagline': bundle.marketing_tagline,
+                'is_featured': bundle.is_featured
+            }
+            
+            return Response({
+                'bundle_product': {
+                    'id': bundle.id,
+                    'name': bundle.bundle_name,
+                    'subject_code': bundle.subject_code,
+                    'metadata': bundle_metadata
+                },
+                'components': components_data,
+                'total_components': len(components_data)
+            })
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to get bundle contents: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=False, methods=['get'], url_path='bundles')
+    def get_bundles(self, request):
+        """
+        Get all available bundles (both master bundles and exam session bundles).
+        Supports filtering by subject, exam session, and other parameters.
+        """
+        try:
+            # Get query parameters for filtering
+            subject_code = request.query_params.get('subject')
+            exam_session = request.query_params.get('exam_session')
+            bundle_type = request.query_params.get('type', 'all')  # 'master', 'exam_session', or 'all'
+            featured_only = request.query_params.get('featured', 'false').lower() == 'true'
+            
+            bundles_data = []
+            
+            # Fetch master bundles if requested
+            if bundle_type in ['master', 'all']:
+                master_bundles = ProductBundle.objects.filter(is_active=True)
+                
+                if subject_code:
+                    master_bundles = master_bundles.filter(subject__code=subject_code)
+                
+                if featured_only:
+                    master_bundles = master_bundles.filter(is_featured=True)
+                
+                master_bundles = master_bundles.select_related('subject').prefetch_related(
+                    'bundle_products__product_product_variation__product',
+                    'bundle_products__product_product_variation__product_variation'
+                ).order_by('display_order', 'bundle_name')
+                
+                for bundle in master_bundles:
+                    serializer = ProductBundleSerializer(bundle, context={'request': request})
+                    bundle_data = serializer.data
+                    bundle_data['bundle_type'] = 'master'
+                    bundle_data['exam_session_code'] = None  # Master bundles don't have exam sessions
+                    bundles_data.append(bundle_data)
+            
+            # Fetch exam session bundles if requested
+            if bundle_type in ['exam_session', 'all']:
+                exam_session_bundles = ExamSessionSubjectBundle.objects.filter(is_active=True)
+                
+                if subject_code:
+                    exam_session_bundles = exam_session_bundles.filter(
+                        exam_session_subject__subject__code=subject_code
+                    )
+                
+                if exam_session:
+                    exam_session_bundles = exam_session_bundles.filter(
+                        exam_session_subject__exam_session__session_code=exam_session
+                    )
+                
+                if featured_only:
+                    exam_session_bundles = exam_session_bundles.filter(bundle__is_featured=True)
+                
+                exam_session_bundles = exam_session_bundles.select_related(
+                    'bundle__subject',
+                    'exam_session_subject__exam_session',
+                    'exam_session_subject__subject'
+                ).prefetch_related(
+                    'bundle_products__exam_session_subject_product_variation__product_product_variation__product',
+                    'bundle_products__exam_session_subject_product_variation__product_product_variation__product_variation'
+                ).order_by('display_order', 'bundle__bundle_name')
+                
+                for bundle in exam_session_bundles:
+                    serializer = ExamSessionSubjectBundleSerializer(bundle, context={'request': request})
+                    bundle_data = serializer.data
+                    bundle_data['bundle_type'] = 'exam_session'
+                    bundles_data.append(bundle_data)
+            
+            return Response({
+                'results': bundles_data,
+                'count': len(bundles_data),
+                'filters_applied': {
+                    'subject_code': subject_code,
+                    'exam_session': exam_session,
+                    'bundle_type': bundle_type,
+                    'featured_only': featured_only
+                }
+            })
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to get bundles: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 @api_view(['GET'])
 @permission_classes([AllowAny])

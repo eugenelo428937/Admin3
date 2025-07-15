@@ -225,13 +225,13 @@ const ProductList = React.memo(() => {
 					setHasNextPage(response.has_next);
 					setSearchResults(response);
 				} else {
-					console.log('📋 REGULAR MODE: Using regular product endpoint');
+					console.log('📋 REGULAR MODE: Using combined products and bundles endpoint');
 					console.log('📋 [ProductList] Regular mode navbar filters:', {
 						navbarGroupFilter,
 						navbarProductFilter
 					});
 					
-					// Use regular product endpoint
+					// Use combined products and bundles endpoint
 					const params = new URLSearchParams();
 					
 					// Add navbar filters if present
@@ -261,32 +261,32 @@ const ProductList = React.memo(() => {
 						page
 					);
 
-					const data = await productService.getAvailableProducts(
+					const data = await productService.getProductsAndBundles(
 						params,
 						page,
 						PAGE_SIZE
 					);
 
-					// Handle paginated response
-					const newProducts = data.products || data.results || [];
-					const pagination = data.pagination || {};
+					// Handle combined response
+					const newItems = data.results || [];
 
-					console.log('📋 [ProductList] Regular API response:', {
-						productsCount: newProducts.length,
-						paginationCount: pagination.count,
-						sampleProduct: newProducts[0]
+					console.log('📋 [ProductList] Combined API response:', {
+						itemsCount: newItems.length,
+						productsCount: data.products_count,
+						bundlesCount: data.bundles_count,
+						sampleItem: newItems[0]
 					});
 
 					if (resetProducts || page === 1) {
-						console.log('📋 [ProductList] Setting products to regular results:', newProducts.length, 'products');
-						setProducts(newProducts);
+						console.log('📋 [ProductList] Setting items to combined results:', newItems.length, 'items');
+						setProducts(newItems);
 					} else {
-						setProducts((prev) => [...prev, ...newProducts]);
+						setProducts((prev) => [...prev, ...newItems]);
 					}
 
 					// Update pagination state
-					setHasNextPage(pagination.has_next || false);
-					setTotalProducts(pagination.count || newProducts.length);
+					setHasNextPage(data.has_next || false);
+					setTotalProducts(data.count || newItems.length);
 					setCurrentPage(page);
 				}
 			} catch (err) {
@@ -396,14 +396,19 @@ const ProductList = React.memo(() => {
 			<div className="product-cards-container">
 				{products.length === 0 && !loading ? (
 					<Alert variant="info" className="mt-3">
-						No products available based on selected filters.
+						No products or bundles available based on selected filters.
 					</Alert>
 				) : (
 					<>
 						{/* Product count display */}
 						<div className="d-flex justify-content-between align-items-center mb-3">
 							<div className="text-muted">
-								Showing {products.length} of {totalProducts} products
+								Showing {products.length} of {totalProducts} items
+								{!isSearchMode && (
+									<span className="ms-2">
+										(products & bundles)
+									</span>
+								)}
 							</div>
 							{hasNextPage && (
 								<small className="text-muted">
@@ -413,16 +418,17 @@ const ProductList = React.memo(() => {
 							)}
 						</div>
 
-						<Row xs={1} md={3} lg={3} xl={4} className="g-4">
-							{products.map((product) => (
+						<Row xs={1} md={2} lg={3} xl={4} className="g-4">
+							{products.map((item) => (
 								<Col
 									key={
-										product.essp_id ||
-										product.id ||
-										product.product_id
+										item.essp_id ||
+										item.id ||
+										item.product_id ||
+										`bundle-${item.id}`
 									}>
 									<ProductCard
-										product={product}
+										product={item}
 										onAddToCart={handleAddToCart}
 										allEsspIds={allEsspIds}
 										bulkDeadlines={bulkDeadlines}

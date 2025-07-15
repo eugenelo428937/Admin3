@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cart, CartItem, ActedOrder, ActedOrderItem, ActedOrderPayment
+from .models import Cart, CartItem, CartFee, ActedOrder, ActedOrderItem, ActedOrderPayment
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
@@ -12,6 +12,19 @@ class CartItemAdmin(admin.ModelAdmin):
     list_display = ('id', 'cart', 'product', 'quantity', 'price_type', 'actual_price', 'added_at')
     search_fields = ('cart__user__username', 'cart__session_key', 'product__product_name')
     list_filter = ('price_type', 'added_at',)
+
+
+@admin.register(CartFee)
+class CartFeeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'cart', 'fee_type', 'name', 'amount_display', 'is_refundable', 'applied_at')
+    search_fields = ('cart__user__username', 'name', 'description')
+    list_filter = ('fee_type', 'is_refundable', 'applied_at', 'currency')
+    raw_id_fields = ('cart',)
+    readonly_fields = ('applied_at',)
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('cart__user')
+
 
 @admin.register(ActedOrder)
 class ActedOrderAdmin(admin.ModelAdmin):

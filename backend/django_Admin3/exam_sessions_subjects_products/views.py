@@ -15,6 +15,10 @@ from products.models.product_group import ProductGroup
 from subjects.models import Subject
 from subjects.serializers import SubjectSerializer
 
+# Import exam session bundle models and serializers
+from .models import ExamSessionSubjectBundle
+from products.serializers import ExamSessionSubjectBundleSerializer
+
 logger = logging.getLogger(__name__)
 
 class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):    
@@ -135,7 +139,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='list', permission_classes=[AllowAny])
     def list_products(self, request):
         """
-        Get list of all products with their subject details.
+        Get list of all products and exam session bundles with their subject details.
         Optimized with caching and pagination support.
         """
         logger.info('--- list_products called ---')
@@ -161,16 +165,16 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             'page': page,
             'page_size': page_size
         }
-        cache_key = f"products_list_{hash(str(sorted(cache_key_params.items())))}"
+        cache_key = f"products_bundles_list_{hash(str(sorted(cache_key_params.items())))}"
         
         # Try to get from cache first
         cached_data = cache.get(cache_key)
         if cached_data:
-            logger.info('Returning cached products data')
+            logger.info('Returning cached products and bundles data')
             return Response(cached_data)
         
-        # Optimize queryset with select_related and prefetch_related
-        queryset = ExamSessionSubjectProduct.objects.select_related(
+        # ===== FETCH PRODUCTS =====
+        products_queryset = ExamSessionSubjectProduct.objects.select_related(
             'exam_session_subject__subject',
             'product'
         ).prefetch_related(
@@ -178,25 +182,36 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             'variations__prices'
         )
 
-        # Subject filtering - multiple options
+        # ===== FETCH EXAM SESSION BUNDLES =====
+        bundles_queryset = ExamSessionSubjectBundle.objects.filter(is_active=True).select_related(
+            'bundle__subject',
+            'exam_session_subject__exam_session',
+            'exam_session_subject__subject'
+        ).prefetch_related(
+            'bundle_products__exam_session_subject_product_variation__product_product_variation__product',
+            'bundle_products__exam_session_subject_product_variation__product_product_variation__product_variation'
+        )
+
+        # ===== APPLY SUBJECT FILTERING TO BOTH =====
         subject_ids = request.query_params.getlist('subject')
         subject_code = request.query_params.get('subject_code', None)
         logger.info(f'Filtering subject_ids: {subject_ids}, subject_code: {subject_code}')
+        
         if subject_ids:
-            queryset = queryset.filter(
-                exam_session_subject__subject__id__in=subject_ids)
-            logger.info(f'After subject_ids filter, queryset count: {queryset.count()}')
+            products_queryset = products_queryset.filter(exam_session_subject__subject__id__in=subject_ids)
+            bundles_queryset = bundles_queryset.filter(exam_session_subject__subject__id__in=subject_ids)
+            logger.info(f'After subject_ids filter - products: {products_queryset.count()}, bundles: {bundles_queryset.count()}')
+        
         if subject_code:
-            queryset = queryset.filter(
-                exam_session_subject__subject__code=subject_code)
-            logger.info(f'After subject_code filter, queryset count: {queryset.count()}')
+            products_queryset = products_queryset.filter(exam_session_subject__subject__code=subject_code)
+            bundles_queryset = bundles_queryset.filter(exam_session_subject__subject__code=subject_code)
+            logger.info(f'After subject_code filter - products: {products_queryset.count()}, bundles: {bundles_queryset.count()}')
 
-        # --- Product group filtering logic ---
+        # ===== APPLY GROUP FILTERING TO PRODUCTS =====
         main_category_ids = request.query_params.getlist('main_category')
         delivery_method_ids = request.query_params.getlist('delivery_method')
         logger.info(f'Filtering main_category_ids: {main_category_ids}, delivery_method_ids: {delivery_method_ids}')
         
-        # Use more efficient filtering approach
         if main_category_ids or delivery_method_ids:
             product_filters = Q()
             
@@ -205,41 +220,38 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             
             if delivery_method_ids:
                 if main_category_ids:
-                    # Intersection: products must be in both categories
                     product_filters &= Q(product__groups__id__in=delivery_method_ids)
                 else:
                     product_filters |= Q(product__groups__id__in=delivery_method_ids)
             
-            queryset = queryset.filter(product_filters).distinct()
+            products_queryset = products_queryset.filter(product_filters).distinct()
             
-        logger.info(f'After product group filter, queryset count: {queryset.count()}')
+        logger.info(f'After product group filter - products: {products_queryset.count()}')
 
-        # --- Navbar filtering logic ---
+        # ===== APPLY NAVBAR FILTERING =====
         group_filter = request.query_params.get('group')
         product_filter = request.query_params.get('product')
         logger.info(f'Navbar filtering: group={group_filter}, product={product_filter}')
         
         if group_filter:
-            # Filter by product group name
             try:
                 group = ProductGroup.objects.get(name=group_filter)
-                queryset = queryset.filter(product__groups=group)
-                logger.info(f'After group filter "{group_filter}", queryset count: {queryset.count()}')
+                products_queryset = products_queryset.filter(product__groups=group)
+                logger.info(f'After group filter "{group_filter}" - products: {products_queryset.count()}')
             except ProductGroup.DoesNotExist:
                 logger.warning(f'Product group "{group_filter}" not found')
-                queryset = queryset.none()  # Return empty result if group doesn't exist
+                products_queryset = products_queryset.none()
         
         if product_filter:
-            # Filter by specific product ID
             try:
                 product_id = int(product_filter)
-                queryset = queryset.filter(product__id=product_id)
-                logger.info(f'After product filter ID {product_id}, queryset count: {queryset.count()}')
+                products_queryset = products_queryset.filter(product__id=product_id)
+                logger.info(f'After product filter ID {product_id} - products: {products_queryset.count()}')
             except (ValueError, TypeError):
                 logger.warning(f'Invalid product ID: {product_filter}')
-                queryset = queryset.none()  # Return empty result if product ID is invalid
+                products_queryset = products_queryset.none()
 
-        # --- New navbar dropdown filtering logic ---
+        # ===== APPLY NEW NAVBAR DROPDOWN FILTERING =====
         tutorial_format_filter = request.query_params.get('tutorial_format')
         variation_filter = request.query_params.get('variation')
         distance_learning_filter = request.query_params.get('distance_learning')
@@ -248,56 +260,88 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         logger.info(f'New navbar filtering: tutorial_format={tutorial_format_filter}, variation={variation_filter}, distance_learning={distance_learning_filter}, tutorial={tutorial_filter}')
         
         if tutorial_format_filter:
-            # Filter by tutorial format (product group name)
             try:
                 format_group = ProductGroup.objects.get(name=tutorial_format_filter)
-                queryset = queryset.filter(product__groups=format_group)
-                logger.info(f'After tutorial_format filter "{tutorial_format_filter}", queryset count: {queryset.count()}')
+                products_queryset = products_queryset.filter(product__groups=format_group)
+                logger.info(f'After tutorial_format filter "{tutorial_format_filter}" - products: {products_queryset.count()}')
             except ProductGroup.DoesNotExist:
                 logger.warning(f'Tutorial format group "{tutorial_format_filter}" not found')
-                queryset = queryset.none()
+                products_queryset = products_queryset.none()
         
         if variation_filter:
-            # Filter by product variation ID
             try:
                 variation_id = int(variation_filter)
-                queryset = queryset.filter(product__product_variations__id=variation_id)
-                logger.info(f'After variation filter ID {variation_id}, queryset count: {queryset.count()}')
+                products_queryset = products_queryset.filter(product__product_variations__id=variation_id)
+                logger.info(f'After variation filter ID {variation_id} - products: {products_queryset.count()}')
             except (ValueError, TypeError):
                 logger.warning(f'Invalid variation ID: {variation_filter}')
-                queryset = queryset.none()
+                products_queryset = products_queryset.none()
         
         if distance_learning_filter:
-            # Filter by distance learning groups
             distance_learning_groups = ['Core Study Materials', 'Revision Materials', 'Marking']
             try:
                 dl_groups = ProductGroup.objects.filter(name__in=distance_learning_groups)
-                queryset = queryset.filter(product__groups__in=dl_groups).distinct()
-                logger.info(f'After distance_learning filter, queryset count: {queryset.count()}')
+                products_queryset = products_queryset.filter(product__groups__in=dl_groups).distinct()
+                logger.info(f'After distance_learning filter - products: {products_queryset.count()}')
             except Exception as e:
                 logger.warning(f'Error applying distance learning filter: {e}')
-                queryset = queryset.none()
+                products_queryset = products_queryset.none()
         
         if tutorial_filter:
-            # Filter by tutorial group excluding online classroom
             try:
                 tutorial_group = ProductGroup.objects.get(name='Tutorial')
                 online_classroom_group = ProductGroup.objects.get(name='Online Classroom')
-                queryset = queryset.filter(product__groups=tutorial_group).exclude(product__groups=online_classroom_group).distinct()
-                logger.info(f'After tutorial filter, queryset count: {queryset.count()}')
+                products_queryset = products_queryset.filter(product__groups=tutorial_group).exclude(product__groups=online_classroom_group).distinct()
+                logger.info(f'After tutorial filter - products: {products_queryset.count()}')
             except ProductGroup.DoesNotExist as e:
                 logger.warning(f'Tutorial group not found: {e}')
-                queryset = queryset.none()
+                products_queryset = products_queryset.none()
 
-        # Apply pagination
-        total_count = queryset.count()
+        # ===== SERIALIZE BOTH PRODUCTS AND BUNDLES =====
+        products_serializer = ProductListSerializer(products_queryset, many=True)
+        bundles_serializer = ExamSessionSubjectBundleSerializer(bundles_queryset, many=True, context={'request': request})
+
+        # ===== TRANSFORM BUNDLES TO HAVE CONSISTENT STRUCTURE =====
+        transformed_bundles = []
+        for bundle_data in bundles_serializer.data:
+            transformed_bundle = {
+                **bundle_data,
+                'item_type': 'bundle',
+                'is_bundle': True,
+                'type': 'bundle',
+                'bundle_type': 'exam_session',
+                'product_name': bundle_data.get('bundle_name'),
+                'shortname': bundle_data.get('bundle_name'),
+                'fullname': bundle_data.get('bundle_description', bundle_data.get('bundle_name')),
+                'description': bundle_data.get('bundle_description'),
+                'code': bundle_data.get('subject_code'),
+            }
+            transformed_bundles.append(transformed_bundle)
+
+        # ===== TRANSFORM PRODUCTS TO HAVE CONSISTENT STRUCTURE =====
+        transformed_products = []
+        for product_data in products_serializer.data:
+            transformed_product = {
+                **product_data,
+                'item_type': 'product',
+                'is_bundle': False,
+                'type': product_data.get('type', 'product')
+            }
+            transformed_products.append(transformed_product)
+
+        # ===== COMBINE AND PAGINATE =====
+        all_items = transformed_bundles + transformed_products
+        total_count = len(all_items)
+        
+        # Apply pagination to combined results
         start_index = (page - 1) * page_size
         end_index = start_index + page_size
-        paginated_queryset = queryset[start_index:end_index]
+        paginated_items = all_items[start_index:end_index]
         
+        logger.info(f'Combined totals - products: {len(transformed_products)}, bundles: {len(transformed_bundles)}, total: {total_count}')
         logger.info(f'Pagination: total={total_count}, start={start_index}, end={end_index}, page_size={page_size}')
         
-        # Get subjects for filters (cache this separately - only on first page)
+        # ===== GET SUBJECTS FOR FILTERS =====
         subjects_data = []
         if page == 1:
             subjects_cache_key = 'all_subjects_ordered'
@@ -308,31 +352,28 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 subjects_data = subject_serializer.data
                 cache.set(subjects_cache_key, subjects_data, 1800)  # 30 minutes
         
-        # Serialize the main data
-        serializer = ProductListSerializer(paginated_queryset, many=True)
-        
-        # Calculate pagination info
+        # ===== PREPARE RESPONSE =====
         has_next = end_index < total_count
         has_previous = page > 1
         
         response_data = {
-            'products': serializer.data,
-            'pagination': {
-                'count': total_count,
-                'page': page,
-                'page_size': page_size,
-                'has_next': has_next,
-                'has_previous': has_previous,
-                'total_pages': (total_count + page_size - 1) // page_size  # Ceiling division
-            },
+            'results': paginated_items,  # Changed from 'products' to 'results' for consistency
+            'count': total_count,
+            'page': page,
+            'page_size': page_size,
+            'has_next': has_next,
+            'has_previous': has_previous,
+            'total_pages': (total_count + page_size - 1) // page_size,
+            'products_count': len(transformed_products),
+            'bundles_count': len(transformed_bundles),
             'filters': {
                 'subjects': subjects_data
-            } if page == 1 else {}  # Only include subjects on first page
+            } if page == 1 else {}
         }
         
-        # Cache the result for 5 minutes (shorter cache for paginated results)
+        # Cache the result for 5 minutes
         cache.set(cache_key, response_data, 300)
-        logger.info(f'Paginated queryset count: {len(serializer.data)}, total: {total_count}, cached with key: {cache_key}')
+        logger.info(f'Paginated items count: {len(paginated_items)}, total: {total_count}, cached with key: {cache_key}')
         
         return Response(response_data)
 
@@ -404,7 +445,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         query = request.query_params.get('q', '').strip()
         subject_ids_param = request.query_params.get('subjects', '')
         category_ids_param = request.query_params.get('categories', '')
-        min_score = int(request.query_params.get('min_score', 60))
+        min_score = int(request.query_params.get('min_score', 99))
         limit = int(request.query_params.get('limit', 50))
         
         # Parse subject and category IDs
@@ -458,5 +499,88 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             logger.error(f'🔍 [API] Advanced fuzzy search error: {str(e)}')
             return Response({
                 'error': 'Advanced search failed',
+                'details': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['get'], url_path='default-search-data', permission_classes=[AllowAny])
+    def default_search_data(self, request):
+        """
+        Get default search data including popular products and top filters.
+        Used when no search query is provided to show featured content.
+        
+        Query parameters:
+        - limit: Maximum number of items per category (default: 5)
+        """
+        logger.info('🏠 [API] Default search data endpoint called')
+        
+        try:
+            limit = int(request.query_params.get('limit', 5))
+            logger.info(f'🏠 [API] Limit: {limit}')
+            
+            # Start with a basic response to test the endpoint
+            response_data = {
+                'popular_products': [],
+                'total_count': 0,
+                'suggested_filters': {
+                    'subjects': [],
+                    'product_groups': [],
+                    'variations': [],
+                    'products': []
+                },
+                'search_info': {
+                    'query': '',
+                    'type': 'default'
+                }
+            }
+            
+            # Try to get some basic data
+            try:
+                # Get some subjects
+                subjects = Subject.objects.all()[:limit]
+                subjects_serializer = SubjectSerializer(subjects, many=True)
+                response_data['suggested_filters']['subjects'] = subjects_serializer.data
+                logger.info(f'🏠 [API] Found {len(subjects_serializer.data)} subjects')
+            except Exception as e:
+                logger.warning(f'🏠 [API] Error getting subjects: {str(e)}')
+            
+            try:
+                # Get some product groups
+                product_groups = ProductGroup.objects.all()[:limit]
+                product_groups_data = [
+                    {
+                        'id': group.id,
+                        'name': group.name,
+                        'description': group.description or group.name
+                    }
+                    for group in product_groups
+                ]
+                response_data['suggested_filters']['product_groups'] = product_groups_data
+                logger.info(f'🏠 [API] Found {len(product_groups_data)} product groups')
+            except Exception as e:
+                logger.warning(f'🏠 [API] Error getting product groups: {str(e)}')
+            
+            try:
+                # Get some popular products
+                popular_products_queryset = ExamSessionSubjectProduct.objects.select_related(
+                    'exam_session_subject__subject',
+                    'product'
+                )[:limit]
+                
+                popular_products_serializer = ProductListSerializer(popular_products_queryset, many=True)
+                response_data['popular_products'] = popular_products_serializer.data
+                response_data['total_count'] = len(popular_products_serializer.data)
+                logger.info(f'🏠 [API] Found {len(popular_products_serializer.data)} popular products')
+            except Exception as e:
+                logger.warning(f'🏠 [API] Error getting popular products: {str(e)}')
+            
+            logger.info('🏠 [API] Default search data completed successfully')
+            return Response(response_data)
+            
+        except Exception as e:
+            logger.error(f'🏠 [API] Default search data error: {str(e)}')
+            import traceback
+            logger.error(f'🏠 [API] Traceback: {traceback.format_exc()}')
+            return Response({
+                'error': 'Failed to get default search data',
                 'details': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
