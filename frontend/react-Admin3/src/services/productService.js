@@ -327,6 +327,28 @@ const productService = {
 				data: error.response?.data || null,
 			};
 		}
+	},
+
+	// Get dynamic filter configuration
+	getFilterConfiguration: async (filterTypes = []) => {
+		try {
+			const params = filterTypes.length > 0 ? { types: filterTypes } : {};
+			const response = await httpService.get(
+				`${PRODUCTS_API_URL}/filter-configuration/`,
+				{ params }
+			);
+			return response.data;
+		} catch (error) {
+			console.error("Error fetching filter configuration:", error);
+			throw {
+				message:
+					error.response?.data?.message ||
+					error.message ||
+					"Failed to fetch filter configuration",
+				status: error.response?.status || 0,
+				data: error.response?.data || null,
+			};
+		}
 	}
 };
 

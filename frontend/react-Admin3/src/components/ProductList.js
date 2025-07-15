@@ -19,6 +19,8 @@ import "../styles/product_list.css";
 import ProductCard from "./ProductCard";
 import VATToggle from "./VATToggle";
 import SearchBox from "./SearchBox";
+import AdvancedFilterPanel from "./AdvancedFilterPanel";
+import FilterDebugger from "./FilterDebugger";
 
 const ProductList = React.memo(() => {
 	const navigate = useNavigate();
@@ -97,6 +99,25 @@ const ProductList = React.memo(() => {
 
 	// Use the custom hook for product card functionality
 	const { handleAddToCart, allEsspIds, bulkDeadlines } = useProductCardHelpers(products);
+
+	// Filter panel state
+	const [panelFilters, setPanelFilters] = useState({});
+
+	// Handle filter panel changes with debouncing
+	const handleFiltersChange = useCallback((filters) => {
+		console.log('🔍 [ProductList] Filter panel changed:', filters);
+		
+		// Only update if filters actually changed
+		setPanelFilters(prevFilters => {
+			const filtersChanged = JSON.stringify(prevFilters) !== JSON.stringify(filters);
+			if (filtersChanged) {
+				console.log('🔍 [ProductList] Filters actually changed, updating state');
+				return filters;
+			}
+			console.log('🔍 [ProductList] Filters unchanged, skipping update');
+			return prevFilters;
+		});
+	}, []);
 
 
 
@@ -253,6 +274,49 @@ const ProductList = React.memo(() => {
 					if (navbarTutorialFilter) {
 						params.append("tutorial", navbarTutorialFilter);
 					}
+					
+					// Add URL-based filters from navbar/direct navigation
+					if (subjectFilter) {
+						params.append("subject", subjectFilter);
+					}
+					if (categoryFilter) {
+						params.append("main_category", categoryFilter);
+					}
+					if (groupFilter) {
+						params.append("group", groupFilter);
+					}
+					if (productFilter) {
+						params.append("product", productFilter);
+					}
+					if (tutorialFormatFilter) {
+						params.append("tutorial_format", tutorialFormatFilter);
+					}
+					if (variationFilter) {
+						params.append("variation", variationFilter);
+					}
+					if (distanceLearningFilter) {
+						params.append("distance_learning", distanceLearningFilter);
+					}
+					if (tutorialFilter) {
+						params.append("tutorial", tutorialFilter);
+					}
+					
+					// Add panel filters (these will be combined with URL filters)
+					if (panelFilters.subject && panelFilters.subject.length > 0) {
+						panelFilters.subject.forEach(id => params.append("subject", id));
+					}
+					if (panelFilters.main_category && panelFilters.main_category.length > 0) {
+						panelFilters.main_category.forEach(id => params.append("main_category", id));
+					}
+					if (panelFilters.delivery_method && panelFilters.delivery_method.length > 0) {
+						panelFilters.delivery_method.forEach(id => params.append("delivery_method", id));
+					}
+					if (panelFilters.tutorial_format && panelFilters.tutorial_format.length > 0) {
+						panelFilters.tutorial_format.forEach(format => params.append("tutorial_format", format));
+					}
+					if (panelFilters.variation && panelFilters.variation.length > 0) {
+						panelFilters.variation.forEach(id => params.append("variation", id));
+					}
 
 					console.debug(
 						"Product filter params:",
@@ -260,6 +324,29 @@ const ProductList = React.memo(() => {
 						"Page:",
 						page
 					);
+					
+					console.log('🔍 [ProductList] Combined filter params:', {
+						navbarFilters: {
+							navbarGroupFilter,
+							navbarProductFilter,
+							navbarTutorialFormatFilter,
+							navbarVariationFilter,
+							navbarDistanceLearningFilter,
+							navbarTutorialFilter
+						},
+						urlFilters: {
+							subjectFilter,
+							categoryFilter,
+							groupFilter,
+							productFilter,
+							tutorialFormatFilter,
+							variationFilter,
+							distanceLearningFilter,
+							tutorialFilter
+						},
+						panelFilters,
+						finalParams: params.toString()
+					});
 
 					const data = await productService.getProductsAndBundles(
 						params,
@@ -299,7 +386,9 @@ const ProductList = React.memo(() => {
 		},
 		[isSearchMode, searchQuery, searchSubjects, searchGroups, searchVariations, searchProducts,
 		 navbarGroupFilter, navbarProductFilter, navbarTutorialFormatFilter, navbarVariationFilter, 
-		 navbarDistanceLearningFilter, navbarTutorialFilter, PAGE_SIZE]
+		 navbarDistanceLearningFilter, navbarTutorialFilter, panelFilters, 
+		 subjectFilter, categoryFilter, groupFilter, productFilter, tutorialFormatFilter, 
+		 variationFilter, distanceLearningFilter, tutorialFilter, PAGE_SIZE]
 	);
 
 	// Load more products function
@@ -325,7 +414,9 @@ const ProductList = React.memo(() => {
 		fetchProducts(1, true);
 	}, [navbarGroupFilter, navbarProductFilter, navbarTutorialFormatFilter, navbarVariationFilter, 
 		navbarDistanceLearningFilter, navbarTutorialFilter, isSearchMode, searchQuery, 
-		searchSubjects, searchGroups, searchVariations, searchProducts]);
+		searchSubjects, searchGroups, searchVariations, searchProducts, panelFilters,
+		subjectFilter, categoryFilter, groupFilter, productFilter, tutorialFormatFilter, 
+		variationFilter, distanceLearningFilter, tutorialFilter]);
 
 	if (loading) return <div>Loading products...</div>;
 	if (error) return <div>Error: {error}</div>;
@@ -354,129 +445,172 @@ const ProductList = React.memo(() => {
 				<VATToggle />
 			</div>
 
-			{(navbarGroupFilter || navbarProductFilter) && !isSearchMode && (
-				<div className="mb-3">
-					<Button
-						variant="outline-secondary"
-						size="sm"
-						onClick={() => {
-							navigate("/products");
-						}}>
-						Clear Filter
-					</Button>
-				</div>
-			)}
-			{/* Search Results Header */}
-			{isSearchMode && (
-				<div className="mb-4">
-					<Alert
-						variant="info"
-						className="d-flex justify-content-between align-items-center">
-						<div>
-							<strong>Search Results</strong>
-							{searchQuery && (
-								<span className="ms-2">for "{searchQuery}"</span>
-							)}
-							{searchResults && (
-								<span className="ms-2">
-									({searchResults.count} products found)
-								</span>
-							)}
-						</div>
-						<Button
-							variant="outline-secondary"
-							size="sm"
-							onClick={() => navigate("/products")}>
-							Clear Search
-						</Button>
-					</Alert>
-				</div>
-			)}
-			{/* Product Cards */}
-			<div className="product-cards-container">
-				{products.length === 0 && !loading ? (
-					<Alert variant="info" className="mt-3">
-						No products or bundles available based on selected filters.
-					</Alert>
-				) : (
-					<>
-						{/* Product count display */}
-						<div className="d-flex justify-content-between align-items-center mb-3">
-							<div className="text-muted">
-								Showing {products.length} of {totalProducts} items
-								{!isSearchMode && (
-									<span className="ms-2">
-										(products & bundles)
-									</span>
-								)}
-							</div>
-							{hasNextPage && (
-								<small className="text-muted">
-									{PAGE_SIZE * (currentPage - 1) + products.length}{" "}
-									loaded, more available
-								</small>
-							)}
-						</div>
+			{/* Filter Debugger - Development Only */}
+			<FilterDebugger
+				urlFilters={{
+					subjectFilter,
+					categoryFilter,
+					groupFilter,
+					productFilter,
+					tutorialFormatFilter,
+					variationFilter,
+					distanceLearningFilter,
+					tutorialFilter
+				}}
+				panelFilters={panelFilters}
+				navbarFilters={{
+					navbarGroupFilter,
+					navbarProductFilter,
+					navbarTutorialFormatFilter,
+					navbarVariationFilter,
+					navbarDistanceLearningFilter,
+					navbarTutorialFilter
+				}}
+				finalParams={JSON.stringify(Object.fromEntries(new URLSearchParams(location.search)))}
+			/>
 
-						<Row xs={1} md={2} lg={3} xl={4} className="g-4">
-							{products.map((item) => (
-								<Col
-									key={
-										item.essp_id ||
-										item.id ||
-										item.product_id ||
-										`bundle-${item.id}`
-									}>
-									<ProductCard
-										product={item}
-										onAddToCart={handleAddToCart}
-										allEsspIds={allEsspIds}
-										bulkDeadlines={bulkDeadlines}
-									/>
-								</Col>
-							))}
-						</Row>
-
-						{/* Load More Button */}
-						{hasNextPage && (
-							<div className="text-center mt-4 mb-4">
-								<Button
-									variant="primary"
-									size="lg"
-									onClick={loadMoreProducts}
-									disabled={loadingMore}
-									className="d-flex align-items-center mx-auto">
-									{loadingMore ? (
-										<>
-											<Spinner
-												as="span"
-												animation="border"
-												size="sm"
-												role="status"
-												className="me-2"
-											/>
-											Loading more products...
-										</>
-									) : (
-										`Load More Products (${
-											totalProducts - products.length
-										} remaining)`
-									)}
-								</Button>
-							</div>
-						)}
-
-						{/* End of products message */}
-						{!hasNextPage && products.length > 0 && (
-							<div className="text-center mt-4 mb-4">
-								<div className="text-muted">
-									<strong>End of products</strong> - All{" "}
-									{products.length} products loaded
-								</div>
-							</div>
-						)}
-					</>
+			{/* Main content area with filter panel */}
+			<div className="d-flex gap-3">
+				{/* Filter Panel - Only show in non-search mode */}
+				{!isSearchMode && (
+					<div className="filter-panel-container">
+						<AdvancedFilterPanel
+							onFiltersChange={handleFiltersChange}
+							categoryFilter={categoryFilter}
+							subjectFilter={subjectFilter}
+							isSearchMode={isSearchMode}
+							initialFilters={panelFilters}
+						/>
+					</div>
 				)}
+
+				{/* Main content area */}
+				<div className="flex-grow-1 main-content-area">
+					{(navbarGroupFilter || navbarProductFilter) && !isSearchMode && (
+						<div className="mb-3">
+							<Button
+								variant="outline-secondary"
+								size="sm"
+								onClick={() => {
+									navigate("/products");
+								}}>
+								Clear Filter
+							</Button>
+						</div>
+					)}
+					{/* Search Results Header */}
+					{isSearchMode && (
+						<div className="mb-4">
+							<Alert
+								variant="info"
+								className="d-flex justify-content-between align-items-center">
+								<div>
+									<strong>Search Results</strong>
+									{searchQuery && (
+										<span className="ms-2">for "{searchQuery}"</span>
+									)}
+									{searchResults && (
+										<span className="ms-2">
+											({searchResults.count} products found)
+										</span>
+									)}
+								</div>
+								<Button
+									variant="outline-secondary"
+									size="sm"
+									onClick={() => navigate("/products")}>
+									Clear Search
+								</Button>
+							</Alert>
+						</div>
+					)}
+					{/* Product Cards */}
+					<div className="product-cards-container">
+						{products.length === 0 && !loading ? (
+							<Alert variant="info" className="mt-3">
+								No products or bundles available based on selected filters.
+							</Alert>
+						) : (
+							<>
+								{/* Product count display */}
+								<div className="d-flex justify-content-between align-items-center mb-3">
+									<div className="text-muted">
+										Showing {products.length} of {totalProducts} items
+										{!isSearchMode && (
+											<span className="ms-2">
+												(products & bundles)
+											</span>
+										)}
+									</div>
+									{hasNextPage && (
+										<small className="text-muted">
+											{PAGE_SIZE * (currentPage - 1) + products.length}{" "}
+											loaded, more available
+										</small>
+									)}
+								</div>
+
+								<Row xs={1} md={2} lg={3} xl={4} className="g-4">
+									{products.map((item) => (
+										<Col
+											key={
+												item.essp_id ||
+												item.id ||
+												item.product_id ||
+												`bundle-${item.id}`
+											}>
+											<ProductCard
+												product={item}
+												onAddToCart={handleAddToCart}
+												allEsspIds={allEsspIds}
+												bulkDeadlines={bulkDeadlines}
+											/>
+										</Col>
+									))}
+								</Row>
+
+								{/* Load More Button */}
+								{hasNextPage && (
+									<div className="text-center mt-4 mb-4">
+										<Button
+											variant="primary"
+											size="lg"
+											onClick={loadMoreProducts}
+											disabled={loadingMore}
+											className="d-flex align-items-center mx-auto">
+											{loadingMore ? (
+												<>
+													<Spinner
+														as="span"
+														animation="border"
+														size="sm"
+														role="status"
+														className="me-2"
+													/>
+													Loading more products...
+												</>
+											) : (
+												`Load More Products (${
+													totalProducts - products.length
+												} remaining)`
+											)}
+										</Button>
+									</div>
+								)}
+
+								{/* End of products message */}
+								{!hasNextPage && products.length > 0 && (
+									<div className="text-center mt-4 mb-4">
+										<div className="text-muted">
+											<strong>End of products</strong> - All{" "}
+											{products.length} products loaded
+										</div>
+									</div>
+								)}
+							</>
+						)}
+					</div>
+				</div>
 			</div>
 		</Container>
 	);
