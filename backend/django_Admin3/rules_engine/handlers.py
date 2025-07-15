@@ -289,7 +289,18 @@ class BaseRuleHandler(ABC):
             if not calc_function:
                 raise ValueError(f"Fee calculation function '{function_name}' not found")
             
-            calculation_result = calc_function(cart_items, action.parameters)
+            # Prepare parameters with additional context
+            function_params = action.parameters.copy()
+            function_params.update({
+                'cart_id': context.get_data('cart_id'),
+                'rule_id': action.rule.id,
+                'rule_name': action.rule.name,
+                'user_id': context.user.id if context.user else None,
+                'timestamp': timezone.now().isoformat(),
+                'payment_method': context.get_data('payment_method', 'credit_card'),
+            })
+            
+            calculation_result = calc_function(cart_items, function_params)
             
             return {
                 'type': 'calculation',

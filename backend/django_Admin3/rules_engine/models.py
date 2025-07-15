@@ -117,13 +117,20 @@ class RuleCondition(models.Model):
             comparison_value = self._parse_value(self.value)
             
             if self.operator == 'custom_function':
-                from .custom_functions import check_same_subject_products
+                from . import custom_functions
                 if isinstance(comparison_value, dict) and 'function' in comparison_value:
                     function_name = comparison_value['function']
                     params = comparison_value.get('params', {})
-                    if function_name == 'check_same_subject_products':
-                        result = check_same_subject_products(field_value, params)
+                    
+                    # Get the custom function by name
+                    custom_function = getattr(custom_functions, function_name, None)
+                    if custom_function:
+                        # Merge params with the full context for custom functions
+                        enhanced_params = params.copy()
+                        enhanced_params.update(context)  # Add full context to params
+                        result = custom_function(field_value, enhanced_params)
                     else:
+                        logger.error(f"Custom function '{function_name}' not found")
                         result = False
                 else:
                     result = False

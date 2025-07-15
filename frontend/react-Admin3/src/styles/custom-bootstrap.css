@@ -4,7 +4,7 @@
   --bs-primary-rgb: 51, 51, 52;
   --text-primary: #333334;
   --text-primary-light: #fdfdfd;
-  font-family: 'Poppins', sans-serif;
+  
   /* Primary color variations */
   /* --bs-primary-bg-subtle: #d4edda;
   --bs-primary-border-subtle: #9fdf9f;
@@ -190,6 +190,7 @@
   -moz-osx-font-smoothing: grayscale;
   font-smooth: never;
 }
+
 .scaleUp__wholestep {
     transform: scale(var(--wholestep));
 }
@@ -215,12 +216,18 @@
 }
 
 html {
-  font-family: sans-serif;
+  font-family: 'Poppins', sans-serif !important;
   /* 1 */
   -ms-text-size-adjust: 100%;
   /* 2 */
   -webkit-text-size-adjust: 100%;
   /* 2 */
+}
+
+.font-poppins {
+  font-family: 'Poppins','Helvetica Neue','Helvetica', sans-serif !important;
+  letter-spacing: -0.045rem !important;
+  transform: scale(1, 0.975) !important;
 }
 
 /**
@@ -1697,6 +1704,24 @@ th {
 }
 .hero-container {  
   height: 27.95rem !important;
+}
+
+.product-list-container {
+  padding: 0rem 2rem !important;
+}
+.subject-chip{
+  background-color: var(--light__primarycontainer_lkv);  
+}
+.session-chip{
+  background-color: var(--light__secondarycontainer_lkv);  
+}
+.product-chip{
+  background-color: #fff3cd;  
+}
+@media (min-width: 992px) {
+  .product-list-container {
+    padding: 2rem 6rem !important;
+  }
 }
 /* Additional custom classes */
 /* .text-primary {

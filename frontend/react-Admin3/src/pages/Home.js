@@ -1,6 +1,6 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import SearchBox from "../components/SearchBox";
 import SearchResults from "../components/SearchResults";
 import { Row, Col } from "react-bootstrap";
@@ -10,12 +10,12 @@ import backgroundVideo from "../assets/video/12595751_2560_1440_30fps.mp4";
 const Home = () => {
 	const navigate = useNavigate();
 	const [searchResults, setSearchResults] = useState(null);
-	const [searchQuery, setSearchQuery] = useState('');
+	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedFilters, setSelectedFilters] = useState({
 		subjects: [],
 		product_groups: [],
 		variations: [],
-		products: []
+		products: [],
 	});
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
@@ -23,97 +23,110 @@ const Home = () => {
 	// Handle search results from SearchBox
 	const handleSearchResults = (results, query) => {
 		setSearchResults(results);
-		setSearchQuery(query || '');
+		setSearchQuery(query || "");
 		setError(null);
 	};
 
 	// Handle filter selection from SearchResults
 	const handleFilterSelect = (filterType, item) => {
 		const isSelected = isFilterSelected(filterType, item);
-		
+
 		if (isSelected) {
 			// Remove filter
-			setSelectedFilters(prev => ({
+			setSelectedFilters((prev) => ({
 				...prev,
-				[filterType]: prev[filterType].filter(selected => selected.id !== item.id)
+				[filterType]: prev[filterType].filter(
+					(selected) => selected.id !== item.id
+				),
 			}));
 		} else {
 			// Add filter
-			setSelectedFilters(prev => ({
+			setSelectedFilters((prev) => ({
 				...prev,
-				[filterType]: [...prev[filterType], item]
+				[filterType]: [...prev[filterType], item],
 			}));
 		}
 	};
 
 	// Check if filter is selected
 	const isFilterSelected = (filterType, item) => {
-		return selectedFilters[filterType].some(selected => selected.id === item.id);
+		return selectedFilters[filterType].some(
+			(selected) => selected.id === item.id
+		);
 	};
 
 	// Remove filter
 	const handleFilterRemove = (filterType, itemId) => {
-		setSelectedFilters(prev => ({
+		setSelectedFilters((prev) => ({
 			...prev,
-			[filterType]: prev[filterType].filter(item => item.id !== itemId)
+			[filterType]: prev[filterType].filter((item) => item.id !== itemId),
 		}));
 	};
 
 	// Handle "Show Matching Products" button click
 	const handleShowMatchingProducts = (results, filters, query) => {
-		console.log('🚀 [Home] Starting navigation to search results');
-		console.log('🚀 [Home] Raw parameters received:', {
-			results: results ? 'present' : 'missing',
-			filters: filters ? 'present' : 'missing', 
-			query: query ? `"${query}"` : 'missing'
+		console.log("🚀 [Home] Starting navigation to search results");
+		console.log("🚀 [Home] Raw parameters received:", {
+			results: results ? "present" : "missing",
+			filters: filters ? "present" : "missing",
+			query: query ? `"${query}"` : "missing",
 		});
-		
+
 		// Use current state if parameters are not provided
 		const searchQueryToUse = query || searchQuery;
 		const filtersToUse = filters || selectedFilters;
-		
-		console.log('🚀 [Home] Final parameters to use:', {
+
+		console.log("🚀 [Home] Final parameters to use:", {
 			searchQuery: searchQueryToUse?.trim(),
-			selectedFilters: filtersToUse
-		});
-		
-		const searchParams = new URLSearchParams();
-		
-		if (searchQueryToUse?.trim()) {
-			searchParams.append('q', searchQueryToUse.trim());
-			console.log('🚀 [Home] Added query parameter:', searchQueryToUse.trim());
-		}
-		
-		// Add selected filters
-		filtersToUse.subjects.forEach(subject => {
-			searchParams.append('subjects', subject.code || subject.id);
-			console.log('🚀 [Home] Added subject filter:', subject.code || subject.id);
-		});
-		
-		filtersToUse.product_groups.forEach(group => {
-			searchParams.append('groups', group.id);
-			console.log('🚀 [Home] Added group filter:', group.id);
-		});
-		
-		filtersToUse.variations.forEach(variation => {
-			searchParams.append('variations', variation.id);
-			console.log('🚀 [Home] Added variation filter:', variation.id);
-		});
-		
-		filtersToUse.products.forEach(product => {
-			searchParams.append('products', product.id);
-			console.log('🚀 [Home] Added product filter:', product.id);
+			selectedFilters: filtersToUse,
 		});
 
-		console.log('🚀 [Home] All searchParams entries:', Array.from(searchParams.entries()));
+		const searchParams = new URLSearchParams();
+
+		if (searchQueryToUse?.trim()) {
+			searchParams.append("q", searchQueryToUse.trim());
+			console.log(
+				"🚀 [Home] Added query parameter:",
+				searchQueryToUse.trim()
+			);
+		}
+
+		// Add selected filters
+		filtersToUse.subjects.forEach((subject) => {
+			searchParams.append("subjects", subject.code || subject.id);
+			console.log(
+				"🚀 [Home] Added subject filter:",
+				subject.code || subject.id
+			);
+		});
+
+		filtersToUse.product_groups.forEach((group) => {
+			searchParams.append("groups", group.id);
+			console.log("🚀 [Home] Added group filter:", group.id);
+		});
+
+		filtersToUse.variations.forEach((variation) => {
+			searchParams.append("variations", variation.id);
+			console.log("🚀 [Home] Added variation filter:", variation.id);
+		});
+
+		filtersToUse.products.forEach((product) => {
+			searchParams.append("products", product.id);
+			console.log("🚀 [Home] Added product filter:", product.id);
+		});
+
+		console.log(
+			"🚀 [Home] All searchParams entries:",
+			Array.from(searchParams.entries())
+		);
 
 		const finalUrl = `/products?${searchParams.toString()}`;
-		console.log('🚀 [Home] Final navigation URL:', finalUrl);
-		
+		console.log("🚀 [Home] Final navigation URL:", finalUrl);
+
 		// Navigate to product list with search parameters
 		navigate(finalUrl);
-		
-		console.log('🚀 [Home] Navigation completed');
+
+		console.log("🚀 [Home] Navigation completed");
 	};
 
 	return (
@@ -183,20 +196,22 @@ const Home = () => {
 				</Col>
 			</Row>
 
-			{/* Search Results Section - Outside hero container to prevent clipping */}
-			<Container className="product-list-container" disableGutters={true} maxWidth="xl">
-			<SearchResults
-				searchResults={searchResults}
-				searchQuery={searchQuery}
-				selectedFilters={selectedFilters}
-				onFilterSelect={handleFilterSelect}
-				onFilterRemove={handleFilterRemove}
-				onShowMatchingProducts={handleShowMatchingProducts}
-				isFilterSelected={isFilterSelected}
-				loading={loading}
-				error={error}
-				maxSuggestions={5}
-			/>
+			{/* Search Results Section */}
+			<Container				
+				disableGutters={true}
+				maxWidth="xl">
+				<SearchResults
+					searchResults={searchResults}
+					searchQuery={searchQuery}
+					selectedFilters={selectedFilters}
+					onFilterSelect={handleFilterSelect}
+					onFilterRemove={handleFilterRemove}
+					onShowMatchingProducts={handleShowMatchingProducts}
+					isFilterSelected={isFilterSelected}
+					loading={loading}
+					error={error}
+					maxSuggestions={5}
+				/>
 			</Container>
 		</Container>
 	);

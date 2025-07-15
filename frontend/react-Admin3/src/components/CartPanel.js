@@ -337,7 +337,18 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 														style={{ fontSize: "0.9em" }}>
 														Product Code:{" "}
 														{generateProductCode(item)}
-													</span>													
+													</span>
+													{/* Show bundle information if item was added via bundle */}
+													{item.metadata?.addedViaBundle && (
+														<>
+															<br />
+															<span
+																className="badge bg-info text-white"
+																style={{ fontSize: "0.75em" }}>
+																📦 From Bundle: {item.metadata.addedViaBundle.bundleName}
+															</span>
+														</>
+													)}
 												</>
 											)}
 											<br />
@@ -400,7 +411,7 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 				<Row className="d-flex flex-row align-items-center justify-content-between mt-3 mx-3 cart-panel-buttons">
 					<Button
 						variant="danger"
-						className="d-flex flex-row flex-wrap align-items-center justify-content-center"
+						className="d-flex flex-row flex-wrap align-items-center justify-content-center w-auto"
 						onClick={clearCart}
 						title="Clear cart">
 						<Trash3 className="bi d-flex flex-row align-items-center" />

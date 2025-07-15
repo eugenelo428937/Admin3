@@ -228,11 +228,23 @@ def evaluate_checkout_rules(user, cart_items=None, **kwargs):
                 business_days_to_next_holiday += 1
             current_date += timedelta(days=1)
     
+    # Get cart_id from cart_items or kwargs
+    cart_id = kwargs.get('cart_id')
+    if not cart_id and cart_items:
+        # Try to get cart_id from first cart item
+        first_item = cart_items[0] if cart_items else None
+        if hasattr(first_item, 'cart_id'):
+            cart_id = first_item.cart_id
+        elif hasattr(first_item, 'cart'):
+            cart_id = first_item.cart.id
+    
     context = {
         'cart_items': cart_items or [],
         'cart_item_count': len(cart_items) if cart_items else 0,
+        'cart_id': cart_id,
         'business_days_to_next_holiday': business_days_to_next_holiday,
         'user_country': user_country,  # Make user_country directly accessible
+        'payment_method': kwargs.get('payment_method', 'credit_card'),
         **kwargs
     }
     
