@@ -249,6 +249,84 @@ const productService = {
 				data: error.response?.data || null,
 			};
 		}
+	},
+
+	// Get exam session bundles only (no master bundles)
+	getBundles: async (params = {}) => {
+		try {
+			// Use the BundleViewSet endpoint that only returns exam session bundles
+			const response = await httpService.get(
+				`${PRODUCTS_API_URL}/bundles/`,
+				{ params }
+			);
+			return response.data.results || response.data;
+		} catch (error) {
+			console.error("Error fetching exam session bundles:", error);
+			throw {
+				message:
+					error.response?.data?.message ||
+					error.message ||
+					"Failed to fetch exam session bundles",
+				status: error.response?.status || 0,
+				data: error.response?.data || null,
+			};
+		}
+	},
+
+	// Get combined products and bundles for listing (now uses unified endpoint)
+	getProductsAndBundles: async (params = {}, page = 1, pageSize = 50) => {
+		try {
+			// Use the unified endpoint that includes both products and exam session bundles
+			const response = await productService.getAvailableProducts(params, page, pageSize);
+			
+			console.log('🏪 [ProductService] Unified API response:', {
+				itemsCount: response.results?.length,
+				productsCount: response.products_count,
+				bundlesCount: response.bundles_count,
+				totalCount: response.count,
+				sampleItem: response.results?.[0]
+			});
+
+			return {
+				results: response.results || [],
+				count: response.count || 0,
+				products_count: response.products_count || 0,
+				bundles_count: response.bundles_count || 0,
+				page: response.page || page,
+				has_next: response.has_next || false,
+				has_previous: response.has_previous || false
+			};
+		} catch (error) {
+			console.error("Error fetching products and bundles:", error);
+			throw {
+				message:
+					error.response?.data?.message ||
+					error.message ||
+					"Failed to fetch products and bundles",
+				status: error.response?.status || 0,
+				data: error.response?.data || null,
+			};
+		}
+	},
+
+	// Get bundle contents by bundle ID
+	getBundleContents: async (bundleId) => {
+		try {
+			const response = await httpService.get(
+				`${PRODUCTS_API_URL}/products/${bundleId}/bundle-contents/`
+			);
+			return response.data;
+		} catch (error) {
+			console.error("Error fetching bundle contents:", error);
+			throw {
+				message:
+					error.response?.data?.message ||
+					error.message ||
+					"Failed to fetch bundle contents",
+				status: error.response?.status || 0,
+				data: error.response?.data || null,
+			};
+		}
 	}
 };
 

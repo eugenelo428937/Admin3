@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
 	Button,
+	Chip,
 	Card,
 	CardHeader,
 	CardContent,
@@ -29,12 +30,18 @@ import {
 	ArrowRight,
 	ArrowDropDown,
 	Close,
+	LibraryBooksSharp,
+	// DevicesSharp,
+	// MenuBookSharp,
 } from "@mui/icons-material";
 import { useCart } from "../contexts/CartContext";
 import { useVAT } from "../contexts/VATContext";
 import MarkingProductCard from "./MarkingProductCard";
 import TutorialProductCard from "./TutorialProductCard";
+import OnlineClassroomProductCard from "./OnlineClassroomProductCard";
+import BundleCard from "./BundleCard";
 import "../styles/product_card.css";
+import "../styles/custom-bootstrap.css";
 
 const ProductCard = React.memo(
 	({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
@@ -62,8 +69,13 @@ const ProductCard = React.memo(
 						.includes("online classroom") ||
 					product.product_name?.toLowerCase().includes("recording") ||
 					product.learning_mode === "LMS",
+				isBundle:
+					product.type === "Bundle" ||
+					product.product_name?.toLowerCase().includes("bundle") ||
+					product.product_name?.toLowerCase().includes("package") ||
+					product.is_bundle === true,
 			}),
-			[product.type, product.product_name, product.learning_mode]
+			[product.type, product.product_name, product.learning_mode, product.is_bundle]
 		);
 
 		// Memoize variation calculations
@@ -142,8 +154,8 @@ const ProductCard = React.memo(
 			showVATInclusive,
 		]);
 
-		const { isTutorial, isMarking, isOnlineClassroom } = productTypeCheck;
-		const isMaterial = !isTutorial && !isMarking;
+		const { isTutorial, isMarking, isOnlineClassroom, isBundle } = productTypeCheck;
+		const isMaterial = !isTutorial && !isMarking && !isOnlineClassroom && !isBundle;
 		const { hasVariations, singleVariation, currentVariation } =
 			variationInfo;
 
@@ -162,7 +174,7 @@ const ProductCard = React.memo(
 		}, [currentVariation, selectedPriceType]);
 
 		// For Tutorial products, use the specialized component
-		if (isTutorial) {
+		if (isTutorial && !isOnlineClassroom) {
 			return (
 				<TutorialProductCard
 					subjectCode={product.subject_code}
@@ -183,6 +195,26 @@ const ProductCard = React.memo(
 					onAddToCart={onAddToCart}
 					allEsspIds={allEsspIds}
 					bulkDeadlines={bulkDeadlines}
+				/>
+			);
+		}
+
+		// For Online Classroom products, use the specialized component
+		if (isOnlineClassroom) {
+			return (
+				<OnlineClassroomProductCard
+					product={product}
+					onAddToCart={onAddToCart}
+				/>
+			);
+		}
+
+		// For Bundle products, use the specialized component
+		if (isBundle) {
+			return (
+				<BundleCard
+					bundle={product}
+					onAddToCart={onAddToCart}
 				/>
 			);
 		}
@@ -269,16 +301,20 @@ const ProductCard = React.memo(
 		const renderRegularContent = () => (
 			<>
 				<CardContent
-					className="d-flex flex-column pb-0"
+					className="d-flex flex-column pb-0 product-card-content"
 					sx={{ marginTop: "0" }}>
-					<Box
-						sx={{ height: "5rem" }}
-						className="d-flex align-items-center">
-						<Typography variant="h5" className="mb-0">
-							{product.product_name}
-						</Typography>
+					<Box className="d-flex flex-row w-100 align-items-center mb-2">
+						<Chip
+							variant="outlined"
+							label={product.subject_code}
+							clickable={false}
+						/>
+						{/* <Chip
+								variant="outlined"
+								label={product.exam_session_code}
+								clickable={false}
+							/> */}
 					</Box>
-
 					{/* Variation Section - Fixed height for alignment */}
 					<Box sx={{ width: "100%", height: "5.5rem", mt: 2 }}>
 						<Typography
@@ -365,10 +401,12 @@ const ProductCard = React.memo(
 
 				<Divider />
 
-				<CardActions sx={{ px: 2, py: 1 }} className="d-flex w-100">
-					<Grid container spacing={0} className="w-100 mb-3">
-						<Grid size={12} sx={{ height: "4rem" }}>
-							<Typography
+				<CardActions
+					sx={{ px: 2, py: 1 }}
+					className="d-flex w-100 product-card-actions">
+					<Grid container spacing={0} className="w-100 mb-2">
+						<Grid size={12}>
+							{/* <Typography
 								variant="body2"
 								color="text-primary"
 								sx={{ cursor: "pointer" }}
@@ -377,90 +415,81 @@ const ProductCard = React.memo(
 								aria-expanded={showDiscounts}
 								aria-label="Toggle discount options">
 								Discounts:
-								{showDiscounts ? <ArrowDropDown /> : <ArrowRight />}
-							</Typography>
+								{showDiscounts ? <ArrowDropDown /> : <ArrowRight />} 
+							</Typography>*/}
 
-							{showDiscounts && (
-								<>
-									<Box className="d-flex flex-row ps-2">
-										<FormControlLabel
-											control={
-												<Checkbox
-													size="small"
-													className="p-0 mx-1"
-													checked={selectedPriceType === "retaker"}
-													disabled={
-														!hasPriceType(
-															currentVariation,
-															"retaker"
-														)
-													}
-													onChange={() =>
-														handlePriceTypeChange("retaker")
-													}
-													sx={{
-														"& .MuiSvgIcon-root": {
-															fontSize: 14,
-														},
-													}}
-												/>
+							<Box className="d-flex flex-row ps-2 mb-2">
+								<FormControlLabel
+									control={
+										<Checkbox
+											size="small"
+											className="p-0 mx-1"
+											checked={selectedPriceType === "retaker"}
+											disabled={
+												!hasPriceType(currentVariation, "retaker")
 											}
-											label="Retaker"
+											onChange={() =>
+												handlePriceTypeChange("retaker")
+											}
 											sx={{
-												"& .MuiFormControlLabel-label": {
-													fontSize: "0.875rem",
-													color: !hasPriceType(
-														currentVariation,
-														"retaker"
-													)
-														? "text.disabled"
-														: "inherit",
+												"& .MuiSvgIcon-root": {
+													fontSize: 14,
 												},
 											}}
 										/>
+									}
+									label="Retaker"
+									sx={{
+										"& .MuiFormControlLabel-label": {
+											fontSize: "0.875rem",
+											color: !hasPriceType(
+												currentVariation,
+												"retaker"
+											)
+												? "text.disabled"
+												: "inherit",
+										},
+									}}
+								/>
 
-										<br />
+								<br />
 
-										<FormControlLabel
-											control={
-												<Checkbox
-													size="small"
-													checked={
-														selectedPriceType === "additional"
-													}
-													disabled={
-														!hasPriceType(
-															currentVariation,
-															"additional"
-														)
-													}
-													onChange={() =>
-														handlePriceTypeChange("additional")
-													}
-													className="p-0 mx-1"
-													sx={{
-														"& .MuiSvgIcon-root": {
-															fontSize: 14,
-														},
-													}}
-												/>
+								<FormControlLabel
+									control={
+										<Checkbox
+											size="small"
+											checked={selectedPriceType === "additional"}
+											disabled={
+												!hasPriceType(
+													currentVariation,
+													"additional"
+												)
 											}
-											label="Additional Copy"
+											onChange={() =>
+												handlePriceTypeChange("additional")
+											}
+											className="p-0 mx-1"
 											sx={{
-												"& .MuiFormControlLabel-label": {
-													fontSize: "0.875rem",
-													color: !hasPriceType(
-														currentVariation,
-														"additional"
-													)
-														? "text.disabled"
-														: "inherit",
+												"& .MuiSvgIcon-root": {
+													fontSize: 14,
 												},
 											}}
 										/>
-									</Box>
-								</>
-							)}
+									}
+									label="Additional Copy"
+									sx={{
+										"& .MuiFormControlLabel-label": {
+											fontSize: "0.875rem",
+											color: !hasPriceType(
+												currentVariation,
+												"additional"
+											)
+												? "text.disabled"
+												: "inherit",
+										},
+									}}
+								/>
+							</Box>
 						</Grid>
 						<Grid size={8} className="d-flex justify-content-start">
 							<Box
@@ -541,38 +570,26 @@ const ProductCard = React.memo(
 
 		// Determine header class based on product type
 		const getHeaderClass = () => {
-			if (isOnlineClassroom) return "tutorial-product-card-header";
-			if (isMarking) return "marking-header";
 			return "material-header";
 		};
 
 		return (
-			<Card elevation={2} className="product-card d-flex flex-column justify-content-between">
+			<Card
+				elevation={2}
+				className="product-card d-flex flex-column">
 				<CardHeader
 					title={
-						<Typography variant="h6" className="mb-0">
-							{product.subject_code}
-						</Typography>
-					}
-					subheader={
-						isOnlineClassroom && (
-							<Typography variant="body2" color="text.secondary">
-								Online Classroom
+						<Box className="d-flex flex-row w-100 align-items-center justify-content-between mb-2">
+							<Typography variant="h6" className="mb-0">
+								{product.product_name}
 							</Typography>
-						)
-					}
+							<LibraryBooksSharp />
+						</Box>
+					}					
 					className={`product-card-header d-flex  align-items-center ${getHeaderClass()}`}
 					sx={{
-						backgroundColor: (theme) => {
-							if (isOnlineClassroom) return theme.palette.primary.main;
-							if (isMarking) return theme.palette.secondary.main;
-							return theme.palette.grey[100];
-						},
-						color: (theme) => {
-							if (isOnlineClassroom || isMarking)
-								return theme.palette.common.white;
-							return theme.palette.text.primary;
-						},
+						backgroundColor: (theme) => theme.palette.grey[100],
+						color: (theme) => theme.palette.text.primary,
 					}}
 				/>
 

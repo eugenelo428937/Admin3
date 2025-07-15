@@ -5,8 +5,8 @@ const API_BASE = config.cartUrl;
 
 const cartService = {
 	fetchCart: () => httpService.get(API_BASE),
-	addToCart: (product, quantity = 1, priceInfo = {}) =>
-		httpService.post(`${API_BASE}/add/`, { 
+	addToCart: (product, quantity = 1, priceInfo = {}) => {
+		const payload = { 
 			current_product: product.essp_id || product.id, 
 			quantity,
 			price_type: priceInfo.priceType || 'standard',
@@ -31,7 +31,12 @@ const cartService = {
 				newLocation: priceInfo.newLocation,
 				...priceInfo.metadata // Allow additional metadata
 			}
-		}),
+		};
+		
+		console.log('🛒 [CartService] Payload being sent:', payload);
+		
+		return httpService.post(`${API_BASE}/add/`, payload);
+	},
 	updateItem: (itemId, quantity) =>
 		httpService.patch(`${API_BASE}/update_item/`, {
 			item_id: itemId,

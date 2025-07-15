@@ -5,32 +5,33 @@ alwaysApply: true
 ---
 # Cursor Rules for Admin3 Project
 
+> [!CAUTION]
+> The Django product model is the master table for a catalogue of all products can be available but it is **NOT** intended for user to order. The Django exam_sessions_subjects_products model is all the **CURRENT** products available for ordering in the online store.
+
 - Always use Powershell when running scripts. When joinning command use ";;" instead of "&&"
 - The django and react server are always running. Do not try to start those server when testing.
-- For running Django test scripts, cd ./backend/django_Admin3
+- To activate virtual environment. In the project base directory. run `.\.venv\Scripts\activate`
+- For running Django test scripts, cd ./backend/django_Admin3  
 - For running react test scripts, cd ./frontend/react-Admin3
 - Seek confirmation when perform file deletion
-
+- When creating new django model, always ask for confirmation for the schema and fields.
 
 ## Project Context
+
 Admin3 is a Django REST API backend with React frontend for educational administration data management, integrating with the Administrate API for course management, tutorials, events, and student administration.
 
 ## Technology Stack
+
 - Backend: Django 5.1, Django REST Framework, PostgreSQL
 - Frontend: React 18, Axios, Material-UI
 - Integration: GraphQL queries to Administrate API
 - Authentication: JWT tokens with refresh mechanism
 - Database: PostgreSQL (ACTEDDBDEV01)
 
-## Development Environment Setting
-- Windows 11
-- Powershell for command prompt
-- Django server is always running on Port 8888.
-- React Server is running on default 3000 Port.
-
 ## Django Backend Rules
 
 ### Models
+
 - Use snake_case for field names and model methods
 - Store external API IDs as `external_id` fields
 - Include proper `__str__` methods for all models
@@ -39,6 +40,7 @@ Admin3 is a Django REST API backend with React frontend for educational administ
 - Use `active` boolean fields for soft deletes
 
 ### Views and Serializers
+
 - Use class-based views with Django REST Framework
 - Follow model-view-serializer pattern
 - Include proper pagination for list views

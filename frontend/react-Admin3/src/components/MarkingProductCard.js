@@ -1,26 +1,45 @@
 import React, { useEffect, useMemo } from "react";
 import {
+	Button,
 	Card,
-	Spinner,
-	Modal,
-	Col,
-	OverlayTrigger,
+	CardHeader,
+	CardContent,
+	CardActions,
+	Checkbox,
+	FormControlLabel,
+	FormControl,
+	Grid,
+	Typography,
+	Box,
+	Divider,
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogActions,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableRow,
 	Tooltip,
-} from "react-bootstrap";
-import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
-import ArrowRightIcon from "@mui/icons-material/ArrowRight";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { 
-	Button, 
-	Checkbox, 
-	FormControlLabel, 
-	FormControl, 
-	FormLabel 
+	Alert,
+	CircularProgress,
+	Chip,
+	FormLabel,
 } from "@mui/material";
-import { ExclamationCircle, InfoCircle } from "react-bootstrap-icons";
+import {
+	AddShoppingCart,
+	InfoOutline,
+	ArrowRight,
+	ArrowDropDown,
+	Warning,
+	RuleOutlined,
+	CalendarMonthOutlined,
+} from "@mui/icons-material";
 import productService from "../services/productService";
-import "../styles/product_card.css";
 import { useVAT } from "../contexts/VATContext";
+import "../styles/product_card.css";
+import "../styles/custom-bootstrap.css";
 
 const MarkingProductCard = React.memo(({
 	product,
@@ -69,7 +88,34 @@ const MarkingProductCard = React.memo(({
 			// Get price display info from VAT context
 			const priceDisplay = getPriceDisplay(priceObj.amount, 0.20, isVATExempt);
 			
-			return `${formatPrice(priceDisplay.displayPrice)} ${priceDisplay.label}`;
+			return (
+				<div className="d-flex flex-row align-items-end">
+					<Typography variant="h6" className="fw-lighter w-100">
+						{formatPrice(priceDisplay.displayPrice)}
+					</Typography>
+
+					<Tooltip
+						title="Show all price types"
+						placement="top"
+						className="d-flex flex-row align-self-start">
+						<InfoOutline
+							role="button"
+							className="text-secondary mx-1 fw-light"
+							onClick={() => setShowPriceModal(true)}
+							style={{
+								cursor: "pointer",
+								fontSize: "1rem",
+							}}
+							aria-label="Show price information"
+						/>
+					</Tooltip>						
+					<Typography
+						variant="caption"
+						className="fw-light w-100 align-self-center">
+						{priceDisplay.label}
+					</Typography>
+				</div>
+			);
 		};
 	}, [getPriceDisplay, formatPrice, isProductVATExempt, product.type, showVATInclusive]);
 
@@ -181,278 +227,362 @@ const MarkingProductCard = React.memo(({
 	};
 
 	const renderPriceModal = () => (
-		<Modal
-			show={showPriceModal}
-			onHide={() => setShowPriceModal(false)}
-			size="lg"
-			centered>
-			<Modal.Header closeButton>
-				<Modal.Title>Price Information</Modal.Title>
-			</Modal.Header>
-			<Modal.Body>
-				<div className="mb-2">
-					<strong>Subject:</strong> {product.subject_code}
-					<br />
-					<strong>Product Name:</strong> {product.product_name}
-				</div>
-				<div className="table-responsive">
-					<table className="table table-bordered table-sm">
-						<thead>
-							<tr>
-								<th>Variation</th>
-								<th>Price Type</th>
-								<th>Price</th>
-							</tr>
-						</thead>
-						<tbody>
-							{product.variations &&
-								product.variations.map((variation) =>
-									variation.prices &&
-									variation.prices.map((price) => (
-										<tr key={`${variation.id}-${price.price_type}`}>
-											<td>{variation.name}</td>
-											<td>{price.price_type}</td>
-											<td>£{price.amount}</td>
-										</tr>
-									))
-								)}
-						</tbody>
-					</table>
-				</div>
-			</Modal.Body>
-		</Modal>
+		<Dialog
+			open={showPriceModal}
+			onClose={() => setShowPriceModal(false)}
+			maxWidth="md"
+			fullWidth>
+			<DialogTitle>
+				<Typography variant="h6">Price Information</Typography>
+			</DialogTitle>
+			<DialogContent>
+				<Box sx={{ mb: 2 }}>
+					<Typography variant="body2" color="text.secondary">
+						Subject: {product.subject_code}
+					</Typography>
+					<Typography variant="body2" color="text.secondary">
+						Product Name: {product.product_name}
+					</Typography>
+				</Box>
+				<Table size="small">
+					<TableHead>
+						<TableRow>
+							<TableCell>Variation</TableCell>
+							<TableCell>Price Type</TableCell>
+							<TableCell>Price</TableCell>
+						</TableRow>
+					</TableHead>
+					<TableBody>
+						{product.variations &&
+							product.variations.map((variation) =>
+								variation.prices &&
+								variation.prices.map((price) => (
+									<TableRow key={`${variation.id}-${price.price_type}`}>
+										<TableCell>{variation.name}</TableCell>
+										<TableCell>{price.price_type}</TableCell>
+										<TableCell>
+											{(() => {
+												const priceDisplay = getPrice(variation, price.price_type);
+												if (priceDisplay) {
+													return priceDisplay;
+												}
+												return formatPrice(price.amount);
+											})()}
+										</TableCell>
+									</TableRow>
+								))
+							)}
+					</TableBody>
+				</Table>
+			</DialogContent>
+			<DialogActions>
+				<Button onClick={() => setShowPriceModal(false)}>Close</Button>
+			</DialogActions>
+		</Dialog>
 	);
 
 	return (
-		<Col>
-			<Card className="h-100 shadow-sm product-card">
-				<Card.Header className="product-card-header marking-header">
-					<h5 className="mb-0">Subject {product.subject_code}</h5>
-				</Card.Header>{" "}
-				<Card.Body>
-					<div className="d-flex justify-content-between align-items-center mt-2">
-						<Card.Title className="mb-0">
-							{product.product_name}
-						</Card.Title>
-					</div>
-				</Card.Body>{" "}
-				<Card.Footer className="bg-white border-0 d-flex flex-column">
+		<>
+			<Card elevation={2} className="product-card d-flex flex-column">
+				<CardHeader
+					title={
+						<Box className="d-flex flex-row w-100 align-items-center justify-content-between mb-2">
+							<Typography variant="h6" className="mb-0 w-75">
+								{product.product_name}
+							</Typography>
+							<RuleOutlined />
+						</Box>
+					}
+					className="product-card-header marking-header"
+				/>
+
+				<CardContent
+					className="d-flex flex-column pb-0 product-card-content"
+					sx={{ marginTop: "0" }}>
+					<Box className="d-flex flex-row w-100 align-items-center mb-2">
+						<Chip
+							variant="outlined"
+							label={product.subject_code}
+							clickable={false}
+						/>
+						{/* <Chip
+								variant="outlined"
+								label={product.exam_session_code}
+								clickable={false}
+							/> */}
+					</Box>
 					{/* Deadline Information */}
-					{loading && (
-						<div className="d-flex align-items-center mb-2">
-							<Spinner size="sm" className="me-2" />
-							<span className="text-muted">Loading deadlines...</span>
-						</div>
-					)}
-					{!loading && deadlines.length > 0 && (
-						<div className="mb-2">
-							{/* Deadline Status Line */}
-							<div className="mb-2">
-								{expired.length > 0 && (
-									<div className="text-danger small mb-1">
-										<ExclamationCircle className="me-1" />
-										{expired.length} deadline
-										{expired.length > 1 ? "s" : ""} overdue
-									</div>
-								)}
-								{upcoming.length > 0 && (
-									<div className="text-secondary small">
-										<div>
-											Upcoming deadline:{" "}
-											{upcoming[0].deadline.toLocaleDateString()}
-										</div>
-										<>
-											Recommended submission:{" "}
-											{upcoming[0].recommended_submit_date.toLocaleDateString()}
-										</>
-									</div>
-								)}
-								{allExpired && (
-									<div className="text-danger small">
-										<ExclamationCircle className="me-1" />
-										All deadlines have expired
-									</div>
-								)}
-							</div>
-							{/* View Deadlines Button */}
-							<div className="mb-2">
-								<Button
-									variant="outlined"
-									size="small"
-									onClick={() => setShowModal(true)}
-									color={allExpired ? "error" : "info"}>
-									{allExpired
-										? "All Deadlines Expired"
-										: "View Deadlines"}
-									{upcoming.length > 0 &&
-										` (${upcoming.length} upcoming)`}
-								</Button>
-							</div>
-						</div>
-					)}
-					<div className="d-flex flex-column align-items-start mb-2">
-						{singleVariation && (
-							<div>
-								<span className="form-label mb-1">Product Variation:</span>
-								<div>
-									<span className="form-label mb-0">
-										<b>{singleVariation.name}</b>
-									</span>
-								</div>
-							</div>
+					<Box sx={{ width: "100%", mt: 0, mb: 0 }}>
+						{loading && (
+							<Box className="d-flex align-items-center mb-2">
+								<CircularProgress size={16} sx={{ mr: 1 }} />
+								<Typography variant="caption" color="text.secondary">
+									Loading deadlines...
+								</Typography>
+							</Box>
 						)}
+						{!loading && deadlines.length > 0 && (
+							<Box sx={{ m: 0, p: 0 }} className="justify-content-start">
+								{/* Deadline Status */}
+								<Box sx={{ mb: 0, p: 0 }}>
+									{expired.length > 0 && !allExpired && (
+										<Box sx={{ mb: 0, p: 0 }}>
+											<Alert
+												severity="warning"
+												sx={{ p: 0, backgroundColor: "#fff" }}>
+												<Typography variant="body2">
+													{expired.length} deadline
+													{expired.length > 1 ? "s" : ""} overdue
+												</Typography>
+											</Alert>
+										</Box>
+									)}
+									{upcoming.length > 0 && (
+										<Box sx={{ mb: 2 }}>
+											<Typography
+												variant="body2"
+												color="text.secondary">
+												Upcoming deadline:{" "}
+												{upcoming[0].deadline.toLocaleDateString()}
+											</Typography>
+											{/* <Typography
+												variant="body2"
+												color="text.secondary">
+												Recommended submission:{" "}
+												{upcoming[0].recommended_submit_date.toLocaleDateString()}
+											</Typography> */}
+										</Box>
+									)}
+									{allExpired && (
+										<Box sx={{ mb: 2 }} className="align-self-end">
+											<Alert
+												severity="error"
+												sx={{ p: 0, backgroundColor: "#fff" }}>
+												<Typography variant="body2">
+													All deadlines have expired
+												</Typography>
+											</Alert>
+										</Box>
+									)}
+								</Box>
+								{/* View Deadlines Button */}
+								<Box
+									sx={{ mb: 0 }}
+									className="d-flex justify-content-center">
+									<Button
+										variant="outlined"
+										size="small"
+										onClick={() => setShowModal(true)}
+										color={allExpired ? "error" : "primary"}>
+										<CalendarMonthOutlined className="me-1" />
+										{allExpired
+											? "All Deadlines Expired"
+											: "View Deadlines"}
+										{upcoming.length > 0 &&
+											` (${upcoming.length} upcoming)`}
+									</Button>
+								</Box>
+							</Box>
+						)}
+					</Box>
+
+					{/* Variation Section - Fixed height for alignment */}
+					<Box
+						sx={{ width: "100%", height: "5.5rem", mt: 2 }}
+						className="d-none">
+						<Typography
+							variant="subtitle2"
+							color="text.secondary"
+							sx={{ mb: 1 }}>
+							Variation:
+						</Typography>
+
+						{singleVariation && (
+							<FormControl
+								component="fieldset"
+								size="small"
+								sx={{ width: "100%" }}>
+								<FormControlLabel
+									control={
+										<Checkbox
+											size="small"
+											checked={true}
+											disabled={true}
+											className="m-0 align-items-center p-0 me-2"
+											sx={{
+												"& .MuiSvgIcon-root": {
+													fontSize: 14,
+												},
+											}}
+										/>
+									}
+									label={singleVariation.name}
+									sx={{
+										margin: 0,
+										"& .MuiFormControlLabel-label": {
+											fontSize: "0.875rem",
+										},
+									}}
+								/>
+							</FormControl>
+						)}
+
 						{hasVariations && !singleVariation && (
-							<FormControl component="fieldset" size="small">
-								<FormLabel 
-									component="legend" 
-									sx={{ fontSize: '0.875rem', mb: 1, color: 'text.primary' }}>
-									Product Variations:
-								</FormLabel>
-								<div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+							<FormControl
+								component="fieldset"
+								size="small"
+								sx={{ width: "100%" }}>
+								<Box className="d-flex flex-column">
 									{product.variations.map((variation) => (
 										<FormControlLabel
 											key={variation.id}
+											className="d-flex flex-row"
 											control={
-												<Checkbox 
-													size="small" 
-													checked={selectedVariations.includes(variation.id)}
-													onChange={(e) => handleVariationChange(variation.id, e.target.checked)}
+												<Checkbox
+													size="small"
+													checked={selectedVariations.includes(
+														variation.id
+													)}
+													onChange={(e) =>
+														handleVariationChange(
+															variation.id,
+															e.target.checked
+														)
+													}
+													sx={{
+														"& .MuiSvgIcon-root": {
+															fontSize: 14,
+														},
+													}}
+													className="m-0 align-items-center p-0 me-2"
 												/>
 											}
 											label={variation.name}
-											sx={{ 
+											sx={{
 												margin: 0,
-												'& .MuiFormControlLabel-label': { 
-													fontSize: '0.875rem' 
-												} 
+												"& .MuiFormControlLabel-label": {
+													fontSize: "0.875rem",
+												},
 											}}
 										/>
 									))}
-								</div>
+								</Box>
 							</FormControl>
 						)}
-					</div>{" "}
-					<div className="d-flex justify-content-between align-items-center">
-						<div className="d-flex flex-column">
-							<div className="d-flex align-items-center mb-2">
-								<span
-									className="fw-bold me-3"
-									style={{ fontSize: "1.2em" }}>
-									{getPrice(currentVariation, selectedPriceType)
-										? getPrice(currentVariation, selectedPriceType)
-										: "-"}
-								</span>
-								<OverlayTrigger
-									placement="top"
-									overlay={<Tooltip>Show all price types</Tooltip>}>
-									<InfoCircle
-										role="button"
-										className="text-info me-2"
-										onClick={() => setShowPriceModal(true)}
-										style={{ cursor: "pointer" }}
-									/>
-								</OverlayTrigger>
-							</div>
-							<div className="mb-2">
-								<div
-									className="d-flex align-items-center"
-									style={{ cursor: "pointer" }}
-									onClick={() => setShowDiscounts(!showDiscounts)}>
-									<span className="me-2 text-secondary">
-										Discounts:
-									</span>
-									<span className="text-muted">
-										{showDiscounts ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
-									</span>
-								</div>{" "}
-								{showDiscounts && (
-									<div className="mt-2 ps-3">
-										<div className="form-check">
-											<input
-												className="form-check-input"
-												type="checkbox"
-												id={`retaker-${
-													product.essp_id ||
-													product.id ||
-													product.product_id
-												}`}
-												checked={selectedPriceType === "retaker"}
-												disabled={
-													!hasPriceType(
-														currentVariation,
-														"retaker"
-													)
-												}
-												onChange={() =>
-													handlePriceTypeChange("retaker")
-												}
-											/>
-											<label
-												className={`form-check-label ${
-													!hasPriceType(
-														currentVariation,
-														"retaker"
-													)
-														? "text-muted"
-														: ""
-												}`}
-												htmlFor={`retaker-${
-													product.essp_id ||
-													product.id ||
-													product.product_id
-												}`}>
-												Retaker
-											</label>
-										</div>
-										<div className="form-check">
-											<input
-												className="form-check-input"
-												type="checkbox"
-												id={`additional-${
-													product.essp_id ||
-													product.id ||
-													product.product_id
-												}`}
-												checked={selectedPriceType === "additional"}
-												disabled={
-													!hasPriceType(
-														currentVariation,
-														"additional"
-													)
-												}
-												onChange={() =>
-													handlePriceTypeChange("additional")
-												}
-											/>
-											<label
-												className={`form-check-label ${
-													!hasPriceType(
-														currentVariation,
-														"additional"
-													)
-														? "text-muted"
-														: ""
-												}`}
-												htmlFor={`additional-${
-													product.essp_id ||
-													product.id ||
-													product.product_id
-												}`}>
-												Additional Copy
-											</label>
-										</div>
-									</div>
-								)}
-							</div>
-						</div>{" "}
-						<div>
+					</Box>
+				</CardContent>
+
+				<Divider />
+
+				<CardActions
+					sx={{ px: 2, py: 1 }}
+					className="d-flex w-100 product-card-actions">
+					<Grid container spacing={0} className="w-100 mb-2">
+						<Grid size={12}>
+							<Box className="d-flex flex-row ps-2 mb-2">
+								<FormControlLabel
+									control={
+										<Checkbox
+											size="small"
+											className="p-0 mx-1"
+											checked={selectedPriceType === "retaker"}
+											disabled={
+												!hasPriceType(currentVariation, "retaker")
+											}
+											onChange={() =>
+												handlePriceTypeChange("retaker")
+											}
+											sx={{
+												"& .MuiSvgIcon-root": {
+													fontSize: 14,
+												},
+											}}
+										/>
+									}
+									label="Retaker"
+									sx={{
+										"& .MuiFormControlLabel-label": {
+											fontSize: "0.875rem",
+											color: !hasPriceType(
+												currentVariation,
+												"retaker"
+											)
+												? "text.disabled"
+												: "inherit",
+										},
+									}}
+								/>
+
+								<FormControlLabel
+									control={
+										<Checkbox
+											size="small"
+											checked={selectedPriceType === "additional"}
+											disabled={
+												!hasPriceType(
+													currentVariation,
+													"additional"
+												)
+											}
+											onChange={() =>
+												handlePriceTypeChange("additional")
+											}
+											className="p-0 mx-1"
+											sx={{
+												"& .MuiSvgIcon-root": {
+													fontSize: 14,
+												},
+											}}
+										/>
+									}
+									label="Additional Copy"
+									sx={{
+										"& .MuiFormControlLabel-label": {
+											fontSize: "0.875rem",
+											color: !hasPriceType(
+												currentVariation,
+												"additional"
+											)
+												? "text.disabled"
+												: "inherit",
+										},
+									}}
+								/>
+							</Box>
+						</Grid>
+						<Grid size={8} className="d-flex justify-content-start">
+							<Box
+								sx={{
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "flex-start",
+								}}>
+								<Box
+									sx={{
+										display: "flex",
+										alignItems: "center",
+										mb: 1,
+									}}>
+									{getPrice(currentVariation, selectedPriceType) || (
+										<Typography variant="h6" className="fw-bolder">
+											-
+										</Typography>
+									)}
+								</Box>
+							</Box>
+						</Grid>
+						<Grid size={4} className="d-flex justify-content-end">
 							<Button
 								color="success"
 								variant="contained"
 								size="small"
-								className="d-flex flex-row flex-wrap align-items-center justify-content-center product-add-to-cart-button p-2"
 								onClick={handleAddToCart}
-																disabled={allExpired || (hasVariations && !singleVariation && selectedVariations.length === 0)}
+								disabled={
+									allExpired ||
+									(hasVariations &&
+										!singleVariation &&
+										selectedVariations.length === 0)
+								}
 								aria-label="Add product to cart"
 								sx={{
 									borderRadius: "50%",
@@ -461,87 +591,91 @@ const MarkingProductCard = React.memo(({
 									height: "2rem",
 									padding: "4px",
 								}}>
-								<AddShoppingCartIcon sx={{ fontSize: "1.1rem" }} />
+								<AddShoppingCart sx={{ fontSize: "1.1rem" }} />
 							</Button>
-						</div>
-					</div>
-				</Card.Footer>
+						</Grid>
+					</Grid>
+				</CardActions>
 				{renderPriceModal()}
 			</Card>
-			<Modal
-				show={showModal}
-				onHide={() => setShowModal(false)}
-				size="lg"
-				centered>
-				<Modal.Header closeButton>
-					<Modal.Title>Marking Deadlines</Modal.Title>
-				</Modal.Header>
-				<Modal.Body>
-					<div className="mb-2">
-						<strong>Subject:</strong> {product.subject_code}
-					</div>
-					<div className="mb-2">
-						<strong>Marking Product:</strong> {product.product_name}
-					</div>
-					<div className="table-responsive">
-						<table className="table table-sm table-bordered">
-							<thead>
-								<tr>
-									<th></th>
-									<th className="text-center">
-										Recommended Submission Date
-									</th>
-									<th className="text-center">Deadline</th>
-								</tr>
-							</thead>
-							<tbody>
-								{parsedDeadlines
-									.sort((a, b) => a.deadline - b.deadline)
-									.map((d, i) => {
-										const isRecommendedExpired =
-											d.recommended_submit_date < now;
-										const isDeadlineExpired = d.deadline < now;
-										return (
-											<tr key={i}>
-												<td className="text-center">{d.name}</td>
-												<td
-													className={
-														"text-center " +
-														(isRecommendedExpired
-															? "text-danger"
-															: "")
-													}>
-													{isRecommendedExpired && (
-														<ExclamationCircle className="me-1 text-danger" />
-													)}
-													{d.recommended_submit_date.toLocaleDateString()}
-												</td>
-												<td
-													className={
-														"text-center " +
-														(isDeadlineExpired
-															? "text-danger"
-															: "")
-													}>
-													{isDeadlineExpired && (
-														<ExclamationCircle className="me-1 text-danger" />
-													)}
-													{d.deadline.toLocaleDateString()}
-												</td>
-											</tr>
-										);
-									})}
-							</tbody>
-						</table>
-					</div>
-				</Modal.Body>
-				<Modal.Footer>
-					<Button variant="secondary" onClick={() => setShowModal(false)}>
+
+			{/* Marking Deadlines Modal */}
+			<Dialog
+				open={showModal}
+				onClose={() => setShowModal(false)}
+				maxWidth="lg"
+				fullWidth>
+				<DialogTitle>Marking Deadlines</DialogTitle>
+				<DialogContent>
+					<Box sx={{ mb: 2 }}>
+						<Typography variant="body2">
+							<strong>Subject:</strong> {product.subject_code}
+						</Typography>
+						<Typography variant="body2">
+							<strong>Marking Product:</strong> {product.product_name}
+						</Typography>
+					</Box>
+					<Table size="small">
+						<TableHead>
+							<TableRow>
+								<TableCell></TableCell>
+								<TableCell align="center">
+									Recommended Submission Date
+								</TableCell>
+								<TableCell align="center">Deadline</TableCell>
+							</TableRow>
+						</TableHead>
+						<TableBody>
+							{parsedDeadlines
+								.sort((a, b) => a.deadline - b.deadline)
+								.map((d, i) => {
+									const isRecommendedExpired =
+										d.recommended_submit_date < now;
+									const isDeadlineExpired = d.deadline < now;
+									return (
+										<TableRow key={i}>
+											<TableCell align="center">{d.name}</TableCell>
+											<TableCell
+												align="center"
+												sx={{
+													color: isRecommendedExpired
+														? "error.main"
+														: "inherit",
+												}}>
+												{isRecommendedExpired && (
+													<Warning
+														sx={{ fontSize: "1rem", mr: 0.5 }}
+													/>
+												)}
+												{d.recommended_submit_date.toLocaleDateString()}
+											</TableCell>
+											<TableCell
+												align="center"
+												sx={{
+													color: isDeadlineExpired
+														? "error.main"
+														: "inherit",
+												}}>
+												{isDeadlineExpired && (
+													<Warning
+														sx={{ fontSize: "1rem", mr: 0.5 }}
+													/>
+												)}
+												{d.deadline.toLocaleDateString()}
+											</TableCell>
+										</TableRow>
+									);
+								})}
+						</TableBody>
+					</Table>
+				</DialogContent>
+				<DialogActions>
+					<Button variant="outlined" onClick={() => setShowModal(false)}>
 						Close
-					</Button>{" "}
+					</Button>
 					<Button
-						variant="success"
-						className="d-flex flex-row flex-wrap align-items-center justify-content-center product-add-to-cart-button p-2 ms-2"
+						variant="contained"
+						color="success"
 						disabled={allExpired}
 						onClick={() => {
 							if (expired.length > 0 && !allExpired) {
@@ -551,38 +685,42 @@ const MarkingProductCard = React.memo(({
 								addToCartConfirmed();
 								setShowModal(false);
 							}
+						}}
+						sx={{
+							display: "flex",
+							alignItems: "center",
+							gap: 1,
 						}}>
-						<AddShoppingCartIcon sx={{ fontSize: "1.1rem" }} />
-						<span className="ms-1">Add to Cart</span>
+						<AddShoppingCart sx={{ fontSize: "1.1rem" }} />
+						Add to Cart
 					</Button>
-				</Modal.Footer>
-			</Modal>
+				</DialogActions>
+			</Dialog>
 
 			{/* Expired Deadline Warning Modal */}
-			<Modal
-				show={showExpiredWarning}
-				onHide={() => setShowExpiredWarning(false)}
-				centered>
-				<Modal.Header closeButton>
-					<Modal.Title className="text-warning">
-						<ExclamationCircle className="me-2" />
-						Warning: Expired Deadlines
-					</Modal.Title>
-				</Modal.Header>
-				<Modal.Body>
-					<p>
+			<Dialog
+				open={showExpiredWarning}
+				onClose={() => setShowExpiredWarning(false)}
+				maxWidth="sm">
+				<DialogTitle sx={{ color: "warning.main" }}>
+					<Warning sx={{ mr: 1 }} />
+					Warning: Expired Deadlines
+				</DialogTitle>
+				<DialogContent>
+					<Typography variant="body1" sx={{ mb: 2 }}>
 						This marking product has <strong>{expired.length}</strong>{" "}
 						expired deadline{expired.length > 1 ? "s" : ""}. Adding this
 						product to your cart may not be useful as some submission
 						deadlines have already passed.
-					</p>
-					<p>Are you sure you want to continue?</p>
-				</Modal.Body>
-				<Modal.Footer>
+					</Typography>
+					<Typography variant="body1">
+						Are you sure you want to continue?
+					</Typography>
+				</DialogContent>
+				<DialogActions>
 					<Button
 						variant="outlined"
-						onClick={() => setShowExpiredWarning(false)}
-						className="me-2">
+						onClick={() => setShowExpiredWarning(false)}>
 						Cancel
 					</Button>
 					<Button
@@ -591,9 +729,9 @@ const MarkingProductCard = React.memo(({
 						onClick={addToCartConfirmed}>
 						Add to Cart Anyway
 					</Button>
-				</Modal.Footer>
-			</Modal>
-		</Col>
+				</DialogActions>
+			</Dialog>
+		</>
 	);
 });
 
