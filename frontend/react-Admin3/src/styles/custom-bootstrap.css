@@ -1754,3 +1754,24 @@ th {
 .text-accent {
   color: #ff6b35 !important;
 }  */
+
+/* Tutorial Choice Panel Accommodation */
+.App {
+  padding-bottom: 80px; /* Space for tutorial choice panel */
+}
+
+.body-container {
+  position: relative;
+  min-height: calc(100vh - 80px); /* Account for panel space */
+}
+
+/* Responsive spacing for tutorial choice panel */
+@media (max-width: 768px) {
+  .App {
+    padding-bottom: 100px; /* More space on mobile */
+  }
+  
+  .body-container {
+    min-height: calc(100vh - 100px);
+  }
+}

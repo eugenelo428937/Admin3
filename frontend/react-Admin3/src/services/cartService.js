@@ -29,7 +29,8 @@ const cartService = {
 				subjectCode: priceInfo.subjectCode,
 				location: priceInfo.location,
 				newLocation: priceInfo.newLocation,
-				...priceInfo.metadata // Allow additional metadata
+				// Support for full metadata object (for tutorials)
+				...(priceInfo.metadata || {})
 			}
 		};
 		

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python manage.py shell:*)",
+      "Bash(find:*)"
+    ],
+    "deny": []
+  }
+}

@@ -11,6 +11,7 @@ import NoMatch from "./components/NoMatch";
 import { CartProvider } from "./contexts/CartContext";
 import { ProductProvider } from "./contexts/ProductContext";
 import { VATProvider } from "./contexts/VATContext";
+import { TutorialChoiceProvider } from "./contexts/TutorialChoiceContext";
 import AdminExamSessionList from "./components/admin/exam-sessions/ExamSessionList";
 import AdminExamSessionForm from "./components/admin/exam-sessions/ExamSessionForm";
 import AdminSubjectList from "./components/admin/subjects/SubjectList";
@@ -31,6 +32,7 @@ import ResetPasswordForm from "./components/ResetPasswordForm";
 import AccountActivation from "./components/AccountActivation";
 import ResendActivation from "./components/ResendActivation";
 import EmailVerification from "./components/EmailVerification";
+import TutorialChoicePanel from "./components/TutorialChoicePanel";
 
 // Import custom Bootstrap CSS overrides
 import "./styles/custom-bootstrap.css";
@@ -65,10 +67,11 @@ function App() {
 					<AuthProvider>
 						<ProductProvider>
 							<VATProvider>
-								<div className="App">
-									<ActEdNavbar />
-									<div className="body-container">
-										<Routes>
+								<TutorialChoiceProvider>
+									<div className="App">
+										<ActEdNavbar />
+										<div className="body-container">
+											<Routes>
 											<Route
 												path="/"
 												element={<Navigate to="/home" replace />}
@@ -176,10 +179,14 @@ function App() {
 												path="/auth/email-verification"
 												element={<EmailVerification />}
 											/>
-											<Route path="*" element={<NoMatch />} />
-										</Routes>
+												<Route path="*" element={<NoMatch />} />
+											</Routes>
+										</div>
+										
+										{/* Tutorial Choice Panel */}
+										<TutorialChoicePanel />
 									</div>
-								</div>
+								</TutorialChoiceProvider>
 							</VATProvider>
 						</ProductProvider>
 					</AuthProvider>

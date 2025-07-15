@@ -14,6 +14,7 @@ from products.models.products import Product
 from products.models.product_group import ProductGroup
 from subjects.models import Subject
 from subjects.serializers import SubjectSerializer
+from products.services.filter_service import get_product_filter_service
 
 # Import exam session bundle models and serializers
 from .models import ExamSessionSubjectBundle
@@ -192,41 +193,42 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             'bundle_products__exam_session_subject_product_variation__product_product_variation__product_variation'
         )
 
-        # ===== APPLY SUBJECT FILTERING TO BOTH =====
-        subject_ids = request.query_params.getlist('subject')
-        subject_code = request.query_params.get('subject_code', None)
-        logger.info(f'Filtering subject_ids: {subject_ids}, subject_code: {subject_code}')
+        # ===== APPLY FILTERING USING NEW FILTER SERVICE =====
+        filter_service = get_product_filter_service()
         
-        if subject_ids:
-            products_queryset = products_queryset.filter(exam_session_subject__subject__id__in=subject_ids)
-            bundles_queryset = bundles_queryset.filter(exam_session_subject__subject__id__in=subject_ids)
-            logger.info(f'After subject_ids filter - products: {products_queryset.count()}, bundles: {bundles_queryset.count()}')
+        # Extract filters from request parameters
+        filters = {
+            'subject': request.query_params.getlist('subject'),
+            'main_category': request.query_params.getlist('main_category'), 
+            'delivery_method': request.query_params.getlist('delivery_method'),
+            'tutorial_format': request.query_params.getlist('tutorial_format'),
+            'variation': request.query_params.getlist('variation')
+        }
         
-        if subject_code:
-            products_queryset = products_queryset.filter(exam_session_subject__subject__code=subject_code)
-            bundles_queryset = bundles_queryset.filter(exam_session_subject__subject__code=subject_code)
-            logger.info(f'After subject_code filter - products: {products_queryset.count()}, bundles: {bundles_queryset.count()}')
-
-        # ===== APPLY GROUP FILTERING TO PRODUCTS =====
-        main_category_ids = request.query_params.getlist('main_category')
-        delivery_method_ids = request.query_params.getlist('delivery_method')
-        logger.info(f'Filtering main_category_ids: {main_category_ids}, delivery_method_ids: {delivery_method_ids}')
+        # Add single subject code if provided
+        if request.query_params.get('subject_code'):
+            filters['subject'].append(request.query_params.get('subject_code'))
         
-        if main_category_ids or delivery_method_ids:
-            product_filters = Q()
+        logger.info(f'Applying filters using filter service: {filters}')
+        
+        # Apply filters to products
+        products_queryset = filter_service.apply_filters(products_queryset, filters)
+        
+        # Apply subject filtering to bundles (bundles don't have other filter types)
+        if filters['subject']:
+            subject_filter = Q()
+            ids = [v for v in filters['subject'] if isinstance(v, int) or (isinstance(v, str) and v.isdigit())]
+            codes = [v for v in filters['subject'] if isinstance(v, str) and not v.isdigit()]
             
-            if main_category_ids:
-                product_filters |= Q(product__groups__id__in=main_category_ids)
+            if ids:
+                subject_filter |= Q(exam_session_subject__subject__id__in=ids)
+            if codes:
+                subject_filter |= Q(exam_session_subject__subject__code__in=codes)
             
-            if delivery_method_ids:
-                if main_category_ids:
-                    product_filters &= Q(product__groups__id__in=delivery_method_ids)
-                else:
-                    product_filters |= Q(product__groups__id__in=delivery_method_ids)
-            
-            products_queryset = products_queryset.filter(product_filters).distinct()
-            
-        logger.info(f'After product group filter - products: {products_queryset.count()}')
+            if subject_filter:
+                bundles_queryset = bundles_queryset.filter(subject_filter)
+        
+        logger.info(f'After filter service - products: {products_queryset.count()}, bundles: {bundles_queryset.count()}')
 
         # ===== APPLY NAVBAR FILTERING =====
         group_filter = request.query_params.get('group')
