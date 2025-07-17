@@ -40,6 +40,11 @@ else:
 # Use environment variables
 DEBUG = env('DEBUG')
 
+# Static files
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
+
 # Paths to the certificate and key files
 CERT_FILE = os.path.join(BASE_DIR, 'certs', 'elo_cert.pem')
 # KEY_FILE = os.path.join(BASE_DIR, 'certs', 'key.pem')
