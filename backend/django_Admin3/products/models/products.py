@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from .product_group import ProductGroup
+from .filter_system import FilterGroup
 from .product_variation import ProductVariation
 
 class Product(models.Model):
@@ -10,7 +10,7 @@ class Product(models.Model):
     description = models.TextField(blank=True, null=True)
     code = models.CharField(max_length=10)
     
-    groups = models.ManyToManyField(ProductGroup, related_name='products', through='ProductProductGroup')
+    groups = models.ManyToManyField(FilterGroup, related_name='products', through='ProductProductGroup')
     product_variations = models.ManyToManyField(
         ProductVariation,
         through='ProductProductVariation',
@@ -35,7 +35,7 @@ class Product(models.Model):
 
 class ProductProductGroup(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    product_group = models.ForeignKey(ProductGroup, on_delete=models.CASCADE)
+    product_group = models.ForeignKey(FilterGroup, on_delete=models.CASCADE)
     
     class Meta:
         unique_together = ("product", "product_group")

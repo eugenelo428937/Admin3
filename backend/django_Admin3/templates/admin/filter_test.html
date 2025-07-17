@@ -1,0 +1,192 @@
+{% extends "admin/base_site.html" %}
+{% load admin_urls %}
+
+{% block title %}Test Filter: {{ filter_config.display_label }}{% endblock %}
+
+{% block content %}
+<div class="content">
+    <h1>Test Filter: {{ filter_config.display_label }}</h1>
+    
+    <div class="module">
+        <h2>Filter Information</h2>
+        <table>
+            <tr>
+                <th>Name:</th>
+                <td>{{ filter_config.name }}</td>
+            </tr>
+            <tr>
+                <th>Type:</th>
+                <td>{{ filter_config.filter_type }}</td>
+            </tr>
+            <tr>
+                <th>Key:</th>
+                <td>{{ filter_config.filter_key }}</td>
+            </tr>
+            <tr>
+                <th>UI Component:</th>
+                <td>{{ filter_config.ui_component }}</td>
+            </tr>
+            <tr>
+                <th>Groups:</th>
+                <td>{{ filter_config.filter_groups.count }}</td>
+            </tr>
+        </table>
+    </div>
+
+    {% if error %}
+        <div class="module">
+            <h2>Error</h2>
+            <p class="errornote">{{ error }}</p>
+        </div>
+    {% else %}
+        <div class="module">
+            <h2>Test Filter</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-row">
+                    <label for="test_values">Select values to test:</label>
+                    <select name="test_values" id="test_values" multiple size="10" style="width: 100%; min-height: 200px;">
+                        {% for option in filter_options %}
+                        <option value="{{ option.value }}">
+                            {% if option.level %}
+                                {% for i in "xxxxxxxxxx"|slice:":"|slice:option.level %}&nbsp;&nbsp;{% endfor %}
+                            {% endif %}
+                            {{ option.label }}
+                            {% if option.code %} ({{ option.code }}){% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <p class="help">Hold Ctrl (Cmd on Mac) to select multiple values</p>
+                </div>
+                <div class="submit-row">
+                    <input type="submit" value="Test Filter" class="default" />
+                </div>
+            </form>
+        </div>
+
+        {% if test_result %}
+            <div class="module">
+                <h2>Test Results</h2>
+                <table>
+                    <tr>
+                        <th>Total Products Before Filter:</th>
+                        <td>{{ test_result.total_before }}</td>
+                    </tr>
+                    <tr>
+                        <th>Total Products After Filter:</th>
+                        <td>{{ test_result.total_after }}</td>
+                    </tr>
+                    <tr>
+                        <th>Test Values:</th>
+                        <td>{{ test_result.test_values|join:", " }}</td>
+                    </tr>
+                    <tr>
+                        <th>Reduction:</th>
+                        <td>
+                            {% widthratio test_result.total_after test_result.total_before 100 %}%
+                            ({{ test_result.total_before|add:test_result.total_after|add:"-"|add:test_result.total_after }} filtered out)
+                        </td>
+                    </tr>
+                </table>
+                
+                {% if test_result.sample_results %}
+                    <h3>Sample Results (first 10)</h3>
+                    <table class="module">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Product</th>
+                                <th>Subject</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in test_result.sample_results %}
+                            <tr>
+                                <td>{{ result.id }}</td>
+                                <td>{{ result.product__shortname|default:"N/A" }}</td>
+                                <td>{{ result.exam_session_subject__subject__code|default:"N/A" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>No results found with the selected filter values.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if filter_options %}
+            <div class="module">
+                <h2>Available Options (showing first 20)</h2>
+                <table class="module">
+                    <thead>
+                        <tr>
+                            <th>Value</th>
+                            <th>Label</th>
+                            {% if filter_config.filter_type == 'filter_group' %}
+                                <th>Code</th>
+                                <th>Level</th>
+                                <th>Path</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for option in filter_options %}
+                        <tr>
+                            <td>{{ option.value }}</td>
+                            <td>
+                                {% if option.level %}
+                                    {% for i in "xxxxxxxxxx"|slice:":"|slice:option.level %}&nbsp;&nbsp;{% endfor %}
+                                {% endif %}
+                                {{ option.label }}
+                            </td>
+                            {% if filter_config.filter_type == 'filter_group' %}
+                                <td>{{ option.code|default:"N/A" }}</td>
+                                <td>{{ option.level|default:0 }}</td>
+                                <td>{{ option.path|default:"N/A" }}</td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    {% endif %}
+
+    <div class="submit-row">
+        <a href="{% url 'admin:products_filterconfiguration_changelist' %}" class="default">Back to Filter Configurations</a>
+        <a href="{% url 'admin:clear_refactored_cache' %}" class="button">Clear Cache</a>
+        <a href="{% url 'admin:reload_refactored_configurations' %}" class="button">Reload Configurations</a>
+    </div>
+</div>
+
+<style>
+.module table th {
+    background-color: #f8f8f8;
+    font-weight: bold;
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+.module table td {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.form-row {
+    margin-bottom: 15px;
+}
+
+.form-row label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.help {
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+</style>
+{% endblock %}

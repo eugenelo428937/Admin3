@@ -3,12 +3,12 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from .models import Product 
-from .models.product_group import ProductGroup
+from .models.filter_system import FilterGroup
 from .models.product_group_filter import ProductGroupFilter
 from .models import ProductVariation
 from .serializers import (
-    ProductSerializer, ProductGroupSerializer, ProductGroupThreeLevelSerializer, 
-    ProductGroupFilterSerializer, ProductGroupWithProductsSerializer, ProductVariationSerializer,
+    ProductSerializer, FilterGroupSerializer, FilterGroupThreeLevelSerializer, 
+    ProductGroupFilterSerializer, FilterGroupWithProductsSerializer, ProductVariationSerializer,
     ProductBundleSerializer, ExamSessionSubjectBundleSerializer, ExamSessionSubjectBundleProductSerializer
 )
 from rest_framework import status
@@ -20,6 +20,7 @@ from .models import ProductBundle, ProductBundleProduct
 from exam_sessions_subjects_products.models import ExamSessionSubjectBundle, ExamSessionSubjectBundleProduct
 from exam_sessions_subjects.models import ExamSessionSubject
 from .services.filter_service import get_product_filter_service
+from .services.filter_service import get_filter_service
 
 class BundleViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -142,13 +143,13 @@ class ProductViewSet(viewsets.ModelViewSet):
         if group_ids:
             queryset = queryset.filter(groups__id__in=group_ids).distinct()
         
-        # Filter by tutorial format (product group name)
+        # Filter by tutorial format (filter group name)
         tutorial_format = self.request.query_params.get('tutorial_format')
         if tutorial_format:
             try:
-                format_group = ProductGroup.objects.get(name=tutorial_format)
+                format_group = FilterGroup.objects.get(name=tutorial_format)
                 queryset = queryset.filter(groups=format_group).distinct()
-            except ProductGroup.DoesNotExist:
+            except FilterGroup.DoesNotExist:
                 queryset = queryset.none()
         
         # Filter by product variation ID
@@ -164,19 +165,19 @@ class ProductViewSet(viewsets.ModelViewSet):
         if distance_learning:
             distance_learning_groups = ['Core Study Materials', 'Revision Materials', 'Marking']
             try:
-                dl_groups = ProductGroup.objects.filter(name__in=distance_learning_groups)
+                dl_groups = FilterGroup.objects.filter(name__in=distance_learning_groups)
                 queryset = queryset.filter(groups__in=dl_groups).distinct()
-            except ProductGroup.DoesNotExist:
+            except FilterGroup.DoesNotExist:
                 queryset = queryset.none()
         
         # Filter by tutorial
         tutorial = self.request.query_params.get('tutorial')
         if tutorial:
             try:
-                tutorial_group = ProductGroup.objects.get(name='Tutorial')
-                online_classroom_group = ProductGroup.objects.get(name='Online Classroom')
+                tutorial_group = FilterGroup.objects.get(name='Tutorial')
+                online_classroom_group = FilterGroup.objects.get(name='Online Classroom')
                 queryset = queryset.filter(groups=tutorial_group).exclude(groups=online_classroom_group).distinct()
-            except ProductGroup.DoesNotExist:
+            except FilterGroup.DoesNotExist:
                 queryset = queryset.none()
         
         return queryset
@@ -367,8 +368,8 @@ def product_group_tree(request):
     """
     Returns the full product group tree (with children) for navigation/filtering.
     """
-    roots = ProductGroup.objects.filter(parent__isnull=True)
-    serializer = ProductGroupSerializer(roots, many=True)
+    roots = FilterGroup.objects.filter(parent__isnull=True)
+    serializer = FilterGroupSerializer(roots, many=True)
     return Response({'results': serializer.data})
 
 @api_view(['GET'])
@@ -377,8 +378,8 @@ def product_group_three_level_tree(request):
     """
     Returns the product group tree up to three levels deep.
     """
-    roots = ProductGroup.objects.filter(parent__isnull=True)
-    serializer = ProductGroupThreeLevelSerializer(roots, many=True)
+    roots = FilterGroup.objects.filter(parent__isnull=True)
+    serializer = FilterGroupThreeLevelSerializer(roots, many=True)
     return Response({'results': serializer.data})
 
 @api_view(['GET'])
@@ -393,8 +394,8 @@ def products_by_group(request, group_id):
             ids.extend(get_descendant_ids(child))
         return ids
     try:
-        group = ProductGroup.objects.get(id=group_id)
-    except ProductGroup.DoesNotExist:
+        group = FilterGroup.objects.get(id=group_id)
+    except FilterGroup.DoesNotExist:
         return Response({'error': 'Group not found'}, status=404)
     group_ids = get_descendant_ids(group)
     products = Product.objects.filter(groups__in=group_ids).distinct()
@@ -415,27 +416,20 @@ def filter_configuration(request):
     Returns dynamic filter configuration and options for the frontend.
     Supports extensible filtering with configurable filter types.
     """
-    filter_service = get_product_filter_service()
+    # Use the new configurable filter service
+    filter_service = get_filter_service()
     
     # Get requested filter types or return all
     filter_types = request.query_params.getlist('types')
     
-    # Get filter configuration
+    # Get complete filter configuration (includes options)
     config = filter_service.get_filter_configuration()
     
-    # Get filter options
-    options = filter_service.get_filter_options(filter_types if filter_types else None)
+    # Filter by requested types if specified
+    if filter_types:
+        config = {k: v for k, v in config.items() if k in filter_types}
     
-    # Combine configuration and options
-    result = {}
-    for filter_type, filter_config in config.items():
-        if not filter_types or filter_type in filter_types:
-            result[filter_type] = {
-                **filter_config,
-                'options': options.get(filter_type, [])
-            }
-    
-    return Response(result)
+    return Response(config)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -456,10 +450,10 @@ def navbar_product_groups(request):
         groups_data = []
         for group_name in navbar_groups:
             try:
-                group = ProductGroup.objects.get(name=group_name)
-                serializer = ProductGroupWithProductsSerializer(group)
+                group = FilterGroup.objects.get(name=group_name)
+                serializer = FilterGroupWithProductsSerializer(group)
                 groups_data.append(serializer.data)
-            except ProductGroup.DoesNotExist:
+            except FilterGroup.DoesNotExist:
                 # If group doesn't exist, add empty group
                 groups_data.append({
                     'id': None,
@@ -492,10 +486,10 @@ def distance_learning_dropdown(request):
         groups_data = []
         for group_name in distance_learning_groups:
             try:
-                group = ProductGroup.objects.get(name=group_name)
-                serializer = ProductGroupWithProductsSerializer(group)
+                group = FilterGroup.objects.get(name=group_name)
+                serializer = FilterGroupWithProductsSerializer(group)
                 groups_data.append(serializer.data)
-            except ProductGroup.DoesNotExist:
+            except FilterGroup.DoesNotExist:
                 # If group doesn't exist, add empty group
                 groups_data.append({
                     'id': None,
@@ -525,9 +519,9 @@ def tutorial_dropdown(request):
     try:
         # Get product group IDs
         try:
-            tutorial_group = ProductGroup.objects.get(name='Tutorial')
-            online_classroom_group = ProductGroup.objects.get(name='Online Classroom')
-        except ProductGroup.DoesNotExist:
+            tutorial_group = FilterGroup.objects.get(name='Tutorial')
+            online_classroom_group = FilterGroup.objects.get(name='Online Classroom')
+        except FilterGroup.DoesNotExist:
             tutorial_group = None
             online_classroom_group = None
         
@@ -651,7 +645,7 @@ def fuzzy_search(request):
         ).filter(similarity__gt=similarity_threshold).order_by('-similarity')[:5]
         
         # Search for similar product groups
-        product_groups = ProductGroup.objects.filter(
+        product_groups = FilterGroup.objects.filter(
             name__icontains=search_query
         ).annotate(
             similarity=TrigramSimilarity('name', search_query)
@@ -685,7 +679,7 @@ def fuzzy_search(request):
         # Serialize results
         suggested_filters = {
             'subjects': SubjectSerializer(subjects, many=True).data,
-            'product_groups': ProductGroupSerializer(product_groups, many=True).data,
+            'product_groups': FilterGroupSerializer(product_groups, many=True).data,
             'variations': ProductVariationSerializer(variations, many=True).data,
             'products': ProductSerializer(similar_products, many=True).data
         }

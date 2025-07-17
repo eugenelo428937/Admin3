@@ -1,0 +1,65 @@
+{% extends "admin/base_site.html" %}
+{% load admin_urls %}
+
+{% block title %}Test Options Provider{% endblock %}
+
+{% block content %}
+<div class="content">
+    <h1>Test Options Provider: {{ provider.filter_configuration.display_label }}</h1>
+    
+    <div class="module">
+        <h2>Provider Information</h2>
+        <table>
+            <tr>
+                <th>Source Type:</th>
+                <td>{{ provider.source_type }}</td>
+            </tr>
+            <tr>
+                <th>Cache Timeout:</th>
+                <td>{{ provider.cache_timeout }} seconds</td>
+            </tr>
+            <tr>
+                <th>Last Cached:</th>
+                <td>{{ provider.last_cached|default:"Never" }}</td>
+            </tr>
+        </table>
+    </div>
+
+    {% if error %}
+        <div class="module">
+            <h2>Error</h2>
+            <p class="errornote">{{ error }}</p>
+        </div>
+    {% else %}
+        <div class="module">
+            <h2>Options ({{ options_count }} items)</h2>
+            {% if options %}
+                <table class="module">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Value</th>
+                            <th>Label</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for option in options %}
+                        <tr>
+                            <td>{{ option.id|default:"N/A" }}</td>
+                            <td>{{ option.value|default:"N/A" }}</td>
+                            <td>{{ option.label|default:"N/A" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No options available.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="submit-row">
+        <a href="{% url 'admin:products_filteroptionprovider_changelist' %}" class="default">Back to Option Providers</a>
+    </div>
+</div>
+{% endblock %}

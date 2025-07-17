@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import Product, ProductGroup, ProductVariation, ProductBundle, ProductBundleProduct
+from .models import Product, ProductVariation, ProductBundle, ProductBundleProduct
 from .models.product_group_filter import ProductGroupFilter
-from .models.product_group import ProductGroup
+from .models.filter_system import FilterGroup
 from exam_sessions_subjects_products.models import ExamSessionSubjectBundle, ExamSessionSubjectBundleProduct
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -158,26 +158,26 @@ class ExamSessionSubjectBundleSerializer(serializers.ModelSerializer):
     def get_components_count(self, obj):
         return obj.bundle_products.filter(is_active=True).count()
 
-class ProductGroupSerializer(serializers.ModelSerializer):
+class FilterGroupSerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()
     class Meta:
-        model = ProductGroup
+        model = FilterGroup
         fields = ['id', 'name', 'parent', 'children']
     def get_children(self, obj):
-        return ProductGroupSerializer(obj.children.all(), many=True).data
+        return FilterGroupSerializer(obj.children.all(), many=True).data
 
-class ProductGroupThreeLevelSerializer(serializers.ModelSerializer):
+class FilterGroupThreeLevelSerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()
     class Meta:
-        model = ProductGroup
+        model = FilterGroup
         fields = ['id', 'name', 'parent', 'children']
     def get_children(self, obj):
         # Level 2
         return [
             {
-                **ProductGroupThreeLevelSerializer(child).data,
+                **FilterGroupThreeLevelSerializer(child).data,
                 'children': [
-                    ProductGroupThreeLevelSerializer(grandchild).data
+                    FilterGroupThreeLevelSerializer(grandchild).data
                     for grandchild in child.children.all()
                 ]
             }
@@ -204,11 +204,11 @@ class ProductGroupFilterSerializer(serializers.ModelSerializer):
             for group in obj.groups.all()
         ]
 
-class ProductGroupWithProductsSerializer(serializers.ModelSerializer):
+class FilterGroupWithProductsSerializer(serializers.ModelSerializer):
     products = serializers.SerializerMethodField()
     
     class Meta:
-        model = ProductGroup
+        model = FilterGroup
         fields = ['id', 'name', 'products']
     
     def get_products(self, obj):
