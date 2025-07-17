@@ -1,5 +1,5 @@
 from django.db import models
-from .product_group import ProductGroup
+from .filter_system import FilterGroup
 
 class ProductGroupFilter(models.Model):
     FILTER_TYPE_CHOICES = [
@@ -9,7 +9,7 @@ class ProductGroupFilter(models.Model):
     ]
     name = models.CharField(max_length=100)
     filter_type = models.CharField(max_length=32, choices=FILTER_TYPE_CHOICES)
-    groups = models.ManyToManyField(ProductGroup, related_name="filter_groups")
+    groups = models.ManyToManyField(FilterGroup, related_name="filter_groups")
 
     def __str__(self):
         return f"{self.name} ({self.filter_type})"

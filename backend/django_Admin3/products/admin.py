@@ -1,14 +1,12 @@
 # products/admin.py
 from django.contrib import admin
-from .models import Product, ProductGroup
+from .models import Product
 from .models.products import ProductVariation
 from .models.product_group_filter import ProductGroupFilter
 
-@admin.register(ProductGroup)
-class ProductGroupAdmin(admin.ModelAdmin):
-    list_display = ("name", "parent")
-    search_fields = ("name",)
-    list_filter = ("parent",)
+# Import the new filter admin - this ensures the admin classes are registered
+from .admin import filter_admin
+
 
 @admin.register(ProductGroupFilter)
 class ProductGroupFilterAdmin(admin.ModelAdmin):

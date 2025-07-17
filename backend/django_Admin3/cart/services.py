@@ -4,7 +4,8 @@ import logging
 from decimal import Decimal
 from django.conf import settings
 from django.utils import timezone
-from .models import ActedOrderPayment
+from .models import ActedOrderPayment, Cart, CartItem
+from marking_vouchers.models import MarkingVoucher
 
 logger = logging.getLogger(__name__)
 
@@ -339,6 +340,150 @@ class DummyPaymentService:
             'payment_id': payment.id,
             'message': 'Dummy invoice payment created'
         }
+
+class CartService:
+    """Service for handling cart operations"""
+    
+    def add_marking_voucher(self, cart, voucher_id, quantity=1):
+        """
+        Add a marking voucher to the cart
+        
+        Args:
+            cart: Cart instance
+            voucher_id: ID of the marking voucher
+            quantity: Number of vouchers to add
+            
+        Returns:
+            CartItem: The created or updated cart item
+        """
+        try:
+            voucher = MarkingVoucher.objects.get(id=voucher_id, is_active=True)
+            
+            # Check if voucher is available
+            if not voucher.is_available:
+                raise ValueError("Voucher is not available")
+            
+            # Check if voucher is already in cart
+            existing_item = CartItem.objects.filter(
+                cart=cart,
+                marking_voucher=voucher,
+                item_type='marking_voucher'
+            ).first()
+            
+            if existing_item:
+                # Update quantity
+                existing_item.quantity += quantity
+                existing_item.save()
+                return existing_item
+            else:
+                # Create new cart item
+                cart_item = CartItem.objects.create(
+                    cart=cart,
+                    marking_voucher=voucher,
+                    item_type='marking_voucher',
+                    quantity=quantity,
+                    actual_price=voucher.price
+                )
+                return cart_item
+                
+        except MarkingVoucher.DoesNotExist:
+            raise ValueError("Marking voucher not found")
+    
+    def remove_marking_voucher(self, cart, voucher_id):
+        """
+        Remove a marking voucher from the cart
+        
+        Args:
+            cart: Cart instance
+            voucher_id: ID of the marking voucher to remove
+            
+        Returns:
+            bool: True if item was removed, False if not found
+        """
+        try:
+            cart_item = CartItem.objects.get(
+                cart=cart,
+                marking_voucher_id=voucher_id,
+                item_type='marking_voucher'
+            )
+            cart_item.delete()
+            return True
+        except CartItem.DoesNotExist:
+            return False
+    
+    def update_marking_voucher_quantity(self, cart, voucher_id, quantity):
+        """
+        Update the quantity of a marking voucher in the cart
+        
+        Args:
+            cart: Cart instance
+            voucher_id: ID of the marking voucher
+            quantity: New quantity
+            
+        Returns:
+            CartItem: Updated cart item
+        """
+        try:
+            cart_item = CartItem.objects.get(
+                cart=cart,
+                marking_voucher_id=voucher_id,
+                item_type='marking_voucher'
+            )
+            
+            if quantity <= 0:
+                cart_item.delete()
+                return None
+            
+            # Check if voucher is still available
+            if not cart_item.marking_voucher.is_available:
+                raise ValueError("Voucher is no longer available")
+            
+            cart_item.quantity = quantity
+            cart_item.save()
+            return cart_item
+            
+        except CartItem.DoesNotExist:
+            raise ValueError("Marking voucher not found in cart")
+    
+    def get_cart_total(self, cart):
+        """
+        Calculate the total cost of items in the cart
+        
+        Args:
+            cart: Cart instance
+            
+        Returns:
+            dict: Cart totals with breakdown
+        """
+        items = cart.items.all()
+        
+        product_subtotal = Decimal('0.00')
+        voucher_subtotal = Decimal('0.00')
+        
+        for item in items:
+            item_total = item.actual_price * item.quantity
+            
+            if item.item_type == 'marking_voucher':
+                voucher_subtotal += item_total
+            else:
+                product_subtotal += item_total
+        
+        subtotal = product_subtotal + voucher_subtotal
+        
+        # Calculate VAT (assuming 20% VAT rate)
+        vat_rate = Decimal('0.20')
+        vat_amount = subtotal * vat_rate
+        total = subtotal + vat_amount
+        
+        return {
+            'product_subtotal': product_subtotal,
+            'voucher_subtotal': voucher_subtotal,
+            'subtotal': subtotal,
+            'vat_rate': vat_rate,
+            'vat_amount': vat_amount,
+            'total': total
+        }
+
 
 # Select payment service based on settings
 if getattr(settings, 'USE_DUMMY_PAYMENT_GATEWAY', False):
