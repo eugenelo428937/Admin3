@@ -423,7 +423,7 @@ class CartViewSet(viewsets.ViewSet):
                         'name': item.product.product.fullname,
                         'product_name': item.product.product.fullname,
                         'product_code': item.product.product.code,  # Add full product code (e.g., CB1/CC/25A)
-                        'product_type': product_type,  # Add product type from ProductGroup
+                        'product_type': product_type,  # Add product type from FilterGroup
                         'subject_code': getattr(item.product.exam_session_subject.subject, 'code', 'N/A'),
                         'session_code': getattr(item.product.exam_session_subject.exam_session, 'session_code', 'N/A'),
                         'quantity': item.quantity,

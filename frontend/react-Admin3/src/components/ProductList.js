@@ -255,6 +255,26 @@ const ProductList = React.memo(() => {
 					// Use combined products and bundles endpoint
 					const params = new URLSearchParams();
 					
+					// Check if we need to include marking vouchers
+					let shouldIncludeMarkingVouchers = false;
+					
+					console.log('📋 [ProductList] Filter values for marking voucher check:', {
+						navbarGroupFilter,
+						groupFilter,
+						panelFiltersGroup: panelFilters.group
+					});
+					
+					// Check for Marking group (id: 2) or Marking Vouchers group (id: 8)
+					// Handle both string and number comparisons
+					if (navbarGroupFilter === '2' || navbarGroupFilter === 2 || navbarGroupFilter === '8' || navbarGroupFilter === 8 || 
+						groupFilter === '2' || groupFilter === 2 || groupFilter === '8' || groupFilter === 8 ||
+						panelFilters.group?.includes('2') || panelFilters.group?.includes(2) || 
+						panelFilters.group?.includes('8') || panelFilters.group?.includes(8)) {
+						shouldIncludeMarkingVouchers = true;
+					}
+					
+					console.log('📋 [ProductList] shouldIncludeMarkingVouchers:', shouldIncludeMarkingVouchers);
+					
 					// Add navbar filters if present
 					if (navbarGroupFilter) {
 						params.append("group", navbarGroupFilter);
@@ -301,22 +321,13 @@ const ProductList = React.memo(() => {
 						params.append("tutorial", tutorialFilter);
 					}
 					
-					// Add panel filters (these will be combined with URL filters)
-					if (panelFilters.subject && panelFilters.subject.length > 0) {
-						panelFilters.subject.forEach(id => params.append("subject", id));
-					}
-					if (panelFilters.main_category && panelFilters.main_category.length > 0) {
-						panelFilters.main_category.forEach(id => params.append("main_category", id));
-					}
-					if (panelFilters.delivery_method && panelFilters.delivery_method.length > 0) {
-						panelFilters.delivery_method.forEach(id => params.append("delivery_method", id));
-					}
-					if (panelFilters.tutorial_format && panelFilters.tutorial_format.length > 0) {
-						panelFilters.tutorial_format.forEach(format => params.append("tutorial_format", format));
-					}
-					if (panelFilters.variation && panelFilters.variation.length > 0) {
-						panelFilters.variation.forEach(id => params.append("variation", id));
-					}
+					// Add panel filters dynamically based on filter configurations
+					// Each filter uses its configuration name directly as the parameter
+					Object.keys(panelFilters).forEach(filterName => {
+						if (panelFilters[filterName] && panelFilters[filterName].length > 0) {
+							panelFilters[filterName].forEach(id => params.append(filterName, id));
+						}
+					});
 
 					console.debug(
 						"Product filter params:",
@@ -348,14 +359,44 @@ const ProductList = React.memo(() => {
 						finalParams: params.toString()
 					});
 
-					const data = await productService.getProductsAndBundles(
+					let data;
+					let markingVouchers = [];
+					
+					// Fetch products and bundles
+					data = await productService.getProductsAndBundles(
 						params,
 						page,
 						PAGE_SIZE
 					);
+					
+					// Fetch marking vouchers if needed
+					if (shouldIncludeMarkingVouchers && page === 1) {
+						try {
+							console.log('📋 [ProductList] Fetching marking vouchers...');
+							markingVouchers = await productService.getMarkingVouchers();
+							console.log('📋 [ProductList] Fetched marking vouchers:', markingVouchers.length, markingVouchers);
+							
+							// Add voucher type indicator
+							markingVouchers = markingVouchers.map(voucher => ({
+								...voucher,
+								type: 'MarkingVoucher',
+								is_voucher: true
+							}));
+							console.log('📋 [ProductList] Processed marking vouchers:', markingVouchers);
+						} catch (error) {
+							console.error('Error fetching marking vouchers:', error);
+							// Still continue with regular products even if vouchers fail
+						}
+					}
 
 					// Handle combined response
-					const newItems = data.results || [];
+					let newItems = data.results || [];
+					
+					// Add marking vouchers to the beginning of the list if we have them
+					if (markingVouchers.length > 0) {
+						newItems = [...markingVouchers, ...newItems];
+						console.log('📋 [ProductList] Combined items with vouchers:', newItems.length, 'total items');
+					}
 
 					console.log('📋 [ProductList] Combined API response:', {
 						itemsCount: newItems.length,
@@ -373,7 +414,9 @@ const ProductList = React.memo(() => {
 
 					// Update pagination state
 					setHasNextPage(data.has_next || false);
-					setTotalProducts(data.count || newItems.length);
+					// Add vouchers count to total if we included them
+					const totalCount = (data.count || 0) + (markingVouchers.length || 0);
+					setTotalProducts(totalCount);
 					setCurrentPage(page);
 				}
 			} catch (err) {
@@ -550,7 +593,7 @@ const ProductList = React.memo(() => {
 									)}
 								</div>
 
-								<Row xs={1} md={2} lg={3} xl={4} className="g-4">
+								<Row xs={1} md={2} lg={2} xl={3} className="g-4">
 									{products.map((item) => (
 										<Col
 											key={

@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(python manage.py shell:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(python manage.py:*)",
+      "Bash(curl:*)",
+      "Bash(rm:*)",
+      "Bash(mv:*)",
+      "Bash(npm start)",
+      "Bash(python:*)",
+      "Bash(del:*)"
     ],
     "deny": []
   }

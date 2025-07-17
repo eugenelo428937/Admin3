@@ -4,7 +4,7 @@ from fuzzywuzzy import fuzz, process
 from django.db.models import Q, QuerySet
 from .models import ExamSessionSubjectProduct
 from subjects.models import Subject
-from products.models.product_group import ProductGroup
+from products.models.filter_system import FilterGroup
 
 logger = logging.getLogger(__name__)
 

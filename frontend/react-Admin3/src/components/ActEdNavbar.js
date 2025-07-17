@@ -252,6 +252,12 @@ const ActEdNavbar = () => {
 		navigate(`/products?variation=${variationId}`);
 	};
 
+	// Handle navigating to marking vouchers
+	const handleMarkingVouchersClick = (e) => {
+		e.preventDefault();
+		navigate(`/products?group=8`); // Navigate to Marking Vouchers group (id: 8)
+	};
+
 	// Handle navigating to tutorial format filters
 	const handleTutorialFormatClick = (groupName) => {
 		navigate(`/products?tutorial_format=${encodeURIComponent(groupName)}`);
@@ -980,6 +986,13 @@ const ActEdNavbar = () => {
 									</Row>
 								</div>
 							</NavDropdown>
+							<Nav.Link
+								as={NavLink}
+								to="/products?group=8"
+								onClick={handleMarkingVouchersClick}
+								className="navbar-marking-vouchers">
+								Marking Vouchers
+							</Nav.Link>
 							{isApprentice ? (
 								<Nav.Link
 									as={NavLink}

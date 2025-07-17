@@ -11,10 +11,10 @@ from .serializers import ExamSessionSubjectProductSerializer, ProductListSeriali
 from .services import FuzzySearchService
 from exam_sessions_subjects.models import ExamSessionSubject
 from products.models.products import Product
-from products.models.product_group import ProductGroup
+from products.models.filter_system import FilterGroup
 from subjects.models import Subject
 from subjects.serializers import SubjectSerializer
-from products.services.filter_service import get_product_filter_service
+from products.services.filter_service import get_product_filter_service, get_filter_service
 
 # Import exam session bundle models and serializers
 from .models import ExamSessionSubjectBundle
@@ -151,21 +151,36 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         page_size = int(request.query_params.get('page_size', 50))
         logger.info(f'Pagination: page={page}, page_size={page_size}')
         
-        # Create cache key based on query parameters (including pagination)
+        # ===== DYNAMIC FILTER CONFIGURATION =====
+        from products.models.filter_system import FilterConfiguration
+        
+        # Get all active filter configurations
+        filter_configs = FilterConfiguration.objects.filter(is_active=True).select_related()
+        
+        # Create dynamic cache key based on all possible query parameters
         cache_key_params = {
-            'subject_ids': request.query_params.getlist('subject'),
-            'subject_code': request.query_params.get('subject_code'),
-            'main_category_ids': request.query_params.getlist('main_category'),
-            'delivery_method_ids': request.query_params.getlist('delivery_method'),
-            'group': request.query_params.get('group'),
-            'product': request.query_params.get('product'),
-            'tutorial_format': request.query_params.get('tutorial_format'),
-            'variation': request.query_params.get('variation'),
-            'distance_learning': request.query_params.get('distance_learning'),
-            'tutorial': request.query_params.get('tutorial'),
             'page': page,
             'page_size': page_size
         }
+        
+        # Add all dynamic filter parameters to cache key
+        for config in filter_configs:
+            # Use the filter name directly as the parameter name
+            param_values = request.query_params.getlist(config.name)
+            if param_values:
+                cache_key_params[config.name] = param_values
+        
+        # Add navbar filters to cache key
+        navbar_filters = ['group', 'product', 'tutorial_format', 'variation', 'distance_learning', 'tutorial']
+        for navbar_filter in navbar_filters:
+            value = request.query_params.get(navbar_filter)
+            if value:
+                cache_key_params[navbar_filter] = value
+        
+        # Add subject_code for backward compatibility
+        if request.query_params.get('subject_code'):
+            cache_key_params['subject_code'] = request.query_params.get('subject_code')
+        
         cache_key = f"products_bundles_list_{hash(str(sorted(cache_key_params.items())))}"
         
         # Try to get from cache first
@@ -193,40 +208,150 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             'bundle_products__exam_session_subject_product_variation__product_product_variation__product_variation'
         )
 
-        # ===== APPLY FILTERING USING NEW FILTER SERVICE =====
-        filter_service = get_product_filter_service()
+        # ===== APPLY DYNAMIC FILTERING USING FILTER SERVICE =====
+        filter_service = get_filter_service()
         
-        # Extract filters from request parameters
-        filters = {
-            'subject': request.query_params.getlist('subject'),
-            'main_category': request.query_params.getlist('main_category'), 
-            'delivery_method': request.query_params.getlist('delivery_method'),
-            'tutorial_format': request.query_params.getlist('tutorial_format'),
-            'variation': request.query_params.getlist('variation')
-        }
+        # Build dynamic filters dictionary based on active filter configurations
+        filters = {}
+        bundle_filter_active = False
         
-        # Add single subject code if provided
+        # Process each filter configuration dynamically
+        for config in filter_configs:
+            # Check if this filter has values in the request using the filter name directly
+            filter_values = request.query_params.getlist(config.name)
+            if filter_values:
+                # Convert string values to integers if needed
+                processed_values = []
+                for value in filter_values:
+                    try:
+                        # Try to convert to int if it's a numeric string
+                        if value.isdigit():
+                            processed_values.append(int(value))
+                        else:
+                            processed_values.append(value)
+                    except (ValueError, AttributeError):
+                        processed_values.append(value)
+                
+                filters[config.name] = processed_values
+                logger.info(f'Added dynamic filter: {config.name} = {processed_values} (from parameter: {config.name})')
+                
+                # Check if bundle filter is active
+                if config.filter_type == 'bundle' and 'bundle' in processed_values:
+                    bundle_filter_active = True
+        
+        # Handle subject code for backward compatibility
         if request.query_params.get('subject_code'):
+            if 'subject' not in filters:
+                filters['subject'] = []
             filters['subject'].append(request.query_params.get('subject_code'))
         
-        logger.info(f'Applying filters using filter service: {filters}')
+        # Handle direct subject parameter
+        if request.query_params.getlist('subject'):
+            if 'subject' not in filters:
+                filters['subject'] = []
+            filters['subject'].extend(request.query_params.getlist('subject'))
         
-        # Apply filters to products
-        products_queryset = filter_service.apply_filters(products_queryset, filters)
+        logger.info(f'Final dynamic filters being applied: {filters}')
+        logger.info(f'Bundle filter active: {bundle_filter_active}')
         
-        # Apply subject filtering to bundles (bundles don't have other filter types)
-        if filters['subject']:
-            subject_filter = Q()
-            ids = [v for v in filters['subject'] if isinstance(v, int) or (isinstance(v, str) and v.isdigit())]
-            codes = [v for v in filters['subject'] if isinstance(v, str) and not v.isdigit()]
+        # ===== HANDLE BUNDLE FILTER LOGIC =====
+        if bundle_filter_active:
+            # If bundle filter is active, only return bundles
+            logger.info('Bundle filter is active - returning only bundles')
+            products_queryset = products_queryset.none()  # No products when bundle filter is active
             
-            if ids:
-                subject_filter |= Q(exam_session_subject__subject__id__in=ids)
-            if codes:
-                subject_filter |= Q(exam_session_subject__subject__code__in=codes)
+            # Apply other filters to bundles (except bundle filter)
+            bundle_filters = {k: v for k, v in filters.items() if k != 'bundle'}
             
-            if subject_filter:
-                bundles_queryset = bundles_queryset.filter(subject_filter)
+            # Apply subject filtering to bundles
+            if bundle_filters.get('subject') or bundle_filters.get('SUBJECT_FILTER'):
+                subject_filter = Q()
+                subject_values = bundle_filters.get('subject', []) + bundle_filters.get('SUBJECT_FILTER', [])
+                
+                if subject_values:
+                    ids = [v for v in subject_values if isinstance(v, int) or (isinstance(v, str) and v.isdigit())]
+                    codes = [v for v in subject_values if isinstance(v, str) and not v.isdigit()]
+                    
+                    if ids:
+                        subject_filter |= Q(exam_session_subject__subject__id__in=ids)
+                    if codes:
+                        subject_filter |= Q(exam_session_subject__subject__code__in=codes)
+                    
+                    if subject_filter:
+                        bundles_queryset = bundles_queryset.filter(subject_filter)
+                        logger.info(f'Bundles after subject filtering: {bundles_queryset.count()}')
+        else:
+            # Normal filtering - apply filters to products and find related bundles
+            original_filters = filters.copy()
+            
+            # Apply filters to products using the filter service
+            if filters:
+                products_queryset = filter_service.apply_filters(products_queryset, filters)
+                logger.info(f'Products after dynamic filtering: {products_queryset.count()}')
+            
+            # Apply subject filtering to bundles (bundles don't have other filter types)
+            if filters.get('subject') or filters.get('SUBJECT_FILTER'):
+                subject_filter = Q()
+                
+                # Get subject values from either key
+                subject_values = filters.get('subject', []) + filters.get('SUBJECT_FILTER', [])
+                
+                if subject_values:
+                    ids = [v for v in subject_values if isinstance(v, int) or (isinstance(v, str) and v.isdigit())]
+                    codes = [v for v in subject_values if isinstance(v, str) and not v.isdigit()]
+                    
+                    if ids:
+                        subject_filter |= Q(exam_session_subject__subject__id__in=ids)
+                    if codes:
+                        subject_filter |= Q(exam_session_subject__subject__code__in=codes)
+                    
+                    if subject_filter:
+                        bundles_queryset = bundles_queryset.filter(subject_filter)
+                        logger.info(f'Bundles after subject filtering: {bundles_queryset.count()}')
+            
+            # ===== FIND BUNDLES CONTAINING FILTERED PRODUCTS =====
+            # If we have any filters applied, find bundles that contain products matching those filters
+            if original_filters:
+                try:
+                    # Get the products that match the current filters
+                    filtered_product_ids = list(products_queryset.values_list('product_id', flat=True))
+                    
+                    if filtered_product_ids:
+                        # Find bundles that contain any of these products
+                        # We need to check if any products in the bundle match our filter criteria
+                        from exam_sessions_subjects_products.models import ExamSessionSubjectBundleProduct
+                        
+                        # Get bundle products that match our filtered products
+                        bundle_products_with_matching_items = ExamSessionSubjectBundleProduct.objects.filter(
+                            exam_session_subject_product_variation__product_id__in=filtered_product_ids
+                        ).values_list('bundle_id', flat=True).distinct()
+                        
+                        # Add these bundles to our bundles queryset
+                        if bundle_products_with_matching_items:
+                            # Get existing bundle IDs to avoid duplicates
+                            existing_bundle_ids = set(bundles_queryset.values_list('id', flat=True))
+                            new_bundle_ids = set(bundle_products_with_matching_items) - existing_bundle_ids
+                            
+                            if new_bundle_ids:
+                                # Add new bundles that contain filtered products
+                                additional_bundles = ExamSessionSubjectBundle.objects.filter(
+                                    id__in=new_bundle_ids,
+                                    is_active=True
+                                ).select_related(
+                                    'bundle__subject',
+                                    'exam_session_subject__exam_session',
+                                    'exam_session_subject__subject'
+                                ).prefetch_related(
+                                    'bundle_products__exam_session_subject_product_variation__product_product_variation__product',
+                                    'bundle_products__exam_session_subject_product_variation__product_product_variation__product_variation'
+                                )
+                                
+                                # Combine the querysets
+                                bundles_queryset = bundles_queryset.union(additional_bundles)
+                                logger.info(f'Added {len(new_bundle_ids)} bundles containing filtered products')
+                            
+                except Exception as e:
+                    logger.error(f'Error finding bundles containing filtered products: {e}')
         
         logger.info(f'After filter service - products: {products_queryset.count()}, bundles: {bundles_queryset.count()}')
 
@@ -237,11 +362,11 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         
         if group_filter:
             try:
-                group = ProductGroup.objects.get(name=group_filter)
+                group = FilterGroup.objects.get(name=group_filter)
                 products_queryset = products_queryset.filter(product__groups=group)
                 logger.info(f'After group filter "{group_filter}" - products: {products_queryset.count()}')
-            except ProductGroup.DoesNotExist:
-                logger.warning(f'Product group "{group_filter}" not found')
+            except FilterGroup.DoesNotExist:
+                logger.warning(f'Filter group "{group_filter}" not found')
                 products_queryset = products_queryset.none()
         
         if product_filter:
@@ -263,10 +388,10 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         
         if tutorial_format_filter:
             try:
-                format_group = ProductGroup.objects.get(name=tutorial_format_filter)
+                format_group = FilterGroup.objects.get(name=tutorial_format_filter)
                 products_queryset = products_queryset.filter(product__groups=format_group)
                 logger.info(f'After tutorial_format filter "{tutorial_format_filter}" - products: {products_queryset.count()}')
-            except ProductGroup.DoesNotExist:
+            except FilterGroup.DoesNotExist:
                 logger.warning(f'Tutorial format group "{tutorial_format_filter}" not found')
                 products_queryset = products_queryset.none()
         
@@ -282,7 +407,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         if distance_learning_filter:
             distance_learning_groups = ['Core Study Materials', 'Revision Materials', 'Marking']
             try:
-                dl_groups = ProductGroup.objects.filter(name__in=distance_learning_groups)
+                dl_groups = FilterGroup.objects.filter(name__in=distance_learning_groups)
                 products_queryset = products_queryset.filter(product__groups__in=dl_groups).distinct()
                 logger.info(f'After distance_learning filter - products: {products_queryset.count()}')
             except Exception as e:
@@ -291,11 +416,11 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         
         if tutorial_filter:
             try:
-                tutorial_group = ProductGroup.objects.get(name='Tutorial')
-                online_classroom_group = ProductGroup.objects.get(name='Online Classroom')
+                tutorial_group = FilterGroup.objects.get(name='Tutorial')
+                online_classroom_group = FilterGroup.objects.get(name='Online Classroom')
                 products_queryset = products_queryset.filter(product__groups=tutorial_group).exclude(product__groups=online_classroom_group).distinct()
                 logger.info(f'After tutorial filter - products: {products_queryset.count()}')
-            except ProductGroup.DoesNotExist as e:
+            except FilterGroup.DoesNotExist as e:
                 logger.warning(f'Tutorial group not found: {e}')
                 products_queryset = products_queryset.none()
 
@@ -547,7 +672,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             
             try:
                 # Get some product groups
-                product_groups = ProductGroup.objects.all()[:limit]
+                product_groups = FilterGroup.objects.all()[:limit]
                 product_groups_data = [
                     {
                         'id': group.id,

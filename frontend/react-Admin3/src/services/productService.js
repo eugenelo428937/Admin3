@@ -5,6 +5,7 @@ import httpService from "./httpService";
 // Use fallback if productsUrl is not defined
 const PRODUCTS_API_URL = config.productsUrl || `${config.apiBaseUrl || config.apiUrl}/products`;
 const MARKING_API_URL = config.markingUrl;
+const MARKING_VOUCHERS_API_URL = `${config.apiBaseUrl || config.apiUrl}/api/marking-vouchers`;
 
 const productService = {
 	// Get all products with optional filtering
@@ -345,6 +346,69 @@ const productService = {
 					error.response?.data?.message ||
 					error.message ||
 					"Failed to fetch filter configuration",
+				status: error.response?.status || 0,
+				data: error.response?.data || null,
+			};
+		}
+	},
+
+	// Marking Vouchers API methods
+	getMarkingVouchers: async (params = {}) => {
+		try {
+			const response = await httpService.get(
+				`${MARKING_VOUCHERS_API_URL}/`,
+				{ params }
+			);
+			return response.data.results || response.data;
+		} catch (error) {
+			console.error("Error fetching marking vouchers:", error);
+			throw {
+				message:
+					error.response?.data?.message ||
+					error.message ||
+					"Failed to fetch marking vouchers",
+				status: error.response?.status || 0,
+				data: error.response?.data || null,
+			};
+		}
+	},
+
+	getMarkingVoucherById: async (id) => {
+		try {
+			const response = await httpService.get(
+				`${MARKING_VOUCHERS_API_URL}/${id}/`
+			);
+			return response.data;
+		} catch (error) {
+			console.error("Error fetching marking voucher:", error);
+			throw {
+				message:
+					error.response?.data?.message ||
+					error.message ||
+					"Failed to fetch marking voucher",
+				status: error.response?.status || 0,
+				data: error.response?.data || null,
+			};
+		}
+	},
+
+	addMarkingVoucherToCart: async (voucherId, quantity = 1) => {
+		try {
+			const response = await httpService.post(
+				`${MARKING_VOUCHERS_API_URL}/add-to-cart/`,
+				{
+					voucher_id: voucherId,
+					quantity: quantity
+				}
+			);
+			return response.data;
+		} catch (error) {
+			console.error("Error adding marking voucher to cart:", error);
+			throw {
+				message:
+					error.response?.data?.message ||
+					error.message ||
+					"Failed to add marking voucher to cart",
 				status: error.response?.status || 0,
 				data: error.response?.data || null,
 			};

@@ -1,0 +1,144 @@
+# ActEd Online Store Documentation
+
+## Overview
+
+## Existing Functionality
+
+- Users Related
+  - Login
+  - Reset Password
+  - Change Email
+  - Update profile
+  - Sign out
+  - Logging
+- Products
+  - List
+  - Add on sale
+  - Bundle
+  - Marking products
+    - Deadline Check
+  - Tutorial products
+    - Choices
+    - Finalisation Data/Status
+    - Course Type
+    - Tutorial Dates
+  - Online Classroom
+    - India/UK
+- Tutorial Request
+- Cart
+  - Add product to Cart
+  - Update Cart
+  - Empty Cart
+  - Apply discounts
+- Ordering/Checkout
+  - Reduced rate
+  - Invoice delivery preference
+  - Study Materials delivery preference
+  - Confirm delivery preference
+  - Calculate VAT
+  - Calculate Total
+  - Dispaly Communication Details
+  - special education/ Health conditions
+  - Notes
+  - Terms and condition
+  - Product specify preference
+  - How we use your information
+    - Feedback to employers
+    - Marketing perference
+  - Payment
+    - Credit Card
+    - Invoice
+      - Details
+      - Purchase Order Code, Cost Code, Staff number
+      - Order confirmation employer's email
+- Email
+  - Confirmation
+    - Printed Material order
+    - Digital Material order
+    - Marking Material order
+    - Tutorial order
+  - Tutorial Request
+
+## New/Updated functionailty
+
+- Catalog
+  - Products
+    - Variations
+  - Bundles
+  - Subjects
+  - Exam Sessions
+- Current Products
+  - Current Subjects
+    - Products  
+      - Variations
+      - Variation Prices
+      - Bundles
+      - Product Cards
+      - Marking Paper
+        - Deadlines
+          - Deadline warnings
+      - Tutorials
+        - Events
+          - Check Availability
+        - Sessions Dates (**TO BE IMPLEMENTED**)
+        - Tutorial Choices Panel (**IN PROGRESS**)
+- Filtering (**IN PROGRESS**)
+  - Configuration
+  - Filter Group
+  - Product Group
+  - Examples:
+    - Subjects
+    - Delivery Mode
+    - Product Category
+    - Product Type
+- Searching (**IN PROGRESS**)
+  - Fuzzy Searching
+- Rules Engine
+  - Rules
+  - Conditions
+  - Actions
+  - Executions
+  - Message Templates
+  - User Acknoeledgements
+  - Custom functions
+  - Example:
+    - Product Specific Rules
+      - Tutorial Booking Fee
+      - Marking Solution
+    - Display conditional message
+      - Holiday Message
+    - Requires User Acknowledge
+      - Terms and conditions
+      - Session Change Message (**TO BE IMPLEMENTED**)
+    - Automatic Applied
+      - VAT Calculation
+- Utilities
+  - Address search
+  - Email Module
+    - Settings
+    - Tempalte
+      - MJML
+    - Conditional Rendering
+      - Attachment
+      - Contents
+        - Content Rules
+        - Placeholder
+- Cart
+  - Panel
+- Checkout
+  - Steps
+- Users
+  - Auth User
+  - User Profile
+    - Addresses
+    - Email
+    - Contact Number
+  - Students (**TO BE IMPLEMENTED**)
+  - Marker (**TO BE IMPLEMENTED**)
+  - Apprentice (**TO BE IMPLEMENTED**)
+  - Study Plus (**TO BE IMPLEMENTED**)
+  - User Preference (**TO BE IMPLEMENTED**)
+    - Subjects
+    - Tutorial Locations
+    - Mode of Delivery
+- Payment (**TO BE IMPLEMENTED**)

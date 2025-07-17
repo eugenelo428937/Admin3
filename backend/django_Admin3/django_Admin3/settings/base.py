@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     'exam_sessions_subjects_products',    
     'products.apps.ProductsConfig',
     'marking',
+    'marking_vouchers',
     'core_auth',    
     'administrate.apps.AdministrateConfig',
     'rules_engine.apps.RulesEngineConfig',

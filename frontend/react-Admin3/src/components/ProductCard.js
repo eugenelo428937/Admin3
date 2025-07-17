@@ -37,6 +37,7 @@ import {
 import { useCart } from "../contexts/CartContext";
 import { useVAT } from "../contexts/VATContext";
 import MarkingProductCard from "./MarkingProductCard";
+import MarkingVoucherProductCard from "./MarkingVoucherProductCard";
 import TutorialProductCard from "./TutorialProductCard";
 import OnlineClassroomProductCard from "./OnlineClassroomProductCard";
 import BundleCard from "./BundleCard";
@@ -63,6 +64,10 @@ const ProductCard = React.memo(
 			() => ({
 				isTutorial: product.type === "Tutorial",
 				isMarking: product.type === "Markings",
+				isMarkingVoucher: product.type === "MarkingVoucher" || 
+					(product.is_voucher === true) ||
+					(product.product_name?.toLowerCase().includes("voucher")) ||
+					(product.code && product.code.startsWith("VOUCHER")),
 				isOnlineClassroom:
 					product.product_name
 						?.toLowerCase()
@@ -75,7 +80,7 @@ const ProductCard = React.memo(
 					product.product_name?.toLowerCase().includes("package") ||
 					product.is_bundle === true,
 			}),
-			[product.type, product.product_name, product.learning_mode, product.is_bundle]
+			[product.type, product.product_name, product.learning_mode, product.is_bundle, product.is_voucher, product.code]
 		);
 
 		// Memoize variation calculations
@@ -154,8 +159,8 @@ const ProductCard = React.memo(
 			showVATInclusive,
 		]);
 
-		const { isTutorial, isMarking, isOnlineClassroom, isBundle } = productTypeCheck;
-		const isMaterial = !isTutorial && !isMarking && !isOnlineClassroom && !isBundle;
+		const { isTutorial, isMarking, isMarkingVoucher, isOnlineClassroom, isBundle } = productTypeCheck;
+		const isMaterial = !isTutorial && !isMarking && !isMarkingVoucher && !isOnlineClassroom && !isBundle;
 		const { hasVariations, singleVariation, currentVariation } =
 			variationInfo;
 
@@ -183,6 +188,16 @@ const ProductCard = React.memo(
 					productId={product.essp_id || product.id || product.product_id}
 					product={product}
 					variations={product.variations}
+				/>
+			);
+		}
+
+		// For Marking Voucher products, use the specialized component
+		if (isMarkingVoucher) {
+			return (
+				<MarkingVoucherProductCard
+					voucher={product}
+					onAddToCart={onAddToCart}
 				/>
 			);
 		}
@@ -586,7 +601,7 @@ const ProductCard = React.memo(
 							<LibraryBooksSharp />
 						</Box>
 					}					
-					className={`product-card-header d-flex  align-items-center ${getHeaderClass()}`}
+					className={`product-card-header d-flex w-100 align-items-center ${getHeaderClass()}`}
 					sx={{
 						backgroundColor: (theme) => theme.palette.grey[100],
 						color: (theme) => theme.palette.text.primary,
