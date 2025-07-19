@@ -9,7 +9,11 @@
       "Bash(mv:*)",
       "Bash(npm start)",
       "Bash(python:*)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(dir)",
+      "Bash(more:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }
