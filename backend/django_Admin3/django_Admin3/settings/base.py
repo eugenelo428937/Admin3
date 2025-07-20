@@ -338,3 +338,14 @@ RECAPTCHA_ACTIONS = {
 # ADMINISTRATE_API_KEY = env('ADMINISTRATE_API_KEY')
 # ADMINISTRATE_API_SECRET = env('ADMINISTRATE_API_SECRET')
 # ADMINISTRATE_REST_API_URL = env('ADMINISTRATE_REST_API_URL')
+
+CACHES = {
+      'default': {
+          'BACKEND': 'django_redis.cache.RedisCache',
+          'LOCATION': 'redis://127.0.0.1:6379/1',
+          'OPTIONS': {
+              'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+              # No password needed since Redis is running without auth
+          }
+      }
+  }
