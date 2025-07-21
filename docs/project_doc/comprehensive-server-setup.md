@@ -1,7 +1,9 @@
 # Admin3 Production Server Setup - Comprehensive Guide
+
 ## AWS EC2 Windows Server 2025 - Enterprise-Grade Deployment
 
 ### **Overview**
+
 This comprehensive guide provides enterprise-grade deployment procedures for Admin3 on AWS EC2 Windows Server 2025. It includes security hardening, monitoring, backup procedures, and performance optimization suitable for production environments and end-user demos.
 
 ### **🚀 Quick Start - Automated Installation**
@@ -20,6 +22,7 @@ cd "C:\Code\Admin3\Project settings\server setup"
 ```
 
 **Available Scripts:**
+
 - `01-initial-ec2-setup.ps1` - Initial server setup and dependencies
 - `02-rds-database-setup.ps1` - Database configuration
 - `03-redis-installation.ps1` - Redis cache installation
@@ -84,6 +87,7 @@ flowchart TD
 ## **1. Pre-Production Checklist**
 
 ### **1.1 AWS Account Preparation**
+
 - [ ] AWS account with appropriate permissions
 - [ ] VPC configured with public/private subnets
 - [ ] Security groups defined for EC2 and RDS
@@ -96,12 +100,14 @@ flowchart TD
 - [ ] RDS security group allows EC2 access on port 5432
 
 ### **1.2 Domain and SSL Requirements**
+
 - [ ] Domain name registered and configured
 - [ ] SSL certificate obtained (Let's Encrypt or AWS Certificate Manager)
 - [ ] DNS records configured
 - [ ] CDN setup (CloudFront) if required
 
 ### **1.3 Backup and Recovery Planning**
+
 - [ ] Backup strategy defined (RTO/RPO requirements)
 - [ ] Recovery procedures documented
 - [ ] Test restore procedures validated
@@ -113,6 +119,7 @@ flowchart TD
 ### **2.1 Enhanced EC2 Instance Configuration**
 
 #### **2.1.1 Instance Specifications**
+
 ```yaml
 Instance Type: m7i.large (minimum for production)
 vCPUs: 2
@@ -127,6 +134,7 @@ Network: Enhanced networking enabled
 #### **2.1.2 Security Groups Configuration**
 
 **EC2 Security Group (Admin3-EC2-SG):**
+
 ```yaml
 Inbound Rules:
   - HTTP (80): 0.0.0.0/0
@@ -291,21 +299,7 @@ VPC Configuration:
 ```
 
 #### **Security Group Configuration Details**
-```powershell
-# Create EC2 Security Group
-aws ec2 create-security-group --group-name Admin3-EC2-SG --description "Security group for Admin3 EC2 instance"
-
-# Add inbound rules for EC2
-aws ec2 authorize-security-group-ingress --group-name Admin3-EC2-SG --protocol tcp --port 80 --cidr 0.0.0.0/0
-aws ec2 authorize-security-group-ingress --group-name Admin3-EC2-SG --protocol tcp --port 443 --cidr 0.0.0.0/0
-aws ec2 authorize-security-group-ingress --group-name Admin3-EC2-SG --protocol tcp --port 3389 --cidr YOUR_IP/32
-
-# Create RDS Security Group
-aws ec2 create-security-group --group-name Admin3-RDS-SG --description "Security group for Admin3 RDS instance"
-
-# Add inbound rule for RDS (from EC2 security group)
-aws ec2 authorize-security-group-ingress --group-name Admin3-RDS-SG --protocol tcp --port 5432 --source-group Admin3-EC2-SG
-```
+See 00-aws-ec2-security-group.ps1
 
 ### **2.4.2 Connection Testing and Troubleshooting**
 
@@ -314,8 +308,8 @@ aws ec2 authorize-security-group-ingress --group-name Admin3-RDS-SG --protocol t
 # Test network connectivity to RDS
 function Test-RDSConnectivity {
     param(
-        [string]$RDSEndpoint = "acteddevdb01.crueqe6us4nv.eu-west-2.rds.amazonaws.com",
-        [int]$Port = 5432
+        [string]$RDSEndpoint = $env:DB_HOST,
+        [int]$Port = $env:DB_PORT
     )
     
     Write-Host "Testing RDS connectivity..." -ForegroundColor Cyan
@@ -353,6 +347,7 @@ Test-RDSConnectivity
 #### **Database Connection Test**
 
 Test database connectivity:
+
 ```powershell
 # Simple connection test
 psql -h $env:DB_HOST -d $env:DB_NAME -U $env:DB_USER -c "SELECT version();"
@@ -363,9 +358,10 @@ psql -h $env:DB_HOST -d $env:DB_NAME -U $env:DB_USER -c "SELECT version();"
 #### **Issue 1: Connection Timeout**
 
 Troubleshoot connectivity issues:
+
 ```powershell
 # Test network connectivity to RDS
-Test-NetConnection -ComputerName $env:DB_HOST -Port 5432
+Test-NetConnection -ComputerName $env:DB_HOST -Port $env:DB_PORT
 
 # Check security groups
 aws ec2 describe-security-groups --group-names Admin3-RDS-SG
@@ -375,26 +371,24 @@ aws ec2 describe-security-groups --group-names Admin3-EC2-SG
 #### **Issue 2: Authentication Failed**
 
 Check database credentials and permissions:
+
 ```powershell
 # Verify environment variables are set
 echo $env:DB_USER
 echo $env:DB_NAME
 
 # Test with master user if needed
-psql -h $env:DB_HOST -U postgres -c "SELECT current_user;"
+psql -h $env:DB_HOST -U $env:DB_POSTGRE_USER -c "SELECT current_user;"
 ```
 
 #### **Issue 3: SSL Connection Required**
 
 Configure SSL connection:
+
 ```powershell
 # Download RDS CA certificate
 $certUrl = "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
-Invoke-WebRequest -Uri $certUrl -OutFile "C:\certificates\rds-ca-bundle.pem"
-
-# Set SSL environment variables
-$env:PGSSLROOTCERT = "C:\certificates\rds-ca-bundle.pem"
-$env:PGSSLMODE = "require"
+Invoke-WebRequest -Uri $certUrl -OutFile $env:PGSSLROOTCERT
 ```
 
 ### **2.4.4 Production Backup Strategy for RDS**
@@ -446,13 +440,13 @@ secedit /configure /db c:\windows\security\local.sdb /cfg c:\secpol_modified.cfg
 #### **3.1.2 Windows Firewall Configuration**
 ```powershell
 # Configure Windows Firewall
-New-NetFirewallRule -DisplayName "HTTP" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow
-New-NetFirewallRule -DisplayName "HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow
-New-NetFirewallRule -DisplayName "Django" -Direction Inbound -Protocol TCP -LocalPort 8000 -Action Allow -RemoteAddress 127.0.0.1
+New-NetFirewallRule -DisplayName "HTTP" -Direction Inbound -Protocol TCP -LocalPort $env:HTTP_PORT -Action Allow
+New-NetFirewallRule -DisplayName "HTTPS" -Direction Inbound -Protocol TCP -LocalPort $env:HTTPS_PORT -Action Allow
+New-NetFirewallRule -DisplayName "Django" -Direction Inbound -Protocol TCP -LocalPort $env:DJANGO_PORT -Action Allow -RemoteAddress 127.0.0.1
 
 # Block unnecessary ports
-New-NetFirewallRule -DisplayName "Block PostgreSQL External" -Direction Inbound -Protocol TCP -LocalPort 5432 -Action Block -RemoteAddress Internet
-New-NetFirewallRule -DisplayName "Block Redis External" -Direction Inbound -Protocol TCP -LocalPort 6379 -Action Block -RemoteAddress Internet
+New-NetFirewallRule -DisplayName "Block PostgreSQL External" -Direction Inbound -Protocol TCP -LocalPort $env:DB_PORT -Action Block -RemoteAddress Internet
+New-NetFirewallRule -DisplayName "Block Redis External" -Direction Inbound -Protocol TCP -LocalPort $env:REDIS_PORT -Action Block -RemoteAddress Internet
 
 # Enable logging
 Set-NetFirewallProfile -Profile Domain,Public,Private -LogAllowed True -LogBlocked True -LogMaxSizeKilobytes 10240
@@ -460,115 +454,11 @@ Set-NetFirewallProfile -Profile Domain,Public,Private -LogAllowed True -LogBlock
 
 ### **3.2 Application Security**
 
-#### **3.2.1 Django Security Configuration**
-```python
-# backend/django_Admin3/django_Admin3/settings/production.py
-import os
-from .base import *
-
-# Security settings
-DEBUG = False
-ALLOWED_HOSTS = ['your-domain.com', 'www.your-domain.com']
-
-# Security headers
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_HSTS_SECONDS = 31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
-
-# CORS configuration
-CORS_ALLOWED_ORIGINS = [
-    "https://your-domain.com",
-    "https://www.your-domain.com",
-]
-
-# Database security - AWS RDS Configuration
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ACTEDDBDEV01',
-        'USER': 'actedadmin',
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST', 'acteddevdb01.xxxxxxxxxx.us-east-1.rds.amazonaws.com'),
-        'PORT': '5432',
-        'OPTIONS': {
-            'sslmode': 'require',
-            'options': '-c default_transaction_isolation=read committed'
-        },
-        'CONN_MAX_AGE': 600,  # 10 minutes
-        'CONN_HEALTH_CHECKS': True,
-    }
-}
-
-# Cache security
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'PASSWORD': os.environ.get('REDIS_PASSWORD'),
-        }
-    }
-}
-
-# Logging configuration
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '[{levelname}] {asctime} {name} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'C:\\logs\\admin3\\django.log',
-            'maxBytes': 10485760,  # 10MB
-            'backupCount': 5,
-            'formatter': 'verbose',
-        },
-        'security': {
-            'level': 'WARNING',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'C:\\logs\\admin3\\security.log',
-            'maxBytes': 10485760,  # 10MB
-            'backupCount': 5,
-            'formatter': 'verbose',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'django.security': {
-            'handlers': ['security'],
-            'level': 'WARNING',
-            'propagate': False,
-        },
-        'admin3': {
-            'handlers': ['file'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-    },
-}
-```
-
-#### **3.2.2 Environment Variables and Secrets**
+#### **3.2.1 Environment Variables and Secrets**
 
 Environment variables are configured via the automated scripts. See the environment setup documentation in:
-```
+
+```powershell
 C:\Code\Admin3\Project settings\server setup\.env.uat
 C:\Code\Admin3\Project settings\server setup\load-environment.ps1
 ```
@@ -586,6 +476,7 @@ Run the complete application deployment:
 ```
 
 This script handles:
+
 - Python virtual environment setup
 - Dependency installation
 - Django migrations and static files
@@ -596,6 +487,7 @@ This script handles:
 ### **4.2 Waitress WSGI Server Configuration**
 
 The Waitress WSGI server configuration is handled by the automated deployment script. Key features:
+
 - Production-optimized settings
 - Comprehensive logging
 - Windows service integration
@@ -608,6 +500,7 @@ The Waitress WSGI server configuration is handled by the automated deployment sc
 IIS installation and configuration is handled by the automated deployment script.
 
 #### **4.3.3 URL Rewrite Rules**
+
 ```xml
 <!-- C:\inetpub\wwwroot\Admin3\static\web.config -->
 <?xml version="1.0" encoding="UTF-8"?>
@@ -676,6 +569,7 @@ IIS installation and configuration is handled by the automated deployment script
 ### **5.1 Application Monitoring**
 
 #### **5.1.1 Django Logging Enhancement**
+
 ```python
 # backend/django_Admin3/django_Admin3/monitoring.py
 import logging
@@ -724,6 +618,7 @@ class SecurityMonitoringMiddleware(MiddlewareMixin):
 ```
 
 #### **5.1.2 Health Check Endpoints**
+
 ```python
 # backend/django_Admin3/django_Admin3/health_check.py
 from django.http import JsonResponse
@@ -808,6 +703,7 @@ def health_check(request):
 
 **🚀 Automated Script Available:**
 Set up monitoring and logging:
+
 ```powershell
 & "C:\Code\Admin3\Project settings\server setup\07-monitoring-logging.ps1"
 ```
@@ -822,6 +718,7 @@ Set up monitoring and logging:
 
 **🚀 Automated Script Available:**
 Create database backups:
+
 ```powershell
 & "C:\Code\Admin3\Project settings\server setup\09-backup-database.ps1"
 ```
@@ -830,6 +727,7 @@ Create database backups:
 
 **🚀 Automated Script Available:**
 Create application backups:
+
 ```powershell
 & "C:\Code\Admin3\Project settings\server setup\10-backup-application.ps1"
 ```
@@ -840,9 +738,9 @@ Create application backups:
 
 **🚀 Automated Script Available:**
 Restore database from backup:
+
 ```powershell
 & "C:\Code\Admin3\Project settings\server setup\11-restore-database.ps1" -BackupFile "path\to\backup.sql"
-```
 ```
 
 ---
@@ -852,6 +750,7 @@ Restore database from backup:
 ### **7.1 Database Performance Tuning**
 
 #### **7.1.1 PostgreSQL Configuration Optimization**
+
 ```sql
 -- Performance tuning queries
 -- Run these in pgAdmin or psql
@@ -874,32 +773,8 @@ UPDATE pg_class SET reltuples = (SELECT COUNT(*) FROM cart_cartitem) WHERE relna
 ```
 
 #### **7.1.2 Connection Pooling Setup**
-```python
-# backend/django_Admin3/django_Admin3/settings/production.py
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Admin3_Production',
-        'USER': 'admin3_user',
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': 'localhost',
-        'PORT': '5432',
-        'OPTIONS': {
-            'sslmode': 'require',
-            'options': '-c default_transaction_isolation=read committed'
-        },
-        'CONN_MAX_AGE': 600,  # 10 minutes
-        'CONN_HEALTH_CHECKS': True,
-    }
-}
 
-# Database connection pooling
-DATABASE_POOL_CLASS = 'django_db_pool.pools.postgresql.DatabasePool'
-DATABASE_POOL_PARAMS = {
-    'max_connections': 20,
-    'min_connections': 5,
-}
-```
+See ```backend/django_Admin3/django_Admin3/settings/production.py```
 
 ### **7.2 Caching Strategy**
 
@@ -1102,94 +977,7 @@ class PerformanceMetrics:
 ### **8.1 GitHub Actions Workflow**
 
 #### **8.1.1 Deployment Pipeline**
-```yaml
-# .github/workflows/deploy.yml
-name: Deploy to Production
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: admin3_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r backend/django_Admin3/requirements.txt
-        pip install pytest pytest-django pytest-cov
-    
-    - name: Run Django tests
-      run: |
-        cd backend/django_Admin3
-        python manage.py test --settings=django_Admin3.settings.test
-    
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-    
-    - name: Install Node dependencies
-      run: |
-        cd frontend/react-Admin3
-        npm install
-    
-    - name: Run React tests
-      run: |
-        cd frontend/react-Admin3
-        npm test -- --coverage --watchAll=false
-    
-    - name: Build React app
-      run: |
-        cd frontend/react-Admin3
-        npm run build
-    
-    - name: Security scan
-      run: |
-        pip install bandit safety
-        bandit -r backend/django_Admin3/
-        safety check -r backend/django_Admin3/requirements.txt
-
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Deploy to production
-      run: |
-        # Add deployment script here
-        # This would typically use SSH, AWS CLI, or other deployment tools
-        echo "Deploying to production server..."
-        # Example: ssh user@server "cd /path/to/app && git pull && ./deploy.sh"
-```
+See ```.github\workflows\deploy.yml```
 
 ### **8.2 Deployment Automation**
 
@@ -1197,6 +985,7 @@ jobs:
 
 **🚀 Automated Script Available:**
 Run automated deployment:
+
 ```powershell
 & "C:\Code\Admin3\Project settings\server setup\15-deployment-automation.ps1"
 ```
@@ -1211,11 +1000,13 @@ Run automated deployment:
 
 **🚀 Automated Script Available:**
 Run comprehensive troubleshooting:
+
 ```powershell
 & "C:\Code\Admin3\Project settings\server setup\08-troubleshooting.ps1"
 ```
 
 Quick diagnostics:
+
 ```powershell
 # Check services
 Get-Service Admin3-Waitress, Redis, W3SVC
@@ -1225,7 +1016,6 @@ psql -h $env:DB_HOST -d $env:DB_NAME -U $env:DB_USER -c "SELECT 1;"
 
 # Test Redis
 redis-cli ping
-```
 
 function Test-WebsiteResponse {
     try {
@@ -1271,155 +1061,18 @@ Show-RecentErrors
 ```
 
 #### **9.1.2 Performance Issues**
+
 ```powershell
 # Performance diagnosis script
-# C:\scripts\diagnose_performance.ps1
-
-function Test-DatabasePerformance {
-    try {
-        $env:PGPASSWORD = $env:DB_PASSWORD
-        
-        # Check slow queries
-        $slowQueries = & "C:\Program Files\PostgreSQL\16\bin\psql.exe" -h localhost -U admin3_user -d Admin3_Production -c "
-            SELECT query, calls, total_time, mean_time, rows
-            FROM pg_stat_statements
-            WHERE mean_time > 1000
-            ORDER BY mean_time DESC
-            LIMIT 10;
-        "
-        
-        Write-Host "Top 10 Slow Queries:" -ForegroundColor "Yellow"
-        Write-Host $slowQueries
-        
-        # Check database size
-        $dbSize = & "C:\Program Files\PostgreSQL\16\bin\psql.exe" -h localhost -U admin3_user -d Admin3_Production -c "
-            SELECT pg_size_pretty(pg_database_size(current_database()));
-        "
-        
-        Write-Host "Database Size: $dbSize" -ForegroundColor "Green"
-        
-    } catch {
-        Write-Host "Database performance check failed: $_" -ForegroundColor "Red"
-    } finally {
-        $env:PGPASSWORD = $null
-    }
-}
-
-function Test-SystemResources {
-    # CPU usage
-    $cpu = Get-WmiObject -Class Win32_Processor | Measure-Object -Property LoadPercentage -Average
-    Write-Host "CPU Usage: $([math]::Round($cpu.Average, 2))%" -ForegroundColor $(if ($cpu.Average -gt 80) {"Red"} else {"Green"})
-    
-    # Memory usage
-    $memory = Get-WmiObject -Class Win32_OperatingSystem
-    $memoryUsage = [math]::Round((($memory.TotalVisibleMemorySize - $memory.FreePhysicalMemory) / $memory.TotalVisibleMemorySize) * 100, 2)
-    Write-Host "Memory Usage: $memoryUsage%" -ForegroundColor $(if ($memoryUsage -gt 85) {"Red"} else {"Green"})
-    
-    # Disk usage
-    $disk = Get-WmiObject -Class Win32_LogicalDisk | Where-Object { $_.DriveType -eq 3 }
-    foreach ($drive in $disk) {
-        $diskUsage = [math]::Round((($drive.Size - $drive.FreeSpace) / $drive.Size) * 100, 2)
-        Write-Host "Disk $($drive.DeviceID) Usage: $diskUsage%" -ForegroundColor $(if ($diskUsage -gt 90) {"Red"} else {"Green"})
-    }
-}
-
-function Test-NetworkConnectivity {
-    # Test external connectivity
-    $sites = @("google.com", "github.com", "pypi.org")
-    
-    foreach ($site in $sites) {
-        try {
-            $result = Test-NetConnection -ComputerName $site -Port 443 -InformationLevel "Quiet"
-            Write-Host "Connectivity to $site`: $($result)" -ForegroundColor $(if ($result) {"Green"} else {"Red"})
-        } catch {
-            Write-Host "Connectivity to $site`: ERROR" -ForegroundColor "Red"
-        }
-    }
-}
-
-# Run performance diagnostics
-Write-Host "Admin3 Performance Diagnostics" -ForegroundColor "Cyan"
-Write-Host "==============================" -ForegroundColor "Cyan"
-
-Test-SystemResources
-Test-DatabasePerformance
-Test-NetworkConnectivity
+Project settings\server setup\diagnose_performance.ps1
 ```
 
 ### **9.2 Emergency Procedures**
 
 #### **9.2.1 Emergency Rollback Script**
+
 ```powershell
-# C:\scripts\emergency_rollback.ps1
-param(
-    [Parameter(Mandatory=$true)]
-    [string]$BackupTimestamp,
-    [switch]$Force
-)
-
-$ErrorActionPreference = "Stop"
-
-function Write-EmergencyLog {
-    param([string]$Message, [string]$Level = "INFO")
-    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    $logEntry = "[$timestamp] [EMERGENCY] [$Level] $Message"
-    Write-Host $logEntry -ForegroundColor "Red"
-    Add-Content -Path "C:\logs\admin3\emergency.log" -Value $logEntry
-}
-
-try {
-    Write-EmergencyLog "Starting emergency rollback procedure..."
-    
-    if (-not $Force) {
-        $confirm = Read-Host "Are you sure you want to perform emergency rollback? (yes/no)"
-        if ($confirm -ne "yes") {
-            Write-EmergencyLog "Emergency rollback cancelled by user"
-            exit 0
-        }
-    }
-    
-    # Stop all services
-    Write-EmergencyLog "Stopping all services..."
-    Stop-Service -Name "Admin3-Waitress" -Force
-    Stop-WebSite -Name "Admin3"
-    Stop-Service -Name "postgresql-x64-16" -Force
-    
-    # Restore database
-    Write-EmergencyLog "Restoring database from backup..."
-    $databaseBackup = "C:\backups\postgresql\admin3_backup_$BackupTimestamp.7z"
-    & "C:\scripts\restore_database.ps1" -BackupFile $databaseBackup -Force
-    
-    # Restore application files
-    Write-EmergencyLog "Restoring application files..."
-    $appBackup = "C:\backups\application\admin3_app_backup_$BackupTimestamp.7z"
-    & "C:\Program Files\7-Zip\7z.exe" x $appBackup -o"C:\inetpub\wwwroot -aoa
-    
-    # Start services
-    Write-EmergencyLog "Starting services..."
-    Start-Service -Name "postgresql-x64-16"
-    Start-Sleep -Seconds 30
-    Start-Service -Name "Admin3-Waitress"
-    Start-WebSite -Name "Admin3"
-    
-    # Wait and test
-    Start-Sleep -Seconds 60
-    
-    # Health check
-    try {
-        $response = Invoke-WebRequest -Uri "http://localhost/api/health/" -TimeoutSec 30
-        if ($response.StatusCode -eq 200) {
-            Write-EmergencyLog "Emergency rollback completed successfully!"
-        } else {
-            Write-EmergencyLog "Emergency rollback completed but health check failed" -Level "WARNING"
-        }
-    } catch {
-        Write-EmergencyLog "Emergency rollback completed but health check failed: $_" -Level "ERROR"
-    }
-    
-} catch {
-    Write-EmergencyLog "Emergency rollback failed: $_" -Level "ERROR"
-    exit 1
-}
+Project settings\server setup\emergency_rollback.ps1
 ```
 
 ---
@@ -1435,124 +1088,11 @@ Run weekly maintenance:
 ```powershell
 & "C:\Code\Admin3\Project settings\server setup\13-weekly-maintenance.ps1"
 ```
-```powershell
-# C:\scripts\weekly_maintenance.ps1
-param(
-    [string]$LogPath = "C:\logs\admin3",
-    [string]$BackupPath = "C:\backups",
-    [int]$LogRetentionDays = 30,
-    [int]$BackupRetentionDays = 90
-)
-
-function Write-MaintenanceLog {
-    param([string]$Message, [string]$Level = "INFO")
-    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    $logEntry = "[$timestamp] [MAINTENANCE] [$Level] $Message"
-    Write-Host $logEntry
-    Add-Content -Path "$LogPath\maintenance.log" -Value $logEntry
-}
-
-function Clean-OldLogs {
-    Write-MaintenanceLog "Cleaning old log files..."
-    $cutoffDate = (Get-Date).AddDays(-$LogRetentionDays)
-    
-    Get-ChildItem -Path $LogPath -Filter "*.log" | Where-Object { $_.CreationTime -lt $cutoffDate } | ForEach-Object {
-        Write-MaintenanceLog "Removing old log file: $($_.Name)"
-        Remove-Item $_.FullName -Force
-    }
-}
-
-function Clean-OldBackups {
-    Write-MaintenanceLog "Cleaning old backup files..."
-    $cutoffDate = (Get-Date).AddDays(-$BackupRetentionDays)
-    
-    Get-ChildItem -Path $BackupPath -Filter "*.7z" -Recurse | Where-Object { $_.CreationTime -lt $cutoffDate } | ForEach-Object {
-        Write-MaintenanceLog "Removing old backup file: $($_.Name)"
-        Remove-Item $_.FullName -Force
-    }
-}
-
-function Update-SystemPatches {
-    Write-MaintenanceLog "Checking for Windows updates..."
-    try {
-        Get-WindowsUpdate -List | ForEach-Object {
-            Write-MaintenanceLog "Available update: $($_.Title)"
-        }
-        
-        # Install important updates only
-        Get-WindowsUpdate -Install -AcceptAll -IgnoreReboot -Category "Important"
-        Write-MaintenanceLog "Windows updates installed successfully"
-    } catch {
-        Write-MaintenanceLog "Failed to install Windows updates: $_" -Level "ERROR"
-    }
-}
-
-function Optimize-Database {
-    Write-MaintenanceLog "Optimizing database..."
-    try {
-        $env:PGPASSWORD = $env:DB_PASSWORD
-        
-        # Update table statistics
-        & "C:\Program Files\PostgreSQL\16\bin\psql.exe" -h localhost -U admin3_user -d Admin3_Production -c "ANALYZE;"
-        
-        # Vacuum database
-        & "C:\Program Files\PostgreSQL\16\bin\psql.exe" -h localhost -U admin3_user -d Admin3_Production -c "VACUUM;"
-        
-        # Reindex tables
-        & "C:\Program Files\PostgreSQL\16\bin\psql.exe" -h localhost -U admin3_user -d Admin3_Production -c "REINDEX DATABASE Admin3_Production;"
-        
-        Write-MaintenanceLog "Database optimization completed"
-    } catch {
-        Write-MaintenanceLog "Database optimization failed: $_" -Level "ERROR"
-    } finally {
-        $env:PGPASSWORD = $null
-    }
-}
-
-function Check-DiskSpace {
-    Write-MaintenanceLog "Checking disk space..."
-    $drives = Get-WmiObject -Class Win32_LogicalDisk | Where-Object { $_.DriveType -eq 3 }
-    
-    foreach ($drive in $drives) {
-        $freeSpacePercent = ($drive.FreeSpace / $drive.Size) * 100
-        Write-MaintenanceLog "Drive $($drive.DeviceID): $([math]::Round($freeSpacePercent, 2))% free"
-        
-        if ($freeSpacePercent -lt 15) {
-            Write-MaintenanceLog "Low disk space warning for drive $($drive.DeviceID)" -Level "WARNING"
-        }
-    }
-}
-
-function Test-ApplicationHealth {
-    Write-MaintenanceLog "Testing application health..."
-    try {
-        $response = Invoke-WebRequest -Uri "http://localhost/api/health/" -TimeoutSec 30
-        if ($response.StatusCode -eq 200) {
-            Write-MaintenanceLog "Application health check passed"
-        } else {
-            Write-MaintenanceLog "Application health check failed with status: $($response.StatusCode)" -Level "WARNING"
-        }
-    } catch {
-        Write-MaintenanceLog "Application health check failed: $_" -Level "ERROR"
-    }
-}
-
-# Run maintenance tasks
-Write-MaintenanceLog "Starting weekly maintenance..."
-
-Clean-OldLogs
-Clean-OldBackups
-Update-SystemPatches
-Optimize-Database
-Check-DiskSpace
-Test-ApplicationHealth
-
-Write-MaintenanceLog "Weekly maintenance completed"
-```
 
 ### **10.2 Monthly Maintenance**
 
 #### **10.2.1 Monthly Security Updates**
+
 ```powershell
 # C:\scripts\monthly_security.ps1
 
@@ -1618,6 +1158,7 @@ Review-SecurityLogs
 ### **11.1 Incident Response Plan**
 
 #### **11.1.1 Security Incident Detection**
+
 ```powershell
 # C:\scripts\security_incident_response.ps1
 param(
@@ -1746,6 +1287,7 @@ Log-SecurityIncident "Security incident response completed"
 ### **11.2 Recovery Procedures**
 
 #### **11.2.1 Post-Incident Recovery**
+
 ```powershell
 # C:\scripts\post_incident_recovery.ps1
 param(
@@ -1884,298 +1426,15 @@ if (Verify-SystemIntegrity) {
 
 **🚀 Automated Script Available:**
 Run pre-go-live validation:
+
 ```powershell
 & "C:\Code\Admin3\Project settings\server setup\14-pre-golive-checklist.ps1"
 ```
-```powershell
-# C:\scripts\pre_golive_checklist.ps1
-
-function Test-Item {
-    param([string]$TestName, [scriptblock]$TestScript)
-    
-    Write-Host "Testing: $TestName..." -ForegroundColor "Yellow"
-    
-    try {
-        $result = & $TestScript
-        if ($result) {
-            Write-Host "✓ $TestName - PASSED" -ForegroundColor "Green"
-            return $true
-        } else {
-            Write-Host "✗ $TestName - FAILED" -ForegroundColor "Red"
-            return $false
-        }
-    } catch {
-        Write-Host "✗ $TestName - ERROR: $_" -ForegroundColor "Red"
-        return $false
-    }
-}
-
-# Infrastructure Tests
-$infraTests = @(
-    @{Name="Server OS Updates"; Script={Get-HotFix | Where-Object {$_.InstalledOn -gt (Get-Date).AddDays(-30)} | Measure-Object | Select-Object -ExpandProperty Count -gt 0}},
-    @{Name="Required Services Running"; Script={
-        $services = @("Admin3-Waitress", "postgresql-x64-16", "Redis", "W3SVC")
-        $runningServices = Get-Service -Name $services | Where-Object {$_.Status -eq "Running"}
-        $runningServices.Count -eq $services.Count
-    }},
-    @{Name="Firewall Configuration"; Script={
-        $rules = Get-NetFirewallRule | Where-Object {$_.DisplayName -in @("HTTP", "HTTPS")}
-        $rules.Count -eq 2
-    }},
-    @{Name="SSL Certificate Valid"; Script={
-        # Test SSL certificate validity
-        $cert = Get-ChildItem Cert:\LocalMachine\WebHosting\ | Where-Object {$_.Subject -like "*yourdomain.com*"}
-        $cert -and $cert.NotAfter -gt (Get-Date).AddDays(30)
-    }}
-)
-
----
-
-## **Document Update Summary - Redis Service Improvements**
-
-### **📋 What Was Updated**
-
-This document has been updated to address critical Redis Windows service installation issues that were causing deployment failures.
-
-### **🛠️ Key Architectural Improvements**
-
-**1. Robust Redis Service Installation (Section 2.3.2)**
-- **Problem Solved**: "Service already exists" and service start failures
-- **Solution**: Comprehensive service cleanup and installation validation
-- **Benefits**: Reliable Redis service deployment with retry logic and error handling
-
-**2. Enhanced Error Handling & Diagnostics (Section 2.3.4)**
-- **Problem Solved**: Limited troubleshooting information for service failures
-- **Solution**: Multi-layered diagnostic system with automated recovery
-- **Benefits**: Faster issue resolution and reduced downtime
-
-**3. Service Recovery Automation**
-- **Problem Solved**: Manual intervention required for service issues
-- **Solution**: Automated recovery procedures with fallback options
-- **Benefits**: Self-healing infrastructure capabilities
-
-### **🔧 Implementation Benefits**
-
-**Infrastructure Resilience:**
-- **Service Redundancy**: Multiple cleanup and installation strategies
-- **Automated Recovery**: Self-healing service management
-- **Comprehensive Logging**: Enhanced troubleshooting capabilities
-
-**Operational Excellence:**
-- **Zero-Downtime Recovery**: Graceful service restart procedures
-- **Emergency Procedures**: Manual Redis startup for critical situations
-- **Monitoring Integration**: Health checks and status validation
-
-**Developer Experience:**
-- **Clear Error Messages**: Detailed diagnostic information
-- **Step-by-Step Guidance**: Troubleshooting procedures with exact commands
-- **Automated Solutions**: Reduced manual intervention requirements
-
-### **🚀 Next Steps for Infrastructure Evolution**
-
-**Phase 1: Service Management Enhancement**
-- Implement centralized service monitoring dashboard
-- Add automated health check scheduling
-- Integrate with application logging system
-
-**Phase 2: High Availability Implementation**
-- Redis clustering configuration for redundancy
-- Load balancer integration for service failover
-- Cross-region backup and recovery procedures
-
-**Phase 3: Infrastructure as Code**
-- PowerShell DSC templates for automated deployment
-- Terraform modules for cloud infrastructure provisioning
-- CI/CD pipeline integration for automated updates
-
-### **🏗️ Architectural Decision Records**
-
-**Decision: Enhanced Service Installation Process**
-- **Context**: Windows service installation was prone to orphaned registrations
-- **Decision**: Implement comprehensive cleanup before installation
-- **Consequences**: More reliable deployments, longer installation time
-
-**Decision: Multi-Layer Diagnostics**
-- **Context**: Service failures were difficult to diagnose quickly
-- **Decision**: Implement structured diagnostic reporting with Windows Event Log integration
-- **Consequences**: Faster troubleshooting, increased script complexity
-
-**Decision: Automated Recovery Procedures**
-- **Context**: Service failures required manual intervention
-- **Decision**: Implement graceful and forced recovery options
-- **Consequences**: Improved uptime, potential for recursive failures
-
-This architectural enhancement establishes a foundation for robust, self-healing infrastructure that supports the Admin3 application's scalability and reliability requirements.
-
----
-
-# Security Tests
-$securityTests = @(
-    @{Name="Security Headers"; Script={
-        $response = Invoke-WebRequest -Uri "http://localhost" -Method Head
-        $securityHeaders = @("X-Frame-Options", "X-Content-Type-Options", "X-XSS-Protection")
-        ($securityHeaders | Where-Object {$response.Headers.ContainsKey($_)}).Count -eq $securityHeaders.Count
-    }},
-    @{Name="Database Encryption"; Script={
-        $env:PGPASSWORD = $env:DB_PASSWORD
-        $result = & "C:\Program Files\PostgreSQL\16\bin\psql.exe" -h localhost -U admin3_user -d Admin3_Production -c "SHOW ssl;"
-        $env:PGPASSWORD = $null
-        $result -like "*on*"
-    }},
-    @{Name="Password Policies"; Script={
-        $policy = Get-ADDefaultDomainPasswordPolicy -ErrorAction SilentlyContinue
-        $policy.MinPasswordLength -ge 12
-    }}
-)
-
-# Application Tests
-$appTests = @(
-    @{Name="Django Admin Access"; Script={
-        $response = Invoke-WebRequest -Uri "http://localhost/admin/login/" -Method Get
-        $response.StatusCode -eq 200
-    }},
-    @{Name="API Health Check"; Script={
-        $response = Invoke-WebRequest -Uri "http://localhost/api/health/" -Method Get
-        $response.StatusCode -eq 200
-    }},
-    @{Name="React App Loading"; Script={
-        $response = Invoke-WebRequest -Uri "http://localhost" -Method Get
-        $response.Content -like "*<div id=`"root`"*"
-    }},
-    @{Name="Database Connection"; Script={
-        $env:PGPASSWORD = $env:DB_PASSWORD
-        $result = & "C:\Program Files\PostgreSQL\16\bin\psql.exe" -h localhost -U admin3_user -d Admin3_Production -c "SELECT 1;"
-        $env:PGPASSWORD = $null
-        $LASTEXITCODE -eq 0
-    }},
-    @{Name="Redis Connection"; Script={
-        $result = redis-cli ping
-        $result -eq "PONG"
-    }}
-)
-
-# Performance Tests
-$perfTests = @(
-    @{Name="API Response Time"; Script={
-        $start = Get-Date
-        $response = Invoke-WebRequest -Uri "http://localhost/api/health/" -Method Get
-        $duration = ((Get-Date) - $start).TotalMilliseconds
-        $duration -lt 1000 # Less than 1 second
-    }},
-    @{Name="Database Query Performance"; Script={
-        $env:PGPASSWORD = $env:DB_PASSWORD
-        $start = Get-Date
-        $result = & "C:\Program Files\PostgreSQL\16\bin\psql.exe" -h localhost -U admin3_user -d Admin3_Production -c "SELECT COUNT(*) FROM auth_user;"
-        $duration = ((Get-Date) - $start).TotalMilliseconds
-        $env:PGPASSWORD = $null
-        $duration -lt 500 # Less than 500ms
-    }},
-    @{Name="System Resource Usage"; Script={
-        $cpu = Get-WmiObject -Class Win32_Processor | Measure-Object -Property LoadPercentage -Average
-        $memory = Get-WmiObject -Class Win32_OperatingSystem
-        $memoryUsage = (($memory.TotalVisibleMemorySize - $memory.FreePhysicalMemory) / $memory.TotalVisibleMemorySize) * 100
-        $cpu.Average -lt 80 -and $memoryUsage -lt 85
-    }}
-)
-
-# Backup and Recovery Tests
-$backupTests = @(
-    @{Name="Backup Scripts Available"; Script={
-        $scripts = @("C:\scripts\backup_database.ps1", "C:\scripts\backup_application.ps1")
-        ($scripts | Where-Object {Test-Path $_}).Count -eq $scripts.Count
-    }},
-    @{Name="Recent Backup Exists"; Script={
-        $backupPath = "C:\backups\postgresql"
-        $recentBackup = Get-ChildItem -Path $backupPath -Filter "*.7z" | Sort-Object CreationTime -Descending | Select-Object -First 1
-        $recentBackup -and $recentBackup.CreationTime -gt (Get-Date).AddDays(-1)
-    }},
-    @{Name="Recovery Scripts Available"; Script={
-        $scripts = @("C:\scripts\restore_database.ps1", "C:\scripts\emergency_rollback.ps1")
-        ($scripts | Where-Object {Test-Path $_}).Count -eq $scripts.Count
-    }}
-)
-
-# Run all tests
-Write-Host "Admin3 Pre-Go-Live Validation" -ForegroundColor "Cyan"
-Write-Host "=============================" -ForegroundColor "Cyan"
-
-$allTests = @(
-    @{Category="Infrastructure"; Tests=$infraTests},
-    @{Category="Security"; Tests=$securityTests},
-    @{Category="Application"; Tests=$appTests},
-    @{Category="Performance"; Tests=$perfTests},
-    @{Category="Backup & Recovery"; Tests=$backupTests}
-)
-
-$totalTests = 0
-$passedTests = 0
-
-foreach ($category in $allTests) {
-    Write-Host "`n$($category.Category) Tests:" -ForegroundColor "Magenta"
-    Write-Host "$(('=' * $category.Category.Length)) Tests:" -ForegroundColor "Magenta"
-    
-    foreach ($test in $category.Tests) {
-        $result = Test-Item -TestName $test.Name -TestScript $test.Script
-        $totalTests++
-        if ($result) { $passedTests++ }
-    }
-}
-
-# Summary
-Write-Host "`nTest Results Summary:" -ForegroundColor "Cyan"
-Write-Host "===================" -ForegroundColor "Cyan"
-Write-Host "Total Tests: $totalTests" -ForegroundColor "White"
-Write-Host "Passed: $passedTests" -ForegroundColor "Green"
-Write-Host "Failed: $($totalTests - $passedTests)" -ForegroundColor "Red"
-
-$successRate = [math]::Round(($passedTests / $totalTests) * 100, 2)
-Write-Host "Success Rate: $successRate%" -ForegroundColor $(if ($successRate -eq 100) {"Green"} elseif ($successRate -gt 90) {"Yellow"} else {"Red"})
-
-if ($successRate -eq 100) {
-    Write-Host "`n✓ SYSTEM READY FOR GO-LIVE!" -ForegroundColor "Green"
-} elseif ($successRate -gt 90) {
-    Write-Host "`n⚠ SYSTEM MOSTLY READY - Address failed tests before go-live" -ForegroundColor "Yellow"
-} else {
-    Write-Host "`n✗ SYSTEM NOT READY - Critical issues must be resolved" -ForegroundColor "Red"
-}
-```
-
----
-
-## **Conclusion**
-
-This comprehensive server setup guide provides enterprise-grade deployment procedures for Admin3 on AWS EC2 Windows Server 2025. The guide includes:
-
-- **Complete infrastructure setup** with security hardening
-- **Production-ready application deployment** with monitoring
-- **Comprehensive backup and recovery** procedures
-- **Performance optimization** and caching strategies
-- **Security incident response** and recovery procedures
-- **Automated maintenance** and monitoring scripts
-- **Troubleshooting guides** and emergency procedures
-
-### **Key Benefits:**
-
-1. **Production-Ready**: Suitable for end-user demos and production environments
-2. **Security-First**: Comprehensive security hardening and monitoring
-3. **Automated Operations**: Scripted deployment, backup, and maintenance
-4. **Scalable Architecture**: Designed to handle growth and additional features
-5. **Comprehensive Monitoring**: Full observability and alerting capabilities
-
-### **Next Steps:**
-
-1. **Follow the deployment procedures** step by step
-2. **Customize configuration** for your specific environment
-3. **Test all procedures** in a staging environment first
-4. **Train operations team** on maintenance and troubleshooting
-5. **Establish monitoring** and alerting procedures
-
-This guide ensures your Admin3 deployment meets enterprise standards for security, performance, and reliability while providing comprehensive procedures for ongoing operations and maintenance.
 
 ---
 
 **Document Version**: 1.0  
-**Last Updated**: 2025-01-18  
-**Target Environment**: AWS EC2 Windows Server 2025  
+**Last Updated**: 2025-07-21  
+**Target Environment**: AWS EC2 Windows Server 2025 + RDS PostgreSQL  
 **Application**: Admin3 (Django + React)  
 **Deployment Type**: Production-Ready Demo Environment
