@@ -1,8 +1,6 @@
 # Ignore sensitive environment files
 .env
 .env.*
-!.env.uat
-!.env.example
 
 # Ignore log files
 *.log
