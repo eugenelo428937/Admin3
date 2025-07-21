@@ -4,6 +4,39 @@
 ### **Overview**
 This comprehensive guide provides enterprise-grade deployment procedures for Admin3 on AWS EC2 Windows Server 2025. It includes security hardening, monitoring, backup procedures, and performance optimization suitable for production environments and end-user demos.
 
+### **🚀 Quick Start - Automated Installation**
+
+For a complete automated setup, use our master installation script:
+
+```powershell
+# Navigate to the scripts directory
+cd "C:\Code\Admin3\Project settings\server setup"
+
+# Run the complete setup (interactive)
+& ".\run-setup.ps1"
+
+# Or run with specific options
+& ".\run-setup.ps1" -SkipInitialSetup -RunTests -DryRun
+```
+
+**Available Scripts:**
+- `01-initial-ec2-setup.ps1` - Initial server setup and dependencies
+- `02-rds-database-setup.ps1` - Database configuration
+- `03-redis-installation.ps1` - Redis cache installation
+- `04-redis-service-setup.ps1` - Redis Windows service setup
+- `05-redis-troubleshooting.ps1` - Redis diagnostics and recovery
+- `06-iis-application-setup.ps1` - IIS and application deployment
+- `07-monitoring-logging.ps1` - Monitoring and logging setup
+- `08-troubleshooting.ps1` - System health diagnostics
+- `09-backup-database.ps1` - Database backup automation
+- `10-backup-application.ps1` - Application backup automation
+- `11-restore-database.ps1` - Database recovery procedures
+- `12-emergency-rollback.ps1` - Emergency system rollback
+- `13-weekly-maintenance.ps1` - Automated maintenance tasks
+- `14-pre-golive-checklist.ps1` - Production readiness validation
+- `15-deployment-automation.ps1` - Automated deployment pipeline
+- `secure-server-setup.ps1` - Secure setup with environment variables
+
 ### **Architecture Overview**
 ```mermaid
 flowchart TD
@@ -118,6 +151,14 @@ Outbound Rules:
 ```
 
 #### **2.1.3 Enhanced Initial Setup**
+
+**🚀 Automated Script Available:**
+Run the automated setup script:
+```powershell
+& "C:\Code\Admin3\Project settings\server setup\01-initial-ec2-setup.ps1"
+```
+
+**Manual Commands (if needed):**
 ```powershell
 # Set execution policy for PowerShell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
@@ -172,686 +213,64 @@ choco install postgresql-client
 choco install openssl
 ```
 
-#### **2.2.3 Database Setup via RDS Console or CLI**
+#### **2.2.3 Database Setup via RDS Console and EC2 to RDS Connection Setup**
+
+**🚀 Automated Script Available:**
+Run the database setup script:
 ```powershell
-# Set environment variables for RDS connection
-$env:PGHOST = "acteddevdb01.crueqe6us4nv.eu-west-2.rds.amazonaws.com"
-$env:PGPORT = "5432"
-$env:PGUSER = "postgres"
-$env:PGPASSWORD = "NeiTzsch3!l8AA"
-$env:PGDATABASE = "postgres"
-
-# Connect to RDS and create database (quoted to preserve case)
-psql -h $env:PGHOST -U $env:PGUSER -c "CREATE DATABASE acteddbdev01;"
-
-# Create application user
-psql -h $env:PGHOST -U $env:PGUSER -c "CREATE USER actedadmin WITH PASSWORD 'Act3d@dm1n0EEoo';"
-
-# Grant database-level privileges (while connected to postgres)
-psql -h $env:PGHOST -U $env:PGUSER -c "GRANT ALL PRIVILEGES ON DATABASE acteddbdev01 TO actedadmin;"
-
-# NOW connect to the ACTEDDBDEV01 database for schema permissions
-psql -h $env:PGHOST -U $env:PGUSER -d acteddbdev01 -c "GRANT USAGE ON SCHEMA public TO actedadmin;"
-psql -h $env:PGHOST -U $env:PGUSER -d acteddbdev01 -c "GRANT CREATE ON SCHEMA public TO actedadmin;"
-
-# Create backup user and set permissions
-psql -h $env:PGHOST -U $env:PGUSER -c "CREATE USER backup_user WITH PASSWORD 'Act3dB@ckUq';"
-psql -h $env:PGHOST -U $env:PGUSER -d acteddbdev01 -c "GRANT CONNECT ON DATABASE acteddbdev01 TO backup_user;"
-psql -h $env:PGHOST -U $env:PGUSER -d acteddbdev01 -c "GRANT USAGE ON SCHEMA public TO backup_user;"
-psql -h $env:PGHOST -U $env:PGUSER -d acteddbdev01 -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO backup_user;"
-psql -h $env:PGHOST -U $env:PGUSER -d acteddbdev01 -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO backup_user;"
-
-# Clear sensitive environment variables
-$env:PGPASSWORD = $null
+& "C:\Code\Admin3\Project settings\server setup\02-rds-database-setup.ps1" -MasterPassword "YourRDSMasterPassword"
 ```
 
-#### **2.2.4 EC2 to RDS Connection Setup**
-```powershell
-# Test RDS connection from EC2
-$rdsEndpoint = "acteddevdb01.crueqe6us4nv.eu-west-2.rds.amazonaws.com"
-$testConnection = Test-NetConnection -ComputerName $rdsEndpoint -Port 5432
-
-if ($testConnection.TcpTestSucceeded) {
-    Write-Host "RDS connection successful" -ForegroundColor Green
-} else {
-    Write-Host "RDS connection failed - check security groups" -ForegroundColor Red
-}
-
-# Test database connection
-$env:PGPASSWORD = "Act3d@dm1n0EEoo"
-psql -h $rdsEndpoint -U actedadmin -d acteddbdev01 -c "SELECT version();"
-$env:PGPASSWORD = $null
-```
-
-### **2.3 Redis Cache Setup (Fixed)**
+### **2.3 Redis Cache Setup**
 
 #### **2.3.1 Redis Installation and Configuration**
+
+**🚀 Automated Script Available:**
+Run the Redis installation script:
 ```powershell
-# Install Redis using chocolatey
-choco install redis-64 -y
-
-# Wait for installation to complete
-Start-Sleep -Seconds 10
-
-# Find Redis installation directory (Redis executables are in the redis folder, not redis-64)
-$redisDir = "C:\ProgramData\chocolatey\lib\redis\tools"
-
-# Verify Redis server executable exists
-if (Test-Path "$redisDir\redis-server.exe") {
-    Write-Host "Redis installed in: $redisDir" -ForegroundColor Green
-} else {
-    Write-Host "Redis installation not found, checking alternative locations..." -ForegroundColor Yellow
-    # Alternative search if not in expected location
-    $redisPath = Get-ChildItem -Path "C:\ProgramData\chocolatey\lib" -Recurse -Name "redis-server.exe" | Select-Object -First 1
-    if ($redisPath) {
-        $redisDir = Split-Path $redisPath -Parent
-        Write-Host "Redis found in: $redisDir" -ForegroundColor Green
-    } else {
-        Write-Error "Redis installation not found. Please check chocolatey installation."
-        exit 1
-    }
-}
-
-# Create Redis configuration file
-$redisConfig = "$redisDir\redis.conf"
-$configContent = @"
-# Redis Configuration for Admin3
-port 6379
-bind 127.0.0.1
-protected-mode yes
-requirepass R3d1sP@ssW
-
-# Memory management
-maxmemory 512mb
-maxmemory-policy allkeys-lru
-
-# Persistence
-save 300 10
-save 60 1000
-
-# Logging
-loglevel notice
-logfile "C:\\logs\\redis\\redis.log"
-
-# Windows specific
-tcp-keepalive 60
-timeout 0
-"@
-
-# Create logs directory
-New-Item -ItemType Directory -Path "C:\logs\redis" -Force
-
-# Write configuration file
-$configContent | Out-File -FilePath $redisConfig -Encoding UTF8
-
-Write-Host "Redis configuration created at: $redisConfig"
+& "C:\Code\Admin3\Project settings\server setup\03-redis-installation.ps1"
 ```
 
+This script will:
+- Install Redis using Chocolatey
+- Auto-detect Redis installation directory
+- Create secure Redis configuration with environment variables
+- Set up logging directories
+- Configure memory management and persistence
+
 #### **2.3.2 Redis Windows Service Setup (Fixed)**
+
+**🚀 Automated Script Available:**
+Run the Redis service setup script:
 ```powershell
-# Install Redis as Windows service using NSSM with proper error handling
-$redisExe = "$redisDir\redis-server.exe"
-$serviceName = "Redis"
-
-# Install NSSM if not already installed
-if (-not (Get-Command nssm -ErrorAction SilentlyContinue)) {
-    choco install nssm -y
-    # Refresh PATH to include NSSM
-    $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
-}
-
-# Robust Redis service installation function
-function Install-RedisService {
-    param(
-        [string]$ServiceName,
-        [string]$RedisExecutable,
-        [string]$ConfigFile
-    )
-    
-    Write-Host "Installing Redis service: $ServiceName" -ForegroundColor Cyan
-    
-    # Step 1: Check for existing services and clean up
-    $existingServices = Get-Service -Name "*Redis*" -ErrorAction SilentlyContinue
-    if ($existingServices) {
-        Write-Host "Found existing Redis services, cleaning up..." -ForegroundColor Yellow
-        foreach ($service in $existingServices) {
-            Write-Host "Stopping service: $($service.Name)" -ForegroundColor Yellow
-            Stop-Service -Name $service.Name -Force -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 2
-            
-            Write-Host "Removing service: $($service.Name)" -ForegroundColor Yellow
-            try {
-                nssm remove $service.Name confirm
-            } catch {
-                # Try alternative removal method
-                sc.exe delete $service.Name
-            }
-        }
-        Start-Sleep -Seconds 3
-    }
-    
-    # Step 2: Validate prerequisites
-    if (!(Test-Path $RedisExecutable)) {
-        throw "Redis executable not found: $RedisExecutable"
-    }
-    if (!(Test-Path $ConfigFile)) {
-        throw "Redis config file not found: $ConfigFile"
-    }
-    
-    # Step 3: Install service with comprehensive configuration
-    Write-Host "Installing new Redis service..." -ForegroundColor Green
-    
-    # Install the service
-    $installResult = nssm install $ServiceName $RedisExecutable $ConfigFile
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to install Redis service. NSSM exit code: $LASTEXITCODE"
-    }
-    
-    # Configure service parameters
-    nssm set $ServiceName AppDirectory $redisDir
-    nssm set $ServiceName DisplayName "Redis Server"
-    nssm set $ServiceName Description "Redis in-memory data structure store for Admin3"
-    nssm set $ServiceName Start SERVICE_AUTO_START
-    
-    # Configure logging with proper paths
-    nssm set $ServiceName AppStdout "C:\logs\redis\redis-stdout.log"
-    nssm set $ServiceName AppStderr "C:\logs\redis\redis-stderr.log"
-    nssm set $ServiceName AppRotateFiles 1
-    nssm set $ServiceName AppRotateOnline 1
-    nssm set $ServiceName AppRotateBytes 10485760  # 10MB
-    
-    # Configure service recovery
-    nssm set $ServiceName AppThrottle 1500  # Throttle restart attempts
-    nssm set $ServiceName AppExit 0 Restart  # Fixed: Use "0" instead of "Default"
-    nssm set $ServiceName AppRestartDelay 5000  # 5 second delay between restarts
-    
-    Write-Host "Redis service configured successfully" -ForegroundColor Green
-}
-
-# Execute the installation
-try {
-    Install-RedisService -ServiceName $serviceName -RedisExecutable $redisExe -ConfigFile $redisConfig
-    
-    # Start the service with retry logic
-    Write-Host "Starting Redis service..." -ForegroundColor Cyan
-    $retryCount = 0
-    $maxRetries = 3
-    
-    do {
-        try {
-            Start-Service -Name $serviceName -ErrorAction Stop
-            Set-Service -Name $serviceName -StartupType Automatic
-            break
-        } catch {
-            $retryCount++
-            Write-Host "Service start attempt $retryCount failed: $($_.Exception.Message)" -ForegroundColor Yellow
-            if ($retryCount -lt $maxRetries) {
-                Write-Host "Retrying in 5 seconds..." -ForegroundColor Yellow
-                Start-Sleep -Seconds 5
-            } else {
-                throw "Failed to start Redis service after $maxRetries attempts"
-            }
-        }
-    } while ($retryCount -lt $maxRetries)
-    
-    # Verify service is running
-    Start-Sleep -Seconds 5
-    $redisStatus = Get-Service -Name $serviceName
-    Write-Host "Redis service status: $($redisStatus.Status)" -ForegroundColor $(if ($redisStatus.Status -eq "Running") {"Green"} else {"Red"})
-    
-    if ($redisStatus.Status -ne "Running") {
-        throw "Redis service failed to start properly"
-    }
-    
-    Write-Host "Redis service installation completed successfully!" -ForegroundColor Green
-    
-} catch {
-    Write-Host "Error during Redis service installation: $($_.Exception.Message)" -ForegroundColor Red
-    Write-Host "Check the logs at C:\logs\redis\ for more details" -ForegroundColor Yellow
-    
-    # Display troubleshooting information
-    Write-Host "`nTroubleshooting steps:" -ForegroundColor Cyan
-    Write-Host "1. Check if Redis executable exists: Test-Path '$redisExe'" -ForegroundColor White
-    Write-Host "2. Check if config file exists: Test-Path '$redisConfig'" -ForegroundColor White
-    Write-Host "3. Check Windows Event Log for service errors" -ForegroundColor White
-    Write-Host "4. Run: nssm status $serviceName" -ForegroundColor White
-    Write-Host "5. Check logs: Get-Content 'C:\logs\redis\redis-stderr.log' -Tail 20" -ForegroundColor White
-}
+& "C:\Code\Admin3\Project settings\server setup\04-redis-service-setup.ps1"
 ```
 
 #### **2.3.3 Redis Connection Test**
+
+Test Redis connectivity after installation:
 ```powershell
-# Test Redis connection with fallback for password/no-password configurations
-try {
-    # Install Redis CLI if not available
-    if (-not (Get-Command redis-cli -ErrorAction SilentlyContinue)) {
-        $env:PATH += ";$redisDir"
-    }
-    
-    Write-Host "Testing Redis connection..." -ForegroundColor Cyan
-    
-    # First try without password (common in minimal configs)
-    $result = redis-cli ping 2>$null
-    if ($result -eq "PONG") {
-        Write-Host "✅ Redis connection successful (no password)" -ForegroundColor Green
-    } else {
-        # Try with password if no-password failed
-        Write-Host "Trying with password..." -ForegroundColor Yellow
-        $result = redis-cli -a "R3d1sP@ssW" ping 2>$null
-        if ($result -eq "PONG") {
-            Write-Host "✅ Redis connection successful (with password)" -ForegroundColor Green
-        } else {
-            Write-Host "❌ Redis connection failed" -ForegroundColor Red
-            
-            # Additional diagnostics
-            Write-Host "`nDiagnostic information:" -ForegroundColor Cyan
-            Write-Host "- Check if Redis service is running: nssm status Redis" -ForegroundColor White
-            Write-Host "- Check Redis logs: Get-Content 'C:\logs\redis\redis.log' -Tail 10" -ForegroundColor White
-            Write-Host "- Test basic connectivity: redis-cli ping" -ForegroundColor White
-        }
-    }
-} catch {
-    Write-Host "❌ Redis connection error: $_" -ForegroundColor Red
-}
+redis-cli ping
 ```
 
 #### **2.3.4 Redis Troubleshooting & Common Issues**
 
-##### **Common Service Installation Issues**
-
-**Issue 1: "Service already exists" Error**
+**🚀 Automated Script Available:**
+For comprehensive Redis troubleshooting and recovery:
 ```powershell
-# Complete service cleanup and reinstallation
-function Reset-RedisService {
-    Write-Host "Performing complete Redis service reset..." -ForegroundColor Cyan
-    
-    # Stop all Redis-related processes
-    Get-Process -Name "*redis*" -ErrorAction SilentlyContinue | Stop-Process -Force
-    
-    # Remove all Redis services (handle multiple possible names)
-    $redisServices = @("Redis", "Redis Server", "redis-server", "RedisServer")
-    foreach ($serviceName in $redisServices) {
-        $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
-        if ($service) {
-            Write-Host "Removing service: $serviceName" -ForegroundColor Yellow
-            Stop-Service -Name $serviceName -Force -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 2
-            
-            # Try NSSM removal first
-            try {
-                nssm remove $serviceName confirm
-            } catch {
-                # Fallback to sc.exe
-                sc.exe delete $serviceName
-            }
-        }
-    }
-    
-    # Clean up registry entries (if accessible)
-    try {
-        Remove-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Redis*" -Recurse -Force -ErrorAction SilentlyContinue
-    } catch {
-        Write-Host "Registry cleanup skipped (may require elevated permissions)" -ForegroundColor Yellow
-    }
-    
-    Write-Host "Service reset complete. Wait 10 seconds before reinstalling..." -ForegroundColor Green
-    Start-Sleep -Seconds 10
-}
+& "C:\Code\Admin3\Project settings\server setup\05-redis-troubleshooting.ps1"
 ```
 
-**Issue 2: Service Fails to Start**
+**Quick Diagnostics:**
 ```powershell
-# Comprehensive Redis service diagnostics
-function Diagnose-RedisService {
-    param([string]$ServiceName = "Redis")
-    
-    Write-Host "Redis Service Diagnostics" -ForegroundColor Cyan
-    Write-Host "=========================" -ForegroundColor Cyan
-    
-    # 1. Check service configuration
-    Write-Host "`n1. Service Configuration:" -ForegroundColor Yellow
-    try {
-        $serviceInfo = nssm dump $ServiceName
-        Write-Host "Service exists and configuration:" -ForegroundColor Green
-        $serviceInfo | Select-String "Application|AppDirectory|AppParameters" | ForEach-Object { Write-Host "  $_" }
-    } catch {
-        Write-Host "Service not found or NSSM error: $_" -ForegroundColor Red
-        return
-    }
-    
-    # 2. Check executable and config files
-    Write-Host "`n2. File Validation:" -ForegroundColor Yellow
-    $appPath = (nssm get $ServiceName Application)
-    $configPath = (nssm get $ServiceName AppParameters) -replace '--config ', ''
-    
-    if (Test-Path $appPath) {
-        Write-Host "Redis executable found: $appPath" -ForegroundColor Green
-    } else {
-        Write-Host "Redis executable MISSING: $appPath" -ForegroundColor Red
-    }
-    
-    if (Test-Path $configPath) {
-        Write-Host "Redis config found: $configPath" -ForegroundColor Green
-    } else {
-        Write-Host "Redis config MISSING: $configPath" -ForegroundColor Red
-    }
-    
-    # 3. Check port availability
-    Write-Host "`n3. Port Check:" -ForegroundColor Yellow
-    $portInUse = Get-NetTCPConnection -LocalPort 6379 -ErrorAction SilentlyContinue
-    if ($portInUse) {
-        $process = Get-Process -Id $portInUse.OwningProcess -ErrorAction SilentlyContinue
-        Write-Host "Port 6379 in use by: $($process.ProcessName) (PID: $($process.Id))" -ForegroundColor Red
-    } else {
-        Write-Host "Port 6379 available" -ForegroundColor Green
-    }
-    
-    # 4. Check logs
-    Write-Host "`n4. Recent Logs:" -ForegroundColor Yellow
-    $logPaths = @(
-        "C:\logs\redis\redis-stderr.log",
-        "C:\logs\redis\redis-stdout.log",
-        "C:\logs\redis\redis.log"
-    )
-    
-    foreach ($logPath in $logPaths) {
-        if (Test-Path $logPath) {
-            Write-Host "  $logPath (last 3 lines):" -ForegroundColor Cyan
-            Get-Content $logPath -Tail 3 | ForEach-Object { Write-Host "    $_" }
-        }
-    }
-    
-    # 5. Windows Event Log
-    Write-Host "`n5. Windows Event Log (System):" -ForegroundColor Yellow
-    try {
-        $events = Get-WinEvent -FilterHashtable @{LogName='System'; ID=7000,7001,7009,7023,7024; StartTime=(Get-Date).AddHours(-1)} -MaxEvents 5 -ErrorAction SilentlyContinue
-        if ($events) {
-            $events | Where-Object {$_.Message -like "*Redis*"} | ForEach-Object {
-                Write-Host "  $($_.TimeCreated): $($_.Message)" -ForegroundColor Red
-            }
-        } else {
-            Write-Host "  No recent service errors found" -ForegroundColor Green
-        }
-    } catch {
-        Write-Host "  Could not access event log" -ForegroundColor Yellow
-    }
-}
-```
+# Check service status
+Get-Service Redis
 
-**Issue 3: Manual Service Recovery**
-```powershell
-# Manual Redis service recovery procedure
-function Recover-RedisService {
-    param(
-        [string]$ServiceName = "Redis",
-        [switch]$ForceReinstall
-    )
-    
-    Write-Host "Redis Service Recovery Procedure" -ForegroundColor Cyan
-    Write-Host "================================" -ForegroundColor Cyan
-    
-    if ($ForceReinstall) {
-        Write-Host "Performing forced reinstallation..." -ForegroundColor Yellow
-        Reset-RedisService
-        
-        # Re-run the installation from the main script
-        Write-Host "Please re-run the Redis installation section after this completes." -ForegroundColor Green
-        return
-    }
-    
-    # Try gentle recovery first
-    Write-Host "Attempting gentle service recovery..." -ForegroundColor Yellow
-    
-    # Stop and restart service
-    try {
-        Stop-Service -Name $ServiceName -Force -ErrorAction Stop
-        Start-Sleep -Seconds 5
-        Start-Service -Name $ServiceName -ErrorAction Stop
-        Write-Host "Service recovered successfully!" -ForegroundColor Green
-        return
-    } catch {
-        Write-Host "Gentle recovery failed: $($_.Exception.Message)" -ForegroundColor Red
-    }
-    
-    # Try manual process start
-    Write-Host "Attempting manual Redis start..." -ForegroundColor Yellow
-    try {
-        $appPath = nssm get $ServiceName Application
-        $configPath = nssm get $ServiceName AppParameters
-        
-        if (Test-Path $appPath) {
-            Write-Host "Starting Redis manually: $appPath $configPath" -ForegroundColor Cyan
-            Start-Process -FilePath $appPath -ArgumentList $configPath -NoNewWindow -PassThru
-            Start-Sleep -Seconds 3
-            
-            $redisProcess = Get-Process -Name "redis-server" -ErrorAction SilentlyContinue
-            if ($redisProcess) {
-                Write-Host "Redis started manually (PID: $($redisProcess.Id))" -ForegroundColor Green
-                Write-Host "Note: This is temporary. Fix the service for permanent solution." -ForegroundColor Yellow
-            }
-        }
-    } catch {
-        Write-Host "Manual start failed: $($_.Exception.Message)" -ForegroundColor Red
-        Write-Host "Recommend full reinstallation with -ForceReinstall" -ForegroundColor Yellow
-    }
-}
-```
+# Check process
+Get-Process redis-server
 
-##### **Quick Troubleshooting Commands**
-```powershell
-# Quick status check
-function Test-RedisHealth {
-    $service = Get-Service -Name "Redis" -ErrorAction SilentlyContinue
-    $process = Get-Process -Name "redis-server" -ErrorAction SilentlyContinue
-    $port = Get-NetTCPConnection -LocalPort 6379 -ErrorAction SilentlyContinue
-    
-    Write-Host "Redis Health Status:" -ForegroundColor Cyan
-    Write-Host "Service: $($service.Status -replace '^$', 'Not Found')" -ForegroundColor $(if ($service.Status -eq 'Running') {'Green'} else {'Red'})
-    Write-Host "Process: $(if($process) {'Running'} else {'Not Running'})" -ForegroundColor $(if($process) {'Green'} else {'Red'})
-    Write-Host "Port 6379: $(if($port) {'Listening'} else {'Not Listening'})" -ForegroundColor $(if($port) {'Green'} else {'Red'})
-}
-
-# Run diagnostics if there are issues
-# Test-RedisHealth
-# Diagnose-RedisService
-# Recover-RedisService -ForceReinstall  # If all else fails
-```
-
-##### **Emergency Redis Manual Start**
-```powershell
-# If service won't start, try manual execution for immediate needs
-$redisDir = "C:\ProgramData\chocolatey\lib\redis\tools"
-$redisExe = "$redisDir\redis-server.exe"
-$redisConfig = "$redisDir\redis.conf"
-
-if (Test-Path $redisExe) {
-    Write-Host "Starting Redis manually for emergency access..." -ForegroundColor Yellow
-    Start-Process -FilePath $redisExe -ArgumentList $redisConfig -NoNewWindow
-    Write-Host "Redis started manually. Check Task Manager for redis-server process." -ForegroundColor Green
-    Write-Host "Remember to fix the service installation for production use!" -ForegroundColor Red
-} else {
-    Write-Host "Redis executable not found. Reinstallation required." -ForegroundColor Red
-}
-```
-
-##### **Complete Redis Service Reset (Most Effective Fix)**
-```powershell
-# Use this when Redis service is in SERVICE_PAUSED state or won't start
-function Reset-RedisServiceComplete {
-    Write-Host "Performing complete Redis service reset..." -ForegroundColor Cyan
-    
-    # Step 1: Stop and remove existing service
-    try {
-        $service = Get-Service -Name "Redis" -ErrorAction SilentlyContinue
-        if ($service) {
-            Write-Host "Stopping Redis service..." -ForegroundColor Yellow
-            Stop-Service -Name "Redis" -Force -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 3
-            
-            Write-Host "Removing Redis service..." -ForegroundColor Yellow
-            nssm remove Redis confirm
-        }
-    } catch {
-        Write-Host "Service removal: $_" -ForegroundColor Yellow
-    }
-    
-    # Step 2: Kill any Redis processes
-    Get-Process -Name "*redis*" -ErrorAction SilentlyContinue | Stop-Process -Force
-    
-    # Step 3: Auto-detect Redis installation
-    $redisDir = $null
-    $possiblePaths = @(
-        "C:\ProgramData\chocolatey\lib\redis-64\tools",
-        "C:\ProgramData\chocolatey\lib\redis\tools", 
-        "C:\Program Files\Redis",
-        "C:\Redis"
-    )
-    
-    foreach ($path in $possiblePaths) {
-        if (Test-Path "$path\redis-server.exe") {
-            $redisDir = $path
-            Write-Host "Found Redis installation at: $redisDir" -ForegroundColor Green
-            break
-        }
-    }
-    
-    if (-not $redisDir) {
-        Write-Error "Redis installation not found. Install with: choco install redis-64 -y"
-        return
-    }
-    
-    # Step 4: Create minimal working config
-    $redisExe = "$redisDir\redis-server.exe"
-    $configFile = "$redisDir\redis-minimal.conf"
-    
-    $minimalConfig = @"
-bind 127.0.0.1
-port 6379
-timeout 0
-tcp-keepalive 300
-loglevel notice
-databases 16
-save 900 1
-save 300 10
-save 60 10000
-maxmemory 256mb
-maxmemory-policy allkeys-lru
-"@
-    
-    $minimalConfig | Out-File -FilePath $configFile -Encoding ASCII
-    Write-Host "Created minimal Redis config: $configFile" -ForegroundColor Green
-    
-    # Step 5: Install service with minimal config
-    Write-Host "Installing Redis service with minimal configuration..." -ForegroundColor Cyan
-    nssm install Redis $redisExe $configFile
-    nssm set Redis AppDirectory $redisDir
-    nssm set Redis DisplayName "Redis Server"
-    nssm set Redis Start SERVICE_AUTO_START
-    nssm set Redis AppExit 0 Restart  # Fixed syntax
-    
-    # Step 6: Start service
-    Write-Host "Starting Redis service..." -ForegroundColor Cyan
-    Start-Sleep -Seconds 2
-    nssm start Redis
-    
-    # Step 7: Verify
-    Start-Sleep -Seconds 3
-    $status = nssm status Redis
-    Write-Host "Redis service status: $status" -ForegroundColor $(if($status -eq 'SERVICE_RUNNING') {'Green'} else {'Red'})
-    
-    if ($status -eq 'SERVICE_RUNNING') {
-        Write-Host "✅ Redis service reset completed successfully!" -ForegroundColor Green
-        
-        # Test connection
-        try {
-            $redisCliPath = "$redisDir\redis-cli.exe"
-            if (Test-Path $redisCliPath) {
-                $result = & $redisCliPath ping
-                if ($result -eq "PONG") {
-                    Write-Host "✅ Redis connection test successful" -ForegroundColor Green
-                }
-            }
-        } catch {
-            Write-Host "⚠️ Could not test Redis connection, but service is running" -ForegroundColor Yellow
-        }
-    } else {
-        Write-Host "❌ Redis service failed to start. Check Windows Event Log." -ForegroundColor Red
-    }
-}
-
-# Run the complete reset
-Reset-RedisServiceComplete
-```
-
-##### **Alternative: Use Memurai (Redis-compatible for Windows)**
-```powershell
-# If Redis continues to fail, use Memurai which is more stable on Windows
-function Install-MemuraiService {
-    Write-Host "Setting up Memurai as Redis alternative..." -ForegroundColor Cyan
-    
-    # Check if Memurai is installed
-    $memuriaPaths = @(
-        "C:\ProgramData\chocolatey\lib\memurai-developer\tools",
-        "C:\ProgramData\chocolatey\lib\memurai-developer.install\tools",
-        "C:\Program Files\Memurai"
-    )
-    
-    $memuraiDir = $null
-    foreach ($path in $memuriaPaths) {
-        if (Test-Path "$path\memurai.exe") {
-            $memuraiDir = $path
-            Write-Host "Found Memurai at: $memuraiDir" -ForegroundColor Green
-            break
-        }
-    }
-    
-    if (-not $memuraiDir) {
-        Write-Host "Installing Memurai..." -ForegroundColor Yellow
-        choco install memurai-developer -y
-        Start-Sleep -Seconds 10
-        
-        # Re-check after installation
-        foreach ($path in $memuriaPaths) {
-            if (Test-Path "$path\memurai.exe") {
-                $memuraiDir = $path
-                break
-            }
-        }
-    }
-    
-    if ($memuraiDir) {
-        # Remove existing Redis service
-        $service = Get-Service -Name "Redis" -ErrorAction SilentlyContinue
-        if ($service) {
-            Stop-Service -Name "Redis" -Force -ErrorAction SilentlyContinue
-            nssm remove Redis confirm
-        }
-        
-        # Install Memurai as Redis service
-        $memuraiExe = "$memuraiDir\memurai.exe"
-        nssm install Redis $memuraiExe
-        nssm set Redis AppDirectory $memuraiDir
-        nssm set Redis DisplayName "Redis (Memurai)"
-        nssm set Redis Description "Memurai Redis-compatible cache for Admin3"
-        nssm set Redis Start SERVICE_AUTO_START
-        
-        # Start service
-        nssm start Redis
-        Start-Sleep -Seconds 3
-        
-        $status = nssm status Redis
-        Write-Host "Memurai service status: $status" -ForegroundColor $(if($status -eq 'SERVICE_RUNNING') {'Green'} else {'Red'})
-        
-        if ($status -eq 'SERVICE_RUNNING') {
-            Write-Host "✅ Memurai installed successfully as Redis replacement!" -ForegroundColor Green
-        }
-    } else {
-        Write-Host "❌ Failed to install or find Memurai" -ForegroundColor Red
-    }
-}
-
-# Use if Redis continues to fail
-# Install-MemuraiService
+# Test connectivity
+redis-cli ping
 ```
 
 ---
@@ -932,182 +351,63 @@ Test-RDSConnectivity
 ```
 
 #### **Database Connection Test**
-```powershell
-# Test database connection and permissions
-function Test-DatabaseConnection {
-    param(
-        [string]$Host = "acteddevdb01.xxxxxxxxxx.us-east-1.rds.amazonaws.com",
-        [string]$Database = "acteddbdev01",
-        [string]$Username = "actedadmin",
-        [string]$Password = "Act3d@dm1n0EEoo"
-    )
-    
-    Write-Host "Testing database connection..." -ForegroundColor Cyan
-    
-    # Set environment variables
-    $env:PGHOST = $Host
-    $env:PGPORT = "5432"
-    $env:PGDATABASE = $Database
-    $env:PGUSER = $Username
-    $env:PGPASSWORD = $Password
-    
-    try {
-        # Test basic connection
-        Write-Host "Testing basic connection..." -ForegroundColor Yellow
-        $result = psql -c "SELECT version();" 2>&1
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "✓ Database connection successful" -ForegroundColor Green
-        } else {
-            Write-Host "✗ Database connection failed" -ForegroundColor Red
-            Write-Host "Error: $result" -ForegroundColor Red
-            return $false
-        }
-        
-        # Test permissions
-        Write-Host "Testing permissions..." -ForegroundColor Yellow
-        $result = psql -c "SELECT current_user, current_database();" 2>&1
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "✓ Database permissions verified" -ForegroundColor Green
-        } else {
-            Write-Host "✗ Database permissions check failed" -ForegroundColor Red
-            Write-Host "Error: $result" -ForegroundColor Red
-        }
-        
-        # Test table creation (and cleanup)
-        Write-Host "Testing write permissions..." -ForegroundColor Yellow
-        $result = psql -c "CREATE TABLE test_connection (id INT); DROP TABLE test_connection;" 2>&1
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "✓ Database write permissions verified" -ForegroundColor Green
-        } else {
-            Write-Host "✗ Database write permissions failed" -ForegroundColor Red
-            Write-Host "Error: $result" -ForegroundColor Red
-        }
-        
-    } catch {
-        Write-Host "✗ Database connection error: $_" -ForegroundColor Red
-        return $false
-    } finally {
-        # Clear sensitive environment variables
-        $env:PGHOST = $null
-        $env:PGPORT = $null
-        $env:PGDATABASE = $null
-        $env:PGUSER = $null
-        $env:PGPASSWORD = $null
-    }
-    
-    return $true
-}
 
-# Run database connection test
-Test-DatabaseConnection
+Test database connectivity:
+```powershell
+# Simple connection test
+psql -h $env:DB_HOST -d $env:DB_NAME -U $env:DB_USER -c "SELECT version();"
 ```
 
 ### **2.4.3 Common Connection Issues and Solutions**
 
 #### **Issue 1: Connection Timeout**
-```powershell
-# Problem: psql: could not connect to server: Connection timed out
-# Solution: Check security groups and network ACLs
 
-function Fix-ConnectionTimeout {
-    Write-Host "Troubleshooting connection timeout..." -ForegroundColor Yellow
-    
-    # Check security groups
-    Write-Host "1. Verify RDS security group allows inbound on port 5432 from EC2 security group"
-    Write-Host "2. Verify EC2 security group allows outbound on port 5432 to RDS security group"
-    Write-Host "3. Check VPC route tables for proper routing"
-    Write-Host "4. Ensure RDS is in private subnet and EC2 can route to it"
-    
-    # AWS CLI commands to check
-    Write-Host "`nAWS CLI commands to verify:" -ForegroundColor Cyan
-    Write-Host "aws ec2 describe-security-groups --group-names Admin3-RDS-SG"
-    Write-Host "aws ec2 describe-security-groups --group-names Admin3-EC2-SG"
-    Write-Host "aws rds describe-db-instances --db-instance-identifier acteddevdb01"
-}
+Troubleshoot connectivity issues:
+```powershell
+# Test network connectivity to RDS
+Test-NetConnection -ComputerName $env:DB_HOST -Port 5432
+
+# Check security groups
+aws ec2 describe-security-groups --group-names Admin3-RDS-SG
+aws ec2 describe-security-groups --group-names Admin3-EC2-SG
 ```
 
 #### **Issue 2: Authentication Failed**
-```powershell
-# Problem: psql: FATAL: password authentication failed
-# Solution: Verify credentials and user permissions
 
-function Fix-AuthenticationFailed {
-    Write-Host "Troubleshooting authentication..." -ForegroundColor Yellow
-    
-    Write-Host "1. Verify RDS master username and password"
-    Write-Host "2. Check if user 'actedadmin' exists in the database"
-    Write-Host "3. Verify user has proper permissions on database 'ACTEDDBDEV01'"
-    
-    # Connect as master user to fix permissions
-    Write-Host "`nTo fix permissions, connect as master user:" -ForegroundColor Cyan
-    Write-Host "psql -h acteddevdb01.xxx.rds.amazonaws.com -U postgres -c \"CREATE USER actedadmin WITH PASSWORD 'Act3d@dm1n0EEoo';\""
-    Write-Host "psql -h acteddevdb01.xxx.rds.amazonaws.com -U postgres -c \"GRANT ALL PRIVILEGES ON DATABASE \\\"ACTEDDBDEV01\\\" TO actedadmin;\""
-}
+Check database credentials and permissions:
+```powershell
+# Verify environment variables are set
+echo $env:DB_USER
+echo $env:DB_NAME
+
+# Test with master user if needed
+psql -h $env:DB_HOST -U postgres -c "SELECT current_user;"
 ```
 
 #### **Issue 3: SSL Connection Required**
-```powershell
-# Problem: psql: FATAL: SSL connection is required
-# Solution: Configure SSL properly
 
-function Fix-SSLConnection {
-    Write-Host "Configuring SSL connection..." -ForegroundColor Yellow
-    
-    # Download RDS CA certificate
-    $certUrl = "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
-    $certPath = "C:\certificates\rds-ca-2019-root.pem"
-    
-    New-Item -ItemType Directory -Path "C:\certificates" -Force
-    Invoke-WebRequest -Uri $certUrl -OutFile $certPath
-    
-    Write-Host "SSL certificate downloaded to: $certPath" -ForegroundColor Green
-    
-    # Set environment variable for SSL
-    [Environment]::SetEnvironmentVariable("PGSSLROOTCERT", $certPath, "Machine")
-    [Environment]::SetEnvironmentVariable("PGSSLMODE", "require", "Machine")
-    
-    Write-Host "SSL configuration completed" -ForegroundColor Green
-}
+Configure SSL connection:
+```powershell
+# Download RDS CA certificate
+$certUrl = "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
+Invoke-WebRequest -Uri $certUrl -OutFile "C:\certificates\rds-ca-bundle.pem"
+
+# Set SSL environment variables
+$env:PGSSLROOTCERT = "C:\certificates\rds-ca-bundle.pem"
+$env:PGSSLMODE = "require"
 ```
 
 ### **2.4.4 Production Backup Strategy for RDS**
 
-#### **Automated RDS Backups**
+**🚀 Automated Script Available:**
+Create database backups:
 ```powershell
-# RDS automatically creates backups, but here's how to create manual snapshots
-function Create-RDSSnapshot {
-    param(
-        [string]$DBInstanceIdentifier = "acteddevdb01",
-        [string]$SnapshotIdentifier = "admin3-manual-snapshot-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
-    )
-    
-    Write-Host "Creating RDS snapshot..." -ForegroundColor Cyan
-    
-    aws rds create-db-snapshot --db-instance-identifier $DBInstanceIdentifier --db-snapshot-identifier $SnapshotIdentifier
-    
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "✓ RDS snapshot created: $SnapshotIdentifier" -ForegroundColor Green
-    } else {
-        Write-Host "✗ Failed to create RDS snapshot" -ForegroundColor Red
-    }
-}
+& "C:\Code\Admin3\Project settings\server setup\09-backup-database.ps1"
+```
 
-# Schedule automated snapshots
-function Schedule-RDSBackups {
-    Write-Host "RDS Backup Configuration:" -ForegroundColor Cyan
-    Write-Host "- Automated backups: Enabled with 7-day retention"
-    Write-Host "- Backup window: 03:00-04:00 UTC (during low usage)"
-    Write-Host "- Maintenance window: Sunday 04:00-05:00 UTC"
-    Write-Host "- Point-in-time recovery: Enabled"
-    Write-Host "- Manual snapshots: Create weekly via scheduled task"
-    
-    # Create scheduled task for weekly manual snapshots
-    $action = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-Command Create-RDSSnapshot"
-    $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At 2:00AM
-    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
-    
-    Register-ScheduledTask -TaskName "Admin3-RDS-WeeklySnapshot" -Action $action -Trigger $trigger -Settings $settings -Description "Weekly RDS snapshot for Admin3"
-}
+Manual RDS snapshot:
+```powershell
+aws rds create-db-snapshot --db-instance-identifier $env:DB_HOST --db-snapshot-identifier "admin3-manual-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
 ```
 
 ---
@@ -1266,26 +566,11 @@ LOGGING = {
 ```
 
 #### **3.2.2 Environment Variables and Secrets**
-```powershell
-# Create environment variables for RDS connection
-[Environment]::SetEnvironmentVariable("DJANGO_SECRET_KEY", "your-very-long-secret-key-here", "Machine")
-[Environment]::SetEnvironmentVariable("DB_HOST", "acteddevdb01.xxxxxxxxxx.us-east-1.rds.amazonaws.com", "Machine")
-[Environment]::SetEnvironmentVariable("DB_PASSWORD", "Act3d@dm1n0EEoo", "Machine")
-[Environment]::SetEnvironmentVariable("REDIS_PASSWORD", "R3d1sP@ssW", "Machine")
-[Environment]::SetEnvironmentVariable("DJANGO_SETTINGS_MODULE", "django_Admin3.settings.production", "Machine")
 
-# Create .env file for additional settings
-$envContent = @"
-DJANGO_SECRET_KEY=your-very-long-secret-key-here
-DB_HOST=acteddevdb01.xxxxxxxxxx.us-east-1.rds.amazonaws.com
-DB_PASSWORD=Act3d@dm1n0EEoo
-REDIS_PASSWORD=R3d1sP@ssW
-DJANGO_SETTINGS_MODULE=django_Admin3.settings.production
-EMAIL_HOST_PASSWORD=your-email-password
-ADMINISTRATE_API_KEY=your-api-key
-"@
-
-$envContent | Out-File -FilePath "C:\inetpub\wwwroot\Admin3\backend\django_Admin3\.env.production"
+Environment variables are configured via the automated scripts. See the environment setup documentation in:
+```
+C:\Code\Admin3\Project settings\server setup\.env.uat
+C:\Code\Admin3\Project settings\server setup\load-environment.ps1
 ```
 
 ---
@@ -1294,156 +579,33 @@ $envContent | Out-File -FilePath "C:\inetpub\wwwroot\Admin3\backend\django_Admin
 
 ### **4.1 Enhanced Application Setup**
 
-#### **4.1.1 Python Environment Setup**
+**🚀 Automated Script Available:**
+Run the complete application deployment:
 ```powershell
-# Navigate to project directory
-cd C:\inetpub\wwwroot\Admin3
-
-# Create virtual environment
-python -m venv .venv
-.\.venv\Scripts\activate
-
-# Upgrade pip and install dependencies
-python -m pip install --upgrade pip
-pip install -r backend\django_Admin3\requirements.txt
-pip install waitress gunicorn psycopg2-binary redis django-redis
-pip install sentry-sdk # For error tracking
+& "C:\Code\Admin3\Project settings\server setup\06-iis-application-setup.ps1"
 ```
 
-#### **4.1.2 Django Production Setup**
-```powershell
-# Create logs directory
-New-Item -ItemType Directory -Path "C:\logs\admin3" -Force
-
-# Apply migrations
-cd backend\django_Admin3
-python manage.py migrate
-
-# Collect static files
-python manage.py collectstatic --noinput
-
-# Create superuser (interactive)
-python manage.py createsuperuser
-
-# Test Django application
-python manage.py check --deploy
-```
-
-#### **4.1.3 React Production Build**
-```powershell
-cd frontend\react-Admin3
-
-# Install dependencies
-npm install
-
-# Build for production
-npm run build
-
-# Copy build files to IIS directory
-Copy-Item -Path "build\*" -Destination "C:\inetpub\wwwroot\Admin3\static" -Recurse -Force
-```
+This script handles:
+- Python virtual environment setup
+- Dependency installation
+- Django migrations and static files
+- React production build
+- IIS configuration
+- Windows service setup
 
 ### **4.2 Waitress WSGI Server Configuration**
 
-#### **4.2.1 Enhanced Waitress Configuration**
-```python
-# backend/django_Admin3/waitress_server.py
-import os
-import logging
-from waitress import serve
-from django_Admin3.wsgi import application
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('C:\\logs\\admin3\\waitress.log'),
-        logging.StreamHandler()
-    ]
-)
-
-logger = logging.getLogger(__name__)
-
-if __name__ == '__main__':
-    logger.info("Starting Waitress WSGI server...")
-    
-    # Production configuration
-    serve(
-        application,
-        host='127.0.0.1',
-        port=8000,
-        threads=10,
-        max_request_body_size=10485760,  # 10MB
-        connection_limit=1000,
-        cleanup_interval=30,
-        channel_timeout=120,
-        log_socket_errors=True,
-        ident='Admin3-Waitress'
-    )
-```
-
-#### **4.2.2 Windows Service Configuration**
-```powershell
-# Install Waitress as Windows service using NSSM
-$serviceName = "Admin3-Waitress"
-$pythonExe = "C:\inetpub\wwwroot\Admin3\.venv\Scripts\python.exe"
-$serverScript = "C:\inetpub\wwwroot\Admin3\backend\django_Admin3\waitress_server.py"
-
-nssm install $serviceName $pythonExe $serverScript
-nssm set $serviceName AppDirectory "C:\inetpub\wwwroot\Admin3\backend\django_Admin3"
-nssm set $serviceName DisplayName "Admin3 Waitress WSGI Server"
-nssm set $serviceName Description "Production WSGI server for Admin3 Django application"
-nssm set $serviceName Start SERVICE_AUTO_START
-nssm set $serviceName AppStdout "C:\logs\admin3\waitress-stdout.log"
-nssm set $serviceName AppStderr "C:\logs\admin3\waitress-stderr.log"
-nssm set $serviceName AppRotateFiles 1
-nssm set $serviceName AppRotateOnline 1
-nssm set $serviceName AppRotateBytes 10485760  # 10MB
-
-# Start the service
-Start-Service $serviceName
-```
+The Waitress WSGI server configuration is handled by the automated deployment script. Key features:
+- Production-optimized settings
+- Comprehensive logging
+- Windows service integration
+- Automatic startup configuration
 
 ### **4.3 IIS Configuration**
 
 #### **4.3.1 Enhanced IIS Setup**
-```powershell
-# Install IIS features
-Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebServerRole,IIS-WebServer,IIS-CommonHttpFeatures,IIS-HttpRedirect,IIS-WebServerManagementTools,IIS-HttpCompressionStatic,IIS-HttpCompressionDynamic,IIS-Security,IIS-RequestFiltering,IIS-HttpLogging,IIS-DefaultDocument,IIS-DirectoryBrowsing,IIS-ASPNET45
 
-# Download and install URL Rewrite module
-$urlRewriteUrl = "https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi"
-$urlRewriteFile = "C:\temp\rewrite_amd64.msi"
-New-Item -ItemType Directory -Path "C:\temp" -Force
-Invoke-WebRequest -Uri $urlRewriteUrl -OutFile $urlRewriteFile
-Start-Process -FilePath $urlRewriteFile -ArgumentList "/quiet" -Wait
-
-# Download and install ARR
-$arrUrl = "https://download.microsoft.com/download/E/9/8/E9849D6A-020E-47E4-9FD0-A023E99B54EB/requestRouter_amd64.msi"
-$arrFile = "C:\temp\requestRouter_amd64.msi"
-Invoke-WebRequest -Uri $arrUrl -OutFile $arrFile
-Start-Process -FilePath $arrFile -ArgumentList "/quiet" -Wait
-```
-
-#### **4.3.2 IIS Site Configuration**
-```powershell
-# Import IIS module
-Import-Module WebAdministration
-
-# Remove default site
-Remove-WebSite -Name "Default Web Site"
-
-# Create new site
-New-WebSite -Name "Admin3" -Port 80 -PhysicalPath "C:\inetpub\wwwroot\Admin3\static"
-
-# Configure application pool
-New-WebAppPool -Name "Admin3AppPool"
-Set-ItemProperty -Path "IIS:\AppPools\Admin3AppPool" -Name "processModel.identityType" -Value "ApplicationPoolIdentity"
-Set-ItemProperty -Path "IIS:\AppPools\Admin3AppPool" -Name "processModel.idleTimeout" -Value "00:00:00"
-Set-ItemProperty -Path "IIS:\AppPools\Admin3AppPool" -Name "recycling.periodicRestart.time" -Value "00:00:00"
-Set-WebConfiguration -Filter "/system.webServer/httpCompression" -Location "Admin3" -Value @{dynamicCompressionDisableCpuUsage=100;dynamicCompressionEnableCpuUsage=50}
-```
+IIS installation and configuration is handled by the automated deployment script.
 
 #### **4.3.3 URL Rewrite Rules**
 ```xml
@@ -1643,97 +805,11 @@ def health_check(request):
 ### **5.2 Log Aggregation and Analysis**
 
 #### **5.2.1 PowerShell Log Monitoring Script**
+
+**🚀 Automated Script Available:**
+Set up monitoring and logging:
 ```powershell
-# C:\scripts\log_monitor.ps1
-param(
-    [string]$LogPath = "C:\logs\admin3",
-    [string]$AlertEmail = "admin@yourdomain.com",
-    [int]$CheckInterval = 300  # 5 minutes
-)
-
-function Send-Alert {
-    param([string]$Subject, [string]$Body)
-    
-    try {
-        Send-MailMessage -To $AlertEmail -From "server@yourdomain.com" -Subject $Subject -Body $Body -SmtpServer "smtp.yourdomain.com" -Port 587 -UseSsl
-        Write-Host "Alert sent: $Subject"
-    } catch {
-        Write-Error "Failed to send alert: $_"
-    }
-}
-
-function Check-LogErrors {
-    $logFiles = Get-ChildItem -Path $LogPath -Filter "*.log" -Recurse
-    
-    foreach ($logFile in $logFiles) {
-        $recentErrors = Get-Content $logFile.FullName | Select-String -Pattern "ERROR|CRITICAL" | Select-Object -Last 10
-        
-        if ($recentErrors.Count -gt 0) {
-            $subject = "Log Errors Detected - $($logFile.Name)"
-            $body = "Recent errors found in $($logFile.FullName):`n`n$($recentErrors -join "`n")"
-            Send-Alert -Subject $subject -Body $body
-        }
-    }
-}
-
-function Check-ServiceHealth {
-    $services = @("Admin3-Waitress", "Redis")
-    
-    foreach ($service in $services) {
-        $serviceStatus = Get-Service -Name $service -ErrorAction SilentlyContinue
-        
-        if ($serviceStatus.Status -ne "Running") {
-            $subject = "Service Alert - $service"
-            $body = "Service $service is not running. Status: $($serviceStatus.Status)"
-            Send-Alert -Subject $subject -Body $body
-            
-            # Attempt to restart service
-            try {
-                Start-Service -Name $service
-                Write-Host "Restarted service: $service"
-            } catch {
-                Write-Error "Failed to restart service $service: $_"
-            }
-        }
-    }
-}
-
-function Check-DiskSpace {
-    $drives = Get-WmiObject -Class Win32_LogicalDisk | Where-Object { $_.DriveType -eq 3 }
-    
-    foreach ($drive in $drives) {
-        $freeSpacePercent = ($drive.FreeSpace / $drive.Size) * 100
-        
-        if ($freeSpacePercent -lt 10) {
-            $subject = "Low Disk Space Alert - Drive $($drive.DeviceID)"
-            $body = "Drive $($drive.DeviceID) has only $([math]::Round($freeSpacePercent, 2))% free space remaining."
-            Send-Alert -Subject $subject -Body $body
-        }
-    }
-}
-
-# Main monitoring loop
-while ($true) {
-    Write-Host "Running health checks... $(Get-Date)"
-    
-    Check-LogErrors
-    Check-ServiceHealth
-    Check-DiskSpace
-    
-    Write-Host "Health checks completed. Sleeping for $CheckInterval seconds..."
-    Start-Sleep -Seconds $CheckInterval
-}
-```
-
-#### **5.2.2 Task Scheduler Setup for Monitoring**
-```powershell
-# Create scheduled task for log monitoring
-$action = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-ExecutionPolicy Bypass -File C:\scripts\log_monitor.ps1"
-$trigger = New-ScheduledTaskTrigger -AtStartup
-$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
-$principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
-
-Register-ScheduledTask -TaskName "Admin3-LogMonitor" -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Description "Monitor Admin3 application logs and services"
+& "C:\Code\Admin3\Project settings\server setup\07-monitoring-logging.ps1"
 ```
 
 ---
@@ -1743,211 +819,30 @@ Register-ScheduledTask -TaskName "Admin3-LogMonitor" -Action $action -Trigger $t
 ### **6.1 Database Backup Strategy**
 
 #### **6.1.1 Automated PostgreSQL Backup Script**
+
+**🚀 Automated Script Available:**
+Create database backups:
 ```powershell
-# C:\scripts\backup_database.ps1
-param(
-    [string]$DatabaseName = "Admin3_Production",
-    [string]$BackupPath = "C:\backups\postgresql",
-    [string]$S3Bucket = "admin3-backups",
-    [int]$RetentionDays = 30
-)
-
-$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-$backupFile = "$BackupPath\admin3_backup_$timestamp.sql"
-$compressedFile = "$BackupPath\admin3_backup_$timestamp.7z"
-
-# Create backup directory
-New-Item -ItemType Directory -Path $BackupPath -Force
-
-# Set PostgreSQL environment variables
-$env:PGPASSWORD = $env:DB_PASSWORD
-$env:PGUSER = "backup_user"
-$env:PGHOST = "localhost"
-$env:PGPORT = "5432"
-
-try {
-    Write-Host "Starting database backup..."
-    
-    # Create database backup
-    & "C:\Program Files\PostgreSQL\16\bin\pg_dump.exe" -d $DatabaseName -f $backupFile --verbose
-    
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "Database backup completed successfully"
-        
-        # Compress backup
-        & "C:\Program Files\7-Zip\7z.exe" a -t7z -mx9 $compressedFile $backupFile
-        
-        # Remove uncompressed file
-        Remove-Item $backupFile -Force
-        
-        # Upload to S3
-        aws s3 cp $compressedFile "s3://$S3Bucket/database/"
-        
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "Backup uploaded to S3 successfully"
-        } else {
-            Write-Error "Failed to upload backup to S3"
-        }
-        
-        # Clean up old local backups
-        Get-ChildItem -Path $BackupPath -Filter "*.7z" | Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-$RetentionDays) } | Remove-Item -Force
-        
-    } else {
-        Write-Error "Database backup failed"
-        exit 1
-    }
-    
-} catch {
-    Write-Error "Backup process failed: $_"
-    exit 1
-} finally {
-    # Clear password from environment
-    $env:PGPASSWORD = $null
-}
+& "C:\Code\Admin3\Project settings\server setup\09-backup-database.ps1"
 ```
 
 #### **6.1.2 Application Files Backup**
+
+**🚀 Automated Script Available:**
+Create application backups:
 ```powershell
-# C:\scripts\backup_application.ps1
-param(
-    [string]$ApplicationPath = "C:\inetpub\wwwroot\Admin3",
-    [string]$BackupPath = "C:\backups\application",
-    [string]$S3Bucket = "admin3-backups",
-    [int]$RetentionDays = 7
-)
-
-$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-$backupFile = "$BackupPath\admin3_app_backup_$timestamp.7z"
-
-# Create backup directory
-New-Item -ItemType Directory -Path $BackupPath -Force
-
-# Exclude patterns
-$excludePatterns = @(
-    "*.pyc",
-    "__pycache__",
-    "node_modules",
-    "*.log",
-    ".git",
-    ".venv"
-)
-
-try {
-    Write-Host "Starting application backup..."
-    
-    # Create exclusion file for 7zip
-    $excludeFile = "$BackupPath\exclude.txt"
-    $excludePatterns | Out-File -FilePath $excludeFile -Encoding UTF8
-    
-    # Create compressed backup
-    & "C:\Program Files\7-Zip\7z.exe" a -t7z -mx9 $backupFile $ApplicationPath "-xr@$excludeFile"
-    
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "Application backup completed successfully"
-        
-        # Upload to S3
-        aws s3 cp $backupFile "s3://$S3Bucket/application/"
-        
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "Application backup uploaded to S3 successfully"
-        } else {
-            Write-Error "Failed to upload application backup to S3"
-        }
-        
-        # Clean up old local backups
-        Get-ChildItem -Path $BackupPath -Filter "*app_backup*.7z" | Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-$RetentionDays) } | Remove-Item -Force
-        
-    } else {
-        Write-Error "Application backup failed"
-        exit 1
-    }
-    
-} catch {
-    Write-Error "Application backup process failed: $_"
-    exit 1
-} finally {
-    # Clean up temp files
-    if (Test-Path $excludeFile) {
-        Remove-Item $excludeFile -Force
-    }
-}
+& "C:\Code\Admin3\Project settings\server setup\10-backup-application.ps1"
 ```
 
 ### **6.2 Recovery Procedures**
 
 #### **6.2.1 Database Recovery Script**
+
+**🚀 Automated Script Available:**
+Restore database from backup:
 ```powershell
-# C:\scripts\restore_database.ps1
-param(
-    [Parameter(Mandatory=$true)]
-    [string]$BackupFile,
-    [string]$DatabaseName = "Admin3_Production",
-    [string]$NewDatabaseName = "Admin3_Production_Restored",
-    [switch]$Force
-)
-
-# Set PostgreSQL environment variables
-$env:PGPASSWORD = $env:DB_PASSWORD
-$env:PGUSER = "postgres"
-$env:PGHOST = "localhost"
-$env:PGPORT = "5432"
-
-try {
-    Write-Host "Starting database restore..."
-    
-    # Check if backup file exists
-    if (-not (Test-Path $BackupFile)) {
-        Write-Error "Backup file not found: $BackupFile"
-        exit 1
-    }
-    
-    # Decompress if needed
-    if ($BackupFile.EndsWith(".7z")) {
-        $extractPath = Split-Path $BackupFile -Parent
-        $extractedFile = $BackupFile.Replace(".7z", "")
-        
-        Write-Host "Extracting backup file..."
-        & "C:\Program Files\7-Zip\7z.exe" x $BackupFile -o$extractPath
-        $BackupFile = $extractedFile
-    }
-    
-    # Create new database
-    Write-Host "Creating database: $NewDatabaseName"
-    & "C:\Program Files\PostgreSQL\16\bin\createdb.exe" -U postgres $NewDatabaseName
-    
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "Database created successfully"
-        
-        # Restore from backup
-        Write-Host "Restoring from backup..."
-        & "C:\Program Files\PostgreSQL\16\bin\psql.exe" -U postgres -d $NewDatabaseName -f $BackupFile
-        
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "Database restored successfully"
-            
-            if ($Force) {
-                Write-Host "Dropping original database and renaming restored database..."
-                & "C:\Program Files\PostgreSQL\16\bin\dropdb.exe" -U postgres $DatabaseName
-                & "C:\Program Files\PostgreSQL\16\bin\psql.exe" -U postgres -c "ALTER DATABASE `"$NewDatabaseName`" RENAME TO `"$DatabaseName`";"
-            }
-            
-        } else {
-            Write-Error "Database restore failed"
-            exit 1
-        }
-        
-    } else {
-        Write-Error "Failed to create database"
-        exit 1
-    }
-    
-} catch {
-    Write-Error "Database restore process failed: $_"
-    exit 1
-} finally {
-    # Clear password from environment
-    $env:PGPASSWORD = $null
-}
+& "C:\Code\Admin3\Project settings\server setup\11-restore-database.ps1" -BackupFile "path\to\backup.sql"
+```
 ```
 
 ---
@@ -2299,148 +1194,11 @@ jobs:
 ### **8.2 Deployment Automation**
 
 #### **8.2.1 Automated Deployment Script**
+
+**🚀 Automated Script Available:**
+Run automated deployment:
 ```powershell
-# C:\scripts\deploy.ps1
-param(
-    [string]$Branch = "main",
-    [string]$AppPath = "C:\inetpub\wwwroot\Admin3",
-    [switch]$SkipBackup = $false,
-    [switch]$SkipTests = $false
-)
-
-$ErrorActionPreference = "Stop"
-
-function Write-DeployLog {
-    param([string]$Message, [string]$Level = "INFO")
-    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    $logEntry = "[$timestamp] [$Level] $Message"
-    Write-Host $logEntry
-    Add-Content -Path "C:\logs\admin3\deploy.log" -Value $logEntry
-}
-
-function Stop-ApplicationServices {
-    Write-DeployLog "Stopping application services..."
-    Stop-Service -Name "Admin3-Waitress" -Force
-    Stop-WebSite -Name "Admin3"
-}
-
-function Start-ApplicationServices {
-    Write-DeployLog "Starting application services..."
-    Start-Service -Name "Admin3-Waitress"
-    Start-WebSite -Name "Admin3"
-}
-
-function Test-ApplicationHealth {
-    Write-DeployLog "Testing application health..."
-    $maxRetries = 10
-    $retryCount = 0
-    
-    do {
-        try {
-            $response = Invoke-WebRequest -Uri "http://localhost/api/health/" -TimeoutSec 30
-            if ($response.StatusCode -eq 200) {
-                Write-DeployLog "Application is healthy"
-                return $true
-            }
-        } catch {
-            Write-DeployLog "Health check failed, retrying... ($retryCount/$maxRetries)"
-            Start-Sleep -Seconds 5
-        }
-        $retryCount++
-    } while ($retryCount -lt $maxRetries)
-    
-    Write-DeployLog "Application health check failed after $maxRetries attempts" -Level "ERROR"
-    return $false
-}
-
-try {
-    Write-DeployLog "Starting deployment process..."
-    
-    # Create backup if not skipped
-    if (-not $SkipBackup) {
-        Write-DeployLog "Creating backup..."
-        & "C:\scripts\backup_database.ps1"
-        & "C:\scripts\backup_application.ps1"
-    }
-    
-    # Stop services
-    Stop-ApplicationServices
-    
-    # Update code
-    Write-DeployLog "Updating code from repository..."
-    cd $AppPath
-    git fetch origin
-    git checkout $Branch
-    git pull origin $Branch
-    
-    # Update Python dependencies
-    Write-DeployLog "Updating Python dependencies..."
-    cd "$AppPath\backend\django_Admin3"
-    .\.venv\Scripts\activate
-    pip install --upgrade pip
-    pip install -r requirements.txt
-    
-    # Run migrations
-    Write-DeployLog "Running database migrations..."
-    python manage.py migrate --noinput
-    
-    # Collect static files
-    Write-DeployLog "Collecting static files..."
-    python manage.py collectstatic --noinput
-    
-    # Update Node dependencies and build
-    Write-DeployLog "Building React application..."
-    cd "$AppPath\frontend\react-Admin3"
-    npm install
-    npm run build
-    
-    # Copy build files
-    Copy-Item -Path "build\*" -Destination "C:\inetpub\wwwroot\Admin3\static" -Recurse -Force
-    
-    # Run tests if not skipped
-    if (-not $SkipTests) {
-        Write-DeployLog "Running tests..."
-        cd "$AppPath\backend\django_Admin3"
-        python manage.py test --keepdb
-    }
-    
-    # Start services
-    Start-ApplicationServices
-    
-    # Wait for services to start
-    Start-Sleep -Seconds 30
-    
-    # Test application health
-    if (Test-ApplicationHealth) {
-        Write-DeployLog "Deployment completed successfully!"
-        
-        # Clear cache
-        Write-DeployLog "Clearing application cache..."
-        python manage.py shell -c "from django.core.cache import cache; cache.clear()"
-        
-    } else {
-        Write-DeployLog "Deployment failed - application health check failed" -Level "ERROR"
-        
-        # Rollback if possible
-        Write-DeployLog "Attempting rollback..."
-        git checkout HEAD~1
-        Start-ApplicationServices
-        
-        exit 1
-    }
-    
-} catch {
-    Write-DeployLog "Deployment failed: $_" -Level "ERROR"
-    
-    # Attempt to restart services
-    try {
-        Start-ApplicationServices
-    } catch {
-        Write-DeployLog "Failed to restart services: $_" -Level "ERROR"
-    }
-    
-    exit 1
-}
+& "C:\Code\Admin3\Project settings\server setup\15-deployment-automation.ps1"
 ```
 
 ---
@@ -2450,53 +1208,24 @@ try {
 ### **9.1 Common Issues and Solutions**
 
 #### **9.1.1 Application Won't Start**
+
+**🚀 Automated Script Available:**
+Run comprehensive troubleshooting:
 ```powershell
-# Troubleshooting checklist script
-# C:\scripts\troubleshoot.ps1
+& "C:\Code\Admin3\Project settings\server setup\08-troubleshooting.ps1"
+```
 
-function Test-ServiceStatus {
-    $services = @("Admin3-Waitress", "Redis", "W3SVC")
-    
-    foreach ($service in $services) {
-        $status = Get-Service -Name $service -ErrorAction SilentlyContinue
-        if ($status) {
-            Write-Host "$service`: $($status.Status)" -ForegroundColor $(if ($status.Status -eq "Running") {"Green"} else {"Red"})
-        } else {
-            Write-Host "$service`: Not Found" -ForegroundColor "Red"
-        }
-    }
-}
+Quick diagnostics:
+```powershell
+# Check services
+Get-Service Admin3-Waitress, Redis, W3SVC
 
-function Test-DatabaseConnection {
-    try {
-        $env:PGPASSWORD = $env:DB_PASSWORD
-        $env:PGHOST = $env:DB_HOST
-        $result = & "C:\Program Files\PostgreSQL\16\bin\psql.exe" -U actedadmin -d acteddbdev01 -c "SELECT 1;"
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "Database connection: OK" -ForegroundColor "Green"
-        } else {
-            Write-Host "Database connection: FAILED" -ForegroundColor "Red"
-        }
-    } catch {
-        Write-Host "Database connection: ERROR - $_" -ForegroundColor "Red"
-    } finally {
-        $env:PGPASSWORD = $null
-        $env:PGHOST = $null
-    }
-}
+# Test database connection
+psql -h $env:DB_HOST -d $env:DB_NAME -U $env:DB_USER -c "SELECT 1;"
 
-function Test-RedisConnection {
-    try {
-        $result = redis-cli ping
-        if ($result -eq "PONG") {
-            Write-Host "Redis connection: OK" -ForegroundColor "Green"
-        } else {
-            Write-Host "Redis connection: FAILED" -ForegroundColor "Red"
-        }
-    } catch {
-        Write-Host "Redis connection: ERROR - $_" -ForegroundColor "Red"
-    }
-}
+# Test Redis
+redis-cli ping
+```
 
 function Test-WebsiteResponse {
     try {
@@ -2700,6 +1429,12 @@ try {
 ### **10.1 Regular Maintenance Tasks**
 
 #### **10.1.1 Weekly Maintenance Script**
+
+**🚀 Automated Script Available:**
+Run weekly maintenance:
+```powershell
+& "C:\Code\Admin3\Project settings\server setup\13-weekly-maintenance.ps1"
+```
 ```powershell
 # C:\scripts\weekly_maintenance.ps1
 param(
@@ -3146,6 +1881,12 @@ if (Verify-SystemIntegrity) {
 ### **12.1 Pre-Go-Live Checklist**
 
 #### **12.1.1 Comprehensive Pre-Launch Validation**
+
+**🚀 Automated Script Available:**
+Run pre-go-live validation:
+```powershell
+& "C:\Code\Admin3\Project settings\server setup\14-pre-golive-checklist.ps1"
+```
 ```powershell
 # C:\scripts\pre_golive_checklist.ps1
 

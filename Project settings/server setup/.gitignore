@@ -1,0 +1,28 @@
+# Ignore sensitive environment files
+.env
+.env.*
+!.env.uat
+!.env.example
+
+# Ignore log files
+*.log
+setup-*.log
+
+# Ignore backup files
+*.backup
+*.bak
+
+# Ignore temporary files
+*.tmp
+*.temp
+
+# Ignore SSL certificates and keys (if stored locally)
+*.crt
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Ignore AWS credentials files
+credentials
+config
