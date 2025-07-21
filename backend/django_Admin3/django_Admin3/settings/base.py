@@ -21,14 +21,28 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Initialize environ
 env = environ.Env(
-    DEBUG=(bool, False),
-    DJANGO_ENV=(str, 'development'),
+    DEBUG=(bool, False),    
     ALLOWED_HOSTS=(list, []),
+    CORS_ALLOWED_ORIGINS=(list, []),
+    CRSF_ALLOWED_ORIGINS=(list, []),
 )
 
 # Read .env file if it exists
+# Determine environment from DJANGO_SETTINGS_MODULE if DJANGO_ENV not set
+settings_module = os.environ.get('DJANGO_SETTINGS_MODULE', '')
+if not os.getenv('DJANGO_ENV') and settings_module:
+    if 'uat' in settings_module:
+        os.environ.setdefault('DJANGO_ENV', 'uat')
+    elif 'production' in settings_module:
+        os.environ.setdefault('DJANGO_ENV', 'production')
+    elif 'development' in settings_module:
+        os.environ.setdefault('DJANGO_ENV', 'development')
+
 DJANGO_ENV = os.getenv('DJANGO_ENV', 'development')
+print(f'DJANGO_ENV {DJANGO_ENV}')
+print(f'DJANGO_SETTINGS_MODULE {settings_module}')
 env_file = os.path.join(BASE_DIR, f'.env.{DJANGO_ENV}')
+print(f'DJANGO_ENV FILE {env_file}')
 if os.path.exists(env_file):
     print(f'Loading environment from: {env_file}')
     environ.Env.read_env(env_file)
@@ -209,12 +223,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:8888",
-    "http://127.0.0.1:8888"
-]
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -224,6 +233,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8888",
     "http://127.0.0.1:8888"
 ]
+CRSF_ALLOWED_ORIGINS = os.environ.get('CRSF_ALLOWED_ORIGINS', '').split(',')
 
 # Allow credentials (cookies) to be included in requests
 CORS_ALLOW_METHODS = [
