@@ -13,7 +13,10 @@
       "Bash(dir)",
       "Bash(more:*)",
       "Bash(cat:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(Get-Content \"C:\\Code\\Admin3\\Project settings\\server setup\\server_setup_2_2_3.ps1\")",
+      "Bash(powershell:*)",
+      "Bash(Remove-Item \"C:\\Code\\Admin3\\Project settings\\server setup\\server_setup_2_2_311.ps1\" -Force)"
     ],
     "deny": []
   }
