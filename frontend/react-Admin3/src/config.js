@@ -35,7 +35,7 @@ const config = {
 };
 
 if (config.isDevelopment) {	
-	console.log("Development environment:", config.isDevelopment);
+	console.log("environment:", process.env.NODE_ENV);	
 	console.log("Debug logs enabled:", config.enableDebugLogs);		
 }	
 
