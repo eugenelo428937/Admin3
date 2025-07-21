@@ -88,5 +88,5 @@ backend/django_Admin3/administrate/src/*.xlsx
 frontend/react-Admin3/.env.*
 frontend/react-Admin3/Sandbox/*
 backend/django_Admin3/django_debug.log
-Project settings\server setup\secrets\
-Project settings\server setup\misc\
+Project settings/server setup/secrets/
+Project settings/server setup/misc/*
