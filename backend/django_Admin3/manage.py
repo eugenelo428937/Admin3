@@ -6,6 +6,7 @@ import sys
 def main():
     """Run administrative tasks."""
     # Set environment variable before importing Django
+    print(f'DJANGO_ENV {os.environ.get("DJANGO_SETTINGS_MODULE")}')
     os.environ.setdefault('DJANGO_SETTINGS_MODULE',
                           'django_Admin3.settings.development')    
     try:
