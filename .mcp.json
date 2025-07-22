@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "trello": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "server.js"
+      ],
+      "env": {}
+    }
+  }
+}
