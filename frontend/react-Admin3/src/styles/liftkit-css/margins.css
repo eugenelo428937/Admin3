@@ -1,0 +1,847 @@
+.m-top__2xs {
+  margin-top: var(--2xs);
+}
+.m-top__xs {
+  margin-top: var(--xs);
+}
+.m-top__sm {
+  margin-top: var(--sm);
+}
+.m-top__md {
+  margin-top: var(--md);
+}
+.m-top__lg {
+  margin-top: var(--lg);
+}
+.m-top__xl {
+  margin-top: var(--xl);
+}
+.m-top__2xl {
+  margin-top: var(--2xl);
+}
+
+.m-right__2xs {
+  margin-right: var(--2xs);
+}
+.m-right__xs {
+  margin-right: var(--xs);
+}
+.m-right__sm {
+  margin-right: var(--sm);
+}
+.m-right__md {
+  margin-right: var(--md);
+}
+.m-right__lg {
+  margin-right: var(--lg);
+}
+.m-right__xl {
+  margin-right: var(--xl);
+}
+.m-right__2xl {
+  margin-right: var(--2xl);
+}
+
+.m-bottom__2xs {
+  margin-bottom: var(--2xs);
+}
+.m-bottom__xs {
+  margin-bottom: var(--xs);
+}
+.m-bottom__sm {
+  margin-bottom: var(--sm);
+}
+.m-bottom__md {
+  margin-bottom: var(--md);
+}
+.m-bottom__lg {
+  margin-bottom: var(--lg);
+}
+.m-bottom__xl {
+  margin-bottom: var(--xl);
+}
+.m-bottom__2xl {
+  margin-bottom: var(--2xl);
+}
+
+.m-left__2xs {
+  margin-left: var(--2xs);
+}
+.m-left__xs {
+  margin-left: var(--xs);
+}
+.m-left__sm {
+  margin-left: var(--sm);
+}
+.m-left__md {
+  margin-left: var(--md);
+}
+.m-left__lg {
+  margin-left: var(--lg);
+}
+.m-left__xl {
+  margin-left: var(--xl);
+}
+.m-left__2xl {
+  margin-left: var(--2xl);
+}
+
+.display1.m-top__2xs,
+.display2.m-top__2xs,
+.title1.m-top__2xs,
+.title2.m-top__2xs,
+.title3.m-top__2xs,
+.heading.m-top__2xs,
+.subheading.m-top__2xs,
+.body.m-top__2xs,
+.callout.m-top__2xs,
+.label.m-top__2xs,
+.caption.m-top__2xs,
+.overline.m-top__2xs,
+.display1__bold.m-top__2xs,
+.display2__bold.m-top__2xs,
+.title1__bold.m-top__2xs,
+.title2__bold.m-top__2xs,
+.title3__bold.m-top__2xs,
+.heading__bold.m-top__2xs,
+.subheading__bold.m-top__2xs,
+.body__bold.m-top__2xs,
+.callout__bold.m-top__2xs,
+.label__bold.m-top__2xs,
+.caption__bold.m-top__2xs,
+.overline__bold.m-top__2xs {
+  margin-top: var(--2xs);
+}
+
+.display1.m-top__xs,
+.display2.m-top__xs,
+.title1.m-top__xs,
+.title2.m-top__xs,
+.title3.m-top__xs,
+.heading.m-top__xs,
+.subheading.m-top__xs,
+.body.m-top__xs,
+.callout.m-top__xs,
+.label.m-top__xs,
+.caption.m-top__xs,
+.overline.m-top__xs,
+.display1__bold.m-top__xs,
+.display2__bold.m-top__xs,
+.title1__bold.m-top__xs,
+.title2__bold.m-top__xs,
+.title3__bold.m-top__xs,
+.heading__bold.m-top__xs,
+.subheading__bold.m-top__xs,
+.body__bold.m-top__xs,
+.callout__bold.m-top__xs,
+.label__bold.m-top__xs,
+.caption__bold.m-top__xs,
+.overline__bold.m-top__xs {
+  margin-top: var(--xs);
+}
+
+.display1.m-top__sm,
+.display2.m-top__sm,
+.title1.m-top__sm,
+.title2.m-top__sm,
+.title3.m-top__sm,
+.heading.m-top__sm,
+.subheading.m-top__sm,
+.body.m-top__sm,
+.callout.m-top__sm,
+.label.m-top__sm,
+.caption.m-top__sm,
+.overline.m-top__sm,
+.display1__bold.m-top__sm,
+.display2__bold.m-top__sm,
+.title1__bold.m-top__sm,
+.title2__bold.m-top__sm,
+.title3__bold.m-top__sm,
+.heading__bold.m-top__sm,
+.subheading__bold.m-top__sm,
+.body__bold.m-top__sm,
+.callout__bold.m-top__sm,
+.label__bold.m-top__sm,
+.caption__bold.m-top__sm,
+.overline__bold.m-top__sm {
+  margin-top: var(--sm);
+}
+/* Repeat for other margin directions and sizes */
+
+.display1.m-top__md,
+.display2.m-top__md,
+.title1.m-top__md,
+.title2.m-top__md,
+.title3.m-top__md,
+.heading.m-top__md,
+.subheading.m-top__md,
+.body.m-top__md,
+.callout.m-top__md,
+.label.m-top__md,
+.caption.m-top__md,
+.overline.m-top__md,
+.display1__bold.m-top__md,
+.display2__bold.m-top__md,
+.title1__bold.m-top__md,
+.title2__bold.m-top__md,
+.title3__bold.m-top__md,
+.heading__bold.m-top__md,
+.subheading__bold.m-top__md,
+.body__bold.m-top__md,
+.callout__bold.m-top__md,
+.label__bold.m-top__md,
+.caption__bold.m-top__md,
+.overline__bold.m-top__md {
+  margin-top: var(--md);
+}
+
+.display1.m-top__lg,
+.display2.m-top__lg,
+.title1.m-top__lg,
+.title2.m-top__lg,
+.title3.m-top__lg,
+.heading.m-top__lg,
+.subheading.m-top__lg,
+.body.m-top__lg,
+.callout.m-top__lg,
+.label.m-top__lg,
+.caption.m-top__lg,
+.overline.m-top__lg,
+.display1__bold.m-top__lg,
+.display2__bold.m-top__lg,
+.title1__bold.m-top__lg,
+.title2__bold.m-top__lg,
+.title3__bold.m-top__lg,
+.heading__bold.m-top__lg,
+.subheading__bold.m-top__lg,
+.body__bold.m-top__lg,
+.callout__bold.m-top__lg,
+.label__bold.m-top__lg,
+.caption__bold.m-top__lg,
+.overline__bold.m-top__lg {
+  margin-top: var(--lg);
+}
+
+.display1.m-top__xl,
+.display2.m-top__xl,
+.title1.m-top__xl,
+.title2.m-top__xl,
+.title3.m-top__xl,
+.heading.m-top__xl,
+.subheading.m-top__xl,
+.body.m-top__xl,
+.callout.m-top__xl,
+.label.m-top__xl,
+.caption.m-top__xl,
+.overline.m-top__xl,
+.display1__bold.m-top__xl,
+.display2__bold.m-top__xl,
+.title1__bold.m-top__xl,
+.title2__bold.m-top__xl,
+.title3__bold.m-top__xl,
+.heading__bold.m-top__xl,
+.subheading__bold.m-top__xl,
+.body__bold.m-top__xl,
+.callout__bold.m-top__xl,
+.label__bold.m-top__xl,
+.caption__bold.m-top__xl,
+.overline__bold.m-top__xl {
+  margin-top: var(--xl);
+}
+
+.display1.m-top__2xl,
+.display2.m-top__2xl,
+.title1.m-top__2xl,
+.title2.m-top__2xl,
+.title3.m-top__2xl,
+.heading.m-top__2xl,
+.subheading.m-top__2xl,
+.body.m-top__2xl,
+.callout.m-top__2xl,
+.label.m-top__2xl,
+.caption.m-top__2xl,
+.overline.m-top__2xl,
+.display1__bold.m-top__2xl,
+.display2__bold.m-top__2xl,
+.title1__bold.m-top__2xl,
+.title2__bold.m-top__2xl,
+.title3__bold.m-top__2xl,
+.heading__bold.m-top__2xl,
+.subheading__bold.m-top__2xl,
+.body__bold.m-top__2xl,
+.callout__bold.m-top__2xl,
+.label__bold.m-top__2xl,
+.caption__bold.m-top__2xl,
+.overline__bold.m-top__2xl {
+  margin-top: var(--2xl);
+}
+
+.display1.m-right__2xs,
+.display2.m-right__2xs,
+.title1.m-right__2xs,
+.title2.m-right__2xs,
+.title3.m-right__2xs,
+.heading.m-right__2xs,
+.subheading.m-right__2xs,
+.body.m-right__2xs,
+.callout.m-right__2xs,
+.label.m-right__2xs,
+.caption.m-right__2xs,
+.overline.m-right__2xs,
+.display1__bold.m-right__2xs,
+.display2__bold.m-right__2xs,
+.title1__bold.m-right__2xs,
+.title2__bold.m-right__2xs,
+.title3__bold.m-right__2xs,
+.heading__bold.m-right__2xs,
+.subheading__bold.m-right__2xs,
+.body__bold.m-right__2xs,
+.callout__bold.m-right__2xs,
+.label__bold.m-right__2xs,
+.caption__bold.m-right__2xs,
+.overline__bold.m-right__2xs {
+  margin-right: var(--2xs);
+}
+
+.display1.m-right__xs,
+.display2.m-right__xs,
+.title1.m-right__xs,
+.title2.m-right__xs,
+.title3.m-right__xs,
+.heading.m-right__xs,
+.subheading.m-right__xs,
+.body.m-right__xs,
+.callout.m-right__xs,
+.label.m-right__xs,
+.caption.m-right__xs,
+.overline.m-right__xs,
+.display1__bold.m-right__xs,
+.display2__bold.m-right__xs,
+.title1__bold.m-right__xs,
+.title2__bold.m-right__xs,
+.title3__bold.m-right__xs,
+.heading__bold.m-right__xs,
+.subheading__bold.m-right__xs,
+.body__bold.m-right__xs,
+.callout__bold.m-right__xs,
+.label__bold.m-right__xs,
+.caption__bold.m-right__xs,
+.overline__bold.m-right__xs {
+  margin-right: var(--xs);
+}
+
+.display1.m-right__sm,
+.display2.m-right__sm,
+.title1.m-right__sm,
+.title2.m-right__sm,
+.title3.m-right__sm,
+.heading.m-right__sm,
+.subheading.m-right__sm,
+.body.m-right__sm,
+.callout.m-right__sm,
+.label.m-right__sm,
+.caption.m-right__sm,
+.overline.m-right__sm,
+.display1__bold.m-right__sm,
+.display2__bold.m-right__sm,
+.title1__bold.m-right__sm,
+.title2__bold.m-right__sm,
+.title3__bold.m-right__sm,
+.heading__bold.m-right__sm,
+.subheading__bold.m-right__sm,
+.body__bold.m-right__sm,
+.callout__bold.m-right__sm,
+.label__bold.m-right__sm,
+.caption__bold.m-right__sm,
+.overline__bold.m-right__sm {
+  margin-right: var(--sm);
+}
+/* Repeat for other margin directions and sizes */
+
+.display1.m-right__md,
+.display2.m-right__md,
+.title1.m-right__md,
+.title2.m-right__md,
+.title3.m-right__md,
+.heading.m-right__md,
+.subheading.m-right__md,
+.body.m-right__md,
+.callout.m-right__md,
+.label.m-right__md,
+.caption.m-right__md,
+.overline.m-right__md,
+.display1__bold.m-right__md,
+.display2__bold.m-right__md,
+.title1__bold.m-right__md,
+.title2__bold.m-right__md,
+.title3__bold.m-right__md,
+.heading__bold.m-right__md,
+.subheading__bold.m-right__md,
+.body__bold.m-right__md,
+.callout__bold.m-right__md,
+.label__bold.m-right__md,
+.caption__bold.m-right__md,
+.overline__bold.m-right__md {
+  margin-right: var(--md);
+}
+
+.display1.m-right__lg,
+.display2.m-right__lg,
+.title1.m-right__lg,
+.title2.m-right__lg,
+.title3.m-right__lg,
+.heading.m-right__lg,
+.subheading.m-right__lg,
+.body.m-right__lg,
+.callout.m-right__lg,
+.label.m-right__lg,
+.caption.m-right__lg,
+.overline.m-right__lg,
+.display1__bold.m-right__lg,
+.display2__bold.m-right__lg,
+.title1__bold.m-right__lg,
+.title2__bold.m-right__lg,
+.title3__bold.m-right__lg,
+.heading__bold.m-right__lg,
+.subheading__bold.m-right__lg,
+.body__bold.m-right__lg,
+.callout__bold.m-right__lg,
+.label__bold.m-right__lg,
+.caption__bold.m-right__lg,
+.overline__bold.m-right__lg {
+  margin-right: var(--lg);
+}
+
+.display1.m-right__xl,
+.display2.m-right__xl,
+.title1.m-right__xl,
+.title2.m-right__xl,
+.title3.m-right__xl,
+.heading.m-right__xl,
+.subheading.m-right__xl,
+.body.m-right__xl,
+.callout.m-right__xl,
+.label.m-right__xl,
+.caption.m-right__xl,
+.overline.m-right__xl,
+.display1__bold.m-right__xl,
+.display2__bold.m-right__xl,
+.title1__bold.m-right__xl,
+.title2__bold.m-right__xl,
+.title3__bold.m-right__xl,
+.heading__bold.m-right__xl,
+.subheading__bold.m-right__xl,
+.body__bold.m-right__xl,
+.callout__bold.m-right__xl,
+.label__bold.m-right__xl,
+.caption__bold.m-right__xl,
+.overline__bold.m-right__xl {
+  margin-right: var(--xl);
+}
+
+.display1.m-right__2xl,
+.display2.m-right__2xl,
+.title1.m-right__2xl,
+.title2.m-right__2xl,
+.title3.m-right__2xl,
+.heading.m-right__2xl,
+.subheading.m-right__2xl,
+.body.m-right__2xl,
+.callout.m-right__2xl,
+.label.m-right__2xl,
+.caption.m-right__2xl,
+.overline.m-right__2xl,
+.display1__bold.m-right__2xl,
+.display2__bold.m-right__2xl,
+.title1__bold.m-right__2xl,
+.title2__bold.m-right__2xl,
+.title3__bold.m-right__2xl,
+.heading__bold.m-right__2xl,
+.subheading__bold.m-right__2xl,
+.body__bold.m-right__2xl,
+.callout__bold.m-right__2xl,
+.label__bold.m-right__2xl,
+.caption__bold.m-right__2xl,
+.overline__bold.m-right__2xl {
+  margin-right: var(--2xl);
+}
+
+.display1.m-bottom__2xs,
+.display2.m-bottom__2xs,
+.title1.m-bottom__2xs,
+.title2.m-bottom__2xs,
+.title3.m-bottom__2xs,
+.heading.m-bottom__2xs,
+.subheading.m-bottom__2xs,
+.body.m-bottom__2xs,
+.callout.m-bottom__2xs,
+.label.m-bottom__2xs,
+.caption.m-bottom__2xs,
+.overline.m-bottom__2xs,
+.display1__bold.m-bottom__2xs,
+.display2__bold.m-bottom__2xs,
+.title1__bold.m-bottom__2xs,
+.title2__bold.m-bottom__2xs,
+.title3__bold.m-bottom__2xs,
+.heading__bold.m-bottom__2xs,
+.subheading__bold.m-bottom__2xs,
+.body__bold.m-bottom__2xs,
+.callout__bold.m-bottom__2xs,
+.label__bold.m-bottom__2xs,
+.caption__bold.m-bottom__2xs,
+.overline__bold.m-bottom__2xs {
+  margin-bottom: var(--2xs);
+}
+
+.display1.m-bottom__xs,
+.display2.m-bottom__xs,
+.title1.m-bottom__xs,
+.title2.m-bottom__xs,
+.title3.m-bottom__xs,
+.heading.m-bottom__xs,
+.subheading.m-bottom__xs,
+.body.m-bottom__xs,
+.callout.m-bottom__xs,
+.label.m-bottom__xs,
+.caption.m-bottom__xs,
+.overline.m-bottom__xs,
+.display1__bold.m-bottom__xs,
+.display2__bold.m-bottom__xs,
+.title1__bold.m-bottom__xs,
+.title2__bold.m-bottom__xs,
+.title3__bold.m-bottom__xs,
+.heading__bold.m-bottom__xs,
+.subheading__bold.m-bottom__xs,
+.body__bold.m-bottom__xs,
+.callout__bold.m-bottom__xs,
+.label__bold.m-bottom__xs,
+.caption__bold.m-bottom__xs,
+.overline__bold.m-bottom__xs {
+  margin-bottom: var(--xs);
+}
+
+.display1.m-bottom__sm,
+.display2.m-bottom__sm,
+.title1.m-bottom__sm,
+.title2.m-bottom__sm,
+.title3.m-bottom__sm,
+.heading.m-bottom__sm,
+.subheading.m-bottom__sm,
+.body.m-bottom__sm,
+.callout.m-bottom__sm,
+.label.m-bottom__sm,
+.caption.m-bottom__sm,
+.overline.m-bottom__sm,
+.display1__bold.m-bottom__sm,
+.display2__bold.m-bottom__sm,
+.title1__bold.m-bottom__sm,
+.title2__bold.m-bottom__sm,
+.title3__bold.m-bottom__sm,
+.heading__bold.m-bottom__sm,
+.subheading__bold.m-bottom__sm,
+.body__bold.m-bottom__sm,
+.callout__bold.m-bottom__sm,
+.label__bold.m-bottom__sm,
+.caption__bold.m-bottom__sm,
+.overline__bold.m-bottom__sm {
+  margin-bottom: var(--sm);
+}
+/* Repeat for other margin directions and sizes */
+
+.display1.m-bottom__md,
+.display2.m-bottom__md,
+.title1.m-bottom__md,
+.title2.m-bottom__md,
+.title3.m-bottom__md,
+.heading.m-bottom__md,
+.subheading.m-bottom__md,
+.body.m-bottom__md,
+.callout.m-bottom__md,
+.label.m-bottom__md,
+.caption.m-bottom__md,
+.overline.m-bottom__md,
+.display1__bold.m-bottom__md,
+.display2__bold.m-bottom__md,
+.title1__bold.m-bottom__md,
+.title2__bold.m-bottom__md,
+.title3__bold.m-bottom__md,
+.heading__bold.m-bottom__md,
+.subheading__bold.m-bottom__md,
+.body__bold.m-bottom__md,
+.callout__bold.m-bottom__md,
+.label__bold.m-bottom__md,
+.caption__bold.m-bottom__md,
+.overline__bold.m-bottom__md {
+  margin-bottom: var(--md);
+}
+
+.display1.m-bottom__lg,
+.display2.m-bottom__lg,
+.title1.m-bottom__lg,
+.title2.m-bottom__lg,
+.title3.m-bottom__lg,
+.heading.m-bottom__lg,
+.subheading.m-bottom__lg,
+.body.m-bottom__lg,
+.callout.m-bottom__lg,
+.label.m-bottom__lg,
+.caption.m-bottom__lg,
+.overline.m-bottom__lg,
+.display1__bold.m-bottom__lg,
+.display2__bold.m-bottom__lg,
+.title1__bold.m-bottom__lg,
+.title2__bold.m-bottom__lg,
+.title3__bold.m-bottom__lg,
+.heading__bold.m-bottom__lg,
+.subheading__bold.m-bottom__lg,
+.body__bold.m-bottom__lg,
+.callout__bold.m-bottom__lg,
+.label__bold.m-bottom__lg,
+.caption__bold.m-bottom__lg,
+.overline__bold.m-bottom__lg {
+  margin-bottom: var(--lg);
+}
+
+.display1.m-bottom__xl,
+.display2.m-bottom__xl,
+.title1.m-bottom__xl,
+.title2.m-bottom__xl,
+.title3.m-bottom__xl,
+.heading.m-bottom__xl,
+.subheading.m-bottom__xl,
+.body.m-bottom__xl,
+.callout.m-bottom__xl,
+.label.m-bottom__xl,
+.caption.m-bottom__xl,
+.overline.m-bottom__xl,
+.display1__bold.m-bottom__xl,
+.display2__bold.m-bottom__xl,
+.title1__bold.m-bottom__xl,
+.title2__bold.m-bottom__xl,
+.title3__bold.m-bottom__xl,
+.heading__bold.m-bottom__xl,
+.subheading__bold.m-bottom__xl,
+.body__bold.m-bottom__xl,
+.callout__bold.m-bottom__xl,
+.label__bold.m-bottom__xl,
+.caption__bold.m-bottom__xl,
+.overline__bold.m-bottom__xl {
+  margin-bottom: var(--xl);
+}
+
+.display1.m-bottom__2xl,
+.display2.m-bottom__2xl,
+.title1.m-bottom__2xl,
+.title2.m-bottom__2xl,
+.title3.m-bottom__2xl,
+.heading.m-bottom__2xl,
+.subheading.m-bottom__2xl,
+.body.m-bottom__2xl,
+.callout.m-bottom__2xl,
+.label.m-bottom__2xl,
+.caption.m-bottom__2xl,
+.overline.m-bottom__2xl,
+.display1__bold.m-bottom__2xl,
+.display2__bold.m-bottom__2xl,
+.title1__bold.m-bottom__2xl,
+.title2__bold.m-bottom__2xl,
+.title3__bold.m-bottom__2xl,
+.heading__bold.m-bottom__2xl,
+.subheading__bold.m-bottom__2xl,
+.body__bold.m-bottom__2xl,
+.callout__bold.m-bottom__2xl,
+.label__bold.m-bottom__2xl,
+.caption__bold.m-bottom__2xl,
+.overline__bold.m-bottom__2xl {
+  margin-bottom: var(--2xl);
+}
+
+.display1.m-left__2xs,
+.display2.m-left__2xs,
+.title1.m-left__2xs,
+.title2.m-left__2xs,
+.title3.m-left__2xs,
+.heading.m-left__2xs,
+.subheading.m-left__2xs,
+.body.m-left__2xs,
+.callout.m-left__2xs,
+.label.m-left__2xs,
+.caption.m-left__2xs,
+.overline.m-left__2xs,
+.display1__bold.m-left__2xs,
+.display2__bold.m-left__2xs,
+.title1__bold.m-left__2xs,
+.title2__bold.m-left__2xs,
+.title3__bold.m-left__2xs,
+.heading__bold.m-left__2xs,
+.subheading__bold.m-left__2xs,
+.body__bold.m-left__2xs,
+.callout__bold.m-left__2xs,
+.label__bold.m-left__2xs,
+.caption__bold.m-left__2xs,
+.overline__bold.m-left__2xs {
+  margin-left: var(--2xs);
+}
+
+.display1.m-left__xs,
+.display2.m-left__xs,
+.title1.m-left__xs,
+.title2.m-left__xs,
+.title3.m-left__xs,
+.heading.m-left__xs,
+.subheading.m-left__xs,
+.body.m-left__xs,
+.callout.m-left__xs,
+.label.m-left__xs,
+.caption.m-left__xs,
+.overline.m-left__xs,
+.display1__bold.m-left__xs,
+.display2__bold.m-left__xs,
+.title1__bold.m-left__xs,
+.title2__bold.m-left__xs,
+.title3__bold.m-left__xs,
+.heading__bold.m-left__xs,
+.subheading__bold.m-left__xs,
+.body__bold.m-left__xs,
+.callout__bold.m-left__xs,
+.label__bold.m-left__xs,
+.caption__bold.m-left__xs,
+.overline__bold.m-left__xs {
+  margin-left: var(--xs);
+}
+
+.display1.m-left__sm,
+.display2.m-left__sm,
+.title1.m-left__sm,
+.title2.m-left__sm,
+.title3.m-left__sm,
+.heading.m-left__sm,
+.subheading.m-left__sm,
+.body.m-left__sm,
+.callout.m-left__sm,
+.label.m-left__sm,
+.caption.m-left__sm,
+.overline.m-left__sm,
+.display1__bold.m-left__sm,
+.display2__bold.m-left__sm,
+.title1__bold.m-left__sm,
+.title2__bold.m-left__sm,
+.title3__bold.m-left__sm,
+.heading__bold.m-left__sm,
+.subheading__bold.m-left__sm,
+.body__bold.m-left__sm,
+.callout__bold.m-left__sm,
+.label__bold.m-left__sm,
+.caption__bold.m-left__sm,
+.overline__bold.m-left__sm {
+  margin-left: var(--sm);
+}
+/* Repeat for other margin directions and sizes */
+
+.display1.m-left__md,
+.display2.m-left__md,
+.title1.m-left__md,
+.title2.m-left__md,
+.title3.m-left__md,
+.heading.m-left__md,
+.subheading.m-left__md,
+.body.m-left__md,
+.callout.m-left__md,
+.label.m-left__md,
+.caption.m-left__md,
+.overline.m-left__md,
+.display1__bold.m-left__md,
+.display2__bold.m-left__md,
+.title1__bold.m-left__md,
+.title2__bold.m-left__md,
+.title3__bold.m-left__md,
+.heading__bold.m-left__md,
+.subheading__bold.m-left__md,
+.body__bold.m-left__md,
+.callout__bold.m-left__md,
+.label__bold.m-left__md,
+.caption__bold.m-left__md,
+.overline__bold.m-left__md {
+  margin-left: var(--md);
+}
+
+.display1.m-left__lg,
+.display2.m-left__lg,
+.title1.m-left__lg,
+.title2.m-left__lg,
+.title3.m-left__lg,
+.heading.m-left__lg,
+.subheading.m-left__lg,
+.body.m-left__lg,
+.callout.m-left__lg,
+.label.m-left__lg,
+.caption.m-left__lg,
+.overline.m-left__lg,
+.display1__bold.m-left__lg,
+.display2__bold.m-left__lg,
+.title1__bold.m-left__lg,
+.title2__bold.m-left__lg,
+.title3__bold.m-left__lg,
+.heading__bold.m-left__lg,
+.subheading__bold.m-left__lg,
+.body__bold.m-left__lg,
+.callout__bold.m-left__lg,
+.label__bold.m-left__lg,
+.caption__bold.m-left__lg,
+.overline__bold.m-left__lg {
+  margin-left: var(--lg);
+}
+
+.display1.m-left__xl,
+.display2.m-left__xl,
+.title1.m-left__xl,
+.title2.m-left__xl,
+.title3.m-left__xl,
+.heading.m-left__xl,
+.subheading.m-left__xl,
+.body.m-left__xl,
+.callout.m-left__xl,
+.label.m-left__xl,
+.caption.m-left__xl,
+.overline.m-left__xl,
+.display1__bold.m-left__xl,
+.display2__bold.m-left__xl,
+.title1__bold.m-left__xl,
+.title2__bold.m-left__xl,
+.title3__bold.m-left__xl,
+.heading__bold.m-left__xl,
+.subheading__bold.m-left__xl,
+.body__bold.m-left__xl,
+.callout__bold.m-left__xl,
+.label__bold.m-left__xl,
+.caption__bold.m-left__xl,
+.overline__bold.m-left__xl {
+  margin-left: var(--xl);
+}
+
+.display1.m-left__2xl,
+.display2.m-left__2xl,
+.title1.m-left__2xl,
+.title2.m-left__2xl,
+.title3.m-left__2xl,
+.heading.m-left__2xl,
+.subheading.m-left__2xl,
+.body.m-left__2xl,
+.callout.m-left__2xl,
+.label.m-left__2xl,
+.caption.m-left__2xl,
+.overline.m-left__2xl,
+.display1__bold.m-left__2xl,
+.display2__bold.m-left__2xl,
+.title1__bold.m-left__2xl,
+.title2__bold.m-left__2xl,
+.title3__bold.m-left__2xl,
+.heading__bold.m-left__2xl,
+.subheading__bold.m-left__2xl,
+.body__bold.m-left__2xl,
+.callout__bold.m-left__2xl,
+.label__bold.m-left__2xl,
+.caption__bold.m-left__2xl,
+.overline__bold.m-left__2xl {
+  margin-left: var(--2xl);
+}

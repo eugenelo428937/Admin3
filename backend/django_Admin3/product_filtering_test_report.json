@@ -1,0 +1,64 @@
+{
+  "timestamp": "2025-07-23T17:19:18.745258",
+  "summary": {
+    "total_tests": 9,
+    "passed_tests": 5,
+    "failed_tests": 4
+  },
+  "test_results": [
+    {
+      "test": "Filter Configuration Exists",
+      "status": "PASS",
+      "details": "Found SUBJECT_FILTER config: type=subject, key=subject",
+      "timestamp": "2025-07-23T17:19:18.183836"
+    },
+    {
+      "test": "Filter Service Loads Strategy",
+      "status": "PASS",
+      "details": "SUBJECT_FILTER strategy loaded: SubjectFilterStrategy",
+      "timestamp": "2025-07-23T17:19:18.183836"
+    },
+    {
+      "test": "Database Relationships",
+      "status": "PASS",
+      "details": "Total products: 393, CS2: 22, CB1: 18",
+      "timestamp": "2025-07-23T17:19:18.195830"
+    },
+    {
+      "test": "Filter Service Direct Test",
+      "status": "PASS",
+      "details": "Base: 393 \u2192 Filtered: 22, All CS2: True",
+      "timestamp": "2025-07-23T17:19:18.216915"
+    },
+    {
+      "test": "Filter Service Direct Test",
+      "status": "FAIL",
+      "details": "Filter service error: 'charmap' codec can't encode character '\\u2192' in position 23: character maps to <undefined>",
+      "timestamp": "2025-07-23T17:19:18.216915"
+    },
+    {
+      "test": "API Endpoint (No Filter)",
+      "status": "FAIL",
+      "details": "API returned status 400",
+      "timestamp": "2025-07-23T17:19:18.740208"
+    },
+    {
+      "test": "API Endpoint (CS2 Filter)",
+      "status": "FAIL",
+      "details": "API returned status 400",
+      "timestamp": "2025-07-23T17:19:18.741256"
+    },
+    {
+      "test": "Frontend Simulation",
+      "status": "FAIL",
+      "details": "API returned status 400",
+      "timestamp": "2025-07-23T17:19:18.741256"
+    },
+    {
+      "test": "Subjects Exist in Database",
+      "status": "PASS",
+      "details": "CS2 exists: True, CB1 exists: True, Total active subjects: 24",
+      "timestamp": "2025-07-23T17:19:18.745258"
+    }
+  ]
+}

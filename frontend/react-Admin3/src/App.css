@@ -1,3 +1,31 @@
+@import "./styles/custom-bootstrap.css";
+@import "./styles/liftkit-css/globals.css";
+@import "./styles/liftkit-css/align-items.css";
+@import "./styles/liftkit-css/align-self.css";
+@import "./styles/liftkit-css/aspect-ratios.css";
+@import "./styles/liftkit-css/background-colors.css";
+@import "./styles/liftkit-css/border-radius.css";
+@import "./styles/liftkit-css/containers.css";
+@import "./styles/liftkit-css/display.css";
+@import "./styles/liftkit-css/flexboxes.css";
+@import "./styles/liftkit-css/font-color.css";
+@import "./styles/liftkit-css/gaps.css";
+@import "./styles/liftkit-css/grid.css";
+@import "./styles/liftkit-css/icons.css";
+@import "./styles/liftkit-css/justify-content.css";
+@import "./styles/liftkit-css/margins.css";
+@import "./styles/liftkit-css/normalize.css";
+@import "./styles/liftkit-css/opacity.css";
+@import "./styles/liftkit-css/overflow.css";
+@import "./styles/liftkit-css/padding.css";
+@import "./styles/liftkit-css/position.css";
+@import "./styles/liftkit-css/scale.css";
+@import "./styles/liftkit-css/sections.css";
+@import "./styles/liftkit-css/shadows.css";
+@import "./styles/liftkit-css/state-layers.css";
+@import "./styles/liftkit-css/text-alignment.css";
+@import "./styles/liftkit-css/typography.css";
+
 .App {
   text-align: center;
 }

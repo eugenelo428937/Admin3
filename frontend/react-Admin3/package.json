@@ -1,65 +1,72 @@
 {
-	"name": "admin3",
-	"version": "0.1.0",
-	"private": true,
-	"dependencies": {
-		"@chainlift/liftkit-css": "^1.1.1",
-		"@emotion/react": "^11.14.0",
-		"@emotion/styled": "^11.14.0",
-		"@fontsource/poppins": "^5.2.6",
-		"@mui/icons-material": "^7.1.1",
-		"@mui/material": "^7.1.0",
-		"axios": "^1.8.4",
-		"bootstrap": "^5.3.5",
-		"bootstrap-icons": "^1.11.3",
-		"moment": "^2.30.1",
-		"node": "^24.4.0",
-		"react": "^19.1.0",
-		"react-bootstrap": "^2.10.9",
-		"react-bootstrap-icons": "^1.11.5",
-		"react-dom": "^19.1.0",
-		"react-google-recaptcha": "^3.1.0",
-		"react-google-recaptcha-v3": "^1.11.0",
-		"react-papaparse": "^4.4.0",
-		"react-router-bootstrap": "^0.26.3",
-		"react-router-dom": "^7.5.0",
-		"react-select": "^5.10.1",
-		"web-vitals": "^5.0.3"
-	},
-	"devDependencies": {
-		"@babel/core": "^7.26.10",
-		"@babel/plugin-transform-runtime": "^7.26.10",
-		"@babel/preset-env": "^7.26.9",
-		"@babel/preset-react": "^7.26.3",
-		"@testing-library/dom": "^10.4.0",
-		"@testing-library/jest-dom": "^6.6.3",
-		"@testing-library/react": "^16.3.0",
-		"@testing-library/user-event": "^14.6.1",
-		"react-scripts": "^5.0.1"
-	},
-	"scripts": {
-		"start": "react-scripts start",
-		"start:uat": "copy .env.uat .env && react-scripts start",
-		"build": "react-scripts build",
-		"test": "react-scripts test",
-		"eject": "react-scripts eject"
-	},
-	"eslintConfig": {
-		"extends": [
-			"react-app",
-			"react-app/jest"
-		]
-	},
-	"browserslist": {
-		"production": [
-			">0.2%",
-			"not dead",
-			"not op_mini all"
-		],
-		"development": [
-			"last 1 chrome version",
-			"last 1 firefox version",
-			"last 1 safari version"
-		]
-	}
+  "name": "admin3",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@csstools/normalize.css": "^12.1.1",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@fontsource-variable/dm-sans": "^5.2.6",
+    "@fontsource-variable/inter": "^5.2.6",
+    "@fontsource/dm-sans": "^5.2.6",
+    "@fontsource/poppins": "^5.2.6",
+    "@material/material-color-utilities": "^0.3.0",
+    "@mui/icons-material": "^7.1.1",
+    "@mui/material": "^7.1.0",
+    "axios": "^1.8.4",
+    "bootstrap": "^5.3.5",
+    "bootstrap-icons": "^1.11.3",
+    "lucide-react": "^0.525.0",
+    "moment": "^2.30.1",
+    "node": "^24.4.0",
+    "react": "^19.1.0",
+    "react-bootstrap": "^2.10.9",
+    "react-bootstrap-icons": "^1.11.5",
+    "react-dom": "^19.1.0",
+    "react-google-recaptcha": "^3.1.0",
+    "react-google-recaptcha-v3": "^1.11.0",
+    "react-papaparse": "^4.4.0",
+    "react-router-bootstrap": "^0.26.3",
+    "react-router-dom": "^7.5.0",
+    "react-select": "^5.10.1",
+    "web-vitals": "^5.0.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.10",
+    "@babel/plugin-transform-runtime": "^7.26.10",
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.26.3",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "react-scripts": "^5.0.1",
+    "shadcn": "^2.7.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "start:uat": "copy .env.uat .env && react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "add": "liftkit add"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }

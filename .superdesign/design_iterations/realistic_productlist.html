@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realistic ProductList - Admin3 Educational Store</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="realistic_productlist_theme.css">
+    
+    <style>
+        /* Enhanced Animations */
+        .realistic-product-card {
+            animation: fadeIn 0.6s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .realistic-product-card:nth-child(1) { animation-delay: 0ms; }
+        .realistic-product-card:nth-child(2) { animation-delay: 120ms; }
+        .realistic-product-card:nth-child(3) { animation-delay: 240ms; }
+        .realistic-product-card:nth-child(4) { animation-delay: 360ms; }
+        .realistic-product-card:nth-child(5) { animation-delay: 480ms; }
+        .realistic-product-card:nth-child(6) { animation-delay: 600ms; }
+        .realistic-product-card:nth-child(7) { animation-delay: 720ms; }
+        .realistic-product-card:nth-child(8) { animation-delay: 840ms; }
+        .realistic-product-card:nth-child(9) { animation-delay: 960ms; }
+        
+        .product-type-icon:hover {
+            animation: pulse 0.4s ease-out;
+            transform: scale(1.05);
+        }
+        
+        .urgent-warning {
+            animation: urgentFlash 2s infinite;
+        }
+        
+        @keyframes urgentFlash {
+            0%, 100% { background: oklch(from var(--urgent) l c h / 0.12); }
+            50% { background: oklch(from var(--urgent) l c h / 0.2); }
+        }
+        
+        .savings-highlight {
+            animation: bounce 0.8s ease-out;
+        }
+        
+        .filter-chip-enter {
+            animation: chipSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        @keyframes chipSlideIn {
+            from { transform: translateX(-20px) scale(0.8); opacity: 0; }
+            to { transform: translateX(0) scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="realistic-product-list">
+        <!-- Enhanced Header -->
+        <header class="product-header">
+            <div class="header-left">
+                <h1 class="header-title">
+                    <i data-lucide="graduation-cap"></i>
+                    Products
+                    <span class="product-count">(1,234)</span>
+                </h1>
+            </div>
+            
+            <div class="header-controls">
+                <!-- Search Integration -->
+                <div style="position: relative;">
+                    <input type="text" placeholder="Search products..." 
+                           style="padding: 0.625rem 2.5rem 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: var(--text-sm); width: 280px;">
+                    <i data-lucide="search" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--muted-foreground); width: 1rem; height: 1rem;"></i>
+                </div>
+                
+                <!-- View Controls -->
+                <div class="view-controls">
+                    <button class="view-control-btn active" id="gridView">
+                        <i data-lucide="grid-3x3"></i>
+                        Grid
+                    </button>
+                    <button class="view-control-btn" id="listView">
+                        <i data-lucide="list"></i>
+                        List
+                    </button>
+                </div>
+                
+                <!-- Sort Dropdown -->
+                <select style="padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--card); font-size: var(--text-sm);">
+                    <option>Sort: Price ↓</option>
+                    <option>Sort: Price ↑</option>
+                    <option>Sort: Name A-Z</option>
+                    <option>Sort: Deadline</option>
+                    <option>Sort: Subject</option>
+                    <option>Sort: Popular</option>
+                </select>
+                
+                <!-- VAT Toggle -->
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: var(--text-sm); cursor: pointer;">
+                    <input type="checkbox" id="vatToggle" style="width: 1rem; height: 1rem;">
+                    <span>Include VAT</span>
+                </label>
+            </div>
+        </header>
+        
+        <!-- Active Filters Section -->
+        <div class="active-filters-section">
+            <div class="active-filters-row">
+                <div class="active-filter-chip math filter-chip-enter">
+                    <i data-lucide="calculator"></i>
+                    <span>Mathematics</span>
+                    <i data-lucide="x" class="remove-filter-icon" style="width: 0.875rem; height: 0.875rem; cursor: pointer;"></i>
+                </div>
+                <div class="active-filter-chip materials filter-chip-enter" style="animation-delay: 100ms;">
+                    <i data-lucide="book-open"></i>
+                    <span>Materials</span>
+                    <i data-lucide="x" class="remove-filter-icon" style="width: 0.875rem; height: 0.875rem; cursor: pointer;"></i>
+                </div>
+                <div class="active-filter-chip tutorials filter-chip-enter" style="animation-delay: 200ms;">
+                    <i data-lucide="video"></i>
+                    <span>Tutorials</span>
+                    <i data-lucide="x" class="remove-filter-icon" style="width: 0.875rem; height: 0.875rem; cursor: pointer;"></i>
+                </div>
+                <div class="active-filter-chip" style="background: var(--muted); color: var(--muted-foreground); animation-delay: 300ms;">
+                    <i data-lucide="dollar-sign"></i>
+                    <span>$50 - $300</span>
+                    <i data-lucide="x" class="remove-filter-icon" style="width: 0.875rem; height: 0.875rem; cursor: pointer;"></i>
+                </div>
+                <button style="background: transparent; border: 1px solid var(--border); color: var(--muted-foreground); padding: 0.5rem 1rem; border-radius: var(--radius-sm); font-size: var(--text-sm); cursor: pointer; display: flex; align-items: center; gap: 0.375rem; transition: all var(--transition-fast);" 
+                        onmouseover="this.style.background='var(--muted)'" 
+                        onmouseout="this.style.background='transparent'">
+                    <i data-lucide="x-circle" style="width: 1rem; height: 1rem;"></i>
+                    Clear All
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Layout -->
+        <div class="product-main-layout">
+            <!-- Realistic Filter Panel -->
+            <aside class="realistic-filter-panel">
+                <div class="filter-panel-header">
+                    <h3 class="filter-panel-title">
+                        <i data-lucide="filter"></i>
+                        Filters
+                    </h3>
+                    <button style="background: transparent; border: none; color: var(--muted-foreground); cursor: pointer;">
+                        <i data-lucide="rotate-ccw" style="width: 1.125rem; height: 1.125rem;"></i>
+                    </button>
+                </div>
+                
+                <!-- Subject Filter -->
+                <div class="filter-section">
+                    <h4 class="filter-section-title">
+                        <i data-lucide="graduation-cap"></i>
+                        Subject
+                    </h4>
+                    <div style="display: flex; flex-direction: column; gap: 0.375rem;">
+                        <div class="filter-option">
+                            <label class="filter-option-label">
+                                <input type="checkbox" checked style="width: 1rem; height: 1rem;">
+                                <span>Mathematics</span>
+                            </label>
+                            <span class="filter-count">234</span>
+                        </div>
+                        <div class="filter-option">
+                            <label class="filter-option-label">
+                                <input type="checkbox" style="width: 1rem; height: 1rem;">
+                                <span>Science</span>
+                            </label>
+                            <span class="filter-count">189</span>
+                        </div>
+                        <div class="filter-option">
+                            <label class="filter-option-label">
+                                <input type="checkbox" style="width: 1rem; height: 1rem;">
+                                <span>English</span>
+                            </label>
+                            <span class="filter-count">156</span>
+                        </div>
+                        <div class="filter-option">
+                            <label class="filter-option-label">
+                                <input type="checkbox" style="width: 1rem; height: 1rem;">
+                                <span>History</span>
+                            </label>
+                            <span class="filter-count">98</span>
+                        </div>
+                        <div class="filter-option">
+                            <label class="filter-option-label">
+                                <input type="checkbox" style="width: 1rem; height: 1rem;">
+                                <span>Geography</span>
+                            </label>
+                            <span class="filter-count">67</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Category Filter -->
+                <div class="filter-section">
+                    <h4 class="filter-section-title">
+                        <i data-lucide="tag"></i>
+                        Category
+                    </h4>
+                    <div style="display: flex; flex-direction: column; gap: 0.375rem;">
+                        <div class="filter-option">
+                            <label class="filter-option-label">
+                                <input type="checkbox" checked style="width: 1rem; height: 1rem;">
+                                <span>Materials</span>
+                            </label>
+                            <span class="filter-count">445</span>
+                        </div>
+                        <div class="filter-option">
+                            <label class="filter-option-label">
+                                <input type="checkbox" checked style="width: 1rem; height: 1rem;">
+                                <span>Tutorials</span>
+                            </label>
+                            <span class="filter-count">234</span>
+                        </div>
+                        <div class="filter-option">
+                            <label class="filter-option-label">
+                                <input type="checkbox" style="width: 1rem; height: 1rem;">
+                                <span>Online Classes</span>
+                            </label>
+                            <span class="filter-count">167</span>
+                        </div>
+                        <div class="filter-option">
+                            <label class="filter-option-label">
+                                <input type="checkbox" style="width: 1rem; height: 1rem;">
+                                <span>Marking</span>
+                            </label>
+                            <span class="filter-count">89</span>
+                        </div>
+                        <div class="filter-option">
+                            <label class="filter-option-label">
+                                <input type="checkbox" style="width: 1rem; height: 1rem;">
+                                <span>Bundles</span>
+                            </label>
+                            <span class="filter-count">56</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Location Filter -->
+                <div class="filter-section">
+                    <h4 class="filter-section-title">
+                        <i data-lucide="map-pin"></i>
+                        Location
+                    </h4>
+                    <div style="display: flex; flex-direction: column; gap: 0.375rem;">
+                        <div class="filter-option">
+                            <label class="filter-option-label">
+                                <input type="checkbox" style="width: 1rem; height: 1rem;">
+                                <span>Sydney</span>
+                            </label>
+                            <span class="filter-count">89</span>
+                        </div>
+                        <div class="filter-option">
+                            <label class="filter-option-label">
+                                <input type="checkbox" style="width: 1rem; height: 1rem;">
+                                <span>Melbourne</span>
+                            </label>
+                            <span class="filter-count">76</span>
+                        </div>
+                        <div class="filter-option">
+                            <label class="filter-option-label">
+                                <input type="checkbox" style="width: 1rem; height: 1rem;">
+                                <span>Brisbane</span>
+                            </label>
+                            <span class="filter-count">54</span>
+                        </div>
+                        <div class="filter-option">
+                            <label class="filter-option-label">
+                                <input type="checkbox" style="width: 1rem; height: 1rem;">
+                                <span>Perth</span>
+                            </label>
+                            <span class="filter-count">32</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Price Range Filter -->
+                <div class="filter-section">
+                    <h4 class="filter-section-title">
+                        <i data-lucide="dollar-sign"></i>
+                        Price Range
+                    </h4>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="number" placeholder="Min" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: var(--text-sm);">
+                            <input type="number" placeholder="Max" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: var(--text-sm);">
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.375rem;">
+                            <div class="filter-option">
+                                <label class="filter-option-label">
+                                    <input type="checkbox" style="width: 1rem; height: 1rem;">
+                                    <span>Under $50</span>
+                                </label>
+                                <span class="filter-count">89</span>
+                            </div>
+                            <div class="filter-option">
+                                <label class="filter-option-label">
+                                    <input type="checkbox" checked style="width: 1rem; height: 1rem;">
+                                    <span>$50 - $150</span>
+                                </label>
+                                <span class="filter-count">234</span>
+                            </div>
+                            <div class="filter-option">
+                                <label class="filter-option-label">
+                                    <input type="checkbox" style="width: 1rem; height: 1rem;">
+                                    <span>$150 - $300</span>
+                                </label>
+                                <span class="filter-count">156</span>
+                            </div>
+                            <div class="filter-option">
+                                <label class="filter-option-label">
+                                    <input type="checkbox" style="width: 1rem; height: 1rem;">
+                                    <span>$300+</span>
+                                </label>
+                                <span class="filter-count">67</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+            
+            <!-- Realistic Product Grid -->
+            <main class="realistic-product-grid">
+                <!-- Mathematics Materials Card -->
+                <div class="realistic-product-card">
+                    <div class="urgency-indicator normal"></div>
+                    <div class="product-card-header">
+                        <div class="product-type-icon materials">
+                            <i data-lucide="book-open"></i>
+                        </div>
+                        <div class="product-info-section">
+                            <h3 class="product-title">Advanced Mathematics Materials</h3>
+                            <p class="product-subtitle">Year 12 Complete Package • HSC Preparation</p>
+                        </div>
+                    </div>
+                    <div class="product-badges">
+                        <span class="product-badge variation">
+                            <i data-lucide="file-text"></i>
+                            Print Edition
+                        </span>
+                        <span class="product-badge popular">
+                            <i data-lucide="star"></i>
+                            Popular
+                        </span>
+                        <span class="product-badge">
+                            <i data-lucide="truck"></i>
+                            Free Shipping
+                        </span>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-pricing">
+                            <div class="main-price">$89.99</div>
+                            <div class="price-label">Excl. VAT</div>
+                        </div>
+                        <button class="add-to-cart-button">
+                            <i data-lucide="shopping-cart"></i>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Tutorial Live Session Card -->
+                <div class="realistic-product-card">
+                    <div class="urgency-indicator warning"></div>
+                    <div class="product-card-header">
+                        <div class="product-type-icon tutorials">
+                            <i data-lucide="video"></i>
+                        </div>
+                        <div class="product-info-section">
+                            <h3 class="product-title">Physics Tutorial Sessions</h3>
+                            <p class="product-subtitle">Live Interactive Classes • Weekly Sessions</p>
+                        </div>
+                    </div>
+                    <div class="product-badges">
+                        <span class="product-badge location">
+                            <i data-lucide="map-pin"></i>
+                            Sydney CBD
+                        </span>
+                        <span class="product-badge">
+                            <i data-lucide="users"></i>
+                            12 Events
+                        </span>
+                        <span class="product-badge deadline">
+                            <i data-lucide="calendar"></i>
+                            Starts Mar 15
+                        </span>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-pricing">
+                            <div class="main-price">$199.99</div>
+                            <div class="price-label">Excl. VAT</div>
+                        </div>
+                        <button class="add-to-cart-button">
+                            <i data-lucide="shopping-cart"></i>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Marking Voucher Card (Urgent) -->
+                <div class="realistic-product-card urgent">
+                    <div class="urgency-indicator urgent"></div>
+                    <div class="product-card-header">
+                        <div class="product-type-icon voucher">
+                            <i data-lucide="ticket"></i>
+                        </div>
+                        <div class="product-info-section">
+                            <h3 class="product-title">Essay Marking Voucher</h3>
+                            <p class="product-subtitle">Professional Feedback • Expert Analysis</p>
+                        </div>
+                    </div>
+                    <div class="product-badges">
+                        <span class="product-badge urgent urgent-warning">
+                            <i data-lucide="clock"></i>
+                            Expires in 5 days
+                        </span>
+                        <span class="product-badge digital">
+                            <i data-lucide="zap"></i>
+                            Instant Access
+                        </span>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-pricing">
+                            <div class="main-price">$25.00</div>
+                            <div class="price-label">Excl. VAT</div>
+                        </div>
+                        <button class="add-to-cart-button">
+                            <i data-lucide="shopping-cart"></i>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Online Classroom Card -->
+                <div class="realistic-product-card">
+                    <div class="urgency-indicator normal"></div>
+                    <div class="product-card-header">
+                        <div class="product-type-icon online">
+                            <i data-lucide="monitor"></i>
+                        </div>
+                        <div class="product-info-section">
+                            <h3 class="product-title">Chemistry Online Classroom</h3>
+                            <p class="product-subtitle">Recorded Sessions • LMS Access</p>
+                        </div>
+                    </div>
+                    <div class="product-badges">
+                        <span class="product-badge digital">
+                            <i data-lucide="play-circle"></i>
+                            Recordings
+                        </span>
+                        <span class="product-badge">
+                            <i data-lucide="infinity"></i>
+                            Lifetime Access
+                        </span>
+                        <span class="product-badge variation">
+                            <i data-lucide="desktop"></i>
+                            LMS Mode
+                        </span>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-pricing">
+                            <div class="main-price">$149.99</div>
+                            <div class="price-label">Excl. VAT</div>
+                        </div>
+                        <button class="add-to-cart-button">
+                            <i data-lucide="shopping-cart"></i>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Bundle Package Card -->
+                <div class="realistic-product-card">
+                    <div class="urgency-indicator normal"></div>
+                    <div class="product-card-header">
+                        <div class="product-type-icon bundle">
+                            <i data-lucide="package"></i>
+                        </div>
+                        <div class="product-info-section">
+                            <h3 class="product-title">Complete Study Bundle</h3>
+                            <p class="product-subtitle">Materials + Tutorials + Online Access</p>
+                        </div>
+                    </div>
+                    <div class="product-badges">
+                        <span class="product-badge bundle">
+                            <i data-lucide="layers"></i>
+                            3 Components
+                        </span>
+                        <span class="product-badge popular savings-highlight">
+                            <i data-lucide="percent"></i>
+                            Save $89
+                        </span>
+                        <span class="product-badge">
+                            <i data-lucide="gift"></i>
+                            Best Value
+                        </span>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-pricing">
+                            <div class="main-price">$299.99</div>
+                            <div class="price-label">Excl. VAT</div>
+                            <div class="savings-indicator">Was $389.97 • Save $89.98</div>
+                        </div>
+                        <button class="add-to-cart-button">
+                            <i data-lucide="shopping-cart"></i>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Exam Preparation Card -->
+                <div class="realistic-product-card">
+                    <div class="urgency-indicator normal"></div>
+                    <div class="product-card-header">
+                        <div class="product-type-icon exam">
+                            <i data-lucide="target"></i>
+                        </div>
+                        <div class="product-info-section">
+                            <h3 class="product-title">HSC Practice Exams</h3>
+                            <p class="product-subtitle">Past Papers • Worked Solutions • Statistics</p>
+                        </div>
+                    </div>
+                    <div class="product-badges">
+                        <span class="product-badge">
+                            <i data-lucide="file-check"></i>
+                            15 Exams
+                        </span>
+                        <span class="product-badge">
+                            <i data-lucide="bar-chart"></i>
+                            Performance Stats
+                        </span>
+                        <span class="product-badge digital">
+                            <i data-lucide="download"></i>
+                            PDF Download
+                        </span>
+                    </div>
+                    <div class="product-footer">
+                        <div class="product-pricing">
+                            <div class="main-price">$45.00</div>
+                            <div class="price-label">Excl. VAT</div>
+                        </div>
+                        <button class="add-to-cart-button">
+                            <i data-lucide="shopping-cart"></i>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Loading Skeleton Cards -->
+                <div class="realistic-product-card" style="opacity: 0.6;">
+                    <div class="product-card-header">
+                        <div class="realistic-loading-skeleton" style="width: 3.5rem; height: 3.5rem; border-radius: var(--radius-sm);"></div>
+                        <div class="product-info-section">
+                            <div class="realistic-loading-skeleton" style="height: 1.375rem; width: 85%; margin-bottom: 0.5rem;"></div>
+                            <div class="realistic-loading-skeleton" style="height: 1rem; width: 70%;"></div>
+                        </div>
+                    </div>
+                    <div class="product-badges" style="gap: 0.5rem;">
+                        <div class="realistic-loading-skeleton" style="height: 1.75rem; width: 4rem; border-radius: var(--radius-sm);"></div>
+                        <div class="realistic-loading-skeleton" style="height: 1.75rem; width: 3.5rem; border-radius: var(--radius-sm);"></div>
+                    </div>
+                    <div class="product-footer">
+                        <div class="realistic-loading-skeleton" style="height: 2rem; width: 5rem;"></div>
+                        <div class="realistic-loading-skeleton" style="height: 2.75rem; width: 7rem; border-radius: var(--radius-sm);"></div>
+                    </div>
+                </div>
+                
+                <div class="realistic-product-card" style="opacity: 0.6;">
+                    <div class="product-card-header">
+                        <div class="realistic-loading-skeleton" style="width: 3.5rem; height: 3.5rem; border-radius: var(--radius-sm);"></div>
+                        <div class="product-info-section">
+                            <div class="realistic-loading-skeleton" style="height: 1.375rem; width: 80%; margin-bottom: 0.5rem;"></div>
+                            <div class="realistic-loading-skeleton" style="height: 1rem; width: 65%;"></div>
+                        </div>
+                    </div>
+                    <div class="product-badges" style="gap: 0.5rem;">
+                        <div class="realistic-loading-skeleton" style="height: 1.75rem; width: 5rem; border-radius: var(--radius-sm);"></div>
+                        <div class="realistic-loading-skeleton" style="height: 1.75rem; width: 4rem; border-radius: var(--radius-sm);"></div>
+                    </div>
+                    <div class="product-footer">
+                        <div class="realistic-loading-skeleton" style="height: 2rem; width: 5.5rem;"></div>
+                        <div class="realistic-loading-skeleton" style="height: 2.75rem; width: 7rem; border-radius: var(--radius-sm);"></div>
+                    </div>
+                </div>
+                
+                <div class="realistic-product-card" style="opacity: 0.6;">
+                    <div class="product-card-header">
+                        <div class="realistic-loading-skeleton" style="width: 3.5rem; height: 3.5rem; border-radius: var(--radius-sm);"></div>
+                        <div class="product-info-section">
+                            <div class="realistic-loading-skeleton" style="height: 1.375rem; width: 90%; margin-bottom: 0.5rem;"></div>
+                            <div class="realistic-loading-skeleton" style="height: 1rem; width: 75%;"></div>
+                        </div>
+                    </div>
+                    <div class="product-badges" style="gap: 0.5rem;">
+                        <div class="realistic-loading-skeleton" style="height: 1.75rem; width: 3.5rem; border-radius: var(--radius-sm);"></div>
+                        <div class="realistic-loading-skeleton" style="height: 1.75rem; width: 4.5rem; border-radius: var(--radius-sm);"></div>
+                        <div class="realistic-loading-skeleton" style="height: 1.75rem; width: 3rem; border-radius: var(--radius-sm);"></div>
+                    </div>
+                    <div class="product-footer">
+                        <div class="realistic-loading-skeleton" style="height: 2rem; width: 4.5rem;"></div>
+                        <div class="realistic-loading-skeleton" style="height: 2.75rem; width: 7rem; border-radius: var(--radius-sm);"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <!-- Load More Section -->
+        <div style="text-align: center; margin-top: 3rem; padding: 2rem;">
+            <button class="add-to-cart-button" style="padding: 1rem 2rem; font-size: 1rem;">
+                <i data-lucide="refresh-cw"></i>
+                Load More Products (567 remaining)
+            </button>
+            <div style="margin-top: 1rem; color: var(--muted-foreground); font-size: var(--text-sm);">
+                Showing 9 of 1,234 educational products
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Enhanced functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // View toggle functionality
+            const gridView = document.getElementById('gridView');
+            const listView = document.getElementById('listView');
+            const productGrid = document.querySelector('.realistic-product-grid');
+            
+            gridView.addEventListener('click', function() {
+                gridView.classList.add('active');
+                listView.classList.remove('active');
+                productGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(320px, 1fr))';
+            });
+            
+            listView.addEventListener('click', function() {
+                listView.classList.add('active');
+                gridView.classList.remove('active');
+                productGrid.style.gridTemplateColumns = '1fr';
+                // In list view, make cards horizontal
+                document.querySelectorAll('.realistic-product-card').forEach(card => {
+                    card.style.display = 'flex';
+                    card.style.alignItems = 'center';
+                    card.style.padding = '1.25rem';
+                });
+            });
+            
+            // Filter chip removal with animation
+            document.querySelectorAll('.remove-filter-icon').forEach(icon => {
+                icon.addEventListener('click', function() {
+                    const chip = this.closest('.active-filter-chip');
+                    chip.style.animation = 'slideOut 0.3s ease-out forwards';
+                    setTimeout(() => chip.remove(), 300);
+                });
+            });
+            
+            // Enhanced add to cart with realistic feedback
+            document.querySelectorAll('.add-to-cart-button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const originalText = this.innerHTML;
+                    const productCard = this.closest('.realistic-product-card');
+                    
+                    // Disable button
+                    this.disabled = true;
+                    this.innerHTML = '<i data-lucide="loader-2"></i> Adding...';
+                    this.style.background = 'var(--muted-foreground)';
+                    
+                    // Add visual feedback to card
+                    productCard.style.transform = 'scale(1.02)';
+                    productCard.style.borderColor = 'var(--success)';
+                    
+                    lucide.createIcons();
+                    
+                    setTimeout(() => {
+                        this.innerHTML = '<i data-lucide="check"></i> Added to Cart!';
+                        this.style.background = 'var(--success)';
+                        
+                        lucide.createIcons();
+                        
+                        setTimeout(() => {
+                            // Reset button
+                            this.innerHTML = originalText;
+                            this.style.background = 'var(--primary)';
+                            this.disabled = false;
+                            
+                            // Reset card
+                            productCard.style.transform = 'scale(1)';
+                            productCard.style.borderColor = 'var(--border)';
+                            
+                            lucide.createIcons();
+                        }, 2000);
+                    }, 1500);
+                });
+            });
+            
+            // VAT toggle with realistic price calculations
+            const vatToggle = document.getElementById('vatToggle');
+            const prices = document.querySelectorAll('.main-price');
+            
+            vatToggle.addEventListener('change', function() {
+                prices.forEach(price => {
+                    const vatLabel = price.nextElementSibling;
+                    const currentPrice = parseFloat(price.textContent.replace('$', ''));
+                    
+                    if (this.checked) {
+                        // Add 10% GST (Australian VAT)
+                        const newPrice = (currentPrice * 1.1).toFixed(2);
+                        price.textContent = `$${newPrice}`;
+                        vatLabel.textContent = 'Incl. VAT';
+                        vatLabel.style.color = 'var(--success)';
+                        
+                        // Add visual feedback
+                        price.style.animation = 'pulse 0.4s ease-out';
+                    } else {
+                        // Remove VAT
+                        const newPrice = (currentPrice / 1.1).toFixed(2);
+                        price.textContent = `$${newPrice}`;
+                        vatLabel.textContent = 'Excl. VAT';
+                        vatLabel.style.color = 'var(--muted-foreground)';
+                        
+                        price.style.animation = 'pulse 0.4s ease-out';
+                    }
+                });
+            });
+            
+            // Enhanced search functionality
+            const searchInput = document.querySelector('input[placeholder="Search products..."]');
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                document.querySelectorAll('.realistic-product-card').forEach(card => {
+                    const title = card.querySelector('.product-title').textContent.toLowerCase();
+                    const subtitle = card.querySelector('.product-subtitle').textContent.toLowerCase();
+                    
+                    if (title.includes(query) || subtitle.includes(query)) {
+                        card.style.display = 'block';
+                        card.style.animation = 'fadeIn 0.4s ease-out';
+                    } else {
+                        card.style.opacity = query ? '0.3' : '1';
+                        card.style.transform = query ? 'scale(0.95)' : 'scale(1)';
+                    }
+                });
+            });
+            
+            // Scroll-triggered back to top
+            function addBackToTop() {
+                if (window.scrollY > 800) {
+                    if (!document.querySelector('.back-to-top')) {
+                        const backToTop = document.createElement('button');
+                        backToTop.className = 'back-to-top';
+                        backToTop.innerHTML = '<i data-lucide="arrow-up"></i>';
+                        backToTop.style.cssText = `
+                            position: fixed;
+                            bottom: 2rem;
+                            right: 2rem;
+                            background: var(--primary);
+                            color: var(--primary-foreground);
+                            border: none;
+                            border-radius: 50%;
+                            width: 3.5rem;
+                            height: 3.5rem;
+                            cursor: pointer;
+                            box-shadow: var(--shadow-card-hover);
+                            transition: all var(--transition-normal);
+                            z-index: 1000;
+                            font-size: 1.25rem;
+                        `;
+                        
+                        backToTop.addEventListener('click', function() {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        });
+                        
+                        backToTop.addEventListener('mouseenter', function() {
+                            this.style.transform = 'translateY(-3px) scale(1.05)';
+                            this.style.background = 'var(--primary-hover)';
+                        });
+                        
+                        backToTop.addEventListener('mouseleave', function() {
+                            this.style.transform = 'translateY(0) scale(1)';
+                            this.style.background = 'var(--primary)';
+                        });
+                        
+                        document.body.appendChild(backToTop);
+                        lucide.createIcons();
+                    }
+                } else {
+                    const backToTop = document.querySelector('.back-to-top');
+                    if (backToTop) backToTop.remove();
+                }
+            }
+            
+            window.addEventListener('scroll', addBackToTop);
+            
+            // Urgent voucher blinking effect
+            setInterval(() => {
+                document.querySelectorAll('.urgent-warning').forEach(badge => {
+                    badge.style.animation = 'urgentFlash 1s ease-in-out';
+                });
+            }, 3000);
+        });
+        
+        // Additional CSS animations
+        const additionalStyles = document.createElement('style');
+        additionalStyles.textContent = `
+            @keyframes slideOut {
+                from { transform: translateX(0) scale(1); opacity: 1; }
+                to { transform: translateX(-30px) scale(0.8); opacity: 0; }
+            }
+            
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(additionalStyles);
+    </script>
+</body>
+</html>

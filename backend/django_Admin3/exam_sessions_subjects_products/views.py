@@ -25,6 +25,16 @@ logger = logging.getLogger(__name__)
 class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):    
     queryset = ExamSessionSubjectProduct.objects.all()
     serializer_class = ExamSessionSubjectProductSerializer
+    
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action in ['list_products', 'default_search_data', 'fuzzy_search', 'advanced_fuzzy_search']:
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = self.permission_classes
+        return [permission() for permission in permission_classes]
      
     @action(detail=False, methods=['post'], url_path='bulk-create')
     @permission_classes([IsAuthenticated])
@@ -181,6 +191,10 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         if request.query_params.get('subject_code'):
             cache_key_params['subject_code'] = request.query_params.get('subject_code')
         
+        # Add subject parameter to cache key
+        if request.query_params.getlist('subject'):
+            cache_key_params['subject'] = request.query_params.getlist('subject')
+        
         cache_key = f"products_bundles_list_{hash(str(sorted(cache_key_params.items())))}"
         
         # Try to get from cache first
@@ -241,15 +255,15 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         
         # Handle subject code for backward compatibility
         if request.query_params.get('subject_code'):
-            if 'subject' not in filters:
-                filters['subject'] = []
-            filters['subject'].append(request.query_params.get('subject_code'))
+            if 'SUBJECT_FILTER' not in filters:
+                filters['SUBJECT_FILTER'] = []
+            filters['SUBJECT_FILTER'].append(request.query_params.get('subject_code'))
         
         # Handle direct subject parameter
         if request.query_params.getlist('subject'):
-            if 'subject' not in filters:
-                filters['subject'] = []
-            filters['subject'].extend(request.query_params.getlist('subject'))
+            if 'SUBJECT_FILTER' not in filters:
+                filters['SUBJECT_FILTER'] = []
+            filters['SUBJECT_FILTER'].extend(request.query_params.getlist('subject'))
         
         logger.info(f'Final dynamic filters being applied: {filters}')
         logger.info(f'Bundle filter active: {bundle_filter_active}')
