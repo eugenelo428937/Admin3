@@ -18,12 +18,20 @@
       "Bash(powershell:*)",
       "Bash(Remove-Item \"C:\\Code\\Admin3\\Project settings\\server setup\\server_setup_2_2_311.ps1\" -Force)",
       "Bash(nginx:*)",
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(node:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run build:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx eslint:*)",
+      "Bash(npx tsc:*)",
+      "Bash(..venvScriptsactivate)",
+      "Bash(npx react-scripts build:*)"
     ],
     "deny": []
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "trello"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

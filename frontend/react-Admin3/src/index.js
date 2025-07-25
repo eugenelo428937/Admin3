@@ -5,7 +5,9 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { createRoot } from "react-dom/client";
 import { BrowserRouter as Router } from "react-router-dom";
+import "@fontsource-variable/dm-sans";
 import "@fontsource/poppins";
+import "@fontsource-variable/inter";
 
 const container = document.getElementById("root");
 const root = createRoot(container);

@@ -19,8 +19,7 @@
     padding-left: 45px !important;
     padding-right: 45px !important;
     border-radius: 25px;
-    border: 2px solid #e0e0e0;
-    font-size: 16px;
+    border: 2px solid #e0e0e0;    
     height: 50px;
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -172,8 +171,7 @@
     }
     
     .search-input {
-        height: 45px;
-        font-size: 14px;
+        height: 45px;        
         padding-left: 40px !important;
         padding-right: 40px !important;
     }
