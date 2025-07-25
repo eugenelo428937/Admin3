@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, Row, Col, Alert, Spinner, Button, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import ProfileForm from "../components/ProfileForm";
+import ProfileForm from "../components/User/ProfileForm";
 import userService from "../services/userService";
 import logger from "../services/loggerService";
 

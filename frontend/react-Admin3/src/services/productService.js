@@ -279,14 +279,6 @@ const productService = {
 		try {
 			// Use the unified endpoint that includes both products and exam session bundles
 			const response = await productService.getAvailableProducts(params, page, pageSize);
-			
-			console.log('🏪 [ProductService] Unified API response:', {
-				itemsCount: response.results?.length,
-				productsCount: response.products_count,
-				bundlesCount: response.bundles_count,
-				totalCount: response.count,
-				sampleItem: response.results?.[0]
-			});
 
 			return {
 				results: response.results || [],
@@ -409,6 +401,29 @@ const productService = {
 					error.response?.data?.message ||
 					error.message ||
 					"Failed to add marking voucher to cart",
+				status: error.response?.status || 0,
+				data: error.response?.data || null,
+			};
+		}
+	},
+
+	// Search products with query and filters
+	searchProducts: async (params = {}) => {
+		try {
+			const response = await httpService.get(
+				`${PRODUCTS_API_URL}/search/`,
+				{ params }
+			);
+			return {
+				data: response.data.results || response.data || []
+			};
+		} catch (error) {
+			console.error("Error searching products:", error);
+			throw {
+				message:
+					error.response?.data?.message ||
+					error.message ||
+					"Failed to search products",
 				status: error.response?.status || 0,
 				data: error.response?.data || null,
 			};

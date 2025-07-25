@@ -1,12 +1,15 @@
 // src/App.js
-import React, { Profiler, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
+import { ThemeProvider } from '@mui/material/styles';
+import { CssBaseline, Typography } from '@mui/material';
+import theme from './theme/theme';
 import { AuthProvider } from "./hooks/useAuth";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Home from "./pages/Home";
 import UserProfile from "./pages/UserProfile";
-import ActEdNavbar from "./components/ActEdNavbar";
+import MainNavBar from "./components/Navigation/MainNavBar";
 import NoMatch from "./components/NoMatch";
 import { CartProvider } from "./contexts/CartContext";
 import { ProductProvider } from "./contexts/ProductContext";
@@ -22,20 +25,19 @@ import AdminProductList from "./components/admin/products/ProductList";
 import AdminProductDetail from "./components/admin/products/ProductDetail";
 import AdminProductForm from "./components/admin/products/ProductForm";
 import AdminProductImport from "./components/admin/products/ProductImport";
-import ProductList from "./components/ProductList";
-import CheckoutPage from "./components/CheckoutPage";
-import OrderHistory from "./components/OrderHistory";
-import ProfileForm from "./components/ProfileForm";
-import TutorialProductList from "./components/TutorialProductList";
-import ForgotPasswordForm from "./components/ForgotPasswordForm";
-import ResetPasswordForm from "./components/ResetPasswordForm";
-import AccountActivation from "./components/AccountActivation";
-import ResendActivation from "./components/ResendActivation";
-import EmailVerification from "./components/EmailVerification";
-import TutorialChoicePanel from "./components/TutorialChoicePanel";
-
-// Import custom Bootstrap CSS overrides
-import "./styles/custom-bootstrap.css";
+import ProductList from "./components/Product/ProductList";
+import CheckoutPage from "./components/Ordering/CheckoutPage";
+import OrderHistory from "./components/User/OrderHistory";
+import ProfileForm from "./components/User/ProfileForm";
+import TutorialProductList from "./components/Product/ProductCard/Tutorial/TutorialProductList";
+import ForgotPasswordForm from "./components/User/ForgotPasswordForm";
+import ResetPasswordForm from "./components/User/ResetPasswordForm";
+import AccountActivation from "./components/User/AccountActivation";
+import ResendActivation from "./components/User/ResendActivation";
+import EmailVerification from "./components/User/EmailVerification";
+import TutorialChoicePanel from "./components/Product/ProductCard/Tutorial/TutorialChoicePanel";
+import StyleGuide from "./pages/StyleGuide";
+import "./App.css";
 
 function App() {
 	// eslint-disable-next-line
@@ -55,144 +57,156 @@ function App() {
 	}, []);
 
 	return (
-		<GoogleReCaptchaProvider
-			reCaptchaKey={RECAPTCHA_SITE_KEY}
-			container={{
-				parameters: {
-					badge: "inline",
-				},
-			}}>
-			<ErrorBoundary>
-				<CartProvider>
-					<AuthProvider>
-						<ProductProvider>
-							<VATProvider>
-								<TutorialChoiceProvider>
-									<div className="App">
-										<ActEdNavbar />
-										<div className="body-container">
-											<Routes>
-											<Route
-												path="/"
-												element={<Navigate to="/home" replace />}
-											/>
-											<Route path="/home" element={<Home />} />
-											<Route path="/profile" element={<UserProfile />} />
-											<Route
-												path="/products"
-												element={<ProductList />}
-											/>
-											<Route
-												path="admin/exam-sessions"
-												element={<AdminExamSessionList />}
-											/>
-											<Route
-												path="admin/exam-sessions/new"
-												element={<AdminExamSessionForm />}
-											/>
-											<Route
-												path="/exam-sessions/edit/:id"
-												element={<AdminExamSessionForm />}
-											/>
-											<Route
-												path="admin/subjects"
-												element={<AdminSubjectList />}
-											/>
-											<Route
-												path="admin/subjects/new"
-												element={<AdminSubjectForm />}
-											/>
-											<Route
-												path="admin/subjects/:id"
-												element={<AdminSubjectDetail />}
-											/>
-											<Route
-												path="admin/subjects/:id/edit"
-												element={<AdminSubjectForm />}
-											/>
-											<Route
-												path="admin/subjects/import"
-												element={<AdminSubjectImport />}
-											/>
-											<Route
-												path="admin/products"
-												element={<AdminProductList />}
-											/>
-											<Route
-												path="admin/products/:id"
-												element={<AdminProductDetail />}
-											/>
-											<Route
-												path="admin/products/new"
-												element={<AdminProductForm />}
-											/>
-											<Route
-												path="admin/products/edit/:id"
-												element={<AdminProductForm />}
-											/>
-											<Route
-												path="admin/products/import"
-												element={<AdminProductImport />}
-											/>
-											<Route
-												path="/checkout"
-												element={<CheckoutPage />}
-											/>
-											<Route
-												path="/orders"
-												element={<OrderHistory />}
-											/>
-											<Route
-												path="/register"
-												element={
-													<ProfileForm
-														mode="registration"
-														title="Create Your ActEd Account"
+		<ThemeProvider theme={theme}>
+			<CssBaseline />
+			<GoogleReCaptchaProvider
+				reCaptchaKey={RECAPTCHA_SITE_KEY}
+				container={{
+					parameters: {
+						badge: "inline",
+					},
+				}}>
+				<ErrorBoundary>
+					<CartProvider>
+						<AuthProvider>
+							<ProductProvider>
+								<VATProvider>
+									<TutorialChoiceProvider>
+										<div className="App">
+											<MainNavBar className="main-navbar" />
+											<div className="body-container">
+												<Routes>
+													<Route
+														path="/"
+														element={
+															<Navigate to="/home" replace />
+														}
 													/>
-												}
-											/>
-											<Route
-												path="/tutorials"
-												element={<TutorialProductList />}
-											/>
-											<Route
-												path="/auth/forgot-password"
-												element={<ForgotPasswordForm />}
-											/>
-											<Route
-												path="/auth/reset-password"
-												element={<ResetPasswordForm />}
-											/>
-											<Route
-												path="/auth/activate"
-												element={<AccountActivation />}
-											/>
-											<Route
-												path="/auth/verify-email"
-												element={<AccountActivation />}
-											/>
-											<Route
-												path="/auth/resend-activation"
-												element={<ResendActivation />}
-											/>
-											<Route
-												path="/auth/email-verification"
-												element={<EmailVerification />}
-											/>
-												<Route path="*" element={<NoMatch />} />
-											</Routes>
+													<Route
+														path="/style-guide"
+														element={<StyleGuide />}														
+													/>
+													<Route path="/home" element={<Home />} />
+													<Route
+														path="/profile"
+														element={<UserProfile />}
+													/>
+													<Route
+														path="/products"
+														element={<ProductList />}
+													/>
+													<Route
+														path="admin/exam-sessions"
+														element={<AdminExamSessionList />}
+													/>
+													<Route
+														path="admin/exam-sessions/new"
+														element={<AdminExamSessionForm />}
+													/>
+													<Route
+														path="/exam-sessions/edit/:id"
+														element={<AdminExamSessionForm />}
+													/>
+													<Route
+														path="admin/subjects"
+														element={<AdminSubjectList />}
+													/>
+													<Route
+														path="admin/subjects/new"
+														element={<AdminSubjectForm />}
+													/>
+													<Route
+														path="admin/subjects/:id"
+														element={<AdminSubjectDetail />}
+													/>
+													<Route
+														path="admin/subjects/:id/edit"
+														element={<AdminSubjectForm />}
+													/>
+													<Route
+														path="admin/subjects/import"
+														element={<AdminSubjectImport />}
+													/>
+													<Route
+														path="admin/products"
+														element={<AdminProductList />}
+													/>
+													<Route
+														path="admin/products/:id"
+														element={<AdminProductDetail />}
+													/>
+													<Route
+														path="admin/products/new"
+														element={<AdminProductForm />}
+													/>
+													<Route
+														path="admin/products/edit/:id"
+														element={<AdminProductForm />}
+													/>
+													<Route
+														path="admin/products/import"
+														element={<AdminProductImport />}
+													/>
+													<Route
+														path="/checkout"
+														element={<CheckoutPage />}
+													/>
+													<Route
+														path="/orders"
+														element={<OrderHistory />}
+													/>
+													<Route
+														path="/register"
+														element={
+															<ProfileForm
+																mode="registration"
+																title="Create Your ActEd Account"
+															/>
+														}
+													/>
+													<Route
+														path="/tutorials"
+														element={<TutorialProductList />}
+													/>
+													<Route
+														path="/auth/forgot-password"
+														element={<ForgotPasswordForm />}
+													/>
+													<Route
+														path="/auth/reset-password"
+														element={<ResetPasswordForm />}
+													/>
+													<Route
+														path="/auth/activate"
+														element={<AccountActivation />}
+													/>
+													<Route
+														path="/auth/verify-email"
+														element={<AccountActivation />}
+													/>
+													<Route
+														path="/auth/resend-activation"
+														element={<ResendActivation />}
+													/>
+													<Route
+														path="/auth/email-verification"
+														element={<EmailVerification />}
+													/>
+													<Route path="*" element={<NoMatch />} />
+												</Routes>
+											</div>
+
+											{/* Tutorial Choice Panel */}
+											<TutorialChoicePanel />
 										</div>
-										
-										{/* Tutorial Choice Panel */}
-										<TutorialChoicePanel />
-									</div>
-								</TutorialChoiceProvider>
-							</VATProvider>
-						</ProductProvider>
-					</AuthProvider>
-				</CartProvider>
-			</ErrorBoundary>
-		</GoogleReCaptchaProvider>
+									</TutorialChoiceProvider>
+								</VATProvider>
+							</ProductProvider>
+						</AuthProvider>
+					</CartProvider>
+				</ErrorBoundary>
+			</GoogleReCaptchaProvider>
+		</ThemeProvider>
 	);
 }
 
