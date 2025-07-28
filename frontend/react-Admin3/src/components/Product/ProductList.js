@@ -484,7 +484,7 @@ const ProductList = React.memo(() => {
 	if (error) return <div>Error: {error}</div>;
 
 	return (
-		<div fluid className="product-list-container">
+		<div fluid className="product-list-container m-top__lg">
 			<header className="product-header text-start d-flex flex-column flex-md-row justify-content-start justify-content-md-between align-items-start m-bottom__xl ">
 				<div className="header-left">
 					<Typography variant="h3" className="header-title p-bottom__2xs">

@@ -1,0 +1,350 @@
+{
+  "productCardDisplayElements": {
+    "commonElements": {
+      "header": {
+        "productName": {
+          "required": true,
+          "type": "string",
+          "notes": "Main product title, always displayed in header"
+        },
+        "productIcon": {
+          "required": true,
+          "type": "MaterialUI Icon",
+          "notes": "Different icons per product type: LibraryBooksSharp (Material), RuleOutlined (Marking), LocalActivityOutlined (Voucher), QuestionAnswerOutlined (Tutorial), BoxSeam (Bundle)"
+        },
+        "headerBackground": {
+          "required": true,
+          "type": "themed color",
+          "notes": "Different background colors per product type"
+        }
+      },
+      "chips": {
+        "subjectCode": {
+          "required": true,
+          "type": "Chip",
+          "variant": "outlined",
+          "notes": "Shows subject code for identification"
+        },
+        "examSessionCode": {
+          "required": false,
+          "type": "Chip",
+          "variant": "outlined",
+          "notes": "Shows exam session, sometimes hidden"
+        }
+      },
+      "pricing": {
+        "priceDisplay": {
+          "required": true,
+          "type": "formatted currency",
+          "notes": "Shows calculated price with VAT handling"
+        },
+        "priceLabel": {
+          "required": true,
+          "type": "string",
+          "notes": "VAT context label (Inc. VAT, Ex. VAT, etc.)"
+        },
+        "priceInfoButton": {
+          "required": true,
+          "type": "InfoOutline icon",
+          "notes": "Opens price modal with all variations and price types"
+        }
+      },
+      "discountOptions": {
+        "retakerDiscount": {
+          "required": true,
+          "type": "Checkbox",
+          "notes": "Discount for retaking exams"
+        },
+        "additionalCopyDiscount": {
+          "required": true,
+          "type": "Checkbox",
+          "notes": "Discount for additional copies"
+        }
+      },
+      "addToCartButton": {
+        "required": true,
+        "type": "circular Button",
+        "icon": "AddShoppingCart",
+        "color": "success",
+        "notes": "Round button for adding to cart"
+      }
+    },
+    "productTypeSpecific": {
+      "materialProducts": {
+        "variations": {
+          "required": true,
+          "type": "Checkbox list",
+          "notes": "Product variations (e.g., Printed/eBook) with fixed height container"
+        },
+        "header": {
+          "className": "material-header"
+        }
+      },
+      "markingProducts": {
+        "deadlineInformation": {
+          "required": true,
+          "type": "complex component",
+          "elements": {
+            "loadingIndicator": {
+              "type": "CircularProgress",
+              "notes": "Shows while loading deadline data"
+            },
+            "expiredAlert": {
+              "type": "Alert",
+              "severity": "warning/error",
+              "notes": "Shows when deadlines are expired"
+            },
+            "upcomingDeadline": {
+              "type": "Typography",
+              "notes": "Shows next deadline date"
+            },
+            "viewDeadlinesButton": {
+              "type": "Button",
+              "icon": "CalendarMonthOutlined",
+              "notes": "Opens deadlines modal"
+            }
+          }
+        },
+        "deadlinesModal": {
+          "required": true,
+          "type": "Dialog",
+          "content": "Table with submission dates and deadlines"
+        },
+        "expiredWarningModal": {
+          "required": true,
+          "type": "Dialog",
+          "notes": "Warns about expired deadlines before adding to cart"
+        },
+        "header": {
+          "className": "marking-header"
+        }
+      },
+      "markingVoucherProducts": {
+        "voucherCode": {
+          "required": true,
+          "type": "Chip",
+          "color": "primary",
+          "variant": "outlined"
+        },
+        "description": {
+          "required": false,
+          "type": "Typography",
+          "variant": "body2"
+        },
+        "expiryInformation": {
+          "required": true,
+          "type": "complex component",
+          "elements": {
+            "expiryDate": {
+              "type": "Typography with CalendarMonthOutlined icon"
+            },
+            "urgencyAlert": {
+              "type": "Alert",
+              "severity": "error/warning/info",
+              "notes": "Shows urgency based on days remaining"
+            },
+            "noExpiryChip": {
+              "type": "Chip",
+              "color": "success",
+              "notes": "Shown when no expiry date"
+            }
+          }
+        },
+        "availability": {
+          "required": true,
+          "type": "boolean state",
+          "notes": "Affects card opacity and button state"
+        },
+        "infoDialog": {
+          "required": true,
+          "type": "Dialog",
+          "content": "Detailed voucher information"
+        },
+        "header": {
+          "className": "marking-header",
+          "backgroundColor": "#ff9800"
+        }
+      },
+      "onlineClassroomProducts": {
+        "largeProductName": {
+          "required": true,
+          "type": "Typography",
+          "variant": "h5",
+          "notes": "Displayed prominently in content area"
+        },
+        "collapsibleDiscounts": {
+          "required": true,
+          "type": "expandable section",
+          "notes": "Discount options hidden by default, toggle to show"
+        },
+        "variations": {
+          "required": true,
+          "type": "Checkbox list",
+          "notes": "Similar to material products"
+        },
+        "header": {
+          "className": "online-classroom-header"
+        }
+      },
+      "tutorialProducts": {
+        "location": {
+          "required": true,
+          "type": "string",
+          "notes": "Displayed as main title instead of product name"
+        },
+        "choicesBadge": {
+          "required": false,
+          "type": "Badge with Chip",
+          "notes": "Shows number of tutorial choices made"
+        },
+        "tutorialSummary": {
+          "required": true,
+          "type": "complex component",
+          "elements": {
+            "eventCount": {
+              "type": "Typography",
+              "notes": "Number of tutorial events available"
+            },
+            "descriptionChips": {
+              "type": "Stack of Chips",
+              "color": "info",
+              "notes": "Shows tutorial descriptions, limited display"
+            },
+            "venueChips": {
+              "type": "Stack of Chips",
+              "color": "secondary",
+              "notes": "Shows venues, limited display"
+            }
+          }
+        },
+        "actionButtons": {
+          "selectTutorialsButton": {
+            "type": "Button",
+            "color": "secondary",
+            "text": "Select Tutorials"
+          },
+          "viewChoicesButton": {
+            "type": "Button",
+            "color": "success",
+            "icon": "ShoppingCart",
+            "text": "View Choices",
+            "conditional": "only when choices exist"
+          }
+        },
+        "choiceDialog": {
+          "required": true,
+          "type": "TutorialChoiceDialog component"
+        },
+        "header": {
+          "className": "tutorial-header"
+        }
+      },
+      "bundleProducts": {
+        "bundleName": {
+          "required": true,
+          "type": "string",
+          "notes": "Shows bundle_name instead of product_name"
+        },
+        "bundleIcon": {
+          "required": true,
+          "type": "BoxSeam icon"
+        },
+        "examSessionChip": {
+          "required": true,
+          "type": "Chip",
+          "className": "session-chip"
+        },
+        "componentsInfo": {
+          "required": true,
+          "type": "Button with InfoOutline icon",
+          "notes": "Shows component count and opens modal"
+        },
+        "componentsList": {
+          "required": true,
+          "type": "List",
+          "notes": "Shows bundle components with variations"
+        },
+        "contentsModal": {
+          "required": true,
+          "type": "Dialog",
+          "content": "Detailed bundle contents"
+        },
+        "bundlePricing": {
+          "required": true,
+          "type": "calculated total",
+          "notes": "Sums component prices with fallback logic"
+        },
+        "header": {
+          "className": "bundle-header"
+        }
+      }
+    },
+    "modals": {
+      "priceModal": {
+        "required": true,
+        "type": "Dialog",
+        "content": {
+          "productInfo": "Subject code and product name",
+          "priceTable": "All variations and price types"
+        }
+      }
+    },
+    "layoutStructure": {
+      "card": {
+        "elevation": 2,
+        "className": "product-card d-flex flex-column"
+      },
+      "header": {
+        "component": "CardHeader",
+        "className": "product-card-header"
+      },
+      "content": {
+        "component": "CardContent",
+        "className": "product-card-content",
+        "fixedHeightSections": {
+          "variations": "5.5rem height for alignment"
+        }
+      },
+      "divider": {
+        "component": "Divider",
+        "placement": "between content and actions"
+      },
+      "actions": {
+        "component": "CardActions",
+        "className": "product-card-actions",
+        "layout": "Grid system with responsive sizing"
+      }
+    },
+    "stateManagement": {
+      "selectedVariations": {
+        "type": "array",
+        "notes": "Manages multiple variation selections"
+      },
+      "selectedPriceType": {
+        "type": "string",
+        "default": "standard",
+        "options": ["standard", "retaker", "additional"]
+      },
+      "modals": {
+        "showPriceModal": "boolean",
+        "showDiscounts": "boolean",
+        "showContentsModal": "boolean (bundles)",
+        "showInfoDialog": "boolean (vouchers)"
+      }
+    },
+    "accessibility": {
+      "ariaLabels": {
+        "required": true,
+        "elements": ["addToCartButton", "priceInfoButton", "toggleButtons"]
+      },
+      "keyboardNavigation": {
+        "required": true,
+        "notes": "All interactive elements accessible via keyboard"
+      },
+      "screenReaderSupport": {
+        "required": true,
+        "notes": "Proper labels and descriptions for screen readers"
+      }
+    }
+  }
+}
