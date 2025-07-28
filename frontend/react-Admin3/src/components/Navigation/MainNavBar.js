@@ -186,6 +186,7 @@ const MainNavBar = () => {
 				expand="md"
 				expanded={expanded}
 				onToggle={setExpanded}
+				sticky="top"
 				className="navbar navbar-expand-md navbar-main align-content-center justify-content-between px-1 px-lg-4 px-xl-5 pt-md-2 py-lg-2">
 				<Container
 					fluid
