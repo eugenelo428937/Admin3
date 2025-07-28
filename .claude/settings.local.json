@@ -26,7 +26,8 @@
       "Bash(npx eslint:*)",
       "Bash(npx tsc:*)",
       "Bash(..venvScriptsactivate)",
-      "Bash(npx react-scripts build:*)"
+      "Bash(npx react-scripts build:*)",
+      "Bash(echo $env:APPDATA)"
     ],
     "deny": []
   },

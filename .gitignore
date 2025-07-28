@@ -92,3 +92,5 @@ Project settings/server setup/secrets/
 Project settings/server setup/misc/*
 claude-mcp-trello/*
 claude-mcp-trello/
+.mcp.json
+.env.*
