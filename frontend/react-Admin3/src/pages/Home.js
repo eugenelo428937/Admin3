@@ -134,7 +134,7 @@ const Home = () => {
 			disableGutters={true}
 			maxWidth="false"
 			className="hero-container">
-			<Row>
+			<Row disableGutters={true}>
 				<Col
 					className="text-center"
 					style={{
@@ -175,23 +175,21 @@ const Home = () => {
 
 					{/* Content */}
 					<Container className="hero-content d-flex flex-wrap justify-content-center align-items-center">
-						<Container>
-							<h1 className="display1 color-light__onprimary_lkv">
-								BPP Actuarial Education
-							</h1>
-							<h2 className="display2__bold color-light__onprimary_lkv">
-								Online Store
-							</h2>
-							<div
-								style={{ maxWidth: "600px", margin: "0 auto" }}
-								className="mt-5">
-								<SearchBox
-									onSearchResults={handleSearchResults}
-									onShowMatchingProducts={handleShowMatchingProducts}
-									autoFocus={false}
-								/>
-							</div>
-						</Container>
+						<Typography variant="h1" className="color-light__onprimary_lkv">
+							BPP Actuarial Education
+						</Typography>
+						<Typography variant="h2" className="color-light__onprimary_lkv">
+							Online Store
+						</Typography>
+						<div
+							style={{ maxWidth: "600px", margin: "0 auto" }}
+							className="m-top__xl">
+							<SearchBox
+								onSearchResults={handleSearchResults}
+								onShowMatchingProducts={handleShowMatchingProducts}
+								autoFocus={false}
+							/>
+						</div>
 					</Container>
 				</Col>
 			</Row>

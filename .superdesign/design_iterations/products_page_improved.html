@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin3 - Educational Administration</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    
+    <!-- Enhanced Theme -->
+    <link rel="stylesheet" href="products_improved_theme.css">
+    
+    <style>
+        /* Additional component-specific styles */
+        .filter-toggle {
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .filter-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+        
+        .filter-content.open {
+            max-height: 500px;
+            padding-top: 0.5rem;
+        }
+        
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+        }
+        
+        .inc-vat-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: var(--accent);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            right: 2px;
+            transition: transform 0.3s;
+        }
+        
+        .bundle-indicator {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--accent);
+            color: var(--accent-foreground);
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .variation-selector {
+            background: var(--muted);
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            margin: 0.5rem 0;
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted-foreground);
+        }
+    </style>
+</head>
+<body>
+    <!-- Utility Bar (Matching Current) -->
+    <div class="utility-bar px-4 py-2">
+        <div class="max-w-7xl mx-auto flex justify-between items-center text-sm">
+            <div class="flex items-center space-x-4">
+                <a href="/Home" class="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition-colors">
+                    <i data-lucide="home" class="w-4 h-4"></i>
+                    <span>ActEd Home</span>
+                </a>
+                <a href="/style-guide" class="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition-colors">
+                    <i data-lucide="help-circle" class="w-4 h-4"></i>
+                    <span>Help</span>
+                </a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button class="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition-colors">
+                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                    <span>Shopping Cart</span>
+                </button>
+                <button class="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition-colors">
+                    <i data-lucide="user" class="w-4 h-4"></i>
+                    <span>Login</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header (Enhanced but Matching Current) -->
+    <header class="header-gradient text-white">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <nav class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <a href="#home" class="flex items-center space-x-2">
+                        <div class="bg-white rounded-lg p-2">
+                            <div class="w-12 h-12 bg-blue-900 rounded-md flex items-center justify-center">
+                                <span class="text-white font-bold text-lg">BPP</span>
+                            </div>
+                        </div>
+                        <div class="hidden sm:block">
+                            <div class="text-lg font-bold">BPP</div>
+                            <div class="text-blue-100 text-sm">ACTUARIAL EDUCATION</div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Navigation (Matching Current) -->
+                <div class="hidden lg:flex items-center space-x-8">
+                    <a href="/home" class="text-blue-100 hover:text-white transition-colors">Home</a>
+                    <button class="text-blue-100 hover:text-white transition-colors flex items-center space-x-1">
+                        <span>Subjects</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </button>
+                    <button class="text-white font-medium flex items-center space-x-1 border-b-2 border-white pb-1">
+                        <span>Products</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </button>
+                    <button class="text-blue-100 hover:text-white transition-colors flex items-center space-x-1">
+                        <span>Distance Learning</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </button>
+                    <button class="text-blue-100 hover:text-white transition-colors flex items-center space-x-1">
+                        <span>Tutorials</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </button>
+                    <a href="/products?group=8" class="text-blue-100 hover:text-white transition-colors">Marking Vouchers</a>
+                </div>
+
+                <!-- Right Actions -->
+                <div class="flex items-center space-x-4">
+                    <button class="hidden lg:flex items-center space-x-2 text-blue-100 hover:text-white transition-colors">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>Brochure</span>
+                    </button>
+                    <button class="flex items-center space-x-2 text-blue-100 hover:text-white transition-colors relative">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Search</span>
+                    </button>
+                    <button class="lg:hidden">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        <!-- Products Header -->
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Products</h1>
+            <div class="inc-vat-toggle">
+                <span class="text-sm text-gray-600">Inc. VAT</span>
+                <div class="toggle-switch"></div>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Enhanced Filter Sidebar (Matching Current Structure) -->
+            <aside class="filter-sidebar w-full lg:w-64 h-fit">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold">Filters</h2>
+                    <div class="w-8 h-px bg-gray-300"></div>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="filter-section">
+                    <div class="filter-toggle filter-header" onclick="toggleFilter('category')">
+                        <span class="font-medium">Category</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 transition-transform" id="category-icon"></i>
+                    </div>
+                    <div class="filter-content open" id="category-content">
+                        <div class="space-y-2">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm">Bundles (12)</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm">Mock Packs (152)</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm">Study Materials (89)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Type Filter -->
+                <div class="filter-section">
+                    <div class="filter-toggle filter-header" onclick="toggleFilter('productType')">
+                        <span class="font-medium">Product Type</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 transition-transform" id="productType-icon"></i>
+                    </div>
+                    <div class="filter-content open" id="productType-content">
+                        <div class="space-y-2">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm">eBook (156)</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm">Printed (89)</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm">Marking (67)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subject Filter -->
+                <div class="filter-section">
+                    <div class="filter-toggle filter-header" onclick="toggleFilter('subject')">
+                        <span class="font-medium">Subject</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 transition-transform" id="subject-icon"></i>
+                    </div>
+                    <div class="filter-content open" id="subject-content">
+                        <div class="space-y-2">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm">CB1 (45)</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm">CB2 (42)</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm">CM1 (38)</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm">CM2 (35)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mode of Delivery Filter -->
+                <div class="filter-section">
+                    <div class="filter-toggle filter-header" onclick="toggleFilter('mode')">
+                        <span class="font-medium">Mode of Delivery</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 transition-transform" id="mode-icon"></i>
+                    </div>
+                    <div class="filter-content" id="mode-content">
+                        <div class="space-y-2">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm">Digital (245)</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm">Physical (149)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Products Section -->
+            <section class="flex-1">
+                <!-- Product Meta Info -->
+                <div class="product-meta">
+                    <span>Showing 20 of 394 items products-meta</span>
+                    <span>20 loaded, more available</span>
+                </div>
+
+                <!-- Products Grid -->
+                <div class="products-grid">
+                    <!-- Bundle Product Card (Enhanced) -->
+                    <div class="product-card bundle-card animate-fadeInUp">
+                        <div class="bundle-indicator">BUNDLE</div>
+                        
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Materials & Marking Bundle</h3>
+                                <div class="flex gap-2 mb-3">
+                                    <span class="subject-tag">CB1</span>
+                                    <span class="subject-tag">25A</span>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="book-open" class="w-6 h-6 text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <button class="btn-secondary w-full mb-3 text-left" onclick="toggleBundle('bundle1')">
+                            <span>Bundle includes 5 items :</span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 ml-auto"></i>
+                        </button>
+
+                        <div class="bundle-content" id="bundle1" style="display: none;">
+                            <div class="space-y-2">
+                                <div class="bundle-item">
+                                    <span class="text-sm">ASET (2020-2023 Papers)</span>
+                                    <span class="subject-tag">eBook</span>
+                                </div>
+                                <div class="bundle-item">
+                                    <span class="text-sm">Mock Exam Marking</span>
+                                    <span class="subject-tag">Marking</span>
+                                </div>
+                                <div class="bundle-item">
+                                    <span class="text-sm">Series X Assignments (Marking)</span>
+                                    <span class="subject-tag">Marking</span>
+                                </div>
+                                <div class="bundle-item">
+                                    <span class="text-sm">Combined Materials Pack</span>
+                                    <span class="subject-tag">Printed</span>
+                                </div>
+                                <div class="bundle-item">
+                                    <span class="text-sm">Flash Cards</span>
+                                    <span class="subject-tag">Printed</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border-t pt-4 mt-4">
+                            <div class="product-options">
+                                <div class="flex gap-4">
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" id="retaker1">
+                                        <label for="retaker1" class="text-sm">Retaker</label>
+                                    </div>
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" id="additional1">
+                                        <label for="additional1" class="text-sm">Additional Copy</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between mt-4">
+                                <div>
+                                    <div class="price-display">£618.00</div>
+                                    <div class="price-suffix">(inc. VAT)</div>
+                                </div>
+                                <button class="btn-primary" onclick="addToCart(this, 'bundle')">
+                                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                                    Add bundle to cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mock Pack Product Cards (Enhanced) -->
+                    <div class="product-card animate-fadeInUp" style="animation-delay: 0.1s;">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Additional Mock Pack</h3>
+                                <span class="subject-tag">CB1</span>
+                            </div>
+                            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="file-text" class="w-6 h-6 text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <div class="variation-selector">
+                            <h4 class="font-medium text-sm mb-2">Variation:</h4>
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" checked disabled>
+                                <label class="text-sm">Vitalsource eBook</label>
+                            </div>
+                        </div>
+
+                        <div class="border-t pt-4">
+                            <div class="product-options">
+                                <div class="flex gap-4">
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" id="retaker2">
+                                        <label for="retaker2" class="text-sm">Retaker</label>
+                                    </div>
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" id="additional2">
+                                        <label for="additional2" class="text-sm">Additional Copy</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between mt-4">
+                                <div>
+                                    <div class="price-display">£25.20</div>
+                                    <div class="price-suffix">(inc. VAT)</div>
+                                </div>
+                                <button class="btn-primary" onclick="addToCart(this, 'product')">
+                                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                                    Add product to cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Mock Pack CB2 -->
+                    <div class="product-card animate-fadeInUp" style="animation-delay: 0.2s;">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Additional Mock Pack</h3>
+                                <span class="subject-tag">CB2</span>
+                            </div>
+                            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="file-text" class="w-6 h-6 text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <div class="variation-selector">
+                            <h4 class="font-medium text-sm mb-2">Variation:</h4>
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" checked disabled>
+                                <label class="text-sm">Vitalsource eBook</label>
+                            </div>
+                        </div>
+
+                        <div class="border-t pt-4">
+                            <div class="product-options">
+                                <div class="flex gap-4">
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" id="retaker3">
+                                        <label for="retaker3" class="text-sm">Retaker</label>
+                                    </div>
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" id="additional3">
+                                        <label for="additional3" class="text-sm">Additional Copy</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between mt-4">
+                                <div>
+                                    <div class="price-display">£25.20</div>
+                                    <div class="price-suffix">(inc. VAT)</div>
+                                </div>
+                                <button class="btn-primary" onclick="addToCart(this, 'product')">
+                                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                                    Add product to cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Mock Pack CM1 -->
+                    <div class="product-card animate-fadeInUp" style="animation-delay: 0.3s;">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Additional Mock Pack</h3>
+                                <span class="subject-tag">CM1</span>
+                            </div>
+                            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="file-text" class="w-6 h-6 text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <div class="variation-selector">
+                            <h4 class="font-medium text-sm mb-2">Variation:</h4>
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" checked disabled>
+                                <label class="text-sm">Vitalsource eBook</label>
+                            </div>
+                        </div>
+
+                        <div class="border-t pt-4">
+                            <div class="product-options">
+                                <div class="flex gap-4">
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" id="retaker4">
+                                        <label for="retaker4" class="text-sm">Retaker</label>
+                                    </div>
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" id="additional4">
+                                        <label for="additional4" class="text-sm">Additional Copy</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between mt-4">
+                                <div>
+                                    <div class="price-display">£50.40</div>
+                                    <div class="price-suffix">(inc. VAT)</div>
+                                </div>
+                                <button class="btn-primary" onclick="addToCart(this, 'product')">
+                                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                                    Add product to cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Mock Pack CM2 -->
+                    <div class="product-card animate-fadeInUp" style="animation-delay: 0.4s;">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Additional Mock Pack</h3>
+                                <span class="subject-tag">CM2</span>
+                            </div>
+                            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="file-text" class="w-6 h-6 text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <div class="variation-selector">
+                            <h4 class="font-medium text-sm mb-2">Variation:</h4>
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" checked disabled>
+                                <label class="text-sm">Vitalsource eBook</label>
+                            </div>
+                        </div>
+
+                        <div class="border-t pt-4">
+                            <div class="product-options">
+                                <div class="flex gap-4">
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" id="retaker5">
+                                        <label for="retaker5" class="text-sm">Retaker</label>
+                                    </div>
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" id="additional5">
+                                        <label for="additional5" class="text-sm">Additional Copy</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between mt-4">
+                                <div>
+                                    <div class="price-display">£50.40</div>
+                                    <div class="price-suffix">(inc. VAT)</div>
+                                </div>
+                                <button class="btn-primary" onclick="addToCart(this, 'product')">
+                                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                                    Add product to cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Mock Pack CP1 -->
+                    <div class="product-card animate-fadeInUp" style="animation-delay: 0.5s;">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Additional Mock Pack</h3>
+                                <span class="subject-tag">CP1</span>
+                            </div>
+                            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="file-text" class="w-6 h-6 text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <div class="variation-selector">
+                            <h4 class="font-medium text-sm mb-2">Variation:</h4>
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" checked disabled>
+                                <label class="text-sm">Vitalsource eBook</label>
+                            </div>
+                        </div>
+
+                        <div class="border-t pt-4">
+                            <div class="product-options">
+                                <div class="flex gap-4">
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" id="retaker6">
+                                        <label for="retaker6" class="text-sm">Retaker</label>
+                                    </div>
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" id="additional6">
+                                        <label for="additional6" class="text-sm">Additional Copy</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between mt-4">
+                                <div>
+                                    <div class="price-display">£50.40</div>
+                                    <div class="price-suffix">(inc. VAT)</div>
+                                </div>
+                                <button class="btn-primary" onclick="addToCart(this, 'product')">
+                                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                                    Add product to cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enhanced Load More Button -->
+                <button class="load-more-btn" onclick="loadMoreProducts()">
+                    <div class="flex items-center justify-center gap-2">
+                        <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                        <span>Load More Products (374 remaining)</span>
+                    </div>
+                </button>
+            </section>
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Filter toggle functionality
+        function toggleFilter(filterId) {
+            const content = document.getElementById(filterId + '-content');
+            const icon = document.getElementById(filterId + '-icon');
+            
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                icon.style.transform = 'rotate(-90deg)';
+            } else {
+                content.classList.add('open');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Bundle content toggle
+        function toggleBundle(bundleId) {
+            const bundle = document.getElementById(bundleId);
+            if (bundle.style.display === 'none') {
+                bundle.style.display = 'block';
+                bundle.classList.add('animate-slideDown');
+            } else {
+                bundle.style.display = 'none';
+                bundle.classList.remove('animate-slideDown');
+            }
+        }
+
+        // Add to cart functionality
+        function addToCart(button, type) {
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Added!';
+            button.style.background = 'var(--success)';
+            
+            // Animate the card
+            const card = button.closest('.product-card');
+            card.style.transform = 'scale(1.02)';
+            card.style.boxShadow = 'var(--shadow-lg)';
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.style.background = 'var(--accent)';
+                card.style.transform = '';
+                card.style.boxShadow = '';
+                lucide.createIcons();
+            }, 2000);
+        }
+
+        // Load more products
+        function loadMoreProducts() {
+            const button = document.querySelector('.load-more-btn');
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<div class="flex items-center justify-center gap-2"><i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span>Loading...</span></div>';
+            lucide.createIcons();
+            
+            // Simulate loading
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                lucide.createIcons();
+                // Here you would typically load more products
+                console.log('Loading more products...');
+            }, 1500);
+        }
+
+        // Enhanced hover effects
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-4px)';
+                this.style.boxShadow = 'var(--shadow-lg)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'var(--shadow-sm)';
+            });
+        });
+
+        // Smooth scroll for animations on page load
+        window.addEventListener('load', () => {
+            document.body.style.opacity = '0';
+            document.body.style.animation = 'fadeInUp 0.8s ease-out forwards';
+            document.body.style.opacity = '1';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,370 @@
+/* BPP Products Page - Enhanced Theme (Staying Close to Current) */
+:root {
+  /* Current BPP Brand Colors - Enhanced */
+  --background: oklch(0.9900 0 0);
+  --foreground: oklch(0.1200 0 0);
+  --card: oklch(1.0000 0 0);
+  --card-foreground: oklch(0.1200 0 0);
+  
+  /* BPP Brand Colors - Refined */
+  --primary: oklch(0.2800 0.1200 260.0000); /* BPP Dark Blue */
+  --primary-foreground: oklch(0.9900 0 0);
+  --secondary: oklch(0.9400 0 0); /* Light Gray */
+  --secondary-foreground: oklch(0.2000 0 0);
+  
+  /* Educational Professional Colors */
+  --accent: oklch(0.6200 0.1800 140.0000); /* Professional Green for CTAs */
+  --accent-foreground: oklch(0.9900 0 0);
+  --muted: oklch(0.9600 0 0);
+  --muted-foreground: oklch(0.4500 0 0);
+  
+  /* Status & Interactive Colors */
+  --success: oklch(0.6200 0.1800 140.0000);
+  --warning: oklch(0.7500 0.2000 85.0000);
+  --destructive: oklch(0.5800 0.2200 28.0000);
+  --info: oklch(0.5500 0.1500 220.0000);
+  
+  /* Interface Elements */
+  --border: oklch(0.9000 0 0);
+  --input: oklch(0.9700 0 0);
+  --ring: oklch(0.6200 0.1800 140.0000);
+  
+  /* Typography - Professional */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Merriweather', Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  /* Layout & Spacing */
+  --radius: 0.5rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  
+  /* Professional Shadows - Subtle */
+  --shadow-sm: 0 1px 2px 0px hsl(0 0% 0% / 0.05);
+  --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.08), 0 1px 2px -1px hsl(0 0% 0% / 0.08);
+  --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.08), 0 2px 4px -2px hsl(0 0% 0% / 0.08);
+  --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.08), 0 4px 6px -4px hsl(0 0% 0% / 0.08);
+  --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.10), 0 8px 10px -6px hsl(0 0% 0% / 0.10);
+  
+  /* Animation Timings */
+  --transition-fast: 150ms ease-out;
+  --transition-normal: 250ms ease-out;
+  --transition-slow: 350ms ease-out;
+  
+  /* Spacing System */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+}
+
+/* Base Styles */
+* {
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+body {
+  font-family: var(--font-sans) !important;
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+  line-height: 1.6 !important;
+}
+
+/* Typography Enhancements */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans) !important;
+  font-weight: 600 !important;
+  color: var(--foreground) !important;
+  letter-spacing: -0.025em !important;
+}
+
+/* Enhanced Card Styles */
+.product-card {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: var(--spacing-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: all var(--transition-normal) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.product-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-md) !important;
+  border-color: var(--accent) !important;
+}
+
+.product-card.bundle-card {
+  background: linear-gradient(135deg, oklch(0.6200 0.0600 140.0000) 0%, var(--card) 100%) !important;
+  border-color: var(--accent) !important;
+}
+
+/* Enhanced Filter Sidebar */
+.filter-sidebar {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: var(--spacing-lg) !important;
+}
+
+.filter-section {
+  margin-bottom: var(--spacing-lg) !important;
+  padding-bottom: var(--spacing-md) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.filter-section:last-child {
+  border-bottom: none !important;
+  margin-bottom: 0 !important;
+}
+
+.filter-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  cursor: pointer !important;
+  padding: var(--spacing-sm) 0 !important;
+  font-weight: 500 !important;
+  color: var(--foreground) !important;
+}
+
+.filter-content {
+  padding-top: var(--spacing-sm) !important;
+}
+
+/* Enhanced Buttons */
+.btn-primary {
+  background: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+  border: none !important;
+  padding: var(--spacing-sm) var(--spacing-md) !important;
+  border-radius: var(--radius) !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  transition: all var(--transition-fast) !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: var(--spacing-xs) !important;
+}
+
+.btn-primary:hover {
+  background: oklch(0.5800 0.1600 140.0000) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.btn-secondary {
+  background: var(--secondary) !important;
+  color: var(--secondary-foreground) !important;
+  border: 1px solid var(--border) !important;
+  padding: var(--spacing-sm) var(--spacing-md) !important;
+  border-radius: var(--radius) !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  transition: all var(--transition-fast) !important;
+  cursor: pointer !important;
+}
+
+.btn-secondary:hover {
+  background: var(--muted) !important;
+  border-color: var(--accent) !important;
+}
+
+/* Price Display Enhancement */
+.price-display {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: var(--accent) !important;
+  margin: var(--spacing-sm) 0 !important;
+}
+
+.price-suffix {
+  font-size: 0.875rem !important;
+  font-weight: 400 !important;
+  color: var(--muted-foreground) !important;
+}
+
+/* Subject Tags */
+.subject-tag {
+  background: var(--muted) !important;
+  color: var(--muted-foreground) !important;
+  padding: var(--spacing-xs) var(--spacing-sm) !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  display: inline-block !important;
+  margin: var(--spacing-xs) var(--spacing-xs) var(--spacing-xs) 0 !important;
+}
+
+/* Product Options */
+.product-options {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--spacing-sm) !important;
+  margin: var(--spacing-md) 0 !important;
+}
+
+.option-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--spacing-sm) !important;
+}
+
+.checkbox-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--spacing-xs) !important;
+  cursor: pointer !important;
+}
+
+/* Bundle Content Styles */
+.bundle-content {
+  background: var(--muted) !important;
+  padding: var(--spacing-md) !important;
+  border-radius: var(--radius) !important;
+  margin: var(--spacing-md) 0 !important;
+}
+
+.bundle-item {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: var(--spacing-xs) 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.bundle-item:last-child {
+  border-bottom: none !important;
+}
+
+/* Loading and Animation States */
+.loading-shimmer {
+  background: linear-gradient(90deg, var(--muted) 25%, var(--background) 50%, var(--muted) 75%) !important;
+  background-size: 1000px 100% !important;
+  animation: shimmer 2s infinite !important;
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+    transform: translateY(0);
+  }
+}
+
+/* Utility Classes */
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out forwards !important;
+}
+
+.animate-slideDown {
+  animation: slideDown 0.3s ease-out forwards !important;
+}
+
+/* Enhanced Header Styles */
+.header-gradient {
+  background: linear-gradient(135deg, var(--primary) 0%, oklch(0.2200 0.1400 280.0000) 100%) !important;
+}
+
+.utility-bar {
+  background: oklch(0.9500 0 0) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* Products Grid */
+.products-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  gap: var(--spacing-lg) !important;
+  margin-top: var(--spacing-lg) !important;
+}
+
+/* Load More Button */
+.load-more-btn {
+  background: var(--secondary) !important;
+  color: var(--secondary-foreground) !important;
+  border: 2px dashed var(--border) !important;
+  padding: var(--spacing-lg) !important;
+  border-radius: var(--radius-lg) !important;
+  font-weight: 500 !important;
+  transition: all var(--transition-normal) !important;
+  cursor: pointer !important;
+  margin: var(--spacing-xl) 0 !important;
+  width: 100% !important;
+}
+
+.load-more-btn:hover {
+  background: var(--muted) !important;
+  border-color: var(--accent) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .products-grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--spacing-md) !important;
+  }
+  
+  .filter-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    width: 280px !important;
+    z-index: 50 !important;
+    transform: translateX(-100%) !important;
+    transition: transform var(--transition-slow) !important;
+  }
+  
+  .filter-sidebar.open {
+    transform: translateX(0) !important;
+  }
+}
+
+/* Focus States for Accessibility */
+button:focus,
+input:focus,
+select:focus {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 2px !important;
+}
+
+/* Print Styles */
+@media print {
+  .filter-sidebar,
+  .load-more-btn {
+    display: none !important;
+  }
+}
