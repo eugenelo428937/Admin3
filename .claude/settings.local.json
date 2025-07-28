@@ -26,7 +26,14 @@
       "Bash(npx eslint:*)",
       "Bash(npx tsc:*)",
       "Bash(..venvScriptsactivate)",
-      "Bash(npx react-scripts build:*)"
+      "Bash(npx react-scripts build:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_tab_new",
+      "mcp__playwright__browser_evaluate",
+      "mcp__maerial-ui-mcp__useMuiDocs",
+      "mcp__maerial-ui-mcp__fetchDocs"
     ],
     "deny": []
   },

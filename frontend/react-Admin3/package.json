@@ -9,6 +9,7 @@
     "@fontsource-variable/dm-sans": "^5.2.6",
     "@fontsource-variable/inter": "^5.2.6",
     "@fontsource/dm-sans": "^5.2.6",
+    "@fontsource/inter": "^5.2.6",
     "@fontsource/poppins": "^5.2.6",
     "@material/material-color-utilities": "^0.3.0",
     "@mui/icons-material": "^7.1.1",
@@ -27,7 +28,7 @@
     "react-google-recaptcha-v3": "^1.11.0",
     "react-papaparse": "^4.4.0",
     "react-router-bootstrap": "^0.26.3",
-    "react-router-dom": "^7.5.0",
+    "react-router-dom": "^7.7.1",
     "react-select": "^5.10.1",
     "web-vitals": "^5.0.3"
   },
