@@ -36,7 +36,9 @@ import AccountActivation from "./components/User/AccountActivation";
 import ResendActivation from "./components/User/ResendActivation";
 import EmailVerification from "./components/User/EmailVerification";
 import TutorialChoicePanel from "./components/Product/ProductCard/Tutorial/TutorialChoicePanel";
+import ProductCardVariations from './components/sandbox/ProductCardVariations'; 
 import StyleGuide from "./pages/StyleGuide";
+import StyleGuide2 from "./components/StyleGuide";
 import "./App.css";
 
 function App() {
@@ -193,6 +195,8 @@ function App() {
 														element={<EmailVerification />}
 													/>
 													<Route path="*" element={<NoMatch />} />
+													<Route path="/product-card-variations" element={<ProductCardVariations />} />
+													<Route path="/style-guide-2" element={<StyleGuide2 />} />
 												</Routes>
 											</div>
 
