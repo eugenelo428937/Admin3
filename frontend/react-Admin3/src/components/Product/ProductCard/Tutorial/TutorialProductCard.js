@@ -245,14 +245,14 @@ const TutorialProductCard = React.memo(
 					{variations.length > 0 && (
 						<CardActions sx={{ px: 2, py: 1 }}>
 							<Grid container spacing={2} alignItems="center">
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									{hasChoices && (
 										<Typography variant="caption" color="text.secondary">
 											{choiceCount} choice(s) selected
 										</Typography>
 									)}
 								</Grid>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
 										<Button
 											variant="contained"
