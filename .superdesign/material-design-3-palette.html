@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material Design 3 Color System</title>
+    <link rel="stylesheet" href="material-design-3-palette.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Google Sans', 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            color: #1f1f1f;
+            line-height: 1.5;
+            padding: 24px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 400;
+            margin-bottom: 8px;
+            color: #1f1f1f;
+        }
+
+        .header p {
+            font-size: 1rem;
+            color: #5f6368;
+        }
+
+        .theme-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+
+        .toggle-button {
+            background: #6750a4;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-button:hover {
+            background: #7c4dff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .color-section {
+            margin-bottom: 48px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 24px;
+            color: #1f1f1f;
+            padding-left: 8px;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .color-family-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            transition: all 0.3s ease;
+        }
+
+        .color-family-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.12);
+        }
+
+        .color-family-header {
+            padding: 16px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e8eaed;
+        }
+
+        .color-family-title {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #1f1f1f;
+            margin-bottom: 4px;
+        }
+
+        .color-family-subtitle {
+            font-size: 0.875rem;
+            color: #5f6368;
+        }
+
+        .color-swatches {
+            padding: 0;
+        }
+
+        .color-swatch {
+            position: relative;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.02);
+        }
+
+        .color-info {
+            display: flex;
+            flex-direction: column;
+            z-index: 2;
+        }
+
+        .color-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .color-role {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .color-value {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.75rem;
+            opacity: 0.9;
+            z-index: 2;
+        }
+
+        /* Surface Color Grid */
+        .surface-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .surface-card {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+
+        .surface-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .surface-preview {
+            height: 40px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        .surface-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .surface-value {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.75rem;
+            color: #5f6368;
+        }
+
+        /* Extended Colors */
+        .extended-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .extended-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+
+        .extended-header {
+            padding: 16px;
+            border-bottom: 1px solid #e8eaed;
+        }
+
+        .extended-title {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .extended-subtitle {
+            font-size: 0.875rem;
+            color: #5f6368;
+        }
+
+        /* Dark Theme */
+        [data-theme="dark"] {
+            background-color: #121212;
+            color: #e8eaed;
+        }
+
+        [data-theme="dark"] .header h1,
+        [data-theme="dark"] .section-title {
+            color: #e8eaed;
+        }
+
+        [data-theme="dark"] .color-family-card,
+        [data-theme="dark"] .surface-card,
+        [data-theme="dark"] .extended-card {
+            background: #1f1f1f;
+            box-shadow: 0 1px 3px rgba(255,255,255,0.1);
+        }
+
+        [data-theme="dark"] .color-family-header {
+            background: #2d2d2d;
+            border-color: #3c4043;
+        }
+
+        [data-theme="dark"] .color-family-title,
+        [data-theme="dark"] .surface-name,
+        [data-theme="dark"] .extended-title {
+            color: #e8eaed;
+        }
+
+        @media (max-width: 768px) {
+            .color-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .color-swatch {
+                height: 56px;
+                padding: 0 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Material Design 3 Color System</h1>
+            <p>Dynamic color palette from sandbox CSS files</p>
+        </div>
+
+        <div class="theme-toggle">
+            <button class="toggle-button" onclick="toggleTheme()">
+                Switch to Dark Theme
+            </button>
+        </div>
+
+        <!-- Primary Colors -->
+        <div class="color-section">
+            <h2 class="section-title">Key Colors</h2>
+            <div class="color-grid">
+                <div class="color-family-card">
+                    <div class="color-family-header">
+                        <div class="color-family-title">Primary</div>
+                        <div class="color-family-subtitle">Main brand color</div>
+                    </div>
+                    <div class="color-swatches">
+                        <div class="color-swatch" style="background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);">
+                            <div class="color-info">
+                                <div class="color-name">Primary</div>
+                                <div class="color-role">md-sys-color-primary</div>
+                            </div>
+                            <div class="color-value">rgb(0 104 116)</div>
+                        </div>
+                        <div class="color-swatch" style="background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);">
+                            <div class="color-info">
+                                <div class="color-name">Primary Container</div>
+                                <div class="color-role">md-sys-color-primary-container</div>
+                            </div>
+                            <div class="color-value">rgb(158 239 253)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="color-family-card">
+                    <div class="color-family-header">
+                        <div class="color-family-title">Secondary</div>
+                        <div class="color-family-subtitle">Supporting color</div>
+                    </div>
+                    <div class="color-swatches">
+                        <div class="color-swatch" style="background-color: var(--md-sys-color-secondary); color: var(--md-sys-color-on-secondary);">
+                            <div class="color-info">
+                                <div class="color-name">Secondary</div>
+                                <div class="color-role">md-sys-color-secondary</div>
+                            </div>
+                            <div class="color-value">rgb(0 104 116)</div>
+                        </div>
+                        <div class="color-swatch" style="background-color: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container);">
+                            <div class="color-info">
+                                <div class="color-name">Secondary Container</div>
+                                <div class="color-role">md-sys-color-secondary-container</div>
+                            </div>
+                            <div class="color-value">rgb(158 239 253)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="color-family-card">
+                    <div class="color-family-header">
+                        <div class="color-family-title">Tertiary</div>
+                        <div class="color-family-subtitle">Accent color</div>
+                    </div>
+                    <div class="color-swatches">
+                        <div class="color-swatch" style="background-color: var(--md-sys-color-tertiary); color: var(--md-sys-color-on-tertiary);">
+                            <div class="color-info">
+                                <div class="color-name">Tertiary</div>
+                                <div class="color-role">md-sys-color-tertiary</div>
+                            </div>
+                            <div class="color-value">rgb(82 94 125)</div>
+                        </div>
+                        <div class="color-swatch" style="background-color: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container);">
+                            <div class="color-info">
+                                <div class="color-name">Tertiary Container</div>
+                                <div class="color-role">md-sys-color-tertiary-container</div>
+                            </div>
+                            <div class="color-value">rgb(218 226 255)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="color-family-card">
+                    <div class="color-family-header">
+                        <div class="color-family-title">Error</div>
+                        <div class="color-family-subtitle">Error states</div>
+                    </div>
+                    <div class="color-swatches">
+                        <div class="color-swatch" style="background-color: var(--md-sys-color-error); color: var(--md-sys-color-on-error);">
+                            <div class="color-info">
+                                <div class="color-name">Error</div>
+                                <div class="color-role">md-sys-color-error</div>
+                            </div>
+                            <div class="color-value">rgb(186 26 26)</div>
+                        </div>
+                        <div class="color-swatch" style="background-color: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container);">
+                            <div class="color-info">
+                                <div class="color-name">Error Container</div>
+                                <div class="color-role">md-sys-color-error-container</div>
+                            </div>
+                            <div class="color-value">rgb(255 218 214)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Surface Colors -->
+        <div class="color-section">
+            <h2 class="section-title">Surface Colors</h2>
+            <div class="surface-grid">
+                <div class="surface-card">
+                    <div class="surface-preview" style="background-color: var(--md-sys-color-surface);"></div>
+                    <div class="surface-name">Surface</div>
+                    <div class="surface-value">rgb(245 250 251)</div>
+                </div>
+                <div class="surface-card">
+                    <div class="surface-preview" style="background-color: var(--md-sys-color-surface-dim);"></div>
+                    <div class="surface-name">Surface Dim</div>
+                    <div class="surface-value">rgb(213 219 220)</div>
+                </div>
+                <div class="surface-card">
+                    <div class="surface-preview" style="background-color: var(--md-sys-color-surface-bright);"></div>
+                    <div class="surface-name">Surface Bright</div>
+                    <div class="surface-value">rgb(245 250 251)</div>
+                </div>
+                <div class="surface-card">
+                    <div class="surface-preview" style="background-color: var(--md-sys-color-surface-container-lowest);"></div>
+                    <div class="surface-name">Container Lowest</div>
+                    <div class="surface-value">rgb(255 255 255)</div>
+                </div>
+                <div class="surface-card">
+                    <div class="surface-preview" style="background-color: var(--md-sys-color-surface-container-low);"></div>
+                    <div class="surface-name">Container Low</div>
+                    <div class="surface-value">rgb(239 245 246)</div>
+                </div>
+                <div class="surface-card">
+                    <div class="surface-preview" style="background-color: var(--md-sys-color-surface-container);"></div>
+                    <div class="surface-name">Container</div>
+                    <div class="surface-value">rgb(233 239 240)</div>
+                </div>
+                <div class="surface-card">
+                    <div class="surface-preview" style="background-color: var(--md-sys-color-surface-container-high);"></div>
+                    <div class="surface-name">Container High</div>
+                    <div class="surface-value">rgb(227 233 234)</div>
+                </div>
+                <div class="surface-card">
+                    <div class="surface-preview" style="background-color: var(--md-sys-color-surface-container-highest);"></div>
+                    <div class="surface-name">Container Highest</div>
+                    <div class="surface-value">rgb(222 227 229)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Extended Colors -->
+        <div class="color-section">
+            <h2 class="section-title">Extended Colors</h2>
+            <div class="extended-grid">
+                <div class="extended-card">
+                    <div class="extended-header">
+                        <div class="extended-title">Highlight</div>
+                        <div class="extended-subtitle">Custom brand accent</div>
+                    </div>
+                    <div class="color-swatches">
+                        <div class="color-swatch" style="background-color: var(--md-extended-color-highlight-color); color: var(--md-extended-color-highlight-on-color);">
+                            <div class="color-info">
+                                <div class="color-name">Highlight</div>
+                                <div class="color-role">extended-color-highlight</div>
+                            </div>
+                            <div class="color-value">rgb(140 74 96)</div>
+                        </div>
+                        <div class="color-swatch" style="background-color: var(--md-extended-color-highlight-color-container); color: var(--md-extended-color-highlight-on-color-container);">
+                            <div class="color-info">
+                                <div class="color-name">Highlight Container</div>
+                                <div class="color-role">extended-color-highlight-container</div>
+                            </div>
+                            <div class="color-value">rgb(255 217 226)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="extended-card">
+                    <div class="extended-header">
+                        <div class="extended-title">Custom Color 1</div>
+                        <div class="extended-subtitle">Earth tones</div>
+                    </div>
+                    <div class="color-swatches">
+                        <div class="color-swatch" style="background-color: var(--md-extended-color-custom-color1-color); color: var(--md-extended-color-custom-color1-on-color);">
+                            <div class="color-info">
+                                <div class="color-name">Custom 1</div>
+                                <div class="color-role">extended-color-custom-color1</div>
+                            </div>
+                            <div class="color-value">rgb(142 77 48)</div>
+                        </div>
+                        <div class="color-swatch" style="background-color: var(--md-extended-color-custom-color1-color-container); color: var(--md-extended-color-custom-color1-on-color-container);">
+                            <div class="color-info">
+                                <div class="color-name">Custom 1 Container</div>
+                                <div class="color-role">extended-color-custom-color1-container</div>
+                            </div>
+                            <div class="color-value">rgb(255 219 206)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="extended-card">
+                    <div class="extended-header">
+                        <div class="extended-title">Custom Color 2</div>
+                        <div class="extended-subtitle">Ocean blues</div>
+                    </div>
+                    <div class="color-swatches">
+                        <div class="color-swatch" style="background-color: var(--md-extended-color-custom-color2-color); color: var(--md-extended-color-custom-color2-on-color);">
+                            <div class="color-info">
+                                <div class="color-name">Custom 2</div>
+                                <div class="color-role">extended-color-custom-color2</div>
+                            </div>
+                            <div class="color-value">rgb(10 103 128)</div>
+                        </div>
+                        <div class="color-swatch" style="background-color: var(--md-extended-color-custom-color2-color-container); color: var(--md-extended-color-custom-color2-on-color-container);">
+                            <div class="color-info">
+                                <div class="color-name">Custom 2 Container</div>
+                                <div class="color-role">extended-color-custom-color2-container</div>
+                            </div>
+                            <div class="color-value">rgb(185 234 255)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="extended-card">
+                    <div class="extended-header">
+                        <div class="extended-title">Custom Color 3</div>
+                        <div class="extended-subtitle">Nature greens</div>
+                    </div>
+                    <div class="color-swatches">
+                        <div class="color-swatch" style="background-color: var(--md-extended-color-custom-color3-color); color: var(--md-extended-color-custom-color3-on-color);">
+                            <div class="color-info">
+                                <div class="color-name">Custom 3</div>
+                                <div class="color-role">extended-color-custom-color3</div>
+                            </div>
+                            <div class="color-value">rgb(0 106 98)</div>
+                        </div>
+                        <div class="color-swatch" style="background-color: var(--md-extended-color-custom-color3-color-container); color: var(--md-extended-color-custom-color3-on-color-container);">
+                            <div class="color-info">
+                                <div class="color-name">Custom 3 Container</div>
+                                <div class="color-role">extended-color-custom-color3-container</div>
+                            </div>
+                            <div class="color-value">rgb(158 242 230)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const body = document.documentElement;
+            const button = document.querySelector('.toggle-button');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                button.textContent = 'Switch to Dark Theme';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                button.textContent = 'Switch to Light Theme';
+            }
+        }
+
+        // Add click-to-copy functionality
+        document.querySelectorAll('.color-swatch').forEach(swatch => {
+            swatch.addEventListener('click', () => {
+                const colorValue = swatch.querySelector('.color-value').textContent;
+                navigator.clipboard.writeText(colorValue).then(() => {
+                    // Brief visual feedback
+                    const originalTransform = swatch.style.transform;
+                    swatch.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        swatch.style.transform = originalTransform;
+                    }, 150);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
