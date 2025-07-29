@@ -1,4 +1,3 @@
-import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBox from "../components/SearchBox";
@@ -130,11 +129,8 @@ const Home = () => {
 	};
 
 	return (
-		<Container
-			disableGutters={true}
-			maxWidth="false"
-			className="hero-container">
-			<Row disableGutters={true}>
+		<Container maxWidth="false" className="hero-container">
+			<Row>
 				<Col
 					className="text-center"
 					style={{
@@ -175,10 +171,14 @@ const Home = () => {
 
 					{/* Content */}
 					<Container className="hero-content d-flex flex-wrap justify-content-center align-items-center">
-						<Typography variant="h1" className="color-light__onprimary_lkv">
+						<Typography
+							variant="h1"
+							className="color-light__onprimary_lkv">
 							BPP Actuarial Education
 						</Typography>
-						<Typography variant="h2" className="color-light__onprimary_lkv">
+						<Typography
+							variant="h2"
+							className="color-light__onprimary_lkv">
 							Online Store
 						</Typography>
 						<div
@@ -195,9 +195,7 @@ const Home = () => {
 			</Row>
 
 			{/* Search Results Section */}
-			<Container				
-				disableGutters={true}
-				maxWidth="xl">
+			<Container disableGutters={true} maxWidth="xl">
 				<SearchResults
 					searchResults={searchResults}
 					searchQuery={searchQuery}
