@@ -13,7 +13,7 @@ import {
 	Paper,
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
-
+import { useTheme } from "@mui/material/styles";
 // Import sub-components
 import TypographySection from "./styleguide/TypographySection";
 import ColorSystemSection from "./styleguide/ColorSystemSection";
@@ -24,32 +24,43 @@ import NavigationSection from "./styleguide/NavigationSection";
 import LayoutSection from "./styleguide/LayoutSection";
 import TablesSection from "./styleguide/TablesSection";
 import ProductCardsSection from "./styleguide/ProductCardsSection";
+import ProductCardVariantsDemo from "./styleguide/ProductCardVariantsDemo";
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 
 const StyleGuide = () => {
 	const [dialogOpen, setDialogOpen] = useState(false);
-	const [tabValue, setTabValue] = useState(0);
+	const theme = useTheme();
 
 	return (
 		<Container
-			maxWidth={false}>
-			<Typography variant="h2" component="h1" gutterBottom sx={{ mt: 3 }}>
+			maxWidth="xl"
+			disableGutters
+			sx={{
+				px: theme.liftkit.spacing["2xl"],
+				py: theme.liftkit.spacing.lg,
+			}}>
+			<Typography variant="h2" textAlign="left">
 				Admin3 Style Guide
 			</Typography>
 
 			<Typography
 				variant="subtitle1"
 				gutterBottom
-				sx={{ mb: 2, color: "text.secondary" }}>
+				sx={{ mb: theme.liftkit.spacing.md }}
+				textAlign="left">
 				BPP branding with Material UI components and Liftkit CSS
 			</Typography>
 
 			{/* Tab Navigation - Styled via theme.js */}
-			<Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }} className="m-left__2xl m-right__2xl p-left__2xl p-right__2xl">
+			<Box
+				sx={{
+					borderBottom: 1,
+					borderColor: "divider",					
+				}}>
 				<Tabs
 					defaultActiveKey="typography"
-					id="uncontrolled-tab-example"
+					id="style-guide-tabs"
 					className="mb-3">
 					<Tab
 						eventKey="typography"
@@ -89,6 +100,7 @@ const StyleGuide = () => {
 							</Typography>
 						}>
 						<ProductCardsSection />
+						<ProductCardVariantsDemo />
 					</Tab>
 					<Tab
 						eventKey="buttons-forms-feedback"
@@ -162,7 +174,7 @@ const StyleGuide = () => {
 				onClick={() => setDialogOpen(true)}
 				sx={{ position: "fixed", bottom: 16, right: 16 }}>
 				<Add />
-			</Fab>		
+			</Fab>
 		</Container>
 	);
 };

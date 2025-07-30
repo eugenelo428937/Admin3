@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
-import { ThemeProvider } from '@mui/material/styles';
-import { CssBaseline, Typography } from '@mui/material';
-import theme from './theme/theme';
+import { ThemeProvider } from "@mui/material/styles";
+import { CssBaseline, Typography } from "@mui/material";
+import theme from "./theme/theme";
 import { AuthProvider } from "./hooks/useAuth";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Home from "./pages/Home";
@@ -15,6 +15,7 @@ import { CartProvider } from "./contexts/CartContext";
 import { ProductProvider } from "./contexts/ProductContext";
 import { VATProvider } from "./contexts/VATContext";
 import { TutorialChoiceProvider } from "./contexts/TutorialChoiceContext";
+import { Container } from "@mui/material";
 import AdminExamSessionList from "./components/admin/exam-sessions/ExamSessionList";
 import AdminExamSessionForm from "./components/admin/exam-sessions/ExamSessionForm";
 import AdminSubjectList from "./components/admin/subjects/SubjectList";
@@ -36,7 +37,7 @@ import AccountActivation from "./components/User/AccountActivation";
 import ResendActivation from "./components/User/ResendActivation";
 import EmailVerification from "./components/User/EmailVerification";
 import TutorialChoicePanel from "./components/Product/ProductCard/Tutorial/TutorialChoicePanel";
-import ProductCardVariations from './components/sandbox/ProductCardVariations'; 
+import ProductCardVariations from "./components/sandbox/ProductCardVariations";
 import StyleGuide from "./components/StyleGuide";
 import "./App.css";
 
@@ -75,7 +76,9 @@ function App() {
 									<TutorialChoiceProvider>
 										<div className="App">
 											<MainNavBar className="main-navbar" />
-											<div className="body-container">
+											<Container
+												maxWidth={false}
+												className="body-container">
 												<Routes>
 													<Route
 														path="/"
@@ -85,7 +88,7 @@ function App() {
 													/>
 													<Route
 														path="/style-guide"
-														element={<StyleGuide />}														
+														element={<StyleGuide />}
 													/>
 													<Route path="/home" element={<Home />} />
 													<Route
@@ -194,9 +197,12 @@ function App() {
 														element={<EmailVerification />}
 													/>
 													<Route path="*" element={<NoMatch />} />
-													<Route path="/product-card-variations" element={<ProductCardVariations />} />													
+													<Route
+														path="/product-card-variations"
+														element={<ProductCardVariations />}
+													/>
 												</Routes>
-											</div>
+											</Container>
 
 											{/* Tutorial Choice Panel */}
 											<TutorialChoicePanel />

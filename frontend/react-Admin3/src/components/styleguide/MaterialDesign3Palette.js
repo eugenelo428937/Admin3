@@ -1029,16 +1029,17 @@ const MaterialDesign3Palette = () => {
 								elevation={1}
 								sx={{
 									display: "flex",
-									flexDirection: "column",
+									flexDirection: "row",
 									p: 2,
+									pl: 3,
 									backgroundColor: "white",
 									borderRadius: 3,
 									cursor: "pointer",
 									transition: "transform 0.2s ease",
-									justifyContent: "center",
+									justifyContent: "flex-start",
 									alignItems: "center",
-									height: "11.25rem",
-									width: "13.25rem",
+									height: "7rem",
+									width: "21.25rem",
 									"&:hover": {
 										transform: "translateY(-2px)",
 										boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
@@ -1054,15 +1055,18 @@ const MaterialDesign3Palette = () => {
 										backgroundColor: variable.color,
 										borderRadius: 2,
 										mb: 1.5,
+										mr: 2,
 										border: "1px solid rgba(0,0,0,0.35)",
 									}}
 								/>
-								<Typography variant="body2" sx={{ mb: 0.5 }}>
-									{variable.name}
-								</Typography>
-								<Typography variant="subtitle2">
-									{variable.var}
-								</Typography>
+								<Box sx={{ display: "flex", flexDirection: "column" }}>
+									<Typography variant="body2" sx={{ mb: 0.5 }}>
+										{variable.name}
+									</Typography>
+									<Typography variant="subtitle2">
+										{variable.var}
+									</Typography>
+								</Box>
 							</Paper>
 						</Grid>
 					))}
