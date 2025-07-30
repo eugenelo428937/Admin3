@@ -211,12 +211,32 @@
 	--color-brand-060-emphasis: #7950d1;
 	--color-brand-070: #fff2eb;
 	--color-brand-070-emphasis: #ff6717;
-/* End of BPP Color System */
 
-
-
-
-
+	/* End of BPP Color System */
+	--material-product-card-header-bg-color: var(--color-brand-020);
+	--material-product-card-header-bg-color-emphasis: var(
+		--color-brand-020-emphasis
+	);
+	--tutorial-product-card-header-bg-color: var(--color-brand-030);
+	--tutorial-product-card-header-bg-color-emphasis: var(
+		--color-brand-030-emphasis
+	);
+	--marking-product-card-header-bg-color: var(--color-brand-040);
+	--marking-product-card-header-bg-color-emphasis: var(
+		--color-brand-040-emphasis
+	);
+	--bundle-product-card-header-bg-color: var(--color-brand-050);
+	--bundle-product-card-header-bg-color-emphasis: var(
+		--color-brand-050-emphasis
+	);
+	--online-classroom-product-card-header-bg-color: var(--color-brand-060);
+	--online-classroom-product-card-header-bg-color-emphasis: var(
+		--color-brand-060-emphasis
+	);
+	--marking-voucher-product-card-header-bg-color: var(--color-brand-070);
+	--marking-voucher-product-card-header-bg-color-emphasis: var(
+		--color-brand-070-emphasis
+	);
 
 	--light__background_lkv: #fefefe;
 	--light__onsurface_lkv: #1b1b1f;
@@ -342,7 +362,7 @@
 	--dark__outlinevariant_lkv: #45464f;
 
 	--bs-heading-color: rgba(0, 0, 0, 0.87);
-	--product-card-header-bg-color: #5f5c5e;
+	--product-card-header-bg-color: #af3787;
 	--bs-accordion-btn-focus-box-shadow: 0 0 0 0.25rem rgba(14, 68, 149, 0.25) !important;
 	--bs-primary-rgb: red !important;
 	/* Primary Color Customization */
@@ -367,7 +387,17 @@
 	--main-backgound-color: #fdfdfd;
 	--quick-link-text-decoration-color: #cdcdcb;
 	--bs-tooltip-bg: #707070 !important;
-
+	/* Professional Shadows - Subtle */
+	--shadow-sm: 0 1px 2px 0px hsl(0 0% 0% / 0.05);
+	--shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.08),
+		0 1px 2px -1px hsl(0 0% 0% / 0.08);
+	--shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.08),
+		0 2px 4px -2px hsl(0 0% 0% / 0.08);
+	--shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.08),
+		0 4px 6px -4px hsl(0 0% 0% / 0.08);
+	--shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.1),
+		0 8px 10px -6px hsl(0 0% 0% / 0.1);
+	--Paper-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12);
 	/* Make text look sharper */
 	font-family: "Inter Variable", sans-serif !important;
 	font-family: "Poppins", sans-serif !important;

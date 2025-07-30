@@ -14,7 +14,7 @@ const TypographySection = () => {
 	return (
 		<Card
 			elevation={2}
-			sx={{ height: "100%" }}
+			sx={{ width: "100%" }}
 			className="p-left__2xl p-right__2xl p-top__lg">
 			<CardHeader
 				title={<Typography variant="h3">Typography & Spacing</Typography>}
