@@ -43,7 +43,10 @@
       "mcp__playwright__useMuiDocs",
       "Bash(npx playwright test:*)",
       "mcp__material-ui__fetchDocs",
-      "mcp__playwright__fetchDocs"
+      "mcp__playwright__fetchDocs",
+      "Bash(md-tree:*)",
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": []
   },

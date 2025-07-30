@@ -2,56 +2,6 @@
   max-width: 18rem;  
 }
 
-.product-card-header{
-  height: 6rem;
-}
-.tutorial-header{
-  background-color: rgba(240, 253, 244, 1);
-}
-.tutorial-header h6{
-  background-color: rgba(240, 253, 244, 1);
-}
-.product-card-actions{
-  background-color:#Fbfbfb !important;
-  height: 6rem;
-}
-.product-card{
-  border: 1px solid rgb(229, 231, 235) !important;
-}
-
-/* Marking product header */
-.product-card-header.marking-header {
-    background-color: rgba(255, 247, 237, 1) !important;        
-} 
-
-/* Material product header */
-.product-card-header.material-header {
-    background-color: rgba(239, 246, 255, 1) !important;        
-}
-
-/* Bundle product header */
-.product-card-header.bundle-header {
-    background-color: rgba(255, 248, 220, 1) !important;        
-}
-
-/* Exam session bundle header */
-.bundle-header {
-    background: linear-gradient(135deg, rgba(240, 253, 244, 1) 0%, rgba(187, 247, 208, 0.8) 100%) !important;
-    border: 1px solid rgba(34, 197, 94, 0.3) !important;
-}
-
-/* Default bundle header */
-.bundle-header-default {
-    background: linear-gradient(135deg, rgba(249, 250, 251, 1) 0%, rgba(229, 231, 235, 0.8) 100%) !important;
-    border: 1px solid rgba(156, 163, 175, 0.3) !important;
-}
-
-/* Bundle card header specific styles */
-.bundle-card-header {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
-    padding-bottom: 8px !important;
-}
-
 /* Bundle card hover effects */
 .bundle-header-master:hover {
     transform: translateY(-2px);
@@ -73,6 +23,11 @@
 .product-card-header.online-classroom-header{
   background-color: rgb(251, 240, 253) !important;        
 }
+
+/* Assessment product header */
+.product-card-header.assessment-header {
+    background-color: rgba(252, 228, 236, 1) !important;        
+}
 /* Accessibility improvements */
 .product-card-header button:focus,
 .choice-selector:focus,
@@ -81,12 +36,6 @@
   outline: none;
 }
 
-.product-card-header button:hover {
-  opacity: 0.8;
-}
-.product-card-content{
-  min-height: 12rem;
-}
 /* High contrast support */
 @media (prefers-contrast: high) {
   .product-card-header.tutorial-header {
@@ -111,6 +60,12 @@
     background-color: #fef3c7 !important;
     color: #78350f !important;
     border: 2px solid #f59e0b !important;
+  }
+  
+  .product-card-header.assessment-header {
+    background-color: #fce4ec !important;
+    color: #4a148c !important;
+    border: 2px solid #9c27b0 !important;
   }
 }
 
