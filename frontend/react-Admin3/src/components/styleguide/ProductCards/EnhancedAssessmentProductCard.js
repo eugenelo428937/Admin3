@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
+  Avatar,
   Box,
   Typography,
   Card,
@@ -23,7 +24,7 @@ import {
 } from '@mui/icons-material';
 
 // Enhanced Assessment Product Card - Mock Exams & Practice Tests
-const EnhancedAssessmentProductCard = () => {
+const EnhancedAssessmentProductCard = ({ variant = "assessment-product", ...props }) => {
 	const [selectedVariation, setSelectedVariation] = useState('standard');
 	const [selectedPriceType, setSelectedPriceType] = useState('');
 	const [selectedAttempts, setSelectedAttempts] = useState(3);
@@ -79,43 +80,43 @@ const EnhancedAssessmentProductCard = () => {
 	return (
 		<Card 
 			ref={cardRef}
-			elevation={2} 
-			className="product-card d-flex flex-column" 
+			elevation={2}
+			variant={variant}
+			className="d-flex flex-column" 
 			onMouseMove={handleMouseMove}
 			onMouseEnter={handleMouseEnter}
 			onMouseLeave={handleMouseLeave}
 			sx={{ 
-				maxWidth: 340, 
-				height: 'fit-content', 
 				overflow: 'hidden',
 				transform: isHovered ? 'scale(1.02)' : 'scale(1)',
 				transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-			}}>
+			}}
+			{...props}>
 			<CardHeader
 				ref={headerRef}
+				className="product-header"
 				title={
-					<Box display="flex" alignItems="center" justifyContent="space-between">
-						<Typography variant="h6" sx={{ flex: 1}}>
-							CS1 Mock Examination
-						</Typography>
-						<Box
-							sx={{
-								backgroundColor: 'white',
-								borderRadius: '50%',
-								p: 1.5,
-								display: 'flex',
-								alignItems: 'center',
-								justifyContent: 'center',
-								boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-							}}
-						>
-							<Assessment sx={{ fontSize: 16, color: '#9c27b0' }} />
-						</Box>
-					</Box>
+					<Typography
+						variant="h4"
+						textAlign="left"
+						className="product-title">
+						CS1 Mock Examination
+					</Typography>
 				}
-				className="product-card-header assessment-header"
+				subheader={
+					<Typography
+						variant="subtitle1"
+						textAlign="left"
+						className="product-subtitle">
+						Mock Exam • Practice Test
+					</Typography>
+				}
+				avatar={
+					<Avatar className="product-avatar">
+						<Assessment className="product-avatar-icon" />
+					</Avatar>
+				}
 				sx={{ 
-					py: 2.5,
 					position: 'relative',
 					'&::before': {
 						content: '""',
@@ -135,10 +136,10 @@ const EnhancedAssessmentProductCard = () => {
 				}}
 			/>
 
-			<CardContent className="product-card-content" sx={{ marginTop: "0" }}>
-				<Box display="flex" gap={1.5} mb={3}>
-					<Chip label="CS1" variant="filled" color="primary" sx={{ fontWeight: 600, fontSize: '0.875rem', px: 1.5, py: 0.5, '& .MuiChip-label': { px: 1 } }} />
-					<Chip label="Mock Exam" variant="filled" sx={{ bgcolor: '#9c27b0', color: 'white', fontWeight: 600, fontSize: '0.875rem', px: 1.5, py: 0.5, '& .MuiChip-label': { px: 1 } }} />
+			<CardContent>
+				<Box className="product-chips">
+					<Chip label="CS1" variant="filled" color="primary" />
+					<Chip label="Mock Exam" variant="filled" color="secondary" />
 				</Box>
 
 				<Box mb={3}>
@@ -212,7 +213,7 @@ const EnhancedAssessmentProductCard = () => {
 
 			<Divider />
 
-			<CardActions className="product-card-actions" sx={{ px: 2, py: 1, flexDirection: 'column', alignItems: 'stretch', mt: 'auto', height: 'auto !important', minHeight: 'auto !important' }}>
+			<CardActions>
 				<Box mb={2.5}>
 					<Typography variant="subtitle2" color="text.primary" textAlign="left" className="m-bottom__2xs">
 						Discount Options
@@ -231,46 +232,35 @@ const EnhancedAssessmentProductCard = () => {
 					</Box>
 				</Box>
 
-				<Box display="flex" alignItems="center" justifyContent="space-between">
-					<Box display="flex" alignItems="center" gap={1.5}>
-						<Typography variant="h4" fontWeight={700} color="primary.main">
-							{(() => {
-								let basePrice = selectedVariation === 'adaptive' ? 65 : 45;
-								if (selectedAttempts === 5) basePrice += 15;
-								if (selectedAttempts === 'Unlimited') basePrice += 30;
-								if (selectedPriceType === 'retaker') return `£${(basePrice * 0.8).toFixed(2)}`;
-								if (selectedPriceType === 'student') return `£${(basePrice * 0.85).toFixed(2)}`;
-								return `£${basePrice.toFixed(2)}`;
-							})()}
-						</Typography>
-						<Tooltip title="Show price details">
-							<Button variant="outlined" size="small" sx={{ minWidth: 'auto', px: 1, py: 0.5 }}>
-								<InfoOutline sx={{ fontSize: 16 }} />
-							</Button>
-						</Tooltip>
+				<Box className="price-container">
+					<Box className="price-action-section">
+						<Box className="price-info">
+							<Typography variant="h3" className="price-display">
+								{(() => {
+									let basePrice = selectedVariation === 'adaptive' ? 65 : 45;
+									if (selectedAttempts === 5) basePrice += 15;
+									if (selectedAttempts === 'Unlimited') basePrice += 30;
+									if (selectedPriceType === 'retaker') return `£${(basePrice * 0.8).toFixed(2)}`;
+									if (selectedPriceType === 'student') return `£${(basePrice * 0.85).toFixed(2)}`;
+									return `£${basePrice.toFixed(2)}`;
+								})()}
+							</Typography>
+							<Tooltip title="Show price details">
+								<Button size="small" className="info-button">
+									<InfoOutline />
+								</Button>
+							</Tooltip>
+						</Box>
+						<Button
+							variant="contained"
+							className="add-to-cart-button"
+							disabled={!selectedVariation}
+						>
+							<AddShoppingCart />
+						</Button>
 					</Box>
-					<Button
-						variant="contained"
-						sx={{
-							backgroundColor: '#9c27b0',
-							borderRadius: '50%',
-							minWidth: 44,
-							width: 44,
-							height: 44,
-							p: 0,
-							boxShadow: '0 4px 8px rgba(156, 39, 176, 0.3)',
-							'&:hover': {
-								backgroundColor: '#7b1fa2',
-								boxShadow: '0 6px 12px rgba(156, 39, 176, 0.4)',
-								transform: 'translateY(-1px)',
-							},
-						}}
-						disabled={!selectedVariation}
-					>
-						<AddShoppingCart sx={{ fontSize: 18, color: 'white' }} />
-					</Button>
 				</Box>
-				<Typography variant="caption" color="text.secondary" mt={1}>
+				<Typography variant="caption" className="status-text">
 					{selectedPriceType === 'retaker' ? 'Retaker discount applied' : selectedPriceType === 'student' ? 'Student discount applied' : 'Standard pricing'} • Price includes VAT • {selectedAttempts} attempt{selectedAttempts !== 1 && selectedAttempts !== 'Unlimited' ? 's' : selectedAttempts === 'Unlimited' ? 's' : ''} included
 				</Typography>
 			</CardActions>
