@@ -16,7 +16,8 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Collapse
+  Collapse,
+  Tooltip
 } from '@mui/material';
 import {
   Inventory2,
@@ -29,10 +30,11 @@ import {
   School,
   LibraryBooks,
   Computer,
-  Assessment
+  Assessment,
+  InfoOutline
 } from '@mui/icons-material';
 
-const EnhancedBundleProductCard = () => {
+const EnhancedBundleProductCard = ({ variant = "bundle-product", ...props }) => {
   const [showDetails, setShowDetails] = useState(false);
 
   const bundleItems = [
@@ -47,7 +49,7 @@ const EnhancedBundleProductCard = () => {
   const savings = totalValue - bundlePrice;
 
   return (
-    <Card elevation={2} sx={{ maxWidth: 340, height: 'fit-content' }}>
+    <Card elevation={2} variant={variant} className="d-flex flex-column" {...props}>
       <Badge 
         badgeContent="Best Value" 
         color="success" 
@@ -62,23 +64,28 @@ const EnhancedBundleProductCard = () => {
         }}
       >
         <CardHeader
+          className="product-header"
+          title={
+            <Typography
+              variant="h4"
+              textAlign="left"
+              className="product-title">
+              CP1 Complete Bundle
+            </Typography>
+          }
+          subheader={
+            <Typography
+              variant="subtitle1"
+              textAlign="left"
+              className="product-subtitle">
+              Core Principles • All Formats
+            </Typography>
+          }
           avatar={
-            <Avatar
-              sx={{ 
-                bgcolor: 'var(--mui-palette-product-bundle)',
-                color: 'white',
-                width: 48,
-                height: 48
-              }}
-            >
-              <Inventory2 />
+            <Avatar className="product-avatar">
+              <Inventory2 className="product-avatar-icon" />
             </Avatar>
           }
-          title="CP1 Complete Bundle"
-          subheader="Core Principles • All Formats"
-          titleTypographyProps={{ variant: 'h6', fontSize: '1.1rem' }}
-          subheaderTypographyProps={{ variant: 'caption' }}
-          sx={{ pb: 1 }}
         />
       </Badge>
       
@@ -98,14 +105,7 @@ const EnhancedBundleProductCard = () => {
           </Stack>
         </Box>
 
-        <Box sx={{ 
-          bgcolor: 'success.50', 
-          border: 1, 
-          borderColor: 'success.light',
-          borderRadius: 1, 
-          p: 1.5, 
-          mb: 2 
-        }}>
+        <Box className="product-variations">
           <Typography variant="subtitle2" color="success.dark" sx={{ mb: 1 }}>
             Save £{savings} with this bundle
           </Typography>
@@ -156,28 +156,33 @@ const EnhancedBundleProductCard = () => {
           </List>
         </Collapse>
 
-        <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-          <Chip label="Complete Package" size="small" color="primary" />
-          <Chip label="Best Value" size="small" color="success" />
-        </Stack>
+        <Box className="product-chips">
+          <Chip label="Complete Package" variant="filled" color="primary" />
+          <Chip label="Best Value" variant="filled" color="secondary" />
+        </Box>
       </CardContent>
       
-      <CardActions sx={{ p: 2, pt: 0 }}>
-        <Button 
-          variant="contained" 
-          startIcon={<AddShoppingCart />}
-          fullWidth
-          size="large"
-          sx={{
-            backgroundColor: 'var(--mui-palette-product-bundle)',
-            '&:hover': {
-              backgroundColor: 'var(--mui-palette-product-bundle)',
-              filter: 'brightness(0.9)'
-            }
-          }}
-        >
-          Get Complete Bundle
-        </Button>
+      <CardActions>
+        <Box className="price-container">
+          <Box className="price-action-section">
+            <Box className="price-info">
+              <Typography variant="h3" className="price-display">
+                £{bundlePrice}
+              </Typography>
+              <Tooltip title="Show price details">
+                <Button size="small" className="info-button">
+                  <InfoOutline />
+                </Button>
+              </Tooltip>
+            </Box>
+            <Button variant="contained" className="add-to-cart-button">
+              <AddShoppingCart />
+            </Button>
+          </Box>
+        </Box>
+        <Typography variant="caption" className="status-text">
+          Save £{savings} with this bundle • Price includes VAT
+        </Typography>
       </CardActions>
     </Card>
   );

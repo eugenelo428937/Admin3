@@ -27,7 +27,7 @@ import {
   Timer
 } from '@mui/icons-material';
 
-const EnhancedMarkingVoucherProductCard = () => {
+const EnhancedMarkingVoucherProductCard = ({ variant = "marking-product", ...props }) => {
   const [selectedPackage, setSelectedPackage] = useState('5-pack');
 
   const voucherPackages = {
@@ -61,7 +61,7 @@ const EnhancedMarkingVoucherProductCard = () => {
   const selectedOption = voucherPackages[selectedPackage];
 
   return (
-    <Card elevation={2} sx={{ maxWidth: 340, height: 'fit-content' }}>
+    <Card elevation={2} variant={variant} className="d-flex flex-column" {...props}>
       {selectedOption.popular && (
         <Badge 
           badgeContent="Popular" 
@@ -79,23 +79,28 @@ const EnhancedMarkingVoucherProductCard = () => {
       )}
       
       <CardHeader
+        className="product-header"
+        title={
+          <Typography
+            variant="h4"
+            textAlign="left"
+            className="product-title">
+            Marking Voucher Pack
+          </Typography>
+        }
+        subheader={
+          <Typography
+            variant="subtitle1"
+            textAlign="left"
+            className="product-subtitle">
+            Pre-paid Credits • Any Subject
+          </Typography>
+        }
         avatar={
-          <Avatar
-            sx={{ 
-              bgcolor: 'var(--mui-palette-product-voucher)',
-              color: 'white',
-              width: 48,
-              height: 48
-            }}
-          >
-            <ConfirmationNumberOutlined />
+          <Avatar className="product-avatar">
+            <ConfirmationNumberOutlined className="product-avatar-icon" />
           </Avatar>
         }
-        title="Marking Voucher Pack"
-        subheader="Pre-paid Credits • Any Subject"
-        titleTypographyProps={{ variant: 'h6', fontSize: '1.1rem' }}
-        subheaderTypographyProps={{ variant: 'caption' }}
-        sx={{ pb: 1 }}
       />
       
       <CardContent sx={{ pt: 0 }}>
@@ -199,21 +204,27 @@ const EnhancedMarkingVoucherProductCard = () => {
         </Box>
       </CardContent>
       
-      <CardActions sx={{ p: 2, pt: 0 }}>
-        <Button 
-          variant="contained" 
-          startIcon={<AddShoppingCart />}
-          fullWidth
-          sx={{
-            backgroundColor: 'var(--mui-palette-product-voucher)',
-            '&:hover': {
-              backgroundColor: 'var(--mui-palette-product-voucher)',
-              filter: 'brightness(0.9)'
-            }
-          }}
-        >
-          Buy {selectedOption.quantity} Vouchers - £{selectedOption.price}
-        </Button>
+      <CardActions>
+        <Box className="price-container">
+          <Box className="price-action-section">
+            <Box className="price-info">
+              <Typography variant="h3" className="price-display">
+                £{selectedOption.price}
+              </Typography>
+              <Tooltip title="Show price details">
+                <Button size="small" className="info-button">
+                  <InfoOutline />
+                </Button>
+              </Tooltip>
+            </Box>
+            <Button variant="contained" className="add-to-cart-button">
+              <AddShoppingCart />
+            </Button>
+          </Box>
+        </Box>
+        <Typography variant="caption" className="status-text">
+          {selectedOption.quantity} vouchers • Save £{selectedOption.savings} • Price includes VAT
+        </Typography>
       </CardActions>
     </Card>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
 	Paper,
 	Avatar,
@@ -11,10 +11,10 @@ import {
 	Button,
 	Chip,
 	Divider,
-	Checkbox,
-	FormGroup,
-	FormControlLabel,
+	Stack,
 	Radio,
+	RadioGroup,
+	FormControlLabel,
 	Tooltip,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
@@ -26,33 +26,135 @@ import {
 
 // Variation B: Enhanced Balanced & Traditional
 const BalancedProductCard = ({ variant = "material-product", ...props }) => {
-	const [selectedVariations, setSelectedVariations] = useState([]);
+	const [selectedVariation, setSelectedVariation] = useState("printed");
 	const [selectedPriceType, setSelectedPriceType] = useState(""); // Empty means standard pricing
+	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+	const [isHovered, setIsHovered] = useState(false);
 	const theme = useTheme();
+	const cardRef = useRef(null);
+	const headerRef = useRef(null);
+
+	const variationOptions = {
+		printed: {
+			price: 45,
+			label: "Printed Version",
+			description: "Physical study materials",
+		},
+		ebook: {
+			price: 35,
+			label: "eBook Version",
+			description: "Digital download",
+		},
+		both: {
+			price: 65,
+			label: "Printed + eBook",
+			description: "Complete package",
+		},
+	};
+
+	const handleVariationChange = (event) => {
+		setSelectedVariation(event.target.value);
+	};
+
+	// Initialize mouse position to center
+	useEffect(() => {
+		setMousePosition({ x: 50, y: 50 });
+	}, []);
+
+	const handleMouseMove = (e) => {
+		// Calculate mouse position relative to the header, not the entire card
+		if (headerRef.current) {
+			const rect = headerRef.current.getBoundingClientRect();
+			const x = ((e.clientX - rect.left) / rect.width) * 100;
+			const y = ((e.clientY - rect.top) / rect.height) * 100;
+			setMousePosition({ x, y });
+		}
+	};
+
+	const handleMouseEnter = () => {
+		setIsHovered(true);
+	};
+
+	const handleMouseLeave = () => {
+		setIsHovered(false);
+		setMousePosition({ x: 50, y: 50 }); // Reset to center
+	};
+
+	// Calculate gradient based on mouse position using theme utility
+	const getGradientStyle = () => {
+		return theme.gradients.createGradientStyle(
+			mousePosition, 
+			isHovered, 
+			theme.gradients.colorSchemes.material
+		);
+	};
+
+	// Debug: Log theme values to console
+	console.log("Theme Debug:", {
+		md3Available: !!theme.palette.md3,
+		onPrimary: theme.palette.md3?.onPrimary,
+		fullMd3: theme.palette.md3,
+		variant: variant,
+	});
 
 	return (
 		<Card
+			ref={cardRef}
 			elevation={2}
 			variant={variant}
-			className="product-card d-flex flex-column"
+			className="d-flex flex-column"
+			onMouseMove={handleMouseMove}
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseLeave}
+			sx={{ 
+				overflow: 'hidden',
+				transform: isHovered ? 'scale(1.02)' : 'scale(1)',
+				transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+			}}
 			{...props}>
 			{/* Enhanced Header - Similar to Variation C */}
 			<CardHeader
+				ref={headerRef}
+				className="product-header"
 				title={
-					<Typography variant="h5" textAlign="left">
+					<Typography
+						variant="h4"
+						textAlign="left"
+						className="product-title">
 						Mini ASET
 					</Typography>
 				}
 				subheader={
-					<Typography variant="subtitle1" textAlign="left">
+					<Typography
+						variant="subtitle1"
+						textAlign="left"
+						className="product-subtitle">
 						(April 2024 Paper)
 					</Typography>
 				}
 				avatar={
-					<Avatar sx={{ backgroundColor: theme.palette.md3.onPrimary }}>
-						<LibraryBooksSharp />
+					<Avatar className="product-avatar">
+						<LibraryBooksSharp className="product-avatar-icon" />
 					</Avatar>
 				}
+				sx={{ 
+					position: 'relative',
+					'&::before': {
+						content: '""',
+						position: 'absolute',
+						top: 0,
+						left: 0,
+						right: 0,
+						bottom: 0,
+						...getGradientStyle(),
+						zIndex: 0,
+						pointerEvents: 'none',
+					},
+					'& > *': {
+						position: 'relative',
+						zIndex: 1,
+					}
+				}}
 			/>
 
 			<CardContent>
@@ -64,170 +166,173 @@ const BalancedProductCard = ({ variant = "material-product", ...props }) => {
 
 				{/* Enhanced Variations Section - Better hierarchy */}
 				<Box className="product-variations">
-					<Typography variant="body2" textAlign="left">
+					<Typography variant="subtitle2" sx={{ mb: 1.5 }}>
 						Product Variations
 					</Typography>
 
-					<FormGroup>
-						<FormControlLabel
-							control={
-								<Checkbox size="small" />
-							}
-							label={
-								<Typography variant="subtitle1">
-									Printed Version
-								</Typography>
-							}
-						/>
-						<FormControlLabel
-							control={<Checkbox size="small" />}
-							label={
-								<Typography variant="subtitle1">
-									eBook Version
-								</Typography>
-							}
-						/>
-					</FormGroup>
+					<RadioGroup
+						value={selectedVariation}
+						onChange={handleVariationChange}
+						sx={{ width: "100%" }}>
+						<Stack spacing={1}>
+							{Object.entries(variationOptions).map(([key, option]) => (
+								<Box
+									key={key}
+									sx={{
+										border: 1,
+										borderColor:
+											selectedVariation === key
+												? "primary.main"
+												: "divider",
+										borderRadius: 1,
+										p: theme.spacing.sm,
+										backgroundColor:
+											selectedVariation === key
+												? "primary.50"
+												: "transparent",
+										transition: "all 0.2s ease",
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "space-between",
+										width: "100%",
+									}}>
+									<FormControlLabel
+										value={key}
+										control={<Radio size="small" />}
+										label={
+											<Typography
+												variant="body2"
+												fontWeight={
+													selectedVariation === key ? 600 : 400
+												}>
+												{option.label}
+											</Typography>
+										}
+										sx={{ mx: 0, flex: 1 }}
+									/>
+									<Typography
+										variant="body2"
+										color="primary.main"
+										sx={{ paddingRight: "1rem" }}
+										fontWeight={600}>
+										£{option.price}
+									</Typography>
+								</Box>
+							))}
+						</Stack>
+					</RadioGroup>
 				</Box>
 			</CardContent>
-
-			<Divider />
-
-			<CardActions
-				className="product-card-actions"
-				sx={{
-					pt: theme.liftkit.spacing.md,
-					px: theme.liftkit.spacing.md,
-					flexDirection: "column",
-					alignItems: "stretch",
-					mt: "auto",
-					justifyContent: "space-between",
-				}}>
-				{/* Enhanced Discount Options */}
-				<Box className="discount-options">
-					<Typography
-						variant="subtitle2"
-						color="text.primary"
-						textAlign="left"
-						className="m-bottom__2xs">
-						Discount Options
-					</Typography>
+			<CardActions>
+				<Box className="price-container">
+					{/* Left Column - Discount Options */}
 					<Box
-						sx={{
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "flex-start",
-							transition: "all 0.2s ease",
-							"&:hover": {
-								boxShadow: "1px 2px 1px rgba(0, 0, 0, 0.15)",
-								backgroundColor: "grey.50",
-							},
-						}}>
-						<FormControlLabel
-							control={
-								<Radio
-									color="primary"
-									checked={selectedPriceType === "retaker"}
-									onClick={() =>
-										setSelectedPriceType(
-											selectedPriceType === "retaker"
-												? ""
-												: "retaker"
-										)
-									}
-									sx={{
-										"& .MuiSvgIcon-root": { fontSize: "1rem" },
-									}}
-								/>
-							}
-							label={<Typography variant="caption">Retaker</Typography>}
-							sx={{ m: 0 }}
-						/>
-						<FormControlLabel
-							control={
-								<Radio
-									color="primary"
-									checked={selectedPriceType === "additional"}
-									onClick={() =>
-										setSelectedPriceType(
-											selectedPriceType === "additional"
-												? ""
-												: "additional"
-										)
-									}
-									sx={{
-										"& .MuiSvgIcon-root": { fontSize: "1rem" },
-									}}
-								/>
-							}
-							label={
-								<Typography variant="caption">
-									Additional Copy
-								</Typography>
-							}
-							sx={{ m: 0 }}
-						/>
-					</Box>
-				</Box>
-
-				{/* Enhanced Price & Action */}
-				<Box
-					display="flex"
-					alignItems="center"
-					justifyContent="space-between">
-					<Box
-						display="flex"
-						alignItems="center"
-						gap={theme.liftkit.spacing.sm}>
-						<Typography variant="h4" color="primary.main">
-							{selectedPriceType === "retaker"
-								? "£36.00"
-								: selectedPriceType === "additional"
-								? "£22.50"
-								: "£45.00"}
+						className="discount-options"
+						sx={{ flex: 1, alignSelf: "flex-start" }}>
+						<Typography variant="subtitle2" className="discount-title">
+							Discount Options
 						</Typography>
-						<Tooltip title="Show price details">
-							<Button
-								size="small"
-								sx={{
-									minWidth: "auto",
-									px: theme.liftkit.spacing.xs,
-									py: theme.liftkit.spacing.xs,
-									"&:hover": {
-										backgroundColor: theme.palette.bpp.granite["010"],
-										boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
-									},
-								}}>
-								<InfoOutline sx={{ fontSize: "1.4rem" }} />
-							</Button>
-						</Tooltip>
+						<Box className="discount-radio-group">
+							<FormControlLabel
+								className="discount-radio-option"
+								control={
+									<Radio
+										checked={selectedPriceType === "retaker"}
+										onClick={() =>
+											setSelectedPriceType(
+												selectedPriceType === "retaker"
+													? ""
+													: "retaker"
+											)
+										}
+										size="small"
+									/>
+								}
+								label={
+									<Typography
+										variant="subtitle2"
+										className="discount-label">
+										Retaker
+									</Typography>
+								}
+							/>
+							<FormControlLabel
+								className="discount-radio-option"
+								control={
+									<Radio
+										checked={selectedPriceType === "additional"}
+										onClick={() =>
+											setSelectedPriceType(
+												selectedPriceType === "additional"
+													? ""
+													: "additional"
+											)
+										}
+										size="small"
+									/>
+								}
+								label={
+									<Typography
+										variant="subtitle2"
+										className="discount-label">
+										Additional Copy
+									</Typography>
+								}
+							/>
+						</Box>
 					</Box>
-					<Button
-						variant="contained"
-						color="success"
-						sx={{
-							borderRadius: "50%",
-							minWidth: 44,
-							width: 44,
-							height: 44,
-							p: 0,
-							boxShadow: "0 4px 8px rgba(76, 175, 80, 0.3)",
-							"&:hover": {
-								boxShadow: "0 6px 12px rgba(76, 175, 80, 0.4)",
-								transform: "translateY(-1px)",
-							},
-						}}>
-						<AddShoppingCart sx={{ fontSize: 18 }} />
-					</Button>
+
+					{/* Right Column - Price & Action Section */}
+					<Box className="price-action-section">
+						{/* Price and Info Button Row */}
+						<Box className="price-info-row">
+							<Typography variant="h3" className="price-display">
+								{selectedPriceType === "retaker"
+									? `£${(
+											variationOptions[selectedVariation].price * 0.8
+									  ).toFixed(2)}`
+									: selectedPriceType === "additional"
+									? `£${(
+											variationOptions[selectedVariation].price * 0.5
+									  ).toFixed(2)}`
+									: `£${variationOptions[selectedVariation].price}.00`}
+							</Typography>
+							<Tooltip title="Show price details">
+								<Button size="small" className="info-button">
+									<InfoOutline />
+								</Button>
+							</Tooltip>
+						</Box>
+
+						{/* Status Text */}
+						<Box className="price-details-row">
+							<Typography
+								variant="fineprint"
+								className="price-level-text"
+								color="text.secondary">
+								{selectedPriceType === "retaker"
+									? "Retaker discount applied"
+									: selectedPriceType === "additional"
+									? "Additional copy discount applied"
+									: "Standard pricing"}
+							</Typography>
+							<Typography
+								variant="fineprint"
+								className="vat-status-text"
+								color="text.secondary">
+								Price includes VAT
+							</Typography>
+						</Box>
+
+						{/* Add to Cart Button - Always at bottom */}
+						<Button
+							variant="contained"
+							className="add-to-cart-button"
+							sx={{ alignSelf: "stretch" }}>
+							<AddShoppingCart />
+						</Button>
+					</Box>
 				</Box>
-				<Typography variant="caption" color="text.secondary" mt={1}>
-					{selectedPriceType === "retaker"
-						? "Retaker discount applied"
-						: selectedPriceType === "additional"
-						? "Additional copy discount applied"
-						: "Standard pricing"}{" "}
-					• Price includes VAT
-				</Typography>
 			</CardActions>
 		</Card>
 	);
