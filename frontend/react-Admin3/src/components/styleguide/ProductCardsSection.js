@@ -78,7 +78,7 @@ const ProductCardsSection = () => {
 				and functionality
 			</Typography>
 
-			<Grid container spacing={4} sx={{ mb: 6 }}>
+			<Grid container spacing={4} sx={{ mb: 6, alignItems: "flex-start" }}>
 				<Grid item xs={12} sm={6} lg={4}>
 					<Typography variant="h6" gutterBottom>
 						Study Materials
