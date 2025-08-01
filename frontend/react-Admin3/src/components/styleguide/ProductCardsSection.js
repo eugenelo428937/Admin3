@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+	
 	Box,
 	Container,
 	Typography,
@@ -58,12 +59,9 @@ import {
 	EnhancedMarkingVoucherProductCard,
 	EnhancedCompactCard,
 	EnhancedHorizontalCard,
-	EnhancedMinimalCard,
-	MarkingCardAllAvailable,
-	MarkingCardExpiringSoon,
-	MarkingCardSomeExpired,
-	MarkingCardAllExpired,
+	EnhancedMinimalCard,		
 } from "./ProductCards";
+import MarkingProductCard from "./ProductCards/MarkingProductCard";
 
 const ProductCardsSection = () => {
 	const theme = useTheme();
@@ -133,15 +131,15 @@ const ProductCardsSection = () => {
 
 				<Grid item xs={12} sm={6} lg={4}>
 					<Typography variant="h6" gutterBottom>
-						Marking (Available)
+						Marking
 					</Typography>
 					<Typography
 						variant="body2"
 						color="text.secondary"
 						sx={{ mb: 2 }}>
-						Deadlines available, no discounts
+						Different deadline scenarios for marking products
 					</Typography>
-					<MarkingCardAllAvailable />
+					<MarkingProductCard />
 				</Grid>
 
 				<Grid item xs={12} sm={6} lg={4}>
@@ -168,56 +166,7 @@ const ProductCardsSection = () => {
 				</Grid>
 			</Grid>
 
-			{/* Marking States Showcase */}
-			<Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
-				Marking Product States
-			</Typography>
-			<Typography variant="body1" sx={{ mb: 4 }}>
-				Different deadline scenarios for marking products
-			</Typography>
-
-			<Grid container spacing={3} sx={{ mb: 6 }}>
-				<Grid item xs={12} sm={6} lg={3}>
-					<Typography variant="h6" gutterBottom>
-						All Available
-					</Typography>
-					<Typography variant="body2" sx={{ mb: 2 }}>
-						Multiple upcoming deadlines
-					</Typography>
-					<MarkingCardAllAvailable />
-				</Grid>
-
-				<Grid item xs={12} sm={6} lg={3}>
-					<Typography variant="h6" gutterBottom>
-						Expiring Soon
-					</Typography>
-					<Typography variant="body2" sx={{ mb: 2 }}>
-						Urgent deadline warning
-					</Typography>
-					<MarkingCardExpiringSoon />
-				</Grid>
-
-				<Grid item xs={12} sm={6} lg={3}>
-					<Typography variant="h6" gutterBottom>
-						Some Expired
-					</Typography>
-					<Typography variant="body2" sx={{ mb: 2 }}>
-						Mixed availability state
-					</Typography>
-					<MarkingCardSomeExpired />
-				</Grid>
-
-				<Grid item xs={12} sm={6} lg={3}>
-					<Typography variant="h6" gutterBottom>
-						All Expired
-					</Typography>
-					<Typography variant="body2" sx={{ mb: 2 }}>
-						Product unavailable
-					</Typography>
-					<MarkingCardAllExpired />
-				</Grid>
-			</Grid>
-
+			
 			{/* Enhanced Card Variations */}
 			<Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
 				Enhanced Card Variations

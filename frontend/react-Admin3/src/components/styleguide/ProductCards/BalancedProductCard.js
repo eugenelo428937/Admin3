@@ -106,12 +106,28 @@ const BalancedProductCard = ({ variant = "material-product", ...props }) => {
 			onMouseMove={handleMouseMove}
 			onMouseEnter={handleMouseEnter}
 			onMouseLeave={handleMouseLeave}
-			sx={{ 
-				overflow: 'hidden',
+			sx={{ 				
 				transform: isHovered ? 'scale(1.02)' : 'scale(1)',
 				transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
 			}}
 			{...props}>
+			{/* Floating Badges */}
+			<Box className="floating-badges-container">
+				<Chip
+					label="CS1"
+					size="small"
+					className="subject-badge"
+					role="img"
+					aria-label="Subject: CS1"
+				/>
+				<Chip
+					label="25S"
+					size="small"
+					className="session-badge"
+					role="img"
+					aria-label="Exam session: 25S"
+				/>
+			</Box>
 			{/* Enhanced Header - Similar to Variation C */}
 			<CardHeader
 				ref={headerRef}
@@ -226,9 +242,7 @@ const BalancedProductCard = ({ variant = "material-product", ...props }) => {
 			<CardActions>
 				<Box className="price-container">
 					{/* Left Column - Discount Options */}
-					<Box
-						className="discount-options"
-						sx={{ flex: 1, alignSelf: "flex-start" }}>
+					<Box className="discount-options">
 						<Typography variant="subtitle2" className="discount-title">
 							Discount Options
 						</Typography>
