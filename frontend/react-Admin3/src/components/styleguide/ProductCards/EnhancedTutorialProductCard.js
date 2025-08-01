@@ -1,34 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  CardHeader,
-  CardActions,
-  Button,
-  Chip,
-  Badge,
-  Divider,
-  Stack,
-  Avatar,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
-  Tooltip,  
-  Radio
-} from '@mui/material';
+	Box,
+	Typography,
+	Card,
+	CardContent,
+	CardHeader,
+	CardActions,
+	Button,
+	Chip,
+	Badge,
+	Divider,
+	Stack,
+	Avatar,
+	Checkbox,
+	FormControlLabel,
+	FormGroup,
+	Tooltip,
+	Radio,
+} from "@mui/material";
 import {
-  School,
-  AddShoppingCart,
-  Star,
-  AccessTime,
-  CalendarMonthOutlined,
-  InfoOutline
-} from '@mui/icons-material';
-import { useTheme } from '@mui/material/styles';
+	School,
+	AddShoppingCart,
+	Star,
+	AccessTime,
+	CalendarMonthOutlined,
+	InfoOutline,
+	ViewModule,
+	LocationOn,
+} from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
 
-const EnhancedTutorialProductCard = ({ variant = "tutorial-product", ...props }) => {
+const EnhancedTutorialProductCard = ({
+	variant = "tutorial-product",
+	...props
+}) => {
 	const [selectedOptions, setSelectedOptions] = useState({
 		materials: false,
 		recording: false,
@@ -59,6 +64,23 @@ const EnhancedTutorialProductCard = ({ variant = "tutorial-product", ...props })
 			variant={variant}
 			className="d-flex flex-column"
 			{...props}>
+			{/* Floating Badges */}
+			<Box className="floating-badges-container">
+				<Chip
+					label="CS1"
+					size="small"
+					className="subject-badge"
+					role="img"
+					aria-label="Subject: CS1"
+				/>
+				<Chip
+					label="25S"
+					size="small"
+					className="session-badge"
+					role="img"
+					aria-label="Exam session: 25S"
+				/>
+			</Box>
 			<CardHeader
 				className="product-header"
 				title={
@@ -84,38 +106,75 @@ const EnhancedTutorialProductCard = ({ variant = "tutorial-product", ...props })
 				}
 			/>
 			<CardContent>
-				{/* Enhanced Chips Section - More prominent */}
-				<Box className="product-chips">
-					<Chip label="CS1" variant="filled" color="primary" />
-					<Chip label="2024A" variant="filled" color="secondary" />
-				</Box>
-
-				<Box sx={{ mb: 2 }}>
-					{/* Number of tutorials : 6 */}
-					{/* Venue available: */}
-					{/*  BPP Birmingham */}
-					{/* Birmingham Vue Cinema */}
-					{/* Format: */}
-					{/* 3 full days */}
-					{/* 6-day bundle */}
-					{/* Select tutorial button */}
-					<Stack
-						direction="row"
-						spacing={1}
-						alignItems="center"
-						sx={{ mb: 1 }}>
-						<CalendarMonthOutlined
-							sx={{ fontSize: 16, color: "text.secondary" }}
-						/>
-						<Typography variant="caption"></Typography>
+				{/* Tutorial Information Section */}
+				<Box className="tutorial-info-section">
+					<Stack direction="column" className="info-row">
+						<Stack
+							direction="row"
+							alignItems="center"
+							className="info-title">
+							<CalendarMonthOutlined className="info-icon" />
+							<Typography variant="caption" className="info-text">
+								Tutorials available:
+							</Typography>
+						</Stack>
+						<Typography variant="caption" className="info-sub-text">
+							• 6 (4 available, 1 partially booked)
+						</Typography>
 					</Stack>
-					<Stack direction="row" spacing={1} alignItems="center">
-						<AccessTime sx={{ fontSize: 16, color: "text.secondary" }} />
-						<Typography variant="caption">2 days • 9am-5pm</Typography>
+
+					<Stack direction="column" className="info-row">
+						<Stack
+							direction="row"
+							alignItems="center"
+							className="info-title">
+							<ViewModule className="info-icon" />
+							<Typography variant="caption" className="info-text">
+								Format:
+							</Typography>
+						</Stack>
+						<Typography variant="caption" className="info-sub-text">
+							• 3 full days
+						</Typography>
+						<Typography variant="caption" className="info-sub-text">
+							• 6-day bundle
+						</Typography>
+					</Stack>
+
+					<Stack direction="column" className="info-row">
+						<Stack
+							direction="row"
+							alignItems="center"
+							className="info-title">
+							<LocationOn className="info-icon" />
+							<Typography variant="caption" className="info-text">
+								Venue:
+							</Typography>
+						</Stack>
+						<Typography variant="caption" className="info-sub-text">
+							• BPP Birmingham
+						</Typography>
+						<Typography variant="caption" className="info-sub-text">
+							• Birmingham Vue Cinema
+						</Typography>
 					</Stack>
 				</Box>
-
-				<Divider sx={{ my: 2 }} />
+				<Box className="tutorial-action-buttons">
+					<Button
+						variant="contained"
+						size="small"
+						color="primary"
+						className="select-tutorial-button">
+						Select Tutorial
+					</Button>
+					<Button
+						variant="contained"
+						size="small"
+						color="secondary"
+						className="view-selection-button">
+						View Selection
+					</Button>
+				</Box>
 			</CardContent>
 
 			<CardActions>
@@ -176,13 +235,13 @@ const EnhancedTutorialProductCard = ({ variant = "tutorial-product", ...props })
 					</Box>
 					{/* Price & Action Section - matches theme structure */}
 					<Box className="price-action-section">
-						<Box className="price-info">
+						<Box className="price-info-row">
 							<Typography variant="h3" className="price-display">
 								{selectedPriceType === "retaker"
-									? "£36.00"
+									? "£239.20"
 									: selectedPriceType === "additional"
-									? "£22.50"
-									: "£45.00"}
+									? "£149.50"
+									: "£299.00"}
 							</Typography>
 							<Tooltip title="Show price details">
 								<Button size="small" className="info-button">
@@ -190,20 +249,28 @@ const EnhancedTutorialProductCard = ({ variant = "tutorial-product", ...props })
 								</Button>
 							</Tooltip>
 						</Box>
+						<Box className="price-details-row">
+							<Typography
+								variant="fineprint"
+								className="price-level-text"
+								color="text.secondary">
+								{selectedPriceType === "retaker" ||
+								selectedPriceType === "additional"
+									? "Discount applied"
+									: "Standard pricing"}
+							</Typography>
+							<Typography
+								variant="fineprint"
+								className="vat-status-text"
+								color="text.secondary">
+								Price includes VAT
+							</Typography>
+						</Box>
 						<Button variant="contained" className="add-to-cart-button">
 							<AddShoppingCart />
 						</Button>
 					</Box>
 				</Box>
-				{/* Status Text */}
-				<Typography variant="caption" className="status-text">
-					{selectedPriceType === "retaker"
-						? "Retaker discount applied"
-						: selectedPriceType === "additional"
-						? "Additional copy discount applied"
-						: "Standard pricing"}{" "}
-					• Price includes VAT
-				</Typography>
 			</CardActions>
 		</Card>
 	);

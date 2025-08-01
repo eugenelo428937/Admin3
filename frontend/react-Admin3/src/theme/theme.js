@@ -8,14 +8,16 @@ const createGradientStyle = (mousePosition, isHovered, colorScheme) => {
 	const { x, y } = mousePosition;
 	const intensity = isHovered ? 0.15 : 0.03;
 	const gradientAngle = Math.atan2(y - 50, x - 50) * (180 / Math.PI);
-	
+
 	return {
 		background: `linear-gradient(${gradientAngle}deg, 
 			rgba(${colorScheme.primary}, ${intensity}) 0%, 
 			rgba(${colorScheme.secondary}, ${intensity * 0.7}) 30%, 
 			rgba(255, 255, 255, 0) 60%, 
 			rgba(${colorScheme.accent}, ${intensity * 0.5}) 100%)`,
-		transition: isHovered ? 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' : 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+		transition: isHovered
+			? "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+			: "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
 	};
 };
 
@@ -269,16 +271,56 @@ const theme = createTheme({
 					style: {
 						minWidth: "21rem",
 						maxWidth: "21rem",
-						height: "fit-content",
-						overflow: "hidden",
-						aspectRatio: "2/3",
+						height: "34rem !important",
+						overflow: "visible",
+						aspectRatio: "5/7",
 						boxShadow: "var(--Paper-shadow)",
 						justifyContent: "space-between",
+						position: "relative",
+
+						// Floating badges
+						"& .floating-badges-container": {
+							position: "absolute",
+							top: "calc(var(--product-card-header-height) - var(--badge-height) / 1.618)",
+							right: liftKitTheme.spacing.sm,
+							zIndex: 10,
+							display: "flex",
+							gap: liftKitTheme.spacing.xs2,
+							pointerEvents: "none", // Don't interfere with card interactions
+							"& .subject-badge": {
+								backgroundColor: colorTheme.bpp.mint["080"],
+								color: colorTheme.bpp.mint["010"],
+								fontSize: "0.866rem",
+								height: "1.236rem",
+								width: "3.66rem",
+								boxShadow: "var(--Paper-shadow)",
+								"& .MuiChip-label": {
+									padding: "3px 8px",
+								},
+								"&:hover": {
+									backgroundColor: colorTheme.bpp.cobalt["090"],
+								},
+							},
+							"& .session-badge": {
+								backgroundColor: colorTheme.bpp.pink["070"],
+								color: colorTheme.bpp.pink["010"],
+								fontSize: "0.866rem",
+								height: "1.236rem",
+								width: "3.66rem",
+								boxShadow: "var(--Paper-shadow)",
+								"& .MuiChip-label": {
+									padding: "3px 8px",
+								},
+								"&:hover": {
+									backgroundColor: colorTheme.bpp.granite["100"],
+								},
+							},
+						},
 						// Product Header
 						"& .product-header": {
-							backgroundColor: colorTheme.bpp.purple["010"],
+							backgroundColor: colorTheme.bpp.purple["020"],
 							color: "#ffffff",
-							height: "13.43rem",
+
 							height: "7.43rem",
 							padding: "1rem",
 							boxShadow: "var(--shadow-sm)",
@@ -330,43 +372,65 @@ const theme = createTheme({
 									},
 								},
 							},
-							// Variations section height
-							"& .product-variations": {
-								padding: liftKitTheme.spacing.sm,
-								paddingLeft: liftKitTheme.spacing.md,
-								boxShadow: "var(--shadow-sm)",
-								backgroundColor:
-									"rgb(from " +
-									colorTheme.bpp.sky["010"] +
-									" r g b / 0.25);",
-								transition: "all 0.2s ease",
-								"& .MuiTypography-root": {
-									marginBottom: 0,
-								},
-								"& .MuiFormGroup-root": {
+
+							// Tutorial info section
+							"& .tutorial-info-section": {
+								display: "flex",
+								flexDirection: "column",
+								textAlign: "left",
+								marginBottom: liftKitTheme.spacing.md,
+								marginLeft: liftKitTheme.spacing.sm,
+								marginRight: liftKitTheme.spacing.sm,
+								"& .info-row": {
 									display: "flex",
-									flexDirection: "column",
+									alignItems: "center",
+									marginBottom: liftKitTheme.spacing.sm,
 									alignItems: "flex-start",
-									justifyContent: "flex-start",
-									marginTop: liftKitTheme.spacing.xs2,
-									"& .MuiFormControlLabel-root": {
-										paddingLeft: liftKitTheme.spacing.md,
-										width: "100%",
-										"&:hover": {
-											boxShadow: "var(--Paper-shadow)",
-											backgroundColor:
-												"rgb(from " +
-												colorTheme.bpp.sky["010"] +
-												" r g b / 0.65);",
-										},
-										"& .MuiSvgIcon-root": { fontSize: "1.2rem" },
-										"& .MuiCheckbox-root": {
-											padding: "0.4rem",
-											width: "1.5rem",
-										},
-										"& .MuiTypography-root": {
-											marginLeft: liftKitTheme.spacing.xs,
-										},
+									textAlign: "left",
+									"& .info-title": {
+										marginBottom: liftKitTheme.spacing.xs2,
+									},
+									"& .info-icon": {
+										fontSize: "16px",
+										color: colorTheme.bpp.purple["090"],
+										marginRight: liftKitTheme.spacing.xs2,
+									},
+
+									"& .info-text": {
+										color: colorTheme.bpp.purple["100"],
+										fontWeight: "600",
+									},
+								},
+
+								"& .info-sub-text": {
+									color: colorTheme.bpp.purple["090"],
+									marginLeft: liftKitTheme.spacing.md,
+									fontWeight: "500",
+								},
+							},
+
+							// Tutorial action buttons
+							"& .tutorial-action-buttons": {
+								display: "flex",
+								gap: liftKitTheme.spacing.sm,
+								"& .select-tutorial-button": {
+									flex: 1,
+									backgroundColor: colorTheme.bpp.purple["050"],
+									color: colorTheme.bpp.purple["100"],
+									"&:hover": {
+										backgroundColor: colorTheme.bpp.purple["060"],
+										transform: "translateY(-1px)",
+										boxShadow: "var(--Paper-shadow)",
+									},
+								},
+								"& .view-selection-button": {
+									flex: 1,
+									backgroundColor: colorTheme.bpp.granite["050"],
+									color: colorTheme.bpp.granite["100"],
+									"&:hover": {
+										backgroundColor: colorTheme.bpp.granite["060"],
+										transform: "translateY(-1px)",
+										boxShadow: "var(--Paper-shadow)",
 									},
 								},
 							},
@@ -374,12 +438,141 @@ const theme = createTheme({
 
 						//  actions styling
 						"& .MuiCardActions-root": {
-							height: "9.7rem !important",
-							backgroundColor: colorTheme.bpp.granite["020"],
+							height: "10.2rem !important",
+							backgroundColor: colorTheme.bpp.purple["030"],
 							boxShadow: "var(--shadow-lg)",
-							// Show discount options for materials
-							"& .discount-options": {
-								display: "block",
+							paddingTop: liftKitTheme.spacing.md,
+							paddingLeft: liftKitTheme.spacing.md,
+							paddingRight: liftKitTheme.spacing.md,
+							flexDirection: "column",
+							alignItems: "stretch",
+							justifyContent: "space-between",
+							display: "flex",
+							width: "100%",
+							// Price & Action Section
+							"& .price-container": {
+								display: "flex",
+								flexDirection: "row",
+								alignItems: "center",
+								justifyContent: "end",
+
+								// Discount Options
+								"& .discount-options": {
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "start",
+									justifyContent: "start",
+									textAlign: "left",
+									paddingLeft: liftKitTheme.spacing.sm,
+									paddingRight: liftKitTheme.spacing.md,
+									flex: 1,
+									alignSelf: "flex-start",
+									"& .discount-title": {
+										textAlign: "left",
+										color: colorTheme.bpp.purple["100"],
+									},
+									"& .discount-radio-group": {
+										display: "flex",
+										flexDirection: "column",
+										alignItems: "flex-start",
+										justifyContent: "flex-start",
+										marginLeft: liftKitTheme.spacing.sm,
+										"& .discount-radio-option": {
+											padding: liftKitTheme.spacing.xs2,
+											paddingBottom: 0,
+											width: "100%",
+											color: colorTheme.bpp.purple["100"],
+											transition: "all 0.2s ease-in-out",
+
+											"&:hover": {
+												boxShadow: "var(--Paper-shadow)",
+												backdropFilter: "saturate(2.4)",
+											},
+
+											"& .MuiRadio-root": {
+												width: liftKitTheme.spacing.md,
+												height: liftKitTheme.spacing.md,
+												color: colorTheme.bpp.purple["090"],
+												alignItems: "center",
+												justifyContent: "center",
+												"& .MuiSvgIcon-root": {
+													fontSize: liftKitTheme.spacing.md,
+												},
+											},
+
+											"& .discount-label": {
+												paddingLeft: liftKitTheme.spacing.xs,
+												color: colorTheme.bpp.purple["100"],
+											},
+										},
+									},
+								},
+								"& .price-action-section": {
+									flex: 1,
+									display: "flex",
+									flexDirection: "column",
+									"& .price-info-row": {
+										display: "flex",
+										alignItems: "baseline",
+										alignSelf: "flex-end",
+										justifyContent: "flex-end",
+										"& .price-display": {
+											color: colorTheme.bpp.purple["100"],
+										},
+
+										"& .info-button": {
+											minWidth: "auto",
+											borderRadius: "50%",
+											paddingBottom: 0,
+
+											"&:hover": {
+												backdropFilter: "saturate(2.4)",
+												boxShadow: "var(--Paper-shadow)",
+												transform: "translateY(-1px)",
+											},
+
+											"& .MuiSvgIcon-root": {
+												fontSize: "1.2rem",
+											},
+										},
+									},
+									"& .price-details-row": {
+										display: "flex",
+										flexDirection: "column",
+										alignItems: "flex-end",
+										"& .price-level-text": {
+											display: "block",
+											textAlign: "right",
+										},
+										"& .vat-status-text": {
+											display: "block",
+											textAlign: "right",
+										},
+									},
+									"& .add-to-cart-button": {
+										alignSelf: "flex-end",
+										borderRadius: "50%",
+										minWidth: liftKitTheme.spacing.xl,
+										width: liftKitTheme.spacing.xl,
+										height: liftKitTheme.spacing.xl,
+										padding: liftKitTheme.spacing.sm,
+										marginLeft: liftKitTheme.spacing.md,
+										marginRight: liftKitTheme.spacing.md,
+										marginTop: liftKitTheme.spacing.md,
+										boxShadow: "var(--Paper-shadow)",
+										backgroundColor: colorTheme.bpp.purple["030"],
+										transition: "all 0.15s ease-in-out",
+										"&:hover": {
+											boxShadow: "var(--Paper-shadow)",
+											transform: "scale(1.05)",
+											filter: "saturate(2)",
+										},
+
+										"& .MuiSvgIcon-root": {
+											fontSize: "1.6rem",
+										},
+									},
+								},
 							},
 						},
 					},
@@ -391,17 +584,56 @@ const theme = createTheme({
 					style: {
 						minWidth: "22rem",
 						maxWidth: "22rem",
-						height: "fit-content",
-						overflow: "hidden",
-						aspectRatio: "2/3",
+						height: "34rem !important",
+						overflow: "visible",
+						aspectRatio: "5/7",
 						boxShadow: "var(--Paper-shadow)",
 						justifyContent: "space-between",
+						position: "relative",
 
+						// Floating badges
+						"& .floating-badges-container": {
+							position: "absolute",
+							top: "calc(var(--product-card-header-height) - var(--badge-height) / 1.618)",
+							right: liftKitTheme.spacing.sm,
+							zIndex: 10,
+							display: "flex",
+							gap: liftKitTheme.spacing.xs2,
+							pointerEvents: "none",
+							"& .subject-badge": {
+								backgroundColor: colorTheme.bpp.mint["080"],
+								color: colorTheme.bpp.mint["010"],
+								fontSize: "0.866rem",
+								height: "1.236rem",
+								width: "3.66rem",
+								boxShadow: "var(--Paper-shadow)",
+								"& .MuiChip-label": {
+									padding: "3px 8px",
+								},
+								"&:hover": {
+									backgroundColor: colorTheme.bpp.cobalt["090"],
+								},
+							},
+							"& .session-badge": {
+								backgroundColor: colorTheme.bpp.pink["070"],
+								color: colorTheme.bpp.pink["010"],
+								fontSize: "0.866rem",
+								height: "1.236rem",
+								width: "3.66rem",
+								boxShadow: "var(--Paper-shadow)",
+								"& .MuiChip-label": {
+									padding: "3px 8px",
+								},
+								"&:hover": {
+									backgroundColor: colorTheme.bpp.granite["100"],
+								},
+							},
+						},
 						// Product Header
 						"& .product-header": {
 							backgroundColor: colorTheme.bpp.sky["020"],
 							color: "#ffffff",
-							height: "13.43rem",
+
 							height: "7.43rem",
 							padding: "1rem",
 							boxShadow: "var(--shadow-sm)",
@@ -438,7 +670,7 @@ const theme = createTheme({
 						//  content styling
 						"& .MuiCardContent-root": {
 							padding: liftKitTheme.spacing.md,
-							height: "100%",
+							height: "auto",
 
 							// Chips section
 							"& .product-chips": {
@@ -511,8 +743,8 @@ const theme = createTheme({
 
 						//  actions styling
 						"& .MuiCardActions-root": {
-							height: "23.7rem !important",
-							backgroundColor: colorTheme.bpp.sky["020"],
+							height: "10.2rem !important",
+							backgroundColor: colorTheme.bpp.sky["030"],
 							boxShadow: "var(--shadow-lg)",
 							paddingTop: liftKitTheme.spacing.md,
 							paddingLeft: liftKitTheme.spacing.md,
@@ -532,12 +764,14 @@ const theme = createTheme({
 								// Discount Options
 								"& .discount-options": {
 									display: "flex",
+									flex: 1,
+									alignSelf: "flex-start",
 									flexDirection: "column",
 									alignItems: "start",
 									justifyContent: "start",
 									textAlign: "left",
 									paddingLeft: liftKitTheme.spacing.sm,
-									paddingRight: liftKitTheme.spacing.sm,
+									paddingRight: liftKitTheme.spacing.md,
 									"& .discount-title": {
 										textAlign: "left",
 										color: colorTheme.bpp.sky["100"],
@@ -550,6 +784,7 @@ const theme = createTheme({
 										marginLeft: liftKitTheme.spacing.sm,
 										"& .discount-radio-option": {
 											padding: liftKitTheme.spacing.xs2,
+											paddingBottom: 0,
 											width: "100%",
 											color: colorTheme.bpp.sky["100"],
 											transition: "all 0.2s ease-in-out",
@@ -584,7 +819,7 @@ const theme = createTheme({
 									flexDirection: "column",
 									"& .price-info-row": {
 										display: "flex",
-										alignItems: "flex-end",
+										alignItems: "baseline",
 										alignSelf: "flex-end",
 										"& .price-display": {
 											color: colorTheme.bpp.sky["100"],
@@ -593,7 +828,7 @@ const theme = createTheme({
 										"& .info-button": {
 											minWidth: "auto",
 											borderRadius: "50%",
-
+											paddingBottom: 0,
 											"&:hover": {
 												backdropFilter: "saturate(2.4)",
 												boxShadow: "var(--Paper-shadow)",
@@ -659,18 +894,59 @@ const theme = createTheme({
 					style: {
 						minWidth: "21rem",
 						maxWidth: "21rem",
-						height: "fit-content",
-						overflow: "hidden",
-						aspectRatio: "2/3",
+						height: "34rem !important",
+						height: "34rem !important",
+						overflow: "visible",
+						aspectRatio: "5/7",
 						boxShadow: "var(--Paper-shadow)",
 						justifyContent: "space-between",
+						position: "relative",
+
+						// Floating badges
+						"& .floating-badges-container": {
+							position: "absolute",
+							top: "calc(var(--product-card-header-height) - var(--badge-height) / 1.618)",
+							right: liftKitTheme.spacing.sm,
+							zIndex: 10,
+							display: "flex",
+							gap: liftKitTheme.spacing.xs2,
+							pointerEvents: "none",
+							"& .subject-badge": {
+								backgroundColor: colorTheme.bpp.mint["080"],
+								color: colorTheme.bpp.mint["010"],
+								fontSize: "0.866rem",
+								height: "1.236rem",
+								width: "3.66rem",
+								boxShadow: "var(--Paper-shadow)",
+								"& .MuiChip-label": {
+									padding: "3px 8px",
+								},
+								"&:hover": {
+									backgroundColor: colorTheme.bpp.cobalt["090"],
+								},
+							},
+							"& .session-badge": {
+								backgroundColor: colorTheme.bpp.pink["070"],
+								color: colorTheme.bpp.pink["010"],
+								fontSize: "0.866rem",
+								height: "1.236rem",
+								width: "3.66rem",
+								boxShadow: "var(--Paper-shadow)",
+								"& .MuiChip-label": {
+									padding: "3px 8px",
+								},
+								"&:hover": {
+									backgroundColor: colorTheme.bpp.granite["100"],
+								},
+							},
+						},
 
 						// Product Header
 						"& .product-header": {
-							backgroundColor: colorTheme.bpp.green["010"],
+							backgroundColor: colorTheme.bpp.green["020"],
 							color: "#ffffff",
-							height: "13.43rem",
-							height: "7.43rem",
+
+							height: "var(--product-card-header-height)",
 							padding: "1rem",
 							boxShadow: "var(--shadow-sm)",
 							display: "flex",
@@ -683,9 +959,41 @@ const theme = createTheme({
 								flex: "1",
 								"& .product-title": {
 									color: colorTheme.bpp.green["100"],
+									"& .title-info-button": {
+										minWidth: "auto",
+										padding: liftKitTheme.spacing.xs2,
+										borderRadius: "50%",
+										color: colorTheme.bpp.green["080"],
+										"&:hover": {
+											backdropFilter: "saturate(2.4)",
+											boxShadow: "var(--Paper-shadow)",
+											transform: "translateY(-1px)",
+										},
+										"& .MuiSvgIcon-root": {
+											fontSize: "1.2rem",
+										},
+									},
 								},
-								"& .product-subtitle": {
-									color: colorTheme.bpp.green["090"],
+								"& .product-subtitle-container": {
+									display: "flex",
+									alignItems: "center",
+									gap: liftKitTheme.spacing.xs,
+									"& .product-subtitle": {
+										color: colorTheme.bpp.green["090"],
+									},
+									"& .subtitle-info-button": {
+										minWidth: "auto",
+										padding: liftKitTheme.spacing.xs2,
+										borderRadius: "50%",
+										color: colorTheme.bpp.green["080"],
+										"&:hover": {
+											backgroundColor: "rgba(255, 255, 255, 0.1)",
+											transform: "scale(1.05)",
+										},
+										"& .MuiSvgIcon-root": {
+											fontSize: "1rem",
+										},
+									},
 								},
 							},
 							"& .MuiCardHeader-avatar": {
@@ -726,12 +1034,46 @@ const theme = createTheme({
 									" r g b / 0.25);",
 								transition: "all 0.2s ease",
 							},
+							// Bundle-specific styling
+							"& .bundle-details-title": {
+								color: colorTheme.bpp.green["100"],
+								textAlign: "left",
+								marginBottom: liftKitTheme.spacing.sm,
+								fontWeight: "600",
+							},
+							"& .bundle-items-list": {
+								paddingTop: 0,
+								paddingBottom: 0,
+								"& .bundle-list-item": {
+									paddingLeft: 0,
+									paddingRight: 0,
+									padding: 0,
+									"& .bundle-item-icon": {
+										minWidth: "2rem",
+										"& .MuiSvgIcon-root": {
+											fontSize: "1rem",
+											color: colorTheme.bpp.green["080"],
+										},
+									},
+									"& .bundle-item-text": {
+										"& .MuiListItemText-primary": {
+											fontSize: "0.875rem",
+											color: colorTheme.bpp.green["090"],
+										},
+									},
+									"& .bundle-item-value": {
+										fontSize: "0.75rem",
+										fontWeight: "600",
+										color: colorTheme.bpp.green["060"],
+									},
+								},
+							},
 						},
 
 						//  actions styling
 						"& .MuiCardActions-root": {
-							height: "23.7rem !important",
-							backgroundColor: colorTheme.bpp.green["010"],
+							height: "10.2rem !important",
+							backgroundColor: colorTheme.bpp.green["030"],
 							boxShadow: "var(--shadow-lg)",
 							paddingTop: liftKitTheme.spacing.md,
 							paddingLeft: liftKitTheme.spacing.md,
@@ -745,21 +1087,64 @@ const theme = createTheme({
 								flexDirection: "row",
 								alignItems: "center",
 								justifyContent: "start",
+
+								// Discount Options
+								"& .discount-options": {
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "start",
+									justifyContent: "start",
+									textAlign: "left",
+									paddingLeft: liftKitTheme.spacing.sm,
+									paddingRight: liftKitTheme.spacing.md,
+									flex: 1,
+									alignSelf: "flex-start",
+									"& .discount-title": {
+										color: colorTheme.bpp.green["090"],
+										fontSize: "0.75rem",
+										fontWeight: "600",
+										marginBottom: liftKitTheme.spacing.xs,
+									},
+									"& .discount-radio-group": {
+										display: "flex",
+										flexDirection: "column",
+										gap: liftKitTheme.spacing.xs2,
+										"& .discount-radio-option": {
+											margin: 0,
+											"& .MuiRadio-root": {
+												padding: liftKitTheme.spacing.xs2,
+												color: colorTheme.bpp.green["070"],
+												"&.Mui-checked": {
+													color: colorTheme.bpp.green["080"],
+												},
+											},
+											"& .discount-label": {
+												fontSize: "0.75rem",
+												color: colorTheme.bpp.green["080"],
+												fontWeight: "500",
+											},
+										},
+									},
+								},
+
 								"& .price-action-section": {
 									display: "flex",
 									flexDirection: "column",
 									alignItems: "flex-end",
 									justifyContent: "space-between",
-									"& .price-info": {
+									"& .price-info-row": {
 										display: "flex",
 										alignItems: "center",
+										gap: liftKitTheme.spacing.xs,
 										"& .price-display": {
 											color: colorTheme.bpp.green["100"],
+											fontWeight: "700",
 										},
 										"& .info-button": {
 											minWidth: "auto",
 											padding: liftKitTheme.spacing.xs2,
 											borderRadius: "50%",
+											color: colorTheme.bpp.green["080"],
 											"&:hover": {
 												backdropFilter: "saturate(2.4)",
 												boxShadow: "var(--Paper-shadow)",
@@ -768,6 +1153,19 @@ const theme = createTheme({
 											"& .MuiSvgIcon-root": {
 												fontSize: "1.2rem",
 											},
+										},
+									},
+									"& .price-details-row": {
+										display: "flex",
+										flexDirection: "column",
+										alignItems: "flex-end",
+										"& .price-level-text": {
+											display: "block",
+											textAlign: "right",
+										},
+										"& .vat-status-text": {
+											display: "block",
+											textAlign: "right",
 										},
 									},
 									"& .add-to-cart-button": {
@@ -808,17 +1206,57 @@ const theme = createTheme({
 					style: {
 						minWidth: "21rem",
 						maxWidth: "21rem",
-						height: "fit-content",
-						overflow: "hidden",
-						aspectRatio: "2/3",
+						height: "34rem !important",
+						overflow: "visible",
+						aspectRatio: "5/7",
 						boxShadow: "var(--Paper-shadow)",
 						justifyContent: "space-between",
+						position: "relative",
+
+						// Floating badges
+						"& .floating-badges-container": {
+							position: "absolute",
+							top: "calc(var(--product-card-header-height) - var(--badge-height) / 1.618)",
+							right: liftKitTheme.spacing.sm,
+							zIndex: 10,
+							display: "flex",
+							gap: liftKitTheme.spacing.xs2,
+							pointerEvents: "none",
+							"& .subject-badge": {
+								backgroundColor: colorTheme.bpp.mint["080"],
+								color: colorTheme.bpp.mint["010"],
+								fontSize: "0.866rem",
+								height: "1.236rem",
+								width: "3.66rem",
+								boxShadow: "var(--Paper-shadow)",
+								"& .MuiChip-label": {
+									padding: "3px 8px",
+								},
+								"&:hover": {
+									backgroundColor: colorTheme.bpp.cobalt["090"],
+								},
+							},
+							"& .session-badge": {
+								backgroundColor: colorTheme.bpp.pink["070"],
+								color: colorTheme.bpp.pink["010"],
+								fontSize: "0.866rem",
+								height: "1.236rem",
+								width: "3.66rem",
+								boxShadow: "var(--Paper-shadow)",
+								"& .MuiChip-label": {
+									padding: "3px 8px",
+								},
+								"&:hover": {
+									backgroundColor: colorTheme.bpp.granite["100"],
+								},
+							},
+						},
 
 						// Product Header
 						"& .product-header": {
 							backgroundColor: colorTheme.bpp.cobalt["010"],
 							color: "#ffffff",
-							height: "13.43rem",
+
 							height: "7.43rem",
 							padding: "1rem",
 							boxShadow: "var(--shadow-sm)",
@@ -862,14 +1300,80 @@ const theme = createTheme({
 								marginBottom: liftKitTheme.spacing.md,
 								"& .MuiChip-root": {
 									boxShadow: "var(--Paper-shadow)",
+									"& .MuiChip-label": {
+										fontWeight:
+											liftKitTheme.typography.overline.fontWeight,
+										paddingX: liftKitTheme.spacing.md,
+										paddingY: liftKitTheme.spacing.xs,
+									},
+								},
+							},
+
+							// Product Variations
+							"& .product-variations": {
+								display: "flex",
+								flexDirection: "column",
+								alignItems: "start",
+								justifyContent: "start",
+								textAlign: "left",
+								paddingLeft: liftKitTheme.spacing.sm,
+								paddingRight: liftKitTheme.spacing.sm,
+
+								"& .variations-title": {
+									marginBottom: liftKitTheme.spacing.xs2,
+									textAlign: "left",
+									color: colorTheme.bpp.cobalt["100"],
+								},
+
+								"& .variations-group": {
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "flex-start",
+									justifyContent: "flex-start",
+									width: "100%",
+									"& .variation-option": {
+										marginBottom: liftKitTheme.spacing.xs2,
+										marginLeft: liftKitTheme.spacing.xs2,
+										width: "100%",
+										color: colorTheme.bpp.cobalt["100"],
+										transition: "all 0.2s ease-in-out",
+										border: "1px solid",
+										borderColor: "divider",
+										borderRadius: liftKitTheme.spacing.xs,
+										padding: liftKitTheme.spacing.md,
+										backgroundColor: "transparent",
+										"&:hover": {
+											boxShadow: "var(--Paper-shadow)",
+											backdropFilter: "saturate(2.4)",
+											borderColor: colorTheme.bpp.cobalt["050"],
+										},
+										"& .MuiRadio-root": {
+											padding: liftKitTheme.spacing.sm,
+											width: liftKitTheme.spacing.md,
+											height: liftKitTheme.spacing.md,
+											color: colorTheme.bpp.cobalt["090"],
+											alignItems: "center",
+											justifyContent: "center",
+											"& .MuiSvgIcon-root": {
+												fontSize: liftKitTheme.spacing.md,
+											},
+										},
+										"& .variation-label": {
+											marginLeft: liftKitTheme.spacing.xs,
+											width: "100%",
+											"& .variation-description": {
+												textAlign: "left",
+											},
+										},
+									},
 								},
 							},
 						},
 
 						//  actions styling
 						"& .MuiCardActions-root": {
-							height: "23.7rem !important",
-							backgroundColor: colorTheme.bpp.cobalt["010"],
+							height: "10.2rem !important",
+							backgroundColor: colorTheme.bpp.cobalt["020"],
 							boxShadow: "var(--shadow-lg)",
 							paddingTop: liftKitTheme.spacing.md,
 							paddingLeft: liftKitTheme.spacing.md,
@@ -882,22 +1386,75 @@ const theme = createTheme({
 								display: "flex",
 								flexDirection: "row",
 								alignItems: "center",
-								justifyContent: "start",
-								"& .price-action-section": {
+								justifyContent: "end",
+
+								// Discount Options
+								"& .discount-options": {
 									display: "flex",
 									flexDirection: "column",
-									alignItems: "flex-end",
-									justifyContent: "space-between",
-									"& .price-info": {
+									alignItems: "start",
+									justifyContent: "start",
+									textAlign: "left",
+									paddingLeft: liftKitTheme.spacing.sm,
+									paddingRight: liftKitTheme.spacing.md,
+									flex: 1,
+									alignSelf: "flex-start",
+									"& .discount-title": {
+										textAlign: "left",
+										color: colorTheme.bpp.cobalt["100"],
+									},
+									"& .discount-radio-group": {
 										display: "flex",
-										alignItems: "center",
+										flexDirection: "column",
+										alignItems: "flex-start",
+										justifyContent: "flex-start",
+										marginLeft: liftKitTheme.spacing.sm,
+										"& .discount-radio-option": {
+											padding: liftKitTheme.spacing.xs2,
+											paddingBottom: 0,
+											width: "100%",
+											color: colorTheme.bpp.cobalt["100"],
+											transition: "all 0.2s ease-in-out",
+
+											"&:hover": {
+												boxShadow: "var(--Paper-shadow)",
+												backdropFilter: "saturate(2.4)",
+											},
+
+											"& .MuiRadio-root": {
+												width: liftKitTheme.spacing.md,
+												height: liftKitTheme.spacing.md,
+												color: colorTheme.bpp.cobalt["090"],
+												alignItems: "center",
+												justifyContent: "center",
+												"& .MuiSvgIcon-root": {
+													fontSize: liftKitTheme.spacing.md,
+												},
+											},
+
+											"& .discount-label": {
+												paddingLeft: liftKitTheme.spacing.xs,
+												color: colorTheme.bpp.cobalt["100"],
+											},
+										},
+									},
+								},
+								"& .price-action-section": {
+									flex: 1,
+									display: "flex",
+									flexDirection: "column",
+									"& .price-info-row": {
+										display: "flex",
+										alignItems: "baseline",
+										alignSelf: "flex-end",
+										justifyContent: "flex-end",
 										"& .price-display": {
 											color: colorTheme.bpp.cobalt["100"],
 										},
 										"& .info-button": {
 											minWidth: "auto",
-											padding: liftKitTheme.spacing.xs2,
 											borderRadius: "50%",
+											paddingBottom: 0,
 											"&:hover": {
 												backdropFilter: "saturate(2.4)",
 												boxShadow: "var(--Paper-shadow)",
@@ -908,7 +1465,21 @@ const theme = createTheme({
 											},
 										},
 									},
+									"& .price-details-row": {
+										display: "flex",
+										flexDirection: "column",
+										alignItems: "flex-end",
+										"& .price-level-text": {
+											display: "block",
+											textAlign: "right",
+										},
+										"& .vat-status-text": {
+											display: "block",
+											textAlign: "right",
+										},
+									},
 									"& .add-to-cart-button": {
+										alignSelf: "flex-end",
 										borderRadius: "50%",
 										minWidth: liftKitTheme.spacing.xl,
 										width: liftKitTheme.spacing.xl,
@@ -930,11 +1501,6 @@ const theme = createTheme({
 										},
 									},
 								},
-								// Status Text
-								"& .status-text": {
-									color: colorTheme.bpp.cobalt["100"],
-									marginTop: liftKitTheme.spacing.xs2,
-								},
 							},
 						},
 					},
@@ -946,9 +1512,10 @@ const theme = createTheme({
 					style: {
 						minWidth: "21rem",
 						maxWidth: "21rem",
-						height: "fit-content",
+						height: "34rem !important",
+						height: "34rem !important",
 						overflow: "hidden",
-						aspectRatio: "2/3",
+						aspectRatio: "5/7",
 						boxShadow: "var(--Paper-shadow)",
 						justifyContent: "space-between",
 
@@ -956,7 +1523,7 @@ const theme = createTheme({
 						"& .product-header": {
 							backgroundColor: colorTheme.bpp.orange["010"],
 							color: "#ffffff",
-							height: "13.43rem",
+
 							height: "7.43rem",
 							padding: "1rem",
 							boxShadow: "var(--shadow-sm)",
@@ -1006,7 +1573,7 @@ const theme = createTheme({
 
 						//  actions styling
 						"& .MuiCardActions-root": {
-							height: "23.7rem !important",
+							height: "10.2rem !important",
 							backgroundColor: colorTheme.bpp.orange["010"],
 							boxShadow: "var(--shadow-lg)",
 							paddingTop: liftKitTheme.spacing.md,
@@ -1102,38 +1669,38 @@ const theme = createTheme({
 		createGradientStyle,
 		colorSchemes: {
 			material: {
-				primary: "140, 250, 250",    //rgb(140, 212, 246)
+				primary: "140, 250, 250", //rgb(140, 212, 246)
 
-				secondary: "33, 150, 243", // #2196F3		
-				accent: "173, 63, 181"      //rgb(173, 63, 181)
+				secondary: "33, 150, 243", // #2196F3
+				accent: "173, 63, 181", //rgb(173, 63, 181)
 			},
 			tutorial: {
-				primary: "156, 39, 176",   // #9C27B0
-				secondary: "233, 30, 99",  // #E91E63
-				accent: "103, 58, 183"     // #673AB7
+				primary: "156, 39, 176", // #9C27B0
+				secondary: "233, 30, 99", // #E91E63
+				accent: "103, 58, 183", // #673AB7
 			},
 			online: {
-				primary: "33, 150, 243",   // #2196F3
-				secondary: "3, 169, 244",  // #03A9F4
-				accent: "63, 81, 181"      // #3F51B5
+				primary: "33, 150, 243", // #2196F3
+				secondary: "3, 169, 244", // #03A9F4
+				accent: "63, 81, 181", // #3F51B5
 			},
 			bundle: {
-				primary: "76, 175, 80",    // #4CAF50
+				primary: "76, 175, 80", // #4CAF50
 				secondary: "139, 195, 74", // #8BC34A
-				accent: "46, 125, 50"      // #2E7D32
+				accent: "46, 125, 50", // #2E7D32
 			},
 			assessment: {
-				primary: "156, 39, 176",   // #9C27B0
-				secondary: "233, 30, 99",  // #E91E63
-				accent: "103, 58, 183"     // #673AB7
+				primary: "156, 39, 176", // #9C27B0
+				secondary: "233, 30, 99", // #E91E63
+				accent: "103, 58, 183", // #673AB7
 			},
 			marking: {
-				primary: "255, 152, 0",    // #FF9800
-				secondary: "255, 193, 7",  // #FFC107
-				accent: "255, 111, 0"      // #FF6F00
-			}
-		}
-	}
+				primary: "255, 152, 0", // #FF9800
+				secondary: "255, 193, 7", // #FFC107
+				accent: "255, 111, 0", // #FF6F00
+			},
+		},
+	},
 });
 
 export default theme;
