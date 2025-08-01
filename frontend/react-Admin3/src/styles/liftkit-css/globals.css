@@ -17,6 +17,10 @@
 	--xl: calc(var(--lg) * var(--scaleFactor));
 	--2xl: calc(var(--xl) * var(--scaleFactor));
 
+	/* Product Card Variables */
+	--product-card-header-height: 7.43rem;
+	--badge-height: 1rem;
+
 	/*Increments*/
 
 	--wholestep: 1.618; /* always equals the scalefactor */

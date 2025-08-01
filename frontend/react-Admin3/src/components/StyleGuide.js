@@ -24,7 +24,7 @@ import NavigationSection from "./styleguide/NavigationSection";
 import LayoutSection from "./styleguide/LayoutSection";
 import TablesSection from "./styleguide/TablesSection";
 import ProductCardsSection from "./styleguide/ProductCardsSection";
-import ProductCardVariantsDemo from "./styleguide/ProductCardVariantsDemo";
+
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 
@@ -99,8 +99,7 @@ const StyleGuide = () => {
 								Product Cards
 							</Typography>
 						}>
-						<ProductCardsSection />
-						<ProductCardVariantsDemo />
+						<ProductCardsSection />						
 					</Tab>
 					<Tab
 						eventKey="buttons-forms-feedback"

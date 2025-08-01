@@ -1,233 +1,193 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  CardHeader,
-  CardActions,
-  Button,
-  Chip,
-  Badge,
-  Divider,
-  Stack,
-  Avatar,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  Tooltip
-} from '@mui/material';
+	Alert,
+	Box,
+	Typography,
+	Card,
+	CardContent,
+	CardHeader,
+	CardActions,
+	Button,
+	Chip,
+	Badge,
+	Divider,
+	Stack,
+	Avatar,
+	FormControlLabel,
+	Radio,
+	RadioGroup,
+	Tooltip,
+	TextField,
+	IconButton,
+} from "@mui/material";
 import {
-  ConfirmationNumberOutlined,
-  AddShoppingCart,
-  Star,
-  AccessTime,
-  InfoOutline,
-  Savings,
-  Timer
-} from '@mui/icons-material';
+	ConfirmationNumberOutlined,
+	AddShoppingCart,
+	Star,
+	AccessTime,
+	InfoOutline,
+	Savings,
+	Timer,
+	Add,
+	Remove,
+} from "@mui/icons-material";
+import { Arrows as ArrowsIcon } from "react-bootstrap-icons";
+import { NumberInput } from "@carbon/react";
 
-const EnhancedMarkingVoucherProductCard = ({ variant = "marking-product", ...props }) => {
-  const [selectedPackage, setSelectedPackage] = useState('5-pack');
+const EnhancedMarkingVoucherProductCard = ({
+	variant = "marking-product",
+	...props
+}) => {
+	const [quantity, setQuantity] = useState(1);
+	const basePrice = 35; // Base price per voucher
 
-  const voucherPackages = {
-    '3-pack': { 
-      quantity: 3, 
-      price: 99, 
-      pricePerVoucher: 33, 
-      savings: 6,
-      popular: false 
-    },
-    '5-pack': { 
-      quantity: 5, 
-      price: 150, 
-      pricePerVoucher: 30, 
-      savings: 25,
-      popular: true 
-    },
-    '10-pack': { 
-      quantity: 10, 
-      price: 280, 
-      pricePerVoucher: 28, 
-      savings: 70,
-      popular: false 
-    }
-  };
+	const handleQuantityChange = (event, value) => {
+		if (value >= 1 && value <= 99) {
+			setQuantity(value);
+		}
+	};
 
-  const handlePackageChange = (event) => {
-    setSelectedPackage(event.target.value);
-  };
+	const handleIncrement = () => {
+		if (quantity < 99) {
+			setQuantity(quantity + 1);
+		}
+	};
 
-  const selectedOption = voucherPackages[selectedPackage];
+	const handleDecrement = () => {
+		if (quantity > 1) {
+			setQuantity(quantity - 1);
+		}
+	};
 
-  return (
-    <Card elevation={2} variant={variant} className="d-flex flex-column" {...props}>
-      {selectedOption.popular && (
-        <Badge 
-          badgeContent="Popular" 
-          color="primary" 
-          sx={{
-            '& .MuiBadge-badge': {
-              top: 12,
-              right: 12,
-              fontSize: '0.75rem',
-              height: 20,
-              minWidth: 20
-            }
-          }}
-        />
-      )}
-      
-      <CardHeader
-        className="product-header"
-        title={
-          <Typography
-            variant="h4"
-            textAlign="left"
-            className="product-title">
-            Marking Voucher Pack
-          </Typography>
-        }
-        subheader={
-          <Typography
-            variant="subtitle1"
-            textAlign="left"
-            className="product-subtitle">
-            Pre-paid Credits • Any Subject
-          </Typography>
-        }
-        avatar={
-          <Avatar className="product-avatar">
-            <ConfirmationNumberOutlined className="product-avatar-icon" />
-          </Avatar>
-        }
-      />
-      
-      <CardContent sx={{ pt: 0 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Pre-purchase marking credits at discounted rates. Use anytime within 12 months across all subjects.
-        </Typography>
+	const totalPrice = basePrice * quantity;
 
-        <Box sx={{ mb: 2 }}>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-            <Timer sx={{ fontSize: 16, color: 'text.secondary' }} />
-            <Typography variant="caption">Valid for 12 months</Typography>
-          </Stack>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-            <Star sx={{ fontSize: 16, color: 'warning.main' }} />
-            <Typography variant="caption">4.8 (67 reviews)</Typography>
-          </Stack>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Savings sx={{ fontSize: 16, color: 'success.main' }} />
-            <Typography variant="caption" color="success.main">
-              Save up to £{Math.max(...Object.values(voucherPackages).map(p => p.savings))}
-            </Typography>
-          </Stack>
-        </Box>
+	return (
+		<Card
+			elevation={2}
+			variant={variant}
+			className="d-flex flex-column"
+			{...props}>
+			<CardHeader
+				className="product-header"
+				title={
+					<Typography
+						variant="h4"
+						textAlign="left"
+						className="product-title">
+						Marking Voucher
+					</Typography>
+				}
+				avatar={
+					<Avatar className="product-avatar">
+						<ConfirmationNumberOutlined className="product-avatar-icon" />
+					</Avatar>
+				}
+			/>
 
-        <Divider sx={{ my: 2 }} />
+			<CardContent>
+				<Typography
+					variant="body2"
+					color="text.secondary"
+					className="product-description"
+					sx={{ mb: 2, textAlign: "left" }}>
+					Submit any current assignment or mock exam paper for marking at
+					any time, irrespective of the deadlines dates.
+				</Typography>
 
-        <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
-          Choose Package Size
-        </Typography>
+				<Alert
+					severity="info"
+					className="info-alert"
+					sx={{ mb: 2, textAlign: "left" }}>
+					<Typography variant="caption" className="alert-text">
+						To ensure that your script is returned before the date of the
+						exam, please adhere to the explicit Marking Voucher deadline
+						dates in each session.
+					</Typography>
+				</Alert>
 
-        <RadioGroup value={selectedPackage} onChange={handlePackageChange}>
-          <Stack spacing={1}>
-            {Object.entries(voucherPackages).map(([key, option]) => (
-              <Box key={key} sx={{ 
-                border: 1, 
-                borderColor: selectedPackage === key ? 'primary.main' : 'divider',
-                borderRadius: 1,
-                p: 1.5,
-                backgroundColor: selectedPackage === key ? 'primary.50' : 'transparent',
-                transition: 'all 0.2s ease',
-                position: 'relative'
-              }}>
-                {option.popular && (
-                  <Chip 
-                    label="Most Popular" 
-                    size="small" 
-                    color="primary"
-                    sx={{ 
-                      position: 'absolute',
-                      top: -8,
-                      right: 8,
-                      fontSize: '0.65rem',
-                      height: 16
-                    }}
-                  />
-                )}
-                <FormControlLabel
-                  value={key}
-                  control={<Radio size="small" />}
-                  label={
-                    <Box sx={{ width: '100%' }}>
-                      <Box display="flex" justifyContent="space-between" alignItems="center">
-                        <Typography variant="body2" fontWeight={selectedPackage === key ? 600 : 400}>
-                          {option.quantity} Vouchers
-                        </Typography>
-                        <Typography variant="body2" color="primary.main" fontWeight={600}>
-                          £{option.price}
-                        </Typography>
-                      </Box>
-                      <Box display="flex" justifyContent="space-between" alignItems="center">
-                        <Typography variant="caption" color="text.secondary">
-                          £{option.pricePerVoucher} per voucher
-                        </Typography>
-                        <Typography variant="caption" color="success.main">
-                          Save £{option.savings}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  }
-                  sx={{ mx: 0, width: '100%' }}
-                />
-              </Box>
-            ))}
-          </Stack>
-        </RadioGroup>
+				<Box className="validity-info" sx={{ mb: 2 }}>
+					<Stack
+						direction="row"
+						spacing={1}
+						alignItems="center"
+						className="info-row"
+						sx={{ mb: 1 }}>
+						<Timer
+							className="info-icon"
+							sx={{ fontSize: 16, color: "text.secondary" }}
+						/>
+						<Typography variant="caption" className="info-text">
+							Valid for 4 years
+						</Typography>
+					</Stack>
+				</Box>
 
-        <Box sx={{ 
-          mt: 2, 
-          p: 1.5, 
-          bgcolor: 'info.50', 
-          borderRadius: 1,
-          border: 1,
-          borderColor: 'info.light'
-        }}>
-          <Stack direction="row" spacing={1} alignItems="flex-start">
-            <InfoOutline sx={{ fontSize: 16, color: 'info.main', mt: 0.2 }} />
-            <Typography variant="caption" color="info.dark">
-              Vouchers can be used for any subject and never expire during the 12-month validity period.
-            </Typography>
-          </Stack>
-        </Box>
-      </CardContent>
-      
-      <CardActions>
-        <Box className="price-container">
-          <Box className="price-action-section">
-            <Box className="price-info">
-              <Typography variant="h3" className="price-display">
-                £{selectedOption.price}
-              </Typography>
-              <Tooltip title="Show price details">
-                <Button size="small" className="info-button">
-                  <InfoOutline />
-                </Button>
-              </Tooltip>
-            </Box>
-            <Button variant="contained" className="add-to-cart-button">
-              <AddShoppingCart />
-            </Button>
-          </Box>
-        </Box>
-        <Typography variant="caption" className="status-text">
-          {selectedOption.quantity} vouchers • Save £{selectedOption.savings} • Price includes VAT
-        </Typography>
-      </CardActions>
-    </Card>
-  );
+				<Box
+					// className="quantity-section"
+					sx={{
+						display: "flex",
+						alignItems: "center",
+						mt: 2,
+						flexDirection: "row",
+					}}>
+					<NumberInput
+						id="default-number-input"
+						type="text"
+						label="Quantity"
+						value={quantity}
+						onBlur={() => {}}
+						onChange={() => {}}
+						size="md"
+						step={1}
+						min={1}
+						max={99}
+						defaultValue={1}
+						helperText="Please enter quantity."
+						invalidText="Invalid quantity"
+						locale="en"
+					/>
+				</Box>
+			</CardContent>
+
+			<CardActions>
+				<Box className="price-container">
+					<Box className="price-action-section">
+						<Box className="price-info-row">
+							<Typography variant="h3" className="price-display">
+								£{totalPrice.toFixed(2)}
+							</Typography>
+							<Tooltip title="Show price details">
+								<Button size="small" className="info-button">
+									<InfoOutline />
+								</Button>
+							</Tooltip>
+						</Box>
+						<Box className="price-details-row">
+							<Typography
+								variant="fineprint"
+								className="price-level-text"
+								color="text.secondary">
+								{quantity} voucher{quantity !== 1 ? "s" : ""} • £
+								{basePrice} each
+							</Typography>
+							<Typography
+								variant="fineprint"
+								className="vat-status-text"
+								color="text.secondary">
+								Price includes VAT
+							</Typography>
+						</Box>
+						<Button
+							variant="contained"
+							className="add-to-cart-button"
+							sx={{ alignSelf: "stretch" }}>
+							<AddShoppingCart />
+						</Button>
+					</Box>
+				</Box>
+			</CardActions>
+		</Card>
+	);
 };
 
 export default EnhancedMarkingVoucherProductCard;

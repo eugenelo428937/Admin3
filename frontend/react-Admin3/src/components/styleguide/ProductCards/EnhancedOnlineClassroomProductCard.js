@@ -30,6 +30,7 @@ import {
 
 const EnhancedOnlineClassroomProductCard = ({ variant = "online-product", ...props }) => {
   const [selectedFormat, setSelectedFormat] = useState('live');
+  const [selectedPriceType, setSelectedPriceType] = useState(""); // Empty means standard pricing
 
   const formatOptions = {
 		live: {
@@ -49,119 +50,176 @@ const EnhancedOnlineClassroomProductCard = ({ variant = "online-product", ...pro
 			variant={variant}
 			className="d-flex flex-column"
 			{...props}>
-			<Badge
-				badgeContent="Digital"
-				color="info"
-				sx={{
-					"& .MuiBadge-badge": {
-						top: 12,
-						right: 12,
-						fontSize: "0.75rem",
-						height: 20,
-						minWidth: 20,
-					},
-				}}>
-				<CardHeader
-					className="product-header"
-					title={
-						<Typography
-							variant="h4"
-							textAlign="left"
-							className="product-title">
-							Online Classroom
-						</Typography>
-					}
-					subheader={
-						<Typography
-							variant="subtitle1"
-							textAlign="left"
-							className="product-subtitle">
-							CP1 - Actuarial Practice
-						</Typography>
-					}
-					avatar={
-						<Avatar className="product-avatar">
-							<Computer className="product-avatar-icon" />
-						</Avatar>
-					}
+			{/* Floating Badges */}
+			<Box className="floating-badges-container">
+				<Chip
+					label="CP1"
+					size="small"
+					className="subject-badge"
+					role="img"
+					aria-label="Subject: CP1"
 				/>
-			</Badge>
+				<Chip
+					label="25S"
+					size="small"
+					className="session-badge"
+					role="img"
+					aria-label="Exam session: 25S"
+				/>
+			</Box>
+			<CardHeader
+				className="product-header"
+				title={
+					<Typography
+						variant="h4"
+						textAlign="left"
+						className="product-title">
+						Online Classroom
+					</Typography>
+				}
+				subheader={
+					<Typography
+						variant="subtitle1"
+						textAlign="left"
+						className="product-subtitle">
+						CP1 - Actuarial Practice
+					</Typography>
+				}
+				avatar={
+					<Avatar className="product-avatar">
+						<Computer className="product-avatar-icon" />
+					</Avatar>
+				}
+			/>
 
 			<CardContent>
 				{/* Enhanced Chips Section - More prominent */}
 				<Box className="product-chips">
-					<Chip label="CS1" variant="filled" color="primary" />
+					<Chip label="CP1" variant="filled" color="primary" />
 					<Chip label="2024A" variant="filled" color="secondary" />
 				</Box>
 
-				<Typography variant="subtitle2" sx={{ mb: 1.5 }}>
-					Access Options
-				</Typography>
+				<Box className="product-variations">
+					<Typography variant="subtitle2" className="variations-title">
+						Access Options
+					</Typography>
 
-				<RadioGroup value={selectedFormat} onChange={handleFormatChange}>
-					<Stack spacing={1}>
-						{Object.entries(formatOptions).map(([key, option]) => (
-							<Box
-								key={key}
-								sx={{
-									border: 1,
-									borderColor:
-										selectedFormat === key
-											? "primary.main"
-											: "divider",
-									borderRadius: 1,
-									p: 1.5,
-									backgroundColor:
-										selectedFormat === key
-											? "primary.50"
-											: "transparent",
-									transition: "all 0.2s ease",
-								}}>
-								<FormControlLabel
-									value={key}
-									control={<Radio size="small" />}
-									label={
-										<Box sx={{ width: "100%" }}>
-											<Box
-												display="flex"
-												justifyContent="space-between"
-												alignItems="center">
+					<RadioGroup
+						value={selectedFormat}
+						onChange={handleFormatChange}
+						className="variations-group">
+						<Stack spacing={1}>
+							{Object.entries(formatOptions).map(([key, option]) => (
+								<Box key={key} className="variation-option">
+									<FormControlLabel
+										value={key}
+										control={<Radio size="small" />}
+										label={
+											<Box className="variation-label">
+												<Box
+													display="flex"
+													justifyContent="space-between"
+													alignItems="center">
+													<Typography
+														variant="body2"
+														fontWeight={
+															selectedFormat === key ? 600 : 400
+														}>
+														{option.label}
+													</Typography>
+													<Typography
+														variant="body2"
+														color="primary.main"
+														fontWeight={600}>
+														£{option.price}
+													</Typography>
+												</Box>
 												<Typography
-													variant="body2"
-													fontWeight={
-														selectedFormat === key ? 600 : 400
-													}>
-													{option.label}
-												</Typography>
-												<Typography
-													variant="body2"
-													color="primary.main"
-													fontWeight={600}>
-													£{option.price}
+													variant="caption"
+													color="text.secondary"
+													className="variation-description">
+													{option.description}
 												</Typography>
 											</Box>
-											<Typography
-												variant="caption"
-												color="text.secondary"
-												textAlign="left">
-												{option.description}
-											</Typography>
-										</Box>
-									}
-									sx={{ mx: 0, width: "100%" }}
-								/>
-							</Box>
-						))}
-					</Stack>
-				</RadioGroup>
+										}
+										className="variation-control"
+									/>
+								</Box>
+							))}
+						</Stack>
+					</RadioGroup>
+				</Box>
 			</CardContent>
 
 			<CardActions>
+				{/* Discount Options Section - matches theme structure */}
 				<Box className="price-container">
+					<Box className="discount-options">
+						<Typography variant="subtitle2" className="discount-title">
+							Discount Options
+						</Typography>
+						<Box className="discount-radio-group">
+							<FormControlLabel
+								className="discount-radio-option"
+								control={
+									<Radio
+										checked={selectedPriceType === "retaker"}
+										onClick={() =>
+											setSelectedPriceType(
+												selectedPriceType === "retaker"
+													? ""
+													: "retaker"
+											)
+										}
+										size="small"
+									/>
+								}
+								label={
+									<Typography
+										variant="subtitle2"
+										className="discount-label">
+										Retaker
+									</Typography>
+								}
+							/>
+							<FormControlLabel
+								className="discount-radio-option"
+								control={
+									<Radio
+										checked={selectedPriceType === "additional"}
+										onClick={() =>
+											setSelectedPriceType(
+												selectedPriceType === "additional"
+													? ""
+													: "additional"
+											)
+										}
+										size="small"
+									/>
+								}
+								label={
+									<Typography
+										variant="subtitle2"
+										className="discount-label">
+										Additional Copy
+									</Typography>
+								}
+							/>
+						</Box>
+					</Box>
+					{/* Price & Action Section - matches theme structure */}
 					<Box className="price-action-section">
-						<Box className="price-info">
+						<Box className="price-info-row">
 							<Typography variant="h3" className="price-display">
-								£{formatOptions[selectedFormat].price}
+								{selectedPriceType === "retaker"
+									? `£${(
+											formatOptions[selectedFormat].price * 0.8
+									  ).toFixed(2)}`
+									: selectedPriceType === "additional"
+									? `£${(
+											formatOptions[selectedFormat].price * 0.5
+									  ).toFixed(2)}`
+									: `£${formatOptions[selectedFormat].price}`}
 							</Typography>
 							<Tooltip title="Show price details">
 								<Button size="small" className="info-button">
@@ -169,14 +227,29 @@ const EnhancedOnlineClassroomProductCard = ({ variant = "online-product", ...pro
 								</Button>
 							</Tooltip>
 						</Box>
+						<Box className="price-details-row">
+							<Typography
+								variant="fineprint"
+								className="price-level-text"
+								color="text.secondary">
+								{selectedPriceType === "retaker"
+									? "Retaker discount applied"
+									: selectedPriceType === "additional"
+									? "Additional copy discount applied"
+									: "Standard pricing"}
+							</Typography>
+							<Typography
+								variant="fineprint"
+								className="vat-status-text"
+								color="text.secondary">
+								Price includes VAT
+							</Typography>
+						</Box>
 						<Button variant="contained" className="add-to-cart-button">
 							<AddShoppingCart />
 						</Button>
 					</Box>
 				</Box>
-				<Typography variant="caption" className="status-text">
-					{formatOptions[selectedFormat].description} • Price includes VAT
-				</Typography>
 			</CardActions>
 		</Card>
   );

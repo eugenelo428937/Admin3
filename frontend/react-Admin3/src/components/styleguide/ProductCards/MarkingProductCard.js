@@ -1,37 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
 	Stack,
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  CardHeader,
-  CardActions,
-  Button,
-  Chip,
-  Divider,
-  Tooltip
-} from '@mui/material';
+	Box,
+	Typography,
+	Card,
+	CardContent,
+	CardHeader,
+	CardActions,
+	Button,
+	Chip,
+	Divider,
+	Tooltip,
+} from "@mui/material";
 import {
-  RuleOutlined,
-  AddShoppingCart,
-  InfoOutline,
-  CalendarMonthOutlined
-} from '@mui/icons-material';
+	RuleOutlined,
+	AddShoppingCart,
+	InfoOutline,
+	CalendarMonthOutlined,
+} from "@mui/icons-material";
 
 // Enhanced Marking Product Card - All Deadlines Available
-const MarkingCardAllAvailable = () => {
-	const [selectedPriceType, setSelectedPriceType] = useState('');
+const MarkingProductCard = () => {
+	const [selectedPriceType, setSelectedPriceType] = useState("");
 
 	const mockDeadlines = [
-		{ id: 1, deadline: new Date('2025-03-15'), recommended_submit_date: new Date('2025-03-10') },
-		{ id: 2, deadline: new Date('2025-06-15'), recommended_submit_date: new Date('2025-06-10') },
-		{ id: 3, deadline: new Date('2025-09-15'), recommended_submit_date: new Date('2025-09-10') }
+		{
+			id: 1,
+			deadline: new Date("2025-03-15"),
+			recommended_submit_date: new Date("2025-03-10"),
+		},
+		{
+			id: 2,
+			deadline: new Date("2025-06-15"),
+			recommended_submit_date: new Date("2025-06-10"),
+		},
+		{
+			id: 3,
+			deadline: new Date("2025-09-15"),
+			recommended_submit_date: new Date("2025-09-10"),
+		},
 	];
-	
+
 	const now = new Date();
-	const upcoming = mockDeadlines.filter(d => d.deadline > now);
-	const expired = mockDeadlines.filter(d => d.deadline <= now);
+	const upcoming = mockDeadlines.filter((d) => d.deadline > now);
+	const expired = mockDeadlines.filter((d) => d.deadline <= now);
 
 	return (
 		<Card
@@ -98,45 +110,87 @@ const MarkingCardAllAvailable = () => {
 						• 3
 					</Typography>
 				</Stack>
+				{/* Add Pagination for showing different deadlines messages for demo purposes */}
 				<Box
 					sx={{
-						border: 1,
-						borderColor: "success.light",
-						borderRadius: 1,
+						mt: 2,
 						p: 1.5,
-						backgroundColor: "success.50",
-						display: "flex",
-						alignItems: "center",
-						gap: 1,
-						transition: "all 0.2s ease",
-						"&:hover": {
-							boxShadow: "1px 2px 1px rgba(0, 0, 0, 0.15)",
-							backgroundColor: "success.100",
-						},
+						bgcolor: "info.50",
+						borderRadius: 1,
+						border: 1,
+						borderColor: "info.light",
 					}}>
-					<CalendarMonthOutlined
-						sx={{ fontSize: 18, color: "success.main" }}
-					/>
-					<Typography variant="body2" color="success.dark">
-						{upcoming.length > 0
-							? `Next deadline: ${upcoming[0].deadline.toLocaleDateString()} (${
-									upcoming.length
-							  } available)`
-							: "All deadlines available"}
-					</Typography>
-					All available
 					<Stack direction="row" spacing={1} alignItems="flex-start">
-						<InfoOutline
+						<CalendarMonthOutlined
 							sx={{ fontSize: 16, color: "info.main", mt: 0.2 }}
 						/>
 						<Typography variant="caption" color="info.dark">
-							To ensure that your script is returned before the date of
-							the exam, please adhere to the explicit Marking Voucher
-							deadline dates in each session.
+							Next deadline: 15/09/2025
 						</Typography>
 					</Stack>
-					 Expiring soon WARNING Deadline due in 7
-					days. 15/09/2025
+				</Box>
+				<Box
+					sx={{
+						mt: 2,
+						p: 1.5,
+						bgcolor: "warning.50",
+						borderRadius: 1,
+						border: 1,
+						borderColor: "info.warning",
+					}}>
+					<Stack direction="row" spacing={1} alignItems="flex-start">
+						<CalendarMonthOutlined
+							sx={{ fontSize: 16, color: "info.main", mt: 0.2 }}
+						/>
+						<Typography variant="caption" color="info.dark">
+							Next deadline: 15/09/2025
+						</Typography>
+						<Typography variant="caption" color="info.dark">
+							Deadline due in <b>7</b> days.
+						</Typography>
+					</Stack>
+				</Box>
+				<Box
+					sx={{
+						mt: 2,
+						p: 1.5,
+						bgcolor: "error.50",
+						borderRadius: 1,
+						border: 1,
+						borderColor: "error.light",
+					}}>
+					<Stack direction="row" spacing={1} alignItems="flex-start">
+						<CalendarMonthOutlined
+							sx={{ fontSize: 16, color: "error.main", mt: 0.2 }}
+						/>
+						<Typography variant="caption" color="error.dark">
+							2/3 deadlines expired
+						</Typography>
+						<Typography variant="caption" color="error.dark">
+							Consider using Marking Voucher instead. 
+						</Typography>
+					</Stack>
+				</Box>
+				<Box
+					sx={{
+						mt: 2,
+						p: 1.5,
+						bgcolor: "error.50",
+						borderRadius: 1,
+						border: 1,
+						borderColor: "error.light",
+					}}>
+					<Stack direction="row" spacing={1} alignItems="flex-start">
+						<CalendarMonthOutlined
+							sx={{ fontSize: 16, color: "error.main", mt: 0.2 }}
+						/>
+						<Typography variant="caption" color="error.dark">
+							All deadlines expired
+						</Typography>
+						<Typography variant="caption" color="error.dark">
+							Consider using Marking Voucher instead.
+						</Typography>
+					</Stack>
 				</Box>
 			</CardContent>
 			<CardActions
@@ -196,4 +250,4 @@ const MarkingCardAllAvailable = () => {
 	);
 };
 
-export default MarkingCardAllAvailable;
+export default MarkingProductCard;
