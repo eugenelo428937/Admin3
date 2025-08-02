@@ -1,7 +1,7 @@
 # Product Card UI/UX Guidelines
 
 ## Overview
-This document outlines the comprehensive design system and implementation rules for the Material Product Card component in the Admin3 Online Store. The design system is based on the finalized `BalancedProductCard` component and the corresponding theme-based styling architecture.
+This document outlines the comprehensive design system and implementation rules for the Product Card components in the Admin3 Online Store. The design system has evolved to include seven distinct product card variants, each optimized for specific product types with consistent styling patterns, hover effects, and theme-based architecture.
 
 ## Architecture Overview
 
@@ -9,7 +9,8 @@ This document outlines the comprehensive design system and implementation rules 
 The product card system follows these core principles:
 - **Modular Design**: Clean separation between component logic and styling
 - **Theme-Based Variants**: All styling variations managed through theme.js
-- **Interactive Elements**: Dynamic gradients and hover effects for enhanced UX
+- **Consistent Interactions**: Unified hover effects and user interactions across all variants
+- **Non-BPP Color Palette**: Floating badges use consistent neutral colors across all product types
 - **Accessibility First**: Proper contrast ratios and semantic structure
 - **Responsive Layout**: Consistent aspect ratios and flexible dimensions
 
@@ -17,410 +18,504 @@ The product card system follows these core principles:
 ```
 src/
 ├── components/styleguide/ProductCards/
-│   └── BalancedProductCard.js          # Component logic and structure
+│   ├── BalancedProductCard.js                    # material-product variant
+│   ├── EnhancedBundleProductCard.js              # bundle-product variant
+│   ├── EnhancedTutorialProductCard.js            # tutorial-product variant
+│   ├── EnhancedOnlineClassroomProductCard.js     # online-product variant
+│   ├── MarkingProductCard.js                     # marking-product variant
+│   ├── EnhancedMarkingVoucherProductCard.js      # marking-voucher-product variant
+│   └── EnhancedAssessmentProductCard.js          # assessment-product variant
 ├── theme/
-│   └── theme.js                        # All styling variants and configurations
+│   └── theme.js                                  # All styling variants and configurations
 └── styles/
-    └── liftkit.css                     # Base design system styles
+    └── liftkit.css                               # Base design system styles
 ```
 
-## Component Architecture
+## Available Product Card Variants
 
-### 1. Component Structure (BalancedProductCard.js)
+### 1. BalancedProductCard.js (`material-product`)
+- **Primary Use**: Study materials, books, printed/eBook products
+- **Key Features**: 
+  - Product variation selection (printed, eBook, both)
+  - Discount options (retaker, additional copy)
+  - Interactive gradient header with mouse tracking
+  - Dynamic pricing calculations
+- **Theme Color**: Sky blue (BPP color system)
+- **Dimensions**: 22rem width, 34rem height
 
-#### Core Elements
-The component is structured with these main sections:
+### 2. EnhancedBundleProductCard.js (`bundle-product`)
+- **Primary Use**: Product bundles and package deals
+- **Key Features**:
+  - Bundle items list with individual pricing
+  - Total value vs bundle price comparison
+  - Discount options with bundle-specific pricing
+  - Expandable details section
+- **Theme Color**: Green (BPP color system)
+- **Dimensions**: 21rem width, 34rem height
 
+### 3. EnhancedTutorialProductCard.js (`tutorial-product`)
+- **Primary Use**: Tutorial sessions and educational events
+- **Key Features**:
+  - Optional add-ons (materials, recordings)
+  - Dynamic pricing based on selections
+  - Tutorial-specific metadata display
+  - Location and scheduling information
+- **Theme Color**: Purple (BPP color system)
+- **Dimensions**: 21rem width, 34rem height
+
+### 4. EnhancedOnlineClassroomProductCard.js (`online-product`)
+- **Primary Use**: Online classroom sessions and VLE content
+- **Key Features**:
+  - Format selection (live, recorded, hybrid)
+  - Platform-specific information
+  - Access duration details
+  - Interactive content indicators
+- **Theme Color**: Cobalt blue (BPP color system)
+- **Dimensions**: 21rem width, 34rem height
+
+### 5. MarkingProductCard.js (`marking-product`)
+- **Primary Use**: Assignment and exam marking services
+- **Key Features**:
+  - **Specialized Pagination System**: Shows different deadline scenarios
+  - Dynamic deadline messaging with color-coded alerts
+  - Submission count display
+  - Interactive pagination dots for scenario switching
+  - **Unique Class Names**: Uses marking-specific CSS classes
+- **Theme Color**: Orange (BPP color system)
+- **Dimensions**: 21rem width, 34rem height
+
+### 6. EnhancedMarkingVoucherProductCard.js (`marking-voucher-product`)
+- **Primary Use**: Marking vouchers for flexible submission timing
+- **Key Features**:
+  - **Quantity Selector**: Increment/decrement controls
+  - Validity information display
+  - Usage guidelines and restrictions
+  - Dynamic total pricing
+  - **Unique Class Names**: Uses voucher-specific CSS classes
+- **Theme Color**: Orange (BPP color system)
+- **Dimensions**: 21rem width, 34rem height
+
+### 7. EnhancedAssessmentProductCard.js (`assessment-product`)
+- **Primary Use**: Mock exams and practice assessments
+- **Key Features**:
+  - Exam type selection (standard, adaptive)
+  - Attempt quantity configuration (1, 3, 5, unlimited)
+  - Assessment features display
+  - Performance analytics integration
+- **Theme Color**: Purple/Pink gradient (custom implementation)
+- **Dimensions**: Flexible dimensions with overflow handling
+
+## Universal Features Across All Variants
+
+### 1. Hover Effects
+All product cards implement consistent hover behavior:
+```jsx
+sx={{                 
+    transform: isHovered ? 'scale(1.02)' : 'scale(1)',
+    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+}}
+```
+- **Scale Effect**: 1.02x scale on hover
+- **Smooth Transition**: Cubic-bezier easing for professional feel
+- **State Management**: onMouseEnter/onMouseLeave handlers
+
+### 2. Floating Badge Colors (Non-BPP Palette)
+**All product cards use consistent floating badge colors:**
+```css
+/* Subject Badge */
+.subject-badge {
+    backgroundColor: "#475569",  /* Steel Blue */
+    color: "#f1f5f9",           /* Light text */
+    "&:hover": {
+        backgroundColor: "#334155" /* Darker steel blue */
+    }
+}
+
+/* Session Badge */
+.session-badge {
+    backgroundColor: "#6b7280",  /* Neutral Gray */
+    color: "#f9fafb",           /* Light text */
+    "&:hover": {
+        backgroundColor: "#4b5563" /* Darker gray */
+    }
+}
+```
+
+### 3. Badge Positioning
+Floating badges are consistently positioned across all variants:
+- **Position**: `top: "calc(var(--product-card-header-height) - var(--badge-height) / 1.618)"`
+- **Alignment**: Right-aligned with `right: liftKitTheme.spacing.sm`
+- **Z-Index**: 10 to appear above header content
+- **Non-Interactive**: `pointerEvents: "none"` to avoid interference
+
+## Specialized Features by Variant
+
+### MarkingProductCard Unique Features
+```jsx
+// Pagination system for deadline scenarios
+const deadlineScenarios = [
+    { id: 0, title: "All Available", messageBox: { type: "info", ... } },
+    { id: 1, title: "Upcoming Soon", messageBox: { type: "warning", ... } },
+    { id: 2, title: "Some Expired", messageBox: { type: "error", ... } },
+    // ... more scenarios
+];
+
+// Special class names for marking cards
+<Stack className="marking-submissions-info">
+    <Stack className="submissions-info-row">
+        <Typography className="submissions-info-title">
+        <Typography className="submissions-info-count">
+    </Stack>
+</Stack>
+
+<Box className="marking-deadline-message">
+    <Stack className="deadline-message-content">
+        <Typography className="deadline-message-primary">
+        <Typography className="deadline-message-secondary">
+    </Stack>
+</Box>
+
+<Box className="marking-pagination-container">
+    <IconButton className="pagination-dot-button">
+        <Circle className="pagination-dot active|inactive" />
+    </IconButton>
+</Box>
+```
+
+### EnhancedMarkingVoucherProductCard Unique Features
+```jsx
+// Quantity management with validation
+const [quantity, setQuantity] = useState(1);
+
+const handleQuantityChange = (event, value) => {
+    if (value >= 1 && value <= 99) {
+        setQuantity(value);
+    }
+};
+
+// Special class names for voucher cards
+<Alert className="voucher-info-alert">
+    <Typography className="alert-text">
+</Alert>
+
+<Box className="voucher-validity-info">
+    <Stack className="validity-info-row">
+        <Timer className="validity-info-icon" />
+        <Typography className="validity-info-text">
+    </Stack>
+</Box>
+
+<Box className="voucher-quantity-section">
+    {/* Quantity controls */}
+</Box>
+```
+
+## Class Name Requirements for Theme Application
+
+**CRITICAL**: The following CSS class names MUST be used exactly as specified for the theme styling to apply correctly.
+
+### Universal Required Class Names (All Variants)
 ```jsx
 <Card variant={variant}>
-  <CardHeader />          // Dynamic gradient header with product info
-  <CardContent />         // Product details, chips, and variations
-  <CardActions />         // Pricing, discount options, and actions
+    {/* Floating Badges */}
+    <Box className="floating-badges-container">          // REQUIRED
+        <Chip className="subject-badge" />               // REQUIRED  
+        <Chip className="session-badge" />               // REQUIRED
+    </Box>
+    
+    <CardHeader className="product-header">              // REQUIRED
+        <Typography className="product-title">          // REQUIRED
+        <Typography className="product-subtitle">       // REQUIRED
+        <Avatar className="product-avatar">             // REQUIRED
+            <Icon className="product-avatar-icon" />     // REQUIRED
+        </Avatar>
+    </CardHeader>
+    
+    <CardContent>
+        <Box className="product-chips">                  // REQUIRED (if present)
+        <Box className="product-variations">            // REQUIRED (if present)
+    </CardContent>
+    
+    <CardActions>
+        <Box className="price-container">               // REQUIRED
+            <Box className="discount-options">          // REQUIRED (if present)
+                <Typography className="discount-title"> // REQUIRED
+                <Box className="discount-radio-group">  // REQUIRED
+                    <FormControlLabel className="discount-radio-option"> // REQUIRED
+                        <Typography className="discount-label"> // REQUIRED
+                    </FormControlLabel>
+                </Box>
+            </Box>
+            
+            <Box className="price-action-section">      // REQUIRED
+                <Box className="price-info-row">        // REQUIRED
+                    <Typography className="price-display"> // REQUIRED
+                    <Button className="info-button">     // REQUIRED
+                </Box>
+                <Box className="price-details-row">     // REQUIRED
+                    <Typography className="price-level-text"> // REQUIRED
+                    <Typography className="vat-status-text"> // REQUIRED
+                </Box>
+                <Button className="add-to-cart-button"> // REQUIRED
+            </Box>
+        </Box>
+    </CardActions>
 </Card>
 ```
 
-#### Key Features
-- **Interactive Gradient Header**: Mouse-tracking gradient effects
-- **Product Variations**: Radio button selection for different product types
-- **Discount Options**: Retaker and Additional Copy pricing
-- **Dynamic Pricing**: Real-time price calculations based on selections
+### MarkingProductCard Additional Required Classes
+```jsx
+// Submissions information
+<Stack className="marking-submissions-info">
+    <Stack className="submissions-info-row">
+        <Icon className="submissions-info-icon">
+        <Typography className="submissions-info-title">
+        <Typography className="submissions-info-count">
+    </Stack>
+</Stack>
 
-### 2. Styling Architecture (theme.js)
+// Deadline messaging
+<Box className="marking-deadline-message">
+    <Stack className="deadline-message-content">
+        <Icon className="deadline-message-icon">
+        <Box className="deadline-message-text">
+            <Typography className="deadline-message-primary">
+            <Typography className="deadline-message-secondary">
+        </Box>
+    </Stack>
+</Box>
 
-#### Variant System
+// Pagination system
+<Box className="marking-pagination-container">
+    <IconButton className="pagination-dot-button">
+        <Circle className="pagination-dot active">    // or "inactive"
+    </IconButton>
+</Box>
+```
+
+### EnhancedMarkingVoucherProductCard Additional Required Classes
+```jsx
+// Voucher information alert
+<Alert className="voucher-info-alert">
+    <Typography className="alert-text">
+</Alert>
+
+// Validity information
+<Box className="voucher-validity-info">
+    <Stack className="validity-info-row">
+        <Icon className="validity-info-icon">
+        <Typography className="validity-info-text">
+    </Stack>
+</Box>
+
+// Quantity section
+<Box className="voucher-quantity-section">
+    {/* Quantity controls */}
+</Box>
+```
+
+## Theme Structure and Styling Philosophy
+
+### Styling Architecture
 All visual variations are defined in `theme.js` under `MuiCard.variants`:
+```javascript
+{
+    props: { variant: "variant-name" },
+    style: {
+        // All styling configurations
+        minWidth: "21rem",
+        maxWidth: "21rem", 
+        height: "34rem !important",
+        // ... component styling
+    }
+}
+```
+
+### Current Theme Variants
+- `material-product` - Sky blue theme (materials, books)
+- `tutorial-product` - Purple theme (tutorials, sessions)
+- `bundle-product` - Green theme (product bundles)
+- `online-product` - Cobalt blue theme (online classroom)
+- `marking-product` - Orange theme (marking services)
+- `marking-voucher-product` - Orange theme (marking vouchers)
+- `assessment-product` - Custom gradient theme (mock exams)
+
+### Color Scheme Application
+Each variant uses specific BPP color system shades:
+- **Header Background**: Uses shade `020` from chosen color scheme
+- **Actions Background**: Uses shade `030` from chosen color scheme
+- **Interactive Elements**: Use appropriate color variations for hover states
+
+### Class-Based Styling Approach
+- **No Component-Level sx Props**: Layout styling handled via theme classes
+- **Dynamic States Only**: sx props reserved for dynamic colors and state changes
+- **Consistent Patterns**: All variants follow the same class naming conventions
+- **Theme Centralization**: All styling logic centralized in theme.js
+
+## Implementation Guidelines
+
+### 1. Creating New Product Card Components
+When creating new product card variants:
+
+1. **Follow the naming convention**: `EnhancedXxxProductCard.js`
+2. **Use consistent hover implementation**:
+```jsx
+const [isHovered, setIsHovered] = useState(false);
+
+<Card 
+    onMouseEnter={() => setIsHovered(true)}
+    onMouseLeave={() => setIsHovered(false)}
+    sx={{                 
+        transform: isHovered ? 'scale(1.02)' : 'scale(1)',
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+    }}>
+```
+
+3. **Include floating badges with consistent colors**:
+```jsx
+<Box className="floating-badges-container">
+    <Chip label="CS1" className="subject-badge" />
+    <Chip label="25S" className="session-badge" />
+</Box>
+```
+
+4. **Follow the required class name structure** as outlined above
+
+### 2. Adding New Theme Variants
+To add a new product card variant in theme.js:
 
 ```javascript
 {
-  props: { variant: "material-product" },
-  style: {
-    // All styling configurations
-  }
-}
-```
-
-#### Available Variants
-- `material-product` (default) - Sky blue theme
-- `tutorial-product` - Purple theme  
-- `bundle-product` - Green theme
-- `online-product` - Cobalt blue theme
-- `marking-product` - Orange theme
-
-### Floating Badge Positioning
-Floating badges are positioned between the card header and content using CSS custom properties:
-- **Position**: `top: "calc(var(--product-card-header-height) - var(--badge-height) / 2.5)"`
-- **Alignment**: Right-aligned with `right: liftKitTheme.spacing.sm`
-- **CSS Variables**: Defined in `globals.css`
-  - `--product-card-header-height: 7.43rem`
-  - `--badge-height: 1.5rem`
-
-## Implementation Rules
-
-### 1. Creating New Product Card Variants
-
-#### Step 1: Theme Configuration
-Add new variant in `theme.js` under `MuiCard.variants`:
-
-```javascript
-{
-  props: { variant: "new-product-type" },
-  style: {
-    minWidth: "22rem",
-    maxWidth: "22rem",
-    height: "fit-content",
-    overflow: "hidden",
-    aspectRatio: "2/3",
-    boxShadow: "var(--Paper-shadow)",
-    justifyContent: "space-between",
-    
-    // Header styling
-    "& .product-header": {
-      backgroundColor: colorTheme.bpp.{colorScheme}["020"],
-      // ... other header styles
-    },
-    
-    // Content styling
-    "& .MuiCardContent-root": {
-      // ... content styles
-    },
-    
-    // Actions styling
-    "& .MuiCardActions-root": {
-      // ... actions styles
+    props: { variant: "new-product-type" },
+    style: {
+        minWidth: "21rem",
+        maxWidth: "21rem",
+        height: "34rem !important",
+        overflow: "visible",
+        aspectRatio: "5/7",
+        boxShadow: "var(--Paper-shadow)",
+        justifyContent: "space-between",
+        position: "relative",
+        
+        // Include floating badges styling
+        "& .floating-badges-container": {
+            // ... consistent badge positioning and colors
+        },
+        
+        // Header styling with chosen BPP color
+        "& .product-header": {
+            backgroundColor: colorTheme.bpp.{colorScheme}["020"],
+            // ... other header styles
+        },
+        
+        // Actions styling with chosen BPP color
+        "& .MuiCardActions-root": {
+            backgroundColor: colorTheme.bpp.{colorScheme}["030"],
+            // ... other actions styles
+        }
     }
-  }
 }
 ```
 
-#### Step 2: Color Scheme Selection
-Choose appropriate color from BPP color system:
-- `sky` - Blue theme (materials)
-- `purple` - Purple theme (tutorials)
-- `green` - Green theme (bundles)
-- `cobalt` - Blue theme (online products)
-- `orange` - Orange theme (marking)
-- `granite` - Neutral theme (general use)
-
-#### Header and Actions Color Scheme Requirements
-- **Header Background**: Use shade `020` from chosen color scheme
-- **Actions Background**: Use shade `030` from chosen color scheme
-- **Example for bundle cards**: 
-  - Header: `colorTheme.bpp.green["020"]`
-  - Actions: `colorTheme.bpp.green["030"]`
-
-#### Step 3: Gradient Configuration
-Add color scheme to gradient system in `theme.js`:
-
-```javascript
-gradients: {
-  colorSchemes: {
-    newTheme: {
-      primary: "R, G, B",    // Primary color RGB values
-      secondary: "R, G, B",  // Secondary color RGB values  
-      accent: "R, G, B"      // Accent color RGB values
-    }
-  }
-}
-```
-
-### 2. Required CSS Class Names for Theme Application
-
-**CRITICAL**: The following CSS class names MUST be used exactly as specified for the theme styling to apply correctly. These class names are referenced in `theme.js` and are essential for the styling system to work.
-
-#### Required Class Names Structure
+### 3. Component Usage Examples
 ```jsx
-<Card variant={variant}>
-  {/* Floating Badges - positioned between header and content */}
-  <Box className="floating-badges-container">    // REQUIRED: Floating badges container
-    <Chip className="subject-badge" />           // REQUIRED: Subject badge styling
-    <Chip className="session-badge" />           // REQUIRED: Session badge styling
-  </Box>
-  
-  <CardHeader 
-    className="product-header"           // REQUIRED: Applies header styling
-    title={<Typography className="product-title">Title</Typography>}     // REQUIRED
-    subheader={<Typography className="product-subtitle">Subtitle</Typography>} // REQUIRED
-    avatar={<Avatar className="product-avatar">
-      <Icon className="product-avatar-icon" />  // REQUIRED
-    </Avatar>}
-  />
-  
-  <CardContent>
-    <Box className="product-chips">      // REQUIRED: Chips container styling
-      <Chip />
-    </Box>
-    
-    <Box className="product-variations"> // REQUIRED: Variations container styling
-      <Typography className="variations-title">   // REQUIRED
-      <Box className="variations-group">  // REQUIRED: Group container
-        <Box className="variation-option"> // REQUIRED: Individual option styling
-          <FormControlLabel className="variation-label" /> // REQUIRED
-        </Box>
-      </Box>
-    </Box>
-  </CardContent>
-  
-  <CardActions>
-    <Box className="price-container">    // REQUIRED: Main price container
-      <Box className="discount-options">  // REQUIRED: Discount section
-        <Typography className="discount-title">    // REQUIRED
-        <Box className="discount-radio-group">     // REQUIRED
-          <FormControlLabel className="discount-radio-option"> // REQUIRED
-            <Typography className="discount-label" />          // REQUIRED
-          </FormControlLabel>
-        </Box>
-      </Box>
-      
-      <Box className="price-action-section">      // REQUIRED: Price/action area
-        <Box className="price-info-row">          // REQUIRED: Price display row
-          <Typography className="price-display">  // REQUIRED: Price text
-          <Button className="info-button">        // REQUIRED: Info button
-        </Box>
-        <Box className="price-details-row">       // REQUIRED: Details row
-          <Typography className="price-level-text">    // REQUIRED
-          <Typography className="vat-status-text">     // REQUIRED
-        </Box>
-        <Button className="add-to-cart-button">   // REQUIRED: Cart button
-      </Box>
-    </Box>
-  </CardActions>
-</Card>
-```
-
-#### Class Name Reference Table
-
-| Component Section | Required Class Name | Purpose | Theme Reference |
-|------------------|-------------------|---------|-----------------|
-| **Floating Badges** | `floating-badges-container` | Container for floating badges | `"& .floating-badges-container"` |
-| | `subject-badge` | Subject badge styling | `"& .subject-badge"` |
-| | `session-badge` | Session badge styling | `"& .session-badge"` |
-| **Header** | `product-header` | Header container styling | `"& .product-header"` |
-| | `product-title` | Main product title | `"& .product-title"` |
-| | `product-subtitle` | Product subtitle/details | `"& .product-subtitle"` |
-| | `product-avatar` | Avatar container | `"& .product-avatar"` |
-| | `product-avatar-icon` | Icon within avatar | `"& .product-avatar-icon"` |
-| **Content** | `product-chips` | Chips container | `"& .product-chips"` |
-| | `product-variations` | Variations container | `"& .product-variations"` |
-| | `variations-title` | Variations section title | `"& .variations-title"` |
-| | `variations-group` | Radio group container | `"& .variations-group"` |
-| | `variation-option` | Individual variation item | `"& .variation-option"` |
-| | `variation-label` | Variation label text | `"& .variation-label"` |
-| **Actions** | `price-container` | Main pricing container | `"& .price-container"` |
-| | `discount-options` | Discount section | `"& .discount-options"` |
-| | `discount-title` | Discount section title | `"& .discount-title"` |
-| | `discount-radio-group` | Discount radio container | `"& .discount-radio-group"` |
-| | `discount-radio-option` | Individual discount option | `"& .discount-radio-option"` |
-| | `discount-label` | Discount option label | `"& .discount-label"` |
-| | `price-action-section` | Price and button area | `"& .price-action-section"` |
-| | `price-info-row` | Price display row | `"& .price-info-row"` |
-| | `price-display` | Price text element | `"& .price-display"` |
-| | `info-button` | Information button | `"& .info-button"` |
-| | `price-details-row` | Price details container | `"& .price-details-row"` |
-| | `price-level-text` | Price level indicator | `"& .price-level-text"` |
-| | `vat-status-text` | VAT status text | `"& .vat-status-text"` |
-| | `add-to-cart-button` | Add to cart button | `"& .add-to-cart-button"` |
-
-### 3. Styling Rules and Standards
-
-#### Floating Badges Section
-- **Position**: `top: "calc(var(--product-card-header-height) - var(--badge-height) / 2.5)"`
-- **Alignment**: Right-aligned with `right: liftKitTheme.spacing.sm`
-- **Container Class**: `className="floating-badges-container"`
-- **Badge Classes**: `className="subject-badge"` and `className="session-badge"`
-- **Z-Index**: 10 to appear above header
-- **Pointer Events**: `none` to avoid interference with card interactions
-
-#### Header Section
-- **Height**: Fixed at `7.43rem` (available as CSS variable `--product-card-header-height`)
-- **Required Class**: `className="product-header"`
-- **Layout**: Flexbox with title/subtitle on left, avatar on right
-- **Background**: Uses theme-specific color from BPP system (shade 020)
-- **Interactive Gradient**: Mouse-tracking gradient overlay
-- **Typography**: 
-  - Title: `variant="h4"` with `className="product-title"`
-  - Subtitle: `variant="subtitle1"` with `className="product-subtitle"`
-
-#### Content Section
-- **Padding**: Uses `liftKitTheme.spacing.md`
-- **Chips**: Horizontal layout with `className="product-chips"`
-- **Variations**: Radio group with `className="product-variations"`
-- **Spacing**: Consistent use of LiftKit spacing system
-
-#### Actions Section
-- **Height**: `10.2rem`  
-- **Required Class**: Main container needs `className="price-container"`
-- **Layout**: Flexbox column for proper alignment
-- **Background**: Uses theme-specific color from BPP system (shade 030)
-- **Price Display**: Right-aligned with `className="price-display"`
-- **Buttons**: Circular with `className="add-to-cart-button"`
-
-### 4. Component Usage Guidelines
-
-#### Basic Implementation
-```jsx
+// Basic usage
 import BalancedProductCard from './components/styleguide/ProductCards/BalancedProductCard';
-
-// Material product (default)
 <BalancedProductCard variant="material-product" />
 
-// Tutorial product
-<BalancedProductCard variant="tutorial-product" />
+// Bundle card usage
+import EnhancedBundleProductCard from './components/styleguide/ProductCards/EnhancedBundleProductCard';
+<EnhancedBundleProductCard variant="bundle-product" />
 
-// Custom variant
-<BalancedProductCard variant="new-product-type" />
+// Marking card with pagination
+import MarkingProductCard from './components/styleguide/ProductCards/MarkingProductCard';
+<MarkingProductCard variant="marking-product" />
 ```
 
-#### Required Props Structure
-```jsx
-const productData = {
-  title: "Product Name",
-  subtitle: "(Session Details)",
-  chips: ["CS1", "2024A"],
-  variations: {
-    printed: { price: 45, label: "Printed Version" },
-    ebook: { price: 35, label: "eBook Version" },
-    both: { price: 65, label: "Complete Package" }
-  }
-};
-```
+## Responsive Behavior
 
-### 5. Interactive Features
+### Card Dimensions
+- **Width**: Fixed at `21-22rem` for consistency (material-product is 22rem, others are 21rem)
+- **Height**: Fixed at `34rem` for consistent grid layouts
+- **Aspect Ratio**: Mostly `5/7` for optimal visual balance
 
-#### Gradient Effects
-- **Mouse Tracking**: Gradients follow cursor position within header
-- **Hover States**: Increased opacity and scale effects
-- **Smooth Transitions**: Cubic-bezier easing for professional feel
-- **Color Schemes**: Theme-specific gradient colors
-
-#### State Management
-- **Selected Variation**: Radio button selection for product types
-- **Discount Options**: Toggle states for retaker/additional copy pricing
-- **Dynamic Pricing**: Real-time price calculations
-- **Hover Effects**: Scale transforms and filter effects
-
-### 6. Accessibility Requirements
-
-#### Color Contrast
-- **Text on Backgrounds**: Minimum 4.5:1 contrast ratio
-- **Interactive Elements**: Clear focus indicators
-- **Color Coding**: Never rely solely on color for meaning
-
-#### Semantic Structure
-- **Proper HTML5**: Use semantic card structure
-- **ARIA Labels**: Descriptive labels for complex interactions
-- **Keyboard Navigation**: Full keyboard accessibility
-- **Screen Readers**: Meaningful alt text and descriptions
-
-### 7. Responsive Behavior
-
-#### Card Dimensions
-- **Width**: Fixed at `21-22rem` for consistency
-- **Aspect Ratio**: `2/3` for optimal visual balance
-- **Height**: `fit-content` to accommodate varying content
-
-#### Breakpoint Considerations
-- **Mobile**: Stack cards vertically
+### Breakpoint Considerations
+- **Mobile**: Stack cards vertically, single column
 - **Tablet**: 2-column grid layout
-- **Desktop**: 3+ column grid layout
+- **Desktop**: 3+ column grid layout depending on container width
 - **Large Screens**: Maximum 4 columns to maintain readability
 
-## Design Tokens
-
-### Spacing System (LiftKit)
-```javascript
-spacing: {
-  xs: "0.25rem",
-  sm: "0.5rem", 
-  md: "1rem",
-  lg: "1.5rem",
-  xl: "2rem"
-}
-```
-
-### Typography Scale
-- **h4**: Product titles (1.25rem)
-- **subtitle1**: Product subtitles (0.875rem)
-- **subtitle2**: Section headers (0.75rem)
-- **body2**: General content (0.875rem)
-- **fineprint**: Legal text (0.625rem)
-
-### Shadow System
-- **Paper-shadow**: Base card elevation
-- **shadow-sm**: Subtle elements
-- **shadow-lg**: High-emphasis elements
-
-## Quality Assurance
+## Quality Assurance and Testing
 
 ### Visual Testing Checklist
-- [ ] Gradient effects work smoothly across all variants
-- [ ] Color schemes maintain proper contrast ratios
-- [ ] Typography scales consistently
+- [ ] Hover effects work smoothly across all variants
+- [ ] Floating badge colors are consistent (Steel Blue #475569 and Gray #6b7280)
+- [ ] Theme-specific header and actions colors apply correctly
+- [ ] Typography scales consistently across variants
 - [ ] Interactive states provide clear feedback
-- [ ] Card proportions remain consistent
+- [ ] Card proportions remain consistent in grid layouts
 
-### Functional Testing
-- [ ] Radio button selections update pricing correctly
-- [ ] Discount toggles calculate proper values
-- [ ] Mouse tracking gradients respond accurately
-- [ ] Hover effects perform smoothly
-- [ ] All variants render consistently
+### Functional Testing for Specialized Features
+- [ ] MarkingProductCard pagination system cycles through all scenarios
+- [ ] MarkingProductCard deadline messages display appropriate colors and icons
+- [ ] EnhancedMarkingVoucherProductCard quantity controls work within bounds (1-99)
+- [ ] All discount options calculate pricing correctly
+- [ ] Add to cart buttons are functional and properly styled
 
-### Cross-Browser Compatibility
-- [ ] Gradient CSS properties supported
-- [ ] Flexbox layouts work correctly  
-- [ ] CSS custom properties function properly
-- [ ] Hover effects perform consistently
+### Accessibility Compliance
+- [ ] All floating badges have proper ARIA labels
+- [ ] Color contrast ratios meet WCAG 2.1 AA standards
+- [ ] Interactive elements are keyboard accessible
+- [ ] Screen reader friendly markup and descriptions
 
-## Future Considerations
+## Performance Considerations
 
-### Extensibility
-- **New Product Types**: Follow variant pattern for additions
-- **Animation Enhancements**: Consider micro-interactions
-- **Theme Variations**: Support for light/dark mode
-- **Customization**: Allow user preference overrides
+### Optimization Strategies
+- **React.memo**: Use for expensive component renders
+- **State Management**: Minimize unnecessary re-renders
+- **Theme Caching**: Theme configurations are loaded once and cached
+- **CSS-in-JS Optimization**: Styles are generated at build time where possible
 
-### Performance Optimization
-- **Component Memoization**: Use React.memo for expensive renders
-- **Gradient Optimization**: Consider CSS-only alternatives
-- **Bundle Size**: Monitor theme configuration size
-- **Image Optimization**: Optimize any product imagery
+### Bundle Size Management
+- **Tree Shaking**: Only import required components
+- **Code Splitting**: Lazy load product card variants when possible
+- **Icon Optimization**: Use Material-UI icons efficiently
 
 ## Troubleshooting
 
-### Common Issues
-1. **Styles Not Applying**: Verify all required class names are present exactly as specified
-2. **Gradient Not Showing**: Check color scheme configuration
-3. **Inconsistent Heights**: Verify content structure matches guidelines
-4. **Typography Issues**: Ensure theme typography is properly imported
-5. **Color Contrast**: Use theme colors, not hardcoded values
-6. **Missing Styling**: Check that class names match the reference table exactly
+### Common Issues and Solutions
+
+1. **Styles Not Applying**
+   - Verify all required class names are present exactly as specified
+   - Check that the variant prop matches a defined theme variant
+   - Ensure theme.js is properly imported and configured
+
+2. **Hover Effects Not Working**
+   - Confirm onMouseEnter/onMouseLeave handlers are implemented
+   - Check that isHovered state is properly managed
+   - Verify sx prop includes transform and transition styles
+
+3. **Floating Badges Not Visible**
+   - Ensure floating-badges-container class is present
+   - Check z-index conflicts with other elements
+   - Verify badge positioning calculations in theme.js
+
+4. **Inconsistent Card Heights**
+   - Confirm height: "34rem !important" in theme variant
+   - Check for content overflow issues
+   - Verify aspect ratio is properly set
+
+5. **Color Inconsistencies**
+   - Use theme colors from BPP system, not hardcoded values
+   - Ensure floating badges use consistent non-BPP colors
+   - Check that header and actions use correct shade values (020/030)
 
 ### Debug Tools
-- **Browser DevTools**: Inspect CSS custom properties
-- **React DevTools**: Check component props and state
-- **Accessibility Tools**: Verify WCAG compliance
-- **Performance Profiler**: Monitor render performance
+- **React DevTools**: Inspect component props and state
+- **Browser DevTools**: Check applied CSS and custom properties
+- **Theme Inspector**: Verify theme variant configurations
+- **Accessibility Tools**: Test WCAG compliance
 
 ---
 
-*This document should be updated whenever the product card design system is modified or extended.*
+*This document reflects the current state of the product card system as of the latest update. It should be maintained and updated whenever new variants are added or existing components are modified.*

@@ -288,31 +288,33 @@ const theme = createTheme({
 							gap: liftKitTheme.spacing.xs2,
 							pointerEvents: "none", // Don't interfere with card interactions
 							"& .subject-badge": {
-								backgroundColor: colorTheme.bpp.mint["080"],
-								color: colorTheme.bpp.mint["010"],
-								fontSize: "0.866rem",
+								backgroundColor: "#475569", // Steel Blue - consistent across all cards
+								color: "#f1f5f9",
+								fontSize: "0.7rem",
 								height: "1.236rem",
 								width: "3.66rem",
+								fontWeight: 600,
 								boxShadow: "var(--Paper-shadow)",
 								"& .MuiChip-label": {
 									padding: "3px 8px",
 								},
 								"&:hover": {
-									backgroundColor: colorTheme.bpp.cobalt["090"],
+									backgroundColor: "#334155",
 								},
 							},
 							"& .session-badge": {
-								backgroundColor: colorTheme.bpp.pink["070"],
-								color: colorTheme.bpp.pink["010"],
-								fontSize: "0.866rem",
+								backgroundColor: "#6b7280", // Neutral Gray - consistent across all cards
+								color: "#f9fafb",
+								fontSize: "0.7rem",
 								height: "1.236rem",
 								width: "3.66rem",
+								fontWeight: 600,
 								boxShadow: "var(--Paper-shadow)",
 								"& .MuiChip-label": {
 									padding: "3px 8px",
 								},
 								"&:hover": {
-									backgroundColor: colorTheme.bpp.granite["100"],
+									backgroundColor: "#4b5563",
 								},
 							},
 						},
@@ -333,6 +335,8 @@ const theme = createTheme({
 								order: 1,
 								flex: "1",
 								"& .product-title": {
+    								width: "90%",
+    								textAlign: "left",
 									color: colorTheme.bpp.sky["100"],
 								},
 								"& .product-subtitle": {
@@ -601,31 +605,33 @@ const theme = createTheme({
 							gap: liftKitTheme.spacing.xs2,
 							pointerEvents: "none",
 							"& .subject-badge": {
-								backgroundColor: colorTheme.bpp.mint["080"],
-								color: colorTheme.bpp.mint["010"],
-								fontSize: "0.866rem",
+								backgroundColor: "#475569", // Steel Blue - consistent across all cards
+								color: "#f1f5f9",
+								fontSize: "0.7rem",
 								height: "1.236rem",
 								width: "3.66rem",
+								fontWeight: 600,
 								boxShadow: "var(--Paper-shadow)",
 								"& .MuiChip-label": {
 									padding: "3px 8px",
 								},
 								"&:hover": {
-									backgroundColor: colorTheme.bpp.cobalt["090"],
+									backgroundColor: "#334155",
 								},
 							},
 							"& .session-badge": {
-								backgroundColor: colorTheme.bpp.pink["070"],
-								color: colorTheme.bpp.pink["010"],
-								fontSize: "0.866rem",
+								backgroundColor: "#6b7280", // Neutral Gray - consistent across all cards
+								color: "#f9fafb",
+								fontSize: "0.7rem",
 								height: "1.236rem",
 								width: "3.66rem",
+								fontWeight: 600,
 								boxShadow: "var(--Paper-shadow)",
 								"& .MuiChip-label": {
 									padding: "3px 8px",
 								},
 								"&:hover": {
-									backgroundColor: colorTheme.bpp.granite["100"],
+									backgroundColor: "#4b5563",
 								},
 							},
 						},
@@ -646,6 +652,9 @@ const theme = createTheme({
 								order: 1,
 								flex: "1",
 								"& .product-title": {
+    								width: "90%",
+    								textAlign: "left",
+									
 									color: colorTheme.bpp.sky["100"],
 								},
 								"& .product-subtitle": {
@@ -864,7 +873,7 @@ const theme = createTheme({
 										marginRight: liftKitTheme.spacing.md,
 										marginTop: liftKitTheme.spacing.md,
 										boxShadow: "var(--Paper-shadow)",
-										backgroundColor: colorTheme.bpp.sky["030"],
+										backgroundColor: colorTheme.bpp.sky["040"],
 										transition: "all 0.15s ease-in-out",
 										"&:hover": {
 											boxShadow: "var(--Paper-shadow)",
@@ -877,12 +886,6 @@ const theme = createTheme({
 										},
 									},
 								},
-
-								// Status Text
-								"& .status-text": {
-									color: colorTheme.bpp.sky["100"],
-									marginTop: liftKitTheme.spacing.xs2,
-								},
 							},
 						},
 					},
@@ -894,7 +897,6 @@ const theme = createTheme({
 					style: {
 						minWidth: "21rem",
 						maxWidth: "21rem",
-						height: "34rem !important",
 						height: "34rem !important",
 						overflow: "visible",
 						aspectRatio: "5/7",
@@ -912,31 +914,33 @@ const theme = createTheme({
 							gap: liftKitTheme.spacing.xs2,
 							pointerEvents: "none",
 							"& .subject-badge": {
-								backgroundColor: colorTheme.bpp.mint["080"],
-								color: colorTheme.bpp.mint["010"],
-								fontSize: "0.866rem",
+								backgroundColor: "#475569", // Steel Blue - consistent across all cards
+								color: "#f1f5f9",
+								fontSize: "0.7rem",
 								height: "1.236rem",
 								width: "3.66rem",
+								fontWeight: 600,
 								boxShadow: "var(--Paper-shadow)",
 								"& .MuiChip-label": {
 									padding: "3px 8px",
 								},
 								"&:hover": {
-									backgroundColor: colorTheme.bpp.cobalt["090"],
+									backgroundColor: "#334155",
 								},
 							},
 							"& .session-badge": {
-								backgroundColor: colorTheme.bpp.pink["070"],
-								color: colorTheme.bpp.pink["010"],
-								fontSize: "0.866rem",
+								backgroundColor: "#6b7280", // Neutral Gray - consistent across all cards
+								color: "#f9fafb",
+								fontSize: "0.7rem",
 								height: "1.236rem",
 								width: "3.66rem",
+								fontWeight: 600,
 								boxShadow: "var(--Paper-shadow)",
 								"& .MuiChip-label": {
 									padding: "3px 8px",
 								},
 								"&:hover": {
-									backgroundColor: colorTheme.bpp.granite["100"],
+									backgroundColor: "#4b5563",
 								},
 							},
 						},
@@ -958,6 +962,8 @@ const theme = createTheme({
 								order: 1,
 								flex: "1",
 								"& .product-title": {
+    								width: "90%",
+    								textAlign: "left",
 									color: colorTheme.bpp.green["100"],
 									"& .title-info-button": {
 										minWidth: "auto",
@@ -1138,7 +1144,6 @@ const theme = createTheme({
 										gap: liftKitTheme.spacing.xs,
 										"& .price-display": {
 											color: colorTheme.bpp.green["100"],
-											fontWeight: "700",
 										},
 										"& .info-button": {
 											minWidth: "auto",
@@ -1178,7 +1183,7 @@ const theme = createTheme({
 										marginRight: liftKitTheme.spacing.md,
 										marginTop: liftKitTheme.spacing.md,
 										boxShadow: "var(--Paper-shadow)",
-										backgroundColor: colorTheme.bpp.green["030"],
+										backgroundColor: colorTheme.bpp.green["040"],
 										transition: "all 0.15s ease-in-out",
 										"&:hover": {
 											boxShadow: "var(--Paper-shadow)",
@@ -1223,38 +1228,40 @@ const theme = createTheme({
 							gap: liftKitTheme.spacing.xs2,
 							pointerEvents: "none",
 							"& .subject-badge": {
-								backgroundColor: colorTheme.bpp.mint["080"],
-								color: colorTheme.bpp.mint["010"],
-								fontSize: "0.866rem",
+								backgroundColor: "#475569", // Steel Blue - consistent across all cards
+								color: "#f1f5f9",
+								fontSize: "0.7rem",
 								height: "1.236rem",
 								width: "3.66rem",
+								fontWeight: 600,
 								boxShadow: "var(--Paper-shadow)",
 								"& .MuiChip-label": {
 									padding: "3px 8px",
 								},
 								"&:hover": {
-									backgroundColor: colorTheme.bpp.cobalt["090"],
+									backgroundColor: "#334155",
 								},
 							},
 							"& .session-badge": {
-								backgroundColor: colorTheme.bpp.pink["070"],
-								color: colorTheme.bpp.pink["010"],
-								fontSize: "0.866rem",
+								backgroundColor: "#6b7280", // Neutral Gray - consistent across all cards
+								color: "#f9fafb",
+								fontSize: "0.7rem",
 								height: "1.236rem",
 								width: "3.66rem",
+								fontWeight: 600,
 								boxShadow: "var(--Paper-shadow)",
 								"& .MuiChip-label": {
 									padding: "3px 8px",
 								},
 								"&:hover": {
-									backgroundColor: colorTheme.bpp.granite["100"],
+									backgroundColor: "#4b5563",
 								},
 							},
 						},
 
 						// Product Header
 						"& .product-header": {
-							backgroundColor: colorTheme.bpp.cobalt["010"],
+							backgroundColor: colorTheme.bpp.cobalt["020"],
 							color: "#ffffff",
 
 							height: "7.43rem",
@@ -1269,6 +1276,8 @@ const theme = createTheme({
 								order: 1,
 								flex: "1",
 								"& .product-title": {
+    								width: "90%",
+    								textAlign: "left",
 									color: colorTheme.bpp.cobalt["100"],
 								},
 								"& .product-subtitle": {
@@ -1373,7 +1382,7 @@ const theme = createTheme({
 						//  actions styling
 						"& .MuiCardActions-root": {
 							height: "10.2rem !important",
-							backgroundColor: colorTheme.bpp.cobalt["020"],
+							backgroundColor: colorTheme.bpp.cobalt["030"],
 							boxShadow: "var(--shadow-lg)",
 							paddingTop: liftKitTheme.spacing.md,
 							paddingLeft: liftKitTheme.spacing.md,
@@ -1489,7 +1498,7 @@ const theme = createTheme({
 										marginRight: liftKitTheme.spacing.md,
 										marginTop: liftKitTheme.spacing.md,
 										boxShadow: "var(--Paper-shadow)",
-										backgroundColor: colorTheme.bpp.cobalt["030"],
+										backgroundColor: colorTheme.bpp.cobalt["040"],
 										transition: "all 0.15s ease-in-out",
 										"&:hover": {
 											boxShadow: "var(--Paper-shadow)",
@@ -1513,15 +1522,54 @@ const theme = createTheme({
 						minWidth: "21rem",
 						maxWidth: "21rem",
 						height: "34rem !important",
-						height: "34rem !important",
-						overflow: "hidden",
+						overflow: "visible",
 						aspectRatio: "5/7",
 						boxShadow: "var(--Paper-shadow)",
 						justifyContent: "space-between",
-
+						position: "relative",
+						// Floating badges
+						"& .floating-badges-container": {
+							position: "absolute",
+							top: "calc(var(--product-card-header-height) - var(--badge-height) / 1.618)",
+							right: liftKitTheme.spacing.sm,
+							zIndex: 10,
+							display: "flex",
+							gap: liftKitTheme.spacing.xs2,
+							pointerEvents: "none", // Don't interfere with card interactions
+							"& .subject-badge": {
+								backgroundColor: "#475569", // Steel Blue - consistent across all cards
+								color: "#f1f5f9",
+								fontSize: "0.7rem",
+								height: "1.236rem",
+								width: "3.66rem",
+								fontWeight: 600,
+								boxShadow: "var(--Paper-shadow)",
+								"& .MuiChip-label": {
+									padding: "3px 8px",
+								},
+								"&:hover": {
+									backgroundColor: "#334155",
+								},
+							},
+							"& .session-badge": {
+								backgroundColor: "#6b7280", // Neutral Gray - consistent across all cards
+								color: "#f9fafb",
+								fontSize: "0.7rem",
+								height: "1.236rem",
+								width: "3.66rem",
+								fontWeight: 600,
+								boxShadow: "var(--Paper-shadow)",
+								"& .MuiChip-label": {
+									padding: "3px 8px",
+								},
+								"&:hover": {
+									backgroundColor: "#4b5563",
+								},
+							},
+						},
 						// Product Header
 						"& .product-header": {
-							backgroundColor: colorTheme.bpp.orange["010"],
+							backgroundColor: colorTheme.bpp.pink["020"],
 							color: "#ffffff",
 
 							height: "7.43rem",
@@ -1536,6 +1584,8 @@ const theme = createTheme({
 								order: 1,
 								flex: "1",
 								"& .product-title": {
+    								width: "90%",
+    								textAlign: "left",
 									color: colorTheme.bpp.orange["100"],
 								},
 								"& .product-subtitle": {
@@ -1569,12 +1619,102 @@ const theme = createTheme({
 									boxShadow: "var(--Paper-shadow)",
 								},
 							},
+							
+							// Marking submissions info
+							"& .marking-submissions-info": {
+								marginBottom: liftKitTheme.spacing.sm,
+							},
+							
+							// Submissions info row
+							"& .submissions-info-row": {
+								marginBottom: liftKitTheme.spacing.sm,
+							},
+							
+							// Submissions info icon
+							"& .submissions-info-icon": {
+								fontSize: "1rem",
+								color: "text.secondary",
+							},
+							
+							// Submissions info count
+							"& .submissions-info-count": {
+								marginLeft: liftKitTheme.spacing.lg,
+							},
+							
+							// Marking deadline message
+							"& .marking-deadline-message": {
+								marginTop: liftKitTheme.spacing.md,
+								borderRadius: 1,
+								border: 1,
+								textAlign: "left",
+							},
+							
+							// Deadline message content (handled by Stack, no specific styles needed)
+							"& .deadline-message-content": {},
+							
+							// Deadline message icon
+							"& .deadline-message-icon": {
+								fontSize: "1rem",
+								marginTop: "0.2rem",
+							},
+							
+							// Deadline message text
+							"& .deadline-message-text": {
+								textAlign: "left",
+							},
+							
+							// Deadline message secondary text
+							"& .deadline-message-secondary": {
+								display: "block",
+							},
+							
+							// Marking pagination container
+							"& .marking-pagination-container": {
+								display: "flex",
+								justifyContent: "center",
+								alignItems: "center",
+								marginTop: liftKitTheme.spacing.lg,
+							},
+							
+							// Pagination dot button
+							"& .pagination-dot-button": {
+								padding: "0.5rem",
+							},
+							
+							// Active pagination dot
+							"& .pagination-dot.active": {
+								fontSize: "0.5rem",
+								color: "primary.main",
+								cursor: "pointer",
+							},
+							
+							// Inactive pagination dot
+							"& .pagination-dot.inactive": {
+								fontSize: "0.5rem",
+								color: "grey.300",
+								cursor: "pointer",
+							},
+							
+							// Submission Deadlines Button
+							"& .submission-deadlines-button": {
+								marginTop: liftKitTheme.spacing.md,
+								alignSelf: 'flex-start',
+								textTransform: 'none',
+								borderColor: colorTheme.bpp.pink["050"],
+								color: colorTheme.bpp.pink["090"],
+								backgroundColor: colorTheme.bpp.pink["020"],
+								'&:hover': {
+									backgroundColor: colorTheme.bpp.pink["030"],
+									borderColor: colorTheme.bpp.pink["060"],
+									color: colorTheme.bpp.pink["100"]
+								}
+							},
 						},
 
 						//  actions styling
 						"& .MuiCardActions-root": {
 							height: "10.2rem !important",
-							backgroundColor: colorTheme.bpp.orange["010"],
+							backgroundColor: colorTheme.bpp.pink["030"],
 							boxShadow: "var(--shadow-lg)",
 							paddingTop: liftKitTheme.spacing.md,
 							paddingLeft: liftKitTheme.spacing.md,
@@ -1587,33 +1727,51 @@ const theme = createTheme({
 								display: "flex",
 								flexDirection: "row",
 								alignItems: "center",
-								justifyContent: "start",
+								justifyContent: "end",
 								"& .price-action-section": {
+									flex: 1,
 									display: "flex",
 									flexDirection: "column",
-									alignItems: "flex-end",
-									justifyContent: "space-between",
-									"& .price-info": {
+									"& .price-info-row": {
 										display: "flex",
-										alignItems: "center",
+										alignItems: "baseline",
+										alignSelf: "flex-end",
+										justifyContent: "flex-end",
 										"& .price-display": {
-											color: colorTheme.bpp.orange["100"],
+											color: colorTheme.bpp.purple["100"],
 										},
+
 										"& .info-button": {
 											minWidth: "auto",
-											padding: liftKitTheme.spacing.xs2,
 											borderRadius: "50%",
+											paddingBottom: 0,
+
 											"&:hover": {
 												backdropFilter: "saturate(2.4)",
 												boxShadow: "var(--Paper-shadow)",
 												transform: "translateY(-1px)",
 											},
+
 											"& .MuiSvgIcon-root": {
 												fontSize: "1.2rem",
 											},
 										},
 									},
+									"& .price-details-row": {
+										display: "flex",
+										flexDirection: "column",
+										alignItems: "flex-end",
+										"& .price-level-text": {
+											display: "block",
+											textAlign: "right",
+										},
+										"& .vat-status-text": {
+											display: "block",
+											textAlign: "right",
+										},
+									},
 									"& .add-to-cart-button": {
+										alignSelf: "flex-end",
 										borderRadius: "50%",
 										minWidth: liftKitTheme.spacing.xl,
 										width: liftKitTheme.spacing.xl,
@@ -1623,22 +1781,241 @@ const theme = createTheme({
 										marginRight: liftKitTheme.spacing.md,
 										marginTop: liftKitTheme.spacing.md,
 										boxShadow: "var(--Paper-shadow)",
-										backgroundColor: colorTheme.bpp.orange["030"],
+										backgroundColor: colorTheme.bpp.pink["040"],
 										transition: "all 0.15s ease-in-out",
 										"&:hover": {
 											boxShadow: "var(--Paper-shadow)",
 											transform: "scale(1.05)",
 											filter: "saturate(2)",
 										},
+
 										"& .MuiSvgIcon-root": {
 											fontSize: "1.6rem",
 										},
 									},
 								},
-								// Status Text
-								"& .status-text": {
+							},
+						},
+					},
+				},
+				// Marking VoucherProduct Card Variant (Orange theme)
+				{
+					props: { variant: "marking-voucher-product" },
+					style: {
+						minWidth: "21rem",
+						maxWidth: "21rem",
+						height: "34rem !important",
+						overflow: "visible",
+						aspectRatio: "5/7",
+						boxShadow: "var(--Paper-shadow)",
+						justifyContent: "space-between",
+						position: "relative",
+						// Floating badges
+						"& .floating-badges-container": {
+							position: "absolute",
+							top: "calc(var(--product-card-header-height) - var(--badge-height) / 1.618)",
+							right: liftKitTheme.spacing.sm,
+							zIndex: 10,
+							display: "flex",
+							gap: liftKitTheme.spacing.xs2,
+							pointerEvents: "none", // Don't interfere with card interactions
+							"& .subject-badge": {
+								backgroundColor: "#475569", // Steel Blue - consistent across all cards
+								color: "#f1f5f9",
+								fontSize: "0.7rem",
+								height: "1.236rem",
+								width: "3.66rem",
+								fontWeight: 600,
+								boxShadow: "var(--Paper-shadow)",
+								"& .MuiChip-label": {
+									padding: "3px 8px",
+								},
+								"&:hover": {
+									backgroundColor: "#334155",
+								},
+							},
+							"& .session-badge": {
+								backgroundColor: "#6b7280", // Neutral Gray - consistent across all cards
+								color: "#f9fafb",
+								fontSize: "0.7rem",
+								height: "1.236rem",
+								width: "3.66rem",
+								fontWeight: 600,
+								boxShadow: "var(--Paper-shadow)",
+								"& .MuiChip-label": {
+									padding: "3px 8px",
+								},
+								"&:hover": {
+									backgroundColor: "#4b5563",
+								},
+							},
+						},
+						// Product Header
+						"& .product-header": {
+							backgroundColor: colorTheme.bpp.orange["020"],
+							color: "#ffffff",
+
+							height: "7.43rem",
+							padding: "1rem",
+							boxShadow: "var(--shadow-sm)",
+							display: "flex",
+							flexDirection: "row",
+							alignItems: "center",
+							justifyContent: "flex-start",
+							flex: "0 0 auto",
+							"& .MuiCardHeader-content": {
+								order: 1,
+								flex: "1",
+								"& .product-title": {
+    								width: "90%",
+    								textAlign: "left",
 									color: colorTheme.bpp.orange["100"],
-									marginTop: liftKitTheme.spacing.xs2,
+								},
+								"& .product-subtitle": {
+									color: colorTheme.bpp.orange["090"],
+								},
+							},
+							"& .MuiCardHeader-avatar": {
+								order: 2,
+								marginLeft: "auto",
+								marginRight: "0",
+								"& .product-avatar": {
+									backgroundColor: colorTheme.bpp.granite["020"],
+									boxShadow: "var(--Paper-shadow)",
+									"& .product-avatar-icon": {
+										fontSize: "1.5rem",
+										color: colorTheme.bpp.orange["090"],
+									},
+								},
+							},
+						},
+
+						//  content styling
+						"& .MuiCardContent-root": {
+							padding: liftKitTheme.spacing.md,
+							// Chips section
+							"& .product-chips": {
+								display: "flex",
+								gap: liftKitTheme.spacing.sm,
+								marginBottom: liftKitTheme.spacing.md,
+								"& .MuiChip-root": {
+									boxShadow: "var(--Paper-shadow)",
+								},
+							},
+							// Product description styling
+							"& .product-description": {
+								marginBottom: liftKitTheme.spacing.sm,
+								textAlign: "left",
+							},
+							// Voucher info alert styling
+							"& .voucher-info-alert": {
+								marginBottom: liftKitTheme.spacing.sm,
+								textAlign: "left",
+							},
+							// Voucher validity info styling
+							"& .voucher-validity-info": {
+								marginBottom: liftKitTheme.spacing.sm,
+							},
+							// Validity info row styling
+							"& .validity-info-row": {
+								marginBottom: liftKitTheme.spacing.sm,
+							},
+							// Validity info icon styling
+							"& .validity-info-icon": {
+								fontSize: "1rem",
+								color: "text.secondary",
+							},
+							// Voucher quantity section styling
+							"& .voucher-quantity-section": {
+								display: "flex",
+								alignItems: "center",
+								marginTop: liftKitTheme.spacing.lg,
+								flexDirection: "row",
+							},
+						},
+
+						//  actions styling
+						"& .MuiCardActions-root": {
+							height: "10.2rem !important",
+							backgroundColor: colorTheme.bpp.orange["030"],
+							boxShadow: "var(--shadow-lg)",
+							paddingTop: liftKitTheme.spacing.md,
+							paddingLeft: liftKitTheme.spacing.md,
+							paddingRight: liftKitTheme.spacing.md,
+							flexDirection: "column",
+							alignItems: "stretch",
+							justifyContent: "space-between",
+							// Price & Action Section
+							"& .price-container": {
+								display: "flex",
+								flexDirection: "row",
+								alignItems: "center",
+								justifyContent: "end",
+								"& .price-action-section": {
+									flex: 1,
+									display: "flex",
+									flexDirection: "column",
+									"& .price-info-row": {
+										display: "flex",
+										alignItems: "baseline",
+										alignSelf: "flex-end",
+										justifyContent: "flex-end",
+										"& .price-display": {
+											color: colorTheme.bpp.orange["100"],
+										},
+
+										"& .info-button": {
+											minWidth: "auto",
+											borderRadius: "50%",
+											paddingBottom: 0,
+
+											"&:hover": {
+												backdropFilter: "saturate(2.4)",
+												boxShadow: "var(--Paper-shadow)",
+												transform: "translateY(-1px)",
+											},
+
+											"& .MuiSvgIcon-root": {
+												fontSize: "1.2rem",
+											},
+										},
+									},
+									"& .price-details-row": {
+										display: "flex",
+										flexDirection: "column",
+										alignItems: "flex-end",
+										"& .price-level-text": {
+											display: "block",
+											textAlign: "right",
+										},
+										"& .vat-status-text": {
+											display: "block",
+											textAlign: "right",
+										},
+									},
+									"& .add-to-cart-button": {
+										alignSelf: "flex-end",
+										borderRadius: "50%",
+										minWidth: liftKitTheme.spacing.xl,
+										width: liftKitTheme.spacing.xl,
+										height: liftKitTheme.spacing.xl,
+										padding: liftKitTheme.spacing.sm,
+										marginLeft: liftKitTheme.spacing.md,
+										marginRight: liftKitTheme.spacing.md,
+										marginTop: liftKitTheme.spacing.md,
+										boxShadow: "var(--Paper-shadow)",
+										backgroundColor: colorTheme.bpp.orange["040"],
+										transition: "all 0.15s ease-in-out",
+										"&:hover": {
+											boxShadow: "var(--Paper-shadow)",
+											transform: "scale(1.05)",
+											filter: "saturate(2)",
+										},
+
+										"& .MuiSvgIcon-root": {
+											fontSize: "1.6rem",
+										},
+									},
 								},
 							},
 						},
@@ -1698,6 +2075,26 @@ const theme = createTheme({
 				primary: "255, 152, 0", // #FF9800
 				secondary: "255, 193, 7", // #FFC107
 				accent: "255, 111, 0", // #FF6F00
+			},
+		},
+		// Chakra UI NumberInput styling
+		".chakra-number-input": {
+			"& .chakra-numberinput__field": {
+				borderRadius: "6px",
+				border: "1px solid rgba(0, 0, 0, 0.23)",
+				fontSize: "0.875rem",
+				fontFamily: "DM Sans Variable, Inter Variable, Poppins, sans-serif",
+				textAlign: "center",
+				"&:focus": {
+					borderColor: colorTheme.primary.main,
+					boxShadow: `0 0 0 2px ${colorTheme.primary.main}25`,
+				},
+			},
+			"& .chakra-numberinput__stepper": {
+				borderColor: "rgba(0, 0, 0, 0.23)",
+			},
+			"& .chakra-numberinput__stepper:hover": {
+				backgroundColor: "rgba(0, 0, 0, 0.04)",
 			},
 		},
 	},
