@@ -9,47 +9,115 @@ import {
 	CardActions,
 	Button,
 	Chip,
-	Divider,
 	Tooltip,
+	Avatar,
+	IconButton,
 } from "@mui/material";
 import {
 	RuleOutlined,
 	AddShoppingCart,
 	InfoOutline,
 	CalendarMonthOutlined,
+	Circle,
 } from "@mui/icons-material";
 
-// Enhanced Marking Product Card - All Deadlines Available
+// Enhanced Marking Product Card - Deadline Scenarios with Pagination
 const MarkingProductCard = () => {
-	const [selectedPriceType, setSelectedPriceType] = useState("");
+	const [currentScenario, setCurrentScenario] = useState(0);
+	const [isHovered, setIsHovered] = useState(false);
 
-	const mockDeadlines = [
+	// Different deadline scenarios for pagination showcase
+	const deadlineScenarios = [
+		{
+			id: 0,
+			title: "All Available",
+			messageBox: {
+				type: "info",
+				icon: CalendarMonthOutlined,
+				message: "Next deadline: 15/03/2025",
+				bgColor: "info.50",
+				borderColor: "info.light",
+				textColor: "info.dark"
+			}
+		},
 		{
 			id: 1,
-			deadline: new Date("2025-03-15"),
-			recommended_submit_date: new Date("2025-03-10"),
+			title: "Upcoming Soon",
+			messageBox: {
+				type: "warning",
+				icon: CalendarMonthOutlined,
+				message: "Next deadline: 15/03/2025",
+				submessage: "Deadline due in 7 days.",
+				bgColor: "warning.50",
+				borderColor: "warning.light",
+				textColor: "warning.dark"
+			}
 		},
 		{
 			id: 2,
-			deadline: new Date("2025-06-15"),
-			recommended_submit_date: new Date("2025-06-10"),
+			title: "Some Expired",
+			messageBox: {
+				type: "error",
+				icon: CalendarMonthOutlined,
+				message: "2/3 deadlines expired",
+				submessage: "Consider using Marking Voucher instead.",
+				bgColor: "error.50",
+				borderColor: "error.light",
+				textColor: "error.dark"
+			}
 		},
 		{
 			id: 3,
-			deadline: new Date("2025-09-15"),
-			recommended_submit_date: new Date("2025-09-10"),
+			title: "All Expired",
+			messageBox: {
+				type: "error",
+				icon: CalendarMonthOutlined,
+				message: "All deadlines expired",
+				submessage: "Consider using Marking Voucher instead.",
+				bgColor: "error.50",
+				borderColor: "error.light",
+				textColor: "error.dark"
+			}
 		},
+		{
+			id: 4,
+			title: "No Deadlines",
+			messageBox: {
+				type: "info",
+				icon: CalendarMonthOutlined,
+				message: "No upcoming deadlines",
+				submessage: "Check back later for new submissions.",
+				bgColor: "grey.50",
+				borderColor: "grey.300",
+				textColor: "grey.700"
+			}
+		}
 	];
 
-	const now = new Date();
-	const upcoming = mockDeadlines.filter((d) => d.deadline > now);
-	const expired = mockDeadlines.filter((d) => d.deadline <= now);
+	const handleScenarioChange = (index) => {
+		setCurrentScenario(index);
+	};
+
+	const handleMouseEnter = () => {
+		setIsHovered(true);
+	};
+
+	const handleMouseLeave = () => {
+		setIsHovered(false);
+	};
 
 	return (
-		<Card
+		<Card 
 			elevation={2}
-			className="product-card d-flex flex-column"
-			sx={{ maxWidth: 340, height: "fit-content", overflow: "hidden" }}>
+			variant="marking-product"
+			className="d-flex flex-column"
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseLeave}
+			sx={{                 
+				transform: isHovered ? 'scale(1.02)' : 'scale(1)',
+				transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+			}}>
+			{/* Floating Badges */}
 			<Box className="floating-badges-container">
 				<Chip
 					label="CM1"
@@ -57,6 +125,7 @@ const MarkingProductCard = () => {
 					className="subject-badge"
 					role="img"
 					aria-label="Subject: CM1"
+					elevation={4}
 				/>
 				<Chip
 					label="25S"
@@ -64,187 +133,128 @@ const MarkingProductCard = () => {
 					className="session-badge"
 					role="img"
 					aria-label="Exam session: 25S"
+					elevation={4}
 				/>
 			</Box>
-			<CardHeader
+			
+			<CardHeader 
+				className="product-header"
 				title={
-					<Box
-						display="flex"
-						alignItems="center"
-						justifyContent="space-between">
-						<Typography variant="h6" sx={{ flex: 1 }}>
-							Series X Assignments (Marking)
-						</Typography>
-						<Box
-							sx={{
-								backgroundColor: "white",
-								borderRadius: "50%",
-								p: 1.5,
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-								boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-							}}>
-							<RuleOutlined
-								sx={{ fontSize: 16, color: "orange.main" }}
-							/>
-						</Box>
-					</Box>
+					<Typography variant="h4" className="product-title">
+						Series X Assignments (Marking)
+					</Typography>
 				}
-				className="product-card-header marking-header"
-				sx={{ py: 2.5 }}
+				
+				avatar={
+					<Avatar className="product-avatar">
+						<RuleOutlined className="product-avatar-icon" />
+					</Avatar>
+				}
 			/>
 
-			<CardContent className="product-card-content" sx={{ marginTop: "0" }}>
-				<Stack direction="column" className="info-row">
-					<Stack
-						direction="row"
-						alignItems="center"
-						className="info-title">
-						<CalendarMonthOutlined className="info-icon" />
-						<Typography variant="caption" className="info-text">
+			<CardContent>
+				{/* Number of submissions info */}
+				<Stack direction="column" spacing={1} className="marking-submissions-info">
+					<Stack direction="row" alignItems="center" spacing={1} className="submissions-info-row">
+						<CalendarMonthOutlined className="submissions-info-icon" />
+						<Typography variant="body2" color="text.secondary" className="submissions-info-title">
 							Number of submissions:
 						</Typography>
-					</Stack>
-					<Typography variant="caption" className="info-sub-text">
-						• 3
+						<Typography variant="body2" className="submissions-info-count">
+						3
 					</Typography>
+					</Stack>
 				</Stack>
-				{/* Add Pagination for showing different deadlines messages for demo purposes */}
+
+				{/* Dynamic deadline message based on current scenario */}
 				<Box
+					className="marking-deadline-message"
 					sx={{
-						mt: 2,
-						p: 1.5,
-						bgcolor: "info.50",
-						borderRadius: 1,
-						border: 1,
-						borderColor: "info.light",
+						bgcolor: deadlineScenarios[currentScenario].messageBox.bgColor,
+						borderColor: deadlineScenarios[currentScenario].messageBox.borderColor,
 					}}>
-					<Stack direction="row" spacing={1} alignItems="flex-start">
-						<CalendarMonthOutlined
-							sx={{ fontSize: 16, color: "info.main", mt: 0.2 }}
-						/>
-						<Typography variant="caption" color="info.dark">
-							Next deadline: 15/09/2025
-						</Typography>
+					<Stack direction="row" alignItems="flex-start" className="deadline-message-content">
+						{React.createElement(deadlineScenarios[currentScenario].messageBox.icon, {
+							className: "deadline-message-icon",
+							sx: { 
+								color: deadlineScenarios[currentScenario].messageBox.textColor === "info.dark" ? "info.main" : 
+								       deadlineScenarios[currentScenario].messageBox.textColor === "warning.dark" ? "warning.main" :
+								       deadlineScenarios[currentScenario].messageBox.textColor === "error.dark" ? "error.main" : "grey.600",
+							}
+						})}
+						<Box className="deadline-message-text">
+							<Typography variant="caption" color={deadlineScenarios[currentScenario].messageBox.textColor} className="deadline-message-primary">
+								{deadlineScenarios[currentScenario].messageBox.message}
+							</Typography>
+							{deadlineScenarios[currentScenario].messageBox.submessage && (
+								<Typography variant="caption" color={deadlineScenarios[currentScenario].messageBox.textColor} className="deadline-message-secondary">
+									{deadlineScenarios[currentScenario].messageBox.submessage}
+								</Typography>
+							)}
+						</Box>
 					</Stack>
 				</Box>
-				<Box
-					sx={{
-						mt: 2,
-						p: 1.5,
-						bgcolor: "warning.50",
-						borderRadius: 1,
-						border: 1,
-						borderColor: "info.warning",
-					}}>
-					<Stack direction="row" spacing={1} alignItems="flex-start">
-						<CalendarMonthOutlined
-							sx={{ fontSize: 16, color: "info.main", mt: 0.2 }}
-						/>
-						<Typography variant="caption" color="info.dark">
-							Next deadline: 15/09/2025
-						</Typography>
-						<Typography variant="caption" color="info.dark">
-							Deadline due in <b>7</b> days.
-						</Typography>
-					</Stack>
+
+				{/* Pagination dots */}
+				<Box className="marking-pagination-container">
+					{deadlineScenarios.map((scenario, index) => (
+						<IconButton
+							key={scenario.id}
+							size="small"
+							onClick={() => handleScenarioChange(index)}
+							className="pagination-dot-button"
+						>
+							<Circle
+								className={`pagination-dot ${currentScenario === index ? 'active' : 'inactive'}`}
+							/>
+						</IconButton>
+					))}
 				</Box>
-				<Box
-					sx={{
-						mt: 2,
-						p: 1.5,
-						bgcolor: "error.50",
-						borderRadius: 1,
-						border: 1,
-						borderColor: "error.light",
-					}}>
-					<Stack direction="row" spacing={1} alignItems="flex-start">
-						<CalendarMonthOutlined
-							sx={{ fontSize: 16, color: "error.main", mt: 0.2 }}
-						/>
-						<Typography variant="caption" color="error.dark">
-							2/3 deadlines expired
-						</Typography>
-						<Typography variant="caption" color="error.dark">
-							Consider using Marking Voucher instead. 
-						</Typography>
-					</Stack>
-				</Box>
-				<Box
-					sx={{
-						mt: 2,
-						p: 1.5,
-						bgcolor: "error.50",
-						borderRadius: 1,
-						border: 1,
-						borderColor: "error.light",
-					}}>
-					<Stack direction="row" spacing={1} alignItems="flex-start">
-						<CalendarMonthOutlined
-							sx={{ fontSize: 16, color: "error.main", mt: 0.2 }}
-						/>
-						<Typography variant="caption" color="error.dark">
-							All deadlines expired
-						</Typography>
-						<Typography variant="caption" color="error.dark">
-							Consider using Marking Voucher instead.
-						</Typography>
-					</Stack>
-				</Box>
+
+				{/* Submission Deadlines Button */}
+				<Button
+					variant="outlined"
+					size="small"
+					className="submission-deadlines-button"
+				>
+					Submission Deadlines
+				</Button>
 			</CardContent>
-			<CardActions
-				className="product-card-actions"
-				sx={{
-					px: 2,
-					py: 1,
-					flexDirection: "column",
-					alignItems: "stretch",
-					mt: "auto",
-					height: "auto !important",
-					minHeight: "auto !important",
-				}}>
-				<Box
-					display="flex"
-					alignItems="center"
-					justifyContent="space-between">
-					<Box display="flex" alignItems="center" gap={1.5}>
-						<Typography
-							variant="h4"
-							fontWeight={700}
-							color="primary.main">
-							£35.00
-						</Typography>
-						<Tooltip title="Show price details">
-							<Button
-								variant="outlined"
-								size="small"
-								sx={{ minWidth: "auto", px: 1, py: 0.5 }}>
-								<InfoOutline sx={{ fontSize: 16 }} />
-							</Button>
-						</Tooltip>
+			<CardActions>
+				<Box className="price-container">
+					<Box className="price-action-section">
+						<Box className="price-info-row">
+							<Typography variant="h3" className="price-display">
+								£35.00
+							</Typography>
+							<Tooltip title="Show price details">
+								<Button size="small" className="info-button">
+									<InfoOutline />
+								</Button>
+							</Tooltip>
+						</Box>
+						<Box className="price-details-row">
+							<Typography
+								variant="fineprint"
+								className="price-level-text"
+								color="text.secondary">
+								Standard pricing
+							</Typography>
+							<Typography
+								variant="fineprint"
+								className="vat-status-text"
+								color="text.secondary">
+								Price includes VAT
+							</Typography>
+						</Box>
+						<Button
+							variant="contained"
+							className="add-to-cart-button"
+							sx={{ alignSelf: "stretch" }}>
+							<AddShoppingCart />
+						</Button>
 					</Box>
-					<Button
-						variant="contained"
-						color="success"
-						sx={{
-							borderRadius: "50%",
-							minWidth: 44,
-							width: 44,
-							height: 44,
-							p: 0,
-							boxShadow: "0 4px 8px rgba(76, 175, 80, 0.3)",
-							"&:hover": {
-								boxShadow: "0 6px 12px rgba(76, 175, 80, 0.4)",
-								transform: "translateY(-1px)",
-							},
-						}}>
-						<AddShoppingCart sx={{ fontSize: 18 }} />
-					</Button>
 				</Box>
-				<Typography variant="caption" color="text.secondary" mt={1}>
-					Standard pricing • Price includes VAT
-				</Typography>
 			</CardActions>
 		</Card>
 	);

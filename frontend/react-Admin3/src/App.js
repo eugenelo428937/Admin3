@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline, Typography } from "@mui/material";
+import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
 import theme from "./theme/theme";
 import { AuthProvider } from "./hooks/useAuth";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -41,6 +42,8 @@ import ProductCardVariations from "./components/sandbox/ProductCardVariations";
 import StyleGuide from "./components/StyleGuide";
 import "./App.css";
 
+const system = createSystem(defaultConfig);
+
 function App() {
 	// eslint-disable-next-line
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -59,16 +62,17 @@ function App() {
 	}, []);
 
 	return (
-		<ThemeProvider theme={theme}>
-			<CssBaseline />
-			<GoogleReCaptchaProvider
-				reCaptchaKey={RECAPTCHA_SITE_KEY}
-				container={{
-					parameters: {
-						badge: "inline",
-					},
-				}}>
-				<ErrorBoundary>
+		<ChakraProvider value={system}>
+			<ThemeProvider theme={theme}>
+				<CssBaseline />
+				<GoogleReCaptchaProvider
+					reCaptchaKey={RECAPTCHA_SITE_KEY}
+					container={{
+						parameters: {
+							badge: "inline",
+						},
+					}}>
+					<ErrorBoundary>
 					<CartProvider>
 						<AuthProvider>
 							<ProductProvider>
@@ -212,9 +216,10 @@ function App() {
 							</ProductProvider>
 						</AuthProvider>
 					</CartProvider>
-				</ErrorBoundary>
-			</GoogleReCaptchaProvider>
-		</ThemeProvider>
+					</ErrorBoundary>
+				</GoogleReCaptchaProvider>
+			</ThemeProvider>
+		</ChakraProvider>
 	);
 }
 

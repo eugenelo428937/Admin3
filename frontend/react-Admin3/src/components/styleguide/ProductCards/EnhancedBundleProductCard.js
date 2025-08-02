@@ -39,6 +39,7 @@ const EnhancedBundleProductCard = ({
 }) => {
 	const [showDetails, setShowDetails] = useState(false);
 	const [selectedPriceType, setSelectedPriceType] = useState("");
+	const [isHovered, setIsHovered] = useState(false);
 
 	const bundleItems = [
 		//     Display the following items in the list :
@@ -78,11 +79,25 @@ const EnhancedBundleProductCard = ({
 	const bundlePrice = 499;
 	const savings = totalValue - bundlePrice;
 
+	const handleMouseEnter = () => {
+		setIsHovered(true);
+	};
+
+	const handleMouseLeave = () => {
+		setIsHovered(false);
+	};
+
 	return (
 		<Card
 			elevation={2}
 			variant={variant}
 			className="d-flex flex-column"
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseLeave}
+			sx={{                 
+				transform: isHovered ? 'scale(1.02)' : 'scale(1)',
+				transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+			}}
 			{...props}>
 			{/* Floating Badges */}
 			<Box className="floating-badges-container">
@@ -110,7 +125,7 @@ const EnhancedBundleProductCard = ({
 						variant="h4"
 						textAlign="left"
 						className="product-title">
-						Materials & Marking Bundle Information
+						Materials & Marking Bundle
 						<Tooltip
 							className="title-info-tooltip-button"
 							title={

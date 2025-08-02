@@ -31,6 +31,7 @@ import {
 const EnhancedOnlineClassroomProductCard = ({ variant = "online-product", ...props }) => {
   const [selectedFormat, setSelectedFormat] = useState('live');
   const [selectedPriceType, setSelectedPriceType] = useState(""); // Empty means standard pricing
+  const [isHovered, setIsHovered] = useState(false);
 
   const formatOptions = {
 		live: {
@@ -44,10 +45,24 @@ const EnhancedOnlineClassroomProductCard = ({ variant = "online-product", ...pro
     setSelectedFormat(event.target.value);
   };
 
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+  };
+
   return (
 		<Card
 			elevation={2}
 			variant={variant}
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseLeave}
+			sx={{                 
+				transform: isHovered ? 'scale(1.02)' : 'scale(1)',
+				transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+			}}
 			className="d-flex flex-column"
 			{...props}>
 			{/* Floating Badges */}
@@ -93,12 +108,6 @@ const EnhancedOnlineClassroomProductCard = ({ variant = "online-product", ...pro
 			/>
 
 			<CardContent>
-				{/* Enhanced Chips Section - More prominent */}
-				<Box className="product-chips">
-					<Chip label="CP1" variant="filled" color="primary" />
-					<Chip label="2024A" variant="filled" color="secondary" />
-				</Box>
-
 				<Box className="product-variations">
 					<Typography variant="subtitle2" className="variations-title">
 						Access Options

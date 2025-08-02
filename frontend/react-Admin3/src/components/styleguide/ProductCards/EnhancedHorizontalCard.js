@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -14,8 +14,27 @@ import {
 
 // Enhanced Horizontal Card Component
 const EnhancedHorizontalCard = () => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+  };
   return (
-    <Card elevation={2} sx={{ display: 'flex', height: 120 }}>
+    <Card 
+      elevation={2} 
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      sx={{ 
+        display: 'flex', 
+        height: 120,
+        transform: isHovered ? 'scale(1.02)' : 'scale(1)',
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+      }}
+    >
       <Box
         sx={{
           width: 100,

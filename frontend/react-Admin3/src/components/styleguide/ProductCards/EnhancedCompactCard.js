@@ -21,9 +21,28 @@ import {
 const EnhancedCompactCard = () => {
   const [selectedVariations, setSelectedVariations] = useState([]);
   const [selectedPriceType, setSelectedPriceType] = useState('');
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+  };
 
   return (
-    <Card elevation={2} sx={{ maxWidth: 340, height: 'fit-content' }}>
+    <Card 
+      elevation={2} 
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      sx={{ 
+        maxWidth: 340, 
+        height: 'fit-content',
+        transform: isHovered ? 'scale(1.02)' : 'scale(1)',
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+      }}
+    >
       <CardHeader
         title={
           <Box display="flex" alignItems="center" justifyContent="space-between">
