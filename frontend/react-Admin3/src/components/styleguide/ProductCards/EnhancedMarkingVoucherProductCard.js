@@ -17,8 +17,6 @@ import {
 	Radio,
 	RadioGroup,
 	Tooltip,
-	TextField,
-	IconButton,
 } from "@mui/material";
 import {
 	ConfirmationNumberOutlined,
@@ -28,44 +26,45 @@ import {
 	InfoOutline,
 	Savings,
 	Timer,
-	Add,
-	Remove,
 } from "@mui/icons-material";
-import { Arrows as ArrowsIcon } from "react-bootstrap-icons";
-import { NumberInput } from "@carbon/react";
-
+import { NumberInput } from '@chakra-ui/react';
 const EnhancedMarkingVoucherProductCard = ({
-	variant = "marking-product",
+	variant = "marking-voucher-product",
 	...props
 }) => {
 	const [quantity, setQuantity] = useState(1);
+	const [isHovered, setIsHovered] = useState(false);
 	const basePrice = 35; // Base price per voucher
 
-	const handleQuantityChange = (event, value) => {
-		if (value >= 1 && value <= 99) {
+	const handleQuantityChange = (details) => {
+		console.log('NumberInput onChange:', details); // Debug log
+		const value = parseInt(details.value);
+		if (!isNaN(value) && value >= 1 && value <= 99) {
 			setQuantity(value);
 		}
 	};
 
-	const handleIncrement = () => {
-		if (quantity < 99) {
-			setQuantity(quantity + 1);
-		}
-	};
-
-	const handleDecrement = () => {
-		if (quantity > 1) {
-			setQuantity(quantity - 1);
-		}
-	};
-
 	const totalPrice = basePrice * quantity;
+
+	const handleMouseEnter = () => {
+		setIsHovered(true);
+	};
+
+	const handleMouseLeave = () => {
+		setIsHovered(false);
+	};
 
 	return (
 		<Card
 			elevation={2}
 			variant={variant}
 			className="d-flex flex-column"
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseLeave}
+			sx={{
+				transform: isHovered ? "scale(1.02)" : "scale(1)",
+				transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+			}}
 			{...props}>
 			<CardHeader
 				className="product-header"
@@ -85,19 +84,7 @@ const EnhancedMarkingVoucherProductCard = ({
 			/>
 
 			<CardContent>
-				<Typography
-					variant="body2"
-					color="text.secondary"
-					className="product-description"
-					sx={{ mb: 2, textAlign: "left" }}>
-					Submit any current assignment or mock exam paper for marking at
-					any time, irrespective of the deadlines dates.
-				</Typography>
-
-				<Alert
-					severity="info"
-					className="info-alert"
-					sx={{ mb: 2, textAlign: "left" }}>
+				<Alert severity="info" className="voucher-info-alert">
 					<Typography variant="caption" className="alert-text">
 						To ensure that your script is returned before the date of the
 						exam, please adhere to the explicit Marking Voucher deadline
@@ -105,47 +92,39 @@ const EnhancedMarkingVoucherProductCard = ({
 					</Typography>
 				</Alert>
 
-				<Box className="validity-info" sx={{ mb: 2 }}>
+				<Box className="voucher-validity-info">
 					<Stack
 						direction="row"
 						spacing={1}
 						alignItems="center"
-						className="info-row"
-						sx={{ mb: 1 }}>
-						<Timer
-							className="info-icon"
-							sx={{ fontSize: 16, color: "text.secondary" }}
-						/>
-						<Typography variant="caption" className="info-text">
+						className="validity-info-row">
+						<Timer className="validity-info-icon" />
+						<Typography variant="caption" className="validity-info-text">
 							Valid for 4 years
 						</Typography>
 					</Stack>
 				</Box>
 
-				<Box
-					// className="quantity-section"
-					sx={{
-						display: "flex",
-						alignItems: "center",
-						mt: 2,
-						flexDirection: "row",
-					}}>
-					<NumberInput
-						id="default-number-input"
-						type="text"
-						label="Quantity"
-						value={quantity}
-						onBlur={() => {}}
-						onChange={() => {}}
-						size="md"
-						step={1}
-						min={1}
-						max={99}
-						defaultValue={1}
-						helperText="Please enter quantity."
-						invalidText="Invalid quantity"
-						locale="en"
-					/>
+				<Box className="voucher-quantity-section">
+					<Typography
+						variant="body2"
+						className="quantity-label"
+						sx={{ mb: 1 }}>
+						Quantity
+					</Typography>
+					<Box className="quantity-input-container">
+						<NumberInput.Root 
+							value={quantity.toString()}
+							onValueChange={handleQuantityChange}
+							min={1}
+							max={99}
+							width="120px"
+							className="chakra-number-input"
+						>
+							<NumberInput.Control />
+							<NumberInput.Input className="quantity-input-field" />
+						</NumberInput.Root>
+					</Box>
 				</Box>
 			</CardContent>
 
@@ -177,10 +156,7 @@ const EnhancedMarkingVoucherProductCard = ({
 								Price includes VAT
 							</Typography>
 						</Box>
-						<Button
-							variant="contained"
-							className="add-to-cart-button"
-							sx={{ alignSelf: "stretch" }}>
+						<Button variant="contained" className="add-to-cart-button">
 							<AddShoppingCart />
 						</Button>
 					</Box>

@@ -9,16 +9,28 @@ import {
 // Enhanced Minimal Card Component
 const EnhancedMinimalCard = () => {
   const [selected, setSelected] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+  };
 
   return (
     <Paper 
       variant="outlined" 
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       sx={{ 
         p: 2,
         cursor: 'pointer',
         transition: 'all 0.2s ease',
         border: selected ? '2px solid' : '1px solid',
         borderColor: selected ? 'primary.main' : 'divider',
+        transform: isHovered ? 'scale(1.02)' : 'scale(1)',
         '&:hover': {
           boxShadow: 2,
           borderColor: 'primary.main'

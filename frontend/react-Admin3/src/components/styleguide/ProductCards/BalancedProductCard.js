@@ -174,12 +174,6 @@ const BalancedProductCard = ({ variant = "material-product", ...props }) => {
 			/>
 
 			<CardContent>
-				{/* Enhanced Chips Section - More prominent */}
-				<Box className="product-chips">
-					<Chip label="CS1" variant="filled" color="primary" />
-					<Chip label="2024A" variant="filled" color="secondary" />
-				</Box>
-
 				{/* Enhanced Variations Section - Better hierarchy */}
 				<Box className="product-variations">
 					<Typography variant="subtitle2" sx={{ mb: 1.5 }}>
