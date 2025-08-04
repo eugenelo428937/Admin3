@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Wizard - Step by Step</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .wizard-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .wizard-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 32px;
+            text-align: center;
+            position: relative;
+        }
+
+        .wizard-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .wizard-subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 24px;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-step {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .progress-step.completed {
+            background: #10b981;
+        }
+
+        .progress-step.active {
+            background: white;
+            color: #1e3c72;
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3);
+        }
+
+        .progress-line {
+            flex: 1;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 0 8px;
+            position: relative;
+        }
+
+        .progress-line.completed {
+            background: #10b981;
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .progress-label {
+            text-align: center;
+            opacity: 0.8;
+            flex: 1;
+        }
+
+        .progress-label.active {
+            opacity: 1;
+            font-weight: 500;
+        }
+
+        .wizard-content {
+            padding: 40px;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .step-header {
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .step-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .step-description {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-label.required::after {
+            content: " *";
+            color: #ef4444;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 48px;
+            padding: 0 16px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            height: 48px;
+            padding: 0 16px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .form-grid.cols-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .form-grid.cols-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .phone-input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .phone-code {
+            width: 120px;
+            flex-shrink: 0;
+        }
+
+        .phone-number {
+            flex: 1;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 24px;
+            margin-top: 8px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 12px 16px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .radio-option:hover {
+            border-color: #3b82f6;
+            background: #f8fafc;
+        }
+
+        .radio-option.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        .radio-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #3b82f6;
+        }
+
+        .address-search {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .search-header {
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #475569;
+            text-align: center;
+        }
+
+        .search-result {
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .search-result:hover {
+            background: #f1f5f9;
+            border-color: #3b82f6;
+        }
+
+        .wizard-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .nav-button {
+            height: 48px;
+            padding: 0 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+
+        .nav-button.primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .nav-button.primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .nav-button.secondary {
+            background: #f8fafc;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .nav-button.secondary:hover {
+            background: #f1f5f9;
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .step-indicator {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .optional-toggle {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .toggle-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-button:hover {
+            background: #2563eb;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            color: white;
+            font-size: 32px;
+        }
+
+        .success-message {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .success-text {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .wizard-container {
+                margin: 10px;
+                border-radius: 12px;
+            }
+
+            .wizard-header {
+                padding: 24px;
+            }
+
+            .wizard-content {
+                padding: 32px 24px;
+            }
+
+            .form-grid.cols-2,
+            .form-grid.cols-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .radio-group {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .phone-input-group {
+                flex-direction: column;
+            }
+
+            .phone-code {
+                width: 100%;
+            }
+
+            .progress-labels {
+                font-size: 10px;
+            }
+
+            .progress-step {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .wizard-title {
+                font-size: 20px;
+            }
+
+            .step-title {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wizard-container">
+        <div class="wizard-header">
+            <h1 class="wizard-title">Create Your Account</h1>
+            <p class="wizard-subtitle">Follow these simple steps to join our community</p>
+            
+            <div class="progress-container">
+                <div class="progress-steps">
+                    <div class="progress-step active" data-step="1">1</div>
+                    <div class="progress-line"></div>
+                    <div class="progress-step" data-step="2">2</div>
+                    <div class="progress-line"></div>
+                    <div class="progress-step" data-step="3">3</div>
+                    <div class="progress-line"></div>
+                    <div class="progress-step" data-step="4">4</div>
+                    <div class="progress-line"></div>
+                    <div class="progress-step" data-step="5">5</div>
+                </div>
+                <div class="progress-labels">
+                    <div class="progress-label active">Personal</div>
+                    <div class="progress-label">Home</div>
+                    <div class="progress-label">Work</div>
+                    <div class="progress-label">Contact</div>
+                    <div class="progress-label">Security</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="wizard-content">
+            <!-- Step 1: Personal Information -->
+            <div class="step active" data-step="1">
+                <div class="step-header">
+                    <h2 class="step-title">Personal Information</h2>
+                    <p class="step-description">Let's start with your basic details</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <select class="form-select" name="title">
+                        <option value="">Select title</option>
+                        <option value="Mr">Mr</option>
+                        <option value="Miss">Miss</option>
+                        <option value="Mrs">Mrs</option>
+                        <option value="Ms">Ms</option>
+                        <option value="Dr">Dr</option>
+                    </select>
+                </div>
+
+                <div class="form-grid cols-2">
+                    <div class="form-group">
+                        <label class="form-label required">First Name</label>
+                        <input type="text" class="form-input" name="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Last Name</label>
+                        <input type="text" class="form-input" name="lastName" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Email Address</label>
+                    <input type="email" class="form-input" name="email" required>
+                </div>
+            </div>
+
+            <!-- Step 2: Home Address -->
+            <div class="step" data-step="2">
+                <div class="step-header">
+                    <h2 class="step-title">Home Address</h2>
+                    <p class="step-description">Where should we send your study materials?</p>
+                </div>
+
+                <div class="address-search">
+                    <div class="search-header">Find your address quickly</div>
+                    <div class="form-grid cols-2">
+                        <div class="form-group">
+                            <label class="form-label">Postcode/ZIP</label>
+                            <input type="text" class="form-input" placeholder="Enter postcode">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Country</label>
+                            <select class="form-select">
+                                <option value="">Select country</option>
+                                <option value="GB">United Kingdom</option>
+                                <option value="US">United States</option>
+                                <option value="IE">Ireland</option>
+                                <option value="ZA">South Africa</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" class="nav-button primary" style="width: 100%; margin-top: 16px;">
+                        <span class="material-icons">search</span>
+                        Search Address
+                    </button>
+                </div>
+
+                <div id="manualHomeAddress">
+                    <div class="form-group">
+                        <label class="form-label">Building Name</label>
+                        <input type="text" class="form-input" name="homeBuildingName">
+                    </div>
+
+                    <div class="form-grid cols-2">
+                        <div class="form-group">
+                            <label class="form-label required">Street</label>
+                            <input type="text" class="form-input" name="homeStreet" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">District</label>
+                            <input type="text" class="form-input" name="homeDistrict">
+                        </div>
+                    </div>
+
+                    <div class="form-grid cols-2">
+                        <div class="form-group">
+                            <label class="form-label required">Town/City</label>
+                            <input type="text" class="form-input" name="homeTown" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">County/State</label>
+                            <input type="text" class="form-input" name="homeCounty">
+                        </div>
+                    </div>
+
+                    <div class="form-grid cols-2">
+                        <div class="form-group">
+                            <label class="form-label required">Postcode/ZIP</label>
+                            <input type="text" class="form-input" name="homePostcode" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">Country</label>
+                            <select class="form-select" name="homeCountry" required>
+                                <option value="">Select country</option>
+                                <option value="GB">United Kingdom</option>
+                                <option value="US">United States</option>
+                                <option value="IE">Ireland</option>
+                                <option value="ZA">South Africa</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Work Address (Optional) -->
+            <div class="step" data-step="3">
+                <div class="step-header">
+                    <h2 class="step-title">Work Address</h2>
+                    <p class="step-description">Add your workplace details (optional but recommended)</p>
+                </div>
+
+                <div class="optional-toggle">
+                    <button type="button" class="toggle-button" onclick="toggleWorkAddress()">
+                        Add Work Address
+                    </button>
+                    <p style="margin-top: 12px; font-size: 14px; color: #64748b;">
+                        Skip this step if you don't want to add work details
+                    </p>
+                </div>
+
+                <div id="workAddressForm" style="display: none;">
+                    <div class="form-grid cols-2">
+                        <div class="form-group">
+                            <label class="form-label required">Company/Institution</label>
+                            <input type="text" class="form-input" name="workCompany">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Department</label>
+                            <input type="text" class="form-input" name="workDepartment">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Building Name</label>
+                        <input type="text" class="form-input" name="workBuildingName">
+                    </div>
+
+                    <div class="form-grid cols-2">
+                        <div class="form-group">
+                            <label class="form-label required">Street</label>
+                            <input type="text" class="form-input" name="workStreet">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">District</label>
+                            <input type="text" class="form-input" name="workDistrict">
+                        </div>
+                    </div>
+
+                    <div class="form-grid cols-2">
+                        <div class="form-group">
+                            <label class="form-label required">Town/City</label>
+                            <input type="text" class="form-input" name="workTown">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">County/State</label>
+                            <input type="text" class="form-input" name="workCounty">
+                        </div>
+                    </div>
+
+                    <div class="form-grid cols-2">
+                        <div class="form-group">
+                            <label class="form-label required">Postcode/ZIP</label>
+                            <input type="text" class="form-input" name="workPostcode">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">Country</label>
+                            <select class="form-select" name="workCountry">
+                                <option value="">Select country</option>
+                                <option value="GB">United Kingdom</option>
+                                <option value="US">United States</option>
+                                <option value="IE">Ireland</option>
+                                <option value="ZA">South Africa</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Contact Information -->
+            <div class="step" data-step="4">
+                <div class="step-header">
+                    <h2 class="step-title">Contact Information</h2>
+                    <p class="step-description">How can we reach you?</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Home Phone</label>
+                    <div class="phone-input-group">
+                        <select class="form-select phone-code">
+                            <option value="+44">+44 (UK)</option>
+                            <option value="+1">+1 (US)</option>
+                            <option value="+353">+353 (IE)</option>
+                            <option value="+27">+27 (ZA)</option>
+                        </select>
+                        <input type="tel" class="form-input phone-number" name="homePhone" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Mobile Phone</label>
+                    <div class="phone-input-group">
+                        <select class="form-select phone-code">
+                            <option value="+44">+44 (UK)</option>
+                            <option value="+1">+1 (US)</option>
+                            <option value="+353">+353 (IE)</option>
+                            <option value="+27">+27 (ZA)</option>
+                        </select>
+                        <input type="tel" class="form-input phone-number" name="mobilePhone" required>
+                    </div>
+                </div>
+
+                <div id="workContactSection" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Work Phone</label>
+                        <div class="phone-input-group">
+                            <select class="form-select phone-code">
+                                <option value="+44">+44 (UK)</option>
+                                <option value="+1">+1 (US)</option>
+                                <option value="+353">+353 (IE)</option>
+                                <option value="+27">+27 (ZA)</option>
+                            </select>
+                            <input type="tel" class="form-input phone-number" name="workPhone">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Work Email</label>
+                        <input type="email" class="form-input" name="workEmail">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Personal Email</label>
+                    <input type="email" class="form-input" name="personalEmail" placeholder="Different from main email">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Send invoices to</label>
+                    <div class="radio-group">
+                        <label class="radio-option selected">
+                            <input type="radio" name="invoiceAddress" value="home" checked>
+                            <span>Home Address</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="invoiceAddress" value="work">
+                            <span>Work Address</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Send study materials to</label>
+                    <div class="radio-group">
+                        <label class="radio-option selected">
+                            <input type="radio" name="materialAddress" value="home" checked>
+                            <span>Home Address</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="materialAddress" value="work">
+                            <span>Work Address</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Security -->
+            <div class="step" data-step="5">
+                <div class="step-header">
+                    <h2 class="step-title">Account Security</h2>
+                    <p class="step-description">Create a secure password for your account</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Password</label>
+                    <input type="password" class="form-input" name="password" required>
+                    <small style="color: #64748b; font-size: 12px; margin-top: 4px; display: block;">
+                        Use at least 8 characters with a mix of letters, numbers, and symbols
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Confirm Password</label>
+                    <input type="password" class="form-input" name="confirmPassword" required>
+                </div>
+
+                <div class="address-search" style="background: #fef3c7; border-color: #f59e0b;">
+                    <div class="search-header" style="color: #92400e;">
+                        <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">info</span>
+                        Delivery Information
+                    </div>
+                    <p style="color: #92400e; font-size: 14px; line-height: 1.5; margin: 0;">
+                        Please order your study materials well in advance. Materials are printed to order and may take 2+ weeks for delivery. 
+                        Consider eBooks for faster access - they're usually processed in 2-3 working days.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Success Step -->
+            <div class="step" data-step="success" style="text-align: center;">
+                <div class="success-icon">
+                    <span class="material-icons">check</span>
+                </div>
+                <div class="success-message">
+                    <h2 class="success-title">Account Created Successfully!</h2>
+                    <p class="success-text">
+                        Welcome to our community! We've sent a verification email to your inbox. 
+                        Please check your email and click the verification link to activate your account.
+                    </p>
+                </div>
+                <button type="button" class="nav-button primary" onclick="window.location.reload()">
+                    <span class="material-icons">login</span>
+                    Go to Login
+                </button>
+            </div>
+
+            <div class="wizard-navigation">
+                <button type="button" class="nav-button secondary" id="prevBtn" onclick="changeStep(-1)" style="display: none;">
+                    <span class="material-icons">arrow_back</span>
+                    Previous
+                </button>
+                
+                <div class="step-indicator">
+                    Step <span id="currentStep">1</span> of 5
+                </div>
+                
+                <button type="button" class="nav-button primary" id="nextBtn" onclick="changeStep(1)">
+                    Next
+                    <span class="material-icons">arrow_forward</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+
+        function updateProgress() {
+            // Update progress steps
+            document.querySelectorAll('.progress-step').forEach((step, index) => {
+                const stepNumber = index + 1;
+                if (stepNumber < currentStep) {
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                } else if (stepNumber === currentStep) {
+                    step.classList.add('active');
+                    step.classList.remove('completed');
+                } else {
+                    step.classList.remove('active', 'completed');
+                }
+            });
+
+            // Update progress lines
+            document.querySelectorAll('.progress-line').forEach((line, index) => {
+                if (index + 1 < currentStep) {
+                    line.classList.add('completed');
+                } else {
+                    line.classList.remove('completed');
+                }
+            });
+
+            // Update progress labels
+            document.querySelectorAll('.progress-label').forEach((label, index) => {
+                if (index + 1 === currentStep) {
+                    label.classList.add('active');
+                } else {
+                    label.classList.remove('active');
+                }
+            });
+
+            // Update step indicator
+            document.getElementById('currentStep').textContent = currentStep;
+        }
+
+        function showStep(step) {
+            console.log('Showing step:', step);
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            const targetStep = document.querySelector(`[data-step="${step}"]`);
+            if (targetStep) {
+                targetStep.classList.add('active');
+                console.log('Step activated:', step);
+            } else {
+                console.error('Step not found:', step);
+            }
+        }
+
+        function changeStep(direction) {
+            console.log('changeStep called with direction:', direction, 'current step:', currentStep);
+            
+            if (direction === 1) {
+                // Validate current step before proceeding
+                if (!validateCurrentStep()) {
+                    console.log('Validation failed for step:', currentStep);
+                    return;
+                }
+                
+                if (currentStep < 5) {
+                    currentStep++;
+                    console.log('Moving to step:', currentStep);
+                    showStep(currentStep);
+                    updateProgress();
+                    updateNavigationButtons();
+                } else if (currentStep === 5) {
+                    // Submit form
+                    console.log('Submitting form');
+                    showStep('success');
+                    document.querySelector('.wizard-navigation').style.display = 'none';
+                    return;
+                }
+            } else {
+                if (currentStep > 1) {
+                    currentStep--;
+                    console.log('Moving back to step:', currentStep);
+                    showStep(currentStep);
+                    updateProgress();
+                    updateNavigationButtons();
+                }
+            }
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (currentStep === 1) {
+                prevBtn.style.display = 'none';
+            } else {
+                prevBtn.style.display = 'flex';
+            }
+            
+            if (currentStep === 5) {
+                nextBtn.innerHTML = '<span class="material-icons">check</span> Create Account';
+            } else {
+                nextBtn.innerHTML = 'Next <span class="material-icons">arrow_forward</span>';
+            }
+        }
+
+        function validateCurrentStep() {
+            const currentStepElement = document.querySelector(`[data-step="${currentStep}"]`);
+            const requiredInputs = currentStepElement.querySelectorAll('input[required], select[required]');
+            
+            // For demo purposes, let's be more lenient with validation
+            // In production, you'd want stricter validation
+            let hasErrors = false;
+            
+            for (let input of requiredInputs) {
+                if (!input.value.trim()) {
+                    input.style.borderColor = '#ef4444';
+                    hasErrors = true;
+                    
+                    // Clear error styling after 3 seconds
+                    setTimeout(() => {
+                        input.style.borderColor = '';
+                    }, 3000);
+                } else {
+                    input.style.borderColor = '';
+                }
+            }
+            
+            // For demo, allow proceeding even with some empty fields
+            // But focus on first empty field to show validation feedback
+            if (hasErrors) {
+                const firstEmptyInput = Array.from(requiredInputs).find(input => !input.value.trim());
+                if (firstEmptyInput) {
+                    firstEmptyInput.focus();
+                }
+                // Still allow proceeding for demo purposes
+                return true;
+            }
+            
+            return true;
+        }
+
+        function toggleWorkAddress() {
+            const workForm = document.getElementById('workAddressForm');
+            const workContactSection = document.getElementById('workContactSection');
+            const toggleButton = document.querySelector('.toggle-button');
+            
+            if (workForm.style.display === 'none') {
+                workForm.style.display = 'block';
+                workContactSection.style.display = 'block';
+                toggleButton.textContent = 'Remove Work Address';
+                toggleButton.style.background = '#ef4444';
+            } else {
+                workForm.style.display = 'none';
+                workContactSection.style.display = 'none';
+                toggleButton.textContent = 'Add Work Address';
+                toggleButton.style.background = '#3b82f6';
+            }
+        }
+
+        // Handle radio button visual feedback
+        document.addEventListener('change', function(e) {
+            if (e.target.type === 'radio') {
+                const radioGroup = e.target.name;
+                document.querySelectorAll(`input[name="${radioGroup}"]`).forEach(radio => {
+                    const option = radio.closest('.radio-option');
+                    if (radio.checked) {
+                        option.classList.add('selected');
+                    } else {
+                        option.classList.remove('selected');
+                    }
+                });
+            }
+        });
+
+        // Initialize
+        updateProgress();
+        updateNavigationButtons();
+    </script>
+</body>
+</html>

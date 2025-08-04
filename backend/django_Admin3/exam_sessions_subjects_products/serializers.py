@@ -35,18 +35,22 @@ class ProductListSerializer(serializers.ModelSerializer):
     subject_id = serializers.IntegerField(source='exam_session_subject.subject.id')
     subject_code = serializers.CharField(source='exam_session_subject.subject.code')
     subject_description = serializers.CharField(source='exam_session_subject.subject.description')
+    exam_session_code = serializers.CharField(source='exam_session_subject.exam_session.session_code')
+    exam_session_id = serializers.IntegerField(source='exam_session_subject.exam_session.id')
     product_id = serializers.IntegerField(source='product.id')
     product_code = serializers.CharField(source='product.code')
     product_name = serializers.CharField(source='product.fullname')
     product_short_name = serializers.CharField(source='product.shortname')
     product_description = serializers.CharField(source='product.description')
+    buy_both = serializers.BooleanField(source='product.buy_both', read_only=True)
     variations = serializers.SerializerMethodField()
 
     class Meta:
         model = ExamSessionSubjectProduct
         fields = [
             'id', 'essp_id', 'type', 'product_id', 'product_code', 'product_name', 'product_short_name',
-            'product_description', 'subject_id', 'subject_code', 'subject_description', 'variations',
+            'product_description', 'buy_both', 'subject_id', 'subject_code', 'subject_description', 
+            'exam_session_code', 'exam_session_id', 'variations',
         ]
 
     def get_type(self, obj):
