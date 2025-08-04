@@ -277,6 +277,7 @@ SESSION_COOKIE_AGE = 86400  # 24 hours in seconds
 SESSION_COOKIE_SECURE = True  # Use only with HTTPS
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_SAVE_EVERY_REQUEST = True  # Ensure session persists across requests
 
 # Add JWT settings
 SIMPLE_JWT = {

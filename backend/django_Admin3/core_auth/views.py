@@ -30,9 +30,22 @@ class AuthViewSet(viewsets.ViewSet):
     def csrf(self, request):
         """
         Get CSRF token for the current session
+        Ensures session is properly established and persisted
         """
+        # Ensure session is created if it doesn't exist
+        if not request.session.session_key:
+            request.session.create()
+        
+        # Get the CSRF token for this session
+        csrf_token = get_token(request)
+        
+        # Log session info for debugging (development only)
+        if settings.DEBUG:
+            logger.debug(f"CSRF token generated for session: {request.session.session_key}")
+        
         return Response({
-            'csrfToken': get_token(request)
+            'csrfToken': csrf_token,
+            'sessionKey': request.session.session_key  # For debugging purposes
         })
 
     @action(detail=False, methods=['post'])

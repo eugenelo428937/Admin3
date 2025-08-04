@@ -5,28 +5,23 @@ import {
 	CardHeader,
 	CardContent,
 	CardActions,
-	Grid,
 	Typography,
 	Box,
-	Divider,
 	Dialog,
 	DialogTitle,
 	DialogContent,
 	DialogActions,
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableRow,
 	Tooltip,
 	Chip,
 	List,
 	ListItem,
 	ListItemText,
-	Checkbox,
+	ListItemIcon,
+	Radio,
 	FormControlLabel,
+	Avatar,
 } from "@mui/material";
-import { InfoOutline, AddShoppingCart, LocalOffer, ArrowRight, ArrowDropDown } from "@mui/icons-material";
+import { InfoOutline, AddShoppingCart, CheckRounded, Inventory2 } from "@mui/icons-material";
 import { BoxSeam } from "react-bootstrap-icons";
 
 import { useCart } from "../../../contexts/CartContext";
@@ -39,8 +34,8 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 	const [showContentsModal, setShowContentsModal] = useState(false);
 	const [bundleContents, setBundleContents] = useState(null);
 	const [loadingContents, setLoadingContents] = useState(false);
-	const [selectedPriceType, setSelectedPriceType] = useState("standard");
-	const [showDiscounts, setShowDiscounts] = useState(false);
+	const [selectedPriceType, setSelectedPriceType] = useState("");
+	const [isHovered, setIsHovered] = useState(false);
 
 	const { addToCart } = useCart();
 	const {
@@ -49,6 +44,14 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 		isProductVATExempt,
 		showVATInclusive,
 	} = useVAT();
+
+	const handleMouseEnter = () => {
+		setIsHovered(true);
+	};
+
+	const handleMouseLeave = () => {
+		setIsHovered(false);
+	};
 
 	// Calculate bundle total price by summing component prices with fallback logic
 	const getBundlePrice = useMemo(() => {
@@ -143,7 +146,7 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 	// Handle price type change for discounts
 	const handlePriceTypeChange = (priceType) => {
 		if (selectedPriceType === priceType) {
-			setSelectedPriceType("standard");
+			setSelectedPriceType("");
 		} else {
 			setSelectedPriceType(priceType);
 		}
@@ -178,8 +181,7 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 			);
 
 			if (result.success && result.cartItems) {
-				// Add each component product to cart with correct parameters
-				// Note: useCart addToCart always adds quantity 1, so we call it multiple times for higher quantities
+				// Add each component product to cart sequentially to avoid overwriting
 				for (const cartItem of result.cartItems) {
 					console.log('🛒 [BundleCard] Adding cart item:', {
 						productName: cartItem.product.product_name,
@@ -188,16 +190,18 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 					});
 					
 					const quantity = cartItem.quantity || 1;
+					const priceInfoToSend = {
+						variationId: cartItem.priceInfo.variationId,
+						variationName: cartItem.priceInfo.variationName,
+						priceType: cartItem.priceInfo.priceType,
+						actualPrice: cartItem.priceInfo.actualPrice,
+					};
+					
+					console.log('🛒 [BundleCard] Sending priceInfo:', priceInfoToSend);
+					
+					// Add with the correct quantity - CartContext now handles synchronization
 					for (let i = 0; i < quantity; i++) {
-						const priceInfoToSend = {
-							variationId: cartItem.priceInfo.variationId,
-							variationName: cartItem.priceInfo.variationName,
-							priceType: cartItem.priceInfo.priceType,
-							actualPrice: cartItem.priceInfo.actualPrice,
-						};
-						
-						console.log('🛒 [BundleCard] Sending priceInfo:', priceInfoToSend);
-						
+						// Wait for each add to complete before proceeding to prevent race conditions
 						await addToCart(cartItem.product, priceInfoToSend);
 					}
 				}
@@ -253,7 +257,7 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 												component.product_name
 											}
 											secondary={
-												<Box>
+												<>
 													<Typography
 														variant="caption"
 														display="block">
@@ -285,7 +289,7 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 																}
 															</Typography>
 														)}
-												</Box>
+												</>
 											}
 										/>
 									</ListItem>
@@ -305,195 +309,213 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 
 	return (
 		<>
-			<Card className={`product-card h-100 `}>
+			<Card
+				elevation={2}
+				variant="bundle-product"
+				className="d-flex flex-column"
+				onMouseEnter={handleMouseEnter}
+				onMouseLeave={handleMouseLeave}
+				sx={{                 
+					transform: isHovered ? 'scale(1.02)' : 'scale(1)',
+					transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+				}}>
+				{/* Floating Badges */}
+				<Box className="floating-badges-container">
+					<Chip
+						label={bundle.subject_code}
+						size="small"
+						className="subject-badge"
+						role="img"
+						aria-label={`Subject: ${bundle.subject_code}`}
+						elevation={4}
+					/>
+					{bundle.exam_session_code && (
+						<Chip
+							label={bundle.exam_session_code}
+							size="small"
+							className="session-badge"
+							role="img"
+							aria-label={`Exam session: ${bundle.exam_session_code}`}
+							elevation={4}
+						/>
+					)}
+				</Box>
 				<CardHeader
+					className="product-header"
 					title={
-						<Box
-							display="flex"
-							alignItems="center"
-							justifyContent="space-between">
-							<Typography variant="h6" className="fw-normal">
-								{bundle.bundle_name}
-							</Typography>
-							<BoxSeam />
-						</Box>
+						<Typography
+							variant="h4"
+							textAlign="left"
+							className="product-title">
+							{bundle.bundle_name}
+							<Tooltip
+								className="title-info-tooltip-button"
+								title={
+									<Typography
+										variant="body2"
+										color="white"
+										padding="0.618rem"
+										className="title-info-tooltip-title">
+										The products for this bundle are shown separately in your shopping cart. 
+										If there's anything you don't want then you can remove it in the shopping cart page as normal.
+									</Typography>
+								}
+								slotProps={{
+									popper: {
+										sx: {
+											width: "20rem",
+											boxShadow: "var(--Paper-shadow)",
+										},
+									},
+								}}
+								placement="bottom-start"
+								arrow>
+								<Button size="small" className="title-info-button" onClick={handleShowContents}>
+									<InfoOutline />
+								</Button>
+							</Tooltip>
+						</Typography>
 					}
-					className="product-card-header bundle-header"
+					avatar={
+						<Avatar className="product-avatar">
+							<Inventory2 className="product-avatar-icon" />
+						</Avatar>
+					}
 				/>
 
-				<CardContent className="flex-grow-1 pb-0 product-card-content">
-					<Box className="d-flex flex-row w-100 align-items-center">
-						<Chip
-							variant="outlined"
-							label={bundle.subject_code}
-							clickable={false}
-							slotProps={{ root: { className: "subject-chip" } }}
-							className="mx-1 "
-						/>
-						<Chip
-							variant="outlined"
-							label={bundle.exam_session_code}
-							clickable={false}
-							className="mx-1 session-chip"
-						/>
-					</Box>
-					<Tooltip title="View bundle contents">
-						<Button
-							size="small"
-							endIcon={<InfoOutline />}
-							onClick={handleShowContents}
-							className="mb-0">
-							Bundle includes {bundle.components_count} items :
-						</Button>
-					</Tooltip>
-					{/* List  */}
-					<List dense={true} disablePadding={true}>
-						{bundle.components?.map((component) => (
-							<ListItem
-								key={component.id}
-								className="mx-1 my-0"
-								disablePadding={true}>
+				<CardContent>
+					<Typography variant="body2" className="bundle-details-title">
+						What's included ({bundle.components_count || bundle.components?.length || 0} items)
+					</Typography>
+
+					<List dense className="bundle-items-list">
+						{bundle.components?.map((component, index) => (
+							<ListItem key={component.id || index} className="bundle-list-item">
+								<ListItemIcon className="bundle-item-icon">
+									<CheckRounded />
+								</ListItemIcon>
 								<ListItemText
-									className="my-0"
-									primary={
-										<Box>
-											<Typography
-												variant="caption"
-												className="fw-bolder me-2">
-												{component.product.fullname}
-											</Typography>
-											<Typography variant="caption">
-												{
-													component.product_variation
-														?.variation_type
-												}
-											</Typography>
-										</Box>
-									}
+									primary={component.product?.fullname || component.name}
+									slotProps={{
+										primary: {
+											variant: "body2",
+											className: "bundle-item-text",
+										},
+									}}								
 								/>
+								<Typography
+									variant="caption"
+									color="text.secondary"
+									className="bundle-item-value">
+									{/* Component price if available */}
+									{component.price || ''}
+								</Typography>
 							</ListItem>
 						))}
 					</List>
 				</CardContent>
 
-				<Divider />
-
-				<CardActions
-					sx={{ px: 2, py: 1 }}
-					className="d-flex w-100 product-card-actions">
-					<Grid container spacing={0} className="w-100 mb-2">
-						<Grid size={12}>
-							{/* <Typography
-								variant="body2"
-								color="text.primary"
-								sx={{ cursor: "pointer" }}
-								onClick={() => setShowDiscounts(!showDiscounts)}
-								role="button"
-								aria-expanded={showDiscounts}
-								aria-label="Toggle discount options">
-								Discounts:
-								{showDiscounts ? <ArrowDropDown /> : <ArrowRight />}
-							</Typography> */}
-
-							<Box className="d-flex flex-row ps-2 mb-2">
+				<CardActions>
+					<Box className="price-container">
+						{/* Left Column - Discount Options */}
+						<Box className="discount-options">
+							<Typography variant="subtitle2" className="discount-title">
+								Discount Options
+							</Typography>
+							<Box className="discount-radio-group">
 								<FormControlLabel
+									className="discount-radio-option"
 									control={
-										<Checkbox
-											size="small"
-											className="p-0 mx-1"
+										<Radio
 											checked={selectedPriceType === "retaker"}
-											disabled={!hasBundlePriceType("retaker")}
-											onChange={() =>
+											onClick={() =>
 												handlePriceTypeChange("retaker")
 											}
-											sx={{
-												"& .MuiSvgIcon-root": {
-													fontSize: 14,
-												},
-											}}
+											size="small"
+											disabled={!hasBundlePriceType("retaker")}
 										/>
 									}
-									label="Retaker"
-									sx={{
-										"& .MuiFormControlLabel-label": {
-											fontSize: "0.875rem",
-											color: !hasBundlePriceType("retaker")
-												? "text.disabled"
-												: "inherit",
-										},
-									}}
+									label={
+										<Typography
+											variant="subtitle2"
+											className="discount-label">
+											Retaker
+										</Typography>
+									}
 								/>
-
-								<br />
-
 								<FormControlLabel
+									className="discount-radio-option"
 									control={
-										<Checkbox
-											size="small"
+										<Radio
 											checked={selectedPriceType === "additional"}
-											disabled={!hasBundlePriceType("additional")}
-											onChange={() =>
+											onClick={() =>
 												handlePriceTypeChange("additional")
 											}
-											className="p-0 mx-1"
-											sx={{
-												"& .MuiSvgIcon-root": {
-													fontSize: 14,
-												},
-											}}
+											size="small"
+											disabled={!hasBundlePriceType("additional")}
 										/>
 									}
-									label="Additional Copy"
-									sx={{
-										"& .MuiFormControlLabel-label": {
-											fontSize: "0.875rem",
-											color: !hasBundlePriceType("additional")
-												? "text.disabled"
-												: "inherit",
-										},
-									}}
+									label={
+										<Typography
+											variant="subtitle2"
+											className="discount-label">
+											Additional Copy
+										</Typography>
+									}
 								/>
 							</Box>
-						</Grid>
-						<Grid size={8} className="d-flex justify-content-start">
-							<Box
-								sx={{
-									display: "flex",
-									flexDirection: "column",
-									alignItems: "flex-start",
-								}}>
-								<Box
-									sx={{
-										display: "flex",
-										alignItems: "center",
-										mb: 1,
-									}}>
-									{getBundlePrice(selectedPriceType) || (
-										<Typography variant="h6" className="fw-bolder">
-											-
-										</Typography>
-									)}
-								</Box>
+						</Box>
+
+						{/* Right Column - Price & Action Section */}
+						<Box className="price-action-section">
+							<Box className="price-info-row">
+								<Typography variant="h3" className="price-display">
+									{(() => {
+										const priceType = selectedPriceType || "standard";
+										const priceComponent = getBundlePrice(priceType);
+										
+										// Extract formatted price from the component
+										if (priceComponent && priceComponent.props && priceComponent.props.children) {
+											const priceText = priceComponent.props.children[0]?.props?.children;
+											return priceText || '-';
+										}
+										return '-';
+									})()}
+								</Typography>
+								<Tooltip title="Show price details">
+									<Button size="small" className="info-button" onClick={handleShowContents}>
+										<InfoOutline />
+									</Button>
+								</Tooltip>
 							</Box>
-						</Grid>
-						<Grid size={4} className="d-flex justify-content-end">
+
+							<Box className="price-details-row">
+								<Typography
+									variant="fineprint"
+									className="price-level-text"
+									color="text.secondary">
+									{selectedPriceType === "retaker" ||
+									selectedPriceType === "additional"
+										? "Discount applied"
+										: "Standard pricing"}
+								</Typography>
+								<Typography
+									variant="fineprint"
+									className="vat-status-text"
+									color="text.secondary">
+									Price includes VAT
+								</Typography>
+							</Box>
+
 							<Button
-								color="success"
 								variant="contained"
-								size="small"
+								className="add-to-cart-button"
 								onClick={handleAddToCart}
-								aria-label="Add bundle to cart"
-								sx={{
-									borderRadius: "50%",
-									minWidth: "2rem",
-									width: "2rem",
-									height: "2rem",
-									padding: "4px",
-								}}>
-								<AddShoppingCart sx={{ fontSize: "1.1rem" }} />
+								aria-label="Add bundle to cart">
+								<AddShoppingCart />
 							</Button>
-						</Grid>
-					</Grid>
+						</Box>
+					</Box>
 				</CardActions>
 			</Card>
 

@@ -20,6 +20,7 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
+    buy_both = models.BooleanField(default=False)
     
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
