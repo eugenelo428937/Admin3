@@ -6,7 +6,7 @@ import React, {
 	useCallback,
 	useRef,
 } from "react";
-import { Typography } from "@mui/material";
+import { Typography, Box } from "@mui/material";
 import { Container, Row, Col, Alert, Button, Spinner } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
@@ -484,8 +484,8 @@ const ProductList = React.memo(() => {
 	if (error) return <div>Error: {error}</div>;
 
 	return (
-		<div fluid className="product-list-container m-top__lg">
-			<header className="product-header text-start d-flex flex-column flex-md-row justify-content-start justify-content-md-between align-items-start m-bottom__xl ">
+		<Container fluid className="product-list-container m-top__lg">
+			<header className="product-header text-start d-flex flex-column flex-md-row justify-content-start justify-content-md-between align-items-start m-bottom__md ">
 				<div className="header-left">
 					<Typography variant="h3" className="header-title p-bottom__2xs">
 						Products
@@ -543,6 +543,21 @@ const ProductList = React.memo(() => {
 
 			{/* Main content area with filter panel */}
 			<div className="d-flex gap-3 flex-column flex-lg-row align-items-start">
+				<Box className="d-flex flex-column">
+			{(navbarGroupFilter ||
+						navbarProductFilter ||
+						subjectFilter ||
+						Object.keys(panelFilters).length > 0) &&
+						!isSearchMode && (
+							<div className="mb-3 text-start">
+								<Button
+									variant="outline-secondary"
+									size="sm"
+									onClick={handleClearAllFilters}>
+									Clear All Filters
+								</Button>
+							</div>
+						)}
 				{/* Filter Panel - Only show in non-search mode */}
 				{!isSearchMode && (
 					<aside className="filter-panel-container">
@@ -555,23 +570,10 @@ const ProductList = React.memo(() => {
 						/>
 					</aside>
 				)}
-
+</Box>
 				{/* Main content area */}
 				<main className="flex-grow-1 main-content-area">
-					{(navbarGroupFilter ||
-						navbarProductFilter ||
-						subjectFilter ||
-						Object.keys(panelFilters).length > 0) &&
-						!isSearchMode && (
-							<div className="mb-3">
-								<Button
-									variant="outline-secondary"
-									size="sm"
-									onClick={handleClearAllFilters}>
-									Clear All Filters
-								</Button>
-							</div>
-						)}
+					
 					{/* Search Results Header */}
 					{isSearchMode && (
 						<div className="mb-4">
@@ -683,7 +685,7 @@ const ProductList = React.memo(() => {
 					)}
 				</main>
 			</div>
-		</div>
+		</Container>
 	);
 });
 

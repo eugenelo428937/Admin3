@@ -40,6 +40,7 @@ import EmailVerification from "./components/User/EmailVerification";
 import TutorialChoicePanel from "./components/Product/ProductCard/Tutorial/TutorialChoicePanel";
 import ProductCardVariations from "./components/sandbox/ProductCardVariations";
 import StyleGuide from "./components/StyleGuide";
+import Registration from './pages/Registration';
 import "./App.css";
 
 const system = createSystem(defaultConfig);
@@ -205,6 +206,7 @@ function App() {
 														path="/product-card-variations"
 														element={<ProductCardVariations />}
 													/>
+													 <Route path="/register2" element={<Registration />} />
 												</Routes>
 											</Container>
 

@@ -1,17 +1,12 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
 	Button,
 	Card,
 	CardHeader,
 	CardContent,
 	CardActions,
-	Checkbox,
-	FormControlLabel,
-	FormControl,
-	Grid,
 	Typography,
 	Box,
-	Divider,
 	Dialog,
 	DialogTitle,
 	DialogContent,
@@ -22,16 +17,15 @@ import {
 	TableHead,
 	TableRow,
 	Tooltip,
-	Alert,
-	CircularProgress,
 	Chip,
-	FormLabel,
+	Stack,
+	Avatar,
+	Radio,
+	FormControlLabel,
 } from "@mui/material";
 import {
 	AddShoppingCart,
 	InfoOutline,
-	ArrowRight,
-	ArrowDropDown,
 	Warning,
 	RuleOutlined,
 	CalendarMonthOutlined,
@@ -51,10 +45,10 @@ const MarkingProductCard = React.memo(({
 	const [loading, setLoading] = React.useState(true);
 	const [showModal, setShowModal] = React.useState(false);
 	const [showPriceModal, setShowPriceModal] = React.useState(false);
-	const [selectedVariations, setSelectedVariations] = React.useState([]);
-	const [selectedPriceType, setSelectedPriceType] = React.useState("standard");
-	const [showDiscounts, setShowDiscounts] = React.useState(false);
+	const [selectedVariations] = React.useState([]);
+	const [selectedPriceType, setSelectedPriceType] = React.useState("");
 	const [showExpiredWarning, setShowExpiredWarning] = React.useState(false);
+	const [isHovered, setIsHovered] = useState(false);
 
 	const { getPriceDisplay, formatPrice, isProductVATExempt, showVATInclusive } = useVAT();
 
@@ -156,6 +150,106 @@ const MarkingProductCard = React.memo(({
 	const allExpired =
 		deadlines.length > 0 && expired.length === deadlines.length;
 
+	// Handle hover effects
+	const handleMouseEnter = () => {
+		setIsHovered(true);
+	};
+
+	const handleMouseLeave = () => {
+		setIsHovered(false);
+	};
+
+	// Determine deadline scenario based on actual conditions
+	const getDeadlineScenario = () => {
+		if (loading) {
+			return {
+				type: "info",
+				icon: CalendarMonthOutlined,
+				message: "Loading deadlines...",
+				bgColor: "grey.50",
+				borderColor: "grey.300",
+				textColor: "grey.700"
+			};
+		}
+
+		if (deadlines.length === 0) {
+			return {
+				type: "info",
+				icon: CalendarMonthOutlined,
+				message: "No upcoming deadlines",
+				submessage: "Check back later for new submissions.",
+				bgColor: "grey.50",
+				borderColor: "grey.300",
+				textColor: "grey.700"
+			};
+		}
+
+		if (allExpired) {
+			return {
+				type: "error",
+				icon: CalendarMonthOutlined,
+				message: "All deadlines expired",
+				submessage: "Consider using Marking Voucher instead.",
+				bgColor: "error.50",
+				borderColor: "error.light",
+				textColor: "error.dark"
+			};
+		}
+
+		if (expired.length > 0) {
+			return {
+				type: "error",
+				icon: CalendarMonthOutlined,
+				message: `${expired.length}/${deadlines.length} deadlines expired`,
+				submessage: "Consider using Marking Voucher instead.",
+				bgColor: "error.50",
+				borderColor: "error.light",
+				textColor: "error.dark"
+			};
+		}
+
+		// Check if upcoming deadline is within 7 days
+		if (upcoming.length > 0) {
+			const nextDeadline = upcoming[0].deadline;
+			const daysDiff = Math.ceil((nextDeadline - new Date()) / (1000 * 60 * 60 * 24));
+			
+			if (daysDiff <= 7) {
+				return {
+					type: "warning",
+					icon: CalendarMonthOutlined,
+					message: `Next deadline: ${nextDeadline.toLocaleDateString()}`,
+					submessage: `Deadline due in ${daysDiff} day${daysDiff !== 1 ? 's' : ''}.`,
+					bgColor: "warning.50",
+					borderColor: "warning.light",
+					textColor: "warning.dark"
+				};
+			}
+		}
+
+		// All available - no issues
+		if (upcoming.length > 0) {
+			return {
+				type: "info",
+				icon: CalendarMonthOutlined,
+				message: `Next deadline: ${upcoming[0].deadline.toLocaleDateString()}`,
+				bgColor: "info.50",
+				borderColor: "info.light",
+				textColor: "info.dark"
+			};
+		}
+
+		return {
+			type: "info",
+			icon: CalendarMonthOutlined,
+			message: "No deadline information available",
+			bgColor: "grey.50",
+			borderColor: "grey.300",
+			textColor: "grey.700"
+		};
+	};
+
+	const currentDeadlineScenario = getDeadlineScenario();
+
 	const hasPriceType = (variation, priceType) => {
 		if (!variation || !variation.prices) return false;
 		return variation.prices.some((p) => p.price_type === priceType);
@@ -172,7 +266,7 @@ const MarkingProductCard = React.memo(({
 
 	const handlePriceTypeChange = (priceType) => {
 		if (selectedPriceType === priceType) {
-			setSelectedPriceType("standard");
+			setSelectedPriceType("");
 		} else {
 			setSelectedPriceType(priceType);
 		}
@@ -188,24 +282,19 @@ const MarkingProductCard = React.memo(({
 		}
 	};
 
-	const handleVariationChange = (variationId, checked) => {
-		if (checked) {
-			setSelectedVariations(prev => [...prev, variationId]);
-		} else {
-			setSelectedVariations(prev => prev.filter(id => id !== variationId));
-		}
-	};
 
 	const addToCartConfirmed = () => {
+		const finalPriceType = selectedPriceType || "standard";
+		
 		if (singleVariation) {
 			// Handle single variation
 			const priceObj = singleVariation.prices?.find(
-				(p) => p.price_type === selectedPriceType
+				(p) => p.price_type === finalPriceType
 			);
 			onAddToCart(product, {
 				variationId: singleVariation.id,
 				variationName: singleVariation.name,
-				priceType: selectedPriceType,
+				priceType: finalPriceType,
 				actualPrice: priceObj?.amount,
 			});
 		} else if (selectedVariations.length > 0) {
@@ -213,12 +302,12 @@ const MarkingProductCard = React.memo(({
 			selectedVariations.forEach(variationId => {
 				const variation = product.variations.find(v => v.id === variationId);
 				const priceObj = variation?.prices?.find(
-					(p) => p.price_type === selectedPriceType
+					(p) => p.price_type === finalPriceType
 				);
 				onAddToCart(product, {
 					variationId: variation.id,
 					variationName: variation.name,
-					priceType: selectedPriceType,
+					priceType: finalPriceType,
 					actualPrice: priceObj?.amount,
 				});
 			});
@@ -283,299 +372,207 @@ const MarkingProductCard = React.memo(({
 
 	return (
 		<>
-			<Card elevation={2} className="product-card d-flex flex-column">
-				<CardHeader
-					title={
-						<Box className="d-flex flex-row w-100 align-items-center justify-content-between mb-2">
-							<Typography variant="h6" className="mb-0 w-75">
-								{product.product_name}
-							</Typography>
-							<RuleOutlined />
-						</Box>
+			<Card 
+				elevation={2}
+				variant="marking-product"
+				className="d-flex flex-column"
+				onMouseEnter={handleMouseEnter}
+				onMouseLeave={handleMouseLeave}
+				sx={{                 
+					transform: isHovered ? 'scale(1.02)' : 'scale(1)',
+					transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+					width: '100%', 
+					margin: 0, 
+					padding: 0,
+					display: 'flex',
+					flexDirection: 'column',
+					height: '100%',
+					'& .MuiCardHeader-root': {
+						width: '100%'
 					}
-					className="product-card-header marking-header"
+				}}>
+				{/* Floating Badges */}
+				<Box className="floating-badges-container">
+					<Chip
+						label={product.subject_code}
+						size="small"
+						className="subject-badge"
+						role="img"
+						aria-label={`Subject: ${product.subject_code}`}
+					/>
+					<Chip
+						label="25S"
+						size="small"
+						className="session-badge"
+						role="img"
+						aria-label="Exam session: 25S"
+					/>
+				</Box>
+				
+				<CardHeader 
+					className="product-header"
+					title={
+						<Typography variant="h4" className="product-title">
+							{product.product_name}
+						</Typography>
+					}
+					avatar={
+						<Avatar className="product-avatar">
+							<RuleOutlined className="product-avatar-icon" />
+						</Avatar>
+					}
 				/>
 
-				<CardContent
-					className="d-flex flex-column pb-0 product-card-content"
-					sx={{ marginTop: "0" }}>
-					<Box className="d-flex flex-row w-100 align-items-center mb-2">
-						<Chip
-							variant="outlined"
-							label={product.subject_code}
-							clickable={false}
-						/>
-						{/* <Chip
-								variant="outlined"
-								label={product.exam_session_code}
-								clickable={false}
-							/> */}
-					</Box>
-					{/* Deadline Information */}
-					<Box sx={{ width: "100%", mt: 0, mb: 0 }}>
-						{loading && (
-							<Box className="d-flex align-items-center mb-2">
-								<CircularProgress size={16} sx={{ mr: 1 }} />
-								<Typography variant="caption" color="text.secondary">
-									Loading deadlines...
-								</Typography>
-							</Box>
-						)}
-						{!loading && deadlines.length > 0 && (
-							<Box sx={{ m: 0, p: 0 }} className="justify-content-start">
-								{/* Deadline Status */}
-								<Box sx={{ mb: 0, p: 0 }}>
-									{expired.length > 0 && !allExpired && (
-										<Box sx={{ mb: 0, p: 0 }}>
-											<Alert
-												severity="warning"
-												sx={{ p: 0, backgroundColor: "#fff" }}>
-												<Typography variant="body2">
-													{expired.length} deadline
-													{expired.length > 1 ? "s" : ""} overdue
-												</Typography>
-											</Alert>
-										</Box>
-									)}
-									{upcoming.length > 0 && (
-										<Box sx={{ mb: 2 }}>
-											<Typography
-												variant="body2"
-												color="text.secondary">
-												Upcoming deadline:{" "}
-												{upcoming[0].deadline.toLocaleDateString()}
-											</Typography>
-											{/* <Typography
-												variant="body2"
-												color="text.secondary">
-												Recommended submission:{" "}
-												{upcoming[0].recommended_submit_date.toLocaleDateString()}
-											</Typography> */}
-										</Box>
-									)}
-									{allExpired && (
-										<Box sx={{ mb: 2 }} className="align-self-end">
-											<Alert
-												severity="error"
-												sx={{ p: 0, backgroundColor: "#fff" }}>
-												<Typography variant="body2">
-													All deadlines have expired
-												</Typography>
-											</Alert>
-										</Box>
-									)}
-								</Box>
-								{/* View Deadlines Button */}
-								<Box
-									sx={{ mb: 0 }}
-									className="d-flex justify-content-center">
-									<Button
-										variant="outlined"
-										size="small"
-										onClick={() => setShowModal(true)}
-										color={allExpired ? "error" : "primary"}>
-										<CalendarMonthOutlined className="me-1" />
-										{allExpired
-											? "All Deadlines Expired"
-											: "View Deadlines"}
-										{upcoming.length > 0 &&
-											` (${upcoming.length} upcoming)`}
-									</Button>
-								</Box>
-							</Box>
-						)}
-					</Box>
+				<CardContent sx={{ alignSelf: 'flex-start', width: '100%', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+					{/* Number of submissions info */}
+					<Stack direction="column" spacing={1} className="marking-submissions-info">
+						<Stack direction="row" alignItems="center" spacing={1} className="submissions-info-row">
+							<CalendarMonthOutlined className="submissions-info-icon" />
+							<Typography variant="body2" color="text.secondary" className="submissions-info-title">
+								Number of submissions:
+							</Typography>
+							<Typography variant="body2" className="submissions-info-count">
+								{deadlines.length}
+							</Typography>
+						</Stack>
+					</Stack>
 
-					{/* Variation Section - Fixed height for alignment */}
+					{/* Dynamic deadline message based on current scenario */}
 					<Box
-						sx={{ width: "100%", height: "5.5rem", mt: 2 }}
-						className="d-none">
-						<Typography
-							variant="subtitle2"
-							color="text.secondary"
-							sx={{ mb: 1 }}>
-							Variation:
-						</Typography>
+						className="marking-deadline-message"
+						sx={{
+							bgcolor: currentDeadlineScenario.bgColor,
+							borderColor: currentDeadlineScenario.borderColor,
+						}}>
+						<Stack direction="row" alignItems="flex-start" className="deadline-message-content">
+							{React.createElement(currentDeadlineScenario.icon, {
+								className: "deadline-message-icon",
+								sx: { 
+									color: currentDeadlineScenario.textColor === "info.dark" ? "info.main" : 
+									       currentDeadlineScenario.textColor === "warning.dark" ? "warning.main" :
+									       currentDeadlineScenario.textColor === "error.dark" ? "error.main" : "grey.600",
+								}
+							})}
+							<Box className="deadline-message-text">
+								<Typography variant="caption" color={currentDeadlineScenario.textColor} className="deadline-message-primary">
+									{currentDeadlineScenario.message}
+								</Typography>
+								{currentDeadlineScenario.submessage && (
+									<Typography variant="caption" color={currentDeadlineScenario.textColor} className="deadline-message-secondary">
+										{currentDeadlineScenario.submessage}
+									</Typography>
+								)}
+							</Box>
+						</Stack>
+					</Box>
 
-						{singleVariation && (
-							<FormControl
-								component="fieldset"
-								size="small"
-								sx={{ width: "100%" }}>
-								<FormControlLabel
-									control={
-										<Checkbox
-											size="small"
-											checked={true}
-											disabled={true}
-											className="m-0 align-items-center p-0 me-2"
-											sx={{
-												"& .MuiSvgIcon-root": {
-													fontSize: 14,
-												},
-											}}
-										/>
-									}
-									label={singleVariation.name}
-									sx={{
-										margin: 0,
-										"& .MuiFormControlLabel-label": {
-											fontSize: "0.875rem",
-										},
-									}}
-								/>
-							</FormControl>
-						)}
-
-						{hasVariations && !singleVariation && (
-							<FormControl
-								component="fieldset"
-								size="small"
-								sx={{ width: "100%" }}>
-								<Box className="d-flex flex-column">
-									{product.variations.map((variation) => (
-										<FormControlLabel
-											key={variation.id}
-											className="d-flex flex-row"
-											control={
-												<Checkbox
-													size="small"
-													checked={selectedVariations.includes(
-														variation.id
-													)}
-													onChange={(e) =>
-														handleVariationChange(
-															variation.id,
-															e.target.checked
-														)
-													}
-													sx={{
-														"& .MuiSvgIcon-root": {
-															fontSize: 14,
-														},
-													}}
-													className="m-0 align-items-center p-0 me-2"
-												/>
-											}
-											label={variation.name}
-											sx={{
-												margin: 0,
-												"& .MuiFormControlLabel-label": {
-													fontSize: "0.875rem",
-												},
-											}}
-										/>
-									))}
-								</Box>
-							</FormControl>
-						)}
+					{/* Submission Deadlines Button */}
+					<Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+						<Button
+							variant="outlined"
+							size="small"
+							className="submission-deadlines-button"
+							onClick={() => setShowModal(true)}
+							color={allExpired ? "error" : "primary"}>
+							{allExpired ? "All Deadlines Expired" : "Submission Deadlines"}
+							{upcoming.length > 0 && ` (${upcoming.length} upcoming)`}
+						</Button>
 					</Box>
 				</CardContent>
 
-				<Divider />
-
-				<CardActions
-					sx={{ px: 2, py: 1 }}
-					className="d-flex w-100 product-card-actions">
-					<Grid container spacing={0} className="w-100 mb-2">
-						<Grid size={12}>
-							<Box className="d-flex flex-row ps-2 mb-2">
+				<CardActions>
+					{/* Discount Options Section - matches theme structure */}
+					<Box className="price-container">
+						<Box className="discount-options">
+							<Typography variant="subtitle2" className="discount-title">
+								Discount Options
+							</Typography>
+							<Box className="discount-radio-group">
 								<FormControlLabel
+									className="discount-radio-option"
 									control={
-										<Checkbox
-											size="small"
-											className="p-0 mx-1"
+										<Radio
 											checked={selectedPriceType === "retaker"}
-											disabled={
-												!hasPriceType(currentVariation, "retaker")
-											}
-											onChange={() =>
+											onClick={() =>
 												handlePriceTypeChange("retaker")
 											}
-											sx={{
-												"& .MuiSvgIcon-root": {
-													fontSize: 14,
-												},
-											}}
+											size="small"
+											disabled={!hasPriceType(currentVariation, "retaker")}
 										/>
 									}
-									label="Retaker"
-									sx={{
-										"& .MuiFormControlLabel-label": {
-											fontSize: "0.875rem",
-											color: !hasPriceType(
-												currentVariation,
-												"retaker"
-											)
-												? "text.disabled"
-												: "inherit",
-										},
-									}}
+									label={
+										<Typography
+											variant="subtitle2"
+											className="discount-label">
+											Retaker
+										</Typography>
+									}
 								/>
-
 								<FormControlLabel
+									className="discount-radio-option"
 									control={
-										<Checkbox
-											size="small"
+										<Radio
 											checked={selectedPriceType === "additional"}
-											disabled={
-												!hasPriceType(
-													currentVariation,
-													"additional"
-												)
-											}
-											onChange={() =>
+											onClick={() =>
 												handlePriceTypeChange("additional")
 											}
-											className="p-0 mx-1"
-											sx={{
-												"& .MuiSvgIcon-root": {
-													fontSize: 14,
-												},
-											}}
+											size="small"
+											disabled={!hasPriceType(currentVariation, "additional")}
 										/>
 									}
-									label="Additional Copy"
-									sx={{
-										"& .MuiFormControlLabel-label": {
-											fontSize: "0.875rem",
-											color: !hasPriceType(
-												currentVariation,
-												"additional"
-											)
-												? "text.disabled"
-												: "inherit",
-										},
-									}}
+									label={
+										<Typography
+											variant="subtitle2"
+											className="discount-label">
+											Additional Copy
+										</Typography>
+									}
 								/>
 							</Box>
-						</Grid>
-						<Grid size={8} className="d-flex justify-content-start">
-							<Box
-								sx={{
-									display: "flex",
-									flexDirection: "column",
-									alignItems: "flex-start",
-								}}>
-								<Box
-									sx={{
-										display: "flex",
-										alignItems: "center",
-										mb: 1,
-									}}>
-									{getPrice(currentVariation, selectedPriceType) || (
-										<Typography variant="h6" className="fw-bolder">
-											-
-										</Typography>
-									)}
-								</Box>
+						</Box>
+						{/* Price & Action Section - matches theme structure */}
+						<Box className="price-action-section">
+							<Box className="price-info-row">
+								<Typography variant="h3" className="price-display">
+									{(() => {
+										const finalPriceType = selectedPriceType || "standard";
+										const priceResult = getPrice(currentVariation, finalPriceType);
+										if (priceResult && typeof priceResult === 'object' && priceResult.props) {
+											// Extract price from the JSX structure
+											const priceElement = priceResult.props.children[0];
+											if (priceElement && priceElement.props && priceElement.props.children) {
+												return priceElement.props.children;
+											}
+										}
+										return "£35.00";
+									})()}
+								</Typography>
+								<Tooltip title="Show price details">
+									<Button size="small" className="info-button" onClick={() => setShowPriceModal(true)}>
+										<InfoOutline />
+									</Button>
+								</Tooltip>
 							</Box>
-						</Grid>
-						<Grid size={4} className="d-flex justify-content-end">
-							<Button
-								color="success"
-								variant="contained"
-								size="small"
+							<Box className="price-details-row">
+								<Typography
+									variant="fineprint"
+									className="price-level-text"
+									color="text.secondary">
+									{selectedPriceType === "retaker" ||
+									selectedPriceType === "additional"
+										? "Discount applied"
+										: "Standard pricing"}
+								</Typography>
+								<Typography
+									variant="fineprint"
+									className="vat-status-text"
+									color="text.secondary">
+									Price includes VAT
+								</Typography>
+							</Box>
+							<Button 
+								variant="contained" 
+								className="add-to-cart-button"
 								onClick={handleAddToCart}
 								disabled={
 									allExpired ||
@@ -583,18 +580,11 @@ const MarkingProductCard = React.memo(({
 										!singleVariation &&
 										selectedVariations.length === 0)
 								}
-								aria-label="Add product to cart"
-								sx={{
-									borderRadius: "50%",
-									minWidth: "2rem",
-									width: "2rem",
-									height: "2rem",
-									padding: "4px",
-								}}>
-								<AddShoppingCart sx={{ fontSize: "1.1rem" }} />
+								sx={{ alignSelf: "stretch" }}>
+								<AddShoppingCart />
 							</Button>
-						</Grid>
-					</Grid>
+						</Box>
+					</Box>
 				</CardActions>
 				{renderPriceModal()}
 			</Card>

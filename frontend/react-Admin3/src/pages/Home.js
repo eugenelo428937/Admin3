@@ -5,8 +5,10 @@ import SearchResults from "../components/SearchResults";
 import { Row, Col } from "react-bootstrap";
 import { Typography, Container } from "@mui/material";
 import backgroundVideo from "../assets/video/12595751_2560_1440_30fps.mp4";
+import { useTheme } from "@mui/material/styles";
 
 const Home = () => {
+	const theme = useTheme();
 	const navigate = useNavigate();
 	const [searchResults, setSearchResults] = useState(null);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -170,15 +172,15 @@ const Home = () => {
 					/>
 
 					{/* Content */}
-					<Container className="hero-content d-flex flex-wrap justify-content-center align-items-center">
+					<Container className="hero-content d-flex flex-column flex-wrap justify-content-center align-items-center">
 						<Typography
 							variant="h1"
-							className="color-light__onprimary_lkv">
+							className="">
 							BPP Actuarial Education
 						</Typography>
 						<Typography
 							variant="h2"
-							className="color-light__onprimary_lkv">
+							className="">
 							Online Store
 						</Typography>
 						<div

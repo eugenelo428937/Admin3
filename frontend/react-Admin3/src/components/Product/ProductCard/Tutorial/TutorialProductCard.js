@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import {
 	Button,
@@ -8,19 +8,23 @@ import {
 	CardActions,
 	Typography,
 	Box,
-	Grid,
 	Chip,
 	Stack,
 	Alert,
 	CircularProgress,
-	Badge,
+	Avatar,
+	Radio,
+	FormControlLabel,
+	Tooltip,
 } from "@mui/material";
 import {
 	AddShoppingCart,
-	QuestionAnswerOutlined,
-	ShoppingCart,
+	School,
+	CalendarMonthOutlined,
+	ViewModule,
+	LocationOn,
+	InfoOutline,
 } from "@mui/icons-material";
-import { useCart } from "../../../../contexts/CartContext";
 import { useTutorialChoice } from "../../../../contexts/TutorialChoiceContext";
 import tutorialService from "../../../../services/tutorialService";
 import TutorialChoiceDialog from "./TutorialChoiceDialog";
@@ -44,11 +48,11 @@ const TutorialProductCard = React.memo(
 		const [loading, setLoading] = useState(!preloadedVariations);
 		const [error, setError] = useState(null);
 		const [showChoiceDialog, setShowChoiceDialog] = useState(false);
+		const [isHovered, setIsHovered] = useState(false);
+		const [selectedPriceType, setSelectedPriceType] = useState(""); // Empty means standard pricing
 
-		const { addToCart } = useCart();
 		const {
 			getSubjectChoices,
-			getTotalChoices,
 			showChoicePanelForSubject,
 		} = useTutorialChoice();
 
@@ -110,11 +114,20 @@ const TutorialProductCard = React.memo(
 
 		const summaryInfo = getSummaryInfo();
 
+		const handleMouseEnter = () => {
+			setIsHovered(true);
+		};
+
+		const handleMouseLeave = () => {
+			setIsHovered(false);
+		};
+
 		if (loading) {
 			return (
 				<Card
 					elevation={2}
-					className="product-card d-flex flex-column">
+					variant="tutorial-product"
+					className="d-flex flex-column">
 					<CardContent
 						className="d-flex justify-content-center align-items-center"
 						sx={{ height: "200px" }}>
@@ -136,7 +149,8 @@ const TutorialProductCard = React.memo(
 			return (
 				<Card
 					elevation={2}
-					className="product-card d-flex flex-column justify-content-between">
+					variant="tutorial-product"
+					className="d-flex flex-column justify-content-between">
 					<CardContent>
 						<Alert severity="error">{error}</Alert>
 					</CardContent>
@@ -149,136 +163,245 @@ const TutorialProductCard = React.memo(
 			<>
 				<Card
 					elevation={2}
-					className="product-card tutorial-product-card d-flex flex-column">
+					variant="tutorial-product"
+					onMouseEnter={handleMouseEnter}
+					onMouseLeave={handleMouseLeave}
+					sx={{                 
+						transform: isHovered ? 'scale(1.02)' : 'scale(1)',
+						transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+						display: 'flex',
+						flexDirection: 'column',
+						height: '100%'
+					}}
+					className="d-flex flex-column">
+					{/* Floating Badges */}
+					<Box className="floating-badges-container">
+						<Chip
+							label={product.subject_code || subjectCode}
+							size="small"
+							className="subject-badge"
+							role="img"
+							aria-label={`Subject: ${product.subject_code || subjectCode}`}
+						/>
+						<Chip
+							label="25S"
+							size="small"
+							className="session-badge"
+							role="img"
+							aria-label="Exam session: 25S"
+						/>
+					</Box>
 					<CardHeader
+						className="product-header"
+						sx={{ 
+							width: '100%', 
+							margin: 0, 
+							padding: 0,
+							'& .MuiCardHeader-root': {
+								width: '100%'
+							}
+						}}
 						title={
-							<Box className="d-flex flex-row w-100 align-items-center justify-content-between">
-								<Typography variant="h6" className="mb-0">
-									{location}
-								</Typography>
-								<QuestionAnswerOutlined />
-							</Box>
+							<Typography
+								variant="h4"
+								textAlign="left"
+								className="product-title">
+								{location}
+							</Typography>
 						}
-						className="product-card-header tutorial-header"
+						subheader={
+							<Typography
+								variant="subtitle1"
+								textAlign="left"
+								className="product-subtitle">
+								{subjectCode} Tutorial
+							</Typography>
+						}
+						avatar={
+							<Avatar className="product-avatar">
+								<School className="product-avatar-icon" />
+							</Avatar>
+						}
 					/>
 
-					<CardContent
-						className="product-card-content"
-						sx={{ marginTop: "0" }}>
-						<Box className="d-flex flex-row w-100 align-items-center mb-2">
-							<Chip
-								variant="outlined"
-								label={product.subject_code}
-								clickable={false}
-							/>
-							{hasChoices && (
-								<Badge badgeContent={choiceCount} color="primary">
-									<Chip
-										variant="filled"
-										color="success"
-										label="Choices Made"
-										size="small"
-										sx={{ ml: 1 }}
-									/>
-								</Badge>
-							)}
+					<CardContent sx={{ width: '100%', margin: 0, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+						{/* Tutorial Information Section */}
+						<Box className="tutorial-info-section">
+							<Stack direction="column" className="info-row">
+								<Stack
+									direction="row"
+									alignItems="center"
+									className="info-title">
+									<CalendarMonthOutlined className="info-icon" />
+									<Typography variant="caption" className="info-text">
+										Tutorials available:
+									</Typography>
+								</Stack>
+								<Typography variant="caption" className="info-sub-text">
+									• {summaryInfo.totalEvents} ({variations.length} variations, {hasChoices ? choiceCount + ' selected' : '0 selected'})
+								</Typography>
+							</Stack>
+
+							<Stack direction="column" className="info-row">
+								<Stack
+									direction="row"
+									alignItems="center"
+									className="info-title">
+									<ViewModule className="info-icon" />
+									<Typography variant="caption" className="info-text">
+										Format:
+									</Typography>
+								</Stack>
+								{summaryInfo.distinctDescriptions.map((desc, index) => (
+									<Typography key={index} variant="caption" className="info-sub-text">
+										• {desc}
+									</Typography>
+								))}
+							</Stack>
+
+							<Stack direction="column" className="info-row">
+								<Stack
+									direction="row"
+									alignItems="center"
+									className="info-title">
+									<LocationOn className="info-icon" />
+									<Typography variant="caption" className="info-text">
+										Venue:
+									</Typography>
+								</Stack>
+								{summaryInfo.distinctVenues.map((venue, index) => (
+									<Typography key={index} variant="caption" className="info-sub-text">
+										• {venue}
+									</Typography>
+								))}
+							</Stack>
 						</Box>
-						
+
 						{variations.length === 0 ? (
 							<Box className="text-center text-muted">
 								<Typography variant="body2" color="text.secondary">
-									No tutorial variations available for this subject and
-									location.
+									No tutorial variations available for this subject and location.
 								</Typography>
 							</Box>
 						) : (
-							<Box className="tutorial-summary">
-								<Box sx={{ mb: 2 }}>
-									<Typography variant="body2" sx={{ mb: 1 }}>
-										{summaryInfo.totalEvents} tutorial events available
-									</Typography>
-									
-									<Stack direction="row" spacing={1} sx={{ mb: 1 }} flexWrap="wrap">
-										{summaryInfo.distinctDescriptions.slice(0, 2).map((desc, index) => (
-											<Chip
-												key={index}
-												variant="outlined"
-												label={desc}
-												size="small"
-												color="info"
-											/>
-										))}
-										{summaryInfo.distinctDescriptions.length > 2 && (
-											<Chip
-												variant="outlined"
-												label={`+${summaryInfo.distinctDescriptions.length - 2} more`}
-												size="small"
-												color="default"
-											/>
-										)}
-									</Stack>
-									
-									<Stack direction="row" spacing={1} flexWrap="wrap">
-										{summaryInfo.distinctVenues.slice(0, 2).map((venue, index) => (
-											<Chip
-												key={index}
-												variant="outlined"
-												label={venue}
-												size="small"
-												color="secondary"
-											/>
-										))}
-										{summaryInfo.distinctVenues.length > 2 && (
-											<Chip
-												variant="outlined"
-												label={`+${summaryInfo.distinctVenues.length - 2} more`}
-												size="small"
-												color="default"
-											/>
-										)}
-									</Stack>
-								</Box>
+							<Box className="tutorial-action-buttons" sx={{ display: 'flex', justifyContent: 'center', gap: 1, flexWrap: 'wrap' }}>
+								<Button
+									variant="contained"
+									size="small"
+									color="primary"
+									className="select-tutorial-button"
+									onClick={() => setShowChoiceDialog(true)}>
+									Select Tutorial
+								</Button>
+								{hasChoices && (
+									<Button
+										variant="contained"
+										size="small"
+										color="secondary"
+										className="view-selection-button"
+										onClick={() => showChoicePanelForSubject(subjectCode)}>
+										View Selection
+									</Button>
+								)}
 							</Box>
 						)}
 					</CardContent>
 
-					{variations.length > 0 && (
-						<CardActions sx={{ px: 2, py: 1 }}>
-							<Grid container spacing={2} alignItems="center">
-								<Grid size={{ xs: 12, sm: 6 }}>
-									{hasChoices && (
-										<Typography variant="caption" color="text.secondary">
-											{choiceCount} choice(s) selected
-										</Typography>
-									)}
-								</Grid>
-								<Grid size={{ xs: 12, sm: 6 }}>
-									<Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-										<Button
-											variant="contained"
-											color="secondary"
-											size="small"
-											onClick={() => setShowChoiceDialog(true)}
-										>
-											Select Tutorials
-										</Button>
-										
-										{hasChoices && (
-											<Button
-												variant="contained"
-												color="success"
+					<CardActions>
+						{/* Discount Options Section - matches theme structure */}
+						<Box className="price-container">
+							<Box className="discount-options">
+								<Typography variant="subtitle2" className="discount-title">
+									Discount Options
+								</Typography>
+								<Box className="discount-radio-group">
+									<FormControlLabel
+										className="discount-radio-option"
+										control={
+											<Radio
+												checked={selectedPriceType === "retaker"}
+												onClick={() =>
+													setSelectedPriceType(
+														selectedPriceType === "retaker"
+															? ""
+															: "retaker"
+													)
+												}
 												size="small"
-												onClick={() => showChoicePanelForSubject(subjectCode)}
-												startIcon={<ShoppingCart />}
-											>
-												View Choices
-											</Button>
-										)}
-									</Box>
-								</Grid>
-							</Grid>
-						</CardActions>
-					)}
+											/>
+										}
+										label={
+											<Typography
+												variant="subtitle2"
+												className="discount-label">
+												Retaker
+											</Typography>
+										}
+									/>
+									<FormControlLabel
+										className="discount-radio-option"
+										control={
+											<Radio
+												checked={selectedPriceType === "additional"}
+												onClick={() =>
+													setSelectedPriceType(
+														selectedPriceType === "additional"
+															? ""
+															: "additional"
+													)
+												}
+												size="small"
+											/>
+										}
+										label={
+											<Typography
+												variant="subtitle2"
+												className="discount-label">
+												Additional Copy
+											</Typography>
+										}
+									/>
+								</Box>
+							</Box>
+							{/* Price & Action Section - matches theme structure */}
+							<Box className="price-action-section">
+								<Box className="price-info-row">
+									<Typography variant="h3" className="price-display">
+										{selectedPriceType === "retaker"
+											? "£239.20"
+											: selectedPriceType === "additional"
+											? "£149.50"
+											: "£299.00"}
+									</Typography>
+									<Tooltip title="Show price details">
+										<Button size="small" className="info-button">
+											<InfoOutline />
+										</Button>
+									</Tooltip>
+								</Box>
+								<Box className="price-details-row">
+									<Typography
+										variant="fineprint"
+										className="price-level-text"
+										color="text.secondary">
+										{selectedPriceType === "retaker" ||
+										selectedPriceType === "additional"
+											? "Discount applied"
+											: "Standard pricing"}
+									</Typography>
+									<Typography
+										variant="fineprint"
+										className="vat-status-text"
+										color="text.secondary">
+										Price includes VAT
+									</Typography>
+								</Box>
+								<Button variant="contained" className="add-to-cart-button">
+									<AddShoppingCart />
+								</Button>
+							</Box>
+						</Box>
+					</CardActions>
 				</Card>
 
 				{/* Tutorial Choice Dialog */}

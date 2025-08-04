@@ -12,7 +12,7 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'fullname', 'shortname', 'product_name', 'description', 'code', 
-                 'type', 'variations', 'created_at', 'updated_at', 'is_active']
+                 'type', 'variations', 'created_at', 'updated_at', 'is_active', 'buy_both']
         read_only_fields = ['created_at', 'updated_at']
     
     def get_type(self, obj):

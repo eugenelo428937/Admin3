@@ -49,6 +49,9 @@ const LoginForm = ({
             <Button variant="link" type="button" onClick={() => { onHide(); navigate('/register'); }}>
               Need an account? Register
             </Button>
+            <Button variant="link" type="button" onClick={() => { onHide(); navigate('/register2'); }}>
+              Need an account? Register2
+            </Button>
           </div>
           <div className="text-center">
             <Button 

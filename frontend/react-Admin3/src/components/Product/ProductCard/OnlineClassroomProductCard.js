@@ -1,17 +1,18 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState } from "react";
 import {
 	Button,
 	Card,
 	CardHeader,
 	CardContent,
-	Checkbox,
 	CardActions,
 	FormControlLabel,
-	FormControl,
-	Grid,
+	Radio,
+	RadioGroup,
 	Typography,
 	Box,
-	Divider,
+	Stack,
+	Avatar,
+	Chip,
 	Dialog,
 	DialogTitle,
 	DialogContent,
@@ -26,139 +27,39 @@ import {
 import {
 	InfoOutline,
 	AddShoppingCart,
-	ArrowRight,
-	ArrowDropDown,
+	Computer,
 } from "@mui/icons-material";
-import { useCart } from "../../../contexts/CartContext";
-import { useVAT } from "../../../contexts/VATContext";
 import "../../../styles/product_card.css";
 
 
 const OnlineClassroomProductCard = React.memo(
-	({ product, onAddToCart }) => {
-		const [selectedVariations, setSelectedVariations] = useState([]);
+	({ product, onAddToCart, variant = "online-product", ...props }) => {
+		const [selectedFormat, setSelectedFormat] = useState('live');
+		const [selectedPriceType, setSelectedPriceType] = useState(""); // Empty means standard pricing
+		const [isHovered, setIsHovered] = useState(false);
 		const [showPriceModal, setShowPriceModal] = useState(false);
-		const [selectedPriceType, setSelectedPriceType] = useState("standard");
-		const [showDiscounts, setShowDiscounts] = useState(false);
 
-		const { addToCart } = useCart();
-		const {
-			getPriceDisplay,
-			formatPrice,
-			isProductVATExempt,
-			showVATInclusive,
-		} = useVAT();
-
-		// Memoize variation calculations
-		const variationInfo = useMemo(() => {
-			const hasVariations =
-				product.variations && product.variations.length > 0;
-			const singleVariation =
-				product.variations && product.variations.length === 1
-					? product.variations[0]
-					: null;
-
-			const currentVariation = hasVariations
-				? selectedVariations.length > 0
-					? product.variations.find((v) =>
-							selectedVariations.includes(v.id)
-					  )
-					: singleVariation || product.variations[0]
-				: singleVariation;
-
-			return { hasVariations, singleVariation, currentVariation };
-		}, [product.variations, selectedVariations]);
-
-		// Memoize price calculation to avoid recalculating on every render
-		const getPrice = useMemo(() => {
-			return (variation, priceType) => {
-				if (!variation || !variation.prices) return null;
-				const priceObj = variation.prices.find(
-					(p) => p.price_type === priceType
-				);
-				if (!priceObj) return null;
-
-				// Check if this product is VAT exempt
-				const isVATExempt = isProductVATExempt(product.type);
-
-				// Get price display info from VAT context
-				const priceDisplay = getPriceDisplay(
-					priceObj.amount,
-					0.2,
-					isVATExempt
-				);
-
-				return (
-					<div className="d-flex flex-row align-items-end">
-						<Typography variant="h6" className="fw-lighter w-100">
-							{formatPrice(priceDisplay.displayPrice)}
-						</Typography>
-
-						<Tooltip
-							title="Show all price types"
-							placement="top"
-							className="d-flex flex-row align-self-start">
-							<InfoOutline
-								role="button"
-								className="text-secondary mx-1 fw-light"
-								onClick={() => setShowPriceModal(true)}
-								style={{
-									cursor: "pointer",
-									fontSize: "1rem",
-								}}
-								aria-label="Show price information"
-							/>
-						</Tooltip>						
-						<Typography
-							variant="caption"
-							className="fw-light w-100 align-self-center">
-							{priceDisplay.label}
-						</Typography>
-					</div>
-				);
-			};
-		}, [
-			getPriceDisplay,
-			formatPrice,
-			isProductVATExempt,
-			product.type,
-			showVATInclusive,
-		]);
-
-		const { hasVariations, singleVariation, currentVariation } =
-			variationInfo;
-
-		const hasPriceType = (variation, priceType) => {
-			if (!variation || !variation.prices) return false;
-			return variation.prices.some((p) => p.price_type === priceType);
+		// Format options for online classroom
+		const formatOptions = {
+			live: {
+				price: 249,
+				label: "The Hub (VLE)",
+				description: "Tutorial recordings delivered via the BPP Learning Hub",
+			},
 		};
 
-		// Reset price type to standard if current selection is not available for the current variation
-		useEffect(() => {
-			if (currentVariation && selectedPriceType !== "standard") {
-				if (!hasPriceType(currentVariation, selectedPriceType)) {
-					setSelectedPriceType("standard");
-				}
-			}
-		}, [currentVariation, selectedPriceType]);
-
-		const handlePriceTypeChange = (priceType) => {
-			if (selectedPriceType === priceType) {
-				setSelectedPriceType("standard");
-			} else {
-				setSelectedPriceType(priceType);
-			}
+		const handleFormatChange = (event) => {
+			setSelectedFormat(event.target.value);
 		};
 
-		const handleVariationChange = (variationId, checked) => {
-			if (checked) {
-				setSelectedVariations((prev) => [...prev, variationId]);
-			} else {
-				setSelectedVariations((prev) =>
-					prev.filter((id) => id !== variationId)
-				);
-			}
+		const handleMouseEnter = () => {
+			setIsHovered(true);
 		};
+
+		const handleMouseLeave = () => {
+			setIsHovered(false);
+		};
+
 
 		const renderPriceModal = () => (
 			<Dialog
@@ -181,36 +82,31 @@ const OnlineClassroomProductCard = React.memo(
 					<Table size="small">
 						<TableHead>
 							<TableRow>
-								<TableCell>Variation</TableCell>
+								<TableCell>Format</TableCell>
 								<TableCell>Price Type</TableCell>
 								<TableCell>Price</TableCell>
 							</TableRow>
 						</TableHead>
 						<TableBody>
-							{product.variations &&
-								product.variations.map(
-									(variation) =>
-										variation.prices &&
-										variation.prices.map((price) => (
-											<TableRow
-												key={`${variation.id}-${price.price_type}`}>
-												<TableCell>{variation.name}</TableCell>
-												<TableCell>{price.price_type}</TableCell>
-												<TableCell>
-													{(() => {
-														const priceDisplay = getPrice(
-															variation,
-															price.price_type
-														);
-														if (priceDisplay) {
-															return priceDisplay;
-														}
-														return formatPrice(price.amount);
-													})()}
-												</TableCell>
-											</TableRow>
-										))
-								)}
+							{Object.entries(formatOptions).map(([formatKey, format]) => (
+								<React.Fragment key={formatKey}>
+									<TableRow>
+										<TableCell>{format.label}</TableCell>
+										<TableCell>Standard</TableCell>
+										<TableCell>£{format.price}</TableCell>
+									</TableRow>
+									<TableRow>
+										<TableCell>{format.label}</TableCell>
+										<TableCell>Retaker</TableCell>
+										<TableCell>£{(format.price * 0.8).toFixed(2)}</TableCell>
+									</TableRow>
+									<TableRow>
+										<TableCell>{format.label}</TableCell>
+										<TableCell>Additional Copy</TableCell>
+										<TableCell>£{(format.price * 0.5).toFixed(2)}</TableCell>
+									</TableRow>
+								</React.Fragment>
+							))}
 						</TableBody>
 					</Table>
 				</DialogContent>
@@ -220,294 +116,228 @@ const OnlineClassroomProductCard = React.memo(
 			</Dialog>
 		);
 
-		// Render Online Classroom Content
-		const renderContent = () => (
-			<>
-				<CardContent
-					className="d-flex flex-column pb-0"
-					sx={{ marginTop: "0" }}>
-					<Box
-						sx={{ height: "5rem" }}
-						className="d-flex align-items-center">
-						<Typography variant="h5" className="mb-0">
-							{product.product_name}
-						</Typography>
-					</Box>
-
-					{/* Variation Section - Fixed height for alignment */}
-					<Box sx={{ width: "100%", height: "5.5rem", mt: 2 }}>
-						<Typography
-							variant="subtitle2"
-							color="text.secondary"
-							sx={{ mb: 1 }}>
-							Variation:
-						</Typography>
-
-						{singleVariation && (
-							<FormControl
-								component="fieldset"
-								size="small"
-								sx={{ width: "100%" }}>
-								<FormControlLabel
-									control={
-										<Checkbox
-											size="small"
-											checked={true}
-											disabled={true}
-											className="m-0 align-items-center p-0 me-2"
-											sx={{
-												"& .MuiSvgIcon-root": {
-													fontSize: 14,
-												},
-											}}
-										/>
-									}
-									label={singleVariation.name}
-									sx={{
-										margin: 0,
-										"& .MuiFormControlLabel-label": {
-											fontSize: "0.875rem",
-										},
-									}}
-								/>
-							</FormControl>
-						)}
-
-						{hasVariations && !singleVariation && (
-							<FormControl
-								component="fieldset"
-								size="small"
-								sx={{ width: "100%" }}>
-								<Box className="d-flex flex-column">
-									{product.variations.map((variation) => (
-										<FormControlLabel
-											key={variation.id}
-											className="d-flex flex-row"
-											control={
-												<Checkbox
-													size="small"
-													checked={selectedVariations.includes(
-														variation.id
-													)}
-													onChange={(e) =>
-														handleVariationChange(
-															variation.id,
-															e.target.checked
-														)
-													}
-													sx={{
-														"& .MuiSvgIcon-root": {
-															fontSize: 14,
-														},
-													}}
-													className="m-0 align-items-center p-0 me-2"
-												/>
-											}
-											label={variation.name}
-											sx={{
-												margin: 0,
-												"& .MuiFormControlLabel-label": {
-													fontSize: "0.875rem",
-												},
-											}}
-										/>
-									))}
-								</Box>
-							</FormControl>
-						)}
-					</Box>
-				</CardContent>
-
-				<Divider />
-
-				<CardActions sx={{ px: 2, py: 1 }} className="d-flex w-100">
-					<Grid container spacing={0} className="w-100 mb-3">
-						<Grid size={12} sx={{ height: "4rem" }}>
-							<Typography
-								variant="body2"
-								color="text-primary"
-								sx={{ cursor: "pointer" }}
-								onClick={() => setShowDiscounts(!showDiscounts)}
-								role="button"
-								aria-expanded={showDiscounts}
-								aria-label="Toggle discount options">
-								Discounts:
-								{showDiscounts ? <ArrowDropDown /> : <ArrowRight />}
-							</Typography>
-
-							{showDiscounts && (
-								<>
-									<Box className="d-flex flex-row ps-2">
-										<FormControlLabel
-											control={
-												<Checkbox
-													size="small"
-													className="p-0 mx-1"
-													checked={selectedPriceType === "retaker"}
-													disabled={
-														!hasPriceType(
-															currentVariation,
-															"retaker"
-														)
-													}
-													onChange={() =>
-														handlePriceTypeChange("retaker")
-													}
-													sx={{
-														"& .MuiSvgIcon-root": {
-															fontSize: 14,
-														},
-													}}
-												/>
-											}
-											label="Retaker"
-											sx={{
-												"& .MuiFormControlLabel-label": {
-													fontSize: "0.875rem",
-													color: !hasPriceType(
-														currentVariation,
-														"retaker"
-													)
-														? "text.disabled"
-														: "inherit",
-												},
-											}}
-										/>
-
-										<br />
-
-										<FormControlLabel
-											control={
-												<Checkbox
-													size="small"
-													checked={
-														selectedPriceType === "additional"
-													}
-													disabled={
-														!hasPriceType(
-															currentVariation,
-															"additional"
-														)
-													}
-													onChange={() =>
-														handlePriceTypeChange("additional")
-													}
-													className="p-0 mx-1"
-													sx={{
-														"& .MuiSvgIcon-root": {
-															fontSize: 14,
-														},
-													}}
-												/>
-											}
-											label="Additional Copy"
-											sx={{
-												"& .MuiFormControlLabel-label": {
-													fontSize: "0.875rem",
-													color: !hasPriceType(
-														currentVariation,
-														"additional"
-													)
-														? "text.disabled"
-														: "inherit",
-												},
-											}}
-										/>
-									</Box>
-								</>
-							)}
-						</Grid>
-						<Grid size={8} className="d-flex justify-content-start">
-							<Box
-								sx={{
-									display: "flex",
-									flexDirection: "column",
-									alignItems: "flex-start",
-								}}>
-								<Box
-									sx={{
-										display: "flex",
-										alignItems: "center",
-										mb: 1,
-									}}>
-									{getPrice(currentVariation, selectedPriceType) || (
-										<Typography variant="h6" className="fw-bolder">
-											-
-										</Typography>
-									)}
-								</Box>
-							</Box>
-						</Grid>
-						<Grid size={4} className="d-flex justify-content-end">
-							<Button
-								color="success"
-								variant="contained"
-								size="small"
-								onClick={() => {
-									if (singleVariation) {
-										// Handle single variation
-										const priceObj = singleVariation.prices?.find(
-											(p) => p.price_type === selectedPriceType
-										);
-										onAddToCart(product, {
-											variationId: singleVariation.id,
-											variationName: singleVariation.name,
-											priceType: selectedPriceType,
-											actualPrice: priceObj?.amount,
-										});
-									} else if (selectedVariations.length > 0) {
-										// Handle multiple variations - add each as separate cart item
-										selectedVariations.forEach((variationId) => {
-											const variation = product.variations.find(
-												(v) => v.id === variationId
-											);
-											const priceObj = variation?.prices?.find(
-												(p) => p.price_type === selectedPriceType
-											);
-											onAddToCart(product, {
-												variationId: variation.id,
-												variationName: variation.name,
-												priceType: selectedPriceType,
-												actualPrice: priceObj?.amount,
-											});
-										});
-									}
-								}}
-								disabled={
-									hasVariations &&
-									!singleVariation &&
-									selectedVariations.length === 0
-								}
-								aria-label="Add product to cart"
-								sx={{
-									borderRadius: "50%",
-									minWidth: "2rem",
-									width: "2rem",
-									height: "2rem",
-									padding: "4px",
-								}}>
-								<AddShoppingCart sx={{ fontSize: "1.1rem" }} />
-							</Button>
-						</Grid>
-					</Grid>
-				</CardActions>
-			</>
-		);
 
 		return (
 			<Card
 				elevation={2}
-				className="product-card d-flex flex-column justify-content-between">
+				variant={variant}
+				onMouseEnter={handleMouseEnter}
+				onMouseLeave={handleMouseLeave}
+				sx={{                 
+					transform: isHovered ? 'scale(1.02)' : 'scale(1)',
+					transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+					display: 'flex',
+					flexDirection: 'column',
+					height: '100%'
+				}}
+				className="d-flex flex-column"
+				{...props}>
+				{/* Floating Badges */}
+				<Box className="floating-badges-container">
+					<Chip
+						label={product.subject_code || "CP1"}
+						size="small"
+						className="subject-badge"
+						role="img"
+						aria-label={`Subject: ${product.subject_code || "CP1"}`}
+					/>
+					<Chip
+						label="25S"
+						size="small"
+						className="session-badge"
+						role="img"
+						aria-label="Exam session: 25S"
+					/>
+				</Box>
+
 				<CardHeader
+					className="product-header"
+					sx={{ 
+						width: '100%', 
+						margin: 0, 
+						padding: 0,
+						'& .MuiCardHeader-root': {
+							width: '100%'
+						}
+					}}
 					title={
-						<Typography variant="h6" className="mb-0">
-							Subject {product.subject_code} - Online Classroom
+						<Typography
+							variant="h4"
+							textAlign="left"
+							className="product-title">
+							Online Classroom
 						</Typography>
-					}					s
-					className="product-card-header d-flex align-items-center online-classroom-header"					
+					}
+					subheader={
+						<Typography
+							variant="subtitle1"
+							textAlign="left"
+							className="product-subtitle">
+							{product.subject_code} - {product.product_name || "Actuarial Practice"}
+						</Typography>
+					}
+					avatar={
+						<Avatar className="product-avatar">
+							<Computer className="product-avatar-icon" />
+						</Avatar>
+					}
 				/>
 
-				{renderContent()}
+				<CardContent sx={{ alignSelf: 'flex-start', width: '100%', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+					<Box className="product-variations">
+						<Typography variant="subtitle2" className="variations-title">
+							Access Options
+						</Typography>
+
+						<RadioGroup
+							value={selectedFormat}
+							onChange={handleFormatChange}
+							className="variations-group"
+							sx={{ margin: 0 }}>
+							<Stack spacing={1} sx={{ margin: 0 }}>
+								{Object.entries(formatOptions).map(([key, option]) => (
+									<Box key={key} className="variation-option" sx={{ margin: 0 }}>
+										<FormControlLabel
+											value={key}
+											control={<Radio size="small" />}
+											sx={{ margin: 0 }}
+											label={
+												<Box className="variation-label">
+													<Box
+														display="flex"
+														justifyContent="space-between"
+														alignItems="center">
+														<Typography
+															variant="body2"
+															fontWeight={
+																selectedFormat === key ? 600 : 400
+															}>
+															{option.label}
+														</Typography>
+														<Typography
+															variant="body2"
+															color="primary.main"
+															fontWeight={600}>
+															£{option.price}
+														</Typography>
+													</Box>
+													<Typography
+														variant="caption"
+														color="text.secondary"
+														className="variation-description">
+														{option.description}
+													</Typography>
+												</Box>
+											}
+											className="variation-control"
+										/>
+									</Box>
+								))}
+							</Stack>
+						</RadioGroup>
+					</Box>
+				</CardContent>
+
+				<CardActions sx={{ width: '100%', margin: 0, padding: 2 }}>
+					{/* Discount Options Section - matches theme structure */}
+					<Box className="price-container">
+						<Box className="discount-options">
+							<Typography variant="subtitle2" className="discount-title">
+								Discount Options
+							</Typography>
+							<Box className="discount-radio-group">
+								<FormControlLabel
+									className="discount-radio-option"
+									control={
+										<Radio
+											checked={selectedPriceType === "retaker"}
+											onClick={() =>
+												setSelectedPriceType(
+													selectedPriceType === "retaker"
+														? ""
+														: "retaker"
+												)
+											}
+											size="small"
+										/>
+									}
+									label={
+										<Typography
+											variant="subtitle2"
+											className="discount-label">
+											Retaker
+										</Typography>
+									}
+								/>
+								<FormControlLabel
+									className="discount-radio-option"
+									control={
+										<Radio
+											checked={selectedPriceType === "additional"}
+											onClick={() =>
+												setSelectedPriceType(
+													selectedPriceType === "additional"
+														? ""
+														: "additional"
+												)
+											}
+											size="small"
+										/>
+									}
+									label={
+										<Typography
+											variant="subtitle2"
+											className="discount-label">
+											Additional Copy
+										</Typography>
+									}
+								/>
+							</Box>
+						</Box>
+						{/* Price & Action Section - matches theme structure */}
+						<Box className="price-action-section">
+							<Box className="price-info-row">
+								<Typography variant="h3" className="price-display">
+									{selectedPriceType === "retaker"
+										? `£${(
+												formatOptions[selectedFormat].price * 0.8
+										  ).toFixed(2)}`
+										: selectedPriceType === "additional"
+										? `£${(
+												formatOptions[selectedFormat].price * 0.5
+										  ).toFixed(2)}`
+										: `£${formatOptions[selectedFormat].price}`}
+								</Typography>
+								<Tooltip title="Show price details">
+									<Button size="small" className="info-button">
+										<InfoOutline />
+									</Button>
+								</Tooltip>
+							</Box>
+							<Box className="price-details-row">
+								<Typography
+									variant="fineprint"
+									className="price-level-text"
+									color="text.secondary">
+									{selectedPriceType === "retaker"
+										? "Retaker discount applied"
+										: selectedPriceType === "additional"
+										? "Additional copy discount applied"
+										: "Standard pricing"}
+								</Typography>
+								<Typography
+									variant="fineprint"
+									className="vat-status-text"
+									color="text.secondary">
+									Price includes VAT
+								</Typography>
+							</Box>
+							<Button variant="contained" className="add-to-cart-button">
+								<AddShoppingCart />
+							</Button>
+						</Box>
+					</Box>
+				</CardActions>
 				{renderPriceModal()}
 			</Card>
 		);

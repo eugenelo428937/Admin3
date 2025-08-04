@@ -269,9 +269,9 @@ const theme = createTheme({
 				{
 					props: { variant: "tutorial-product" },
 					style: {
-						minWidth: "21rem",
-						maxWidth: "21rem",
-						height: "34rem !important",
+						minWidth: "20rem",
+						maxWidth: "20rem",
+						height: "31.6rem !important",
 						overflow: "visible",
 						aspectRatio: "5/7",
 						boxShadow: "var(--Paper-shadow)",
@@ -360,6 +360,7 @@ const theme = createTheme({
 						//  content styling
 						"& .MuiCardContent-root": {
 							padding: liftKitTheme.spacing.md,
+							paddingTop: liftKitTheme.spacing.lg,
 							// Chips section
 							"& .product-chips": {
 								display: "flex",
@@ -586,9 +587,9 @@ const theme = createTheme({
 				{
 					props: { variant: "material-product" },
 					style: {
-						minWidth: "22rem",
-						maxWidth: "22rem",
-						height: "34rem !important",
+						minWidth: "20rem",
+						maxWidth: "20rem",
+						height: "31.6rem !important",
 						overflow: "visible",
 						aspectRatio: "5/7",
 						boxShadow: "var(--Paper-shadow)",
@@ -641,6 +642,7 @@ const theme = createTheme({
 							color: "#ffffff",
 
 							height: "7.43rem",
+							width: "100%",
 							padding: "1rem",
 							boxShadow: "var(--shadow-sm)",
 							display: "flex",
@@ -679,7 +681,12 @@ const theme = createTheme({
 						//  content styling
 						"& .MuiCardContent-root": {
 							padding: liftKitTheme.spacing.md,
-							height: "auto",
+							paddingTop: liftKitTheme.spacing.lg,
+							flex: 1,
+							display: "flex",
+							flexDirection: "column",
+							justifyContent: "flex-start",
+							alignSelf: "flex-start",
 
 							// Chips section
 							"& .product-chips": {
@@ -722,12 +729,19 @@ const theme = createTheme({
 									justifyContent: "flex-start",
 									width: "100%",
 									"& .variation-option": {
+										border: "1px solid",
+										borderColor: "divider",
+										borderRadius: 1,
+										padding: liftKitTheme.spacing.sm,
 										marginBottom: liftKitTheme.spacing.xs2,
 										marginLeft: liftKitTheme.spacing.xs2,
 										width: "100%",
 										color: colorTheme.bpp.sky["100"],
 										transition: "all 0.2s ease-in-out",
-										"& .MuiCheckbox-root": {
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "space-between",
+										"& .MuiRadio-root": {
 											padding: liftKitTheme.spacing.sm,
 											width: liftKitTheme.spacing.md,
 											height: liftKitTheme.spacing.md,
@@ -742,8 +756,31 @@ const theme = createTheme({
 											boxShadow: "var(--Paper-shadow)",
 											backdropFilter: "saturate(2.4)",
 										},
+										"& .variation-control": {
+											margin: 0,
+											flex: 1,
+										},
 										"& .variation-label": {
 											marginLeft: liftKitTheme.spacing.xs,
+										},
+										"& .variation-price": {
+											paddingRight: liftKitTheme.spacing.md,
+										},
+										// Buy Both specific styling
+										"&.buy-both-option": {
+											borderColor: "secondary.main",
+											backgroundColor: "rgba(156, 39, 176, 0.05)", // Light secondary color
+											"& .MuiRadio-root": {
+												color: "secondary.main",
+											},
+											"& .buy-both-label": {
+												fontWeight: 600,
+												color: "secondary.main",
+											},
+											"& .buy-both-price": {
+												color: "secondary.main",
+												fontWeight: 600,
+											},
 										},
 									},
 								},
@@ -895,9 +932,9 @@ const theme = createTheme({
 				{
 					props: { variant: "bundle-product" },
 					style: {
-						minWidth: "21rem",
-						maxWidth: "21rem",
-						height: "34rem !important",
+						minWidth: "20rem",
+						maxWidth: "20rem",
+						height: "31.6rem !important",
 						overflow: "visible",
 						aspectRatio: "5/7",
 						boxShadow: "var(--Paper-shadow)",
@@ -1020,6 +1057,7 @@ const theme = createTheme({
 						//  content styling
 						"& .MuiCardContent-root": {
 							padding: liftKitTheme.spacing.md,
+							paddingTop: liftKitTheme.spacing.lg,
 							// Chips section
 							"& .product-chips": {
 								display: "flex",
@@ -1209,9 +1247,9 @@ const theme = createTheme({
 				{
 					props: { variant: "online-product" },
 					style: {
-						minWidth: "21rem",
-						maxWidth: "21rem",
-						height: "34rem !important",
+						minWidth: "20rem",
+						maxWidth: "20rem",
+						height: "31.6rem !important",
 						overflow: "visible",
 						aspectRatio: "5/7",
 						boxShadow: "var(--Paper-shadow)",
@@ -1302,6 +1340,7 @@ const theme = createTheme({
 						//  content styling
 						"& .MuiCardContent-root": {
 							padding: liftKitTheme.spacing.md,
+							paddingTop: liftKitTheme.spacing.lg,
 							// Chips section
 							"& .product-chips": {
 								display: "flex",
@@ -1341,8 +1380,6 @@ const theme = createTheme({
 									justifyContent: "flex-start",
 									width: "100%",
 									"& .variation-option": {
-										marginBottom: liftKitTheme.spacing.xs2,
-										marginLeft: liftKitTheme.spacing.xs2,
 										width: "100%",
 										color: colorTheme.bpp.cobalt["100"],
 										transition: "all 0.2s ease-in-out",
@@ -1351,6 +1388,7 @@ const theme = createTheme({
 										borderRadius: liftKitTheme.spacing.xs,
 										padding: liftKitTheme.spacing.md,
 										backgroundColor: "transparent",
+										
 										"&:hover": {
 											boxShadow: "var(--Paper-shadow)",
 											backdropFilter: "saturate(2.4)",
@@ -1369,9 +1407,10 @@ const theme = createTheme({
 										},
 										"& .variation-label": {
 											marginLeft: liftKitTheme.spacing.xs,
-											width: "100%",
 											"& .variation-description": {
+												marginTop: liftKitTheme.spacing.xs,
 												textAlign: "left",
+												display: "block",
 											},
 										},
 									},
@@ -1519,9 +1558,9 @@ const theme = createTheme({
 				{
 					props: { variant: "marking-product" },
 					style: {
-						minWidth: "21rem",
-						maxWidth: "21rem",
-						height: "34rem !important",
+						minWidth: "20rem",
+						maxWidth: "20rem",
+						height: "31.6rem !important",
 						overflow: "visible",
 						aspectRatio: "5/7",
 						boxShadow: "var(--Paper-shadow)",
@@ -1610,6 +1649,7 @@ const theme = createTheme({
 						//  content styling
 						"& .MuiCardContent-root": {
 							padding: liftKitTheme.spacing.md,
+							paddingTop: liftKitTheme.spacing.lg,
 							// Chips section
 							"& .product-chips": {
 								display: "flex",
@@ -1802,9 +1842,9 @@ const theme = createTheme({
 				{
 					props: { variant: "marking-voucher-product" },
 					style: {
-						minWidth: "21rem",
-						maxWidth: "21rem",
-						height: "34rem !important",
+						minWidth: "20rem",
+						maxWidth: "20rem",
+						height: "31.6rem !important",
 						overflow: "visible",
 						aspectRatio: "5/7",
 						boxShadow: "var(--Paper-shadow)",
@@ -1893,6 +1933,7 @@ const theme = createTheme({
 						//  content styling
 						"& .MuiCardContent-root": {
 							padding: liftKitTheme.spacing.md,
+							paddingTop: liftKitTheme.spacing.lg,
 							// Chips section
 							"& .product-chips": {
 								display: "flex",

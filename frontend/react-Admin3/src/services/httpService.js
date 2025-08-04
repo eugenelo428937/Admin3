@@ -30,6 +30,12 @@ const fetchCsrfToken = async () => {
         const response = await axios.get(`${config.authUrl}/csrf/`, {
             withCredentials: true
         });
+        
+        // Log session establishment for debugging
+        if (process.env.NODE_ENV === 'development' && response.data.sessionKey) {
+            console.log('🔐 [httpService] Session established:', response.data.sessionKey);
+        }
+        
         return response.data.csrfToken;
     } catch (error) {
         logger.error("Error fetching CSRF token:", error);
@@ -38,12 +44,28 @@ const fetchCsrfToken = async () => {
 };
 httpService.interceptors.request.use(
 	async (config) => {
-		// Add CSRF token
-		const csrfToken = getCookie("csrftoken");
+		// Add CSRF token - only fetch if cookie doesn't exist AND it's required for the request
+		let csrfToken = getCookie("csrftoken");
+		
+		// Only add CSRF token if we have one from cookie
+		// Don't fetch new token to avoid creating new session
 		if (csrfToken) {
 			config.headers["X-CSRFToken"] = csrfToken;
 		} else {
-			csrfToken = await fetchCsrfToken();
+			// For POST/PUT/PATCH/DELETE requests that need CSRF, try to get token without creating new session
+			const isModifyingRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method?.toUpperCase());
+			if (isModifyingRequest && !config.url?.includes('/csrf/')) {
+				// Try to fetch CSRF token only for non-CSRF endpoints
+				try {
+					csrfToken = await fetchCsrfToken();
+					if (csrfToken) {
+						config.headers["X-CSRFToken"] = csrfToken;
+					}
+				} catch (error) {
+					console.warn("Failed to fetch CSRF token:", error);
+					// Continue without CSRF token - let Django handle the error
+				}
+			}
 		}
 
 		const token = localStorage.getItem("token");
