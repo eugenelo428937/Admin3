@@ -77,7 +77,7 @@ const ProductCardsSection = () => {
 			</Typography>
 
 			<Grid container spacing={4} sx={{ mb: 6, alignItems: "flex-start" }}>
-				<Grid item xs={12} sm={6} lg={4}>
+				<Grid size={{ xs: 12, sm: 6, lg: 4 }}>
 					<Typography variant="h6" gutterBottom>
 						Study Materials
 					</Typography>
@@ -90,7 +90,7 @@ const ProductCardsSection = () => {
 					<BalancedProductCard />
 				</Grid>
 
-				<Grid item xs={12} sm={6} lg={4}>
+				<Grid size={{ xs: 12, sm: 6, lg: 4 }}>
 					<Typography variant="h6" gutterBottom>
 						Tutorial
 					</Typography>
@@ -103,7 +103,7 @@ const ProductCardsSection = () => {
 					<EnhancedTutorialProductCard />
 				</Grid>
 
-				<Grid item xs={12} sm={6} lg={4}>
+				<Grid size={{ xs: 12, sm: 6, lg: 4 }}>
 					<Typography variant="h6" gutterBottom>
 						Online Classroom
 					</Typography>
@@ -116,7 +116,7 @@ const ProductCardsSection = () => {
 					<EnhancedOnlineClassroomProductCard />
 				</Grid>
 
-				<Grid item xs={12} sm={6} lg={4}>
+				<Grid size={{ xs: 12, sm: 6, lg: 4 }}>
 					<Typography variant="h6" gutterBottom>
 						Bundle
 					</Typography>
@@ -129,7 +129,7 @@ const ProductCardsSection = () => {
 					<EnhancedBundleProductCard />
 				</Grid>
 
-				<Grid item xs={12} sm={6} lg={4}>
+				<Grid size={{ xs: 12, sm: 6, lg: 4 }}>
 					<Typography variant="h6" gutterBottom>
 						Marking
 					</Typography>
@@ -142,7 +142,7 @@ const ProductCardsSection = () => {
 					<MarkingProductCard />
 				</Grid>
 
-				<Grid item xs={12} sm={6} lg={4}>
+				<Grid size={{ xs: 12, sm: 6, lg: 4 }}>
 					<Typography variant="h6" gutterBottom>
 						Marking Voucher
 					</Typography>
@@ -155,7 +155,7 @@ const ProductCardsSection = () => {
 					<EnhancedMarkingVoucherProductCard />
 				</Grid>
 
-				<Grid item xs={12} sm={6} lg={4}>
+				<Grid size={{ xs: 12, sm: 6, lg: 4 }}>
 					<Typography variant="h6" gutterBottom>
 						Assessment/Mock Exam
 					</Typography>
@@ -174,7 +174,7 @@ const ProductCardsSection = () => {
 
 			<Grid container spacing={3} sx={{ mb: 4 }}>
 				{/* Enhanced Compact Card */}
-				<Grid item xs={12} md={4}>
+				<Grid size={{ xs: 12, sm: 6}}>
 					<Typography variant="h6" gutterBottom>
 						Enhanced Compact Card
 					</Typography>
@@ -182,7 +182,7 @@ const ProductCardsSection = () => {
 				</Grid>
 
 				{/* Enhanced Horizontal Card */}
-				<Grid item xs={12} md={4}>
+				<Grid size={{ xs: 12, sm: 6}}>
 					<Typography variant="h6" gutterBottom>
 						Enhanced Horizontal Layout
 					</Typography>
@@ -190,7 +190,7 @@ const ProductCardsSection = () => {
 				</Grid>
 
 				{/* Enhanced Minimal Card */}
-				<Grid item xs={12} md={4}>
+				<Grid size={{ xs: 12, sm: 6}}>
 					<Typography variant="h6" gutterBottom>
 						Enhanced Minimal Style
 					</Typography>
@@ -205,7 +205,7 @@ const ProductCardsSection = () => {
 
 			<Grid container spacing={3}>
 				{/* Compact Card */}
-				<Grid item xs={12} md={4}>
+				<Grid size={{ xs: 12, sm: 6}}>
 					<Typography variant="h6" gutterBottom>
 						Compact Card
 					</Typography>
@@ -235,7 +235,7 @@ const ProductCardsSection = () => {
 				</Grid>
 
 				{/* Horizontal Card */}
-				<Grid item xs={12} md={4}>
+				<Grid size={{ xs: 12, sm: 6}}>
 					<Typography variant="h6" gutterBottom>
 						Horizontal Layout
 					</Typography>
@@ -272,7 +272,7 @@ const ProductCardsSection = () => {
 				</Grid>
 
 				{/* Minimal Card */}
-				<Grid item xs={12} md={4}>
+				<Grid size={{ xs: 12, sm: 6}}>
 					<Typography variant="h6" gutterBottom>
 						Minimal Style
 					</Typography>

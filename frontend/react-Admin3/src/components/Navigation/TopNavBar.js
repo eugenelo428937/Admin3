@@ -10,7 +10,7 @@ import {
 	AccountCircle as PersonIcon,
 } from "@mui/icons-material";
 import { useCart } from "../../contexts/CartContext";
-import LoginForm from "../User/LoginForm";
+import AuthModal from "./AuthModal";
 import CartPanel from "../Ordering/CartPanel";
 
 const TopNavBar = () => {
@@ -18,27 +18,17 @@ const TopNavBar = () => {
 	const {
 		isAuthenticated,
 		user,
-		isLoading,
-		login,
 		logout,
 	} = useAuth();
-	const [showLoginModal, setShowLoginModal] = useState(false);
+	const [showAuthModal, setShowAuthModal] = useState(false);
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [showCartPanel, setShowCartPanel] = useState(false);
 
-	const [formData, setFormData] = useState({
-		email: "",
-		password: "",
-	});
-
-	// Error and loading states
-	const [loginError, setLoginError] = useState("");
-
-	// Listen for navigation state to auto-trigger login modal
+	// Listen for navigation state to auto-trigger auth modal
 	useEffect(() => {
 		if (location.state?.showLogin && !isAuthenticated) {
-			setShowLoginModal(true);
+			setShowAuthModal(true);
 			// Clear the state to prevent repeated triggering
 			navigate(location.pathname, { replace: true, state: null });
 		}
@@ -51,56 +41,24 @@ const TopNavBar = () => {
 		}
 	}, [isAuthenticated]);
 
-	// Listen for custom event to show login modal (from CartPanel checkout)
+	// Listen for custom event to show auth modal (from CartPanel checkout)
 	useEffect(() => {
-		const handleShowLoginModal = () => {
+		const handleShowAuthModal = () => {
 			if (!isAuthenticated) {
-				setShowLoginModal(true);
+				setShowAuthModal(true);
 			}
 		};
 
-		window.addEventListener("show-login-modal", handleShowLoginModal);
+		window.addEventListener("show-login-modal", handleShowAuthModal);
 
 		return () => {
-			window.removeEventListener("show-login-modal", handleShowLoginModal);
+			window.removeEventListener("show-login-modal", handleShowAuthModal);
 		};
 	}, [isAuthenticated]);
 
-	// Handle closing the modal and resetting form data
-	const handleClose = () => {
-		setShowLoginModal(false);
-		setFormData({
-			// Reset form data
-			email: "",
-			password: "",
-		});
-	};
-
-	const handleInputChange = (e) => {
-		setFormData({
-			...formData,
-			[e.target.name]: e.target.value,
-		});
-	};
-
-	// Handle login
-	const handleLogin = async (e) => {
-		e.preventDefault();
-		try {
-			setLoginError("");
-			const result = await login(formData);
-			if (result.status === "error") {
-				setLoginError(result.message);
-			} else {
-				setShowLoginModal(false);
-				setFormData((prevState) => ({
-					...prevState,
-					password: "",
-				}));
-			}
-		} catch (err) {
-			setLoginError(err.message || "Login failed");
-		}
+	// Handle closing the auth modal
+	const handleCloseAuthModal = () => {
+		setShowAuthModal(false);
 	};
 
 	// Handle logout
@@ -113,17 +71,11 @@ const TopNavBar = () => {
 		}
 	};
 
-	// Toggle between login and register modals
-	const switchToRegister = () => {
-		setLoginError("");
-		setShowLoginModal(false);
-		navigate("/register");
-	};
 
 	// Handle user icon click
 	const handleUserIconClick = () => {
 		if (!isAuthenticated) {
-			setShowLoginModal(true);
+			setShowAuthModal(true);
 		}
 		// If authenticated, the dropdown will handle showing logout option
 	};
@@ -235,16 +187,10 @@ const TopNavBar = () => {
 				</div>
 			</div>
 
-			{/* Login Modal */}
-			<LoginForm
-				show={showLoginModal}
-				onHide={handleClose}
-				formData={formData}
-				handleInputChange={handleInputChange}
-				handleLogin={handleLogin}
-				loginError={loginError}
-				isLoading={isLoading}
-				switchToRegister={switchToRegister}
+			{/* Auth Modal */}
+			<AuthModal
+				open={showAuthModal}
+				onClose={handleCloseAuthModal}
 			/>
 
 			{/* Cart Panel */}

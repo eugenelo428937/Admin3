@@ -50,7 +50,10 @@
       "Bash(mkdir:*)",
       "WebFetch(domain:chakra-ui.com)",
       "Bash(npm run lint:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "WebFetch(domain:chromium-i18n.appspot.com)",
+      "WebFetch(domain:www.gstatic.com)",
+      "Bash(npm start:*)"
     ],
     "deny": []
   },

@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
-import { Row, Col, Card, Badge, Button, Container } from "react-bootstrap";
+import { Row, Col, Card, Badge, Button} from "react-bootstrap";
+import{ Container } from "@mui/material";
 import { Filter, ArrowRight, X } from "react-bootstrap-icons";
 import ProductCard from "./Product/ProductCard/ProductCard";
 import useProductCardHelpers from "../hooks/useProductCardHelpers";
@@ -158,7 +159,7 @@ const SearchResults = ({
 	};
 
 	return (
-		<div className="search-results-container mb-3" maxWidth={false}>
+		<Container className="search-results-container mb-3" maxWidth={false}>
 			{/* Error Display */}
 			{error && (
 				<Row className="mb-3">
@@ -407,7 +408,7 @@ const SearchResults = ({
 					</Col>
 				</Row>
 			)}
-		</div>
+		</Container>
 	);
 };
 

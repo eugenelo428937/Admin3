@@ -35,7 +35,9 @@
 		<mj-text padding="16px" align="left">
 			<a href="{{ activation_url }}" style="color: #007bff; word-break: break-all;">{{ activation_url }}</a>
 		</mj-text>
-		
+		<mj-text padding="16px" align="left">
+			The link will expire in 15 minutes.
+		</mj-text>
 		<mj-text padding="16px" align="left">
 			Once your account is activated, you'll be able to:
 			<ul>

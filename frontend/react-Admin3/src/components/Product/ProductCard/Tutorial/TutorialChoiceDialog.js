@@ -363,7 +363,7 @@ const TutorialChoiceDialog = ({
             const isSelected = isEventSelected(subjectCode, event.id);
             
             return (
-              <Grid item xs={12} md={6} key={event.id}>
+              <Grid size={{ xs: 12, md: 6 }} key={event.id}>
                 <Card 
                   variant="outlined" 
                   sx={{ 
