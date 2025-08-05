@@ -116,7 +116,7 @@ const theme = createTheme({
 			fontFamily: "Poppins,Inter Variable,san-serif",
 			fontWeight: 600,
 			fontSize:
-				"calc((1em / var(--quarterstep)) / var(--eighthstep)) !important",
+				"calc((1em * var(--eighthstep)) / var(--quarterstep)) !important",
 			lineHeight: "var(--halfstep) !important",
 			letterSpacing: "-0.004em !important",
 			position: "static",
@@ -173,6 +173,21 @@ const theme = createTheme({
 
 	// Optional: Customize components to better use Inter
 	components: {
+		MuiDivider: {
+			styleOverrides: {
+				root: {
+					borderColor: colorTheme.bpp.granite["050"],
+					opacity: 0.5,
+				},
+			},
+		},
+		MuiFormHelperText: {
+			styleOverrides: {
+				root: {
+					marginTop: liftKitTheme.spacing.xs2,
+				},
+			},
+		},
 		MuiButton: {
 			styleOverrides: {
 				root: {
@@ -184,10 +199,24 @@ const theme = createTheme({
 				},
 			},
 		},
+		MuiTextField: {
+			styleOverrides: {
+				root: {
+					marginBottom: liftKitTheme.spacing.sm,
+				},
+			},
+			variants: [
+				{
+					props: { variant: "filled" },
+					style: {},
+				},
+			],
+		},
 		MuiTypography: {
 			styleOverrides: {
 				root: {
 					fontFamily: "Poppins,Inter Variable,san-serif",
+					color: colorTheme.liftkit.light.onSurface,
 				},
 			},
 		},
@@ -335,8 +364,8 @@ const theme = createTheme({
 								order: 1,
 								flex: "1",
 								"& .product-title": {
-    								width: "90%",
-    								textAlign: "left",
+									width: "90%",
+									textAlign: "left",
 									color: colorTheme.bpp.sky["100"],
 								},
 								"& .product-subtitle": {
@@ -654,9 +683,9 @@ const theme = createTheme({
 								order: 1,
 								flex: "1",
 								"& .product-title": {
-    								width: "90%",
-    								textAlign: "left",
-									
+									width: "90%",
+									textAlign: "left",
+
 									color: colorTheme.bpp.sky["100"],
 								},
 								"& .product-subtitle": {
@@ -999,8 +1028,8 @@ const theme = createTheme({
 								order: 1,
 								flex: "1",
 								"& .product-title": {
-    								width: "90%",
-    								textAlign: "left",
+									width: "90%",
+									textAlign: "left",
 									color: colorTheme.bpp.green["100"],
 									"& .title-info-button": {
 										minWidth: "auto",
@@ -1314,8 +1343,8 @@ const theme = createTheme({
 								order: 1,
 								flex: "1",
 								"& .product-title": {
-    								width: "90%",
-    								textAlign: "left",
+									width: "90%",
+									textAlign: "left",
 									color: colorTheme.bpp.cobalt["100"],
 								},
 								"& .product-subtitle": {
@@ -1388,7 +1417,7 @@ const theme = createTheme({
 										borderRadius: liftKitTheme.spacing.xs,
 										padding: liftKitTheme.spacing.md,
 										backgroundColor: "transparent",
-										
+
 										"&:hover": {
 											boxShadow: "var(--Paper-shadow)",
 											backdropFilter: "saturate(2.4)",
@@ -1623,8 +1652,8 @@ const theme = createTheme({
 								order: 1,
 								flex: "1",
 								"& .product-title": {
-    								width: "90%",
-    								textAlign: "left",
+									width: "90%",
+									textAlign: "left",
 									color: colorTheme.bpp.orange["100"],
 								},
 								"& .product-subtitle": {
@@ -1659,28 +1688,28 @@ const theme = createTheme({
 									boxShadow: "var(--Paper-shadow)",
 								},
 							},
-							
+
 							// Marking submissions info
 							"& .marking-submissions-info": {
 								marginBottom: liftKitTheme.spacing.sm,
 							},
-							
+
 							// Submissions info row
 							"& .submissions-info-row": {
 								marginBottom: liftKitTheme.spacing.sm,
 							},
-							
+
 							// Submissions info icon
 							"& .submissions-info-icon": {
 								fontSize: "1rem",
 								color: "text.secondary",
 							},
-							
+
 							// Submissions info count
 							"& .submissions-info-count": {
 								marginLeft: liftKitTheme.spacing.lg,
 							},
-							
+
 							// Marking deadline message
 							"& .marking-deadline-message": {
 								marginTop: liftKitTheme.spacing.md,
@@ -1688,26 +1717,26 @@ const theme = createTheme({
 								border: 1,
 								textAlign: "left",
 							},
-							
+
 							// Deadline message content (handled by Stack, no specific styles needed)
 							"& .deadline-message-content": {},
-							
+
 							// Deadline message icon
 							"& .deadline-message-icon": {
 								fontSize: "1rem",
 								marginTop: "0.2rem",
 							},
-							
+
 							// Deadline message text
 							"& .deadline-message-text": {
 								textAlign: "left",
 							},
-							
+
 							// Deadline message secondary text
 							"& .deadline-message-secondary": {
 								display: "block",
 							},
-							
+
 							// Marking pagination container
 							"& .marking-pagination-container": {
 								display: "flex",
@@ -1715,39 +1744,39 @@ const theme = createTheme({
 								alignItems: "center",
 								marginTop: liftKitTheme.spacing.lg,
 							},
-							
+
 							// Pagination dot button
 							"& .pagination-dot-button": {
 								padding: "0.5rem",
 							},
-							
+
 							// Active pagination dot
 							"& .pagination-dot.active": {
 								fontSize: "0.5rem",
 								color: "primary.main",
 								cursor: "pointer",
 							},
-							
+
 							// Inactive pagination dot
 							"& .pagination-dot.inactive": {
 								fontSize: "0.5rem",
 								color: "grey.300",
 								cursor: "pointer",
 							},
-							
+
 							// Submission Deadlines Button
 							"& .submission-deadlines-button": {
 								marginTop: liftKitTheme.spacing.md,
-								alignSelf: 'flex-start',
-								textTransform: 'none',
+								alignSelf: "flex-start",
+								textTransform: "none",
 								borderColor: colorTheme.bpp.pink["050"],
 								color: colorTheme.bpp.pink["090"],
 								backgroundColor: colorTheme.bpp.pink["020"],
-								'&:hover': {
+								"&:hover": {
 									backgroundColor: colorTheme.bpp.pink["030"],
 									borderColor: colorTheme.bpp.pink["060"],
-									color: colorTheme.bpp.pink["100"]
-								}
+									color: colorTheme.bpp.pink["100"],
+								},
 							},
 						},
 
@@ -1907,8 +1936,8 @@ const theme = createTheme({
 								order: 1,
 								flex: "1",
 								"& .product-title": {
-    								width: "90%",
-    								textAlign: "left",
+									width: "90%",
+									textAlign: "left",
 									color: colorTheme.bpp.orange["100"],
 								},
 								"& .product-subtitle": {
