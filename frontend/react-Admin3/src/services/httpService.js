@@ -68,8 +68,24 @@ httpService.interceptors.request.use(
 			}
 		}
 
+		// Define endpoints that should not include authorization headers
+		const noAuthEndpoints = [
+			'/activate/',
+			'/send_activation/',
+			'/verify_email/',
+			'/password_reset_request/',
+			'/password_reset_confirm/',
+			'/login/',
+			'/register/',
+			'/csrf/'
+		];
+
+		// Check if current request is to an endpoint that doesn't need auth
+		const skipAuth = noAuthEndpoints.some(endpoint => config.url?.includes(endpoint));
+
+		// Only add authorization header if we have a token AND it's not a no-auth endpoint
 		const token = localStorage.getItem("token");
-		if (token) {
+		if (token && !skipAuth) {
 			config.headers.Authorization = `Bearer ${token}`;
 		}
 		return config;

@@ -41,6 +41,7 @@ import TutorialChoicePanel from "./components/Product/ProductCard/Tutorial/Tutor
 import ProductCardVariations from "./components/sandbox/ProductCardVariations";
 import StyleGuide from "./components/StyleGuide";
 import Registration from './pages/Registration';
+import Login from './pages/Login';
 import "./App.css";
 
 const system = createSystem(defaultConfig);
@@ -96,6 +97,7 @@ function App() {
 														element={<StyleGuide />}
 													/>
 													<Route path="/home" element={<Home />} />
+													<Route path="/login" element={<Login />} />
 													<Route
 														path="/profile"
 														element={<UserProfile />}

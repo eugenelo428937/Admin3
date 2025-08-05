@@ -58,7 +58,7 @@
 	color: var(--bs-gray-500) !important;
 }
 .navbar-top a, .navbar-top button {
-	color: var(--icon-light-color) !important;
+	color: var(--icon-light-color);
 	text-decoration: none;
 }
 .dropdown-toggle.nav-link {
@@ -104,7 +104,7 @@
 	color: var(--text-primary-light) !important;
 }
 .dropdown-submenu a{
-    color: var(--text-primary-light) !important;
+    color: var(--text-primary-light);
     text-wrap: auto;
 }
 .navbar-expand-md .navbar-nav .dropdown-menu {

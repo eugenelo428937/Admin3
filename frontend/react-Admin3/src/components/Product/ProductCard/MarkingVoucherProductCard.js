@@ -214,7 +214,7 @@ const MarkingVoucherProductCard = React.memo(({ voucher, onAddToCart }) => {
 				<CardActions className="product-card-actions">
 					<Grid container spacing={1} alignItems="center">
 						{/* Price Display */}
-						<Grid item xs={6}>
+						<Grid size={{ xs: 6, md: 6 }}>
 							<Box>
 								<Typography
 									variant="h6"
@@ -234,7 +234,7 @@ const MarkingVoucherProductCard = React.memo(({ voucher, onAddToCart }) => {
 						</Grid>
 
 						{/* Action Buttons */}
-						<Grid item xs={6}>
+						<Grid size={{ xs: 6, md: 6 }}>
 							<Box className="d-flex justify-content-end gap-1">
 								<Tooltip title="Voucher Information">
 									<Button

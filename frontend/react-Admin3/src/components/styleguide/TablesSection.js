@@ -106,7 +106,7 @@ const TablesSection = () => {
               Product Icons
             </Typography>
             <Grid container spacing={1}>
-              <Grid item xs={3}>
+              <Grid size={{ xs: 3 }}>
                 <Box sx={{ textAlign: "center", p: 1 }}>
                   <School
                     sx={{
@@ -122,7 +122,7 @@ const TablesSection = () => {
                   </Typography>
                 </Box>
               </Grid>
-              <Grid item xs={3}>
+              <Grid size={{ xs: 3 }}>
                 <Box sx={{ textAlign: "center", p: 1 }}>
                   <LibraryBooks
                     sx={{
@@ -138,7 +138,7 @@ const TablesSection = () => {
                   </Typography>
                 </Box>
               </Grid>
-              <Grid item xs={3}>
+              <Grid size={{ xs: 3 }}>
                 <Box sx={{ textAlign: "center", p: 1 }}>
                   <Rule
                     sx={{
@@ -154,7 +154,7 @@ const TablesSection = () => {
                   </Typography>
                 </Box>
               </Grid>
-              <Grid item xs={3}>
+              <Grid size={{ xs: 3 }}>
                 <Box sx={{ textAlign: "center", p: 1 }}>
                   <Computer
                     sx={{

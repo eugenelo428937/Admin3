@@ -18,6 +18,9 @@ import MobileNavigation from "./MobileNavigation";
 import TopNavBar from "./TopNavBar";
 import NavbarBrand from "./NavbarBrand";
 import NavigationMenu from "./NavigationMenu";
+import UserActions from "./UserActions";
+import AuthModal from "./AuthModal";
+import CartPanel from "../Ordering/CartPanel";
 
 import "../../styles/navbar.css";
 const MainNavBar = () => {
@@ -45,6 +48,12 @@ const MainNavBar = () => {
 
 	// State for search modal
 	const [showSearchModal, setShowSearchModal] = useState(false);
+	
+	// State for auth modal
+	const [showAuthModal, setShowAuthModal] = useState(false);
+	
+	// State for cart panel
+	const [showCartPanel, setShowCartPanel] = useState(false);
 
 	// Add keyboard shortcut for search modal (Ctrl+K / Cmd+K)
 	useEffect(() => {
@@ -178,9 +187,29 @@ const MainNavBar = () => {
 	const handleCloseSearchModal = () => {
 		setShowSearchModal(false);
 	};
+	
+	// Handle opening the auth modal
+	const handleOpenAuthModal = () => {
+		setShowAuthModal(true);
+	};
+	
+	// Handle closing the auth modal
+	const handleCloseAuthModal = () => {
+		setShowAuthModal(false);
+	};
+	
+	// Handle opening the cart panel
+	const handleOpenCartPanel = () => {
+		setShowCartPanel(true);
+	};
+	
+	// Handle closing the cart panel
+	const handleCloseCartPanel = () => {
+		setShowCartPanel(false);
+	};
 
 	return (
-		<>
+		<div className="sticky-top">
 			<TopNavBar />
 			<Navbar
 				expand="md"
@@ -253,31 +282,15 @@ const MainNavBar = () => {
 						</div>
 					</Navbar.Collapse>
 
-					{/* Right Section - Brochure and Search */}
-					<div className="d-flex flex-lg-row flex-column justify-content-md-end justify-content-start align-content-center flex-row ps-md-2 order-0 order-md-4">
-						<div className="d-none d-md-block mb-md-1 mb-lg-0">
-							<Button
-								variant="link"
-								to="/Brochure"
-								className="nav-link btn-search p-0 ms-2 align-items-center d-flex flex-row">
-								<DownloadIcon className="bi d-flex flex-row align-items-center"></DownloadIcon>
-								<span className="d-none d-md-block mx-1 fst-normal body">
-									Brochure
-								</span>
-							</Button>
-						</div>
-						<div>
-							<Button
-								variant="link"
-								onClick={handleOpenSearchModal}
-								className="nav-link btn-search p-0 ms-2 align-items-center d-flex flex-row"
-								title="Search Products">
-								<SearchIcon className="bi d-flex flex-row align-items-center"></SearchIcon>
-								<span className="d-none d-md-block fst-normal body">
-									Search
-								</span>
-							</Button>
-						</div>
+					{/* Right Section - User Actions */}
+					<div className="order-0 order-md-4">
+						<UserActions
+							onOpenSearch={handleOpenSearchModal}
+							onOpenAuth={handleOpenAuthModal}
+							onOpenCart={handleOpenCartPanel}
+							onToggleMobileMenu={() => setExpanded(!expanded)}
+							isMobile={false}
+						/>
 					</div>
 				</Container>
 			</Navbar>
@@ -287,7 +300,19 @@ const MainNavBar = () => {
 				open={showSearchModal} 
 				onClose={handleCloseSearchModal} 
 			/>
-		</>
+			
+			{/* Auth Modal */}
+			<AuthModal
+				open={showAuthModal}
+				onClose={handleCloseAuthModal}
+			/>
+			
+			{/* Cart Panel */}
+			<CartPanel
+				show={showCartPanel}
+				handleClose={handleCloseCartPanel}
+			/>
+		</div>
 	);
 };
 

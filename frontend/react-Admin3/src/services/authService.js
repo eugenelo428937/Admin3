@@ -221,6 +221,7 @@ const authService = {
 		try {
 			logger.debug("Attempting account activation", { uid });
 
+			// httpService now automatically skips auth headers for activation endpoints
 			const response = await httpService.post(`${API_AUTH_URL}/activate/`, {
 				uid: uid,
 				token: token
@@ -230,10 +231,14 @@ const authService = {
 
 			if (response.status === 200 && response.data) {
 				logger.info("Account activation successful", { uid });
-				return {
-					status: "success",
-					message: response.data.message || "Account activated successfully"
-				};
+				
+				// Handle both successful activation and already activated cases
+				if (response.data.status === "success" || response.data.status === "info") {
+					return {
+						status: "success",
+						message: response.data.message || "Account activated successfully"
+					};
+				}
 			}
 
 			return {
@@ -270,6 +275,7 @@ const authService = {
 		try {
 			logger.debug("Attempting to resend activation email", { email });
 
+			// httpService now automatically skips auth headers for activation endpoints
 			const response = await httpService.post(`${API_AUTH_URL}/send_activation/`, {
 				email: email
 			});
@@ -316,6 +322,7 @@ const authService = {
 				newEmail: verificationData.new_email 
 			});
 
+			// httpService now automatically skips auth headers for verification endpoints
 			const response = await httpService.post(`${API_AUTH_URL}/verify_email/`, verificationData);
 
 			logger.debug("Email verification response received", response.data);

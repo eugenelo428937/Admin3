@@ -4,45 +4,45 @@
 const colorTheme = {
 	// Core Material-UI palette using Liftkit colors
 	primary: {
-		main: "#4658ac", // light__primary_lkv
-		light: "#b9c3ff", // light__inverseprimary_lkv / dark__primary_lkv
-		dark: "#2d3f93", // light__onprimaryfixedvariant_lkv
-		contrastText: "#fefbff", // light__onprimary_lkv
+		main: "#4658ac", // light__primary_lkv #4658ac
+		light: "#b9c3ff", // light__inverseprimary_lkv / dark__primary_lkv #b9c3ff
+		dark: "#2d3f93", // light__onprimaryfixedvariant_lkv #2d3f93
+		contrastText: "#fefbff", // light__onprimary_lkv #fefbff
 	},
 	secondary: {
-		main: "#5a5d72", // light__secondary_lkv
-		light: "#c3c5dd", // dark__secondary_lkv
-		dark: "#434659", // light__onsecondaryfixedvariant_lkv
+		main: "#5a5d72", // light__secondary_lkv #5a5d72
+		light: "#c3c5dd", // dark__secondary_lkv #c3c5dd
+		dark: "#434659", // light__onsecondaryfixedvariant_lkv #434659
 		contrastText: "#fff",
 	},
 	tertiary: {
-		main: "#76546e", // light__tertiary_lkv
-		light: "#e5bad8", // dark__tertiary_lkv
-		dark: "#5c3c55", // light__ontertiaryfixedvariant_lkv
+		main: "#76546e", // light__tertiary_lkv #76546e
+		light: "#e5bad8", // dark__tertiary_lkv #e5bad8
+		dark: "#5c3c55", // light__ontertiaryfixedvariant_lkv #5c3c55
 		contrastText: "#fff",
 	},
 	error: {
-		main: "#ba1a1a", // light__error_lkv
-		light: "#ffb4ab", // dark__error_lkv
-		dark: "#93000a", // dark__errorcontainer_lkv
+		main: "#ba1a1a", // light__error_lkv #ba1a1a
+		light: "#ffb4ab", // dark__error_lkv #ffb4ab
+		dark: "#93000a", // dark__errorcontainer_lkv #93000a
 		contrastText: "#fff",
 	},
 	warning: {
-		main: "#7c5800", // light__warning_lkv
-		light: "#f7bd48", // dark__warning_lkv
-		dark: "#5e4200", // dark__warningcontainer_lkv
+		main: "#7c5800", // light__warning_lkv #7c5800
+		light: "#f7bd48", // dark__warning_lkv #f7bd48
+		dark: "#5e4200", // dark__warningcontainer_lkv #5e4200
 		contrastText: "#fff",
 	},
 	info: {
-		main: "#1758c7", // light__info_lkv
-		light: "#b1c5ff", // dark__info_lkv
-		dark: "#00419e", // dark__infocontainer_lkv
+		main: "#1758c7", // light__info_lkv #1758c7
+		light: "#b1c5ff", // dark__info_lkv #b1c5ff
+		dark: "#00419e", // dark__infocontainer_lkv #00419e
 		contrastText: "#fff",
 	},
 	success: {
-		main: "#006d3d", // light__success_lkv
-		light: "#76db9a", // dark__success_lkv
-		dark: "#00522c", // dark__successcontainer_lkv
+		main: "#006d3d", // light__success_lkv #006d3d
+		light: "#76db9a", // dark__success_lkv #76db9a
+		dark: "#00522c", // dark__successcontainer_lkv #00522c
 		contrastText: "#fff",
 	},
 	background: {
@@ -50,17 +50,17 @@ const colorTheme = {
 		paper: "#f0edf1", // light__surfacecontainer_lkv
 	},
 	surface: {
-		main: "#e8eced", // light__surface_lkv
-		variant: "#e3e1ec", // light__surfacevariant_lkv
-		containerLowest: "#fff", // light__surfacecontainerlowest_lkv
-		containerLow: "#cbdadd", // light__surfacecontainerlow_lkv
-		container: "#f0edf1", // light__surfacecontainer_lkv
-		containerHigh: "#eae7ec", // light__surfacecontainerhigh_lkv
-		containerHighest: "#e4e1e6", // light__surfacecontainerhighest_lkv
+		main: "#e8eced", // light__surface_lkv #e8eced
+		variant: "#e3e1ec", // light__surfacevariant_lkv #e3e1ec
+		containerLowest: "#fff", // light__surfacecontainerlowest_lkv #fff
+		containerLow: "#cbdadd", // light__surfacecontainerlow_lkv #cbdadd
+		container: "#f0edf1", // light__surfacecontainer_lkv #f0edf1
+		containerHigh: "#eae7ec", // light__surfacecontainerhigh_lkv #eae7ec
+		containerHighest: "#e4e1e6", // light__surfacecontainerhighest_lkv #e4e1e6
 	},
 	text: {
-		primary: "#1b1b1f", // light__onsurface_lkv
-		secondary: "#45464f", // light__onsurfacevariant_lkv
+		primary: "#1b1b1f", // light__onsurface_lkv #1b1b1f
+		secondary: "#45464f", // light__onsurfacevariant_lkv #45464f
 	},
 
 	// BPP Color System
@@ -280,46 +280,46 @@ const colorTheme = {
 
 		// Liftkit Dark Theme
 		dark: {
-			outline: "#90909a",
-			error: "#ffb4ab",
-			primary: "#b9c3ff",
-			onPrimary: "#11277c",
-			primaryContainer: "#2d3f93",
-			onPrimaryContainer: "#dee1ff",
-			secondary: "#c3c5dd",
-			onSecondary: "#2c2f42",
-			secondaryContainer: "#434659",
-			onSecondaryContainer: "#dfe1f9",
-			tertiary: "#e5bad8",
-			onTertiary: "#44263e",
-			tertiaryContainer: "#5c3c55",
-			onTertiaryContainer: "#ffd7f2",
-			onError: "#690005",
-			errorContainer: "#93000a",
-			onErrorContainer: "#ffb4ab",
-			background: "#1b1b1f",
-			onBackground: "#e4e1e6",
-			surface: "#131316",
-			onSurface: "#e4e1e6",
-			onSurfaceVariant: "#c6c5d0",
-			surfaceVariant: "#45464f",
-			shadow: "#000",
-			inverseSurface: "#e4e1e6",
-			scrim: "#000",
-			inverseOnSurface: "#303034",
-			inversePrimary: "#4658ac",
-			success: "#76db9a",
-			onSuccess: "#00391d",
-			successContainer: "#00522c",
-			onSuccessContainer: "#92f8b4",
-			warning: "#f7bd48",
-			onWarning: "#412d00",
-			warningContainer: "#5e4200",
-			onWarningContainer: "#ffdea7",
-			info: "#b1c5ff",
-			onInfo: "#002c71",
-			infoContainer: "#00419e",
-			onInfoContainer: "#dae2ff",
+			outline: "#90909a", // rgb(144,144,154) converted to hex
+			error: "#ffb4ab", // rgb(255,180,171) converted to hex
+			primary: "#b9c3ff", // rgb(185,195,255) converted to hex
+			onPrimary: "#11277c", // rgb(17,39,124) converted to hex
+			primaryContainer: "#2d3f93", // rgb(45,63,147) converted to hex
+			onPrimaryContainer: "#dee1ff", // rgb(222,225,255) converted to hex
+			secondary: "#c3c5dd", // rgb(195,197,221) converted to hex
+			onSecondary: "#2c2f42", // rgb(44,47,66) converted to hex
+			secondaryContainer: "#434659", // rgb(67,70,89) converted to hex
+			onSecondaryContainer: "#dfe1f9", // rgb(223,225,249) converted to hex
+			tertiary: "#e5bad8", // rgb(229,186,216) converted to hex
+			onTertiary: "#44263e", // rgb(68,38,62) converted to hex
+			tertiaryContainer: "#5c3c55", // rgb(92,60,85) converted to hex
+			onTertiaryContainer: "#ffd7f2", // rgb(255,215,242) converted to hex
+			onError: "#690005", // rgb(105,0,5) converted to hex
+			errorContainer: "#93000a", // rgb(147,0,10) converted to hex
+			onErrorContainer: "#ffb4ab", // rgb(255,180,171) converted to hex
+			background: "#1b1b1f", // rgb(27,27,31) converted to hex
+			onBackground: "#e4e1e6", // rgb(228,225,230) converted to hex
+			surface: "#131316", // rgb(19,19,22) converted to hex
+			onSurface: "#e4e1e6", // rgb(228,225,230) converted to hex
+			onSurfaceVariant: "#c6c5d0", // rgb(198,197,208) converted to hex
+			surfaceVariant: "#45464f", // rgb(69,70,79) converted to hex
+			shadow: "#000", // rgb(0,0,0) converted to hex
+			inverseSurface: "#e4e1e6", // rgb(228,225,230) converted to hex
+			scrim: "#000", // rgb(0,0,0) converted to hex
+			inverseOnSurface: "#303034", // rgb(48,48,52) converted to hex
+			inversePrimary: "#4658ac", // rgb(70,88,172) converted to hex
+			success: "#76db9a", // rgb(118,219,154) converted to hex
+			onSuccess: "#00391d", // rgb(0,57,29) converted to hex
+			successContainer: "#00522c", // rgb(0,82,44) converted to hex
+			onSuccessContainer: "#92f8b4", // rgb(146,248,180) converted to hex
+			warning: "#f7bd48", // rgb(247,189,72) converted to hex
+			onWarning: "#412d00", // rgb(65,45,0) converted to hex
+			warningContainer: "#5e4200", // rgb(94,66,0) converted to hex
+			onWarningContainer: "#ffdea7", // rgb(255,222,167) converted to hex
+			info: "#b1c5ff", // rgb(177,197,255) converted to hex
+			onInfo: "#002c71", // rgb(0,44,113) converted to hex
+			infoContainer: "#00419e", // rgb(0,65,158) converted to hex
+			onInfoContainer: "#dae2ff", // rgb(218,226,255) converted to hex
 		},
 	},
 };

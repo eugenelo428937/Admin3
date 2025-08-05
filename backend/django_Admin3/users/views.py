@@ -111,6 +111,47 @@ class UserViewSet(viewsets.ModelViewSet):
             for email in profile.emails.all():
                 emails[email.email_type.lower() + '_email'] = email.email
             
+            # Prepare address data from JSON format with fallback to old fields
+            home_address_data = {}
+            if home_address:
+                if home_address.address_data:
+                    home_address_data = home_address.address_data.copy()
+                    home_address_data['country'] = home_address.country
+                else:
+                    # Fallback to old fields for backward compatibility
+                    home_address_data = {
+                        'building': home_address.building or '',
+                        'street': home_address.street or '',
+                        'district': home_address.district or '',
+                        'town': home_address.town or '',
+                        'county': home_address.county or '',
+                        'postcode': home_address.postcode or '',
+                        'state': home_address.state or '',
+                        'country': home_address.country or '',
+                    }
+            
+            work_address_data = {}
+            if work_address:
+                if work_address.address_data:
+                    work_address_data = work_address.address_data.copy()
+                    work_address_data['country'] = work_address.country
+                    work_address_data['company'] = work_address.company or ''
+                    work_address_data['department'] = work_address.department or ''
+                else:
+                    # Fallback to old fields for backward compatibility
+                    work_address_data = {
+                        'company': work_address.company or '',
+                        'department': work_address.department or '',
+                        'building': work_address.building or '',
+                        'street': work_address.street or '',
+                        'district': work_address.district or '',
+                        'town': work_address.town or '',
+                        'county': work_address.county or '',
+                        'postcode': work_address.postcode or '',
+                        'state': work_address.state or '',
+                        'country': work_address.country or '',
+                    }
+            
             profile_data = {
                 'user': {
                     'id': user.id,
@@ -126,28 +167,8 @@ class UserViewSet(viewsets.ModelViewSet):
                     'send_study_material_to': profile.send_study_material_to,
                     'remarks': profile.remarks or '',
                 },
-                'home_address': {
-                    'building': home_address.building if home_address else '',
-                    'street': home_address.street if home_address else '',
-                    'district': home_address.district if home_address else '',
-                    'town': home_address.town if home_address else '',
-                    'county': home_address.county if home_address else '',
-                    'postcode': home_address.postcode if home_address else '',
-                    'state': home_address.state if home_address else '',
-                    'country': home_address.country if home_address else '',
-                } if home_address else {},
-                'work_address': {
-                    'company': work_address.company if work_address else '',
-                    'department': work_address.department if work_address else '',
-                    'building': work_address.building if work_address else '',
-                    'street': work_address.street if work_address else '',
-                    'district': work_address.district if work_address else '',
-                    'town': work_address.town if work_address else '',
-                    'county': work_address.county if work_address else '',
-                    'postcode': work_address.postcode if work_address else '',
-                    'state': work_address.state if work_address else '',
-                    'country': work_address.country if work_address else '',
-                } if work_address else {},
+                'home_address': home_address_data,
+                'work_address': work_address_data,
                 'contact_numbers': contact_numbers,
                 'emails': emails
             }
@@ -210,30 +231,56 @@ class UserViewSet(viewsets.ModelViewSet):
                     profile.remarks = profile_data['remarks']
                 profile.save()
                 
-                # Update home address
+                # Update home address (using JSON format)
                 home_address_data = data.get('home_address', {})
                 if home_address_data:
                     home_address, created = UserProfileAddress.objects.get_or_create(
                         user_profile=profile,
                         address_type='HOME',
-                        defaults={}
+                        defaults={'address_data': {}, 'country': ''}
                     )
-                    for field in ['building', 'street', 'district', 'town', 'county', 'postcode', 'state', 'country']:
+                    
+                    # Store as JSON, excluding company/department fields
+                    address_json = {}
+                    for field, value in home_address_data.items():
+                        if field not in ['company', 'department'] and value:
+                            address_json[field] = value
+                    
+                    home_address.address_data = address_json
+                    home_address.country = home_address_data.get('country', '')
+                    
+                    # Update old fields for backward compatibility
+                    for field in ['building', 'street', 'district', 'town', 'county', 'postcode', 'state']:
                         if field in home_address_data:
                             setattr(home_address, field, home_address_data[field])
+                    
                     home_address.save()
                 
-                # Update work address
+                # Update work address (using JSON format)
                 work_address_data = data.get('work_address', {})
                 if work_address_data:
                     work_address, created = UserProfileAddress.objects.get_or_create(
                         user_profile=profile,
                         address_type='WORK',
-                        defaults={}
+                        defaults={'address_data': {}, 'country': ''}
                     )
-                    for field in ['company', 'department', 'building', 'street', 'district', 'town', 'county', 'postcode', 'state', 'country']:
+                    
+                    # Store as JSON
+                    address_json = {}
+                    for field, value in work_address_data.items():
+                        if value:
+                            address_json[field] = value
+                    
+                    work_address.address_data = address_json
+                    work_address.country = work_address_data.get('country', '')
+                    work_address.company = work_address_data.get('company', '')
+                    work_address.department = work_address_data.get('department', '')
+                    
+                    # Update old fields for backward compatibility
+                    for field in ['building', 'street', 'district', 'town', 'county', 'postcode', 'state']:
                         if field in work_address_data:
                             setattr(work_address, field, work_address_data[field])
+                    
                     work_address.save()
                 
                 # Update contact numbers

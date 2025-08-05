@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { Container, Alert, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import RegistrationWizard from "../components/User/RegistrationWizard";
+import {
+	Alert,
+	Typography,
+	Container,
+	Paper,
+	Card,
+	CardContent,
+	TextField,
+	Button,
+	Box,
+} from "@mui/material";
 
 const Registration = () => {
   const [success, setSuccess] = useState(false);
@@ -44,90 +54,86 @@ const Registration = () => {
 
   if (success) {
     return (
-      <Container className="py-5">
-        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-          <Card className="shadow">
-            <Card.Body className="text-center p-5">
-              <div className="mb-4">
-                <div className="success-icon mb-3" style={{ fontSize: '4rem', color: '#198754' }}>
-                  ✅
-                </div>
-                <h2 className="text-success mb-3">Registration Successful!</h2>
-                <p className="text-muted mb-4" style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
-                  {successMessage}
-                </p>
-              </div>
-              
-              <div className="d-grid gap-2 col-md-6 mx-auto">
-                <button 
-                  className="btn btn-primary btn-lg"
-                  onClick={handleBackToLogin}
-                >
-                  <i className="bi bi-box-arrow-in-right me-2"></i>
-                  Go to Login
-                </button>
-              </div>
-              
-              <div className="mt-4">
-                <Alert variant="info" className="text-start">
-                  <Alert.Heading className="h6">
-                    <i className="bi bi-info-circle me-2"></i>
-                    What's Next?
-                  </Alert.Heading>
-                  <ul className="mb-0" style={{ fontSize: '0.9rem' }}>
-                    <li>Check your email inbox (and spam folder) for the activation link</li>
-                    <li>Click the activation link to verify your email address</li>
-                    <li>Once activated, you can log in to access your account</li>
-                    <li>Complete your profile and start exploring our courses</li>
-                  </ul>
-                </Alert>
-              </div>
-            </Card.Body>
-          </Card>
-        </div>
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Card elevation={3}>
+          <CardContent sx={{ textAlign: 'center', p: 5 }}>
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h1" sx={{ fontSize: '4rem', color: '#198754', mb: 3 }}>
+                ✅
+              </Typography>
+              <Typography variant="h4" color="success.main" sx={{ mb: 3 }}>
+                Registration Successful!
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.1rem', lineHeight: 1.6, mb: 4 }}>
+                {successMessage}
+              </Typography>
+            </Box>
+            
+            <Box sx={{ maxWidth: 400, mx: 'auto', mb: 4 }}>
+              <Button 
+                variant="contained"
+                size="large"
+                fullWidth
+                onClick={handleBackToLogin}
+                sx={{ py: 1.5 }}
+              >
+                Go to Login
+              </Button>
+            </Box>
+            
+            <Alert severity="info" sx={{ textAlign: 'left', mt: 4 }}>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                What's Next?
+              </Typography>
+              <Box component="ul" sx={{ mb: 0, fontSize: '0.9rem' }}>
+                <li>Check your email inbox (and spam folder) for the activation link</li>
+                <li>Click the activation link to verify your email address</li>
+                <li>Once activated, you can log in to access your account</li>
+                <li>Complete your profile and start exploring our courses</li>
+              </Box>
+            </Alert>
+          </CardContent>
+        </Card>        
       </Container>
     );
   }
 
   return (
-    <Container className="py-5">
-      <div className="text-center mb-4">
-        <h1 className="display-5 fw-bold text-primary mb-2">
-          Join Our Community
-        </h1>
-        <p className="lead text-muted">
-          Start your actuarial education journey with thousands of professionals
-        </p>
-      </div>
+		<Container maxWidth="lg" sx={{ py: 2 }}>
+			{error && (
+				<Box sx={{ maxWidth: 700, mx: 'auto', mb: 4 }}>
+					<Alert
+						severity="error"
+						onClose={() => setError("")}
+						sx={{ textAlign: 'left' }}
+					>
+						<Typography variant="h6" sx={{ mb: 1 }}>
+							Registration Failed
+						</Typography>
+						<Typography variant="body2">{error}</Typography>
+					</Alert>
+				</Box>
+			)}
 
-      {error && (
-        <div style={{ maxWidth: '700px', margin: '0 auto 2rem' }}>
-          <Alert variant="danger" dismissible onClose={() => setError("")}>
-            <Alert.Heading>
-              <i className="bi bi-exclamation-triangle-fill me-2"></i>
-              Registration Failed
-            </Alert.Heading>
-            <p className="mb-0">{error}</p>
-          </Alert>
-        </div>
-      )}
+			<RegistrationWizard
+				onSuccess={handleRegistrationSuccess}
+				onError={handleRegistrationError}
+				onSwitchToLogin={handleSwitchToLogin}
+			/>
 
-      <RegistrationWizard
-        onSuccess={handleRegistrationSuccess}
-        onError={handleRegistrationError}
-        onSwitchToLogin={handleSwitchToLogin}
-      />
-
-      <div className="text-center mt-5">
-        <div className="text-muted" style={{ fontSize: '0.9rem' }}>
-          <p>
-            By creating an account, you agree to our{" "}
-            <a href="/terms" className="text-decoration-none">Terms of Service</a> and{" "}
-            <a href="/privacy" className="text-decoration-none">Privacy Policy</a>
-          </p>
-        </div>
-      </div>
-    </Container>
+			<Box sx={{ textAlign: 'center', mt: 2 }}>
+				<Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.9rem" }}>
+					By creating an account, you agree to our{" "}
+					<Box component="a" href="/terms" sx={{ textDecoration: 'none', color: 'primary.main' }}>
+						Terms of Service
+					</Box>{" "}
+					and{" "}
+					<Box component="a" href="/privacy" sx={{ textDecoration: 'none', color: 'primary.main' }}>
+						Privacy Policy
+					</Box>
+				</Typography>
+			</Box>			
+		</Container>
   );
 };
 

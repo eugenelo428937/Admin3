@@ -9,59 +9,56 @@ import {
 import {
   Close as CloseIcon
 } from '@mui/icons-material';
-import LoginForm from '../../LoginForm';
+import { useAuth } from '../../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import LoginForm from '../User/LoginForm';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
 const AuthModal = ({ open, onClose }) => {
+  const { login, isLoading } = useAuth();
+  const navigate = useNavigate();
+  
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [loginError, setLoginError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear error when user starts typing
-    if (loginError) {
-      setLoginError('');
-    }
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
     setLoginError('');
-
+    
     try {
-      // Login logic is handled by the LoginForm component
-      // This is just a wrapper to maintain consistency with the original navbar
+      const result = await login(formData);
+      if (result.status === 'error') {
+        setLoginError(result.message);
+      } else {
+        handleClose();
+      }
     } catch (error) {
-      setLoginError('Login failed. Please check your credentials.');
-    } finally {
-      setIsLoading(false);
+      setLoginError(error.message || 'Login failed');
     }
   };
 
-  const switchToRegister = () => {
-    // Navigate to registration page
-    window.location.href = '/register';
+  const handleClose = () => {
+    setFormData({ email: '', password: '' });
+    setLoginError('');
     onClose();
   };
 
-  const handleClose = () => {
-    // Clear form data when closing
-    setFormData({ email: '', password: '' });
-    setLoginError('');
-    setIsLoading(false);
-    onClose();
+  const switchToRegister = () => {
+    handleClose();
+    navigate('/register');
   };
 
   return (
@@ -74,39 +71,36 @@ const AuthModal = ({ open, onClose }) => {
       PaperProps={{
         sx: {
           borderRadius: 2,
-          position: 'relative'
+          overflow: 'visible'
         }
       }}
     >
-      {/* Close Button */}
-      <Box sx={{ position: 'absolute', right: 8, top: 8, zIndex: 1 }}>
-        <IconButton 
-          onClick={handleClose} 
-          size="small"
-          sx={{ 
-            backgroundColor: 'background.paper',
-            boxShadow: 1,
-            '&:hover': {
-              backgroundColor: 'grey.100'
-            }
+      <Box sx={{ position: 'relative' }}>
+        <IconButton
+          onClick={handleClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            zIndex: 1
           }}
         >
           <CloseIcon />
         </IconButton>
+        
+        <DialogContent sx={{ p: 0 }}>
+          <LoginForm
+            show={true}
+            onHide={handleClose}
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleLogin={handleLogin}
+            loginError={loginError}
+            isLoading={isLoading}
+            switchToRegister={switchToRegister}
+          />
+        </DialogContent>
       </Box>
-
-      <DialogContent sx={{ p: 0 }}>
-        <LoginForm
-          show={open}
-          onHide={handleClose}
-          formData={formData}
-          handleInputChange={handleInputChange}
-          handleLogin={handleLogin}
-          loginError={loginError}
-          isLoading={isLoading}
-          switchToRegister={switchToRegister}
-        />
-      </DialogContent>
     </Dialog>
   );
 };

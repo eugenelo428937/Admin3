@@ -16,7 +16,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         profile_data = validated_data.pop('profile', {})
-        print('DEBUG: profile_data received:', profile_data)
         password = validated_data.pop('password')
         username = validated_data.pop('username', validated_data.get('email'))
 
@@ -39,43 +38,31 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user_profile.send_study_material_to = profile_data.get('send_study_material_to', 'HOME')
         user_profile.save()
 
-        # Addresses
+        # Addresses - Now using JSON format
         home_addr = profile_data.get('home_address', {})
-        print('DEBUG: home_addr:', home_addr)
-        if home_addr and (home_addr.get('street') or home_addr.get('town') or home_addr.get('postcode')):
+        if home_addr and self._has_valid_address_data(home_addr):
+            # Store address as JSON format, filtering out empty fields
+            address_data = self._clean_address_data(home_addr)
             UserProfileAddress.objects.create(
                 user_profile=user_profile,
                 address_type='HOME',
-                building=home_addr.get('building', ''),
-                street=home_addr.get('street', ''),
-                district=home_addr.get('district', ''),
-                town=home_addr.get('town', ''),
-                county=home_addr.get('county', ''),
-                postcode=home_addr.get('postcode', ''),
-                state=home_addr.get('state', ''),
+                address_data=address_data,
                 country=home_addr.get('country', ''),
             )
+        
         work_addr = profile_data.get('work_address', {})
-        print('DEBUG: work_addr:', work_addr)
-        if work_addr and (work_addr.get('street') or work_addr.get('town') or work_addr.get('postcode')):
+        if work_addr and self._has_valid_address_data(work_addr):
+            # Store address as JSON format, filtering out empty fields
+            address_data = self._clean_address_data(work_addr)
             UserProfileAddress.objects.create(
                 user_profile=user_profile,
                 address_type='WORK',
-                building=work_addr.get('building', ''),
-                street=work_addr.get('street', ''),
-                district=work_addr.get('district', ''),
-                town=work_addr.get('town', ''),
-                county=work_addr.get('county', ''),
-                postcode=work_addr.get('postcode', ''),
-                state=work_addr.get('state', ''),
+                address_data=address_data,
                 country=work_addr.get('country', ''),
                 company=work_addr.get('company', ''),
                 department=work_addr.get('department', ''),
             )
         # Contact Numbers
-        print('DEBUG: home_phone:', profile_data.get('home_phone'))
-        print('DEBUG: work_phone:', profile_data.get('work_phone'))
-        print('DEBUG: mobile_phone:', profile_data.get('mobile_phone'))
         if profile_data.get('home_phone'):
             UserProfileContactNumber.objects.create(user_profile=user_profile, contact_type='HOME', number=profile_data['home_phone'])
         if profile_data.get('work_phone'):
@@ -83,7 +70,30 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if profile_data.get('mobile_phone'):
             UserProfileContactNumber.objects.create(user_profile=user_profile, contact_type='MOBILE', number=profile_data['mobile_phone'])
         # Emails
-        print('DEBUG: email:', validated_data.get('email'))
         if validated_data.get('email'):
             UserProfileEmail.objects.create(user_profile=user_profile, email_type='PERSONAL', email=validated_data['email'])
         return user
+    
+    def _has_valid_address_data(self, address_dict):
+        """Check if address dictionary contains meaningful data"""
+        # Check for common address fields that indicate a valid address
+        required_fields = ['street', 'town', 'city', 'address']
+        return any(address_dict.get(field) for field in required_fields)
+    
+    def _clean_address_data(self, address_dict):
+        """Clean and format address data for JSON storage"""
+        # Remove empty values and None values
+        cleaned_data = {}
+        for key, value in address_dict.items():
+            if value and str(value).strip():
+                cleaned_data[key] = str(value).strip()
+        
+        # Map old field names to standardized names if needed
+        if 'street' in cleaned_data and 'address' not in cleaned_data:
+            cleaned_data['address'] = cleaned_data['street']
+        if 'town' in cleaned_data and 'city' not in cleaned_data:
+            cleaned_data['city'] = cleaned_data['town']
+        if 'postcode' in cleaned_data and 'postal_code' not in cleaned_data:
+            cleaned_data['postal_code'] = cleaned_data['postcode']
+        
+        return cleaned_data

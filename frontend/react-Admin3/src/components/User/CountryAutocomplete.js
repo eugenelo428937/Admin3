@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Form } from "react-bootstrap";
+import { TextField, Paper, List, ListItem, ListItemText, Box, Typography } from "@mui/material";
 import config from "../../config";
 
 const frequentCountries = [
@@ -9,9 +9,9 @@ const frequentCountries = [
   "South Africa"
 ];
 
-const API_URL = config.countryUrl || "/api/countries/countries/";
+const API_URL = config.countryUrl || config.apiBaseUrl + "/api/countries/";
 
-const CountryAutocomplete = ({ value, onChange, placeholder, isInvalid, feedback, inputRef, name }) => {
+const CountryAutocomplete = ({ value, onChange, placeholder, isInvalid, feedback, inputRef, name, label }) => {
   const [inputValue, setInputValue] = useState(value || "");
   const [showDropdown, setShowDropdown] = useState(false);
   const [countryList, setCountryList] = useState([]);
@@ -79,47 +79,60 @@ const CountryAutocomplete = ({ value, onChange, placeholder, isInvalid, feedback
   };
 
   return (
-    <div ref={containerRef} style={{ position: "relative" }}>
-      <Form.Control
+    <Box ref={containerRef} sx={{ position: "relative" }}>
+      <TextField
+        fullWidth
         type="text"
         name={name}
+        label={label}
         value={inputValue}
         onChange={handleInputChange}
         onFocus={() => setShowDropdown(true)}
         autoComplete="off"
         placeholder={placeholder}
-        isInvalid={isInvalid}
-        ref={inputRef}
+        error={isInvalid}
+        helperText={isInvalid ? feedback : ''}
+        inputRef={inputRef}
+        variant="standard"
       />
       {showDropdown && (
-        <div style={{
-          position: "absolute",
-          zIndex: 1000,
-          background: "#fff",
-          border: "1px solid #ccc",
-          width: "100%",
-          maxHeight: 200,
-          overflowY: "auto"
-        }}>
-          {filtered.length === 0 ? (
-            <div style={{ padding: 8, color: '#888' }}>No countries found</div>
-          ) : (
-            filtered.map((country) => (
-              <div
-                key={country.iso_code}
-                style={{ padding: 8, cursor: "pointer" }}
-                onMouseDown={() => handleSelect(country)}
-              >
-                {country.name} {country.phone_code && <span style={{color:'#888'}}>({country.phone_code})</span>}
-              </div>
-            ))
-          )}
-        </div>
+        <Paper
+          elevation={3}
+          sx={{
+            position: "absolute",
+            zIndex: 1000,
+            width: "100%",
+            maxHeight: 300,
+            overflowY: "auto",
+            mt: 1
+          }}
+        >
+          <List disablePadding>
+            {filtered.length === 0 ? (
+              <ListItem>
+                <ListItemText
+                  primary={<Typography color="text.secondary">No countries found</Typography>}
+                />
+              </ListItem>
+            ) : (
+              filtered.map((country) => (
+                <ListItem
+                  key={country.iso_code}
+                  component="div"
+                  onMouseDown={() => handleSelect(country)}
+                  sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+                >
+                  <ListItemText
+                    primary={country.name}
+                    secondary={country.phone_code && `${country.phone_code}`}
+                  />
+                </ListItem>
+              ))
+            )}
+          </List>
+        </Paper>
       )}
-      {feedback && isInvalid && (
-        <div className="invalid-feedback" style={{ display: 'block' }}>{feedback}</div>
-      )}
-    </div>
+    </Box>
   );
 };
 
@@ -130,7 +143,8 @@ CountryAutocomplete.propTypes = {
   isInvalid: PropTypes.bool,
   feedback: PropTypes.string,
   inputRef: PropTypes.any,
-  name: PropTypes.string
+  name: PropTypes.string,
+  label: PropTypes.string
 };
 
 export default CountryAutocomplete;

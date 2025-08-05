@@ -16,7 +16,7 @@ const ProductCardVariantsDemo = () => {
 			</Typography>
 
 			<Grid container spacing={3}>
-				<Grid item xs={12} md={6} lg={3}>
+				<Grid size={{ xs: 12, md: 6, lg: 3 }}>
 					<Box>
 						<Typography variant="h6" sx={{ mb: theme.liftkit.spacing.sm }}>
 							Bundle Product
@@ -28,7 +28,7 @@ const ProductCardVariantsDemo = () => {
 					</Box>
 				</Grid>
 
-				<Grid item xs={12} md={6} lg={3}>
+				<Grid size={{ xs: 12, md: 6, lg: 3 }}>
 					<Box>
 						<Typography variant="h6" sx={{ mb: theme.liftkit.spacing.sm }}>
 							Marking Product
@@ -40,7 +40,7 @@ const ProductCardVariantsDemo = () => {
 					</Box>
 				</Grid>
 
-				<Grid item xs={12} md={6} lg={3}>
+				<Grid size={{ xs: 12, md: 6, lg: 3 }}>
 					<Box>
 						<Typography variant="h6" sx={{ mb: theme.liftkit.spacing.sm }}>
 							Tutorial Product
@@ -52,7 +52,7 @@ const ProductCardVariantsDemo = () => {
 					</Box>
 				</Grid>
 
-				<Grid item xs={12} md={6} lg={3}>
+				<Grid size={{ xs: 12, md: 6, lg: 3 }}>
 					<Box>
 						<Typography variant="h6" sx={{ mb: theme.liftkit.spacing.sm }}>
 							Material Product (Default)
