@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
 	Box,
 	Typography,
@@ -18,6 +18,9 @@ import {
 	Tooltip,
 	Radio,
 } from "@mui/material";
+import SpeedDial from "@mui/material/SpeedDial";
+import SpeedDialAction from "@mui/material/SpeedDialAction";
+import SpeedDialIcon from "@mui/material/SpeedDialIcon";
 import {
 	School,
 	AddShoppingCart,
@@ -29,16 +32,28 @@ import {
 	LocationOn,
 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
-
+const actions = [
+	{ icon: <ViewModule />, name: "View Selection" },
+	{ icon: <CalendarMonthOutlined />, name: "Select Tutorial" },
+	{ icon: <AddShoppingCart />, name: "Add to Cart" },
+	
+];
 const EnhancedTutorialProductCard = ({
 	variant = "tutorial-product",
+	hasTutorialSelection = false,
+	onOpenTutorialSelection,
+	onViewSelection,
+	onAddToCart,
 	...props
 }) => {
 	const [selectedOptions, setSelectedOptions] = useState({
 		materials: false,
 		recording: false,
 	});
-	const [isHovered, setIsHovered] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const [speedDialOpen, setSpeedDialOpen] = useState(false);
+    const [overlayCenter, setOverlayCenter] = useState({ x: 0, y: 0 });
+    const speedDialWrapperRef = useRef(null);
 	const theme = useTheme();
 	const basePrice = 299;
 	const materialsPrice = 99;
@@ -67,6 +82,51 @@ const EnhancedTutorialProductCard = ({
 		setIsHovered(false);
 	};
 
+	const handleSpeedDialOpen = () => {		
+			setSpeedDialOpen(true);		
+	};
+
+	const handleSpeedDialClose = () => setSpeedDialOpen(false);
+
+	const handleFabClick = () => {
+		if (!hasTutorialSelection) {
+			if (typeof onOpenTutorialSelection === "function") {
+				onOpenTutorialSelection();
+			}
+			return;
+		}
+		setSpeedDialOpen((prev) => !prev);
+	};
+
+	const recalcOverlayCenter = () => {
+		try {
+			const wrapper = speedDialWrapperRef.current;
+			if (!wrapper) return;
+			const fab = wrapper.querySelector?.(".MuiFab-root");
+			const target = fab || wrapper;
+			const rect = target.getBoundingClientRect();
+			const centerX = rect.left + rect.width / 2;
+			const centerY = rect.top + rect.height / 2;
+			setOverlayCenter({ x: centerX, y: centerY });
+		} catch (_) {
+			// ignore
+		}
+	};
+
+	useEffect(() => {
+		if (speedDialOpen) {
+			recalcOverlayCenter();
+			const onResize = () => recalcOverlayCenter();
+			const onScroll = () => recalcOverlayCenter();
+			window.addEventListener("resize", onResize);
+			window.addEventListener("scroll", onScroll, true);
+			return () => {
+				window.removeEventListener("resize", onResize);
+				window.removeEventListener("scroll", onScroll, true);
+			};
+		}
+	}, [speedDialOpen]);
+
 	return (
 		<Card
 			elevation={2}
@@ -74,9 +134,10 @@ const EnhancedTutorialProductCard = ({
 			className="d-flex flex-column"
 			onMouseEnter={handleMouseEnter}
 			onMouseLeave={handleMouseLeave}
-			sx={{                 
-				transform: isHovered ? 'scale(1.02)' : 'scale(1)',
-				transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+			sx={{
+                position: "relative",
+				transform: isHovered ? "scale(1.02)" : "scale(1)",
+				transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
 			}}
 			{...props}>
 			{/* Floating Badges */}
@@ -174,22 +235,7 @@ const EnhancedTutorialProductCard = ({
 						</Typography>
 					</Stack>
 				</Box>
-				<Box className="tutorial-action-buttons">
-					<Button
-						variant="contained"
-						size="small"
-						color="primary"
-						className="select-tutorial-button">
-						Select Tutorial
-					</Button>
-					<Button
-						variant="contained"
-						size="small"
-						color="secondary"
-						className="view-selection-button">
-						View Selection
-					</Button>
-				</Box>
+				{/* Action buttons merged into Speed Dial below */}
 			</CardContent>
 
 			<CardActions>
@@ -281,12 +327,104 @@ const EnhancedTutorialProductCard = ({
 								Price includes VAT
 							</Typography>
 						</Box>
-						<Button variant="contained" className="add-to-cart-button">
-							<AddShoppingCart />
-						</Button>
+
+						<Box
+							sx={{ position: "relative", width: "100%", zIndex: 9000 }}>
+							<SpeedDial
+								ariaLabel="Tutorial actions"
+								icon={<SpeedDialIcon />}
+								direction="up"
+								onOpen={handleSpeedDialOpen}
+								onClose={handleSpeedDialClose}
+								open={speedDialOpen}
+								FabProps={{
+									size: "medium",
+									color: "primary",
+									onClick: handleFabClick,
+								}}
+								sx={{
+									position: "absolute",
+									bottom: 0,
+									right: 0,
+									zIndex: 9000,
+								}}
+								className="tutorial-speed-dial">
+                                {actions.map((action) => (
+									<SpeedDialAction
+										key={action.name}
+										icon={action.icon}
+										slotProps={{
+											tooltip: {
+												open: true,
+												title: action.name,
+											},
+										}}
+										sx={{
+                                            "& .MuiSpeedDialAction-staticTooltipLabel": {
+                                                whiteSpace: "nowrap",
+                                                maxWidth: "none",
+                                            },
+										}}		
+                                        onClick={() => {
+                                            if (action.name === "View Selection" && typeof onViewSelection === "function") {
+                                                onViewSelection();
+                                            } else if (action.name === "Select Tutorial" && typeof onOpenTutorialSelection === "function") {
+                                                onOpenTutorialSelection();
+                                            } else if (action.name === "Add to Cart" && typeof onAddToCart === "function") {
+                                                onAddToCart();
+                                            }
+                                            handleSpeedDialClose();
+                                        }}
+									/>
+								))}
+								{/* <SpeedDialAction
+									icon={<ViewModule />}
+									tooltipTitle="View Selection"
+									sx={{
+										title: action.name,
+									}}
+									onClick={() => {
+										if (typeof onViewSelection === "function")
+											onViewSelection();
+										handleSpeedDialClose();
+									}}
+								/>
+								<SpeedDialAction
+									icon={<School />}
+									tooltipTitle="Select Tutorial"
+									onClick={() => {
+										if (typeof onOpenTutorialSelection === "function")
+											onOpenTutorialSelection();
+										handleSpeedDialClose();
+									}}
+								/>
+								<SpeedDialAction
+									icon={<AddShoppingCart />}
+									tooltipTitle="Add to Cart"
+									onClick={() => {
+										if (typeof onAddToCart === "function")
+											onAddToCart();
+										handleSpeedDialClose();
+									}}
+								/> */}
+							</SpeedDial>
+						</Box>
 					</Box>
 				</Box>
 			</CardActions>
+            {speedDialOpen && (
+                <Box
+                    onClick={handleSpeedDialClose}
+                    sx={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: (theme) => theme.zIndex.speedDial - 1,
+                        pointerEvents: 'auto',
+                        backgroundImage: `radial-gradient( circle at 98% 96%, rgba(0,0,0,0.28) 0px, rgba(0,0,0,0.20) 120px, rgba(0,0,0,0.12) 240px, rgba(0,0,0,0.06) 420px, rgba(0,0,0,0.0) 65% )`,
+                        transition: 'background 200ms ease-out',
+                    }}
+                />
+            )}
 		</Card>
 	);
 };

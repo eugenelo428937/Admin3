@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Rules Engine API</title>
+</head>
+<body>
+    <h1>Rules Engine API Test</h1>
+    <button onclick="testAPI()">Test API</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAPI() {
+            try {
+                console.log('Testing rules engine API...');
+                const response = await fetch('http://127.0.0.1:8888/api/rules/engine/evaluate/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        entry_point_code: 'home_page_mount',
+                        context: {
+                            current_date: new Date().toISOString().split('T')[0],
+                            user_location: 'home_page'
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('API Response:', result);
+                
+                document.getElementById('result').innerHTML = 
+                    '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+                    
+                if (result.messages && result.messages.length > 0) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.innerHTML = result.messages[0].content;
+                    messageDiv.style.marginTop = '20px';
+                    document.getElementById('result').appendChild(messageDiv);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -4,144 +4,51 @@ const BASE_URL = "/api/rules";
 
 const rulesEngineService = {
   /**
-   * Evaluate rules for a given trigger
+   * Evaluate rules for a given entry point (core method)
    */
-  evaluateRules: async (triggerType, context = {}) => {
+  evaluateRulesAtEntryPoint: async (entryPointCode, context = {}) => {
     try {
       const response = await httpService.post(`${BASE_URL}/engine/evaluate/`, {
-        trigger_type: triggerType,
+        entry_point_code: entryPointCode,
         context: context
       });
       return response.data;
     } catch (error) {
-      console.error("Error evaluating rules:", error);
+      console.error("Error evaluating rules at entry point:", error);
       throw error;
     }
   },
 
   /**
-   * Calculate VAT for checkout using rules engine
+   * Evaluate rules for home page mount (Summer Holiday Display)
    */
-  calculateVAT: async (cartItems = [], userCountry = 'GB', customerType = 'individual') => {
+  evaluateHomePage: async (context = {}) => {
     try {
-      const response = await httpService.post(`${BASE_URL}/engine/calculate-vat/`, {
-        cart_items: cartItems,
-        user_country: userCountry,
-        customer_type: customerType
-      });
-      return response.data;
+      return await rulesEngineService.evaluateRulesAtEntryPoint('home_page_mount', context);
     } catch (error) {
-      console.error("Error calculating VAT:", error);
+      console.error("Error evaluating home page rules:", error);
       throw error;
     }
   },
 
   /**
-   * Acknowledge a rule (for required acknowledgments)
+   * Evaluate rules for checkout terms & conditions (T&C Acknowledge)
    */
-  acknowledgeRule: async (ruleId, templateId = null, acknowledgmentType = 'required') => {
+  evaluateCheckoutTerms: async (context = {}) => {
     try {
-      const response = await httpService.post(`${BASE_URL}/engine/acknowledge/`, {
-        rule_id: ruleId,
-        template_id: templateId,
-        acknowledgment_type: acknowledgmentType,
-        is_selected: acknowledgmentType === 'required' ? true : false
-      });
-      return response.data;
+      return await rulesEngineService.evaluateRulesAtEntryPoint('checkout_terms', context);
     } catch (error) {
-      console.error("Error acknowledging rule:", error);
+      console.error("Error evaluating checkout terms rules:", error);
       throw error;
     }
   },
 
   /**
-   * Select/deselect an optional rule
+   * Evaluate rules for checkout start (expired deadlines and other warnings)
    */
-  selectOptionalRule: async (ruleId, templateId = null, isSelected = true) => {
+  evaluateCheckoutStart: async (context = {}) => {
     try {
-      const response = await httpService.post(`${BASE_URL}/engine/acknowledge/`, {
-        rule_id: ruleId,
-        template_id: templateId,
-        acknowledgment_type: 'optional',
-        is_selected: isSelected
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error selecting optional rule:", error);
-      throw error;
-    }
-  },
-
-  /**
-   * Get pending acknowledgments for the current user
-   */
-  getPendingAcknowledgments: async (triggerType = null) => {
-    try {
-      const params = triggerType ? { trigger_type: triggerType } : {};
-      const response = await httpService.get(`${BASE_URL}/engine/pending-acknowledgments/`, {
-        params
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error getting pending acknowledgments:", error);
-      throw error;
-    }
-  },
-
-  /**
-   * Get user's previous selections for optional rules
-   */
-  getUserSelections: async (triggerType = null) => {
-    try {
-      const params = triggerType ? { trigger_type: triggerType } : {};
-      const response = await httpService.get(`${BASE_URL}/engine/user-selections/`, {
-        params
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error getting user selections:", error);
-      throw error;
-    }
-  },
-
-  /**
-   * Validate checkout and get any required acknowledgments
-   */
-  validateCheckout: async () => {
-    try {
-      const response = await httpService.post(`${BASE_URL}/engine/checkout-validation/`);
-      return response.data;
-    } catch (error) {
-      console.error("Error validating checkout:", error);
-      throw error;
-    }
-  },
-
-  /**
-   * Evaluate rules for adding item to cart
-   */
-  evaluateCartAdd: async (productId, context = {}) => {
-    try {
-      return await rulesEngineService.evaluateRules('cart_add', {
-        product: { id: productId },
-        ...context
-      });
-    } catch (error) {
-      console.error("Error evaluating cart add rules:", error);
-      throw error;
-    }
-  },
-
-  /**
-   * Evaluate rules for checkout start
-   */
-  evaluateCheckoutStart: async (cartItems = [], context = {}) => {
-    try {
-      return await rulesEngineService.evaluateRules('checkout_start', {
-        cart_items: cartItems.map(item => item.id),
-        cart_item_count: cartItems.length,
-        ...context
-      });
+      return await rulesEngineService.evaluateRulesAtEntryPoint('checkout_start', context);
     } catch (error) {
       console.error("Error evaluating checkout start rules:", error);
       throw error;
@@ -149,19 +56,29 @@ const rulesEngineService = {
   },
 
   /**
-   * Evaluate rules for product view
+   * Acknowledge a rule by ID
    */
-  evaluateProductView: async (productId, context = {}) => {
+  acknowledgeRule: async (ruleId, templateId = null, acknowledgmentType = 'required') => {
     try {
-      return await rulesEngineService.evaluateRules('product_view', {
-        product: { id: productId },
-        ...context
+      const response = await httpService.post(`${BASE_URL}/engine/acknowledge/`, {
+        rule_id: ruleId,
+        template_id: templateId,
+        acknowledgment_type: acknowledgmentType,
+        is_selected: true
       });
+      return response.data;
     } catch (error) {
-      console.error("Error evaluating product view rules:", error);
+      console.error("Error acknowledging rule:", error);
       throw error;
     }
   }
 };
 
-export default rulesEngineService; 
+export default rulesEngineService;
+
+// Entry point constants for the required functionality
+export const ENTRY_POINTS = {
+  HOME_PAGE_MOUNT: 'home_page_mount',        // Summer Holiday Display
+  CHECKOUT_TERMS: 'checkout_terms',          // Terms & Conditions Acknowledge
+  CHECKOUT_START: 'checkout_start'           // Checkout Start (expired deadlines, etc.)
+}; 

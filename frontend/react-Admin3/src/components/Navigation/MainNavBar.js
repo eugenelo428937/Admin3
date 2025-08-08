@@ -18,7 +18,7 @@ import MobileNavigation from "./MobileNavigation";
 import TopNavBar from "./TopNavBar";
 import NavbarBrand from "./NavbarBrand";
 import NavigationMenu from "./NavigationMenu";
-import UserActions from "./UserActions";
+import MainNavActions from "./MainNavActions";
 import AuthModal from "./AuthModal";
 import CartPanel from "../Ordering/CartPanel";
 
@@ -216,10 +216,10 @@ const MainNavBar = () => {
 				expanded={expanded}
 				onToggle={setExpanded}
 				sticky="top"
-				className="navbar navbar-expand-md navbar-main align-content-center justify-content-between px-1 px-lg-4 px-xl-5 pt-md-2 py-lg-2">
-				<Container
+				className="navbar navbar-expand-md navbar-main align-content-center justify-content-between p-left__xl p-right__xl pt-md-2 py-lg-2">
+				<Container	
 					fluid
-					className="d-flex flex-row justify-content-between align-items-center px-xl-5 px-lg-4 px-md-3 px-sm-2 px-xs-1">
+					className="d-flex flex-row justify-content-between align-items-center">
 					{/* Left Section - Brand/Logo */}
 					<NavbarBrand />
 
@@ -255,6 +255,7 @@ const MainNavBar = () => {
 							handleProductVariationClick={handleProductVariationClick}
 							handleMarkingVouchersClick={handleMarkingVouchersClick}
 							handleTutorialFormatClick={handleTutorialFormatClick}
+							onCollapseNavbar={() => setExpanded(false)}
 						/>
 
 						{/* Mobile Navigation - Visible only on mobile */}
@@ -282,10 +283,9 @@ const MainNavBar = () => {
 						</div>
 					</Navbar.Collapse>
 
-					{/* Right Section - User Actions */}
+					{/* Right Section - MainNavActions (Login and Cart) */}
 					<div className="order-0 order-md-4">
-						<UserActions
-							onOpenSearch={handleOpenSearchModal}
+						<MainNavActions
 							onOpenAuth={handleOpenAuthModal}
 							onOpenCart={handleOpenCartPanel}
 							onToggleMobileMenu={() => setExpanded(!expanded)}
@@ -296,22 +296,13 @@ const MainNavBar = () => {
 			</Navbar>
 
 			{/* Search Modal */}
-			<SearchModal 
-				open={showSearchModal} 
-				onClose={handleCloseSearchModal} 
-			/>
-			
+			<SearchModal open={showSearchModal} onClose={handleCloseSearchModal} />
+
 			{/* Auth Modal */}
-			<AuthModal
-				open={showAuthModal}
-				onClose={handleCloseAuthModal}
-			/>
-			
+			<AuthModal open={showAuthModal} onClose={handleCloseAuthModal} />
+
 			{/* Cart Panel */}
-			<CartPanel
-				show={showCartPanel}
-				handleClose={handleCloseCartPanel}
-			/>
+			<CartPanel show={showCartPanel} handleClose={handleCloseCartPanel} />
 		</div>
 	);
 };

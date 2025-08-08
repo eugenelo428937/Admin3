@@ -3,7 +3,7 @@ import { useCart } from "../../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 import cartService from "../../services/cartService";
 import { Container, Alert } from "react-bootstrap";
-import rulesEngineService from "../../services/rulesEngineService";
+// Rules engine import removed - only keeping T&C and Summer Holiday functionality
 import CheckoutSteps from "./CheckoutSteps";
 
 const CheckoutPage = () => {
@@ -12,42 +12,7 @@ const CheckoutPage = () => {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [checkoutComplete, setCheckoutComplete] = useState(false);
-  const [rulesMessages, setRulesMessages] = useState([]);
   const navigate = useNavigate();
-
-  // Evaluate checkout rules when component mounts
-  useEffect(() => {
-    const evaluateCheckoutRules = async () => {
-      if (cartItems.length > 0) {
-        try {
-          const result = await rulesEngineService.validateCheckout();
-          if (result.success) {
-            // Convert acknowledgments to messages if there are any
-            const messages = result.messages || [];
-            if (result.acknowledgments && result.acknowledgments.length > 0) {
-              // Add acknowledgment messages to the messages array
-              result.acknowledgments.forEach(ack => {
-                messages.push({
-                  type: 'acknowledgment',
-                  message_type: 'terms',
-                  title: 'Terms and Conditions',
-                  content: 'Please review and acknowledge the terms and conditions to proceed with your order.',
-                  requires_acknowledgment: true,
-                  rule_id: ack.rule_id,
-                  template_id: ack.template_id
-                });
-              });
-            }
-            setRulesMessages(messages);
-          }
-        } catch (err) {
-          console.error("Error evaluating checkout rules:", err);
-        }
-      }
-    };
-
-    evaluateCheckoutRules();
-  }, [cartItems]);
 
   const handleCheckoutComplete = async (paymentData = {}) => {
     setLoading(true);
@@ -115,7 +80,6 @@ const CheckoutPage = () => {
       
       <CheckoutSteps 
         onComplete={handleCheckoutComplete}
-        rulesMessages={rulesMessages}
       />
     </Container>
   );

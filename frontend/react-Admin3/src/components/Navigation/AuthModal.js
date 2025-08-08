@@ -11,7 +11,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import LoginForm from '../User/LoginForm';
+import LoginFormContent from '../User/LoginFormContent';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -68,12 +68,22 @@ const AuthModal = ({ open, onClose }) => {
       TransitionComponent={Transition}
       maxWidth="sm"
       fullWidth
+      sx={{
+        zIndex: 10500,
+        '& .MuiBackdrop-root': {
+          zIndex: 10499
+        }
+      }}
       PaperProps={{
         sx: {
           borderRadius: 2,
-          overflow: 'visible'
+          overflow: 'visible',
+          zIndex: 10501,
+          position: 'relative'
         }
       }}
+      disablePortal={false}
+      keepMounted={false}
     >
       <Box sx={{ position: 'relative' }}>
         <IconButton
@@ -82,15 +92,14 @@ const AuthModal = ({ open, onClose }) => {
             position: 'absolute',
             right: 8,
             top: 8,
-            zIndex: 1
+            zIndex: 10502
           }}
         >
           <CloseIcon />
         </IconButton>
         
         <DialogContent sx={{ p: 0 }}>
-          <LoginForm
-            show={true}
+          <LoginFormContent
             onHide={handleClose}
             formData={formData}
             handleInputChange={handleInputChange}

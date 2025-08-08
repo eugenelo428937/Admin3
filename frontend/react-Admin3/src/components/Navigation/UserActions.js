@@ -10,15 +10,15 @@ import {
   Badge,
   Tooltip
 } from '@mui/material';
-import { 
-  Search as SearchIcon,
-  ShoppingCart as CartIcon,
-  AccountCircle as PersonIcon,
-  Download as DownloadIcon,
-  Menu as MenuIcon,
-  Logout as LogoutIcon,
-  Person as ProfileIcon
-} from '@mui/icons-material';
+import {
+	Search as SearchIcon,
+	ShoppingCart as CartIcon,
+	AccountCircle as PersonIcon,
+	Download as DownloadIcon,
+	Menu as MenuIcon,
+	Logout as LogoutIcon,
+	Person as ProfileIcon,	
+} from "@mui/icons-material";
 import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
@@ -91,18 +91,18 @@ const UserActions = ({ onOpenSearch, onOpenAuth, onOpenCart, onToggleMobileMenu,
 				</Button>
 			</Tooltip>
 
-			{/* Shopping Cart */}
+            {/* Shopping Cart */}
 			<Tooltip title="Shopping Cart">
-				<IconButton
+				<Button
+                    id="main-cart-button"
 					onClick={onOpenCart}
 					sx={{ color: theme.palette.liftkit.light.onSurface }}
-					aria-label={`shopping cart with {cartCount} items`}>
-					<Badge badgeContent={cartCount} color="primary" max={99}>
-						<CartIcon
-							sx={{ color: theme.palette.liftkit.light.background }}
-						/>
+					aria-label={`shopping cart with ${cartCount} items`}
+					startIcon={<CartIcon />}>
+					<Badge badgeContent={cartCount} color="primary" max={99}>						
 					</Badge>
-				</IconButton>
+					Cart 
+				</Button>
 			</Tooltip>
 
 			{/* User Profile / Login */}
@@ -138,7 +138,7 @@ const UserActions = ({ onOpenSearch, onOpenAuth, onOpenCart, onToggleMobileMenu,
 								py: 1,
 								overflow: "visible",
 								zIndex: 9999,
-								backgroundcolor: theme.palette.grey[50],
+								backgroundColor: theme.palette.grey[50],
 								borderRadius: 2,
 								boxShadow: 2,
 								border: "1px solid rgba(0, 0, 0, 0.12)",

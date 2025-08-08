@@ -4,8 +4,13 @@ from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from .engine import rules_engine, evaluate_checkout_rules, evaluate_cart_add_rules
-from .models import Rule, MessageTemplate, UserAcknowledgment, HolidayCalendar
+from .models import (
+    Rule, MessageTemplate, UserAcknowledgment, HolidayCalendar,
+    ContentStyle, ContentStyleTheme, MessageTemplateStyle
+)
 from .serializers import (
     RuleSerializer, MessageTemplateSerializer, UserAcknowledgmentSerializer,
     HolidayCalendarSerializer
@@ -22,29 +27,42 @@ class RulesEngineViewSet(viewsets.ViewSet):
     """
     permission_classes = [AllowAny]
 
+    @method_decorator(csrf_exempt)
     @action(detail=False, methods=['post'], url_path='evaluate')
     def evaluate_rules(self, request):
-        """POST /rules/evaluate/ - Evaluate rules for a given trigger"""
+        """POST /rules/evaluate/ - Evaluate rules for entry point or trigger type"""
         try:
+            entry_point_code = request.data.get('entry_point_code')
             trigger_type = request.data.get('trigger_type')
-            if not trigger_type:
+            
+            # Support both new entry_point_code and legacy trigger_type
+            if not entry_point_code and not trigger_type:
                 return Response(
-                    {'error': 'trigger_type is required'}, 
+                    {'error': 'Either entry_point_code or trigger_type is required'}, 
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
             user = request.user if request.user.is_authenticated else None
             context_data = request.data.get('context', {})
             
-            # Special handling for cart-related triggers
-            if trigger_type == 'checkout_start' and 'cart_items' in context_data:
+            # Special handling for cart-related triggers (legacy)
+            if (trigger_type == 'checkout_start' or entry_point_code == 'checkout_start') and 'cart_items' in context_data:
                 # Get cart items from the cart service
                 from cart.models import CartItem
                 cart_item_ids = context_data.get('cart_items', [])
                 cart_items = list(CartItem.objects.filter(id__in=cart_item_ids).select_related('product', 'product__product'))
-                result = evaluate_checkout_rules(user, cart_items, **context_data)
+                
+                # Remove cart_items from context_data to avoid duplicate argument error
+                filtered_context = {k: v for k, v in context_data.items() if k != 'cart_items'}
+                result = evaluate_checkout_rules(user, cart_items, **filtered_context)
             else:
-                result = rules_engine.evaluate_rules(trigger_type, user, **context_data)
+                # Use the updated engine that supports both entry_point_code and trigger_type
+                result = rules_engine.evaluate_rules(
+                    entry_point_code=entry_point_code,
+                    trigger_type=trigger_type,
+                    user=user,
+                    **context_data
+                )
                 
             return Response(result)
             
@@ -91,7 +109,7 @@ class RulesEngineViewSet(viewsets.ViewSet):
                     'ip_address': ip_address,
                     'user_agent': user_agent,
                     'session_data': {
-                        'request_data': request.data,
+                        'request_data': dict(request.data),
                         'timestamp': timezone.now().isoformat()
                     }
                 }
@@ -182,6 +200,185 @@ class RulesEngineViewSet(viewsets.ViewSet):
 
         except Exception as e:
             logger.error(f"Error getting user selections: {str(e)}")
+            return Response(
+                {'error': 'Internal server error', 'details': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=False, methods=['post'], url_path='accept-terms', permission_classes=[IsAuthenticated])
+    def accept_terms(self, request):
+        """POST /rules/accept-terms/ - Accept Terms & Conditions during checkout"""
+        try:
+            from cart.models import ActedOrder, OrderUserAcknowledgment
+            
+            order_id = request.data.get('order_id')
+            general_terms_accepted = request.data.get('general_terms_accepted', False)
+            terms_version = request.data.get('terms_version', '1.0')
+            product_acknowledgments = request.data.get('product_acknowledgments', {})
+            
+            if not order_id:
+                return Response(
+                    {'error': 'order_id is required'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Verify order belongs to user
+            try:
+                order = ActedOrder.objects.get(id=order_id, user=request.user)
+            except ActedOrder.DoesNotExist:
+                return Response(
+                    {'error': 'Order not found or access denied'}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Get client info
+            ip_address = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0] or \
+                        request.META.get('REMOTE_ADDR', '')
+            user_agent = request.META.get('HTTP_USER_AGENT', '')
+            
+            # Get rules engine evaluation data for this entry point
+            rules_evaluation = rules_engine.evaluate_rules(
+                entry_point_code='checkout_terms',
+                user=request.user,
+                order_id=order_id
+            )
+            
+            # Extract rule_id and template_id from rules evaluation
+            rule_id = None
+            template_id = None
+            
+            if rules_evaluation.get('success') and rules_evaluation.get('messages'):
+                # Look for T&C related messages in the evaluation results
+                for message in rules_evaluation['messages']:
+                    if (message.get('type') in ['message', 'acknowledgment'] and 
+                        message.get('requires_acknowledgment')):
+                        rule_id = message.get('rule_id')
+                        template_id = message.get('template_id')
+                        break
+            
+            # Create or update T&C acknowledgment record
+            with transaction.atomic():
+                terms_acknowledgment, created = OrderUserAcknowledgment.objects.update_or_create(
+                    order=order,
+                    acknowledgment_type='terms_conditions',
+                    defaults={
+                        'rule_id': rule_id,
+                        'template_id': template_id,
+                        'title': 'Terms & Conditions',
+                        'content_summary': f'General Terms & Conditions acceptance (v{terms_version})',
+                        'is_accepted': general_terms_accepted,
+                        'ip_address': ip_address,
+                        'user_agent': user_agent,
+                        'content_version': terms_version,
+                        'acknowledgment_data': {
+                            'products': product_acknowledgments,
+                            'general_terms_accepted': general_terms_accepted
+                        },
+                        'rules_engine_context': {
+                            'evaluation_result': rules_evaluation,
+                            'accepted_at': timezone.now().isoformat(),
+                            'request_data': request.data,
+                            'extracted_rule_id': rule_id,
+                            'extracted_template_id': template_id
+                        }
+                    }
+                )
+                
+                # Also create UserAcknowledgment records for rules engine tracking
+                if rules_evaluation.get('success') and rules_evaluation.get('actions'):
+                    for action_result in rules_evaluation.get('actions', []):
+                        if action_result.get('type') == 'acknowledge':
+                            rule_id = action_result.get('rule_id')
+                            if rule_id:
+                                try:
+                                    rule = Rule.objects.get(id=rule_id)
+                                    UserAcknowledgment.objects.update_or_create(
+                                        user=request.user,
+                                        rule=rule,
+                                        message_template=rule.actions.filter(
+                                            action_type='acknowledge'
+                                        ).first().message_template,
+                                        defaults={
+                                            'acknowledgment_type': 'required',
+                                            'is_selected': general_terms_accepted,
+                                            'ip_address': ip_address,
+                                            'user_agent': user_agent,
+                                            'session_data': {
+                                                'order_id': order_id,
+                                                'terms_version': terms_version,
+                                                'timestamp': timezone.now().isoformat()
+                                            }
+                                        }
+                                    )
+                                except Rule.DoesNotExist:
+                                    logger.warning(f"Rule {rule_id} not found for T&C acknowledgment")
+            
+            action = "created" if created else "updated"
+            return Response({
+                'success': True,
+                'message': f'Terms & Conditions acceptance {action} successfully',
+                'acceptance_id': terms_acceptance.id,
+                'order_id': order.id,
+                'general_terms_accepted': general_terms_accepted,
+                'terms_version': terms_version,
+                'accepted_at': terms_acceptance.accepted_at.isoformat()
+            })
+
+        except Exception as e:
+            logger.error(f"Error accepting terms: {str(e)}")
+            return Response(
+                {'error': 'Internal server error', 'details': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=False, methods=['get'], url_path='checkout-terms-status', permission_classes=[IsAuthenticated])
+    def checkout_terms_status(self, request):
+        """GET /rules/checkout-terms-status/ - Get T&C acceptance status for an order"""
+        try:
+            from cart.models import ActedOrder, OrderUserAcknowledgment
+            
+            order_id = request.query_params.get('order_id')
+            if not order_id:
+                return Response(
+                    {'error': 'order_id is required'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Verify order belongs to user
+            try:
+                order = ActedOrder.objects.get(id=order_id, user=request.user)
+            except ActedOrder.DoesNotExist:
+                return Response(
+                    {'error': 'Order not found or access denied'}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Check if T&C acknowledgment exists
+            try:
+                terms_acknowledgment = OrderUserAcknowledgment.objects.get(
+                    order=order,
+                    acknowledgment_type='terms_conditions'
+                )
+                return Response({
+                    'success': True,
+                    'has_acceptance': True,
+                    'general_terms_accepted': terms_acknowledgment.general_terms_accepted,
+                    'terms_version': terms_acknowledgment.terms_version,
+                    'accepted_at': terms_acknowledgment.accepted_at.isoformat(),
+                    'product_acknowledgments': terms_acknowledgment.product_acknowledgments
+                })
+            except OrderUserAcknowledgment.DoesNotExist:
+                return Response({
+                    'success': True,
+                    'has_acceptance': False,
+                    'general_terms_accepted': False,
+                    'terms_version': None,
+                    'accepted_at': None,
+                    'product_acknowledgments': {}
+                })
+
+        except Exception as e:
+            logger.error(f"Error getting T&C status: {str(e)}")
             return Response(
                 {'error': 'Internal server error', 'details': str(e)}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -358,4 +555,70 @@ class UserAcknowledgmentViewSet(viewsets.ReadOnlyModelViewSet):
             # Regular users can only see their own
             return UserAcknowledgment.objects.filter(
                 user=self.request.user
-            ).order_by('-acknowledged_at') 
+            ).order_by('-acknowledged_at')
+    
+    @action(detail=False, methods=['get'], url_path='template-styles', permission_classes=[AllowAny])
+    def get_template_styles(self, request):
+        """Get dynamic styles for a specific message template"""
+        template_id = request.query_params.get('template_id')
+        if not template_id:
+            return Response({
+                'error': 'template_id parameter is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            template = get_object_or_404(MessageTemplate, id=template_id)
+            styles = {}
+            
+            # Get template-specific style configuration
+            try:
+                template_style = MessageTemplateStyle.objects.get(message_template=template)
+                
+                # Get theme styles if theme is assigned
+                if template_style.theme:
+                    theme_styles = ContentStyle.objects.filter(
+                        theme=template_style.theme,
+                        is_active=True
+                    ).order_by('priority')
+                    
+                    for style in theme_styles:
+                        # Add styles by CSS class selector
+                        if style.css_class_selector:
+                            styles[style.css_class_selector] = style.get_style_object()
+                        
+                        # Add styles by element type
+                        styles[style.element_type] = style.get_style_object()
+                
+                # Override with custom styles for this template
+                custom_styles = template_style.custom_styles.filter(is_active=True).order_by('priority')
+                for style in custom_styles:
+                    if style.css_class_selector:
+                        styles[style.css_class_selector] = style.get_style_object()
+                    styles[style.element_type] = style.get_style_object()
+                    
+            except MessageTemplateStyle.DoesNotExist:
+                # No specific styling configured, use global styles
+                global_styles = ContentStyle.objects.filter(
+                    theme__isnull=True,
+                    is_active=True
+                ).order_by('priority')
+                
+                for style in global_styles:
+                    if style.css_class_selector:
+                        styles[style.css_class_selector] = style.get_style_object()
+                    styles[style.element_type] = style.get_style_object()
+            
+            return Response({
+                'template_id': template_id,
+                'template_name': template.name,
+                'styles': styles,
+                'cached_at': timezone.now().isoformat()
+            })
+            
+        except Exception as e:
+            logger.error(f"Error fetching template styles for template {template_id}: {str(e)}")
+            return Response({
+                'template_id': template_id,
+                'styles': {},
+                'error': 'Failed to fetch styles'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 

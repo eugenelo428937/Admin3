@@ -8,11 +8,63 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
+class RuleEntryPoint(models.Model):
+    """Strict predefined entry points for rule execution"""
+    ENTRY_POINTS = [
+        ('home_page_mount', 'Home Page Mount'),
+        ('product_list_mount', 'Product List Mount'),
+        ('add_to_cart', 'Add to Cart'),
+        ('checkout_start', 'Checkout Start'),
+        ('checkout_terms', 'Checkout Terms & Conditions'),
+        ('checkout_details', 'Checkout Details'),
+        ('checkout_payment_start', 'Checkout Payment Start'),
+        ('checkout_payment_end', 'Checkout Payment End'),
+        ('checkout_order_placed', 'Checkout Order Placed'),
+        ('user_registration_start', 'User Registration Start'),
+        ('user_registration_end', 'User Registration End'),
+        ('user_authenticated', 'User Authenticated'),
+    ]
+    
+    code = models.CharField(max_length=30, choices=ENTRY_POINTS, unique=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'acted_rule_entry_points'
+        verbose_name = 'Rule Entry Point'
+        verbose_name_plural = 'Rule Entry Points'
+        ordering = ['code']
+    
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+
+
 class MessageTemplate(models.Model):
     """Store reusable message templates with variables"""
+    
+    CONTENT_FORMATS = [
+        ('html', 'HTML Content'),
+        ('json', 'JSON Structure'),
+        ('markdown', 'Markdown'),
+    ]
+    
     name = models.CharField(max_length=100, unique=True)
     title = models.CharField(max_length=200)
     content = models.TextField()
+    content_format = models.CharField(
+        max_length=10, 
+        choices=CONTENT_FORMATS, 
+        default='html',
+        help_text="Format of the content field"
+    )
+    json_content = models.JSONField(
+        null=True, 
+        blank=True,
+        help_text="Structured JSON content for rendering with Material UI components"
+    )
     message_type = models.CharField(max_length=20, choices=[
         ('info', 'Information'),
         ('warning', 'Warning'),
@@ -32,10 +84,46 @@ class MessageTemplate(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.message_type}"
+    
+    def get_content(self):
+        """Get the appropriate content based on content_format"""
+        if self.content_format == 'json' and self.json_content:
+            return self.json_content
+        return self.content
+    
+    def clean(self):
+        """Validate that JSON content is provided when content_format is 'json'"""
+        super().clean()
+        if self.content_format == 'json' and not self.json_content:
+            raise ValidationError({
+                'json_content': 'JSON content is required when content format is JSON'
+            })
+        
+        # Validate JSON structure if provided
+        if self.json_content:
+            try:
+                # Basic validation that it's valid JSON and has expected structure
+                if not isinstance(self.json_content, dict):
+                    raise ValidationError({
+                        'json_content': 'JSON content must be a JSON object'
+                    })
+                    
+                # Optional: Add more specific validation for expected structure
+                if 'content' in self.json_content:
+                    if not isinstance(self.json_content['content'], list):
+                        raise ValidationError({
+                            'json_content': 'Content field must be a list of elements'
+                        })
+                        
+            except (TypeError, ValueError) as e:
+                raise ValidationError({
+                    'json_content': f'Invalid JSON structure: {str(e)}'
+                })
 
 
 class Rule(models.Model):
-    """Main rule definition"""
+    """Main rule definition with entry point integration"""
+    # Keep old TRIGGER_TYPES for backward compatibility during migration
     TRIGGER_TYPES = [
         ('cart_add', 'Add to Cart'),
         ('checkout_start', 'Checkout Start'),
@@ -45,13 +133,54 @@ class Rule(models.Model):
         ('registration', 'User Registration'),
         ('order_complete', 'Order Complete'),
     ]
+    
+    SUCCESS_CRITERIA = [
+        ('all_conditions', 'All conditions must pass'),
+        ('any_condition', 'At least one condition must pass'),
+        ('custom_function', 'Use custom function to determine success')
+    ]
 
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    trigger_type = models.CharField(max_length=20, choices=TRIGGER_TYPES)
+    
+    # New entry point field (will replace trigger_type)
+    entry_point = models.ForeignKey(
+        RuleEntryPoint, 
+        on_delete=models.CASCADE,
+        related_name='rules',
+        null=True,  # Temporary for migration
+        blank=True
+    )
+    
+    # Keep old field temporarily for backward compatibility
+    trigger_type = models.CharField(
+        max_length=20, 
+        choices=TRIGGER_TYPES,
+        null=True,  # Make nullable for migration
+        blank=True
+    )
+    
     priority = models.IntegerField(default=100, help_text="Lower numbers = higher priority")
     is_active = models.BooleanField(default=True)
     is_blocking = models.BooleanField(default=False, help_text="If true, user must acknowledge before proceeding")
+    
+    # Success/failure criteria for rule chain execution
+    success_criteria = models.CharField(
+        max_length=20,
+        choices=SUCCESS_CRITERIA,
+        default='all_conditions',
+        help_text="Criteria for determining if this rule succeeds"
+    )
+    success_function = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Custom function name for success criteria evaluation"
+    )
+    return_on_failure = models.BooleanField(
+        default=False,
+        help_text="Return false and stop chain execution if this rule fails"
+    )
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -62,7 +191,32 @@ class Rule(models.Model):
         ordering = ['priority', 'id']
 
     def __str__(self):
-        return f"{self.name} ({self.trigger_type})"
+        if self.entry_point:
+            return f"{self.name} ({self.entry_point.code})"
+        return f"{self.name} ({self.trigger_type})"  # Fallback during migration
+    
+    @property
+    def trigger_identifier(self):
+        """Get the trigger identifier (entry_point.code or trigger_type)"""
+        if self.entry_point:
+            return self.entry_point.code
+        return self.trigger_type
+    
+    def evaluate_success_criteria(self, condition_results):
+        """Evaluate if the rule succeeds based on condition results"""
+        if self.success_criteria == 'all_conditions':
+            return all(condition_results)
+        elif self.success_criteria == 'any_condition':
+            return any(condition_results) if condition_results else True
+        elif self.success_criteria == 'custom_function' and self.success_function:
+            try:
+                from . import custom_functions
+                func = getattr(custom_functions, self.success_function, None)
+                if func:
+                    return func(condition_results)
+            except (ImportError, AttributeError):
+                pass
+        return all(condition_results)  # Default fallback
 
 
 class RuleCondition(models.Model):
@@ -78,6 +232,29 @@ class RuleCondition(models.Model):
         ('cart_item_count', 'Cart Item Count'),
         ('user_order_history', 'User Order History'),
         ('custom_field', 'Custom Field'),
+        # New condition types from refinement requirements
+        ('user_country', 'User Country'),
+        ('user_home_address', 'User Home Address'),
+        ('user_home_email', 'User Home Email'),
+        ('user_work_address', 'User Work Address'),
+        ('user_work_email', 'User Work Email'),
+        ('user_is_reduced_rate', 'User Is Reduced Rate'),
+        ('user_is_apprentice', 'User Is Apprentice'),
+        ('user_is_caa', 'User Is CAA'),
+        ('user_is_study_plus', 'User Is Study Plus'),
+        ('cart_has_material', 'Cart Has Material'),
+        ('cart_has_marking', 'Cart Has Marking'),
+        ('cart_has_tutorial', 'Cart Has Tutorial'),
+        ('product_variations', 'Product Variations'),
+        ('material_despatch_date', 'Material Despatch Date'),
+        ('marking_expired_deadlines', 'Marking Expired Deadlines'),
+        ('tutorial_has_started', 'Tutorial Has Started'),
+        ('exam_session_transition_period', 'Exam Session Transition Period'),
+        ('date_xmas', 'Christmas Period'),
+        ('date_easter', 'Easter Period'),
+        ('checkout_payment_method', 'Checkout Payment Method'),
+        ('checkout_employer_code', 'Checkout Employer Code'),
+        ('cart_item_expired_deadline', 'Cart Item Has Expired Deadline'),
     ]
 
     OPERATORS = [
@@ -95,6 +272,14 @@ class RuleCondition(models.Model):
     ]
 
     rule = models.ForeignKey(Rule, on_delete=models.CASCADE, related_name='conditions')
+    condition_group = models.ForeignKey(
+        'RuleConditionGroup',
+        on_delete=models.CASCADE,
+        related_name='conditions',
+        null=True,
+        blank=True,
+        help_text="Optional condition group this condition belongs to"
+    )
     condition_type = models.CharField(max_length=30, choices=CONDITION_TYPES)
     field_name = models.CharField(max_length=100, help_text="Field to evaluate (e.g., 'product.type', 'user.email')")
     operator = models.CharField(max_length=20, choices=OPERATORS)
@@ -112,8 +297,12 @@ class RuleCondition(models.Model):
     def evaluate(self, context):
         """Evaluate this condition against the provided context"""
         try:
-            # Get the field value from context using dot notation
-            field_value = self._get_nested_value(context, self.field_name)
+            # Special handling for cart item expired deadline condition
+            if self.condition_type == 'cart_item_expired_deadline':
+                return self._evaluate_cart_item_condition(context)
+            
+            # Get the field value from context using dot notation or condition type mapping
+            field_value = self._get_field_value(context)
             comparison_value = self._parse_value(self.value)
             
             if self.operator == 'custom_function':
@@ -125,10 +314,26 @@ class RuleCondition(models.Model):
                     # Get the custom function by name
                     custom_function = getattr(custom_functions, function_name, None)
                     if custom_function:
-                        # Merge params with the full context for custom functions
-                        enhanced_params = params.copy()
-                        enhanced_params.update(context)  # Add full context to params
-                        result = custom_function(field_value, enhanced_params)
+                        # For expired deadline check, we need cart items
+                        if function_name == 'check_expired_marking_deadlines':
+                            # Get context data safely
+                            context_data = context.data if hasattr(context, 'data') else context
+                            cart_items = context_data.get('cart_items', [])
+                            result_data = custom_function(cart_items, params)
+                            
+                            # Store the result in context for message template variables
+                            if hasattr(context, 'data'):
+                                context.data['expired_deadline_result'] = result_data
+                            else:
+                                context['expired_deadline_result'] = result_data
+                                
+                            result = result_data.get('has_expired_deadlines', False)
+                        else:
+                            # For other custom functions, use the original approach
+                            enhanced_params = params.copy()
+                            context_data = context.data if hasattr(context, 'data') else context
+                            enhanced_params.update(context_data)
+                            result = custom_function(field_value, enhanced_params)
                     else:
                         logger.error(f"Custom function '{function_name}' not found")
                         result = False
@@ -142,7 +347,144 @@ class RuleCondition(models.Model):
             # Log error and return False for safety
             logger.error(f"Error evaluating condition: {str(e)}")
             return False
+    
+    def _evaluate_cart_item_condition(self, context):
+        """Evaluate cart item specific conditions"""
+        try:
+            context_data = context.data if hasattr(context, 'data') else context
+            cart_items = context_data.get('cart_items', [])
+            
+            # Group expired items by product to avoid duplicates
+            expired_products_dict = {}
+            
+            # Check each cart item for expired deadlines
+            for item in cart_items:
+                # Handle both Django objects and dictionaries
+                if hasattr(item, 'get'):
+                    # Dictionary format
+                    is_marking_and_expired = item.get('is_marking_and_expired', False)
+                    product_name = item.get('product_name', 'Unknown')
+                    expired_count = item.get('expired_count', 1)
+                    total_papers = item.get('total_papers', 1)
+                    subject_code = item.get('subject_code', '')
+                    product_id = item.get('product_id')
+                else:
+                    # Django object format
+                    is_marking = getattr(item, 'is_marking', False)
+                    has_expired_deadline = getattr(item, 'has_expired_deadline', False)
+                    is_marking_and_expired = is_marking and has_expired_deadline
+                    product_name = item.product.product.fullname
+                    subject_code = item.product.exam_session_subject.subject.code
+                    product_id = item.product.product.id
+                    
+                    # Get deadline counts for marking products
+                    if is_marking_and_expired:
+                        try:
+                            from marking.models import MarkingPaper
+                            from django.utils import timezone
+                            marking_papers = MarkingPaper.objects.filter(exam_session_subject_product=item.product)
+                            total_papers = marking_papers.count()
+                            expired_count = marking_papers.filter(deadline__lt=timezone.now()).count()
+                        except Exception:
+                            expired_count = 1
+                            total_papers = 1
+                    else:
+                        expired_count = 0
+                        total_papers = 1
+                
+                if is_marking_and_expired:
+                    # Use exam_session_subject_product.id as unique key (current_product from cart item)
+                    if hasattr(item, 'product'):
+                        # Django object format
+                        unique_key = item.product.id  # ExamSessionSubjectProduct ID
+                    else:
+                        # Dictionary format
+                        unique_key = item.get('product_id')  # ExamSessionSubjectProduct ID from dict
+                    
+                    # If this unique product isn't already in the dict, add it with counts
+                    if unique_key not in expired_products_dict:
+                        expired_products_dict[unique_key] = {
+                            'product_name': product_name,
+                            'expired_count': expired_count,
+                            'total_papers': total_papers,
+                            'subject_code': subject_code,
+                            'product_id': product_id,
+                            'exam_session_subject_product_id': unique_key
+                        }
+            
+            expired_products = list(expired_products_dict.values())
+            
+            # Store expired products data in context for template variables
+            if expired_products:
+                # Create formatted text for all expired products
+                product_lines = []
+                for product in expired_products:
+                    line = f"{product['subject_code']} {product['product_name']} : {product['expired_count']}/{product['total_papers']} deadlines expired."
+                    product_lines.append(line)
+                
+                # Join with HTML line breaks for proper rendering
+                all_expired_products_text = '<br/>'.join(product_lines)
+                
+                # Create a combined product name that includes all products
+                combined_product_name = all_expired_products_text.replace('<br/>', '\n')
+                
+                expired_data = {
+                    'expired_products': expired_products,
+                    'all_expired_products': all_expired_products_text,
+                    # Use combined data that includes all products
+                    'product_name': combined_product_name,  # This will contain all products
+                    'expired_count': sum(p['expired_count'] for p in expired_products),
+                    'total_papers': sum(p['total_papers'] for p in expired_products),
+                    'subject_code': ', '.join(p['subject_code'] for p in expired_products)
+                }
+                
+                if hasattr(context, 'data'):
+                    context.data['expired_deadline_result'] = expired_data
+                    # Also set individual variables directly for easier lookup
+                    context.data.update(expired_data)
+                else:
+                    context['expired_deadline_result'] = expired_data
+                    context.update(expired_data)
+            
+            # Return True if any cart items have expired deadlines
+            return len(expired_products) > 0
+            
+        except Exception as e:
+            logger.error(f"Error evaluating cart item condition: {str(e)}")
+            return False
 
+    def _get_field_value(self, context):
+        """Get field value based on condition type or field name"""
+        # Map condition types to context paths for the new refined fields
+        condition_mappings = {
+            'user_country': 'user.country',
+            'user_home_address': 'user.home_address',
+            'user_home_email': 'user.home_email',
+            'user_work_address': 'user.work_address',
+            'user_work_email': 'user.work_email',
+            'user_is_reduced_rate': 'user.is_reduced_rate',
+            'user_is_apprentice': 'user.is_apprentice',
+            'user_is_caa': 'user.is_caa',
+            'user_is_study_plus': 'user.is_study_plus',
+            'cart_has_material': 'cart.has_material',
+            'cart_has_marking': 'cart.has_marking',
+            'cart_has_tutorial': 'cart.has_tutorial',
+            'product_variations': 'product.product_variations',
+            'material_despatch_date': 'product.material_product.despatch_date',
+            'marking_expired_deadlines': 'product.marking_product.has_expired_deadlines',
+            'tutorial_has_started': 'product.tutorial.has_started',
+            'exam_session_transition_period': 'exam_session.transition_period',
+            'date_xmas': 'date.xmas',
+            'date_easter': 'date.easter',
+            'checkout_payment_method': 'checkout.payment_method',
+            'checkout_employer_code': 'checkout.employer_code',
+            'cart_item_expired_deadline': 'cart_item.is_marking_and_expired',
+        }
+        
+        # Use condition type mapping if available, otherwise use field_name
+        field_path = condition_mappings.get(self.condition_type, self.field_name)
+        return self._get_nested_value(context, field_path)
+    
     def _get_nested_value(self, obj, path):
         """Get nested value from object using dot notation (e.g., 'user.profile.type')"""
         keys = path.split('.')
@@ -198,7 +540,12 @@ class RuleCondition(models.Model):
                 return False
             try:
                 if isinstance(comparison_value, list) and len(comparison_value) == 2:
-                    return comparison_value[0] <= float(field_value) <= comparison_value[1]
+                    # Try numeric comparison first
+                    try:
+                        return comparison_value[0] <= float(field_value) <= comparison_value[1]
+                    except (ValueError, TypeError):
+                        # Fall back to string comparison (for dates, etc.)
+                        return comparison_value[0] <= str(field_value) <= comparison_value[1]
             except (ValueError, TypeError):
                 pass
             return False
@@ -216,11 +563,38 @@ class RuleCondition(models.Model):
             import re
             return bool(re.search(str(comparison_value), str(field_value)))
         return False
+    
+    def get_condition_description(self):
+        """Get a human-readable description of this condition"""
+        operator_map = {
+            'equals': 'equals',
+            'not_equals': 'does not equal',
+            'contains': 'contains',
+            'not_contains': 'does not contain',
+            'greater_than': 'is greater than',
+            'less_than': 'is less than',
+            'between': 'is between',
+            'in_list': 'is in',
+            'not_in_list': 'is not in',
+            'regex': 'matches pattern',
+            'custom_function': 'custom evaluation'
+        }
+        
+        operator_text = operator_map.get(self.operator, self.operator)
+        negation = 'NOT ' if self.is_negated else ''
+        
+        return f"{negation}{self.get_condition_type_display()} {operator_text} {self.value}"
 
 
 class RuleAction(models.Model):
     """Actions to take when a rule is triggered"""
     ACTION_TYPES = [
+        # New refined action types
+        ('display', 'Display Message'),
+        ('acknowledge', 'Require Acknowledgment'),
+        ('update', 'Update Values'),
+        ('custom', 'Custom Function'),
+        # Legacy types for backward compatibility
         ('show_message', 'Show Message'),
         ('require_acknowledgment', 'Require Acknowledgment'),
         ('redirect', 'Redirect'),
@@ -246,6 +620,63 @@ class RuleAction(models.Model):
 
     def __str__(self):
         return f"{self.rule.name}: {self.action_type}"
+    
+    def execute(self, context):
+        """Execute this action with the given context"""
+        # Map new action types to legacy handlers for backward compatibility
+        action_type = self.action_type
+        if action_type == 'display':
+            action_type = 'show_message'
+        elif action_type == 'acknowledge':
+            action_type = 'require_acknowledgment'
+        elif action_type == 'custom':
+            action_type = 'custom_function'
+        elif action_type == 'update':
+            return self._execute_update_action(context)
+        
+        # Use existing execution logic for other types
+        from .handlers import BaseRuleHandler
+        handler = BaseRuleHandler()
+        return handler._execute_action(self, context)
+    
+    def _execute_update_action(self, context):
+        """Execute update action (new action type)"""
+        update_params = self.parameters.copy()
+        update_type = update_params.get('update_type', 'cart_value')
+        
+        if update_type == 'cart_value':
+            # Add additional charges to cart
+            additional_charge = float(update_params.get('additional_charge', 0))
+            if additional_charge > 0:
+                return {
+                    'type': 'update',
+                    'update_type': 'cart_value',
+                    'additional_charge': additional_charge,
+                    'description': update_params.get('description', 'Additional charge'),
+                    'rule_id': self.rule.id
+                }
+        elif update_type == 'user_status':
+            # Update user status/properties
+            return {
+                'type': 'update',
+                'update_type': 'user_status',
+                'status_updates': update_params.get('status_updates', {}),
+                'rule_id': self.rule.id
+            }
+        elif update_type == 'vat_rate':
+            # Update VAT rate
+            return {
+                'type': 'update',
+                'update_type': 'vat_rate',
+                'vat_rate': float(update_params.get('vat_rate', 0.2)),
+                'rule_id': self.rule.id
+            }
+        
+        return {
+            'type': 'update',
+            'error': f'Unknown update type: {update_type}',
+            'rule_id': self.rule.id
+        }
 
 
 class HolidayCalendar(models.Model):
@@ -313,3 +744,308 @@ class UserAcknowledgment(models.Model):
     def __str__(self):
         action = "selected" if self.acknowledgment_type == 'optional' and self.is_selected else "acknowledged"
         return f"{self.user.username} {action} {self.rule.name}"
+
+
+class RuleChain(models.Model):
+    """Rule execution chains for entry points"""
+    name = models.CharField(max_length=100)
+    entry_point = models.ForeignKey(
+        RuleEntryPoint,
+        on_delete=models.CASCADE,
+        related_name='chains'
+    )
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    stop_on_failure = models.BooleanField(
+        default=True,
+        help_text="Stop chain execution if any rule fails"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'acted_rule_chains'
+        verbose_name = 'Rule Chain'
+        verbose_name_plural = 'Rule Chains'
+        ordering = ['entry_point__code', 'name']
+    
+    def __str__(self):
+        return f"{self.name} ({self.entry_point.code})"
+
+
+class RuleChainLink(models.Model):
+    """Links between chains and rules with execution order"""
+    chain = models.ForeignKey(
+        RuleChain,
+        on_delete=models.CASCADE,
+        related_name='links'
+    )
+    rule = models.ForeignKey(
+        Rule,
+        on_delete=models.CASCADE,
+        related_name='chain_links'
+    )
+    execution_order = models.IntegerField(help_text="Order of execution within the chain")
+    is_active = models.BooleanField(default=True)
+    continue_on_failure = models.BooleanField(
+        default=False,
+        help_text="Continue to next rule even if this one fails"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'acted_rule_chain_links'
+        verbose_name = 'Rule Chain Link'
+        verbose_name_plural = 'Rule Chain Links'
+        ordering = ['chain', 'execution_order']
+        unique_together = [('chain', 'rule')]
+    
+    def __str__(self):
+        return f"{self.chain.name} -> {self.rule.name} (#{self.execution_order})"
+
+
+class RuleConditionGroup(models.Model):
+    """Groups of conditions with logical operators for composite conditions"""
+    LOGICAL_OPERATORS = [
+        ('AND', 'All conditions must be true'),
+        ('OR', 'At least one condition must be true'),
+    ]
+    
+    name = models.CharField(max_length=100)
+    rule = models.ForeignKey(
+        Rule,
+        on_delete=models.CASCADE,
+        related_name='condition_groups'
+    )
+    logical_operator = models.CharField(
+        max_length=3,
+        choices=LOGICAL_OPERATORS,
+        default='AND'
+    )
+    parent_group = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        related_name='child_groups',
+        null=True,
+        blank=True,
+        help_text="Parent group for nested conditions"
+    )
+    execution_order = models.IntegerField(default=1)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        db_table = 'acted_rule_condition_groups'
+        verbose_name = 'Rule Condition Group'
+        verbose_name_plural = 'Rule Condition Groups'
+        ordering = ['rule', 'execution_order']
+    
+    def __str__(self):
+        return f"{self.rule.name} - {self.name} ({self.logical_operator})"
+    
+    def evaluate(self, context):
+        """Evaluate this condition group"""
+        condition_results = []
+        
+        # Evaluate direct conditions
+        for condition in self.conditions.all():
+            try:
+                result = condition.evaluate(context)
+                condition_results.append(result)
+            except Exception as e:
+                logger.error(f"Error evaluating condition {condition.id}: {str(e)}")
+                condition_results.append(False)
+        
+        # Evaluate child groups
+        for child_group in self.child_groups.filter(is_active=True):
+            try:
+                result = child_group.evaluate(context)
+                condition_results.append(result)
+            except Exception as e:
+                logger.error(f"Error evaluating child group {child_group.id}: {str(e)}")
+                condition_results.append(False)
+        
+        # Apply logical operator
+        if not condition_results:
+            return True  # Empty group evaluates to true
+        
+        if self.logical_operator == 'AND':
+            return all(condition_results)
+        elif self.logical_operator == 'OR':
+            return any(condition_results)
+        
+        return False
+
+
+# Style models for configurable JSON content styling
+class ContentStyleTheme(models.Model):
+    """Predefined themes that staff can select from"""
+    name = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'acted_content_style_themes'
+        verbose_name = 'Content Style Theme'
+        verbose_name_plural = 'Content Style Themes'
+    
+    def __str__(self):
+        return self.name
+
+
+class ContentStyle(models.Model):
+    """Staff-configurable styles for JSON content elements"""
+    
+    ELEMENT_TYPES = [
+        ('container', 'Container'),
+        ('box', 'Box'),
+        ('p', 'Paragraph'),
+        ('h1', 'Heading 1'),
+        ('h2', 'Heading 2'),
+        ('h3', 'Heading 3'),
+        ('h4', 'Heading 4'),
+        ('h5', 'Heading 5'),
+        ('h6', 'Heading 6'),
+        ('ul', 'Unordered List'),
+        ('ol', 'Ordered List'),
+        ('li', 'List Item'),
+    ]
+    
+    STYLE_CATEGORIES = [
+        ('alert', 'Alert/Notice'),
+        ('warning', 'Warning'),
+        ('error', 'Error'),
+        ('success', 'Success'),
+        ('info', 'Information'),
+        ('holiday', 'Holiday Notice'),
+        ('terms', 'Terms & Conditions'),
+        ('general', 'General'),
+    ]
+    
+    name = models.CharField(max_length=100, unique=True, help_text="Unique name for this style")
+    element_type = models.CharField(max_length=20, choices=ELEMENT_TYPES)
+    category = models.CharField(max_length=20, choices=STYLE_CATEGORIES, default='general')
+    css_class_selector = models.CharField(
+        max_length=200, 
+        blank=True,
+        help_text="CSS class that triggers this style (e.g., 'alert alert-warning')"
+    )
+    theme = models.ForeignKey(
+        ContentStyleTheme, 
+        on_delete=models.CASCADE, 
+        related_name='styles',
+        null=True, 
+        blank=True
+    )
+    
+    # Visual properties that staff can configure
+    background_color = models.CharField(max_length=20, blank=True, help_text="e.g., #fff3cd, rgba(255,243,205,1)")
+    text_color = models.CharField(max_length=20, blank=True, help_text="e.g., #856404, #000000")
+    border_color = models.CharField(max_length=20, blank=True, help_text="e.g., #ffeaa7")
+    border_width = models.CharField(max_length=10, default='1px', help_text="e.g., 1px, 2px, 0")
+    border_radius = models.CharField(max_length=10, default='4px', help_text="e.g., 4px, 8px, 0")
+    padding = models.CharField(max_length=20, default='12px 16px', help_text="e.g., 12px 16px, 10px")
+    margin = models.CharField(max_length=20, default='0 0 16px 0', help_text="e.g., 0 0 16px 0, 10px")
+    font_size = models.CharField(max_length=10, blank=True, help_text="e.g., 14px, 1.2rem, inherit")
+    font_weight = models.CharField(max_length=10, blank=True, help_text="e.g., normal, bold, 600")
+    text_align = models.CharField(max_length=10, default='left', help_text="left, center, right, justify")
+    
+    # Advanced styling (JSON field for flexibility)
+    custom_styles = models.JSONField(
+        default=dict, 
+        blank=True,
+        help_text="Additional CSS properties as JSON (e.g., {'boxShadow': '0 2px 4px rgba(0,0,0,0.1)'})"
+    )
+    
+    # Configuration
+    is_active = models.BooleanField(default=True)
+    priority = models.IntegerField(default=100, help_text="Higher numbers = higher priority when multiple styles match")
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'acted_content_styles'
+        verbose_name = 'Content Style'
+        verbose_name_plural = 'Content Styles'
+        ordering = ['-priority', 'name']
+    
+    def __str__(self):
+        return f"{self.name} ({self.element_type})"
+    
+    def get_style_object(self):
+        """Convert database fields to CSS-in-JS style object"""
+        styles = {}
+        
+        # Basic styles
+        if self.background_color:
+            styles['backgroundColor'] = self.background_color
+        if self.text_color:
+            styles['color'] = self.text_color
+        if self.border_color:
+            styles['borderColor'] = self.border_color
+        if self.border_width:
+            styles['borderWidth'] = self.border_width
+        if self.border_radius:
+            styles['borderRadius'] = self.border_radius
+        if self.padding:
+            styles['padding'] = self.padding
+        if self.margin:
+            styles['margin'] = self.margin
+        if self.font_size:
+            styles['fontSize'] = self.font_size
+        if self.font_weight:
+            styles['fontWeight'] = self.font_weight
+        if self.text_align:
+            styles['textAlign'] = self.text_align
+        
+        # Add border style if border width is set
+        if self.border_width and self.border_width != '0':
+            styles['borderStyle'] = 'solid'
+        
+        # Merge custom styles
+        if self.custom_styles:
+            styles.update(self.custom_styles)
+        
+        return styles
+    
+    def clean(self):
+        """Validate custom styles JSON"""
+        if self.custom_styles:
+            try:
+                if not isinstance(self.custom_styles, dict):
+                    raise ValidationError({
+                        'custom_styles': 'Custom styles must be a JSON object'
+                    })
+            except (TypeError, ValueError) as e:
+                raise ValidationError({
+                    'custom_styles': f'Invalid JSON: {str(e)}'
+                })
+
+
+class MessageTemplateStyle(models.Model):
+    """Link message templates to specific style themes"""
+    message_template = models.OneToOneField(
+        MessageTemplate,
+        on_delete=models.CASCADE,
+        related_name='style_config'
+    )
+    theme = models.ForeignKey(
+        ContentStyleTheme,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    custom_styles = models.ManyToManyField(
+        ContentStyle,
+        blank=True,
+        help_text="Override specific styles for this template"
+    )
+    
+    class Meta:
+        db_table = 'acted_message_template_styles'
+        verbose_name = 'Message Template Style'
+        verbose_name_plural = 'Message Template Styles'
+    
+    def __str__(self):
+        return f"Styles for {self.message_template.name}"

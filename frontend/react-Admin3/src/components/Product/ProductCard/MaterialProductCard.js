@@ -29,19 +29,19 @@ import {
 	AddShoppingCart,
 	LibraryBooksSharp,
 } from "@mui/icons-material";
+import { ThemeProvider } from "@mui/material/styles";
 import { useTheme } from "@mui/material/styles";
 import { useCart } from "../../../contexts/CartContext";
 import { useVAT } from "../../../contexts/VATContext";
+import BaseProductCard from "../../Common/BaseProductCard";
 import MarkingProductCard from "./MarkingProductCard";
 import MarkingVoucherProductCard from "./MarkingVoucherProductCard";
 import TutorialProductCard from "./Tutorial/TutorialProductCard";
 import OnlineClassroomProductCard from "./OnlineClassroomProductCard";
 import BundleCard from "./BundleCard";
-
 import "../../../styles/product_card.css";
 
-
-const ProductCard = React.memo(
+const MaterialProductCard = React.memo(
 	({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {
 		const [selectedVariation, setSelectedVariation] = useState("");
 		const [showPriceModal, setShowPriceModal] = useState(false);
@@ -53,11 +53,7 @@ const ProductCard = React.memo(
 		const headerRef = useRef(null);
 
 		useCart();
-		const {
-			getPriceDisplay,
-			formatPrice,
-			isProductVATExempt,
-		} = useVAT();
+		const { getPriceDisplay, formatPrice, isProductVATExempt } = useVAT();
 
 		// Initialize mouse position to center
 		useEffect(() => {
@@ -85,8 +81,8 @@ const ProductCard = React.memo(
 		const getGradientStyle = () => {
 			if (theme.gradients?.createGradientStyle) {
 				return theme.gradients.createGradientStyle(
-					mousePosition, 
-					isHovered, 
+					mousePosition,
+					isHovered,
 					theme.gradients.colorSchemes?.material || {}
 				);
 			}
@@ -98,9 +94,10 @@ const ProductCard = React.memo(
 			() => ({
 				isTutorial: product.type === "Tutorial",
 				isMarking: product.type === "Markings",
-				isMarkingVoucher: product.type === "MarkingVoucher" || 
-					(product.is_voucher === true) ||
-					(product.product_name?.toLowerCase().includes("voucher")) ||
+				isMarkingVoucher:
+					product.type === "MarkingVoucher" ||
+					product.is_voucher === true ||
+					product.product_name?.toLowerCase().includes("voucher") ||
 					(product.code && product.code.startsWith("VOUCHER")),
 				isOnlineClassroom:
 					product.product_name
@@ -114,7 +111,14 @@ const ProductCard = React.memo(
 					product.product_name?.toLowerCase().includes("package") ||
 					product.is_bundle === true,
 			}),
-			[product.type, product.product_name, product.learning_mode, product.is_bundle, product.is_voucher, product.code]
+			[
+				product.type,
+				product.product_name,
+				product.learning_mode,
+				product.is_bundle,
+				product.is_voucher,
+				product.code,
+			]
 		);
 
 		// Memoize variation calculations
@@ -128,12 +132,18 @@ const ProductCard = React.memo(
 
 			const currentVariation = hasVariations
 				? selectedVariation
-					? product.variations.find((v) => v.id.toString() === selectedVariation)
+					? product.variations.find(
+							(v) => v.id.toString() === selectedVariation
+					  )
 					: singleVariation || product.variations[0]
 				: singleVariation;
 
 			// Initialize selectedVariation if not set
-			if (hasVariations && !selectedVariation && product.variations.length > 0) {
+			if (
+				hasVariations &&
+				!selectedVariation &&
+				product.variations.length > 0
+			) {
 				setSelectedVariation(product.variations[0].id.toString());
 			}
 
@@ -179,7 +189,7 @@ const ProductCard = React.memo(
 								}}
 								aria-label="Show price information"
 							/>
-						</Tooltip>						
+						</Tooltip>
 						<Typography
 							variant="caption"
 							className="fw-light w-100 align-self-center">
@@ -188,16 +198,16 @@ const ProductCard = React.memo(
 					</div>
 				);
 			};
-		}, [
-			getPriceDisplay,
-			formatPrice,
-			isProductVATExempt,
-			product.type,
-		]);
+		}, [getPriceDisplay, formatPrice, isProductVATExempt, product.type]);
 
-		const { isTutorial, isMarking, isMarkingVoucher, isOnlineClassroom, isBundle } = productTypeCheck;
-		const { hasVariations, currentVariation } =
-			variationInfo;
+		const {
+			isTutorial,
+			isMarking,
+			isMarkingVoucher,
+			isOnlineClassroom,
+			isBundle,
+		} = productTypeCheck;
+		const { hasVariations, currentVariation } = variationInfo;
 
 		const hasPriceType = (variation, priceType) => {
 			if (!variation || !variation.prices) return false;
@@ -261,12 +271,7 @@ const ProductCard = React.memo(
 
 		// For Bundle products, use the specialized component
 		if (isBundle) {
-			return (
-				<BundleCard
-					bundle={product}
-					onAddToCart={onAddToCart}
-				/>
-			);
+			return <BundleCard bundle={product} onAddToCart={onAddToCart} />;
 		}
 
 		const handlePriceTypeChange = (priceType) => {
@@ -358,18 +363,22 @@ const ProductCard = React.memo(
 								className="variations-group">
 								<Stack spacing={1}>
 									{product.variations.map((variation) => {
-										const standardPrice = variation.prices?.find(p => p.price_type === 'standard');
+										const standardPrice = variation.prices?.find(
+											(p) => p.price_type === "standard"
+										);
 										return (
 											<Box
 												key={variation.id}
 												className="variation-option"
 												sx={{
 													borderColor:
-														selectedVariation === variation.id.toString()
+														selectedVariation ===
+														variation.id.toString()
 															? "primary.main"
 															: "divider",
 													backgroundColor:
-														selectedVariation === variation.id.toString()
+														selectedVariation ===
+														variation.id.toString()
 															? "primary.50"
 															: "transparent",
 												}}>
@@ -381,7 +390,10 @@ const ProductCard = React.memo(
 															variant="body2"
 															className="variation-label"
 															fontWeight={
-																selectedVariation === variation.id.toString() ? 600 : 400
+																selectedVariation ===
+																variation.id.toString()
+																	? 600
+																	: 400
 															}>
 															{variation.name}
 														</Typography>
@@ -400,47 +412,71 @@ const ProductCard = React.memo(
 											</Box>
 										);
 									})}
-									
+
 									{/* Buy Both Option */}
-									{product.buy_both && product.variations && product.variations.length > 1 && (
-										<Box
-											className="variation-option buy-both-option"
-											sx={{
-												borderColor: "secondary.main",
-												backgroundColor: "secondary.50",
-											}}>
-											<FormControlLabel
-												value="buy_both"
-												control={<Radio size="small" color="secondary" />}
-												label={
-													<Typography
-														variant="body2"
-														className="variation-label buy-both-label"
-														color="secondary.main">
-														{product.variations[0]?.description_short || product.variations[0]?.name} + {product.variations[1]?.description_short || product.variations[1]?.name}
-													</Typography>
-												}
-												className="variation-control"
-											/>
-											{(() => {
-												const price1 = product.variations[0]?.prices?.find(p => p.price_type === 'standard');
-												const price2 = product.variations[1]?.prices?.find(p => p.price_type === 'standard');
-												if (price1 && price2) {
-													const totalPrice = parseFloat(price1.amount) + parseFloat(price2.amount);
-													return (
+									{product.buy_both &&
+										product.variations &&
+										product.variations.length > 1 && (
+											<Box
+												className="variation-option buy-both-option"
+												sx={{
+													borderColor: "secondary.main",
+													backgroundColor: "secondary.50",
+												}}>
+												<FormControlLabel
+													value="buy_both"
+													control={
+														<Radio
+															size="small"
+															color="secondary"
+														/>
+													}
+													label={
 														<Typography
 															variant="body2"
-															color="secondary.main"
-															className="variation-price buy-both-price"
-															fontWeight={600}>
-															{formatPrice(totalPrice.toString())}
+															className="variation-label buy-both-label"
+															color="secondary.main">
+															{product.variations[0]
+																?.description_short ||
+																product.variations[0]
+																	?.name}{" "}
+															+{" "}
+															{product.variations[1]
+																?.description_short ||
+																product.variations[1]?.name}
 														</Typography>
-													);
-												}
-												return null;
-											})()}
-										</Box>
-									)}
+													}
+													className="variation-control"
+												/>
+												{(() => {
+													const price1 =
+														product.variations[0]?.prices?.find(
+															(p) => p.price_type === "standard"
+														);
+													const price2 =
+														product.variations[1]?.prices?.find(
+															(p) => p.price_type === "standard"
+														);
+													if (price1 && price2) {
+														const totalPrice =
+															parseFloat(price1.amount) +
+															parseFloat(price2.amount);
+														return (
+															<Typography
+																variant="body2"
+																color="secondary.main"
+																className="variation-price buy-both-price"
+																fontWeight={600}>
+																{formatPrice(
+																	totalPrice.toString()
+																)}
+															</Typography>
+														);
+													}
+													return null;
+												})()}
+											</Box>
+										)}
 								</Stack>
 							</RadioGroup>
 						)}
@@ -463,7 +499,9 @@ const ProductCard = React.memo(
 												handlePriceTypeChange("retaker")
 											}
 											size="small"
-											disabled={!hasPriceType(currentVariation, "retaker")}
+											disabled={
+												!hasPriceType(currentVariation, "retaker")
+											}
 										/>
 									}
 									label={
@@ -483,7 +521,12 @@ const ProductCard = React.memo(
 												handlePriceTypeChange("additional")
 											}
 											size="small"
-											disabled={!hasPriceType(currentVariation, "additional")}
+											disabled={
+												!hasPriceType(
+													currentVariation,
+													"additional"
+												)
+											}
 										/>
 									}
 									label={
@@ -505,25 +548,38 @@ const ProductCard = React.memo(
 									{(() => {
 										// Handle Buy Both option
 										if (selectedVariation === "buy_both") {
-											const priceType = selectedPriceType || 'standard';
-											const price1 = product.variations[0]?.prices?.find(p => p.price_type === priceType);
-											const price2 = product.variations[1]?.prices?.find(p => p.price_type === priceType);
+											const priceType =
+												selectedPriceType || "standard";
+											const price1 =
+												product.variations[0]?.prices?.find(
+													(p) => p.price_type === priceType
+												);
+											const price2 =
+												product.variations[1]?.prices?.find(
+													(p) => p.price_type === priceType
+												);
 											if (price1 && price2) {
-												const totalPrice = parseFloat(price1.amount) + parseFloat(price2.amount);
+												const totalPrice =
+													parseFloat(price1.amount) +
+													parseFloat(price2.amount);
 												return formatPrice(totalPrice.toString());
 											}
-											return '-';
+											return "-";
 										}
-										
-										if (!currentVariation) return '-';
-										const priceType = selectedPriceType || 'standard';
-										const priceObj = currentVariation.prices?.find(p => p.price_type === priceType);
-										return priceObj ? formatPrice(priceObj.amount) : '-';
+
+										if (!currentVariation) return "-";
+										const priceType = selectedPriceType || "standard";
+										const priceObj = currentVariation.prices?.find(
+											(p) => p.price_type === priceType
+										);
+										return priceObj
+											? formatPrice(priceObj.amount)
+											: "-";
 									})()}
 								</Typography>
 								<Tooltip title="Show price details">
-									<Button 
-										size="small" 
+									<Button
+										size="small"
 										className="info-button"
 										onClick={() => setShowPriceModal(true)}>
 										<InfoOutline />
@@ -537,7 +593,7 @@ const ProductCard = React.memo(
 									variant="fineprint"
 									className="price-level-text"
 									color="text.secondary">
-									{selectedVariation === "buy_both" 
+									{selectedVariation === "buy_both"
 										? "Bundle pricing - both variations"
 										: selectedPriceType === "retaker"
 										? "Retaker discount applied"
@@ -558,17 +614,26 @@ const ProductCard = React.memo(
 								variant="contained"
 								className="add-to-cart-button"
 								onClick={() => {
-									const priceType = selectedPriceType || 'standard';
-									
+									const priceType = selectedPriceType || "standard";
+
 									// Handle Buy Both option
 									if (selectedVariation === "buy_both") {
 										// Add both variations to cart
 										const variation1 = product.variations[0];
 										const variation2 = product.variations[1];
-										const price1 = variation1?.prices?.find(p => p.price_type === priceType);
-										const price2 = variation2?.prices?.find(p => p.price_type === priceType);
-										
-										if (variation1 && variation2 && price1 && price2) {
+										const price1 = variation1?.prices?.find(
+											(p) => p.price_type === priceType
+										);
+										const price2 = variation2?.prices?.find(
+											(p) => p.price_type === priceType
+										);
+
+										if (
+											variation1 &&
+											variation2 &&
+											price1 &&
+											price2
+										) {
 											// Add first variation
 											onAddToCart(product, {
 												variationId: variation1.id,
@@ -576,7 +641,7 @@ const ProductCard = React.memo(
 												priceType: priceType,
 												actualPrice: price1.amount,
 											});
-											
+
 											// Add second variation
 											onAddToCart(product, {
 												variationId: variation2.id,
@@ -587,10 +652,12 @@ const ProductCard = React.memo(
 										}
 										return;
 									}
-									
+
 									// Handle single variation
 									if (!currentVariation) return;
-									const priceObj = currentVariation.prices?.find(p => p.price_type === priceType);
+									const priceObj = currentVariation.prices?.find(
+										(p) => p.price_type === priceType
+									);
 									onAddToCart(product, {
 										variationId: currentVariation.id,
 										variationName: currentVariation.name,
@@ -598,7 +665,9 @@ const ProductCard = React.memo(
 										actualPrice: priceObj?.amount,
 									});
 								}}
-								disabled={!currentVariation && selectedVariation !== "buy_both"}>
+								disabled={
+									!currentVariation && selectedVariation !== "buy_both"
+								}>
 								<AddShoppingCart />
 							</Button>
 						</Box>
@@ -608,87 +677,102 @@ const ProductCard = React.memo(
 		);
 
 		return (
-			<Card
-				ref={cardRef}
-				elevation={2}
-				variant="material-product"
-				className="d-flex flex-column"
-				onMouseMove={handleMouseMove}
-				onMouseEnter={handleMouseEnter}
-				onMouseLeave={handleMouseLeave}
-				sx={{
-					transform: isHovered ? 'scale(1.02)' : 'scale(1)',
-					transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-				}}>
-				{/* Floating Badges */}
-				<Box className="floating-badges-container">
-					<Chip
-						label={product.subject_code}
-						size="small"
-						className="subject-badge"
-						role="img"
-						aria-label={`Subject: ${product.subject_code}`}
-					/>
-					{(product.exam_session_code || product.session_code || product.exam_session || product.session) && (
+			<ThemeProvider theme={theme}>
+				<BaseProductCard
+					ref={cardRef}
+					elevation={2}
+					variant="product"
+					productType="material"
+					className="d-flex flex-column"
+					onMouseMove={handleMouseMove}
+					onMouseEnter={handleMouseEnter}
+					onMouseLeave={handleMouseLeave}
+					sx={{
+						transform: isHovered ? "scale(1.02)" : "scale(1)",
+						transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+					}}>
+					{/* Floating Badges */}
+					<Box className="floating-badges-container">
 						<Chip
-							label={product.exam_session_code || product.session_code || product.exam_session || product.session}
+							label={product.subject_code}
 							size="small"
-							className="session-badge"
+							className="subject-badge"
 							role="img"
-							aria-label={`Exam session: ${product.exam_session_code || product.session_code || product.exam_session || product.session}`}
+							aria-label={`Subject: ${product.subject_code}`}
 						/>
-					)}
-				</Box>
-				{/* Enhanced Header */}
-				<CardHeader
-					ref={headerRef}
-					className="product-header"
-					title={
-						<Typography
-							variant="h4"
-							textAlign="left"
-							className="product-title">
-							{product.product_name}
-						</Typography>
-					}
-					subheader={
-						<Typography
-							variant="subtitle1"
-							textAlign="left"
-							className="product-subtitle">
-							{/* Removed exam session code from subheader */}
-						</Typography>
-					}
-					avatar={
-						<Avatar className="product-avatar">
-							<LibraryBooksSharp className="product-avatar-icon" />
-						</Avatar>
-					}
-					sx={{ 
-						position: 'relative',
-						'&::before': {
-							content: '""',
-							position: 'absolute',
-							top: 0,
-							left: 0,
-							right: 0,
-							bottom: 0,
-							...getGradientStyle(),
-							zIndex: 0,
-							pointerEvents: 'none',
-						},
-						'& > *': {
-							position: 'relative',
-							zIndex: 1,
+						{(product.exam_session_code ||
+							product.session_code ||
+							product.exam_session ||
+							product.session) && (
+							<Chip
+								label={
+									product.exam_session_code ||
+									product.session_code ||
+									product.exam_session ||
+									product.session
+								}
+								size="small"
+								className="session-badge"
+								role="img"
+								aria-label={`Exam session: ${
+									product.exam_session_code ||
+									product.session_code ||
+									product.exam_session ||
+									product.session
+								}`}
+							/>
+						)}
+					</Box>
+					{/* Enhanced Header */}
+					<CardHeader
+						ref={headerRef}
+						className="product-header"
+						title={
+							<Typography
+								variant="h4"
+								textAlign="left"
+								className="product-title">
+								{product.product_name}
+							</Typography>
 						}
-					}}
-				/>
+						subheader={
+							<Typography
+								variant="subtitle1"
+								textAlign="left"
+								className="product-subtitle">
+								{/* Removed exam session code from subheader */}
+							</Typography>
+						}
+						avatar={
+							<Avatar className="product-avatar">
+								<LibraryBooksSharp className="product-avatar-icon" />
+							</Avatar>
+						}
+						sx={{
+							position: "relative",
+							"&::before": {
+								content: '""',
+								position: "absolute",
+								top: 0,
+								left: 0,
+								right: 0,
+								bottom: 0,
+								...getGradientStyle(),
+								zIndex: 0,
+								pointerEvents: "none",
+							},
+							"& > *": {
+								position: "relative",
+								zIndex: 1,
+							},
+						}}
+					/>
 
-				{renderRegularContent()}
-				{renderPriceModal()}
-			</Card>
+					{renderRegularContent()}
+					{renderPriceModal()}
+				</BaseProductCard> </ThemeProvider>
 		);
 	}
 );
 
-export default ProductCard;
+export default MaterialProductCard;

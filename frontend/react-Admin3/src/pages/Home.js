@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBox from "../components/SearchBox";
 import SearchResults from "../components/SearchResults";
-import { Row, Col } from "react-bootstrap";
+import { Row, Col, Alert } from "react-bootstrap";
 import { Typography, Container } from "@mui/material";
 import backgroundVideo from "../assets/video/12595751_2560_1440_30fps.mp4";
 import { useTheme } from "@mui/material/styles";
+import rulesEngineService from "../services/rulesEngineService";
+import JsonContentRenderer from "../components/Common/JsonContentRenderer";
 
 const Home = () => {
 	const theme = useTheme();
@@ -20,6 +22,43 @@ const Home = () => {
 	});
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
+	const [ruleMessages, setRuleMessages] = useState([]);
+	const [rulesLoading, setRulesLoading] = useState(true);
+
+	// Evaluate rules on component mount
+	useEffect(() => {
+		const evaluateHomePageRules = async () => {
+			try {
+				setRulesLoading(true);
+				const currentDate = new Date().toISOString().split('T')[0];
+				console.log('🎯 [Home] Evaluating rules for date:', currentDate);
+				
+				const result = await rulesEngineService.evaluateRulesAtEntryPoint('home_page_mount', {
+					current_date: currentDate,
+					user_location: 'home_page'
+				});
+				
+				console.log('🎯 [Home] Rules engine result:', result);
+				
+				if (result.success && result.messages) {
+					console.log('🎯 [Home] All messages:', result.messages);
+					
+					// Filter for display messages only - BUT let's also show 'message' type
+					const displayMessages = result.messages.filter(msg => 
+						msg.type === 'display' || msg.type === 'message'
+					);
+					console.log('🎯 [Home] Filtered messages:', displayMessages);
+					setRuleMessages(displayMessages);
+				}
+			} catch (error) {
+				console.error('Error evaluating home page rules:', error);
+			} finally {
+				setRulesLoading(false);
+			}
+		};
+
+		evaluateHomePageRules();
+	}, []);
 
 	// Handle search results from SearchBox
 	const handleSearchResults = (results, query) => {
@@ -195,6 +234,51 @@ const Home = () => {
 					</Container>
 				</Col>
 			</Row>
+
+			{/* Rules Engine Messages - Below Hero, Above Search Results */}
+			{console.log('🎯 [Home] Render - rulesLoading:', rulesLoading, 'ruleMessages:', ruleMessages)}
+			{console.log('🎯 [Home] Render condition check:', !rulesLoading, ruleMessages.length > 0, (!rulesLoading && ruleMessages.length > 0))}
+			
+			{/* FORCE SHOW MESSAGES FOR DEBUGGING */}
+			{ruleMessages.length > 0 ? (
+				<Container maxWidth="xl" className="my-4">
+					<Row>
+						<Col>							
+							{ruleMessages.map((message, index) => (
+								<Alert 
+									key={`rule-message-${index}`}
+									variant="warning"
+									className="mb-3"
+									style={{
+										borderRadius: '8px',
+										border: '1px solid #ffc107',
+										backgroundColor: '#fff3cd',
+										color: '#856404'
+									}}
+								>
+									<div>
+										<strong>{message.title || 'No Title'}</strong>
+										{message.content_format === 'json' && message.json_content ? (
+											<JsonContentRenderer content={message.json_content} />
+										) : (
+											<div dangerouslySetInnerHTML={{ __html: message.message || message.content || 'No message content' }} />
+										)}
+										<div style={{ fontSize: '10px', marginTop: '5px', color: '#666' }}>
+											Type: {message.type} | Message Type: {message.message_type} | Content Format: {message.content_format || 'html'}
+										</div>
+									</div>
+								</Alert>
+							))}
+						</Col>
+					</Row>
+				</Container>
+			) : (
+				<Container maxWidth="xl" className="my-2">
+					<div style={{ padding: '5px', backgroundColor: '#ffeeee', color: '#cc0000' }}>
+						DEBUG: No rule messages to display (length: {ruleMessages.length})
+					</div>
+				</Container>
+			)}					
 
 			{/* Search Results Section */}
 			<Container disableGutters={true} maxWidth="xl">

@@ -15,7 +15,7 @@ import productService from "../../services/productService";
 import searchService from "../../services/searchService";
 import useProductCardHelpers from "../../hooks/useProductCardHelpers";
 import "../../styles/product_list.css";
-import ProductCard from "./ProductCard/ProductCard";
+import ProductCard from "./ProductCard/MaterialProductCard";
 import VATToggle from "../VATToggle";
 import SearchBox from "../SearchBox";
 import AdvancedFilterPanel from "./AdvancedFilterPanel";

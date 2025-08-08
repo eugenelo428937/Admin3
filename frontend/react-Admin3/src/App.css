@@ -70,11 +70,10 @@
 .grecaptcha-badge {
 	visibility: visible !important;
 	opacity: 1 !important;
-	position: relative !important;
-	bottom: auto !important;
-	right: auto !important;
-	transform: none !important;
-	margin: 10px auto !important;
+	position: fixed !important;
+	bottom: 2rem !important;
+    right: 2rem !important;
+	transform: none !important;	
 	display: block !important;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
