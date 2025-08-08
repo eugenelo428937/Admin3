@@ -39,6 +39,7 @@ import ResendActivation from "./components/User/ResendActivation";
 import EmailVerification from "./components/User/EmailVerification";
 import TutorialChoicePanel from "./components/Product/ProductCard/Tutorial/TutorialChoicePanel";
 import ProductCardVariations from "./components/sandbox/ProductCardVariations";
+import ProductCardTestPage from "./components/sandbox/ProductCardTestPage";
 import StyleGuide from "./components/StyleGuide";
 import Registration from './pages/Registration';
 import Login from './pages/Login';
@@ -52,8 +53,7 @@ function App() {
 
 	// reCAPTCHA v3 configuration
 	const RECAPTCHA_SITE_KEY =
-		process.env.REACT_APP_RECAPTCHA_SITE_KEY ||
-		"6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"; // Test key
+		process.env.REACT_APP_RECAPTCHA_SITE_KEY; // Test key
 
 	useEffect(() => {
 		// Check if the user is authenticated
@@ -203,11 +203,15 @@ function App() {
 														path="/auth/email-verification"
 														element={<EmailVerification />}
 													/>
-													<Route path="*" element={<NoMatch />} />
+                                                    <Route path="*" element={<NoMatch />} />
 													<Route
 														path="/product-card-variations"
 														element={<ProductCardVariations />}
 													/>
+                                                    <Route
+                                                        path="/sandbox/product-card-test"
+                                                        element={<ProductCardTestPage />}
+                                                    />
 													 <Route path="/register2" element={<Registration />} />
 												</Routes>
 											</Container>

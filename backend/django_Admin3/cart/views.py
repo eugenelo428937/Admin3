@@ -5,10 +5,11 @@ from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-from .models import Cart, CartItem, ActedOrder, ActedOrderItem
+from .models import Cart, CartItem, ActedOrder, ActedOrderItem, OrderUserAcknowledgment
 from .serializers import CartSerializer, CartItemSerializer, ActedOrderSerializer
 from products.models import Product
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+from marking.models import MarkingPaper
 from utils.email_service import email_service
 import logging
 from django.utils import timezone
@@ -23,6 +24,62 @@ class CartViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
 
     @action(detail=False, methods=['get'])
+    def _is_marking_product(self, product):
+        """Check if a product is a marking product"""
+        product_name = product.product.fullname.lower()
+        group_name = getattr(product.product, 'group_name', '')
+        return 'marking' in product_name or group_name == 'Markings'
+    
+    def _has_expired_deadlines(self, product):
+        """Check if a marking product has expired deadlines"""
+        if not self._is_marking_product(product):
+            return False
+        
+        try:
+            current_time = timezone.now()
+            marking_papers = MarkingPaper.objects.filter(exam_session_subject_product=product)
+            
+            for paper in marking_papers:
+                if paper.deadline < current_time:
+                    return True
+            return False
+        except Exception as e:
+            logger.warning(f"Error checking expired deadlines for product {product.id}: {str(e)}")
+            return False
+    
+    def _get_expired_deadline_info(self, product):
+        """Get detailed expired deadline information for a marking product"""
+        if not self._is_marking_product(product):
+            return {'has_expired': False, 'expired_count': 0, 'total_papers': 0}
+        
+        try:
+            current_time = timezone.now()
+            marking_papers = MarkingPaper.objects.filter(exam_session_subject_product=product)
+            total_papers = marking_papers.count()
+            expired_count = marking_papers.filter(deadline__lt=current_time).count()
+            
+            return {
+                'has_expired': expired_count > 0,
+                'expired_count': expired_count,
+                'total_papers': total_papers
+            }
+        except Exception as e:
+            logger.warning(f"Error getting expired deadline info for product {product.id}: {str(e)}")
+            return {'has_expired': False, 'expired_count': 0, 'total_papers': 0}
+    
+    def _update_cart_flags(self, cart):
+        """Update cart-level flags based on cart contents"""
+        has_marking = False
+        
+        for item in cart.items.all():
+            if item.is_marking:
+                has_marking = True
+                break
+        
+        if cart.has_marking != has_marking:
+            cart.has_marking = has_marking
+            cart.save()
+    
     def get_cart(self, request):
         if request.user.is_authenticated:
             cart, _ = Cart.objects.get_or_create(user=request.user)
@@ -131,21 +188,39 @@ class CartViewSet(viewsets.ViewSet):
                         'totalChoiceCount': new_location.get('choiceCount', 0)
                     }
                     
+                    # Set marking flags for tutorial items
+                    is_marking = self._is_marking_product(product)
+                    has_expired_deadline = self._has_expired_deadlines(product) if is_marking else False
+                    
                     item, created = CartItem.objects.get_or_create(
                         cart=cart,
                         product=product,
                         price_type=price_type,
                         metadata=tutorial_metadata,
-                        defaults={'quantity': quantity, 'actual_price': actual_price}
+                        defaults={
+                            'quantity': quantity, 
+                            'actual_price': actual_price,
+                            'is_marking': is_marking,
+                            'has_expired_deadline': has_expired_deadline
+                        }
                     )
             else:
                 # Fallback to legacy tutorial behavior
+                # Set marking flags for legacy tutorial items
+                is_marking = self._is_marking_product(product)
+                has_expired_deadline = self._has_expired_deadlines(product) if is_marking else False
+                
                 item, created = CartItem.objects.get_or_create(
                     cart=cart, 
                     product=product,
                     price_type=price_type,
                     metadata=metadata,
-                    defaults={'quantity': quantity, 'actual_price': actual_price}
+                    defaults={
+                        'quantity': quantity, 
+                        'actual_price': actual_price,
+                        'is_marking': is_marking,
+                        'has_expired_deadline': has_expired_deadline
+                    }
                 )
         else:
             # For regular (non-tutorial) items, handle variations properly
@@ -166,17 +241,28 @@ class CartViewSet(viewsets.ViewSet):
                     existing_item.quantity += quantity
                     if metadata:
                         existing_item.metadata.update(metadata)
+                    
+                    # Update marking flags in case they weren't set before
+                    existing_item.is_marking = self._is_marking_product(product)
+                    existing_item.has_expired_deadline = self._has_expired_deadlines(product) if existing_item.is_marking else False
+                    
                     existing_item.save()
                     item = existing_item
                     created = False
                 else:
                     # Create new item for this specific variation
+                    # Set marking flags
+                    is_marking = self._is_marking_product(product)
+                    has_expired_deadline = self._has_expired_deadlines(product) if is_marking else False
+                    
                     item = CartItem.objects.create(
                         cart=cart,
                         product=product,
                         price_type=price_type,
                         quantity=quantity,
                         actual_price=actual_price,
+                        is_marking=is_marking,
+                        has_expired_deadline=has_expired_deadline,
                         metadata=metadata
                     )
                     created = True
@@ -194,17 +280,28 @@ class CartViewSet(viewsets.ViewSet):
                     existing_item.quantity += quantity
                     if metadata:
                         existing_item.metadata.update(metadata)
+                    
+                    # Update marking flags in case they weren't set before
+                    existing_item.is_marking = self._is_marking_product(product)
+                    existing_item.has_expired_deadline = self._has_expired_deadlines(product) if existing_item.is_marking else False
+                    
                     existing_item.save()
                     item = existing_item
                     created = False
                 else:
                     # Create new item without variation
+                    # Set marking flags
+                    is_marking = self._is_marking_product(product)
+                    has_expired_deadline = self._has_expired_deadlines(product) if is_marking else False
+                    
                     item = CartItem.objects.create(
                         cart=cart,
                         product=product,
                         price_type=price_type,
                         quantity=quantity,
                         actual_price=actual_price,
+                        is_marking=is_marking,
+                        has_expired_deadline=has_expired_deadline,
                         metadata=metadata
                     )
                     created = True
@@ -215,6 +312,9 @@ class CartViewSet(viewsets.ViewSet):
             if actual_price is not None:
                 item.actual_price = actual_price
                 item.save()
+        
+        # Update cart-level flags based on new contents
+        self._update_cart_flags(cart)
         
         # Get updated cart and return response
         cart = self.get_cart(request)
@@ -238,7 +338,12 @@ class CartViewSet(viewsets.ViewSet):
         """DELETE /cart/remove/ - Remove item from cart"""
         item_id = request.data.get('item_id')
         item = get_object_or_404(CartItem, id=item_id)
+        cart = item.cart
         item.delete()
+        
+        # Update cart-level flags after removing item
+        self._update_cart_flags(cart)
+        
         cart = self.get_cart(request)
         serializer = CartSerializer(cart)
         return Response(serializer.data)
@@ -248,6 +353,10 @@ class CartViewSet(viewsets.ViewSet):
         """POST /cart/clear/ - Remove all items from cart"""
         cart = self.get_cart(request)
         cart.items.all().delete()
+        
+        # Update cart-level flags after clearing
+        self._update_cart_flags(cart)
+        
         return Response(CartSerializer(cart).data)
 
     @action(detail=False, methods=['post'], url_path='checkout', permission_classes=[IsAuthenticated])
@@ -264,6 +373,12 @@ class CartViewSet(viewsets.ViewSet):
         is_invoice = payment_data.get('is_invoice', False)
         payment_method = payment_data.get('payment_method', 'card')
         card_data = payment_data.get('card_data', None)
+        
+        # Extract T&C acceptance data
+        terms_acceptance_data = payment_data.get('terms_acceptance', {})
+        general_terms_accepted = terms_acceptance_data.get('general_terms_accepted', False)
+        terms_version = terms_acceptance_data.get('terms_version', '1.0')
+        product_acknowledgments = terms_acceptance_data.get('product_acknowledgments', {})
 
         # Get client information
         client_ip = self._get_client_ip(request)
@@ -356,6 +471,153 @@ class CartViewSet(viewsets.ViewSet):
                 order.subtotal = subtotal
                 order.total_amount = subtotal  # No VAT if calculation fails
                 order.save()
+
+            # Create T&C acceptance record
+            try:
+                # Get rules engine evaluation data for checkout_terms entry point
+                from rules_engine.engine import rules_engine
+                rules_evaluation = rules_engine.evaluate_rules(
+                    entry_point_code='checkout_terms',
+                    user=user,
+                    order_id=order.id
+                )
+                
+                # Extract rule_id and template_id from rules evaluation
+                rule_id = None
+                template_id = None
+                
+                if rules_evaluation.get('success') and rules_evaluation.get('messages'):
+                    # Look for T&C related messages in the evaluation results
+                    for message in rules_evaluation['messages']:
+                        if (message.get('type') in ['message', 'acknowledgment'] and 
+                            message.get('requires_acknowledgment')):
+                            rule_id = message.get('rule_id')
+                            template_id = message.get('template_id')
+                            break
+                
+                # Serialize full cart data for storage
+                cart_data = []
+                for item in cart.items.all():
+                    cart_data.append({
+                        'id': item.id,
+                        'product_id': item.product.product.id,
+                        'product_name': item.product.product.fullname,
+                        'subject_code': item.product.exam_session_subject.subject.code,
+                        'exam_session_code': item.product.exam_session_subject.exam_session.session_code,
+                        'quantity': item.quantity,
+                        'price_type': item.price_type,
+                        'actual_price': float(item.actual_price),
+                        'metadata': item.metadata,
+                        'is_marking': item.is_marking,
+                        'has_expired_deadline': item.has_expired_deadline
+                    })
+                
+                # Create Terms & Conditions acknowledgment record
+                terms_acknowledgment = OrderUserAcknowledgment.objects.create(
+                    order=order,
+                    is_accepted=general_terms_accepted,
+                    ip_address=client_ip,
+                    user_agent=user_agent,
+                    acknowledgment_data=cart_data,
+                    rules_engine_context={}  # Will be populated with all acknowledged rules below
+                )
+                
+                logger.info(f"T&C acceptance created for order {order.id}: accepted={general_terms_accepted}")
+                
+            except Exception as e:
+                logger.warning(f"Failed to create T&C acceptance record for order {order.id}: {str(e)}")
+                # Continue with checkout - T&C acceptance is recorded but not blocking
+            
+            # Process expired deadline acknowledgments if any
+            try:
+                # Check if there are expired deadline acknowledgments in product_acknowledgments
+                expired_deadline_rules = [k for k in product_acknowledgments.keys() if 'expired' in k.lower() and 'deadline' in k.lower()]
+                
+                if expired_deadline_rules:
+                    # Get the rule evaluation for checkout_start to find expired deadline rule
+                    from rules_engine.engine import rules_engine
+                    from rules_engine.models import Rule, MessageTemplate
+                    
+                    checkout_evaluation = rules_engine.evaluate_rules(
+                        entry_point_code='checkout_start',
+                        user=user,
+                        cart_items=list(cart.items.all())
+                    )
+                    
+                    # Find the expired deadline rule and template
+                    expired_deadline_rule_id = None
+                    expired_deadline_template_id = None
+                    
+                    if checkout_evaluation.get('success') and checkout_evaluation.get('acknowledgments'):
+                        for ack in checkout_evaluation['acknowledgments']:
+                            if ('expired' in ack.get('title', '').lower() and 
+                                'deadline' in ack.get('title', '').lower()):
+                                expired_deadline_rule_id = ack.get('rule_id')
+                                expired_deadline_template_id = ack.get('template_id')
+                                break
+                    
+                    # If we didn't find it in evaluation, look for it by name
+                    if not expired_deadline_rule_id:
+                        try:
+                            rule = Rule.objects.filter(
+                                name__icontains='Expired Marking Deadline',
+                                is_active=True
+                            ).first()
+                            if rule:
+                                expired_deadline_rule_id = rule.id
+                                # Get template from rule actions
+                                for action in rule.actions.all():
+                                    if action.message_template:
+                                        expired_deadline_template_id = action.message_template.id
+                                        break
+                        except Exception as rule_lookup_error:
+                            logger.warning(f"Failed to lookup expired deadline rule: {str(rule_lookup_error)}")
+                    
+                    # Collect all acknowledged rules data for context
+                    acknowledged_rules = []
+                    
+                    # Add T&C rule if found
+                    if rule_id and template_id:
+                        acknowledged_rules.append({
+                            'rule_id': rule_id,
+                            'template_id': template_id,
+                            'type': 'terms_conditions',
+                            'title': 'Terms & Conditions',
+                            'trigger_type': 'checkout_terms',
+                            'success': True,
+                            'can_proceed': True,
+                            'json_content': None  # T&C doesn't have JSON content typically
+                        })
+                    
+                    # Add expired deadline rule if found
+                    if checkout_evaluation:
+                        for ack in checkout_evaluation.get('acknowledgments', []):
+                            acknowledged_rules.append({
+                                'rule_id': ack.get('rule_id'),
+                                'template_id': ack.get('template_id'), 
+                                'type': 'expired_deadline',
+                                'title': ack.get('title'),
+                                'trigger_type': 'checkout_start',
+                                'success': True,
+                                'can_proceed': True,
+                                'json_content': ack.get('json_content')
+                            })
+                    
+                    # Update the terms acknowledgment with all rules context
+                    terms_acknowledgment.rules_engine_context = {
+                        'acknowledged_rules': acknowledged_rules,
+                        'evaluation_results': {
+                            'terms_evaluation': rules_evaluation,
+                            'checkout_evaluation': checkout_evaluation
+                        }
+                    }
+                    terms_acknowledgment.save()
+                    
+                    logger.info(f"Expired deadline acknowledgment created for order {order.id}: {len(expired_deadline_rules)} rules acknowledged")
+                    
+            except Exception as e:
+                logger.warning(f"Failed to create expired deadline acknowledgment for order {order.id}: {str(e)}")
+                # Continue with checkout - acknowledgment is recorded but not blocking
 
             # Process payment based on payment method
             from .services import payment_service

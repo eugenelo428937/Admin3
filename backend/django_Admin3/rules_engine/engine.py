@@ -32,12 +32,13 @@ class RulesEngine:
         # Set the first handler as entry point
         self.chain_start = self.product_handler
         
-    def evaluate_rules(self, trigger_type: str, user=None, **context_data) -> Dict[str, Any]:
+    def evaluate_rules(self, entry_point_code: str = None, trigger_type: str = None, user=None, **context_data) -> Dict[str, Any]:
         """
         Main entry point for rule evaluation
         
         Args:
-            trigger_type: The type of trigger (cart_add, checkout_start, etc.)
+            entry_point_code: The entry point code (new system)
+            trigger_type: The type of trigger (legacy system, for backward compatibility)
             user: The user triggering the rules (if any)
             **context_data: Additional context data
             
@@ -45,8 +46,13 @@ class RulesEngine:
             Dict containing messages, acknowledgments, and other results
         """
         try:
-            # Create context
-            context = RuleContext(trigger_type, user, **context_data)
+            # Support both new entry_point_code and legacy trigger_type
+            if entry_point_code:
+                context = RuleContext(entry_point_code, user, trigger_type, **context_data)
+            elif trigger_type:
+                context = RuleContext(trigger_type, user, trigger_type, **context_data)
+            else:
+                raise ValueError("Either entry_point_code or trigger_type must be provided")
             
             # Execute the chain
             results = self.chain_start.handle(context)
@@ -63,6 +69,11 @@ class RulesEngine:
                 'acknowledgments': [],
                 'can_proceed': True
             }
+            
+    # Maintain backward compatibility
+    def evaluate_rules_by_trigger(self, trigger_type: str, user=None, **context_data) -> Dict[str, Any]:
+        """Legacy method for backward compatibility"""
+        return self.evaluate_rules(trigger_type=trigger_type, user=user, **context_data)
             
     def _process_results(self, results: List[RuleResult], context: RuleContext) -> Dict[str, Any]:
         """Process rule results into a response format"""
@@ -102,7 +113,7 @@ class RulesEngine:
         if blocking_rules:
             can_proceed = self._check_acknowledgments(blocking_rules, context.user)
             
-        return {
+        result = {
             'success': True,
             'messages': messages,
             'acknowledgments': acknowledgments,
@@ -110,10 +121,12 @@ class RulesEngine:
             'can_proceed': can_proceed,
             'blocking_rules': [rule.id for rule in blocking_rules],
             'context': {
-                'trigger_type': context.trigger_type,
+                'trigger_type': str(context.trigger_type) if context.trigger_type else '',
                 'timestamp': context.timestamp.isoformat()
             }
         }
+        
+        return result
         
     def _check_acknowledgments(self, blocking_rules: List, user) -> bool:
         """Check if user has acknowledged all blocking rules"""
@@ -144,8 +157,10 @@ class RulesEngine:
                 rule=rule,
                 message_template=template,
                 defaults={
-                    'ip_address': ip_address,
-                    'user_agent': user_agent
+                    'ip_address': ip_address or '127.0.0.1',
+                    'user_agent': user_agent or 'Django Shell/Testing',
+                    'acknowledgment_type': 'required',
+                    'is_selected': True
                 }
             )
             
@@ -228,25 +243,65 @@ def evaluate_checkout_rules(user, cart_items=None, **kwargs):
                 business_days_to_next_holiday += 1
             current_date += timedelta(days=1)
     
-    # Get cart_id from cart_items or kwargs
+    # Get cart object and cart_id from cart_items or kwargs
     cart_id = kwargs.get('cart_id')
+    cart = None
+    
     if not cart_id and cart_items:
         # Try to get cart_id from first cart item
         first_item = cart_items[0] if cart_items else None
         if hasattr(first_item, 'cart_id'):
             cart_id = first_item.cart_id
         elif hasattr(first_item, 'cart'):
-            cart_id = first_item.cart.id
+            cart = first_item.cart
+            cart_id = cart.id
+    
+    # If we don't have the cart object but have cart_id, fetch it
+    if not cart and cart_id:
+        try:
+            from cart.models import Cart
+            cart = Cart.objects.get(id=cart_id)
+        except Cart.DoesNotExist:
+            pass
     
     context = {
         'cart_items': cart_items or [],
         'cart_item_count': len(cart_items) if cart_items else 0,
         'cart_id': cart_id,
+        'cart': cart,  # Add cart object for cart-level flags
         'business_days_to_next_holiday': business_days_to_next_holiday,
         'user_country': user_country,  # Make user_country directly accessible
         'payment_method': kwargs.get('payment_method', 'credit_card'),
         **kwargs
     }
+    
+    # Add user context for new condition types
+    if user:
+        # Get addresses safely (they might be related objects)
+        home_address = ''
+        work_address = ''
+        
+        # Check if user has a profile with addresses
+        if hasattr(user, 'profile') and user.profile:
+            home_addr_obj = user.profile.addresses.filter(address_type='HOME').first()
+            if home_addr_obj:
+                home_address = str(home_addr_obj.address_data) if hasattr(home_addr_obj, 'address_data') else str(home_addr_obj)
+                
+            work_addr_obj = user.profile.addresses.filter(address_type='WORK').first()
+            if work_addr_obj:
+                work_address = str(work_addr_obj.address_data) if hasattr(work_addr_obj, 'address_data') else str(work_addr_obj)
+        
+        context['user_data'] = {
+            'country': str(getattr(user, 'country', '')),
+            'home_address': home_address,
+            'home_email': str(getattr(user, 'home_email', '')),
+            'work_address': work_address,
+            'work_email': str(getattr(user, 'work_email', '')),
+            'is_reduced_rate': bool(getattr(user, 'is_reduced_rate', False)),
+            'is_apprentice': bool(getattr(user, 'is_apprentice', False)),
+            'is_caa': bool(getattr(user, 'is_caa', False)),
+            'is_study_plus': bool(getattr(user, 'is_study_plus', False)),
+        }
     
     # Calculate cart value if items provided
     if cart_items:
@@ -269,9 +324,10 @@ def evaluate_checkout_rules(user, cart_items=None, **kwargs):
             for item in cart_items
         ]
         
-        # Format cart items for custom functions
-        context['cart_items'] = [
-            {
+        # Format cart items for custom functions with detailed deadline info
+        context['cart_items'] = []
+        for item in cart_items:
+            item_data = {
                 'id': item.id,
                 'product_id': item.product.product.id,  # This is the ID from acted_products table
                 'subject_code': item.product.exam_session_subject.subject.code,
@@ -281,12 +337,30 @@ def evaluate_checkout_rules(user, cart_items=None, **kwargs):
                 'quantity': item.quantity,
                 'price_type': item.price_type,
                 'actual_price': str(item.actual_price) if item.actual_price else None,
+                'is_marking': getattr(item, 'is_marking', False),
+                'has_expired_deadline': getattr(item, 'has_expired_deadline', False),
+                'is_marking_and_expired': getattr(item, 'is_marking', False) and getattr(item, 'has_expired_deadline', False),
                 'metadata': item.metadata
             }
-            for item in cart_items
-        ]
+            
+            # Add detailed deadline info for marking products with expired deadlines
+            if item_data['is_marking_and_expired']:
+                try:
+                    from marking.models import MarkingPaper
+                    marking_papers = MarkingPaper.objects.filter(exam_session_subject_product=item.product)
+                    total_papers = marking_papers.count()
+                    expired_count = marking_papers.filter(deadline__lt=timezone.now()).count()
+                    
+                    item_data['expired_count'] = expired_count
+                    item_data['total_papers'] = total_papers
+                except Exception as e:
+                    # Fallback to defaults if we can't get the counts
+                    item_data['expired_count'] = 1
+                    item_data['total_papers'] = 1
+            
+            context['cart_items'].append(item_data)
     
-    return rules_engine.evaluate_rules('checkout_start', user, **context)
+    return rules_engine.evaluate_rules(entry_point_code='checkout_start', user=user, **context)
 
 
 def evaluate_cart_add_rules(user, product, **kwargs):
@@ -301,7 +375,7 @@ def evaluate_cart_add_rules(user, product, **kwargs):
         **kwargs
     }
     
-    return rules_engine.evaluate_rules('cart_add', user, **context)
+    return rules_engine.evaluate_rules(entry_point_code='add_to_cart', user=user, **context)
 
 
 def evaluate_product_view_rules(user, product, **kwargs):
@@ -316,4 +390,4 @@ def evaluate_product_view_rules(user, product, **kwargs):
         **kwargs
     }
     
-    return rules_engine.evaluate_rules('product_view', user, **context) 
+    return rules_engine.evaluate_rules(entry_point_code='product_list_mount', user=user, **context) 

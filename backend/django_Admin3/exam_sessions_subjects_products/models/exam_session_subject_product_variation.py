@@ -23,7 +23,7 @@ class ExamSessionSubjectProductVariation(models.Model):
         # Generate product code if not set
         if not self.product_code:
             subject_code = self.exam_session_subject_product.exam_session_subject.subject.code
-            exam_session_code = self.exam_session_subject_product.exam_session_subject.exam_session.code
+            exam_session_code = self.exam_session_subject_product.exam_session_subject.exam_session.session_code
             product_code = self.exam_session_subject_product.product.code
             variation_code = self.product_product_variation.product_variation.code
             variation = self.product_product_variation.product_variation

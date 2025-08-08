@@ -53,7 +53,18 @@
       "Bash(npm run:*)",
       "WebFetch(domain:chromium-i18n.appspot.com)",
       "WebFetch(domain:www.gstatic.com)",
-      "Bash(npm start:*)"
+      "Bash(npm start:*)",
+      "mcp__trello__trello_get_lists",
+      "mcp__trello__trello_get_cards_by_list",
+      "mcp__trello__trello_update_card",
+      "mcp__trello__trello_add_card",
+      "mcp__trello__trello_search_all_boards",
+      "Bash(..venvScriptsactivate.bat)",
+      "Bash(\".\\.venv\\Scripts\\activate\")",
+      "Bash(grep:*)",
+      "Bash(./.venv/Scripts/activate:*)",
+      "Bash(./.venv/Scripts/python.exe manage.py migrate:*)",
+      "Bash(./.venv/Scripts/python.exe manage.py shell:*)"
     ],
     "deny": []
   },

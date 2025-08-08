@@ -17,7 +17,8 @@ const NavigationMenu = ({
   handleSpecificProductClick,
   handleProductVariationClick,
   handleMarkingVouchersClick,
-  handleTutorialFormatClick
+  handleTutorialFormatClick,
+  onCollapseNavbar
 }) => {
   const { isSuperuser, isApprentice, isStudyPlus } = useAuth();
 
@@ -44,7 +45,10 @@ const NavigationMenu = ({
 								.map((subject) => (
 									<NavDropdown.Item
 										key={subject.id}
-										onClick={() => handleSubjectClick(subject.code)}>
+										onClick={() => {
+											handleSubjectClick(subject.code);
+											onCollapseNavbar && onCollapseNavbar();
+										}}>
 										<span className="fw-lighter w-100 body">
 											{subject.code} - {subject.description}
 										</span>
@@ -60,7 +64,10 @@ const NavigationMenu = ({
 								.map((subject) => (
 									<NavDropdown.Item
 										key={subject.id}
-										onClick={() => handleSubjectClick(subject.code)}>
+										onClick={() => {
+											handleSubjectClick(subject.code);
+											onCollapseNavbar && onCollapseNavbar();
+										}}>
 										<span className="fw-lighter w-100 body">
 											{subject.code} - {subject.description}
 										</span>
@@ -76,7 +83,10 @@ const NavigationMenu = ({
 								.map((subject) => (
 									<NavDropdown.Item
 										key={subject.id}
-										onClick={() => handleSubjectClick(subject.code)}>
+										onClick={() => {
+											handleSubjectClick(subject.code);
+											onCollapseNavbar && onCollapseNavbar();
+										}}>
 										<span className="fw-lighter w-100 body">
 											{subject.code} - {subject.description}
 										</span>
@@ -92,7 +102,10 @@ const NavigationMenu = ({
 								.map((subject) => (
 									<NavDropdown.Item
 										key={subject.id}
-										onClick={() => handleSubjectClick(subject.code)}>
+										onClick={() => {
+											handleSubjectClick(subject.code);
+											onCollapseNavbar && onCollapseNavbar();
+										}}>
 										<span className="fw-lighter w-100 body">
 											{subject.code} - {subject.description}
 										</span>
@@ -114,7 +127,10 @@ const NavigationMenu = ({
 						<Nav.Link
 							as={NavLink}
 							to="/products"
-							onClick={() => handleProductClick()}
+							onClick={() => {
+								handleProductClick();
+								onCollapseNavbar && onCollapseNavbar();
+							}}
 							className="fw-normal mb-2 text-primary ms-1 border border-light w-auto fs-5">
 							<span className="title3">View All Products</span>
 						</Nav.Link>
@@ -148,21 +164,19 @@ const NavigationMenu = ({
 															style={{
 																cursor: "pointer",
 															}}
-															onClick={() =>
-																handleProductGroupClick(
-																	group.name
-																)
-															}>
+															onClick={() => {
+																handleProductGroupClick(group.name);
+																onCollapseNavbar && onCollapseNavbar();
+															}}>
 															{group.name}
 														</div>
 														{leftColumn.map((product) => (
 															<NavDropdown.Item
 																key={product.id}
-																onClick={() =>
-																	handleSpecificProductClick(
-																		product.id
-																	)
-																}>
+																onClick={() => {
+																	handleSpecificProductClick(product.id);
+																	onCollapseNavbar && onCollapseNavbar();
+																}}>
 																{product.shortname}
 															</NavDropdown.Item>
 														))}
@@ -174,11 +188,10 @@ const NavigationMenu = ({
 														{rightColumn.map((product) => (
 															<NavDropdown.Item
 																key={product.id}
-																onClick={() =>
-																	handleSpecificProductClick(
-																		product.id
-																	)
-																}>
+																onClick={() => {
+																	handleSpecificProductClick(product.id);
+																	onCollapseNavbar && onCollapseNavbar();
+																}}>
 																{product.shortname}
 															</NavDropdown.Item>
 														))}
@@ -195,18 +208,20 @@ const NavigationMenu = ({
 										<div
 											className="fw-bolder mb-2 text-primary"
 											style={{ cursor: "pointer" }}
-											onClick={() =>
-												handleProductGroupClick(group.name)
-											}>
+											onClick={() => {
+												handleProductGroupClick(group.name);
+												onCollapseNavbar && onCollapseNavbar();
+											}}>
 											{group.name}
 										</div>
 										{group.products && group.products.length > 0 ? (
 											group.products.map((product) => (
 												<NavDropdown.Item
 													key={product.id}
-													onClick={() =>
-														handleSpecificProductClick(product.id)
-													}>
+													onClick={() => {
+														handleSpecificProductClick(product.id);
+														onCollapseNavbar && onCollapseNavbar();
+													}}>
 													{product.shortname}
 												</NavDropdown.Item>
 											))
@@ -236,6 +251,7 @@ const NavigationMenu = ({
 							to="/products?distance_learning=true"
 							onClick={() => {
 								// Navigation handled by NavLink 'to' prop
+								onCollapseNavbar && onCollapseNavbar();
 							}}
 							className="fw-normal mb-2 text-primary ms-1 border border-light w-auto fs-5">
 							View All Distance Learning
@@ -254,18 +270,20 @@ const NavigationMenu = ({
 									<div
 										className="fw-bolder mb-2 text-primary"
 										style={{ cursor: "pointer" }}
-										onClick={() =>
-											handleProductGroupClick(group.name)
-										}>
+										onClick={() => {
+											handleProductGroupClick(group.name);
+											onCollapseNavbar && onCollapseNavbar();
+										}}>
 										{group.name}
 									</div>
 									{group.products && group.products.length > 0 ? (
 										group.products.map((product) => (
 											<NavDropdown.Item
 												key={product.id}
-												onClick={() =>
-													handleSpecificProductClick(product.id)
-												}>
+												onClick={() => {
+													handleSpecificProductClick(product.id);
+													onCollapseNavbar && onCollapseNavbar();
+												}}>
 												{product.shortname}
 											</NavDropdown.Item>
 										))
@@ -294,6 +312,7 @@ const NavigationMenu = ({
 							to="/products?tutorial=true"
 							onClick={() => {
 								// Navigation handled by NavLink 'to' prop
+								onCollapseNavbar && onCollapseNavbar();
 							}}
 							className="fw-normal mb-2 text-primary ms-1 border border-light w-auto fs-5">
 							View All Tutorials
@@ -320,11 +339,10 @@ const NavigationMenu = ({
 													(product) => (
 														<NavDropdown.Item
 															key={product.id}
-															onClick={() =>
-																handleSpecificProductClick(
-																	product.id
-																)
-															}>
+															onClick={() => {
+																handleSpecificProductClick(product.id);
+																onCollapseNavbar && onCollapseNavbar();
+															}}>
 															{product.shortname}
 														</NavDropdown.Item>
 													)
@@ -366,11 +384,10 @@ const NavigationMenu = ({
 										tutorialData.Format.map((format) => (
 											<NavDropdown.Item
 												key={format.filter_type}
-												onClick={() =>
-													handleTutorialFormatClick(
-														format.group_name
-													)
-												}>
+												onClick={() => {
+													handleTutorialFormatClick(format.group_name);
+													onCollapseNavbar && onCollapseNavbar();
+												}}>
 												{format.name}
 											</NavDropdown.Item>
 										))
@@ -391,11 +408,10 @@ const NavigationMenu = ({
 											(variation) => (
 												<NavDropdown.Item
 													key={variation.id}
-													onClick={() =>
-														handleProductVariationClick(
-															variation.id
-														)
-													}>
+													onClick={() => {
+														handleProductVariationClick(variation.id);
+														onCollapseNavbar && onCollapseNavbar();
+													}}>
 													{variation.description || variation.name}
 												</NavDropdown.Item>
 											)
@@ -447,13 +463,13 @@ const NavigationMenu = ({
 					title={<span className="title3">Admin</span>}
 					id="admin-nav-dropdown"
 					className="m-left__sm m-right__sm">
-					<NavDropdown.Item as={NavLink} to="admin/exam-sessions">
+					<NavDropdown.Item as={NavLink} to="admin/exam-sessions" onClick={() => onCollapseNavbar && onCollapseNavbar()}>
 						<span className="title3">Exam Sessions</span>
 					</NavDropdown.Item>
-					<NavDropdown.Item as={NavLink} to="admin/subjects">
+					<NavDropdown.Item as={NavLink} to="admin/subjects" onClick={() => onCollapseNavbar && onCollapseNavbar()}>
 						<span className="title3">Subjects</span>
 					</NavDropdown.Item>
-					<NavDropdown.Item as={NavLink} to="admin/products">
+					<NavDropdown.Item as={NavLink} to="admin/products" onClick={() => onCollapseNavbar && onCollapseNavbar()}>
 						<span className="title3">Products</span>
 					</NavDropdown.Item>
 				</NavDropdown>

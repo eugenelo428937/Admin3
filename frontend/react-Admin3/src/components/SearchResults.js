@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Row, Col, Card, Badge, Button} from "react-bootstrap";
 import{ Container } from "@mui/material";
 import { Filter, ArrowRight, X } from "react-bootstrap-icons";
-import ProductCard from "./Product/ProductCard/ProductCard";
+import ProductCard from "./Product/ProductCard/MaterialProductCard";
 import useProductCardHelpers from "../hooks/useProductCardHelpers";
 import "../styles/search_results.css";
 

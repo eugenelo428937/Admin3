@@ -166,12 +166,15 @@ const TutorialProductCard = React.memo(
 					variant="tutorial-product"
 					onMouseEnter={handleMouseEnter}
 					onMouseLeave={handleMouseLeave}
-					sx={{                 
-						transform: isHovered ? 'scale(1.02)' : 'scale(1)',
-						transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-						display: 'flex',
-						flexDirection: 'column',
-						height: '100%'
+					sx={{
+						transform: isHovered ? "scale(1.02)" : "scale(1)",
+						transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+						width: "100%",
+						margin: 0,
+						padding: 0,
+						display: "flex",
+						flexDirection: "column",
+						height: "100%",
 					}}
 					className="d-flex flex-column">
 					{/* Floating Badges */}
@@ -181,7 +184,9 @@ const TutorialProductCard = React.memo(
 							size="small"
 							className="subject-badge"
 							role="img"
-							aria-label={`Subject: ${product.subject_code || subjectCode}`}
+							aria-label={`Subject: ${
+								product.subject_code || subjectCode
+							}`}
 						/>
 						<Chip
 							label="25S"
@@ -193,13 +198,13 @@ const TutorialProductCard = React.memo(
 					</Box>
 					<CardHeader
 						className="product-header"
-						sx={{ 
-							width: '100%', 
-							margin: 0, 
+						sx={{
+							width: "100%",
+							margin: 0,
 							padding: 0,
-							'& .MuiCardHeader-root': {
-								width: '100%'
-							}
+							"& .MuiCardHeader-root": {
+								width: "100%",
+							},
 						}}
 						title={
 							<Typography
@@ -224,7 +229,15 @@ const TutorialProductCard = React.memo(
 						}
 					/>
 
-					<CardContent sx={{ width: '100%', margin: 0, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+					<CardContent
+						sx={{
+							width: "100%",
+							margin: 0,
+							flex: 1,
+							display: "flex",
+							flexDirection: "column",
+							justifyContent: "flex-start",
+						}}>
 						{/* Tutorial Information Section */}
 						<Box className="tutorial-info-section">
 							<Stack direction="column" className="info-row">
@@ -238,7 +251,12 @@ const TutorialProductCard = React.memo(
 									</Typography>
 								</Stack>
 								<Typography variant="caption" className="info-sub-text">
-									• {summaryInfo.totalEvents} ({variations.length} variations, {hasChoices ? choiceCount + ' selected' : '0 selected'})
+									• {summaryInfo.totalEvents} ({variations.length}{" "}
+									variations,{" "}
+									{hasChoices
+										? choiceCount + " selected"
+										: "0 selected"}
+									)
 								</Typography>
 							</Stack>
 
@@ -253,7 +271,10 @@ const TutorialProductCard = React.memo(
 									</Typography>
 								</Stack>
 								{summaryInfo.distinctDescriptions.map((desc, index) => (
-									<Typography key={index} variant="caption" className="info-sub-text">
+									<Typography
+										key={index}
+										variant="caption"
+										className="info-sub-text">
 										• {desc}
 									</Typography>
 								))}
@@ -270,7 +291,10 @@ const TutorialProductCard = React.memo(
 									</Typography>
 								</Stack>
 								{summaryInfo.distinctVenues.map((venue, index) => (
-									<Typography key={index} variant="caption" className="info-sub-text">
+									<Typography
+										key={index}
+										variant="caption"
+										className="info-sub-text">
 										• {venue}
 									</Typography>
 								))}
@@ -280,11 +304,19 @@ const TutorialProductCard = React.memo(
 						{variations.length === 0 ? (
 							<Box className="text-center text-muted">
 								<Typography variant="body2" color="text.secondary">
-									No tutorial variations available for this subject and location.
+									No tutorial variations available for this subject and
+									location.
 								</Typography>
 							</Box>
 						) : (
-							<Box className="tutorial-action-buttons" sx={{ display: 'flex', justifyContent: 'center', gap: 1, flexWrap: 'wrap' }}>
+							<Box
+								className="tutorial-action-buttons"
+								sx={{
+									display: "flex",
+									justifyContent: "center",
+									gap: 1,
+									flexWrap: "wrap",
+								}}>
 								<Button
 									variant="contained"
 									size="small"
@@ -299,7 +331,9 @@ const TutorialProductCard = React.memo(
 										size="small"
 										color="secondary"
 										className="view-selection-button"
-										onClick={() => showChoicePanelForSubject(subjectCode)}>
+										onClick={() =>
+											showChoicePanelForSubject(subjectCode)
+										}>
 										View Selection
 									</Button>
 								)}
@@ -311,7 +345,9 @@ const TutorialProductCard = React.memo(
 						{/* Discount Options Section - matches theme structure */}
 						<Box className="price-container">
 							<Box className="discount-options">
-								<Typography variant="subtitle2" className="discount-title">
+								<Typography
+									variant="subtitle2"
+									className="discount-title">
 									Discount Options
 								</Typography>
 								<Box className="discount-radio-group">
@@ -396,7 +432,9 @@ const TutorialProductCard = React.memo(
 										Price includes VAT
 									</Typography>
 								</Box>
-								<Button variant="contained" className="add-to-cart-button">
+								<Button
+									variant="contained"
+									className="add-to-cart-button">
 									<AddShoppingCart />
 								</Button>
 							</Box>

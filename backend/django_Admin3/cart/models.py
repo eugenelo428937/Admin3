@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
 
 class Cart(models.Model):
@@ -7,6 +8,7 @@ class Cart(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True
     )
     session_key = models.CharField(max_length=40, null=True, blank=True, unique=True)
+    has_marking = models.BooleanField(default=False, help_text="Indicates if cart contains marking products")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -38,6 +40,8 @@ class CartItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     price_type = models.CharField(max_length=20, default="standard")  # standard, retaker, additional
     actual_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    has_expired_deadline = models.BooleanField(default=False, help_text="Indicates if marking product has expired deadlines")
+    is_marking = models.BooleanField(default=False, help_text="Indicates if this is a marking product")
     metadata = models.JSONField(default=dict, blank=True, help_text="Additional product-specific data (e.g., tutorial choices, variation IDs)")
     added_at = models.DateTimeField(auto_now_add=True)
 
@@ -211,6 +215,148 @@ class ActedOrderItem(models.Model):
         if self.item_type == 'marking_voucher':
             return self.marking_voucher.price
         return None
+
+class OrderUserAcknowledgment(models.Model):
+    """Generic model to store all types of user acknowledgments for orders"""
+    
+    # Acknowledgment types
+    ACKNOWLEDGMENT_TYPE_CHOICES = [
+        ('terms_conditions', 'Terms & Conditions'),
+        ('product_specific', 'Product-Specific Acknowledgment'),
+        ('deadline_expired', 'Expired Deadline Acknowledgment'),
+        ('policy_change', 'Policy Change Acknowledgment'),
+        ('warning', 'Warning Acknowledgment'),
+        ('custom', 'Custom Acknowledgment'),
+    ]
+    
+    order = models.ForeignKey(
+        ActedOrder, 
+        on_delete=models.CASCADE, 
+        related_name='user_acknowledgments',
+        help_text="Associated order for this acknowledgment"
+    )
+    
+    # Type and identification
+    acknowledgment_type = models.CharField(
+        max_length=50,
+        choices=ACKNOWLEDGMENT_TYPE_CHOICES,
+        help_text="Type of acknowledgment required"
+    )
+    rule_id = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="ID of the rule that triggered this acknowledgment"
+    )
+    template_id = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="ID of the message template used for this acknowledgment"
+    )
+    
+    # Acknowledgment details
+    title = models.CharField(
+        max_length=255,
+        help_text="Title/subject of the acknowledgment"
+    )
+    content_summary = models.TextField(
+        help_text="Brief summary of what was acknowledged"
+    )
+    is_accepted = models.BooleanField(
+        default=False,
+        help_text="Whether user accepted/acknowledged this requirement"
+    )
+    accepted_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="Timestamp when acknowledgment was made"
+    )
+    
+    # User session information for audit trail
+    ip_address = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+        help_text="IP address of user who made the acknowledgment"
+    )
+    user_agent = models.TextField(
+        blank=True,
+        help_text="User agent string of browser used to make acknowledgment"
+    )
+    
+    # Version tracking and data
+    content_version = models.CharField(
+        max_length=20,
+        default='1.0',
+        help_text="Version of content that was acknowledged"
+    )
+    acknowledgment_data = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Structured data related to this acknowledgment (product IDs, specific conditions, etc.)"
+    )
+    
+    # Rules engine integration
+    rules_engine_context = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Context data from rules engine evaluation that triggered this acknowledgment"
+    )
+    
+    class Meta:
+        db_table = 'acted_order_user_acknowledgments'
+        verbose_name = 'Order User Acknowledgment'
+        verbose_name_plural = 'Order User Acknowledgments'
+        ordering = ['-accepted_at']
+        indexes = [
+            models.Index(fields=['order', 'acknowledgment_type']),
+            models.Index(fields=['rule_id']),
+            models.Index(fields=['acknowledgment_type']),
+        ]
+    
+    def __str__(self):
+        status = "Accepted" if self.is_accepted else "Pending"
+        return f"{self.get_acknowledgment_type_display()} {status} for Order #{self.order.id}"
+    
+    @property 
+    def is_terms_and_conditions(self):
+        """Check if this is a Terms & Conditions acknowledgment"""
+        return self.acknowledgment_type == 'terms_conditions'
+    
+    @property
+    def is_product_specific(self):
+        """Check if this is a product-specific acknowledgment"""
+        return self.acknowledgment_type == 'product_specific'
+    
+    def get_affected_products(self):
+        """Get list of product IDs affected by this acknowledgment"""
+        return self.acknowledgment_data.get('product_ids', [])
+    
+    def add_product_acknowledgment(self, product_id, condition_type, condition_details):
+        """Add a product-specific acknowledgment detail"""
+        if 'products' not in self.acknowledgment_data:
+            self.acknowledgment_data['products'] = {}
+        
+        self.acknowledgment_data['products'][str(product_id)] = {
+            'condition_type': condition_type,
+            'condition_details': condition_details,
+            'acknowledged_at': timezone.now().isoformat()
+        }
+        self.save()
+    
+    # Backward compatibility methods for Terms & Conditions
+    @property
+    def general_terms_accepted(self):
+        """Backward compatibility: Check if general terms were accepted"""
+        return (self.acknowledgment_type == 'terms_conditions' and self.is_accepted)
+    
+    @property
+    def terms_version(self):
+        """Backward compatibility: Get terms version"""
+        return self.content_version
+    
+    @property
+    def product_acknowledgments(self):
+        """Backward compatibility: Get product acknowledgments"""
+        return self.acknowledgment_data.get('products', {})
+
 
 class ActedOrderPayment(models.Model):
     """Model to store payment transaction details for orders"""

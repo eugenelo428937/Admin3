@@ -2,21 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, Alert, Badge, Form, Table, Modal } from 'react-bootstrap';
 import { useCart } from '../../contexts/CartContext';
 import { generateProductCode } from '../../utils/productCodeGenerator';
-import RulesEngineDisplay from '../RulesEngineDisplay';
 import rulesEngineService from '../../services/rulesEngineService';
 import httpService from '../../services/httpService';
+import JsonContentRenderer from '../Common/JsonContentRenderer';
 import config from "../../config";
-const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
+const CheckoutSteps = ({ onComplete }) => {
   const { cartItems } = useCart();
   const [currentStep, setCurrentStep] = useState(1);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const [rulesMessages, setRulesMessages] = useState(initialRulesMessages || []);
-  const [optionalSelections, setOptionalSelections] = useState({});
-  const [userSelections, setUserSelections] = useState({});
   const [vatCalculations, setVatCalculations] = useState(null);
   const [vatLoading, setVatLoading] = useState(false);
+  
+  // Terms & Conditions state
+  const [termsMessages, setTermsMessages] = useState([]);
+  const [termsLoading, setTermsLoading] = useState(false);
+  const [generalTermsAccepted, setGeneralTermsAccepted] = useState(false);
+  const [currentOrderId, setCurrentOrderId] = useState(null);
+  
+  // Checkout start rules state (for expired deadlines and other warnings)
+  const [checkoutMessages, setCheckoutMessages] = useState([]);
+  const [checkoutMessagesLoading, setCheckoutMessagesLoading] = useState(false);
+  const [checkoutAcknowledgments, setCheckoutAcknowledgments] = useState({});
+  const [checkoutCanProceed, setCheckoutCanProceed] = useState(true);
+  
+  // Store acknowledgment messages from checkout_start rules separately from general T&C
+  const [checkoutAcknowledgmentMessages, setCheckoutAcknowledgmentMessages] = useState([]);
   
   // Payment method state
   const [paymentMethod, setPaymentMethod] = useState('card'); // 'card' or 'invoice'
@@ -89,15 +101,6 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
     }
   ];
 
-  // Separate optional and mandatory rules
-  const optionalRules = rulesMessages.filter(msg => !msg.requires_acknowledgment);
-  const mandatoryRules = rulesMessages.filter(msg => msg.requires_acknowledgment);
-
-  // Update rulesMessages when initialRulesMessages changes
-  useEffect(() => {
-    setRulesMessages(initialRulesMessages || []);
-  }, [initialRulesMessages]);
-
   // Check if we're in production environment
   useEffect(() => {
     const checkEnvironment = () => {
@@ -116,13 +119,33 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
       
       setVatLoading(true);
       try {
-        const result = await rulesEngineService.calculateVAT(cartItems);
-        if (result.success) {
-          setVatCalculations(result);
-        }
+        // TODO: Restore VAT calculation functionality if needed
+        // const result = await rulesEngineService.calculateVAT(cartItems);
+        
+        // Set dummy VAT calculations for now
+        const subtotal = cartItems.reduce((total, item) => 
+          total + (parseFloat(item.actual_price) * item.quantity), 0
+        );
+        const vatRate = 0.20; // 20% VAT
+        const totalVat = subtotal * vatRate;
+        const totalGross = subtotal + totalVat;
+        
+        const dummyResult = {
+          success: true,
+          totals: {
+            subtotal: subtotal,
+            total_vat: totalVat,
+            total_gross: totalGross
+          },
+          user_country: 'UK',
+          vat_calculations: []
+        };
+        
+        setVatCalculations(dummyResult);
       } catch (err) {
         console.error('Error calculating VAT:', err);
-        setError('Failed to calculate VAT. Please refresh the page.');
+        // Don't show error to user for now since it's using dummy data
+        // setError('Failed to calculate VAT. Please refresh the page.');
       } finally {
         setVatLoading(false);
       }
@@ -131,39 +154,98 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
     calculateVAT();
   }, [cartItems]);
 
-  // Load user's previous selections
+  // Evaluate checkout_start rules when component mounts or cart changes
   useEffect(() => {
-    const loadUserSelections = async () => {
+    const evaluateCheckoutStartRules = async () => {
+      if (cartItems.length === 0) return;
+      
+      setCheckoutMessagesLoading(true);
       try {
-        const result = await rulesEngineService.getUserSelections('checkout_start');
+        // Evaluate checkout_start rules for warnings like expired deadlines
+        const result = await rulesEngineService.evaluateRulesAtEntryPoint('checkout_start', {
+          cart_items: cartItems.map(item => item.id) // Send cart item IDs, backend will fetch full objects
+        });
+        
         if (result.success) {
-          setUserSelections(result.selections);
-          // Set initial optional selections based on previous choices
-          const initialSelections = {};
-          Object.values(result.selections).forEach(selection => {
-            if (selection.acknowledgment_type === 'optional') {
-              initialSelections[selection.rule_id] = selection.is_selected;
-            }
-          });
-          setOptionalSelections(initialSelections);
+          // Set display messages (warnings) for step 1
+          const displayMessages = result.messages || [];
+          setCheckoutMessages(displayMessages);
+          
+          // Store acknowledgments from checkout_start rules (like expired deadlines)
+          if (result.acknowledgments && result.acknowledgments.length > 0) {
+            setCheckoutAcknowledgmentMessages(result.acknowledgments);
+          } else {
+            setCheckoutAcknowledgmentMessages([]);
+          }
+          
+          // Check if user can proceed (no blocking rules or all acknowledged)
+          setCheckoutCanProceed(result.can_proceed || true);
         }
       } catch (err) {
-        console.error('Error loading user selections:', err);
+        console.error('Error evaluating checkout start rules:', err);
+        // Don't show error to user for non-critical warnings
+      } finally {
+        setCheckoutMessagesLoading(false);
       }
     };
 
-    loadUserSelections();
-  }, []);
+    evaluateCheckoutStartRules();
+  }, [cartItems]);
+
   
   const steps = [
     { title: 'Cart Review', description: 'Review your items' },
-    { title: 'Important Notes & Options', description: 'Review optional preferences' },
     { title: 'Terms & Conditions', description: 'Review and accept terms' },
     { title: 'Payment', description: 'Complete payment' },
     { title: 'Confirmation', description: 'Order confirmation' }
   ];
 
-  const handleNext = () => {
+  // Load T&C messages when reaching step 2
+  useEffect(() => {
+    const loadTermsMessages = async () => {
+      if (currentStep === 2) {
+        setTermsLoading(true);
+        try {
+          const result = await rulesEngineService.evaluateCheckoutTerms();
+          if (result.success && result.messages) {
+            setTermsMessages(result.messages);
+          }
+          
+          // Reset T&C acceptance state for new checkout (ensures checkbox doesn't persist)
+          setGeneralTermsAccepted(false);
+        } catch (err) {
+          console.error('Error loading T&C messages:', err);
+          setError('Failed to load Terms & Conditions. Please refresh and try again.');
+        } finally {
+          setTermsLoading(false);
+        }
+      }
+    };
+
+    loadTermsMessages();
+  }, [currentStep]);
+
+  const handleNext = async () => {
+    if (currentStep === 2 && generalTermsAccepted) {
+      // Save T&C acceptance when moving from step 2 to step 3
+      try {
+        setLoading(true);
+        
+        // For now, we'll store the T&C acceptance in local state
+        // In a real implementation, you might create a draft order first
+        // We'll handle the actual saving during the final checkout completion
+        
+        setSuccess('Terms & Conditions accepted successfully');
+        setTimeout(() => setSuccess(''), 3000);
+      } catch (err) {
+        console.error('Error saving T&C acceptance:', err);
+        setError('Failed to save Terms & Conditions acceptance. Please try again.');
+        return;
+      } finally {
+        setLoading(false);
+      }
+    }
+    
     if (currentStep < steps.length) {
       setCurrentStep(prev => prev + 1);
     }
@@ -175,29 +257,27 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
     }
   };
 
-  const handleOptionalRuleChange = async (ruleId, isSelected) => {
-    try {
-      setOptionalSelections(prev => ({
-        ...prev,
-        [ruleId]: isSelected
-      }));
-
-      // Save selection to backend
-      await rulesEngineService.selectOptionalRule(ruleId, null, isSelected);
-    } catch (err) {
-      console.error('Error saving optional rule selection:', err);
-      setError('Failed to save your selection. Please try again.');
-    }
-  };
-
-  const handleMandatoryRulesComplete = () => {
-    handleNext();
-  };
 
   const canProceedToPayment = () => {
-    // Check if all mandatory rules have been acknowledged
-    return mandatoryRules.length === 0 || 
-           mandatoryRules.every(rule => userSelections[rule.rule_id]?.acknowledgment_type === 'required');
+    // Check if T&C have been accepted and acknowledgments completed
+    if (currentStep === 2) {
+      // Must accept general T&C
+      const termsAccepted = generalTermsAccepted;
+      
+      // Must complete all required checkout acknowledgments (like expired deadlines)
+      const allCheckoutAcknowledgmentsCompleted = checkoutAcknowledgmentMessages.every(message => 
+        checkoutAcknowledgments[`${message.rule_id}-${message.template_id}`]
+      );
+      
+      return termsAccepted && allCheckoutAcknowledgmentsCompleted;
+    }
+    
+    // Step 1 (Cart Review) doesn't need acknowledgments anymore - just display warnings
+    if (currentStep === 1) {
+      return true; // Can always proceed from step 1 to view T&C
+    }
+    
+    return true;
   };
 
   const applyTestCard = (card) => {
@@ -269,8 +349,18 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
         };
       }
 
-      // Call the parent's onComplete function with payment data
-      onComplete(paymentData);
+      // Include T&C acceptance data in the payment data
+      const completePaymentData = {
+        ...paymentData,
+        terms_acceptance: {
+          general_terms_accepted: generalTermsAccepted,
+          terms_version: '1.0',
+          product_acknowledgments: checkoutAcknowledgments // Include expired deadline acknowledgments
+        }
+      };
+
+      // Call the parent's onComplete function with payment data including T&C
+      onComplete(completePaymentData);
       
     } catch (err) {
       console.error('Error during checkout:', err);
@@ -288,12 +378,91 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
     );
   };
 
+  // Handle checkout acknowledgments
+  const handleCheckoutAcknowledgment = async (ruleId, templateId, messageIndex) => {
+    try {
+      setLoading(true);
+      await rulesEngineService.acknowledgeRule(ruleId, templateId, 'required');
+      
+      // Mark this acknowledgment as completed
+      setCheckoutAcknowledgments(prev => ({
+        ...prev,
+        [`${ruleId}-${templateId}`]: true
+      }));
+      
+      // Re-evaluate checkout rules to check if we can proceed  
+      const result = await rulesEngineService.evaluateCheckoutStart({
+        cart_items: cartItems.map(item => item.id) // Send cart item IDs, backend will fetch full objects
+      });
+      
+      if (result.success) {
+        setCheckoutCanProceed(result.can_proceed || true);
+      }
+      
+      setSuccess('Acknowledgment recorded successfully');
+      setTimeout(() => setSuccess(''), 3000);
+      
+    } catch (error) {
+      console.error('Error acknowledging checkout rule:', error);
+      setError('Failed to record acknowledgment. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
         return (
           <div className="cart-review">
             <h4>Review Your Order</h4>
+            
+            {/* Checkout Start Messages (Warnings like expired deadlines) */}
+            {checkoutMessagesLoading ? (
+              <div className="text-center py-2 mb-3">
+                <div className="spinner-border spinner-border-sm me-2" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                Checking for important notices...
+              </div>
+            ) : checkoutMessages.length > 0 && (
+              <div className="mb-3">
+                {checkoutMessages.map((message, index) => (
+                  <Card key={`checkout-msg-${index}`} className="mb-3" 
+                        style={{ borderColor: message.message_type === 'warning' ? '#ffc107' : '#6c757d' }}>
+                    <Card.Header className={`${message.message_type === 'warning' ? 'bg-warning' : 'bg-secondary'}`}>
+                      <h6 className="mb-0 text-dark">
+                        {message.title || 'Notice'}
+                        <Badge className="ms-2" bg="info">
+                          Information
+                        </Badge>
+                      </h6>
+                    </Card.Header>
+                    <Card.Body>
+                      {message.content_format === 'json' && message.json_content ? (
+                        <JsonContentRenderer 
+                          content={message.json_content}
+                          className="checkout-message-content"
+                        />
+                      ) : (
+                        <div 
+                          dangerouslySetInnerHTML={{ 
+                            __html: message.content || message.message 
+                          }} 
+                        />
+                      )}
+                      
+                      <div className="mt-3 p-2 border border-info rounded bg-info bg-opacity-10">
+                        <span className="text-info fw-bold">
+                          <i className="fas fa-info-circle me-2"></i>
+                          This information will need to be acknowledged in the Terms & Conditions step.
+                        </span>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                ))}
+              </div>
+            )}
                        
             {cartItems.length === 0 ? (
               <Alert variant="info">Your cart is empty.</Alert>
@@ -407,76 +576,247 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
 
       case 2:
         return (
-          <div className="optional-rules">
-            <h4>Important Notes & Options</h4>
-            {optionalRules.length > 0 ? (
-              <>
-                <p className="text-muted mb-4">
-                  Based on your cart items, we have some optional recommendations and preferences. 
-                  Please review and select any that apply to you.
+          <div className="terms-conditions">
+            <h4>Terms & Conditions</h4>
+            
+            {/* Checkout Acknowledgments Section (like expired deadline warnings) */}
+            {checkoutAcknowledgmentMessages.length > 0 && (
+              <div className="checkout-acknowledgments mb-4">
+                <h5 className="text-warning">
+                  <i className="fas fa-exclamation-triangle me-2"></i>
+                  Required Acknowledgments
+                </h5>
+                <p className="text-muted mb-3">
+                  The following items require your acknowledgment before you can complete your order:
                 </p>
-                {optionalRules.map((rule, index) => (
-                  <Card key={`${rule.rule_id}-${index}`} className="mb-3">
-                    <Card.Header className="bg-info">
-                      <h6 className="mb-0 text-white">
-                        {rule.title || `Optional Preference ${index + 1}`}
-                      </h6>
-                    </Card.Header>
-                    <Card.Body>
-                      <div 
-                        dangerouslySetInnerHTML={{ __html: rule.content || rule.message }} 
-                      />
-                      
-                      <div className="mt-3">
-                        <Form.Check
-                          type="checkbox"
-                          id={`optional-rule-${rule.rule_id}`}
-                          label="Yes, I would like this option"
-                          checked={optionalSelections[rule.rule_id] || false}
-                          onChange={(e) => handleOptionalRuleChange(rule.rule_id, e.target.checked)}
-                        />
-                      </div>
-                      
-                      {userSelections[rule.rule_id] && (
-                        <div className="mt-2">
-                          <Alert variant="success" className="mb-0 py-2">
-                            <small>
-                              ✓ Saved (Last updated: {new Date(userSelections[rule.rule_id].acknowledged_at).toLocaleString()})
-                            </small>
-                          </Alert>
-                        </div>
-                      )}
-                    </Card.Body>
-                  </Card>
-                ))}
-              </>
+                
+                {checkoutAcknowledgmentMessages.map((message, index) => {
+                  const isAlreadyAcknowledged = checkoutAcknowledgments[`${message.rule_id}-${message.template_id}`];
+                  
+                  return (
+                    <Card key={`checkout-ack-${index}`} className="mb-3 border-warning">
+                      <Card.Header className="bg-warning text-dark">
+                        <h6 className="mb-0">
+                          {message.title || 'Required Acknowledgment'}
+                          <Badge className="ms-2" bg={isAlreadyAcknowledged ? 'success' : 'danger'}>
+                            {isAlreadyAcknowledged ? 'Acknowledged' : 'Requires Acknowledgment'}
+                          </Badge>
+                        </h6>
+                      </Card.Header>
+                      <Card.Body>
+                        {message.content_format === 'json' && message.json_content ? (
+                          <JsonContentRenderer 
+                            content={message.json_content}
+                            className="checkout-acknowledgment-content"
+                          />
+                        ) : (
+                          <div 
+                            dangerouslySetInnerHTML={{ 
+                              __html: message.content || message.message 
+                            }} 
+                          />
+                        )}
+                        
+                        {!isAlreadyAcknowledged ? (
+                          <div className="mt-3 p-3 border border-warning rounded bg-light">
+                            <div className="d-flex justify-content-between align-items-center">
+                              <span className="text-danger fw-bold">
+                                <i className="fas fa-exclamation-circle me-2"></i>
+                                You must acknowledge this to proceed with checkout.
+                              </span>
+                              <Form.Check
+                                type="checkbox"
+                                id={`checkout-acknowledgment-${index}`}
+                                label="I acknowledge"
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setCheckoutAcknowledgments(prev => ({
+                                      ...prev,
+                                      [`${message.rule_id}-${message.template_id}`]: true
+                                    }));
+                                  } else {
+                                    setCheckoutAcknowledgments(prev => {
+                                      const updated = { ...prev };
+                                      delete updated[`${message.rule_id}-${message.template_id}`];
+                                      return updated;
+                                    });
+                                  }
+                                }}
+                                className="fw-bold text-primary"
+                                checked={isAlreadyAcknowledged || false}
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="mt-3 p-2 border border-success rounded bg-success bg-opacity-10">
+                            <span className="text-success fw-bold">
+                              <i className="fas fa-check-circle me-2"></i>
+                              You have acknowledged this notice.
+                            </span>
+                          </div>
+                        )}
+                      </Card.Body>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+            
+            <h5 className="mt-4 mb-3">General Terms & Conditions</h5>
+            
+            {termsLoading ? (
+              <div className="text-center py-4">
+                <div className="spinner-border spinner-border-sm me-2" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                Loading Terms & Conditions...
+              </div>
+            ) : termsMessages.length > 0 ? (
+              <div>
+                {termsMessages.map((message, index) => {
+                  const requiresAcknowledgment = message.requires_acknowledgment || message.type === 'acknowledgment';
+                  const isAlreadyAcknowledged = checkoutAcknowledgments[`${message.rule_id}-${message.template_id}`];
+                  const isTermsMessage = !requiresAcknowledgment; // General T&C message
+                  
+                  return (
+                    <Card key={`terms-${index}`} className="mb-3" 
+                          style={{ borderColor: message.message_type === 'warning' ? '#ffc107' : '#6c757d' }}>
+                      <Card.Header className={`${message.message_type === 'warning' ? 'bg-warning' : 'bg-warning'}`}>
+                        <h6 className="mb-0 text-dark">
+                          {message.title || (isTermsMessage ? 'Terms & Conditions' : 'Notice')}
+                          {requiresAcknowledgment && (
+                            <Badge className="ms-2" bg={isAlreadyAcknowledged ? 'success' : 'danger'}>
+                              {isAlreadyAcknowledged ? 'Acknowledged' : 'Requires Acknowledgment'}
+                            </Badge>
+                          )}
+                        </h6>
+                      </Card.Header>
+                      <Card.Body>
+                        {message.content_format === 'json' && message.json_content ? (
+                          <JsonContentRenderer 
+                            content={message.json_content}
+                            className="terms-conditions-json-content"
+                          />
+                        ) : (
+                          <div 
+                            dangerouslySetInnerHTML={{ 
+                              __html: message.content || message.message 
+                            }} 
+                          />
+                        )}
+                        
+                        {/* Show acknowledgment button if required and not yet acknowledged */}
+                        {requiresAcknowledgment && !isAlreadyAcknowledged && (
+                          <div className="mt-3 p-3 border border-warning rounded bg-light">
+                            <div className="d-flex justify-content-between align-items-center">
+                              <span className="text-danger fw-bold">
+                                <i className="fas fa-exclamation-circle me-2"></i>
+                                You must acknowledge this notice to proceed with checkout.
+                              </span>
+                              <Button 
+                                variant="warning" 
+                                size="sm"
+                                onClick={() => handleCheckoutAcknowledgment(message.rule_id, message.template_id, index)}
+                                disabled={loading}
+                              >
+                                {loading ? 'Processing...' : 'I Acknowledge'}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Show success message if already acknowledged */}
+                        {requiresAcknowledgment && isAlreadyAcknowledged && (
+                          <div className="mt-3 p-2 border border-success rounded bg-success bg-opacity-10">
+                            <span className="text-success fw-bold">
+                              <i className="fas fa-check-circle me-2"></i>
+                              You have acknowledged this notice.
+                            </span>
+                          </div>
+                        )}
+                        
+                        {/* General T&C acceptance checkbox for non-acknowledgment messages */}
+                        {isTermsMessage && (
+                          <div className="mt-4 p-3 border border-warning rounded bg-light">
+                            <Form.Check
+                              type="checkbox"
+                              id="general-terms-acceptance"
+                              label="I agree to the Terms & Conditions and acknowledge that I have read and understood them."
+                              checked={generalTermsAccepted}
+                              onChange={(e) => setGeneralTermsAccepted(e.target.checked)}
+                              className="fw-bold text-primary"
+                              required
+                            />
+                            
+                            {!generalTermsAccepted && (
+                              <div className="mt-2">
+                                <small className="text-danger">
+                                  <i className="fas fa-exclamation-circle me-1"></i>
+                                  You must accept the Terms & Conditions to proceed with your order.
+                                </small>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </Card.Body>
+                    </Card>
+                  );
+                })}
+              </div>
             ) : (
-              <Alert variant="info">
-                No optional preferences available for your current selection.
-              </Alert>
+              <Card className="mb-3">
+                <Card.Header className="bg-warning">
+                  <h6 className="mb-0 text-dark">Terms & Conditions</h6>
+                </Card.Header>
+                <Card.Body>
+                  <div className="mb-3">
+                    <h5>General Terms & Conditions</h5>
+                    <p>By completing this purchase, you agree to our Terms & Conditions which include:</p>
+                    <ul>
+                      <li>Product delivery terms and conditions</li>
+                      <li>Refund and cancellation policy</li>
+                      <li>Academic integrity requirements</li>
+                      <li>Data protection and privacy policy</li>
+                    </ul>
+                    <p>
+                      You can view our full{' '}
+                      <a href="/terms-and-conditions" target="_blank" rel="noopener noreferrer">
+                        Terms & Conditions
+                      </a>{' '}
+                      and{' '}
+                      <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">
+                        Privacy Policy
+                      </a>.
+                    </p>
+                  </div>
+                  
+                  <div className="p-3 border border-warning rounded bg-light">
+                    <Form.Check
+                      type="checkbox"
+                      id="general-terms-acceptance"
+                      label="I agree to the Terms & Conditions and acknowledge that I have read and understood them."
+                      checked={generalTermsAccepted}
+                      onChange={(e) => setGeneralTermsAccepted(e.target.checked)}
+                      className="fw-bold text-primary"
+                      required
+                    />
+                    
+                    {!generalTermsAccepted && (
+                      <div className="mt-2">
+                        <small className="text-danger">
+                          <i className="fas fa-exclamation-circle me-1"></i>
+                          You must accept the Terms & Conditions to proceed with your order.
+                        </small>
+                      </div>
+                    )}
+                  </div>
+                </Card.Body>
+              </Card>
             )}
           </div>
         );
 
       case 3:
-        return (
-          <div className="mandatory-rules">
-            <h4>Terms & Conditions</h4>
-            {mandatoryRules.length > 0 ? (
-              <RulesEngineDisplay
-                messages={mandatoryRules}
-                onComplete={handleMandatoryRulesComplete}
-                displayMode="inline"
-              />
-            ) : (
-              <Alert variant="info">
-                No terms and conditions to display. You may proceed to the next step.
-              </Alert>
-            )}
-          </div>
-        );
-
-      case 4:
         return (
 				<div className="payment">
 					<h4>Payment Options</h4>
@@ -811,7 +1151,7 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
 				</div>
 			);
 
-      case 5:
+      case 4:
         return (
           <div className="confirmation">
             <h4>Order Confirmation</h4>
@@ -894,13 +1234,13 @@ const CheckoutSteps = ({ onComplete, rulesMessages: initialRulesMessages }) => {
         {currentStep < steps.length ? (
           <Button 
             variant="primary" 
-            onClick={currentStep === 4 ? handleCheckoutComplete : handleNext}
+            onClick={currentStep === 3 ? handleCheckoutComplete : handleNext}
             disabled={
               loading || 
-              (currentStep === 3 && !canProceedToPayment())
+              (currentStep === 2 && !canProceedToPayment())
             }
           >
-            {loading ? 'Processing...' : currentStep === 4 ? (paymentMethod === 'invoice' ? 'Send me an Invoice' : 'Complete Order') : 'Next'}
+            {loading ? 'Processing...' : currentStep === 3 ? (paymentMethod === 'invoice' ? 'Send me an Invoice' : 'Complete Order') : 'Next'}
           </Button>
         ) : (
           <Button variant="success" onClick={() => window.location.href = '/products'}>

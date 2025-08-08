@@ -16,3 +16,7 @@ export { default as MarkingCardAllAvailable } from './MarkingCards/MarkingCardAl
 export { default as MarkingCardExpiringSoon } from './MarkingCards/MarkingCardExpiringSoon';
 export { default as MarkingCardSomeExpired } from './MarkingCards/MarkingCardSomeExpired';
 export { default as MarkingCardAllExpired } from './MarkingCards/MarkingCardAllExpired';
+
+// Test components using ProductCard + testTheme
+export { default as BalancedProductCardTest } from './BalancedProductCardTest';
+export { default as EnhancedTutorialProductCardTest } from './EnhancedTutorialProductCardTest';

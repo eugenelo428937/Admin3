@@ -268,6 +268,7 @@ def calculate_vat_standard(cart_items, params):
         dict: VAT calculation results
     """
     try:
+        from django.utils import timezone
         logger.info(f"DEBUG: calculate_vat_standard called")
         logger.info(f"DEBUG: cart_items: {cart_items}")
         logger.info(f"DEBUG: params: {params}")
@@ -325,9 +326,10 @@ def calculate_vat_standard(cart_items, params):
             'meets_threshold': meets_threshold,
             'threshold_amount': threshold,
             'item_calculations': item_calculations,
-            'calculation_timestamp': logger.info('VAT calculation completed')
+            'calculation_timestamp': timezone.now().isoformat()
         }
         
+        logger.info('VAT calculation completed')
         logger.info(f"DEBUG: VAT calculation result: {result}")
         return result
         
@@ -450,4 +452,132 @@ def calculate_business_vat(cart_items, params):
             'total_net': 0,
             'total_vat': 0,
             'total_gross': 0
-        } 
+        }
+
+
+def check_expired_marking_deadlines(cart_items, params):
+    """
+    Check if cart contains marking products with expired deadlines.
+    
+    Args:
+        cart_items: List of cart items with product information
+        params: Dictionary with function parameters
+        
+    Returns:
+        dict: Results containing expired deadline information
+    """
+    try:
+        from marking.models import MarkingPaper
+        from django.utils import timezone
+        from collections import defaultdict
+        
+        # logger.info("DEBUG: check_expired_marking_deadlines called")
+        # logger.info(f"DEBUG: cart_items: {cart_items}")
+        # logger.info(f"DEBUG: params: {params}")
+        
+        current_time = timezone.now()
+        expired_products = []
+        warnings = []
+        
+        # Process each cart item
+        for item in cart_items:
+            # Check if this is a marking product
+            product_type = (item.get('product_type') or '').lower()
+            product_name = item.get('product_name', '')
+            subject_code = item.get('subject_code', '')
+            
+            # logger.info(f"DEBUG: Checking item - Product: {product_name}, Type: {product_type}, Subject: {subject_code}")
+            
+            # Check if this is a marking product (contains "marking" in name or type)
+            if 'marking' in product_name.lower() or 'marking' in product_type:
+                try:
+                    # Get the ExamSessionSubjectProduct ID from the cart item
+                    # This should be available as the cart item's product field references ExamSessionSubjectProduct
+                    essp_id = item.get('id')  # This might be the cart item ID, not the product ID
+                    
+                    # We need to get the actual ExamSessionSubjectProduct ID
+                    # Let's try to find it by matching the product information
+                    from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+                    
+                    # Try to find the ExamSessionSubjectProduct by subject code and product name
+                    marking_products = ExamSessionSubjectProduct.objects.filter(
+                        exam_session_subject__subject__code=subject_code,
+                        product__fullname__icontains='marking'
+                    ).select_related(
+                        'exam_session_subject__subject',
+                        'product'
+                    ).prefetch_related('marking_papers')
+                    
+                    # logger.info(f"DEBUG: Found {marking_products.count()} marking products for {subject_code}")
+                    
+                    for marking_product in marking_products:
+                        # Check if this matches our cart item
+                        if marking_product.product.fullname.lower() == product_name.lower():
+                            # logger.info(f"DEBUG: Matched product: {marking_product.product.fullname}")
+                            
+                            # Get all marking papers for this product
+                            marking_papers = marking_product.marking_papers.all()
+                            total_papers = marking_papers.count()
+                            expired_papers = []
+                            
+                            # logger.info(f"DEBUG: Found {total_papers} marking papers")
+                            
+                            for paper in marking_papers:
+                                if paper.deadline < current_time:
+                                    expired_papers.append(paper.name)
+                                    # logger.info(f"DEBUG: Paper {paper.name} expired on {paper.deadline}")
+                                # else:
+                                    # logger.info(f"DEBUG: Paper {paper.name} deadline {paper.deadline} is still valid")
+                            
+                            expired_count = len(expired_papers)
+                            
+                            if expired_count > 0:
+                                expired_info = {
+                                    'product_name': product_name,
+                                    'subject': subject_code,
+                                    'expired_count': expired_count,
+                                    'paper_count': total_papers,  # Add paper_count alias
+                                    'total_papers': total_papers,
+                                    'expired_papers': ', '.join(expired_papers)
+                                }
+                                
+                                expired_products.append(expired_info)
+                                
+                                # Create warning message
+                                warning_message = f"{expired_count}/{total_papers} deadlines for {subject_code} {product_name} has expired. If you need marking for this study session then please purchase Marking Vouchers instead."
+                                warnings.append({
+                                    'type': 'expired_deadline',
+                                    'message': warning_message,
+                                    'product_details': expired_info
+                                })
+                                
+                                # logger.info(f"DEBUG: Added warning for {product_name}: {expired_count}/{total_papers} expired")
+                            break
+                    
+                except Exception as e:
+                    logger.error(f"Error checking marking deadlines for {product_name}: {str(e)}")
+                    continue
+        
+        # Prepare the result
+        has_expired_deadlines = len(expired_products) > 0
+        
+        result = {
+            'success': True,
+            'has_expired_deadlines': has_expired_deadlines,
+            'expired_products': expired_products,
+            'warnings': warnings,
+            'total_warnings': len(warnings)
+        }
+        
+        # logger.info(f"DEBUG: check_expired_marking_deadlines result: {result}")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error in check_expired_marking_deadlines: {str(e)}")
+        return {
+            'success': False,
+            'error': str(e),
+            'has_expired_deadlines': False,
+            'expired_products': [],
+            'warnings': []
+        }
