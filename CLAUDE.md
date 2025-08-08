@@ -46,6 +46,12 @@ python manage.py test
 python manage.py import_subjects
 python manage.py sync_course_templates
 python manage.py process_email_queue
+
+# Rules Engine and JSON Content Setup
+python setup_tc_rules.py                  # Setup Terms & Conditions rules
+python update_tc_template_to_json.py      # Convert T&C template to JSON
+python convert_summer_holiday_to_json.py  # Convert holiday templates to JSON
+python setup_default_styles.py           # Setup default styling themes
 ```
 
 ### Frontend (React)
@@ -76,6 +82,16 @@ npm test
 - **ExamSessionSubjectProducts**: Current products available for ordering (NOT the master Products table)
 - **Cart/CartItems**: Shopping cart functionality
 - **Orders/OrderItems**: Order management
+- **ActedOrderTermsAcceptance**: Terms & conditions acceptance tracking with audit trail
+
+### Rules Engine Models
+- **RuleEntryPoint**: Predefined execution points (home_page_mount, checkout_terms, etc.)
+- **MessageTemplate**: Reusable message templates with JSON/HTML content formats
+- **Rule**: Business rule definitions with entry point integration
+- **RuleAction**: Actions triggered by rules (display, acknowledge, calculations)
+- **ContentStyleTheme**: Staff-configurable styling themes (Default, Warning, Holiday, Terms)
+- **ContentStyle**: Individual style configurations for JSON content elements
+- **MessageTemplateStyle**: Links templates to themes with custom style overrides
 
 ### Important Database Relationship
 The Django `products` model is the master table for all products but is **NOT** intended for user ordering. The `exam_sessions_subjects_products` model contains all **CURRENT** products available for ordering in the online store.
@@ -111,6 +127,117 @@ python manage.py test_emails preview --template password_reset --save
 /api/tutorials/     # Tutorial events
 /api/rules/         # Rules engine
 /api/utils/         # Utility functions (email, etc.)
+```
+
+### Rules Engine API Endpoints
+```
+/api/rules/engine/evaluate/                    # Evaluate rules by entry point
+/api/rules/engine/accept-terms/                # Accept Terms & Conditions
+/api/rules/engine/checkout-terms-status/       # Check T&C acceptance status
+/api/rules/acknowledgments/template-styles/    # Get dynamic styles for templates
+```
+
+## JSON Content System
+
+### Overview
+The application uses a sophisticated JSON-based content system that allows staff to manage message content and styling through Django admin without code changes.
+
+### Content Formats
+Message templates support multiple content formats:
+- **HTML**: Traditional HTML content (legacy)
+- **JSON**: Structured content with Material UI component mapping
+- **Markdown**: Markdown with JSON structure support
+
+### JSON Content Structure
+```json
+{
+  "message_container": {
+    "element": "container",
+    "text_align": "left",
+    "class": "terms-conditions-content",
+    "title": "h4",
+    "text": "Terms & Conditions"
+  },
+  "content": [
+    {
+      "seq": 1,
+      "element": "p",
+      "text": "By completing this purchase, you agree to our Terms & Conditions..."
+    },
+    {
+      "seq": 2,
+      "element": "ul",
+      "text": [
+        "Product delivery terms and conditions",
+        "Refund and cancellation policy"
+      ]
+    }
+  ]
+}
+```
+
+### Supported Elements
+- **container**: Layout containers
+- **box**: Flexible boxes with styling
+- **p**: Paragraphs
+- **h1-h6**: Headings
+- **ul/ol**: Lists
+- **li**: List items
+
+### Markdown Support
+JSON content supports markdown-like syntax:
+- `**bold text**` → **bold text**
+- `[/link](Display Text)` → clickable links
+
+## Staff-Configurable Styling System
+
+### Overview
+Staff can configure all styling through Django admin without touching code. The system uses database-driven styles that are applied dynamically to JSON content.
+
+### Style Management
+```
+/admin/rules_engine/contentstyletheme/     # Manage style themes
+/admin/rules_engine/contentstyle/          # Individual style configurations
+/admin/rules_engine/messagetemplestyle/    # Template-theme assignments
+```
+
+### Theme System
+- **Default Theme**: Standard styling for all content
+- **Warning Theme**: Yellow/orange styling for alerts and warnings
+- **Holiday Theme**: Special styling for holiday notices
+- **Terms Theme**: Professional styling for Terms & Conditions
+
+### Configurable Properties
+Staff can configure through admin forms:
+- **Colors**: Background, text, border colors (hex, rgba, named)
+- **Layout**: Padding, margin, border width/radius
+- **Typography**: Font size, weight, text alignment
+- **Advanced**: Custom CSS properties via JSON field
+
+### Style Priority System
+1. Template-specific custom styles (highest priority)
+2. Theme-based styles
+3. CSS class selector matches
+4. Element type matches
+5. Global default styles (lowest priority)
+
+### Usage in React Components
+```javascript
+import JsonContentRenderer from '../Common/JsonContentRenderer';
+import DynamicJsonContentRenderer from '../Common/DynamicJsonContentRenderer';
+
+// Basic JSON content rendering
+<JsonContentRenderer 
+  content={message.json_content}
+  className="message-content"
+/>
+
+// Dynamic styling with backend configuration
+<DynamicJsonContentRenderer 
+  content={message.json_content}
+  templateId={message.template_id}
+  className="dynamic-message-content"
+/>
 ```
 
 ## Testing

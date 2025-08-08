@@ -12,7 +12,7 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CartItem
-        fields = ['id', 'current_product', 'product_id', 'product_name', 'product_code', 'subject_code', 'exam_session_code', 'product_type', 'quantity', 'price_type', 'actual_price', 'metadata']
+        fields = ['id', 'current_product', 'product_id', 'product_name', 'product_code', 'subject_code', 'exam_session_code', 'product_type', 'quantity', 'price_type', 'actual_price', 'metadata', 'is_marking', 'has_expired_deadline']
 
     def get_product_type(self, obj):
         """Determine product type based on product name or group"""
@@ -38,7 +38,7 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'session_key', 'items', 'created_at', 'updated_at']
+        fields = ['id', 'user', 'session_key', 'items', 'created_at', 'updated_at', 'has_marking']
 
 class ActedOrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.product.fullname', read_only=True)

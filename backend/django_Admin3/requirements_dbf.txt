@@ -1,0 +1,17 @@
+# DBF Export Dependencies
+# 
+# Install these packages to enable DBF export functionality:
+# pip install -r requirements_dbf.txt
+
+# Core DBF library for writing DBF files (required)
+ydbf>=0.4.1
+
+# DBF reading library for validation (optional but recommended)
+dbfread>=2.0.7
+
+# Alternative DBF libraries (if ydbf doesn't work)
+# dbfpy3>=1.0.0  # Alternative DBF writer
+# simpledbf>=0.2.6  # Simple DBF reader/writer
+
+# For advanced DBF manipulation (optional)
+# xlwt>=1.3.0  # For Excel export as alternative to DBF

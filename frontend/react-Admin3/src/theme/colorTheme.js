@@ -2,6 +2,19 @@
 // Contains BPP Color System, Material Design 3, and Liftkit colors
 
 const colorTheme = {
+
+	offwhite : {
+		"000": "#fdfdfd", // #fdfdfd
+		"001": "#f0edf1", // #f0edf1
+		"002": "#e8eced", // #e8eced
+		"003": "#e3e1ec", // #e3e1ec
+		"005": "#e4e1e6", // #e4e1e6
+		"006": "#eae7ec", // #eae7ec
+		"007": "#e8eced", // #e8eced
+		"008": "#e3e1ec", // #e3e1ec
+		"009": "#e4e1e6", // #e4e1e6
+	},
+
 	// Core Material-UI palette using Liftkit colors
 	primary: {
 		main: "#4658ac", // light__primary_lkv #4658ac
@@ -47,7 +60,7 @@ const colorTheme = {
 	},
 	background: {
 		default: "#fefbff", // light__background_lkv
-		paper: "#f0edf1", // light__surfacecontainer_lkv
+		paper: "#fdfdfd", // light__surfacecontainer_lkv
 	},
 	surface: {
 		main: "#e8eced", // light__surface_lkv #e8eced
@@ -76,7 +89,7 @@ const colorTheme = {
 			"070": "#525252", // rgb(82,82,82) converted to hex
 			"080": "#3b3b3a", // rgb(59,59,58) converted to hex
 			"090": "#272524", // rgb(39,37,36) converted to hex
-			100: "#111110", // rgb(17,17,16) converted to hex
+			"100": "#111110", // rgb(17,17,16) converted to hex
 		},
 		purple: {
 			"010": "#f1eefc",

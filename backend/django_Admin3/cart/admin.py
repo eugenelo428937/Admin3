@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cart, CartItem, CartFee, ActedOrder, ActedOrderItem, ActedOrderPayment
+from .models import Cart, CartItem, CartFee, ActedOrder, ActedOrderItem, ActedOrderPayment, OrderUserAcknowledgment
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
@@ -69,3 +69,39 @@ class ActedOrderPaymentAdmin(admin.ModelAdmin):
             'fields': ('metadata',)
         })
     )
+
+
+@admin.register(OrderUserAcknowledgment)
+class OrderUserAcknowledgmentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'order', 'order_user', 'acknowledgment_type', 'is_accepted', 'title', 'accepted_at')
+    list_filter = ('acknowledgment_type', 'is_accepted', 'content_version', 'accepted_at')
+    search_fields = ('order__user__username', 'order__user__email', 'title', 'content_summary', 'ip_address')
+    readonly_fields = ('accepted_at',)
+    raw_id_fields = ('order',)
+    
+    fieldsets = (
+        ('Order Information', {
+            'fields': ('order', 'accepted_at')
+        }),
+        ('Acknowledgment Details', {
+            'fields': ('acknowledgment_type', 'rule_id', 'template_id', 'title', 'content_summary', 'is_accepted', 'content_version')
+        }),
+        ('Session Information', {
+            'fields': ('ip_address', 'user_agent'),
+            'classes': ('collapse',)
+        }),
+        ('Data & Context', {
+            'fields': ('acknowledgment_data', 'rules_engine_context'),
+            'classes': ('collapse',),
+            'description': 'Structured data and rules engine context for this acknowledgment'
+        })
+    )
+    
+    def order_user(self, obj):
+        """Display the user associated with the order"""
+        return obj.order.user.username
+    order_user.short_description = 'User'
+    order_user.admin_order_field = 'order__user__username'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('order__user')
