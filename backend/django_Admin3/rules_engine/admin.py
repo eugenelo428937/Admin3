@@ -1,9 +1,9 @@
 from django.contrib import admin
 from .models import (
     RuleEntryPoint, Rule, RuleCondition, RuleAction, MessageTemplate, 
-    HolidayCalendar, UserAcknowledgment, RuleExecution, RuleChain, 
+    HolidayCalendar, UserAcknowledgment, RuleExecutionLegacy, RuleChain, 
     RuleChainLink, RuleConditionGroup, ContentStyleTheme, ContentStyle, 
-    MessageTemplateStyle
+    MessageTemplateStyle, ActedRulesFields, ActedRule, ActedRuleExecution
 )
 
 
@@ -152,16 +152,19 @@ class UserAcknowledgmentAdmin(admin.ModelAdmin):
     raw_id_fields = ['user', 'rule', 'message_template']
 
 
-@admin.register(RuleExecution)
-class RuleExecutionAdmin(admin.ModelAdmin):
+@admin.register(RuleExecutionLegacy)
+class RuleExecutionLegacyAdmin(admin.ModelAdmin):
     list_display = ['rule', 'user', 'conditions_met', 'execution_time']
-    list_filter = ['conditions_met', 'execution_time', 'rule__trigger_type']
+    list_filter = ['conditions_met', 'execution_time']
     search_fields = ['rule__name', 'user__email']
-    readonly_fields = ['execution_time']
-    raw_id_fields = ['rule', 'user']
+    readonly_fields = ['rule', 'user', 'trigger_context', 'conditions_met', 
+                      'actions_executed', 'execution_time', 'error_message']
 
     def has_add_permission(self, request):
         return False  # Don't allow manual creation of execution logs
+    
+    def has_change_permission(self, request, obj=None):
+        return False  # Make executions read-only
 
 
 # Style Management Admin
@@ -273,4 +276,81 @@ class RuleActionAdmin(admin.ModelAdmin):
     list_display = ['rule', 'action_type', 'message_template', 'execution_order']
     list_filter = ['action_type', 'rule__entry_point']
     search_fields = ['rule__name']
-    raw_id_fields = ['rule', 'message_template'] 
+    raw_id_fields = ['rule', 'message_template']
+
+
+# =============================================================================
+# NEW JSONB-BASED RULES ENGINE ADMIN
+# =============================================================================
+
+@admin.register(ActedRulesFields)
+class ActedRulesFieldsAdmin(admin.ModelAdmin):
+    list_display = ['fields_id', 'name', 'version', 'is_active', 'created_at']
+    list_filter = ['is_active', 'version', 'created_at']
+    search_fields = ['fields_id', 'name', 'description']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = [
+        ('Basic Information', {
+            'fields': ['fields_id', 'name', 'description', 'version', 'is_active']
+        }),
+        ('Schema Definition', {
+            'fields': ['schema'],
+            'classes': ['wide']
+        }),
+        ('Timestamps', {
+            'fields': ['created_at', 'updated_at'],
+            'classes': ['collapse']
+        })
+    ]
+
+
+@admin.register(ActedRule)
+class ActedRuleAdmin(admin.ModelAdmin):
+    list_display = ['rule_id', 'name', 'entry_point', 'priority', 'active', 'version', 'created_at']
+    list_filter = ['entry_point', 'active', 'priority', 'version', 'created_at']
+    search_fields = ['rule_id', 'name', 'description', 'entry_point']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = [
+        ('Rule Identification', {
+            'fields': ['rule_id', 'name', 'description', 'version']
+        }),
+        ('Execution Settings', {
+            'fields': ['entry_point', 'priority', 'active', 'stop_processing']
+        }),
+        ('Rule Definition', {
+            'fields': ['rules_fields_id', 'condition', 'actions'],
+            'classes': ['wide']
+        }),
+        ('Schedule', {
+            'fields': ['active_from', 'active_until'],
+            'classes': ['collapse']
+        }),
+        ('Metadata', {
+            'fields': ['metadata'],
+            'classes': ['collapse']
+        }),
+        ('Timestamps', {
+            'fields': ['created_at', 'updated_at'],
+            'classes': ['collapse']
+        })
+    ]
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).order_by('entry_point', 'priority', 'name')
+
+
+@admin.register(ActedRuleExecution)
+class ActedRuleExecutionAdmin(admin.ModelAdmin):
+    list_display = ['execution_id', 'rule_id', 'entry_point', 'outcome', 'execution_time_ms', 'created_at']
+    list_filter = ['outcome', 'entry_point', 'created_at']
+    search_fields = ['execution_id', 'rule_id', 'entry_point']
+    readonly_fields = ['execution_id', 'rule_id', 'entry_point', 'context_snapshot', 
+                      'actions_result', 'outcome', 'execution_time_ms', 'error_message', 'created_at']
+
+    def has_add_permission(self, request):
+        return False  # Don't allow manual creation of execution logs
+    
+    def has_change_permission(self, request, obj=None):
+        return False  # Make executions read-only 

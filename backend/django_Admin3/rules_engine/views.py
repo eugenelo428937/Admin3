@@ -7,9 +7,10 @@ from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from .engine import rules_engine, evaluate_checkout_rules, evaluate_cart_add_rules
+from .services.rule_engine import rule_engine as new_rule_engine
 from .models import (
     Rule, MessageTemplate, UserAcknowledgment, HolidayCalendar,
-    ContentStyle, ContentStyleTheme, MessageTemplateStyle
+    ContentStyle, ContentStyleTheme, MessageTemplateStyle, ActedRule
 )
 from .serializers import (
     RuleSerializer, MessageTemplateSerializer, UserAcknowledgmentSerializer,
@@ -30,7 +31,7 @@ class RulesEngineViewSet(viewsets.ViewSet):
     @method_decorator(csrf_exempt)
     @action(detail=False, methods=['post'], url_path='evaluate')
     def evaluate_rules(self, request):
-        """POST /rules/evaluate/ - Evaluate rules for entry point or trigger type"""
+        """POST /rules/evaluate/ - Evaluate rules for entry point or trigger type (LEGACY)"""
         try:
             entry_point_code = request.data.get('entry_point_code')
             trigger_type = request.data.get('trigger_type')
@@ -70,6 +71,63 @@ class RulesEngineViewSet(viewsets.ViewSet):
             logger.error(f"Error evaluating rules: {str(e)}")
             return Response(
                 {'error': 'Internal server error', 'details': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @method_decorator(csrf_exempt)
+    @action(detail=False, methods=['post'], url_path='execute', permission_classes=[AllowAny])
+    def execute_rules_new(self, request):
+        """POST /rules/execute/ - New JSONB-based rules engine execution"""
+        try:
+            entry_point = request.data.get('entry_point')
+            context_data = request.data.get('context', {})
+            
+            if not entry_point:
+                return Response(
+                    {'error': 'entry_point is required'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            logger.info(f"🎯 New Rules Engine API: Executing '{entry_point}'")
+            
+            # Add user context if authenticated
+            if request.user.is_authenticated:
+                context_data['user'] = {
+                    'id': str(request.user.id),
+                    'email': request.user.email,
+                    'is_authenticated': True
+                }
+            else:
+                context_data['user'] = {
+                    'id': None,
+                    'email': None,
+                    'is_authenticated': False
+                }
+            
+            # Add request metadata
+            context_data['request'] = {
+                'ip_address': request.META.get('REMOTE_ADDR'),
+                'user_agent': request.META.get('HTTP_USER_AGENT', ''),
+                'timestamp': timezone.now().isoformat()
+            }
+            
+            # Execute new rules engine
+            result = new_rule_engine.execute(entry_point, context_data)
+            
+            logger.info(f"📊 New Rules Engine API: '{entry_point}' - {result.get('rules_evaluated', 0)} rules evaluated")
+            
+            return Response(result)
+            
+        except Exception as e:
+            logger.error(f"❌ New Rules Engine API error: {str(e)}")
+            return Response(
+                {
+                    'success': False,
+                    'error': 'Internal server error',
+                    'details': str(e),
+                    'rules_evaluated': 0,
+                    'execution_time_ms': 0
+                }, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -557,6 +615,7 @@ class UserAcknowledgmentViewSet(viewsets.ReadOnlyModelViewSet):
                 user=self.request.user
             ).order_by('-acknowledged_at')
     
+
     @action(detail=False, methods=['get'], url_path='template-styles', permission_classes=[AllowAny])
     def get_template_styles(self, request):
         """Get dynamic styles for a specific message template"""

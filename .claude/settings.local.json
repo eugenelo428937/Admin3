@@ -64,7 +64,12 @@
       "Bash(grep:*)",
       "Bash(./.venv/Scripts/activate:*)",
       "Bash(./.venv/Scripts/python.exe manage.py migrate:*)",
-      "Bash(./.venv/Scripts/python.exe manage.py shell:*)"
+      "Bash(./.venv/Scripts/python.exe manage.py shell:*)",
+      "Bash(timeout:*)",
+      "Bash(/dev/null)",
+      "Bash(pkill:*)",
+      "Bash(pip install:*)",
+      "Bash(pip uninstall:*)"
     ],
     "deny": []
   },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBox from "../components/SearchBox";
 import SearchResults from "../components/SearchResults";
@@ -6,7 +6,7 @@ import { Row, Col, Alert } from "react-bootstrap";
 import { Typography, Container } from "@mui/material";
 import backgroundVideo from "../assets/video/12595751_2560_1440_30fps.mp4";
 import { useTheme } from "@mui/material/styles";
-import rulesEngineService from "../services/rulesEngineService";
+import { useHomePageRules } from "../hooks/useRulesEngine";
 import JsonContentRenderer from "../components/Common/JsonContentRenderer";
 
 const Home = () => {
@@ -22,43 +22,25 @@ const Home = () => {
 	});
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
-	const [ruleMessages, setRuleMessages] = useState([]);
-	const [rulesLoading, setRulesLoading] = useState(true);
 
-	// Evaluate rules on component mount
-	useEffect(() => {
-		const evaluateHomePageRules = async () => {
-			try {
-				setRulesLoading(true);
-				const currentDate = new Date().toISOString().split('T')[0];
-				console.log('🎯 [Home] Evaluating rules for date:', currentDate);
-				
-				const result = await rulesEngineService.evaluateRulesAtEntryPoint('home_page_mount', {
-					current_date: currentDate,
-					user_location: 'home_page'
-				});
-				
-				console.log('🎯 [Home] Rules engine result:', result);
-				
-				if (result.success && result.messages) {
-					console.log('🎯 [Home] All messages:', result.messages);
-					
-					// Filter for display messages only - BUT let's also show 'message' type
-					const displayMessages = result.messages.filter(msg => 
-						msg.type === 'display' || msg.type === 'message'
-					);
-					console.log('🎯 [Home] Filtered messages:', displayMessages);
-					setRuleMessages(displayMessages);
-				}
-			} catch (error) {
-				console.error('Error evaluating home page rules:', error);
-			} finally {
-				setRulesLoading(false);
-			}
-		};
+	// Use Rules Engine Hook with debugging - memoize context to prevent infinite loops
+	const homePageContext = useMemo(() => ({
+		current_date: new Date().toISOString().split('T')[0],
+		user_location: 'home_page'
+	}), []); // Empty dependency array since date doesn't need to update during session
+	
+	const { 
+		rulesResult, 
+		loading: rulesLoading, 
+		error: rulesError, 
+		hasMessages,
+		rulesCount 
+	} = useHomePageRules(homePageContext);
 
-		evaluateHomePageRules();
-	}, []);
+	// Extract messages from rules result
+	const ruleMessages = rulesResult?.messages?.filter(msg => 
+		msg.type === 'display' || msg.type === 'message'
+	) || [];
 
 	// Handle search results from SearchBox
 	const handleSearchResults = (results, query) => {
@@ -235,12 +217,27 @@ const Home = () => {
 				</Col>
 			</Row>
 
-			{/* Rules Engine Messages - Below Hero, Above Search Results */}
-			{console.log('🎯 [Home] Render - rulesLoading:', rulesLoading, 'ruleMessages:', ruleMessages)}
-			{console.log('🎯 [Home] Render condition check:', !rulesLoading, ruleMessages.length > 0, (!rulesLoading && ruleMessages.length > 0))}
-			
-			{/* FORCE SHOW MESSAGES FOR DEBUGGING */}
-			{ruleMessages.length > 0 ? (
+			{/* Rules Engine Debug Info */}
+			<Container maxWidth="xl" className="my-2">
+				<div style={{ 
+					padding: '10px', 
+					backgroundColor: '#f8f9fa', 
+					border: '1px solid #dee2e6', 
+					borderRadius: '4px',
+					fontSize: '12px',
+					color: '#495057'
+				}}>
+					<strong>🔧 Rules Engine Debug:</strong> Entry Point: home_page_mount | 
+					Rules Fetched: {rulesCount} | 
+					Loading: {rulesLoading ? 'Yes' : 'No'} | 
+					Messages: {ruleMessages.length} | 
+					Has Messages: {hasMessages ? 'Yes' : 'No'}
+					{rulesError && <span style={{ color: '#dc3545' }}> | Error: {rulesError.message}</span>}
+				</div>
+			</Container>
+
+			{/* Rules Engine Messages */}
+			{ruleMessages.length > 0 && (
 				<Container maxWidth="xl" className="my-4">
 					<Row>
 						<Col>							
@@ -271,12 +268,6 @@ const Home = () => {
 							))}
 						</Col>
 					</Row>
-				</Container>
-			) : (
-				<Container maxWidth="xl" className="my-2">
-					<div style={{ padding: '5px', backgroundColor: '#ffeeee', color: '#cc0000' }}>
-						DEBUG: No rule messages to display (length: {ruleMessages.length})
-					</div>
 				</Container>
 			)}					
 

@@ -38,7 +38,7 @@ class RuleEntryPoint(models.Model):
 
 
 class MessageTemplate(models.Model):
-    """Store reusable message templates jwith variables"""
+    """Store reusable message templates with variables"""
     
     CONTENT_FORMATS = [
         ('html', 'HTML Content'),

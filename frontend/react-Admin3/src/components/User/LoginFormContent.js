@@ -48,7 +48,7 @@ const LoginFormContent = ({
 					autoComplete="email"
 					autoFocus
 					variant="standard"
-					color={theme.palette.bpp.granite["100"]}
+					disabled={isLoading}
 				/>
 
 				<TextField
@@ -62,6 +62,7 @@ const LoginFormContent = ({
 					required
 					autoComplete="current-password"
 					variant="standard"
+					disabled={isLoading}
           sx={{
             mb: 0,
           }}
