@@ -87,8 +87,10 @@ npm test
 ### Rules Engine Models
 - **RuleEntryPoint**: Predefined execution points (home_page_mount, checkout_terms, etc.)
 - **MessageTemplate**: Reusable message templates with JSON/HTML content formats
-- **Rule**: Business rule definitions with entry point integration
+- **Rule**: Business rule definitions with entry point integration (stored in JSONB with versioning)
+- **RulesFields**: JSON Schema definitions for context validation
 - **RuleAction**: Actions triggered by rules (display, acknowledge, calculations)
+- **RuleExecution**: Audit trail of rule executions with context snapshots
 - **ContentStyleTheme**: Staff-configurable styling themes (Default, Warning, Holiday, Terms)
 - **ContentStyle**: Individual style configurations for JSON content elements
 - **MessageTemplateStyle**: Links templates to themes with custom style overrides
@@ -131,10 +133,249 @@ python manage.py test_emails preview --template password_reset --save
 
 ### Rules Engine API Endpoints
 ```
-/api/rules/engine/evaluate/                    # Evaluate rules by entry point
+/api/rules/engine/execute/                     # Execute rules by entry point with context
+/api/rules/engine/simulate/                    # Dry-run rules without side effects
 /api/rules/engine/accept-terms/                # Accept Terms & Conditions
 /api/rules/engine/checkout-terms-status/       # Check T&C acceptance status
 /api/rules/acknowledgments/template-styles/    # Get dynamic styles for templates
+/api/rules/executions/                         # View rule execution history and audit logs
+```
+
+## Rules Engine Architecture
+
+### Overview
+The Rules Engine is a comprehensive business rule management system that enables dynamic content delivery, user acknowledgments, and complex business logic execution at predefined entry points throughout the application.
+
+### Core Components
+
+#### RuleEngine (Main Orchestrator)
+- **Entry Method**: `execute(entryPoint, context)`
+- **Purpose**: Main controller that coordinates rule execution flow
+- **Location**: Django service layer (`backend/django_Admin3/apps/rules_engine/services/`)
+
+#### RuleRepository
+- **Purpose**: CRUD operations and versioning for rules
+- **Storage**: PostgreSQL JSONB tables with indexing by entryPoint, active_from, priority
+- **Caching**: In-memory cache with invalidation on rule updates
+
+#### Validator
+- **Purpose**: Validates incoming context against RulesFields JSON Schema
+- **Behavior**: Fails fast on invalid context, produces admin alerts for schema mismatches
+
+#### ConditionEvaluator
+- **Purpose**: Evaluates rule conditions using JSONLogic or CEL expressions
+- **Features**: Pre-compiled expressions for performance, complex condition composition
+
+#### ActionDispatcher
+- **Purpose**: Executes actions via pluggable ActionHandlers (Command pattern)
+- **Handlers**: DisplayMessageHandler, DisplayModalHandler, UserAcknowledgeHandler, UserPreferenceHandler, UpdateHandler
+
+#### MessageTemplateService
+- **Purpose**: Renders templates with context placeholders
+- **Features**: i18n support, XSS sanitization, multiple format support (HTML, JSON, Markdown)
+
+#### ExecutionStore
+- **Purpose**: Persists RuleExecution records for audit trail
+- **Data**: Rule ID, context snapshot, results, timestamps, errors
+
+### Execution Flow
+
+1. **Entry Point Trigger**: Request hits system at entry point → `RuleEngine.execute(entryPoint, context)`
+2. **Rule Retrieval**: RuleRepository fetches active rules ordered by priority and created_at
+3. **Rule Processing**: For each rule:
+   - Validator checks context against RulesFields schema
+   - ConditionEvaluator runs rule condition expressions
+   - If condition true → ActionDispatcher invokes action handlers
+   - Persist RuleExecution record with full audit trail
+4. **Flow Control**: Respect rule chaining and stopOnMatch parameters
+5. **Response**: Return composed UI/response (messages, modals, blocking flags)
+
+### Data Models
+
+#### Rule Structure (JSONB)
+```json
+{
+  "id": "rule_123",
+  "name": "Checkout Terms v2",
+  "entryPoint": "checkout_terms",
+  "priority": 10,
+  "active": true,
+  "version": 3,
+  "rulesFieldsId": "rf_99",
+  "condition": {
+    "type": "jsonlogic",
+    "expr": { "==": [ { "var": "user.region" }, "EU" ] }
+  },
+  "actions": [
+    {
+      "type": "user_acknowledge",
+      "id": "ack_terms_v2",
+      "messageTemplateId": "tmpl_terms_v2",
+      "ackKey": "terms_v2",
+      "required": true
+    }
+  ],
+  "stopProcessing": true,
+  "metadata": { "createdBy": "admin", "createdAt": "2025-08-01T12:00:00Z" }
+}
+```
+
+#### RulesFields Schema
+```json
+{
+  "id": "rf_99",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "user": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "region": { "type": "string" },
+          "age": { "type": "integer" }
+        },
+        "required": ["id"]
+      },
+      "cart": {
+        "type": "object",
+        "properties": {
+          "items": { "type": "array" },
+          "total": { "type": "number" }
+        },
+        "required": ["items"]
+      }
+    },
+    "required": ["user", "cart"]
+  }
+}
+```
+
+### Action Types
+
+#### display_message
+- **Payload**: templateId, placement, priority, dismissible
+- **Purpose**: Non-blocking informational messages
+
+#### display_modal
+- **Payload**: templateId, size, blocking
+- **Purpose**: Modal dialogs requiring user interaction
+
+#### user_acknowledge
+- **Payload**: templateId, ackKey, required, persistTo, scope
+- **Purpose**: User acknowledgment tracking (Terms & Conditions, etc.)
+- **Persistence**: per-session/per-user/per-order scope options
+
+#### user_preference
+- **Payload**: Same as acknowledge but required=false
+- **Purpose**: Optional user preference collection
+
+#### update
+- **Payload**: target (field paths), operation (set/increment/append/remove), value/functionId
+- **Safety**: Explicit allow-list for modifiable fields, transaction-wrapped for critical flows
+
+### Security & Sandboxing
+
+#### Custom Functions
+- **Storage**: Named, versioned functions in FunctionRegistry
+- **Execution**: WASM modules or isolated sandbox with CPU/memory limits
+- **Review**: All functions must be reviewed before production enablement
+
+#### Template Safety
+- **Sanitization**: XSS prevention via whitelist approach
+- **Validation**: Rate limiting for expensive template rendering
+
+#### Field Updates
+- **Access Control**: Allow-lists and role-based permissions for update rule authoring
+- **Validation**: Server-side enforcement for critical flows (checkout)
+
+### Rule Chaining Options
+
+#### Simple Sequence (Current Implementation)
+- Rules ordered by priority with stopOnMatch flag
+- Each rule can set stopProcessing: true for short-circuiting
+
+#### Future Enhancements
+- **DAG-based flows**: Rules as graph nodes with conditional edge traversal
+- **State machine**: Multi-step workflows with rule-based transitions
+- **Event-driven**: Rules emit/subscribe to events for decoupled processing
+
+### Performance Optimization
+
+#### Caching Strategy
+- Cache active rules per entryPoint in Redis/application cache
+- Pre-compile condition expressions to ASTs
+- Invalidate cache on rule updates
+
+#### Query Optimization
+- PostgreSQL JSONB indexes on (entryPoint, active, priority)
+- Lightweight client-side rules for non-critical personalization
+- Server-side authoritative rules for security/checkout
+
+### Observability & Testing
+
+#### Admin Features
+- **Dry-run mode**: Simulate rules with synthetic context
+- **Rule versioning**: Rollback capabilities
+- **Execution visualization**: Rule trigger flows and chains
+
+#### Monitoring
+- **Metrics**: Rule hit counters, execution latency, failure rates
+- **Logging**: Full audit trail with context snapshots
+- **Alerting**: Rule failure notifications and performance degradation alerts
+
+#### Testing
+- **Unit tests**: Test vectors stored in rule metadata
+- **Integration tests**: Full flow testing with mock contexts
+- **Performance tests**: Load testing for high-volume entry points
+
+### Critical Flow Enforcement
+
+#### Server-Side Authority
+- Always re-validate rules server-side for critical operations
+- Return deterministic results: `{ok: false, errors: [...], requiredAcks: [{ackKey, ruleId}], blocked: true}`
+- Use database transactions for atomic acknowledgment + order creation
+
+#### Idempotency
+- Implement idempotency keys for user_acknowledge and update actions
+- DB constraints prevent duplicate acknowledgments
+- Retry-safe operations for all rule executions
+
+### Development Workflow
+
+#### Rule Creation Process
+1. Create/Update rule via Django Admin or React Admin UI
+2. Store rule JSON in PostgreSQL with version increment
+3. Run dry-run simulation via `/api/rules/engine/simulate/`
+4. Publish → trigger cache invalidation → rule goes live
+
+#### Integration Points
+```python
+# Frontend trigger example
+useEffect(() => {
+  fetch('/api/rules/engine/execute/', {
+    method: 'POST',
+    body: JSON.stringify({
+      entryPoint: 'checkout_terms',
+      context: {
+        user: { id: 'u123', region: 'EU' },
+        cart: { total: 59.99 }
+      }
+    })
+  })
+  .then(res => res.json())
+  .then(setRuleResults);
+}, []);
+```
+
+#### Django Implementation Pattern
+```python
+@api_view(['POST'])
+def execute_rules(request):
+    entry_point = request.data.get("entryPoint")
+    context = request.data.get("context", {})
+    
+    results = rule_engine.execute(entry_point, context)
+    return Response(results)
 ```
 
 ## JSON Content System
