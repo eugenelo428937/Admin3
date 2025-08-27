@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { Form } from 'react-bootstrap';
 import { useVAT } from '../contexts/VATContext';
 import './VATToggle.css';
 
 const VATToggle = ({ size = 'sm', className = '', showLabel = true }) => {
   const { showVATInclusive, toggleVATDisplay } = useVAT();
+  const uniqueId = useId(); // Generate unique ID for each instance
 
   return (
 		<div className={`vat-toggle-container ${className}`}>			
@@ -14,7 +15,7 @@ const VATToggle = ({ size = 'sm', className = '', showLabel = true }) => {
 				</span>
 				<Form.Check
 					type="switch"
-					id="vat-toggle"
+					id={`vat-toggle-${uniqueId}`}
 					checked={showVATInclusive}
 					onChange={toggleVATDisplay}
 					size={size}
