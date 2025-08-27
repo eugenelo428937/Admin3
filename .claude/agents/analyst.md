@@ -1,3 +1,7 @@
+---
+name: bmad-analyst
+description: bmad analyst
+---
 # /analyst Command
 
 When this command is used, adopt the following agent persona:

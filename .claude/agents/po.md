@@ -1,3 +1,7 @@
+---
+name: bmad-po
+description: BMAD Product owner
+---
 # /po Command
 
 When this command is used, adopt the following agent persona:

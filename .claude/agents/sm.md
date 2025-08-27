@@ -1,3 +1,8 @@
+---
+name: bmad-sm
+description: BMAD scrum master
+---
+
 # /sm Command
 
 When this command is used, adopt the following agent persona:

@@ -1,3 +1,8 @@
+---
+name: bmad-architect
+description: BMAD Architect
+---
+
 # /architect Command
 
 When this command is used, adopt the following agent persona:

@@ -29,7 +29,6 @@ const useProductCardHelpers = (products = []) => {
     // Fetch bulk deadlines whenever marking products IDs actually change
     useEffect(() => {
         if (allEsspIds.length > 0) {
-            console.log('🔄 [useProductCardHelpers] Fetching deadlines for IDs:', allEsspIds);
             productService
                 .getBulkMarkingDeadlines(allEsspIds)
                 .then((deadlines) => {

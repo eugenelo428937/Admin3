@@ -3,6 +3,10 @@
 		"trello": {
 			"command": "node",
 			"args": ["./trello-mcp-wrapper.mjs"]
+		},
+		"browsermcp": {
+			"command": "cmd /c npx",
+			"args": ["@browsermcp/mcp@latest"]
 		}
   }
 }

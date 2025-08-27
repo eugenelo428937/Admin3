@@ -138,22 +138,12 @@ const SearchResults = ({
 			searchResults.suggested_filters.product_groups?.length > 0 ||
 			searchResults.suggested_filters.variations?.length > 0 ||
 			searchResults.suggested_filters.products?.length > 0);
-	console.log("Search Results:", searchResults?.suggested_products);
 
 	// Helper function to ensure we always pass the correct search parameters
 	const handleShowMatchingProducts = () => {
 		// Use the provided searchQuery, but fallback to search_info if needed
 		const queryToUse = searchQuery || searchResults?.search_info?.query || "";
 
-		console.log(
-			"🚀 [SearchResults] handleShowMatchingProducts called with:",
-			{
-				searchQuery: queryToUse,
-				selectedFilters: selectedFilters,
-				searchResults: searchResults ? "present" : "missing",
-				fallbackUsed: queryToUse !== searchQuery,
-			}
-		);
 
 		onShowMatchingProducts(searchResults, selectedFilters, queryToUse);
 	};

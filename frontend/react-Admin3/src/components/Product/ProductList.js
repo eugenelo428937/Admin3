@@ -6,13 +6,14 @@ import React, {
 	useCallback,
 	useRef,
 } from "react";
-import { Typography, Box } from "@mui/material";
+import { Typography, Box, Chip } from "@mui/material";
 import { Container, Row, Col, Alert, Button, Spinner } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
 import { useVAT } from "../../contexts/VATContext";
 import productService from "../../services/productService";
 import searchService from "../../services/searchService";
+import subjectService from "../../services/subjectService";
 import useProductCardHelpers from "../../hooks/useProductCardHelpers";
 import "../../styles/product_list.css";
 import ProductCard from "./ProductCard/MaterialProductCard";
@@ -73,31 +74,11 @@ const ProductList = React.memo(() => {
 		isSearchMode: detectedSearchMode,
 	} = urlParams;
 
-	// Debug: Only log when URL changes
-	useEffect(() => {
-		if (process.env.NODE_ENV === "development") {
-			console.log("🔄 [ProductList] URL changed:", {
-				url: location.search,
-				subjectFilter,
-				isSearchMode: detectedSearchMode,
-			});
-		}
-	}, [location.search, subjectFilter, detectedSearchMode]);
 
 	const [products, setProducts] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [loadingMore, setLoadingMore] = useState(false);
 	const [error, setError] = useState(null);
-	const [navbarGroupFilter, setNavbarGroupFilter] = useState(null);
-	const [navbarProductFilter, setNavbarProductFilter] = useState(null);
-
-	// New navbar filter states
-	const [navbarTutorialFormatFilter, setNavbarTutorialFormatFilter] =
-		useState(null);
-	const [navbarVariationFilter, setNavbarVariationFilter] = useState(null);
-	const [navbarDistanceLearningFilter, setNavbarDistanceLearningFilter] =
-		useState(null);
-	const [navbarTutorialFilter, setNavbarTutorialFilter] = useState(null);
 
 	// Use detected search mode directly (no state needed)
 	const isSearchMode = detectedSearchMode;
@@ -109,11 +90,6 @@ const ProductList = React.memo(() => {
 	const [totalProducts, setTotalProducts] = useState(0);
 	const PAGE_SIZE = config.pageSize || 20;
 
-	// Debug logging for page size
-	if (process.env.NODE_ENV === "development") {
-		console.log("🔧 [ProductList] PAGE_SIZE configured as:", PAGE_SIZE);
-		console.log("🔧 [ProductList] config.pageSize value:", config.pageSize);
-	}
 
 	const { showVATInclusive } = useVAT();
 
@@ -131,39 +107,160 @@ const ProductList = React.memo(() => {
 	// FilterDebugger collapsed state
 	const [filterDebugExpanded, setFilterDebugExpanded] = useState(false);
 
-	// Handle filter panel changes
+	// Lookup data for filter names
+	const [subjects, setSubjects] = useState([]);
+	const [filterConfig, setFilterConfig] = useState({});
+	const [productDisplayNames, setProductDisplayNames] = useState({}); // Cache for display names in active filters
+
+	// Load lookup data for filter names
+	useEffect(() => {
+		const loadLookupData = async () => {
+			try {
+				const [subjectsData, filterConfigData] = await Promise.all([
+					subjectService.getAll(),
+					productService.getFilterConfiguration()
+				]);
+				setSubjects(subjectsData);
+				setFilterConfig(filterConfigData);
+			} catch (error) {
+				console.error('Error loading lookup data:', error);
+			}
+		};
+		
+		loadLookupData();
+	}, []);
+
+	// Extract product name from loaded products when they're available
+	useEffect(() => {
+		if (productFilter && products.length > 0 && !productDisplayNames[productFilter]) {
+			console.log(`Looking for product name for ID ${productFilter} in ${products.length} products`);
+			
+			// First try to find by exact ID match
+			let matchingProduct = products.find(p => p.id === parseInt(productFilter));
+			console.log('Found matching product by ID:', matchingProduct);
+			
+			// If not found by ID, try to find by product name pattern
+			// Since navigation IDs don't match API IDs, look for products that might be "Core Reading"
+			if (!matchingProduct && products.length > 0) {
+				// Check if we have a consistent product name in the results
+				const uniqueProductNames = [...new Set(products.map(p => p.name || p.title || p.product_name).filter(Boolean))];
+				console.log('Available unique product names:', uniqueProductNames);
+				
+				// If there's only one unique product name, use it
+				if (uniqueProductNames.length === 1) {
+					const productName = uniqueProductNames[0];
+					console.log('Using single product name from results:', productName);
+					setProductDisplayNames(prev => ({
+						...prev,
+						[productFilter]: productName
+					}));
+					return;
+				}
+				
+				// If multiple product names, try to find one that looks like an individual product
+				// Look for names that aren't bundles (don't contain "Bundle" or "Pack")
+				const individualProducts = uniqueProductNames.filter(name => 
+					!name.includes('Bundle') && !name.includes('Pack') && !name.includes('&')
+				);
+				console.log('Individual product names (filtered out bundles):', individualProducts);
+				
+				if (individualProducts.length === 1) {
+					const productName = individualProducts[0];
+					console.log('Using individual product name:', productName);
+					setProductDisplayNames(prev => ({
+						...prev,
+						[productFilter]: productName
+					}));
+					return;
+				}
+			}
+			
+			if (matchingProduct) {
+				const extractedName = matchingProduct.name || matchingProduct.title || matchingProduct.product_name;
+				console.log('Extracted product name:', extractedName);
+				if (extractedName) {
+					setProductDisplayNames(prev => ({
+						...prev,
+						[productFilter]: extractedName
+					}));
+				}
+			} else {
+				console.log('No matching product found. Available product IDs:', products.map(p => p.id));
+				console.log('Sample product structure:', products[0]);
+			}
+		}
+	}, [productFilter, products, productDisplayNames]);
+
+	// Handle filter panel changes - now only receives panel-only filters
 	const handleFiltersChange = useCallback((filters) => {
 		setPanelFilters(filters);
 	}, []);
 
+	// Helper function to get display name for filter values
+	const getFilterDisplayName = useCallback((filterType, value) => {
+		// Handle subjects
+		if (filterType === 'subject') {
+			const subject = subjects.find(s => s.code === value || s.id === parseInt(value));
+			return subject ? `${subject.code} - ${subject.description}` : value;
+		}
+		
+		// Handle filter config options (includes products, groups, etc.)
+		if (filterConfig[filterType]?.options) {
+			const option = filterConfig[filterType].options.find(opt => 
+				opt.id === value || opt.id === parseInt(value) || opt.code === value
+			);
+			return option ? (option.label || option.name) : value;
+		}
+		
+		// For other URL-based filters, try to get a better display name using the correct config keys
+		const urlToConfigKeyMap = {
+			'subject': 'SUBJECT_FILTER',
+			'group': 'PRODUCT_CATEGORY',
+			'product': 'PRODUCT_TYPE',
+			'tutorial_format': 'tutorial_format',
+			'variation': 'variation',
+			'distance_learning': 'DELIVERY_MODE',
+			'tutorial': 'tutorial'
+		};
+		
+		const configKey = urlToConfigKeyMap[filterType] || filterType;
+		const filterOptions = filterConfig[configKey]?.options || [];
+		const option = filterOptions.find(opt => 
+			opt.id === value || opt.id === parseInt(value)
+		);
+		
+		if (option) {
+			return option.label || option.name;
+		}
+		
+		// Fallback display names if option not found
+		switch (filterType) {
+			case 'group':
+				return value; // Remove "Group" prefix, just show the name
+			case 'category':
+				return `Category ${value}`;
+			case 'product':
+				return productDisplayNames[value] || `Product ${value}`;
+			case 'tutorial_format':
+				return `Tutorial Format ${value}`;
+			case 'variation':
+				return `Variation ${value}`;
+			case 'distance_learning':
+				return 'Distance Learning';
+			case 'tutorial':
+				return 'Tutorial';
+			default:
+				return `${filterType}: ${value}`;
+		}
+	}, [subjects, filterConfig, productDisplayNames]);
+
 	// Clear all filters function
 	const handleClearAllFilters = useCallback(() => {
-		if (process.env.NODE_ENV === "development") {
-			console.log("🧹 [ProductList] Clearing all filters");
-		}
 		// Clear panel filters
 		setPanelFilters({});
 		// Navigate to clean products page
 		navigate("/products", { replace: true });
 	}, [navigate]);
-
-	// Simplified filter synchronization - URL is the single source of truth
-	useEffect(() => {
-		// Update navbar states to match URL parameters
-		setNavbarGroupFilter(groupFilter);
-		setNavbarProductFilter(productFilter);
-		setNavbarTutorialFormatFilter(tutorialFormatFilter);
-		setNavbarVariationFilter(variationFilter);
-		setNavbarDistanceLearningFilter(distanceLearningFilter);
-		setNavbarTutorialFilter(tutorialFilter);
-	}, [
-		groupFilter,
-		productFilter,
-		tutorialFormatFilter,
-		variationFilter,
-		distanceLearningFilter,
-		tutorialFilter,
-	]);
 
 	// Function to fetch products with pagination
 	const fetchProducts = useCallback(
@@ -173,7 +270,7 @@ const ProductList = React.memo(() => {
 				page,
 				resetProducts,
 				subjectFilter,
-				navbarGroupFilter,
+				groupFilter,
 				isSearchMode,
 				searchQuery,
 				panelFilters,
@@ -181,9 +278,6 @@ const ProductList = React.memo(() => {
 
 			// Check if we're already fetching with the same parameters
 			if (fetchingRef.current && lastFetchParamsRef.current === paramsKey) {
-				if (process.env.NODE_ENV === "development") {
-					console.log("🚫 [ProductList] Preventing duplicate API call");
-				}
 				return;
 			}
 
@@ -239,10 +333,6 @@ const ProductList = React.memo(() => {
 
 					// Check for Marking group (id: 2) or Marking Vouchers group (id: 8)
 					if (
-						navbarGroupFilter === "2" ||
-						navbarGroupFilter === 2 ||
-						navbarGroupFilter === "8" ||
-						navbarGroupFilter === 8 ||
 						groupFilter === "2" ||
 						groupFilter === 2 ||
 						groupFilter === "8" ||
@@ -253,29 +343,6 @@ const ProductList = React.memo(() => {
 						panelFilters.group?.includes(8)
 					) {
 						shouldIncludeMarkingVouchers = true;
-					}
-
-					// Add navbar filters if present
-					if (navbarGroupFilter) {
-						params.append("group", navbarGroupFilter);
-					}
-					if (navbarProductFilter) {
-						params.append("product", navbarProductFilter);
-					}
-					if (navbarTutorialFormatFilter) {
-						params.append("tutorial_format", navbarTutorialFormatFilter);
-					}
-					if (navbarVariationFilter) {
-						params.append("variation", navbarVariationFilter);
-					}
-					if (navbarDistanceLearningFilter) {
-						params.append(
-							"distance_learning",
-							navbarDistanceLearningFilter
-						);
-					}
-					if (navbarTutorialFilter) {
-						params.append("tutorial", navbarTutorialFilter);
 					}
 
 					// Add URL-based filters from navbar/direct navigation
@@ -303,6 +370,10 @@ const ProductList = React.memo(() => {
 					if (tutorialFilter) {
 						params.append("tutorial", tutorialFilter);
 					}
+					if (productFilter) {
+						// Individual product filter - pass directly to API since not supported by filter panel
+						params.append("product", productFilter);
+					}
 
 					// Add panel filters dynamically based on filter configurations
 					// Each filter uses its configuration name directly as the parameter
@@ -317,16 +388,6 @@ const ProductList = React.memo(() => {
 						}
 					});
 
-					// Debug logging in development only
-					if (
-						process.env.NODE_ENV === "development" &&
-						params.toString()
-					) {
-						console.log(
-							"📊 [ProductList] API Filters:",
-							params.toString()
-						);
-					}
 
 					let data;
 					let markingVouchers = [];
@@ -396,12 +457,6 @@ const ProductList = React.memo(() => {
 			searchGroups,
 			searchVariations,
 			searchProducts,
-			navbarGroupFilter,
-			navbarProductFilter,
-			navbarTutorialFormatFilter,
-			navbarVariationFilter,
-			navbarDistanceLearningFilter,
-			navbarTutorialFilter,
 			panelFilters,
 			subjectFilter,
 			categoryFilter,
@@ -428,57 +483,100 @@ const ProductList = React.memo(() => {
 		fetchProducts(1, true);
 	}, [location.search, panelFilters]); // Only depend on URL and panel filters
 
-	// Get active filters for display
+	// Helper function to check if two values represent the same filter (handles subject code-to-ID conversion)
+	const isSameFilterValue = useCallback((filterType, value1, value2) => {
+		// Direct comparison
+		if (value1 === value2 || value1 === value2.toString() || value2 === value1.toString()) {
+			return true;
+		}
+		
+		// For subjects, compare codes to IDs
+		if (filterType === 'subject') {
+			const subject = subjects.find(s => s.code === value1 || s.id === parseInt(value1));
+			if (subject) {
+				return subject.code === value2 || subject.id === parseInt(value2);
+			}
+		}
+		
+		return false;
+	}, [subjects]);
+
+	// Get active filters for display - unified approach using URL parameters and panel filters
 	const getActiveFilters = useMemo(() => {
 		const activeFilters = [];
 
-		if (subjectFilter) {
-			activeFilters.push({
-				type: "subject",
-				value: subjectFilter,
-				label: `Subject: ${subjectFilter}`,
-				icon: "graduation-cap",
-				color: "default",
-			});
-		}
+		// Create a map of URL filters for easier processing
+		const urlFilterMap = {
+			subject: subjectFilter,
+			group: groupFilter,
+			product: productFilter,
+			tutorial_format: tutorialFormatFilter,
+			variation: variationFilter,
+			distance_learning: distanceLearningFilter,
+			tutorial: tutorialFilter,
+			category: categoryFilter
+		};
 
-		if (navbarGroupFilter) {
-			activeFilters.push({
-				type: "group",
-				value: navbarGroupFilter,
-				label: `Group: ${navbarGroupFilter}`,
-				icon: "tag",
-				color: "default",
-			});
-		}
+		// Add URL-based filters
+		Object.entries(urlFilterMap).forEach(([filterType, filterValue]) => {
+			if (filterValue) {
+				const iconMap = {
+					subject: "graduation-cap",
+					group: "tag",
+					product: "package",
+					tutorial_format: "school",
+					variation: "tune",
+					distance_learning: "computer",
+					tutorial: "class",
+					category: "folder"
+				};
 
-		if (categoryFilter) {
-			activeFilters.push({
-				type: "category",
-				value: categoryFilter,
-				label: `Category: ${categoryFilter}`,
-				icon: "folder",
-				color: "default",
-			});
-		}
+				activeFilters.push({
+					type: filterType,
+					value: filterValue,
+					label: getFilterDisplayName(filterType, filterValue),
+					icon: iconMap[filterType] || "filter",
+					color: "default",
+				});
+			}
+		});
 
-		// Add panel filters
+		// Add panel filters (avoid duplicates by checking if URL filter already exists)
 		Object.entries(panelFilters).forEach(([filterType, values]) => {
 			if (values && values.length > 0) {
 				values.forEach((value) => {
-					activeFilters.push({
-						type: filterType,
-						value: value,
-						label: `${filterType}: ${value}`,
-						icon: "filter",
-						color: "default",
-					});
+					// Check for duplicates - don't add panel filter if URL filter already exists for same type/value
+					const urlFilterExists = activeFilters.some(filter => 
+						filter.type === filterType && isSameFilterValue(filterType, filter.value, value)
+					);
+					
+					if (!urlFilterExists) {
+						activeFilters.push({
+							type: filterType,
+							value: value,
+							label: getFilterDisplayName(filterType, value),
+							icon: "filter",
+							color: "default",
+						});
+					}
 				});
 			}
 		});
 
 		return activeFilters;
-	}, [subjectFilter, navbarGroupFilter, categoryFilter, panelFilters]);
+	}, [
+		subjectFilter, 
+		groupFilter, 
+		productFilter, 
+		tutorialFormatFilter, 
+		variationFilter, 
+		distanceLearningFilter, 
+		tutorialFilter, 
+		categoryFilter, 
+		panelFilters,
+		getFilterDisplayName,
+		isSameFilterValue
+	]);
 
 	if (loading) return <div>Loading products...</div>;
 	if (error) return <div>Error: {error}</div>;
@@ -525,13 +623,13 @@ const ProductList = React.memo(() => {
 								tutorialFilter,
 							}}
 							panelFilters={panelFilters}
-							navbarFilters={{
-								navbarGroupFilter,
-								navbarProductFilter,
-								navbarTutorialFormatFilter,
-								navbarVariationFilter,
-								navbarDistanceLearningFilter,
-								navbarTutorialFilter,
+							urlFilters={{
+								groupFilter,
+								productFilter,
+								tutorialFormatFilter,
+								variationFilter,
+								distanceLearningFilter,
+								tutorialFilter,
 							}}
 							finalParams={JSON.stringify(
 								Object.fromEntries(new URLSearchParams(location.search))
@@ -544,8 +642,8 @@ const ProductList = React.memo(() => {
 			{/* Main content area with filter panel */}
 			<div className="d-flex gap-3 flex-column flex-lg-row align-items-start">
 				<Box className="d-flex flex-column">
-			{(navbarGroupFilter ||
-						navbarProductFilter ||
+			{(groupFilter ||
+						productFilter ||
 						subjectFilter ||
 						Object.keys(panelFilters).length > 0) &&
 						!isSearchMode && (
@@ -564,9 +662,19 @@ const ProductList = React.memo(() => {
 						<AdvancedFilterPanel
 							onFiltersChange={handleFiltersChange}
 							categoryFilter={categoryFilter}
-							subjectFilter={subjectFilter}
 							isSearchMode={isSearchMode}
 							initialFilters={panelFilters}
+							urlFilters={{
+								subject: subjectFilter,
+								group: groupFilter,
+								product: productFilter,
+								tutorial_format: tutorialFormatFilter,
+								variation: variationFilter,
+								distance_learning: distanceLearningFilter,
+								tutorial: tutorialFilter
+							}}
+							subjects={subjects}
+							filterConfig={filterConfig}
 						/>
 					</aside>
 				)}
@@ -574,6 +682,70 @@ const ProductList = React.memo(() => {
 				{/* Main content area */}
 				<main className="flex-grow-1 main-content-area">
 					
+					{/* Active Filters Display */}
+					{getActiveFilters.length > 0 && !isSearchMode && (
+						<div className="mb-4">
+							<div className="d-flex align-items-center mb-2">
+								<Typography variant="subtitle2" color="text.secondary" className="me-2">
+									Active Filters ({getActiveFilters.length})
+								</Typography>
+								<Button
+									variant="outline-secondary"
+									size="sm"
+									onClick={handleClearAllFilters}>
+									Clear All
+								</Button>
+							</div>
+							<Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+								{getActiveFilters.map((filter, index) => (
+									<Chip
+										key={`${filter.type}-${filter.value}-${index}`}
+										label={filter.label}
+										size="small"
+										color="primary"
+										variant="outlined"
+										onDelete={() => {
+											// Handle filter removal based on filter type
+											if (filter.type === 'subject' || filter.type === 'category' || 
+												filter.type === 'group' || filter.type === 'product' ||
+												filter.type === 'tutorial_format' || filter.type === 'variation' ||
+												filter.type === 'distance_learning' || filter.type === 'tutorial') {
+												// For URL-based filters, navigate to clean URL
+												const newParams = new URLSearchParams(location.search);
+												const paramMap = {
+													'subject': 'subject_code',
+													'category': 'main_category',
+													'group': 'group',
+													'product': 'product',
+													'tutorial_format': 'tutorial_format',
+													'variation': 'variation',
+													'distance_learning': 'distance_learning',
+													'tutorial': 'tutorial'
+												};
+												const paramName = paramMap[filter.type] || filter.type;
+												newParams.delete(paramName);
+												newParams.delete(filter.type);
+												navigate(`/products?${newParams.toString()}`, { replace: true });
+											} else {
+												// For panel filters, update panelFilters state
+												setPanelFilters(prev => {
+													const newFilters = { ...prev };
+													if (newFilters[filter.type]) {
+														newFilters[filter.type] = newFilters[filter.type].filter(v => v !== filter.value);
+														if (newFilters[filter.type].length === 0) {
+															delete newFilters[filter.type];
+														}
+													}
+													return newFilters;
+												});
+											}
+										}}
+									/>
+								))}
+							</Box>
+						</div>
+					)}
+
 					{/* Search Results Header */}
 					{isSearchMode && (
 						<div className="mb-4">

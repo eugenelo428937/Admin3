@@ -124,8 +124,7 @@ const NavigationMenu = ({
 				className="m-left__sm m-right__sm">
 				<div className="dropdown-submenu">
 					<Row>
-						<Nav.Link
-							as={NavLink}
+						<NavDropdown.Item							
 							to="/products"
 							onClick={() => {
 								handleProductClick();
@@ -133,7 +132,7 @@ const NavigationMenu = ({
 							}}
 							className="fw-normal mb-2 text-primary ms-1 border border-light w-auto fs-5">
 							<span className="title3">View All Products</span>
-						</Nav.Link>
+						</NavDropdown.Item>
 					</Row>
 					<Row>
 						{loadingProductGroups ? (
@@ -159,23 +158,29 @@ const NavigationMenu = ({
 											<Col lg={3}>
 												<Row>
 													<Col lg={6}>
-														<div
+														<NavDropdown.Item
 															className="fw-bolder mb-2 text-primary"
 															style={{
 																cursor: "pointer",
 															}}
 															onClick={() => {
-																handleProductGroupClick(group.name);
-																onCollapseNavbar && onCollapseNavbar();
+																handleProductGroupClick(
+																	group.name
+																);
+																onCollapseNavbar &&
+																	onCollapseNavbar();
 															}}>
 															{group.name}
-														</div>
+														</NavDropdown.Item>
 														{leftColumn.map((product) => (
 															<NavDropdown.Item
 																key={product.id}
 																onClick={() => {
-																	handleSpecificProductClick(product.id);
-																	onCollapseNavbar && onCollapseNavbar();
+																	handleSpecificProductClick(
+																		product.id
+																	);
+																	onCollapseNavbar &&
+																		onCollapseNavbar();
 																}}>
 																{product.shortname}
 															</NavDropdown.Item>
@@ -189,8 +194,11 @@ const NavigationMenu = ({
 															<NavDropdown.Item
 																key={product.id}
 																onClick={() => {
-																	handleSpecificProductClick(product.id);
-																	onCollapseNavbar && onCollapseNavbar();
+																	handleSpecificProductClick(
+																		product.id
+																	);
+																	onCollapseNavbar &&
+																		onCollapseNavbar();
 																}}>
 																{product.shortname}
 															</NavDropdown.Item>
@@ -205,7 +213,7 @@ const NavigationMenu = ({
 								// Regular single column display for other groups
 								return (
 									<Col key={group.id || group.name}>
-										<div
+										<NavDropdown.Item
 											className="fw-bolder mb-2 text-primary"
 											style={{ cursor: "pointer" }}
 											onClick={() => {
@@ -213,7 +221,7 @@ const NavigationMenu = ({
 												onCollapseNavbar && onCollapseNavbar();
 											}}>
 											{group.name}
-										</div>
+										</NavDropdown.Item>
 										{group.products && group.products.length > 0 ? (
 											group.products.map((product) => (
 												<NavDropdown.Item
@@ -246,8 +254,7 @@ const NavigationMenu = ({
 				className="m-left__sm m-right__sm">
 				<div className="dropdown-submenu">
 					<Row>
-						<Nav.Link
-							as={NavLink}
+						<NavDropdown.Item
 							to="/products?distance_learning=true"
 							onClick={() => {
 								// Navigation handled by NavLink 'to' prop
@@ -255,7 +262,7 @@ const NavigationMenu = ({
 							}}
 							className="fw-normal mb-2 text-primary ms-1 border border-light w-auto fs-5">
 							View All Distance Learning
-						</Nav.Link>
+						</NavDropdown.Item>
 					</Row>
 					<Row>
 						{loadingDistanceLearning ? (
@@ -267,7 +274,7 @@ const NavigationMenu = ({
 						) : (
 							distanceLearningData.map((group) => (
 								<Col key={group.id || group.name}>
-									<div
+									<NavDropdown.Item
 										className="fw-bolder mb-2 text-primary"
 										style={{ cursor: "pointer" }}
 										onClick={() => {
@@ -275,7 +282,7 @@ const NavigationMenu = ({
 											onCollapseNavbar && onCollapseNavbar();
 										}}>
 										{group.name}
-									</div>
+									</NavDropdown.Item>
 									{group.products && group.products.length > 0 ? (
 										group.products.map((product) => (
 											<NavDropdown.Item
@@ -307,8 +314,7 @@ const NavigationMenu = ({
 				className="m-left__sm m-right__sm">
 				<div className="dropdown-submenu">
 					<Row>
-						<Nav.Link
-							as={NavLink}
+						<NavDropdown.Item
 							to="/products?tutorial=true"
 							onClick={() => {
 								// Navigation handled by NavLink 'to' prop
@@ -316,7 +322,7 @@ const NavigationMenu = ({
 							}}
 							className="fw-normal mb-2 text-primary ms-1 border border-light w-auto fs-5">
 							View All Tutorials
-						</Nav.Link>
+						</NavDropdown.Item>
 					</Row>
 					<Row>
 						{loadingTutorial ? (

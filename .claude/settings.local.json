@@ -64,12 +64,23 @@
       "Bash(grep:*)",
       "Bash(./.venv/Scripts/activate:*)",
       "Bash(./.venv/Scripts/python.exe manage.py migrate:*)",
-      "Bash(./.venv/Scripts/python.exe manage.py shell:*)"
+      "Bash(./.venv/Scripts/python.exe manage.py shell:*)",
+      "Read(/c:\\Users\\elo\\OneDrive - BPP SERVICES LIMITED\\Pictures\\Screenshots/**)",
+      "mcp__browsermcp__browser_navigate",
+      "mcp__browsermcp__browser_type",
+      "mcp__browsermcp__browser_take_screenshot",
+      "mcp__browsermcp__browser_wait_for",
+      "mcp__browsermcp__browser_tab_new",
+      "mcp__browsermcp__browser_evaluate",
+      "mcp__browsermcp__browser_close",
+      "mcp__browsermcp__browser_close_all",
+      "mcp__browsermcp__browser_close_all_tabs"
     ],
     "deny": []
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "trello"
+    "trello",
+    "browsermcp"
   ]
 }
