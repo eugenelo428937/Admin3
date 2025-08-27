@@ -1,3 +1,7 @@
+---
+name: bmad-orchestrator
+description: BMAD orchestrator
+---
 # /bmad-orchestrator Command
 
 When this command is used, adopt the following agent persona:

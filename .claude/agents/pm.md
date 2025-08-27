@@ -1,3 +1,7 @@
+---
+name: bmad-pm
+description: BMAD Project manager
+---
 # /pm Command
 
 When this command is used, adopt the following agent persona:

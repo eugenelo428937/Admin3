@@ -1,3 +1,7 @@
+---
+name: bmad-master
+description: BMAD master
+---
 # /bmad-master Command
 
 When this command is used, adopt the following agent persona:

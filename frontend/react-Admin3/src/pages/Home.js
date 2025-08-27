@@ -31,23 +31,17 @@ const Home = () => {
 			try {
 				setRulesLoading(true);
 				const currentDate = new Date().toISOString().split('T')[0];
-				console.log('🎯 [Home] Evaluating rules for date:', currentDate);
 				
 				const result = await rulesEngineService.evaluateRulesAtEntryPoint('home_page_mount', {
 					current_date: currentDate,
 					user_location: 'home_page'
 				});
 				
-				console.log('🎯 [Home] Rules engine result:', result);
-				
 				if (result.success && result.messages) {
-					console.log('🎯 [Home] All messages:', result.messages);
-					
 					// Filter for display messages only - BUT let's also show 'message' type
 					const displayMessages = result.messages.filter(msg => 
 						msg.type === 'display' || msg.type === 'message'
 					);
-					console.log('🎯 [Home] Filtered messages:', displayMessages);
 					setRuleMessages(displayMessages);
 				}
 			} catch (error) {
@@ -105,68 +99,37 @@ const Home = () => {
 
 	// Handle "Show Matching Products" button click
 	const handleShowMatchingProducts = (results, filters, query) => {
-		console.log("🚀 [Home] Starting navigation to search results");
-		console.log("🚀 [Home] Raw parameters received:", {
-			results: results ? "present" : "missing",
-			filters: filters ? "present" : "missing",
-			query: query ? `"${query}"` : "missing",
-		});
-
-		// Use current state if parameters are not provided
+			// Use current state if parameters are not provided
 		const searchQueryToUse = query || searchQuery;
 		const filtersToUse = filters || selectedFilters;
-
-		console.log("🚀 [Home] Final parameters to use:", {
-			searchQuery: searchQueryToUse?.trim(),
-			selectedFilters: filtersToUse,
-		});
 
 		const searchParams = new URLSearchParams();
 
 		if (searchQueryToUse?.trim()) {
 			searchParams.append("q", searchQueryToUse.trim());
-			console.log(
-				"🚀 [Home] Added query parameter:",
-				searchQueryToUse.trim()
-			);
 		}
 
 		// Add selected filters
 		filtersToUse.subjects.forEach((subject) => {
 			searchParams.append("subjects", subject.code || subject.id);
-			console.log(
-				"🚀 [Home] Added subject filter:",
-				subject.code || subject.id
-			);
 		});
 
 		filtersToUse.product_groups.forEach((group) => {
 			searchParams.append("groups", group.id);
-			console.log("🚀 [Home] Added group filter:", group.id);
 		});
 
 		filtersToUse.variations.forEach((variation) => {
 			searchParams.append("variations", variation.id);
-			console.log("🚀 [Home] Added variation filter:", variation.id);
 		});
 
 		filtersToUse.products.forEach((product) => {
 			searchParams.append("products", product.id);
-			console.log("🚀 [Home] Added product filter:", product.id);
 		});
 
-		console.log(
-			"🚀 [Home] All searchParams entries:",
-			Array.from(searchParams.entries())
-		);
-
 		const finalUrl = `/products?${searchParams.toString()}`;
-		console.log("🚀 [Home] Final navigation URL:", finalUrl);
 
 		// Navigate to product list with search parameters
 		navigate(finalUrl);
-
-		console.log("🚀 [Home] Navigation completed");
 	};
 
 	return (
@@ -236,8 +199,6 @@ const Home = () => {
 			</Row>
 
 			{/* Rules Engine Messages - Below Hero, Above Search Results */}
-			{console.log('🎯 [Home] Render - rulesLoading:', rulesLoading, 'ruleMessages:', ruleMessages)}
-			{console.log('🎯 [Home] Render condition check:', !rulesLoading, ruleMessages.length > 0, (!rulesLoading && ruleMessages.length > 0))}
 			
 			{/* FORCE SHOW MESSAGES FOR DEBUGGING */}
 			{ruleMessages.length > 0 ? (
