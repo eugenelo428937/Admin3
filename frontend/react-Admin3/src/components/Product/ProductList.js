@@ -15,8 +15,9 @@ import productService from "../../services/productService";
 import searchService from "../../services/searchService";
 import subjectService from "../../services/subjectService";
 import useProductCardHelpers from "../../hooks/useProductCardHelpers";
+import { useProductListRules } from "../../hooks/useRulesEngine";
 import "../../styles/product_list.css";
-import ProductCard from "./ProductCard/MaterialProductCard";
+import ProductCardWithRules from "./ProductCard/ProductCardWithRules";
 import VATToggle from "../VATToggle";
 import SearchBox from "../SearchBox";
 import AdvancedFilterPanel from "./AdvancedFilterPanel";
@@ -92,6 +93,22 @@ const ProductList = React.memo(() => {
 
 
 	const { showVATInclusive } = useVAT();
+
+	// Rules Engine Integration - memoize context to prevent infinite loops
+	const productListContext = useMemo(() => ({
+		search_mode: isSearchMode,
+		search_query: searchQuery,
+		subject_filter: subjectFilter,
+		category_filter: categoryFilter,
+		total_products: totalProducts,
+		current_page: currentPage
+	}), [isSearchMode, searchQuery, subjectFilter, categoryFilter, totalProducts, currentPage]);
+	
+	const { 
+		rulesResult: productListRulesResult, 
+		loading: productListRulesLoading, 
+		rulesCount: productListRulesCount 
+	} = useProductListRules(productListContext);
 
 	// Use the custom hook for product card functionality
 	const { handleAddToCart, allEsspIds, bulkDeadlines } =
@@ -595,7 +612,17 @@ const ProductList = React.memo(() => {
 					<VATToggle />
 				</div>
 			</header>
-
+			{/* Rules Engine Debug Panel */}
+					<div style={{ 
+						padding: '10px', 
+						backgroundColor: '#f8f9fa', 
+						border: '1px solid #dee2e6', 
+						borderRadius: '4px',
+						fontSize: '12px',
+						color: '#495057',
+						marginBottom: '10px'
+					}}>
+						<strong>🔧 Rules Engine D
 			{/* Filter Debugger - Development Only - Collapsible */}
 			{process.env.NODE_ENV === "development" && (
 				<div className="filter-debugger-container d-none">
@@ -803,7 +830,7 @@ const ProductList = React.memo(() => {
 											`bundle-${item.id}`
 										}
 										className="product-card-wrapper justify-content-center">
-										<ProductCard
+										<ProductCardWithRules
 											product={item}
 											onAddToCart={handleAddToCart}
 											allEsspIds={allEsspIds}
