@@ -8,7 +8,6 @@ const searchService = {
     // Fuzzy search for suggestions using our new FuzzyWuzzy backend
     fuzzySearch: async (query) => {
         try {
-            console.log('🔍 [SearchService] FuzzyWuzzy search for:', query);
             
             if (!query || query.trim() === '') {
                 return {
@@ -26,7 +25,6 @@ const searchService = {
                 }
             });
             
-            console.log('🔍 [SearchService] FuzzyWuzzy API response:', response.data);
             
             // The backend returns the data in the correct format
             return {
@@ -55,14 +53,6 @@ const searchService = {
     // Advanced search with filters using our new FuzzyWuzzy backend
     advancedSearch: async (searchParams) => {
         try {
-            console.log('🔍 [SearchService] FuzzyWuzzy advanced search with params:', searchParams);
-            console.log('🔍 [SearchService] searchParams.q details:', {
-                value: searchParams.q,
-                typeof: typeof searchParams.q,
-                isEmpty: !searchParams.q,
-                trimmed: searchParams.q?.trim(),
-                length: searchParams.q?.length
-            });
             
             // Build parameters for the advanced fuzzy search endpoint
             const params = {
@@ -73,9 +63,7 @@ const searchService = {
             // Add query if provided
             if (searchParams.q && searchParams.q.trim()) {
                 params.q = searchParams.q.trim();
-                console.log('🔍 [SearchService] Added q parameter:', params.q);
             } else {
-                console.log('🔍 [SearchService] NO q parameter added - searchParams.q is falsy or empty');
             }
             
             // Add subject filters (convert subject codes to IDs if needed)
@@ -102,22 +90,13 @@ const searchService = {
                 console.warn('Product filters not yet implemented in fuzzy search backend');
             }
             
-            console.log('🔍 [SearchService] Making advanced fuzzy search request with params:', params);
-            
             const requestUrl = `${SEARCH_API_URL}/advanced-fuzzy-search/`;
-            console.log('🔍 [SearchService] Request URL:', requestUrl);
-            console.log('🔍 [SearchService] Final request params being sent:', JSON.stringify(params, null, 2));
             
             // Use the new advanced fuzzy search endpoint
             const response = await httpService.get(requestUrl, {
                 params: params
             });
             
-            console.log('🔍 [SearchService] FuzzyWuzzy advanced search results:', {
-                totalProducts: response.data.total_count,
-                returnedProducts: response.data.products?.length,
-                searchParams
-            });
             
             return {
                 results: response.data.products || [],
@@ -147,7 +126,6 @@ const searchService = {
     // Get default filters and popular products when no search query
     getDefaultSearchData: async () => {
         try {
-            console.log('🏠 [SearchService] Getting default search data');
             
             // Use the same endpoint but without query to get popular/default data
             const response = await httpService.get(`${SEARCH_API_URL}/default-search-data/`, {
@@ -156,7 +134,6 @@ const searchService = {
                 }
             });
             
-            console.log('🏠 [SearchService] Default search data response:', response.data);
             
             return {
                 suggested_filters: response.data.suggested_filters || { 
@@ -175,7 +152,6 @@ const searchService = {
             
             // If the specific endpoint doesn't exist, try to fallback to existing endpoints
             if (error.response?.status === 404) {
-                console.log('🏠 [SearchService] Default endpoint not found, using fallback');
                 try {
                     // Try to get some basic data from existing endpoints
                     return {

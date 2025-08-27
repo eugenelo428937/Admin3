@@ -30,115 +30,220 @@ import productService from '../../services/productService';
 
 const AdvancedFilterPanel = ({ 
     onFiltersChange, 
-    categoryFilter, 
-    subjectFilter,
+    categoryFilter,
     isSearchMode = false,
-    initialFilters = {} 
+    initialFilters = {},
+    urlFilters = {},
+    subjects = [],
+    filterConfig = {}
 }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     
     // State management
-    const [filterConfig, setFilterConfig] = useState({});
+    const [internalFilterConfig, setInternalFilterConfig] = useState(filterConfig);
     const [activeFilters, setActiveFilters] = useState(initialFilters);
     const [expandedPanels, setExpandedPanels] = useState({});
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(Object.keys(filterConfig).length === 0);
     const [error, setError] = useState(null);
+    const [isUpdatingFromUrl, setIsUpdatingFromUrl] = useState(false);
 
-    // Load filter configuration on mount - only once
+    // Update internal filter config when prop changes
     useEffect(() => {
-        let isMounted = true;
-        
-        const loadFilterConfig = async () => {
-            try {
-                setLoading(true);
-                const config = await productService.getFilterConfiguration();
-                
-                if (!isMounted) return; // Component unmounted
-                
-                setFilterConfig(config);
-                
-                // Set default expanded panels
-                const defaultExpanded = {};
-                Object.entries(config).forEach(([key, value]) => {
-                    defaultExpanded[key] = value.default_open || false;
-                });
-                setExpandedPanels(defaultExpanded);
-                
-                setError(null);
-            } catch (err) {
-                if (!isMounted) return; // Component unmounted
-                setError('Failed to load filter configuration');
-                console.error('Error loading filter config:', err);
-            } finally {
-                if (isMounted) {
-                    setLoading(false);
-                }
-            }
-        };
+        if (Object.keys(filterConfig).length > 0) {
+            // Filter config loaded successfully
+            
+            setInternalFilterConfig(filterConfig);
+            setLoading(false);
+            
+            // Set default expanded panels
+            const defaultExpanded = {};
+            Object.entries(filterConfig).forEach(([key, value]) => {
+                defaultExpanded[key] = value.default_open || false;
+            });
+            setExpandedPanels(prev => ({ ...defaultExpanded, ...prev }));
+        }
+    }, [filterConfig]);
 
-        loadFilterConfig();
-        
-        return () => {
-            isMounted = false;
-        };
-    }, []); // Empty dependency array - only run once
-
-    // Handle external filter changes (from URL params, etc.) - only when filters actually change
+    // Handle external filter changes (from URL params, navbar, etc.) - rebuild filters from scratch
     useEffect(() => {
-        if (!isSearchMode && Object.keys(filterConfig).length > 0) {
-            const newFilters = { ...activeFilters };
+        if (!isSearchMode && Object.keys(internalFilterConfig).length > 0) {
+            console.log('Processing URL filters:', urlFilters);
+            console.log('Available filter configs:', Object.keys(internalFilterConfig));
+            // Processing URL filters
             
-            // Handle category filter from navbar - only if not already set
-            if (categoryFilter && !newFilters.main_category?.includes(categoryFilter)) {
-                newFilters.main_category = [...(newFilters.main_category || []), categoryFilter];
-            }
+            // Start with a fresh filter object, only keeping panel-initiated filters that don't conflict with URL filters
+            const newFilters = {};
             
-            // Handle subject filter from URL - only if not already set
-            if (subjectFilter) {
-                let subjectId = subjectFilter;
-                if (typeof subjectFilter === 'string' && !subjectFilter.match(/^\d+$/)) {
-                    // Convert subject code to ID
-                    const subjectOptions = filterConfig.subject?.options || [];
-                    const foundSubject = subjectOptions.find(s => s.code === subjectFilter);
-                    if (foundSubject) {
-                        subjectId = foundSubject.id;
+            // First, add URL filters
+            Object.entries(urlFilters).forEach(([filterKey, filterValue]) => {
+                if (filterValue) {
+                    // Map URL filter keys to filter config keys
+                    const filterKeyMapping = {
+                        'subject': 'SUBJECT_FILTER',
+                        'group': 'PRODUCT_CATEGORY', 
+                        'product': 'PRODUCT_TYPE',
+                        'tutorial_format': 'tutorial_format',
+                        'variation': 'variation',
+                        'distance_learning': 'DELIVERY_MODE',
+                        'tutorial': 'tutorial'
+                    };
+                    
+                    let panelFilterKey = filterKeyMapping[filterKey] || filterKey;
+                    console.log(`Initial mapping ${filterKey} (${filterValue}) -> ${panelFilterKey}`);
+                    
+                    // Special case: if group filter doesn't exist in PRODUCT_CATEGORY, check PRODUCT_TYPE
+                    if (filterKey === 'group' && panelFilterKey === 'PRODUCT_CATEGORY') {
+                        const categoryOptions = internalFilterConfig.PRODUCT_CATEGORY?.options || [];
+                        const categoryExists = categoryOptions.some(opt => 
+                            opt.label === filterValue || opt.name === filterValue || opt.id === filterValue
+                        );
+                        
+                        if (!categoryExists) {
+                            // Check if it exists in PRODUCT_TYPE instead
+                            const typeOptions = internalFilterConfig.PRODUCT_TYPE?.options || [];
+                            const typeExists = typeOptions.some(opt => 
+                                opt.label === filterValue || opt.name === filterValue || opt.id === filterValue
+                            );
+                            
+                            if (typeExists) {
+                                panelFilterKey = 'PRODUCT_TYPE';
+                                console.log(`Remapped ${filterKey} to PRODUCT_TYPE since not found in PRODUCT_CATEGORY`);
+                            }
+                        }
                     }
-                } else {
-                    subjectId = parseInt(subjectFilter);
+                    
+                    console.log(`Final mapping ${filterKey} (${filterValue}) -> ${panelFilterKey}`);
+                    
+                    if (panelFilterKey && internalFilterConfig[panelFilterKey]) {
+                        let filterId = filterValue;
+                        
+                        // Special handling for subjects - convert code to ID
+                        if (panelFilterKey === 'SUBJECT_FILTER') {
+                            if (typeof filterValue === 'string' && !filterValue.match(/^\d+$/)) {
+                                // Convert subject code to ID using passed subjects prop
+                                const foundSubject = subjects.find(s => s.code === filterValue || s.code === filterValue.toUpperCase());
+                                if (foundSubject) {
+                                    filterId = foundSubject.id;
+                                } else {
+                                    // Also try the filter config if we didn't find in subjects
+                                    const foundInConfig = internalFilterConfig.SUBJECT_FILTER?.options?.find(s => 
+                                        s.code === filterValue || s.code === filterValue.toUpperCase() ||
+                                        s.label === filterValue || s.name === filterValue
+                                    );
+                                    if (foundInConfig) {
+                                        filterId = foundInConfig.id;
+                                    }
+                                }
+                            } else {
+                                filterId = parseInt(filterValue);
+                            }
+                        } else if ((panelFilterKey === 'PRODUCT_CATEGORY' && filterKey === 'group') || 
+                                 (panelFilterKey === 'PRODUCT_TYPE' && (filterKey === 'group' || filterKey === 'product'))) {
+                            // Special handling for product categories and types - convert name to ID
+                            if (typeof filterValue === 'string' && !filterValue.match(/^\d+$/)) {
+                                // Find option by label/name in filter config
+                                const foundOption = internalFilterConfig[panelFilterKey]?.options?.find(opt => 
+                                    opt.label === filterValue || opt.name === filterValue || 
+                                    opt.label === filterValue.toLowerCase() || opt.name === filterValue.toLowerCase()
+                                );
+                                console.log(`Looking for ${panelFilterKey} "${filterValue}":`, foundOption);
+                                if (foundOption) {
+                                    filterId = foundOption.id;
+                                } else {
+                                    filterId = filterValue; // Keep as string if not found
+                                }
+                            } else {
+                                filterId = parseInt(filterValue);
+                            }
+                        } else {
+                            // For non-subject filters, convert string/number to appropriate type
+                            filterId = typeof filterValue === 'string' ? parseInt(filterValue) || filterValue : filterValue;
+                        }
+                        
+                        // Check if the filter option exists in the configuration
+                        const filterOptions = internalFilterConfig[panelFilterKey]?.options || [];
+                        const optionExists = filterOptions.some(opt => opt.id === filterId || opt.id === filterValue);
+                        console.log(`Checking if ${panelFilterKey} option exists for ID ${filterId}:`, optionExists);
+                        console.log(`Available ${panelFilterKey} options:`, filterOptions.map(opt => ({id: opt.id, label: opt.label || opt.name, code: opt.code})));
+                        
+                        if (optionExists) {
+                            // Use the mapped panelFilterKey for activeFilters so checkbox rendering works
+                            newFilters[panelFilterKey] = [filterId];
+                            console.log(`Added filter: ${panelFilterKey} = [${filterId}]`);
+                        } else if (panelFilterKey === 'PRODUCT_TYPE' && filterKey === 'product') {
+                            // Special case: individual product ID doesn't exist in PRODUCT_TYPE config
+                            // Navigation is clicking on individual products (e.g., "Core Reading") 
+                            // but filter only supports product categories (e.g., "Core Study Materials")
+                            // Individual product filtering will be handled at API level instead of filter panel
+                            
+                            // For now, we'll ignore individual product filters since the filter system doesn't support them
+                            // The user will see all products instead of filtering by specific product name
+                            // TODO: Consider implementing product name search or requesting backend to add individual product filter config
+                        }
+                    }
                 }
+            });
+            
+            // Then add category filter from navbar if present
+            if (categoryFilter && internalFilterConfig.main_category) {
+                const filterOptions = internalFilterConfig.main_category?.options || [];
+                const optionExists = filterOptions.some(opt => opt.id === categoryFilter);
                 
-                if (subjectId && !newFilters.subject?.includes(subjectId)) {
-                    newFilters.subject = [...(newFilters.subject || []), subjectId];
+                if (optionExists) {
+                    newFilters.main_category = [categoryFilter];
                 }
             }
+            
+            // Finally, add any panel filters that don't conflict with URL filters
+            Object.entries(initialFilters).forEach(([filterType, values]) => {
+                if (values && values.length > 0 && !newFilters[filterType]) {
+                    newFilters[filterType] = [...values];
+                }
+            });
             
             // Only update if filters actually changed
             const filtersChanged = JSON.stringify(activeFilters) !== JSON.stringify(newFilters);
+            
             if (filtersChanged) {
-                console.log('🔍 [AdvancedFilterPanel] External filters changed, updating:', newFilters);
+                setIsUpdatingFromUrl(true);
                 setActiveFilters(newFilters);
+                // Reset the flag after a short delay
+                setTimeout(() => setIsUpdatingFromUrl(false), 50);
             }
         }
-    }, [categoryFilter, subjectFilter, isSearchMode, filterConfig.subject?.options]); // More specific dependency
+    }, [categoryFilter, urlFilters, isSearchMode, internalFilterConfig, subjects, initialFilters]); // activeFilters is intentionally excluded to avoid circular dependency
 
-    // Notify parent when filters change - debounced
+    // Notify parent when filters change - debounced (but not when updating from URL)
     useEffect(() => {
+        if (isUpdatingFromUrl) {
+            return; // Don't notify parent when we're updating from URL filters
+        }
+        
         const timeoutId = setTimeout(() => {
             if (onFiltersChange) {
-                console.log('🔍 [AdvancedFilterPanel] Notifying parent of filter change:', {
-                    activeFilters,
-                    filterCount: Object.keys(activeFilters).length,
-                    hasSubject: !!activeFilters.subject?.length,
-                    hasMainCategory: !!activeFilters.main_category?.length
+                // Only send panel-only filters (non-URL filters) to parent
+                const urlMappedConfigKeys = ['SUBJECT_FILTER', 'PRODUCT_CATEGORY', 'PRODUCT_TYPE', 'DELIVERY_MODE', 'main_category', 'tutorial_format', 'variation', 'tutorial'];
+                const panelOnlyFilters = {};
+                
+                
+                Object.entries(activeFilters).forEach(([configKey, values]) => {
+                    // Only include filters that are NOT URL-based
+                    if (!urlMappedConfigKeys.includes(configKey) && values && values.length > 0) {
+                        panelOnlyFilters[configKey] = values;
+                    }
                 });
-                onFiltersChange(activeFilters);
+                
+                // Only call parent if we actually have panel-only filters
+                if (Object.keys(panelOnlyFilters).length > 0) {
+                    onFiltersChange(panelOnlyFilters);
+                }
             }
         }, 100); // Small debounce to prevent rapid fire calls
         
         return () => clearTimeout(timeoutId);
-    }, [activeFilters, onFiltersChange]);
+    }, [activeFilters, onFiltersChange, isUpdatingFromUrl]);
 
     // Handle filter value changes
     const handleFilterChange = useCallback((filterType, value, checked) => {
@@ -206,38 +311,15 @@ const AdvancedFilterPanel = ({
 
     // Get filter label for display - memoized
     const getFilterLabel = useCallback((filterType, value) => {
-        const options = filterConfig[filterType]?.options || [];
+        const options = internalFilterConfig[filterType]?.options || [];
         const option = options.find(opt => opt.id === value);
         return option?.label || option?.name || value;
-    }, [filterConfig]);
+    }, [internalFilterConfig]);
 
-    // Render filter chips - memoized
-    const renderFilterChips = useMemo(() => {
-        const chips = [];
-        
-        Object.entries(activeFilters).forEach(([filterType, values]) => {
-            if (values && values.length > 0) {
-                values.forEach(value => {
-                    chips.push(
-                        <Chip
-                            key={`${filterType}-${value}`}
-                            label={getFilterLabel(filterType, value)}
-                            onDelete={() => handleFilterChange(filterType, value, false)}
-                            size="small"
-                            color="primary"
-                            variant="outlined"
-                        />
-                    );
-                });
-            }
-        });
-        
-        return chips;
-    }, [activeFilters, getFilterLabel, handleFilterChange]);
 
     // Render filter options for a specific filter type
     const renderFilterOptions = (filterType) => {
-        const config = filterConfig[filterType];
+        const config = internalFilterConfig[filterType];
         if (!config || !config.options) return null;
         
         const activeValues = activeFilters[filterType] || [];
@@ -282,33 +364,11 @@ const AdvancedFilterPanel = ({
             );
         }
 
-        const sortedFilters = Object.entries(filterConfig)
+        const sortedFilters = Object.entries(internalFilterConfig)
             .sort(([, a], [, b]) => a.display_order - b.display_order);
 
         return (
 				<Box>
-					{/* Active filters chips */}
-					{getActiveFilterCount > 0 && (
-						<Box sx={{ p: 2, pb: 0 }}>
-							<Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-								<Typography variant="subtitle2" color="text.secondary">
-									Active Filters ({getActiveFilterCount})
-								</Typography>
-								<Button
-									size="small"
-									onClick={handleClearFilters}
-									sx={{ ml: "auto" }}
-									className="clear-filters-btn">
-									Clear All
-								</Button>
-							</Box>
-							<Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb:2 }}>
-								{renderFilterChips}
-							</Box>
-							<Divider sx={{ mt: 1 }} />
-						</Box>
-					)}
-
 					{/* Filter accordions */}
 					{sortedFilters.map(([filterType, config]) => (
 						<Accordion

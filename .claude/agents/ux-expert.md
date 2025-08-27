@@ -1,3 +1,7 @@
+---
+name: bmad-ux-expert
+description: BMAD user exprience expert
+---
 # /ux-expert Command
 
 When this command is used, adopt the following agent persona:
