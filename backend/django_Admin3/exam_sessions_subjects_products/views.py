@@ -7,8 +7,15 @@ from rest_framework.response import Response
 from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import ExamSessionSubjectProduct
-from .serializers import ExamSessionSubjectProductSerializer, ProductListSerializer
+from .serializers import (
+    ExamSessionSubjectProductSerializer, 
+    ProductListSerializer,
+    ProductSearchRequestSerializer,
+    ProductSearchResponseSerializer
+)
 from .services import FuzzySearchService
+from .services.optimized_search_service import optimized_search_service
+from .middleware.query_performance import monitor_query_performance
 from exam_sessions_subjects.models import ExamSessionSubject
 from products.models.products import Product
 from products.models.filter_system import FilterGroup
@@ -30,7 +37,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         """
         Instantiates and returns the list of permissions that this view requires.
         """
-        if self.action in ['list_products', 'default_search_data', 'fuzzy_search', 'advanced_fuzzy_search']:
+        if self.action in ['list_products', 'default_search_data', 'fuzzy_search', 'advanced_fuzzy_search', 'unified_search']:
             permission_classes = [AllowAny]
         else:
             permission_classes = self.permission_classes
@@ -377,7 +384,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         if group_filter:
             try:
                 group = FilterGroup.objects.get(name=group_filter)
-                products_queryset = products_queryset.filter(product__groups=group)
+                products_queryset = products_queryset.filter(product__productproductgroup__product_group=group)
                 logger.info(f'After group filter "{group_filter}" - products: {products_queryset.count()}')
             except FilterGroup.DoesNotExist:
                 logger.warning(f'Filter group "{group_filter}" not found')
@@ -403,7 +410,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         if tutorial_format_filter:
             try:
                 format_group = FilterGroup.objects.get(name=tutorial_format_filter)
-                products_queryset = products_queryset.filter(product__groups=format_group)
+                products_queryset = products_queryset.filter(product__productproductgroup__product_group=format_group)
                 logger.info(f'After tutorial_format filter "{tutorial_format_filter}" - products: {products_queryset.count()}')
             except FilterGroup.DoesNotExist:
                 logger.warning(f'Tutorial format group "{tutorial_format_filter}" not found')
@@ -432,7 +439,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             try:
                 tutorial_group = FilterGroup.objects.get(name='Tutorial')
                 online_classroom_group = FilterGroup.objects.get(name='Online Classroom')
-                products_queryset = products_queryset.filter(product__groups=tutorial_group).exclude(product__groups=online_classroom_group).distinct()
+                products_queryset = products_queryset.filter(product__productproductgroup__product_group=tutorial_group).exclude(product__productproductgroup__product_group=online_classroom_group).distinct()
                 logger.info(f'After tutorial filter - products: {products_queryset.count()}')
             except FilterGroup.DoesNotExist as e:
                 logger.warning(f'Tutorial group not found: {e}')
@@ -725,3 +732,237 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 'error': 'Failed to get default search data',
                 'details': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=False, methods=['post'], url_path='unified-search', permission_classes=[AllowAny])
+    @monitor_query_performance('Unified Product Search')
+    def unified_search(self, request):
+        """
+        Unified product search endpoint with disjunctive facet counting.
+        Phase 3 Optimized version with database performance improvements.
+        
+        POST /api/products/search/
+        
+        Request format:
+        {
+            "filters": {
+                "subjects": ["CM2", "SA1"],
+                "categories": ["Bundle"],
+                "product_types": ["Core Study Material"],
+                "products": ["Additional Mock Pack"],
+                "modes_of_delivery": ["Ebook"]
+            },
+            "pagination": {
+                "page": 1,
+                "page_size": 20
+            },
+            "options": {
+                "include_bundles": true,
+                "include_analytics": false
+            }
+        }
+        """
+        logger.info('🔍 [UNIFIED-SEARCH-V3] Starting optimized product search')
+        logger.info(f'🔍 [UNIFIED-SEARCH-V3] Request data: {request.data}')
+        
+        try:
+            # Validate request data
+            request_serializer = ProductSearchRequestSerializer(data=request.data)
+            if not request_serializer.is_valid():
+                logger.error(f'🔍 [UNIFIED-SEARCH-V3] Invalid request: {request_serializer.errors}')
+                return Response({
+                    'error': 'Invalid request format',
+                    'details': request_serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            validated_data = request_serializer.validated_data
+            
+            # Extract parameters with defaults
+            filters = validated_data.get('filters', {})
+            pagination = validated_data.get('pagination', {'page': 1, 'page_size': 20})
+            options = validated_data.get('options', {'include_bundles': True})
+            
+            # Add navbar-style filters from query parameters (for dropdown navigation compatibility)
+            tutorial_format_filter = request.query_params.get('tutorial_format')
+            group_filter = request.query_params.get('group')
+            variation_filter = request.query_params.get('variation')
+            distance_learning_filter = request.query_params.get('distance_learning')
+            tutorial_filter = request.query_params.get('tutorial')
+            
+            navbar_filters = {}
+            if tutorial_format_filter:
+                navbar_filters['tutorial_format'] = tutorial_format_filter
+                logger.info(f'🔍 [UNIFIED-SEARCH-V3] Added navbar filter: tutorial_format={tutorial_format_filter}')
+            if group_filter:
+                navbar_filters['group'] = group_filter
+                logger.info(f'🔍 [UNIFIED-SEARCH-V3] Added navbar filter: group={group_filter}')
+            if variation_filter:
+                navbar_filters['variation'] = variation_filter
+                logger.info(f'🔍 [UNIFIED-SEARCH-V3] Added navbar filter: variation={variation_filter}')
+            if distance_learning_filter:
+                navbar_filters['distance_learning'] = distance_learning_filter
+                logger.info(f'🔍 [UNIFIED-SEARCH-V3] Added navbar filter: distance_learning={distance_learning_filter}')
+            if tutorial_filter:
+                navbar_filters['tutorial'] = tutorial_filter
+                logger.info(f'🔍 [UNIFIED-SEARCH-V3] Added navbar filter: tutorial={tutorial_filter}')
+            
+            logger.info(f'🔍 [UNIFIED-SEARCH-V3] Using OptimizedSearchService')
+            
+            # Use the optimized search service
+            result = optimized_search_service.search_products(
+                filters=filters,
+                navbar_filters=navbar_filters,
+                pagination=pagination,
+                options=options
+            )
+            
+            logger.info(
+                f'🔍 [UNIFIED-SEARCH-V3] Completed in {result["performance"]["duration"]:.3f}s, '
+                f'returned {len(result["products"])} results'
+            )
+            
+            return Response(result)
+            
+        except Exception as e:
+            logger.error(f'🔍 [UNIFIED-SEARCH] Error: {str(e)}')
+            import traceback
+            logger.error(f'🔍 [UNIFIED-SEARCH] Traceback: {traceback.format_exc()}')
+            return Response({
+                'error': 'Search failed',
+                'details': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def _generate_filter_counts(self, applied_filters, base_products_queryset, base_bundles_queryset):
+        """
+        Generate disjunctive facet counts using proper database relationships.
+        Uses acted_filter_group hierarchy with parent_id to generate dynamic filters.
+        This replaces hardcoded filter generation with database-driven approach.
+        """
+        logger.info('🔢 [FILTER-COUNTS] Generating database-driven disjunctive facet counts')
+        
+        filter_counts = {
+            'subjects': {},
+            'categories': {},
+            'product_types': {},
+            'products': {},
+            'modes_of_delivery': {}
+        }
+        
+        try:
+            filter_service = get_filter_service()
+            
+            # 1. Subjects - Get from acted_subjects (correct approach)
+            logger.info('🔢 [FILTER-COUNTS] Generating subjects from acted_subjects')
+            subjects = base_products_queryset.values_list(
+                'exam_session_subject__subject__code',
+                'exam_session_subject__subject__description'
+            ).distinct()
+            
+            for code, name in subjects:
+                if code:
+                    # Test applying this subject filter
+                    test_filters = applied_filters.copy()
+                    test_filters['subjects'] = [code]
+                    legacy_test_filters = {'SUBJECT_FILTER': [code]}
+                    
+                    count = filter_service.apply_filters(base_products_queryset, legacy_test_filters).count()
+                    filter_counts['subjects'][code] = count
+            
+            # 2. Categories - Get from acted_filter_group where parent_id IS NULL AND has PRODUCT_CATEGORY config
+            logger.info('🔢 [FILTER-COUNTS] Generating categories from filter groups with PRODUCT_CATEGORY config')
+            root_categories = FilterGroup.objects.filter(
+                parent_id__isnull=True, 
+                is_active=True,
+                filterconfigurationgroup__filter_configuration__name='PRODUCT_CATEGORY'
+            ).distinct().order_by('name')
+            
+            for category in root_categories:
+                # Count products associated with this category group
+                count = base_products_queryset.filter(
+                    product__productproductgroup__product_group__id=category.id
+                ).distinct().count()
+                
+                # Include bundle count for Bundle category
+                if category.name == 'Bundle' and base_bundles_queryset:
+                    bundle_count = base_bundles_queryset.count()
+                    count += bundle_count
+                
+                if count > 0:
+                    filter_counts['categories'][category.name] = count
+            
+            # 3. Product Types - Get child groups with PRODUCT_TYPE configuration
+            logger.info('🔢 [FILTER-COUNTS] Generating product types from filter groups with PRODUCT_TYPE config')
+            # Get all child groups that have PRODUCT_TYPE configuration
+            child_groups = FilterGroup.objects.filter(
+                parent_id__isnull=False, 
+                is_active=True,
+                filterconfigurationgroup__filter_configuration__name='PRODUCT_TYPE'
+            ).distinct().select_related('parent').order_by('parent__name', 'name')
+            
+            for group in child_groups:
+                # Count products associated with this group
+                count = base_products_queryset.filter(
+                    product__productproductgroup__product_group__id=group.id
+                ).distinct().count()
+                
+                if count > 0:
+                    # Use full path for clarity: "Parent > Child"
+                    display_name = f"{group.parent.name} > {group.name}" if group.parent else group.name
+                    filter_counts['product_types'][group.name] = count
+            
+            # 4. Products - Individual products (keep existing logic)
+            logger.info('🔢 [FILTER-COUNTS] Generating individual products')
+            distinct_products = base_products_queryset.values_list(
+                'product__id',
+                'product__shortname'
+            ).distinct()[:50]  # Limit to prevent UI overload
+            
+            for product_id, product_name in distinct_products:
+                if product_name:
+                    count = base_products_queryset.filter(
+                        product__id=product_id
+                    ).count()
+                    if count > 0:
+                        filter_counts['products'][str(product_id)] = count
+            
+            # 5. Modes of Delivery - Get from product variations but also check for filter groups
+            logger.info('🔢 [FILTER-COUNTS] Generating modes of delivery from variations and filter groups')
+            
+            # First get from product variations (existing approach)
+            modes = base_products_queryset.values_list(
+                'variations__product_product_variation__product_variation__name',
+                flat=True
+            ).distinct()
+            
+            for mode in modes:
+                if mode:
+                    count = base_products_queryset.filter(
+                        variations__product_product_variation__product_variation__name=mode
+                    ).distinct().count()
+                    if count > 0:
+                        filter_counts['modes_of_delivery'][mode] = count
+            
+            # Also check for delivery mode filter groups (like Tutorial formats)
+            delivery_groups = FilterGroup.objects.filter(
+                name__in=['Face-to-face', 'Online Classroom', 'Live Online', 'eBook', 'Printed'],
+                is_active=True
+            )
+            
+            for group in delivery_groups:
+                count = base_products_queryset.filter(
+                    product__productproductgroup__product_group__id=group.id
+                ).distinct().count()
+                if count > 0:
+                    filter_counts['modes_of_delivery'][group.name] = count
+            
+            logger.info(f'🔢 [FILTER-COUNTS] Generated database-driven counts: {filter_counts}')
+            logger.info(f'🔢 [FILTER-COUNTS] Categories found: {list(filter_counts["categories"].keys())}')
+            logger.info(f'🔢 [FILTER-COUNTS] Product types found: {list(filter_counts["product_types"].keys())}')
+            
+        except Exception as e:
+            logger.error(f'🔢 [FILTER-COUNTS] Error generating database-driven counts: {str(e)}')
+            import traceback
+            logger.error(f'🔢 [FILTER-COUNTS] Traceback: {traceback.format_exc()}')
+            # Return empty counts on error
+            pass
+        
+        return filter_counts

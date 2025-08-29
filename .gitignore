@@ -95,3 +95,4 @@ claude-mcp-trello/
 node_modules/
 node_modules/*.mcp.json
 .env.*
+.mcp.json

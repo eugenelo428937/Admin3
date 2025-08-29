@@ -5,7 +5,8 @@ import {
 	Button,
 	Navbar,
 } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import {
 	Download as DownloadIcon,
 	Search as SearchIcon,
@@ -21,11 +22,21 @@ import NavigationMenu from "./NavigationMenu";
 import MainNavActions from "./MainNavActions";
 import AuthModal from "./AuthModal";
 import CartPanel from "../Ordering/CartPanel";
+// Redux imports for navigation integration
+import {
+	navSelectSubject,
+	navViewAllProducts,
+	navSelectProductGroup,
+	navSelectProduct,
+	resetFilters
+} from "../../store/slices/filtersSlice";
 
 import "../../styles/navbar.css";
 const MainNavBar = () => {
 	// Auth hook is no longer needed in MainNavBar - used by child components
 	const navigate = useNavigate();
+	const location = useLocation();
+	const dispatch = useDispatch();
 	
 	// State for navbar expansion
 	const [expanded, setExpanded] = useState(false);
@@ -137,31 +148,48 @@ const MainNavBar = () => {
 
 	// Handle navigating to product list with subject filter
 	const handleSubjectClick = (subjectCode) => {
+		// Dispatch Redux action for navigation behavior (clear existing subjects, then apply new subject)
+		dispatch(navSelectSubject(subjectCode));
+		// Also navigate via URL for direct linking support
 		navigate(`/products?subject_code=${subjectCode}`);
 		setExpanded(false); // Close mobile menu
 	};
 
-	// Handle navigating to product list with subject filter
+	// Handle navigating to product list (view all products)
 	const handleProductClick = () => {
+		// Dispatch Redux action for "View All Products" behavior (clear all filters except subjects)
+		dispatch(navViewAllProducts());
+		// Navigate to products page
 		navigate(`/products`);
 		setExpanded(false); // Close mobile menu
 	};
 
 	// Handle navigating to product list with product group filter
 	const handleProductGroupClick = (groupName) => {
+		// Dispatch Redux action for product group selection (clear all except subjects, then apply product type filter)
+		dispatch(navSelectProductGroup(groupName));
+		// Also navigate via URL for direct linking support
 		navigate(`/products?group=${encodeURIComponent(groupName)}`);
 		setExpanded(false); // Close mobile menu
 	};
 
 	// Handle navigating to product list with specific product filter
 	const handleSpecificProductClick = (productId) => {
-		navigate(`/products?product=${productId}`);
+		// Dispatch Redux action for product selection (clear all except subjects, then apply product filter)
+		dispatch(navSelectProduct(productId));
+		// Preserve existing URL parameters when adding product filter
+		const currentParams = new URLSearchParams(location.search);
+		currentParams.set('product', productId);
+		navigate(`/products?${currentParams.toString()}`);
 		setExpanded(false); // Close mobile menu
 	};
 
 	// Handle navigating to product variation
 	const handleProductVariationClick = (variationId) => {
-		navigate(`/products?variation=${variationId}`);
+		// Preserve existing URL parameters when adding variation filter
+		const currentParams = new URLSearchParams(location.search);
+		currentParams.set('variation', variationId);
+		navigate(`/products?${currentParams.toString()}`);
 		setExpanded(false); // Close mobile menu
 	};
 
