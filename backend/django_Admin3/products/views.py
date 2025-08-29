@@ -557,19 +557,33 @@ def tutorial_dropdown(request):
             for product in location_products[mid_point:]
         ]
         
-        # Column 2: Format - Simple links for filtering
-        format_data = [
-            {
-                'name': 'Face to Face',
-                'filter_type': 'face_to_face',
-                'group_name': 'Face-to-face'
-            },
-            {
-                'name': 'Live Online', 
-                'filter_type': 'live_online',
-                'group_name': 'Live Online'
-            }
-        ]
+        # Column 2: Format - Get children of Tutorial group (parent_id = 3)
+        try:
+            tutorial_parent_group = FilterGroup.objects.get(id=3)  # Tutorial parent group
+            format_groups = FilterGroup.objects.filter(parent=tutorial_parent_group).order_by('name')
+            
+            format_data = [
+                {
+                    'name': group.name,
+                    'filter_type': group.name.lower().replace(' ', '_').replace('-', '_'),
+                    'group_name': group.name
+                }
+                for group in format_groups
+            ]
+        except FilterGroup.DoesNotExist:
+            # Fallback to hardcoded values if Tutorial group not found
+            format_data = [
+                {
+                    'name': 'Face to Face',
+                    'filter_type': 'face_to_face',
+                    'group_name': 'Face-to-face'
+                },
+                {
+                    'name': 'Live Online', 
+                    'filter_type': 'live_online',
+                    'group_name': 'Live Online'
+                }
+            ]
         
         # Column 3: Online Classroom - Product variations of products in Online Classroom group
         if online_classroom_group:
