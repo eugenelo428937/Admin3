@@ -138,3 +138,76 @@ class ExamSessionSubjectProductVariationSerializer(serializers.ModelSerializer):
         model = ExamSessionSubjectProductVariation
         fields = ['id', 'exam_session_subject_product', 'product_product_variation', 'product_code', 'created_at', 'updated_at', 'price']
         read_only_fields = ['created_at', 'updated_at']
+
+
+# Unified Search API Serializers
+class ProductSearchRequestSerializer(serializers.Serializer):
+    """Serializer for unified product search request"""
+    filters = serializers.DictField(
+        child=serializers.ListField(child=serializers.CharField(), allow_empty=True),
+        required=False,
+        help_text="Filter criteria with lists of values for each filter type"
+    )
+    pagination = serializers.DictField(
+        required=False,
+        help_text="Pagination parameters"
+    )
+    options = serializers.DictField(
+        required=False,
+        help_text="Additional options like include_bundles, include_analytics"
+    )
+
+    def validate_pagination(self, value):
+        """Validate pagination parameters"""
+        if value:
+            page = value.get('page', 1)
+            page_size = value.get('page_size', 20)
+            
+            if not isinstance(page, int) or page < 1:
+                raise serializers.ValidationError("page must be a positive integer")
+            if not isinstance(page_size, int) or page_size < 1 or page_size > 100:
+                raise serializers.ValidationError("page_size must be between 1 and 100")
+        
+        return value
+
+    def validate_filters(self, value):
+        """Validate filter parameters"""
+        if value:
+            valid_filter_types = [
+                'subjects', 'categories', 'product_types', 
+                'products', 'modes_of_delivery'
+            ]
+            
+            for filter_type in value.keys():
+                if filter_type not in valid_filter_types:
+                    raise serializers.ValidationError(
+                        f"Invalid filter type: {filter_type}. "
+                        f"Valid types: {', '.join(valid_filter_types)}"
+                    )
+        
+        return value
+
+
+class FilterCountSerializer(serializers.Serializer):
+    """Serializer for filter counts in response"""
+    subjects = serializers.DictField(child=serializers.IntegerField(), required=False)
+    categories = serializers.DictField(child=serializers.IntegerField(), required=False)
+    product_types = serializers.DictField(child=serializers.IntegerField(), required=False)
+    products = serializers.DictField(child=serializers.IntegerField(), required=False)
+    modes_of_delivery = serializers.DictField(child=serializers.IntegerField(), required=False)
+
+
+class ProductSearchPaginationSerializer(serializers.Serializer):
+    """Serializer for pagination info in response"""
+    page = serializers.IntegerField()
+    page_size = serializers.IntegerField()
+    total_count = serializers.IntegerField()
+    has_next = serializers.BooleanField()
+    has_previous = serializers.BooleanField()
+
+
+class ProductSearchResponseSerializer(serializers.Serializer):
+    """Serializer for unified product search response"""
+    products = serializers.ListField(child=serializers.DictField())
+    filter_counts = FilterCountSerializer()
+    pagination = ProductSearchPaginationSerializer()

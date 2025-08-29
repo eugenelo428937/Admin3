@@ -85,7 +85,7 @@ class Command(BaseCommand):
                 'option_provider': {
                     'source_type': 'database_table',
                     'source_config': {
-                        'table_name': 'acted_product_group',
+                        'table_name': 'acted_filter_group',
                         'value_field': 'id',
                         'label_field': 'name',
                         'where_clause': "parent_id IS NULL",  # Only top-level categories
@@ -118,7 +118,7 @@ class Command(BaseCommand):
                 'option_provider': {
                     'source_type': 'database_table',
                     'source_config': {
-                        'table_name': 'acted_product_group',
+                        'table_name': 'acted_filter_group',
                         'value_field': 'id',
                         'label_field': 'name',
                         'where_clause': "name IN ('Printed', 'eBook', 'The Hub')",

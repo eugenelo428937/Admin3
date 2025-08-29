@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
     Box,
     Paper,
@@ -48,6 +48,9 @@ const AdvancedFilterPanel = ({
     const [loading, setLoading] = useState(Object.keys(filterConfig).length === 0);
     const [error, setError] = useState(null);
     const [isUpdatingFromUrl, setIsUpdatingFromUrl] = useState(false);
+    
+    // Track last sent filters to avoid redundant parent calls
+    const lastSentFiltersRef = useRef({});
 
     // Update internal filter config when prop changes
     useEffect(() => {
@@ -217,27 +220,93 @@ const AdvancedFilterPanel = ({
 
     // Notify parent when filters change - debounced (but not when updating from URL)
     useEffect(() => {
+        console.log('🔧 Parent notification effect triggered');
+        console.log('🔧 isUpdatingFromUrl:', isUpdatingFromUrl);
+        console.log('🔧 activeFilters:', activeFilters);
+        
         if (isUpdatingFromUrl) {
+            console.log('🔧 Skipping parent notification - updating from URL');
             return; // Don't notify parent when we're updating from URL filters
         }
         
         const timeoutId = setTimeout(() => {
+            console.log('🔧 Parent notification timeout executing');
             if (onFiltersChange) {
                 // Only send panel-only filters (non-URL filters) to parent
-                const urlMappedConfigKeys = ['SUBJECT_FILTER', 'PRODUCT_CATEGORY', 'PRODUCT_TYPE', 'DELIVERY_MODE', 'main_category', 'tutorial_format', 'variation', 'tutorial'];
+                // Note: SUBJECT_FILTER needs special handling as it can be both URL-based and panel-based
+                const alwaysUrlOnlyFilters = ['PRODUCT_CATEGORY', 'PRODUCT_TYPE', 'DELIVERY_MODE', 'main_category', 'tutorial_format', 'variation', 'tutorial'];
                 const panelOnlyFilters = {};
                 
+                console.log('🔧 Processing active filters for parent notification:');
+                console.log('🔧 Current URL filters:', urlFilters);
                 
                 Object.entries(activeFilters).forEach(([configKey, values]) => {
-                    // Only include filters that are NOT URL-based
-                    if (!urlMappedConfigKeys.includes(configKey) && values && values.length > 0) {
+                    console.log('🔧   Checking filter:', configKey, 'values:', values);
+                    
+                    // Check if this filter should be excluded
+                    let shouldExclude = false;
+                    
+                    // Always exclude certain URL-only filters
+                    if (alwaysUrlOnlyFilters.includes(configKey)) {
+                        shouldExclude = true;
+                        console.log('🔧   Excluded - always URL-only filter');
+                    } 
+                    // Special handling for SUBJECT_FILTER - exclude subjects that match the URL
+                    else if (configKey === 'SUBJECT_FILTER') {
+                        const currentUrlSubject = urlFilters.subject;
+                        if (currentUrlSubject && values && values.length > 0) {
+                            // Find the URL subject
+                            const urlSubject = subjects.find(s => s.code === currentUrlSubject || s.id === parseInt(currentUrlSubject));
+                            if (urlSubject) {
+                                // Filter out any panel subjects that match the URL subject
+                                const filteredValues = values.filter(panelSubjectId => {
+                                    const matches = urlSubject.id === panelSubjectId || urlSubject.code === panelSubjectId;
+                                    if (matches) {
+                                        console.log('🔧   Removing duplicate URL subject from panel:', panelSubjectId);
+                                    }
+                                    return !matches;
+                                });
+                                
+                                // If we have remaining subjects after filtering, include them
+                                if (filteredValues.length > 0) {
+                                    panelOnlyFilters[configKey] = filteredValues;
+                                    console.log('🔧   Including SUBJECT_FILTER with filtered values:', filteredValues);
+                                    return; // Skip the normal processing
+                                } else {
+                                    shouldExclude = true;
+                                    console.log('🔧   Excluded - all SUBJECT_FILTER values match URL subject');
+                                }
+                            } else {
+                                console.log('🔧   Including SUBJECT_FILTER - URL subject not found in subjects list');
+                            }
+                        } else if (!currentUrlSubject) {
+                            console.log('🔧   Including SUBJECT_FILTER - no URL subject');
+                        }
+                    }
+                    
+                    // Include if not excluded and has values
+                    if (!shouldExclude && values && values.length > 0) {
                         panelOnlyFilters[configKey] = values;
+                        console.log('🔧   Added to panel-only filters');
+                    } else if (!values || values.length === 0) {
+                        console.log('🔧   Excluded (empty values)');
                     }
                 });
                 
-                // Only call parent if we actually have panel-only filters
-                if (Object.keys(panelOnlyFilters).length > 0) {
+                console.log('🔧 Final panel-only filters to send to parent:', panelOnlyFilters);
+                
+                // Check if filters have actually changed
+                const filtersChanged = JSON.stringify(lastSentFiltersRef.current) !== JSON.stringify(panelOnlyFilters);
+                console.log('🔧 Filters changed since last send:', filtersChanged);
+                console.log('🔧 Last sent filters:', lastSentFiltersRef.current);
+                
+                // Only call parent if filters changed
+                if (filtersChanged) {
+                    console.log('🔧 Calling parent onFiltersChange with:', panelOnlyFilters);
+                    lastSentFiltersRef.current = { ...panelOnlyFilters };
                     onFiltersChange(panelOnlyFilters);
+                } else {
+                    console.log('🔧 No change in filters, not calling parent');
                 }
             }
         }, 100); // Small debounce to prevent rapid fire calls
@@ -247,30 +316,40 @@ const AdvancedFilterPanel = ({
 
     // Handle filter value changes
     const handleFilterChange = useCallback((filterType, value, checked) => {
+        console.log('🔧 Filter change triggered:', { filterType, value, checked });
+        console.log('🔧 Current active filters before change:', activeFilters);
+        
         setActiveFilters(prev => {
             const currentValues = prev[filterType] || [];
+            console.log('🔧 Current values for', filterType, ':', currentValues);
             let newValues;
             
             if (checked) {
                 // Don't add if already exists
                 if (currentValues.includes(value)) {
+                    console.log('🔧 Value already exists, not adding');
                     return prev;
                 }
                 newValues = [...currentValues, value];
+                console.log('🔧 Adding value, new values:', newValues);
             } else {
                 // Don't remove if doesn't exist
                 if (!currentValues.includes(value)) {
+                    console.log('🔧 Value does not exist, not removing');
                     return prev;
                 }
                 newValues = currentValues.filter(v => v !== value);
+                console.log('🔧 Removing value, new values:', newValues);
             }
             
-            return {
+            const updatedFilters = {
                 ...prev,
                 [filterType]: newValues
             };
+            console.log('🔧 Updated active filters:', updatedFilters);
+            return updatedFilters;
         });
-    }, []);
+    }, [activeFilters]);
 
     // Handle panel expansion
     const handlePanelChange = (panel) => (event, isExpanded) => {

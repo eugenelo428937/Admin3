@@ -34,7 +34,7 @@ export const useRulesEngine = (entryPoint, context = {}, autoTrigger = true) => 
       setError(null);
       
       const finalContext = { ...memoizedContext, ...overrideContext };
-      console.log(`🎯 Rules Engine: Evaluating ${entryPoint} with context:`, finalContext);
+      //console.log(`🎯 Rules Engine: Evaluating ${entryPoint} with context:`, finalContext);
       const result = await rulesEngineService.evaluateRulesAtEntryPoint(entryPoint, finalContext);
       
       setRulesResult(result);
@@ -50,7 +50,7 @@ export const useRulesEngine = (entryPoint, context = {}, autoTrigger = true) => 
   // Auto-trigger on mount if enabled - only once
   useEffect(() => {
     if (autoTrigger && entryPoint && !hasEvaluated.current) {
-      console.log(`🔄 Rules Engine: Initial evaluation for ${entryPoint}`);
+      // console.log(`🔄 Rules Engine: Initial evaluation for ${entryPoint}`);
       hasEvaluated.current = true;
       evaluateRules();
     }

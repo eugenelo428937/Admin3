@@ -380,7 +380,7 @@ const NavigationMenu = ({
 										</div>
 									</div>
 								</Col>
-								{/* Format Column - Simple filter links */}
+								{/* Format Column - Filter links from acted_filter_group where parent='Tutorial' */}
 								<Col>
 									<div className="fw-bolder mb-2 text-primary">
 										Format
@@ -400,31 +400,6 @@ const NavigationMenu = ({
 									) : (
 										<div className="text-muted small">
 											No formats available
-										</div>
-									)}
-								</Col>
-								{/* Online Classroom Column */}
-								<Col>
-									<div className="fw-bolder mb-2 text-primary">
-										Online Classroom
-									</div>
-									{tutorialData["Online Classroom"] &&
-									tutorialData["Online Classroom"].length > 0 ? (
-										tutorialData["Online Classroom"].map(
-											(variation) => (
-												<NavDropdown.Item
-													key={variation.id}
-													onClick={() => {
-														handleProductVariationClick(variation.id);
-														onCollapseNavbar && onCollapseNavbar();
-													}}>
-													{variation.description || variation.name}
-												</NavDropdown.Item>
-											)
-										)
-									) : (
-										<div className="text-muted small">
-											No online classroom available
 										</div>
 									)}
 								</Col>

@@ -1,0 +1,1 @@
+# Management module for exam_sessions_subjects_products app

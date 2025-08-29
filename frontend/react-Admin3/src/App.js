@@ -1,11 +1,13 @@
 // src/App.js
 import React, { useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import { Provider } from 'react-redux';
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline, Typography } from "@mui/material";
 import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
 import theme from "./theme/theme";
+import { store } from './store';
 import { AuthProvider } from "./hooks/useAuth";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Home from "./pages/Home";
@@ -64,24 +66,25 @@ function App() {
 	}, []);
 
 	return (
-		<ChakraProvider value={system}>
-			<ThemeProvider theme={theme}>
-				<CssBaseline />
-				<GoogleReCaptchaProvider
-					reCaptchaKey={RECAPTCHA_SITE_KEY}
-					container={{
-						parameters: {
-							badge: "inline",
-						},
-					}}>
-					<ErrorBoundary>
-					<CartProvider>
-						<AuthProvider>
-							<ProductProvider>
-								<VATProvider>
-									<TutorialChoiceProvider>
-										<div className="App">
-											<MainNavBar className="main-navbar" />
+		<Provider store={store}>
+			<ChakraProvider value={system}>
+				<ThemeProvider theme={theme}>
+					<CssBaseline />
+					<GoogleReCaptchaProvider
+						reCaptchaKey={RECAPTCHA_SITE_KEY}
+						container={{
+							parameters: {
+								badge: "inline",
+							},
+						}}>
+						<ErrorBoundary>
+						<CartProvider>
+							<AuthProvider>
+								<ProductProvider>
+									<VATProvider>
+										<TutorialChoiceProvider>
+											<div className="App">
+												<MainNavBar className="main-navbar" />
 											<Container
 												maxWidth={false}
 												className="body-container">
@@ -228,6 +231,7 @@ function App() {
 				</GoogleReCaptchaProvider>
 			</ThemeProvider>
 		</ChakraProvider>
+		</Provider>
 	);
 }
 
