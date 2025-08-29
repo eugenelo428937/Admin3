@@ -8,7 +8,7 @@ const rulesEngineService = {
    */
   evaluateRulesAtEntryPoint: async (entryPointCode, context = {}) => {
     try {
-      console.log(`🎯 Rules Engine: Triggering entry point "${entryPointCode}"`, { context });
+      // console.log(`🎯 Rules Engine: Triggering entry point "${entryPointCode}"`, { context });
       
       const response = await httpService.post(`${BASE_URL}/engine/execute/`, {
         entry_point: entryPointCode,
@@ -16,7 +16,7 @@ const rulesEngineService = {
       });
       
       const rulesCount = response.data.rules_evaluated || 0;
-      console.log(`📊 Rules Engine: Entry point "${entryPointCode}" - ${rulesCount} rules fetched and evaluated`, response.data);
+      // console.log(`📊 Rules Engine: Entry point "${entryPointCode}" - ${rulesCount} rules fetched and evaluated`, response.data);
       
       return response.data;
     } catch (error) {

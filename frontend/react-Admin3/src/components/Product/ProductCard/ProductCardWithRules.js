@@ -51,7 +51,7 @@ const ProductCardWithRules = ({ product, onAddToCart, allEsspIds, bulkDeadlines,
   // Log debug info for each product card
   React.useEffect(() => {
     if (!productCardRulesLoading && productCardRulesCount !== undefined) {
-      console.log(`🎯 Product Card [${product.id}]: ${productCardRulesCount} rules evaluated`);
+      // console.log(`🎯 Product Card [${product.id}]: ${productCardRulesCount} rules evaluated`);
     }
   }, [product.id, productCardRulesCount, productCardRulesLoading]);
 

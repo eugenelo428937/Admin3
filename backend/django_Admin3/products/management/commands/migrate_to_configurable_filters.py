@@ -112,7 +112,7 @@ class Command(BaseCommand):
                     filter_configuration=filter_config,
                     source_type='database_table',
                     source_config={
-                        'table_name': 'acted_product_group',
+                        'table_name': 'acted_filter_group',
                         'value_field': 'id',
                         'label_field': 'name',
                         'where_clause': f"id IN ({','.join(map(str, group_ids))})",
