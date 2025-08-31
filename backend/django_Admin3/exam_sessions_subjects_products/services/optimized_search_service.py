@@ -211,26 +211,32 @@ class OptimizedSearchService:
         """
         logger.info(f'🔍 [NAVBAR-FILTERS] Applying navbar filters: {navbar_filters}')
         
-        # Apply tutorial_format filter
+        # Apply tutorial_format filter (expects code like 'live_online' not name)
         if 'tutorial_format' in navbar_filters:
             try:
                 from products.models.filter_system import FilterGroup
-                format_group = FilterGroup.objects.get(name=navbar_filters['tutorial_format'])
-                queryset = queryset.filter(product__productproductgroup__product_group=format_group)
-                logger.info(f'🔍 [NAVBAR-FILTERS] Applied tutorial_format filter "{navbar_filters["tutorial_format"]}" - queryset count: {queryset.count()}')
+                # Look up by code instead of name
+                format_group = FilterGroup.objects.get(code=navbar_filters['tutorial_format'])
+                queryset = queryset.filter(product__groups=format_group)
+                logger.info(f'🔍 [NAVBAR-FILTERS] Applied tutorial_format filter code="{navbar_filters["tutorial_format"]}" (name="{format_group.name}") - queryset count: {queryset.count()}')
             except FilterGroup.DoesNotExist:
-                logger.warning(f'🔍 [NAVBAR-FILTERS] Tutorial format group "{navbar_filters["tutorial_format"]}" not found')
+                logger.warning(f'🔍 [NAVBAR-FILTERS] Tutorial format group with code "{navbar_filters["tutorial_format"]}" not found')
                 queryset = queryset.none()
         
-        # Apply group filter
+        # Apply group filter (expects code for consistency)
         if 'group' in navbar_filters:
             try:
                 from products.models.filter_system import FilterGroup
-                group = FilterGroup.objects.get(name=navbar_filters['group'])
-                queryset = queryset.filter(product__productproductgroup__product_group=group)
-                logger.info(f'🔍 [NAVBAR-FILTERS] Applied group filter "{navbar_filters["group"]}" - queryset count: {queryset.count()}')
+                # First try by code, then fall back to name for backward compatibility
+                try:
+                    group = FilterGroup.objects.get(code=navbar_filters['group'])
+                except FilterGroup.DoesNotExist:
+                    # Fall back to name for backward compatibility
+                    group = FilterGroup.objects.get(name=navbar_filters['group'])
+                queryset = queryset.filter(product__groups=group)
+                logger.info(f'🔍 [NAVBAR-FILTERS] Applied group filter "{navbar_filters["group"]}" (name="{group.name}") - queryset count: {queryset.count()}')
             except FilterGroup.DoesNotExist:
-                logger.warning(f'🔍 [NAVBAR-FILTERS] Filter group "{navbar_filters["group"]}" not found')
+                logger.warning(f'🔍 [NAVBAR-FILTERS] Filter group "{navbar_filters["group"]}" not found by code or name')
                 queryset = queryset.none()
         
         # Apply tutorial filter (special logic for Tutorial group excluding Online Classroom)
@@ -240,9 +246,9 @@ class OptimizedSearchService:
                 tutorial_group = FilterGroup.objects.get(name='Tutorial')
                 online_classroom_group = FilterGroup.objects.get(name='Online Classroom')
                 queryset = queryset.filter(
-                    product__productproductgroup__product_group=tutorial_group
+                    product__groups=tutorial_group
                 ).exclude(
-                    product__productproductgroup__product_group=online_classroom_group
+                    product__groups=online_classroom_group
                 ).distinct()
                 logger.info(f'🔍 [NAVBAR-FILTERS] Applied tutorial filter - queryset count: {queryset.count()}')
             except FilterGroup.DoesNotExist as e:
@@ -264,7 +270,7 @@ class OptimizedSearchService:
             try:
                 from products.models.filter_system import FilterGroup
                 distance_learning_group = FilterGroup.objects.get(name='Material')
-                queryset = queryset.filter(product__productproductgroup__product_group=distance_learning_group)
+                queryset = queryset.filter(product__groups=distance_learning_group)
                 logger.info(f'🔍 [NAVBAR-FILTERS] Applied distance_learning filter - queryset count: {queryset.count()}')
             except FilterGroup.DoesNotExist:
                 logger.warning(f'🔍 [NAVBAR-FILTERS] Material group not found for distance learning filter')

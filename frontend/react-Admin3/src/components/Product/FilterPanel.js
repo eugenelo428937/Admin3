@@ -182,16 +182,26 @@ const FilterPanel = ({
                                 <Badge badgeContent={activeValues.length} color="primary" />
                             )}
                             {hasActiveFilters && (
-                                <IconButton
-                                    size="small"
+                                <Box
+                                    component="span"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleClearFilterType(filterType);
                                     }}
-                                    sx={{ p: 0.5 }}
+                                    sx={{ 
+                                        p: 0.5,
+                                        cursor: 'pointer',
+                                        borderRadius: '50%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        '&:hover': {
+                                            backgroundColor: 'action.hover'
+                                        }
+                                    }}
                                 >
                                     <ClearIcon fontSize="small" />
-                                </IconButton>
+                                </Box>
                             )}
                         </Box>
                     </Box>
