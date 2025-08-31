@@ -201,8 +201,11 @@ const MainNavBar = () => {
 	};
 
 	// Handle navigating to tutorial format filters
-	const handleTutorialFormatClick = (groupName) => {
-		navigate(`/products?tutorial_format=${encodeURIComponent(groupName)}`);
+	const handleTutorialFormatClick = (groupCode) => {
+		// Dispatch Redux action for tutorial format selection (like other product groups)
+		dispatch(navSelectProductGroup(groupCode));
+		// Also navigate via URL for direct linking support
+		navigate(`/products`);
 		setExpanded(false); // Close mobile menu
 	};
 

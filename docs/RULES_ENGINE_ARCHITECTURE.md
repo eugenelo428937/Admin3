@@ -274,13 +274,14 @@ class UserAcknowledgeHandler(ActionHandler):
 ```
 
 #### MessageTemplateService
-**Purpose**: Render templates with context data and handle multiple formats
+**Purpose**: Render templates with predefined styling and React component mapping
 
 **Features**:
-- Multiple format support (HTML, JSON, Markdown)
-- Placeholder substitution with context data
+- Predefined style variants (info, success, warning, error, alert, neutral)
+- React component type mapping for consistent UI
+- Placeholder substitution with context data  
 - XSS sanitization
-- i18n support
+- Content structure validation
 
 **Implementation**:
 ```python
@@ -288,30 +289,68 @@ from jinja2 import Environment, DictLoader
 import bleach
 
 class MessageTemplateService:
+    STYLE_VARIANTS = ['info', 'success', 'warning', 'error', 'alert', 'neutral']
+    COMPONENT_TYPES = [
+        'banner_message', 'inline_alert', 'modal_dialog', 
+        'terms_modal', 'toast_notification', 'sidebar_notice'
+    ]
+    
     def __init__(self):
         self.jinja_env = Environment(
             loader=DictLoader({}),
             autoescape=True
         )
         
-    def render(self, template: MessageTemplate, context: dict) -> str:
-        if template.format == "html":
-            return self._render_html(template, context)
-        elif template.format == "json":
-            return self._render_json(template, context)
-        elif template.format == "markdown":
-            return self._render_markdown(template, context)
-        else:
-            raise ValueError(f"Unsupported template format: {template.format}")
+    def render(self, template: MessageTemplate, context: dict) -> dict:
+        """Render template and return structured data for React components"""
+        # Validate style variant and component type
+        if template.style_variant not in self.STYLE_VARIANTS:
+            raise ValueError(f"Invalid style variant: {template.style_variant}")
+        if template.component_type not in self.COMPONENT_TYPES:
+            raise ValueError(f"Invalid component type: {template.component_type}")
             
-    def _render_html(self, template: MessageTemplate, context: dict) -> str:
-        jinja_template = self.jinja_env.from_string(template.content)
-        rendered = jinja_template.render(**context)
+        # Render content with context placeholders
+        rendered_content = self._render_content(template.content, context)
         
-        if template.sanitize:
-            allowed_tags = ['p', 'strong', 'em', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']
-            rendered = bleach.clean(rendered, tags=allowed_tags)
-            
+        return {
+            "templateId": template.id,
+            "componentType": template.component_type,
+            "styleVariant": template.style_variant,
+            "content": rendered_content,
+            "language": template.language,
+            "metadata": template.metadata
+        }
+    
+    def _render_content(self, content: dict, context: dict) -> dict:
+        """Render template content with Jinja2 placeholders"""
+        rendered = {}
+        
+        for key, value in content.items():
+            if isinstance(value, str):
+                # Render string placeholders
+                template = self.jinja_env.from_string(value)
+                rendered[key] = template.render(**context)
+                
+                # Sanitize HTML in rendered strings
+                if template.sanitize:
+                    rendered[key] = bleach.clean(
+                        rendered[key], 
+                        tags=['strong', 'em'], 
+                        strip=True
+                    )
+            elif isinstance(value, list):
+                # Render each item in lists
+                rendered[key] = []
+                for item in value:
+                    if isinstance(item, str):
+                        template = self.jinja_env.from_string(item)
+                        rendered[key].append(template.render(**context))
+                    else:
+                        rendered[key].append(item)
+            else:
+                # Pass through non-string values
+                rendered[key] = value
+                
         return rendered
 ```
 
@@ -341,8 +380,10 @@ class RuleExecution(models.Model):
 
 ## Data Models
 
-### Rule (JSONB Storage)
+### ActedRule (JSONB Storage)
 **Primary Model**: Stores business rules with versioning and metadata
+**Location**: `backend/django_Admin3/rules_engine/models/acted_rule.py`  
+**Database Table**: `acted_rules_engine`
 
 ```json
 {
@@ -401,8 +442,10 @@ class RuleExecution(models.Model):
 }
 ```
 
-### RulesFields (Context Schema)
+### ActedRulesFields (Context Schema)
 **Purpose**: Define and validate context structure for rule evaluation
+**Location**: `backend/django_Admin3/rules_engine/models/acted_rules_fields.py`
+**Database Table**: `acted_rules_fields`
 
 ```json
 {
@@ -462,8 +505,10 @@ class RuleExecution(models.Model):
 }
 ```
 
-### MessageTemplate (Multi-Format Content)
-**Purpose**: Reusable message templates supporting multiple content formats
+### MessageTemplate (Simplified Content)
+**Purpose**: Reusable message templates with predefined styling
+**Location**: `backend/django_Admin3/rules_engine/models/message_template.py`
+**Database Table**: `acted_message_templates`
 
 ```json
 {
@@ -471,33 +516,19 @@ class RuleExecution(models.Model):
   "name": "Terms & Conditions v3",
   "description": "Updated terms acceptance message for EU compliance",
   "language": "en",
-  "format": "json",
+  "style_variant": "warning",
+  "component_type": "terms_modal",
   "content": {
-    "message_container": {
-      "element": "container",
-      "text_align": "left",
-      "class": "terms-conditions-content"
-    },
-    "content": [
-      {
-        "seq": 1,
-        "element": "h4",
-        "text": "Terms & Conditions Agreement"
-      },
-      {
-        "seq": 2,
-        "element": "p",
-        "text": "By completing this purchase of **{{cart.items.length}} items** totaling **{{cart.total}} {{cart.currency}}**, you agree to our updated Terms & Conditions."
-      },
-      {
-        "seq": 3,
-        "element": "ul",
-        "text": [
-          "Digital product delivery within 24 hours",
-          "30-day refund policy for eligible items",
-          "Data processing in accordance with GDPR"
-        ]
-      }
+    "title": "Terms & Conditions Agreement",
+    "message": "By completing this purchase of **{{cart.items.length}} items** totaling **{{cart.total}} {{cart.currency}}**, you agree to our updated Terms & Conditions.",
+    "details": [
+      "Digital product delivery within 24 hours",
+      "30-day refund policy for eligible items", 
+      "Data processing in accordance with GDPR"
+    ],
+    "buttons": [
+      {"label": "Accept", "action": "acknowledge", "variant": "primary"},
+      {"label": "Cancel", "action": "cancel", "variant": "secondary"}
     ]
   },
   "placeholders": ["cart.items.length", "cart.total", "cart.currency"],
@@ -512,8 +543,34 @@ class RuleExecution(models.Model):
 }
 ```
 
-### RuleExecution (Audit Trail)
+### Predefined Style Variants
+**Available Styles**: Staff can choose from predefined variants, no custom styling allowed.
+
+| **Variant** | **Use Case** | **Appearance** |
+|-------------|--------------|----------------|
+| `info` | General information messages | Blue theme, info icon |
+| `success` | Success confirmations | Green theme, checkmark icon |
+| `warning` | Important warnings | Orange theme, warning icon |
+| `error` | Error messages | Red theme, error icon |
+| `alert` | Critical alerts | Red theme, alert icon |
+| `neutral` | Default messages | Gray theme, no icon |
+
+### React Component Types
+**Available Components**: Predefined React components for message rendering.
+
+| **Component Type** | **Description** | **React Component** |
+|-------------------|-----------------|-------------------|
+| `banner_message` | Top banner notifications | `<MessageBanner />` |
+| `inline_alert` | Inline page alerts | `<InlineAlert />` |  
+| `modal_dialog` | Modal popup dialogs | `<MessageModal />` |
+| `terms_modal` | Terms & conditions dialog | `<TermsModal />` |
+| `toast_notification` | Toast notifications | `<ToastMessage />` |
+| `sidebar_notice` | Sidebar notifications | `<SidebarNotice />` |
+
+### ActedRuleExecution (Audit Trail)
 **Purpose**: Complete audit trail of rule executions with context snapshots
+**Location**: `backend/django_Admin3/rules_engine/models/acted_rule_execution.py`
+**Database Table**: `acted_rule_execution`
 
 ```json
 {
@@ -585,18 +642,50 @@ class RuleExecution(models.Model):
 }
 ```
 
-**Frontend Integration**:
+**React Component Integration**:
 ```javascript
-// React component handling
-{effects.filter(e => e.type === 'display_message').map(effect => (
-  <Alert 
-    key={effect.id}
-    severity={effect.variant || 'info'}
-    onClose={effect.dismissible ? () => handleDismiss(effect.id) : undefined}
-  >
-    <div dangerouslySetInnerHTML={{ __html: effect.message }} />
-  </Alert>
-))}
+// Simplified component rendering with predefined styles
+const MessageRenderer = ({ effects }) => {
+  const componentMap = {
+    'banner_message': MessageBanner,
+    'inline_alert': InlineAlert,
+    'modal_dialog': MessageModal,
+    'terms_modal': TermsModal, 
+    'toast_notification': ToastMessage,
+    'sidebar_notice': SidebarNotice
+  };
+
+  return (
+    <>
+      {effects.filter(e => e.type === 'display_message').map(effect => {
+        const Component = componentMap[effect.componentType] || InlineAlert;
+        
+        return (
+          <Component
+            key={effect.templateId}
+            variant={effect.styleVariant}
+            content={effect.content}
+            onDismiss={effect.dismissible ? () => handleDismiss(effect.id) : undefined}
+          />
+        );
+      })}
+    </>
+  );
+};
+
+// Example component implementation
+const MessageBanner = ({ variant, content, onDismiss }) => (
+  <div className={`message-banner message-banner--${variant}`}>
+    <h4>{content.title}</h4>
+    <p>{content.message}</p>
+    {content.details && (
+      <ul>
+        {content.details.map((detail, idx) => <li key={idx}>{detail}</li>)}
+      </ul>
+    )}
+    {onDismiss && <button onClick={onDismiss}>×</button>}
+  </div>
+);
 ```
 
 ### display_modal

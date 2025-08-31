@@ -205,13 +205,15 @@ const filtersSlice = createSlice({
         case 'categories':
           state.categories = [];
           break;
-        case 'productTypes':
+        case 'product_types':
+        case 'productTypes': // Support both property names for compatibility
           state.product_types = [];
           break;
         case 'products':
           state.products = [];
           break;
-        case 'modesOfDelivery':
+        case 'modes_of_delivery':
+        case 'modesOfDelivery': // Support both property names for compatibility
           state.modes_of_delivery = [];
           break;
       }
@@ -272,6 +274,17 @@ const filtersSlice = createSlice({
       state.product_types = [];
       state.products = [action.payload];
       state.modes_of_delivery = [];
+      state.searchQuery = '';
+      state.currentPage = 1;
+      state.lastUpdated = Date.now();
+    },
+    
+    navSelectModeOfDelivery: (state, action) => {
+      // Clear all except subjects, then filter by Mode of Delivery
+      state.categories = [];
+      state.product_types = [];
+      state.products = [];
+      state.modes_of_delivery = [action.payload];
       state.searchQuery = '';
       state.currentPage = 1;
       state.lastUpdated = Date.now();
@@ -378,6 +391,7 @@ export const {
   navViewAllProducts,
   navSelectProductGroup,
   navSelectProduct,
+  navSelectModeOfDelivery,
   setCurrentPage,
   setPageSize,
   toggleFilterPanel,

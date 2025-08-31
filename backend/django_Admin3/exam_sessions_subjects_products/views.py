@@ -384,7 +384,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         if group_filter:
             try:
                 group = FilterGroup.objects.get(name=group_filter)
-                products_queryset = products_queryset.filter(product__productproductgroup__product_group=group)
+                products_queryset = products_queryset.filter(product__groups=group)
                 logger.info(f'After group filter "{group_filter}" - products: {products_queryset.count()}')
             except FilterGroup.DoesNotExist:
                 logger.warning(f'Filter group "{group_filter}" not found')
@@ -410,7 +410,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         if tutorial_format_filter:
             try:
                 format_group = FilterGroup.objects.get(name=tutorial_format_filter)
-                products_queryset = products_queryset.filter(product__productproductgroup__product_group=format_group)
+                products_queryset = products_queryset.filter(product__groups=format_group)
                 logger.info(f'After tutorial_format filter "{tutorial_format_filter}" - products: {products_queryset.count()}')
             except FilterGroup.DoesNotExist:
                 logger.warning(f'Tutorial format group "{tutorial_format_filter}" not found')
@@ -439,7 +439,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             try:
                 tutorial_group = FilterGroup.objects.get(name='Tutorial')
                 online_classroom_group = FilterGroup.objects.get(name='Online Classroom')
-                products_queryset = products_queryset.filter(product__productproductgroup__product_group=tutorial_group).exclude(product__productproductgroup__product_group=online_classroom_group).distinct()
+                products_queryset = products_queryset.filter(product__groups=tutorial_group).exclude(product__groups=online_classroom_group).distinct()
                 logger.info(f'After tutorial filter - products: {products_queryset.count()}')
             except FilterGroup.DoesNotExist as e:
                 logger.warning(f'Tutorial group not found: {e}')
@@ -878,7 +878,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             for category in root_categories:
                 # Count products associated with this category group
                 count = base_products_queryset.filter(
-                    product__productproductgroup__product_group__id=category.id
+                    product__groups__id=category.id
                 ).distinct().count()
                 
                 # Include bundle count for Bundle category
@@ -901,7 +901,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             for group in child_groups:
                 # Count products associated with this group
                 count = base_products_queryset.filter(
-                    product__productproductgroup__product_group__id=group.id
+                    product__groups__id=group.id
                 ).distinct().count()
                 
                 if count > 0:
@@ -949,7 +949,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             
             for group in delivery_groups:
                 count = base_products_queryset.filter(
-                    product__productproductgroup__product_group__id=group.id
+                    product__groups__id=group.id
                 ).distinct().count()
                 if count > 0:
                     filter_counts['modes_of_delivery'][group.name] = count

@@ -520,18 +520,22 @@ def tutorial_dropdown(request):
         # Get product group IDs
         try:
             tutorial_group = FilterGroup.objects.get(name='Tutorial')
-            online_classroom_group = FilterGroup.objects.get(name='Online Classroom')
         except FilterGroup.DoesNotExist:
             tutorial_group = None
+            
+        try:
+            online_classroom_group = FilterGroup.objects.get(name='Online Classroom Recording')
+        except FilterGroup.DoesNotExist:
             online_classroom_group = None
         
-        # Column 1: Location - Products in Tutorial group, excluding Online Classroom group
-        location_products = Product.objects.filter(
-            is_active=True,
-            groups=tutorial_group
-        ).exclude(
-            groups=online_classroom_group
-        ).order_by('shortname') if tutorial_group and online_classroom_group else Product.objects.none()
+        # Column 1: Location - Products in Tutorial group (tutorial locations)
+        if tutorial_group:
+            location_products = Product.objects.filter(
+                is_active=True,
+                groups=tutorial_group
+            ).order_by('shortname')
+        else:
+            location_products = Product.objects.none()
         
         # Split into 2 sub-columns
         location_count = location_products.count()
@@ -565,7 +569,7 @@ def tutorial_dropdown(request):
             format_data = [
                 {
                     'name': group.name,
-                    'filter_type': group.name.lower().replace(' ', '_').replace('-', '_'),
+                    'filter_type': group.code,
                     'group_name': group.name
                 }
                 for group in format_groups
@@ -574,14 +578,14 @@ def tutorial_dropdown(request):
             # Fallback to hardcoded values if Tutorial group not found
             format_data = [
                 {
-                    'name': 'Face to Face',
+                    'name': 'Face-to-face Tutorial',
                     'filter_type': 'face_to_face',
-                    'group_name': 'Face-to-face'
+                    'group_name': 'Face-to-face Tutorial'
                 },
                 {
-                    'name': 'Live Online', 
+                    'name': 'Live Online Tutorial', 
                     'filter_type': 'live_online',
-                    'group_name': 'Live Online'
+                    'group_name': 'Live Online Tutorial'
                 }
             ]
         
