@@ -50,7 +50,7 @@ class FilterStrategy(ABC):
                 for desc in descendants:
                     options.append({
                         'id': desc.id,
-                        'value': desc.id,
+                        'value': desc.code,
                         'label': desc.name,
                         'code': desc.code,
                         'level': desc.get_level(),
@@ -60,7 +60,7 @@ class FilterStrategy(ABC):
             else:
                 options.append({
                     'id': group.id,
-                    'value': group.id,
+                    'value': group.code,
                     'label': group.name,
                     'code': group.code,
                     'level': group.get_level(),
@@ -138,12 +138,21 @@ class FilterGroupStrategy(FilterStrategy):
         # Track usage
         self.track_usage(filter_values)
         
-        # Convert string values to integers
+        # Convert codes to IDs for database queries
         group_ids = []
         for value in filter_values:
             try:
-                if isinstance(value, str) and value.isdigit():
-                    group_ids.append(int(value))
+                if isinstance(value, str):
+                    if value.isdigit():
+                        # Legacy numeric ID support
+                        group_ids.append(int(value))
+                    else:
+                        # Code-based filtering - convert code to ID
+                        group = FilterGroup.objects.filter(code=value).first()
+                        if group:
+                            group_ids.append(group.id)
+                        else:
+                            logger.warning(f"FilterGroup with code '{value}' not found")
                 elif isinstance(value, int):
                     group_ids.append(value)
             except (ValueError, TypeError):

@@ -391,7 +391,7 @@ const NavigationMenu = ({
 											<NavDropdown.Item
 												key={format.filter_type}
 												onClick={() => {
-													handleTutorialFormatClick(format.group_name);
+													handleTutorialFormatClick(format.filter_type);
 													onCollapseNavbar && onCollapseNavbar();
 												}}>
 												{format.name}

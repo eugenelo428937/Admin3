@@ -51,7 +51,7 @@ const FILTER_CONFIG = {
         removeAction: removeCategoryFilter,
         color: 'secondary'
     },
-    productTypes: {
+    product_types: {
         label: 'Product Type',
         pluralLabel: 'Product Types',
         removeAction: removeProductTypeFilter,
@@ -63,9 +63,9 @@ const FILTER_CONFIG = {
         removeAction: removeProductFilter,
         color: 'success'
     },
-    modesOfDelivery: {
-        label: 'Delivery',
-        pluralLabel: 'Delivery Modes',
+    modes_of_delivery: {
+        label: 'Product Type',
+        pluralLabel: 'Product Types',
         removeAction: removeModeOfDeliveryFilter,
         color: 'warning'
     }
@@ -115,17 +115,65 @@ const ActiveFilters = ({
      */
     const getDisplayLabel = useCallback((filterType, value, counts) => {
         // Try to get a human-readable label from counts data
-        if (counts && counts[filterType] && typeof counts[filterType][value] === 'object') {
-            return counts[filterType][value].label || value;
+        if (counts && counts[filterType] && counts[filterType][value]) {
+            const filterData = counts[filterType][value];
+            
+            // Handle different count data structures
+            if (typeof filterData === 'object' && filterData !== null) {
+                // Object structure: { label: 'Name', name: 'Name', count: 5 }
+                // Return the display name without any prefixes
+                return filterData.label || filterData.name || filterData.display_name || value;
+            } else if (typeof filterData === 'string') {
+                // If it's already a string, just return it
+                return filterData;
+            } else if (typeof filterData === 'number') {
+                // Simple count structure - check if we have metadata
+                if (counts._meta && counts._meta[filterType] && counts._meta[filterType][value]) {
+                    const metaData = counts._meta[filterType][value];
+                    return metaData.name || metaData.label || metaData.display_name || value;
+                }
+            }
         }
         
-        // For subjects, try to get shortname or use the code
-        if (filterType === 'subjects' && counts && counts.subjects && counts.subjects[value]) {
-            return value; // Subject codes are usually already human readable
+        // Special handling for different filter types
+        switch (filterType) {
+            case 'subjects':
+                // Subject codes are usually already human readable
+                return value;
+                
+            case 'products':
+                // For products, try to resolve ID to name
+                if (counts && counts.products && counts.products[value]) {
+                    if (typeof counts.products[value] === 'object') {
+                        return counts.products[value].name || counts.products[value].label || value;
+                    }
+                    // If it's just a string or number, return it
+                    return counts.products[value];
+                }
+                // If we can't resolve, just return the value
+                return value;
+                
+            case 'product_types':
+                // For product types, try to resolve code to name from filterCounts
+                if (counts && counts.product_types && counts.product_types[value]) {
+                    if (typeof counts.product_types[value] === 'object') {
+                        return counts.product_types[value].name || counts.product_types[value].label || value;
+                    }
+                    return counts.product_types[value];
+                }
+                return value;
+                
+            case 'modes_of_delivery':
+                // Modes of delivery should be human readable  
+                return value;
+                
+            case 'categories':
+                // Categories should be human readable
+                return value;
+                
+            default:
+                return value;
         }
-        
-        // Default to the value itself
-        return value;
     }, []);
 
     /**
@@ -272,7 +320,7 @@ const ActiveFilters = ({
                 {activeFilterChips.map((chip) => (
                     <Chip
                         key={chip.key}
-                        label={isMobile ? chip.label : chip.fullLabel}
+                        label={chip.label}
                         onDelete={() => handleRemoveFilter(chip.filterType, chip.value)}
                         deleteIcon={<ClearIcon />}
                         color={chip.color}

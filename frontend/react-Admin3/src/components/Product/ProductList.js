@@ -111,6 +111,7 @@ const ProductList = React.memo(() => {
             productFilter: queryParams.get("product"),
             variationFilter: queryParams.get("variation"),
             tutorialFormatFilter: queryParams.get("tutorial_format"),
+            modeOfDeliveryFilter: queryParams.get("mode_of_delivery"),
             searchQuery: queryParams.get("q") || queryParams.get("search"),
         };
     }, [location.search]);
@@ -150,6 +151,11 @@ const ProductList = React.memo(() => {
         
         if (urlParams.variationFilter) {
             filtersFromUrl.modes_of_delivery = [urlParams.variationFilter];
+        }
+        
+        // Handle mode_of_delivery parameter from navbar clicks
+        if (urlParams.modeOfDeliveryFilter) {
+            filtersFromUrl.modes_of_delivery = [urlParams.modeOfDeliveryFilter];
         }
         
         // Apply filters if we have any

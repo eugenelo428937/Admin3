@@ -22,6 +22,68 @@ Admin3 is a Django REST API backend with React frontend for the Online Store for
 - **React Router** for navigation
 - **Context API** for state management
 
+## Test-Driven Development (TDD) Enforcement
+
+### Mandatory TDD Process
+All code development in Admin3 MUST follow strict Test-Driven Development practices:
+
+1. **RED Phase**: Write a failing test first
+   - Create test that captures the desired behavior
+   - Run test to verify it fails (confirms test validity)
+   - Never write implementation code without a failing test
+
+2. **GREEN Phase**: Write minimal implementation
+   - Write only enough code to make the test pass
+   - Avoid over-engineering or implementing untested features
+   - Focus on passing the current test, nothing more
+
+3. **REFACTOR Phase**: Improve code quality
+   - Refactor implementation while keeping tests green
+   - Improve design, remove duplication, enhance readability
+   - All tests must continue passing during refactoring
+
+### TDD Enforcement Rules
+
+#### For All Agents
+- **No production code without tests**: Agents must verify tests exist before implementing features
+- **Test-first validation**: Run tests and confirm failures before implementation
+- **Coverage requirements**: Minimum 80% test coverage for new code
+- **TodoWrite integration**: Track TDD phases (RED/GREEN/REFACTOR) in todo lists
+
+#### Test Commands by Project Area
+```bash
+# Backend (Django) - from backend/django_Admin3/
+python manage.py test                    # Run all tests
+python manage.py test --coverage        # Run with coverage report
+python manage.py test apps.specific     # Test specific app
+
+# Frontend (React) - from frontend/react-Admin3/
+npm test                                # Run tests in watch mode
+npm test -- --coverage --watchAll=false # Run with coverage
+npm test -- --testPathPattern=Component # Test specific component
+```
+
+#### File Organization
+- **Backend tests**: `backend/django_Admin3/apps/{app}/tests/test_{module}.py`
+- **Frontend tests**: `frontend/react-Admin3/src/components/__tests__/{Component}.test.js`
+
+#### TDD Workflow Integration
+When implementing features, agents must:
+1. Create failing test with descriptive name
+2. Use TodoWrite to track TDD phase: `tddStage: "RED"`
+3. Run test to confirm failure
+4. Implement minimal solution
+5. Update TodoWrite to `tddStage: "GREEN"`
+6. Verify test passes
+7. Refactor if needed with `tddStage: "REFACTOR"`
+8. Run full test suite before marking complete
+
+### Configuration
+TDD enforcement is configured via:
+- `tdd-guard.config.js`: Project-specific TDD rules
+- Claude Code hooks: Pre/post tool execution validation
+- Coverage thresholds: 80% minimum for new code
+
 ## Common Development Commands
 
 ### Backend (Django)
@@ -133,10 +195,10 @@ python manage.py test_emails preview --template password_reset --save
 
 ### Rules Engine API Endpoints
 ```
-/api/rules/engine/execute/                     # Execute rules by entry point with context
-/api/rules/engine/simulate/                    # Dry-run rules without side effects
-/api/rules/engine/accept-terms/                # Accept Terms & Conditions
-/api/rules/engine/checkout-terms-status/       # Check T&C acceptance status
+/api/rules/engine/execute/                     # Execute rules by entry point with context (ActedRule-based)
+/api/rules/engine/evaluate/                    # Legacy rules evaluation (deprecated)
+/api/rules/engine/acknowledge/                 # Accept Terms & Conditions  
+/api/rules/engine/calculate-vat/               # VAT calculation via rules engine
 /api/rules/acknowledgments/template-styles/    # Get dynamic styles for templates
 /api/rules/executions/                         # View rule execution history and audit logs
 ```
@@ -192,16 +254,19 @@ The Rules Engine is a comprehensive business rule management system that enables
 
 ### Data Models
 
-#### Rule Structure (JSONB)
+#### ActedRule Structure (JSONB)
+**Model**: `ActedRule` in `backend/django_Admin3/rules_engine/models/acted_rule.py`
+**Table**: `acted_rules_engine`
+
 ```json
 {
-  "id": "rule_123",
-  "name": "Checkout Terms v2",
-  "entryPoint": "checkout_terms",
+  "rule_id": "rule_checkout_terms_v3",
+  "name": "Checkout Terms v3",
+  "entry_point": "checkout_terms",
   "priority": 10,
   "active": true,
   "version": 3,
-  "rulesFieldsId": "rf_99",
+  "rules_fields_id": "rf_checkout_context",
   "condition": {
     "type": "jsonlogic",
     "expr": { "==": [ { "var": "user.region" }, "EU" ] }
@@ -209,18 +274,20 @@ The Rules Engine is a comprehensive business rule management system that enables
   "actions": [
     {
       "type": "user_acknowledge",
-      "id": "ack_terms_v2",
-      "messageTemplateId": "tmpl_terms_v2",
-      "ackKey": "terms_v2",
+      "id": "ack_terms_v3",
+      "messageTemplateId": "tmpl_terms_v3", 
+      "ackKey": "terms_v3_eu",
       "required": true
     }
   ],
-  "stopProcessing": true,
-  "metadata": { "createdBy": "admin", "createdAt": "2025-08-01T12:00:00Z" }
+  "stop_processing": true,
+  "metadata": { "createdBy": "admin_user", "createdAt": "2025-08-29T10:00:00Z" }
 }
 ```
 
-#### RulesFields Schema
+#### ActedRulesFields Schema
+**Model**: `ActedRulesFields` in `backend/django_Admin3/rules_engine/models/acted_rules_fields.py`
+**Table**: `acted_rules_fields`
 ```json
 {
   "id": "rf_99",
@@ -430,54 +497,63 @@ JSON content supports markdown-like syntax:
 - `**bold text**` → **bold text**
 - `[/link](Display Text)` → clickable links
 
-## Staff-Configurable Styling System
+## Simplified Message Template System
 
 ### Overview
-Staff can configure all styling through Django admin without touching code. The system uses database-driven styles that are applied dynamically to JSON content.
+Staff can create and edit message content through Django admin with predefined styling. No custom styling configuration - all messages use predefined style variants and React components.
 
-### Style Management
+### Message Template Management
 ```
-/admin/rules_engine/contentstyletheme/     # Manage style themes
-/admin/rules_engine/contentstyle/          # Individual style configurations
-/admin/rules_engine/messagetemplestyle/    # Template-theme assignments
+/admin/rules_engine/messagetemplate/       # Manage message templates
 ```
 
-### Theme System
-- **Default Theme**: Standard styling for all content
-- **Warning Theme**: Yellow/orange styling for alerts and warnings
-- **Holiday Theme**: Special styling for holiday notices
-- **Terms Theme**: Professional styling for Terms & Conditions
+### Predefined Style Variants
+Staff can choose from these predefined style variants:
 
-### Configurable Properties
-Staff can configure through admin forms:
-- **Colors**: Background, text, border colors (hex, rgba, named)
-- **Layout**: Padding, margin, border width/radius
-- **Typography**: Font size, weight, text alignment
-- **Advanced**: Custom CSS properties via JSON field
+| **Variant** | **Use Case** | **CSS Classes** |
+|-------------|--------------|-----------------|
+| `info` | General information | `message-info` (blue theme) |
+| `success` | Success confirmations | `message-success` (green theme) |
+| `warning` | Important warnings | `message-warning` (orange theme) |
+| `error` | Error messages | `message-error` (red theme) |
+| `alert` | Critical alerts | `message-alert` (red theme) |
+| `neutral` | Default messages | `message-neutral` (gray theme) |
 
-### Style Priority System
-1. Template-specific custom styles (highest priority)
-2. Theme-based styles
-3. CSS class selector matches
-4. Element type matches
-5. Global default styles (lowest priority)
+### React Component Types
+Staff can choose from these predefined component types:
+
+| **Component Type** | **React Component** | **Use Case** |
+|-------------------|-------------------|--------------|
+| `banner_message` | `<MessageBanner />` | Top page banners |
+| `inline_alert` | `<InlineAlert />` | Inline page alerts |
+| `modal_dialog` | `<MessageModal />` | Modal popup dialogs |
+| `terms_modal` | `<TermsModal />` | Terms & conditions |
+| `toast_notification` | `<ToastMessage />` | Toast notifications |
+| `sidebar_notice` | `<SidebarNotice />` | Sidebar notices |
+
+### Content Structure
+Message templates use simple JSON content structure:
+
+```json
+{
+  "title": "Message Title",
+  "message": "Main message with {{placeholders}}",
+  "details": ["List", "of", "details"],
+  "buttons": [
+    {"label": "Accept", "action": "acknowledge", "variant": "primary"}
+  ]
+}
+```
 
 ### Usage in React Components
 ```javascript
-import JsonContentRenderer from '../Common/JsonContentRenderer';
-import DynamicJsonContentRenderer from '../Common/DynamicJsonContentRenderer';
+import { MessageRenderer } from '../Common/MessageRenderer';
 
-// Basic JSON content rendering
-<JsonContentRenderer 
-  content={message.json_content}
-  className="message-content"
-/>
-
-// Dynamic styling with backend configuration
-<DynamicJsonContentRenderer 
-  content={message.json_content}
-  templateId={message.template_id}
-  className="dynamic-message-content"
+// All message rendering handled by single component
+<MessageRenderer 
+  effects={rulesEngineEffects}
+  onDismiss={handleMessageDismiss}
+  onAction={handleMessageAction}
 />
 ```
 
