@@ -1,16 +1,16 @@
 {
   "mcpServers": {
-		"trello": {
-			"command": "node",
-			"args": ["./trello-mcp-wrapper.mjs"]
-		},
-		"browsermcp": {
-			"command": "cmd",
-			"args": ["/c", "npx", "@browsermcp/mcp@latest"]
-		},
-		"github": {
-			"command": "npx",
-			"args": ["-y", "@modelcontextprotocol/server-github"]
-		}
+    "trello": {
+      "command": "node",
+      "args": ["trello-mcp-wrapper.mjs"]
+    },
+    "browsermcp": {
+      "command": "node",
+      "args": ["run-mcp.js", "browsermcp"]
+    },
+    "github": {
+      "command": "node",
+      "args": ["run-mcp.js", "github"]
+    }
   }
 }
