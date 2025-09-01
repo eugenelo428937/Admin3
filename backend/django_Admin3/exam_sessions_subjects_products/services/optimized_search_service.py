@@ -276,6 +276,16 @@ class OptimizedSearchService:
                 logger.warning(f'🔍 [NAVBAR-FILTERS] Material group not found for distance learning filter')
                 queryset = queryset.none()
         
+        # Apply product filter (specific product by ID - for tutorial location navigation)
+        if 'product' in navbar_filters:
+            try:
+                product_id = int(navbar_filters['product'])
+                queryset = queryset.filter(product__id=product_id)
+                logger.info(f'🔍 [NAVBAR-FILTERS] Applied product filter ID={product_id} - queryset count: {queryset.count()}')
+            except (ValueError, TypeError):
+                logger.warning(f'🔍 [NAVBAR-FILTERS] Invalid product ID: {navbar_filters["product"]}')
+                queryset = queryset.none()
+        
         return queryset.distinct()
     
     def _generate_optimized_filter_counts(self, applied_filters, base_queryset):
@@ -311,7 +321,10 @@ class OptimizedSearchService:
                         code = item['exam_session_subject__subject__code']
                         count = item['count']
                         if code and count > 0:
-                            filter_counts['subjects'][code] = count
+                            filter_counts['subjects'][code] = {
+                                'count': count,
+                                'name': code  # Subject codes are already human-readable
+                            }
                             logger.info(f"[FILTER-COUNTS] Subject {code}: {count} products")
                 
                 elif config.filter_type == 'filter_group':
@@ -333,7 +346,11 @@ class OptimizedSearchService:
                             count = self._calculate_filter_group_count(base_queryset, config, group)
                             
                             if count > 0:
-                                filter_counts[filter_key][group.name] = count
+                                filter_counts[filter_key][group.name] = {
+                                    'count': count,
+                                    'name': group.name,
+                                    'display_name': group.name  # Just use the child name, no parent prefix
+                                }
                                 logger.info(f"[FILTER-COUNTS] {config.display_label} - {group.name}: {count} products")
             
             # Fallback: If no configurations found, still provide subjects
@@ -347,12 +364,35 @@ class OptimizedSearchService:
                     code = item['exam_session_subject__subject__code']
                     count = item['count']
                     if code:
-                        filter_counts['subjects'][code] = count
+                        filter_counts['subjects'][code] = {
+                            'count': count,
+                            'name': code
+                        }
             
         except Exception as e:
             logger.error(f"[FILTER-COUNTS] Error generating filter counts: {str(e)}")
             import traceback
             logger.error(f"[FILTER-COUNTS] Traceback: {traceback.format_exc()}")
+        
+        # Add product metadata for filtered products (e.g., tutorial locations)
+        if applied_filters.get('products'):
+            logger.info(f"[FILTER-COUNTS] Adding metadata for filtered products: {applied_filters['products']}")
+            from products.models import Product
+            
+            for product_id in applied_filters['products']:
+                try:
+                    product = Product.objects.filter(id=product_id).first()
+                    if product:
+                        # Count products that match this specific product ID
+                        count = base_queryset.filter(product_id=product_id).count()
+                        filter_counts['products'][str(product_id)] = {
+                            'count': count,
+                            'name': product.shortname or product.name,
+                            'id': product_id
+                        }
+                        logger.info(f"[FILTER-COUNTS] Product {product_id} ({product.shortname}): {count} items")
+                except Exception as e:
+                    logger.error(f"[FILTER-COUNTS] Error adding product metadata for {product_id}: {str(e)}")
         
         logger.info(f"[FILTER-COUNTS] Final filter counts: {filter_counts}")
         return filter_counts

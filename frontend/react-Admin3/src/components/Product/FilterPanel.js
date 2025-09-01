@@ -80,6 +80,7 @@ const FilterPanel = ({
         }));
     }, []);
 
+
     /**
      * Handle filter selection
      */
@@ -127,6 +128,7 @@ const FilterPanel = ({
             return total + (Array.isArray(filterArray) ? filterArray.length : 0);
         }, 0);
     }, [filters]);
+
 
     /**
      * Render filter section with checkboxes
@@ -208,10 +210,15 @@ const FilterPanel = ({
                 </AccordionSummary>
                 <AccordionDetails sx={{ pt: 0 }}>
                     <FormGroup>
-                        {Object.entries(options).map(([value, label]) => {
-                            const count = counts && counts[value] ? counts[value] : 0;
+                        {Object.entries(options).map(([value, filterData]) => {
+                            // Handle new structure: filterData can be either a number (old) or object with {count, name} (new)
+                            const count = typeof filterData === 'object' && filterData !== null 
+                                ? filterData.count 
+                                : filterData || 0;
+                            const displayLabel = typeof filterData === 'object' && filterData !== null
+                                ? (filterData.display_name || filterData.name || value)
+                                : value;
                             const isChecked = activeValues.includes(value);
-                            const displayLabel = typeof label === 'string' ? label : value;
                             
                             return (
                                 <FormControlLabel

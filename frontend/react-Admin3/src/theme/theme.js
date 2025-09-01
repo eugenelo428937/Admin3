@@ -322,8 +322,8 @@ const theme = createTheme({
 				{
 					props: { variant: "product" },
 					style: {
-						minWidth: "20rem",
-						maxWidth: "20rem",
+						minWidth: "18rem",
+						maxWidth: "18rem",
 						height: "31.6rem !important",
 						overflow: "visible",
 						aspectRatio: "5/7",
