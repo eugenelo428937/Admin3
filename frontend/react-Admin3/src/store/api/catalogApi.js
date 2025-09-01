@@ -79,6 +79,7 @@ export const catalogApi = createApi({
         if (navbarFilters.variation) queryParams.append('variation', navbarFilters.variation);
         if (navbarFilters.distance_learning) queryParams.append('distance_learning', navbarFilters.distance_learning);
         if (navbarFilters.tutorial) queryParams.append('tutorial', navbarFilters.tutorial);
+        if (navbarFilters.product) queryParams.append('product', navbarFilters.product);
         
         const queryString = queryParams.toString();
         const url = `search/${queryString ? '?' + queryString : ''}`;

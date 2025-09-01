@@ -17,7 +17,6 @@ const NavigationMenu = ({
   handleSpecificProductClick,
   handleProductVariationClick,
   handleMarkingVouchersClick,
-  handleTutorialFormatClick,
   onCollapseNavbar
 }) => {
   const { isSuperuser, isApprentice, isStudyPlus } = useAuth();
@@ -391,7 +390,7 @@ const NavigationMenu = ({
 											<NavDropdown.Item
 												key={format.filter_type}
 												onClick={() => {
-													handleTutorialFormatClick(format.filter_type);
+													handleProductGroupClick(format.group_name);
 													onCollapseNavbar && onCollapseNavbar();
 												}}>
 												{format.name}

@@ -138,10 +138,19 @@ class ProductViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         
-        # Filter by group IDs
-        group_ids = self.request.query_params.getlist('group')
-        if group_ids:
-            queryset = queryset.filter(groups__id__in=group_ids).distinct()
+        # Filter by group (support both group names and IDs for backward compatibility)
+        group_filter = self.request.query_params.get('group')
+        if group_filter:
+            try:
+                # Try to parse as integer ID first
+                if group_filter.isdigit():
+                    queryset = queryset.filter(groups__id=int(group_filter)).distinct()
+                else:
+                    # Handle as group name
+                    group = FilterGroup.objects.get(name=group_filter)
+                    queryset = queryset.filter(groups=group).distinct()
+            except (FilterGroup.DoesNotExist, ValueError):
+                queryset = queryset.none()
         
         # Filter by tutorial format (filter group name)
         tutorial_format = self.request.query_params.get('tutorial_format')

@@ -158,6 +158,10 @@ const ProductList = React.memo(() => {
             filtersFromUrl.modes_of_delivery = [urlParams.modeOfDeliveryFilter];
         }
         
+        // Handle tutorial_format parameter from navbar clicks
+        // Note: tutorialFormatFilter is handled via URL parameter, not Redux state
+        // This is intentionally separate from the Redux filters system
+        
         // Apply filters if we have any
         if (Object.keys(filtersFromUrl).length > 0) {
             dispatch(setMultipleFilters(filtersFromUrl));
@@ -223,78 +227,76 @@ const ProductList = React.memo(() => {
     }, [dispatch]);
 
     return (
-        <Container maxWidth="xl" sx={{ py: 2 }}>
-            <Grid container spacing={3}>
-                {/* Filter Panel - Desktop Sidebar */}
-                {!isMobile && (
-                    <Grid item md={3} lg={2}>
-                        <FilterPanel isSearchMode={isSearchMode} />
-                    </Grid>
-                )}
+			<Container maxWidth="xl" sx={{ py: 2 }}>
+				{/* Header Section */}
+				<Box
+					sx={{
+						display: "flex",
+						justifyContent: "space-between",
+						alignItems: "center",
+						mb: 2,
+						flexDirection: { xs: "column", sm: "row" },
+						gap: 2,
+					}}>
+					<Typography variant="h4" component="h1">
+						{isSearchMode ? "Search Results" : "Products"}
+					</Typography>
 
-                {/* Main Content */}
-                <Grid item xs={12} md={9} lg={10}>
-                    <Box sx={{ mb: 3 }}>
-                        {/* Header Section */}
-                        <Box sx={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center',
-                            mb: 2,
-                            flexDirection: { xs: 'column', sm: 'row' },
-                            gap: 2
-                        }}>
-                            <Typography variant="h4" component="h1">
-                                {isSearchMode ? 'Search Results' : 'Products'}
-                            </Typography>
-                            
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                {isVATVisible && <VATToggle />}
-                                {isMobile && <FilterPanel showMobile />}
-                            </Box>
-                        </Box>
+					<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+						{isVATVisible && <VATToggle />}
+						{isMobile && <FilterPanel showMobile />}
+					</Box>
+				</Box>
+				<Grid container spacing={3}>
+					{/* Filter Panel - Desktop Sidebar */}
+					{!isMobile && (
+						<Grid size={{ xs: 12, lg: 2 }}>
+							<FilterPanel isSearchMode={isSearchMode} />
+						</Grid>
+					)}
 
-                        {/* Search Box */}
-                        <SearchBox 
-                            onSearch={handleSearch}
-                            initialValue={searchQuery}
-                            placeholder="Search products..."
-                        />
+					{/* Main Content */}
+					<Grid size={{ xs: 12, lg: 10}}>
+						<Box sx={{ mb: 3 }}>
+							{/* Search Box */}
+							<SearchBox
+								onSearch={handleSearch}
+								initialValue={searchQuery}
+								placeholder="Search products..."
+							/>
 
-                        {/* Search Mode Alert */}
-                        {isSearchMode && (
-                            <Alert 
-                                severity="info" 
-                                sx={{ mt: 2, mb: 2 }}
-                                action={
-                                    <Button
-                                        color="inherit"
-                                        size="small"
-                                        onClick={clearSearch}
-                                    >
-                                        Clear Search
-                                    </Button>
-                                }
-                            >
-                                <strong>Search Results</strong>
-                                {searchQuery && (
-                                    <span style={{ marginLeft: 8 }}>
-                                        for "{searchQuery}"
-                                    </span>
-                                )}
-                                {pagination?.total_count && (
-                                    <span style={{ marginLeft: 8 }}>
-                                        ({pagination.total_count} products found)
-                                    </span>
-                                )}
-                            </Alert>
-                        )}
+							{/* Search Mode Alert */}
+							{isSearchMode && (
+								<Alert
+									severity="info"
+									sx={{ mt: 2, mb: 2 }}
+									action={
+										<Button
+											color="inherit"
+											size="small"
+											onClick={clearSearch}>
+											Clear Search
+										</Button>
+									}>
+									<strong>Search Results</strong>
+									{searchQuery && (
+										<span style={{ marginLeft: 8 }}>
+											for "{searchQuery}"
+										</span>
+									)}
+									{pagination?.total_count && (
+										<span style={{ marginLeft: 8 }}>
+											({pagination.total_count} products found)
+										</span>
+									)}
+								</Alert>
+							)}
 
-                        {/* Active Filters */}
-                        <ActiveFilters showCount />
+							{/* Active Filters */}
+							<ActiveFilters showCount />
 
-                        {/* Debug Information (Development Only) */}
-                        {/* {process.env.NODE_ENV === 'development' && (
+							{/* Debug Information (Development Only) */}
+							{/* {process.env.NODE_ENV === 'development' && (
                             <FilterDebugger 
                                 filters={filters}
                                 searchQuery={searchQuery}
@@ -302,37 +304,37 @@ const ProductList = React.memo(() => {
                                 isLoading={isLoading}
                             />
                         )} */}
-                    </Box>
+						</Box>
 
-                    {/* Product Grid */}
-                    <ProductGrid
-                        products={products}
-                        loading={isLoading || searchLoading}
-                        error={error || searchError}
-                        pagination={pagination}
-                        onLoadMore={handleLoadMore}
-                        onAddToCart={handleAddToCart}
-                        allEsspIds={allEsspIds}
-                        bulkDeadlines={bulkDeadlines}
-                        showProductCount
-                        showLoadMoreButton
-                        emptyStateMessage={
-                            isSearchMode 
-                                ? "No products found for your search criteria."
-                                : "No products available based on selected filters."
-                        }
-                    />
-                </Grid>
-            </Grid>
+						{/* Product Grid */}
+						<ProductGrid
+							products={products}
+							loading={isLoading || searchLoading}
+							error={error || searchError}
+							pagination={pagination}
+							onLoadMore={handleLoadMore}
+							onAddToCart={handleAddToCart}
+							allEsspIds={allEsspIds}
+							bulkDeadlines={bulkDeadlines}
+							showProductCount
+							showLoadMoreButton
+							emptyStateMessage={
+								isSearchMode
+									? "No products found for your search criteria."
+									: "No products available based on selected filters."
+							}
+						/>
+					</Grid>
+				</Grid>
 
-            {/* Rules Engine Results (if needed for debugging) */}
-            {productListRulesResults && productListRulesResults.length > 0 && (
-                <Box sx={{ mt: 4 }}>
-                    {/* Render rules engine results if needed */}
-                </Box>
-            )}
-        </Container>
-    );
+				{/* Rules Engine Results (if needed for debugging) */}
+				{productListRulesResults && productListRulesResults.length > 0 && (
+					<Box sx={{ mt: 4 }}>
+						{/* Render rules engine results if needed */}
+					</Box>
+				)}
+			</Container>
+		);
 });
 
 ProductList.displayName = 'ProductList';

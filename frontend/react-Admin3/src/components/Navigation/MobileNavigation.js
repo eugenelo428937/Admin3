@@ -21,7 +21,6 @@ const MobileNavigation = ({
 	handleSpecificProductClick,
 	handleProductVariationClick,
 	handleMarkingVouchersClick,
-	handleTutorialFormatClick,
 }) => {
 	const { isSuperuser, isApprentice, isStudyPlus } = useAuth();
 	const navigate = useNavigate();
@@ -536,7 +535,7 @@ const MobileNavigation = ({
 							<div
 								className="mobile-nav-link"
 								onClick={() => {
-									handleTutorialFormatClick(format.group_name);
+									handleProductGroupClick(format.group_name);
 									closeNavigation();
 								}}>
 								<span>{format.name}</span>
