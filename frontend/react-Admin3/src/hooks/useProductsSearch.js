@@ -94,6 +94,7 @@ export const useProductsSearch = (options = {}) => {
       if (queryParams.get('variation')) navbarFilters.variation = queryParams.get('variation');
       if (queryParams.get('distance_learning')) navbarFilters.distance_learning = queryParams.get('distance_learning');
       if (queryParams.get('tutorial')) navbarFilters.tutorial = queryParams.get('tutorial');
+      if (queryParams.get('product')) navbarFilters.product = queryParams.get('product');
       
       // Prepare search parameters
       const searchParams = {

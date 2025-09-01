@@ -290,6 +290,7 @@ const filtersSlice = createSlice({
       state.lastUpdated = Date.now();
     },
     
+    
     // Pagination actions
     setCurrentPage: (state, action) => {
       state.currentPage = action.payload;

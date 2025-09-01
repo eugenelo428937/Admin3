@@ -21,6 +21,15 @@ import FilterPanel from './FilterPanel';
 // Mock Material-UI's useMediaQuery
 jest.mock('@mui/material/useMediaQuery');
 
+// Mock react-router-dom
+const mockNavigate = jest.fn();
+const mockLocation = { search: '' };
+
+jest.mock('react-router-dom', () => ({
+    useNavigate: () => mockNavigate,
+    useLocation: () => mockLocation,
+}));
+
 // Mock Redux actions
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({

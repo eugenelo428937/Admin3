@@ -787,6 +787,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             variation_filter = request.query_params.get('variation')
             distance_learning_filter = request.query_params.get('distance_learning')
             tutorial_filter = request.query_params.get('tutorial')
+            product_filter = request.query_params.get('product')
             
             navbar_filters = {}
             if tutorial_format_filter:
@@ -804,6 +805,9 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             if tutorial_filter:
                 navbar_filters['tutorial'] = tutorial_filter
                 logger.info(f'🔍 [UNIFIED-SEARCH-V3] Added navbar filter: tutorial={tutorial_filter}')
+            if product_filter:
+                navbar_filters['product'] = product_filter
+                logger.info(f'🔍 [UNIFIED-SEARCH-V3] Added navbar filter: product={product_filter}')
             
             logger.info(f'🔍 [UNIFIED-SEARCH-V3] Using OptimizedSearchService')
             
@@ -865,7 +869,10 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                     legacy_test_filters = {'SUBJECT_FILTER': [code]}
                     
                     count = filter_service.apply_filters(base_products_queryset, legacy_test_filters).count()
-                    filter_counts['subjects'][code] = count
+                    filter_counts['subjects'][code] = {
+                        'count': count,
+                        'name': name or code  # Use description if available, otherwise code
+                    }
             
             # 2. Categories - Get from acted_filter_group where parent_id IS NULL AND has PRODUCT_CATEGORY config
             logger.info('🔢 [FILTER-COUNTS] Generating categories from filter groups with PRODUCT_CATEGORY config')
@@ -887,7 +894,10 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                     count += bundle_count
                 
                 if count > 0:
-                    filter_counts['categories'][category.name] = count
+                    filter_counts['categories'][category.name] = {
+                        'count': count,
+                        'name': category.name
+                    }
             
             # 3. Product Types - Get child groups with PRODUCT_TYPE configuration
             logger.info('🔢 [FILTER-COUNTS] Generating product types from filter groups with PRODUCT_TYPE config')
@@ -905,9 +915,11 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 ).distinct().count()
                 
                 if count > 0:
-                    # Use full path for clarity: "Parent > Child"
-                    display_name = f"{group.parent.name} > {group.name}" if group.parent else group.name
-                    filter_counts['product_types'][group.name] = count
+                    filter_counts['product_types'][group.name] = {
+                        'count': count,
+                        'name': group.name,
+                        'display_name': group.name  # Just use the child name, no parent prefix
+                    }
             
             # 4. Products - Individual products (keep existing logic)
             logger.info('🔢 [FILTER-COUNTS] Generating individual products')
@@ -922,7 +934,11 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                         product__id=product_id
                     ).count()
                     if count > 0:
-                        filter_counts['products'][str(product_id)] = count
+                        filter_counts['products'][str(product_id)] = {
+                            'count': count,
+                            'name': product_name,
+                            'id': product_id
+                        }
             
             # 5. Modes of Delivery - Get from product variations but also check for filter groups
             logger.info('🔢 [FILTER-COUNTS] Generating modes of delivery from variations and filter groups')
@@ -939,7 +955,10 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                         variations__product_product_variation__product_variation__name=mode
                     ).distinct().count()
                     if count > 0:
-                        filter_counts['modes_of_delivery'][mode] = count
+                        filter_counts['modes_of_delivery'][mode] = {
+                            'count': count,
+                            'name': mode
+                        }
             
             # Also check for delivery mode filter groups (like Tutorial formats)
             delivery_groups = FilterGroup.objects.filter(
@@ -952,7 +971,10 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                     product__groups__id=group.id
                 ).distinct().count()
                 if count > 0:
-                    filter_counts['modes_of_delivery'][group.name] = count
+                    filter_counts['modes_of_delivery'][group.name] = {
+                        'count': count,
+                        'name': group.name
+                    }
             
             logger.info(f'🔢 [FILTER-COUNTS] Generated database-driven counts: {filter_counts}')
             logger.info(f'🔢 [FILTER-COUNTS] Categories found: {list(filter_counts["categories"].keys())}')

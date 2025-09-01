@@ -200,14 +200,6 @@ const MainNavBar = () => {
 		setExpanded(false); // Close mobile menu
 	};
 
-	// Handle navigating to tutorial format filters
-	const handleTutorialFormatClick = (groupCode) => {
-		// Dispatch Redux action for tutorial format selection (like other product groups)
-		dispatch(navSelectProductGroup(groupCode));
-		// Also navigate via URL for direct linking support
-		navigate(`/products`);
-		setExpanded(false); // Close mobile menu
-	};
 
 	// Handle opening the search modal
 	const handleOpenSearchModal = () => {
@@ -285,8 +277,7 @@ const MainNavBar = () => {
 							handleSpecificProductClick={handleSpecificProductClick}
 							handleProductVariationClick={handleProductVariationClick}
 							handleMarkingVouchersClick={handleMarkingVouchersClick}
-							handleTutorialFormatClick={handleTutorialFormatClick}
-							onCollapseNavbar={() => setExpanded(false)}
+									onCollapseNavbar={() => setExpanded(false)}
 						/>
 
 						{/* Mobile Navigation - Visible only on mobile */}
@@ -309,8 +300,7 @@ const MainNavBar = () => {
 									handleProductVariationClick
 								}
 								handleMarkingVouchersClick={handleMarkingVouchersClick}
-								handleTutorialFormatClick={handleTutorialFormatClick}
-							/>
+										/>
 						</div>
 					</Navbar.Collapse>
 
