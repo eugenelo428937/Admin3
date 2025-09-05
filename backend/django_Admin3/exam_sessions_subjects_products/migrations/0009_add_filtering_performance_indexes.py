@@ -7,6 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('exam_sessions_subjects_products', '0008_new_bundle_structure'),
+        ('subjects', '0001_initial'),  # Ensure acted_subjects table exists before creating index
     ]
 
     operations = [

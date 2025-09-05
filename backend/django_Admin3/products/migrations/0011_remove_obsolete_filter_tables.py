@@ -4,20 +4,19 @@ from django.db import migrations
 
 
 def remove_obsolete_tables(apps, schema_editor):
-    """Remove obsolete filter tables"""
+    """Remove obsolete filter tables - DISABLED: tables already handled by migration 0010"""
+    print("Migration 0011: Skipping table drops - already handled by migration 0010")
+    
+    # Only drop product group tables that weren't handled by 0010
     from django.db import connection
     
-    obsolete_tables = [
-        'acted_filter_configuration',
-        'acted_filter_option_provider', 
-        'acted_filter_preset',
-        'acted_filter_usage_analytics',
+    remaining_obsolete_tables = [
         'acted_product_group_filter',
         'acted_product_group_filter_groups'
     ]
     
     with connection.cursor() as cursor:
-        for table in obsolete_tables:
+        for table in remaining_obsolete_tables:
             try:
                 cursor.execute(f"DROP TABLE IF EXISTS {table} CASCADE;")
                 print(f"Dropped table: {table}")

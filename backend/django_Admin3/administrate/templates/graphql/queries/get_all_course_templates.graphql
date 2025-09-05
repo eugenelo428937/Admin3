@@ -1,5 +1,5 @@
-query GetAllCourseTemplates {
-	courseTemplates {
+query GetAllCourseTemplates($first: Int!, $offset: Int!) {
+	courseTemplates(first: $first, offset: $offset) {
 		pageInfo {
 			hasNextPage
 			endCursor

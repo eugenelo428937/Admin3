@@ -2,10 +2,11 @@
 import os
 import sys
 import django
+from django.conf import settings
 from pathlib import Path
 
 # Add Django project to path
-base_dir = Path(__file__).resolve().parent.parent
+base_dir = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(base_dir))
 
 # Set up Django environment
