@@ -48,14 +48,15 @@ class Migration(migrations.Migration):
                 max_length=32,
             ),
         ),
-        migrations.AlterField(
-            model_name="productgroupfilter",
-            name="groups",
-            field=models.ManyToManyField(
-                related_name="filter_groups", to="products.filtergroup"
-            ),
-        ),
-        migrations.DeleteModel(
-            name="ProductGroup",
-        ),
+        # Skip ProductGroupFilter and ProductGroup operations - these models were already removed in migration 0011
+        # migrations.AlterField(
+        #     model_name="productgroupfilter",
+        #     name="groups",
+        #     field=models.ManyToManyField(
+        #         related_name="filter_groups", to="products.filtergroup"
+        #     ),
+        # ),
+        # migrations.DeleteModel(
+        #     name="ProductGroup",
+        # ),
     ]

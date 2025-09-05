@@ -1,0 +1,25 @@
+query getCourseTemplatePriceLevels($first: Int!, $offset: Int!) {
+  courseTemplates(first: $first, offset: $offset) {
+    pageInfo {
+      hasNextPage
+    }
+    edges {
+      node {
+        id
+        title
+        publicPrices {
+          edges {
+            node {
+              id
+              amount
+              priceLevel {
+                id
+                name
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
