@@ -1,6 +1,7 @@
 from .custom_fields import CustomField
 from .course_templates import CourseTemplate
 from .price_levels import PriceLevel
+from .course_template_price_levels import CourseTemplatePriceLevel
 from .locations import Location
 from .instructors import Instructor
 from .venues import Venue

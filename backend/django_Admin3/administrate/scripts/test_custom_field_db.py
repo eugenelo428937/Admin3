@@ -1,7 +1,12 @@
 # scripts/test_custom_field_db.py
 import os
-import django
 import sys
+import django
+from django.conf import settings
+import django
+import json
+import requests
+import base64
 from pathlib import Path
 
 # Add project root to path
@@ -12,7 +17,7 @@ sys.path.append(str(project_root))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_Admin3.settings.development")
 django.setup()
 
-from backend.django_Admin3.administrate.models.models import CustomField
+from administrate.models import CustomField
 
 def test_custom_field_creation():
     """Test creating a custom field in the database"""

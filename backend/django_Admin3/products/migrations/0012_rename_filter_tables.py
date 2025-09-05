@@ -4,23 +4,11 @@ from django.db import migrations
 
 
 def rename_filter_tables(apps, schema_editor):
-    """Rename refactored filter tables to remove 'refactored' prefix"""
-    from django.db import connection
+    """Rename refactored filter tables to remove 'refactored' prefix - NO-OP: Tables already have correct names"""
+    print("Migration 0012: No-op migration - tables already have correct names from migration 0010")
     
-    table_renames = [
-        ('acted_filter_configuration', 'acted_filter_configuration'),
-        ('acted_filter_configuration_group', 'acted_filter_configuration_group'),
-        ('acted_filter_preset', 'acted_filter_preset'),
-        ('acted_filter_usage_analytics', 'acted_filter_usage_analytics'),
-    ]
-    
-    with connection.cursor() as cursor:
-        for old_name, new_name in table_renames:
-            try:
-                cursor.execute(f"ALTER TABLE {old_name} RENAME TO {new_name};")
-                print(f"Renamed table: {old_name} -> {new_name}")
-            except Exception as e:
-                print(f"Error renaming table {old_name}: {e}")
+    # The tables created in 0010 already have the final names, no renaming needed
+    # This migration is redundant but kept for migration history consistency
 
 
 def reverse_rename_filter_tables(apps, schema_editor):

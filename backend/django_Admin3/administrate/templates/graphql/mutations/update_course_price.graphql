@@ -1,0 +1,16 @@
+mutation UpdateCoursePrice($coursePriceId: ID!, $amount: Decimal!) {
+  courseTemplate {
+    updatePrices(
+      input: {
+        coursePriceId: $coursePriceId
+        amount: $amount
+      }
+    ) {
+      errors {
+        label
+        message
+        value
+      }
+    }
+  }
+}

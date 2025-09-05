@@ -8,6 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('exam_sessions_subjects_products', '0009_add_filtering_performance_indexes'),
+        ('products', '0010_refactored_filter_system'),  # Ensure acted_filter_group table exists
     ]
 
     operations = [

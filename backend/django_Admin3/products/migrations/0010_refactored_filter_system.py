@@ -23,6 +23,17 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "Product Product Variations",
             },
         ),
+        
+        # Drop all old filter system tables before creating the refactored versions
+        migrations.RunSQL(
+            """
+            DROP TABLE IF EXISTS acted_filter_configuration CASCADE;
+            DROP TABLE IF EXISTS acted_filter_option_provider CASCADE;
+            DROP TABLE IF EXISTS acted_filter_preset CASCADE;
+            DROP TABLE IF EXISTS acted_filter_usage_analytics CASCADE;
+            """,
+            reverse_sql="-- Old tables will be recreated by rollback to migration 0008"
+        ),
         migrations.CreateModel(
             name="FilterGroup",
             fields=[

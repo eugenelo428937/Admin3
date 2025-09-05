@@ -18,9 +18,17 @@ class Command(BaseCommand):
             action='store_true',
             help='Enable debug logging'
         )
+        parser.add_argument(
+            '--page-size',
+            type=int,
+            default=100,
+            help='Number of records per page'
+        )
 
     def handle(self, *args, **options):
         debug = options['debug']
+        page_size = options['page_size']
+        
         if debug:
             logger.setLevel(logging.DEBUG)
 
@@ -31,30 +39,58 @@ class Command(BaseCommand):
             
             self.stdout.write('Fetching course templates...')
             
-            try:
-                result = api_service.execute_query(query)
-                
-                if not self._validate_response(result):
+            has_next_page = True
+            offset = 0
+            all_templates = []
+
+            while has_next_page:
+                try:
+                    # Add pagination variables to the query
+                    variables = {
+                        "first": page_size,
+                        "offset": offset
+                    }
+
+                    result = api_service.execute_query(query, variables)
+                    
+                    if not self._validate_response(result):
+                        self.stdout.write(
+                            self.style.WARNING('Invalid response format from API')
+                        )
+                        return
+                    
+                    page_info = result['data']['courseTemplates']['pageInfo']
+                    course_templates = result['data']['courseTemplates']['edges']
+                    
+                    all_templates.extend(course_templates)
+                    
+                    # Update pagination info
+                    has_next_page = page_info.get('hasNextPage', False)
+                    offset += page_size
+                    
                     self.stdout.write(
-                        self.style.WARNING('Invalid response format from API')
+                        f'Fetched {len(course_templates)} course templates. '
+                        f'Total so far: {len(all_templates)}'
                     )
+                    
+                    if not course_templates:
+                        self.stdout.write(self.style.WARNING('No more course templates found'))
+                        break
+                    
+                except Exception as e:
+                    self.stdout.write(
+                        self.style.ERROR(f'Error processing course templates: {str(e)}')
+                    )
+                    if debug:
+                        logger.exception(e)
                     return
-                
-                course_templates = result['data']['courseTemplates']['edges']
-                
-                if course_templates:
-                    self.stdout.write(f'Syncing {len(course_templates)} course templates...')
-                    self._sync_course_templates(course_templates, debug)
-                else:
-                    self.stdout.write(self.style.WARNING('No course templates found to sync'))
-                
-            except Exception as e:
-                self.stdout.write(
-                    self.style.ERROR(f'Error processing course templates: {str(e)}')
-                )
-                if debug:
-                    logger.exception(e)
-                return
+
+            # After fetching all templates, synchronize them with the database
+            if all_templates:
+                self.stdout.write(f'Syncing {len(all_templates)} course templates...')
+                self._sync_course_templates(all_templates, debug)
+            else:
+                self.stdout.write(self.style.WARNING('No course templates found to sync'))
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Unexpected error: {str(e)}'))
@@ -68,7 +104,8 @@ class Command(BaseCommand):
             'data' in result and
             'courseTemplates' in result['data'] and
             'edges' in result['data']['courseTemplates'] and
-            isinstance(result['data']['courseTemplates']['edges'], list)
+            isinstance(result['data']['courseTemplates']['edges'], list) and
+            'pageInfo' in result['data']['courseTemplates']
         )
 
     def _get_custom_field_value(self, custom_fields, key):

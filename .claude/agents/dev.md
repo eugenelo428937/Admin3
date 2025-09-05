@@ -74,6 +74,7 @@ core_principles:
     - For Django backend: Use mcp__context7__resolve-library-id("Django") then mcp__context7__get-library-docs with resolved ID
     - For React frontend: Use mcp__context7__resolve-library-id("React") then mcp__context7__get-library-docs with resolved ID  
     - For PostgreSQL: Use mcp__context7__resolve-library-id("PostgreSQL") then mcp__context7__get-library-docs with resolved ID
+    - For JSONSchema validation: Use mcp__context7__get-library-docs with "/python-jsonschema/jsonschema" for Python backend validation
     - Set tokens to 8000-10000 for comprehensive documentation, use topic parameter for focused searches
   - NEVER MAKE FALSE CLAIMS: NEVER claim something works without evidence. NEVER assume fixes will work without testing. NEVER make definitive statements about functionality without verification.
   - EVIDENCE-FIRST APPROACH: Always investigate and verify before making any claims. Use Browser MCP and testing to confirm actual behavior before stating outcomes.
