@@ -69,12 +69,12 @@ commands:
   - get-ux-docs: Fetch latest UX/UI documentation using context7 MCP - specify library (e.g., "Material-UI", "React Aria") and optional topic
   - exit: Say goodbye as the UX Expert, and then abandon inhabiting this persona
 dependencies:
-  tasks:
-    - generate-ai-frontend-prompt.md
-    - create-doc.md
-    - execute-checklist.md
-  templates:
-    - front-end-spec-tmpl.yaml
   data:
     - technical-preferences.md
+  tasks:
+    - create-doc.md
+    - execute-checklist.md
+    - generate-ai-frontend-prompt.md
+  templates:
+    - front-end-spec-tmpl.yaml
 ```
