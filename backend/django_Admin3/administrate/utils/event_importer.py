@@ -35,7 +35,7 @@ from administrate.models import CourseTemplate, Location, Venue, Instructor, Cus
 from administrate.exceptions import AdministrateAPIError
 from administrate.utils.graphql_loader import load_graphql_query, load_graphql_mutation
 logger = logging.getLogger(__name__)
-file_path = r"C:\Code\Admin3\backend\django_Admin3\administrate\src\EventSessionImportTemplate 2026A V1.xlsx"
+file_path = r"C:\TEMP\EventSessionImportTemplate2026AV2.xlsx"
 queryFilePath = r"C:\Administrate\Result\query"+datetime.now().strftime("%Y%m%d")+"FINALLIVE.txt"
 resultFilePath = r"C:\Administrate\Result\importResult"+datetime.now().strftime("%Y%m%d")+"FINALLIVE.txt"
 ValidationFilePath = r"C:\Administrate\Result\ValidationResult"+datetime.now().strftime("%Y%m%d")+".txt"
@@ -1247,7 +1247,7 @@ def update_session(api_service, parent_event, row_data, session_id, session_cust
     variables = {        
         "sessionId": session_id,
         "sessionTitle": row_data["Session title"],
-        "locationId": parent_event["Location"]["id"],
+        "locationId": parent_event["location"]["id"],
         "venue_id": parent_event["venue"]["id"] if parent_event.get("venue") else None,
         "timeZoneName": timeZone,
         "session_start_date": row_data["formatted_classroom_start_datetime"],
@@ -1498,71 +1498,15 @@ def writeResultToFile(contentList):
     return 
 
 
-def get_events(api_service, current_sitting, state, first=100, offset=0):
-    events = []        
-    query = load_graphql_query('get_events_by_sitting_and_lifecycle')
-    variables = {"current_sitting": current_sitting,
-                    "state": state,
-                 "first": first,
-                 "offset": offset}
-    result = api_service.execute_query(query,variables)    
-
-    if (result and 'data' in result and
-            'events' in result['data'] and
-            'edges' in result['data']['events']):
-        for event in result['data']['events']['edges']:
-            events.append(event['node']['id'])
-    return events
-
-def delete_events(api_service,events):
-    query = load_graphql_mutation('delete_events')
-    variables = {"eventids": events}
-    print(events)
-    result = api_service.execute_query(query, variables)
-    print(result)
-    return result
-
-
-def set_event_websale(api_service, event_id, websaleCFKey, websale, lifecycleState):
-    """
-    Set the web sale status of an event
-    
-    Args:
-        api_service: AdministrateAPIService instance
-        event_id: Event ID to update
-        websale: Web sale status (True/False)
-    
-    Returns:
-        dict: Result of the update operation
-    """
-    
-    query = load_graphql_mutation('set_event_websale')
-    variables = {
-        "eventId": event_id,
-        "websale": websale,
-        "websaleCFKey": websaleCFKey,
-        "lifecycleState": lifecycleState,
-    }
-    result = api_service.execute_query(query, variables)
-   
-    return result
+# Note: get_events, delete_events, and set_event_websale functions have been moved to
+# administrate.services.event_management_service.EventManagementService
 
 if __name__ == "__main__":
     result = bulk_upload_events_from_excel(file_path,debug=True,dry_run=False)
-    count=0
-    api_service = AdministrateAPIService()
-    # event_custom_field_keys = get_custom_field_keys_by_entity_type(
-    #     api_service, "Event", False)
     
-    # result = get_events(api_service,"26A",EventLifecycleState.DRAFT.value)
-    # print(len(result))
-    # for event_id in result:
-    #     print(count)
-    #     set_event_websale(api_service, event_id, event_custom_field_keys["Web sale"], "True",
-    #                       EventLifecycleState.PUBLISHED.value)
-    #     count += 1
-
-    # print(result)
-    # delete_events(api_service,result)
-    # bulk_upload_events_from_excel(file_path, debug=True)
+    # Note: For event management operations like setting websale or deleting events,
+    # use the Django management command:
+    # python manage.py manage_events set-websale --sitting 26A --state Draft --websale True
+    # python manage.py manage_events delete-draft --sitting 26A
+    # python manage.py manage_events list --sitting 26A --state published
     
