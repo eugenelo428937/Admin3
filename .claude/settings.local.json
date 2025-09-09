@@ -82,31 +82,34 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Edit",
+        "matcher": "Write|Edit|MultiEdit",
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'TDD: Validating test coverage before code changes...'"
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command", 
-            "command": "echo 'TDD: Ensuring tests exist before new implementation...'"
+            "command": "tdd-guard validate --strict --config tdd-guard.config.js",
+            "timeout": 10
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Edit",
+        "matcher": "Write|Edit|MultiEdit",
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'TDD: Running tests after code changes...'"
+            "command": "tdd-guard check-coverage --config tdd-guard.config.js",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "tdd-guard track-test-execution",
+            "timeout": 3
           }
         ]
       }

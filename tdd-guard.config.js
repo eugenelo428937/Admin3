@@ -1,45 +1,74 @@
 /**
- * TDD Guard Configuration for Admin3 Project
- * Enforces test-driven development across Django backend and React frontend
+ * TDD Guard Root Configuration for Admin3 Project
+ * Orchestrates TDD enforcement across Django backend and React frontend
+ * Strict enforcement as per https://github.com/nizos/tdd-guard/blob/main/docs/enforcement.md
  */
 
 module.exports = {
+  // Global TDD enforcement - STRICT MODE
+  enabled: true,
+  strictMode: true,
+  
   // Project structure configuration
   projects: {
     backend: {
       name: 'Django Backend',
       workingDir: 'backend/django_Admin3',
+      configFile: 'backend/django_Admin3/tdd-guard.config.js',
       language: 'python',
-      testFramework: 'pytest',
-      testCommand: 'python manage.py test',
-      testPattern: '**/test_*.py',
-      srcPattern: '**/!(test_|conftest)*.py',
-      coverageCommand: 'python manage.py test --coverage',
-      minCoverage: 80
+      testFramework: 'django',
+      testCommand: 'python manage.py test --verbosity=2',
+      testPattern: '**/test*.py',
+      srcPattern: '**/*.py',
+      coverageCommand: 'coverage run --source="." manage.py test && coverage report',
+      minCoverage: 80,
+      enforceTestFirst: true
     },
     frontend: {
       name: 'React Frontend',
       workingDir: 'frontend/react-Admin3',
+      configFile: 'frontend/react-Admin3/tdd-guard.config.js',
       language: 'javascript',
       testFramework: 'jest',
-      testCommand: 'npm test -- --watchAll=false',
-      testPattern: '**/*.{test,spec}.{js,jsx}',
-      srcPattern: '**/!(*.{test,spec}).{js,jsx}',
+      testCommand: 'npm test -- --watchAll=false --passWithNoTests',
+      testPattern: '**/*.{test,spec}.{js,jsx,ts,tsx}',
+      srcPattern: 'src/**/*.{js,jsx,ts,tsx}',
       coverageCommand: 'npm test -- --coverage --watchAll=false',
-      minCoverage: 80
+      minCoverage: 80,
+      enforceTestFirst: true
     }
   },
 
-  // TDD enforcement rules
+  // STRICT TDD enforcement rules
   rules: {
     enforceTestFirst: true,
+    blockWithoutFailingTests: true,
+    requireFailingTestBeforeImplementation: true,
     enforceMinimalImplementation: true,
     enforceRefactorStep: true,
-    blockWithoutFailingTests: true,
-    requireCoverageIncrease: true
+    requireCoverageIncrease: true,
+    preventTestSkipping: true,
+    blockDirectFileModification: true
   },
 
-  // File patterns to ignore (configuration, migrations, etc.)
+  // Security enforcement (from enforcement.md)
+  security: {
+    // Prevent bypassing via shell commands
+    blockShellBypass: [
+      'echo *',
+      'printf *',
+      'sed *',
+      'awk *',
+      'perl *',
+      'cat > *',
+      'tee *'
+    ],
+    // Protect guard configuration
+    protectConfig: true,
+    configReadOnly: true
+  },
+
+  // File patterns to ignore
   ignorePatterns: [
     '**/migrations/**',
     '**/*.config.js',
@@ -48,39 +77,93 @@ module.exports = {
     '**/settings/**',
     '**/node_modules/**',
     '**/.venv/**',
+    '**/venv/**',
     '**/dist/**',
-    '**/build/**'
+    '**/build/**',
+    '**/__pycache__/**',
+    '**/coverage/**',
+    '**/.coverage'
   ],
 
-  // Custom test discovery patterns
+  // Test discovery and mapping
   testDiscovery: {
     backend: {
-      // Map implementation files to test files
       testFilePattern: (srcFile) => {
-        const relativePath = srcFile.replace('backend/django_Admin3/', '');
-        const testPath = relativePath.replace(/\.py$/, '_test.py');
-        return `backend/django_Admin3/tests/${testPath}`;
-      }
+        const pathParts = srcFile.split('/');
+        const fileName = pathParts[pathParts.length - 1];
+        const moduleName = fileName.replace('.py', '');
+        const appPath = pathParts.slice(0, -1).join('/');
+        
+        return [
+          `${appPath}/tests/test_${moduleName}.py`,
+          `${appPath}/test_${moduleName}.py`,
+          `${appPath}/tests.py`
+        ];
+      },
+      requireTestBeforeImplementation: true
     },
     frontend: {
       testFilePattern: (srcFile) => {
-        const dir = srcFile.substring(0, srcFile.lastIndexOf('/'));
-        const fileName = srcFile.substring(srcFile.lastIndexOf('/') + 1);
-        const testName = fileName.replace(/\.(js|jsx)$/, '.test.$1');
-        return `${dir}/__tests__/${testName}`;
-      }
+        const baseName = srcFile.replace(/\.(jsx?|tsx?)$/, '');
+        return [
+          `${baseName}.test.js`,
+          `${baseName}.test.jsx`,
+          `${baseName}.spec.js`,
+          `${baseName}.spec.jsx`
+        ];
+      },
+      requireTestBeforeImplementation: true
     }
   },
 
-  // Integration with Claude Code agents
+  // Integration with Claude Code
   claude: {
+    // Enhanced todo tracking with TDD stages
     enhanceTodoTracking: true,
     tddStageTracking: true,
+    trackStages: ['RED', 'GREEN', 'REFACTOR'],
+    
+    // Automatic test execution
     autoRunTests: true,
-    blockImplementationWithoutTests: true
+    runTestsBeforeImplementation: true,
+    runTestsAfterImplementation: true,
+    
+    // Strict blocking rules
+    blockImplementationWithoutTests: true,
+    blockCommitWithoutTests: true,
+    blockPushWithoutCoverage: true,
+    
+    // Validation messages
+    messages: {
+      noTest: '❌ TDD Violation: No test found. Write a failing test first.',
+      testPassing: '❌ TDD Violation: Test is already passing. Test must fail first.',
+      noImplementation: '✅ Good! Now implement the minimal code to make the test pass.',
+      implementationWithoutTest: '❌ TDD Violation: Cannot write implementation without a failing test.',
+      refactorTime: '✅ Tests passing! Time to refactor if needed.',
+      coverageLow: '⚠️ Warning: Test coverage below 80%. Add more tests.'
+    }
+  },
+
+  // Hook configuration
+  hooks: {
+    preWrite: 'tdd-guard validate --strict',
+    preEdit: 'tdd-guard validate --strict',
+    preMultiEdit: 'tdd-guard validate --strict',
+    preTodoWrite: 'tdd-guard track-stage',
+    postTest: 'tdd-guard check-coverage'
+  },
+
+  // Reporting
+  reporting: {
+    showCoverage: true,
+    showTestStatus: true,
+    trackTddCycles: true,
+    logViolations: true,
+    outputFile: '.tdd-guard-report.json'
   },
 
   // Debugging and logging
-  debug: process.env.NODE_ENV === 'development',
-  logLevel: 'info'
+  debug: process.env.TDD_GUARD_DEBUG === 'true',
+  logLevel: 'info',
+  logFile: '.tdd-guard.log'
 };

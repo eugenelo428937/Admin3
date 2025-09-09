@@ -1,0 +1,29 @@
+[tool.tdd-guard]
+enabled = true
+project_root = "C:/Code/Admin3/backend/django_Admin3"
+test_framework = "django"
+test_command = "python manage.py test"
+test_file_pattern = "**/test_*.py"
+source_file_pattern = "**/*.py"
+enforce_test_first = true
+min_coverage = 80
+ignore_patterns = [
+    "**/migrations/**",
+    "**/settings/**",
+    "**/manage.py",
+    "**/__pycache__/**",
+    "**/.venv/**"
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "django_Admin3.settings"
+python_files = ["test_*.py", "*_test.py", "tests.py"]
+python_classes = ["Test*", "*Tests", "*TestCase"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short --strict-markers"
+testpaths = [".", "apps", "rules_engine", "utils"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests"
+]
