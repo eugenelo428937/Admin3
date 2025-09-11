@@ -33,10 +33,19 @@ def analyze_test_files():
     test_dir = os.path.dirname(__file__)
     
     test_files = [
+        'test_imports_refactor.py',
         'test_stage1_rule_entry_point.py',
         'test_stage2_rule_fields.py', 
         'test_stage3_rules_condition.py',
-        'test_stage4_rule_integration.py'
+        'test_stage4_rule_integration.py',
+        'test_stage5_rule_actions.py',
+        'test_stage6_rule_execution.py',
+        'test_stage7_end_to_end.py',
+        'test_stage8_serializers.py',
+        'test_stage9_views.py',
+        'test_stage10_end_to_end_api.py',
+        'test_tdd_guard_verification.py',
+        'test_user_acknowledgment_refactor.py'
     ]
     
     print("RED TDD RED PHASE VERIFICATION")
@@ -71,7 +80,15 @@ def analyze_test_files():
         'Stage 1 - Entry Points': any('stage1' in f for f, _ in all_methods),
         'Stage 2 - Schema Validation': any('stage2' in f for f, _ in all_methods),
         'Stage 3 - Condition Logic': any('stage3' in f for f, _ in all_methods),
-        'Stage 4 - Rule Integration': any('stage4' in f for f, _ in all_methods)
+        'Stage 4 - Rule Integration': any('stage4' in f for f, _ in all_methods),
+        'Stage 5 - Rule Actions': any('stage5' in f for f, _ in all_methods),
+        'Stage 6 - Rule Execution': any('stage6' in f for f, _ in all_methods),
+        'Stage 7 - End-to-End': any('stage7' in f for f, _ in all_methods),
+        'Stage 8 - Serializers': any('stage8' in f for f, _ in all_methods),
+        'Stage 9 - Views': any('stage9' in f for f, _ in all_methods),
+        'Stage 10 - End-to-End API': any('stage10' in f for f, _ in all_methods),
+        'Import/Refactor Tests': any('imports' in f or 'refactor' in f for f, _ in all_methods),
+        'TDD Guard Tests': any('tdd_guard' in f for f, _ in all_methods)
     }
     
     print("\nSTAGE COVERAGE VERIFICATION:")
@@ -96,9 +113,9 @@ def analyze_test_files():
     
     print("\n" + "=" * 60)
     
-    if total_tests >= 30:  # Expect at least 30 comprehensive tests
+    if total_tests >= 80:  # Expect at least 80 comprehensive tests across all stages
         print("OK TDD TEST SUITE COMPLETE!")
-        print(f"Created {total_tests} comprehensive tests across 4 stages")
+        print(f"Created {total_tests} comprehensive tests across 10+ stages")
         print("\nRED PHASE READY:")
         print("+ All tests are written BEFORE implementation")
         print("+ Tests cover all specified requirements")
@@ -111,7 +128,7 @@ def analyze_test_files():
         
     else:
         print("WARNING: Test suite may be incomplete")
-        print(f"Found {total_tests} tests, expected at least 30")
+        print(f"Found {total_tests} tests, expected at least 80 for all stages")
     
     return total_tests, all_methods
 

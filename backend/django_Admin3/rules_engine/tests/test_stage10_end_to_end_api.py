@@ -56,16 +56,19 @@ class TestEndToEndAPIFlows(TransactionTestCase):
         # Create entry points
         RuleEntryPoint.objects.create(
             name='checkout_terms',
+            code='checkout_terms',
             description='Checkout terms and conditions'
         )
         
         RuleEntryPoint.objects.create(
             name='home_page_mount',
+            code='home_page_mount',
             description='Home page initialization'
         )
         
         RuleEntryPoint.objects.create(
             name='cart_update',
+            code='cart_update',
             description='Cart update hooks'
         )
         
@@ -481,7 +484,7 @@ class TestEndToEndAPIFlows(TransactionTestCase):
         if UserAcknowledgment:
             prefs = UserAcknowledgment.objects.filter(
                 user_id=str(self.eu_user.id),
-                ack_type='preference'
+                acknowledgment_type='preference'
             )
             self.assertEqual(prefs.count(), 2)
         

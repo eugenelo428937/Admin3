@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
 class CustomField(models.Model):
-    external_id = models.CharField(max_length=255, unique=True)
+    external_id = models.CharField(max_length=255)
     label = models.CharField(max_length=255)
     field_type = models.CharField(max_length=50)
     description = models.TextField(blank=True, null=True)

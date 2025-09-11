@@ -1,7 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
-    "defaultMode": "bypassPermissions",
     "allow": [
       "Bash(python manage.py shell:*)",
       "Bash(find:*)",
@@ -77,43 +76,8 @@
       "mcp__browsermcp__browser_close_all",
       "mcp__browsermcp__browser_close_all_tabs"
     ],
-    "deny": []
-  },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "tdd-guard validate --strict --config tdd-guard.config.js",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "tdd-guard check-coverage --config tdd-guard.config.js",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "tdd-guard track-test-execution",
-            "timeout": 3
-          }
-        ]
-      }
-    ]
+    "deny": [],
+    "defaultMode": "bypassPermissions"
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [

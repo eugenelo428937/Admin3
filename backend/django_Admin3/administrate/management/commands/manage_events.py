@@ -54,7 +54,7 @@ class Command(BaseCommand):
         websale_parser.add_argument(
             '--new-state',
             type=str,
-            choices=['Draft', 'published', 'cancelled'],
+            choices=['draft', 'published', 'cancelled'],
             help='New lifecycle state to set (optional, defaults to current state)'
         )
         websale_parser.add_argument(
@@ -65,7 +65,7 @@ class Command(BaseCommand):
         websale_parser.add_argument(
             '--batch-size',
             type=int,
-            default=100,
+            default=500,
             help='Number of events to fetch per batch (default: 100)'
         )
 
@@ -155,7 +155,7 @@ class Command(BaseCommand):
         soldout_parser.add_argument(
             '--batch-size',
             type=int,
-            default=100,
+            default=500,
             help='Number of events to process per batch (default: 100)'
         )
 
@@ -203,12 +203,13 @@ class Command(BaseCommand):
         websale = options['websale']
         new_state = options.get('new_state') or state
         dry_run = options.get('dry_run', False)
-        batch_size = options.get('batch_size', 100)
+        batch_size = options.get('batch_size', 500)
 
         self.stdout.write(f"\n{'[DRY RUN] ' if dry_run else ''}Setting websale status for events:")
         self.stdout.write(f"  Sitting: {sitting}")
         self.stdout.write(f"  Current state: {state}")
         self.stdout.write(f"  Websale: {websale}")
+        self.stdout.write(f"  batch_size: {batch_size}")
         if new_state != state:
             self.stdout.write(f"  New state: {new_state}")
         self.stdout.write("")
@@ -287,7 +288,7 @@ class Command(BaseCommand):
         """Handle deleting draft events."""
         sitting = options['sitting']
         dry_run = options.get('dry_run', False)
-        batch_size = options.get('batch_size', 100)
+        batch_size = options.get('batch_size', 500)
         confirm = options.get('confirm', False)
 
         self.stdout.write(f"\n{'[DRY RUN] ' if dry_run else ''}Deleting draft events:")
@@ -380,7 +381,7 @@ class Command(BaseCommand):
         """Handle listing events for review."""
         sitting = options['sitting']
         state = options['state']
-        batch_size = options.get('batch_size', 100)
+        batch_size = options.get('batch_size', 500)
 
         self.stdout.write(f"\nListing events:")
         self.stdout.write(f"  Sitting: {sitting}")
@@ -430,7 +431,7 @@ class Command(BaseCommand):
         state = options['state']
         soldout = options['soldout']
         dry_run = options.get('dry_run', False)
-        batch_size = options.get('batch_size', 100)
+        batch_size = options.get('batch_size', 500)
         
         # Convert string to boolean
         is_sold_out = soldout == 'True'

@@ -27,12 +27,21 @@ def run_stage_tests():
     print("(This confirms TDD methodology - tests should FAIL initially)")
     print()
     
-    # Test modules to run
+    # Test modules to run - all rules engine tests
     test_modules = [
+        'rules_engine.tests.test_imports_refactor',
         'rules_engine.tests.test_stage1_rule_entry_point',
         'rules_engine.tests.test_stage2_rule_fields', 
         'rules_engine.tests.test_stage3_rules_condition',
-        'rules_engine.tests.test_stage4_rule_integration'
+        'rules_engine.tests.test_stage4_rule_integration',
+        'rules_engine.tests.test_stage5_rule_actions',
+        'rules_engine.tests.test_stage6_rule_execution',
+        'rules_engine.tests.test_stage7_end_to_end',
+        'rules_engine.tests.test_stage8_serializers',
+        'rules_engine.tests.test_stage9_views',
+        'rules_engine.tests.test_stage10_end_to_end_api',
+        'rules_engine.tests.test_tdd_guard_verification',
+        'rules_engine.tests.test_user_acknowledgment_refactor'
     ]
     
     total_tests = 0

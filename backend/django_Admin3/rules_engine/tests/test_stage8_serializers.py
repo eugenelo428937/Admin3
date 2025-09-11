@@ -48,11 +48,13 @@ class TestRuleSerializers(TestCase):
         # Create entry points
         self.checkout_entry = RuleEntryPoint.objects.create(
             name='checkout_terms',
+            code='checkout_terms',
             description='Checkout terms and conditions'
         )
         
         self.home_entry = RuleEntryPoint.objects.create(
             name='home_page_mount',
+            code='home_page_mount',
             description='Home page initialization'
         )
         
@@ -63,7 +65,7 @@ class TestRuleSerializers(TestCase):
             description='Schema for checkout process context validation',
             schema={
                 'type': 'object',
-                'properties': {                    
+                'properties': {
                     'cart': {
                         'type': 'object',
                         'properties': {
@@ -101,13 +103,42 @@ class TestRuleSerializers(TestCase):
                                 }
                             },
                             'total': {'type': 'number', 'minimum': 0},
+                            'discount': {'type': 'number', 'default': 0},
                             'created_at': {'type': 'string'},
                             'updated_at': {'type': 'string'},
                             'has_marking': {'type': 'boolean'},
                             'has_material': {'type': 'boolean'},
                             'has_tutorial': {'type': 'boolean'},
                         },
-                        'required': ['id','user','session_key','items']
+                        'required': ['id', 'user', 'session_key', 'items']
+                    },
+                    'user': {
+                        'type': 'object',
+                        'properties': {
+                            'id': {'type': 'integer'},
+                            'email': {'type': 'string'},
+                            'region': {'type': 'string'},
+                            'tier': {'type': 'string'},
+                            'preferences': {'type': 'object'}
+                        }
+                    },
+                    'session': {
+                        'type': 'object',
+                        'properties': {
+                            'session_id': {'type': 'string'},
+                            'ip_address': {'type': 'string'}
+                        }
+                    },
+                    'acknowledgments': {
+                        'type': 'object',
+                        'additionalProperties': {
+                            'type': 'object',
+                            'properties': {
+                                'acknowledged': {'type': 'boolean'},
+                                'timestamp': {'type': 'string'},
+                                'user_id': {'type': 'integer'}
+                            }
+                        }
                     }
                 },
                 'required': ['cart']

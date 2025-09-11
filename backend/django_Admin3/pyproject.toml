@@ -16,6 +16,7 @@ ignore_patterns = [
 ]
 
 [tool.pytest.ini_options]
+tdd_guard_project_root = "C:/Code/Admin3/backend/django_Admin3"
 DJANGO_SETTINGS_MODULE = "django_Admin3.settings"
 python_files = ["test_*.py", "*_test.py", "tests.py"]
 python_classes = ["Test*", "*Tests", "*TestCase"]

@@ -1,0 +1,80 @@
+{
+    "type": "object",
+    "properties": {
+        "cart": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer"},
+                "user": {"type": ["integer", "null"]},
+                "session_key": {"type": ["string", "null"]},
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": "integer"},
+                            "current_product": {"type": "integer"},
+                            "product_id": {"type": "integer"},
+                            "product_name": {"type": "string"},
+                            "product_code": {"type": "string"},
+                            "subject_code": {"type": "string"},
+                            "exam_session_code": {"type": "string"},
+                            "product_type": {"type": "string"},
+                            "quantity": {"type": "integer", "minimum": 1},
+                            "price_type": {"type": "string"},
+                            "actual_price": {"type": "string"},
+                            "metadata": {
+                                "type": "object",
+                                "properties": {
+                                    "variationId": {"type": "integer"},
+                                    "variationName": {"type": "string"}
+                                },
+                                "required": ["variationId"]
+                            },
+                            "is_marking": {"type": "boolean"},
+                            "has_expired_deadline": {"type": "boolean"}
+                        },
+                        "required": ["id", "current_product", "product_type", "quantity", "price_type", "actual_price", "metadata"]
+                    }
+                },
+                "total": {"type": "number", "minimum": 0},
+                "discount": {"type": "number", "default": 0},
+                "created_at": {"type": "string"},
+                "updated_at": {"type": "string"},
+                "has_marking": {"type": "boolean"},
+                "has_material": {"type": "boolean"},
+                "has_tutorial": {"type": "boolean"}
+            },
+            "required": ["id", "user", "session_key", "items"]
+        },
+        "user": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer"},
+                "email": {"type": "string"},
+                "region": {"type": "string"},
+                "tier": {"type": "string"},
+                "preferences": {"type": "object"}
+            }
+        },
+        "session": {
+            "type": "object",
+            "properties": {
+                "session_id": {"type": "string"},
+                "ip_address": {"type": "string"}
+            }
+        },
+        "acknowledgments": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "acknowledged": {"type": "boolean"},
+                    "timestamp": {"type": "string"},
+                    "user_id": {"type": "integer"}
+                }
+            }
+        }
+    },
+    "required": ["cart"]
+}

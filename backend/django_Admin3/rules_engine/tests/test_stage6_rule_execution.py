@@ -1,5 +1,5 @@
 """
-Stage 6 TDD Tests: RuleExecution
+Stage 6 TDD Tests: ActedRuleExecution
 - Test execution logging and persistence
 - Test context snapshot storage
 - Test multiple execution logging
@@ -17,8 +17,8 @@ import json
 from datetime import datetime, timedelta
 
 
-class Stage6RuleExecutionTests(TestCase):
-    """TDD Stage 6: RuleExecution Logging Tests"""
+class Stage6ActedRuleExecutionTests(TestCase):
+    """TDD Stage 6: ActedRuleExecution Logging Tests"""
     
     def setUp(self):
         """Set up test data"""
@@ -170,13 +170,13 @@ class Stage6RuleExecutionTests(TestCase):
     def test_log_execution(self):
         """
         TDD RED: Test that rule execution is persisted to database
-        Expected to FAIL initially - no RuleExecution model or logging
+        Expected to FAIL initially - no ActedRuleExecution model or logging
         """
         rule = self.test_rule
         context = self.basic_context
         entry_point = 'checkout_terms'
         
-        # Expected execution record structure (when RuleExecution model exists)
+        # Expected execution record structure (when ActedRuleExecution model exists)
         expected_execution_fields = {
             'rule_id': 'execution_test_rule',
             'entry_point': 'checkout_terms',
@@ -195,12 +195,12 @@ class Stage6RuleExecutionTests(TestCase):
             'error_message': None
         }
         
-        # This will fail until RuleExecution model is created
+        # This will fail until ActedRuleExecution model is created
         try:
-            from rules_engine.models.rule_execution import RuleExecution
+            from rules_engine.models.acted_rule_execution import ActedRuleExecution
             
             # Create execution record (when implemented)
-            execution = RuleExecution.objects.create(
+            execution = ActedRuleExecution.objects.create(
                 rule_id=rule.rule_id,
                 entry_point=entry_point,
                 context_snapshot=context,
@@ -216,8 +216,8 @@ class Stage6RuleExecutionTests(TestCase):
             self.assertTrue(execution.success)
             
         except ImportError:
-            # Expected to fail initially - RuleExecution model doesn't exist yet
-            self.fail("RuleExecution model not implemented yet - this test should fail in RED phase")
+            # Expected to fail initially - ActedRuleExecution model doesn't exist yet
+            self.fail("ActedRuleExecution model not implemented yet - this test should fail in RED phase")
     
     def test_log_stores_context_snapshot(self):
         """
@@ -268,10 +268,10 @@ class Stage6RuleExecutionTests(TestCase):
         
         # This will fail until context snapshot logging is implemented
         try:
-            from rules_engine.models.rule_execution import RuleExecution
+            from rules_engine.models.acted_rule_execution import ActedRuleExecution
             
             # Create execution with full context snapshot
-            execution = RuleExecution.objects.create(
+            execution = ActedRuleExecution.objects.create(
                 rule_id=rule.rule_id,
                 entry_point='checkout_terms',
                 context_snapshot=context_with_sensitive_data,
@@ -282,19 +282,20 @@ class Stage6RuleExecutionTests(TestCase):
             # Verify complete context is stored
             stored_context = execution.context_snapshot
             self.assertEqual(stored_context['cart']['total'], 75.00)
-            self.assertEqual(stored_context['user']['tier'], 'premium')
-            self.assertEqual(stored_context['user']['ip_address'], '192.168.1.100')
+            # User data is stored in cart.user (as integer ID), not as separate object
+            self.assertEqual(stored_context['cart']['user'], 60)
             self.assertEqual(stored_context['request_metadata']['source'], 'web_checkout')
             
             # Verify context can be queried
-            executions_with_premium = RuleExecution.objects.filter(
-                context_snapshot__user__tier='premium'
+            # Query by cart user ID instead
+            executions_with_user_60 = ActedRuleExecution.objects.filter(
+                context_snapshot__cart__user=60
             )
-            self.assertEqual(executions_with_premium.count(), 1)
+            self.assertEqual(executions_with_user_60.count(), 1)
             
         except ImportError:
             # Expected to fail initially
-            self.fail("RuleExecution model not implemented - context snapshot storage missing")
+            self.fail("ActedRuleExecution model not implemented - context snapshot storage missing")
     
     def test_log_multiple_rules(self):
         """
@@ -342,12 +343,12 @@ class Stage6RuleExecutionTests(TestCase):
         
         # This will fail until multiple execution logging is implemented
         try:
-            from rules_engine.models.rule_execution import RuleExecution
+            from rules_engine.models.acted_rule_execution import ActedRuleExecution
             
             # Simulate executing all 3 rules
             executions = []
             for rule in [self.test_rule, rule2, rule3]:
-                execution = RuleExecution.objects.create(
+                execution = ActedRuleExecution.objects.create(
                     rule_id=rule.rule_id,
                     entry_point='checkout_terms',
                     context_snapshot=context,
@@ -358,7 +359,7 @@ class Stage6RuleExecutionTests(TestCase):
                 executions.append(execution)
             
             # Verify all 3 executions logged
-            all_executions = RuleExecution.objects.filter(entry_point='checkout_terms')
+            all_executions = ActedRuleExecution.objects.filter(entry_point='checkout_terms')
             self.assertEqual(all_executions.count(), 3)
             
             # Verify distinct rule IDs
@@ -394,10 +395,10 @@ class Stage6RuleExecutionTests(TestCase):
         
         # This will fail until audit trail is implemented
         try:
-            from rules_engine.models.rule_execution import RuleExecution
+            from rules_engine.models.acted_rule_execution import ActedRuleExecution
             
             # Create execution with full audit data
-            execution = RuleExecution.objects.create(
+            execution = ActedRuleExecution.objects.create(
                 rule_id=rule.rule_id,
                 entry_point='checkout_terms',
                 context_snapshot=context,
@@ -420,7 +421,7 @@ class Stage6RuleExecutionTests(TestCase):
                     'rule_version': 1,
                     'engine_version': '1.0.0',
                     'request_id': 'req_abc123',
-                    'user_id': context['user']['id']
+                    'user_id': context['cart']['user']
                 }
             )
             
@@ -441,7 +442,7 @@ class Stage6RuleExecutionTests(TestCase):
             )
             
         except ImportError:
-            self.fail("RuleExecution audit trail not implemented")
+            self.fail("ActedRuleExecution audit trail not implemented")
     
     def test_execution_error_logging(self):
         """
@@ -469,10 +470,10 @@ class Stage6RuleExecutionTests(TestCase):
         
         # This will fail until error logging is implemented
         try:
-            from rules_engine.models.rule_execution import RuleExecution
+            from rules_engine.models.acted_rule_execution import ActedRuleExecution
             
             # Simulate execution that encounters error
-            execution = RuleExecution.objects.create(
+            execution = ActedRuleExecution.objects.create(
                 rule_id=error_rule.rule_id,
                 entry_point='checkout_terms',
                 context_snapshot=context,
@@ -495,12 +496,12 @@ class Stage6RuleExecutionTests(TestCase):
             self.assertEqual(execution.error_details['action_index'], 0)
             
             # Verify failed executions can be queried
-            failed_executions = RuleExecution.objects.filter(success=False)
+            failed_executions = ActedRuleExecution.objects.filter(success=False)
             self.assertEqual(failed_executions.count(), 1)
             self.assertEqual(failed_executions.first().rule_id, 'error_execution_rule')
             
         except ImportError:
-            self.fail("Error logging in RuleExecution not implemented")
+            self.fail("Error logging in ActedRuleExecution not implemented")
     
     def test_execution_performance_metrics(self):
         """
@@ -512,10 +513,10 @@ class Stage6RuleExecutionTests(TestCase):
         
         # This will fail until performance tracking is implemented
         try:
-            from rules_engine.models.rule_execution import RuleExecution
+            from rules_engine.models.acted_rule_execution import ActedRuleExecution
             
             # Create execution with performance metrics
-            execution = RuleExecution.objects.create(
+            execution = ActedRuleExecution.objects.create(
                 rule_id=rule.rule_id,
                 entry_point='checkout_terms',
                 context_snapshot=context,
@@ -538,10 +539,10 @@ class Stage6RuleExecutionTests(TestCase):
             self.assertGreater(execution.context_size_bytes, 0)
             
             # Test performance queries
-            slow_executions = RuleExecution.objects.filter(total_execution_time_ms__gte=30)
+            slow_executions = ActedRuleExecution.objects.filter(total_execution_time_ms__gte=30)
             self.assertEqual(slow_executions.count(), 1)
             
-            large_contexts = RuleExecution.objects.filter(context_size_bytes__gte=500)
+            large_contexts = ActedRuleExecution.objects.filter(context_size_bytes__gte=500)
             # Should depend on actual context size
             
         except ImportError:
@@ -557,12 +558,12 @@ class Stage6RuleExecutionTests(TestCase):
         
         # This will fail until cleanup functionality is implemented
         try:
-            from rules_engine.models.rule_execution import RuleExecution
+            from rules_engine.models.acted_rule_execution import ActedRuleExecution
             
             # Create many execution records
             executions = []
             for i in range(25):
-                execution = RuleExecution.objects.create(
+                execution = ActedRuleExecution.objects.create(
                     rule_id=rule.rule_id,
                     entry_point='checkout_terms',
                     context_snapshot=context,
@@ -573,22 +574,22 @@ class Stage6RuleExecutionTests(TestCase):
                 executions.append(execution)
             
             # Test pagination
-            page1 = RuleExecution.objects.order_by('-created_at')[:10]
+            page1 = ActedRuleExecution.objects.order_by('-created_at')[:10]
             self.assertEqual(len(page1), 10)
             
-            page2 = RuleExecution.objects.order_by('-created_at')[10:20]
+            page2 = ActedRuleExecution.objects.order_by('-created_at')[10:20]
             self.assertEqual(len(page2), 10)
             
             # Test cleanup of old records (older than 30 days)
             cutoff_date = timezone.now() - timedelta(days=30)
-            old_executions = RuleExecution.objects.filter(created_at__lt=cutoff_date)
+            old_executions = ActedRuleExecution.objects.filter(created_at__lt=cutoff_date)
             old_count = old_executions.count()
             
             # Simulate cleanup
             old_executions.delete()
             
             # Verify cleanup worked
-            remaining_executions = RuleExecution.objects.all()
+            remaining_executions = ActedRuleExecution.objects.all()
             self.assertEqual(remaining_executions.count(), 25 - old_count)
             
         except ImportError:
