@@ -31,7 +31,7 @@ class EventManagementService:
         """
         self.api_service = api_service
     
-    def get_events(self, current_sitting: str, state: str, first: int = 100, offset: int = 0) -> List[str]:
+    def get_events(self, current_sitting: str, state: str, first: int = 500, offset: int = 0) -> List[str]:
         """
         Get events by sitting and lifecycle state.
         
@@ -280,7 +280,7 @@ class EventManagementService:
         # Get all draft events
         all_event_ids = []
         offset = 0
-        fetch_batch_size = 100
+        fetch_batch_size = batch_size
         
         while True:
             events = self.get_events(

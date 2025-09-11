@@ -519,7 +519,7 @@ class Stage4RuleIntegrationTests(TestCase):
         with connection.cursor() as cursor:
             # Query that should use entry_point + active index
             cursor.execute("""
-                SELECT rule_id FROM acted_rules_engine 
+                SELECT rule_id FROM acted_rules_jsonb 
                 WHERE entry_point = %s AND active = %s 
                 ORDER BY priority
             """, ['checkout_terms', True])

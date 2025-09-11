@@ -52,6 +52,9 @@ class RuleRepository:
 class Validator:
     """Context validation using JSON Schema"""
     
+    def __init__(self):
+        self._schema_cache = {}
+    
     def validate_context(self, context: Dict[str, Any], rules_fields_id: Optional[str] = None) -> bool:
         """Validate context against schema"""
         if not isinstance(context, dict):
@@ -64,22 +67,28 @@ class Validator:
             return True
         
         try:
-            # Get the schema from database
-            rules_fields = ActedRulesFields.objects.get(
-                fields_id=rules_fields_id,
-                is_active=True
-            )
+            # Try to get schema from cache first
+            if rules_fields_id in self._schema_cache:
+                schema = self._schema_cache[rules_fields_id]
+            else:
+                # Get the schema from database and cache it
+                rules_fields = ActedRulesFields.objects.get(
+                    fields_id=rules_fields_id,
+                    is_active=True
+                )
+                schema = rules_fields.schema
+                self._schema_cache[rules_fields_id] = schema
             
             # Validate context against schema
-            jsonschema.validate(context, rules_fields.schema)
-            logger.debug(f"✅ Schema validation passed for {rules_fields_id}")
+            jsonschema.validate(context, schema)
+            logger.debug(f" Schema validation passed for {rules_fields_id}")
             return True
             
         except ActedRulesFields.DoesNotExist:
             logger.error(f"RulesFields schema not found: {rules_fields_id}")
             return False
         except jsonschema.ValidationError as e:
-            logger.warning(f"❌ Schema validation failed for {rules_fields_id}: {e.message}")
+            logger.warning(f" Schema validation failed for {rules_fields_id}: {e.message}")
             logger.debug(f"Validation error path: {' -> '.join(str(p) for p in e.absolute_path)}")
             return False
         except Exception as e:
@@ -103,16 +112,16 @@ class ConditionEvaluator:
             
             # Ensure we return a boolean
             if isinstance(result, bool):
-                logger.debug(f"✅ JSONLogic condition evaluated to: {result}")
+                logger.debug(f" JSONLogic condition evaluated to: {result}")
                 return result
             else:
                 # Convert truthy/falsy values to boolean
                 boolean_result = bool(result)
-                logger.debug(f"✅ JSONLogic condition result {result} converted to boolean: {boolean_result}")
+                logger.debug(f" JSONLogic condition result {result} converted to boolean: {boolean_result}")
                 return boolean_result
             
         except Exception as e:
-            logger.error(f"❌ Error evaluating JSONLogic condition {condition}: {e}")
+            logger.error(f" Error evaluating JSONLogic condition {condition}: {e}")
             logger.debug(f"Context was: {context}")
             return False
     
@@ -177,7 +186,43 @@ class ConditionEvaluator:
             
             elif operator == "!":
                 # Logical NOT: {"!": condition}
-                return not self._evaluate_jsonlogic(operands, data)
+                return not self._evaluate_jsonlogic(operands[0], data)
+            
+            elif operator == ">=":
+                # Greater than or equal: {">=": [left, right]}
+                left = self._evaluate_jsonlogic(operands[0], data)
+                right = self._evaluate_jsonlogic(operands[1], data)
+                try:
+                    return float(left) >= float(right)
+                except (ValueError, TypeError):
+                    return False
+            
+            elif operator == ">":
+                # Greater than: {">":[left, right]}
+                left = self._evaluate_jsonlogic(operands[0], data)
+                right = self._evaluate_jsonlogic(operands[1], data)
+                try:
+                    return float(left) > float(right)
+                except (ValueError, TypeError):
+                    return False
+            
+            elif operator == "<":
+                # Less than: {"<": [left, right]}
+                left = self._evaluate_jsonlogic(operands[0], data)
+                right = self._evaluate_jsonlogic(operands[1], data)
+                try:
+                    return float(left) < float(right)
+                except (ValueError, TypeError):
+                    return False
+            
+            elif operator == "<=":
+                # Less than or equal: {"<=": [left, right]}
+                left = self._evaluate_jsonlogic(operands[0], data)
+                right = self._evaluate_jsonlogic(operands[1], data)
+                try:
+                    return float(left) <= float(right)
+                except (ValueError, TypeError):
+                    return False
             
             else:
                 logger.warning(f"Unknown JSONLogic operator: {operator}")
@@ -212,6 +257,7 @@ class ConditionEvaluator:
             return value
         except Exception:
             return None
+    
 
 
 class ActionDispatcher:
@@ -267,6 +313,19 @@ class ActionDispatcher:
                 }
             }
         
+        elif action_type == "update":
+            return {
+                "type": "update",
+                "success": True,
+                "message": {
+                    "type": "update",
+                    "target": action.get("target"),
+                    "operation": action.get("operation"),
+                    "value": action.get("value"),
+                    "description": action.get("description", "Value updated")
+                }
+            }
+        
         else:
             logger.warning(f"Unknown action type: {action_type}")
             return {
@@ -284,6 +343,7 @@ class ExecutionStore:
                        execution_time_ms: float, error_message: str = "") -> str:
         """Store rule execution record"""
         execution_id = f"exec_{int(time.time())}_{uuid.uuid4().hex[:8]}"
+        
         
         try:
             ActedRuleExecution.objects.create(
@@ -304,6 +364,17 @@ class ExecutionStore:
 
 
 class RuleEngine:
+    
+    def _get_template_content(self, template_name):
+        """Get template content for acknowledgment"""
+        if not template_name:
+            return {}
+        try:
+            from ..models.message_template import MessageTemplate
+            template = MessageTemplate.objects.get(name=template_name, is_active=True)
+            return template.json_content or {}
+        except MessageTemplate.DoesNotExist:
+            return {}
     """Main Rules Engine orchestrator"""
     
     def __init__(self):
@@ -318,11 +389,11 @@ class RuleEngine:
         start_time = time.time()
         
         try:
-            logger.info(f"🎯 Rules Engine: Executing entry point '{entry_point}'")
+            logger.info(f" Rules Engine: Executing entry point '{entry_point}'")
             
             # Fetch active rules
             rules = self.rule_repository.get_active_rules(entry_point)
-            logger.info(f"📊 Rules Engine: Found {len(rules)} active rules for '{entry_point}'")
+            logger.info(f" Rules Engine: Found {len(rules)} active rules for '{entry_point}'")
             
             if not rules:
                 return {
@@ -337,6 +408,12 @@ class RuleEngine:
             all_messages = []
             blocked = False
             rules_evaluated = 0
+            blocking_rules = []
+            required_acknowledgments = []
+            satisfied_acknowledgments = []
+            rules_executed_list = []
+            preference_prompts = []
+            context_updates = {}
             
             for rule in rules:
                 try:
@@ -351,20 +428,84 @@ class RuleEngine:
                     condition_result = self.condition_evaluator.evaluate(rule.condition, context)
                     
                     if condition_result:
-                        logger.info(f"✅ Rule '{rule.rule_id}' condition matched")
+                        logger.info(f" Rule '{rule.rule_id}' condition matched")
                         
                         # Execute actions
                         actions_result = self.action_dispatcher.dispatch(rule.actions, context)
                         
-                        # Collect messages
+                        # Check for blocking acknowledgments and preferences
+                        for action, action_result in zip(rule.actions, actions_result):
+                            if action.get('type') == 'user_acknowledge':
+                                ack_key = action.get('ackKey')
+                                required = action.get('required', True)
+                                
+                                # Check if acknowledgment exists in context
+                                acknowledgments = context.get('acknowledgments', {})
+                                if ack_key in acknowledgments and acknowledgments[ack_key].get('acknowledged'):
+                                    satisfied_acknowledgments.append(ack_key)
+                                elif required:
+                                    blocked = True
+                                    blocking_rules.append(rule.rule_id)
+                                    required_acknowledgments.append({
+                                        'ackKey': ack_key,
+                                        'templateName': action.get('templateName'),
+                                        'ruleId': rule.rule_id,
+                                        'required': required
+                                    })
+                                else:  # not required - preference prompt
+                                    preference_prompts.append({
+                                        'ackKey': ack_key,
+                                        'templateName': action.get('templateName'),
+                                        'ruleId': rule.rule_id,
+                                        'required': False
+                                    })
+                            elif action.get('type') == 'user_preference':
+                                # Handle user preferences (non-blocking)
+                                ack_key = action.get('ackKey')
+                                preference_prompts.append({
+                                    'ackKey': ack_key,
+                                    'templateName': action.get('templateName'),
+                                    'ruleId': rule.rule_id,
+                                    'required': False
+                                })
+                            elif action.get('type') == 'update':
+                                # Apply context updates for subsequent rules
+                                target = action.get('target')
+                                operation = action.get('operation')
+                                value = action.get('value')
+                                
+                                if target and operation == 'set':
+                                    self._set_nested_value(context, target, value)
+                                    context_updates[target] = value
+                                    logger.debug(f"Updated context: {target} = {value}")
+                                elif target and operation == 'increment':
+                                    current_value = self._get_nested_value(context, target) or 0
+                                    new_value = current_value + value
+                                    self._set_nested_value(context, target, new_value)
+                                    context_updates[target] = new_value
+                                    logger.debug(f"Incremented context: {target} from {current_value} to {new_value}")
+                        
+                        # Collect messages  
                         for action_result in actions_result:
                             if action_result.get("success") and "message" in action_result:
                                 all_messages.append(action_result["message"])
                         
+                        # Calculate execution time
+                        execution_time_ms = (time.time() - rule_start) * 1000
+                        
+                        # Track executed rule
+                        rules_executed_list.append({
+                            'rule_id': rule.rule_id,
+                            'priority': rule.priority,
+                            'condition_result': True,
+                            'actions_executed': len(actions_result),
+                            'stop_processing': rule.stop_processing,
+                            'execution_time_ms': execution_time_ms
+                        })
+                        
                         rules_evaluated += 1
                         
                         # Store execution record
-                        execution_time_ms = (time.time() - rule_start) * 1000
                         self.execution_store.store_execution(
                             rule.rule_id, entry_point, context, actions_result,
                             "success", execution_time_ms
@@ -372,13 +513,13 @@ class RuleEngine:
                         
                         # Check if we should stop processing
                         if rule.stop_processing:
-                            logger.info(f"🛑 Rule '{rule.rule_id}' set stop_processing=True")
+                            logger.info(f" Rule '{rule.rule_id}' set stop_processing=True")
                             break
                     else:
-                        logger.debug(f"⏭️  Rule '{rule.rule_id}' condition not matched")
+                        logger.debug(f"  Rule '{rule.rule_id}' condition not matched")
                 
                 except Exception as e:
-                    logger.error(f"❌ Error processing rule '{rule.rule_id}': {e}")
+                    logger.error(f" Error processing rule '{rule.rule_id}': {e}")
                     # Store error execution record
                     execution_time_ms = (time.time() - rule_start) * 1000
                     self.execution_store.store_execution(
@@ -394,15 +535,26 @@ class RuleEngine:
                 "messages": all_messages,
                 "rules_evaluated": rules_evaluated,
                 "execution_time_ms": total_time_ms,
-                "entry_point": entry_point
+                "entry_point": entry_point,
+                "blocking_rules": blocking_rules,
+                "required_acknowledgments": required_acknowledgments,
+                "satisfied_acknowledgments": satisfied_acknowledgments,
+                "actions_completed": [],
+                "proceed": not blocked,
+                "rules_executed": rules_executed_list,
+                "preference_prompts": preference_prompts,
+                "context_updates": context_updates,
             }
             
-            logger.info(f"🏁 Rules Engine: Completed '{entry_point}' - {rules_evaluated} rules evaluated in {total_time_ms:.2f}ms")
+            if blocked:
+                result['error'] = 'Required acknowledgments not provided' 
+            
+            logger.info(f" Rules Engine: Completed '{entry_point}' - {rules_evaluated} rules evaluated in {total_time_ms:.2f}ms")
             return result
             
         except Exception as e:
             total_time_ms = (time.time() - start_time) * 1000
-            logger.error(f"💥 Rules Engine: Fatal error in '{entry_point}': {e}")
+            logger.error(f" Rules Engine: Fatal error in '{entry_point}': {e}")
             return {
                 "success": False,
                 "blocked": False,
@@ -412,6 +564,24 @@ class RuleEngine:
                 "error": str(e),
                 "entry_point": entry_point
             }
+    
+    def _set_nested_value(self, data: Dict[str, Any], path: str, value: Any) -> None:
+        """Set nested value in dictionary using dot notation"""
+        try:
+            keys = path.split('.')
+            current = data
+            
+            # Navigate to the parent object
+            for key in keys[:-1]:
+                if key not in current:
+                    current[key] = {}
+                current = current[key]
+            
+            # Set the final value
+            current[keys[-1]] = value
+            
+        except Exception as e:
+            logger.error(f"Failed to set nested value {path} = {value}: {e}")
 
 
 # Global instance

@@ -35,7 +35,7 @@ from administrate.models import CourseTemplate, Location, Venue, Instructor, Cus
 from administrate.exceptions import AdministrateAPIError
 from administrate.utils.graphql_loader import load_graphql_query, load_graphql_mutation
 logger = logging.getLogger(__name__)
-file_path = r"C:\TEMP\EventSessionImportTemplate2026AV2.xlsx"
+file_path = r"C:\Code\Admin3\backend\django_Admin3\administrate\src\EventSessionImportTemplate 2026A V1 WAITLIST.xlsx"
 queryFilePath = r"C:\Administrate\Result\query"+datetime.now().strftime("%Y%m%d")+"FINALLIVE.txt"
 resultFilePath = r"C:\Administrate\Result\importResult"+datetime.now().strftime("%Y%m%d")+"FINALLIVE.txt"
 ValidationFilePath = r"C:\Administrate\Result\ValidationResult"+datetime.now().strftime("%Y%m%d")+".txt"
@@ -293,16 +293,15 @@ def validate_event(api_service,
 
     # Validate venues
     try:        
-        if venue_name:
-            if (venue_name.casefold() not in tbc_venue_name):            
-                if venue_name and row_data['location_id']:
-                    venue = validate_venue(
-                        api_service, venue_name, row_data['location_id'])
-                    if not venue:
-                        row_errors.append(
-                            f"Invalid Venue: {venue_name}")
-                    else:
-                        row_data['venue_id'] = venue['id']
+        if venue_name:            
+            if venue_name and row_data['location_id']:
+                venue = validate_venue(
+                    api_service, venue_name, row_data['location_id'])
+                if not venue:
+                    row_errors.append(
+                        f"Invalid Venue: {venue_name}")
+                else:
+                    row_data['venue_id'] = venue['id']
 
     except Exception as e:
         row_errors.append(f"Error validating venue: {str(e)}")
