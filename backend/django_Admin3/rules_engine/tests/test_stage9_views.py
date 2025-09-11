@@ -26,9 +26,9 @@ from rules_engine.models import (
 
 # Import expected models that don't exist yet
 try:
-    from rules_engine.models import RuleExecution
+    from rules_engine.models import ActedRuleExecution
 except ImportError:
-    RuleExecution = None
+    ActedRuleExecution = None
 
 User = get_user_model()
 
@@ -50,11 +50,13 @@ class TestRuleViews(TestCase):
         # Create entry points
         self.checkout_entry = RuleEntryPoint.objects.create(
             name='checkout_terms',
+            code='checkout_terms',
             description='Checkout terms and conditions'
         )
         
         self.home_entry = RuleEntryPoint.objects.create(
             name='home_page_mount',
+            code='home_page_mount',
             description='Home page initialization'
         )
         
@@ -114,12 +116,7 @@ class TestRuleViews(TestCase):
                 },
                 'required': ['cart']
             },
-            version=1
-                            }
-                        }
-                    }
-                }
-            }
+            version=1                       
         )
         
         # Create message templates
@@ -512,8 +509,8 @@ class TestRuleViews(TestCase):
         TDD RED: Test that rule executions are logged to database
         Expected to FAIL initially - no execution logging
         """
-        if not RuleExecution:
-            self.fail("RuleExecution model not implemented yet")
+        if not ActedRuleExecution:
+            self.fail("ActedRuleExecution model not implemented yet")
         
         # Create rule
         rule = ActedRule.objects.create(
@@ -552,7 +549,7 @@ class TestRuleViews(TestCase):
         }
         
         # Count executions before
-        initial_count = RuleExecution.objects.count()
+        initial_count = ActedRuleExecution.objects.count()
         
         url = reverse('rules-execute')
         response = self.client.post(url, execute_data, format='json')
@@ -560,11 +557,11 @@ class TestRuleViews(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
         # Verify execution was logged
-        new_count = RuleExecution.objects.count()
+        new_count = ActedRuleExecution.objects.count()
         self.assertEqual(new_count, initial_count + 1)
         
         # Get the logged execution
-        execution = RuleExecution.objects.latest('created_at')
+        execution = ActedRuleExecution.objects.latest('created_at')
         self.assertEqual(execution.rule_id, 'logged_rule')
         self.assertEqual(execution.entry_point, 'checkout_terms')
         self.assertEqual(execution.context_snapshot['user']['region'], 'EU')

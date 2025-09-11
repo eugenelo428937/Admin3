@@ -2,7 +2,7 @@
 User Acknowledgment Model
 """
 from .base import models, User
-from .rule import Rule
+from .acted_rule import ActedRule
 from .message_template import MessageTemplate
 
 
@@ -15,7 +15,7 @@ class UserAcknowledgment(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    rule = models.ForeignKey(Rule, on_delete=models.CASCADE)
+    rule = models.ForeignKey(ActedRule, on_delete=models.CASCADE)
     message_template = models.ForeignKey(MessageTemplate, on_delete=models.CASCADE, null=True, blank=True)
     acknowledgment_type = models.CharField(max_length=20, choices=ACKNOWLEDGMENT_TYPES, default='required')
     is_selected = models.BooleanField(default=False, help_text="For optional rules, whether user selected this option")

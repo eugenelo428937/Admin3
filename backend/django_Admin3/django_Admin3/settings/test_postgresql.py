@@ -17,7 +17,7 @@ DATABASES = {
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '5432'),
         'TEST': {
-            'NAME': f"test_{os.getenv('DB_NAME', 'ACTEDDBDEV01')}",
+            'NAME': f"TEST_{os.getenv('DB_NAME', 'ACTEDDBDEV01')}",
         },
         'OPTIONS': {
             'options': '-c default_transaction_isolation=read_committed'

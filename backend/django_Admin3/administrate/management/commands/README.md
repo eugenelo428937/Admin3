@@ -127,18 +127,6 @@ python manage.py update_administrate_prices --debug
 
 ## Other Commands in this Directory
 
-### import_subjects
-Imports subjects from Administrate API.
-```bash
-python manage.py import_subjects
-```
-
-### import_administrate_data
-General import command for various Administrate data.
-```bash
-python manage.py import_administrate_data
-```
-
 ### sync_pricelevels
 Synchronizes price level definitions from Administrate API.
 ```bash

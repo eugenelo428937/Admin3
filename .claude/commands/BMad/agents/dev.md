@@ -1,7 +1,6 @@
 ---
 name: bmad-dev
 description: BMAD Dev
-model: sonnet
 ---
 
 # /dev Command
