@@ -659,11 +659,11 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         Query parameters:
         - limit: Maximum number of items per category (default: 5)
         """
-        logger.info('🏠 [API] Default search data endpoint called')
+        logger.info('[API] Default search data endpoint called')
         
         try:
             limit = int(request.query_params.get('limit', 5))
-            logger.info(f'🏠 [API] Limit: {limit}')
+            logger.info(f' [API] Limit: {limit}')
             
             # Start with a basic response to test the endpoint
             response_data = {
@@ -687,9 +687,9 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 subjects = Subject.objects.all()[:limit]
                 subjects_serializer = SubjectSerializer(subjects, many=True)
                 response_data['suggested_filters']['subjects'] = subjects_serializer.data
-                logger.info(f'🏠 [API] Found {len(subjects_serializer.data)} subjects')
+                logger.info(f' [API] Found {len(subjects_serializer.data)} subjects')
             except Exception as e:
-                logger.warning(f'🏠 [API] Error getting subjects: {str(e)}')
+                logger.warning(f' [API] Error getting subjects: {str(e)}')
             
             try:
                 # Get some product groups
@@ -703,9 +703,9 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                     for group in product_groups
                 ]
                 response_data['suggested_filters']['product_groups'] = product_groups_data
-                logger.info(f'🏠 [API] Found {len(product_groups_data)} product groups')
+                logger.info(f' [API] Found {len(product_groups_data)} product groups')
             except Exception as e:
-                logger.warning(f'🏠 [API] Error getting product groups: {str(e)}')
+                logger.warning(f' [API] Error getting product groups: {str(e)}')
             
             try:
                 # Get some popular products
@@ -717,17 +717,17 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 popular_products_serializer = ProductListSerializer(popular_products_queryset, many=True)
                 response_data['popular_products'] = popular_products_serializer.data
                 response_data['total_count'] = len(popular_products_serializer.data)
-                logger.info(f'🏠 [API] Found {len(popular_products_serializer.data)} popular products')
+                logger.info(f' [API] Found {len(popular_products_serializer.data)} popular products')
             except Exception as e:
-                logger.warning(f'🏠 [API] Error getting popular products: {str(e)}')
+                logger.warning(f' [API] Error getting popular products: {str(e)}')
             
-            logger.info('🏠 [API] Default search data completed successfully')
+            logger.info(' [API] Default search data completed successfully')
             return Response(response_data)
             
         except Exception as e:
-            logger.error(f'🏠 [API] Default search data error: {str(e)}')
+            logger.error(f' [API] Default search data error: {str(e)}')
             import traceback
-            logger.error(f'🏠 [API] Traceback: {traceback.format_exc()}')
+            logger.error(f' [API] Traceback: {traceback.format_exc()}')
             return Response({
                 'error': 'Failed to get default search data',
                 'details': str(e)

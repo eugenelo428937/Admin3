@@ -45,6 +45,11 @@ import ProductCardTestPage from "./components/sandbox/ProductCardTestPage";
 import StyleGuide from "./components/StyleGuide";
 import Registration from './pages/Registration';
 import Login from './pages/Login';
+import MessageClassificationDemo from "./components/Test/MessageClassificationDemo";
+import ContentParsingDemo from "./components/Test/ContentParsingDemo";
+import ContextBuildingDemo from "./components/Test/ContextBuildingDemo";
+import ProcessingPipelineDemo from "./components/Test/ProcessingPipelineDemo";
+import RulesEngineUtilitiesDemo from "./components/Test/RulesEngineUtilitiesDemo";
 import "./App.css";
 
 const system = createSystem(defaultConfig);
@@ -215,6 +220,26 @@ function App() {
                                                         path="/sandbox/product-card-test"
                                                         element={<ProductCardTestPage />}
                                                     />
+													<Route
+														path="/test/message-classification"
+														element={<MessageClassificationDemo />}
+													/>
+													<Route
+														path="/test/content-parsing"
+														element={<ContentParsingDemo />}
+													/>
+													<Route
+														path="/test/context-building"
+														element={<ContextBuildingDemo />}
+													/>
+													<Route
+														path="/test/processing-pipeline"
+														element={<ProcessingPipelineDemo />}
+													/>
+													<Route
+														path="/test/rules-engine"
+														element={<RulesEngineUtilitiesDemo />}
+													/>
 													 <Route path="/register2" element={<Registration />} />
 												</Routes>
 											</Container>

@@ -1,16 +1,14 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBox from "../components/SearchBox";
 import SearchResults from "../components/SearchResults";
 import { Row, Col, Alert } from "react-bootstrap";
 import { Typography, Container } from "@mui/material";
 import backgroundVideo from "../assets/video/12595751_2560_1440_30fps.mp4";
-import { useTheme } from "@mui/material/styles";
-import { useHomePageRules } from "../hooks/useRulesEngine";
-import JsonContentRenderer from "../components/Common/JsonContentRenderer";
+import { rulesEngineHelpers } from "../utils/rulesEngineUtils";
+import rulesEngineService from "../services/rulesEngineService";
 
 const Home = () => {
-	const theme = useTheme();
 	const navigate = useNavigate();
 	const [searchResults, setSearchResults] = useState(null);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -20,27 +18,62 @@ const Home = () => {
 		variations: [],
 		products: [],
 	});
-	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 
-	// Use Rules Engine Hook with debugging - memoize context to prevent infinite loops
-	const homePageContext = useMemo(() => ({
-		current_date: new Date().toISOString().split('T')[0],
-		user_location: 'home_page'
-	}), []); // Empty dependency array since date doesn't need to update during session
-	
-	const { 
-		rulesResult, 
-		loading: rulesLoading, 
-		error: rulesError, 
-		hasMessages,
-		rulesCount 
-	} = useHomePageRules(homePageContext);
+	// Rules engine state for holiday messages and other home page rules
+	const [rulesMessages, setRulesMessages] = useState([]);
+	const [rulesLoading, setRulesLoading] = useState(false);
 
-	// Extract messages from rules result
-	const ruleMessages = rulesResult?.messages?.filter(msg => 
-		msg.type === 'display' || msg.type === 'message'
-	) || [];
+	// Execute home_page_mount rules when component mounts
+	useEffect(() => {
+		const executeRules = async () => {
+			setRulesLoading(true);
+			setRulesMessages([]); // Clear previous messages
+
+			try {
+				console.log('🔍 [Home] Executing home page rules...');
+
+				// Use the new helper function for simplified execution
+				const result = await rulesEngineHelpers.executeHomePage(null, rulesEngineService);
+
+				console.log('📋 [Home] Rules engine result:', result);
+
+				if (result.success && result.messages?.processed?.length > 0) {
+					// Extract processed display messages for home page (filter out acknowledgments)
+					const displayMessages = result.messages.processed.filter(msg =>
+						!msg.isAcknowledgment &&
+						(msg.display_type !== 'modal' && msg.parsed?.displayType !== 'modal')
+					);
+					setRulesMessages(displayMessages);
+				}
+
+				// Handle any processing errors
+				if (result.errors && result.errors.length > 0) {
+					console.error('🚨 Rules processing errors:', result.errors);
+					if (process.env.NODE_ENV === 'development') {
+						setError(`Development Error: ${result.errors.join(', ')}`);
+					}
+				}
+			} catch (err) {
+				console.error('Error executing home_page_mount rules:', err);
+
+				// Handle schema validation errors specifically
+				if (err.name === 'SchemaValidationError') {
+					console.error('🚨 Schema validation failed for rules engine:', err.details);
+					console.error('🔍 Schema errors:', err.schemaErrors);
+					// For development, show schema validation errors to help debugging
+					if (process.env.NODE_ENV === 'development') {
+						setError(`Development Error: Schema validation failed - ${err.details}`);
+					}
+				}
+				// Don't show other rule engine errors to user - shouldn't block home page
+			} finally {
+				setRulesLoading(false);
+			}
+		};
+
+		executeRules();
+	}, []); // Empty dependency array since this should run once on mount
 
 	// Handle search results from SearchBox
 	const handleSearchResults = (results, query) => {
@@ -186,59 +219,44 @@ const Home = () => {
 				</Col>
 			</Row>
 
-			{/* Rules Engine Debug Info */}
-			<Container maxWidth="xl" className="my-2">
-				<div style={{ 
-					padding: '10px', 
-					backgroundColor: '#f8f9fa', 
-					border: '1px solid #dee2e6', 
-					borderRadius: '4px',
-					fontSize: '12px',
-					color: '#495057'
-				}}>
-					<strong>🔧 Rules Engine Debug:</strong> Entry Point: home_page_mount | 
-					Rules Fetched: {rulesCount} | 
-					Loading: {rulesLoading ? 'Yes' : 'No'} | 
-					Messages: {ruleMessages.length} | 
-					Has Messages: {hasMessages ? 'Yes' : 'No'}
-					{rulesError && <span style={{ color: '#dc3545' }}> | Error: {rulesError.message}</span>}
-				</div>
-			</Container>
+			{/* Rules Engine Messages Section (Holiday Messages, etc.) */}
+			<Container maxWidth="xl" className="mt-4">
+				{rulesLoading && (
+					<Alert variant="info" className="text-center">
+						<i className="bi bi-hourglass-split me-2"></i>
+						Checking for important notices...
+					</Alert>
+				)}
 
-			{/* Rules Engine Messages */}
-			{ruleMessages.length > 0 && (
-				<Container maxWidth="xl" className="my-4">
-					<Row>
-						<Col>							
-							{ruleMessages.map((message, index) => (
-								<Alert 
-									key={`rule-message-${index}`}
-									variant="warning"
-									className="mb-3"
-									style={{
-										borderRadius: '8px',
-										border: '1px solid #ffc107',
-										backgroundColor: '#fff3cd',
-										color: '#856404'
-									}}
-								>
-									<div>
-										<strong>{message.title || 'No Title'}</strong>
-										{message.content_format === 'json' && message.json_content ? (
-											<JsonContentRenderer content={message.json_content} />
-										) : (
-											<div dangerouslySetInnerHTML={{ __html: message.message || message.content || 'No message content' }} />
-										)}
-										<div style={{ fontSize: '10px', marginTop: '5px', color: '#666' }}>
-											Type: {message.type} | Message Type: {message.message_type} | Content Format: {message.content_format || 'html'}
-										</div>
-									</div>
-								</Alert>
-							))}
-						</Col>
-					</Row>
-				</Container>
-			)}					
+				{!rulesLoading && rulesMessages.map((message, index) => {
+					// Use the parsed content from the new utilities
+					const parsed = message.parsed || message;
+					const variant = parsed.variant === 'warning' ? 'warning' :
+								parsed.variant === 'error' ? 'danger' :
+								parsed.variant === 'info' ? 'info' : 'primary';
+
+					return (
+						<Alert
+							key={`alert-${message.template_id || index}`}
+							variant={variant}
+							className="mb-3"
+							data-testid="holiday-message"
+							dismissible={parsed.dismissible || false}
+						>
+							<Alert.Heading>
+								{parsed.icon && <i className={`bi bi-${parsed.icon} me-2`}></i>}
+								{parsed.title || 'Notice'}
+							</Alert.Heading>
+							<div
+								className="mb-0"
+								dangerouslySetInnerHTML={{
+									__html: parsed.message || 'No message content'
+								}}
+							/>
+						</Alert>
+					);
+				})}
+			</Container>
 
 			{/* Search Results Section */}
 			<Container disableGutters={true} maxWidth="xl">
@@ -250,7 +268,7 @@ const Home = () => {
 					onFilterRemove={handleFilterRemove}
 					onShowMatchingProducts={handleShowMatchingProducts}
 					isFilterSelected={isFilterSelected}
-					loading={loading}
+					loading={false}
 					error={error}
 					maxSuggestions={5}
 				/>

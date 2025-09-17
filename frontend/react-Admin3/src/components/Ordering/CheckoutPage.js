@@ -3,7 +3,6 @@ import { useCart } from "../../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 import cartService from "../../services/cartService";
 import { Container, Alert } from "react-bootstrap";
-import { useCheckoutStartRules, useCheckoutTermsRules, useCheckoutPreferenceRules, useCheckoutPaymentRules } from "../../hooks/useRulesEngine";
 import CheckoutSteps from "./CheckoutSteps";
 
 const CheckoutPage = () => {
@@ -14,33 +13,6 @@ const CheckoutPage = () => {
   const [checkoutComplete, setCheckoutComplete] = useState(false);
   const navigate = useNavigate();
 
-  // Rules Engine Integration for all checkout entry points - memoize context to prevent infinite loops
-  const checkoutContext = useMemo(() => ({
-    cart_items: cartItems,
-    cart_total: cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-    cart_count: cartItems.length,
-    user_location: 'checkout_page'
-  }), [cartItems]);
-  
-  const { 
-    rulesResult: checkoutStartResult, 
-    rulesCount: checkoutStartCount 
-  } = useCheckoutStartRules(checkoutContext);
-  
-  const { 
-    rulesResult: checkoutTermsResult, 
-    rulesCount: checkoutTermsCount 
-  } = useCheckoutTermsRules(checkoutContext);
-  
-  const { 
-    rulesResult: checkoutPreferenceResult, 
-    rulesCount: checkoutPreferenceCount 
-  } = useCheckoutPreferenceRules(checkoutContext);
-  
-  const { 
-    rulesResult: checkoutPaymentResult, 
-    rulesCount: checkoutPaymentCount 
-  } = useCheckoutPaymentRules(checkoutContext);
 
   const handleCheckoutComplete = async (paymentData = {}) => {
     setLoading(true);
@@ -62,7 +34,7 @@ const CheckoutPage = () => {
       await clearCart();
       
       // Redirect to orders page after a delay to show the order
-      setTimeout(() => navigate("/orders"), 3000);
+      //setTimeout(() => navigate("/orders"), 3000);
     } catch (err) {
       console.error('Checkout error:', err);
       const errorMessage = err.response?.data?.detail || 
@@ -104,35 +76,12 @@ const CheckoutPage = () => {
     <Container className="mt-4">
       <h2>Checkout</h2>
       
-      {/* Rules Engine Debug Panel */}
-      <div style={{ 
-        padding: '10px', 
-        backgroundColor: '#f8f9fa', 
-        border: '1px solid #dee2e6', 
-        borderRadius: '4px',
-        fontSize: '12px',
-        color: '#495057',
-        marginBottom: '15px'
-      }}>
-        <strong>🔧 Rules Engine Debug:</strong><br/>
-        • checkout_start: {checkoutStartCount || 0} rules<br/>
-        • checkout_terms: {checkoutTermsCount || 0} rules<br/>
-        • checkout_preference: {checkoutPreferenceCount || 0} rules<br/>
-        • checkout_payment: {checkoutPaymentCount || 0} rules<br/>
-        Cart Items: {cartItems.length} | Total: ${checkoutContext.cart_total.toFixed(2)}
-      </div>
       
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
       
       <CheckoutSteps 
         onComplete={handleCheckoutComplete}
-        rulesResults={{
-          checkoutStart: checkoutStartResult,
-          checkoutTerms: checkoutTermsResult,
-          checkoutPreference: checkoutPreferenceResult,
-          checkoutPayment: checkoutPaymentResult
-        }}
       />
     </Container>
   );

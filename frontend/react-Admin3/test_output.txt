@@ -1,0 +1,32 @@
+
+> admin3@0.1.0 test
+> react-scripts test --testPathPattern=rulesEngineService.test.js --watchAll=false
+
+FAIL src/services/__tests__/rulesEngineService.test.js
+  rulesEngineService
+    executeRules
+      × should call POST /api/rules/engine/execute/ with correct parameters (3 ms)
+
+  ● rulesEngineService › executeRules › should call POST /api/rules/engine/execute/ with correct parameters
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "/api/rules/engine/execute/", {"context": {"cart": {"id": 1, "items": [{"actual_price": "150.00", "current_product": 72, "id": 1, "metadata": {"variationId": 1}, "price_type": "standard", "product_id": 72, "product_name": "CM1 ASET", "product_type": "Material", "quantity": 1, "subject_code": "CM1"}]}}, "entryPoint": "checkout_start"}
+
+    Number of calls: 0
+
+    [0m [90m 66 |[39m
+     [90m 67 |[39m             [90m// Assert[39m
+    [31m[1m>[22m[39m[90m 68 |[39m             expect(httpService[33m.[39mpost)[33m.[39mtoHaveBeenCalledWith([32m'/api/rules/engine/execute/'[39m[33m,[39m {
+     [90m    |[39m                                      [31m[1m^[22m[39m
+     [90m 69 |[39m                 entryPoint[33m:[39m [32m'checkout_start'[39m[33m,[39m
+     [90m 70 |[39m                 context[33m:[39m mockContext
+     [90m 71 |[39m             })[33m;[39m[0m
+
+      at Object.<anonymous> (src/services/__tests__/rulesEngineService.test.js:68:38)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 total
+Snapshots:   0 total
+Time:        1.707 s
+Ran all test suites matching /rulesEngineService.test.js/i.
