@@ -110,7 +110,7 @@ function App() {
 - Debounced API calls
 - Search result navigation
 
-### 👤 User Management
+###  User Management
 - Profile avatar with initials
 - Dropdown menu with profile/logout options
 - Authentication modal integration

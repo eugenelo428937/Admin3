@@ -16,12 +16,11 @@ import {
     CircularProgress,
     Alert,
     Skeleton,
-    Stack,
     useTheme,
     useMediaQuery
 } from '@mui/material';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
-import ProductCardWithRules from './ProductCard/ProductCardWithRules';
+import MaterialProductCard from './ProductCard/MaterialProductCard';
 
 const ProductGrid = ({
     products = [],
@@ -208,7 +207,7 @@ const ProductGrid = ({
                             justifyContent: 'center'
                         }}
                     >
-                        <ProductCardWithRules
+                        <MaterialProductCard
                             product={item}
                             onAddToCart={onAddToCart}
                             allEsspIds={allEsspIds}

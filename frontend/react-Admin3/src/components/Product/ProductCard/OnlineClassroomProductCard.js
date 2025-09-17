@@ -34,22 +34,21 @@ import "../../../styles/product_card.css";
 
 const OnlineClassroomProductCard = React.memo(
 	({ product, onAddToCart, variant = "online-product", ...props }) => {
-		const [selectedFormat, setSelectedFormat] = useState('live');
+		// Initialize with the first available variation ID instead of hardcoded string
+		const [selectedVariation, setSelectedVariation] = useState(
+			product.variations?.[0]?.id?.toString() || ""
+		);
 		const [selectedPriceType, setSelectedPriceType] = useState(""); // Empty means standard pricing
 		const [isHovered, setIsHovered] = useState(false);
 		const [showPriceModal, setShowPriceModal] = useState(false);
 
-		// Format options for online classroom
-		const formatOptions = {
-			live: {
-				price: 249,
-				label: "The Hub (VLE)",
-				description: "Tutorial recordings delivered via the BPP Learning Hub",
-			},
-		};
+		// Use actual product variations instead of hardcoded options
+		const currentVariation = product.variations?.find(
+			v => v.id.toString() === selectedVariation
+		);
 
-		const handleFormatChange = (event) => {
-			setSelectedFormat(event.target.value);
+		const handleVariationChange = (event) => {
+			setSelectedVariation(event.target.value);
 		};
 
 		const handleMouseEnter = () => {
@@ -88,23 +87,15 @@ const OnlineClassroomProductCard = React.memo(
 							</TableRow>
 						</TableHead>
 						<TableBody>
-							{Object.entries(formatOptions).map(([formatKey, format]) => (
-								<React.Fragment key={formatKey}>
-									<TableRow>
-										<TableCell>{format.label}</TableCell>
-										<TableCell>Standard</TableCell>
-										<TableCell>£{format.price}</TableCell>
-									</TableRow>
-									<TableRow>
-										<TableCell>{format.label}</TableCell>
-										<TableCell>Retaker</TableCell>
-										<TableCell>£{(format.price * 0.8).toFixed(2)}</TableCell>
-									</TableRow>
-									<TableRow>
-										<TableCell>{format.label}</TableCell>
-										<TableCell>Additional Copy</TableCell>
-										<TableCell>£{(format.price * 0.5).toFixed(2)}</TableCell>
-									</TableRow>
+							{product.variations?.map((variation) => (
+								<React.Fragment key={variation.id}>
+									{variation.prices?.map((price) => (
+										<TableRow key={`${variation.id}-${price.price_type}`}>
+											<TableCell>{variation.name}</TableCell>
+											<TableCell>{price.price_type}</TableCell>
+											<TableCell>£{price.amount}</TableCell>
+										</TableRow>
+									))}
 								</React.Fragment>
 							))}
 						</TableBody>
@@ -190,49 +181,58 @@ const OnlineClassroomProductCard = React.memo(
 						</Typography>
 
 						<RadioGroup
-							value={selectedFormat}
-							onChange={handleFormatChange}
+							value={selectedVariation}
+							onChange={handleVariationChange}
 							className="variations-group"
 							sx={{ margin: 0 }}>
 							<Stack spacing={1} sx={{ margin: 0 }}>
-								{Object.entries(formatOptions).map(([key, option]) => (
-									<Box key={key} className="variation-option" sx={{ margin: 0 }}>
-										<FormControlLabel
-											value={key}
-											control={<Radio size="small" />}
-											sx={{ margin: 0 }}
-											label={
-												<Box className="variation-label">
-													<Box
-														display="flex"
-														justifyContent="space-between"
-														alignItems="center">
-														<Typography
-															variant="body2"
-															fontWeight={
-																selectedFormat === key ? 600 : 400
-															}>
-															{option.label}
-														</Typography>
-														<Typography
-															variant="body2"
-															color="primary.main"
-															fontWeight={600}>
-															£{option.price}
-														</Typography>
+								{product.variations?.map((variation) => {
+									const standardPrice = variation.prices?.find(
+										(p) => p.price_type === "standard"
+									);
+									return (
+										<Box key={variation.id} className="variation-option" sx={{ margin: 0 }}>
+											<FormControlLabel
+												value={variation.id.toString()}
+												control={<Radio size="small" />}
+												sx={{ margin: 0 }}
+												label={
+													<Box className="variation-label">
+														<Box
+															display="flex"
+															justifyContent="space-between"
+															alignItems="center">
+															<Typography
+																variant="body2"
+																fontWeight={
+																	selectedVariation === variation.id.toString() ? 600 : 400
+																}>
+																{variation.name}
+															</Typography>
+															{standardPrice && (
+																<Typography
+																	variant="body2"
+																	color="primary.main"
+																	fontWeight={600}>
+																	£{standardPrice.amount}
+																</Typography>
+															)}
+														</Box>
+														{variation.description && (
+															<Typography
+																variant="caption"
+																color="text.secondary"
+																className="variation-description">
+																{variation.description}
+															</Typography>
+														)}
 													</Box>
-													<Typography
-														variant="caption"
-														color="text.secondary"
-														className="variation-description">
-														{option.description}
-													</Typography>
-												</Box>
-											}
-											className="variation-control"
-										/>
-									</Box>
-								))}
+												}
+												className="variation-control"
+											/>
+										</Box>
+									);
+								})}
 							</Stack>
 						</RadioGroup>
 					</Box>
@@ -298,15 +298,22 @@ const OnlineClassroomProductCard = React.memo(
 						<Box className="price-action-section">
 							<Box className="price-info-row">
 								<Typography variant="h3" className="price-display">
-									{selectedPriceType === "retaker"
-										? `£${(
-												formatOptions[selectedFormat].price * 0.8
-										  ).toFixed(2)}`
-										: selectedPriceType === "additional"
-										? `£${(
-												formatOptions[selectedFormat].price * 0.5
-										  ).toFixed(2)}`
-										: `£${formatOptions[selectedFormat].price}`}
+									{(() => {
+										if (!currentVariation) return "£0.00";
+
+										const standardPrice = currentVariation.prices?.find(p => p.price_type === "standard");
+										const retakerPrice = currentVariation.prices?.find(p => p.price_type === "retaker");
+										const additionalPrice = currentVariation.prices?.find(p => p.price_type === "additional");
+
+										if (selectedPriceType === "retaker" && retakerPrice) {
+											return `£${retakerPrice.amount}`;
+										} else if (selectedPriceType === "additional" && additionalPrice) {
+											return `£${additionalPrice.amount}`;
+										} else if (standardPrice) {
+											return `£${standardPrice.amount}`;
+										}
+										return "£0.00";
+									})()}
 								</Typography>
 								<Tooltip title="Show price details">
 									<Button size="small" className="info-button">
@@ -332,7 +339,28 @@ const OnlineClassroomProductCard = React.memo(
 									Price includes VAT
 								</Typography>
 							</Box>
-							<Button variant="contained" className="add-to-cart-button">
+							<Button
+								variant="contained"
+								className="add-to-cart-button"
+								onClick={() => {
+									if (!onAddToCart || !currentVariation) return;
+
+									// Get the appropriate price based on selected price type
+									const priceType = selectedPriceType || "standard";
+									const priceObj = currentVariation.prices?.find(p => p.price_type === priceType);
+
+									// Construct context similar to MaterialProductCard
+									const context = {
+										// Use actual integer variation ID from database
+										variationId: currentVariation.id,
+										variationName: currentVariation.name,
+										priceType: priceType,
+										actualPrice: priceObj?.amount || "0.00",
+									};
+
+									onAddToCart(product, context);
+								}}
+								disabled={!currentVariation}>
 								<AddShoppingCart />
 							</Button>
 						</Box>

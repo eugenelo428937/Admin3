@@ -11,7 +11,7 @@ I want to configure rule execution entry points throughout the application,
 so that business logic can be consistently applied at checkout, product display, VAT calculation, and user registration.
 
 **Acceptance Criteria**:
-1. ✅ Rules engine supports configurable entry points: `home_page_mount`, `product_list_mount`, `product_card_mount`, `checkout_start`, `checkout_preference`, `checkout_terms`, `checkout_payment`, `vat_calculation`, `employer_validation`, `user_registration`
+1. ✅ Rules engine supports configurable entry points: `home_page_mount`, `product_list_mount`, `product_card_mount`, `checkout_start`, `checkout_preference`, `checkout_terms`, `checkout_payment`,`user_registration`
 2. ✅ Entry points can be enabled/disabled without code changes through Django admin
 3. ✅ Rule execution performance remains under 200ms per entry point (current: ~20-45ms)
 4. ✅ Admin interface allows configuration of which rules execute at each entry point via ActedRule model
@@ -38,7 +38,7 @@ so that I see accurate pricing without manual intervention.
 
 **Acceptance Criteria**:
 1. VAT rates are configurable by country and product type through admin interface
-2. VAT calculation executes automatically at vat_calculation entry point
+2. VAT calculation executes automatically at checkout_start entry point
 3. System supports multiple VAT scenarios (domestic, EU, international)
 4. Calculation accuracy is 100% for all supported country/product combinations
 5. Fallback to default rates when specific configuration unavailable
@@ -142,8 +142,8 @@ so that I understand any special requirements for my organization.
 
 ## 📊 **Implementation Status Summary**
 
-**Last Updated**: 2025-08-29  
-**Alignment Status**: ✅ COMPLETED  
+**Last Updated**: 2025-09-15
+**Alignment Status**: ✅ COMPLETED WITH BUSINESS RULES IMPLEMENTED
 
 ### **✅ FULLY IMPLEMENTED**
 
@@ -151,17 +151,25 @@ so that I understand any special requirements for my organization.
 - ✅ **Models**: `ActedRule`, `ActedRulesFields`, `ActedRuleExecution`
 - ✅ **API**: `POST /api/rules/engine/execute/`
 - ✅ **Admin Interface**: `/admin/rules_engine/actedrule/`
-- ✅ **Entry Points**: 10+ entry points including `home_page_mount`, `checkout_terms`, etc.
+- ✅ **Entry Points**: 12 entry points including `home_page_mount`, `checkout_start`, `checkout_terms`
 - ✅ **Performance**: 20-45ms execution time (under 200ms requirement)
 - ✅ **Audit Trail**: Complete execution logging with context snapshots
 - ✅ **Status**: **READY FOR PRODUCTION** 🚀
+
+#### **Business Rules Implemented** - **COMPLETE**
+- ✅ **ASET Warning Rule**: Product warnings for ASET items (products 72, 73) with comprehensive test suite
+- ✅ **UK Import Tax Warning**: Non-UK user import tax notifications with address validation
+- ✅ **Expired Marking Deadlines**: Warning for products with expired marking deadlines
+- ✅ **Holiday Message System**: Dynamic holiday-based messaging with JSON content support
+- ✅ **JSON Content System**: Full template system with predefined styling variants
+- ✅ **Message Template Engine**: Rich content templates with variable substitution
 
 ### **⚠️ PARTIALLY IMPLEMENTED**
 
 #### **Story 1.2: Dynamic VAT Calculation** - **PARTIAL**
 - ⚠️ **Status**: Components exist but not fully integrated
 - ✅ **VAT Context**: `VATContext.js` implemented
-- ✅ **VAT Toggle**: `VATToggle.js` component exists  
+- ✅ **VAT Toggle**: `VATToggle.js` component exists
 - ❌ **Missing**: Full rules-engine integration for dynamic VAT by location/product
 
 ### **❌ NOT YET IMPLEMENTED**
@@ -181,6 +189,40 @@ so that I understand any special requirements for my organization.
 | `checkout_validation` entry point | `checkout_terms` entry point |
 | `RulesFields` model | `ActedRulesFields` model |
 | Generic entry points | Specific implemented entry points |
+
+## 🎯 **Implemented Business Rules Details**
+
+### **1. ASET Warning Rule**
+- **Rule ID**: `test_aset_warning_rule`
+- **Entry Point**: `checkout_start`
+- **Trigger**: When cart contains products 72 or 73
+- **Action**: Display warning message about ASET content overlap
+- **Test Coverage**: 283 lines of comprehensive test cases
+- **Status**: ✅ Production ready with full test suite
+
+### **2. UK Import Tax Warning Rule**
+- **Rule ID**: `uk_import_tax_warning`
+- **Entry Point**: `checkout_start`
+- **Trigger**: User with non-UK address countries
+- **Action**: Display import tax notification
+- **Integration**: UserProfile address validation
+- **Status**: ✅ Implemented with TDD approach
+
+### **3. Expired Marking Deadlines Rule**
+- **Rule ID**: `rule_expired_marking_deadlines_v1`
+- **Entry Point**: `checkout_start`
+- **Trigger**: Cart contains marking products with expired deadlines
+- **Action**: Warning message with deadline details
+- **Priority**: 90 (higher than ASET rule)
+- **Status**: ✅ Setup script completed
+
+### **4. Holiday Message System**
+- **Rule Type**: Dynamic holiday-based messaging
+- **Entry Point**: Multiple (configurable)
+- **Trigger**: Date-based conditions near holidays
+- **Action**: Holiday-specific notifications
+- **Content**: JSON-based message templates
+- **Status**: ✅ Multiple implementation scripts available
 
 ## 📋 **Next Development Priorities**
 

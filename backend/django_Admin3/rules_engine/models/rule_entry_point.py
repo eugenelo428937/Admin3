@@ -14,6 +14,7 @@ class RuleEntryPoint(models.Model):
         ('checkout_preference', 'Checkout Preference'),
         ('checkout_terms', 'Checkout Terms'),
         ('checkout_payment', 'Checkout Payment'),
+        ('user_registration', 'User Registration'),
     ]
     
     code = models.CharField(max_length=30, choices=ENTRY_POINTS, unique=True)

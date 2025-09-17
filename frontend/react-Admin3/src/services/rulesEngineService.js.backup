@@ -1,0 +1,8 @@
+import httpService from './httpService';
+
+// Minimal stub to satisfy import
+const rulesEngineService = {
+    executeRules: () => {}
+};
+
+export default rulesEngineService;

@@ -22,6 +22,10 @@ class CartViewSet(viewsets.ViewSet):
     Handles both authenticated users and guests (via session_key).
     """
     permission_classes = [AllowAny]
+    
+    def dispatch(self, request, *args, **kwargs):
+        print(f"[CartViewSet.dispatch] {request.method} {request.path}")
+        return super().dispatch(request, *args, **kwargs)
 
     @action(detail=False, methods=['get'])
     def _is_marking_product(self, product):
@@ -67,17 +71,53 @@ class CartViewSet(viewsets.ViewSet):
             logger.warning(f"Error getting expired deadline info for product {product.id}: {str(e)}")
             return {'has_expired': False, 'expired_count': 0, 'total_papers': 0}
     
+    def _is_digital_product(self, cart_item):
+        """Check if cart item contains digital products (eBooks, Online Classroom)"""
+        try:
+            # Check metadata for Vitalsource eBook
+            metadata = cart_item.metadata or {}
+            if metadata.get('variationName') == 'Vitalsource eBook':
+                return True
+
+            # Check product code for Online Classroom
+            if hasattr(cart_item, 'product') and cart_item.product:
+                product = cart_item.product.product  # ExamSessionSubjectProduct -> Product
+                if product and hasattr(product, 'code') and product.code == 'OC':
+                    return True
+
+            return False
+        except Exception as e:
+            logger.warning(f"Error checking digital product for cart item {cart_item.id}: {str(e)}")
+            return False
+
     def _update_cart_flags(self, cart):
         """Update cart-level flags based on cart contents"""
         has_marking = False
-        
+        has_digital = False
+
         for item in cart.items.all():
             if item.is_marking:
                 has_marking = True
+
+            # Check if this item is a digital product
+            if self._is_digital_product(item):
+                has_digital = True
+
+            # Early exit if both flags are set
+            if has_marking and has_digital:
                 break
-        
+
+        # Update flags if changed
+        cart_updated = False
         if cart.has_marking != has_marking:
             cart.has_marking = has_marking
+            cart_updated = True
+
+        if cart.has_digital != has_digital:
+            cart.has_digital = has_digital
+            cart_updated = True
+
+        if cart_updated:
             cart.save()
     
     def get_cart(self, request):
@@ -92,10 +132,12 @@ class CartViewSet(viewsets.ViewSet):
         return cart
     
     def list(self, request):
-        """GET /cart/ - Get current cart"""
+        """GET /cart/ - Get current cart with user context"""
         cart = self.get_cart(request)
-        serializer = CartSerializer(cart)
-        return Response(serializer.data)
+        serializer = CartSerializer(cart, context={'request': request})
+        data = serializer.data
+        data['test_field'] = 'This is a test'
+        return Response(data)
 
     @action(detail=False, methods=['post'], url_path='add')
     def add(self, request):
@@ -190,7 +232,10 @@ class CartViewSet(viewsets.ViewSet):
                     
                     # Set marking flags for tutorial items
                     is_marking = self._is_marking_product(product)
-                    has_expired_deadline = self._has_expired_deadlines(product) if is_marking else False
+                    deadline_info = self._get_expired_deadline_info(product) if is_marking else {}
+                    has_expired_deadline = deadline_info.get('has_expired', False)
+                    expired_deadlines_count = deadline_info.get('expired_count', 0)
+                    marking_paper_count = deadline_info.get('total_papers', 0)
                     
                     item, created = CartItem.objects.get_or_create(
                         cart=cart,
@@ -198,17 +243,22 @@ class CartViewSet(viewsets.ViewSet):
                         price_type=price_type,
                         metadata=tutorial_metadata,
                         defaults={
-                            'quantity': quantity, 
+                            'quantity': quantity,
                             'actual_price': actual_price,
                             'is_marking': is_marking,
-                            'has_expired_deadline': has_expired_deadline
+                            'has_expired_deadline': has_expired_deadline,
+                            'expired_deadlines_count': expired_deadlines_count,
+                            'marking_paper_count': marking_paper_count
                         }
                     )
             else:
                 # Fallback to legacy tutorial behavior
                 # Set marking flags for legacy tutorial items
                 is_marking = self._is_marking_product(product)
-                has_expired_deadline = self._has_expired_deadlines(product) if is_marking else False
+                deadline_info = self._get_expired_deadline_info(product) if is_marking else {}
+                has_expired_deadline = deadline_info.get('has_expired', False)
+                expired_deadlines_count = deadline_info.get('expired_count', 0)
+                marking_paper_count = deadline_info.get('total_papers', 0)
                 
                 item, created = CartItem.objects.get_or_create(
                     cart=cart, 
@@ -216,10 +266,12 @@ class CartViewSet(viewsets.ViewSet):
                     price_type=price_type,
                     metadata=metadata,
                     defaults={
-                        'quantity': quantity, 
+                        'quantity': quantity,
                         'actual_price': actual_price,
                         'is_marking': is_marking,
-                        'has_expired_deadline': has_expired_deadline
+                        'has_expired_deadline': has_expired_deadline,
+                        'expired_deadlines_count': expired_deadlines_count,
+                        'marking_paper_count': marking_paper_count
                     }
                 )
         else:
@@ -241,11 +293,19 @@ class CartViewSet(viewsets.ViewSet):
                     existing_item.quantity += quantity
                     if metadata:
                         existing_item.metadata.update(metadata)
-                    
+
                     # Update marking flags in case they weren't set before
                     existing_item.is_marking = self._is_marking_product(product)
-                    existing_item.has_expired_deadline = self._has_expired_deadlines(product) if existing_item.is_marking else False
-                    
+                    if existing_item.is_marking:
+                        deadline_info = self._get_expired_deadline_info(product)
+                        existing_item.has_expired_deadline = deadline_info.get('has_expired', False)
+                        existing_item.expired_deadlines_count = deadline_info.get('expired_count', 0)
+                        existing_item.marking_paper_count = deadline_info.get('total_papers', 0)
+                    else:
+                        existing_item.has_expired_deadline = False
+                        existing_item.expired_deadlines_count = 0
+                        existing_item.marking_paper_count = 0
+
                     existing_item.save()
                     item = existing_item
                     created = False
@@ -253,8 +313,11 @@ class CartViewSet(viewsets.ViewSet):
                     # Create new item for this specific variation
                     # Set marking flags
                     is_marking = self._is_marking_product(product)
-                    has_expired_deadline = self._has_expired_deadlines(product) if is_marking else False
-                    
+                    deadline_info = self._get_expired_deadline_info(product) if is_marking else {}
+                    has_expired_deadline = deadline_info.get('has_expired', False)
+                    expired_deadlines_count = deadline_info.get('expired_count', 0)
+                    marking_paper_count = deadline_info.get('total_papers', 0)
+
                     item = CartItem.objects.create(
                         cart=cart,
                         product=product,
@@ -263,6 +326,8 @@ class CartViewSet(viewsets.ViewSet):
                         actual_price=actual_price,
                         is_marking=is_marking,
                         has_expired_deadline=has_expired_deadline,
+                        expired_deadlines_count=expired_deadlines_count,
+                        marking_paper_count=marking_paper_count,
                         metadata=metadata
                     )
                     created = True
@@ -280,11 +345,19 @@ class CartViewSet(viewsets.ViewSet):
                     existing_item.quantity += quantity
                     if metadata:
                         existing_item.metadata.update(metadata)
-                    
+
                     # Update marking flags in case they weren't set before
                     existing_item.is_marking = self._is_marking_product(product)
-                    existing_item.has_expired_deadline = self._has_expired_deadlines(product) if existing_item.is_marking else False
-                    
+                    if existing_item.is_marking:
+                        deadline_info = self._get_expired_deadline_info(product)
+                        existing_item.has_expired_deadline = deadline_info.get('has_expired', False)
+                        existing_item.expired_deadlines_count = deadline_info.get('expired_count', 0)
+                        existing_item.marking_paper_count = deadline_info.get('total_papers', 0)
+                    else:
+                        existing_item.has_expired_deadline = False
+                        existing_item.expired_deadlines_count = 0
+                        existing_item.marking_paper_count = 0
+
                     existing_item.save()
                     item = existing_item
                     created = False
@@ -292,8 +365,11 @@ class CartViewSet(viewsets.ViewSet):
                     # Create new item without variation
                     # Set marking flags
                     is_marking = self._is_marking_product(product)
-                    has_expired_deadline = self._has_expired_deadlines(product) if is_marking else False
-                    
+                    deadline_info = self._get_expired_deadline_info(product) if is_marking else {}
+                    has_expired_deadline = deadline_info.get('has_expired', False)
+                    expired_deadlines_count = deadline_info.get('expired_count', 0)
+                    marking_paper_count = deadline_info.get('total_papers', 0)
+
                     item = CartItem.objects.create(
                         cart=cart,
                         product=product,
@@ -302,6 +378,8 @@ class CartViewSet(viewsets.ViewSet):
                         actual_price=actual_price,
                         is_marking=is_marking,
                         has_expired_deadline=has_expired_deadline,
+                        expired_deadlines_count=expired_deadlines_count,
+                        marking_paper_count=marking_paper_count,
                         metadata=metadata
                     )
                     created = True
@@ -379,6 +457,15 @@ class CartViewSet(viewsets.ViewSet):
         general_terms_accepted = terms_acceptance_data.get('general_terms_accepted', False)
         terms_version = terms_acceptance_data.get('terms_version', '1.0')
         product_acknowledgments = terms_acceptance_data.get('product_acknowledgments', {})
+
+        # Validate payment data BEFORE creating order
+        if payment_method == 'card' and not card_data:
+            return Response({'detail': 'Card data is required for card payments.'},
+                          status=status.HTTP_400_BAD_REQUEST)
+
+        if payment_method == 'invoice' and not employer_code:
+            return Response({'detail': 'Employer code is required for invoice payments.'},
+                          status=status.HTTP_400_BAD_REQUEST)
 
         # Get client information
         client_ip = self._get_client_ip(request)
@@ -471,6 +558,9 @@ class CartViewSet(viewsets.ViewSet):
                 order.subtotal = subtotal
                 order.total_amount = subtotal  # No VAT if calculation fails
                 order.save()
+
+            # Transfer session acknowledgments to order before T&C processing
+            self._transfer_session_acknowledgments_to_order(request, order, cart)
 
             # Create T&C acceptance record
             try:
@@ -623,9 +713,6 @@ class CartViewSet(viewsets.ViewSet):
             from .services import payment_service
             payment_result = None
             if payment_method == 'card':
-                if not card_data:
-                    return Response({'detail': 'Card data is required for card payments.'}, 
-                                  status=status.HTTP_400_BAD_REQUEST)
                 payment_result = payment_service.process_card_payment(order, card_data, client_ip, user_agent)
                 if not payment_result['success']:
                     # Payment failed - rollback order creation
@@ -785,6 +872,207 @@ class CartViewSet(viewsets.ViewSet):
         else:
             ip = request.META.get('REMOTE_ADDR')
         return ip
+
+    def _transfer_session_acknowledgments_to_order(self, request, order, cart):
+        """
+        Transfer session-based acknowledgments to order acknowledgments table
+        FIXED: Only transfer acknowledgments for rules that actually matched in current execution
+        """
+        try:
+            session_acknowledgments = request.session.get('user_acknowledgments', [])
+            if not session_acknowledgments:
+                logger.info(f"No session acknowledgments found for order {order.id}")
+                return
+
+            logger.info(f"Found {len(session_acknowledgments)} session acknowledgments for order {order.id}")
+
+            # CRITICAL FIX: Get rules that actually matched in current execution
+            matched_rule_ids = self._get_matched_rules_for_current_execution(order, cart)
+            logger.info(f"Rules that matched in current execution: {matched_rule_ids}")
+
+            # Filter acknowledgments to only include those for matched rules
+            valid_acknowledgments = []
+            stale_acknowledgments = []
+
+            for ack in session_acknowledgments:
+                message_id = str(ack.get('message_id', ''))
+                ack_key = ack.get('ack_key', '')
+
+                # Check if this acknowledgment corresponds to a rule that matched
+                is_valid = (
+                    message_id in matched_rule_ids or
+                    ack_key in matched_rule_ids or
+                    any(rule_id for rule_id in matched_rule_ids if str(rule_id) == message_id)
+                )
+
+                if is_valid:
+                    valid_acknowledgments.append(ack)
+                    logger.info(f"Valid acknowledgment: message_id={message_id}, ack_key={ack_key}")
+                else:
+                    stale_acknowledgments.append(ack)
+                    logger.info(f"Stale acknowledgment (rule didn't match): message_id={message_id}, ack_key={ack_key}")
+
+            if not valid_acknowledgments:
+                logger.info(f"No valid acknowledgments to transfer for order {order.id}")
+                # Clear stale acknowledgments from session
+                request.session['user_acknowledgments'] = []
+                request.session.modified = True
+                return
+
+            logger.info(f"Transferring {len(valid_acknowledgments)} valid acknowledgments (discarding {len(stale_acknowledgments)} stale ones)")
+
+            # Group valid acknowledgments by message_id for aggregation
+            acknowledgment_groups = {}
+            for ack in valid_acknowledgments:
+                message_id = ack.get('message_id')
+                if message_id not in acknowledgment_groups:
+                    acknowledgment_groups[message_id] = []
+                acknowledgment_groups[message_id].append(ack)
+
+            # Create order acknowledgments for each group
+            for message_id, acks in acknowledgment_groups.items():
+                # Determine acknowledgment type based on ack_key
+                acknowledgment_type = 'custom'
+                for ack in acks:
+                    ack_key = ack.get('ack_key', '')
+                    if 'terms' in ack_key.lower():
+                        acknowledgment_type = 'terms_conditions'
+                    elif 'expired' in ack_key.lower() and 'deadline' in ack_key.lower():
+                        acknowledgment_type = 'deadline_expired'
+                    elif 'warning' in ack_key.lower():
+                        acknowledgment_type = 'warning'
+
+                # Get the most recent acknowledgment for this message_id
+                latest_ack = max(acks, key=lambda x: x.get('acknowledged_timestamp', ''))
+
+                # Create acknowledgment data with all entry points
+                acknowledgment_data = {
+                    'session_acknowledgments': acks,
+                    'entry_points': list(set(ack.get('entry_point_location') for ack in acks)),
+                    'total_acknowledgments': len(acks),
+                    'first_acknowledged': min(acks, key=lambda x: x.get('acknowledged_timestamp', '')).get('acknowledged_timestamp'),
+                    'last_acknowledged': latest_ack.get('acknowledged_timestamp'),
+                    'ack_keys': list(set(ack.get('ack_key') for ack in acks)),
+                    'validation_info': {
+                        'validated_against_current_execution': True,
+                        'matched_rule_ids': list(matched_rule_ids),
+                        'stale_acknowledgments_discarded': len(stale_acknowledgments)
+                    }
+                }
+
+                # Create the order acknowledgment record
+                order_acknowledgment = OrderUserAcknowledgment.objects.create(
+                    order=order,
+                    acknowledgment_type=acknowledgment_type,
+                    rule_id=message_id,  # Use message_id as rule_id reference
+                    template_id=message_id,  # Use message_id as template reference
+                    title=f'Session Acknowledgment {message_id}',
+                    content_summary=f'Validated acknowledgment for message {message_id} across {len(set(ack.get("entry_point_location") for ack in acks))} entry points',
+                    is_accepted=latest_ack.get('acknowledged', False),
+                    ip_address=latest_ack.get('ip_address', ''),
+                    user_agent=latest_ack.get('user_agent', ''),
+                    content_version='1.0',
+                    acknowledgment_data=acknowledgment_data,
+                    rules_engine_context={
+                        'transferred_from_session': True,
+                        'session_id': request.session.session_key,
+                        'transfer_timestamp': timezone.now().isoformat(),
+                        'validated_against_rules': True,
+                        'matched_rule_ids': list(matched_rule_ids),
+                        'original_session_data': session_acknowledgments,
+                        'stale_acknowledgments_count': len(stale_acknowledgments)
+                    }
+                )
+
+                logger.info(f"Created validated order acknowledgment {order_acknowledgment.id} for message {message_id} with type {acknowledgment_type}")
+
+            # Clear session acknowledgments after successful transfer
+            request.session['user_acknowledgments'] = []
+            request.session.modified = True
+
+            logger.info(f"Successfully transferred {len(valid_acknowledgments)} valid acknowledgments to order {order.id}, discarded {len(stale_acknowledgments)} stale ones")
+
+        except Exception as e:
+            logger.error(f"Failed to transfer session acknowledgments to order {order.id}: {str(e)}")
+            # Don't raise exception - acknowledgment transfer failure shouldn't block checkout
+
+    def _get_matched_rules_for_current_execution(self, order, cart):
+        """
+        Execute rules engine for checkout_terms and return which rules actually matched
+        Uses the cart that's being processed for checkout to ensure accurate rule matching
+        """
+        try:
+            if not cart:
+                logger.warning(f"No cart provided for order {order.id}, cannot validate acknowledgments")
+                return set()
+
+            # Build context for rules execution
+            cart_items = cart.items.all().select_related('product__product', 'product__exam_session_subject__subject')
+
+            # Use the cart's has_digital flag instead of manually detecting
+            has_digital = cart.has_digital
+
+            # Calculate total from cart items since Cart model doesn't have subtotal
+            total = sum(item.actual_price or 0 for item in cart_items)
+
+            context = {
+                'cart': {
+                    'id': cart.id,
+                    'user_id': cart.user.id if cart.user else None,
+                    'has_digital': has_digital,
+                    'total': float(total),
+                    'items': []
+                },
+                'user': {
+                    'id': order.user.id,
+                    'email': order.user.email,
+                    'is_authenticated': True
+                } if order.user else None,
+                'session': {
+                    'ip_address': '127.0.0.1',
+                    'session_id': 'checkout_validation'
+                },
+                'acknowledgments': {}
+            }
+
+            # Add cart items
+            for item in cart_items:
+                context['cart']['items'].append({
+                    'id': item.id,
+                    'product_id': item.product.product.id,
+                    'quantity': item.quantity,
+                    'actual_price': str(item.actual_price),
+                    'is_digital': has_digital
+                })
+
+            # Execute rules engine
+            from rules_engine.services.rule_engine import rule_engine
+            result = rule_engine.execute('checkout_terms', context)
+
+            if not result.get('success'):
+                logger.warning(f"Rules execution failed for order {order.id}: {result.get('error')}")
+                return set()
+
+            # Extract rule IDs that actually matched and executed
+            matched_rule_ids = set()
+
+            # Check rules_executed list for rules that had condition_result=True
+            for rule_exec in result.get('rules_executed', []):
+                if rule_exec.get('condition_result'):
+                    matched_rule_ids.add(rule_exec.get('rule_id'))
+
+            # Also check messages for template_ids that were generated
+            for message in result.get('messages', []):
+                template_id = message.get('template_id')
+                if template_id:
+                    matched_rule_ids.add(str(template_id))
+
+            logger.info(f"Rules that matched for order {order.id}: {matched_rule_ids}")
+            return matched_rule_ids
+
+        except Exception as e:
+            logger.error(f"Error executing rules for validation in order {order.id}: {e}")
+            return set()
 
     @action(detail=False, methods=['get'], url_path='orders', permission_classes=[IsAuthenticated])
     def orders(self, request):

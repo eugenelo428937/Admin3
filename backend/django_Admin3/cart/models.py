@@ -9,6 +9,7 @@ class Cart(models.Model):
     )
     session_key = models.CharField(max_length=40, null=True, blank=True, unique=True)
     has_marking = models.BooleanField(default=False, help_text="Indicates if cart contains marking products")
+    has_digital = models.BooleanField(default=False, help_text="Indicates if cart contains digital products (eBooks, Online Classroom)")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -41,6 +42,8 @@ class CartItem(models.Model):
     price_type = models.CharField(max_length=20, default="standard")  # standard, retaker, additional
     actual_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     has_expired_deadline = models.BooleanField(default=False, help_text="Indicates if marking product has expired deadlines")
+    expired_deadlines_count = models.IntegerField(default=0, help_text="Number of expired deadlines for marking products")
+    marking_paper_count = models.IntegerField(default=0, help_text="Total number of marking papers for marking products")
     is_marking = models.BooleanField(default=False, help_text="Indicates if this is a marking product")
     metadata = models.JSONField(default=dict, blank=True, help_text="Additional product-specific data (e.g., tutorial choices, variation IDs)")
     added_at = models.DateTimeField(auto_now_add=True)

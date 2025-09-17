@@ -13,8 +13,16 @@ from django.utils import timezone
 import jsonschema
 
 from ..models import ActedRule, ActedRulesFields, ActedRuleExecution
+from .template_processor import TemplateProcessor
 
 logger = logging.getLogger(__name__)
+
+
+class ValidationResult:
+    """Result of context validation"""
+    def __init__(self, is_valid: bool, errors: List[str] = None):
+        self.is_valid = is_valid
+        self.errors = errors or []
 
 
 class RuleRepository:
@@ -25,7 +33,9 @@ class RuleRepository:
     
     def get_active_rules(self, entry_point: str) -> List[ActedRule]:
         """Get active rules for entry point with caching"""
-        cache_key = f"rules:{entry_point}"
+        # Use safe cache key by replacing spaces with underscores
+        safe_entry_point = entry_point.replace(' ', '_').lower()
+        cache_key = f"rules:{safe_entry_point}"
         rules = cache.get(cache_key)
         
         if rules is None:
@@ -44,7 +54,9 @@ class RuleRepository:
     
     def invalidate_cache(self, entry_point: str):
         """Invalidate cache for entry point"""
-        cache_key = f"rules:{entry_point}"
+        # Use safe cache key by replacing spaces with underscores
+        safe_entry_point = entry_point.replace(' ', '_').lower()
+        cache_key = f"rules:{safe_entry_point}"
         cache.delete(cache_key)
         logger.debug(f"Invalidated cache for {entry_point}")
 
@@ -55,16 +67,17 @@ class Validator:
     def __init__(self):
         self._schema_cache = {}
     
-    def validate_context(self, context: Dict[str, Any], rules_fields_id: Optional[str] = None) -> bool:
-        """Validate context against schema"""
+    def validate_context(self, context: Dict[str, Any], rules_fields_id: Optional[str] = None) -> ValidationResult:
+        """Validate context against schema and return detailed result"""
         if not isinstance(context, dict):
-            logger.warning(f"Context is not a dict: {type(context)}")
-            return False
+            error_msg = f"Context is not a dict: {type(context)}"
+            logger.warning(error_msg)
+            return ValidationResult(False, [error_msg])
         
         # If no schema ID provided, do basic validation
         if not rules_fields_id:
             logger.debug(f"No schema validation - context keys: {list(context.keys())}")
-            return True
+            return ValidationResult(True)
         
         try:
             # Try to get schema from cache first
@@ -82,18 +95,22 @@ class Validator:
             # Validate context against schema
             jsonschema.validate(context, schema)
             logger.debug(f" Schema validation passed for {rules_fields_id}")
-            return True
+            return ValidationResult(True)
             
         except ActedRulesFields.DoesNotExist:
-            logger.error(f"RulesFields schema not found: {rules_fields_id}")
-            return False
+            error_msg = f"RulesFields schema not found: {rules_fields_id}"
+            logger.error(error_msg)
+            return ValidationResult(False, [error_msg])
         except jsonschema.ValidationError as e:
+            error_path = ' -> '.join(str(p) for p in e.absolute_path) if e.absolute_path else 'root'
+            error_msg = f"Schema validation failed at '{error_path}': {e.message}"
             logger.warning(f" Schema validation failed for {rules_fields_id}: {e.message}")
-            logger.debug(f"Validation error path: {' -> '.join(str(p) for p in e.absolute_path)}")
-            return False
+            logger.debug(f"Validation error path: {error_path}")
+            return ValidationResult(False, [error_msg])
         except Exception as e:
-            logger.error(f"Unexpected error during schema validation: {e}")
-            return False
+            error_msg = f"Unexpected error during schema validation: {e}"
+            logger.error(error_msg)
+            return ValidationResult(False, [error_msg])
 
 
 class ConditionEvaluator:
@@ -286,30 +303,94 @@ class ActionDispatcher:
         action_type = action.get("type")
         
         if action_type == "display_message":
+            # Get template content from database if templateId is provided
+            template_id = action.get("templateId")
+            title = action.get("title", "Message")
+            content = action.get("content", "Default message")
+            dismissible = True  # Default value
+            
+            if template_id:
+                try:
+                    from ..models import MessageTemplate
+                    template = MessageTemplate.objects.get(id=template_id, is_active=True)
+                    title = template.title or template.name
+                    content = template.content
+                    
+                    # Use JSON content if available
+                    if template.json_content and isinstance(template.json_content, dict):
+                        json_content = template.json_content
+                        if 'content' in json_content and isinstance(json_content['content'], dict):
+                            title = json_content['content'].get('title', title)
+                            content = json_content['content'].get('message', content)
+
+                    # Get dismissible setting from template
+                    dismissible = template.dismissible
+
+                    # Process template variables using generic template processor
+                    context_mapping = action.get('context_mapping', {})
+                    processor = TemplateProcessor()
+                    content, title = processor.process_variables(content, title, context_mapping, context)
+                        
+                except Exception as e:
+                    logger.warning(f"Could not fetch template {template_id}: {e}")
+            
             return {
                 "type": "display_message",
                 "success": True,
                 "message": {
                     "type": "display",
-                    "title": action.get("title", "Message"),
-                    "content": action.get("content", "Default message"),
+                    "title": title,  # Keep for backward compatibility
+                    "content": {
+                        "title": title,
+                        "message": content,
+                        "icon": "info",
+                        "dismissible": dismissible
+                    },
                     "message_type": action.get("messageType", "info"),
-                    "template_id": action.get("templateId")
+                    "template_id": template_id,
+                    "display_type": action.get("display_type", "alert")  # Add display_type support
                 }
             }
         
         elif action_type == "user_acknowledge":
+            # Load template content if templateId is provided
+            template_content = action.get("content", "Please acknowledge")
+            template_title = action.get("title", "Acknowledgment Required")
+
+            template_id = action.get("templateId")
+            if template_id:
+                try:
+                    from rules_engine.models import MessageTemplate
+                    template = MessageTemplate.objects.get(id=template_id)
+
+                    if template.content_format == 'json' and template.json_content:
+                        # Use JSON content for rich display
+                        template_content = template.json_content
+                        # Extract title from JSON content if available
+                        if isinstance(template_content, dict) and 'content' in template_content:
+                            inner_content = template_content['content']
+                            if isinstance(inner_content, dict) and 'title' in inner_content:
+                                template_title = inner_content['title']
+                    else:
+                        # Use plain text content
+                        template_content = template.content
+                        template_title = template.title or template_title
+
+                except MessageTemplate.DoesNotExist:
+                    logger.warning(f"Template {template_id} not found, using fallback content")
+
             return {
                 "type": "user_acknowledge",
                 "success": True,
                 "message": {
                     "type": "acknowledge",
-                    "title": action.get("title", "Acknowledgment Required"),
-                    "content": action.get("content", "Please acknowledge"),
+                    "title": template_title,
+                    "content": template_content,
                     "message_type": "terms",
-                    "template_id": action.get("templateId"),
+                    "template_id": template_id,
                     "ack_key": action.get("ackKey"),
-                    "required": action.get("required", True)
+                    "required": action.get("required", True),
+                    "display_type": action.get("display_type", "modal")
                 }
             }
         
@@ -387,10 +468,15 @@ class RuleEngine:
     def execute(self, entry_point: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Main execution method"""
         start_time = time.time()
-        
+
         try:
             logger.info(f" Rules Engine: Executing entry point '{entry_point}'")
-            
+
+            # Add defensive context validation to prevent AttributeError
+            context_issues = self._validate_context_structure(context)
+            if context_issues:
+                logger.warning(f"Context structure issues detected: {context_issues}")
+
             # Fetch active rules
             rules = self.rule_repository.get_active_rules(entry_point)
             logger.info(f" Rules Engine: Found {len(rules)} active rules for '{entry_point}'")
@@ -414,19 +500,41 @@ class RuleEngine:
             rules_executed_list = []
             preference_prompts = []
             context_updates = {}
+            schema_validation_errors = []
             
             for rule in rules:
                 try:
                     rule_start = time.time()
                     
                     # Validate context
-                    if not self.validator.validate_context(context, rule.rules_fields_id):
+                    validation_result = self.validator.validate_context(context, rule.rules_fields_id)
+                    if not validation_result.is_valid:
                         logger.warning(f"Context validation failed for rule {rule.rule_id}")
+                        # Collect schema validation errors
+                        for error in validation_result.errors:
+                            schema_validation_errors.append({
+                                'rule_id': rule.rule_id,
+                                'rule_name': rule.name,
+                                'entry_point': entry_point,
+                                'error': error
+                            })
                         continue
                     
                     # Evaluate condition
                     condition_result = self.condition_evaluator.evaluate(rule.condition, context)
-                    
+
+                    # Debug logging for ASET rule
+                    if rule.rule_id == 'rule_aset_warning_v1':
+                        logger.info(f"ASET rule evaluation: condition={rule.condition}")
+                        cart_items = context.get('cart', {}).get('items', [])
+                        product_ids = [item.get('product_id') for item in cart_items]
+                        logger.info(f"Cart product_ids: {product_ids}")
+                        logger.info(f"Looking for product_id in [72, 73]")
+                        logger.info(f"Condition result: {condition_result}")
+
+                    # Count this rule as evaluated regardless of condition result
+                    rules_evaluated += 1
+
                     if condition_result:
                         logger.info(f" Rule '{rule.rule_id}' condition matched")
                         
@@ -503,8 +611,6 @@ class RuleEngine:
                             'execution_time_ms': execution_time_ms
                         })
                         
-                        rules_evaluated += 1
-                        
                         # Store execution record
                         self.execution_store.store_execution(
                             rule.rule_id, entry_point, context, actions_result,
@@ -517,6 +623,17 @@ class RuleEngine:
                             break
                     else:
                         logger.debug(f"  Rule '{rule.rule_id}' condition not matched")
+                        
+                        # Track non-matching rule
+                        execution_time_ms = (time.time() - rule_start) * 1000
+                        rules_executed_list.append({
+                            'rule_id': rule.rule_id,
+                            'priority': rule.priority,
+                            'condition_result': False,
+                            'actions_executed': 0,
+                            'stop_processing': rule.stop_processing,
+                            'execution_time_ms': execution_time_ms
+                        })
                 
                 except Exception as e:
                     logger.error(f" Error processing rule '{rule.rule_id}': {e}")
@@ -528,6 +645,22 @@ class RuleEngine:
                     )
             
             total_time_ms = (time.time() - start_time) * 1000
+            
+            # Check if we have schema validation errors that should be returned as errors
+            if schema_validation_errors:
+                # Return error response for schema validation failures
+                logger.error(f"Schema validation errors for entry point '{entry_point}': {len(schema_validation_errors)} errors")
+                return {
+                    "success": False,
+                    "blocked": True,
+                    "messages": [],
+                    "rules_evaluated": 0,
+                    "execution_time_ms": total_time_ms,
+                    "entry_point": entry_point,
+                    "schema_validation_errors": schema_validation_errors,
+                    "error": "Context schema validation failed",
+                    "details": f"Schema validation failed for {len(schema_validation_errors)} rule(s)"
+                }
             
             result = {
                 "success": True,
@@ -582,6 +715,31 @@ class RuleEngine:
             
         except Exception as e:
             logger.error(f"Failed to set nested value {path} = {value}: {e}")
+
+    def _validate_context_structure(self, context: Dict[str, Any]) -> List[str]:
+        """
+        Validate context structure to prevent AttributeError issues
+        Returns list of validation issues (empty if valid)
+        """
+        issues = []
+
+        # Check for common problematic patterns
+        if 'cart' in context and isinstance(context['cart'], dict):
+            cart = context['cart']
+
+            # Check cart.user field
+            if 'user' in cart:
+                user_val = cart['user']
+                if not isinstance(user_val, (int, type(None))):
+                    issues.append(f"cart.user should be integer or null, got {type(user_val).__name__}: {user_val}")
+
+        # Check top-level user field
+        if 'user' in context:
+            user_val = context['user']
+            if not isinstance(user_val, (dict, type(None))):
+                issues.append(f"user should be dict or null, got {type(user_val).__name__}: {user_val}")
+
+        return issues
 
 
 # Global instance

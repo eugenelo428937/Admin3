@@ -5,6 +5,7 @@ const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
+  const [cartData, setCartData] = useState(null); // Store full cart object
   const [loading, setLoading] = useState(true);
 
   // Fetch cart from backend on mount
@@ -13,10 +14,12 @@ export const CartProvider = ({ children }) => {
       try {
         const res = await cartService.fetchCart();
         
-        
+        console.log('🛒 [CartContext] Fetched cart data:', res.data);
+        setCartData(res.data); // Store full cart object
         setCartItems(res.data.items || []);
       } catch (err) {
         console.error('🛒 [CartContext] Error fetching cart:', err);
+        setCartData(null);
         setCartItems([]);
       } finally {
         setLoading(false);
@@ -30,6 +33,7 @@ export const CartProvider = ({ children }) => {
 
       // The backend should return the complete updated cart
       if (res.data && res.data.items) {
+        setCartData(res.data); // Store full cart object
         setCartItems(res.data.items);
       } else {
         console.error('🛒 [CartContext] Invalid response structure:', res.data);
@@ -45,6 +49,7 @@ export const CartProvider = ({ children }) => {
     if (!item) return;
     try {
       const res = await cartService.removeItem(item.id);
+      setCartData(res.data); // Store full cart object
       setCartItems(res.data.items || []);
     } catch (err) {
       // Optionally handle error
@@ -54,6 +59,7 @@ export const CartProvider = ({ children }) => {
   const clearCart = async () => {
     try {
       const res = await cartService.clearCart();
+      setCartData(res.data); // Store full cart object
       setCartItems(res.data.items || []);
     } catch (err) {
       // Optionally handle error
@@ -63,7 +69,7 @@ export const CartProvider = ({ children }) => {
   const cartCount = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart, cartCount, loading }}>
+    <CartContext.Provider value={{ cartItems, cartData, addToCart, removeFromCart, clearCart, cartCount, loading }}>
       {children}
     </CartContext.Provider>
   );

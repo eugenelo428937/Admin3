@@ -35,6 +35,7 @@ class MessageTemplate(models.Model):
         ('terms', 'Terms & Conditions'),
     ])
     variables = models.JSONField(default=list, help_text="List of variable names used in template")
+    dismissible = models.BooleanField(default=True, help_text="Whether the message can be dismissed by the user")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

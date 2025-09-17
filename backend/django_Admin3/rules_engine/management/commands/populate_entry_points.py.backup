@@ -1,0 +1,11 @@
+"""
+Management command to populate RuleEntryPoint table with predefined entry points
+"""
+from django.core.management.base import BaseCommand
+
+
+class Command(BaseCommand):
+    help = 'Populate RuleEntryPoint table with predefined entry points from model choices'
+    
+    def handle(self, *args, **options):
+        self.stdout.write(self.style.SUCCESS('Entry points population command exists'))

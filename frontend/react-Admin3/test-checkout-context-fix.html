@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Checkout Terms Context Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Checkout Terms Context Fix</h1>
+
+    <div class="test-section">
+        <h2>Test Data Setup</h2>
+        <button onclick="testWithValidData()">Test with Valid Cart Data</button>
+        <button onclick="testWithNullCart()">Test with Null Cart Data</button>
+        <button onclick="testWithEmptyCart()">Test with Empty Cart</button>
+        <button onclick="testWithInvalidAcknowledgments()">Test with Array Acknowledgments (Old Bug)</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script type="module">
+        // Mock the buildRulesContext functions
+        const buildRulesContext = {
+            checkout: (cartData, cartItems = []) => {
+                if (!cartData) {
+                    return { cart: null };
+                }
+
+                const total = cartItems.reduce((sum, item) => {
+                    const price = parseFloat(item.actual_price || item.price || 0);
+                    const quantity = parseInt(item.quantity || 1, 10);
+                    return sum + (price * quantity);
+                }, 0);
+
+                const context = {
+                    cart: {
+                        id: parseInt(cartData.id, 10),
+                        user_id: cartData.user_id || null,
+                        items: cartItems.map(item => ({
+                            id: parseInt(item.id, 10),
+                            quantity: parseInt(item.quantity || 1, 10),
+                            actual_price: String(item.actual_price || item.price || '0'),
+                            metadata: {},
+                            is_marking: Boolean(item.is_marking),
+                            price_type: item.price_type || 'standard',
+                            product_id: parseInt(item.product_id || 0, 10),
+                            product_code: item.product_code || '',
+                            product_name: item.product_name || '',
+                            product_type: item.product_type || '',
+                            subject_code: item.subject_code || '',
+                            current_product: null,
+                            exam_session_code: item.exam_session_code || '',
+                            has_expired_deadline: Boolean(item.has_expired_deadline)
+                        })),
+                        total: Number(total),
+                        discount: Number(cartData.discount || 0),
+                        created_at: cartData.created_at || new Date().toISOString(),
+                        updated_at: cartData.updated_at || new Date().toISOString(),
+                        has_marking: Boolean(cartData.has_marking),
+                        session_key: cartData.session_key || null,
+                        has_material: Boolean(cartData.has_material),
+                        has_tutorial: Boolean(cartData.has_tutorial)
+                    },
+                    user: cartData.user_id ? {
+                        id: parseInt(cartData.user_id, 10),
+                        ip: null,
+                        tier: 'standard',
+                        email: '',
+                        region: '',
+                        preferences: {},
+                        home_country: null,
+                        work_country: null,
+                        is_authenticated: true
+                    } : null,
+                    session: {
+                        ip_address: '127.0.0.1',
+                        session_id: cartData.session_key || 'guest_session'
+                    },
+                    acknowledgments: {}  // CORRECT: Object, not array
+                };
+
+                return context;
+            },
+
+            // FIXED VERSION
+            checkoutTerms: (cartData, cartItems = [], user = null) => {
+                const checkoutContext = buildRulesContext.checkout(cartData, cartItems);
+
+                if (!checkoutContext.cart) {
+                    console.error('[checkoutTerms] No cart data provided');
+                    return checkoutContext;
+                }
+
+                const context = {
+                    ...checkoutContext,
+                    ...(user && { user: {
+                        id: parseInt(user.id || user.user_id, 10),
+                        email: user.email || '',
+                        ip: user.ip || null,
+                        tier: user.tier || 'standard',
+                        region: user.region || '',
+                        preferences: user.preferences || {},
+                        home_country: user.home_country || null,
+                        work_country: user.work_country || null,
+                        is_authenticated: true
+                    }}),
+                    step: {
+                        name: 'terms_conditions',
+                        number: 2,
+                        total_steps: 3
+                    }
+                    // NO acknowledgments override - keeps it as object
+                };
+
+                return context;
+            },
+
+            // OLD BUGGY VERSION for comparison
+            checkoutTermsOld: (cartData, cartItems = [], user = null) => {
+                const checkoutContext = buildRulesContext.checkout(cartData, cartItems);
+                return {
+                    ...checkoutContext,
+                    user: user || checkoutContext.cart?.user || null,  // BUG: cart.user doesn't exist
+                    step: {
+                        name: 'terms_conditions',
+                        number: 2,
+                        total_steps: 3
+                    },
+                    acknowledgments: cartData?.acknowledgments || []  // BUG: Array instead of object
+                };
+            }
+        };
+
+        // Test functions
+        window.testWithValidData = () => {
+            const cartData = {
+                id: "123",
+                user_id: "456",
+                session_key: "session123",
+                discount: 10,
+                has_marking: false,
+                has_material: true,
+                has_tutorial: false
+            };
+
+            const cartItems = [
+                {
+                    id: "1",
+                    product_id: "101",
+                    product_name: "Test Product",
+                    price: "50.00",
+                    quantity: 2,
+                    product_type: "material"
+                }
+            ];
+
+            const user = {
+                id: "456",
+                email: "test@example.com",
+                region: "EU"
+            };
+
+            runTest("Valid Cart Data", cartData, cartItems, user);
+        };
+
+        window.testWithNullCart = () => {
+            runTest("Null Cart Data", null, [], null);
+        };
+
+        window.testWithEmptyCart = () => {
+            const cartData = {
+                id: "124",
+                user_id: null,
+                session_key: "guest123"
+            };
+
+            runTest("Empty Cart", cartData, [], null);
+        };
+
+        window.testWithInvalidAcknowledgments = () => {
+            const cartData = {
+                id: "125",
+                user_id: "457",
+                acknowledgments: ["ack1", "ack2"]  // This would cause the old bug
+            };
+
+            const cartItems = [];
+
+            runTestComparison("Array Acknowledgments Bug", cartData, cartItems, null);
+        };
+
+        function runTest(testName, cartData, cartItems, user) {
+            const resultsDiv = document.getElementById('results');
+
+            try {
+                const context = buildRulesContext.checkoutTerms(cartData, cartItems, user);
+
+                const validation = validateContext(context);
+
+                const resultHtml = `
+                    <div class="test-section ${validation.valid ? 'success' : 'error'}">
+                        <h3>${testName}</h3>
+                        <p><strong>Result:</strong> ${validation.valid ? '✅ PASS' : '❌ FAIL'}</p>
+                        ${validation.errors.length > 0 ? `<p><strong>Errors:</strong> ${validation.errors.join(', ')}</p>` : ''}
+                        ${validation.warnings.length > 0 ? `<p><strong>Warnings:</strong> ${validation.warnings.join(', ')}</p>` : ''}
+                        <details>
+                            <summary>Context Structure</summary>
+                            <pre>${JSON.stringify(context, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+
+                resultsDiv.innerHTML += resultHtml;
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="test-section error">
+                        <h3>${testName}</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function runTestComparison(testName, cartData, cartItems, user) {
+            const resultsDiv = document.getElementById('results');
+
+            try {
+                // Test both versions
+                const oldContext = buildRulesContext.checkoutTermsOld(cartData, cartItems, user);
+                const newContext = buildRulesContext.checkoutTerms(cartData, cartItems, user);
+
+                const oldValidation = validateContext(oldContext);
+                const newValidation = validateContext(newContext);
+
+                const resultHtml = `
+                    <div class="test-section">
+                        <h3>${testName} - Comparison</h3>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="${oldValidation.valid ? 'success' : 'error'}" style="padding: 10px;">
+                                <h4>Old (Buggy) Version</h4>
+                                <p><strong>Result:</strong> ${oldValidation.valid ? '✅ PASS' : '❌ FAIL'}</p>
+                                <p><strong>Acknowledgments Type:</strong> ${typeof oldContext.acknowledgments}</p>
+                                ${oldValidation.errors.length > 0 ? `<p><strong>Errors:</strong> ${oldValidation.errors.join(', ')}</p>` : ''}
+                                <details>
+                                    <summary>Context</summary>
+                                    <pre>${JSON.stringify(oldContext, null, 2)}</pre>
+                                </details>
+                            </div>
+
+                            <div class="${newValidation.valid ? 'success' : 'error'}" style="padding: 10px;">
+                                <h4>New (Fixed) Version</h4>
+                                <p><strong>Result:</strong> ${newValidation.valid ? '✅ PASS' : '❌ FAIL'}</p>
+                                <p><strong>Acknowledgments Type:</strong> ${typeof newContext.acknowledgments}</p>
+                                ${newValidation.errors.length > 0 ? `<p><strong>Errors:</strong> ${newValidation.errors.join(', ')}</p>` : ''}
+                                <details>
+                                    <summary>Context</summary>
+                                    <pre>${JSON.stringify(newContext, null, 2)}</pre>
+                                </details>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                resultsDiv.innerHTML += resultHtml;
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="test-section error">
+                        <h3>${testName}</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function validateContext(context) {
+            const errors = [];
+            const warnings = [];
+
+            // Validation for checkout_terms
+            if (!context) {
+                errors.push('Context is null or undefined');
+            } else if (!context.cart) {
+                errors.push('Missing required cart context');
+            } else {
+                if (!context.cart.items || !Array.isArray(context.cart.items)) {
+                    errors.push('Cart items must be an array');
+                }
+                if (context.cart.total === undefined) {
+                    warnings.push('Cart total is missing');
+                }
+                if (!context.cart.id) {
+                    errors.push('Cart ID is required but missing');
+                }
+                if (context.acknowledgments && typeof context.acknowledgments !== 'object') {
+                    errors.push(`Acknowledgments must be an object, got ${typeof context.acknowledgments}`);
+                }
+                if (Array.isArray(context.acknowledgments)) {
+                    errors.push('Acknowledgments cannot be an array - must be an object');
+                }
+            }
+
+            return {
+                valid: errors.length === 0,
+                errors,
+                warnings
+            };
+        }
+    </script>
+</body>
+</html>

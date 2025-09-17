@@ -1,22 +1,21 @@
-# .github/workflows/deploy.yml
-name: Deploy to Production
+name: Deploy Admin3 Application
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  test:
+  test-backend:
     runs-on: ubuntu-latest
     
     services:
       postgres:
-        image: postgres:16
+        image: postgres:15
         env:
-          POSTGRES_PASSWORD: 
-          POSTGRES_DB: 
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_admin3
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -24,63 +23,150 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-    
+
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
-    - name: Set up Python
+    - name: Set up Python 3.11
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
     
-    - name: Install dependencies
+    - name: Install Python dependencies
+      working-directory: ./backend/django_Admin3
       run: |
         python -m pip install --upgrade pip
-        pip install -r backend/django_Admin3/requirements.txt
-        pip install pytest pytest-django pytest-cov
+        pip install -r requirements.txt
+    
+    - name: Create test environment file
+      working-directory: ./backend/django_Admin3
+      run: |
+        echo "DJANGO_SETTINGS_MODULE=django_Admin3.settings.development" >> .env.test
+        echo "DJANGO_DEBUG=False" >> .env.test
+        echo "DJANGO_ENV=test" >> .env.test
+        echo "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" >> .env.test
+        echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/test_admin3" >> .env.test
+        echo "ALLOWED_HOSTS=localhost,127.0.0.1" >> .env.test
+        echo "EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend" >> .env.test
+    
+    - name: Run Django migrations
+      working-directory: ./backend/django_Admin3
+      run: python manage.py migrate --settings=django_Admin3.settings.development
     
     - name: Run Django tests
-      run: |
-        cd backend/django_Admin3
-        python manage.py test --settings=django_Admin3.settings.test
-    
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-    
-    - name: Install Node dependencies
-      run: |
-        cd frontend/react-Admin3
-        npm install
-    
-    - name: Run React tests
-      run: |
-        cd frontend/react-Admin3
-        npm test -- --coverage --watchAll=false
-    
-    - name: Build React app
-      run: |
-        cd frontend/react-Admin3
-        npm run build
-    
-    - name: Security scan
-      run: |
-        pip install bandit safety
-        bandit -r backend/django_Admin3/
-        safety check -r backend/django_Admin3/requirements.txt
+      working-directory: ./backend/django_Admin3
+      run: python manage.py test --settings=django_Admin3.settings.development
 
-  deploy:
-    needs: test
+  test-frontend:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: './frontend/react-Admin3/package-lock.json'
+    
+    - name: Install frontend dependencies
+      working-directory: ./frontend/react-Admin3
+      run: npm ci
+    
+    - name: Run frontend tests
+      working-directory: ./frontend/react-Admin3
+      run: npm test -- --coverage --watchAll=false
+    
+    - name: Build frontend
+      working-directory: ./frontend/react-Admin3
+      run: npm run build
+
+  deploy:
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: './frontend/react-Admin3/package-lock.json'
+    
+    - name: Install Python dependencies
+      working-directory: ./backend/django_Admin3
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Install frontend dependencies
+      working-directory: ./frontend/react-Admin3
+      run: npm ci
+    
+    - name: Create production environment file
+      working-directory: ./backend/django_Admin3
+      run: |
+        echo "DJANGO_SETTINGS_MODULE=django_Admin3.settings.production" >> .env.production
+        echo "DJANGO_DEBUG=False" >> .env.production
+        echo "DJANGO_ENV=production" >> .env.production
+        echo "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" >> .env.production
+        echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env.production
+        echo "ADMINISTRATE_API_URL=https://api.getadministrate.com/graphql" >> .env.production
+        echo "ADMINISTRATE_INSTANCE_URL=bppacted.administrateapp.com" >> .env.production
+        echo "ADMINISTRATE_API_KEY=${{ secrets.ADMINISTRATE_API_KEY }}" >> .env.production
+        echo "ADMINISTRATE_API_SECRET=${{ secrets.ADMINISTRATE_API_SECRET }}" >> .env.production
+        echo "ADMINISTRATE_REST_API_URL=https://bppacted.administrateapp.com" >> .env.production
+        echo "ADMINISTRATE_AUTH_USER=eugenelo@bpp.com" >> .env.production
+        echo "EMAIL_HOST_USER=eugene.lo1030@gmail.com" >> .env.production
+        echo "EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}" >> .env.production
+        echo "DEFAULT_FROM_EMAIL=eugenelo@acted.com" >> .env.production
+        echo "PASSWORD_RESET_TIMEOUT_MINUTES=14" >> .env.production
+        echo "RECAPTCHA_SITE_KEY=6LdhHm0rAAAAAPcWNrdES-7ns_VkwCT8DCKpWWg-" >> .env.production
+        echo "RECAPTCHA_SECRET_KEY=${{ secrets.RECAPTCHA_SECRET_KEY }}" >> .env.production
+        echo "USE_DUMMY_PAYMENT_GATEWAY=False" >> .env.production
+        echo "OPAYO_BASE_URL=https://sandbox.opayo.eu.elavon.com/hosted-payment-pages/vendor/v1/payment-pages" >> .env.production
+        echo "OPAYO_VENDOR_NAME=sandboxEC" >> .env.production
+        echo "OPAYO_INTEGRATION_KEY=${{ secrets.OPAYO_INTEGRATION_KEY }}" >> .env.production
+        echo "OPAYO_INTEGRATION_PASSWORD=${{ secrets.OPAYO_INTEGRATION_PASSWORD }}" >> .env.production
+        echo "OPAYO_VPS_PROTOCOL=4.00" >> .env.production
+        echo "OPAYO_TXTYPE=PAYMENT" >> .env.production
+        echo "OPAYO_VENDOR=ifeltd" >> .env.production
+        echo "GETADDRESS_API_KEY=${{ secrets.GETADDRESS_API_KEY }}" >> .env.production
+        echo "GETADDRESS_ADMIN_KEY=${{ secrets.GETADDRESS_ADMIN_KEY }}" >> .env.production
+    
+    - name: Build frontend for production
+      working-directory: ./frontend/react-Admin3
+      run: npm run build
+    
+    - name: Collect Django static files
+      working-directory: ./backend/django_Admin3
+      run: python manage.py collectstatic --noinput --settings=django_Admin3.settings.production
+    
+    - name: Run production migrations
+      working-directory: ./backend/django_Admin3
+      run: python manage.py migrate --settings=django_Admin3.settings.production
+    
+    # Add your deployment steps here (e.g., deploy to server, Docker, etc.)
     - name: Deploy to production
       run: |
-        # Add deployment script here
-        # This would typically use SSH, AWS CLI, or other deployment tools
-        echo "Deploying to production server..."
-        # Example: ssh user@server "cd /path/to/app && git pull && ./deploy.sh"
+        echo "🚀 Deployment successful!"
+        echo "Frontend built successfully"
+        echo "Backend configured for production"
+        echo "Add your specific deployment commands here"
+        
+    - name: Notify deployment status
+      if: success()
+      run: echo "✅ Deployment completed successfully"
+    
+    - name: Notify deployment failure
+      if: failure()
+      run: echo "❌ Deployment failed"

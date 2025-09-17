@@ -1,16 +1,28 @@
 {
   "mcpServers": {
-    "trello": {
-      "command": "node",
-      "args": ["trello-mcp-wrapper.mjs"]
-    },
-    "browsermcp": {
-      "command": "node",
-      "args": ["run-mcp.js", "browsermcp"]
-    },
-    "github": {
-      "command": "node",
-      "args": ["run-mcp.js", "github"]
-    }
+		"trello": {
+			"command": "node",
+			"args": ["trello-mcp-wrapper.mjs"]
+		},
+		"browsermcp": {
+			"command": "node",
+			"args": ["run-mcp.js", "browsermcp"]
+		},
+		"github": {
+			"command": "node",
+			"args": ["run-mcp.js", "github"]
+		},
+		"tdd-guard Docs": {
+			"command": "node",
+			"args": ["run-mcp.js", "tdd-guard Docs"]
+		},
+		"material-ui Docs": {
+			"command": "node",
+			"args": ["run-mcp.js", "material-ui Docs"]
+		},
+		"json-logic-py Docs": {
+			"command": "node",
+			"args": ["run-mcp.js", "json-logic-py Docs"]
+		}
   }
 }

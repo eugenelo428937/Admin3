@@ -81,8 +81,8 @@ class RulesEngineViewSet(viewsets.ViewSet):
 
     @method_decorator(csrf_exempt)
     @action(detail=False, methods=['post'], url_path='execute', permission_classes=[AllowAny])
-    def execute_rules_new(self, request):
-        """POST /rules/execute/ - New JSONB-based rules engine execution"""
+    def execute_rules(self, request):
+        """POST /rules/execute/ - JSONB-based rules engine execution"""
         try:
             entry_point = request.data.get('entry_point') or request.data.get('entryPoint')
             context_data = request.data.get('context', {})
@@ -93,21 +93,65 @@ class RulesEngineViewSet(viewsets.ViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            logger.info(f"🎯 New Rules Engine API: Executing '{entry_point}'")
+            logger.info(f"🎯 Rules Engine API: Executing '{entry_point}'")
+            logger.info(f"🔐 Authentication: is_authenticated={request.user.is_authenticated}, user_id={getattr(request.user, 'id', 'None')}")
+            logger.info(f"📝 Context keys: {list(context_data.keys())}")
+            auth_header = request.META.get('HTTP_AUTHORIZATION', 'None')
+            logger.info(f"🔑 Authorization header: {auth_header[:50]}..." if len(str(auth_header)) > 50 else f"🔑 Authorization header: {auth_header}")
             
-            # Add user context if authenticated
-            if request.user.is_authenticated:
-                context_data['user'] = {
-                    'id': str(request.user.id),
-                    'email': request.user.email,
-                    'is_authenticated': True
-                }
-            else:
-                context_data['user'] = {
-                    'id': None,
-                    'email': None,
-                    'is_authenticated': False
-                }
+            # Only add user context if not already provided in the request or if authenticated
+            # This allows schema validation to work properly when user context is intentionally missing
+            logger.info(f"🔍 Checking user context: 'user' in context_data = {'user' in context_data}")
+            logger.info(f"🔍 User authentication check: is_authenticated = {request.user.is_authenticated}")
+            logger.info(f"🔍 User object: {request.user} (type: {type(request.user).__name__})")
+
+            if 'user' not in context_data:
+                if request.user.is_authenticated:
+                    user_context = {
+                        'id': request.user.id,  # Use integer, not string
+                        'email': request.user.email,
+                        'is_authenticated': True,
+                        'ip': request.META.get('REMOTE_ADDR', ''),
+                        'home_country': None,
+                        'work_country': None
+                    }
+                    
+                    # Get user address information for country detection
+                    try:
+                        from userprofile.models import UserProfile
+                        from userprofile.models.address import UserProfileAddress
+                        
+                        user_profile = UserProfile.objects.get(user=request.user)
+                        
+                        # Get home address country
+                        try:
+                            home_address = UserProfileAddress.objects.get(
+                                user_profile=user_profile, 
+                                address_type='HOME'
+                            )
+                            user_context['home_country'] = home_address.country
+                        except UserProfileAddress.DoesNotExist:
+                            pass
+                        
+                        # Get work address country
+                        try:
+                            work_address = UserProfileAddress.objects.get(
+                                user_profile=user_profile,
+                                address_type='WORK'
+                            )
+                            user_context['work_country'] = work_address.country
+                        except UserProfileAddress.DoesNotExist:
+                            pass
+                            
+                    except UserProfile.DoesNotExist:
+                        # User profile doesn't exist, keep countries as None
+                        pass
+                        
+                    context_data['user'] = user_context
+                else:
+                    # For unauthenticated users, only add user context if schema validation fails
+                    # This allows proper schema validation for rules that require user context
+                    pass
             
             # Add request metadata
             context_data['request'] = {
@@ -116,15 +160,30 @@ class RulesEngineViewSet(viewsets.ViewSet):
                 'timestamp': timezone.now().isoformat()
             }
             
-            # Execute new rules engine
+            # Debug: Log the final context being sent to rules engine
+            logger.info(f"📋 Final context keys: {list(context_data.keys())}")
+            if 'user' in context_data:
+                user_ctx = context_data['user']
+                # Defensive check: only log if user_ctx is a dictionary
+                if isinstance(user_ctx, dict):
+                    logger.info(f" User context: id={user_ctx.get('id')}, auth={user_ctx.get('is_authenticated')}, home_country={user_ctx.get('home_country')}, work_country={user_ctx.get('work_country')}")
+                else:
+                    logger.info(f" User context: {user_ctx} (type: {type(user_ctx).__name__})")
+            
+            # Execute rules engine
             result = new_rule_engine.execute(entry_point, context_data)
             
-            logger.info(f"📊 New Rules Engine API: '{entry_point}' - {result.get('rules_evaluated', 0)} rules evaluated")
+            # Check for schema validation errors
+            if not result.get('success', True) and 'schema_validation_errors' in result:
+                logger.warning(f"Schema validation errors for '{entry_point}': {len(result['schema_validation_errors'])} errors")
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            
+            logger.info(f"Rules Engine API: '{entry_point}' - {result.get('rules_evaluated', 0)} rules evaluated")
             
             return Response(result)
             
         except Exception as e:
-            logger.error(f"❌ New Rules Engine API error: {str(e)}")
+            logger.error(f"❌ Rules Engine API error: {str(e)}")
             return Response(
                 {
                     'success': False,
@@ -777,422 +836,84 @@ def rules_create(request):
         )
 
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def rules_execute(request):
-    """
-    POST /api/rules/execute/ - Execute rules for entry point with context
-    Enhanced for Stage 10 requirements including rule chaining, context updates, and full template details
-    """
-    try:
-        serializer = RuleExecuteSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
-        entry_point = serializer.validated_data['entry_point']
-        context = serializer.validated_data['context'].copy()  # Make a copy for modifications
-        
-        # Get all rules for this entry point, ordered by priority
-        queryset = ActedRule.objects.filter(
-            entry_point=entry_point,
-            active=True
-        ).order_by('priority', 'created_at')
-        
-        response_data = {
-            'success': True,
-            'actions': [],
-            'blocked': False,
-            'required_acknowledgments': [],
-            'rules_executed': [],  # Stage 10 requirement
-            'updated_context': context.copy()  # Stage 10 requirement
-        }
-        
-        # Rule execution with proper chaining and stop_processing logic
-        for rule in queryset:
-            try:
-                # Enhanced condition evaluation using JSONLogic
-                condition_matched = _evaluate_rule_condition(rule.condition, context)
-                
-                if condition_matched:
-                    # Add to executed rules list
-                    executed_rule_info = {
-                        'rule_id': rule.rule_id,
-                        'rule_name': rule.name,
-                        'priority': rule.priority,
-                        'actions': rule.actions or []
-                    }
-                    response_data['rules_executed'].append(executed_rule_info)
-                    
-                    # Process rule actions
-                    for action in rule.actions or []:
-                        processed_action = _process_rule_action(action, context, response_data)
-                        if processed_action:
-                            response_data['actions'].append(processed_action)
-                    
-                    # Check if we should stop processing more rules
-                    if rule.stop_processing:
-                        logger.debug(f"Rule {rule.rule_id} has stop_processing=True, stopping rule chain")
-                        break
-                        
-                # Log execution
-                if ActedRuleExecution:
-                    ActedRuleExecution.objects.create(
-                        rule_id=rule.rule_id,
-                        entry_point=entry_point,
-                        context_snapshot=context,
-                        condition_result=condition_matched,
-                        success=True,
-                        execution_time_ms=5
-                    )
-                    
-            except Exception as e:
-                logger.error(f"Error processing rule {rule.rule_id}: {str(e)}")
-                # Continue with next rule on error
-                continue
-        
-        return Response(response_data)
-        
-    except Exception as e:
-        logger.error(f"Error executing rules: {str(e)}")
-        return Response(
-            {'error': 'Internal server error', 'details': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-
-def _evaluate_rule_condition(condition, context):
-    """
-    Evaluate rule condition against context using JSONLogic-like syntax
-    Enhanced implementation for Stage 10 tests with more operators
-    """
-    if not condition:
-        return True
-    
-    try:
-        # Handle simple equality conditions
-        if isinstance(condition, dict) and '==' in condition:
-            equals_condition = condition['==']
-            if len(equals_condition) == 2:
-                left_operand = equals_condition[0]
-                right_operand = equals_condition[1]
-                
-                # Handle variable references
-                if isinstance(left_operand, dict) and 'var' in left_operand:
-                    var_path = left_operand['var']
-                    left_value = _get_context_value(context, var_path)
-                else:
-                    left_value = left_operand
-                    
-                return left_value == right_operand
-        
-        # Handle not equal conditions
-        if isinstance(condition, dict) and '!=' in condition:
-            not_equals_condition = condition['!=']
-            if len(not_equals_condition) == 2:
-                left_operand = not_equals_condition[0]
-                right_operand = not_equals_condition[1]
-                
-                if isinstance(left_operand, dict) and 'var' in left_operand:
-                    var_path = left_operand['var']
-                    left_value = _get_context_value(context, var_path)
-                else:
-                    left_value = left_operand
-                    
-                return left_value != right_operand
-        
-        # Handle greater than conditions
-        if isinstance(condition, dict) and '>' in condition:
-            gt_condition = condition['>']
-            if len(gt_condition) == 2:
-                left_operand = gt_condition[0]
-                right_operand = gt_condition[1]
-                
-                if isinstance(left_operand, dict) and 'var' in left_operand:
-                    var_path = left_operand['var']
-                    left_value = _get_context_value(context, var_path)
-                else:
-                    left_value = left_operand
-                    
-                try:
-                    return float(left_value) > float(right_operand)
-                except (TypeError, ValueError):
-                    return False
-        
-        # Handle >= conditions
-        if isinstance(condition, dict) and '>=' in condition:
-            gte_condition = condition['>=']
-            if len(gte_condition) == 2:
-                left_operand = gte_condition[0]
-                right_operand = gte_condition[1]
-                
-                if isinstance(left_operand, dict) and 'var' in left_operand:
-                    var_path = left_operand['var']
-                    left_value = _get_context_value(context, var_path)
-                else:
-                    left_value = left_operand
-                    
-                try:
-                    return float(left_value) >= float(right_operand)
-                except (TypeError, ValueError):
-                    return False
-        
-        # Handle AND conditions
-        if isinstance(condition, dict) and 'and' in condition:
-            and_conditions = condition['and']
-            return all(_evaluate_rule_condition(cond, context) for cond in and_conditions)
-        
-        # Default case - always true for simple testing
-        return True
-        
-    except Exception as e:
-        logger.warning(f"Error evaluating condition {condition}: {str(e)}")
-        return False
-
-
-def _get_context_value(context, path):
-    """
-    Get value from context using dot notation (e.g., 'user.region', 'cart.total')
-    """
-    try:
-        parts = path.split('.')
-        value = context
-        for part in parts:
-            if isinstance(value, dict):
-                value = value.get(part)
-            else:
-                return None
-        return value
-    except Exception:
-        return None
-
-
-def _process_rule_action(action, context, response_data):
-    """
-    Process individual rule action and update context/response as needed
-    """
-    action_type = action.get('type', '')
-    
-    # Base action structure
-    processed_action = {
-        'type': action_type,
-        'templateId': action.get('templateName', ''),
-        'message': action.get('message', ''),
-        'placement': action.get('placement', ''),
-        'priority': action.get('priority', '')
-    }
-    
-    # Handle different action types
-    if action_type == 'user_acknowledge':
-        return _process_acknowledge_action(action, context, response_data, processed_action)
-    elif action_type == 'user_preference':
-        return _process_preference_action(action, context, processed_action)
-    elif action_type == 'update':
-        return _process_update_action(action, context, response_data, processed_action)
-    elif action_type == 'display_message':
-        return _process_display_message_action(action, context, processed_action)
-    
-    return processed_action
-
-
-def _process_acknowledge_action(action, context, response_data, processed_action):
-    """
-    Process user_acknowledge action with full template details
-    """
-    ack_key = action.get('ackKey')
-    is_required = action.get('required', False)
-    is_blocking = action.get('blocking', False)
-    template_name = action.get('templateName')
-    
-    # Add full template details
-    if template_name:
-        try:
-            template = MessageTemplate.objects.get(name=template_name)
-            template_details = {
-                'template_id': template.name,
-                'title': template.title,
-                'content': template.content,
-                'content_format': template.content_format,
-                'message_type': template.message_type,
-                'variables': template.variables or []
-            }
-            
-            # Handle JSON content
-            if template.json_content:
-                template_details.update(template.json_content)
-            
-            processed_action['template'] = template_details
-            processed_action['message'] = template.content
-            
-        except MessageTemplate.DoesNotExist:
-            processed_action['message'] = action.get('templateName', '')
-    
-    # Check if acknowledgment already given
-    acknowledgments = context.get('acknowledgments', {})
-    if ack_key and ack_key not in acknowledgments:
-        if is_required and is_blocking:
-            response_data['blocked'] = True
-            response_data['required_acknowledgments'].append({
-                'ackKey': ack_key,
-                'ruleId': action.get('ruleId', ''),
-                'templateId': template_name
-            })
-    
-    return processed_action
-
-
-def _process_preference_action(action, context, processed_action):
-    """
-    Process user_preference action with full template details
-    """
-    template_name = action.get('templateName')
-    
-    if template_name:
-        try:
-            template = MessageTemplate.objects.get(name=template_name)
-            template_details = {
-                'template_id': template.name,
-                'title': template.title,
-                'content': template.content,
-                'content_format': template.content_format,
-                'message_type': template.message_type,
-                'variables': template.variables or []
-            }
-            
-            if template.json_content:
-                template_details.update(template.json_content)
-            
-            processed_action['template'] = template_details
-            processed_action['message'] = template.content
-            
-        except MessageTemplate.DoesNotExist:
-            processed_action['message'] = action.get('templateName', '')
-    
-    return processed_action
-
-
-def _process_update_action(action, context, response_data, processed_action):
-    """
-    Process update action to modify context
-    Enhanced to support calculations and different operations
-    """
-    target = action.get('target', '')
-    operation = action.get('operation', 'set')
-    value = action.get('value')
-    function_name = action.get('function')
-    
-    # Apply context update based on operation type
-    if target:
-        if operation == 'set' and value is not None:
-            _set_context_value(response_data['updated_context'], target, value)
-        elif operation == 'calculate' and function_name:
-            # Handle special calculation functions
-            calculated_value = _perform_calculation(function_name, response_data['updated_context'], target)
-            if calculated_value is not None:
-                _set_context_value(response_data['updated_context'], target, calculated_value)
-        elif operation == 'increment' and value is not None:
-            current_value = _get_context_value(response_data['updated_context'], target) or 0
-            try:
-                new_value = float(current_value) + float(value)
-                _set_context_value(response_data['updated_context'], target, new_value)
-            except (TypeError, ValueError):
-                logger.warning(f"Cannot increment non-numeric value at {target}")
-    
-    return processed_action
-
-
-def _perform_calculation(function_name, context, target):
-    """
-    Perform calculation based on function name
-    """
-    try:
-        if function_name == 'multiply_discount':
-            # Multiply base_discount by discount_multiplier
-            base_discount = _get_context_value(context, 'cart.base_discount') or 0
-            multiplier = _get_context_value(context, 'cart.discount_multiplier') or 1
-            
-            try:
-                result = float(base_discount) * float(multiplier)
-                return result
-            except (TypeError, ValueError):
-                return 0
-        
-        # Add more calculation functions as needed
-        logger.warning(f"Unknown calculation function: {function_name}")
-        return None
-        
-    except Exception as e:
-        logger.error(f"Error in calculation {function_name}: {str(e)}")
-        return None
-
-
-def _process_display_message_action(action, context, processed_action):
-    """
-    Process display_message action
-    """
-    template_name = action.get('templateName')
-    
-    if template_name:
-        try:
-            template = MessageTemplate.objects.get(name=template_name)
-            processed_action['message'] = template.content
-        except MessageTemplate.DoesNotExist:
-            pass
-    
-    return processed_action
-
-
-def _set_context_value(context, path, value):
-    """
-    Set value in context using dot notation (e.g., 'cart.discount')
-    """
-    try:
-        parts = path.split('.')
-        current = context
-        
-        # Navigate to the parent of the target key
-        for part in parts[:-1]:
-            if part not in current:
-                current[part] = {}
-            current = current[part]
-        
-        # Set the final value
-        current[parts[-1]] = value
-        
-    except Exception as e:
-        logger.warning(f"Error setting context value {path}: {str(e)}")
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def rules_acknowledge(request):
     """
-    POST /api/rules/acknowledge/ - Handle rule acknowledgments
+    POST /api/rules/acknowledge/ - Handle rule acknowledgments with session tracking
     """
     try:
         ack_key = request.data.get('ackKey')
-        accepted = request.data.get('accepted', True)
-        user_id = request.data.get('user_id')
-        context = request.data.get('context', {})
-        
+        message_id = request.data.get('message_id')
+        acknowledged = request.data.get('acknowledged', True)
+        entry_point_location = request.data.get('entry_point_location')
+
         if not ack_key:
             return Response(
-                {'error': 'ackKey is required'}, 
+                {'error': 'ackKey is required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        # For testing purposes, just return success
-        # In production, this would store the acknowledgment
+
+        if not entry_point_location:
+            return Response(
+                {'error': 'entry_point_location is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get or initialize session acknowledgments
+        session_acknowledgments = request.session.get('user_acknowledgments', [])
+
+        # Find existing acknowledgment for this message_id and entry_point_location
+        existing_ack = None
+        existing_index = -1
+
+        for i, ack in enumerate(session_acknowledgments):
+            if (ack.get('message_id') == message_id and
+                ack.get('entry_point_location') == entry_point_location):
+                existing_ack = ack
+                existing_index = i
+                break
+
+        # Create new acknowledgment record
+        acknowledgment_record = {
+            'message_id': message_id,
+            'acknowledged': acknowledged,
+            'acknowledged_timestamp': timezone.now().isoformat(),
+            'entry_point_location': entry_point_location,
+            'ack_key': ack_key,
+            'ip_address': request.META.get('REMOTE_ADDR', ''),
+            'user_agent': request.META.get('HTTP_USER_AGENT', '')
+        }
+
+        if existing_ack:
+            # Update existing acknowledgment
+            session_acknowledgments[existing_index] = acknowledgment_record
+            action = 'updated'
+        else:
+            # Add new acknowledgment
+            session_acknowledgments.append(acknowledgment_record)
+            action = 'created'
+
+        # Save back to session
+        request.session['user_acknowledgments'] = session_acknowledgments
+        request.session.modified = True
+
         return Response({
             'success': True,
-            'message': 'Acknowledgment recorded',
+            'message': f'Acknowledgment {action} successfully',
             'ackKey': ack_key,
-            'accepted': accepted
+            'acknowledged': acknowledged,
+            'entry_point_location': entry_point_location,
+            'action': action,
+            'total_acknowledgments': len(session_acknowledgments)
         })
-        
+
     except Exception as e:
         logger.error(f"Error recording acknowledgment: {str(e)}")
         return Response(
-            {'error': 'Internal server error', 'details': str(e)}, 
+            {'error': 'Internal server error', 'details': str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 

@@ -21,7 +21,6 @@ import {
 } from '@mui/material';
 import { useCart } from '../../contexts/CartContext';
 import { useVAT } from '../../contexts/VATContext';
-import { useProductListRules } from '../../hooks/useRulesEngine';
 import useProductsSearch from '../../hooks/useProductsSearch';
 import useProductCardHelpers from '../../hooks/useProductCardHelpers';
 
@@ -79,14 +78,8 @@ const ProductList = React.memo(() => {
         refresh
     } = useProductsSearch({ autoSearch: true });
     
-    const { allEsspIds, bulkDeadlines } = useProductCardHelpers();
+    const { handleAddToCart: helperAddToCart, allEsspIds, bulkDeadlines } = useProductCardHelpers(products);
     
-    // Rules engine hook
-    const {
-        ruleResults: productListRulesResults,
-        ruleResultsCount: productListRulesCount,
-        ruleResultsLoading: productListRulesLoading,
-    } = useProductListRules();
 
     /**
      * Parse URL parameters on component mount and location changes
@@ -327,12 +320,6 @@ const ProductList = React.memo(() => {
 					</Grid>
 				</Grid>
 
-				{/* Rules Engine Results (if needed for debugging) */}
-				{productListRulesResults && productListRulesResults.length > 0 && (
-					<Box sx={{ mt: 4 }}>
-						{/* Render rules engine results if needed */}
-					</Box>
-				)}
 			</Container>
 		);
 });
