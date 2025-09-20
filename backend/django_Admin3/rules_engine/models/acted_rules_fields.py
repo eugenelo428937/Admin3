@@ -6,7 +6,7 @@ from .base import models, ValidationError
 
 class ActedRulesFields(models.Model):
     """JSON Schema definitions for context validation"""
-    fields_id = models.CharField(max_length=100, unique=True, help_text="Unique identifier for the schema")
+    fields_code = models.CharField(max_length=100, unique=True, help_text="Unique code identifier for the schema")
     name = models.CharField(max_length=200, help_text="Human-readable schema name")
     description = models.TextField(blank=True, help_text="Description of this schema")
     schema = models.JSONField(help_text="JSON Schema definition for context validation")

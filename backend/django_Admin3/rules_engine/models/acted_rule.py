@@ -7,14 +7,14 @@ from .base import models, ValidationError
 class ActedRule(models.Model):
     """New JSONB-based Rule model according to specification"""
     
-    rule_id = models.CharField(max_length=100, unique=True, help_text="Unique identifier for the rule")
+    rule_code = models.CharField(max_length=100, unique=True, help_text="Unique code identifier for the rule (e.g., 'marketing_preference_rule_v1')")
     name = models.CharField(max_length=200, help_text="Human-readable rule name")
     description = models.TextField(blank=True, help_text="Description of what this rule does")
     entry_point = models.CharField(max_length=50, help_text="Entry point code where this rule triggers")
     priority = models.IntegerField(default=100, help_text="Lower numbers = higher priority")
     active = models.BooleanField(default=True, help_text="Whether this rule is active")
     version = models.IntegerField(default=1, help_text="Rule version number")
-    rules_fields_id = models.CharField(max_length=100, blank=True, help_text="ID of the ActedRulesFields schema for context validation")
+    rules_fields_code = models.CharField(max_length=100, blank=True, help_text="Code of the ActedRulesFields schema for context validation")
     condition = models.JSONField(help_text="JSONLogic condition expression")
     actions = models.JSONField(help_text="Array of actions to execute when condition is true")
     stop_processing = models.BooleanField(default=False, help_text="Stop processing other rules if this rule matches")
@@ -31,7 +31,7 @@ class ActedRule(models.Model):
         ordering = ["entry_point", "priority", "created_at"]
         indexes = [
             models.Index(fields=["entry_point", "active", "priority"], name="acted_rules_entry_active"),
-            models.Index(fields=["rule_id"], name="acted_rules_rule_id"),
+            models.Index(fields=["rule_code"], name="acted_rules_rule_code"),
             models.Index(fields=["active", "entry_point"], name="acted_rules_active_ent"),
         ]
     

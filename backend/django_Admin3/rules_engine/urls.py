@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     RulesEngineViewSet, MessageTemplateViewSet,
-    HolidayCalendarViewSet, UserAcknowledgmentViewSet, ActedRuleViewSet,
+    ActedRuleViewSet,
     rules_by_entrypoint, rules_create, rules_acknowledge, rules_preferences
 )
 
@@ -11,8 +11,6 @@ router.register(r'engine', RulesEngineViewSet, basename='rules-engine')
 # Obsolete RuleViewSet removed
 # router.register(r'rules', RuleViewSet)
 router.register(r'templates', MessageTemplateViewSet)
-router.register(r'holidays', HolidayCalendarViewSet)
-router.register(r'acknowledgments', UserAcknowledgmentViewSet)
 router.register(r'acted-rules', ActedRuleViewSet, basename='acted-rules')
 
 urlpatterns = [

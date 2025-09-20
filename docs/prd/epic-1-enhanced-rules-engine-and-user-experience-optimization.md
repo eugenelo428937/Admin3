@@ -142,8 +142,8 @@ so that I understand any special requirements for my organization.
 
 ## 📊 **Implementation Status Summary**
 
-**Last Updated**: 2025-09-15
-**Alignment Status**: ✅ COMPLETED WITH BUSINESS RULES IMPLEMENTED
+**Last Updated**: 2025-09-17
+**Alignment Status**: ✅ COMPLETED WITH DIGITAL CONSENT WORKFLOW
 
 ### **✅ FULLY IMPLEMENTED**
 
@@ -154,9 +154,20 @@ so that I understand any special requirements for my organization.
 - ✅ **Entry Points**: 12 entry points including `home_page_mount`, `checkout_start`, `checkout_terms`
 - ✅ **Performance**: 20-45ms execution time (under 200ms requirement)
 - ✅ **Audit Trail**: Complete execution logging with context snapshots
+- ✅ **Frontend Integration**: Complete React component suite with proper context building
 - ✅ **Status**: **READY FOR PRODUCTION** 🚀
 
+#### **Digital Content Acknowledgment System** - **COMPLETE**
+- ✅ **Digital Product Detection**: Automatic detection of OC and Vitalsource eBook products
+- ✅ **Cart Flag Management**: Dynamic `has_digital` flag based on cart contents
+- ✅ **Frontend Context Building**: Proper inclusion of `has_digital` in rules engine payload
+- ✅ **Dual UI Components**: Separate T&C checkbox and digital consent modal
+- ✅ **Independent Acknowledgments**: Separate order entries for each acknowledgment type
+- ✅ **Acknowledgment Validation**: Only matched rules transferred to order records
+
 #### **Business Rules Implemented** - **COMPLETE**
+- ✅ **Terms & Conditions Rule**: Always-required terms acceptance with inline checkbox
+- ✅ **Digital Content Acknowledgment**: Required modal for digital products with `has_digital=true`
 - ✅ **ASET Warning Rule**: Product warnings for ASET items (products 72, 73) with comprehensive test suite
 - ✅ **UK Import Tax Warning**: Non-UK user import tax notifications with address validation
 - ✅ **Expired Marking Deadlines**: Warning for products with expired marking deadlines
@@ -189,6 +200,34 @@ so that I understand any special requirements for my organization.
 | `checkout_validation` entry point | `checkout_terms` entry point |
 | `RulesFields` model | `ActedRulesFields` model |
 | Generic entry points | Specific implemented entry points |
+
+## 🔧 **Digital Consent Workflow Fixes (2025-09-17)**
+
+### **Critical Bug Fixes Applied**
+
+| **Issue** | **Root Cause** | **Solution** |
+|-----------|----------------|--------------|
+| **Stale Acknowledgment Transfer** | Session acknowledgments transferred without validation | Added acknowledgment validation against matched rules |
+| **Missing `has_digital` Context** | Frontend not including `has_digital` in rules payload | Added `has_digital: Boolean(cartData.has_digital)` to context |
+| **Incorrect Cart Reference** | Acknowledgment validation using wrong cart instance | Pass actual checkout cart to validation method |
+
+### **Frontend Integration Enhancements**
+
+| **Component** | **Enhancement** | **File Location** |
+|---------------|-----------------|-------------------|
+| **Context Building** | Added `has_digital` flag to checkout context | `frontend/react-Admin3/src/utils/rulesEngineUtils.js:448` |
+| **Acknowledgment Modal** | Enhanced modal for digital consent display | `frontend/react-Admin3/src/components/Common/RulesEngineAcknowledgmentModal.js` |
+| **Rules Service** | Maintained consistent API service layer | `frontend/react-Admin3/src/services/rulesEngineService.js` |
+| **Cart Integration** | Fixed cart flag serialization and detection | `backend/django_Admin3/cart/serializers.py:42` |
+
+### **Workflow Validation Results**
+
+✅ **Cart Addition**: OC/eBook products → `cart.has_digital = true`
+✅ **API Response**: Backend sends `has_digital` flag to frontend
+✅ **Context Building**: Frontend includes `has_digital` in rules payload
+✅ **Rules Execution**: Digital consent rule evaluates correctly
+✅ **UI Display**: Separate T&C checkbox + digital consent modal
+✅ **Order Storage**: Independent acknowledgment entries per rule type
 
 ## 🎯 **Implemented Business Rules Details**
 

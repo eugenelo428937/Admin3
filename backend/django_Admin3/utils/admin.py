@@ -7,7 +7,7 @@ import json
 
 from .models import (
     EmailTemplate, EmailAttachment, EmailTemplateAttachment,
-    EmailQueue, EmailLog, EmailSettings, EmailCampaign,
+    EmailQueue, EmailLog, EmailSettings,
     EmailContentRule, EmailTemplateContentRule, EmailContentPlaceholder
 )
 
@@ -344,97 +344,6 @@ class EmailSettingsAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         """Set the updated_by field when saving."""
         obj.updated_by = request.user
-        super().save_model(request, obj, form, change)
-
-
-@admin.register(EmailCampaign)
-class EmailCampaignAdmin(admin.ModelAdmin):
-    list_display = [
-        'name', 'template', 'status', 'total_recipients', 
-        'sent_count', 'open_rate_display', 'click_rate_display', 
-        'scheduled_at', 'created_at'
-    ]
-    list_filter = [
-        'status', 'template__template_type', 'created_at', 'scheduled_at'
-    ]
-    search_fields = ['name', 'description', 'campaign_id']
-    readonly_fields = [
-        'campaign_id', 'sent_count', 'failed_count', 'delivered_count',
-        'opened_count', 'clicked_count', 'started_at', 'completed_at',
-        'created_at', 'updated_at', 'open_rate_display', 'click_rate_display'
-    ]
-    
-    fieldsets = (
-        ('Campaign Information', {
-            'fields': ('campaign_id', 'name', 'description', 'status')
-        }),
-        ('Template and Content', {
-            'fields': ('template', 'subject_override')
-        }),
-        ('Recipients', {
-            'fields': ('recipient_list', 'total_recipients')
-        }),
-        ('Scheduling', {
-            'fields': ('scheduled_at', 'send_rate_per_hour', 'batch_size')
-        }),
-        ('Progress', {
-            'fields': (
-                'sent_count', 'failed_count', 'delivered_count',
-                'opened_count', 'clicked_count', 'open_rate_display', 
-                'click_rate_display'
-            ),
-            'classes': ('collapse',)
-        }),
-        ('Timing', {
-            'fields': ('started_at', 'completed_at'),
-            'classes': ('collapse',)
-        }),
-        ('Metadata', {
-            'fields': ('tags', 'created_by', 'created_at', 'updated_at'),
-            'classes': ('collapse',)
-        })
-    )
-    
-    actions = ['start_campaign', 'pause_campaign', 'cancel_campaign']
-    
-    def open_rate_display(self, obj):
-        """Display open rate as percentage."""
-        return f"{obj.open_rate:.1f}%"
-    open_rate_display.short_description = 'Open Rate'
-    
-    def click_rate_display(self, obj):
-        """Display click rate as percentage."""
-        return f"{obj.click_rate:.1f}%"
-    click_rate_display.short_description = 'Click Rate'
-    
-    def start_campaign(self, request, queryset):
-        """Start selected campaigns."""
-        draft_campaigns = queryset.filter(status='draft')
-        count = draft_campaigns.update(
-            status='scheduled',
-            scheduled_at=timezone.now()
-        )
-        self.message_user(request, f"Started {count} campaigns.")
-    start_campaign.short_description = "Start campaigns"
-    
-    def pause_campaign(self, request, queryset):
-        """Pause selected campaigns."""
-        active_campaigns = queryset.filter(status__in=['scheduled', 'sending'])
-        count = active_campaigns.update(status='paused')
-        self.message_user(request, f"Paused {count} campaigns.")
-    pause_campaign.short_description = "Pause campaigns"
-    
-    def cancel_campaign(self, request, queryset):
-        """Cancel selected campaigns."""
-        cancellable = queryset.filter(status__in=['draft', 'scheduled', 'paused'])
-        count = cancellable.update(status='cancelled')
-        self.message_user(request, f"Cancelled {count} campaigns.")
-    cancel_campaign.short_description = "Cancel campaigns"
-
-    def save_model(self, request, obj, form, change):
-        """Auto-set created_by when creating a new campaign."""
-        if not change:  # Only for new objects
-            obj.created_by = request.user
         super().save_model(request, obj, form, change)
 
 

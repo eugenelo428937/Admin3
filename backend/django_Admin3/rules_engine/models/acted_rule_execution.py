@@ -7,8 +7,8 @@ from .base import models
 class ActedRuleExecution(models.Model):
     """Audit trail for rule executions"""
     
-    execution_id = models.CharField(max_length=100, unique=True, null=True, blank=True, help_text="Unique execution identifier")
-    rule_id = models.CharField(max_length=100, help_text="ID of the executed rule")
+    execution_seq_no = models.CharField(max_length=100, unique=True, null=True, blank=True, help_text="Unique execution sequence number")
+    rule_code = models.CharField(max_length=100, help_text="Code of the executed rule")
     entry_point = models.CharField(max_length=50, help_text="Entry point that triggered the rule")
     context_snapshot = models.JSONField(help_text="Context data at time of execution")
     condition_result = models.BooleanField(default=False, help_text="Whether rule condition evaluated to true")
@@ -34,10 +34,10 @@ class ActedRuleExecution(models.Model):
         db_table = "acted_rule_executions"
         ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=["rule_id", "created_at"], name="acted_exec_rule_created"),
+            models.Index(fields=["rule_code", "created_at"], name="acted_exec_rule_created"),
             models.Index(fields=["entry_point", "created_at"], name="acted_exec_entry_created"),
             models.Index(fields=["outcome", "created_at"], name="acted_exec_outcome_crtd"),
         ]
     
     def __str__(self):
-        return f"Execution {self.execution_id} - {self.outcome}"
+        return f"Execution {self.execution_seq_no} - {self.outcome}"

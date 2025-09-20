@@ -42,10 +42,8 @@ def setup_product_list_delivery_rule():
         'priority': 10,
         'active': True,
         'version': 1,
-        'rules_fields_id': 'product_list_context_v1',  # Use simple product list schema
-        'condition': {
-            'always': True  # Always display this message
-        },
+        'rules_fields_id': '',  # Empty string for no schema validation (database constraint requires non-null)
+        'condition': {"always": True},  # Always true condition (explicitly supported by rules engine)
         'actions': [
             {
                 'type': 'display_message',

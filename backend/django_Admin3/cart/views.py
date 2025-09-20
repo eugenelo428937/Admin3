@@ -5,7 +5,7 @@ from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-from .models import Cart, CartItem, ActedOrder, ActedOrderItem, OrderUserAcknowledgment
+from .models import Cart, CartItem, ActedOrder, ActedOrderItem, OrderUserAcknowledgment, OrderUserPreference
 from .serializers import CartSerializer, CartItemSerializer, ActedOrderSerializer
 from products.models import Product
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
@@ -451,7 +451,8 @@ class CartViewSet(viewsets.ViewSet):
         is_invoice = payment_data.get('is_invoice', False)
         payment_method = payment_data.get('payment_method', 'card')
         card_data = payment_data.get('card_data', None)
-        
+        user_preferences = payment_data.get('user_preferences', {})
+
         # Extract T&C acceptance data
         terms_acceptance_data = payment_data.get('terms_acceptance', {})
         general_terms_accepted = terms_acceptance_data.get('general_terms_accepted', False)
@@ -558,6 +559,15 @@ class CartViewSet(viewsets.ViewSet):
                 order.subtotal = subtotal
                 order.total_amount = subtotal  # No VAT if calculation fails
                 order.save()
+
+            # Save user preferences to order
+            if user_preferences:
+                try:
+                    self._save_user_preferences_to_order(order, user_preferences)
+                    logger.info(f"Successfully saved {len(user_preferences)} user preferences for order {order.id}")
+                except Exception as e:
+                    logger.warning(f"Failed to save user preferences for order {order.id}: {str(e)}")
+                    # Continue with checkout - preference saving failure shouldn't block checkout
 
             # Transfer session acknowledgments to order before T&C processing
             self._transfer_session_acknowledgments_to_order(request, order, cart)
@@ -1312,3 +1322,49 @@ class CartViewSet(viewsets.ViewSet):
                     )
         
         guest_cart.delete()
+
+    def _save_user_preferences_to_order(self, order, user_preferences):
+        """Save user preferences from checkout to order preferences table"""
+        from rules_engine.models import ActedRule
+
+        for preference_key, preference_data in user_preferences.items():
+            try:
+                # Extract preference details
+                value = preference_data.get('value', '')
+                input_type = preference_data.get('inputType', 'text')
+                rule_id = preference_data.get('ruleId')
+
+                # Skip empty preferences
+                if not value and value != 0 and value != False:
+                    continue
+
+                # Find the rule if rule_id is provided
+                rule = None
+                if rule_id:
+                    try:
+                        # Try to get rule by numeric ID first, then by rule_code string
+                        if str(rule_id).isdigit():
+                            rule = ActedRule.objects.get(id=int(rule_id))
+                        else:
+                            rule = ActedRule.objects.get(rule_code=rule_id)
+                    except ActedRule.DoesNotExist:
+                        logger.warning(f"Rule with ID/rule_id {rule_id} not found for preference {preference_key}")
+                        # Continue without rule reference
+
+                # Create the order preference record
+                order_preference = OrderUserPreference.objects.create(
+                    order=order,
+                    rule=rule,
+                    preference_key=preference_key,
+                    preference_value={
+                        'value': value,
+                        'input_type': input_type,
+                        'collected_at': timezone.now().isoformat()
+                    }
+                )
+
+                logger.info(f"Created order preference {order_preference.id} for key '{preference_key}' with value: {value}")
+
+            except Exception as e:
+                logger.error(f"Failed to save preference '{preference_key}': {str(e)}")
+                # Continue with other preferences

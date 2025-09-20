@@ -1,5 +1,5 @@
 {
-  "mcpServers": {
+	"mcpServers": {
 		"trello": {
 			"command": "node",
 			"args": ["trello-mcp-wrapper.mjs"]
@@ -23,6 +23,10 @@
 		"json-logic-py Docs": {
 			"command": "node",
 			"args": ["run-mcp.js", "json-logic-py Docs"]
+		},
+		"mui-mcp": {
+			"command": "node",
+			"args": ["run-mcp.js", "mui-mcp"]
 		}
-  }
+	}
 }
