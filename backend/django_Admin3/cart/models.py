@@ -361,6 +361,143 @@ class OrderUserAcknowledgment(models.Model):
         return self.acknowledgment_data.get('products', {})
 
 
+class OrderUserPreference(models.Model):
+    """Store user preferences collected during checkout for an order"""
+
+    # Preference type choices
+    PREFERENCE_TYPE_CHOICES = [
+        ('marketing', 'Marketing Preferences'),
+        ('communication', 'Communication Preferences'),
+        ('delivery', 'Delivery Preferences'),
+        ('notification', 'Notification Preferences'),
+        ('custom', 'Custom Preference'),
+    ]
+
+    # Input type choices
+    INPUT_TYPE_CHOICES = [
+        ('radio', 'Radio Button'),
+        ('checkbox', 'Checkbox'),
+        ('text', 'Text Input'),
+        ('textarea', 'Text Area'),
+        ('select', 'Dropdown Select'),
+        ('custom', 'Custom Input'),
+    ]
+
+    # Display mode choices
+    DISPLAY_MODE_CHOICES = [
+        ('inline', 'Inline Display'),
+        ('modal', 'Modal Dialog'),
+    ]
+
+    # Core relationships
+    order = models.ForeignKey(
+        ActedOrder,
+        on_delete=models.CASCADE,
+        related_name='user_preferences',
+        help_text="Associated order for this preference"
+    )
+
+    # Import rules models at module level to avoid circular imports
+    rule = models.ForeignKey(
+        'rules_engine.ActedRule',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    template = models.ForeignKey(
+        'rules_engine.MessageTemplate',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    # Preference identification
+    preference_type = models.CharField(
+        max_length=50,
+        choices=PREFERENCE_TYPE_CHOICES,
+        default='custom',
+        help_text="Type of preference"
+    )
+    preference_key = models.CharField(
+        max_length=100,
+        help_text="Unique key identifying this preference"
+    )
+    preference_value = models.JSONField(
+        default=dict,
+        help_text="User's preference value(s) stored as JSON"
+    )
+
+    # Input metadata
+    input_type = models.CharField(
+        max_length=20,
+        choices=INPUT_TYPE_CHOICES,
+        default='text',
+        help_text="Type of input used to collect this preference"
+    )
+    display_mode = models.CharField(
+        max_length=20,
+        choices=DISPLAY_MODE_CHOICES,
+        default='inline',
+        help_text="How the preference was displayed to the user"
+    )
+
+    # Content details
+    title = models.CharField(
+        max_length=255,
+        help_text="Title of the preference displayed to user"
+    )
+    content_summary = models.TextField(
+        blank=True,
+        help_text="Brief summary of the preference content"
+    )
+
+    # Behavioral flags
+    is_submitted = models.BooleanField(
+        default=True,
+        help_text="Whether the user has submitted this preference"
+    )
+
+    # Audit fields
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+
+    # Rules engine integration
+    rules_engine_context = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Context data from rules engine evaluation"
+    )
+
+    class Meta:
+        db_table = 'acted_order_user_preferences'
+        verbose_name = 'Order User Preference'
+        verbose_name_plural = 'Order User Preferences'
+        unique_together = ['order', 'rule', 'preference_key']
+        indexes = [
+            models.Index(fields=['order', 'preference_type']),
+            models.Index(fields=['preference_key']),
+            models.Index(fields=['submitted_at']),
+        ]
+
+    def __str__(self):
+        return f"Order #{self.order.id} preference: {self.preference_key}"
+
+    def get_display_value(self):
+        """Get human-readable display value for the preference"""
+        if self.input_type == 'radio':
+            return self.preference_value.get('choice', '')
+        elif self.input_type == 'checkbox':
+            selections = self.preference_value.get('selections', [])
+            return ', '.join(selections) if selections else ''
+        elif self.input_type in ['text', 'textarea']:
+            return self.preference_value.get('text', '')
+        elif self.input_type == 'select':
+            return self.preference_value.get('selected', '')
+        return str(self.preference_value)
+
+
 class ActedOrderPayment(models.Model):
     """Model to store payment transaction details for orders"""
     PAYMENT_STATUS_CHOICES = [

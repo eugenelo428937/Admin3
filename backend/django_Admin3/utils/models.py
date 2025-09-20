@@ -521,78 +521,6 @@ class EmailSettings(models.Model):
         return setting
 
 
-class EmailCampaign(models.Model):
-    """Email campaign management for bulk emails."""
-    
-    STATUS_CHOICES = [
-        ('draft', 'Draft'),
-        ('scheduled', 'Scheduled'),
-        ('sending', 'Sending'),
-        ('completed', 'Completed'),
-        ('paused', 'Paused'),
-        ('cancelled', 'Cancelled'),
-    ]
-    
-    campaign_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    name = models.CharField(max_length=200, help_text="Campaign name")
-    description = models.TextField(blank=True, help_text="Campaign description")
-    
-    # Template and content
-    template = models.ForeignKey(EmailTemplate, on_delete=models.CASCADE)
-    subject_override = models.CharField(max_length=300, blank=True, help_text="Override template subject")
-    
-    # Recipients
-    recipient_list = models.JSONField(help_text="List of recipients with their context data")
-    total_recipients = models.PositiveIntegerField(default=0, help_text="Total number of recipients")
-    
-    # Scheduling
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
-    scheduled_at = models.DateTimeField(null=True, blank=True, help_text="When to start sending")
-    
-    # Sending configuration
-    send_rate_per_hour = models.PositiveIntegerField(default=100, help_text="Maximum emails per hour")
-    batch_size = models.PositiveIntegerField(default=10, help_text="Emails per batch")
-    
-    # Progress tracking
-    sent_count = models.PositiveIntegerField(default=0)
-    failed_count = models.PositiveIntegerField(default=0)
-    delivered_count = models.PositiveIntegerField(default=0)
-    opened_count = models.PositiveIntegerField(default=0)
-    clicked_count = models.PositiveIntegerField(default=0)
-    
-    # Timing
-    started_at = models.DateTimeField(null=True, blank=True)
-    completed_at = models.DateTimeField(null=True, blank=True)
-    
-    # Metadata
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    
-    class Meta:
-        db_table = 'utils_email_campaign'
-        ordering = ['-created_at']
-        verbose_name = 'Email Campaign'
-        verbose_name_plural = 'Email Campaigns'
-    
-    def __str__(self):
-        return f"{self.name} ({self.status})"
-    
-    @property
-    def completion_percentage(self):
-        """Calculate campaign completion percentage."""
-        if self.total_recipients == 0:
-            return 0
-        return (self.sent_count + self.failed_count) / self.total_recipients * 100
-    
-    @property
-    def success_rate(self):
-        """Calculate campaign success rate."""
-        total_processed = self.sent_count + self.failed_count
-        if total_processed == 0:
-            return 0
-        return self.sent_count / total_processed * 100
-
 
 
 class EmailContentRule(models.Model):
@@ -893,4 +821,66 @@ class EmailContentPlaceholder(models.Model):
         verbose_name_plural = 'Email Content Placeholders'
     
     def __str__(self):
-        return f"{self.display_name} ({self.name})" 
+        return f"{self.display_name} ({self.name})"
+
+
+class AssignmentDeadline(models.Model):
+    """Store assignment deadlines for ICS calendar generation."""
+
+    MODULE_GROUPS = [
+        ('CM1', 'CM1 - Certificate in Mathematics 1'),
+        ('CM2', 'CM2 - Certificate in Mathematics 2'),
+        ('CS1', 'CS1 - Certificate in Statistics 1'),
+        ('CS2', 'CS2 - Certificate in Statistics 2'),
+        ('CB', 'CB - Certificate in Business'),
+        ('CP1', 'CP1 - Certificate in Probability 1'),
+        ('CP2', 'CP2 - Certificate in Probability 2'),
+        ('CP3', 'CP3 - Certificate in Probability 3'),
+        ('SP', 'SP - Statistics and Probability'),
+        ('SA', 'SA - Statistical Analysis'),
+    ]
+
+    module_code = models.CharField(max_length=10, help_text="Full module code (e.g., CM1A01)")
+    module_group = models.CharField(max_length=5, choices=MODULE_GROUPS, help_text="Module group for calendar categorization")
+    assignment_code = models.CharField(max_length=20, help_text="Assignment identifier")
+    title = models.CharField(max_length=200, help_text="Assignment title")
+
+    # Dates
+    recommend_date = models.DateField(null=True, blank=True, help_text="Recommended completion date")
+    deadline_date = models.DateField(help_text="Assignment deadline")
+
+    # Calendar metadata
+    is_active = models.BooleanField(default=True, help_text="Include in calendar generation")
+    academic_year = models.CharField(max_length=10, default="2026", help_text="Academic year")
+
+    # Tracking
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'utils_assignment_deadline'
+        ordering = ['module_group', 'deadline_date', 'module_code']
+        unique_together = ['module_code', 'assignment_code', 'academic_year']
+        indexes = [
+            models.Index(fields=['module_group', 'deadline_date']),
+            models.Index(fields=['is_active', 'deadline_date']),
+        ]
+        verbose_name = 'Assignment Deadline'
+        verbose_name_plural = 'Assignment Deadlines'
+
+    def __str__(self):
+        return f"{self.module_code} {self.assignment_code} - {self.deadline_date}"
+
+    @property
+    def event_title(self):
+        """Generate calendar event title."""
+        return f"{self.module_code} {self.assignment_code} deadline"
+
+    @classmethod
+    def get_module_group(cls, module_code):
+        """Extract module group from full module code."""
+        module_upper = module_code.strip().upper()
+        for group_code, _ in cls.MODULE_GROUPS:
+            if module_upper.startswith(group_code):
+                return group_code
+        return None

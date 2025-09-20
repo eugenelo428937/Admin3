@@ -14,12 +14,11 @@ evaluate_checkout_rules = None
 evaluate_cart_add_rules = None
 from .services.rule_engine import rule_engine as new_rule_engine
 from .models import (
-    MessageTemplate, UserAcknowledgment, HolidayCalendar,
-    ContentStyle, ContentStyleTheme, MessageTemplateStyle, ActedRule, ActedRuleExecution
+    MessageTemplate, ActedRule, ActedRuleExecution
 )
 from .serializers import (
-    MessageTemplateSerializer, UserAcknowledgmentSerializer,
-    HolidayCalendarSerializer, ActedRuleSerializer, RuleExecuteSerializer
+    MessageTemplateSerializer,
+    ActedRuleSerializer, RuleExecuteSerializer
 )
 import logging
 from django.utils import timezone
@@ -195,63 +194,6 @@ class RulesEngineViewSet(viewsets.ViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    @action(detail=False, methods=['post'], url_path='acknowledge', permission_classes=[IsAuthenticated])
-    def acknowledge_rule(self, request):
-        """POST /rules/acknowledge/ - Acknowledge a rule or select an optional rule"""
-        try:
-            rule_id = request.data.get('rule_id')
-            template_id = request.data.get('template_id')
-            acknowledgment_type = request.data.get('acknowledgment_type', 'required')
-            is_selected = request.data.get('is_selected', True)
-            
-            if not rule_id:
-                return Response(
-                    {'error': 'rule_id is required'}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            rule = get_object_or_404(Rule, id=rule_id)
-            message_template = None
-            if template_id:
-                message_template = get_object_or_404(MessageTemplate, id=template_id)
-
-            # Get client IP and user agent for tracking
-            ip_address = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0] or \
-                        request.META.get('REMOTE_ADDR', '')
-            user_agent = request.META.get('HTTP_USER_AGENT', '')
-
-            # Create or update acknowledgment
-            acknowledgment, created = UserAcknowledgment.objects.update_or_create(
-                user=request.user,
-                rule=rule,
-                message_template=message_template,
-                defaults={
-                    'acknowledgment_type': acknowledgment_type,
-                    'is_selected': is_selected,
-                    'ip_address': ip_address,
-                    'user_agent': user_agent,
-                    'session_data': {
-                        'request_data': dict(request.data),
-                        'timestamp': timezone.now().isoformat()
-                    }
-                }
-            )
-
-            action = "created" if created else "updated"
-            return Response({
-                'success': True,
-                'message': f'Rule acknowledgment {action} successfully',
-                'acknowledgment_id': acknowledgment.id,
-                'acknowledgment_type': acknowledgment_type,
-                'is_selected': is_selected
-            })
-
-        except Exception as e:
-            logger.error(f"Error acknowledging rule: {str(e)}")
-            return Response(
-                {'error': 'Internal server error', 'details': str(e)}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
 
     @action(detail=False, methods=['get'], url_path='pending-acknowledgments', permission_classes=[IsAuthenticated])
     def pending_acknowledgments(self, request):
@@ -293,39 +235,6 @@ class RulesEngineViewSet(viewsets.ViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    @action(detail=False, methods=['get'], url_path='user-selections', permission_classes=[IsAuthenticated])
-    def user_selections(self, request):
-        """GET /rules/user-selections/ - Get user's previous rule selections"""
-        try:
-            trigger_type = request.query_params.get('trigger_type')
-            
-            # Get user's acknowledgments
-            queryset = UserAcknowledgment.objects.filter(user=request.user)
-            if trigger_type:
-                queryset = queryset.filter(rule__trigger_type=trigger_type)
-            
-            selections = {}
-            for ack in queryset:
-                selections[ack.rule.id] = {
-                    'rule_id': ack.rule.id,
-                    'rule_name': ack.rule.name,
-                    'acknowledgment_type': ack.acknowledgment_type,
-                    'is_selected': ack.is_selected,
-                    'acknowledged_at': ack.acknowledged_at.isoformat(),
-                    'template_id': ack.message_template.id if ack.message_template else None
-                }
-            
-            return Response({
-                'success': True,
-                'selections': selections
-            })
-
-        except Exception as e:
-            logger.error(f"Error getting user selections: {str(e)}")
-            return Response(
-                {'error': 'Internal server error', 'details': str(e)}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
 
     @action(detail=False, methods=['post'], url_path='accept-terms', permission_classes=[IsAuthenticated])
     def accept_terms(self, request):
@@ -406,34 +315,6 @@ class RulesEngineViewSet(viewsets.ViewSet):
                     }
                 )
                 
-                # Also create UserAcknowledgment records for rules engine tracking
-                if rules_evaluation.get('success') and rules_evaluation.get('actions'):
-                    for action_result in rules_evaluation.get('actions', []):
-                        if action_result.get('type') == 'acknowledge':
-                            rule_id = action_result.get('rule_id')
-                            if rule_id:
-                                try:
-                                    rule = Rule.objects.get(id=rule_id)
-                                    UserAcknowledgment.objects.update_or_create(
-                                        user=request.user,
-                                        rule=rule,
-                                        message_template=rule.actions.filter(
-                                            action_type='acknowledge'
-                                        ).first().message_template,
-                                        defaults={
-                                            'acknowledgment_type': 'required',
-                                            'is_selected': general_terms_accepted,
-                                            'ip_address': ip_address,
-                                            'user_agent': user_agent,
-                                            'session_data': {
-                                                'order_id': order_id,
-                                                'terms_version': terms_version,
-                                                'timestamp': timezone.now().isoformat()
-                                            }
-                                        }
-                                    )
-                                except Rule.DoesNotExist:
-                                    logger.warning(f"Rule {rule_id} not found for T&C acknowledgment")
             
             action = "created" if created else "updated"
             return Response({
@@ -637,49 +518,6 @@ class MessageTemplateViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(is_active=is_active.lower() == 'true')
             
         return queryset.order_by('name')
-
-
-class HolidayCalendarViewSet(viewsets.ModelViewSet):
-    """
-    CRUD operations for holiday calendar (admin use)
-    """
-    queryset = HolidayCalendar.objects.all()
-    serializer_class = HolidayCalendarSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        """Filter holidays based on query parameters"""
-        queryset = HolidayCalendar.objects.all()
-        country = self.request.query_params.get('country')
-        year = self.request.query_params.get('year')
-        
-        if country:
-            queryset = queryset.filter(country=country)
-        if year:
-            queryset = queryset.filter(date__year=year)
-            
-        return queryset.order_by('date')
-
-
-class UserAcknowledgmentViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    Read-only view for user acknowledgments (for audit purposes)
-    """
-    queryset = UserAcknowledgment.objects.all()
-    serializer_class = UserAcknowledgmentSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        """Filter acknowledgments - users can only see their own"""
-        if self.request.user.is_staff:
-            # Staff can see all acknowledgments
-            return UserAcknowledgment.objects.all().order_by('-acknowledged_at')
-        else:
-            # Regular users can only see their own
-            return UserAcknowledgment.objects.filter(
-                user=self.request.user
-            ).order_by('-acknowledged_at')
-    
 
     @action(detail=False, methods=['get'], url_path='template-styles', permission_classes=[AllowAny])
     def get_template_styles(self, request):
@@ -947,60 +785,54 @@ def rules_preferences(request):
                 status=status.HTTP_404_NOT_FOUND
             )
         
-        # Create UserAcknowledgment records for preferences to satisfy the test
+        # Note: This endpoint saves standalone preferences, not order-specific ones
+        # For order-specific preferences, use OrderUserPreference in cart checkout
         saved_preferences = []
-        
-        for key, value in preferences.items():
-            # For testing, create simplified UserAcknowledgment records for preferences
-            # In production, this might use a dedicated preferences model
-            if UserAcknowledgment:
-                try:
-                    # Get or create a simple rule for preference tracking
-                    # ActedRule is already imported at the top of the file
-                    
-                    # Try to get an existing rule or create a simple one
+
+        for key, preference_data in preferences.items():
+            try:
+                # Extract preference details - handle both simple values and complex objects
+                if isinstance(preference_data, dict):
+                    value = preference_data.get('value', preference_data)
+                    input_type = preference_data.get('inputType', 'text')
+                    rule_id = preference_data.get('ruleId')
+                else:
+                    value = preference_data
+                    input_type = 'text'
+                    rule_id = None
+
+                # Skip empty preferences
+                if not value and value != 0 and value != False:
+                    continue
+
+                # Find the associated rule if rule_id is provided
+                rule = None
+                if rule_id:
                     try:
-                        pref_rule = ActedRule.objects.filter(name__startswith=f'Preference: {key}').first()
-                        if not pref_rule:
-                            # Create a minimal rule record
-                            pref_rule = ActedRule.objects.create(
-                                name=f'Preference: {key}',
-                                entry_point='user_preferences',
-                                active=True,
-                                priority=100,
-                                rule_id=f'pref_{key}_{user_id}', condition={}, actions=[{'type': 'user_preference', 'key': key}]
-                            )
-                    except Exception as rule_error:
-                        logger.warning(f"Could not create ActedRule for preference {key}: {str(rule_error)}")
-                        continue
-                    
-                    # Create the acknowledgment record
-                    ack, created = UserAcknowledgment.objects.get_or_create(
-                        user=user,
-                        rule=pref_rule,
-                        defaults={
-                            'acknowledgment_type': 'preference',
-                            'is_selected': bool(value),
-                            'session_data': {
-                                'preference_key': key,
-                                'preference_value': value,
-                                'saved_at': timezone.now().isoformat()
-                            }
-                        }
-                    )
-                    
-                    preference_record = {
-                        'user_id': user_id,
-                        'preference_key': key,
-                        'preference_value': value,
-                        'acknowledgment_type': 'preference',
-                        'created': created,
-                        'saved_at': timezone.now().isoformat()
-                    }
-                    saved_preferences.append(preference_record)
-                    
-                except Exception as e:
-                    logger.warning(f"Could not create UserAcknowledgment for preference {key}: {str(e)}")
+                        # Try to get rule by string rule_code first, then by numeric ID
+                        if str(rule_id).isdigit():
+                            rule = ActedRule.objects.get(id=int(rule_id))
+                        else:
+                            rule = ActedRule.objects.get(rule_code=rule_id)
+                    except ActedRule.DoesNotExist:
+                        logger.warning(f"Rule with ID/rule_code {rule_id} not found for preference {key}")
+
+                # For standalone preferences (not order-specific), we can store in session
+                # or create a simple record. For now, just track in the response.
+                preference_record = {
+                    'user_id': user_id,
+                    'preference_key': key,
+                    'preference_value': value,
+                    'input_type': input_type,
+                    'rule_code': rule.rule_code if rule else None,
+                    'saved_at': timezone.now().isoformat(),
+                    'note': 'Standalone preference - not linked to specific order'
+                }
+                saved_preferences.append(preference_record)
+
+            except Exception as e:
+                logger.error(f"Error processing preference {key}: {str(e)}")
+                continue
         
         return Response({
             'success': True,

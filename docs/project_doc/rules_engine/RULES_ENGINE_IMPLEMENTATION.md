@@ -2,10 +2,10 @@
 
 ## Overview
 
-This document outlines the implementation of a comprehensive rules engine with ActedRule JSONB architecture for dynamic messaging, business logic execution, and terms & conditions in the e-commerce platform.
+This document outlines the implementation of a comprehensive rules engine with ActedRule JSONB architecture for dynamic messaging, business logic execution, and digital content acknowledgments in the e-commerce platform.
 
-**Status**: ✅ **PRODUCTION READY** with 4 implemented business rules
-**Last Updated**: 2025-09-15
+**Status**: ✅ **PRODUCTION READY** with Digital Consent Workflow
+**Last Updated**: 2025-09-17
 
 ## Architecture
 
@@ -18,18 +18,40 @@ This document outlines the implementation of a comprehensive rules engine with A
 
 ### Key Components
 
+#### Backend Architecture
 ```
 rules_engine/
-├── models.py           # Database models
-├── handlers.py         # Chain of responsibility handlers
-├── engine.py           # Main rules engine orchestrator
-├── views.py           # REST API endpoints
-├── serializers.py     # API serializers
-├── urls.py            # URL patterns
-├── admin.py           # Django admin interface
-└── management/
-    └── commands/
-        └── setup_sample_rules.py  # Sample data setup
+├── models/
+│   ├── acted_rule.py           # JSONB-based rule definitions
+│   ├── rule_entry_point.py     # Entry point definitions
+│   └── message_template.py     # Content templates
+├── services/
+│   ├── rule_engine.py          # Main orchestrator
+│   └── template_processor.py   # Message rendering
+├── views.py                    # REST API endpoints
+├── serializers.py              # API serializers
+├── urls.py                     # URL patterns
+└── admin.py                    # Django admin interface
+```
+
+#### Frontend Integration
+```
+frontend/react-Admin3/src/
+├── utils/
+│   └── rulesEngineUtils.js     # Context building & processing
+├── services/
+│   └── rulesEngineService.js   # API communication
+└── components/Common/
+    ├── RulesEngineModal.js               # Generic message modal
+    └── RulesEngineAcknowledgmentModal.js # Acknowledgment modal
+```
+
+#### Cart Integration
+```
+cart/
+├── models.py          # Cart with has_digital flag
+├── serializers.py     # Cart API serialization
+└── views.py           # Acknowledgment transfer logic
 ```
 
 ## Database Schema
@@ -88,6 +110,151 @@ urlpatterns = [
     # ... other patterns ...
 ]
 ```
+
+## Digital Consent Workflow Implementation
+
+### Overview
+The digital content acknowledgment system provides separate, independent acknowledgments for digital products while maintaining backward compatibility with general terms & conditions.
+
+### Workflow Steps
+
+#### 1. Digital Product Detection
+```python
+# In cart/views.py
+def _is_digital_product(self, cart_item):
+    """Check if cart item contains digital products"""
+    try:
+        # Check metadata for Vitalsource eBook
+        metadata = cart_item.metadata or {}
+        if metadata.get('variationName') == 'Vitalsource eBook':
+            return True
+
+        # Check product code for Online Classroom
+        if hasattr(cart_item, 'product') and cart_item.product:
+            product = cart_item.product.product
+            if product and hasattr(product, 'code') and product.code == 'OC':
+                return True
+
+        return False
+    except Exception as e:
+        logger.warning(f"Error checking digital product for cart item {cart_item.id}: {str(e)}")
+        return False
+```
+
+#### 2. Cart Flag Management
+```python
+# Cart flags updated automatically when items are added/removed
+def _update_cart_flags(self, cart):
+    """Update cart-level flags based on cart contents"""
+    has_digital = False
+    for item in cart.items.all():
+        if self._is_digital_product(item):
+            has_digital = True
+            break
+
+    if cart.has_digital != has_digital:
+        cart.has_digital = has_digital
+        cart.save()
+```
+
+#### 3. Frontend Context Building
+```javascript
+// In rulesEngineUtils.js
+export const buildRulesContext = {
+  checkout: (cartData, cartItems = []) => {
+    const context = {
+      cart: {
+        id: parseInt(cartData.id, 10),
+        has_digital: Boolean(cartData.has_digital), // CRITICAL: Include flag
+        // ... other fields
+      }
+    };
+    return context;
+  }
+};
+```
+
+#### 4. Rules Engine Execution
+```python
+# Digital consent rule condition
+{
+  "rule_id": "rule_digital_content_acknowledgment_v1",
+  "condition": {
+    "==": [
+      {"var": "cart.has_digital"},
+      true
+    ]
+  },
+  "actions": [
+    {
+      "type": "user_acknowledge",
+      "messageTemplateId": "tmpl_digital_consent",
+      "required": true,
+      "display_type": "modal"
+    }
+  ]
+}
+```
+
+#### 5. UI Component Integration
+```javascript
+// TermsConditionsStep.js integration
+const result = await rulesEngineHelpers.executeCheckoutTerms(cartData, cartItems, rulesEngineService);
+
+// Separate handling for inline vs modal acknowledgments
+const inlineAcks = result.messages.classified.acknowledgments.inline;   // T&C checkbox
+const modalAcks = result.messages.classified.acknowledgments.modal;     // Digital consent modal
+```
+
+#### 6. Acknowledgment Validation & Transfer
+```python
+# In cart/views.py - Fixed acknowledgment transfer logic
+def _transfer_session_acknowledgments_to_order(self, request, order, cart):
+    """Transfer only validated acknowledgments"""
+    matched_rule_ids = self._get_matched_rules_for_current_execution(order, cart)
+
+    # Filter acknowledgments against matched rules
+    for ack in session_acknowledgments:
+        message_id = str(ack.get('message_id', ''))
+        is_valid = message_id in matched_rule_ids
+
+        if is_valid:
+            # Transfer to order
+            OrderUserAcknowledgment.objects.create(
+                order=order,
+                rule_id=ack.get('message_id'),
+                # ... other fields
+            )
+```
+
+### Frontend Components
+
+#### RulesEngineAcknowledgmentModal.js
+- **Purpose**: Displays modal acknowledgments requiring user checkbox interaction
+- **Features**: Multi-message support, independent checkboxes, icon selection
+- **Integration**: Handles digital consent acknowledgments
+
+#### RulesEngineModal.js
+- **Purpose**: Generic modal for informational messages
+- **Features**: Pagination for multiple messages, variant-based styling
+- **Integration**: Used for non-acknowledgment rule messages
+
+#### rulesEngineUtils.js
+- **Purpose**: Context building and message processing utilities
+- **Key Functions**: `buildRulesContext.checkoutTerms()`, `processRulesResponse()`
+- **Critical Fix**: Added `has_digital: Boolean(cartData.has_digital)` to context
+
+### Validation Results
+
+| Test Case | Expected Result | Actual Result |
+|-----------|-----------------|---------------|
+| Cart with OC product | `has_digital = true` | ✅ Pass |
+| Cart with eBook metadata | `has_digital = true` | ✅ Pass |
+| Cart with regular products | `has_digital = false` | ✅ Pass |
+| Digital consent rule matching | Rule executes when `has_digital = true` | ✅ Pass |
+| T&C rule execution | Always executes regardless of cart contents | ✅ Pass |
+| Independent acknowledgments | Separate order entries for each rule | ✅ Pass |
+| Stale acknowledgment filtering | Only matched rules transferred to order | ✅ Pass |
 
 ## Usage Examples
 

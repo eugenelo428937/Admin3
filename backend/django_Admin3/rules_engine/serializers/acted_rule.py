@@ -23,12 +23,12 @@ class ActedRuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = ActedRule
         fields = [
-            'id', 'rule_id', 'name', 'entry_point', 'fields', 'conditions', 
+            'id', 'rule_code', 'name', 'entry_point', 'fields', 'conditions', 
             'actions', 'priority', 'active', 'version', 'stop_processing',
             'created_at', 'updated_at'
         ]
         extra_kwargs = {
-            'rule_id': {'required': True},
+            'rule_code': {'required': True},
             'name': {'required': False},
         }
     
@@ -54,10 +54,10 @@ class ActedRuleSerializer(serializers.ModelSerializer):
     def get_rules_fields(self, obj):
         """Get rules fields schema"""
         try:
-            if obj.rules_fields_id:
-                rules_fields = ActedRulesFields.objects.get(fields_id=obj.rules_fields_id)
+            if obj.rules_fields_code:
+                rules_fields = ActedRulesFields.objects.get(fields_code=obj.rules_fields_code)
                 return {
-                    'fields_id': rules_fields.fields_id,
+                    'fields_code': rules_fields.fields_code,
                     'name': rules_fields.name,
                     'description': rules_fields.description,
                     'schema': rules_fields.schema,

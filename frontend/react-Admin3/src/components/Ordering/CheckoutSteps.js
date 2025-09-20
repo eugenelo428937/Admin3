@@ -9,6 +9,7 @@ import RulesEngineModal from '../Common/RulesEngineModal';
 // Import step components
 import CartReviewStep from './CheckoutSteps/CartReviewStep';
 import TermsConditionsStep from './CheckoutSteps/TermsConditionsStep';
+import PreferenceStep from './CheckoutSteps/PreferenceStep';
 import PaymentStep from './CheckoutSteps/PaymentStep';
 
 const CheckoutSteps = ({ onComplete }) => {
@@ -22,6 +23,9 @@ const CheckoutSteps = ({ onComplete }) => {
 
   // General terms & conditions state
   const [generalTermsAccepted, setGeneralTermsAccepted] = useState(false);
+
+  // User preferences state
+  const [preferences, setPreferences] = useState({});
 
   // Rules engine state for step 1 (checkout_start)
   const [rulesMessages, setRulesMessages] = useState([]);
@@ -167,6 +171,7 @@ const CheckoutSteps = ({ onComplete }) => {
   const steps = [
     { title: 'Cart Review', description: 'Review your items' },
     { title: 'Terms & Conditions', description: 'Review and accept terms' },
+    { title: 'Preferences', description: 'Set your preferences' },
     { title: 'Payment', description: 'Complete payment' },
     { title: 'Confirmation', description: 'Order confirmation' }
   ];
@@ -223,7 +228,8 @@ const CheckoutSteps = ({ onComplete }) => {
           expiry_year: expiryYear,
           cvv: cvv
         } : undefined,
-        general_terms_accepted: generalTermsAccepted
+        general_terms_accepted: generalTermsAccepted,
+        user_preferences: preferences
       };
 
       await onComplete(paymentData);
@@ -258,6 +264,14 @@ const CheckoutSteps = ({ onComplete }) => {
         );
 
       case 3:
+        return (
+          <PreferenceStep
+            preferences={preferences}
+            setPreferences={setPreferences}
+          />
+        );
+
+      case 4:
         return (
           <PaymentStep
             paymentMethod={paymentMethod}
