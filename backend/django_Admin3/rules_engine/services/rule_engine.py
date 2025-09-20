@@ -67,7 +67,7 @@ class Validator:
     def __init__(self):
         self._schema_cache = {}
     
-    def validate_context(self, context: Dict[str, Any], rules_fields_id: Optional[str] = None) -> ValidationResult:
+    def validate_context(self, context: Dict[str, Any], rules_fields_code: Optional[str] = None) -> ValidationResult:
         """Validate context against schema and return detailed result"""
         if not isinstance(context, dict):
             error_msg = f"Context is not a dict: {type(context)}"
@@ -75,36 +75,36 @@ class Validator:
             return ValidationResult(False, [error_msg])
         
         # If no schema ID provided, do basic validation
-        if not rules_fields_id:
+        if not rules_fields_code:
             logger.debug(f"No schema validation - context keys: {list(context.keys())}")
             return ValidationResult(True)
         
         try:
             # Try to get schema from cache first
-            if rules_fields_id in self._schema_cache:
-                schema = self._schema_cache[rules_fields_id]
+            if rules_fields_code in self._schema_cache:
+                schema = self._schema_cache[rules_fields_code]
             else:
                 # Get the schema from database and cache it
                 rules_fields = ActedRulesFields.objects.get(
-                    fields_id=rules_fields_id,
+                    fields_code=rules_fields_code,
                     is_active=True
                 )
                 schema = rules_fields.schema
-                self._schema_cache[rules_fields_id] = schema
+                self._schema_cache[rules_fields_code] = schema
             
             # Validate context against schema
             jsonschema.validate(context, schema)
-            logger.debug(f" Schema validation passed for {rules_fields_id}")
+            logger.debug(f" Schema validation passed for {rules_fields_code}")
             return ValidationResult(True)
             
         except ActedRulesFields.DoesNotExist:
-            error_msg = f"RulesFields schema not found: {rules_fields_id}"
+            error_msg = f"RulesFields schema not found: {rules_fields_code}"
             logger.error(error_msg)
             return ValidationResult(False, [error_msg])
         except jsonschema.ValidationError as e:
             error_path = ' -> '.join(str(p) for p in e.absolute_path) if e.absolute_path else 'root'
             error_msg = f"Schema validation failed at '{error_path}': {e.message}"
-            logger.warning(f" Schema validation failed for {rules_fields_id}: {e.message}")
+            logger.warning(f" Schema validation failed for {rules_fields_code}: {e.message}")
             logger.debug(f"Validation error path: {error_path}")
             return ValidationResult(False, [error_msg])
         except Exception as e:
@@ -123,10 +123,25 @@ class ConditionEvaluator:
             if condition == {"always": True}:
                 logger.debug("Always-true condition evaluated to True")
                 return True
-            
+
+            # Handle "always_true" type condition
+            if condition.get("type") == "always_true":
+                logger.debug("Always-true type condition evaluated to True")
+                return True
+
+            # Handle "type" based conditions
+            if "type" in condition:
+                condition_type = condition["type"]
+                if condition_type == "always_true":
+                    logger.debug("Always-true condition evaluated to True")
+                    return True
+                elif condition_type == "always_false":
+                    logger.debug("Always-false condition evaluated to False")
+                    return False
+
             # Use custom JSONLogic implementation
             result = self._evaluate_jsonlogic(condition, context)
-            
+
             # Ensure we return a boolean
             if isinstance(result, bool):
                 logger.debug(f" JSONLogic condition evaluated to: {result}")
@@ -136,7 +151,7 @@ class ConditionEvaluator:
                 boolean_result = bool(result)
                 logger.debug(f" JSONLogic condition result {result} converted to boolean: {boolean_result}")
                 return boolean_result
-            
+
         except Exception as e:
             logger.error(f" Error evaluating JSONLogic condition {condition}: {e}")
             logger.debug(f"Context was: {context}")
@@ -394,6 +409,45 @@ class ActionDispatcher:
                 }
             }
         
+        elif action_type == "user_preference":
+            # Handle user preferences similar to acknowledgments
+            from .action_handlers import UserPreferenceHandler
+
+            handler = UserPreferenceHandler()
+
+            # Load template content if provided
+            template_content = action.get("content", "")
+            template_title = action.get("title", "Preference")
+
+            template_id = action.get("messageTemplateId")
+            if template_id:
+                try:
+                    from rules_engine.models import MessageTemplate
+                    template = MessageTemplate.objects.get(id=template_id)
+
+                    if template.content_format == 'json' and template.json_content:
+                        template_content = template.json_content
+                        if isinstance(template_content, dict) and 'content' in template_content:
+                            inner_content = template_content['content']
+                            if isinstance(inner_content, dict) and 'title' in inner_content:
+                                template_title = inner_content['title']
+                    else:
+                        template_content = template.content
+                        template_title = template.title or template_title
+
+                except MessageTemplate.DoesNotExist:
+                    logger.warning(f"Template {template_id} not found, using fallback content")
+
+            # Format the preference for response
+            formatted_preference = handler.format_preference_for_response(action, template_content)
+            formatted_preference['title'] = template_title
+
+            return {
+                "type": "user_preference",
+                "success": True,
+                "preference": formatted_preference
+            }
+
         elif action_type == "update":
             return {
                 "type": "update",
@@ -423,12 +477,12 @@ class ExecutionStore:
                        actions_result: List[Dict[str, Any]], outcome: str, 
                        execution_time_ms: float, error_message: str = "") -> str:
         """Store rule execution record"""
-        execution_id = f"exec_{int(time.time())}_{uuid.uuid4().hex[:8]}"
+        execution_seq_no = f"exec_{int(time.time())}_{uuid.uuid4().hex[:8]}"
         
         
         try:
             ActedRuleExecution.objects.create(
-                execution_id=execution_id,
+                execution_seq_no=execution_seq_no,
                 rule_id=rule_id,
                 entry_point=entry_point,
                 context_snapshot=context,
@@ -437,11 +491,11 @@ class ExecutionStore:
                 execution_time_ms=execution_time_ms,
                 error_message=error_message
             )
-            logger.debug(f"Stored execution record: {execution_id}")
-            return execution_id
+            logger.debug(f"Stored execution record: {execution_seq_no}")
+            return execution_seq_no
         except Exception as e:
             logger.error(f"Failed to store execution record: {e}")
-            return execution_id
+            return execution_seq_no
 
 
 class RuleEngine:
@@ -507,13 +561,13 @@ class RuleEngine:
                     rule_start = time.time()
                     
                     # Validate context
-                    validation_result = self.validator.validate_context(context, rule.rules_fields_id)
+                    validation_result = self.validator.validate_context(context, rule.rules_fields_code)
                     if not validation_result.is_valid:
-                        logger.warning(f"Context validation failed for rule {rule.rule_id}")
+                        logger.warning(f"Context validation failed for rule {rule.rule_code}")
                         # Collect schema validation errors
                         for error in validation_result.errors:
                             schema_validation_errors.append({
-                                'rule_id': rule.rule_id,
+                                'rule_id': rule.rule_code,
                                 'rule_name': rule.name,
                                 'entry_point': entry_point,
                                 'error': error
@@ -524,7 +578,7 @@ class RuleEngine:
                     condition_result = self.condition_evaluator.evaluate(rule.condition, context)
 
                     # Debug logging for ASET rule
-                    if rule.rule_id == 'rule_aset_warning_v1':
+                    if rule.rule_code == 'rule_aset_warning_v1':
                         logger.info(f"ASET rule evaluation: condition={rule.condition}")
                         cart_items = context.get('cart', {}).get('items', [])
                         product_ids = [item.get('product_id') for item in cart_items]
@@ -536,7 +590,7 @@ class RuleEngine:
                     rules_evaluated += 1
 
                     if condition_result:
-                        logger.info(f" Rule '{rule.rule_id}' condition matched")
+                        logger.info(f" Rule '{rule.rule_code}' condition matched")
                         
                         # Execute actions
                         actions_result = self.action_dispatcher.dispatch(rule.actions, context)
@@ -553,29 +607,26 @@ class RuleEngine:
                                     satisfied_acknowledgments.append(ack_key)
                                 elif required:
                                     blocked = True
-                                    blocking_rules.append(rule.rule_id)
+                                    blocking_rules.append(rule.rule_code)
                                     required_acknowledgments.append({
                                         'ackKey': ack_key,
                                         'templateName': action.get('templateName'),
-                                        'ruleId': rule.rule_id,
+                                        'ruleId': rule.rule_code,
                                         'required': required
                                     })
                                 else:  # not required - preference prompt
                                     preference_prompts.append({
                                         'ackKey': ack_key,
                                         'templateName': action.get('templateName'),
-                                        'ruleId': rule.rule_id,
+                                        'ruleId': rule.rule_code,
                                         'required': False
                                     })
                             elif action.get('type') == 'user_preference':
-                                # Handle user preferences (non-blocking)
-                                ack_key = action.get('ackKey')
-                                preference_prompts.append({
-                                    'ackKey': ack_key,
-                                    'templateName': action.get('templateName'),
-                                    'ruleId': rule.rule_id,
-                                    'required': False
-                                })
+                                # Handle user preferences - collect for response
+                                if action_result.get('success') and 'preference' in action_result:
+                                    preference = action_result['preference']
+                                    preference['ruleId'] = rule.rule_code
+                                    preference_prompts.append(preference)
                             elif action.get('type') == 'update':
                                 # Apply context updates for subsequent rules
                                 target = action.get('target')
@@ -603,7 +654,7 @@ class RuleEngine:
                         
                         # Track executed rule
                         rules_executed_list.append({
-                            'rule_id': rule.rule_id,
+                            'rule_id': rule.rule_code,
                             'priority': rule.priority,
                             'condition_result': True,
                             'actions_executed': len(actions_result),
@@ -613,21 +664,21 @@ class RuleEngine:
                         
                         # Store execution record
                         self.execution_store.store_execution(
-                            rule.rule_id, entry_point, context, actions_result,
+                            rule.rule_code, entry_point, context, actions_result,
                             "success", execution_time_ms
                         )
                         
                         # Check if we should stop processing
                         if rule.stop_processing:
-                            logger.info(f" Rule '{rule.rule_id}' set stop_processing=True")
+                            logger.info(f" Rule '{rule.rule_code}' set stop_processing=True")
                             break
                     else:
-                        logger.debug(f"  Rule '{rule.rule_id}' condition not matched")
+                        logger.debug(f"  Rule '{rule.rule_code}' condition not matched")
                         
                         # Track non-matching rule
                         execution_time_ms = (time.time() - rule_start) * 1000
                         rules_executed_list.append({
-                            'rule_id': rule.rule_id,
+                            'rule_id': rule.rule_code,
                             'priority': rule.priority,
                             'condition_result': False,
                             'actions_executed': 0,
@@ -636,11 +687,11 @@ class RuleEngine:
                         })
                 
                 except Exception as e:
-                    logger.error(f" Error processing rule '{rule.rule_id}': {e}")
+                    logger.error(f" Error processing rule '{rule.rule_code}': {e}")
                     # Store error execution record
                     execution_time_ms = (time.time() - rule_start) * 1000
                     self.execution_store.store_execution(
-                        rule.rule_id, entry_point, context, [],
+                        rule.rule_code, entry_point, context, [],
                         "error", execution_time_ms, str(e)
                     )
             
@@ -676,6 +727,7 @@ class RuleEngine:
                 "proceed": not blocked,
                 "rules_executed": rules_executed_list,
                 "preference_prompts": preference_prompts,
+                "preferences": preference_prompts,  # Also add as "preferences" for consistency
                 "context_updates": context_updates,
             }
             

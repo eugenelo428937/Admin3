@@ -52,41 +52,47 @@ const servers = {
 			command: "npx",
 			args: ["-y", "mcp-remote", "https://gitmcp.io/nizos/tdd-guard"],
 		},
-		"material-ui Docs": {
-			windows: {
-				command: "cmd",
-				args: [
-					"/c",
-					"npx",
-					"-y",
-					"mcp-remote",
-					"https://gitmcp.io/mui/material-ui",
-				],
-			},
-			default: {
-				command: "npx",
-				args: ["-y", "mcp-remote", "https://gitmcp.io/mui/material-ui"],
-			},
+	},
+	"material-ui Docs": {
+		windows: {
+			command: "cmd",
+			args: [
+				"/c",
+				"npx",
+				"mcp-remote",
+				"https://gitmcp.io/mui/material-ui-docs",
+			],
 		},
-		"json-logic-py Docs": {
-			windows: {
-				command: "cmd",
-				args: [
-					"/c",
-					"npx",
-					"-y",
-					"mcp-remote",
-					"https://gitmcp.io/nadirizr/json-logic-py",
-				],
-			},
-			default: {
-				command: "npx",
-				args: [
-					"-y",
-					"mcp-remote",
-					"https://gitmcp.io/nadirizr/json-logic-py",
-				],
-			},
+		default: {
+			command: "npx",
+			args: ["mcp-remote", "https://gitmcp.io/mui/material-ui"],
+		},
+	},
+	"json-logic-py Docs": {
+		windows: {
+			command: "cmd",
+			args: [
+				"/c",
+				"npx",
+				"mcp-remote",
+				"https://gitmcp.io/nadirizr/json-logic-py",
+			],
+		},
+		default: {
+			command: "npx",
+			args: ["mcp-remote", "https://gitmcp.io/nadirizr/json-logic-py"],
+		},
+	},
+	"mui-mcp": {
+		windows: {
+			type: "stdio",
+			command: "cmd",
+			args: ["/c", "npx", "-y", "@mui/mcp@latest"],
+		},
+		default: {
+			type: "stdio",
+			command: "npx",
+			args: ["-y", "@mui/mcp@latest"],
 		},
 	},
 };
