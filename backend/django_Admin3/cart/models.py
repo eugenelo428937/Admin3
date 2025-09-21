@@ -10,6 +10,8 @@ class Cart(models.Model):
     session_key = models.CharField(max_length=40, null=True, blank=True, unique=True)
     has_marking = models.BooleanField(default=False, help_text="Indicates if cart contains marking products")
     has_digital = models.BooleanField(default=False, help_text="Indicates if cart contains digital products (eBooks, Online Classroom)")
+    has_tutorial = models.BooleanField(default=False, help_text="Indicates if cart contains tutorial products")
+    has_material = models.BooleanField(default=False, help_text="Indicates if cart contains material products (printed books, eBooks)")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -31,10 +33,11 @@ class CartItem(models.Model):
     product = models.ForeignKey(ExamSessionSubjectProduct, on_delete=models.CASCADE, null=True, blank=True)
     marking_voucher = models.ForeignKey('marking_vouchers.MarkingVoucher', on_delete=models.CASCADE, null=True, blank=True)
     
-    # Item type to distinguish between products and vouchers
+    # Item type to distinguish between products, vouchers, and fees
     ITEM_TYPE_CHOICES = [
         ('product', 'Product'),
         ('marking_voucher', 'Marking Voucher'),
+        ('fee', 'Fee'),
     ]
     item_type = models.CharField(max_length=20, choices=ITEM_TYPE_CHOICES, default='product')
     
@@ -55,8 +58,12 @@ class CartItem(models.Model):
         ordering = ['added_at']
         constraints = [
             models.CheckConstraint(
-                check=models.Q(product__isnull=False) | models.Q(marking_voucher__isnull=False),
-                name='cart_item_has_product_or_voucher'
+                check=(
+                    models.Q(product__isnull=False) |
+                    models.Q(marking_voucher__isnull=False) |
+                    models.Q(item_type='fee')
+                ),
+                name='cart_item_has_product_or_voucher_or_is_fee'
             ),
             models.CheckConstraint(
                 check=~(models.Q(product__isnull=False) & models.Q(marking_voucher__isnull=False)),
@@ -163,10 +170,11 @@ class ActedOrderItem(models.Model):
     product = models.ForeignKey(ExamSessionSubjectProduct, on_delete=models.CASCADE, null=True, blank=True)
     marking_voucher = models.ForeignKey('marking_vouchers.MarkingVoucher', on_delete=models.CASCADE, null=True, blank=True)
     
-    # Item type to distinguish between products and vouchers
+    # Item type to distinguish between products, vouchers, and fees
     ITEM_TYPE_CHOICES = [
         ('product', 'Product'),
         ('marking_voucher', 'Marking Voucher'),
+        ('fee', 'Fee'),
     ]
     item_type = models.CharField(max_length=20, choices=ITEM_TYPE_CHOICES, default='product')
     
@@ -189,8 +197,12 @@ class ActedOrderItem(models.Model):
         verbose_name_plural = 'Order Items'
         constraints = [
             models.CheckConstraint(
-                check=models.Q(product__isnull=False) | models.Q(marking_voucher__isnull=False),
-                name='order_item_has_product_or_voucher'
+                check=(
+                    models.Q(product__isnull=False) |
+                    models.Q(marking_voucher__isnull=False) |
+                    models.Q(item_type='fee')
+                ),
+                name='order_item_has_product_or_voucher_or_is_fee'
             ),
             models.CheckConstraint(
                 check=~(models.Q(product__isnull=False) & models.Q(marking_voucher__isnull=False)),
