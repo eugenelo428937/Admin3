@@ -10,7 +10,7 @@ import VATToggle from "../VATToggle";
 import "../../styles/cart_panel.css";
 
 const CartPanel = React.memo(({ show, handleClose }) => {
-  const { cartItems, clearCart, removeFromCart } = useCart();
+  const { cartItems, cartData, clearCart, removeFromCart } = useCart();
   const { getPriceDisplay, formatPrice, isProductVATExempt, showVATInclusive } = useVAT();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -32,24 +32,35 @@ const CartPanel = React.memo(({ show, handleClose }) => {
   const cartTotals = useMemo(() => {
     let subtotal = 0;
     let totalVAT = 0;
-    
+    let totalFees = 0;
+
     cartItems.forEach(item => {
       const itemPrice = parseFloat(item.actual_price) || 0;
-      
+
       // Check if product is VAT exempt (you might need to add product type to cart items)
       const isVATExempt = isProductVATExempt(item.product_type);
       const priceDisplay = getPriceDisplay(itemPrice, 0.20, isVATExempt);
-      
+
       subtotal += priceDisplay.netPrice * item.quantity;
       totalVAT += priceDisplay.vatAmount * item.quantity;
     });
-    
+
+    // Add cart fees (booking fees, service charges, etc.)
+    if (cartData && cartData.fees) {
+      cartData.fees.forEach(fee => {
+        const feeAmount = parseFloat(fee.amount) || 0;
+        totalFees += feeAmount;
+        // Fees are usually VAT exempt, but if not, add VAT calculation here
+      });
+    }
+
     return {
       subtotal,
       totalVAT,
-      total: subtotal + totalVAT
+      totalFees,
+      total: subtotal + totalVAT + totalFees
     };
-  }, [cartItems, getPriceDisplay, isProductVATExempt, showVATInclusive]);
+  }, [cartItems, cartData, getPriceDisplay, isProductVATExempt, showVATInclusive]);
 
   // Memoize individual item price display calculation
   const getItemPriceDisplay = useMemo(() => {
@@ -389,7 +400,34 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 								</ListGroup.Item>
 							))}
 						</ListGroup>
-						
+
+						{/* Cart Fees */}
+						{cartData && cartData.fees && cartData.fees.length > 0 && (
+							<>
+								<div className="mt-3 mb-2">
+									<small className="text-muted">Additional Fees:</small>
+								</div>
+								<ListGroup>
+									{cartData.fees.map((fee) => (
+										<ListGroup.Item key={fee.id} className="border-0 py-1">
+											<div className="d-flex justify-content-between align-items-center">
+												<div>
+													<span>{fee.name}</span>
+													{fee.description && (
+														<>
+															<br />
+															<small className="text-muted">{fee.description}</small>
+														</>
+													)}
+												</div>
+												<span>{formatPrice(parseFloat(fee.amount))}</span>
+											</div>
+										</ListGroup.Item>
+									))}
+								</ListGroup>
+							</>
+						)}
+
 						{/* Cart Totals */}
 						<div className="cart-totals mt-3 p-3 border-top">
 							<div className="d-flex justify-content-between">
@@ -400,6 +438,12 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 								<span>VAT:</span>
 								<span>{formatPrice(cartTotals.totalVAT)}</span>
 							</div>
+							{cartTotals.totalFees > 0 && (
+								<div className="d-flex justify-content-between">
+									<span>Fees:</span>
+									<span>{formatPrice(cartTotals.totalFees)}</span>
+								</div>
+							)}
 							<hr className="my-2" />
 							<div className="d-flex justify-content-between fw-bold">
 								<span>Total:</span>
