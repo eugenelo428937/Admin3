@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Cart, CartItem, ActedOrder, ActedOrderItem
+from .models import Cart, CartItem, CartFee, ActedOrder, ActedOrderItem
 
 class CartItemSerializer(serializers.ModelSerializer):
     subject_code = serializers.CharField(source='product.exam_session_subject.subject.code', read_only=True)
@@ -33,13 +33,19 @@ class CartItemSerializer(serializers.ModelSerializer):
         
         return 'material'
 
+class CartFeeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CartFee
+        fields = ['id', 'fee_type', 'name', 'description', 'amount', 'currency', 'is_refundable', 'applied_at', 'applied_by_rule', 'metadata']
+
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
+    fees = CartFeeSerializer(many=True, read_only=True)
     user_context = serializers.SerializerMethodField()
 
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'session_key', 'items', 'created_at', 'updated_at', 'has_marking', 'has_digital', 'user_context']
+        fields = ['id', 'user', 'session_key', 'items', 'fees', 'created_at', 'updated_at', 'has_marking', 'has_digital', 'has_tutorial', 'has_material', 'user_context']
     
     def get_user_context(self, obj):
         """Get user context including IP and country information and acknowledgments"""
@@ -118,34 +124,70 @@ class CartSerializer(serializers.ModelSerializer):
             }
 
 class ActedOrderItemSerializer(serializers.ModelSerializer):
-    product_name = serializers.CharField(source='product.product.fullname', read_only=True)
-    product_code = serializers.CharField(source='product.product.code', read_only=True)
-    subject_code = serializers.CharField(source='product.exam_session_subject.subject.code', read_only=True)
-    exam_session_code = serializers.CharField(source='product.exam_session_subject.exam_session.session_code', read_only=True)
+    product_name = serializers.SerializerMethodField()
+    product_code = serializers.SerializerMethodField()
+    subject_code = serializers.SerializerMethodField()
+    exam_session_code = serializers.SerializerMethodField()
     product_type = serializers.SerializerMethodField()
 
     class Meta:
         model = ActedOrderItem
-        fields = ['id', 'product', 'product_name', 'product_code', 'subject_code', 'exam_session_code', 'product_type', 'quantity', 'price_type', 'actual_price', 'metadata']
+        fields = ['id', 'item_type', 'product', 'product_name', 'product_code', 'subject_code', 'exam_session_code', 'product_type', 'quantity', 'price_type', 'actual_price', 'metadata']
+
+    def get_product_name(self, obj):
+        """Get product name or fee name"""
+        if obj.item_type == 'fee':
+            return obj.metadata.get('fee_name', 'Fee')
+        elif obj.product:
+            return obj.product.product.fullname
+        return None
+
+    def get_product_code(self, obj):
+        """Get product code or fee type"""
+        if obj.item_type == 'fee':
+            return obj.metadata.get('fee_type', 'fee')
+        elif obj.product:
+            return obj.product.product.code
+        return None
+
+    def get_subject_code(self, obj):
+        """Get subject code (not applicable to fees)"""
+        if obj.item_type == 'fee':
+            return None
+        elif obj.product:
+            return obj.product.exam_session_subject.subject.code
+        return None
+
+    def get_exam_session_code(self, obj):
+        """Get exam session code (not applicable to fees)"""
+        if obj.item_type == 'fee':
+            return None
+        elif obj.product:
+            return obj.product.exam_session_subject.exam_session.session_code
+        return None
 
     def get_product_type(self, obj):
-        """Determine product type based on product name or group"""
-        product_name = obj.product.product.fullname.lower()
-        
-        if hasattr(obj.product.product, 'group_name') and obj.product.product.group_name:
-            group_name = obj.product.product.group_name.lower()
-            if 'tutorial' in group_name:
+        """Determine product type based on item type and product info"""
+        if obj.item_type == 'fee':
+            return 'fee'
+        elif obj.product:
+            product_name = obj.product.product.fullname.lower()
+
+            if hasattr(obj.product.product, 'group_name') and obj.product.product.group_name:
+                group_name = obj.product.product.group_name.lower()
+                if 'tutorial' in group_name:
+                    return 'tutorial'
+                elif 'marking' in group_name:
+                    return 'marking'
+
+            # Fallback to product name if group_name is not available
+            if 'tutorial' in product_name:
                 return 'tutorial'
-            elif 'marking' in group_name:
+            elif 'marking' in product_name:
                 return 'marking'
-        
-        # Fallback to product name if group_name is not available
-        if 'tutorial' in product_name:
-            return 'tutorial'
-        elif 'marking' in product_name:
-            return 'marking'
-        
-        return 'material'
+
+            return 'material'
+        return None
 
 class ActedOrderSerializer(serializers.ModelSerializer):
     items = ActedOrderItemSerializer(many=True, read_only=True)

@@ -16,19 +16,28 @@ so that business logic can be consistently applied at checkout, product display,
 3. ✅ Rule execution performance remains under 200ms per entry point (current: ~20-45ms)
 4. ✅ Admin interface allows configuration of which rules execute at each entry point via ActedRule model
 5. ✅ Comprehensive logging tracks rule execution and performance metrics with audit trail
+6. ✅ Rules engine supports multiple action types including update actions for cart modifications
 
 **Integration Verification**:
 - ✅ IV1: Existing VAT calculation functionality continues to work unchanged
-- ✅ IV2: Current rules engine features (tutorial booking fees, message display) remain functional  
+- ✅ IV2: Current rules engine features (tutorial booking fees, message display) remain functional
 - ✅ IV3: System performance metrics show no degradation in existing workflows
 
 **Implementation Details**:
 - **Model**: `ActedRule` (JSONB-based) in `backend/django_Admin3/rules_engine/models/acted_rule.py`
-- **API Endpoint**: `POST /api/rules/engine/execute/` 
+- **API Endpoint**: `POST /api/rules/engine/execute/`
 - **Service**: `RuleEngine` orchestrator in `backend/django_Admin3/rules_engine/services/rule_engine.py`
 - **Database**: PostgreSQL with JSONB storage and performance indexes
 - **Admin Interface**: `/admin/rules_engine/actedrule/` for rule management
 - **Audit Trail**: `ActedRuleExecution` model logs all executions with context snapshots
+
+**Action Types Supported**:
+- `display_message`: Show informational messages to users
+- `user_acknowledge`: Require user acknowledgment (e.g., Terms & Conditions)
+- `user_preference`: Collect user preferences (optional acknowledgments)
+- `update`: ✅ **NEW** - Perform updates to cart, user, or system state
+  - `cart.fees` - Add or update cart fees (e.g., tutorial booking fee)
+  - `cart.items` - Add or modify cart items (future implementation)
 
 ### Story 1.2: Dynamic VAT Calculation System
 
@@ -190,6 +199,37 @@ so that I understand any special requirements for my organization.
 #### **Story 1.5: User Delivery and Contact Details Management** - **PENDING**
 #### **Story 1.6: Recommended Products System** - **PENDING**
 #### **Story 1.7: Dynamic Employer Messaging and Contact Display** - **PENDING**
+
+### Story 1.8: Tutorial Booking Fee Rule (Update Action Implementation) - **COMPLETED** ✅
+
+As a system administrator,
+I want to automatically add a booking fee for tutorial-only orders paid by credit card,
+so that credit card processing costs are covered for small-value orders.
+
+**Acceptance Criteria**:
+1. ✅ Cart tracks product types with flags: `has_tutorial`, `has_material`, `has_marking`
+2. ✅ Cart item operations automatically update product type flags when items are added/removed
+3. ✅ Payment method is tracked in checkout context and sent to rules engine
+4. ✅ Rules engine executes at `checkout_payment` entry point when payment method changes
+5. ✅ £1 booking fee is added to cart when:
+   - Cart contains tutorial items only (no materials or marking)
+   - User selects credit card payment method
+6. ✅ MUI Snackbar notification displays when booking fee is added
+7. ✅ Cart fees are stored in separate `CartFee` model with audit trail
+
+**Implementation Details**:
+- **Cart Model Updates**: Added `has_tutorial` and `has_material` boolean fields to Cart model
+- **Cart Service**: Updated `_update_cart_flags()` to detect product types
+- **Frontend Trigger**: `PaymentStep` component executes rules on payment method change
+- **Update Handler**: New `UpdateHandler` class in `rules_engine/services/action_handlers/`
+- **Rule Configuration**: JSONLogic condition checks cart flags and payment method
+- **Database**: `CartFee` model stores fees separately from cart items
+- **Setup Script**: `setup_tutorial_booking_fee_rule.py` creates rule in database
+
+**Testing Results**:
+- ✅ Tutorial only + Card payment → Fee added
+- ✅ Tutorial + Material + Card payment → No fee
+- ✅ Tutorial only + Invoice payment → No fee
 
 ## 🎯 **Key Technical Corrections Made**
 

@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Alert, Button } from 'react-bootstrap';
+import { Snackbar, Alert as MuiAlert } from '@mui/material';
+import { useCart } from '../../../contexts/CartContext';
+import rulesEngineService from '../../../services/rulesEngineService';
 
 const PaymentStep = ({
   paymentMethod,
@@ -18,11 +21,88 @@ const PaymentStep = ({
   setEmployerCode,
   isDevelopment
 }) => {
+  const { cartData, cartItems, refreshCart } = useCart();
+  const [bookingFeeNotification, setBookingFeeNotification] = useState(null);
+  const [rulesLoading, setRulesLoading] = useState(false);
   const testCards = [
     { name: 'VISA Test Card', number: '4929 0000 0000 6', cvv: '123' },
     { name: 'VISA Debit', number: '4462 0000 0000 0003', cvv: '123' },
     { name: 'Mastercard', number: '5404 0000 0000 0001', cvv: '123' }
   ];
+
+  // Execute checkout_payment rules when payment method changes
+  useEffect(() => {
+    const executePaymentRules = async () => {
+      if (!cartData || !paymentMethod) return;
+
+      setRulesLoading(true);
+      try {
+        // Calculate cart total
+        const total = cartItems.reduce((sum, item) => sum + (parseFloat(item.actual_price || 0) * item.quantity), 0);
+
+        // Build context with cart and payment information
+        const context = {
+          cart: {
+            id: cartData.id,
+            items: cartItems,
+            total: total,
+            user: cartData.user || null,
+            session_key: cartData.session_key || null,
+            has_marking: cartData.has_marking || false,
+            has_material: cartData.has_material || false,
+            has_tutorial: cartData.has_tutorial || false,
+            created_at: cartData.created_at,
+            updated_at: cartData.updated_at
+          },
+          payment: {
+            method: paymentMethod,
+            is_card: paymentMethod === 'card'
+          }
+        };
+
+        console.log('💳 [PaymentStep] Executing checkout_payment rules with context:', context);
+
+        const result = await rulesEngineService.executeRules('checkout_payment', context);
+
+        console.log('💳 [PaymentStep] Rules engine result:', result);
+
+        // Check if booking fee was added or removed
+        if (result.updates) {
+          // Check for added fees
+          if (result.updates.cart_fees) {
+            const bookingFee = result.updates.cart_fees.find(fee => fee.fee_type === 'tutorial_booking_fee');
+            if (bookingFee) {
+              setBookingFeeNotification(`£${bookingFee.amount} tutorial booking fee has been added to your cart`);
+              // Refresh cart to show updated total
+              await refreshCart();
+
+              // Clear notification after 5 seconds
+              setTimeout(() => setBookingFeeNotification(null), 5000);
+            }
+          }
+
+          // Check for removed fees
+          if (result.updates.cart_fees_removed) {
+            const removedFee = result.updates.cart_fees_removed.find(fee => fee.fee_type === 'tutorial_booking_fee');
+            if (removedFee && removedFee.removed) {
+              setBookingFeeNotification('Tutorial booking fee has been removed from your cart');
+              // Refresh cart to show updated total
+              await refreshCart();
+
+              // Clear notification after 5 seconds
+              setTimeout(() => setBookingFeeNotification(null), 5000);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error executing payment rules:', err);
+      } finally {
+        setRulesLoading(false);
+      }
+    };
+
+    executePaymentRules();
+  }, [paymentMethod, cartData?.id]); // Only depend on cartData.id, not cartItems to avoid loop
 
   const handleCardSelection = (card) => {
     setCardNumber(card.number);
@@ -166,6 +246,22 @@ const PaymentStep = ({
           </Form.Group>
         )}
       </Form>
+
+      {/* MUI Snackbar for booking fee notification */}
+      <Snackbar
+        open={!!bookingFeeNotification}
+        autoHideDuration={5000}
+        onClose={() => setBookingFeeNotification(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <MuiAlert
+          onClose={() => setBookingFeeNotification(null)}
+          severity="info"
+          sx={{ width: '100%' }}
+        >
+          {bookingFeeNotification}
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 };
