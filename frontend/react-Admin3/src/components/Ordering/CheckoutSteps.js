@@ -5,12 +5,14 @@ import httpService from '../../services/httpService';
 import config from "../../config";
 import rulesEngineService from '../../services/rulesEngineService';
 import RulesEngineModal from '../Common/RulesEngineModal';
+import './CheckoutSteps/CheckoutSteps.css';
 
 // Import step components
 import CartReviewStep from './CheckoutSteps/CartReviewStep';
 import TermsConditionsStep from './CheckoutSteps/TermsConditionsStep';
 import PreferenceStep from './CheckoutSteps/PreferenceStep';
 import PaymentStep from './CheckoutSteps/PaymentStep';
+import CartSummaryPanel from './CheckoutSteps/CartSummaryPanel';
 
 const CheckoutSteps = ({ onComplete }) => {
   const { cartItems, cartData } = useCart();
@@ -46,6 +48,9 @@ const CheckoutSteps = ({ onComplete }) => {
   const [expiryYear, setExpiryYear] = useState('');
   const [cvv, setCvv] = useState('');
   const [isDevelopment, setIsDevelopment] = useState(false);
+
+  // Cart summary panel state
+  const [isCartSummaryCollapsed, setIsCartSummaryCollapsed] = useState(true);
 
   useEffect(() => {
     // Check if we're in development environment
@@ -327,7 +332,29 @@ const CheckoutSteps = ({ onComplete }) => {
 
       <Card>
         <Card.Body>
-          {renderStepContent()}
+          {currentStep === 1 ? (
+            // Step 1: Show full cart review
+            renderStepContent()
+          ) : (
+            // Steps 2+: Show cart summary panel + step content layout
+            <div className="row g-3">
+              <div className={`col-12 col-lg-${isCartSummaryCollapsed ? '10' : '8'} transition-col checkout-step-content-mobile`}>
+                <div className="checkout-step-content">
+                  {renderStepContent()}
+                </div>
+              </div>
+              <div className={`col-12 col-lg-${isCartSummaryCollapsed ? '2' : '4'} transition-col checkout-cart-summary-mobile`}>
+                <div className="cart-summary-panel">
+                  <CartSummaryPanel
+                    cartItems={cartItems}
+                    vatCalculations={vatCalculations}
+                    isCollapsed={isCartSummaryCollapsed}
+                    onToggleCollapse={setIsCartSummaryCollapsed}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </Card.Body>
         <Card.Footer>
           <div className="d-flex justify-content-between">

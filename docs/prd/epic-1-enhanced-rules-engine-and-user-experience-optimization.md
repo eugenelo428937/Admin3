@@ -84,23 +84,9 @@ so that I can quickly provide accurate information without repetitive data entry
 - IV2: Current user profile data structure remains intact
 - IV3: Login and password reset functionality unaffected
 
-### Story 1.5: User Delivery and Contact Details Management
+### Story 1.5: [MOVED TO EPIC 2]
 
-As a registered user,
-I want to manage multiple delivery addresses and contact preferences,
-so that I can easily select appropriate details during checkout.
-
-**Acceptance Criteria**:
-1. Users can add, edit, and delete multiple delivery addresses
-2. Contact preferences include phone numbers and communication preferences
-3. Address selection integrated into checkout process
-4. Default address assignment with easy modification
-5. Address validation and formatting
-
-**Integration Verification**:
-- IV1: Existing checkout process continues to work with single address users
-- IV2: Current order processing maintains existing address handling
-- IV3: Address data migration preserves existing user address information
+**Note**: User Delivery and Contact Details Management has been moved to Epic 2: Order Details and Address Management for better organization and focused implementation.
 
 ### Story 1.6: Recommended Products System
 
@@ -187,7 +173,7 @@ so that I understand any special requirements for my organization.
 
 #### **Story 1.3: Mobile-Responsive Layout Enhancement** - **PENDING**
 #### **Story 1.4: Enhanced User Registration with Employer Integration** - **PENDING**
-#### **Story 1.5: User Delivery and Contact Details Management** - **PENDING**
+#### **Story 1.5: [MOVED TO EPIC 2]** - **Order Details and Address Management**
 #### **Story 1.6: Recommended Products System** - **PENDING**
 #### **Story 1.7: Dynamic Employer Messaging and Contact Display** - **PENDING**
 
@@ -268,8 +254,9 @@ so that I understand any special requirements for my organization.
 1. **Complete** Story 1.2 (Dynamic VAT) integration with rules engine
 2. **Implement** Story 1.3 (Mobile-Responsive Layout)
 3. **Implement** Story 1.4 (Enhanced Registration) and Story 1.6 (Recommendations)
-4. **Performance Test** production rules with actual business logic
-5. **Training** for staff on ActedRule admin interface usage
+4. **Implement** Epic 2: Order Details and Address Management (see separate epic document)
+5. **Performance Test** production rules with actual business logic
+6. **Training** for staff on ActedRule admin interface usage
 
 ## ✅ **Documentation Validation**
 
