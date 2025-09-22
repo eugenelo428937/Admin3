@@ -138,6 +138,12 @@ class ConditionEvaluator:
                 elif condition_type == "always_false":
                     logger.debug("Always-false condition evaluated to False")
                     return False
+                elif condition_type == "jsonlogic":
+                    # Extract the actual JSONLogic expression from the "expr" field
+                    actual_condition = condition.get("expr", condition)
+                    result = self._evaluate_jsonlogic(actual_condition, context)
+                    logger.debug(f" JSONLogic (type-wrapped) condition evaluated to: {result}")
+                    return bool(result)
 
             # Use custom JSONLogic implementation
             result = self._evaluate_jsonlogic(condition, context)
@@ -449,17 +455,34 @@ class ActionDispatcher:
             }
 
         elif action_type == "update":
-            return {
-                "type": "update",
-                "success": True,
-                "message": {
+            # Handle update actions (e.g., add fees to cart)
+            from .action_handlers import UpdateHandler
+            handler = UpdateHandler()
+            result = handler.execute(action, context)
+
+            # Format result for client response
+            if result.get('success'):
+                return {
                     "type": "update",
-                    "target": action.get("target"),
-                    "operation": action.get("operation"),
-                    "value": action.get("value"),
-                    "description": action.get("description", "Value updated")
+                    "success": True,
+                    "updates": {
+                        "cart_fees": [result.get('fee')] if result.get('fee') else []
+                    },
+                    "message": {
+                        "type": "update",
+                        "target": action.get("target"),
+                        "operation": action.get("operation"),
+                        "value": action.get("value"),
+                        "description": action.get("description", "Value updated"),
+                        "result": result
+                    }
                 }
-            }
+            else:
+                return {
+                    "type": "update",
+                    "success": False,
+                    "error": result.get('error', 'Update action failed')
+                }
         
         else:
             logger.warning(f"Unknown action type: {action_type}")
@@ -483,7 +506,7 @@ class ExecutionStore:
         try:
             ActedRuleExecution.objects.create(
                 execution_seq_no=execution_seq_no,
-                rule_id=rule_id,
+                rule_code=rule_id,
                 entry_point=entry_point,
                 context_snapshot=context,
                 actions_result=actions_result,
@@ -555,6 +578,7 @@ class RuleEngine:
             preference_prompts = []
             context_updates = {}
             schema_validation_errors = []
+            update_results = {}
             
             for rule in rules:
                 try:
@@ -644,10 +668,18 @@ class RuleEngine:
                                     context_updates[target] = new_value
                                     logger.debug(f"Incremented context: {target} from {current_value} to {new_value}")
                         
-                        # Collect messages  
+                        # Collect messages and updates
                         for action_result in actions_result:
                             if action_result.get("success") and "message" in action_result:
                                 all_messages.append(action_result["message"])
+
+                            # Collect update results (cart fees, etc.)
+                            if action_result.get("success") and action_result.get("type") == "update":
+                                if "updates" in action_result:
+                                    for update_key, update_value in action_result["updates"].items():
+                                        if update_key not in update_results:
+                                            update_results[update_key] = []
+                                        update_results[update_key].extend(update_value if isinstance(update_value, list) else [update_value])
                         
                         # Calculate execution time
                         execution_time_ms = (time.time() - rule_start) * 1000
@@ -729,6 +761,7 @@ class RuleEngine:
                 "preference_prompts": preference_prompts,
                 "preferences": preference_prompts,  # Also add as "preferences" for consistency
                 "context_updates": context_updates,
+                "updates": update_results,
             }
             
             if blocked:
