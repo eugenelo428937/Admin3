@@ -1,0 +1,62 @@
+/* Checkout Steps Animation Styles */
+
+.transition-col {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Ensure smooth column transitions */
+.row .transition-col {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+/* Mobile responsiveness for cart summary */
+@media (max-width: 991.98px) {
+  .checkout-cart-summary-mobile {
+    order: -1;
+    margin-bottom: 1rem;
+  }
+
+  .checkout-step-content-mobile {
+    order: 1;
+  }
+}
+
+/* Animation classes for cart panel */
+.cart-panel-expanding {
+  animation: expandCart 0.3s ease-in-out;
+}
+
+.cart-panel-collapsing {
+  animation: collapseCart 0.3s ease-in-out;
+}
+
+@keyframes expandCart {
+  from {
+    max-width: 16.666667%; /* ~2/12 cols */
+  }
+  to {
+    max-width: 33.333333%; /* ~4/12 cols */
+  }
+}
+
+@keyframes collapseCart {
+  from {
+    max-width: 33.333333%; /* ~4/12 cols */
+  }
+  to {
+    max-width: 16.666667%; /* ~2/12 cols */
+  }
+}
+
+/* Ensure content doesn't break during animation */
+.checkout-step-content {
+  min-height: 400px;
+}
+
+.cart-summary-panel {
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
