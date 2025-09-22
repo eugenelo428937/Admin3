@@ -66,10 +66,23 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  const refreshCart = async () => {
+    try {
+      const res = await cartService.fetchCart();
+      console.log('🛒 [CartContext] Refreshed cart data:', res.data);
+      setCartData(res.data); // Store full cart object
+      setCartItems(res.data.items || []);
+      return res.data;
+    } catch (err) {
+      console.error('🛒 [CartContext] Error refreshing cart:', err);
+      throw err;
+    }
+  };
+
   const cartCount = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
   return (
-    <CartContext.Provider value={{ cartItems, cartData, addToCart, removeFromCart, clearCart, cartCount, loading }}>
+    <CartContext.Provider value={{ cartItems, cartData, addToCart, removeFromCart, clearCart, refreshCart, cartCount, loading }}>
       {children}
     </CartContext.Provider>
   );
