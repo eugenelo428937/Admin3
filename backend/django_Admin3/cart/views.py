@@ -5,7 +5,7 @@ from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-from .models import Cart, CartItem, ActedOrder, ActedOrderItem, OrderUserAcknowledgment, OrderUserPreference
+from .models import Cart, CartItem, CartFee, ActedOrder, ActedOrderItem, OrderUserAcknowledgment, OrderUserPreference
 from .serializers import CartSerializer, CartItemSerializer, ActedOrderSerializer
 from products.models import Product
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
@@ -90,10 +90,59 @@ class CartViewSet(viewsets.ViewSet):
             logger.warning(f"Error checking digital product for cart item {cart_item.id}: {str(e)}")
             return False
 
+    def _is_tutorial_product(self, cart_item):
+        """Check if cart item is a tutorial product"""
+        try:
+            metadata = cart_item.metadata or {}
+            # Check if it's explicitly marked as tutorial in metadata
+            if metadata.get('type') == 'tutorial':
+                return True
+
+            # Check product code for Tutorial
+            if hasattr(cart_item, 'product') and cart_item.product:
+                product = cart_item.product.product  # ExamSessionSubjectProduct -> Product
+                if product and hasattr(product, 'code'):
+                    # Tutorial codes typically start with 'T' or have 'Tutorial' in name
+                    if product.code in ['T', 'TUT'] or 'tutorial' in product.fullname.lower():
+                        return True
+
+            return False
+        except Exception as e:
+            logger.warning(f"Error checking tutorial product for cart item {cart_item.id}: {str(e)}")
+            return False
+
+    def _is_material_product(self, cart_item):
+        """Check if cart item is a material product (printed book or eBook)"""
+        try:
+            metadata = cart_item.metadata or {}
+
+            # Check for eBook variations
+            if metadata.get('variationName') in ['Vitalsource eBook', 'PDF eBook']:
+                return True
+
+            # Check for printed materials
+            if metadata.get('variationName') == 'Printed':
+                return True
+
+            # Check product code for Materials
+            if hasattr(cart_item, 'product') and cart_item.product:
+                product = cart_item.product.product  # ExamSessionSubjectProduct -> Product
+                if product and hasattr(product, 'code'):
+                    # Material codes typically have 'M' or 'MAT'
+                    if product.code in ['M', 'MAT', 'BOOK'] or 'material' in product.fullname.lower():
+                        return True
+
+            return False
+        except Exception as e:
+            logger.warning(f"Error checking material product for cart item {cart_item.id}: {str(e)}")
+            return False
+
     def _update_cart_flags(self, cart):
         """Update cart-level flags based on cart contents"""
         has_marking = False
         has_digital = False
+        has_tutorial = False
+        has_material = False
 
         for item in cart.items.all():
             if item.is_marking:
@@ -103,8 +152,16 @@ class CartViewSet(viewsets.ViewSet):
             if self._is_digital_product(item):
                 has_digital = True
 
-            # Early exit if both flags are set
-            if has_marking and has_digital:
+            # Check if this item is a tutorial product
+            if self._is_tutorial_product(item):
+                has_tutorial = True
+
+            # Check if this item is a material product
+            if self._is_material_product(item):
+                has_material = True
+
+            # Early exit if all flags are set
+            if has_marking and has_digital and has_tutorial and has_material:
                 break
 
         # Update flags if changed
@@ -115,6 +172,14 @@ class CartViewSet(viewsets.ViewSet):
 
         if cart.has_digital != has_digital:
             cart.has_digital = has_digital
+            cart_updated = True
+
+        if cart.has_tutorial != has_tutorial:
+            cart.has_tutorial = has_tutorial
+            cart_updated = True
+
+        if cart.has_material != has_material:
+            cart.has_material = has_material
             cart_updated = True
 
         if cart_updated:
@@ -487,6 +552,23 @@ class CartViewSet(viewsets.ViewSet):
                     metadata=item.metadata
                 )
                 order_items.append(order_item)
+
+            # Add cart fees as order items
+            for fee in cart.fees.all():
+                fee_order_item = ActedOrderItem.objects.create(
+                    order=order,
+                    item_type='fee',
+                    quantity=1,
+                    actual_price=fee.amount,
+                    metadata={
+                        'fee_type': fee.fee_type,
+                        'fee_name': fee.name,
+                        'fee_description': fee.description,
+                        'fee_currency': fee.currency,
+                        'fee_id': fee.id
+                    }
+                )
+                order_items.append(fee_order_item)
             
             # Calculate totals using the rules engine (same as frontend)
             try:
