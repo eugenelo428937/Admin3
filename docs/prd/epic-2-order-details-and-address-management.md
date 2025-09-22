@@ -133,7 +133,39 @@ so that I can ensure accurate communication and delivery coordination.
   - `user_profile.work_phone`
   - `user.email` (required)
 
-### Story 2.5: Checkout Validation and Progression Controls
+### Story 2.5: Order User Preferences Data Model and API Integration
+
+As a system administrator,
+I want order-specific address and contact details stored separately from user profiles,
+so that we maintain accurate historical records of delivery/invoice details used for each order.
+
+**Acceptance Criteria**:
+1. `acted_order_user_preferences` Django model created with all required fields
+2. Foreign key relationship to Order model with CASCADE delete
+3. API endpoint accepts user preferences data during order creation
+4. Order creation transaction includes both order and preferences creation
+5. Address type selections (home/work) stored with full address details
+6. All contact information (phones, email) captured in order record
+7. Database migration script created for new table
+8. Admin interface available for viewing order preferences
+9. API validation ensures required fields (mobile_phone, email_address) present
+10. Proper indexing on order_id for performance
+
+**Integration Verification**:
+- IV1: Existing order creation process continues to work unchanged
+- IV2: Order model and related functionality preserved
+- IV3: No impact on existing order history or data integrity
+
+**Implementation Details**:
+- **Django Model**: `OrderUserPreferences` in `backend/django_Admin3/orders/models.py`
+- **Migration**: Database migration for new table creation with constraints
+- **API Modification**: `POST /api/orders/` accepts `user_preferences` payload
+- **Serializer**: `OrderUserPreferencesSerializer` for data validation
+- **Admin Interface**: Django admin for order preferences management
+- **Database Transaction**: Atomic creation of order + preferences
+- **Validation**: Required field validation on mobile_phone and email_address
+
+### Story 2.6: Checkout Validation and Progression Controls
 
 As a customer proceeding through checkout,
 I want clear validation of required address and contact information,
@@ -150,6 +182,8 @@ so that I can complete my order without encountering errors.
 8. Clear error messaging for incomplete or invalid fields
 9. Visual indicators (colors, icons) show completion status
 10. Progress persists if user navigates back and forward in checkout
+11. Checkout data prepared for `acted_order_user_preferences` storage (Story 2.5)
+12. Validation coordinates with order creation API requirements
 
 **Integration Verification**:
 - IV1: Existing checkout progression logic remains intact
@@ -165,10 +199,18 @@ so that I can complete my order without encountering errors.
   - Checkout context tracks validation status
   - Progress persistence across navigation
   - Integration with existing checkout stepper
+- **Order Data Storage**:
+  - `POST /api/orders/` creates order with embedded user preferences
+  - Order preferences stored in `acted_order_user_preferences` table
+  - Full address details and contact info captured at order time
 - **UI/UX**:
   - Disabled state styling for "Continue" button
   - Clear error messaging with specific field guidance
   - Success indicators for completed sections
+- **API Integration**:
+  - Order creation endpoint modified to accept user preferences payload
+  - Validation service ensures required fields present before order creation
+  - Database transaction ensures atomicity of order + preferences creation
 
 ---
 
@@ -183,7 +225,8 @@ so that I can complete my order without encountering errors.
 2. **Story 2.2**: Address Selection Integration - **Core Functionality**
 3. **Story 2.3**: Modal Address Editor - **User Experience**
 4. **Story 2.4**: Communication Details Panel - **Contact Management**
-5. **Story 2.5**: Validation and Progression - **Quality Assurance**
+5. **Story 2.5**: Order User Preferences Data Model - **Backend Infrastructure**
+6. **Story 2.6**: Validation and Progression - **Quality Assurance**
 
 ### **🔗 COMPONENT DEPENDENCIES**
 
@@ -193,7 +236,8 @@ so that I can complete my order without encountering errors.
 | `AddressSelectionPanel` | `DynamicAddressForm`, Profile API | Read-only address display |
 | `AddressEditModal` | `SmartAddressInput`, `DynamicAddressForm` | Modal workflow integration |
 | `CommunicationDetailsPanel` | Validation services | Profile synchronization |
-| Checkout Validation | All above components | Progression control logic |
+| `OrderUserPreferences` Model | Order model, Django ORM | Backend data persistence |
+| Checkout Validation | All above components | Progression control + order creation |
 
 ### **🗄️ DATABASE SCHEMA REQUIREMENTS**
 
