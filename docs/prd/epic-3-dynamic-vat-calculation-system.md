@@ -1,37 +1,39 @@
-# Epic 2: Dynamic VAT Calculation System
+# Epic 3: Dynamic VAT Calculation System
 
 **Epic Goal**: Implement a comprehensive, rules-driven VAT calculation system that replaces legacy hardcoded logic with configurable business rules, supporting multiple regions, product types, and pricing scenarios through the enhanced Rules Engine.
 
 **Business Value**: Eliminates manual VAT rate updates, reduces compliance risk, enables rapid response to tax regulation changes, and provides audit trail for all VAT calculations.
 
-**Integration Requirements**: All stories must maintain backward compatibility with existing order processing while transitioning to the new dynamic VAT system. The Rules Engine foundation from Epic 1 must be leveraged for all VAT calculations.
+**Implementation Approach**: Complete replacement of existing VAT calculation logic with rules-driven system. All legacy VAT code will be removed from both frontend and backend. The Rules Engine foundation from Epic 1 will be leveraged for all VAT calculations.
 
-## Story 2.1: VAT Rules Engine Foundation and Product Classification
+## Story 3.1: VAT Rules Engine Foundation and Product Classification
 
 As a system administrator,
 I want to configure VAT rules based on product types and customer regions,
 so that VAT calculations are automatically applied according to business rules without code changes.
 
 **Acceptance Criteria**:
-1. VAT calculation rules execute at `checkout_vat_calculation` entry point
-2. Product classification system identifies digital vs physical products
-3. Regional VAT zones configured: UK, IE, EC, SA, CH/GG (ROW treatment), ROW
-4. Rules support priority-based execution for complex scenarios
-5. VAT calculations maintain 100% accuracy with legacy system during transition
-6. Performance impact under 50ms for VAT calculation per cart
+1. VAT calculation rules execute at `checkout_start` and `checkout_payment` entry points
+2. Both entry points call `calculate_vat` rule with consistent context structure
+3. Country determination uses `acted_user_profile_address.country` where `country = acted_user_profile.send_study_material_to`
+4. VAT calculation considers: country, products ordered, and various discounts
+5. Product classification system identifies digital vs physical products
+6. Performance impact under 50ms for VAT calculation per checkout step
 
-**Integration Verification**:
-- IV1: Existing checkout flow continues without modification
-- IV2: Current VAT display components work with new calculations
-- IV3: Order processing maintains existing VAT data structure
+**Implementation Verification**:
+- IV1: All legacy VAT calculation code removed from backend
+- IV2: All legacy VAT calculation code removed from frontend
+- IV3: `checkout_start` and `checkout_payment` entry points properly configured
+- IV4: `calculate_vat` rule executes correctly with user address context
 
 **Implementation Details**:
-- **Models**: Extend `ActedRule` for VAT-specific rules
-- **Entry Point**: `checkout_vat_calculation`, `cart_item_update`
-- **Context**: Product classification, customer region, pricing type
-- **Actions**: `update` actions for VAT amounts and rates
+- **Entry Points**: `checkout_start`, `checkout_payment`
+- **VAT Rule**: `calculate_vat` (called from both entry points)
+- **Context**: User address country, cart products, discount information
+- **Country Logic**: `acted_user_profile_address.country` matching `acted_user_profile.send_study_material_to`
+- **Actions**: `update` actions for cart VAT amounts and rates
 
-## Story 2.2: Regional VAT Rules Implementation
+## Story 3.2: Regional VAT Rules Implementation
 
 As a customer from different regions,
 I want VAT to be calculated correctly based on my location and product types,
@@ -83,10 +85,10 @@ so that I receive accurate total pricing for my specific situation.
 5. VAT scaler adjustments applied when `vat_adjust` is enabled
 6. All pricing scenarios maintain audit trail
 
-**Integration Verification**:
-- IV1: Existing pricing display components work with new VAT logic
-- IV2: Cart updates reflect correct VAT for pricing changes
-- IV3: Checkout summary shows accurate VAT breakdowns
+**Implementation Verification**:
+- IV1: Legacy pricing VAT logic completely replaced
+- IV2: All pricing scenarios handled by rules engine
+- IV3: Cart and checkout components use new VAT calculation API
 
 ## Story 2.5: VAT Administration and Configuration
 
@@ -102,10 +104,10 @@ so that I can respond to tax regulation changes without requiring code deploymen
 5. Bulk update capabilities for product VAT classifications
 6. VAT calculation dry-run mode for testing rule changes
 
-**Integration Verification**:
-- IV1: Existing Django admin functionality unaffected
-- IV2: User permissions and access controls maintained
-- IV3: Admin interface performance acceptable for daily use
+**Implementation Verification**:
+- IV1: New VAT admin interface replaces legacy configuration
+- IV2: VAT rule management accessible to authorized users
+- IV3: Admin interface provides comprehensive VAT control
 
 ## Story 2.6: VAT Reporting and Compliance
 
