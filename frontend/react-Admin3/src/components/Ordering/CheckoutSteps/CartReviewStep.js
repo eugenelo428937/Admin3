@@ -20,6 +20,7 @@ import {
 import { Info, LocationOn, Receipt } from '@mui/icons-material';
 import { generateProductCode } from '../../../utils/productCodeGenerator';
 import AddressSelectionPanel from '../../Address/AddressSelectionPanel';
+import CommunicationDetailsPanel from '../../Communication/CommunicationDetailsPanel';
 
 const CartReviewStep = ({
   cartItems,
@@ -178,6 +179,14 @@ const CartReviewStep = ({
                 </CardContent>
               </Card>
             </Grid>
+          </Grid>
+
+          {/* Communication Details Panel - Full Width Below Addresses */}
+          <Grid item xs={12} sx={{ mt: 3 }}>
+            <CommunicationDetailsPanel
+              userProfile={userProfile}
+              onProfileUpdate={onAddressUpdate}
+            />
           </Grid>
         </Grid>
       </Grid>
