@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../../../theme/theme';
@@ -233,6 +234,215 @@ describe('CartReviewStep Enhanced Layout', () => {
       // Should still render cart items
       expect(screen.getByText('Test Product 1')).toBeInTheDocument();
       // Should not crash without VAT calculations
+    });
+  });
+
+  // Story 2.2: Dynamic Address Selection - TDD RED Phase Tests
+  describe('Address Selection Dropdowns (Story 2.2 - TDD RED Phase)', () => {
+    const mockUserProfile = {
+      user: {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        first_name: 'John',
+        last_name: 'Doe'
+      },
+      profile: {
+        send_invoices_to: 'HOME',
+        send_study_material_to: 'WORK'
+      },
+      home_address: {
+        building: '123 Main St',
+        town: 'London',
+        postcode: 'SW1A 1AA',
+        country: 'United Kingdom'
+      },
+      work_address: {
+        company: 'Test Company',
+        building: '456 Office St',
+        town: 'London',
+        postcode: 'EC1A 1BB',
+        country: 'United Kingdom'
+      }
+    };
+
+    it('should display delivery address dropdown with Home and Work options', () => {
+      renderWithTheme(
+        <CartReviewStep
+          cartItems={mockCartItems}
+          vatCalculations={mockVatCalculations}
+          rulesLoading={false}
+          rulesMessages={[]}
+          userProfile={mockUserProfile}
+        />
+      );
+
+      // Should find delivery address dropdown
+      const deliveryDropdown = screen.getByTestId('delivery-address-dropdown');
+      expect(deliveryDropdown).toBeInTheDocument();
+
+      // Should have dropdown with correct default value (WORK based on send_study_material_to)
+      const deliveryInput = screen.getByTestId('delivery-address-dropdown-input');
+      expect(deliveryInput).toHaveValue('WORK');
+    });
+
+    it('should display invoice address dropdown with Home and Work options', () => {
+      renderWithTheme(
+        <CartReviewStep
+          cartItems={mockCartItems}
+          vatCalculations={mockVatCalculations}
+          rulesLoading={false}
+          rulesMessages={[]}
+          userProfile={mockUserProfile}
+        />
+      );
+
+      // Should find invoice address dropdown
+      const invoiceDropdown = screen.getByTestId('invoice-address-dropdown');
+      expect(invoiceDropdown).toBeInTheDocument();
+
+      // Should have dropdown with correct default value (HOME based on send_invoices_to)
+      const invoiceInput = screen.getByTestId('invoice-address-dropdown-input');
+      expect(invoiceInput).toHaveValue('HOME');
+    });
+
+    it('should respect send_study_material_to setting for delivery address default', () => {
+      renderWithTheme(
+        <CartReviewStep
+          cartItems={mockCartItems}
+          vatCalculations={mockVatCalculations}
+          rulesLoading={false}
+          rulesMessages={[]}
+          userProfile={mockUserProfile}
+        />
+      );
+
+      // Delivery dropdown should default to WORK (from send_study_material_to)
+      const deliveryInput = screen.getByTestId('delivery-address-dropdown-input');
+      expect(deliveryInput).toHaveValue('WORK');
+    });
+
+    it('should respect send_invoices_to setting for invoice address default', () => {
+      renderWithTheme(
+        <CartReviewStep
+          cartItems={mockCartItems}
+          vatCalculations={mockVatCalculations}
+          rulesLoading={false}
+          rulesMessages={[]}
+          userProfile={mockUserProfile}
+        />
+      );
+
+      // Invoice dropdown should default to HOME (from send_invoices_to)
+      const invoiceInput = screen.getByTestId('invoice-address-dropdown-input');
+      expect(invoiceInput).toHaveValue('HOME');
+    });
+
+    it('should auto-populate address fields when dropdown selection changes', async () => {
+      const user = userEvent.setup();
+
+      renderWithTheme(
+        <CartReviewStep
+          cartItems={mockCartItems}
+          vatCalculations={mockVatCalculations}
+          rulesLoading={false}
+          rulesMessages={[]}
+          userProfile={mockUserProfile}
+        />
+      );
+
+      // Initially should show work address (456 Office St)
+      expect(screen.getByText(/456 Office St/)).toBeInTheDocument();
+
+      // Click on the delivery dropdown to open it
+      const deliveryDropdown = screen.getByTestId('delivery-address-dropdown');
+      await user.click(deliveryDropdown);
+
+      // Select Home option
+      const homeOption = screen.getByText('Home');
+      await user.click(homeOption);
+
+      // Should display home address details in the formatted display
+      await waitFor(() => {
+        expect(screen.getByText(/123 Main St/)).toBeInTheDocument();
+        expect(screen.getByText(/SW1A 1AA/)).toBeInTheDocument();
+      });
+    });
+
+    it('should display address using DynamicAddressForm component for consistent formatting', () => {
+      renderWithTheme(
+        <CartReviewStep
+          cartItems={mockCartItems}
+          vatCalculations={mockVatCalculations}
+          rulesLoading={false}
+          rulesMessages={[]}
+          userProfile={mockUserProfile}
+        />
+      );
+
+      // Should find DynamicAddressForm components within address panels
+      const deliveryAddressDisplay = screen.getByTestId('delivery-address-display');
+      expect(deliveryAddressDisplay).toBeInTheDocument();
+
+      const invoiceAddressDisplay = screen.getByTestId('invoice-address-display');
+      expect(invoiceAddressDisplay).toBeInTheDocument();
+    });
+
+    it('should have address fields initially read-only (non-editable)', () => {
+      renderWithTheme(
+        <CartReviewStep
+          cartItems={mockCartItems}
+          vatCalculations={mockVatCalculations}
+          rulesLoading={false}
+          rulesMessages={[]}
+          userProfile={mockUserProfile}
+        />
+      );
+
+      // Address display should be read-only
+      const deliveryAddressDisplay = screen.getByTestId('delivery-address-display');
+      expect(deliveryAddressDisplay).not.toHaveClass('editable');
+
+      const invoiceAddressDisplay = screen.getByTestId('invoice-address-display');
+      expect(invoiceAddressDisplay).not.toHaveClass('editable');
+    });
+
+    it('should handle missing profile data gracefully', () => {
+      renderWithTheme(
+        <CartReviewStep
+          cartItems={mockCartItems}
+          vatCalculations={mockVatCalculations}
+          rulesLoading={false}
+          rulesMessages={[]}
+          userProfile={null}
+        />
+      );
+
+      // Should still render address panels with placeholder content
+      expect(screen.getByTestId('delivery-address-panel')).toBeInTheDocument();
+      expect(screen.getByTestId('invoice-address-panel')).toBeInTheDocument();
+    });
+
+    it('should handle missing address data gracefully', () => {
+      const profileWithoutAddresses = {
+        ...mockUserProfile,
+        home_address: {},
+        work_address: {}
+      };
+
+      renderWithTheme(
+        <CartReviewStep
+          cartItems={mockCartItems}
+          vatCalculations={mockVatCalculations}
+          rulesLoading={false}
+          rulesMessages={[]}
+          userProfile={profileWithoutAddresses}
+        />
+      );
+
+      // Should render dropdowns even without address data
+      expect(screen.getByTestId('delivery-address-dropdown')).toBeInTheDocument();
+      expect(screen.getByTestId('invoice-address-dropdown')).toBeInTheDocument();
     });
   });
 });
