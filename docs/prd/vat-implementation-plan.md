@@ -1,100 +1,138 @@
 # VAT Calculation System - Detailed Implementation Plan
 
-**Project**: Epic 2 - Dynamic VAT Calculation System
+**Project**: Epic 3 - Dynamic VAT Calculation System
 **Created**: 2025-09-23
-**Duration**: 9 weeks (45 working days)
+**Duration**: 10 weeks (50 working days) - includes legacy code removal
 **Approach**: Test-Driven Development with incremental rollout
 
-## 📋 **Phase 1: Foundation (Weeks 1-2)**
+## 📋 **Phase 0: Legacy Code Removal (Week 1)**
 
-### **Week 1: VAT Rules Infrastructure**
+### **Pre-Implementation: Complete Legacy VAT Code Removal**
+**Approach**: Clean slate implementation - remove all existing VAT calculation logic before building new system.
 
-#### **Day 1-2: Database Schema and Models**
+**Tasks**:
+- [ ] **T0.1**: Remove Backend Legacy VAT Code
+  - Remove VAT calculation methods from cart/models.py
+  - Remove VAT logic from orders/models.py and products/models.py
+  - Delete legacy VAT utility files and configuration
+- [ ] **T0.2**: Remove Frontend Legacy VAT Code
+  - Remove VAT calculation components and hooks
+  - Delete legacy VAT utility functions and constants
+  - Clean up VAT state management from context/reducers
+- [ ] **T0.3**: Database Schema Cleanup
+  - Remove legacy VAT fields from database tables
+  - Create migration for schema cleanup
+  - Validate database integrity after cleanup
+
+**Acceptance Criteria**:
+- [ ] Zero legacy VAT references remain in codebase
+- [ ] Application starts and runs without VAT calculations
+- [ ] Cart and checkout flow works (without VAT display)
+- [ ] Database schema cleaned of legacy VAT fields
+
+**Documentation**: See `docs/prd/epic-3-legacy-vat-removal-plan.md`
+
+## 📋 **Phase 1: Foundation (Week 2)**
+
+### **Week 2: VAT Rules Infrastructure**
+
+#### **Day 1-2: Checkout Entry Points and Context Building**
 **TDD Approach**: Write failing tests first, then implement
 ```python
-# Test: test_vat_product_classification.py
-def test_product_classification_digital_vs_physical():
-    """Test product classification correctly identifies digital products"""
+# Test: test_checkout_vat_entry_points.py
+def test_checkout_start_vat_calculation():
+    """Test checkout_start entry point triggers calculate_vat rule"""
     # RED: Write failing test
-    product = Product.objects.create(code="CM/CC/001")
-    assert product.is_digital == True  # Fails initially
+    user = create_user_with_address(send_material_to="GB")
+    cart = create_cart_with_products(user)
 
-    # GREEN: Implement minimal solution
-    # Add is_digital field and classification logic
+    result = rules_engine.execute("checkout_start", build_vat_context(user, cart))
+    assert result["vat_calculations"]["total_vat"] > 0  # Fails initially
 
-    # REFACTOR: Optimize classification algorithm
+    # GREEN: Implement checkout entry points and calculate_vat rule
+    # REFACTOR: Optimize context building and rule execution
 ```
 
 **Tasks**:
-- [ ] **T1.1**: Create VAT-related database migrations
-  - Add `vat_category` and `is_digital` fields to Products
-  - Create `VATCalculationLog` model for audit trail
-  - Add VAT-related fields to Cart and CartItems
-- [ ] **T1.2**: Implement Product Classification Service
+- [ ] **T1.1**: Configure Checkout VAT Entry Points
+  - Setup `checkout_start` entry point in rules engine
+  - Setup `checkout_payment` entry point in rules engine
+  - Configure both to call `calculate_vat` rule
+- [ ] **T1.2**: Implement VAT Context Building
+  - Build context with user address country logic
+  - Use `acted_user_profile_address.country` where `country = acted_user_profile.send_study_material_to`
+  - Include cart products and discount information
+- [ ] **T1.3**: Create Product Classification Service
   - Write tests for digital/physical product detection
-  - Implement product code pattern matching
+  - Implement product code pattern matching for VAT categories
   - Create VAT category assignment logic
-- [ ] **T1.3**: Setup VAT Rules Engine Entry Points
-  - Configure `checkout_vat_calculation` entry point
-  - Setup `cart_item_update` entry point
-  - Test rule execution framework
 
 **Acceptance Criteria**:
-- [ ] All VAT-related database schemas created and migrated
+- [ ] `checkout_start` and `checkout_payment` entry points configured
+- [ ] `calculate_vat` rule executes from both entry points
+- [ ] VAT context includes user address country and cart products
 - [ ] Product classification correctly identifies 100% of test products
-- [ ] VAT rules engine entry points respond within 50ms
-- [ ] 100% test coverage for new VAT infrastructure
+- [ ] Entry points respond within 50ms per execution
 
 **Test Coverage**:
 ```bash
 # Backend tests
+python manage.py test apps.rules_engine.tests.test_checkout_entry_points --coverage
+python manage.py test apps.vat.tests.test_context_building --coverage
 python manage.py test apps.products.tests.test_vat_classification --coverage
-python manage.py test apps.rules_engine.tests.test_vat_entry_points --coverage
+
+# Frontend integration tests
+npm test -- --testPathPattern=checkout.*vat --coverage
 
 # Minimum 95% coverage required for Phase 1
 ```
 
 ### **Week 2: Basic VAT Rule Structure**
 
-#### **Day 3-5: VAT Context Building and Validation**
-**TDD Approach**: Test context data structure and validation
+#### **Day 3-5: Calculate VAT Rule Implementation**
+**TDD Approach**: Test calculate_vat rule execution and sub-rules
 ```python
-# Test: test_vat_context_builder.py
-def test_vat_context_includes_all_required_fields():
-    """Test VAT context contains user region, cart items, settings"""
-    # RED: Write test for complete context structure
-    context = VATContextBuilder.build(user=user, cart=cart)
-    assert context['user']['region'] in ['UK', 'IE', 'EC', 'SA', 'ROW']
+# Test: test_calculate_vat_rule.py
+def test_calculate_vat_rule_execution():
+    """Test calculate_vat rule executes all sub-rules correctly"""
+    # RED: Write test for calculate_vat rule
+    user = create_user_with_address(send_material_to="GB", address_country="GB")
+    cart = create_cart_with_digital_products(user)
+
+    context = build_vat_context(user, cart)
+    result = rules_engine.execute_rule("calculate_vat", context)
+    assert result["vat_calculations"]["items"][0]["vat_amount"] >= 0
     # Initially fails
 
-    # GREEN: Implement context builder
-    # REFACTOR: Optimize context building performance
+    # GREEN: Implement calculate_vat rule and sub-rules
+    # REFACTOR: Optimize rule execution performance
 ```
 
 **Tasks**:
-- [ ] **T2.1**: Implement VAT Context Builder
-  - Write tests for context data structure
-  - Build context from user profile and cart data
-  - Validate context against VAT rules schema
-- [ ] **T2.2**: Create Regional Classification Service
-  - Test region detection from user country
-  - Implement special region handling (SA, CH, GG)
-  - Create ROW fallback logic
-- [ ] **T2.3**: Basic VAT Rule Templates
-  - Create template rules for major scenarios
-  - Test rule priority and execution order
-  - Implement shadow mode for rule testing
+- [ ] **T2.1**: Implement Calculate VAT Master Rule
+  - Create `calculate_vat` rule that orchestrates all VAT calculations
+  - Configure rule to be called from `checkout_start` and `checkout_payment`
+  - Test rule execution with various context scenarios
+- [ ] **T2.2**: Create VAT Sub-Rules
+  - Implement `determine_vat_region` sub-rule for country mapping
+  - Create `apply_regional_vat_rules` for UK/IE/EC vs ROW logic
+  - Add `row_digital_zero_vat` rule for ROW digital products
+- [ ] **T2.3**: Address Country Resolution Logic
+  - Implement logic to match `acted_user_profile_address.country` with `send_study_material_to`
+  - Create fallback mechanisms for address mismatches
+  - Test edge cases for missing or multiple addresses
 
 **Acceptance Criteria**:
-- [ ] VAT context builder generates valid context for all user types
-- [ ] Regional classification correctly maps all countries
-- [ ] Basic VAT rules execute without errors in shadow mode
-- [ ] Context validation prevents invalid rule execution
+- [ ] `calculate_vat` rule successfully executes from both entry points
+- [ ] Address country resolution works for all user profile scenarios
+- [ ] VAT sub-rules execute in correct sequence and produce accurate results
+- [ ] Regional classification correctly maps all countries to VAT regions
 
 **Test Scenarios**:
-1. UK user with digital products → Context includes region="UK", is_digital=true
-2. ROW user with mixed cart → Context includes appropriate product flags
-3. SA user with special products → Context includes SA-specific product flags
+1. **Checkout Start**: User begins checkout → `checkout_start` entry point → `calculate_vat` rule executes
+2. **Checkout Payment**: User selects payment method → `checkout_payment` entry point → `calculate_vat` rule executes
+3. **Address Resolution**: User has `send_study_material_to="GB"` and matching address → country="GB", region="UK"
+4. **Address Mismatch**: User has `send_study_material_to="GB"` but no matching address → fallback logic applies
 
 ---
 
@@ -451,6 +489,12 @@ python manage.py test performance.test_vat_large_carts
 
 ## 📊 **Acceptance Criteria Summary**
 
+### **Phase 0 Success Criteria**
+- [ ] Complete removal of legacy VAT calculation code
+- [ ] Application functions without VAT calculations
+- [ ] Database schema cleaned of legacy VAT fields
+- [ ] Codebase ready for clean rules engine implementation
+
 ### **Phase 1 Success Criteria**
 - [ ] VAT infrastructure supports all required scenarios
 - [ ] Product classification accuracy: 100%
@@ -458,22 +502,22 @@ python manage.py test performance.test_vat_large_carts
 - [ ] Test coverage: >95% for new VAT code
 
 ### **Phase 2 Success Criteria**
-- [ ] Legacy VAT calculation compatibility: 100%
-- [ ] Regional VAT rule accuracy: 100%
+- [ ] Regional VAT rule accuracy: 100% vs legacy business rules
 - [ ] Product-specific VAT rule coverage: 100%
 - [ ] VAT calculation performance: <50ms per cart
+- [ ] All legacy VAT scenarios reimplemented via rules engine
 
 ### **Phase 3 Success Criteria**
 - [ ] Complex pricing scenario support: 100%
 - [ ] Performance under load: <50ms @ 100 concurrent users
-- [ ] Shadow mode validation: 100% accuracy
 - [ ] Edge case coverage: 100% of legacy scenarios
+- [ ] Rules engine VAT calculations complete
 
 ### **Phase 4 Success Criteria**
 - [ ] Admin interface usability: Finance team can manage rules
 - [ ] VAT compliance reporting: All required reports available
 - [ ] Production monitoring: 99.9% uptime for VAT calculations
-- [ ] Rollback capability: <5 minute recovery time
+- [ ] Complete replacement of legacy VAT system
 
 ---
 
