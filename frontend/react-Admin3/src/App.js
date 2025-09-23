@@ -50,6 +50,7 @@ import ContentParsingDemo from "./components/Test/ContentParsingDemo";
 import ContextBuildingDemo from "./components/Test/ContextBuildingDemo";
 import ProcessingPipelineDemo from "./components/Test/ProcessingPipelineDemo";
 import RulesEngineUtilitiesDemo from "./components/Test/RulesEngineUtilitiesDemo";
+import TestAddressPanel from "./pages/TestAddressPanel";
 import "./App.css";
 
 const system = createSystem(defaultConfig);
@@ -106,6 +107,7 @@ function App() {
 													/>
 													<Route path="/home" element={<Home />} />
 													<Route path="/login" element={<Login />} />
+													<Route path="/test-address" element={<TestAddressPanel />} />
 													<Route
 														path="/profile"
 														element={<UserProfile />}

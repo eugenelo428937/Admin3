@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Alert } from 'react-bootstrap';
 import { useCart } from '../../contexts/CartContext';
+import { useAuth } from '../../hooks/useAuth';
 import httpService from '../../services/httpService';
 import config from "../../config";
 import rulesEngineService from '../../services/rulesEngineService';
 import RulesEngineModal from '../Common/RulesEngineModal';
+import userService from '../../services/userService';
 import './CheckoutSteps/CheckoutSteps.css';
 
 // Import step components
@@ -16,12 +18,15 @@ import CartSummaryPanel from './CheckoutSteps/CartSummaryPanel';
 
 const CheckoutSteps = ({ onComplete }) => {
   const { cartItems, cartData } = useCart();
+  const { isAuthenticated } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [vatCalculations, setVatCalculations] = useState(null);
   const [vatLoading, setVatLoading] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   // General terms & conditions state
   const [generalTermsAccepted, setGeneralTermsAccepted] = useState(false);
@@ -57,7 +62,32 @@ const CheckoutSteps = ({ onComplete }) => {
     setIsDevelopment(process.env.NODE_ENV === 'development' || config.API_BASE_URL?.includes('localhost'));
   }, []);
 
-  // Execute checkout_start rules only on step 1 when component mounts or when returning to step 1
+  // Fetch user profile function (extracted for reuse)
+  const fetchUserProfile = async () => {
+    if (isAuthenticated) {
+      setProfileLoading(true);
+      try {
+        const result = await userService.getUserProfile();
+        if (result.status === "success") {
+          console.log('User profile fetched for checkout:', result.data);
+          setUserProfile(result.data);
+        } else {
+          console.error('Failed to fetch user profile:', result.message);
+        }
+      } catch (err) {
+        console.error('Error fetching user profile:', err);
+      } finally {
+        setProfileLoading(false);
+      }
+    }
+  };
+
+  // Fetch user profile if authenticated
+  useEffect(() => {
+    fetchUserProfile();
+  }, [isAuthenticated]);
+
+  // Execute checkout_start rules when component mounts (for step 1)
   useEffect(() => {
     const executeRules = async () => {
       // Only execute checkout_start rules on step 1
@@ -273,6 +303,8 @@ const CheckoutSteps = ({ onComplete }) => {
             rulesLoading={rulesLoading}
             rulesMessages={rulesMessages}
             vatCalculations={vatCalculations}
+            userProfile={userProfile}
+            onAddressUpdate={fetchUserProfile}
           />
         );
 
