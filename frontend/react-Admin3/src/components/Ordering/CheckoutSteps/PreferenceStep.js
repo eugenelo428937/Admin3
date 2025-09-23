@@ -37,7 +37,7 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
 
       console.log('🔍 [PreferenceStep] Fetching preferences with context:', context);
 
-      const response = await rulesEngineService.executeRules('checkout_preference', context);
+      const response = await rulesEngineService.executeRules(rulesEngineService.ENTRY_POINTS.CHECKOUT_PREFERENCE, context);
 
       console.log('📋 [PreferenceStep] Rules engine response:', response);
 

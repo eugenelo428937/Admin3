@@ -4,6 +4,7 @@ import httpService from './httpService';
 const ENTRY_POINTS = {
     CHECKOUT_START: 'checkout_start',
     CHECKOUT_TERMS: 'checkout_terms',
+    CHECKOUT_PREFERENCE: 'checkout_preference',
     CHECKOUT_PAYMENT: 'checkout_payment',
     PRODUCT_CARD_MOUNT: 'product_card_mount',
     PRODUCT_LIST_MOUNT: 'product_list_mount',
