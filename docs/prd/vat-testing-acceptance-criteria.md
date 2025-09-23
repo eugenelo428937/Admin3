@@ -1,6 +1,6 @@
 # VAT Calculation System - Testing & Acceptance Criteria
 
-**Project**: Epic 2 - Dynamic VAT Calculation System
+**Project**: Epic 3 - Dynamic VAT Calculation System
 **Created**: 2025-09-23
 **Testing Approach**: Test-Driven Development (TDD) with comprehensive scenario coverage
 
@@ -22,7 +22,7 @@
 
 ## 📋 **Phase 1: Foundation Testing (Weeks 1-2)**
 
-### **Story 2.1: VAT Rules Engine Foundation**
+### **Story 3.1: VAT Rules Engine Foundation**
 
 #### **Unit Testing Requirements**
 ```python
@@ -112,7 +112,7 @@ class TestVATEntryPoints:
 
 ## 📋 **Phase 2: Core VAT Logic Testing (Weeks 3-5)**
 
-### **Story 2.2: Regional VAT Rules Implementation**
+### **Story 3.2: Regional VAT Rules Implementation**
 
 #### **Critical Test Scenarios**
 ```python
@@ -245,7 +245,7 @@ class TestVATPerformance:
 
 ## 📋 **Phase 3: Advanced Scenarios Testing (Weeks 6-7)**
 
-### **Story 2.4: Pricing Scenario VAT Calculations**
+### **Story 3.4: Pricing Scenario VAT Calculations**
 
 #### **Comprehensive Pricing Tests**
 ```python
@@ -335,7 +335,7 @@ class TestPricingScenarioVAT:
 
 ## 📋 **Phase 4: Administration & Compliance Testing (Weeks 8-9)**
 
-### **Story 2.5: VAT Administration and Configuration**
+### **Story 3.5: VAT Administration and Configuration**
 
 #### **Admin Interface Testing**
 ```python
@@ -411,7 +411,7 @@ class TestVATAdminInterface:
         assert result["status"] == "success"
 ```
 
-### **Story 2.6: VAT Reporting and Compliance**
+### **Story 3.6: VAT Reporting and Compliance**
 
 #### **Audit Trail Testing**
 ```python
