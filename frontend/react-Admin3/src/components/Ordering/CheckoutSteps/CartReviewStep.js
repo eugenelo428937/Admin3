@@ -87,6 +87,20 @@ const CartReviewStep = ({
               <span>VAT (20%):</span>
               <span>£{vatCalculations.totals.total_vat.toFixed(2)}</span>
             </div>
+            {/* Display fees if present */}
+            {vatCalculations.totals.total_fees > 0 && (
+              <>
+                <hr />
+                {vatCalculations.fees?.map((fee, index) => (
+                  <div key={index} className="d-flex justify-content-between">
+                    <span className="text-muted">
+                      {fee.description || 'Additional Fee'}:
+                    </span>
+                    <span>£{parseFloat(fee.amount).toFixed(2)}</span>
+                  </div>
+                ))}
+              </>
+            )}
             <hr />
             <div className="d-flex justify-content-between">
               <strong>Total:</strong>

@@ -90,6 +90,19 @@ const CartSummaryPanel = ({
               <small>VAT (20%):</small>
               <small>£{vatCalculations.totals.total_vat.toFixed(2)}</small>
             </div>
+            {/* Display fees if present */}
+            {vatCalculations.totals.total_fees > 0 && (
+              <>
+                {vatCalculations.fees?.map((fee, index) => (
+                  <div key={index} className="d-flex justify-content-between">
+                    <small className="text-muted">
+                      {fee.description || 'Additional Fee'}:
+                    </small>
+                    <small>£{parseFloat(fee.amount).toFixed(2)}</small>
+                  </div>
+                ))}
+              </>
+            )}
             <hr className="my-2" />
             <div className="d-flex justify-content-between">
               <strong>Total:</strong>
