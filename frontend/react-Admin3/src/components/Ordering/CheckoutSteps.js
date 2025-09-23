@@ -57,9 +57,14 @@ const CheckoutSteps = ({ onComplete }) => {
     setIsDevelopment(process.env.NODE_ENV === 'development' || config.API_BASE_URL?.includes('localhost'));
   }, []);
 
-  // Execute checkout_start rules when component mounts (for step 1)
+  // Execute checkout_start rules only on step 1 when component mounts or when returning to step 1
   useEffect(() => {
     const executeRules = async () => {
+      // Only execute checkout_start rules on step 1
+      if (currentStep !== 1) {
+        return;
+      }
+
       if (!cartData || cartItems.length === 0) {
         setRulesMessages([]);
         return;
@@ -85,7 +90,7 @@ const CheckoutSteps = ({ onComplete }) => {
           }
         };
 
-        console.log('🔍 [CheckoutSteps] Sending context to rules engine:', JSON.stringify(context, null, 2));
+        console.log('🔍 [CheckoutSteps] Executing checkout_start rules for step 1, context:', JSON.stringify(context, null, 2));
 
         const result = await rulesEngineService.executeRules(rulesEngineService.ENTRY_POINTS.CHECKOUT_START, context);
 
@@ -134,29 +139,42 @@ const CheckoutSteps = ({ onComplete }) => {
     };
 
     executeRules();
-  }, [cartItems, cartData]);
+  }, [currentStep, cartItems, cartData]); // Added currentStep to dependencies
 
-  // Calculate VAT when component mounts
+  // Calculate VAT when component mounts or cart changes
   useEffect(() => {
     const calculateVAT = async () => {
       if (cartItems.length === 0) return;
 
       setVatLoading(true);
       try {
+        // Calculate subtotal from items
         const subtotal = cartItems.reduce((total, item) =>
           total + (parseFloat(item.actual_price) * item.quantity), 0
         );
-        const vatRate = 0.20; // 20% VAT
+
+        // Calculate VAT on subtotal (20% VAT)
+        const vatRate = 0.20;
         const totalVat = subtotal * vatRate;
-        const totalGross = subtotal + totalVat;
+
+        // Calculate fees (VAT exempt) from cartData
+        const totalFees = cartData?.fees ?
+          cartData.fees.reduce((total, fee) =>
+            total + parseFloat(fee.amount || 0), 0
+          ) : 0;
+
+        // Calculate total: subtotal + VAT + fees
+        const totalGross = subtotal + totalVat + totalFees;
 
         const result = {
           success: true,
           totals: {
             subtotal: subtotal,
             total_vat: totalVat,
+            total_fees: totalFees,
             total_gross: totalGross
           },
+          fees: cartData?.fees || [],
           user_country: 'UK',
           vat_calculations: []
         };
@@ -171,7 +189,7 @@ const CheckoutSteps = ({ onComplete }) => {
     };
 
     calculateVAT();
-  }, [cartItems]);
+  }, [cartItems, cartData]);
 
   const steps = [
     { title: 'Cart Review', description: 'Review your items' },

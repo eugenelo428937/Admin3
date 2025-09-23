@@ -62,7 +62,7 @@ const PaymentStep = ({
 
         console.log('💳 [PaymentStep] Executing checkout_payment rules with context:', context);
 
-        const result = await rulesEngineService.executeRules('checkout_payment', context);
+        const result = await rulesEngineService.executeRules(rulesEngineService.ENTRY_POINTS.CHECKOUT_PAYMENT, context);
 
         console.log('💳 [PaymentStep] Rules engine result:', result);
 
@@ -252,7 +252,7 @@ const PaymentStep = ({
         open={!!bookingFeeNotification}
         autoHideDuration={5000}
         onClose={() => setBookingFeeNotification(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
         <MuiAlert
           onClose={() => setBookingFeeNotification(null)}
