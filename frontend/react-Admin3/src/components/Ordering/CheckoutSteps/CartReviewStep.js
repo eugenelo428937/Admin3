@@ -19,12 +19,15 @@ import {
 } from '@mui/material';
 import { Info, LocationOn, Receipt } from '@mui/icons-material';
 import { generateProductCode } from '../../../utils/productCodeGenerator';
+import AddressSelectionPanel from '../../Address/AddressSelectionPanel';
 
 const CartReviewStep = ({
   cartItems,
   rulesLoading,
   rulesMessages,
-  vatCalculations
+  vatCalculations,
+  userProfile = null,
+  onAddressUpdate // Callback for when address is updated
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -133,15 +136,17 @@ const CartReviewStep = ({
                   data-testid="delivery-address-panel"
                 />
                 <CardContent>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     Select your delivery address from your profile settings.
                   </Typography>
-                  {/* Placeholder for address selection dropdown */}
-                  <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                    <Typography variant="body2" color="text.secondary" align="center">
-                      Address selection will be implemented in Story 2.2
-                    </Typography>
-                  </Box>
+                  <AddressSelectionPanel
+                    addressType="delivery"
+                    userProfile={userProfile}
+                    onAddressChange={(addressInfo) => {
+                      console.log('Delivery address changed:', addressInfo);
+                    }}
+                    onAddressUpdate={onAddressUpdate}
+                  />
                 </CardContent>
               </Card>
             </Grid>
@@ -159,15 +164,17 @@ const CartReviewStep = ({
                   data-testid="invoice-address-panel"
                 />
                 <CardContent>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     Select your invoice address from your profile settings.
                   </Typography>
-                  {/* Placeholder for address selection dropdown */}
-                  <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                    <Typography variant="body2" color="text.secondary" align="center">
-                      Address selection will be implemented in Story 2.2
-                    </Typography>
-                  </Box>
+                  <AddressSelectionPanel
+                    addressType="invoice"
+                    userProfile={userProfile}
+                    onAddressChange={(addressInfo) => {
+                      console.log('Invoice address changed:', addressInfo);
+                    }}
+                    onAddressUpdate={onAddressUpdate}
+                  />
                 </CardContent>
               </Card>
             </Grid>
