@@ -3,7 +3,6 @@ import { Card, Form, Alert } from 'react-bootstrap';
 import { rulesEngineHelpers, parseMessageContent } from '../../../utils/rulesEngineUtils';
 import rulesEngineService from '../../../services/rulesEngineService';
 import RulesEngineAcknowledgmentModal from '../../Common/RulesEngineAcknowledgmentModal';
-import acknowledgmentService from '../../../services/acknowledgmentService';
 
 const TermsConditionsStep = ({
   cartData,
@@ -109,7 +108,7 @@ const TermsConditionsStep = ({
     if (acknowledged) {
       try {
         // Submit acknowledgment to the server
-        await acknowledgmentService.submitAcknowledgment({
+        await rulesEngineService.acknowledgeRule({
           ackKey: ackKey || 'terms_conditions_v1', // Use the specific ack key for this rule
           message_id: messageId,
           acknowledged: true,
@@ -231,7 +230,7 @@ const TermsConditionsStep = ({
                   // Submit acknowledgment to backend if checked and we have terms content from rules engine
                   if (isChecked && termsContent) {
                     try {
-                      await acknowledgmentService.submitAcknowledgment({
+                      await rulesEngineService.acknowledgeRule({
                         ackKey: 'terms_conditions_v1', // Required acknowledgment key
                         message_id: 11, // Template ID for terms & conditions
                         acknowledged: true,

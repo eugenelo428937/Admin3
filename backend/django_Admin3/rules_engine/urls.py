@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     RulesEngineViewSet, MessageTemplateViewSet,
     ActedRuleViewSet,
-    rules_by_entrypoint, rules_create, rules_acknowledge, rules_preferences
+    rules_by_entrypoint, rules_create, rules_acknowledge, rules_preferences,
+    validate_comprehensive_checkout
 )
 
 router = DefaultRouter()
@@ -20,5 +21,6 @@ urlpatterns = [
     path('create/', rules_create, name='rules-create'),
     path('acknowledge/', rules_acknowledge, name='rules-acknowledge'),
     path('preferences/', rules_preferences, name='rules-preferences'),  # Stage 10 requirement
+    path('validate-comprehensive-checkout/', validate_comprehensive_checkout, name='validate-comprehensive-checkout'),
     path('<str:rule_id>/', ActedRuleViewSet.as_view({'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'}), name='rules-detail'),
-] 
+]
