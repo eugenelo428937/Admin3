@@ -7,6 +7,7 @@ import config from "../../config";
 import rulesEngineService from '../../services/rulesEngineService';
 import RulesEngineModal from '../Common/RulesEngineModal';
 import userService from '../../services/userService';
+import useCheckoutValidation from '../../hooks/useCheckoutValidation';
 import './CheckoutSteps/CheckoutSteps.css';
 
 // Import step components
@@ -19,6 +20,7 @@ import CartSummaryPanel from './CheckoutSteps/CartSummaryPanel';
 const CheckoutSteps = ({ onComplete }) => {
   const { cartItems, cartData } = useCart();
   const { isAuthenticated } = useAuth();
+  const validation = useCheckoutValidation();
   const [currentStep, setCurrentStep] = useState(1);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -54,6 +56,10 @@ const CheckoutSteps = ({ onComplete }) => {
   const [cvv, setCvv] = useState('');
   const [isDevelopment, setIsDevelopment] = useState(false);
 
+  // Acknowledgment state for blocking validation
+  const [acknowledgmentStates, setAcknowledgmentStates] = useState({});
+  const [requiredAcknowledgments, setRequiredAcknowledgments] = useState([]);
+
   // Cart summary panel state
   const [isCartSummaryCollapsed, setIsCartSummaryCollapsed] = useState(true);
 
@@ -87,9 +93,16 @@ const CheckoutSteps = ({ onComplete }) => {
     fetchUserProfile();
   }, [isAuthenticated]);
 
-  // Execute checkout_start rules when component mounts (for step 1)
+  // Execute checkout_start rules only when on step 1 (cart review)
+  // IMPORTANT: This prevents duplicate API calls when user is on other steps (like PaymentStep)
   useEffect(() => {
     const executeRules = async () => {
+      // Only execute checkout_start rules when on step 1 to avoid conflicts with PaymentStep
+      if (currentStep !== 1) {
+        setRulesMessages([]);
+        return;
+      }
+
       if (!cartData || cartItems.length === 0) {
         setRulesMessages([]);
         return;
@@ -164,7 +177,7 @@ const CheckoutSteps = ({ onComplete }) => {
     };
 
     executeRules();
-  }, [cartItems, cartData]);
+  }, [cartItems, cartData, currentStep]);
 
   // Calculate VAT when component mounts
   useEffect(() => {
@@ -235,6 +248,23 @@ const CheckoutSteps = ({ onComplete }) => {
       setError('Please accept the Terms & Conditions.');
       return;
     }
+
+    // COMPREHENSIVE VALIDATION: Validate ALL acknowledgments from ALL entry points
+    console.log('🔍 [CheckoutSteps] Starting comprehensive checkout validation...');
+    const validationResult = await validation.validateCheckout(cartData, cartItems, paymentMethod, userProfile);
+
+    if (validationResult.blocked) {
+      console.log('❌ [CheckoutSteps] Checkout blocked:', validationResult.validationMessage);
+      // Show user exactly what acknowledgments are missing
+      if (validationResult.validationMessage) {
+        setError(validationResult.validationMessage);
+      } else {
+        setError('Please complete all required acknowledgments before proceeding.');
+      }
+      return;
+    }
+
+    console.log('✅ [CheckoutSteps] All acknowledgments validated, proceeding with checkout...');
 
     if (paymentMethod === 'card') {
       if (!cardNumber || !cardholderName || !expiryMonth || !expiryYear || !cvv) {
@@ -326,6 +356,11 @@ const CheckoutSteps = ({ onComplete }) => {
             employerCode={employerCode}
             setEmployerCode={setEmployerCode}
             isDevelopment={isDevelopment}
+            // Pass acknowledgment state for blocking validation
+            acknowledgmentStates={acknowledgmentStates}
+            setAcknowledgmentStates={setAcknowledgmentStates}
+            requiredAcknowledgments={requiredAcknowledgments}
+            setRequiredAcknowledgments={setRequiredAcknowledgments}
           />
         );
 
@@ -339,6 +374,9 @@ const CheckoutSteps = ({ onComplete }) => {
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
       {vatLoading && <Alert variant="info">Calculating VAT...</Alert>}
+      {validation.validationMessage && !error && (
+        <Alert variant="warning">{validation.validationMessage}</Alert>
+      )}
 
       {/* Step Progress */}
       <div className="d-flex justify-content-between mb-4">
@@ -410,9 +448,13 @@ const CheckoutSteps = ({ onComplete }) => {
               <Button
                 variant="success"
                 onClick={handleComplete}
-                disabled={loading || !generalTermsAccepted}
+                disabled={
+                  loading ||
+                  !generalTermsAccepted ||
+                  validation.isValidating
+                }
               >
-                {loading ? 'Processing...' : 'Complete Order'}
+                {loading ? 'Processing...' : validation.isValidating ? 'Validating...' : 'Complete Order'}
               </Button>
             )}
           </div>

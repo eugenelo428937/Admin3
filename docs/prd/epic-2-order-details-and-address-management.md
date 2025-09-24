@@ -133,23 +133,24 @@ so that I can ensure accurate communication and delivery coordination.
   - `user_profile.work_phone`
   - `user.email` (required)
 
-### Story 2.5: Order User Preferences Data Model and API Integration
+### Story 2.5: Order Contact and Delivery Preference Data Models
 
 As a system administrator,
-I want order-specific address and contact details stored separately from user profiles,
-so that we maintain accurate historical records of delivery/invoice details used for each order.
+I want order-specific contact information and delivery preferences stored separately from user profiles,
+so that we maintain accurate historical records of contact details and address choices used for each order.
 
 **Acceptance Criteria**:
-1. `acted_order_user_preferences` Django model created with all required fields
-2. Foreign key relationship to Order model with CASCADE delete
-3. API endpoint accepts user preferences data during order creation
-4. Order creation transaction includes both order and preferences creation
-5. Address type selections (home/work) stored with full address details
-6. All contact information (phones, email) captured in order record
-7. Database migration script created for new table
-8. Admin interface available for viewing order preferences
-9. API validation ensures required fields (mobile_phone, email_address) present
-10. Proper indexing on order_id for performance
+1. `acted_order_user_contact` Django model created for user contact information
+2. `acted_order_delivery_preference` Django model created for delivery/invoice address preferences
+3. Both models have foreign key relationships to Order model with CASCADE delete
+4. API endpoint accepts contact and delivery preference data during order creation
+5. Order creation transaction includes order + contact + delivery preference creation
+6. Contact model stores email and all phone numbers (home, mobile, work)
+7. Delivery preference model stores address type choices (HOME/WORK) and actual addresses
+8. Database migration scripts created for both new tables
+9. Admin interface available for viewing order contact and delivery preferences
+10. API validation ensures required fields (mobile_phone, email_address) present
+11. Proper indexing on order_id for performance on both tables
 
 **Integration Verification**:
 - IV1: Existing order creation process continues to work unchanged
@@ -157,12 +158,16 @@ so that we maintain accurate historical records of delivery/invoice details used
 - IV3: No impact on existing order history or data integrity
 
 **Implementation Details**:
-- **Django Model**: `OrderUserPreferences` in `backend/django_Admin3/orders/models.py`
-- **Migration**: Database migration for new table creation with constraints
-- **API Modification**: `POST /api/orders/` accepts `user_preferences` payload
-- **Serializer**: `OrderUserPreferencesSerializer` for data validation
-- **Admin Interface**: Django admin for order preferences management
-- **Database Transaction**: Atomic creation of order + preferences
+- **Django Models**:
+  - `OrderUserContact` in `backend/django_Admin3/orders/models.py`
+  - `OrderDeliveryPreference` in `backend/django_Admin3/orders/models.py`
+- **Migration**: Database migration for both new tables with constraints
+- **API Modification**: `POST /api/orders/` accepts `user_contact` and `delivery_preference` payloads
+- **Serializers**:
+  - `OrderUserContactSerializer` for contact data validation
+  - `OrderDeliveryPreferenceSerializer` for delivery preference validation
+- **Admin Interface**: Django admin for both order contact and delivery preference management
+- **Database Transaction**: Atomic creation of order + contact + delivery preferences
 - **Validation**: Required field validation on mobile_phone and email_address
 
 ### Story 2.6: Checkout Validation and Progression Controls
@@ -182,7 +187,7 @@ so that I can complete my order without encountering errors.
 8. Clear error messaging for incomplete or invalid fields
 9. Visual indicators (colors, icons) show completion status
 10. Progress persists if user navigates back and forward in checkout
-11. Checkout data prepared for `acted_order_user_preferences` storage (Story 2.5)
+11. Checkout data prepared for `acted_order_user_contact` and `acted_order_delivery_preference` storage (Story 2.5)
 12. Validation coordinates with order creation API requirements
 
 **Integration Verification**:
@@ -200,17 +205,18 @@ so that I can complete my order without encountering errors.
   - Progress persistence across navigation
   - Integration with existing checkout stepper
 - **Order Data Storage**:
-  - `POST /api/orders/` creates order with embedded user preferences
-  - Order preferences stored in `acted_order_user_preferences` table
+  - `POST /api/orders/` creates order with embedded contact and delivery preferences
+  - Contact info stored in `acted_order_user_contact` table
+  - Address preferences stored in `acted_order_delivery_preference` table
   - Full address details and contact info captured at order time
 - **UI/UX**:
   - Disabled state styling for "Continue" button
   - Clear error messaging with specific field guidance
   - Success indicators for completed sections
 - **API Integration**:
-  - Order creation endpoint modified to accept user preferences payload
+  - Order creation endpoint modified to accept contact and delivery preference payloads
   - Validation service ensures required fields present before order creation
-  - Database transaction ensures atomicity of order + preferences creation
+  - Database transaction ensures atomicity of order + contact + delivery preference creation
 
 ---
 
@@ -236,7 +242,7 @@ so that I can complete my order without encountering errors.
 | `AddressSelectionPanel` | `DynamicAddressForm`, Profile API | Read-only address display |
 | `AddressEditModal` | `SmartAddressInput`, `DynamicAddressForm` | Modal workflow integration |
 | `CommunicationDetailsPanel` | Validation services | Profile synchronization |
-| `OrderUserPreferences` Model | Order model, Django ORM | Backend data persistence |
+| `OrderUserContact` & `OrderDeliveryPreference` Models | Order model, Django ORM | Backend data persistence |
 | Checkout Validation | All above components | Progression control + order creation |
 
 ### **🗄️ DATABASE SCHEMA REQUIREMENTS**
@@ -246,12 +252,34 @@ so that I can complete my order without encountering errors.
 - `acted_user_profile_address` - Address storage exists
 - `auth_user` - Email field exists
 
-**New Table Required**:
-- `acted_order_user_preferences` - Store order-specific address and contact details
+**New Tables Required**:
+- `acted_order_user_contact` - Store order-specific contact information
+- `acted_order_delivery_preference` - Store order-specific delivery and invoice address preferences
 
-**acted_order_user_preferences Schema**:
+**acted_order_user_contact Schema**:
 ```sql
-CREATE TABLE acted_order_user_preferences (
+CREATE TABLE acted_order_user_contact (
+    id SERIAL PRIMARY KEY,
+    order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
+
+    -- Contact Information
+    home_phone VARCHAR(20),
+    mobile_phone VARCHAR(20) NOT NULL,
+    work_phone VARCHAR(20),
+    email_address VARCHAR(254) NOT NULL,
+
+    -- Metadata
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for performance
+CREATE INDEX idx_order_user_contact_order_id ON acted_order_user_contact(order_id);
+```
+
+**acted_order_delivery_preference Schema**:
+```sql
+CREATE TABLE acted_order_delivery_preference (
     id SERIAL PRIMARY KEY,
     order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
 
@@ -273,19 +301,13 @@ CREATE TABLE acted_order_user_preferences (
     invoice_postal_code VARCHAR(20),
     invoice_country VARCHAR(100),
 
-    -- Contact Information
-    home_phone VARCHAR(20),
-    mobile_phone VARCHAR(20) NOT NULL,
-    work_phone VARCHAR(20),
-    email_address VARCHAR(254) NOT NULL,
-
     -- Metadata
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Indexes for performance
-CREATE INDEX idx_order_user_preferences_order_id ON acted_order_user_preferences(order_id);
+CREATE INDEX idx_order_delivery_preference_order_id ON acted_order_delivery_preference(order_id);
 ```
 
 ### **📱 RESPONSIVE DESIGN CONSIDERATIONS**
