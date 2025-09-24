@@ -533,6 +533,92 @@ class CartViewSet(viewsets.ViewSet):
             return Response({'detail': 'Employer code is required for invoice payments.'},
                           status=status.HTTP_400_BAD_REQUEST)
 
+        # CRITICAL FIX: Validate blocking acknowledgments before order creation
+        from rules_engine.services.rule_engine import rule_engine
+
+        # Build context for checkout_payment rules validation
+        cart_total = sum(float(item.actual_price or 0) * item.quantity for item in cart.items.all())
+
+        checkout_context = {
+            'cart': {
+                'id': cart.id,
+                'total': cart_total,
+                'has_tutorial': cart.has_tutorial,
+                'has_material': cart.has_material,
+                'has_marking': cart.has_marking,
+                'has_digital': cart.has_digital,
+                'items': [
+                    {
+                        'id': item.id,
+                        'product_id': item.product.product.id,
+                        'quantity': item.quantity,
+                        'actual_price': str(item.actual_price or 0),
+                        'metadata': item.metadata or {}
+                    }
+                    for item in cart.items.all()
+                ]
+            },
+            'payment': {
+                'method': payment_method,
+                'is_card': payment_method == 'card'
+            },
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'is_authenticated': True
+            },
+            # Include session acknowledgments to check for blocking conditions
+            'acknowledgments': {}
+        }
+
+        # Add session acknowledgments to context for validation
+        session_acknowledgments = request.session.get('user_acknowledgments', [])
+        if session_acknowledgments:
+            for ack in session_acknowledgments:
+                ack_key = ack.get('ack_key')
+                if ack_key:
+                    checkout_context['acknowledgments'][ack_key] = {
+                        'acknowledged': ack.get('acknowledged', False),
+                        'message_id': ack.get('message_id'),
+                        'timestamp': ack.get('acknowledged_timestamp'),
+                        'entry_point_location': ack.get('entry_point_location')
+                    }
+
+        logger.info(f"🔍 [Checkout Validation] Validating blocking acknowledgments for payment method '{payment_method}'")
+
+        # Execute checkout_payment rules to check for blocking conditions
+        try:
+            validation_result = rule_engine.execute('checkout_payment', checkout_context)
+
+            # Check if any rules are blocking the checkout
+            if validation_result.get('blocked'):
+                blocking_message = "Checkout cannot proceed. Please complete all required acknowledgments."
+
+                # Extract specific blocking reasons if available
+                required_acknowledgments = validation_result.get('required_acknowledgments', [])
+                if required_acknowledgments:
+                    blocking_details = [f"Required: {req.get('title', req.get('ack_key', 'Unknown'))}"
+                                      for req in required_acknowledgments]
+                    blocking_message = f"Checkout blocked. Missing required acknowledgments: {', '.join(blocking_details)}"
+
+                logger.warning(f"🚨 [Checkout Blocked] User {user.id} checkout blocked: {blocking_message}")
+
+                return Response({
+                    'detail': blocking_message,
+                    'blocked': True,
+                    'required_acknowledgments': required_acknowledgments,
+                    'blocking_rules': validation_result.get('blocking_rules', [])
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            logger.info(f"✅ [Checkout Validation] No blocking conditions found for user {user.id}")
+
+        except Exception as e:
+            logger.error(f"❌ [Checkout Validation] Failed to validate blocking acknowledgments: {str(e)}")
+            # For safety, allow checkout to proceed if validation fails (log the error)
+            logger.warning(f"⚠️  [Checkout Validation] Proceeding with checkout despite validation error for user {user.id}")
+
+        # END OF BLOCKING VALIDATION FIX
+
         # Get client information
         client_ip = self._get_client_ip(request)
         user_agent = request.META.get('HTTP_USER_AGENT', '')
@@ -650,6 +736,15 @@ class CartViewSet(viewsets.ViewSet):
                 except Exception as e:
                     logger.warning(f"Failed to save user preferences for order {order.id}: {str(e)}")
                     # Continue with checkout - preference saving failure shouldn't block checkout
+
+            # CRITICAL FIX: Always extract essential contact and delivery data for order records
+            # This runs regardless of whether user_preferences exist from rules engine
+            try:
+                self._extract_and_save_essential_order_data(order, user, user_preferences)
+                logger.info(f"Successfully extracted essential contact/delivery data for order {order.id}")
+            except Exception as e:
+                logger.warning(f"Failed to extract essential order data for order {order.id}: {str(e)}")
+                # Continue with checkout - this is logged but shouldn\'t block
 
             # Transfer session acknowledgments to order before T&C processing
             self._transfer_session_acknowledgments_to_order(request, order, cart)
@@ -968,7 +1063,12 @@ class CartViewSet(viewsets.ViewSet):
     def _transfer_session_acknowledgments_to_order(self, request, order, cart):
         """
         Transfer session-based acknowledgments to order acknowledgments table
-        FIXED: Only transfer acknowledgments for rules that actually matched in current execution
+        CRITICAL FIX: Transfer ALL session acknowledgments to separate database records.
+
+        Session acknowledgments were collected when rules matched during the user's journey.
+        During checkout, we should preserve ALL of them as separate records, not filter them out.
+        Each acknowledgment (terms & conditions, tutorial credit card, digital consent, etc.)
+        must be stored as a SEPARATE row in acted_order_user_acknowledgments table.
         """
         try:
             session_acknowledgments = request.session.get('user_acknowledgments', [])
@@ -978,40 +1078,14 @@ class CartViewSet(viewsets.ViewSet):
 
             logger.info(f"Found {len(session_acknowledgments)} session acknowledgments for order {order.id}")
 
-            # CRITICAL FIX: Get rules that actually matched in current execution
+            # CRITICAL FIX: Get rules that matched in current execution for audit purposes only
             matched_rule_ids = self._get_matched_rules_for_current_execution(order, cart)
-            logger.info(f"Rules that matched in current execution: {matched_rule_ids}")
+            logger.info(f"Rules that matched in current execution (for audit): {matched_rule_ids}")
 
-            # Filter acknowledgments to only include those for matched rules
-            valid_acknowledgments = []
-            stale_acknowledgments = []
-
-            for ack in session_acknowledgments:
-                message_id = str(ack.get('message_id', ''))
-                ack_key = ack.get('ack_key', '')
-
-                # Check if this acknowledgment corresponds to a rule that matched
-                is_valid = (
-                    message_id in matched_rule_ids or
-                    ack_key in matched_rule_ids or
-                    any(rule_id for rule_id in matched_rule_ids if str(rule_id) == message_id)
-                )
-
-                if is_valid:
-                    valid_acknowledgments.append(ack)
-                    logger.info(f"Valid acknowledgment: message_id={message_id}, ack_key={ack_key}")
-                else:
-                    stale_acknowledgments.append(ack)
-                    logger.info(f"Stale acknowledgment (rule didn't match): message_id={message_id}, ack_key={ack_key}")
-
-            if not valid_acknowledgments:
-                logger.info(f"No valid acknowledgments to transfer for order {order.id}")
-                # Clear stale acknowledgments from session
-                request.session['user_acknowledgments'] = []
-                request.session.modified = True
-                return
-
-            logger.info(f"Transferring {len(valid_acknowledgments)} valid acknowledgments (discarding {len(stale_acknowledgments)} stale ones)")
+            # FIXED: Transfer ALL session acknowledgments as separate records
+            # No filtering - each acknowledgment gets its own database row
+            valid_acknowledgments = session_acknowledgments
+            logger.info(f"Transferring ALL {len(valid_acknowledgments)} session acknowledgments as separate records")
 
             # DEBUG: Log all valid acknowledgments
             for i, ack in enumerate(valid_acknowledgments):
@@ -1047,9 +1121,9 @@ class CartViewSet(viewsets.ViewSet):
                     'ip_address': ack.get('ip_address', ''),
                     'user_agent': ack.get('user_agent', ''),
                     'validation_info': {
-                        'validated_against_current_execution': True,
-                        'matched_rule_ids': list(matched_rule_ids),
-                        'stale_acknowledgments_discarded': len(stale_acknowledgments)
+                        'transfer_mode': 'all_session_acknowledgments_preserved',
+                        'matched_rule_ids_at_transfer': list(matched_rule_ids),
+                        'no_filtering_applied': True
                     }
                 }
 
@@ -1109,12 +1183,13 @@ class CartViewSet(viewsets.ViewSet):
                         'transferred_from_session': True,
                         'session_id': request.session.session_key,
                         'transfer_timestamp': timezone.now().isoformat(),
-                        'validated_against_rules': True,
-                        'matched_rule_ids': list(matched_rule_ids),
-                        'original_session_data': session_acknowledgments,
+                        'validation_note': 'All session acknowledgments transferred as separate records',
+                        'matched_rule_ids_at_transfer': list(matched_rule_ids),
                         'entry_point': entry_point,
                         'ack_key': ack_key,
-                        'original_message_id': message_id  # Store original message_id here
+                        'original_message_id': message_id,
+                        # Store ONLY this specific acknowledgment, not all session data
+                        'original_acknowledgment': ack
                     }
                 )
 
@@ -1124,7 +1199,7 @@ class CartViewSet(viewsets.ViewSet):
             request.session['user_acknowledgments'] = []
             request.session.modified = True
 
-            logger.info(f"Successfully transferred {len(valid_acknowledgments)} valid acknowledgments to order {order.id}, discarded {len(stale_acknowledgments)} stale ones")
+            logger.info(f"Successfully transferred ALL {len(valid_acknowledgments)} session acknowledgments to order {order.id} as separate database records")
 
         except Exception as e:
             logger.error(f"Failed to transfer session acknowledgments to order {order.id}: {str(e)}")
@@ -1511,3 +1586,245 @@ class CartViewSet(viewsets.ViewSet):
             except Exception as e:
                 logger.error(f"Failed to save preference '{preference_key}': {str(e)}")
                 # Continue with other preferences
+
+        # NEW: Also extract and save contact and address data to new specialized models
+        self._extract_and_save_contact_data(order, user_preferences)
+        self._extract_and_save_delivery_preferences(order, user_preferences)
+
+    def _extract_and_save_contact_data(self, order, user_preferences):
+        """Extract contact information from user preferences and save to OrderUserContact"""
+        from .models import OrderUserContact
+
+        # Check if we have contact data in the preferences
+        contact_data = {}
+
+        # Map preference keys to contact fields
+        contact_mapping = {
+            'home_phone': 'home_phone',
+            'mobile_phone': 'mobile_phone',
+            'work_phone': 'work_phone',
+            'email_address': 'email_address',
+            'email': 'email_address'  # Alternative key
+        }
+
+        for pref_key, pref_data in user_preferences.items():
+            if pref_key in contact_mapping:
+                value = pref_data.get('value', '')
+                if value:  # Only save non-empty values
+                    contact_data[contact_mapping[pref_key]] = value
+
+        # Also check for nested contact object (from "For this order only" submissions)
+        if 'contact' in user_preferences:
+            contact_prefs = user_preferences['contact']
+            if isinstance(contact_prefs, dict):
+                for field in ['home_phone', 'mobile_phone', 'work_phone', 'email_address']:
+                    value = contact_prefs.get('value', {}).get(field) or contact_prefs.get(field)
+                    if value:
+                        contact_data[field] = value
+
+        # Create OrderUserContact record if we have any contact data
+        if contact_data:
+            try:
+                # Check if record already exists
+                existing_contact = OrderUserContact.objects.filter(order=order).first()
+                if existing_contact:
+                    # Update existing record
+                    for field, value in contact_data.items():
+                        setattr(existing_contact, field, value)
+                    existing_contact.save()
+                    logger.info(f"Updated OrderUserContact for order {order.id}")
+                else:
+                    # Create new record
+                    OrderUserContact.objects.create(order=order, **contact_data)
+                    logger.info(f"Created OrderUserContact for order {order.id} with data: {contact_data}")
+            except Exception as e:
+                logger.error(f"Failed to save OrderUserContact for order {order.id}: {str(e)}")
+
+    def _extract_and_save_delivery_preferences(self, order, user_preferences):
+        """Extract delivery/address information from user preferences and save to OrderDeliveryDetail"""
+        from .models import OrderDeliveryDetail
+
+        # Check if we have delivery/address data in the preferences
+        delivery_data = {}
+
+        # Map preference keys to delivery fields
+        delivery_mapping = {
+            'delivery_address_type': 'delivery_address_type',
+            'delivery_address_line1': 'delivery_address_line1',
+            'delivery_address_line2': 'delivery_address_line2',
+            'delivery_city': 'delivery_city',
+            'delivery_state': 'delivery_state',
+            'delivery_postal_code': 'delivery_postal_code',
+            'delivery_country': 'delivery_country',
+            'invoice_address_type': 'invoice_address_type',
+            'invoice_address_line1': 'invoice_address_line1',
+            'invoice_address_line2': 'invoice_address_line2',
+            'invoice_city': 'invoice_city',
+            'invoice_state': 'invoice_state',
+            'invoice_postal_code': 'invoice_postal_code',
+            'invoice_country': 'invoice_country'
+        }
+
+        for pref_key, pref_data in user_preferences.items():
+            if pref_key in delivery_mapping:
+                value = pref_data.get('value', '')
+                if value:  # Only save non-empty values
+                    delivery_data[delivery_mapping[pref_key]] = value
+
+        # Also check for nested address object (from "For this order only" submissions)
+        if 'addressData' in user_preferences:
+            address_prefs = user_preferences['addressData']
+            if isinstance(address_prefs, dict):
+                # Map common address fields to delivery fields
+                address_field_mapping = {
+                    'country': 'delivery_country',
+                    'address': 'delivery_address_line1',
+                    'address_line1': 'delivery_address_line1',
+                    'address_line2': 'delivery_address_line2',
+                    'city': 'delivery_city',
+                    'state': 'delivery_state',
+                    'postal_code': 'delivery_postal_code',
+                    'postcode': 'delivery_postal_code'
+                }
+
+                address_value = address_prefs.get('value', address_prefs)
+                if isinstance(address_value, dict):
+                    for addr_field, delivery_field in address_field_mapping.items():
+                        value = address_value.get(addr_field)
+                        if value:
+                            delivery_data[delivery_field] = value
+
+                # If we have address data, set address type to 'home' by default
+                if delivery_data and 'delivery_address_type' not in delivery_data:
+                    delivery_data['delivery_address_type'] = 'home'
+
+        # Create OrderDeliveryDetail record if we have any delivery data
+        if delivery_data:
+            try:
+                # Check if record already exists
+                existing_pref = OrderDeliveryDetail.objects.filter(order=order).first()
+                if existing_pref:
+                    # Update existing record
+                    for field, value in delivery_data.items():
+                        setattr(existing_pref, field, value)
+                    existing_pref.save()
+                    logger.info(f"Updated OrderDeliveryDetail for order {order.id}")
+                else:
+                    # Create new record
+                    OrderDeliveryDetail.objects.create(order=order, **delivery_data)
+                    logger.info(f"Created OrderDeliveryDetail for order {order.id} with data: {delivery_data}")
+            except Exception as e:
+                logger.error(f"Failed to save OrderDeliveryDetail for order {order.id}: {str(e)}")
+
+    def _extract_and_save_essential_order_data(self, order, user, user_preferences=None):
+        """
+        CRITICAL FIX: Always extract essential contact and delivery data for orders
+        This method runs regardless of whether user_preferences exist from rules engine
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+
+        try:
+            # Always try to extract contact data (essential for email/phone)
+            self._extract_and_save_contact_data_fallback(order, user, user_preferences)
+        except Exception as e:
+            logger.warning(f"Failed to extract contact data for order {order.id}: {str(e)}")
+
+        try:
+            # Always try to extract delivery data (essential for address)
+            self._extract_and_save_delivery_preferences_fallback(order, user, user_preferences)
+        except Exception as e:
+            logger.warning(f"Failed to extract delivery data for order {order.id}: {str(e)}")
+
+    def _extract_and_save_contact_data_fallback(self, order, user, user_preferences=None):
+        """Extract contact data from user_preferences or fallback to user profile"""
+        from .models import OrderUserContact
+        import logging
+        logger = logging.getLogger(__name__)
+
+        contact_data = {}
+
+        # Try to get data from user_preferences first
+        if user_preferences:
+            for pref_key, pref_data in user_preferences.items():
+                value = pref_data.get('value', '') if isinstance(pref_data, dict) else pref_data
+
+                # Map preference keys to contact fields
+                if 'phone' in pref_key.lower() or 'mobile' in pref_key.lower():
+                    contact_data['mobile_phone'] = str(value)
+                elif 'email' in pref_key.lower():
+                    contact_data['email_address'] = str(value)
+
+        # Fallback to user profile data if no preferences
+        if not contact_data.get('email_address') and user:
+            contact_data['email_address'] = user.email
+
+        # Get phone from user profile if available
+        if not contact_data.get('mobile_phone') and user:
+            try:
+                if hasattr(user, 'profile') and hasattr(user.profile, 'phone'):
+                    contact_data['mobile_phone'] = str(user.profile.phone)
+                elif hasattr(user, 'phone'):
+                    contact_data['mobile_phone'] = str(user.phone)
+            except:
+                pass  # No phone data available
+
+        # Create contact record if we have any data
+        if contact_data:
+            try:
+                OrderUserContact.objects.create(order=order, **contact_data)
+                logger.info(f"Created OrderUserContact for order {order.id} with fallback data")
+            except Exception as e:
+                logger.error(f"Failed to create OrderUserContact for order {order.id}: {str(e)}")
+
+    def _extract_and_save_delivery_preferences_fallback(self, order, user, user_preferences=None):
+        """Extract delivery data from user_preferences or fallback to user profile"""
+        from .models import OrderDeliveryDetail
+        import logging
+        logger = logging.getLogger(__name__)
+
+        delivery_data = {}
+
+        # Try to get data from user_preferences first
+        if user_preferences:
+            for pref_key, pref_data in user_preferences.items():
+                value = pref_data.get('value', '') if isinstance(pref_data, dict) else pref_data
+
+                # Map preference keys to delivery fields
+                if 'address' in pref_key.lower():
+                    if 'line1' in pref_key.lower() or 'street' in pref_key.lower():
+                        delivery_data['delivery_address_line1'] = str(value)
+                    elif 'line2' in pref_key.lower():
+                        delivery_data['delivery_address_line2'] = str(value)
+                    elif 'city' in pref_key.lower():
+                        delivery_data['delivery_city'] = str(value)
+                    elif 'postcode' in pref_key.lower() or 'postal' in pref_key.lower():
+                        delivery_data['delivery_postal_code'] = str(value)
+                    elif 'country' in pref_key.lower():
+                        delivery_data['delivery_country'] = str(value)
+
+        # Fallback to user profile address data if available
+        if not delivery_data and user:
+            try:
+                if hasattr(user, 'profile'):
+                    profile = user.profile
+                    if hasattr(profile, 'address_line_1'):
+                        delivery_data['delivery_address_line1'] = str(profile.address_line_1)
+                    if hasattr(profile, 'address_line_2'):
+                        delivery_data['delivery_address_line2'] = str(profile.address_line_2)
+                    if hasattr(profile, 'city'):
+                        delivery_data['delivery_city'] = str(profile.city)
+                    if hasattr(profile, 'postcode'):
+                        delivery_data['delivery_postal_code'] = str(profile.postcode)
+                    if hasattr(profile, 'country'):
+                        delivery_data['delivery_country'] = str(profile.country)
+            except:
+                pass  # No profile address data available
+
+        # Create delivery record if we have any data
+        if delivery_data:
+            try:
+                OrderDeliveryDetail.objects.create(order=order, **delivery_data)
+                logger.info(f"Created OrderDeliveryDetail for order {order.id} with fallback data")
+            except Exception as e:
+                logger.error(f"Failed to create OrderDeliveryDetail for order {order.id}: {str(e)}")

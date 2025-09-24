@@ -362,6 +362,82 @@ describe('AddressEditModal', () => {
         expect(onCloseMock).toHaveBeenCalledTimes(1);
       });
     });
+
+    test('should show "For this order only" option in confirmation dialog', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(<AddressEditModal {...defaultProps} />);
+
+      // Fill in required fields
+      const countrySelect = screen.getByTestId('country-select');
+      await user.selectOptions(countrySelect, 'United Kingdom');
+
+      await waitFor(() => {
+        expect(screen.getByTestId('dynamic-address-form')).toBeInTheDocument();
+      });
+
+      const addressInput = screen.getByTestId('address-input');
+      await user.clear(addressInput);
+      await user.type(addressInput, 'New Address');
+
+      // Click update to show confirmation
+      const updateButton = screen.getByRole('button', { name: /update address/i });
+      await user.click(updateButton);
+
+      // Check confirmation dialog has both options
+      await waitFor(() => {
+        expect(screen.getByText('Confirm Address Update')).toBeInTheDocument();
+        expect(screen.getByText('Update Profile')).toBeInTheDocument();
+        expect(screen.getByText('For this order only')).toBeInTheDocument();
+      });
+    });
+
+    test('should handle order-only address update correctly', async () => {
+      const user = userEvent.setup();
+      const onAddressUpdateMock = jest.fn();
+
+      renderWithTheme(
+        <AddressEditModal
+          {...defaultProps}
+          onAddressUpdate={onAddressUpdateMock}
+        />
+      );
+
+      // Fill in required fields
+      const countrySelect = screen.getByTestId('country-select');
+      await user.selectOptions(countrySelect, 'United Kingdom');
+
+      await waitFor(() => {
+        expect(screen.getByTestId('dynamic-address-form')).toBeInTheDocument();
+      });
+
+      const addressInput = screen.getByTestId('address-input');
+      await user.clear(addressInput);
+      await user.type(addressInput, 'Order Only Address');
+
+      const updateButton = screen.getByRole('button', { name: /update address/i });
+      await user.click(updateButton);
+
+      // Click "For this order only"
+      await waitFor(() => {
+        expect(screen.getByText('For this order only')).toBeInTheDocument();
+      });
+
+      const orderOnlyButton = screen.getByText('For this order only');
+      await user.click(orderOnlyButton);
+
+      // Verify callback was called with orderOnly flag
+      await waitFor(() => {
+        expect(onAddressUpdateMock).toHaveBeenCalledWith(
+          expect.objectContaining({
+            orderOnly: true,
+            addressData: expect.objectContaining({
+              address: 'Order Only Address',
+              country: 'United Kingdom'
+            })
+          })
+        );
+      });
+    });
   });
 
   describe('Error Handling', () => {
