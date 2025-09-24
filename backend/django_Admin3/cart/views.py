@@ -1013,38 +1013,39 @@ class CartViewSet(viewsets.ViewSet):
 
             logger.info(f"Transferring {len(valid_acknowledgments)} valid acknowledgments (discarding {len(stale_acknowledgments)} stale ones)")
 
-            # Group valid acknowledgments by message_id for aggregation
-            acknowledgment_groups = {}
+            # DEBUG: Log all valid acknowledgments
+            for i, ack in enumerate(valid_acknowledgments):
+                logger.info(f"DEBUG: Valid acknowledgment {i+1}: ack_key='{ack.get('ack_key')}', message_id='{ack.get('message_id')}', entry_point='{ack.get('entry_point_location')}'")
+
+            # Create a separate order acknowledgment record for each acknowledgment
+            # This ensures each acknowledgment (terms, digital consent, tutorial credit card, etc.)
+            # gets its own row in the database
             for ack in valid_acknowledgments:
                 message_id = ack.get('message_id')
-                if message_id not in acknowledgment_groups:
-                    acknowledgment_groups[message_id] = []
-                acknowledgment_groups[message_id].append(ack)
+                ack_key = ack.get('ack_key', '')
+                entry_point = ack.get('entry_point_location', '')
 
-            # Create order acknowledgments for each group
-            for message_id, acks in acknowledgment_groups.items():
-                # Determine acknowledgment type based on ack_key
+                # Determine acknowledgment type based on ack_key and entry_point
                 acknowledgment_type = 'custom'
-                for ack in acks:
-                    ack_key = ack.get('ack_key', '')
-                    if 'terms' in ack_key.lower():
-                        acknowledgment_type = 'terms_conditions'
-                    elif 'expired' in ack_key.lower() and 'deadline' in ack_key.lower():
-                        acknowledgment_type = 'deadline_expired'
-                    elif 'warning' in ack_key.lower():
-                        acknowledgment_type = 'warning'
+                if 'terms' in ack_key.lower():
+                    acknowledgment_type = 'terms_conditions'
+                elif 'expired' in ack_key.lower() and 'deadline' in ack_key.lower():
+                    acknowledgment_type = 'deadline_expired'
+                elif 'warning' in ack_key.lower():
+                    acknowledgment_type = 'warning'
+                elif ('credit_card' in ack_key.lower() or 'tutorial' in ack_key.lower()) and entry_point == 'checkout_payment':
+                    acknowledgment_type = 'product_specific'
+                elif 'digital' in ack_key.lower() and 'consent' in ack_key.lower():
+                    acknowledgment_type = 'digital_consent'
 
-                # Get the most recent acknowledgment for this message_id
-                latest_ack = max(acks, key=lambda x: x.get('acknowledged_timestamp', ''))
-
-                # Create acknowledgment data with all entry points
+                # Create acknowledgment data for this specific acknowledgment
                 acknowledgment_data = {
-                    'session_acknowledgments': acks,
-                    'entry_points': list(set(ack.get('entry_point_location') for ack in acks)),
-                    'total_acknowledgments': len(acks),
-                    'first_acknowledged': min(acks, key=lambda x: x.get('acknowledged_timestamp', '')).get('acknowledged_timestamp'),
-                    'last_acknowledged': latest_ack.get('acknowledged_timestamp'),
-                    'ack_keys': list(set(ack.get('ack_key') for ack in acks)),
+                    'ack_key': ack_key,
+                    'message_id': message_id,
+                    'entry_point': entry_point,
+                    'acknowledged_timestamp': ack.get('acknowledged_timestamp'),
+                    'ip_address': ack.get('ip_address', ''),
+                    'user_agent': ack.get('user_agent', ''),
                     'validation_info': {
                         'validated_against_current_execution': True,
                         'matched_rule_ids': list(matched_rule_ids),
@@ -1052,17 +1053,56 @@ class CartViewSet(viewsets.ViewSet):
                     }
                 }
 
-                # Create the order acknowledgment record
+                # Determine a more descriptive title based on ack_key
+                title = f'Session Acknowledgment {message_id}'
+                if 'terms' in ack_key.lower():
+                    title = 'Terms and Conditions Acknowledgment'
+                elif 'tutorial_credit_card' in ack_key.lower():
+                    title = 'Tutorial Credit Card Payment Acknowledgment'
+                elif 'digital' in ack_key.lower() and 'consent' in ack_key.lower():
+                    title = 'Digital Content Consent'
+                elif 'expired' in ack_key.lower() and 'deadline' in ack_key.lower():
+                    title = 'Expired Deadline Warning Acknowledgment'
+
+                # Create the order acknowledgment record - one per acknowledgment
+                # Extract rule_id as integer if possible, otherwise use None
+                try:
+                    if message_id is not None:
+                        if isinstance(message_id, int):
+                            rule_id_int = message_id
+                        elif isinstance(message_id, str) and message_id.isdigit():
+                            rule_id_int = int(message_id)
+                        else:
+                            rule_id_int = None
+                    else:
+                        rule_id_int = None
+                except (ValueError, TypeError):
+                    rule_id_int = None
+
+                # Extract template_id as integer if possible
+                try:
+                    if message_id is not None:
+                        if isinstance(message_id, int):
+                            template_id_int = message_id
+                        elif isinstance(message_id, str) and message_id.isdigit():
+                            template_id_int = int(message_id)
+                        else:
+                            template_id_int = None
+                    else:
+                        template_id_int = None
+                except (ValueError, TypeError):
+                    template_id_int = None
+
                 order_acknowledgment = OrderUserAcknowledgment.objects.create(
                     order=order,
                     acknowledgment_type=acknowledgment_type,
-                    rule_id=message_id,  # Use message_id as rule_id reference
-                    template_id=message_id,  # Use message_id as template reference
-                    title=f'Session Acknowledgment {message_id}',
-                    content_summary=f'Validated acknowledgment for message {message_id} across {len(set(ack.get("entry_point_location") for ack in acks))} entry points',
-                    is_accepted=latest_ack.get('acknowledged', False),
-                    ip_address=latest_ack.get('ip_address', ''),
-                    user_agent=latest_ack.get('user_agent', ''),
+                    rule_id=rule_id_int,  # Use integer rule_id or None
+                    template_id=template_id_int,  # Use integer template_id or None
+                    title=title,
+                    content_summary=f'User acknowledged {ack_key} at {entry_point}',
+                    is_accepted=ack.get('acknowledged', False),
+                    ip_address=ack.get('ip_address', ''),
+                    user_agent=ack.get('user_agent', ''),
                     content_version='1.0',
                     acknowledgment_data=acknowledgment_data,
                     rules_engine_context={
@@ -1072,11 +1112,13 @@ class CartViewSet(viewsets.ViewSet):
                         'validated_against_rules': True,
                         'matched_rule_ids': list(matched_rule_ids),
                         'original_session_data': session_acknowledgments,
-                        'stale_acknowledgments_count': len(stale_acknowledgments)
+                        'entry_point': entry_point,
+                        'ack_key': ack_key,
+                        'original_message_id': message_id  # Store original message_id here
                     }
                 )
 
-                logger.info(f"Created validated order acknowledgment {order_acknowledgment.id} for message {message_id} with type {acknowledgment_type}")
+                logger.info(f"Created order acknowledgment {order_acknowledgment.id} for ack_key='{ack_key}', message_id='{message_id}', type='{acknowledgment_type}'")
 
             # Clear session acknowledgments after successful transfer
             request.session['user_acknowledgments'] = []
@@ -1090,8 +1132,12 @@ class CartViewSet(viewsets.ViewSet):
 
     def _get_matched_rules_for_current_execution(self, order, cart):
         """
-        Execute rules engine for checkout_terms and return which rules actually matched
+        Execute rules engine for ALL checkout entry points and return which rules actually matched
         Uses the cart that's being processed for checkout to ensure accurate rule matching
+
+        CRITICAL FIX: Previous version only checked checkout_terms entry point, but acknowledgments
+        can come from checkout_terms, checkout_payment, and other entry points throughout the flow.
+        This was causing valid acknowledgments to be incorrectly marked as "stale" and discarded.
         """
         try:
             if not cart:
@@ -1103,6 +1149,7 @@ class CartViewSet(viewsets.ViewSet):
 
             # Use the cart's has_digital flag instead of manually detecting
             has_digital = cart.has_digital
+            has_tutorial = cart.has_tutorial
 
             # Calculate total from cart items since Cart model doesn't have subtotal
             total = sum(item.actual_price or 0 for item in cart_items)
@@ -1112,6 +1159,7 @@ class CartViewSet(viewsets.ViewSet):
                     'id': cart.id,
                     'user_id': cart.user.id if cart.user else None,
                     'has_digital': has_digital,
+                    'has_tutorial': has_tutorial,
                     'total': float(total),
                     'items': []
                 },
@@ -1137,29 +1185,42 @@ class CartViewSet(viewsets.ViewSet):
                     'is_digital': has_digital
                 })
 
-            # Execute rules engine
-            from rules_engine.services.rule_engine import rule_engine
-            result = rule_engine.execute('checkout_terms', context)
-
-            if not result.get('success'):
-                logger.warning(f"Rules execution failed for order {order.id}: {result.get('error')}")
-                return set()
-
-            # Extract rule IDs that actually matched and executed
+            # Execute rules engine for ALL relevant entry points that can generate acknowledgments
+            # This ensures we validate acknowledgments from the entire checkout flow, not just checkout_terms
+            entry_points_to_check = ['checkout_terms', 'checkout_payment']
             matched_rule_ids = set()
 
-            # Check rules_executed list for rules that had condition_result=True
-            for rule_exec in result.get('rules_executed', []):
-                if rule_exec.get('condition_result'):
-                    matched_rule_ids.add(rule_exec.get('rule_id'))
+            from rules_engine.services.rule_engine import rule_engine
 
-            # Also check messages for template_ids that were generated
-            for message in result.get('messages', []):
-                template_id = message.get('template_id')
-                if template_id:
-                    matched_rule_ids.add(str(template_id))
+            for entry_point in entry_points_to_check:
+                logger.info(f"Executing rules for entry point '{entry_point}' to validate acknowledgments for order {order.id}")
 
-            logger.info(f"Rules that matched for order {order.id}: {matched_rule_ids}")
+                result = rule_engine.execute(entry_point, context)
+
+                if not result.get('success'):
+                    logger.warning(f"Rules execution failed for entry point '{entry_point}' on order {order.id}: {result.get('error')}")
+                    continue
+
+                # Extract rule IDs that actually matched and executed for this entry point
+                entry_point_matched_ids = set()
+
+                # Check rules_executed list for rules that had condition_result=True
+                for rule_exec in result.get('rules_executed', []):
+                    if rule_exec.get('condition_result'):
+                        rule_id = rule_exec.get('rule_id')
+                        entry_point_matched_ids.add(rule_id)
+                        matched_rule_ids.add(rule_id)
+
+                # Also check messages for template_ids that were generated
+                for message in result.get('messages', []):
+                    template_id = message.get('template_id')
+                    if template_id:
+                        entry_point_matched_ids.add(str(template_id))
+                        matched_rule_ids.add(str(template_id))
+
+                logger.info(f"Entry point '{entry_point}' matched rules: {entry_point_matched_ids}")
+
+            logger.info(f"All rules that matched across entry points for order {order.id}: {matched_rule_ids}")
             return matched_rule_ids
 
         except Exception as e:
