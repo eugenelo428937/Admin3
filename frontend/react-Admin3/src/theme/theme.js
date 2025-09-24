@@ -225,7 +225,7 @@ const theme = createTheme({
 				root: {
 					marginBottom: liftKitTheme.spacing.sm,
 					"& .MuiInputBase-input": {
-						color: colorTheme.liftkit.dark.onSurface,
+						color: colorTheme.liftkit.light.onSurface,
 					},
 				},
 			},

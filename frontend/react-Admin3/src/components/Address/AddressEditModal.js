@@ -176,6 +176,33 @@ const AddressEditModal = ({
     }
   };
 
+  // Handle order-only address update (don't save to profile)
+  const handleOrderOnlyUpdate = () => {
+    setLoading(true);
+
+    // Simulate update without actually saving to profile
+    setTimeout(() => {
+      setLoading(false);
+      setShowConfirmation(false);
+
+      // Call the callback with order-only flag
+      if (onAddressUpdate) {
+        onAddressUpdate({
+          orderOnly: true,
+          addressData: {
+            ...formValues,
+            country: selectedCountry
+          }
+        });
+      }
+
+      // Close modal after brief delay
+      setTimeout(() => {
+        handleClose();
+      }, 500);
+    }, 1000);
+  };
+
   // Handle modal close
   const handleClose = () => {
     setShowConfirmation(false);
@@ -251,23 +278,37 @@ const AddressEditModal = ({
               Confirm Address Update
             </Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Are you sure you want to update your {addressType} address? This will modify your profile settings.
+              This will update your {addressType} address.
             </Typography>
-            <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
               <Button
                 variant="outlined"
                 onClick={() => setShowConfirmation(false)}
                 size="small"
+                color="secondary"
               >
                 Cancel
               </Button>
-              <Button
-                variant="contained"
-                onClick={handleConfirmUpdate}
-                size="small"
-              >
-                Confirm
-              </Button>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Button
+                  variant="outlined"
+                  onClick={handleOrderOnlyUpdate}
+                  size="small"
+                  color="info"
+                  disabled={loading}
+                >
+                  For this order only
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleConfirmUpdate}
+                  size="small"
+                  color="primary"
+                  disabled={loading}
+                >
+                  {loading ? <CircularProgress size={20} /> : 'Update Profile'}
+                </Button>
+              </Box>
             </Box>
           </Box>
         )}

@@ -19,11 +19,22 @@ const PaymentStep = ({
   setCvv,
   employerCode,
   setEmployerCode,
-  isDevelopment
+  isDevelopment,
+  // New props for acknowledgments
+  acknowledgmentStates,
+  setAcknowledgmentStates,
+  requiredAcknowledgments,
+  setRequiredAcknowledgments
 }) => {
   const { cartData, cartItems, refreshCart } = useCart();
   const [bookingFeeNotification, setBookingFeeNotification] = useState(null);
   const [rulesLoading, setRulesLoading] = useState(false);
+  const [acknowledgmentMessages, setAcknowledgmentMessages] = useState([]);
+
+  // Local state for acknowledgments if props not provided (backward compatibility)
+  const [localAcknowledgmentStates, setLocalAcknowledgmentStates] = useState({});
+  const actualAcknowledgmentStates = acknowledgmentStates || localAcknowledgmentStates;
+  const actualSetAcknowledgmentStates = setAcknowledgmentStates || setLocalAcknowledgmentStates;
   const testCards = [
     { name: 'VISA Test Card', number: '4929 0000 0000 6', cvv: '123' },
     { name: 'VISA Debit', number: '4462 0000 0000 0003', cvv: '123' },
@@ -65,6 +76,33 @@ const PaymentStep = ({
         const result = await rulesEngineService.executeRules(rulesEngineService.ENTRY_POINTS.CHECKOUT_PAYMENT, context);
 
         console.log('💳 [PaymentStep] Rules engine result:', result);
+
+        // Handle acknowledgment messages
+        if (result.messages) {
+          const inlineAcknowledgments = result.messages.filter(msg =>
+            msg.type === 'acknowledge' && msg.display_type === 'inline'
+          );
+          setAcknowledgmentMessages(inlineAcknowledgments);
+
+          // Reset acknowledgment states when rules change
+          const newStates = {};
+          inlineAcknowledgments.forEach(msg => {
+            newStates[msg.ack_key] = false; // Default unchecked as per requirement
+          });
+          actualSetAcknowledgmentStates(newStates);
+
+          // Pass required acknowledgments to parent
+          if (setRequiredAcknowledgments && result.required_acknowledgments) {
+            setRequiredAcknowledgments(result.required_acknowledgments);
+          }
+        } else {
+          // Clear acknowledgments if no messages
+          setAcknowledgmentMessages([]);
+          actualSetAcknowledgmentStates({});
+          if (setRequiredAcknowledgments) {
+            setRequiredAcknowledgments([]);
+          }
+        }
 
         // Check if booking fee was added or removed
         if (result.updates) {
@@ -112,6 +150,41 @@ const PaymentStep = ({
     setCardholderName('Test User');
   };
 
+  const handleAcknowledgmentChange = async (ackKey, checked) => {
+    // Update local state
+    actualSetAcknowledgmentStates(prev => ({
+      ...prev,
+      [ackKey]: checked
+    }));
+
+    // Send acknowledgment to backend session
+    try {
+      // Find the message associated with this ackKey to get the correct message_id
+      const associatedMessage = acknowledgmentMessages.find(msg => msg.ack_key === ackKey);
+      const messageId = associatedMessage?.template_id || 'tutorial_credit_card_acknowledgment_v1';
+
+      const acknowledgmentData = {
+        ackKey: ackKey,
+        message_id: messageId,
+        acknowledged: checked,
+        entry_point_location: 'checkout_payment'
+      };
+
+      console.log('💳 [PaymentStep] Sending acknowledgment to backend:', acknowledgmentData);
+
+      const response = await rulesEngineService.acknowledgeRule(acknowledgmentData);
+
+      if (response.success) {
+        console.log('💳 [PaymentStep] Acknowledgment saved to session successfully');
+      } else {
+        console.error('💳 [PaymentStep] Failed to save acknowledgment:', response);
+      }
+    } catch (error) {
+      console.error('💳 [PaymentStep] Error saving acknowledgment:', error);
+      // Don't block the UI - acknowledgment state is still updated locally
+    }
+  };
+
   return (
     <div>
       <h4>Step 3: Payment</h4>
@@ -138,6 +211,33 @@ const PaymentStep = ({
             />
           </div>
         </Form.Group>
+
+        {/* Display acknowledgment messages for this payment step */}
+        {acknowledgmentMessages.length > 0 && (
+          <div className="mb-4">
+            {acknowledgmentMessages.map((message) => (
+              <div key={message.ack_key} className="border rounded p-3 mb-3" style={{ backgroundColor: '#f8f9fa' }}>
+                <h6 className="mb-2">{message.title}</h6>
+                <p className="mb-3 text-muted">
+                  {message.content?.content?.message || message.content}
+                </p>
+                <Form.Check
+                  type="checkbox"
+                  id={`ack-${message.ack_key}`}
+                  label={message.content?.content?.checkbox_text || "I acknowledge and agree"}
+                  checked={actualAcknowledgmentStates[message.ack_key] || false}
+                  onChange={(e) => handleAcknowledgmentChange(message.ack_key, e.target.checked)}
+                  className="fw-bold"
+                />
+                {message.required && (
+                  <small className="text-danger d-block mt-1">
+                    * This acknowledgment is required to proceed
+                  </small>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         {paymentMethod === 'card' && (
           <div>

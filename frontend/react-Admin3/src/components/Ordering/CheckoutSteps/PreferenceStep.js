@@ -28,9 +28,16 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
           is_authenticated: isAuthenticated
         },
         cart: {
+          id: cartData?.id || null,
           items: cartData?.items || [],
           has_digital: cartData?.has_digital || false,
-          total: cartData?.total || 0
+          has_tutorial: cartData?.has_tutorial || false,
+          has_material: cartData?.has_material || false,
+          has_marking: cartData?.has_marking || false,
+          total: cartData?.total || 0,
+          created_at: cartData?.created_at,
+          updated_at: cartData?.updated_at,
+          session_key: cartData?.session_key || null
         },
         entryPoint: 'checkout_preference'
       };
@@ -86,6 +93,10 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
       return content;
     }
     if (typeof content === 'object' && content !== null) {
+      // For health and safety rule structure: { content: { content: { message: "..." } } }
+      if (content.content && typeof content.content === 'object' && content.content.message) {
+        return content.content.message;
+      }
       // For the marketing preference structure where content is nested
       // Structure: { title: "...", content: "description text", input: {...} }
       if (content.content && typeof content.content === 'string') {

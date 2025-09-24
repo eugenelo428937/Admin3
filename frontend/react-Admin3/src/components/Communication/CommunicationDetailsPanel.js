@@ -240,6 +240,98 @@ const CommunicationDetailsPanel = ({
     setShowConfirmation(false);
   };
 
+  // Handle order-only update (don't save to profile)
+  const handleOrderOnlyUpdate = () => {
+    setLoading(true);
+
+    // For now, just simulate the update without actually saving to profile
+    setTimeout(() => {
+      setLoading(false);
+      setShowConfirmation(false);
+
+      // Call the callback with order-only flag
+      if (onProfileUpdate) {
+        onProfileUpdate({
+          contact: {
+            home_phone: formData.homePhone,
+            mobile_phone: formData.mobilePhone,
+            work_phone: formData.workPhone,
+            email_address: formData.email
+          },
+          orderOnly: true
+        });
+      }
+    }, 1000);
+  };
+
+  // Render email section based on profile data
+  const renderEmailSection = () => {
+    const hasMultipleEmails = userProfile?.emails && Object.keys(userProfile.emails).length > 0;
+
+    if (hasMultipleEmails) {
+      return (
+        <Box>
+          {/* Primary Email - Readonly */}
+          <TextField
+            fullWidth
+            label="Primary Email"
+            type="email"
+            value={formData.email}
+            InputProps={{
+              readOnly: true,
+              startAdornment: <Email color="action" sx={{ mr: 1 }} />
+            }}
+            inputProps={{
+              'data-testid': 'primary-email-display',
+              readOnly: true
+            }}
+            sx={{ mb: 1 }}
+          />
+
+          {/* Additional Emails */}
+          <Box sx={{ pl: 1, mb: 1 }}>
+            <Typography variant="caption" color="text.secondary">
+              Additional emails:
+            </Typography>
+            {Object.entries(userProfile.emails).map(([type, email]) => (
+              <Typography key={type} variant="body2" sx={{ ml: 1 }}>
+                {email}
+              </Typography>
+            ))}
+          </Box>
+
+          {/* Email verification message */}
+          <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+            Emails cannot be edited here. Please use the email verification process to update your email addresses.
+          </Typography>
+        </Box>
+      );
+    }
+
+    // Single Email - Editable (legacy)
+    return (
+      <TextField
+        fullWidth
+        required
+        label="Email Address"
+        type="email"
+        value={formData.email}
+        onChange={(e) => handleEmailChange(e.target.value)}
+        error={!!errors.email}
+        helperText={errors.email}
+        placeholder="Enter email address"
+        InputProps={{
+          startAdornment: <Email color="action" sx={{ mr: 1 }} />,
+          endAdornment: isValidating.email && <CircularProgress size={20} />
+        }}
+        inputProps={{
+          'data-testid': 'email-input',
+          'aria-invalid': !!errors.email
+        }}
+      />
+    );
+  };
+
   return (
     <Card className={`communication-details-panel ${className}`}>
       <CardHeader
@@ -317,26 +409,8 @@ const CommunicationDetailsPanel = ({
             isInvalid={!!errors.workPhone}
           />
 
-          {/* Email Address - Required */}
-          <TextField
-            fullWidth
-            required
-            label="Email Address"
-            type="email"
-            value={formData.email}
-            onChange={(e) => handleEmailChange(e.target.value)}
-            error={!!errors.email}
-            helperText={errors.email}
-            placeholder="Enter email address"
-            InputProps={{
-              startAdornment: <Email color="action" sx={{ mr: 1 }} />,
-              endAdornment: isValidating.email && <CircularProgress size={20} />
-            }}
-            inputProps={{
-              'data-testid': 'email-input',
-              'aria-invalid': !!errors.email
-            }}
-          />
+          {/* Email Address Section */}
+          {renderEmailSection()}
         </Box>
 
         {/* Update Button */}
@@ -368,18 +442,28 @@ const CommunicationDetailsPanel = ({
             This will update your profile with the new communication details.
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
           <Button onClick={handleConfirmationClose} color="secondary">
             Cancel
           </Button>
-          <Button
-            onClick={handleProfileUpdate}
-            color="primary"
-            variant="contained"
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={20} /> : 'Update'}
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Button
+              onClick={() => handleOrderOnlyUpdate()}
+              color="info"
+              variant="outlined"
+              disabled={loading}
+            >
+              For this order only
+            </Button>
+            <Button
+              onClick={handleProfileUpdate}
+              color="primary"
+              variant="contained"
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={20} /> : 'Update Profile'}
+            </Button>
+          </Box>
         </DialogActions>
       </Dialog>
     </Card>

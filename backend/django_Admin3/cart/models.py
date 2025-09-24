@@ -510,6 +510,98 @@ class OrderUserPreference(models.Model):
         return str(self.preference_value)
 
 
+class OrderUserContact(models.Model):
+    """Store order-specific contact information"""
+    order = models.ForeignKey(
+        ActedOrder,
+        on_delete=models.CASCADE,
+        related_name='user_contact',
+        help_text="Associated order for this contact information"
+    )
+
+    # Contact Information
+    home_phone = models.CharField(max_length=20, null=True, blank=True)
+    mobile_phone = models.CharField(max_length=20, help_text="Required mobile phone number")
+    work_phone = models.CharField(max_length=20, null=True, blank=True)
+    email_address = models.EmailField(max_length=254, help_text="Required email address")
+
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'acted_order_user_contact'
+        verbose_name = 'Order User Contact'
+        verbose_name_plural = 'Order User Contacts'
+        indexes = [
+            models.Index(fields=['order']),
+        ]
+
+    def __str__(self):
+        return f"Contact for Order #{self.order.id}: {self.email_address}"
+
+
+class OrderDeliveryDetail(models.Model):
+    """Store order-specific delivery and invoice address details"""
+    ADDRESS_TYPE_CHOICES = [
+        ('home', 'Home'),
+        ('work', 'Work'),
+    ]
+
+    order = models.ForeignKey(
+        ActedOrder,
+        on_delete=models.CASCADE,
+        related_name='delivery_detail',
+        help_text="Associated order for this delivery detail"
+    )
+
+    # Delivery Address
+    delivery_address_type = models.CharField(
+        max_length=10,
+        choices=ADDRESS_TYPE_CHOICES,
+        null=True,
+        blank=True,
+        help_text="Type of delivery address (home/work)"
+    )
+    delivery_address_line1 = models.CharField(max_length=255, null=True, blank=True)
+    delivery_address_line2 = models.CharField(max_length=255, null=True, blank=True)
+    delivery_city = models.CharField(max_length=100, null=True, blank=True)
+    delivery_state = models.CharField(max_length=100, null=True, blank=True)
+    delivery_postal_code = models.CharField(max_length=20, null=True, blank=True)
+    delivery_country = models.CharField(max_length=100, null=True, blank=True)
+
+    # Invoice Address
+    invoice_address_type = models.CharField(
+        max_length=10,
+        choices=ADDRESS_TYPE_CHOICES,
+        null=True,
+        blank=True,
+        help_text="Type of invoice address (home/work)"
+    )
+    invoice_address_line1 = models.CharField(max_length=255, null=True, blank=True)
+    invoice_address_line2 = models.CharField(max_length=255, null=True, blank=True)
+    invoice_city = models.CharField(max_length=100, null=True, blank=True)
+    invoice_state = models.CharField(max_length=100, null=True, blank=True)
+    invoice_postal_code = models.CharField(max_length=20, null=True, blank=True)
+    invoice_country = models.CharField(max_length=100, null=True, blank=True)
+
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'acted_order_delivery_detail'
+        verbose_name = 'Order Delivery Detail'
+        verbose_name_plural = 'Order Delivery Details'
+        indexes = [
+            models.Index(fields=['order']),
+        ]
+
+    def __str__(self):
+        delivery_type = self.delivery_address_type or 'unspecified'
+        return f"Delivery Detail for Order #{self.order.id}: {delivery_type} delivery"
+
+
 class ActedOrderPayment(models.Model):
     """Model to store payment transaction details for orders"""
     PAYMENT_STATUS_CHOICES = [

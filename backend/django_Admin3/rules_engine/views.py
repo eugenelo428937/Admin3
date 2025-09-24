@@ -152,6 +152,26 @@ class RulesEngineViewSet(viewsets.ViewSet):
                     # This allows proper schema validation for rules that require user context
                     pass
             
+            # Add session acknowledgments to context for blocking logic
+            session_acknowledgments = request.session.get('user_acknowledgments', [])
+            if session_acknowledgments:
+                # Convert session acknowledgments to the format expected by rules engine
+                acknowledgments_dict = {}
+                for ack in session_acknowledgments:
+                    if ack.get('entry_point_location') == entry_point:
+                        ack_key = ack.get('ack_key')
+                        if ack_key:
+                            acknowledgments_dict[ack_key] = {
+                                'acknowledged': ack.get('acknowledged', False),
+                                'message_id': ack.get('message_id'),
+                                'timestamp': ack.get('acknowledged_timestamp'),
+                                'entry_point_location': ack.get('entry_point_location')
+                            }
+
+                if acknowledgments_dict:
+                    context_data['acknowledgments'] = acknowledgments_dict
+                    logger.info(f"🎯 Added {len(acknowledgments_dict)} session acknowledgments to context for '{entry_point}'")
+
             # Add request metadata
             context_data['request'] = {
                 'ip_address': request.META.get('REMOTE_ADDR'),
@@ -847,3 +867,142 @@ def rules_preferences(request):
             {'error': 'Internal server error', 'details': str(e)}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         ) 
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def validate_comprehensive_checkout(request):
+    """
+    POST /api/rules/validate-comprehensive-checkout/ - Validate checkout by checking ALL required acknowledgments from ALL entry points
+    """
+    try:
+        # Build comprehensive context for all validation
+        context_data = request.data.get("context", {})
+
+        # Get user info if authenticated
+        if request.user.is_authenticated and "user" not in context_data:
+            user_context = {
+                "id": request.user.id,
+                "email": request.user.email,
+                "is_authenticated": True,
+                "ip": request.META.get("REMOTE_ADDR", ""),
+                "home_country": None,
+                "work_country": None
+            }
+
+            # Get user address information for country detection
+            try:
+                from userprofile.models import UserProfile
+                from userprofile.models.address import UserProfileAddress
+
+                user_profile = UserProfile.objects.get(user=request.user)
+
+                # Get home address country
+                try:
+                    home_address = UserProfileAddress.objects.get(
+                        user_profile=user_profile,
+                        address_type="HOME"
+                    )
+                    user_context["home_country"] = home_address.country
+                except UserProfileAddress.DoesNotExist:
+                    pass
+
+                # Get work address country
+                try:
+                    work_address = UserProfileAddress.objects.get(
+                        user_profile=user_profile,
+                        address_type="WORK"
+                    )
+                    user_context["work_country"] = work_address.country
+                except UserProfileAddress.DoesNotExist:
+                    pass
+
+            except UserProfile.DoesNotExist:
+                # User profile doesn't exist, keep countries as None
+                pass
+
+            context_data["user"] = user_context
+
+        # Get session acknowledgments
+        session_acknowledgments = request.session.get("user_acknowledgments", [])
+        logger.info(f"🔍 [Comprehensive Validation] Found {len(session_acknowledgments)} session acknowledgments")
+
+        # Convert session acknowledgments to the format expected by rules engine
+        acknowledgments_dict = {}
+        for ack in session_acknowledgments:
+            ack_key = ack.get("ack_key")
+            if ack_key and ack.get("acknowledged"):
+                acknowledgments_dict[ack_key] = {
+                    "acknowledged": True,
+                    "timestamp": ack.get("acknowledged_timestamp"),
+                    "entry_point_location": ack.get("entry_point_location")
+                }
+
+        # Add acknowledgments to context
+        context_data["acknowledgments"] = acknowledgments_dict
+        logger.info(f"🎯 [Comprehensive Validation] Context acknowledgments: {list(acknowledgments_dict.keys())}")
+
+        # Collect all required acknowledgments from all entry points
+        entry_points_to_check = [
+            "checkout_terms",
+            "checkout_payment",
+            "checkout_preference"
+        ]
+
+        all_required_acknowledgments = []
+        blocking_rules = []
+
+        for entry_point in entry_points_to_check:
+            # Execute rules for this entry point
+            result = new_rule_engine.execute(entry_point, context_data)
+
+            if result.get("blocked"):
+                blocking_rules.extend(result.get("blocking_rules", []))
+
+            # Collect required acknowledgments
+            required_acks = result.get("required_acknowledgments", [])
+            for req_ack in required_acks:
+                req_ack["entry_point"] = entry_point  # Add entry point for tracking
+                all_required_acknowledgments.append(req_ack)
+
+        # Check which acknowledgments are missing
+        missing_acknowledgments = []
+        satisfied_acknowledgments = []
+
+        for req_ack in all_required_acknowledgments:
+            ack_key = req_ack.get("ackKey")
+            if ack_key in acknowledgments_dict:
+                satisfied_acknowledgments.append(ack_key)
+            else:
+                missing_acknowledgments.append(req_ack)
+
+        # Determine if blocked
+        blocked = len(missing_acknowledgments) > 0
+
+        logger.info(f"🚦 [Comprehensive Validation] Result: blocked={blocked}, missing={len(missing_acknowledgments)}, satisfied={len(satisfied_acknowledgments)}")
+
+        return Response({
+            "success": True,
+            "blocked": blocked,
+            "can_proceed": not blocked,
+            "all_required_acknowledgments": all_required_acknowledgments,
+            "missing_acknowledgments": missing_acknowledgments,
+            "satisfied_acknowledgments": satisfied_acknowledgments,
+            "blocking_rules": blocking_rules,
+            "summary": {
+                "total_required": len(all_required_acknowledgments),
+                "total_satisfied": len(satisfied_acknowledgments),
+                "total_missing": len(missing_acknowledgments)
+            }
+        })
+
+    except Exception as e:
+        logger.error(f"❌ [Comprehensive Validation] Error: {str(e)}")
+        return Response({
+            "success": False,
+            "blocked": True,  # Block on error for safety
+            "error": str(e),
+            "missing_acknowledgments": [],
+            "satisfied_acknowledgments": []
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

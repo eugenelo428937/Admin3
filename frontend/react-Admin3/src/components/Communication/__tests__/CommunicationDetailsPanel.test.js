@@ -27,27 +27,13 @@ jest.mock('../../../services/userService', () => ({
 }));
 
 // Mock config
-jest.mock('../../../config', () => {
-  const config = {
+jest.mock('../../../config', () => ({
+  default: {
     apiBaseUrl: 'http://localhost:8000'
-  };
-  return {
-    __esModule: true,
-    default: config
-  };
-});
+  }
+}));
 
-// Mock fetch for countries API
-global.fetch = jest.fn(() => {
-  return Promise.resolve({
-    ok: true,
-    json: () => Promise.resolve([
-      { name: 'United Kingdom', phone_code: '+44' },
-      { name: 'United States', phone_code: '+1' },
-      { name: 'India', phone_code: '+91' }
-    ])
-  });
-});
+// Mock fetch for countries API will be set in beforeEach
 
 const theme = createTheme();
 
@@ -68,10 +54,41 @@ const mockUserProfile = {
   email: 'test@example.com'
 };
 
+const mockUserProfileWithMultipleEmails = {
+  user: {
+    id: 1,
+    email: 'primary@example.com'
+  },
+  profile: {
+    title: 'Mr',
+    send_invoices_to: 'home',
+    send_study_material_to: 'home'
+  },
+  contact_numbers: {
+    mobile_phone: '+44 7700 900123',
+    home_phone: '+44 20 7946 0958',
+    work_phone: '+44 20 8765 4321'
+  },
+  emails: {
+    personal_email: 'personal@example.com',
+    work_email: 'work@example.com'
+  },
+  email: 'primary@example.com'
+};
+
 describe('CommunicationDetailsPanel', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    global.fetch.mockClear();
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve([
+          { name: 'United Kingdom', phone_code: '+44' },
+          { name: 'United States', phone_code: '+1' },
+          { name: 'India', phone_code: '+91' }
+        ])
+      })
+    );
   });
 
   describe('Rendering', () => {
@@ -130,6 +147,60 @@ describe('CommunicationDetailsPanel', () => {
       );
 
       expect(screen.getByTestId('email-input')).toBeInTheDocument();
+    });
+
+    test('renders primary email as readonly with additional emails listed below', async () => {
+      renderWithTheme(
+        <CommunicationDetailsPanel userProfile={mockUserProfileWithMultipleEmails} />
+      );
+
+      // Wait for async operations to complete
+      await waitFor(() => {
+        // Primary email should be readonly
+        const primaryEmailField = screen.getByTestId('primary-email-display');
+        expect(primaryEmailField).toBeInTheDocument();
+        expect(primaryEmailField).toHaveAttribute('readonly');
+
+        // Should display additional emails
+        expect(screen.getByText('personal@example.com')).toBeInTheDocument();
+        expect(screen.getByText('work@example.com')).toBeInTheDocument();
+
+        // Should show "Primary Email" label
+        expect(screen.getAllByText('Primary Email')).toHaveLength(2); // Label and field value
+      });
+    });
+
+    test('shows email verification message for readonly email field', async () => {
+      renderWithTheme(
+        <CommunicationDetailsPanel userProfile={mockUserProfileWithMultipleEmails} />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText(/Emails cannot be edited here/)).toBeInTheDocument();
+        expect(screen.getByText(/email verification process/)).toBeInTheDocument();
+      });
+    });
+
+    test('shows "For this order only" option in confirmation dialog', async () => {
+      renderWithTheme(
+        <CommunicationDetailsPanel userProfile={mockUserProfile} />
+      );
+
+      // Click update button to open confirmation dialog
+      const saveButton = screen.getByText('Update Communication Details');
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        // Check that the confirmation dialog appears
+        expect(screen.getByText('Update Communication Details?')).toBeInTheDocument();
+
+        // Check that "For this order only" option is present
+        expect(screen.getByText('For this order only')).toBeInTheDocument();
+
+        // Check that both buttons are present
+        expect(screen.getByText('Update Profile')).toBeInTheDocument();
+        expect(screen.getByText('For this order only')).toBeInTheDocument();
+      });
     });
 
     test('displays required field indicators for mobile phone and email', () => {

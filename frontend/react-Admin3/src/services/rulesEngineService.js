@@ -46,6 +46,25 @@ const rulesEngineService = {
             // Re-throw other errors
             throw error;
         }
+    },
+
+    /**
+     * Acknowledge a rule in the session
+     * @param {object} acknowledgmentData - The acknowledgment data
+     * @param {string} acknowledgmentData.ackKey - The acknowledgment key
+     * @param {string} acknowledgmentData.message_id - The message/rule ID
+     * @param {boolean} acknowledgmentData.acknowledged - Whether acknowledged or not
+     * @param {string} acknowledgmentData.entry_point_location - The entry point location
+     * @returns {Promise<object>} The response from the API
+     */
+    acknowledgeRule: async (acknowledgmentData) => {
+        try {
+            const response = await httpService.post('/api/rules/acknowledge/', acknowledgmentData);
+            return response.data;
+        } catch (error) {
+            console.error('Error acknowledging rule:', error);
+            throw error;
+        }
     }
 };
 

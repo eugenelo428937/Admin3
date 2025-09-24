@@ -25,6 +25,7 @@ const AddressSelectionPanel = ({
   const [selectedAddressType, setSelectedAddressType] = useState('HOME');
   const [currentAddressData, setCurrentAddressData] = useState({});
   const [showEditModal, setShowEditModal] = useState(false);
+  const [isOrderOnlyAddress, setIsOrderOnlyAddress] = useState(false);
 
   // Get the appropriate preference setting based on address type
   const getPreferenceSetting = useCallback(() => {
@@ -53,6 +54,7 @@ const AddressSelectionPanel = ({
       : userProfile.work_address || {};
 
     setCurrentAddressData(addressData);
+    setIsOrderOnlyAddress(false); // Reset order-only flag when switching between HOME/WORK
 
     // Notify parent component of address change
     if (onAddressChange) {
@@ -79,10 +81,27 @@ const AddressSelectionPanel = ({
   };
 
   // Handle address update from modal
-  const handleAddressUpdateFromModal = () => {
-    // Call the parent callback to refresh address data
-    if (onAddressUpdate) {
-      onAddressUpdate();
+  const handleAddressUpdateFromModal = (updateResult) => {
+    if (updateResult && updateResult.orderOnly) {
+      // "For this order only" - update local state with temporary address
+      const tempAddressData = updateResult.addressData;
+      setCurrentAddressData(tempAddressData);
+      setIsOrderOnlyAddress(true);
+
+      // Notify parent component of the temporary address change
+      if (onAddressChange) {
+        onAddressChange({
+          addressType: selectedAddressType,
+          addressData: tempAddressData,
+          orderOnly: true
+        });
+      }
+    } else {
+      // Profile update - refresh data from user profile
+      setIsOrderOnlyAddress(false);
+      if (onAddressUpdate) {
+        onAddressUpdate();
+      }
     }
     setShowEditModal(false);
   };
@@ -121,15 +140,22 @@ const AddressSelectionPanel = ({
         </Select>
       </FormControl>
 
+      {/* Order Only Address Indicator */}
+      {isOrderOnlyAddress && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          This address is for this order only and won't be saved to your profile.
+        </Alert>
+      )}
+
       {/* Address Display using DynamicAddressForm for consistent formatting */}
       <Box
         data-testid={displayTestId}
         sx={{
           p: 2,
-          bgcolor: 'grey.50',
+          bgcolor: isOrderOnlyAddress ? 'info.50' : 'grey.50',
           borderRadius: 1,
           border: '1px solid',
-          borderColor: 'grey.300'
+          borderColor: isOrderOnlyAddress ? 'info.300' : 'grey.300'
         }}
       >
         {currentAddressData && Object.keys(currentAddressData).length > 0 ? (
