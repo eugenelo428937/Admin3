@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { rulesEngineHelpers, executeAndProcessRules, buildRulesContext } from '../utils/rulesEngineUtils';
-import acknowledgmentService from '../services/acknowledgmentService';
+import acknowledgmentService from '../services/AcknowledgmentService';
 
 /**
  * Hook for managing rules engine acknowledgments
