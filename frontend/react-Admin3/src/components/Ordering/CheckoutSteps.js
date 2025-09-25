@@ -146,6 +146,13 @@ const CheckoutSteps = ({ onComplete }) => {
       console.log('🔍 [CheckoutSteps] Previous contact data state:', contactData);
       setContactData(newContactData);
       console.log('🔍 [CheckoutSteps] Contact data state updated');
+
+      // Trigger real-time validation for Step 1
+      if (currentStep === 1) {
+        setTimeout(() => {
+          validation.validateStep1(newContactData, deliveryAddress, invoiceAddress);
+        }, 100); // Small delay to ensure state updates
+      }
     } else {
       console.warn('🔍 [CheckoutSteps] No contact data in update:', updateData);
     }
@@ -167,6 +174,13 @@ const CheckoutSteps = ({ onComplete }) => {
       };
 
       setDeliveryAddress(newDeliveryAddress);
+
+      // Trigger real-time validation for Step 1
+      if (currentStep === 1) {
+        setTimeout(() => {
+          validation.validateStep1(contactData, newDeliveryAddress, invoiceAddress);
+        }, 100); // Small delay to ensure state updates
+      }
     }
   };
 
@@ -180,6 +194,13 @@ const CheckoutSteps = ({ onComplete }) => {
       };
 
       setInvoiceAddress(newInvoiceAddress);
+
+      // Trigger real-time validation for Step 1
+      if (currentStep === 1) {
+        setTimeout(() => {
+          validation.validateStep1(contactData, deliveryAddress, newInvoiceAddress);
+        }, 100); // Small delay to ensure state updates
+      }
     }
   };
 
@@ -316,7 +337,28 @@ const CheckoutSteps = ({ onComplete }) => {
     { title: 'Confirmation', description: 'Order confirmation' }
   ];
 
+  // Check if Step 1 is valid (for button enable/disable)
+  const isStep1Valid = () => {
+    // Check if all required fields have values
+    const hasContactData = contactData.mobile_phone && contactData.email_address;
+    const hasDeliveryAddress = deliveryAddress?.addressData && Object.keys(deliveryAddress.addressData).length > 0;
+    const hasInvoiceAddress = invoiceAddress?.addressData && Object.keys(invoiceAddress.addressData).length > 0;
+
+    return hasContactData && hasDeliveryAddress && hasInvoiceAddress;
+  };
+
   const handleNext = async () => {
+    // Step 1 validation - Cart Review (addresses and contact info)
+    if (currentStep === 1) {
+      const step1Validation = validation.validateStep1(contactData, deliveryAddress, invoiceAddress);
+
+      if (!step1Validation.canProceed) {
+        setError(step1Validation.errors.join('. '));
+        return;
+      }
+    }
+
+    // Step 2 validation - Terms & Conditions
     if (currentStep === 2 && !generalTermsAccepted) {
       setError('Please accept the Terms & Conditions to continue.');
       return;
@@ -424,6 +466,9 @@ const CheckoutSteps = ({ onComplete }) => {
             onContactUpdate={handleContactDataUpdate}
             onDeliveryAddressUpdate={handleDeliveryAddressUpdate}
             onInvoiceAddressUpdate={handleInvoiceAddressUpdate}
+            // Pass validation state for visual indicators
+            addressValidation={validation.addressValidation}
+            contactValidation={validation.contactValidation}
           />
         );
 
@@ -527,6 +572,7 @@ const CheckoutSteps = ({ onComplete }) => {
                     vatCalculations={vatCalculations}
                     isCollapsed={isCartSummaryCollapsed}
                     onToggleCollapse={setIsCartSummaryCollapsed}
+                    paymentMethod={paymentMethod}
                   />
                 </div>
               </div>
@@ -547,9 +593,12 @@ const CheckoutSteps = ({ onComplete }) => {
               <Button
                 variant="primary"
                 onClick={handleNext}
-                disabled={currentStep === 2 && !generalTermsAccepted}
+                disabled={
+                  (currentStep === 1 && !isStep1Valid()) ||
+                  (currentStep === 2 && !generalTermsAccepted)
+                }
               >
-                Next
+                {currentStep === 1 ? 'Continue to Terms' : 'Next'}
               </Button>
             ) : (
               <Button

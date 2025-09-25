@@ -6,7 +6,8 @@ const CartSummaryPanel = ({
   cartItems = [],
   vatCalculations,
   isCollapsed = false,
-  onToggleCollapse = () => {}
+  onToggleCollapse = () => {},
+  paymentMethod = 'card'
 }) => {
   const containerStyle = {
     transition: 'all 0.3s ease-in-out',
@@ -32,7 +33,11 @@ const CartSummaryPanel = ({
         </div>
         {vatCalculations && (
           <div>
-            <strong>Total: £{vatCalculations.totals.total_gross.toFixed(2)}</strong>
+            <strong>Total: £{(
+              paymentMethod === 'card'
+                ? vatCalculations.totals.total_gross
+                : vatCalculations.totals.total_gross - vatCalculations.totals.total_fees
+            ).toFixed(2)}</strong>
           </div>
         )}
       </Card.Body>
@@ -90,8 +95,8 @@ const CartSummaryPanel = ({
               <small>VAT (20%):</small>
               <small>£{vatCalculations.totals.total_vat.toFixed(2)}</small>
             </div>
-            {/* Display fees if present */}
-            {vatCalculations.totals.total_fees > 0 && (
+            {/* Display fees if present and payment method is card */}
+            {vatCalculations.totals.total_fees > 0 && paymentMethod === 'card' && (
               <>
                 {vatCalculations.fees?.map((fee, index) => (
                   <div key={index} className="d-flex justify-content-between">
@@ -106,7 +111,11 @@ const CartSummaryPanel = ({
             <hr className="my-2" />
             <div className="d-flex justify-content-between">
               <strong>Total:</strong>
-              <strong>£{vatCalculations.totals.total_gross.toFixed(2)}</strong>
+              <strong>£{(
+                paymentMethod === 'card'
+                  ? vatCalculations.totals.total_gross
+                  : vatCalculations.totals.total_gross - vatCalculations.totals.total_fees
+              ).toFixed(2)}</strong>
             </div>
           </div>
         )}
