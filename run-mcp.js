@@ -95,6 +95,21 @@ const servers = {
 			args: ["-y", "@mui/mcp@latest"],
 		},
 	},
+	"spec-kit Docs": {
+		windows: {
+			command: "cmd",
+			args: [
+				"/c",
+				"npx",
+				"mcp-remote",
+				"https://gitmcp.io/github/spec-kit",
+			],
+		},
+		default: {
+			command: "npx",
+			args: ["mcp-remote", "https://gitmcp.io/github/spec-kit"],
+		},
+	}
 };
 
 const serverConfig = servers[server];
