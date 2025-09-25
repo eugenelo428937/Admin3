@@ -30,7 +30,9 @@ const CartReviewStep = ({
   userProfile = null,
   onContactUpdate, // Callback for when contact info is updated
   onDeliveryAddressUpdate, // Callback for delivery address updates
-  onInvoiceAddressUpdate // Callback for invoice address updates
+  onInvoiceAddressUpdate, // Callback for invoice address updates
+  addressValidation = null, // Validation state for addresses
+  contactValidation = null // Validation state for contact info
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -147,6 +149,7 @@ const CartReviewStep = ({
                     userProfile={userProfile}
                     onAddressChange={onDeliveryAddressUpdate}
                     onAddressUpdate={onContactUpdate}
+                    validationState={addressValidation?.deliveryAddress}
                   />
                 </CardContent>
               </Card>
@@ -173,6 +176,7 @@ const CartReviewStep = ({
                     userProfile={userProfile}
                     onAddressChange={onInvoiceAddressUpdate}
                     onAddressUpdate={onContactUpdate}
+                    validationState={addressValidation?.invoiceAddress}
                   />
                 </CardContent>
               </Card>
@@ -184,6 +188,7 @@ const CartReviewStep = ({
             <CommunicationDetailsPanel
               userProfile={userProfile}
               onProfileUpdate={onContactUpdate}
+              validationState={contactValidation}
             />
           </Grid>
         </Grid>

@@ -27,6 +27,10 @@
 		"mui-mcp": {
 			"command": "node",
 			"args": ["run-mcp.js", "mui-mcp"]
+		},
+		"spec-kit Docs": {
+			"command": "node",
+			"args": ["run-mcp.js", "spec-kit Docs"]
 		}
 	}
 }

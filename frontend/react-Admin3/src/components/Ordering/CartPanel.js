@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Offcanvas, Button, ListGroup, Row, Col } from "react-bootstrap";
+import { Offcanvas, Button, ListGroup, Row } from "react-bootstrap";
 import { useCart } from "../../contexts/CartContext";
 import { useVAT } from "../../contexts/VATContext";
 import { useAuth } from "../../hooks/useAuth";
@@ -11,19 +11,33 @@ import "../../styles/cart_panel.css";
 
 const CartPanel = React.memo(({ show, handleClose }) => {
   const { cartItems, cartData, clearCart, removeFromCart } = useCart();
-  const { getPriceDisplay, formatPrice, isProductVATExempt, showVATInclusive } = useVAT();
+  const { getPriceDisplay, formatPrice, isProductVATExempt } = useVAT();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  // Handle safe close with focus management
+  const handleSafeClose = () => {
+    // Remove focus from any element inside the offcanvas before closing
+    if (document.activeElement && document.activeElement.closest('.offcanvas')) {
+      document.activeElement.blur();
+    }
+    // Small delay to ensure blur happens before close
+    setTimeout(() => {
+      handleClose && handleClose();
+    }, 0);
+  };
 
   // Handle checkout button click
   const handleCheckout = () => {
     if (!isAuthenticated) {
       // Set redirect flag for post-login
       localStorage.setItem("postLoginRedirect", "/checkout");
+      // Close cart panel to prevent aria-hidden focus issues with login modal
+      handleSafeClose();
       // Show login modal by dispatching a custom event (handled in parent)
       window.dispatchEvent(new CustomEvent("show-login-modal"));
     } else {
-      handleClose && handleClose();
+      handleSafeClose();
       navigate("/checkout");
     }
   };
@@ -60,7 +74,7 @@ const CartPanel = React.memo(({ show, handleClose }) => {
       totalFees,
       total: subtotal + totalVAT + totalFees
     };
-  }, [cartItems, cartData, getPriceDisplay, isProductVATExempt, showVATInclusive]);
+  }, [cartItems, cartData, getPriceDisplay, isProductVATExempt]);
 
   // Memoize individual item price display calculation
   const getItemPriceDisplay = useMemo(() => {
@@ -71,10 +85,15 @@ const CartPanel = React.memo(({ show, handleClose }) => {
       
       return `${formatPrice(priceDisplay.displayPrice)} ${priceDisplay.label}`;
     };
-  }, [getPriceDisplay, formatPrice, isProductVATExempt, showVATInclusive]);
+  }, [getPriceDisplay, formatPrice, isProductVATExempt]);
 
   return (
-		<Offcanvas show={show} onHide={handleClose} placement="end">
+		<Offcanvas
+			show={show}
+			onHide={handleSafeClose}
+			placement="end"
+			restoreFocus={false}
+			enforceFocus={false}>
 			<Offcanvas.Header closeButton>
 				<div className="d-flex justify-content-between align-items-center w-100 me-3">
 					<Offcanvas.Title>Shopping Cart</Offcanvas.Title>
@@ -456,7 +475,10 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 					<Button
 						variant="danger"
 						className="d-flex flex-row flex-wrap align-items-center justify-content-center w-auto"
-						onClick={clearCart}
+						onClick={() => {
+							clearCart();
+							// No need to close cart after clearing - user might want to keep shopping
+						}}
 						title="Clear cart">
 						<Trash3 className="bi d-flex flex-row align-items-center" />
 						Clear Cart

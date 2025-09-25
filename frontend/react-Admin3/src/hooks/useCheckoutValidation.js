@@ -1,10 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
 import acknowledgmentService from '../services/acknowledgmentService';
+import phoneValidationService from '../services/phoneValidationService';
 
 /**
  * Hook for checkout validation
  *
  * Manages validation of ALL acknowledgments from ALL entry points
+ * as well as address and contact information validation
  * before allowing checkout to proceed.
  */
 const useCheckoutValidation = () => {
@@ -22,8 +24,161 @@ const useCheckoutValidation = () => {
     satisfiedAcknowledgments: [],
     validationMessage: '',
     lastValidated: null,
-    error: null
+    error: null,
+    // Address and contact validation state
+    addressValidation: {
+      deliveryAddress: { isValid: false, error: null },
+      invoiceAddress: { isValid: false, error: null }
+    },
+    contactValidation: {
+      mobilePhone: { isValid: false, error: null },
+      email: { isValid: false, error: null }
+    }
   });
+
+  /**
+   * Validate email address
+   */
+  const validateEmail = useCallback((email) => {
+    if (!email || !email.trim()) {
+      return { isValid: false, error: 'Email address is required' };
+    }
+
+    // RFC 5322 compliant email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return { isValid: false, error: 'Please enter a valid email address' };
+    }
+
+    return { isValid: true, error: null };
+  }, []);
+
+  /**
+   * Validate phone number
+   */
+  const validatePhone = useCallback((phoneNumber, countryCode = 'GB', isRequired = false) => {
+    if (!phoneNumber || !phoneNumber.trim()) {
+      if (isRequired) {
+        return { isValid: false, error: 'Phone number is required' };
+      }
+      return { isValid: true, error: null }; // Optional field is valid when empty
+    }
+
+    try {
+      const validation = phoneValidationService.validatePhoneNumber(phoneNumber, countryCode);
+      return {
+        isValid: validation.isValid,
+        error: validation.error || null
+      };
+    } catch (error) {
+      return { isValid: false, error: 'Invalid phone number format' };
+    }
+  }, []);
+
+  /**
+   * Validate address completeness
+   */
+  const validateAddress = useCallback((addressData, addressType) => {
+    if (!addressData || typeof addressData !== 'object') {
+      return { isValid: false, error: `${addressType} address is required` };
+    }
+
+    // Check required fields for address
+    const requiredFields = ['address_line_1', 'city', 'postal_code', 'country'];
+    const missingFields = [];
+
+    for (const field of requiredFields) {
+      if (!addressData[field] || !addressData[field].trim()) {
+        missingFields.push(field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+      }
+    }
+
+    if (missingFields.length > 0) {
+      return {
+        isValid: false,
+        error: `${addressType} address is incomplete. Missing: ${missingFields.join(', ')}`
+      };
+    }
+
+    return { isValid: true, error: null };
+  }, []);
+
+  /**
+   * Validate contact information
+   */
+  const validateContactInfo = useCallback((contactData) => {
+    const errors = [];
+    const validations = {
+      mobilePhone: { isValid: true, error: null },
+      email: { isValid: true, error: null }
+    };
+
+    // Validate mobile phone (required)
+    const phoneValidation = validatePhone(contactData.mobile_phone, 'GB', true);
+    validations.mobilePhone = phoneValidation;
+    if (!phoneValidation.isValid) {
+      errors.push(phoneValidation.error);
+    }
+
+    // Validate email (required)
+    const emailValidation = validateEmail(contactData.email_address);
+    validations.email = emailValidation;
+    if (!emailValidation.isValid) {
+      errors.push(emailValidation.error);
+    }
+
+    // Validate optional phone numbers
+    if (contactData.home_phone) {
+      const homePhoneValidation = validatePhone(contactData.home_phone, 'GB', false);
+      if (!homePhoneValidation.isValid) {
+        errors.push(`Home phone: ${homePhoneValidation.error}`);
+      }
+    }
+
+    if (contactData.work_phone) {
+      const workPhoneValidation = validatePhone(contactData.work_phone, 'GB', false);
+      if (!workPhoneValidation.isValid) {
+        errors.push(`Work phone: ${workPhoneValidation.error}`);
+      }
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      validations
+    };
+  }, [validateEmail, validatePhone]);
+
+  /**
+   * Validate addresses (delivery and invoice)
+   */
+  const validateAddresses = useCallback((deliveryAddress, invoiceAddress) => {
+    const errors = [];
+    const validations = {
+      deliveryAddress: { isValid: true, error: null },
+      invoiceAddress: { isValid: true, error: null }
+    };
+
+    // Validate delivery address
+    const deliveryValidation = validateAddress(deliveryAddress?.addressData, 'Delivery');
+    validations.deliveryAddress = deliveryValidation;
+    if (!deliveryValidation.isValid) {
+      errors.push(deliveryValidation.error);
+    }
+
+    // Validate invoice address
+    const invoiceValidation = validateAddress(invoiceAddress?.addressData, 'Invoice');
+    validations.invoiceAddress = invoiceValidation;
+    if (!invoiceValidation.isValid) {
+      errors.push(invoiceValidation.error);
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      validations
+    };
+  }, [validateAddress]);
 
   /**
    * Validate checkout comprehensively
@@ -154,6 +309,45 @@ const useCheckoutValidation = () => {
   }, []);
 
   /**
+   * Validate Step 1 (Cart Review) - addresses and contact info
+   */
+  const validateStep1 = useCallback((contactData, deliveryAddress, invoiceAddress) => {
+    const errors = [];
+    let canProceed = true;
+
+    // Validate contact information
+    const contactValidation = validateContactInfo(contactData);
+    if (!contactValidation.isValid) {
+      errors.push(...contactValidation.errors);
+      canProceed = false;
+    }
+
+    // Validate addresses
+    const addressesValidation = validateAddresses(deliveryAddress, invoiceAddress);
+    if (!addressesValidation.isValid) {
+      errors.push(...addressesValidation.errors);
+      canProceed = false;
+    }
+
+    // Update validation state
+    setValidationState(prev => ({
+      ...prev,
+      addressValidation: addressesValidation.validations,
+      contactValidation: contactValidation.validations,
+      canProceed: canProceed && prev.canProceed, // Combine with acknowledgment validation
+      validationMessage: errors.length > 0 ? errors.join('. ') : '',
+      error: errors.length > 0 ? errors[0] : null
+    }));
+
+    return {
+      canProceed,
+      errors,
+      contactValidation: contactValidation.validations,
+      addressValidation: addressesValidation.validations
+    };
+  }, [validateContactInfo, validateAddresses]);
+
+  /**
    * Reset validation state
    */
   const resetValidation = useCallback(() => {
@@ -171,7 +365,15 @@ const useCheckoutValidation = () => {
       satisfiedAcknowledgments: [],
       validationMessage: '',
       lastValidated: null,
-      error: null
+      error: null,
+      addressValidation: {
+        deliveryAddress: { isValid: false, error: null },
+        invoiceAddress: { isValid: false, error: null }
+      },
+      contactValidation: {
+        mobilePhone: { isValid: false, error: null },
+        email: { isValid: false, error: null }
+      }
     });
   }, []);
 
@@ -207,6 +409,12 @@ const useCheckoutValidation = () => {
 
     // Actions
     validateCheckout,
+    validateStep1,
+    validateContactInfo,
+    validateAddresses,
+    validateEmail,
+    validatePhone,
+    validateAddress,
     quickCanProceedCheck,
     getMissingAcknowledgments,
     collectAllRequiredAcknowledgments,
