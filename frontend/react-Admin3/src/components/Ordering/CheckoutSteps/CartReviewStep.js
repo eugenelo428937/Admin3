@@ -28,7 +28,9 @@ const CartReviewStep = ({
   rulesMessages,
   vatCalculations,
   userProfile = null,
-  onAddressUpdate // Callback for when address is updated
+  onContactUpdate, // Callback for when contact info is updated
+  onDeliveryAddressUpdate, // Callback for delivery address updates
+  onInvoiceAddressUpdate // Callback for invoice address updates
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -143,10 +145,8 @@ const CartReviewStep = ({
                   <AddressSelectionPanel
                     addressType="delivery"
                     userProfile={userProfile}
-                    onAddressChange={(addressInfo) => {
-                      console.log('Delivery address changed:', addressInfo);
-                    }}
-                    onAddressUpdate={onAddressUpdate}
+                    onAddressChange={onDeliveryAddressUpdate}
+                    onAddressUpdate={onContactUpdate}
                   />
                 </CardContent>
               </Card>
@@ -171,10 +171,8 @@ const CartReviewStep = ({
                   <AddressSelectionPanel
                     addressType="invoice"
                     userProfile={userProfile}
-                    onAddressChange={(addressInfo) => {
-                      console.log('Invoice address changed:', addressInfo);
-                    }}
-                    onAddressUpdate={onAddressUpdate}
+                    onAddressChange={onInvoiceAddressUpdate}
+                    onAddressUpdate={onContactUpdate}
                   />
                 </CardContent>
               </Card>
@@ -185,7 +183,7 @@ const CartReviewStep = ({
           <Grid item xs={12} sx={{ mt: 3 }}>
             <CommunicationDetailsPanel
               userProfile={userProfile}
-              onProfileUpdate={onAddressUpdate}
+              onProfileUpdate={onContactUpdate}
             />
           </Grid>
         </Grid>

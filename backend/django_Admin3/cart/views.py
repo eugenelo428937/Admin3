@@ -5,7 +5,7 @@ from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-from .models import Cart, CartItem, CartFee, ActedOrder, ActedOrderItem, OrderUserAcknowledgment, OrderUserPreference
+from .models import Cart, CartItem, CartFee, ActedOrder, ActedOrderItem, OrderUserAcknowledgment, OrderUserPreference, OrderUserContact, OrderDeliveryDetail
 from .serializers import CartSerializer, CartItemSerializer, ActedOrderSerializer
 from products.models import Product
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
@@ -658,7 +658,7 @@ class CartViewSet(viewsets.ViewSet):
             
             # Calculate totals using the rules engine (same as frontend)
             try:
-                from rules_engine.engine import evaluate_checkout_rules
+                from rules_engine.services.rule_engine import rule_engine
                 from rules_engine.custom_functions import calculate_vat_standard
                 
                 # Format cart items for VAT calculation 
@@ -744,7 +744,7 @@ class CartViewSet(viewsets.ViewSet):
                 logger.info(f"Successfully extracted essential contact/delivery data for order {order.id}")
             except Exception as e:
                 logger.warning(f"Failed to extract essential order data for order {order.id}: {str(e)}")
-                # Continue with checkout - this is logged but shouldn\'t block
+                # Continue with checkout - this is logged but shouldn't block
 
             # Transfer session acknowledgments to order before T&C processing
             self._transfer_session_acknowledgments_to_order(request, order, cart)
@@ -752,7 +752,7 @@ class CartViewSet(viewsets.ViewSet):
             # Create T&C acceptance record
             try:
                 # Get rules engine evaluation data for checkout_terms entry point
-                from rules_engine.engine import rules_engine
+                from rules_engine.services.rule_engine import rule_engine
                 rules_evaluation = rules_engine.evaluate_rules(
                     entry_point_code='checkout_terms',
                     user=user,
@@ -812,7 +812,7 @@ class CartViewSet(viewsets.ViewSet):
                 
                 if expired_deadline_rules:
                     # Get the rule evaluation for checkout_start to find expired deadline rule
-                    from rules_engine.engine import rules_engine
+                    from rules_engine.services.rule_engine import rule_engine
                     from rules_engine.models import Rule, MessageTemplate
                     
                     checkout_evaluation = rules_engine.evaluate_rules(
@@ -1587,8 +1587,8 @@ class CartViewSet(viewsets.ViewSet):
                 logger.error(f"Failed to save preference '{preference_key}': {str(e)}")
                 # Continue with other preferences
 
-        # NEW: Also extract and save contact and address data to new specialized models
-        self._extract_and_save_contact_data(order, user_preferences)
+        # NEW: Also extract and save delivery address data to new specialized models
+        # NOTE: Contact data extraction is handled by _extract_and_save_essential_order_data above
         self._extract_and_save_delivery_preferences(order, user_preferences)
 
     def _extract_and_save_contact_data(self, order, user_preferences):
@@ -1643,78 +1643,82 @@ class CartViewSet(viewsets.ViewSet):
     def _extract_and_save_delivery_preferences(self, order, user_preferences):
         """Extract delivery/address information from user preferences and save to OrderDeliveryDetail"""
         from .models import OrderDeliveryDetail
+        import logging
+        logger = logging.getLogger(__name__)
+
+        logger.info(f"🔍 [Backend] Extracting delivery data for order {order.id}")
+        logger.info(f"🔍 [Backend] User preferences received: {user_preferences}")
 
         # Check if we have delivery/address data in the preferences
         delivery_data = {}
 
-        # Map preference keys to delivery fields
-        delivery_mapping = {
-            'delivery_address_type': 'delivery_address_type',
-            'delivery_address_line1': 'delivery_address_line1',
-            'delivery_address_line2': 'delivery_address_line2',
-            'delivery_city': 'delivery_city',
-            'delivery_state': 'delivery_state',
-            'delivery_postal_code': 'delivery_postal_code',
-            'delivery_country': 'delivery_country',
-            'invoice_address_type': 'invoice_address_type',
-            'invoice_address_line1': 'invoice_address_line1',
-            'invoice_address_line2': 'invoice_address_line2',
-            'invoice_city': 'invoice_city',
-            'invoice_state': 'invoice_state',
-            'invoice_postal_code': 'invoice_postal_code',
-            'invoice_country': 'invoice_country'
-        }
+        if user_preferences:
+            logger.info(f"🔍 [Backend] Processing {len(user_preferences)} user preferences for delivery data")
+            for pref_key, pref_data in user_preferences.items():
+                value = pref_data.get('value', '') if isinstance(pref_data, dict) else pref_data
+                logger.info(f"🔍 [Backend] Processing delivery preference: {pref_key} = {value}")
 
-        for pref_key, pref_data in user_preferences.items():
-            if pref_key in delivery_mapping:
-                value = pref_data.get('value', '')
-                if value:  # Only save non-empty values
-                    delivery_data[delivery_mapping[pref_key]] = value
+                # Handle the new address data structure from frontend
+                if pref_key == 'delivery_address_type':
+                    delivery_data['delivery_address_type'] = str(value).lower()
+                    logger.info(f"🔍 [Backend] Set delivery_address_type: {value}")
 
-        # Also check for nested address object (from "For this order only" submissions)
-        if 'addressData' in user_preferences:
-            address_prefs = user_preferences['addressData']
-            if isinstance(address_prefs, dict):
-                # Map common address fields to delivery fields
-                address_field_mapping = {
-                    'country': 'delivery_country',
-                    'address': 'delivery_address_line1',
-                    'address_line1': 'delivery_address_line1',
-                    'address_line2': 'delivery_address_line2',
-                    'city': 'delivery_city',
-                    'state': 'delivery_state',
-                    'postal_code': 'delivery_postal_code',
-                    'postcode': 'delivery_postal_code'
-                }
+                elif pref_key == 'delivery_address_data':
+                    # Parse JSON address data and store complete object in JSONB field
+                    try:
+                        import json
+                        address_data = json.loads(str(value)) if isinstance(value, str) else value
+                        logger.info(f"🔍 [Backend] Parsed delivery address data: {address_data}")
 
-                address_value = address_prefs.get('value', address_prefs)
-                if isinstance(address_value, dict):
-                    for addr_field, delivery_field in address_field_mapping.items():
-                        value = address_value.get(addr_field)
-                        if value:
-                            delivery_data[delivery_field] = value
+                        if isinstance(address_data, dict):
+                            # Store complete address object in JSONB field
+                            delivery_data['delivery_address_data'] = address_data
+                            logger.info(f"🔍 [Backend] Set delivery_address_data JSONB: {address_data}")
+                    except Exception as e:
+                        logger.warning(f"🔍 [Backend] Failed to parse delivery address data: {e}")
 
-                # If we have address data, set address type to 'home' by default
-                if delivery_data and 'delivery_address_type' not in delivery_data:
-                    delivery_data['delivery_address_type'] = 'home'
+                elif pref_key == 'invoice_address_type':
+                    delivery_data['invoice_address_type'] = str(value).lower()
+                    logger.info(f"🔍 [Backend] Set invoice_address_type: {value}")
+
+                elif pref_key == 'invoice_address_data':
+                    # Parse JSON address data for invoice and store complete object in JSONB field
+                    try:
+                        import json
+                        address_data = json.loads(str(value)) if isinstance(value, str) else value
+                        logger.info(f"🔍 [Backend] Parsed invoice address data: {address_data}")
+
+                        if isinstance(address_data, dict):
+                            # Store complete address object in JSONB field
+                            delivery_data['invoice_address_data'] = address_data
+                            logger.info(f"🔍 [Backend] Set invoice_address_data JSONB: {address_data}")
+                    except Exception as e:
+                        logger.warning(f"🔍 [Backend] Failed to parse invoice address data: {e}")
+        else:
+            logger.warning(f"🔍 [Backend] No user_preferences provided for delivery data extraction")
+
 
         # Create OrderDeliveryDetail record if we have any delivery data
+        logger.info(f"🔍 [Backend] Final delivery_data for order {order.id}: {delivery_data}")
         if delivery_data:
             try:
                 # Check if record already exists
-                existing_pref = OrderDeliveryDetail.objects.filter(order=order).first()
-                if existing_pref:
+                existing_detail = OrderDeliveryDetail.objects.filter(order=order).first()
+                if existing_detail:
                     # Update existing record
                     for field, value in delivery_data.items():
-                        setattr(existing_pref, field, value)
-                    existing_pref.save()
-                    logger.info(f"Updated OrderDeliveryDetail for order {order.id}")
+                        setattr(existing_detail, field, value)
+                    existing_detail.save()
+                    logger.info(f"✅ [Backend] Updated OrderDeliveryDetail {existing_detail.id} for order {order.id} with data: {delivery_data}")
                 else:
                     # Create new record
-                    OrderDeliveryDetail.objects.create(order=order, **delivery_data)
-                    logger.info(f"Created OrderDeliveryDetail for order {order.id} with data: {delivery_data}")
+                    delivery_detail = OrderDeliveryDetail.objects.create(order=order, **delivery_data)
+                    logger.info(f"✅ [Backend] Created OrderDeliveryDetail {delivery_detail.id} for order {order.id} with data: {delivery_data}")
             except Exception as e:
-                logger.error(f"Failed to save OrderDeliveryDetail for order {order.id}: {str(e)}")
+                logger.error(f"❌ [Backend] Failed to save OrderDeliveryDetail for order {order.id}: {str(e)}")
+                logger.error(f"❌ [Backend] Delivery data that failed: {delivery_data}")
+        else:
+            logger.warning(f"⚠️ [Backend] No delivery data to save for order {order.id}")
 
     def _extract_and_save_essential_order_data(self, order, user, user_preferences=None):
         """
@@ -1742,18 +1746,33 @@ class CartViewSet(viewsets.ViewSet):
         import logging
         logger = logging.getLogger(__name__)
 
+        logger.info(f"🔍 [Backend] Extracting contact data for order {order.id}")
+        logger.info(f"🔍 [Backend] User preferences received: {user_preferences}")
+
         contact_data = {}
 
         # Try to get data from user_preferences first
         if user_preferences:
+            logger.info(f"🔍 [Backend] Processing {len(user_preferences)} user preferences")
             for pref_key, pref_data in user_preferences.items():
                 value = pref_data.get('value', '') if isinstance(pref_data, dict) else pref_data
+                logger.info(f"🔍 [Backend] Processing preference: {pref_key} = {value}")
 
-                # Map preference keys to contact fields
-                if 'phone' in pref_key.lower() or 'mobile' in pref_key.lower():
+                # Map preference keys to contact fields with specific mapping
+                if pref_key == 'mobile_phone':
                     contact_data['mobile_phone'] = str(value)
-                elif 'email' in pref_key.lower():
+                    logger.info(f"🔍 [Backend] Set mobile_phone: {value}")
+                elif pref_key == 'home_phone':
+                    contact_data['home_phone'] = str(value)
+                    logger.info(f"🔍 [Backend] Set home_phone: {value}")
+                elif pref_key == 'work_phone':
+                    contact_data['work_phone'] = str(value)
+                    logger.info(f"🔍 [Backend] Set work_phone: {value}")
+                elif pref_key == 'email_address' or pref_key == 'email':
                     contact_data['email_address'] = str(value)
+                    logger.info(f"🔍 [Backend] Set email_address: {value}")
+        else:
+            logger.warning(f"🔍 [Backend] No user_preferences provided for order {order.id}")
 
         # Fallback to user profile data if no preferences
         if not contact_data.get('email_address') and user:
@@ -1770,12 +1789,16 @@ class CartViewSet(viewsets.ViewSet):
                 pass  # No phone data available
 
         # Create contact record if we have any data
+        logger.info(f"🔍 [Backend] Final contact_data for order {order.id}: {contact_data}")
         if contact_data:
             try:
-                OrderUserContact.objects.create(order=order, **contact_data)
-                logger.info(f"Created OrderUserContact for order {order.id} with fallback data")
+                contact_record = OrderUserContact.objects.create(order=order, **contact_data)
+                logger.info(f"✅ [Backend] Successfully created OrderUserContact {contact_record.id} for order {order.id} with data: {contact_data}")
             except Exception as e:
-                logger.error(f"Failed to create OrderUserContact for order {order.id}: {str(e)}")
+                logger.error(f"❌ [Backend] Failed to create OrderUserContact for order {order.id}: {str(e)}")
+                logger.error(f"❌ [Backend] Contact data that failed: {contact_data}")
+        else:
+            logger.warning(f"⚠️ [Backend] No contact data to save for order {order.id}")
 
     def _extract_and_save_delivery_preferences_fallback(self, order, user, user_preferences=None):
         """Extract delivery data from user_preferences or fallback to user profile"""

@@ -555,7 +555,7 @@ class OrderDeliveryDetail(models.Model):
         help_text="Associated order for this delivery detail"
     )
 
-    # Delivery Address
+    # Address Types
     delivery_address_type = models.CharField(
         max_length=10,
         choices=ADDRESS_TYPE_CHOICES,
@@ -563,14 +563,6 @@ class OrderDeliveryDetail(models.Model):
         blank=True,
         help_text="Type of delivery address (home/work)"
     )
-    delivery_address_line1 = models.CharField(max_length=255, null=True, blank=True)
-    delivery_address_line2 = models.CharField(max_length=255, null=True, blank=True)
-    delivery_city = models.CharField(max_length=100, null=True, blank=True)
-    delivery_state = models.CharField(max_length=100, null=True, blank=True)
-    delivery_postal_code = models.CharField(max_length=20, null=True, blank=True)
-    delivery_country = models.CharField(max_length=100, null=True, blank=True)
-
-    # Invoice Address
     invoice_address_type = models.CharField(
         max_length=10,
         choices=ADDRESS_TYPE_CHOICES,
@@ -578,12 +570,18 @@ class OrderDeliveryDetail(models.Model):
         blank=True,
         help_text="Type of invoice address (home/work)"
     )
-    invoice_address_line1 = models.CharField(max_length=255, null=True, blank=True)
-    invoice_address_line2 = models.CharField(max_length=255, null=True, blank=True)
-    invoice_city = models.CharField(max_length=100, null=True, blank=True)
-    invoice_state = models.CharField(max_length=100, null=True, blank=True)
-    invoice_postal_code = models.CharField(max_length=20, null=True, blank=True)
-    invoice_country = models.CharField(max_length=100, null=True, blank=True)
+
+    # Complete Address Data (JSONB fields)
+    delivery_address_data = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Complete delivery address data in JSON format"
+    )
+    invoice_address_data = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Complete invoice address data in JSON format"
+    )
 
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)

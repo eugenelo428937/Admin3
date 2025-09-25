@@ -34,9 +34,6 @@ const config = {
 	enableDebugLogs: true,
 };
 
-if (config.isDevelopment) {	
-	console.log("environment:", process.env.NODE_ENV);	
-	console.log("Debug logs enabled:", config.enableDebugLogs);		
-}	
+// Development environment detected
 
 export default config;
