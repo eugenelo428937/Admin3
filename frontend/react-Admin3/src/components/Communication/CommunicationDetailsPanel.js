@@ -221,7 +221,15 @@ const CommunicationDetailsPanel = ({
       if (result.status === 'success') {
         setSuccess('Communication details updated successfully');
         if (onProfileUpdate) {
-          onProfileUpdate();
+          onProfileUpdate({
+            contact: {
+              home_phone: formData.homePhone,
+              mobile_phone: formData.mobilePhone,
+              work_phone: formData.workPhone,
+              email_address: formData.email
+            },
+            orderOnly: false // This was a full profile update
+          });
         }
       } else {
         setError(result.message || 'Failed to update communication details');

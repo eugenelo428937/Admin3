@@ -381,9 +381,6 @@ export const buildRulesContext = {
    * @returns {Object} Checkout context
    */
   checkout: (cartData, cartItems = []) => {
-    // Enhanced debugging
-    console.log('🔍 [checkout] Input cartData:', cartData);
-    console.log('🔍 [checkout] Input cartItems length:', cartItems?.length || 0);
 
     if (!cartData) {
       console.error('❌ [checkout] No cart data provided');
@@ -474,11 +471,6 @@ export const buildRulesContext = {
       acknowledgments: {}
     };
 
-    // Debug logging for development
-    console.log('🔥 [buildCheckoutContext] BUILT schema-compliant context:', context);
-    console.log('🔥 [buildCheckoutContext] Cart data input:', cartData);
-    console.log('🔥 [buildCheckoutContext] Cart items input:', cartItems);
-    console.log('🔥 [buildCheckoutContext] Context keys:', Object.keys(context));
 
     return context;
   },
@@ -623,14 +615,8 @@ export const buildRulesContext = {
    * @returns {Object} Checkout terms context
    */
   checkoutTerms: (cartData, cartItems = [], user = null) => {
-    console.log('🔥 [checkoutTerms] START - cartData:', cartData);
-    console.log('🔥 [checkoutTerms] START - cartItems length:', cartItems?.length);
-
     // Use the checkout context as base
     const checkoutContext = buildRulesContext.checkout(cartData, cartItems);
-
-    console.log('🔥 [checkoutTerms] checkoutContext:', checkoutContext);
-    console.log('🔥 [checkoutTerms] checkoutContext.cart:', checkoutContext.cart);
 
     // Early return if no cart context (prevents "Missing required cart context" error)
     if (!checkoutContext.cart) {
@@ -666,11 +652,6 @@ export const buildRulesContext = {
       // The backend expects an object, not an array
     };
 
-    // Debug logging
-    console.log('🔥 [checkoutTerms] FINAL context:', context);
-    console.log('🔥 [checkoutTerms] FINAL context keys:', Object.keys(context));
-    console.log('🔥 [checkoutTerms] FINAL cart exists:', !!context.cart);
-    console.log('🔥 [checkoutTerms] FINAL context JSON:', JSON.stringify(context, null, 2));
 
     return context;
   },
@@ -1032,7 +1013,6 @@ export const executeAndProcessRules = async (entryPoint, context, rulesEngineSer
     }
 
     // Execute rules
-    console.log(`🔍 [executeAndProcessRules] Executing ${entryPoint} with context:`, context);
     const response = await rulesEngineService.executeRules(entryPoint, context);
 
     // Process response
@@ -1041,8 +1021,6 @@ export const executeAndProcessRules = async (entryPoint, context, rulesEngineSer
       entryPoint,
       originalContext: context // Pass the original context for validation if needed
     });
-
-    console.log(`📋 [executeAndProcessRules] Processed response:`, processed);
 
     return processed;
   } catch (error) {
@@ -1085,14 +1063,8 @@ export const rulesEngineHelpers = {
   /**
    * Execute checkout terms rules and process for UI
    */
-  executeCheckoutTerms: async (cartData, cartItems, rulesEngineService) => {
-    console.log('🎯 [executeCheckoutTerms] Starting with cartData:', cartData);
-    console.log('🎯 [executeCheckoutTerms] Cart ID:', cartData?.id);
-
-    const context = buildRulesContext.checkoutTerms(cartData, cartItems);
-
-    console.log('🎯 [executeCheckoutTerms] Built context.cart:', context.cart);
-    console.log('🎯 [executeCheckoutTerms] Context keys:', Object.keys(context));
+  executeCheckoutTerms: async (cartData, cartItems, rulesEngineService, user = null) => {
+    const context = buildRulesContext.checkoutTerms(cartData, cartItems, user);
 
     return executeAndProcessRules('checkout_terms', context, rulesEngineService, {
       processAcknowledgments: true,

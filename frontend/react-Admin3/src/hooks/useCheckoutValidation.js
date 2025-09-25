@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import acknowledgmentService from '../services/AcknowledgmentService';
+import acknowledgmentService from '../services/acknowledgmentService';
 
 /**
  * Hook for checkout validation

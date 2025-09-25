@@ -36,6 +36,27 @@ const CheckoutSteps = ({ onComplete }) => {
   // User preferences state
   const [preferences, setPreferences] = useState({});
 
+  // Contact data state from CommunicationDetailsPanel
+  const [contactData, setContactData] = useState({
+    home_phone: '',
+    mobile_phone: '',
+    work_phone: '',
+    email_address: ''
+  });
+
+  // Address data state from AddressSelectionPanel
+  const [deliveryAddress, setDeliveryAddress] = useState({
+    addressType: 'HOME', // HOME or WORK
+    addressData: {},
+    orderOnly: false
+  });
+
+  const [invoiceAddress, setInvoiceAddress] = useState({
+    addressType: 'HOME', // HOME or WORK
+    addressData: {},
+    orderOnly: false
+  });
+
   // Rules engine state for step 1 (checkout_start)
   const [rulesMessages, setRulesMessages] = useState([]);
   const [rulesLoading, setRulesLoading] = useState(false);
@@ -75,8 +96,28 @@ const CheckoutSteps = ({ onComplete }) => {
       try {
         const result = await userService.getUserProfile();
         if (result.status === "success") {
-          console.log('User profile fetched for checkout:', result.data);
           setUserProfile(result.data);
+
+          // Initialize contact data from user profile
+          const profile = result.data;
+          const getPhoneNumber = (type) => {
+            // First try the new backend format (contact_numbers)
+            if (profile.contact_numbers && profile.contact_numbers[type]) {
+              return profile.contact_numbers[type];
+            }
+            // Fallback to old format (profile)
+            if (profile.profile && profile.profile[type]) {
+              return profile.profile[type];
+            }
+            return '';
+          };
+
+          setContactData({
+            home_phone: getPhoneNumber('home_phone'),
+            mobile_phone: getPhoneNumber('mobile_phone'),
+            work_phone: getPhoneNumber('work_phone'),
+            email_address: profile.email || profile.user?.email || ''
+          });
         } else {
           console.error('Failed to fetch user profile:', result.message);
         }
@@ -85,6 +126,60 @@ const CheckoutSteps = ({ onComplete }) => {
       } finally {
         setProfileLoading(false);
       }
+    }
+  };
+
+  // Handle contact data updates from CommunicationDetailsPanel
+  const handleContactDataUpdate = (updateData) => {
+    console.log('🔍 [CheckoutSteps] Contact data update received:', updateData);
+
+    if (updateData && updateData.contact) {
+      // Extract contact data from the update
+      const newContactData = {
+        home_phone: updateData.contact.home_phone || '',
+        mobile_phone: updateData.contact.mobile_phone || '',
+        work_phone: updateData.contact.work_phone || '',
+        email_address: updateData.contact.email_address || updateData.contact.email || ''
+      };
+
+      console.log('🔍 [CheckoutSteps] Updating contact data state:', newContactData);
+      console.log('🔍 [CheckoutSteps] Previous contact data state:', contactData);
+      setContactData(newContactData);
+      console.log('🔍 [CheckoutSteps] Contact data state updated');
+    } else {
+      console.warn('🔍 [CheckoutSteps] No contact data in update:', updateData);
+    }
+
+    // Also call the original fetchUserProfile if it's not an order-only update
+    if (!updateData || !updateData.orderOnly) {
+      console.log('🔍 [CheckoutSteps] Fetching user profile after contact update');
+      fetchUserProfile();
+    }
+  };
+
+  // Handle delivery address updates from AddressSelectionPanel
+  const handleDeliveryAddressUpdate = (addressInfo) => {
+    if (addressInfo) {
+      const newDeliveryAddress = {
+        addressType: addressInfo.addressType || 'HOME',
+        addressData: addressInfo.addressData || {},
+        orderOnly: addressInfo.orderOnly || false
+      };
+
+      setDeliveryAddress(newDeliveryAddress);
+    }
+  };
+
+  // Handle invoice address updates from AddressSelectionPanel
+  const handleInvoiceAddressUpdate = (addressInfo) => {
+    if (addressInfo) {
+      const newInvoiceAddress = {
+        addressType: addressInfo.addressType || 'HOME',
+        addressData: addressInfo.addressData || {},
+        orderOnly: addressInfo.orderOnly || false
+      };
+
+      setInvoiceAddress(newInvoiceAddress);
     }
   };
 
@@ -128,28 +223,12 @@ const CheckoutSteps = ({ onComplete }) => {
           }
         };
 
-        console.log('🔍 [CheckoutSteps] Executing checkout_start rules for step 1, context:', JSON.stringify(context, null, 2));
-
         const result = await rulesEngineService.executeRules(rulesEngineService.ENTRY_POINTS.CHECKOUT_START, context);
 
-        console.log('📋 [CheckoutSteps] Rules engine result:', result);
-
         if (result.messages && result.messages.length > 0) {
-          console.log('📋 [CheckoutSteps] Total messages received:', result.messages.length);
-          result.messages.forEach((msg, idx) => {
-            console.log(`📋 [CheckoutSteps] Message ${idx+1}:`, {
-              title: msg.content?.title,
-              type: msg.message_type,
-              display_type: msg.display_type,
-              template_id: msg.template_id
-            });
-          });
-
           // Separate modal messages from regular messages
           const modalMsgs = result.messages.filter(msg => msg.display_type === 'modal');
           const alertMessages = result.messages.filter(msg => msg.display_type !== 'modal');
-
-          console.log('📋 [CheckoutSteps] Alert messages for display:', alertMessages.length);
 
           // Set regular alert messages
           setRulesMessages(alertMessages);
@@ -263,11 +342,9 @@ const CheckoutSteps = ({ onComplete }) => {
     }
 
     // COMPREHENSIVE VALIDATION: Validate ALL acknowledgments from ALL entry points
-    console.log('🔍 [CheckoutSteps] Starting comprehensive checkout validation...');
     const validationResult = await validation.validateCheckout(cartData, cartItems, paymentMethod, userProfile);
 
     if (validationResult.blocked) {
-      console.log('❌ [CheckoutSteps] Checkout blocked:', validationResult.validationMessage);
       // Show user exactly what acknowledgments are missing
       if (validationResult.validationMessage) {
         setError(validationResult.validationMessage);
@@ -277,7 +354,6 @@ const CheckoutSteps = ({ onComplete }) => {
       return;
     }
 
-    console.log('✅ [CheckoutSteps] All acknowledgments validated, proceeding with checkout...');
 
     if (paymentMethod === 'card') {
       if (!cardNumber || !cardholderName || !expiryMonth || !expiryYear || !cvv) {
@@ -307,7 +383,23 @@ const CheckoutSteps = ({ onComplete }) => {
           cvv: cvv
         } : undefined,
         general_terms_accepted: generalTermsAccepted,
-        user_preferences: preferences
+        user_preferences: {
+          ...preferences,
+          // Include contact data from CommunicationDetailsPanel
+          home_phone: { value: contactData.home_phone, inputType: 'text' },
+          mobile_phone: { value: contactData.mobile_phone, inputType: 'text' },
+          work_phone: { value: contactData.work_phone, inputType: 'text' },
+          email_address: { value: contactData.email_address, inputType: 'text' },
+
+          // Include address data from AddressSelectionPanels
+          delivery_address_type: { value: deliveryAddress.addressType, inputType: 'select' },
+          delivery_address_data: { value: JSON.stringify(deliveryAddress.addressData), inputType: 'json' },
+          delivery_address_order_only: { value: deliveryAddress.orderOnly, inputType: 'boolean' },
+
+          invoice_address_type: { value: invoiceAddress.addressType, inputType: 'select' },
+          invoice_address_data: { value: JSON.stringify(invoiceAddress.addressData), inputType: 'json' },
+          invoice_address_order_only: { value: invoiceAddress.orderOnly, inputType: 'boolean' }
+        }
       };
 
       await onComplete(paymentData);
@@ -329,7 +421,9 @@ const CheckoutSteps = ({ onComplete }) => {
             rulesMessages={rulesMessages}
             vatCalculations={vatCalculations}
             userProfile={userProfile}
-            onAddressUpdate={fetchUserProfile}
+            onContactUpdate={handleContactDataUpdate}
+            onDeliveryAddressUpdate={handleDeliveryAddressUpdate}
+            onInvoiceAddressUpdate={handleInvoiceAddressUpdate}
           />
         );
 

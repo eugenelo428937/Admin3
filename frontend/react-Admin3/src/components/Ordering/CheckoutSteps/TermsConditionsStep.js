@@ -3,6 +3,7 @@ import { Card, Form, Alert } from 'react-bootstrap';
 import { rulesEngineHelpers, parseMessageContent } from '../../../utils/rulesEngineUtils';
 import rulesEngineService from '../../../services/rulesEngineService';
 import RulesEngineAcknowledgmentModal from '../../Common/RulesEngineAcknowledgmentModal';
+import { useAuth } from '../../../hooks/useAuth';
 
 const TermsConditionsStep = ({
   cartData,
@@ -10,6 +11,7 @@ const TermsConditionsStep = ({
   generalTermsAccepted,
   setGeneralTermsAccepted
 }) => {
+  const { user } = useAuth(); // Get user from AuthContext
   const [rulesLoading, setRulesLoading] = useState(false);
   const [rulesMessages, setRulesMessages] = useState([]);
   const [showAcknowledgmentModal, setShowAcknowledgmentModal] = useState(false);
@@ -43,7 +45,7 @@ const TermsConditionsStep = ({
         console.log('🔍 [TermsConditionsStep] Executing checkout_terms rules...');
 
         // Use the new helper function for simplified execution
-        const result = await rulesEngineHelpers.executeCheckoutTerms(cartData, cartItems, rulesEngineService);
+        const result = await rulesEngineHelpers.executeCheckoutTerms(cartData, cartItems, rulesEngineService, user);
 
         console.log('📋 [TermsConditionsStep] Rules result:', result);
         console.log('📋 [TermsConditionsStep] Messages received:', result.messages?.summary?.totalMessages || 0);
@@ -102,7 +104,7 @@ const TermsConditionsStep = ({
     };
 
     executeTermsRules();
-  }, [cartData, cartItems]);
+  }, [cartData, cartItems, user]);
 
   const handleAcknowledgmentComplete = async (acknowledged, messageId, ackKey) => {
     if (acknowledged) {
