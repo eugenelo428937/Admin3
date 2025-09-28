@@ -109,6 +109,21 @@ const servers = {
 			command: "npx",
 			args: ["mcp-remote", "https://gitmcp.io/github/spec-kit"],
 		},
+	},
+	"BMAD-METHOD Docs": {
+		windows: {
+			command: "cmd",
+			args: [
+				"/c",
+				"npx",
+				"mcp-remote",
+				"https://gitmcp.io/bmad-code-org/BMAD-METHOD",
+			],
+		},
+		default: {
+			command: "npx",
+			args: ["mcp-remote", "https://gitmcp.io/bmad-code-org/BMAD-METHOD"],
+		},
 	}
 };
 

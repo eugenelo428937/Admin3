@@ -8,7 +8,6 @@ import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ProductList from './ProductList';
 import { CartProvider } from '../../contexts/CartContext';
-import { VATProvider } from '../../contexts/VATContext';
 import { createTestStore } from '../../test-utils/test-store';
 
 // Mock the rules engine service to prevent actual API calls during tests
@@ -63,9 +62,7 @@ const renderWithProviders = (component) => {
             <BrowserRouter>
                 <ThemeProvider theme={theme}>
                     <CartProvider>
-                        <VATProvider>
-                            {component}
-                        </VATProvider>
+                        {component}
                     </CartProvider>
                 </ThemeProvider>
             </BrowserRouter>

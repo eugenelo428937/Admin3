@@ -33,7 +33,6 @@ import {
 	CalendarMonthOutlined,
 } from "@mui/icons-material";
 import productService from "../../../services/productService";
-import { useVAT } from "../../../contexts/VATContext";
 import "../../../styles/product_card.css";
 
 const MarkingProductCard = React.memo(
@@ -52,7 +51,6 @@ const MarkingProductCard = React.memo(
 			formatPrice,
 			isProductVATExempt,
 			showVATInclusive,
-		} = useVAT();
 
 		// Memoize variation calculations for performance
 		const variationInfo = useMemo(() => {

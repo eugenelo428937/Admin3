@@ -2,6 +2,9 @@
 ./myenv/
 .env
 .vscode/
+# Spec Kit agent folder security (may contain credentials)
+.claude/
+.specify/memory/
 __pycache__/
 *.pyc
 *.pyo

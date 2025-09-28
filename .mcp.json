@@ -31,6 +31,10 @@
 		"spec-kit Docs": {
 			"command": "node",
 			"args": ["run-mcp.js", "spec-kit Docs"]
+		},
+		"BMAD-METHOD Docs": {
+			"command": "node",
+			"args": ["run-mcp.js", "BMAD-METHOD Docs"]
 		}
 	}
 }

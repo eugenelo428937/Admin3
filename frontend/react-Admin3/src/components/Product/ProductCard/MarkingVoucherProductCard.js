@@ -23,14 +23,12 @@ import {
 	LocalActivityOutlined,
 	CalendarMonthOutlined,
 } from "@mui/icons-material";
-import { useVAT } from "../../../contexts/VATContext";
 import "../../../styles/product_card.css";
 
 
 const MarkingVoucherProductCard = React.memo(({ voucher, onAddToCart }) => {
 	const [showInfoDialog, setShowInfoDialog] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
-	const { formatPrice } = useVAT();
 
 	// Check if voucher is available
 	const isAvailable = useMemo(() => {
