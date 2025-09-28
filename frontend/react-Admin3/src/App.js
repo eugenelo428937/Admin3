@@ -16,7 +16,6 @@ import MainNavBar from "./components/Navigation/MainNavBar";
 import NoMatch from "./components/NoMatch";
 import { CartProvider } from "./contexts/CartContext";
 import { ProductProvider } from "./contexts/ProductContext";
-import { VATProvider } from "./contexts/VATContext";
 import { TutorialChoiceProvider } from "./contexts/TutorialChoiceContext";
 import { Container } from "@mui/material";
 import AdminExamSessionList from "./components/admin/exam-sessions/ExamSessionList";
@@ -87,8 +86,7 @@ function App() {
 						<CartProvider>
 							<AuthProvider>
 								<ProductProvider>
-									<VATProvider>
-										<TutorialChoiceProvider>
+									<TutorialChoiceProvider>
 											<div className="App">
 												<MainNavBar className="main-navbar" />
 											<Container
@@ -250,7 +248,6 @@ function App() {
 											<TutorialChoicePanel />
 										</div>
 									</TutorialChoiceProvider>
-								</VATProvider>
 							</ProductProvider>
 						</AuthProvider>
 					</CartProvider>

@@ -656,77 +656,11 @@ class CartViewSet(viewsets.ViewSet):
                 )
                 order_items.append(fee_order_item)
             
-            # Calculate totals using the rules engine (same as frontend)
-            try:
-                from rules_engine.services.rule_engine import rule_engine
-                from rules_engine.custom_functions import calculate_vat_standard
-                
-                # Format cart items for VAT calculation 
-                cart_items_for_vat = [
-                    {
-                        'id': item.id,
-                        'product_id': item.product.product.id,
-                        'subject_code': item.product.exam_session_subject.subject.code,
-                        'product_name': item.product.product.fullname,
-                        'product_code': item.product.product.code,
-                        'product_type': getattr(item.product, 'type', None),
-                        'quantity': item.quantity,
-                        'price_type': item.price_type,
-                        'actual_price': str(item.actual_price) if item.actual_price else '0',
-                        'metadata': item.metadata
-                    }
-                    for item in cart.items.all()
-                ]
-                
-                # Calculate VAT using standard UK VAT rate (20%)
-                vat_params = {
-                    'function': 'calculate_vat_standard',
-                    'vat_rate': 0.2,
-                    'description': 'Standard UK VAT at 20%',
-                    'threshold_amount': 0,
-                    'exempt_product_types': ['book', 'educational_material']
-                }
-                
-                vat_result = calculate_vat_standard(cart_items_for_vat, vat_params)
-                
-                # Update order with calculated totals
-                order.subtotal = vat_result['total_net']
-                order.vat_amount = vat_result['total_vat']
-                order.total_amount = vat_result['total_gross']
-                order.vat_rate = vat_result['vat_rate']
-                order.vat_country = 'GB'
-                order.vat_calculation_type = 'standard_vat'
-                order.calculations_applied = {'vat_calculation': vat_result}
-                order.save()
-                
-                # Update individual order items with VAT details
-                item_calculations = {calc['item_id']: calc for calc in vat_result['item_calculations']}
-                for order_item in order_items:
-                    cart_item_id = None
-                    # Find corresponding cart item ID
-                    for cart_item in cart.items.all():
-                        if (cart_item.product_id == order_item.product_id and 
-                            cart_item.quantity == order_item.quantity and
-                            cart_item.price_type == order_item.price_type):
-                            cart_item_id = cart_item.id
-                            break
-                    
-                    if cart_item_id and cart_item_id in item_calculations:
-                        calc = item_calculations[cart_item_id]
-                        order_item.net_amount = calc['net_amount']
-                        order_item.vat_amount = calc['vat_amount']
-                        order_item.gross_amount = calc['gross_amount']
-                        order_item.vat_rate = calc['vat_rate']
-                        order_item.is_vat_exempt = calc['is_exempt']
-                        order_item.save()
-                        
-            except Exception as e:
-                logger.warning(f"VAT calculation failed during checkout: {str(e)}, using basic totals")
-                # Fallback: calculate basic totals without VAT
-                subtotal = sum(float(item.actual_price or 0) * item.quantity for item in cart.items.all())
-                order.subtotal = subtotal
-                order.total_amount = subtotal  # No VAT if calculation fails
-                order.save()
+            # Calculate basic totals (no VAT calculation - will be handled by rules engine in Phase 1)
+            subtotal = sum(float(item.actual_price or 0) * item.quantity for item in cart.items.all())
+            order.subtotal = subtotal
+            order.total_amount = subtotal  # Total equals subtotal until new VAT system is implemented
+            order.save()
 
             # Save user preferences to order
             if user_preferences:
@@ -986,7 +920,7 @@ class CartViewSet(viewsets.ViewSet):
                 
                 # Use calculated totals from the order (not recalculating)
                 order_data['subtotal'] = float(order.subtotal)
-                order_data['vat_amount'] = float(order.vat_amount)
+                order_data['vat_amount'] = 0  # VAT will be calculated by new rules engine
                 order_data['discount_amount'] = 0  # No discount system yet
                 order_data['item_count'] = len(order_data['items'])
                 order_data['total_items'] = sum(item['quantity'] for item in order_data['items'])

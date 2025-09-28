@@ -32,7 +32,6 @@ import {
 import { ThemeProvider } from "@mui/material/styles";
 import { useTheme } from "@mui/material/styles";
 import { useCart } from "../../../contexts/CartContext";
-import { useVAT } from "../../../contexts/VATContext";
 import BaseProductCard from "../../Common/BaseProductCard";
 import MarkingProductCard from "./MarkingProductCard";
 import MarkingVoucherProductCard from "./MarkingVoucherProductCard";
@@ -53,7 +52,6 @@ const MaterialProductCard = React.memo(
 		const headerRef = useRef(null);
 
 		useCart();
-		const { getPriceDisplay, formatPrice, isProductVATExempt } = useVAT();
 
 		// Initialize mouse position to center
 		useEffect(() => {

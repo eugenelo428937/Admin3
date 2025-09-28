@@ -2,7 +2,6 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import CartPanel from '../CartPanel';
 import { CartContext } from '../../../contexts/CartContext';
-import { VATContext } from '../../../contexts/VATContext';
 import { useAuth } from '../../../hooks/useAuth';
 
 // Mock dependencies
@@ -19,20 +18,11 @@ const mockCartContextValue = {
   removeFromCart: jest.fn()
 };
 
-// Mock VAT context values
-const mockVATContextValue = {
-  getPriceDisplay: jest.fn(() => ({ netPrice: 10, vatAmount: 2, displayPrice: 12, label: 'inc. VAT' })),
-  formatPrice: jest.fn((price) => `£${price.toFixed(2)}`),
-  isProductVATExempt: jest.fn(() => false),
-  showVATInclusive: true
-};
 
 const renderCartPanel = (props = {}) => {
   return render(
     <CartContext.Provider value={mockCartContextValue}>
-      <VATContext.Provider value={mockVATContextValue}>
-        <CartPanel show={true} handleClose={jest.fn()} {...props} />
-      </VATContext.Provider>
+      <CartPanel show={true} handleClose={jest.fn()} {...props} />
     </CartContext.Provider>
   );
 };

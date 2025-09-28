@@ -1,17 +1,23 @@
 import React, { useMemo } from "react";
 import { Offcanvas, Button, ListGroup, Row } from "react-bootstrap";
 import { useCart } from "../../contexts/CartContext";
-import { useVAT } from "../../contexts/VATContext";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { X, Trash3, CartCheck } from "react-bootstrap-icons";
 import { generateProductCode } from "../../utils/productCodeGenerator";
-import VATToggle from "../VATToggle";
 import "../../styles/cart_panel.css";
 
 const CartPanel = React.memo(({ show, handleClose }) => {
   const { cartItems, cartData, clearCart, removeFromCart } = useCart();
-  const { getPriceDisplay, formatPrice, isProductVATExempt } = useVAT();
+  // Simple price formatter
+  const formatPrice = (amount) => {
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: 'GBP',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
+  };
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -45,18 +51,11 @@ const CartPanel = React.memo(({ show, handleClose }) => {
   // Memoize cart calculations to avoid recalculating on every render
   const cartTotals = useMemo(() => {
     let subtotal = 0;
-    let totalVAT = 0;
     let totalFees = 0;
 
     cartItems.forEach(item => {
       const itemPrice = parseFloat(item.actual_price) || 0;
-
-      // Check if product is VAT exempt (you might need to add product type to cart items)
-      const isVATExempt = isProductVATExempt(item.product_type);
-      const priceDisplay = getPriceDisplay(itemPrice, 0.20, isVATExempt);
-
-      subtotal += priceDisplay.netPrice * item.quantity;
-      totalVAT += priceDisplay.vatAmount * item.quantity;
+      subtotal += itemPrice * item.quantity;
     });
 
     // Add cart fees (booking fees, service charges, etc.)
@@ -64,28 +63,23 @@ const CartPanel = React.memo(({ show, handleClose }) => {
       cartData.fees.forEach(fee => {
         const feeAmount = parseFloat(fee.amount) || 0;
         totalFees += feeAmount;
-        // Fees are usually VAT exempt, but if not, add VAT calculation here
       });
     }
 
     return {
       subtotal,
-      totalVAT,
       totalFees,
-      total: subtotal + totalVAT + totalFees
+      total: subtotal + totalFees
     };
-  }, [cartItems, cartData, getPriceDisplay, isProductVATExempt]);
+  }, [cartItems, cartData]);
 
   // Memoize individual item price display calculation
   const getItemPriceDisplay = useMemo(() => {
     return (item) => {
       const itemPrice = parseFloat(item.actual_price) || 0;
-      const isVATExempt = isProductVATExempt(item.product_type);
-      const priceDisplay = getPriceDisplay(itemPrice, 0.20, isVATExempt);
-      
-      return `${formatPrice(priceDisplay.displayPrice)} ${priceDisplay.label}`;
+      return formatPrice(itemPrice);
     };
-  }, [getPriceDisplay, formatPrice, isProductVATExempt]);
+  }, []);
 
   return (
 		<Offcanvas
@@ -97,7 +91,6 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 			<Offcanvas.Header closeButton>
 				<div className="d-flex justify-content-between align-items-center w-100 me-3">
 					<Offcanvas.Title>Shopping Cart</Offcanvas.Title>
-					<VATToggle size="sm" showLabel={false} className="compact" />
 				</div>
 			</Offcanvas.Header>
 			<Offcanvas.Body className="">
@@ -452,10 +445,6 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 							<div className="d-flex justify-content-between">
 								<span>Subtotal:</span>
 								<span>{formatPrice(cartTotals.subtotal)}</span>
-							</div>
-							<div className="d-flex justify-content-between">
-								<span>VAT:</span>
-								<span>{formatPrice(cartTotals.totalVAT)}</span>
 							</div>
 							{cartTotals.totalFees > 0 && (
 								<div className="d-flex justify-content-between">
