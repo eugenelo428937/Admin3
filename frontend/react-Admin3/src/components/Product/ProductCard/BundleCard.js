@@ -25,7 +25,6 @@ import { InfoOutline, AddShoppingCart, CheckRounded, Inventory2 } from "@mui/ico
 import { BoxSeam } from "react-bootstrap-icons";
 
 import { useCart } from "../../../contexts/CartContext";
-import { useVAT } from "../../../contexts/VATContext";
 import bundleService from "../../../services/bundleService";
 import "../../../styles/product_card.css";
 
@@ -43,7 +42,6 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 		formatPrice,
 		isProductVATExempt,
 		showVATInclusive,
-	} = useVAT();
 
 	const handleMouseEnter = () => {
 		setIsHovered(true);

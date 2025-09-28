@@ -20,7 +20,6 @@ import {
     useMediaQuery
 } from '@mui/material';
 import { useCart } from '../../contexts/CartContext';
-import { useVAT } from '../../contexts/VATContext';
 import useProductsSearch from '../../hooks/useProductsSearch';
 import useProductCardHelpers from '../../hooks/useProductCardHelpers';
 import { rulesEngineHelpers } from '../../utils/rulesEngineUtils';
@@ -44,7 +43,6 @@ import {
 import FilterPanel from './FilterPanel';
 import ActiveFilters from './ActiveFilters';
 import ProductGrid from './ProductGrid';
-import VATToggle from '../VATToggle';
 import SearchBox from '../SearchBox';
 import FilterDebugger from './FilterDebugger';
 
@@ -60,7 +58,6 @@ const ProductList = React.memo(() => {
 
     // Context hooks
     const { addToCart } = useCart();
-    const { isVATVisible } = useVAT();
     
     // Redux state
     const filters = useSelector(selectFilters);
