@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { formatPrice } from '../../../utils/priceFormatter';
 import {
 	Button,
 	Card,

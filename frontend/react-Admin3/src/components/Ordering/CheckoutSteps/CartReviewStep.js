@@ -59,7 +59,7 @@ const CartReviewStep = ({
         data-responsive={getResponsiveLayout()}
       >
         {/* Left 1/3: Cart Summary */}
-        <Grid item xs={12} lg={4} data-testid="cart-summary-section">
+        <Grid size={{ xs: 12, lg: 4 }} data-testid="cart-summary-section">
           <Card data-testid="cart-summary-card" sx={{ height: 'fit-content' }}>
             <CardHeader
               title={
@@ -126,10 +126,10 @@ const CartReviewStep = ({
         </Grid>
 
         {/* Right 2/3: Address Sections */}
-        <Grid item xs={12} lg={8} data-testid="address-sections-container">
+        <Grid size={{ xs: 12, lg: 8 }} data-testid="address-sections-container">
           <Grid container spacing={2}>
             {/* Delivery Address Panel */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Card data-testid="delivery-address-card" sx={{ height: '100%' }}>
                 <CardHeader
                   avatar={<LocationOn color="primary" />}
@@ -156,7 +156,7 @@ const CartReviewStep = ({
             </Grid>
 
             {/* Invoice Address Panel */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Card data-testid="invoice-address-card" sx={{ height: '100%' }}>
                 <CardHeader
                   avatar={<Receipt color="secondary" />}
@@ -184,7 +184,7 @@ const CartReviewStep = ({
           </Grid>
 
           {/* Communication Details Panel - Full Width Below Addresses */}
-          <Grid item xs={12} sx={{ mt: 3 }}>
+          <Grid size={{ xs: 12 }} sx={{ mt: 3 }}>
             <CommunicationDetailsPanel
               userProfile={userProfile}
               onProfileUpdate={onContactUpdate}
@@ -202,8 +202,6 @@ const CartReviewStep = ({
       )}
 
       {!rulesLoading && rulesMessages.map((message, index) => {
-        console.log('📋 [CartReviewStep] Rendering alert', index + 1, 'title:', message.content?.title);
-
         const severity = message.message_type === 'warning' ? 'warning' :
                         message.message_type === 'error' ? 'error' :
                         message.message_type === 'info' ? 'info' : 'info';

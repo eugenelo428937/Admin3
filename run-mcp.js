@@ -98,12 +98,7 @@ const servers = {
 	"spec-kit Docs": {
 		windows: {
 			command: "cmd",
-			args: [
-				"/c",
-				"npx",
-				"mcp-remote",
-				"https://gitmcp.io/github/spec-kit",
-			],
+			args: ["/c", "npx", "mcp-remote", "https://gitmcp.io/github/spec-kit"],
 		},
 		default: {
 			command: "npx",
@@ -124,7 +119,25 @@ const servers = {
 			command: "npx",
 			args: ["mcp-remote", "https://gitmcp.io/bmad-code-org/BMAD-METHOD"],
 		},
-	}
+	},
+	"chrome-devtools-mcp Docs": {
+		windows: {
+			command: "cmd",
+			args: [
+				"/c",
+				"npx",
+				"mcp-remote",
+				"https://gitmcp.io/benjaminr/chrome-devtools-mcp",
+			],
+		},
+		default: {
+			command: "npx",
+			args: [
+				"mcp-remote",
+				"https://gitmcp.io/benjaminr/chrome-devtools-mcp",
+			],
+		},
+	},
 };
 
 const serverConfig = servers[server];
