@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Button, Alert } from 'react-bootstrap';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -90,11 +90,12 @@ const CheckoutSteps = ({ onComplete }) => {
   }, []);
 
   // Fetch user profile function (extracted for reuse)
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     if (isAuthenticated) {
       setProfileLoading(true);
       try {
         const result = await userService.getUserProfile();
+
         if (result.status === "success") {
           setUserProfile(result.data);
 
@@ -112,12 +113,14 @@ const CheckoutSteps = ({ onComplete }) => {
             return '';
           };
 
-          setContactData({
+          const newContactData = {
             home_phone: getPhoneNumber('home_phone'),
             mobile_phone: getPhoneNumber('mobile_phone'),
             work_phone: getPhoneNumber('work_phone'),
             email_address: profile.email || profile.user?.email || ''
-          });
+          };
+
+          setContactData(newContactData);
         } else {
           console.error('Failed to fetch user profile:', result.message);
         }
@@ -127,12 +130,10 @@ const CheckoutSteps = ({ onComplete }) => {
         setProfileLoading(false);
       }
     }
-  };
+  }, [isAuthenticated]);
 
   // Handle contact data updates from CommunicationDetailsPanel
   const handleContactDataUpdate = (updateData) => {
-    console.log('🔍 [CheckoutSteps] Contact data update received:', updateData);
-
     if (updateData && updateData.contact) {
       // Extract contact data from the update
       const newContactData = {
@@ -142,10 +143,7 @@ const CheckoutSteps = ({ onComplete }) => {
         email_address: updateData.contact.email_address || updateData.contact.email || ''
       };
 
-      console.log('🔍 [CheckoutSteps] Updating contact data state:', newContactData);
-      console.log('🔍 [CheckoutSteps] Previous contact data state:', contactData);
       setContactData(newContactData);
-      console.log('🔍 [CheckoutSteps] Contact data state updated');
 
       // Trigger real-time validation for Step 1
       if (currentStep === 1) {
@@ -153,19 +151,16 @@ const CheckoutSteps = ({ onComplete }) => {
           validation.validateStep1(newContactData, deliveryAddress, invoiceAddress);
         }, 100); // Small delay to ensure state updates
       }
-    } else {
-      console.warn('🔍 [CheckoutSteps] No contact data in update:', updateData);
     }
 
     // Also call the original fetchUserProfile if it's not an order-only update
     if (!updateData || !updateData.orderOnly) {
-      console.log('🔍 [CheckoutSteps] Fetching user profile after contact update');
       fetchUserProfile();
     }
   };
 
   // Handle delivery address updates from AddressSelectionPanel
-  const handleDeliveryAddressUpdate = (addressInfo) => {
+  const handleDeliveryAddressUpdate = useCallback((addressInfo) => {
     if (addressInfo) {
       const newDeliveryAddress = {
         addressType: addressInfo.addressType || 'HOME',
@@ -182,10 +177,10 @@ const CheckoutSteps = ({ onComplete }) => {
         }, 100); // Small delay to ensure state updates
       }
     }
-  };
+  }, [currentStep, validation, contactData, invoiceAddress]);
 
   // Handle invoice address updates from AddressSelectionPanel
-  const handleInvoiceAddressUpdate = (addressInfo) => {
+  const handleInvoiceAddressUpdate = useCallback((addressInfo) => {
     if (addressInfo) {
       const newInvoiceAddress = {
         addressType: addressInfo.addressType || 'HOME',
@@ -202,12 +197,12 @@ const CheckoutSteps = ({ onComplete }) => {
         }, 100); // Small delay to ensure state updates
       }
     }
-  };
+  }, [currentStep, validation, contactData, deliveryAddress]);
 
   // Fetch user profile if authenticated
   useEffect(() => {
     fetchUserProfile();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchUserProfile]);
 
   // Execute checkout_start rules only when on step 1 (cart review)
   // IMPORTANT: This prevents duplicate API calls when user is on other steps (like PaymentStep)
