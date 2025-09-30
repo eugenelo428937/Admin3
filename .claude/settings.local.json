@@ -79,7 +79,8 @@
       "Bash(uv sync:*)",
       "Read(//c/Code/chrome-devtools-mcp/**)",
       "Bash(claude mcp add:*)",
-      "Bash(claude mcp:*)"
+      "Bash(claude mcp:*)",
+      "Bash(Select-String -Pattern \"no-undef|''''formatPrice''''|''''getPriceDisplay''''|''''isProductVATExempt''''|''''isVATVisible''''|''''VATToggle''''\" -Context 1,1)"
     ],
     "deny": [],
     "defaultMode": "bypassPermissions"
