@@ -74,7 +74,12 @@
       "mcp__browsermcp__browser_evaluate",
       "mcp__browsermcp__browser_close",
       "mcp__browsermcp__browser_close_all",
-      "mcp__browsermcp__browser_close_all_tabs"
+      "mcp__browsermcp__browser_close_all_tabs",
+      "Bash(git clone:*)",
+      "Bash(uv sync:*)",
+      "Read(//c/Code/chrome-devtools-mcp/**)",
+      "Bash(claude mcp add:*)",
+      "Bash(claude mcp:*)"
     ],
     "deny": [],
     "defaultMode": "bypassPermissions"
