@@ -1,17 +1,18 @@
 {
   "permissions": {
-    "deny": [
-      "Read(.claude/tdd-guard/**)",
-      "Write(.claude/tdd-guard/**)",
-      "Edit(.claude/tdd-guard/**)",
-      "Write(**/tdd-guard.config.js)",
-      "Edit(**/tdd-guard.config.js)",
-      "Bash(echo:*)",
-      "Bash(printf:*)",
-      "Bash(sed:*)",
-      "Bash(awk:*)",
-      "Bash(perl:*)"
-    ]
+		"deny": [
+			"Read(.claude/tdd-guard/**)",
+			"Write(.claude/tdd-guard/**)",
+			"Edit(.claude/tdd-guard/**)",
+			"Write(**/tdd-guard.config.js)",
+			"Edit(**/tdd-guard.config.js)",
+			"Bash(echo:*)",
+			"Bash(printf:*)",
+			"Bash(sed:*)",
+			"Bash(awk:*)",
+			"Bash(perl:*)"
+		],
+		"defaultMode": "bypassPermissions"
   },
   "hooks": {
     "PreToolUse": [
