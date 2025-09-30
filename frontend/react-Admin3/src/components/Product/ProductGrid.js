@@ -109,13 +109,9 @@ const ProductGrid = ({
         return (
             <Grid container spacing={gridSpacing}>
                 {Array.from({ length: skeletonCount }).map((_, index) => (
-                    <Grid 
-                        item 
+                    <Grid
                         key={`skeleton-${index}`}
-                        xs={12} 
-                        sm={6} 
-                        md={4} 
-                        lg={3}
+                        size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
                     >
                         <Box sx={{ p: 2 }}>
                             <Skeleton variant="rectangular" height={200} />
@@ -187,13 +183,9 @@ const ProductGrid = ({
     const renderProductsGrid = useCallback(() => (
         <Grid container spacing={gridSpacing}>
             {products.map((item) => (
-                <Grid 
-                    item 
+                <Grid
                     key={generateProductKey(item)}
-                    xs={12} 
-                    sm={6} 
-                    md={4} 
-                    lg={3}
+                    size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
                     sx={{
                         display: 'flex',
                         justifyContent: 'center'
