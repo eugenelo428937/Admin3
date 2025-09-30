@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')))
 project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(project_root))
-env_path = os.path.join(project_root, '.env.production')
+env_path = os.path.join(project_root, '.env.development')
 
 load_dotenv(env_path)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE',
@@ -31,7 +31,7 @@ from administrate.exceptions import AdministrateAPIError
 from administrate.utils.graphql_loader import load_graphql_query, load_graphql_mutation
 logger = logging.getLogger(__name__)
 
-file_path = r"C:\Users\elo\OneDrive - BPP SERVICES LIMITED\Documents\Code\Admin3\backend\django_Admin3\administrate\src\OCRCancelledtest.csv"
+file_path = r"C:\TEMP\adm-delete-session.csv"
 class LifecycleState(Enum):
     DRAFT = "draft"
     PUBLISHED = "published"
@@ -119,7 +119,7 @@ def main():
     api_service = AdministrateAPIService()
     first = 100
     offset = 0
-    title = "25S"            
+    title = "26A"            
 
     eventLifecycleState = LifecycleState.PUBLISHED.value
     sessionLifecycleState = LifecycleState.DRAFT.value
