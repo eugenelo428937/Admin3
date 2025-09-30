@@ -115,6 +115,46 @@ describe('useCheckoutValidation', () => {
         error: 'Invoice address is required'
       });
     });
+
+    it('should validate address with real user profile field names', () => {
+      const { result } = renderHook(() => useCheckoutValidation());
+
+      // Valid address using real user profile field names (street instead of address_line_1)
+      const userProfileAddress = {
+        street: '123 Main St',
+        town: 'London',
+        postcode: 'SW1A 1AA',
+        country: 'United Kingdom'
+      };
+      expect(result.current.validateAddress(userProfileAddress, 'Delivery')).toEqual({
+        isValid: true,
+        error: null
+      });
+
+      // Valid address with building field
+      const addressWithBuilding = {
+        building: '42',
+        street: 'Baker Street',
+        city: 'London',
+        postal_code: 'NW1 6XE',
+        country: 'United Kingdom'
+      };
+      expect(result.current.validateAddress(addressWithBuilding, 'Invoice')).toEqual({
+        isValid: true,
+        error: null
+      });
+
+      // Invalid address missing street/address_line_1
+      const addressMissingStreet = {
+        town: 'London',
+        postcode: 'SW1A 1AA',
+        country: 'United Kingdom'
+      };
+      expect(result.current.validateAddress(addressMissingStreet, 'Delivery')).toEqual({
+        isValid: false,
+        error: 'Delivery address is incomplete. Missing: Address Line 1'
+      });
+    });
   });
 
   describe('Step 1 Validation', () => {

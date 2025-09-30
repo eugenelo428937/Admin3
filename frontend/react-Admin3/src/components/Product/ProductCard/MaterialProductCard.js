@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import { formatPrice } from '../../../utils/priceFormatter';
 import {
 	Button,
 	Chip,
@@ -157,20 +158,10 @@ const MaterialProductCard = React.memo(
 				);
 				if (!priceObj) return null;
 
-				// Check if this product is VAT exempt
-				const isVATExempt = isProductVATExempt(product.type);
-
-				// Get price display info from VAT context
-				const priceDisplay = getPriceDisplay(
-					priceObj.amount,
-					0.2,
-					isVATExempt
-				);
-
 				return (
 					<div className="d-flex flex-row align-items-end">
 						<Typography variant="h6" className="fw-lighter w-100">
-							{formatPrice(priceDisplay.displayPrice)}
+							{formatPrice(priceObj.amount)}
 						</Typography>
 
 						<Tooltip
@@ -188,15 +179,10 @@ const MaterialProductCard = React.memo(
 								aria-label="Show price information"
 							/>
 						</Tooltip>
-						<Typography
-							variant="caption"
-							className="fw-light w-100 align-self-center">
-							{priceDisplay.label}
-						</Typography>
 					</div>
 				);
 			};
-		}, [getPriceDisplay, formatPrice, isProductVATExempt, product.type]);
+		}, [product.type]);
 
 		const {
 			isTutorial,
