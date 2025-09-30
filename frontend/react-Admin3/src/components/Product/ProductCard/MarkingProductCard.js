@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { formatPrice } from '../../../utils/priceFormatter';
 import {
 	Alert,
 	AlertTitle,
@@ -46,12 +47,6 @@ const MarkingProductCard = React.memo(
 		const [showExpiredWarning, setShowExpiredWarning] = React.useState(false);
 		const [isHovered, setIsHovered] = useState(false);
 
-		const {
-			getPriceDisplay,
-			formatPrice,
-			isProductVATExempt,
-			showVATInclusive,
-
 		// Memoize variation calculations for performance
 		const variationInfo = useMemo(() => {
 			const hasVariations =
@@ -83,20 +78,20 @@ const MarkingProductCard = React.memo(
 				);
 				if (!priceObj) return null;
 
-				// Check if this product is VAT exempt
-				const isVATExempt = isProductVATExempt(product.type);
-
-				// Get price display info from VAT context
-				const priceDisplay = getPriceDisplay(
-					priceObj.amount,
-					0.2,
-					isVATExempt
-				);
+				// Simple price formatter
+				const formatPrice = (amount) => {
+					return new Intl.NumberFormat('en-GB', {
+						style: 'currency',
+						currency: 'GBP',
+						minimumFractionDigits: 2,
+						maximumFractionDigits: 2
+					}).format(amount);
+				};
 
 				return (
 					<div className="d-flex flex-row align-items-end">
 						<Typography variant="h6" className="fw-lighter w-100">
-							{formatPrice(priceDisplay.displayPrice)}
+							{formatPrice(priceObj.amount)}
 						</Typography>
 
 						<Tooltip
@@ -114,20 +109,11 @@ const MarkingProductCard = React.memo(
 								aria-label="Show price information"
 							/>
 						</Tooltip>
-						<Typography
-							variant="caption"
-							className="fw-light w-100 align-self-center">
-							{priceDisplay.label}
-						</Typography>
 					</div>
 				);
 			};
 		}, [
-			getPriceDisplay,
-			formatPrice,
-			isProductVATExempt,
 			product.type,
-			showVATInclusive,
 		]);
 
 		React.useEffect(() => {
@@ -408,7 +394,10 @@ const MarkingProductCard = React.memo(
 														if (priceDisplay) {
 															return priceDisplay;
 														}
-														return formatPrice(price.amount);
+														return new Intl.NumberFormat('en-GB', {
+															style: 'currency',
+															currency: 'GBP'
+														}).format(price.amount);
 													})()}
 												</TableCell>
 											</TableRow>

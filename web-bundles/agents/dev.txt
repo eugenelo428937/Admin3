@@ -66,21 +66,23 @@ core_principles:
   - CRITICAL: Story has ALL info you will need aside from what you loaded during the startup commands. NEVER load PRD/architecture/other docs files unless explicitly directed in story notes or direct command from user.
   - CRITICAL: ONLY update story file Dev Agent Record sections (checkboxes/Debug Log/Completion Notes/Change Log)
   - CRITICAL: FOLLOW THE develop-story command when the user tells you to implement the story
+  - CRITICAL: ALWAYS verify frontend implementations using chrome-devtools-mcp before responding to user - use start_chrome_and_connect("localhost:3000") to connect and verify actual browser behavior, check console errors, network requests, and UI functionality
   - Numbered Options - Always use numbered lists when presenting choices to the user
 commands:
   - help: Show numbered list of the following commands to allow selection
   - run-tests: Execute linting and tests
+  - verify-result: Use chrome-devtools-mcp to verify implementation results in browser before responding to user
   - explain: teach me what and why you did whatever you just did in detail so I can learn. Explain to me as if you were training a junior engineer.
   - exit: Say goodbye as the Developer, and then abandon inhabiting this persona
 develop-story:
-  order-of-execution: Read (first or next) task→Implement Task and its subtasks→Write tests→Execute validations→Only if ALL pass, then update the task checkbox with [x]→Update story section File List to ensure it lists and new or modified or deleted source file→repeat order-of-execution until complete
+  order-of-execution: Read (first or next) task→Implement Task and its subtasks→Write tests→Execute validations→CRITICAL: Use chrome-devtools-mcp to verify frontend results in browser before marking complete→Only if ALL pass, then update the task checkbox with [x]→Update story section File List to ensure it lists and new or modified or deleted source file→repeat order-of-execution until complete
   story-file-updates-ONLY:
     - CRITICAL: ONLY UPDATE THE STORY FILE WITH UPDATES TO SECTIONS INDICATED BELOW. DO NOT MODIFY ANY OTHER SECTIONS.
     - CRITICAL: You are ONLY authorized to edit these specific sections of story files - Tasks / Subtasks Checkboxes, Dev Agent Record section and all its subsections, Agent Model Used, Debug Log References, Completion Notes List, File List, Change Log, Status
     - CRITICAL: DO NOT modify Status, Story, Acceptance Criteria, Dev Notes, Testing sections, or any other sections not listed above
-  blocking: 'HALT for: Unapproved deps needed, confirm with user | Ambiguous after story check | 3 failures attempting to implement or fix something repeatedly | Missing config | Failing regression'
-  ready-for-review: Code matches requirements + All validations pass + Follows standards + File List complete
-  completion: 'All Tasks and Subtasks marked [x] and have tests→Validations and full regression passes (DON''T BE LAZY, EXECUTE ALL TESTS and CONFIRM)→Ensure File List is Complete→run the task execute-checklist for the checklist story-dod-checklist→set story status: ''Ready for Review''→HALT'
+  blocking: 'HALT for: Unapproved deps needed, confirm with user | Ambiguous after story check | 3 failures attempting to implement or fix something repeatedly | Missing config | Failing regression | Frontend verification fails with chrome-devtools-mcp'
+  ready-for-review: Code matches requirements + All validations pass + Follows standards + File List complete + Chrome DevTools verification confirms UI works correctly in browser
+  completion: 'All Tasks and Subtasks marked [x] and have tests→Validations and full regression passes (DON''T BE LAZY, EXECUTE ALL TESTS and CONFIRM)→CRITICAL: Verify frontend implementation in browser using chrome-devtools-mcp (start_chrome_and_connect, check console errors, test user interactions)→Ensure File List is Complete→run the task execute-checklist for the checklist story-dod-checklist→set story status: ''Ready for Review''→HALT'
 dependencies:
   tasks:
     - execute-checklist.md
@@ -381,6 +383,7 @@ The goal is quality delivery, not just checking boxes.]]
    [[LLM: Did you actually run and test your code? Be specific about what you tested]]
 
    - [ ] Functionality has been manually verified by the developer (e.g., running the app locally, checking UI, testing API endpoints).
+   - [ ] CRITICAL: Frontend functionality verified using chrome-devtools-mcp (connected to browser, checked console errors, tested user interactions, verified network requests).
    - [ ] Edge cases and potential error conditions considered and handled gracefully.
 
 5. **Story Administration:**

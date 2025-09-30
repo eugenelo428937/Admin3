@@ -83,14 +83,32 @@ const useCheckoutValidation = () => {
       return { isValid: false, error: `${addressType} address is required` };
     }
 
-    // Check required fields for address
-    const requiredFields = ['address_line_1', 'city', 'postal_code', 'country'];
     const missingFields = [];
 
-    for (const field of requiredFields) {
-      if (!addressData[field] || !addressData[field].trim()) {
-        missingFields.push(field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
-      }
+    // Check for primary address line (flexible field names)
+    const hasAddressLine = addressData.address_line_1 ||
+                          addressData.street ||
+                          addressData.address ||
+                          addressData.building;
+    if (!hasAddressLine || (typeof hasAddressLine === 'string' && !hasAddressLine.trim())) {
+      missingFields.push('Address Line 1');
+    }
+
+    // Check for city/town (flexible field names)
+    const hasCity = addressData.city || addressData.town;
+    if (!hasCity || (typeof hasCity === 'string' && !hasCity.trim())) {
+      missingFields.push('City');
+    }
+
+    // Check for postal code (flexible field names)
+    const hasPostalCode = addressData.postal_code || addressData.postcode;
+    if (!hasPostalCode || (typeof hasPostalCode === 'string' && !hasPostalCode.trim())) {
+      missingFields.push('Postal Code');
+    }
+
+    // Check for country
+    if (!addressData.country || !addressData.country.trim()) {
+      missingFields.push('Country');
     }
 
     if (missingFields.length > 0) {

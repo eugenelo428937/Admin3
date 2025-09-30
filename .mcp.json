@@ -35,6 +35,10 @@
 		"BMAD-METHOD Docs": {
 			"command": "node",
 			"args": ["run-mcp.js", "BMAD-METHOD Docs"]
+		},
+		"chrome-devtools-mcp Docs": {
+			"command": "node",
+			"args": ["run-mcp.js", "chrome-devtools-mcp Docs"]
 		}
 	}
 }

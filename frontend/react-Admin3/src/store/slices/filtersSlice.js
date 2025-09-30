@@ -5,7 +5,7 @@
  * Includes special navigation behaviors for menu interactions.
  */
 
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createSelector } from '@reduxjs/toolkit';
 
 const initialState = {
   // Filter values - arrays to support multiple selections
@@ -406,13 +406,16 @@ export const {
 } = filtersSlice.actions;
 
 // Selectors
-export const selectFilters = (state) => ({
-  subjects: state.filters.subjects,
-  categories: state.filters.categories,
-  product_types: state.filters.product_types,
-  products: state.filters.products,
-  modes_of_delivery: state.filters.modes_of_delivery,
-});
+export const selectFilters = createSelector(
+  [(state) => state.filters],
+  (filters) => ({
+    subjects: filters.subjects,
+    categories: filters.categories,
+    product_types: filters.product_types,
+    products: filters.products,
+    modes_of_delivery: filters.modes_of_delivery,
+  })
+);
 
 export const selectSearchQuery = (state) => state.filters.searchQuery;
 export const selectCurrentPage = (state) => state.filters.currentPage;
@@ -425,34 +428,32 @@ export const selectLastUpdated = (state) => state.filters.lastUpdated;
 export const selectFilterCounts = (state) => state.filters.filterCounts;
 
 // Complex selectors
-export const selectHasActiveFilters = (state) => {
-  const filters = selectFilters(state);
-  const searchQuery = selectSearchQuery(state);
-  
-  return (
+export const selectHasActiveFilters = createSelector(
+  [selectFilters, selectSearchQuery],
+  (filters, searchQuery) => (
     filters.subjects.length > 0 ||
     filters.categories.length > 0 ||
     filters.product_types.length > 0 ||
     filters.products.length > 0 ||
     filters.modes_of_delivery.length > 0 ||
     searchQuery.trim().length > 0
-  );
-};
+  )
+);
 
-export const selectActiveFilterCount = (state) => {
-  const filters = selectFilters(state);
-  const searchQuery = selectSearchQuery(state);
-  
-  let count = 0;
-  count += filters.subjects.length;
-  count += filters.categories.length;
-  count += filters.product_types.length;
-  count += filters.products.length;
-  count += filters.modes_of_delivery.length;
-  if (searchQuery.trim().length > 0) count += 1;
-  
-  return count;
-};
+export const selectActiveFilterCount = createSelector(
+  [selectFilters, selectSearchQuery],
+  (filters, searchQuery) => {
+    let count = 0;
+    count += filters.subjects.length;
+    count += filters.categories.length;
+    count += filters.product_types.length;
+    count += filters.products.length;
+    count += filters.modes_of_delivery.length;
+    if (searchQuery.trim().length > 0) count += 1;
+
+    return count;
+  }
+);
 
 // Export the reducer
 export default filtersSlice.reducer;

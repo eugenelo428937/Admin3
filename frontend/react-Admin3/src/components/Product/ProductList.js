@@ -323,7 +323,6 @@ const ProductList = React.memo(() => {
 					</Typography>
 
 					<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-						{isVATVisible && <VATToggle />}
 						{isMobile && <FilterPanel showMobile />}
 					</Box>
 				</Box>

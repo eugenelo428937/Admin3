@@ -37,11 +37,6 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 	const [isHovered, setIsHovered] = useState(false);
 
 	const { addToCart } = useCart();
-	const {
-		getPriceDisplay,
-		formatPrice,
-		isProductVATExempt,
-		showVATInclusive,
 
 	const handleMouseEnter = () => {
 		setIsHovered(true);
@@ -94,36 +89,27 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 				);
 			}
 
-			// Check if bundle product type is VAT exempt
-			const isVATExempt = isProductVATExempt(bundle.type || "Bundle");
-
-			// Get price display info from VAT context
-			const priceDisplay = getPriceDisplay(
-				totalPrice,
-				0.2,
-				isVATExempt
-			);
+			// Simple price formatter
+			const formatPrice = (amount) => {
+				return new Intl.NumberFormat('en-GB', {
+					style: 'currency',
+					currency: 'GBP',
+					minimumFractionDigits: 2,
+					maximumFractionDigits: 2
+				}).format(amount);
+			};
 
 			return (
 				<div className="d-flex flex-row align-items-end">
 					<Typography variant="h6" className="fw-lighter w-100">
-						{formatPrice(priceDisplay.displayPrice)}
-					</Typography>
-					<Typography
-						variant="caption"
-						className="fw-light w-100 align-self-center">
-						{priceDisplay.label}
+						{formatPrice(totalPrice)}
 					</Typography>
 				</div>
 			);
 		};
 	}, [
 		bundle.components,
-		bundle.type,
-		getPriceDisplay,
-		formatPrice,
-		isProductVATExempt,
-		showVATInclusive,
+		bundle.type
 	]);
 
 	// Check if bundle has pricing for a specific price type
