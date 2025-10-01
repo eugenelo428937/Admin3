@@ -15,11 +15,21 @@ class Cart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Epic 3: VAT calculation results (Phase 2)
+    vat_result = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="VAT calculation results from rules engine (Epic 3)"
+    )
+
     class Meta:
         db_table = 'acted_carts'
         verbose_name = 'Cart'
         verbose_name_plural = 'Carts'
         ordering = ['updated_at']
+        indexes = [
+            models.Index(fields=['vat_result'], name='idx_cart_vat_result'),
+        ]
 
     def __str__(self):
         if self.user:

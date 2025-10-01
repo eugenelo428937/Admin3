@@ -1,5 +1,12 @@
 /* Checkout Steps Animation Styles */
 
+/* Ensure page can scroll properly - override any modal-blocking styles */
+.checkout-page-wrapper {
+  min-height: 100vh;
+  overflow-y: auto;
+  position: relative;
+}
+
 .transition-col {
   transition: all 0.3s ease-in-out;
 }
@@ -57,6 +64,10 @@
 .cart-summary-panel {
   position: sticky;
   top: 1rem;
-  max-height: calc(100vh - 2rem);
+  max-height: calc(100vh - 4rem); /* Increased padding to prevent overflow issues */
   overflow-y: auto;
+  /* Ensure scrolling doesn't interfere with page scroll */
+  overscroll-behavior: contain;
+  /* Add will-change for better performance */
+  will-change: scroll-position;
 }

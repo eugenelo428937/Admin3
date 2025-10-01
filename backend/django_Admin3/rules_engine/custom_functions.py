@@ -253,8 +253,41 @@ def apply_tutorial_booking_fee(cart_items, params):
         }
 
 
-# VAT calculation functions removed - will be replaced by new rules engine implementation in Phase 1
-# Legacy VAT code has been removed as part of Epic 3 preparation
+# ============================================================================
+# VAT Calculation Functions (Epic 3 - Phase 1)
+# ============================================================================
+
+from country.vat_rates import get_vat_rate, map_country_to_region
+from decimal import Decimal, ROUND_HALF_UP
+
+
+def calculate_vat_amount(net_amount, vat_rate):
+    """
+    Calculate VAT amount with proper rounding (ROUND_HALF_UP to 2 decimal places).
+
+    Args:
+        net_amount: Net amount before VAT (Decimal or string)
+        vat_rate: VAT rate as decimal (e.g., 0.20 for 20%)
+
+    Returns:
+        Decimal: VAT amount rounded to 2 decimal places
+
+    Examples:
+        >>> calculate_vat_amount(Decimal('100.00'), Decimal('0.20'))
+        Decimal('20.00')
+        >>> calculate_vat_amount('50.555', '0.20')
+        Decimal('10.11')
+    """
+    amount = Decimal(str(net_amount)) * Decimal(str(vat_rate))
+    return amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+
+# Function Registry - maps function names to callable functions for Rules Engine
+FUNCTION_REGISTRY = {
+    "get_vat_rate": get_vat_rate,
+    "map_country_to_region": map_country_to_region,
+    "calculate_vat_amount": calculate_vat_amount,
+}
 
 
 def check_expired_marking_deadlines(cart_items, params):

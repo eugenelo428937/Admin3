@@ -1,0 +1,42 @@
+						{/* Two-Column Layout: Active Filters (5/12) + Rules Engine Messages (7/12) */}
+						{(activeFilterCount > 0 || rulesLoading || rulesMessages.length > 0) && (
+							<Grid container spacing={2} sx={{ mb: 2 }}>
+								{/* Active Filters Column */}
+								<Grid size={{ xs: 12, md: 5 }}>
+									<ActiveFilters showCount />
+								</Grid>
+
+								{/* Rules Engine Messages Column */}
+								<Grid size={{ xs: 12, md: 7 }}>
+									{rulesLoading && (
+										<Alert severity="info">
+											<i className="bi bi-hourglass-split" style={{ marginRight: 8 }}></i>
+											Loading...
+										</Alert>
+									)}
+
+									{!rulesLoading && rulesMessages.map((message, index) => {
+										const variant = message.variant === 'warning' ? 'warning' :
+													message.variant === 'error' ? 'error' :
+													message.variant === 'info' ? 'info' : 'info';
+
+										return (
+											<Alert
+												key={`rules-message-${message.template_id || index}`}
+												severity={variant}
+												sx={{ mb: index < rulesMessages.length - 1 ? 2 : 0 }}
+												data-testid="product-list-delivery-message"
+											>
+												<strong>{message.title}</strong>
+												<div
+													style={{ marginTop: 4 }}
+													dangerouslySetInnerHTML={{
+														__html: message.message || 'No message content'
+													}}
+												/>
+											</Alert>
+										);
+									})}
+								</Grid>
+							</Grid>
+						)}
