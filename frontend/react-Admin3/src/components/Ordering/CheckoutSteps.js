@@ -517,7 +517,7 @@ const CheckoutSteps = ({ onComplete }) => {
   };
 
   return (
-    <div>
+    <div className="checkout-page-wrapper">
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
       {vatLoading && <Alert variant="info">Calculating VAT...</Alert>}

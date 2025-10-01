@@ -5,7 +5,7 @@
  * Handles debouncing, loading states, and error management.
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { useLazyUnifiedSearchQuery } from '../store/api/catalogApi';
@@ -67,6 +67,7 @@ export const useProductsSearch = (options = {}) => {
   // Refs for debouncing
   const debounceTimerRef = useRef(null);
   const lastSearchParamsRef = useRef(null);
+  const searchParamsCache = useRef(new WeakMap());
   
   /**
    * Clear any pending debounced search
@@ -115,14 +116,16 @@ export const useProductsSearch = (options = {}) => {
       };
       
       // Check if search parameters have changed (avoid duplicate requests)
-      const currentParamsString = JSON.stringify(searchParams);
-      if (!forceSearch && lastSearchParamsRef.current === currentParamsString) {
+      // Use a fast hash instead of JSON.stringify for performance
+      const paramsHash = `${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.products?.join(',')||''}|${searchQuery}|${currentPage}|${pageSize}`;
+
+      if (!forceSearch && lastSearchParamsRef.current === paramsHash) {
         dispatch(setLoading(false));
         return;
       }
-      
+
       // Update last search params
-      lastSearchParamsRef.current = currentParamsString;
+      lastSearchParamsRef.current = paramsHash;
       
       // Trigger the search
       const result = await triggerSearch(searchParams).unwrap();
@@ -216,15 +219,32 @@ export const useProductsSearch = (options = {}) => {
     lastSearchParamsRef.current = null;
   }, [clearDebounce, dispatch]);
   
+  // Create stable references for effect dependencies
+  const filterHash = useMemo(() => {
+    return `${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.products?.join(',')||''}|${searchQuery}|${currentPage}|${pageSize}`;
+  }, [filters.subjects, filters.categories, filters.products, searchQuery, currentPage, pageSize]);
+
   // Auto-search when filters change (if enabled)
   useEffect(() => {
     if (autoSearch) {
-      debouncedSearch();
+      // Clear existing timer first
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      // Set new debounced search
+      debounceTimerRef.current = setTimeout(() => {
+        executeSearch();
+      }, debounceDelay);
     }
-    
+
     // Cleanup on unmount
-    return clearDebounce;
-  }, [filters, searchQuery, currentPage, pageSize, autoSearch, debouncedSearch, clearDebounce]);
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [filterHash, autoSearch, debounceDelay]); // Use stable hash instead of complex objects
   
   // Update search data from RTK Query result
   useEffect(() => {

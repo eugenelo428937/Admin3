@@ -98,12 +98,26 @@ export const catalogApi = createApi({
           },
         };
       },
-      providesTags: (result, error, arg) => [
-        'Search',
-        { type: 'Products', id: 'SEARCH' },
-        // Tag with specific filter combination for granular invalidation
-        { type: 'Search', id: JSON.stringify(arg.filters) },
-      ],
+      providesTags: (result, error, arg) => {
+        // Create a lightweight hash for cache tags instead of full JSON stringify
+        const filterHash = Object.keys(arg.filters || {})
+          .sort()
+          .map(key => {
+            const value = arg.filters[key];
+            if (Array.isArray(value)) {
+              return `${key}:${value.join('-')}`;
+            }
+            return `${key}:${value}`;
+          })
+          .join('|');
+
+        return [
+          'Search',
+          { type: 'Products', id: 'SEARCH' },
+          // Use lightweight hash instead of JSON.stringify for performance
+          { type: 'Search', id: filterHash || 'default' },
+        ];
+      },
       // Keep search results cached for 5 minutes
       keepUnusedDataFor: 300, // 5 minutes
       // Transform response to ensure consistent structure

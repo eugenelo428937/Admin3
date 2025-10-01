@@ -62,7 +62,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "add": "liftkit add"
+    "add": "liftkit add",
+    "lint": "eslint --no-cache src",
+    "lint:fix": "eslint --no-cache --fix src"
   },
   "eslintConfig": {
     "extends": [

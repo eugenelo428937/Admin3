@@ -103,14 +103,15 @@ INSTALLED_APPS = [
     'tutorials',
     'exam_sessions',
     'exam_sessions_subjects',
-    'exam_sessions_subjects_products',    
+    'exam_sessions_subjects_products',
     'products.apps.ProductsConfig',
     'marking',
     'marking_vouchers',
-    'core_auth',    
+    'core_auth',
     'administrate.apps.AdministrateConfig',
     'rules_engine.apps.RulesEngineConfig',
     'utils.apps.UtilsConfig',  # Added utils app for email functionality
+    'vat',  # Epic 3: VAT calculation and audit trail
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

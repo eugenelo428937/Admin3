@@ -22,7 +22,8 @@ import {
 import { Refresh as RefreshIcon } from '@mui/icons-material';
 import MaterialProductCard from './ProductCard/MaterialProductCard';
 
-const ProductGrid = ({
+// Memoized ProductGrid to prevent unnecessary re-renders
+const ProductGrid = React.memo(({
     products = [],
     loading = false,
     error = null,
@@ -81,14 +82,15 @@ const ProductGrid = ({
     }, [products.length, pagination, isLoading]);
 
     /**
-     * Generate unique key for product items
+     * Generate unique key for product items - Stable reference
      */
-    const generateProductKey = useCallback((item) => {
-        return item.essp_id || 
-               item.id || 
-               item.product_id || 
-               `bundle-${item.id}` || 
-               `item-${Math.random().toString(36).substr(2, 9)}`;
+    const generateProductKey = React.useCallback((item) => {
+        // Use stable ID generation without random values
+        return item.essp_id ||
+               item.id ||
+               item.product_id ||
+               `bundle-${item.id}` ||
+               `item-${item.product_name}-${item.subject_code}`;
     }, []);
 
     /**
@@ -178,38 +180,45 @@ const ProductGrid = ({
     ), [emptyStateMessage]);
 
     /**
-     * Render products grid
+     * Render products grid - Optimized with stable references
      */
-    const renderProductsGrid = useCallback(() => (
-        <Grid container spacing={gridSpacing}>
-            {products.map((item) => (
-                <Grid
-                    key={generateProductKey(item)}
-                    size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'center'
-                    }}
-                >
-                    <Box 
-                        sx={{ 
-                            width: '100%',
-                            maxWidth: { xs: '100%', sm: minCardWidth },
-                            display: 'flex',
-                            justifyContent: 'center'
-                        }}
-                    >
-                        <MaterialProductCard
-                            product={item}
-                            onAddToCart={onAddToCart}
-                            allEsspIds={allEsspIds}
-                            bulkDeadlines={bulkDeadlines}
-                        />
-                    </Box>
-                </Grid>
-            ))}
-        </Grid>
-    ), [products, gridSpacing, generateProductKey, onAddToCart, allEsspIds, bulkDeadlines, minCardWidth]);
+    const renderProductsGrid = useMemo(() => {
+        // Only recalculate when products array reference changes
+        // Don't include callbacks in dependencies as they should be stable
+        return (
+            <Grid container spacing={gridSpacing}>
+                {products.map((item) => {
+                    const key = generateProductKey(item);
+                    return (
+                        <Grid
+                            key={key}
+                            size={{ xs: 12, sm: 6, md: 3, lg: 4 }}
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    width: '100%',
+                                    maxWidth: { xs: '100%', sm: minCardWidth },
+                                    display: 'flex',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                <MaterialProductCard
+                                    product={item}
+                                    onAddToCart={onAddToCart}
+                                    allEsspIds={allEsspIds}
+                                    bulkDeadlines={bulkDeadlines}
+                                />
+                            </Box>
+                        </Grid>
+                    );
+                })}
+            </Grid>
+        );
+    }, [products, gridSpacing, minCardWidth]); // Reduced dependencies for better performance
 
     /**
      * Render load more section
@@ -303,7 +312,7 @@ const ProductGrid = ({
                     {renderProductCountSection()}
 
                     {/* Products Grid */}
-                    {renderProductsGrid()}
+                    {renderProductsGrid}
 
                     {/* Load More Section */}
                     {renderLoadMoreSection()}
@@ -311,6 +320,20 @@ const ProductGrid = ({
             )}
         </Box>
     );
-};
+}, (prevProps, nextProps) => {
+    // Custom comparison function for React.memo
+    // Only re-render if critical props have changed
+    return (
+        prevProps.loading === nextProps.loading &&
+        prevProps.error === nextProps.error &&
+        prevProps.products === nextProps.products &&
+        prevProps.pagination?.has_next === nextProps.pagination?.has_next &&
+        prevProps.pagination?.total_count === nextProps.pagination?.total_count &&
+        prevProps.allEsspIds === nextProps.allEsspIds &&
+        prevProps.bulkDeadlines === nextProps.bulkDeadlines
+    );
+});
+
+ProductGrid.displayName = 'ProductGrid';
 
 export default ProductGrid;

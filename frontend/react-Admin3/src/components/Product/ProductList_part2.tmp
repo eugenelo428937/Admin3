@@ -1,0 +1,42 @@
+								);
+							})}
+
+							{/* Debug Information (Development Only) */}
+							{/* {process.env.NODE_ENV === 'development' && (
+                            <FilterDebugger 
+                                filters={filters}
+                                searchQuery={searchQuery}
+                                products={products}
+                                isLoading={isLoading}
+                            />
+                        )} */}
+						</Box>
+
+						{/* Product Grid */}
+						<ProductGrid
+							products={products}
+							loading={isLoading || searchLoading}
+							error={error || searchError}
+							pagination={pagination}
+							onLoadMore={handleLoadMore}
+							onAddToCart={handleAddToCart}
+							allEsspIds={allEsspIds}
+							bulkDeadlines={bulkDeadlines}
+							showProductCount
+							showLoadMoreButton
+							emptyStateMessage={
+								isSearchMode
+									? "No products found for your search criteria."
+									: "No products available based on selected filters."
+							}
+						/>
+					</Grid>
+				</Grid>
+
+			</Container>
+		);
+});
+
+ProductList.displayName = 'ProductList';
+
+export default ProductList;

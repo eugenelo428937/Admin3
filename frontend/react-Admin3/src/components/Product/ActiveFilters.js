@@ -230,7 +230,7 @@ const ActiveFilters = ({
      * Render default variant (full chip display)
      */
     return (
-        <Box sx={{ mb: 2 }}>
+        <Box sx={{ mb: 0 }}>
             {/* Header */}
             <Box sx={{ 
                 display: 'flex', 
@@ -305,7 +305,7 @@ const ActiveFilters = ({
             </Stack>
 
             {/* Optional divider */}
-            <Divider sx={{ mt: 2 }} />
+            <Divider sx={{ mt: 1 }} />
         </Box>
     );
 };

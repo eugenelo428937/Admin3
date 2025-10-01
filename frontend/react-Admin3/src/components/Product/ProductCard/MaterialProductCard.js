@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { formatPrice } from '../../../utils/priceFormatter';
 import {
 	Button,
@@ -46,47 +46,19 @@ const MaterialProductCard = React.memo(
 		const [selectedVariation, setSelectedVariation] = useState("");
 		const [showPriceModal, setShowPriceModal] = useState(false);
 		const [selectedPriceType, setSelectedPriceType] = useState("");
-		const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 		const [isHovered, setIsHovered] = useState(false);
 		const theme = useTheme();
 		const cardRef = useRef(null);
-		const headerRef = useRef(null);
 
 		useCart();
 
-		// Initialize mouse position to center
-		useEffect(() => {
-			setMousePosition({ x: 50, y: 50 });
+		const handleMouseEnter = useCallback(() => {
+			setIsHovered(true);
 		}, []);
 
-		const handleMouseMove = (e) => {
-			if (headerRef.current) {
-				const rect = headerRef.current.getBoundingClientRect();
-				const x = ((e.clientX - rect.left) / rect.width) * 100;
-				const y = ((e.clientY - rect.top) / rect.height) * 100;
-				setMousePosition({ x, y });
-			}
-		};
-
-		const handleMouseEnter = () => {
-			setIsHovered(true);
-		};
-
-		const handleMouseLeave = () => {
+		const handleMouseLeave = useCallback(() => {
 			setIsHovered(false);
-			setMousePosition({ x: 50, y: 50 });
-		};
-
-		const getGradientStyle = () => {
-			if (theme.gradients?.createGradientStyle) {
-				return theme.gradients.createGradientStyle(
-					mousePosition,
-					isHovered,
-					theme.gradients.colorSchemes?.material || {}
-				);
-			}
-			return {};
-		};
+		}, []);
 
 		// Memoize expensive calculations
 		const productTypeCheck = useMemo(
@@ -307,16 +279,7 @@ const MaterialProductCard = React.memo(
 												<TableCell>{variation.name}</TableCell>
 												<TableCell>{price.price_type}</TableCell>
 												<TableCell>
-													{(() => {
-														const priceDisplay = getPrice(
-															variation,
-															price.price_type
-														);
-														if (priceDisplay) {
-															return priceDisplay;
-														}
-														return formatPrice(price.amount);
-													})()}
+													{formatPrice(price.amount)}
 												</TableCell>
 											</TableRow>
 										))
@@ -668,7 +631,6 @@ const MaterialProductCard = React.memo(
 					variant="product"
 					productType="material"
 					className="d-flex flex-column"
-					onMouseMove={handleMouseMove}
 					onMouseEnter={handleMouseEnter}
 					onMouseLeave={handleMouseLeave}
 					sx={{
@@ -709,7 +671,6 @@ const MaterialProductCard = React.memo(
 					</Box>
 					{/* Enhanced Header */}
 					<CardHeader
-						ref={headerRef}
 						className="product-header"
 						title={
 							<Typography
@@ -732,31 +693,26 @@ const MaterialProductCard = React.memo(
 								<LibraryBooksSharp className="product-avatar-icon" />
 							</Avatar>
 						}
-						sx={{
-							position: "relative",
-							"&::before": {
-								content: '""',
-								position: "absolute",
-								top: 0,
-								left: 0,
-								right: 0,
-								bottom: 0,
-								...getGradientStyle(),
-								zIndex: 0,
-								pointerEvents: "none",
-							},
-							"& > *": {
-								position: "relative",
-								zIndex: 1,
-							},
-						}}
 					/>
 
 					{renderRegularContent()}
 					{renderPriceModal()}
 				</BaseProductCard> </ThemeProvider>
 		);
+	},
+	// Custom comparison function for better memoization
+	(prevProps, nextProps) => {
+		// Only re-render if product data actually changes
+		return (
+			prevProps.product?.id === nextProps.product?.id &&
+			prevProps.product?.essp_id === nextProps.product?.essp_id &&
+			prevProps.product?.variations === nextProps.product?.variations &&
+			prevProps.product?.prices === nextProps.product?.prices &&
+			prevProps.onAddToCart === nextProps.onAddToCart
+		);
 	}
 );
+
+MaterialProductCard.displayName = 'MaterialProductCard';
 
 export default MaterialProductCard;
