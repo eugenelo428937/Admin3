@@ -13,26 +13,33 @@ User = get_user_model()
 class VATRemovalTestCase(TestCase):
     """Test that all VAT-related code has been removed"""
 
-    def test_cart_model_has_no_vat_methods(self):
-        """Verify Cart model has no VAT-related methods"""
+    def test_cart_model_has_approved_vat_attributes(self):
+        """Verify Cart model only has approved VAT-related attributes"""
         cart_methods = [method for method in dir(Cart) if not method.startswith('_')]
         vat_methods = [m for m in cart_methods if 'vat' in m.lower()]
 
+        # Allowed: vat_result (field), vataudit_set (reverse FK from VATAudit model)
+        approved_vat_attrs = {'vat_result', 'vataudit_set'}
+        unexpected_attrs = set(vat_methods) - approved_vat_attrs
+
         self.assertEqual(
-            vat_methods,
-            [],
-            f"Found VAT-related methods in Cart model: {vat_methods}"
+            unexpected_attrs,
+            set(),
+            f"Found unexpected VAT-related attributes in Cart model: {unexpected_attrs}"
         )
 
-    def test_cart_model_has_no_vat_fields(self):
-        """Verify Cart model has no VAT-related fields"""
+    def test_cart_model_has_approved_vat_fields(self):
+        """Verify Cart model has approved VAT-related fields"""
         cart_fields = [field.name for field in Cart._meta.get_fields()]
-        vat_fields = [f for f in cart_fields if 'vat' in f.lower()]
+        vat_fields = sorted([f for f in cart_fields if 'vat' in f.lower()])
+
+        # Allowed: vat_result (JSONB field), vataudit (reverse relation from VATAudit)
+        approved_fields = ['vat_result', 'vataudit']
 
         self.assertEqual(
             vat_fields,
-            [],
-            f"Found VAT-related fields in Cart model: {vat_fields}"
+            approved_fields,
+            f"Cart model should only have approved VAT fields, found: {vat_fields}"
         )
 
     def test_cartitem_model_has_no_vat_fields(self):
@@ -40,10 +47,11 @@ class VATRemovalTestCase(TestCase):
         cartitem_fields = [field.name for field in CartItem._meta.get_fields()]
         vat_fields = [f for f in cartitem_fields if 'vat' in f.lower()]
 
+        # CartItem should have NO VAT fields - VAT is calculated per cart, not per item
         self.assertEqual(
             vat_fields,
             [],
-            f"Found VAT-related fields in CartItem model: {vat_fields}"
+            f"CartItem model should have no VAT fields, found: {vat_fields}"
         )
 
     def test_cart_views_have_no_vat_endpoints(self):

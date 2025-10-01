@@ -20,9 +20,9 @@ VAT_RATES = {
 REGION_MAP = {
     'UK': {'GB', 'UK'},
     'IE': {'IE'},
-    'EC': {'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE',
+    'EU': {'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE',
            'GR', 'HU', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT',
-           'RO', 'SK', 'SI', 'ES', 'SE', 'IE'},
+           'RO', 'SK', 'SI', 'ES', 'SE'},
     'SA': {'ZA'},
     'CH': {'CH'},
     'GG': {'GG'}
@@ -37,13 +37,13 @@ def map_country_to_region(country_code: str) -> str:
         country_code: ISO country code (e.g., 'GB', 'DE', 'US')
 
     Returns:
-        Region code (UK, IE, EC, SA, CH, GG, or ROW)
+        Region code (UK, IE, EU, SA, CH, GG, or ROW)
 
     Examples:
         >>> map_country_to_region('GB')
         'UK'
         >>> map_country_to_region('DE')
-        'EC'
+        'EU'
         >>> map_country_to_region('US')
         'ROW'
     """
@@ -59,7 +59,7 @@ def map_country_to_region(country_code: str) -> str:
     return 'ROW'
 
 
-def get_vat_rate(region: str, classification: dict) -> Decimal:
+def get_vat_rate(region: str, classification: dict = None) -> Decimal:
     """
     Get VAT rate based on region and product classification.
 
@@ -70,8 +70,8 @@ def get_vat_rate(region: str, classification: dict) -> Decimal:
     - Standard: region default rate
 
     Args:
-        region: Region code (UK, IE, EC, SA, CH, GG, ROW)
-        classification: Product classification dict with keys:
+        region: Region code (UK, IE, EU, SA, CH, GG, ROW)
+        classification: Product classification dict with keys (optional):
             - is_ebook (bool): True if product is an eBook
             - is_digital (bool): True if product is digital
             - is_live_tutorial (bool): True if product is live tutorial
@@ -87,6 +87,10 @@ def get_vat_rate(region: str, classification: dict) -> Decimal:
         >>> get_vat_rate('ROW', {'is_digital': True})
         Decimal('0.00')
     """
+    # Handle None classification by treating as empty dict
+    if classification is None:
+        classification = {}
+
     # UK eBooks get 0% VAT (post-2020 rule)
     if region == "UK" and classification.get("is_ebook", False):
         return Decimal("0.00")
@@ -99,5 +103,5 @@ def get_vat_rate(region: str, classification: dict) -> Decimal:
     if region == "SA":
         return Decimal("0.15")
 
-    # Return region default rate (handles UK, IE, ROW, CH, GG, EC)
+    # Return region default rate (handles UK, IE, ROW, CH, GG, EU)
     return VAT_RATES.get(region, Decimal("0.00"))

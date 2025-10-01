@@ -11,8 +11,11 @@ This is intentional and follows TDD RED → GREEN → REFACTOR workflow.
 from django.test import TestCase
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 from vat.models import VATAudit
 from cart.models import Cart, ActedOrder
+
+User = get_user_model()
 
 
 class TestVATAuditModelExists(TestCase):
@@ -220,7 +223,12 @@ class TestVATAuditCreation(TestCase):
 
     def test_vat_audit_full_creation_with_cart(self):
         """Test VATAudit creation with cart relationship."""
-        cart = Cart.objects.create(user_id=1)
+        user = User.objects.create_user(
+            username='test_cart_user',
+            email='test@example.com',
+            password='testpass123'
+        )
+        cart = Cart.objects.create(user=user)
         audit = VATAudit.objects.create(
             execution_id='exec_cart_001',
             cart=cart,
