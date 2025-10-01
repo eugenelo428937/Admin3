@@ -7,15 +7,16 @@ Tests the complete integration of:
 - Per-item context extraction
 - Full VAT context assembly
 - Edge cases across components
+
+Updated to use actual CartItem schema with actual_price and metadata fields.
 """
 
 from decimal import Decimal
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from cart.models import Cart, CartItem
-from products.models import Products, ProductVariations
 from country.models import Country
-from userprofile.models import UserProfile
+from userprofile.models import UserProfile, UserProfileAddress
 from vat.context_builder import build_vat_context, build_item_context
 from vat.product_classifier import classify_product
 
@@ -34,54 +35,110 @@ class TestContextBuilderIntegration(TestCase):
             password='testpass123'
         )
 
-        # Create UK country
+        # Create UK country (use iso_code not code)
         self.uk = Country.objects.create(
-            code='GB',
-            name='United Kingdom'
+            iso_code='GB',
+            name='United Kingdom',
+            phone_code='+44'
         )
 
-        # Create user profile with UK address
-        self.profile = UserProfile.objects.create(
-            user=self.user,
-            country=self.uk,
-            postcode='SW1A 1AA'
+        # Create user profile with UK HOME address
+        self.profile, _ = UserProfile.objects.get_or_create(user=self.user)
+        # Clear any existing addresses and create fresh HOME address
+        UserProfileAddress.objects.filter(user_profile=self.profile).delete()
+        UserProfileAddress.objects.create(
+            user_profile=self.profile,
+            address_type='HOME',
+            country='GB',
+            address_data={'postcode': 'SW1A 1AA'}
         )
 
         # Create cart
-        self.cart = Cart.objects.create(user_id=self.user.id)
+        self.cart = Cart.objects.create(user=self.user)
 
     def test_complete_context_with_multiple_product_types(self):
         """Test complete context with diverse product types."""
-        # Create products: ebook, material, marking, live tutorial
-        ebook = Products.objects.create(
-            product_name='CS2 eBook',
-            product_code='MAT-EBOOK-CS2',
-            price=Decimal('80.00')
+        # Create cart items with actual_price and metadata (no Product FK needed)
+
+        # eBook item
+        CartItem.objects.create(
+            cart=self.cart,
+            quantity=1,
+            actual_price=Decimal('80.00'),
+            item_type='fee',
+            metadata={
+                'product_code': 'MAT-EBOOK-CS2',
+                'product_name': 'CS2 eBook',
+                'classification': {
+                    'is_ebook': True,
+                    'is_digital': True,
+                    'is_material': False,
+                    'is_live_tutorial': False,
+                    'is_marking': False,
+                    'product_type': 'ebook'
+                }
+            }
         )
 
-        material = Products.objects.create(
-            product_name='CS2 Printed Material',
-            product_code='MAT-PRINT-CS2',
-            price=Decimal('100.00')
+        # Material item (2x quantity)
+        CartItem.objects.create(
+            cart=self.cart,
+            quantity=2,
+            actual_price=Decimal('100.00'),
+            item_type='fee',
+            metadata={
+                'product_code': 'MAT-PRINT-CS2',
+                'product_name': 'CS2 Printed Material',
+                'classification': {
+                    'is_ebook': False,
+                    'is_digital': False,
+                    'is_material': True,
+                    'is_live_tutorial': False,
+                    'is_marking': False,
+                    'product_type': 'material'
+                }
+            }
         )
 
-        marking = Products.objects.create(
-            product_name='CS2 Marking',
-            product_code='MARK-CS2',
-            price=Decimal('50.00')
+        # Marking item
+        CartItem.objects.create(
+            cart=self.cart,
+            quantity=1,
+            actual_price=Decimal('50.00'),
+            item_type='fee',
+            metadata={
+                'product_code': 'MARK-CS2',
+                'product_name': 'CS2 Marking',
+                'classification': {
+                    'is_ebook': False,
+                    'is_digital': False,
+                    'is_material': False,
+                    'is_live_tutorial': False,
+                    'is_marking': True,
+                    'product_type': 'marking'
+                }
+            }
         )
 
-        tutorial = Products.objects.create(
-            product_name='Live Tutorial',
-            product_code='TUT-LIVE-CS2',
-            price=Decimal('200.00')
+        # Tutorial item
+        CartItem.objects.create(
+            cart=self.cart,
+            quantity=1,
+            actual_price=Decimal('200.00'),
+            item_type='fee',
+            metadata={
+                'product_code': 'TUT-LIVE-CS2',
+                'product_name': 'Live Tutorial',
+                'classification': {
+                    'is_ebook': False,
+                    'is_digital': False,
+                    'is_material': False,
+                    'is_live_tutorial': True,
+                    'is_marking': False,
+                    'product_type': 'live_tutorial'
+                }
+            }
         )
-
-        # Add items to cart
-        CartItem.objects.create(cart=self.cart, product=ebook, quantity=1, price=ebook.price)
-        CartItem.objects.create(cart=self.cart, product=material, quantity=2, price=material.price)
-        CartItem.objects.create(cart=self.cart, product=marking, quantity=1, price=marking.price)
-        CartItem.objects.create(cart=self.cart, product=tutorial, quantity=1, price=tutorial.price)
 
         # Build context
         context = build_vat_context(self.user, self.cart)
@@ -94,7 +151,8 @@ class TestContextBuilderIntegration(TestCase):
 
         # Verify cart context
         self.assertEqual(len(context['cart']['items']), 4)
-        self.assertEqual(context['cart']['total_net'], Decimal('530.00'))  # 80 + 200 + 50 + 200
+        # 80 + (100*2) + 50 + 200 = 530
+        self.assertEqual(context['cart']['total_net'], Decimal('530.00'))
 
         # Verify classifications
         items = context['cart']['items']
@@ -115,41 +173,38 @@ class TestContextBuilderIntegration(TestCase):
 
     def test_context_with_product_variations(self):
         """Test context building with product variations."""
-        # Create base product
-        material = Products.objects.create(
-            product_name='CS2 Material',
-            product_code='MAT-BASE-CS2',
-            price=Decimal('100.00')
-        )
+        # Create cart items with different product codes (simulating variations)
 
-        # Create variations
-        ebook_variation = ProductVariations.objects.create(
-            product=material,
-            product_code='MAT-EBOOK-CS2',
-            price=Decimal('80.00')
-        )
-
-        print_variation = ProductVariations.objects.create(
-            product=material,
-            product_code='MAT-PRINT-CS2',
-            price=Decimal('100.00')
-        )
-
-        # Add items with variations
         CartItem.objects.create(
             cart=self.cart,
-            product=material,
-            product_variation=ebook_variation,
             quantity=1,
-            price=ebook_variation.price
+            actual_price=Decimal('80.00'),
+            item_type='fee',
+            metadata={
+                'product_code': 'MAT-EBOOK-CS2',
+                'classification': {
+                    'is_ebook': True,
+                    'is_digital': True,
+                    'is_material': False,
+                    'product_type': 'ebook'
+                }
+            }
         )
 
         CartItem.objects.create(
             cart=self.cart,
-            product=material,
-            product_variation=print_variation,
             quantity=2,
-            price=print_variation.price
+            actual_price=Decimal('100.00'),
+            item_type='fee',
+            metadata={
+                'product_code': 'MAT-PRINT-CS2',
+                'classification': {
+                    'is_ebook': False,
+                    'is_digital': False,
+                    'is_material': True,
+                    'product_type': 'material'
+                }
+            }
         )
 
         # Build context
@@ -162,30 +217,31 @@ class TestContextBuilderIntegration(TestCase):
         # Verify ebook variation
         ebook_item = next(i for i in items if i['product_code'] == 'MAT-EBOOK-CS2')
         self.assertTrue(ebook_item['classification']['is_ebook'])
-        self.assertEqual(ebook_item['net_amount'], Decimal('80.00'))
+        self.assertEqual(ebook_item['net_amount'], '80.00')  # String format
 
-        # Verify print variation
+        # Verify print variation (2x quantity)
         print_item = next(i for i in items if i['product_code'] == 'MAT-PRINT-CS2')
         self.assertTrue(print_item['classification']['is_material'])
-        self.assertEqual(print_item['net_amount'], Decimal('200.00'))
+        self.assertEqual(print_item['net_amount'], '200.00')  # 100 * 2
 
     def test_context_with_anonymous_user(self):
         """Test context building with anonymous user."""
         # Create anonymous cart
-        anon_cart = Cart.objects.create(user_id=None)
+        anon_cart = Cart.objects.create(user=None)
 
         # Add product
-        product = Products.objects.create(
-            product_name='Test Product',
-            product_code='MAT-PRINT-CS2',
-            price=Decimal('100.00')
-        )
-
         CartItem.objects.create(
             cart=anon_cart,
-            product=product,
             quantity=1,
-            price=product.price
+            actual_price=Decimal('100.00'),
+            item_type='fee',
+            metadata={
+                'product_code': 'MAT-PRINT-CS2',
+                'classification': {
+                    'is_material': True,
+                    'product_type': 'material'
+                }
+            }
         )
 
         # Build context with None user
@@ -226,34 +282,56 @@ class TestContextBuilderRegionMapping(TestCase):
 
     def test_uk_region_mapping(self):
         """Test UK country maps to UK region."""
-        uk = Country.objects.create(code='GB', name='United Kingdom')
-        UserProfile.objects.create(user=self.user, country=uk)
-        cart = Cart.objects.create(user_id=self.user.id)
+        uk = Country.objects.create(iso_code='GB', name='United Kingdom', phone_code='+44')
+        profile, _ = UserProfile.objects.get_or_create(user=self.user)
+        UserProfileAddress.objects.create(
+            user_profile=profile,
+            address_type='HOME',
+            country='GB',
+            address_data={'postcode': 'SW1A 1AA'}
+        )
+        cart = Cart.objects.create(user=self.user)
 
         context = build_vat_context(self.user, cart)
         self.assertEqual(context['user']['region'], 'UK')
 
     def test_eu_region_mapping(self):
         """Test EU country maps to EU region."""
-        france = Country.objects.create(code='FR', name='France')
-        UserProfile.objects.create(user=self.user, country=france)
-        cart = Cart.objects.create(user_id=self.user.id)
+        france = Country.objects.create(iso_code='FR', name='France', phone_code='+33')
+        profile, _ = UserProfile.objects.get_or_create(user=self.user)
+        # Clear any existing HOME addresses first
+        UserProfileAddress.objects.filter(user_profile=profile, address_type='HOME').delete()
+        UserProfileAddress.objects.create(
+            user_profile=profile,
+            address_type='HOME',
+            country='FR',
+            address_data={'postcode': '75001'}
+        )
+        cart = Cart.objects.create(user=self.user)
 
         context = build_vat_context(self.user, cart)
         self.assertEqual(context['user']['region'], 'EU')
 
     def test_row_region_mapping(self):
         """Test non-UK/non-EU country maps to ROW region."""
-        australia = Country.objects.create(code='AU', name='Australia')
-        UserProfile.objects.create(user=self.user, country=australia)
-        cart = Cart.objects.create(user_id=self.user.id)
+        australia = Country.objects.create(iso_code='AU', name='Australia', phone_code='+61')
+        profile, _ = UserProfile.objects.get_or_create(user=self.user)
+        # Clear any existing HOME addresses first
+        UserProfileAddress.objects.filter(user_profile=profile, address_type='HOME').delete()
+        UserProfileAddress.objects.create(
+            user_profile=profile,
+            address_type='HOME',
+            country='AU',
+            address_data={'postcode': '2000'}
+        )
+        cart = Cart.objects.create(user=self.user)
 
         context = build_vat_context(self.user, cart)
         self.assertEqual(context['user']['region'], 'ROW')
 
     def test_user_without_profile(self):
         """Test user without profile has None region."""
-        cart = Cart.objects.create(user_id=self.user.id)
+        cart = Cart.objects.create(user=self.user)
 
         context = build_vat_context(self.user, cart)
         self.assertIsNone(context['user']['region'])
@@ -270,58 +348,60 @@ class TestContextBuilderNetAmountCalculations(TestCase):
             email='test@example.com',
             password='testpass123'
         )
-        self.cart = Cart.objects.create(user_id=self.user.id)
+        self.cart = Cart.objects.create(user=self.user)
 
     def test_total_net_aggregation(self):
         """Test total_net aggregates all item net_amounts."""
-        product1 = Products.objects.create(
-            product_name='Product 1',
-            product_code='MAT-PRINT-1',
-            price=Decimal('50.00')
+        CartItem.objects.create(
+            cart=self.cart,
+            quantity=2,
+            actual_price=Decimal('50.00'),
+            item_type='fee',
+            metadata={'product_code': 'MAT-PRINT-1'}
         )
 
-        product2 = Products.objects.create(
-            product_name='Product 2',
-            product_code='MAT-EBOOK-2',
-            price=Decimal('75.50')
+        CartItem.objects.create(
+            cart=self.cart,
+            quantity=1,
+            actual_price=Decimal('75.50'),
+            item_type='fee',
+            metadata={'product_code': 'MAT-EBOOK-2'}
         )
 
-        product3 = Products.objects.create(
-            product_name='Product 3',
-            product_code='MARK-3',
-            price=Decimal('25.25')
+        CartItem.objects.create(
+            cart=self.cart,
+            quantity=3,
+            actual_price=Decimal('25.25'),
+            item_type='fee',
+            metadata={'product_code': 'MARK-3'}
         )
-
-        CartItem.objects.create(cart=self.cart, product=product1, quantity=2, price=product1.price)
-        CartItem.objects.create(cart=self.cart, product=product2, quantity=1, price=product2.price)
-        CartItem.objects.create(cart=self.cart, product=product3, quantity=3, price=product3.price)
 
         context = build_vat_context(self.user, self.cart)
 
-        # Verify individual amounts
+        # Verify individual amounts (as strings)
         items = context['cart']['items']
-        self.assertEqual(items[0]['net_amount'], Decimal('100.00'))  # 50 * 2
-        self.assertEqual(items[1]['net_amount'], Decimal('75.50'))   # 75.50 * 1
-        self.assertEqual(items[2]['net_amount'], Decimal('75.75'))   # 25.25 * 3
+        self.assertEqual(items[0]['net_amount'], '100.00')  # 50 * 2
+        self.assertEqual(items[1]['net_amount'], '75.50')   # 75.50 * 1
+        self.assertEqual(items[2]['net_amount'], '75.75')   # 25.25 * 3
 
-        # Verify total
+        # Verify total (as Decimal for total_net)
         expected_total = Decimal('100.00') + Decimal('75.50') + Decimal('75.75')
         self.assertEqual(context['cart']['total_net'], expected_total)
 
     def test_decimal_precision_preserved(self):
         """Test decimal precision is preserved throughout calculations."""
-        product = Products.objects.create(
-            product_name='Decimal Product',
-            product_code='MAT-PRINT',
-            price=Decimal('33.33')
+        CartItem.objects.create(
+            cart=self.cart,
+            quantity=3,
+            actual_price=Decimal('33.33'),
+            item_type='fee',
+            metadata={'product_code': 'MAT-PRINT'}
         )
-
-        CartItem.objects.create(cart=self.cart, product=product, quantity=3, price=product.price)
 
         context = build_vat_context(self.user, self.cart)
 
         # 33.33 * 3 = 99.99
-        self.assertEqual(context['cart']['items'][0]['net_amount'], Decimal('99.99'))
+        self.assertEqual(context['cart']['items'][0]['net_amount'], '99.99')
         self.assertEqual(context['cart']['total_net'], Decimal('99.99'))
 
 
@@ -335,7 +415,7 @@ class TestContextBuilderMetadata(TestCase):
             email='test@example.com',
             password='testpass123'
         )
-        self.cart = Cart.objects.create(user_id=self.user.id)
+        self.cart = Cart.objects.create(user=self.user)
 
     def test_settings_section_present(self):
         """Test settings section is present in context."""

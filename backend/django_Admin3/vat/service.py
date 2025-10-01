@@ -42,7 +42,9 @@ def calculate_vat_for_item(item_context):
     item = item_context.get('item', {})
 
     item_id = item.get('item_id')
-    net_amount = item.get('net_amount', Decimal('0.00'))
+    # Convert net_amount from string to Decimal
+    net_amount_raw = item.get('net_amount', '0.00')
+    net_amount = Decimal(net_amount_raw) if isinstance(net_amount_raw, str) else net_amount_raw
     classification = item.get('classification', {})
 
     # Default to ROW if region is None
@@ -235,11 +237,13 @@ def save_vat_result_to_cart(cart, vat_result):
     Returns:
         bool: True if saved successfully
     """
+    from vat.utils import decimal_to_string
+
     if cart is None:
         return False
 
     try:
-        cart.vat_result = vat_result
+        cart.vat_result = decimal_to_string(vat_result)
         cart.save(update_fields=['vat_result'])
         return True
     except Exception:
@@ -262,6 +266,7 @@ def create_vat_audit_record(execution_id, cart, vat_result, duration_ms, order=N
     """
     from vat.models import VATAudit
     from vat.context_builder import build_vat_context
+    from vat.utils import decimal_to_string
 
     # Build input context (reconstruct from cart if available)
     if cart:
@@ -280,15 +285,15 @@ def create_vat_audit_record(execution_id, cart, vat_result, duration_ms, order=N
     else:
         input_context = {'user': None, 'cart': None, 'settings': {}}
 
-    # Create audit record
+    # Create audit record - convert Decimals to strings for JSON storage
     audit = VATAudit.objects.create(
         execution_id=execution_id,
         cart=cart,
         order=order,
         rule_id='calculate_vat_per_item',  # Standard rule ID for VAT calculations
         rule_version=1,  # Version 1 for initial implementation
-        input_context=input_context,
-        output_data=vat_result,
+        input_context=decimal_to_string(input_context),
+        output_data=decimal_to_string(vat_result),
         duration_ms=duration_ms
     )
 

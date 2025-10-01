@@ -92,7 +92,12 @@ const CartSummaryPanel = ({
               <small>£{vatCalculations.totals.subtotal.toFixed(2)}</small>
             </div>
             <div className="d-flex justify-content-between">
-              <small>VAT (20%):</small>
+              <small>
+                VAT{vatCalculations.totals.effective_vat_rate !== undefined &&
+                    vatCalculations.totals.effective_vat_rate !== null
+                  ? ` (${(vatCalculations.totals.effective_vat_rate * 100).toFixed(0)}%)`
+                  : ''}:
+              </small>
               <small>£{vatCalculations.totals.total_vat.toFixed(2)}</small>
             </div>
             {/* Display fees if present and payment method is card */}

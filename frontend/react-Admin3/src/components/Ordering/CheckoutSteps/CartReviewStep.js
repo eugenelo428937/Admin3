@@ -111,7 +111,12 @@ const CartReviewStep = ({
                     <Typography variant="body2">£{vatCalculations.totals.subtotal.toFixed(2)}</Typography>
                   </Box>
                   <Box display="flex" justifyContent="space-between">
-                    <Typography variant="body2">VAT (20%):</Typography>
+                    <Typography variant="body2">
+                      VAT{vatCalculations.totals.effective_vat_rate !== undefined &&
+                          vatCalculations.totals.effective_vat_rate !== null
+                        ? ` (${(vatCalculations.totals.effective_vat_rate * 100).toFixed(0)}%)`
+                        : ''}:
+                    </Typography>
                     <Typography variant="body2">£{vatCalculations.totals.total_vat.toFixed(2)}</Typography>
                   </Box>
                   <Divider sx={{ my: 1 }} />

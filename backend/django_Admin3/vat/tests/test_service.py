@@ -13,7 +13,7 @@ from decimal import Decimal
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from cart.models import Cart, CartItem
-from products.models import Products
+from products.models import Product
 from country.models import Country
 from userprofile.models import UserProfile
 from vat.service import (
@@ -381,8 +381,17 @@ class TestCalculateVATForCartStructure(TestCase):
             password='testpass123'
         )
 
-        self.uk = Country.objects.create(code='GB', name='United Kingdom')
-        UserProfile.objects.create(user=self.user, country=self.uk)
+        self.uk = Country.objects.create(iso_code='GB', name='United Kingdom', phone_code='+44')
+        from userprofile.models import UserProfileAddress
+        profile, _ = UserProfile.objects.get_or_create(user=self.user)
+        # Clear existing HOME addresses to avoid duplicates
+        UserProfileAddress.objects.filter(user_profile=profile, address_type='HOME').delete()
+        UserProfileAddress.objects.create(
+            user_profile=profile,
+            address_type='HOME',
+            country='GB',
+            address_data={'postcode': 'SW1A 1AA'}
+        )
 
         self.cart = Cart.objects.create(user_id=self.user.id)
 
@@ -435,24 +444,37 @@ class TestCalculateVATForCartSingleItem(TestCase):
             password='testpass123'
         )
 
-        self.uk = Country.objects.create(code='GB', name='United Kingdom')
-        UserProfile.objects.create(user=self.user, country=self.uk)
+        self.uk = Country.objects.create(iso_code='GB', name='United Kingdom', phone_code='+44')
+        from userprofile.models import UserProfileAddress
+        profile, _ = UserProfile.objects.get_or_create(user=self.user)
+        # Clear existing HOME addresses to avoid duplicates
+        UserProfileAddress.objects.filter(user_profile=profile, address_type='HOME').delete()
+        UserProfileAddress.objects.create(
+            user_profile=profile,
+            address_type='HOME',
+            country='GB',
+            address_data={'postcode': 'SW1A 1AA'}
+        )
 
         self.cart = Cart.objects.create(user_id=self.user.id)
 
     def test_single_uk_material(self):
         """Test cart with single UK material item."""
-        product = Products.objects.create(
-            product_name='CS2 Material',
-            product_code='MAT-PRINT-CS2',
-            price=Decimal('100.00')
-        )
-
         CartItem.objects.create(
             cart=self.cart,
-            product=product,
             quantity=1,
-            price=product.price
+            actual_price=Decimal('100.00'),
+            item_type='fee',
+            metadata={
+                'product_code': 'MAT-PRINT-CS2',
+                'product_name': 'CS2 Material',
+                'classification': {
+                    'is_material': True,
+                    'is_digital': False,
+                    'is_ebook': False,
+                    'product_type': 'material'
+                }
+            }
         )
 
         result = calculate_vat_for_cart(self.user, self.cart)
@@ -460,15 +482,15 @@ class TestCalculateVATForCartSingleItem(TestCase):
         # Verify items
         items = result['vat_calculations']['items']
         self.assertEqual(len(items), 1)
-        self.assertEqual(items[0]['net_amount'], Decimal('100.00'))
-        self.assertEqual(items[0]['vat_amount'], Decimal('20.00'))
-        self.assertEqual(items[0]['vat_rate'], Decimal('0.20'))
+        self.assertEqual(Decimal(items[0]['net_amount']), Decimal('100.00'))
+        self.assertEqual(Decimal(items[0]['vat_amount']), Decimal('20.00'))
+        self.assertEqual(Decimal(items[0]['vat_rate']), Decimal('0.20'))
 
         # Verify totals
         totals = result['vat_calculations']['totals']
-        self.assertEqual(totals['total_net'], Decimal('100.00'))
-        self.assertEqual(totals['total_vat'], Decimal('20.00'))
-        self.assertEqual(totals['total_gross'], Decimal('120.00'))
+        self.assertEqual(Decimal(totals['total_net']), Decimal('100.00'))
+        self.assertEqual(Decimal(totals['total_vat']), Decimal('20.00'))
+        self.assertEqual(Decimal(totals['total_gross']), Decimal('120.00'))
 
 
 class TestCalculateVATForCartMultipleItems(TestCase):
@@ -482,27 +504,55 @@ class TestCalculateVATForCartMultipleItems(TestCase):
             password='testpass123'
         )
 
-        self.uk = Country.objects.create(code='GB', name='United Kingdom')
-        UserProfile.objects.create(user=self.user, country=self.uk)
+        self.uk = Country.objects.create(iso_code='GB', name='United Kingdom', phone_code='+44')
+        from userprofile.models import UserProfileAddress
+        profile, _ = UserProfile.objects.get_or_create(user=self.user)
+        # Clear existing HOME addresses to avoid duplicates
+        UserProfileAddress.objects.filter(user_profile=profile, address_type='HOME').delete()
+        UserProfileAddress.objects.create(
+            user_profile=profile,
+            address_type='HOME',
+            country='GB',
+            address_data={'postcode': 'SW1A 1AA'}
+        )
 
         self.cart = Cart.objects.create(user_id=self.user.id)
 
     def test_mixed_product_types(self):
         """Test cart with mixed product types (material + ebook)."""
-        material = Products.objects.create(
-            product_name='CS2 Material',
-            product_code='MAT-PRINT-CS2',
-            price=Decimal('100.00')
+        CartItem.objects.create(
+            cart=self.cart,
+            quantity=1,
+            actual_price=Decimal('100.00'),
+            item_type='fee',
+            metadata={
+                'product_code': 'MAT-PRINT-CS2',
+                'product_name': 'CS2 Material',
+                'classification': {
+                    'is_material': True,
+                    'is_digital': False,
+                    'is_ebook': False,
+                    'product_type': 'material'
+                }
+            }
         )
 
-        ebook = Products.objects.create(
-            product_name='CS2 eBook',
-            product_code='MAT-EBOOK-CS2',
-            price=Decimal('80.00')
+        CartItem.objects.create(
+            cart=self.cart,
+            quantity=1,
+            actual_price=Decimal('80.00'),
+            item_type='fee',
+            metadata={
+                'product_code': 'MAT-EBOOK-CS2',
+                'product_name': 'CS2 eBook',
+                'classification': {
+                    'is_material': False,
+                    'is_digital': True,
+                    'is_ebook': True,
+                    'product_type': 'ebook'
+                }
+            }
         )
-
-        CartItem.objects.create(cart=self.cart, product=material, quantity=1, price=material.price)
-        CartItem.objects.create(cart=self.cart, product=ebook, quantity=1, price=ebook.price)
 
         result = calculate_vat_for_cart(self.user, self.cart)
 
@@ -515,28 +565,37 @@ class TestCalculateVATForCartMultipleItems(TestCase):
         # Total: 180 net, 20 VAT, 200 gross
 
         totals = result['vat_calculations']['totals']
-        self.assertEqual(totals['total_net'], Decimal('180.00'))
-        self.assertEqual(totals['total_vat'], Decimal('20.00'))
-        self.assertEqual(totals['total_gross'], Decimal('200.00'))
+        self.assertEqual(Decimal(totals['total_net']), Decimal('180.00'))
+        self.assertEqual(Decimal(totals['total_vat']), Decimal('20.00'))
+        self.assertEqual(Decimal(totals['total_gross']), Decimal('200.00'))
 
     def test_multiple_quantities(self):
         """Test cart items with multiple quantities."""
-        product = Products.objects.create(
-            product_name='CS2 Material',
-            product_code='MAT-PRINT-CS2',
-            price=Decimal('50.00')
+        CartItem.objects.create(
+            cart=self.cart,
+            quantity=3,
+            actual_price=Decimal('50.00'),
+            item_type='fee',
+            metadata={
+                'product_code': 'MAT-PRINT-CS2',
+                'product_name': 'CS2 Material',
+                'classification': {
+                    'is_material': True,
+                    'is_digital': False,
+                    'is_ebook': False,
+                    'product_type': 'material'
+                }
+            }
         )
-
-        CartItem.objects.create(cart=self.cart, product=product, quantity=3, price=product.price)
 
         result = calculate_vat_for_cart(self.user, self.cart)
 
         # 50 * 3 = 150 net
         # 150 * 0.20 = 30 VAT
         totals = result['vat_calculations']['totals']
-        self.assertEqual(totals['total_net'], Decimal('150.00'))
-        self.assertEqual(totals['total_vat'], Decimal('30.00'))
-        self.assertEqual(totals['total_gross'], Decimal('180.00'))
+        self.assertEqual(Decimal(totals['total_net']), Decimal('150.00'))
+        self.assertEqual(Decimal(totals['total_vat']), Decimal('30.00'))
+        self.assertEqual(Decimal(totals['total_gross']), Decimal('180.00'))
 
 
 class TestCalculateVATForCartMetadata(TestCase):
@@ -550,8 +609,17 @@ class TestCalculateVATForCartMetadata(TestCase):
             password='testpass123'
         )
 
-        self.uk = Country.objects.create(code='GB', name='United Kingdom')
-        UserProfile.objects.create(user=self.user, country=self.uk)
+        self.uk = Country.objects.create(iso_code='GB', name='United Kingdom', phone_code='+44')
+        from userprofile.models import UserProfileAddress
+        profile, _ = UserProfile.objects.get_or_create(user=self.user)
+        # Clear existing HOME addresses to avoid duplicates
+        UserProfileAddress.objects.filter(user_profile=profile, address_type='HOME').delete()
+        UserProfileAddress.objects.create(
+            user_profile=profile,
+            address_type='HOME',
+            country='GB',
+            address_data={'postcode': 'SW1A 1AA'}
+        )
 
         self.cart = Cart.objects.create(user_id=self.user.id)
 
@@ -591,21 +659,30 @@ class TestCalculateVATForCartAnonymousUser(TestCase):
 
     def test_anonymous_user_row_treatment(self):
         """Test anonymous user gets ROW treatment (0% VAT)."""
-        cart = Cart.objects.create(user_id=None)
+        cart = Cart.objects.create(user=None)
 
-        product = Products.objects.create(
-            product_name='CS2 Material',
-            product_code='MAT-PRINT-CS2',
-            price=Decimal('100.00')
+        CartItem.objects.create(
+            cart=cart,
+            quantity=1,
+            actual_price=Decimal('100.00'),
+            item_type='fee',
+            metadata={
+                'product_code': 'MAT-PRINT-CS2',
+                'product_name': 'CS2 Material',
+                'classification': {
+                    'is_material': True,
+                    'is_digital': False,
+                    'is_ebook': False,
+                    'product_type': 'material'
+                }
+            }
         )
-
-        CartItem.objects.create(cart=cart, product=product, quantity=1, price=product.price)
 
         result = calculate_vat_for_cart(None, cart)
 
         # Anonymous users should get ROW treatment (0% VAT)
         totals = result['vat_calculations']['totals']
-        self.assertEqual(totals['total_vat'], Decimal('0.00'))
+        self.assertEqual(Decimal(totals['total_vat']), Decimal('0.00'))
 
         # Verify region is None or ROW
         region_info = result['vat_calculations']['region_info']

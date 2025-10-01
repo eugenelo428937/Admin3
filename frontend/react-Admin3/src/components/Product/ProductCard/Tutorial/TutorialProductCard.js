@@ -16,6 +16,9 @@ import {
 	Radio,
 	FormControlLabel,
 	Tooltip,
+	SpeedDial,
+	SpeedDialAction,
+	Backdrop,
 } from "@mui/material";
 import {
 	AddShoppingCart,
@@ -24,6 +27,10 @@ import {
 	ViewModule,
 	LocationOn,
 	InfoOutline,
+	MoreVert,
+	Edit,
+	Visibility,
+	Clear,
 } from "@mui/icons-material";
 import { useTutorialChoice } from "../../../../contexts/TutorialChoiceContext";
 import tutorialService from "../../../../services/tutorialService";
@@ -50,6 +57,7 @@ const TutorialProductCard = React.memo(
 		const [showChoiceDialog, setShowChoiceDialog] = useState(false);
 		const [isHovered, setIsHovered] = useState(false);
 		const [selectedPriceType, setSelectedPriceType] = useState(""); // Empty means standard pricing
+		const [speedDialOpen, setSpeedDialOpen] = useState(false);
 
 		const {
 			getSubjectChoices,
@@ -308,37 +316,7 @@ const TutorialProductCard = React.memo(
 									location.
 								</Typography>
 							</Box>
-						) : (
-							<Box
-								className="tutorial-action-buttons"
-								sx={{
-									display: "flex",
-									justifyContent: "center",
-									gap: 1,
-									flexWrap: "wrap",
-								}}>
-								<Button
-									variant="contained"
-									size="small"
-									color="primary"
-									className="select-tutorial-button"
-									onClick={() => setShowChoiceDialog(true)}>
-									Select Tutorial
-								</Button>
-								{hasChoices && (
-									<Button
-										variant="contained"
-										size="small"
-										color="secondary"
-										className="view-selection-button"
-										onClick={() =>
-											showChoicePanelForSubject(subjectCode)
-										}>
-										View Selection
-									</Button>
-								)}
-							</Box>
-						)}
+						) : null}
 					</CardContent>
 
 					<CardActions>
@@ -403,10 +381,12 @@ const TutorialProductCard = React.memo(
 							<Box className="price-action-section">
 								<Box className="price-info-row">
 									<Typography variant="h3" className="price-display">
-										{selectedPriceType === "retaker"
-											? "£239.20"
-											: selectedPriceType === "additional"
-											? "£149.50"
+										{selectedPriceType === "retaker" && product.retaker_price
+											? `£${parseFloat(product.retaker_price).toFixed(2)}`
+											: selectedPriceType === "additional" && product.additional_copy_price
+											? `£${parseFloat(product.additional_copy_price).toFixed(2)}`
+											: product.price
+											? `£${parseFloat(product.price).toFixed(2)}`
 											: "£299.00"}
 									</Typography>
 									<Tooltip title="Show price details">
@@ -429,7 +409,7 @@ const TutorialProductCard = React.memo(
 										variant="fineprint"
 										className="vat-status-text"
 										color="text.secondary">
-										Price includes VAT
+										{product.vat_status_display || "Price includes VAT"}
 									</Typography>
 								</Box>
 								<Button
@@ -440,6 +420,57 @@ const TutorialProductCard = React.memo(
 							</Box>
 						</Box>
 					</CardActions>
+
+					{/* SpeedDial for Tutorial Actions */}
+					{variations.length > 0 && (
+						<>
+							<Backdrop open={speedDialOpen} sx={{ position: 'absolute', zIndex: 1 }} />
+							<SpeedDial
+								ariaLabel="Tutorial Actions"
+								sx={{ position: 'absolute', bottom: 16, right: 16 }}
+								icon={<MoreVert />}
+								open={speedDialOpen}
+								FabProps={{
+									onClick: () => setSpeedDialOpen(!speedDialOpen)
+								}}>
+								<SpeedDialAction
+									icon={<Edit />}
+									tooltipTitle="Select Tutorial"
+									aria-label="Select Tutorial"
+									onClick={() => {
+										setSpeedDialOpen(false);
+										setShowChoiceDialog(true);
+									}}
+								/>
+								{hasChoices && [
+									<SpeedDialAction
+										key="view"
+										icon={<Visibility />}
+										tooltipTitle="View Selection"
+										aria-label="View Selection"
+										onClick={() => {
+											setSpeedDialOpen(false);
+											showChoicePanelForSubject(subjectCode);
+										}}
+									/>,
+									<SpeedDialAction
+										key="clear"
+										icon={<Clear />}
+										tooltipTitle="Clear Selection"
+										aria-label="Clear Selection"
+										onClick={() => {
+											setSpeedDialOpen(false);
+											// Clear selections for this subject
+											const choicesToClear = getSubjectChoices(subjectCode);
+											Object.keys(choicesToClear).forEach(level => {
+												localStorage.setItem('tutorialChoices', JSON.stringify({}));
+											});
+										}}
+									/>
+								]}
+							</SpeedDial>
+						</>
+					)}
 				</Card>
 
 				{/* Tutorial Choice Dialog */}
