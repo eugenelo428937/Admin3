@@ -448,33 +448,41 @@ class CartService:
     def get_cart_total(self, cart):
         """
         Calculate the total cost of items in the cart
-        
+
         Args:
             cart: Cart instance
-            
+
         Returns:
             dict: Cart totals with breakdown
         """
+        from vat.service import calculate_vat_for_cart
+
         items = cart.items.all()
-        
+
         product_subtotal = Decimal('0.00')
         voucher_subtotal = Decimal('0.00')
-        
+
         for item in items:
             item_total = item.actual_price * item.quantity
-            
+
             if item.item_type == 'marking_voucher':
                 voucher_subtotal += item_total
             else:
                 product_subtotal += item_total
-        
+
         subtotal = product_subtotal + voucher_subtotal
-        
-        # Calculate VAT (assuming 20% VAT rate)
-        vat_rate = Decimal('0.20')
-        vat_amount = subtotal * vat_rate
-        total = subtotal + vat_amount
-        
+
+        # Calculate VAT using new VAT service (replaces hardcoded 20% VAT)
+        vat_result = calculate_vat_for_cart(cart.user, cart)
+        totals = vat_result.get('vat_calculations', {}).get('totals', {})
+
+        # Convert string values back to Decimal for consistency
+        vat_amount = Decimal(totals.get('total_vat', '0.00'))
+        total = Decimal(totals.get('total_gross', str(subtotal)))
+
+        # Calculate effective VAT rate for backward compatibility
+        vat_rate = (vat_amount / subtotal).quantize(Decimal('0.01')) if subtotal > 0 else Decimal('0.00')
+
         return {
             'product_subtotal': product_subtotal,
             'voucher_subtotal': voucher_subtotal,

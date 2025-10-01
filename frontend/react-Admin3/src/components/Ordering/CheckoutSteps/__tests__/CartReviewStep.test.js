@@ -445,4 +445,121 @@ describe('CartReviewStep Enhanced Layout', () => {
       expect(screen.getByTestId('invoice-address-dropdown')).toBeInTheDocument();
     });
   });
+
+  // T002: Dynamic VAT label display tests (TDD RED Phase)
+  describe('Dynamic VAT Label Display (T002)', () => {
+    it('should display "VAT (20%)" when effective_vat_rate is 0.20', () => {
+      const vatWith20Percent = {
+        totals: {
+          subtotal: 200.00,
+          total_vat: 40.00,
+          total_gross: 240.00,
+          effective_vat_rate: 0.20
+        }
+      };
+
+      renderWithTheme(
+        <CartReviewStep
+          cartItems={mockCartItems}
+          vatCalculations={vatWith20Percent}
+          rulesLoading={false}
+          rulesMessages={[]}
+        />
+      );
+
+      expect(screen.getByText(/VAT \(20%\)/)).toBeInTheDocument();
+    });
+
+    it('should display "VAT (15%)" when effective_vat_rate is 0.15', () => {
+      const vatWith15Percent = {
+        totals: {
+          subtotal: 200.00,
+          total_vat: 30.00,
+          total_gross: 230.00,
+          effective_vat_rate: 0.15
+        }
+      };
+
+      renderWithTheme(
+        <CartReviewStep
+          cartItems={mockCartItems}
+          vatCalculations={vatWith15Percent}
+          rulesLoading={false}
+          rulesMessages={[]}
+        />
+      );
+
+      expect(screen.getByText(/VAT \(15%\)/)).toBeInTheDocument();
+    });
+
+    it('should display "VAT (0%)" when effective_vat_rate is 0.00', () => {
+      const vatWith0Percent = {
+        totals: {
+          subtotal: 200.00,
+          total_vat: 0.00,
+          total_gross: 200.00,
+          effective_vat_rate: 0.00
+        }
+      };
+
+      renderWithTheme(
+        <CartReviewStep
+          cartItems={mockCartItems}
+          vatCalculations={vatWith0Percent}
+          rulesLoading={false}
+          rulesMessages={[]}
+        />
+      );
+
+      expect(screen.getByText(/VAT \(0%\)/)).toBeInTheDocument();
+    });
+
+    it('should display "VAT:" when effective_vat_rate is undefined', () => {
+      const vatWithoutRate = {
+        totals: {
+          subtotal: 200.00,
+          total_vat: 40.00,
+          total_gross: 240.00
+          // effective_vat_rate is intentionally missing
+        }
+      };
+
+      renderWithTheme(
+        <CartReviewStep
+          cartItems={mockCartItems}
+          vatCalculations={vatWithoutRate}
+          rulesLoading={false}
+          rulesMessages={[]}
+        />
+      );
+
+      // Should display "VAT:" without percentage when rate is undefined
+      const vatText = screen.getByText(/VAT/);
+      expect(vatText.textContent).toMatch(/^VAT\s*:/);
+    });
+
+    it('should display "VAT:" when effective_vat_rate is null', () => {
+      const vatWithNullRate = {
+        totals: {
+          subtotal: 200.00,
+          total_vat: 40.00,
+          total_gross: 240.00,
+          effective_vat_rate: null
+        }
+      };
+
+      renderWithTheme(
+        <CartReviewStep
+          cartItems={mockCartItems}
+          vatCalculations={vatWithNullRate}
+          rulesLoading={false}
+          rulesMessages={[]}
+        />
+      );
+
+      // Should display "VAT:" without percentage when rate is null
+      const vatText = screen.getByText(/VAT/);
+      expect(vatText.textContent).toMatch(/^VAT\s*:/);
+    });
+  });
 });
