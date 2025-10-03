@@ -18,7 +18,7 @@ import SearchResults from '../SearchResults';
 
 const SearchModal = ({ open, onClose }) => {
   const navigate = useNavigate();
-  
+
   // State for search modal
   const [searchResults, setSearchResults] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,6 +30,21 @@ const SearchModal = ({ open, onClose }) => {
   });
   const [searchLoading] = useState(false);
   const [searchError, setSearchError] = useState(null);
+
+  // Ensure body overflow is properly restored when modal closes
+  useEffect(() => {
+    if (!open) {
+      const timer = setTimeout(() => {
+        const currentOverflow = document.body.style.overflow;
+        if (currentOverflow === 'hidden') {
+          // Use combined overflow property for better MUI compatibility
+          document.body.style.overflow = 'visible auto';
+        }
+        document.body.classList.remove('mui-fixed');
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
 
   // Handle closing the search modal and resetting state
   const handleCloseSearchModal = useCallback(() => {

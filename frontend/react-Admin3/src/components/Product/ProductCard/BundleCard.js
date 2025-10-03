@@ -487,7 +487,7 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 									variant="fineprint"
 									className="vat-status-text"
 									color="text.secondary">
-									Price includes VAT
+									{bundle.vat_status_display || "Price includes VAT"}
 								</Typography>
 							</Box>
 

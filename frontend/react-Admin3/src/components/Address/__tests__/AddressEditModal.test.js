@@ -73,7 +73,7 @@ jest.mock('../DynamicAddressForm', () => {
 
 const renderWithTheme = (component) => {
   return render(
-    <ThemeProvider theme={theme}>
+    <Provider theme={theme}>
       {component}
     </ThemeProvider>
   );

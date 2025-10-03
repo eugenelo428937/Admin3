@@ -1,12 +1,28 @@
+.inter-SemiBold600 {
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: normal;
+}
+.inter-ExtraLight200 {
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 200;
+    font-style: normal;
+}
 .body-container {
   padding-top: 0;
 }
 
 .hero-content {
-  min-height: 58vh;  
+  min-height: 58vh;
+  position: relative;
+  z-index: 2;
 }
-.hero-container {  
-  height: 27.95rem !important;
+.hero-container {
+  min-height: 58vh !important;
+  position: relative;
+  overflow: hidden;
 }
 
 .subject-chip{

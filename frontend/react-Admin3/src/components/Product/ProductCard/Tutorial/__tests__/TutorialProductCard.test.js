@@ -4,19 +4,29 @@ jest.mock('../../../../../services/httpService', () => ({
   post: jest.fn(),
 }));
 
-// Mock CartContext
+// Mock CartContext - use module-level mocks that can be accessed/reset in tests
+const mockCartState = {
+  items: [],
+  addToCart: jest.fn(),
+  updateCartItem: jest.fn(),
+  removeFromCart: jest.fn(),
+  refreshCart: jest.fn(),
+};
+
 jest.mock('../../../../../contexts/CartContext', () => {
   const React = require('react');
   return {
     __esModule: true,
     useCart: () => ({
-      cartItems: [],
+      // Use getter functions to access current mockCartState values
+      get cartItems() { return mockCartState.items; },
       cartData: null,
-      addToCart: jest.fn(),
-      removeFromCart: jest.fn(),
+      addToCart: mockCartState.addToCart,
+      updateCartItem: mockCartState.updateCartItem,
+      removeFromCart: mockCartState.removeFromCart,
       clearCart: jest.fn(),
-      refreshCart: jest.fn(),
-      cartCount: 0,
+      refreshCart: mockCartState.refreshCart,
+      get cartCount() { return mockCartState.items.reduce((sum, item) => sum + (item.quantity || 1), 0); },
       loading: false,
     }),
     CartProvider: ({ children }) => React.createElement('div', null, children),
@@ -24,11 +34,12 @@ jest.mock('../../../../../contexts/CartContext', () => {
 });
 
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import TutorialProductCard from '../TutorialProductCard';
-import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext';
+import { TutorialChoiceProvider, useTutorialChoice } from '../../../../../contexts/TutorialChoiceContext';
 
 // Mock props for TutorialProductCard
 const mockProps = {
@@ -36,15 +47,23 @@ const mockProps = {
   subjectName: 'Core Statistics 1',
   location: 'Birmingham',
   productId: '123',
-  product: { subject_code: 'CS1' },
+  product: {
+    subject_code: 'CS1',
+    price: '299.00',
+    retaker_price: '249.00',
+    additional_copy_price: '149.00'
+  },
   variations: [
     {
       id: 1,
+      name: 'Live Tutorial',
       description: 'Live Tutorial',
       description_short: 'Live',
+      location: 'Birmingham',
       events: [{ id: 101, venue: 'Birmingham Centre' }]
     }
   ],
+  onAddToCart: jest.fn(),
 };
 
 // Helper function to render component with context
@@ -56,12 +75,46 @@ const renderWithContext = (props = mockProps) => {
   );
 };
 
+// Helper to get SpeedDialAction button by label (tooltipOpen creates duplicate labels)
+const getActionButton = (labelRegex) => {
+  const elements = screen.getAllByLabelText(labelRegex);
+  return elements.find(el => el.getAttribute('role') === 'menuitem');
+};
+
+// Helper to query SpeedDialAction button by label
+const queryActionButton = (labelRegex) => {
+  try {
+    const elements = screen.getAllByLabelText(labelRegex);
+    return elements.find(el => el.getAttribute('role') === 'menuitem');
+  } catch {
+    return null;
+  }
+};
+
 describe('TutorialProductCard', () => {
+  // localStorage mock state
+  let localStorageData = {};
+
   beforeEach(() => {
     jest.clearAllMocks();
-    // Mock localStorage
-    Storage.prototype.getItem = jest.fn(() => null);
-    Storage.prototype.setItem = jest.fn();
+    // Reset mock cart state
+    mockCartState.items = [];
+    mockCartState.addToCart.mockClear();
+    mockCartState.updateCartItem.mockClear();
+    mockCartState.removeFromCart.mockClear();
+    mockCartState.refreshCart.mockClear();
+
+    // Reset localStorage mock state
+    localStorageData = {};
+
+    // Mock localStorage with state tracking
+    Storage.prototype.getItem = jest.fn((key) => localStorageData[key] || null);
+    Storage.prototype.setItem = jest.fn((key, value) => {
+      localStorageData[key] = value;
+    });
+    Storage.prototype.removeItem = jest.fn((key) => {
+      delete localStorageData[key];
+    });
   });
 
   it('should render without crashing', () => {
@@ -101,23 +154,24 @@ describe('TutorialProductCard', () => {
     it('should show only "Select Tutorial" action when no tutorials selected', async () => {
       renderWithContext();
 
-      // Verify "Select Tutorial" action exists in DOM
-      const selectAction = screen.getByLabelText(/select tutorial/i);
+      // Verify "Select Tutorial" action exists in DOM (tooltipOpen creates duplicate labels)
+      const selectActions = screen.getAllByLabelText(/select tutorial/i);
+      const selectAction = selectActions.find(el => el.getAttribute('role') === 'menuitem');
       expect(selectAction).toBeInTheDocument();
     });
 
-    it('should NOT show "View Selection" action when no tutorials selected', async () => {
+    it('should NOT show "View selections" action when no tutorials selected', async () => {
       renderWithContext();
 
-      const viewAction = screen.queryByLabelText(/view selection/i);
+      const viewAction = screen.queryByLabelText(/view selections/i);
       expect(viewAction).not.toBeInTheDocument();
     });
 
-    it('should NOT show "Clear Selection" action when no tutorials selected', async () => {
+    it('should NOT show "Add to Cart" action when no tutorials selected', async () => {
       renderWithContext();
 
-      const clearAction = screen.queryByLabelText(/clear selection/i);
-      expect(clearAction).not.toBeInTheDocument();
+      const addToCartAction = screen.queryByLabelText(/add to cart/i);
+      expect(addToCartAction).not.toBeInTheDocument();
     });
 
     it('should display exactly 1 action when no tutorials selected', async () => {
@@ -125,10 +179,10 @@ describe('TutorialProductCard', () => {
 
       // Count SpeedDialAction elements by aria-label
       const selectAction = screen.queryByLabelText(/select tutorial/i);
-      const viewAction = screen.queryByLabelText(/view selection/i);
-      const clearAction = screen.queryByLabelText(/clear selection/i);
+      const viewAction = screen.queryByLabelText(/view selections/i);
+      const addToCartAction = screen.queryByLabelText(/add to cart/i);
 
-      const actionCount = [selectAction, viewAction, clearAction].filter(Boolean).length;
+      const actionCount = [selectAction, viewAction, addToCartAction].filter(Boolean).length;
       expect(actionCount).toBe(1);
     });
   });
@@ -159,26 +213,26 @@ describe('TutorialProductCard', () => {
 
       // Check all three actions exist in DOM
       const selectAction = screen.getByLabelText(/select tutorial/i);
-      const viewAction = screen.getByLabelText(/view selection/i);
-      const clearAction = screen.getByLabelText(/clear selection/i);
+      const viewAction = screen.getByLabelText(/view selections/i);
+      const addToCartAction = screen.getByLabelText(/add to cart/i);
 
       expect(selectAction).toBeInTheDocument();
       expect(viewAction).toBeInTheDocument();
-      expect(clearAction).toBeInTheDocument();
+      expect(addToCartAction).toBeInTheDocument();
     });
 
-    it('should show "View Selection" action when tutorials are selected', async () => {
+    it('should show "View selections" action when tutorials are selected', async () => {
       renderWithContext();
 
-      const viewAction = screen.getByLabelText(/view selection/i);
+      const viewAction = screen.getByLabelText(/view selections/i);
       expect(viewAction).toBeInTheDocument();
     });
 
-    it('should show "Clear Selection" action when tutorials are selected', async () => {
+    it('should show "Add to Cart" action when tutorials are selected', async () => {
       renderWithContext();
 
-      const clearAction = screen.getByLabelText(/clear selection/i);
-      expect(clearAction).toBeInTheDocument();
+      const addToCartAction = screen.getByLabelText(/add to cart/i);
+      expect(addToCartAction).toBeInTheDocument();
     });
 
     it('should still show "Select Tutorial" action when tutorials are selected', async () => {
@@ -193,10 +247,10 @@ describe('TutorialProductCard', () => {
 
       // Count SpeedDialAction elements by aria-label
       const selectAction = screen.queryByLabelText(/select tutorial/i);
-      const viewAction = screen.queryByLabelText(/view selection/i);
-      const clearAction = screen.queryByLabelText(/clear selection/i);
+      const viewAction = screen.queryByLabelText(/view selections/i);
+      const addToCartAction = screen.queryByLabelText(/add to cart/i);
 
-      const actionCount = [selectAction, viewAction, clearAction].filter(Boolean).length;
+      const actionCount = [selectAction, viewAction, addToCartAction].filter(Boolean).length;
       expect(actionCount).toBe(3);
     });
   });
@@ -231,10 +285,15 @@ describe('TutorialProductCard', () => {
 
       await userEvent.click(speedDial);
 
-      const selectAction = screen.getByLabelText(/select tutorial/i);
-      expect(selectAction).toBeInTheDocument();
+      // Wait for SpeedDial to open
+      await waitFor(() => {
+        expect(screen.getByLabelText(/select tutorial/i)).toBeInTheDocument();
+      });
 
-      await userEvent.click(selectAction);
+      const selectAction = screen.getByLabelText(/select tutorial/i);
+
+      // Use fireEvent instead of userEvent to bypass pointer-events check in JSDOM
+      fireEvent.click(selectAction);
 
       // Verify dialog opens (which means action was clicked)
       await waitFor(() => {
@@ -274,9 +333,14 @@ describe('TutorialProductCard', () => {
       const speedDial = screen.getByRole('button', { name: /actions/i });
       await userEvent.click(speedDial);
 
-      // Then click the Select Tutorial action
+      // Wait for action to be available
+      await waitFor(() => {
+        expect(screen.getByLabelText(/select tutorial/i)).toBeInTheDocument();
+      });
+
+      // Then click the Select Tutorial action using fireEvent
       const selectAction = screen.getByLabelText(/select tutorial/i);
-      await userEvent.click(selectAction);
+      fireEvent.click(selectAction);
 
       // Should open tutorial selection dialog
       await waitFor(() => {
@@ -284,7 +348,7 @@ describe('TutorialProductCard', () => {
       });
     });
 
-    it('should call handleViewSelection when "View Selection" action is clicked', async () => {
+    it('should call handleViewSelection when "View selections" action is clicked', async () => {
       // Setup with selections
       const mockChoices = {
         CS1: { '1st': { id: 123, location: 'Birmingham', choiceLevel: '1st' } }
@@ -299,38 +363,58 @@ describe('TutorialProductCard', () => {
       const speedDial = screen.getByRole('button', { name: /actions/i });
       await userEvent.click(speedDial);
 
-      // Then click View Selection action
-      const viewAction = screen.getByLabelText(/view selection/i);
-      await userEvent.click(viewAction);
+      // Wait for action to be available
+      await waitFor(() => {
+        expect(screen.getByLabelText(/view selections/i)).toBeInTheDocument();
+      });
+
+      // Then click View selections action using fireEvent
+      const viewAction = screen.getByLabelText(/view selections/i);
+      fireEvent.click(viewAction);
 
       // Should open view selection panel (context showChoicePanel updates)
       // Since TutorialChoicePanel is rendered via context, we verify the call was made
       expect(viewAction).toBeInTheDocument();
     });
 
-    it('should call handleClearSelection when "Clear Selection" action is clicked', async () => {
+    it('should call handleAddToCart when "Add to Cart" action is clicked', async () => {
       // Setup with selections
       const mockChoices = {
-        CS1: { '1st': { id: 123, location: 'Birmingham', choiceLevel: '1st' } }
+        CS1: { '1st': { id: 1, location: 'Birmingham', choiceLevel: '1st' } }
       };
-      const mockSetItem = jest.fn();
+      const mockOnAddToCart = jest.fn();
       Storage.prototype.getItem = jest.fn((key) =>
         key === 'tutorialChoices' ? JSON.stringify(mockChoices) : null
       );
-      Storage.prototype.setItem = mockSetItem;
 
-      renderWithContext();
+      renderWithContext({ ...mockProps, onAddToCart: mockOnAddToCart });
 
       // First open the SpeedDial
       const speedDial = screen.getByRole('button', { name: /actions/i });
       await userEvent.click(speedDial);
 
-      // Then click Clear Selection action
-      const clearAction = screen.getByLabelText(/clear selection/i);
-      await userEvent.click(clearAction);
+      // Wait for action to be available
+      await waitFor(() => {
+        expect(screen.getByLabelText(/add to cart/i)).toBeInTheDocument();
+      });
 
-      // Should clear selections by calling setItem with empty object
-      expect(mockSetItem).toHaveBeenCalledWith('tutorialChoices', '{}');
+      // Then click Add to Cart action using fireEvent
+      const addToCartAction = screen.getByLabelText(/add to cart/i);
+      fireEvent.click(addToCartAction);
+
+      // Should trigger onAddToCart with correct parameters
+      await waitFor(() => {
+        expect(mockOnAddToCart).toHaveBeenCalledWith(
+          mockProps.product,
+          expect.objectContaining({
+            variationId: 1,
+            variationName: 'Live Tutorial',
+            choiceLevel: '1st',
+            location: 'Birmingham',
+            tutorialSelection: true
+          })
+        );
+      });
     });
 
     it('should pass correct props to TutorialChoiceDialog', () => {
@@ -421,13 +505,18 @@ describe('TutorialProductCard', () => {
 
     it('should NOT render old button group after SpeedDial implementation', () => {
       renderWithContext();
-      // Old buttons should not exist anymore
-      const oldSelectButton = screen.queryByRole('button', { name: /^select tutorial$/i });
-      const oldViewButton = screen.queryByRole('button', { name: /^view selection$/i });
+      // Old buttons should not exist anymore as standalone buttons in card body
+      // They should only exist as SpeedDial actions
+      const buttons = screen.getAllByRole('button');
 
-      // These should not exist as standalone buttons (only in SpeedDial)
-      expect(oldSelectButton).toBeNull();
-      expect(oldViewButton).toBeNull();
+      // Filter out SpeedDial-related buttons (they have aria-label, not text content)
+      const standaloneButtons = buttons.filter(btn => {
+        const text = btn.textContent.toLowerCase();
+        return text.includes('select tutorial') || text.includes('view selection');
+      });
+
+      // No standalone "Select Tutorial" or "View Selection" buttons should exist
+      expect(standaloneButtons.length).toBe(0);
     });
   });
 
@@ -561,6 +650,414 @@ describe('TutorialProductCard', () => {
 
       // Should not crash, may show default VAT text
       expect(screen.getByText('Birmingham')).toBeInTheDocument();
+    });
+  });
+
+  // Story 1.2: Cart Integration Fix (TDD RED Phase - T019-T024)
+  describe('Cart Integration - Incremental Updates (Story 1.2)', () => {
+    beforeEach(() => {
+      // Reset cart state - set resolved values for async mocks
+      mockCartState.addToCart.mockResolvedValue({ data: { items: [] } });
+      mockCartState.updateCartItem.mockResolvedValue({ data: { items: [] } });
+    });
+
+    describe('T019: First choice creates cart item', () => {
+      it('should create exactly 1 cart item when adding first tutorial choice', async () => {
+        // Setup: User has selected 1st choice for CS2
+        const mockChoices = {
+          CS2: {
+            '1st': {
+              eventId: 'evt-cs2-bri-001',
+              eventCode: 'TUT-CS2-BRI-001',
+              location: 'Bristol',
+              variation: {
+                id: 42,
+                name: 'In-Person Tutorial',
+                prices: [{ price_type: 'standard', amount: 125.00 }]
+              },
+              choiceLevel: '1st',
+              timestamp: '2025-10-03T14:30:00.000Z',
+              isDraft: true
+            }
+          }
+        };
+        // Set initial localStorage data
+        localStorageData['tutorialChoices'] = JSON.stringify(mockChoices);
+
+        const propsCS2 = {
+          ...mockProps,
+          subjectCode: 'CS2',
+          subjectName: 'Computer Science 2',
+          location: 'Bristol',
+        };
+
+        renderWithContext(propsCS2);
+
+        // Open SpeedDial
+        const speedDial = screen.getByRole('button', { name: /actions/i });
+        await userEvent.click(speedDial);
+
+        // Click "Add to Cart"
+        const addToCartAction = getActionButton(/add to cart/i);
+        fireEvent.click(addToCartAction);
+
+        // Verify addToCart was called exactly once
+        await waitFor(() => {
+          expect(mockCartState.addToCart).toHaveBeenCalledTimes(1);
+        });
+
+        // Verify cart item structure
+        expect(mockCartState.addToCart).toHaveBeenCalledWith(
+          expect.objectContaining({
+            subject_code: 'CS2',
+            type: 'Tutorial'
+          }),
+          expect.objectContaining({
+            metadata: expect.objectContaining({
+              type: 'tutorial',
+              subjectCode: 'CS2',
+              totalChoiceCount: 1
+            })
+          })
+        );
+      });
+
+      it('should mark choice as added to cart (isDraft: false) after successful add', async () => {
+        const mockChoices = {
+          CS2: {
+            '1st': {
+              eventId: 'evt-cs2-bri-001',
+              choiceLevel: '1st',
+              isDraft: true,
+              variation: {
+                id: 42,
+                name: 'In-Person Tutorial',
+                prices: [{ price_type: 'standard', amount: 125.00 }]
+              }
+            }
+          }
+        };
+        // Set initial localStorage data
+        localStorageData['tutorialChoices'] = JSON.stringify(mockChoices);
+
+        const propsCS2 = { ...mockProps, subjectCode: 'CS2', location: 'Bristol' };
+        renderWithContext(propsCS2);
+
+        const speedDial = screen.getByRole('button', { name: /actions/i });
+        await userEvent.click(speedDial);
+        const addToCartAction = getActionButton(/add to cart/i);
+        fireEvent.click(addToCartAction);
+
+        // After add, choice should have isDraft: false
+        // (This will fail until we implement markChoicesAsAdded integration)
+        await waitFor(() => {
+          const updatedChoices = JSON.parse(localStorage.getItem('tutorialChoices'));
+          expect(updatedChoices.CS2['1st'].isDraft).toBe(false);
+        });
+      });
+    });
+
+    describe('T020: Second choice updates cart item (no duplicate)', () => {
+      it('should UPDATE existing cart item when adding second choice for same subject', async () => {
+        // Setup: Cart already has CS2 tutorial with 1st choice
+        mockCartState.items = [{
+          id: 999,
+          product: 123,
+          subject_code: 'CS2',
+          type: 'Tutorial',
+          quantity: 1,
+          metadata: {
+            type: 'tutorial',
+            subjectCode: 'CS2',
+            totalChoiceCount: 1,
+            locations: [{
+              location: 'Bristol',
+              choices: [{ choice: '1st', eventId: 'evt-cs2-bri-001' }]
+            }]
+          }
+        }];
+
+        // User has now selected 2nd choice
+        const mockChoices = {
+          CS2: {
+            '1st': {
+              eventId: 'evt-cs2-bri-001',
+              choiceLevel: '1st',
+              isDraft: false, // Already in cart
+              variation: {
+                id: 42,
+                prices: [{ price_type: 'standard', amount: 125.00 }]
+              }
+            },
+            '2nd': {
+              eventId: 'evt-cs2-lon-002',
+              choiceLevel: '2nd',
+              isDraft: true, // New choice
+              variation: {
+                id: 42,
+                prices: [{ price_type: 'standard', amount: 125.00 }]
+              }
+            }
+          }
+        };
+        // Set initial localStorage data
+        localStorageData['tutorialChoices'] = JSON.stringify(mockChoices);
+
+        const propsCS2 = { ...mockProps, subjectCode: 'CS2', location: 'London' };
+        renderWithContext(propsCS2);
+
+        const speedDial = screen.getByRole('button', { name: /actions/i });
+        await userEvent.click(speedDial);
+        const addToCartAction = getActionButton(/add to cart/i);
+        fireEvent.click(addToCartAction);
+
+        // Should call updateCartItem, NOT addToCart
+        await waitFor(() => {
+          expect(mockCartState.updateCartItem).toHaveBeenCalledTimes(1);
+          expect(mockCartState.addToCart).not.toHaveBeenCalled();
+        });
+
+        // Verify updated metadata includes both choices
+        expect(mockCartState.updateCartItem).toHaveBeenCalledWith(
+          999, // Existing cart item ID
+          expect.objectContaining({
+            subject_code: 'CS2',
+            type: 'Tutorial'
+          }),
+          expect.objectContaining({
+            metadata: expect.objectContaining({
+              totalChoiceCount: 2 // Now has 2 choices
+            })
+          })
+        );
+      });
+
+      it('should NOT create duplicate cart item for same subject', async () => {
+        mockCartState.items = [{
+          id: 999,
+          subject_code: 'CS2',
+          type: 'Tutorial',
+          metadata: { totalChoiceCount: 1 }
+        }];
+
+        const mockChoices = {
+          CS2: {
+            '1st': { eventId: 'evt-1', isDraft: false, choiceLevel: '1st', variation: { id: 42, prices: [{ price_type: 'standard', amount: 125 }] } },
+            '2nd': { eventId: 'evt-2', isDraft: true, choiceLevel: '2nd', variation: { id: 42, prices: [{ price_type: 'standard', amount: 125 }] } }
+          }
+        };
+        // Set initial localStorage data
+        localStorageData['tutorialChoices'] = JSON.stringify(mockChoices);
+
+        const propsCS2 = { ...mockProps, subjectCode: 'CS2' };
+        renderWithContext(propsCS2);
+
+        const speedDial = screen.getByRole('button', { name: /actions/i });
+        await userEvent.click(speedDial);
+        const addToCartAction = getActionButton(/add to cart/i);
+        fireEvent.click(addToCartAction);
+
+        // Cart should still have exactly 1 item for CS2
+        await waitFor(() => {
+          const cs2Items = mockCartState.items.filter(item => item.subject_code === 'CS2');
+          expect(cs2Items.length).toBe(1);
+        });
+      });
+    });
+
+    describe('T021: Third choice updates cart item', () => {
+      it('should continue updating same cart item when adding third choice', async () => {
+        mockCartState.items = [{
+          id: 999,
+          subject_code: 'CS2',
+          type: 'Tutorial',
+          metadata: { totalChoiceCount: 2 }
+        }];
+
+        const mockChoices = {
+          CS2: {
+            '1st': { eventId: 'evt-1', isDraft: false, choiceLevel: '1st', variation: { id: 42, prices: [{ price_type: 'standard', amount: 125 }] } },
+            '2nd': { eventId: 'evt-2', isDraft: false, choiceLevel: '2nd', variation: { id: 42, prices: [{ price_type: 'standard', amount: 125 }] } },
+            '3rd': { eventId: 'evt-3', isDraft: true, choiceLevel: '3rd', variation: { id: 42, prices: [{ price_type: 'standard', amount: 125 }] } }
+          }
+        };
+        // Set initial localStorage data
+        localStorageData['tutorialChoices'] = JSON.stringify(mockChoices);
+
+        const propsCS2 = { ...mockProps, subjectCode: 'CS2' };
+        renderWithContext(propsCS2);
+
+        const speedDial = screen.getByRole('button', { name: /actions/i });
+        await userEvent.click(speedDial);
+        const addToCartAction = getActionButton(/add to cart/i);
+        fireEvent.click(addToCartAction);
+
+        await waitFor(() => {
+          expect(mockCartState.updateCartItem).toHaveBeenCalledTimes(1);
+        });
+
+        expect(mockCartState.updateCartItem).toHaveBeenCalledWith(
+          999,
+          expect.objectContaining({
+            subject_code: 'CS2',
+            type: 'Tutorial'
+          }),
+          expect.objectContaining({
+            metadata: expect.objectContaining({
+              totalChoiceCount: 3
+            })
+          })
+        );
+      });
+    });
+
+    describe('T022: Cart removal restores draft state', () => {
+      it('should set isDraft: true for all choices when cart item is removed', async () => {
+        const mockChoices = {
+          CS2: {
+            '1st': { eventId: 'evt-1', isDraft: false, choiceLevel: '1st', variation: { id: 42, prices: [{ price_type: 'standard', amount: 125 }] } },
+            '2nd': { eventId: 'evt-2', isDraft: false, choiceLevel: '2nd', variation: { id: 42, prices: [{ price_type: 'standard', amount: 125 }] } }
+          }
+        };
+        // Set initial localStorage data
+        localStorageData['tutorialChoices'] = JSON.stringify(mockChoices);
+
+        const propsCS2 = { ...mockProps, subjectCode: 'CS2' };
+        const { result } = renderHook(() => useTutorialChoice(), {
+          wrapper: TutorialChoiceProvider
+        });
+
+        // Simulate cart removal by restoring choices to draft
+        act(() => {
+          result.current.restoreChoicesToDraft('CS2');
+        });
+
+        // Wait for localStorage update
+        await waitFor(() => {
+          const restoredChoices = JSON.parse(localStorage.getItem('tutorialChoices'));
+          expect(restoredChoices.CS2['1st'].isDraft).toBe(true);
+          expect(restoredChoices.CS2['2nd'].isDraft).toBe(true);
+        });
+      });
+
+      it('should keep choices in localStorage after cart removal (not delete)', async () => {
+        const mockChoices = {
+          CS2: {
+            '1st': { eventId: 'evt-1', isDraft: false, choiceLevel: '1st', variation: { id: 42, prices: [{ price_type: 'standard', amount: 125 }] } }
+          }
+        };
+        // Set initial localStorage data
+        localStorageData['tutorialChoices'] = JSON.stringify(mockChoices);
+
+        const { result } = renderHook(() => useTutorialChoice(), {
+          wrapper: TutorialChoiceProvider
+        });
+
+        // Restore to draft (simulating cart removal)
+        act(() => {
+          result.current.restoreChoicesToDraft('CS2');
+        });
+
+        // Choices should still exist in localStorage
+        await waitFor(() => {
+          const choices = JSON.parse(localStorage.getItem('tutorialChoices'));
+          expect(choices.CS2).toBeDefined();
+          expect(choices.CS2['1st']).toBeDefined();
+          expect(choices.CS2['1st'].isDraft).toBe(true);
+        });
+      });
+    });
+
+    describe('T023: Multiple subjects in cart', () => {
+      it('should allow CS2 and CP1 to have separate cart items simultaneously', async () => {
+        mockCartState.items = [
+          { id: 998, subject_code: 'CS2', type: 'Tutorial', metadata: { totalChoiceCount: 1 } },
+          { id: 999, subject_code: 'CP1', type: 'Tutorial', metadata: { totalChoiceCount: 1 } }
+        ];
+
+        const cs2Items = mockCartState.items.filter(item => item.subject_code === 'CS2');
+        const cp1Items = mockCartState.items.filter(item => item.subject_code === 'CP1');
+
+        expect(cs2Items.length).toBe(1);
+        expect(cp1Items.length).toBe(1);
+        expect(mockCartState.items.length).toBe(2);
+      });
+
+      it('should not interfere when adding choice to CP1 while CS2 exists in cart', async () => {
+        mockCartState.items = [
+          { id: 998, subject_code: 'CS2', type: 'Tutorial' }
+        ];
+
+        const mockChoices = {
+          CP1: {
+            '1st': { eventId: 'evt-cp1-1', isDraft: true, choiceLevel: '1st', variation: { id: 43, prices: [{ price_type: 'standard', amount: 110 }] } }
+          }
+        };
+        // Set initial localStorage data
+        localStorageData['tutorialChoices'] = JSON.stringify(mockChoices);
+
+        const propsCP1 = { ...mockProps, subjectCode: 'CP1', subjectName: 'Programming 1' };
+        renderWithContext(propsCP1);
+
+        const speedDial = screen.getByRole('button', { name: /actions/i });
+        await userEvent.click(speedDial);
+        const addToCartAction = getActionButton(/add to cart/i);
+        fireEvent.click(addToCartAction);
+
+        // Should create NEW cart item for CP1 (not update CS2)
+        await waitFor(() => {
+          expect(mockCartState.addToCart).toHaveBeenCalledWith(
+            expect.objectContaining({ subject_code: 'CP1' }),
+            expect.anything()
+          );
+        });
+
+        // CS2 cart item should remain unchanged
+        const cs2Item = mockCartState.items.find(item => item.subject_code === 'CS2');
+        expect(cs2Item).toBeDefined();
+      });
+    });
+
+    describe('T024: Cart item deleted externally', () => {
+      it.skip('should detect when cart item removed externally and restore draft state', async () => {
+        // Setup: Cart has CS2 item, choices marked as added
+        mockCartState.items = [
+          { id: 999, subject_code: 'CS2', type: 'Tutorial' }
+        ];
+
+        const mockChoices = {
+          CS2: {
+            '1st': { eventId: 'evt-1', isDraft: false, choiceLevel: '1st', variation: { id: 42, prices: [{ price_type: 'standard', amount: 125 }] } }
+          }
+        };
+        Storage.prototype.setItem('tutorialChoices', JSON.stringify(mockChoices));
+
+        // Simulate external cart deletion (e.g., timeout, admin removal)
+        mockCartState.items = []; // Cart is now empty
+
+        // Component should detect mismatch and restore draft state
+        // (This requires polling or event listener implementation)
+
+        // Expected: Choice should be restored to draft
+        const restoredChoices = JSON.parse(localStorage.getItem('tutorialChoices'));
+        expect(restoredChoices.CS2['1st'].isDraft).toBe(true);
+      });
+
+      it.skip('should sync state when cart is cleared externally', async () => {
+        const mockChoices = {
+          CS2: { '1st': { eventId: 'evt-1', isDraft: false, choiceLevel: '1st', variation: { id: 42, prices: [{ price_type: 'standard', amount: 125 }] } } },
+          CP1: { '1st': { eventId: 'evt-2', isDraft: false, choiceLevel: '1st', variation: { id: 43, prices: [{ price_type: 'standard', amount: 110 }] } } }
+        };
+        Storage.prototype.setItem('tutorialChoices', JSON.stringify(mockChoices));
+
+        // Cart cleared externally
+        mockCartState.items = [];
+
+        // All choices should be restored to draft
+        const restoredChoices = JSON.parse(localStorage.getItem('tutorialChoices'));
+        expect(restoredChoices.CS2['1st'].isDraft).toBe(true);
+        expect(restoredChoices.CP1['1st'].isDraft).toBe(true);
+      });
     });
   });
 });

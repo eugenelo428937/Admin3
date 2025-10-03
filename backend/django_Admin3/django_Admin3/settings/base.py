@@ -321,8 +321,9 @@ EMAIL_HOST_PASSWORD = os.environ.get(
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@acted.com')
 
 # For development, you can use console backend for testing
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# DISABLED: Uncomment below to print emails to console instead of sending
+# if DEBUG:
+#     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Password Reset Settings
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://127.0.0.1:3000')

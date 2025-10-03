@@ -38,6 +38,7 @@ const ProductGrid = React.memo(({
     onAddToCart = null,
     allEsspIds = [],
     bulkDeadlines = {},
+    vatCalculations = null,
     showProductCount = true,
     showLoadMoreButton = true,
     gridSpacing = 3,
@@ -211,6 +212,7 @@ const ProductGrid = React.memo(({
                                     onAddToCart={onAddToCart}
                                     allEsspIds={allEsspIds}
                                     bulkDeadlines={bulkDeadlines}
+                                    vatCalculations={vatCalculations}
                                 />
                             </Box>
                         </Grid>
@@ -330,7 +332,8 @@ const ProductGrid = React.memo(({
         prevProps.pagination?.has_next === nextProps.pagination?.has_next &&
         prevProps.pagination?.total_count === nextProps.pagination?.total_count &&
         prevProps.allEsspIds === nextProps.allEsspIds &&
-        prevProps.bulkDeadlines === nextProps.bulkDeadlines
+        prevProps.bulkDeadlines === nextProps.bulkDeadlines &&
+        prevProps.vatCalculations === nextProps.vatCalculations
     );
 });
 
