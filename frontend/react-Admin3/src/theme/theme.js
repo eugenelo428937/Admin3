@@ -25,9 +25,9 @@ const createGradientStyle = (mousePosition, isHovered, colorScheme) => {
 const theme = createTheme({
 	typography: {
 		fontFamily: [
-			"DM Sans Variable",
-			"Inter Variable",
+			"Inter",
 			"Poppins",
+			"DM Sans Variable",
 			"-apple-system",
 			"BlinkMacSystemFont",
 			'"Segoe UI"',
@@ -41,8 +41,29 @@ const theme = createTheme({
 		].join(","),
 
 		// Customize font weights and sizes
+		BPP: {
+			fontFamily: "'Inter', sans-serif",
+			fontWeight: 600,
+			fontSize:
+				"calc(1em * var(--wholestep) * var(--wholestep) * var(--wholestep)) !important",
+			lineHeight: "var(--halfstep-dec) !important",
+			letterSpacing: "-0.022em",
+			fontOpticalSizing: "auto",
+			fontStyle: "normal",
+			fontVariationSettings: "'wght' 600",
+		},
+		Acted: {
+			fontFamily: "'Inter', sans-serif",
+			fontWeight: 200,
+			fontSize: "calc(1em * var(--wholestep) * var(--wholestep)) !important",
+			lineHeight: "var(--halfstep) !important",
+			letterSpacing: "-0.022em !important",
+			fontOpticalSizing: "auto",
+			fontStyle: "normal",
+			fontVariationSettings: "'wght' 200",
+		},
 		h1: {
-			fontFamily: "Poppins,Inter Variable,san-serif",
+			fontFamily: "'Inter', sans-serif",
 			fontWeight: 400,
 			fontSize:
 				"calc(1em * var(--wholestep) * var(--wholestep) * var(--wholestep)) !important",
@@ -50,70 +71,70 @@ const theme = createTheme({
 			letterSpacing: "-0.022em !important",
 		},
 		h2: {
-			fontFamily: "Poppins,Inter Variable,san-serif",
+			fontFamily: "'Inter', sans-serif",
 			fontWeight: 400,
 			fontSize: "calc(1em * var(--wholestep) * var(--wholestep)) !important",
 			lineHeight: "var(--halfstep) !important",
 			letterSpacing: "-0.022em !important",
 		},
 		h3: {
-			fontFamily: "Poppins,Inter Variable,san-serif",
+			fontFamily: "'Inter', 'Poppins', sans-serif",
 			fontWeight: 400,
 			fontSize: "calc(1em * var(--wholestep) * var(--halfstep)) !important",
 			lineHeight: "var(--halfstep) !important",
 			letterSpacing: "-0.022em !important",
 		},
 		h4: {
-			fontFamily: "Poppins,Inter Variable,san-serif",
+			fontFamily: "'Inter', 'Poppins', sans-serif",
 			fontWeight: 400,
 			fontSize: "calc(1em * var(--wholestep)) !important",
 			lineHeight: "var(--halfstep) !important",
 			letterSpacing: "-0.02em !important",
 		},
 		h5: {
-			fontFamily: "Poppins,Inter Variable,san-serif",
+			fontFamily: "'Inter', 'Poppins', sans-serif",
 			fontWeight: 400,
 			fontSize: "calc(1em * var(--halfstep)) !important",
 			lineHeight: "var(--halfstep) !important",
 			letterSpacing: "-0.017em !important",
 		},
 		h6: {
-			fontFamily: "Poppins,Inter Variable,san-serif",
+			fontFamily: "'Inter', 'Poppins', sans-serif",
 			fontWeight: 600,
 			fontSize: "calc(1em * var(--quarterstep)) !important",
 			lineHeight: "var(--halfstep) !important",
 			letterSpacing: "-0.014em !important",
 		},
 		subtitle1: {
-			fontFamily: "Poppins,Inter Variable,san-serif",
+			fontFamily: "'Inter', 'Poppins', sans-serif",
 			fontWeight: 400,
 			fontSize: "calc(1em / var(--quarterstep)) !important",
 			lineHeight: "var(--halfstep) !important",
 			letterSpacing: "-0.007em !important",
 		},
 		subtitle2: {
-			fontFamily: "Poppins,Inter Variable,san-serif",
+			fontFamily: "'Inter', 'Poppins', sans-serif",
 			fontWeight: 400,
 			fontSize: "calc(1em / var(--halfstep)) !important",
 			lineHeight: "var(--halfstep) !important",
 			letterSpacing: "-0.007em !important",
 		},
 		body1: {
-			fontFamily: "Poppins,Inter Variable,san-serif",
+			fontFamily: "'Inter', 'Poppins', sans-serif",
 			fontWeight: 400,
 			fontSize: "1em !important",
 			lineHeight: "var(--wholestep) !important",
 			letterSpacing: "-0.011em !important",
 		},
 		body2: {
-			fontFamily: "Poppins,Inter Variable,san-serif",
+			fontFamily: "'Inter', 'Poppins', sans-serif",
 			fontWeight: 400,
 			fontSize: "calc(1em / var(--quarterstep)) !important",
 			lineHeight: "calc(var(--wholestep) / var(--quarterstep)) !important",
 			letterSpacing: "-0.011em !important",
 		},
 		button: {
-			fontFamily: "Poppins,Inter Variable,san-serif",
+			fontFamily: "'Inter', 'Poppins', sans-serif",
 			fontWeight: 500,
 			fontSize: "calc( 1em * var(--eighthstep) )!important",
 			lineHeight: "var(--halfstep) !important",
@@ -123,14 +144,14 @@ const theme = createTheme({
 			top: "6.235em",
 		},
 		caption: {
-			fontFamily: "Poppins,Inter Variable,san-serif",
+			fontFamily: "'Inter', 'Poppins', sans-serif",
 			fontWeight: 400,
 			fontSize: "calc(1em / var(--halfstep)) !important",
 			lineHeight: "var(--halfstep) !important",
 			letterSpacing: "-0.007em !important",
 		},
 		overline: {
-			fontFamily: "Poppins,Inter Variable,san-serif",
+			fontFamily: "'Inter', 'Poppins', sans-serif",
 			fontWeight: 400,
 			fontSize: "calc(1em / var(--halfstep)) !important",
 			lineHeight: "var(--halfstep) !important",
@@ -138,7 +159,7 @@ const theme = createTheme({
 			textTransform: "uppercase",
 		},
 		fineprint: {
-			fontFamily: "Poppins,Inter Variable,san-serif",
+			fontFamily: "'Inter', 'Poppins', sans-serif",
 			fontWeight: 200,
 			fontSize:
 				"calc(1em /  var(--halfstep)/  var(--quarterstep)) !important",
@@ -195,7 +216,7 @@ const theme = createTheme({
 					{
 						props: { variant: "transparent-background" },
 						style: {
-							fontFamily: "Poppins,Inter Variable,san-serif",
+							fontFamily: "'Inter', 'Poppins', sans-serif",
 							fontWeight: 500,
 							textTransform: "none",
 							borderRadius: 6,
@@ -239,7 +260,7 @@ const theme = createTheme({
 		MuiTypography: {
 			styleOverrides: {
 				root: {
-					fontFamily: "Poppins,Inter Variable,san-serif",
+					fontFamily: "'Inter', 'Poppins', sans-serif",
 					color: colorTheme.liftkit.light.onSurface,
 				},
 			},
@@ -247,21 +268,21 @@ const theme = createTheme({
 		MuiInputBase: {
 			styleOverrides: {
 				root: {
-					fontFamily: "Poppins,Inter Variable,san-serif",
+					fontFamily: "'Inter', 'Poppins', sans-serif",
 				},
 			},
 		},
 		MuiMenuItem: {
 			styleOverrides: {
 				root: {
-					fontFamily: "Poppins,Inter Variable,san-serif",
+					fontFamily: "'Inter', 'Poppins', sans-serif",
 				},
 			},
 		},
 		MuiTabs: {
 			styleOverrides: {
 				root: {
-					fontFamily: "Poppins,Inter Variable,san-serif",
+					fontFamily: "'Inter', 'Poppins', sans-serif",
 					minHeight: "48px",
 					"& .MuiTabs-flexContainer": {
 						display: "flex !important",
@@ -278,7 +299,7 @@ const theme = createTheme({
 		MuiTab: {
 			styleOverrides: {
 				root: {
-					fontFamily: "Poppins,Inter Variable,san-serif",
+					fontFamily: "'Inter', 'Poppins', sans-serif",
 					display: "flex !important",
 					alignItems: "center !important",
 					justifyContent: "center !important",
@@ -330,6 +351,7 @@ const theme = createTheme({
 						boxShadow: "var(--Paper-shadow)",
 						justifyContent: "space-between",
 						position: "relative",
+						transform: "scale(0.7)",
 
 						// Floating badges
 						"& .floating-badges-container": {
@@ -358,7 +380,6 @@ const theme = createTheme({
 								boxShadow: "0 1px 12px rgba(0,0,0,0.25)",
 								border: "1px solid rgba(255, 255, 255, 0.3)",
 								backdropFilter: "blur(20px)",
-								
 							},
 							"& .session-badge": {
 								backgroundColor: colorTheme.bpp.mint["030"],
@@ -378,7 +399,6 @@ const theme = createTheme({
 								boxShadow: "0 1px 12px rgba(0,0,0,0.25)",
 								border: "1px solid rgba(255, 255, 255, 0.3)",
 								backdropFilter: "blur(20px)",
-								
 							},
 						},
 						// Product Header
@@ -597,7 +617,7 @@ const theme = createTheme({
 								borderRadius: "16px",
 								boxShadow: "0 1px 12px rgba(0,0,0,0.25)",
 								border: "1px solid rgba(255, 255, 255, 0.3)",
-								backdropFilter: "blur(20px)",								
+								backdropFilter: "blur(20px)",
 							},
 							"& .session-badge": {
 								backgroundColor: colorTheme.bpp.mint["030"],
@@ -1089,7 +1109,6 @@ const theme = createTheme({
 								boxShadow: "0 1px 12px rgba(0,0,0,0.25)",
 								border: "1px solid rgba(255, 255, 255, 0.3)",
 								backdropFilter: "blur(20px)",
-								
 							},
 							"& .session-badge": {
 								backgroundColor: colorTheme.bpp.mint["030"],
@@ -1109,7 +1128,6 @@ const theme = createTheme({
 								boxShadow: "0 1px 12px rgba(0,0,0,0.25)",
 								border: "1px solid rgba(255, 255, 255, 0.3)",
 								backdropFilter: "blur(20px)",
-								
 							},
 						},
 						// Product Header
@@ -1732,7 +1750,6 @@ const theme = createTheme({
 								boxShadow: "0 1px 12px rgba(0,0,0,0.25)",
 								border: "1px solid rgba(255, 255, 255, 0.3)",
 								backdropFilter: "blur(20px)",
-								
 							},
 							"& .session-badge": {
 								backgroundColor: colorTheme.bpp.mint["030"],
@@ -1752,7 +1769,6 @@ const theme = createTheme({
 								boxShadow: "0 1px 12px rgba(0,0,0,0.25)",
 								border: "1px solid rgba(255, 255, 255, 0.3)",
 								backdropFilter: "blur(20px)",
-								
 							},
 						},
 						// Product Header
@@ -2077,7 +2093,6 @@ const theme = createTheme({
 								boxShadow: "0 1px 12px rgba(0,0,0,0.25)",
 								border: "1px solid rgba(255, 255, 255, 0.3)",
 								backdropFilter: "blur(20px)",
-								
 							},
 							"& .session-badge": {
 								backgroundColor: colorTheme.bpp.mint["030"],
@@ -2097,7 +2112,6 @@ const theme = createTheme({
 								boxShadow: "0 1px 12px rgba(0,0,0,0.25)",
 								border: "1px solid rgba(255, 255, 255, 0.3)",
 								backdropFilter: "blur(20px)",
-								
 							},
 						},
 						// Product Header
@@ -2335,7 +2349,7 @@ const theme = createTheme({
 				borderRadius: "6px",
 				border: "1px solid rgba(0, 0, 0, 0.23)",
 				fontSize: "0.875rem",
-				fontFamily: "DM Sans Variable, Inter Variable, Poppins, sans-serif",
+				fontFamily: "'Inter', 'Poppins', 'DM Sans Variable', sans-serif",
 				textAlign: "center",
 				"&:focus": {
 					borderColor: colorTheme.primary.main,

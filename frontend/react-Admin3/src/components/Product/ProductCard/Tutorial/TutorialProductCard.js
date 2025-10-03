@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 import {
 	Button,
@@ -18,7 +18,9 @@ import {
 	Tooltip,
 	SpeedDial,
 	SpeedDialAction,
+	SpeedDialIcon,
 	Backdrop,
+	Badge,
 } from "@mui/material";
 import {
 	AddShoppingCart,
@@ -27,13 +29,16 @@ import {
 	ViewModule,
 	LocationOn,
 	InfoOutline,
-	MoreVert,
-	Edit,
-	Visibility,
-	Clear,
 } from "@mui/icons-material";
 import { useTutorialChoice } from "../../../../contexts/TutorialChoiceContext";
+import { useCart } from "../../../../contexts/CartContext";
 import tutorialService from "../../../../services/tutorialService";
+import { formatPrice } from "../../../../utils/vatUtils";
+import {
+	buildTutorialMetadata,
+	buildTutorialProductData,
+	buildTutorialPriceData
+} from "../../../../utils/tutorialMetadataBuilder";
 import TutorialChoiceDialog from "./TutorialChoiceDialog";
 import "../../../../styles/product_card.css";
 
@@ -50,6 +55,7 @@ const TutorialProductCard = React.memo(
 		productId,
 		product,
 		variations: preloadedVariations = null,
+		onAddToCart = null,
 	}) => {
 		const [variations, setVariations] = useState(preloadedVariations || []);
 		const [loading, setLoading] = useState(!preloadedVariations);
@@ -62,12 +68,150 @@ const TutorialProductCard = React.memo(
 		const {
 			getSubjectChoices,
 			showChoicePanelForSubject,
-		} = useTutorialChoice();
+		markChoicesAsAdded,
+	} = useTutorialChoice();
+
+		const { addToCart, updateCartItem, cartItems } = useCart();
 
 		// Get current choices for this subject
 		const subjectChoices = getSubjectChoices(subjectCode);
 		const hasChoices = Object.keys(subjectChoices).length > 0;
 		const choiceCount = Object.keys(subjectChoices).length;
+
+		// Calculate total tutorials in cart for this subject
+		const tutorialsInCartCount = useMemo(() => {
+			if (!cartItems || cartItems.length === 0) return 0;
+
+			// Filter cart items for this subject
+			const tutorialItems = cartItems.filter(item =>
+				item.subject_code === subjectCode &&
+				item.type === "Tutorial"
+			);
+
+			// Count total choices across all tutorial items
+			return tutorialItems.reduce((total, item) => {
+				// Check if item has metadata with choice count
+				const metadata = item.metadata || item.priceInfo?.metadata;
+				if (metadata && metadata.totalChoiceCount) {
+					return total + metadata.totalChoiceCount;
+				}
+				// Fallback: count each item as 1
+				return total + 1;
+			}, 0);
+		}, [cartItems, subjectCode]);
+
+		// SpeedDial event handlers - memoized to prevent unnecessary re-renders
+		const handleSpeedDialOpen = useCallback(() => setSpeedDialOpen(true), []);
+		const handleSpeedDialClose = useCallback(() => setSpeedDialOpen(false), []);
+
+		const handleAddToCart = useCallback(async () => {
+		setSpeedDialOpen(false);
+
+		if (!hasChoices) {
+			console.warn("Cannot add to cart: no choices selected");
+			return;
+		}
+
+		// Get actual price from first choice
+		const primaryChoice = Object.values(subjectChoices).find(c => c);
+		const actualPrice = primaryChoice?.variation?.prices?.find(
+			p => p.price_type === "standard"
+		)?.amount || product.price;
+
+		// Build metadata using utility function
+		const tutorialMetadata = buildTutorialMetadata(
+			subjectChoices,
+			subjectCode,
+			location,
+			actualPrice
+		);
+
+		if (!tutorialMetadata) {
+			console.warn("No tutorial metadata generated");
+			return;
+		}
+
+		// Build product and price data using utility functions
+		const productData = buildTutorialProductData(
+			productId,
+			subjectCode,
+			subjectName,
+			location
+		);
+
+		const priceData = buildTutorialPriceData(
+			actualPrice,
+			tutorialMetadata
+		);
+
+		try {
+			// 🔍 Lookup: Check if cart already has an item for this subject
+			const existingCartItem = cartItems.find(item =>
+				item.subject_code === subjectCode &&
+				item.type === "Tutorial"
+			);
+
+			if (existingCartItem) {
+				// ⬆️ Merge: Update existing cart item with new choices
+				console.log('🛒 [TutorialProductCard] Merging with existing cart item:', existingCartItem.id);
+				await updateCartItem(existingCartItem.id, productData, priceData);
+			} else {
+				// ➕ Create: Add new cart item
+				console.log('🛒 [TutorialProductCard] Creating new cart item');
+				await addToCart(productData, priceData);
+			}
+
+			// ✅ Mark choices as added (state transition: isDraft false)
+			markChoicesAsAdded(subjectCode);
+
+			console.log('✅ [TutorialProductCard] Successfully added/updated cart');
+		} catch (error) {
+			console.error('❌ [TutorialProductCard] Error adding to cart:', error);
+			// TODO: Show user error feedback
+		}
+	}, [addToCart, updateCartItem, cartItems, markChoicesAsAdded, hasChoices, subjectChoices, product, productId, subjectCode, subjectName, location]);
+
+		const handleSelectTutorial = useCallback(() => {
+			setSpeedDialOpen(false);
+			setShowChoiceDialog(true);
+		}, []);
+
+		const handleViewSelections = useCallback(() => {
+			setSpeedDialOpen(false);
+			showChoicePanelForSubject(subjectCode);
+		}, [subjectCode, showChoicePanelForSubject]);
+
+		// SpeedDial actions configuration - memoized to prevent unnecessary re-renders
+		const speedDialActions = useMemo(() => [
+			{
+				key: "addToCart",
+				icon: <AddShoppingCart />,
+				name: "Add to Cart",
+				show: hasChoices,
+				onClick: handleAddToCart
+			},
+			{
+				key: "selectTutorial",
+				icon: (
+					<Badge
+						badgeContent={tutorialsInCartCount > 0 ? tutorialsInCartCount : null}
+						color="success"
+					>
+						<CalendarMonthOutlined />
+					</Badge>
+				),
+				name: "Select Tutorial",
+				show: true,
+				onClick: handleSelectTutorial
+			},
+			{
+				key: "viewSelections",
+				icon: <ViewModule />,
+				name: "View selections",
+				show: hasChoices,
+				onClick: handleViewSelections
+			},
+		].filter(action => action.show), [hasChoices, tutorialsInCartCount, handleAddToCart, handleSelectTutorial, handleViewSelections]);
 
 		useEffect(() => {
 			// Only fetch if variations weren't preloaded
@@ -203,6 +347,16 @@ const TutorialProductCard = React.memo(
 							role="img"
 							aria-label="Exam session: 25S"
 						/>
+					{tutorialsInCartCount > 0 && (
+						<Chip
+							label={`${tutorialsInCartCount} in cart`}
+							size="small"
+							className="cart-count-badge"
+							color="success"
+							role="img"
+							aria-label={`${tutorialsInCartCount} tutorials in cart`}
+						/>
+					)}
 					</Box>
 					<CardHeader
 						className="product-header"
@@ -382,11 +536,11 @@ const TutorialProductCard = React.memo(
 								<Box className="price-info-row">
 									<Typography variant="h3" className="price-display">
 										{selectedPriceType === "retaker" && product.retaker_price
-											? `£${parseFloat(product.retaker_price).toFixed(2)}`
+											? formatPrice(product.retaker_price)
 											: selectedPriceType === "additional" && product.additional_copy_price
-											? `£${parseFloat(product.additional_copy_price).toFixed(2)}`
+											? formatPrice(product.additional_copy_price)
 											: product.price
-											? `£${parseFloat(product.price).toFixed(2)}`
+											? formatPrice(product.price)
 											: "£299.00"}
 									</Typography>
 									<Tooltip title="Show price details">
@@ -412,11 +566,6 @@ const TutorialProductCard = React.memo(
 										{product.vat_status_display || "Price includes VAT"}
 									</Typography>
 								</Box>
-								<Button
-									variant="contained"
-									className="add-to-cart-button">
-									<AddShoppingCart />
-								</Button>
 							</Box>
 						</Box>
 					</CardActions>
@@ -424,50 +573,57 @@ const TutorialProductCard = React.memo(
 					{/* SpeedDial for Tutorial Actions */}
 					{variations.length > 0 && (
 						<>
-							<Backdrop open={speedDialOpen} sx={{ position: 'absolute', zIndex: 1 }} />
+							<Backdrop
+								open={speedDialOpen}
+								onClick={handleSpeedDialClose}
+								sx={{
+									position: 'fixed',
+									zIndex: (theme) => theme.zIndex.speedDial - 1
+								}}
+							/>
 							<SpeedDial
 								ariaLabel="Tutorial Actions"
-								sx={{ position: 'absolute', bottom: 16, right: 16 }}
-								icon={<MoreVert />}
+							sx={{ position: 'absolute', bottom: 16, right: 16 }}
+								icon={
+									<Badge
+										badgeContent={tutorialsInCartCount > 0 ? tutorialsInCartCount : null}
+										color="success"
+										invisible={speedDialOpen}
+									>
+										<SpeedDialIcon />
+									</Badge>
+								}
+								direction="up"
 								open={speedDialOpen}
+								onOpen={handleSpeedDialOpen}
+								onClose={(event, reason) => {
+									// Prevent auto-close on mouse leave or blur
+									// Only allow manual close via backdrop, escape, or action clicks
+									return;
+								}}
 								FabProps={{
 									onClick: () => setSpeedDialOpen(!speedDialOpen)
 								}}>
-								<SpeedDialAction
-									icon={<Edit />}
-									tooltipTitle="Select Tutorial"
-									aria-label="Select Tutorial"
-									onClick={() => {
-										setSpeedDialOpen(false);
-										setShowChoiceDialog(true);
-									}}
-								/>
-								{hasChoices && [
+								{speedDialActions.map((action) => (
 									<SpeedDialAction
-										key="view"
-										icon={<Visibility />}
-										tooltipTitle="View Selection"
-										aria-label="View Selection"
-										onClick={() => {
-											setSpeedDialOpen(false);
-											showChoicePanelForSubject(subjectCode);
+										key={action.key}
+										icon={action.icon}
+										slotProps={{
+											tooltip: {
+												open: true,
+												title: action.name,
+											},
 										}}
-									/>,
-									<SpeedDialAction
-										key="clear"
-										icon={<Clear />}
-										tooltipTitle="Clear Selection"
-										aria-label="Clear Selection"
-										onClick={() => {
-											setSpeedDialOpen(false);
-											// Clear selections for this subject
-											const choicesToClear = getSubjectChoices(subjectCode);
-											Object.keys(choicesToClear).forEach(level => {
-												localStorage.setItem('tutorialChoices', JSON.stringify({}));
-											});
+										sx={{
+											"& .MuiSpeedDialAction-staticTooltipLabel": {
+												whiteSpace: "nowrap",
+												maxWidth: "none",
+											},
 										}}
+										aria-label={action.name}
+										onClick={action.onClick}
 									/>
-								]}
+								))}
 							</SpeedDial>
 						</>
 					)}
@@ -496,6 +652,7 @@ TutorialProductCard.propTypes = {
 		.isRequired,
 	product: PropTypes.object.isRequired,
 	variations: PropTypes.array,
+	onAddToCart: PropTypes.func,
 };
 
 export default TutorialProductCard;

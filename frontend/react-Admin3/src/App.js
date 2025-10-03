@@ -83,178 +83,201 @@ function App() {
 							},
 						}}>
 						<ErrorBoundary>
-						<CartProvider>
-							<AuthProvider>
-								<ProductProvider>
-									<TutorialChoiceProvider>
+							<CartProvider>
+								<AuthProvider>
+									<ProductProvider>
+										<TutorialChoiceProvider>
 											<div className="App">
 												<MainNavBar className="main-navbar" />
-											<Container
-												maxWidth={false}
-												className="body-container">
-												<Routes>
-													<Route
-														path="/"
-														element={
-															<Navigate to="/home" replace />
-														}
-													/>
-													<Route
-														path="/style-guide"
-														element={<StyleGuide />}
-													/>
-													<Route path="/home" element={<Home />} />
-													<Route path="/login" element={<Login />} />
-													<Route path="/test-address" element={<TestAddressPanel />} />
-													<Route
-														path="/profile"
-														element={<UserProfile />}
-													/>
-													<Route
-														path="/products"
-														element={<ProductList />}
-													/>
-													<Route
-														path="admin/exam-sessions"
-														element={<AdminExamSessionList />}
-													/>
-													<Route
-														path="admin/exam-sessions/new"
-														element={<AdminExamSessionForm />}
-													/>
-													<Route
-														path="/exam-sessions/edit/:id"
-														element={<AdminExamSessionForm />}
-													/>
-													<Route
-														path="admin/subjects"
-														element={<AdminSubjectList />}
-													/>
-													<Route
-														path="admin/subjects/new"
-														element={<AdminSubjectForm />}
-													/>
-													<Route
-														path="admin/subjects/:id"
-														element={<AdminSubjectDetail />}
-													/>
-													<Route
-														path="admin/subjects/:id/edit"
-														element={<AdminSubjectForm />}
-													/>
-													<Route
-														path="admin/subjects/import"
-														element={<AdminSubjectImport />}
-													/>
-													<Route
-														path="admin/products"
-														element={<AdminProductList />}
-													/>
-													<Route
-														path="admin/products/:id"
-														element={<AdminProductDetail />}
-													/>
-													<Route
-														path="admin/products/new"
-														element={<AdminProductForm />}
-													/>
-													<Route
-														path="admin/products/edit/:id"
-														element={<AdminProductForm />}
-													/>
-													<Route
-														path="admin/products/import"
-														element={<AdminProductImport />}
-													/>
-													<Route
-														path="/checkout"
-														element={<CheckoutPage />}
-													/>
-													<Route
-														path="/orders"
-														element={<OrderHistory />}
-													/>
-													<Route
-														path="/register"
-														element={
-															<ProfileForm
-																mode="registration"
-																title="Create Your ActEd Account"
-															/>
-														}
-													/>
-													<Route
-														path="/tutorials"
-														element={<TutorialProductList />}
-													/>
-													<Route
-														path="/auth/forgot-password"
-														element={<ForgotPasswordForm />}
-													/>
-													<Route
-														path="/auth/reset-password"
-														element={<ResetPasswordForm />}
-													/>
-													<Route
-														path="/auth/activate"
-														element={<AccountActivation />}
-													/>
-													<Route
-														path="/auth/verify-email"
-														element={<AccountActivation />}
-													/>
-													<Route
-														path="/auth/resend-activation"
-														element={<ResendActivation />}
-													/>
-													<Route
-														path="/auth/email-verification"
-														element={<EmailVerification />}
-													/>
-                                                    <Route path="*" element={<NoMatch />} />
-													<Route
-														path="/product-card-variations"
-														element={<ProductCardVariations />}
-													/>
-                                                    <Route
-                                                        path="/sandbox/product-card-test"
-                                                        element={<ProductCardTestPage />}
-                                                    />
-													<Route
-														path="/test/message-classification"
-														element={<MessageClassificationDemo />}
-													/>
-													<Route
-														path="/test/content-parsing"
-														element={<ContentParsingDemo />}
-													/>
-													<Route
-														path="/test/context-building"
-														element={<ContextBuildingDemo />}
-													/>
-													<Route
-														path="/test/processing-pipeline"
-														element={<ProcessingPipelineDemo />}
-													/>
-													<Route
-														path="/test/rules-engine"
-														element={<RulesEngineUtilitiesDemo />}
-													/>
-													 <Route path="/register2" element={<Registration />} />
-												</Routes>
-											</Container>
+												<Container
+													maxWidth={true}
+													className="body-container"
+													disableGutters={true}
+													style={{ m: 0, p: 0 }}>
+													<Routes>
+														<Route
+															path="/"
+															element={
+																<Navigate to="/home" replace />
+															}
+														/>
+														<Route
+															path="/style-guide"
+															element={<StyleGuide />}
+														/>
+														<Route
+															path="/home"
+															element={<Home />}
+														/>
+														<Route
+															path="/login"
+															element={<Login />}
+														/>
+														<Route
+															path="/test-address"
+															element={<TestAddressPanel />}
+														/>
+														<Route
+															path="/profile"
+															element={<UserProfile />}
+														/>
+														<Route
+															path="/products"
+															element={<ProductList />}
+														/>
+														<Route
+															path="admin/exam-sessions"
+															element={<AdminExamSessionList />}
+														/>
+														<Route
+															path="admin/exam-sessions/new"
+															element={<AdminExamSessionForm />}
+														/>
+														<Route
+															path="/exam-sessions/edit/:id"
+															element={<AdminExamSessionForm />}
+														/>
+														<Route
+															path="admin/subjects"
+															element={<AdminSubjectList />}
+														/>
+														<Route
+															path="admin/subjects/new"
+															element={<AdminSubjectForm />}
+														/>
+														<Route
+															path="admin/subjects/:id"
+															element={<AdminSubjectDetail />}
+														/>
+														<Route
+															path="admin/subjects/:id/edit"
+															element={<AdminSubjectForm />}
+														/>
+														<Route
+															path="admin/subjects/import"
+															element={<AdminSubjectImport />}
+														/>
+														<Route
+															path="admin/products"
+															element={<AdminProductList />}
+														/>
+														<Route
+															path="admin/products/:id"
+															element={<AdminProductDetail />}
+														/>
+														<Route
+															path="admin/products/new"
+															element={<AdminProductForm />}
+														/>
+														<Route
+															path="admin/products/edit/:id"
+															element={<AdminProductForm />}
+														/>
+														<Route
+															path="admin/products/import"
+															element={<AdminProductImport />}
+														/>
+														<Route
+															path="/checkout"
+															element={<CheckoutPage />}
+														/>
+														<Route
+															path="/orders"
+															element={<OrderHistory />}
+														/>
+														<Route
+															path="/register"
+															element={
+																<ProfileForm
+																	mode="registration"
+																	title="Create Your ActEd Account"
+																/>
+															}
+														/>
+														<Route
+															path="/tutorials"
+															element={<TutorialProductList />}
+														/>
+														<Route
+															path="/auth/forgot-password"
+															element={<ForgotPasswordForm />}
+														/>
+														<Route
+															path="/auth/reset-password"
+															element={<ResetPasswordForm />}
+														/>
+														<Route
+															path="/auth/activate"
+															element={<AccountActivation />}
+														/>
+														<Route
+															path="/auth/verify-email"
+															element={<AccountActivation />}
+														/>
+														<Route
+															path="/auth/resend-activation"
+															element={<ResendActivation />}
+														/>
+														<Route
+															path="/auth/email-verification"
+															element={<EmailVerification />}
+														/>
+														<Route
+															path="*"
+															element={<NoMatch />}
+														/>
+														<Route
+															path="/product-card-variations"
+															element={<ProductCardVariations />}
+														/>
+														<Route
+															path="/sandbox/product-card-test"
+															element={<ProductCardTestPage />}
+														/>
+														<Route
+															path="/test/message-classification"
+															element={
+																<MessageClassificationDemo />
+															}
+														/>
+														<Route
+															path="/test/content-parsing"
+															element={<ContentParsingDemo />}
+														/>
+														<Route
+															path="/test/context-building"
+															element={<ContextBuildingDemo />}
+														/>
+														<Route
+															path="/test/processing-pipeline"
+															element={
+																<ProcessingPipelineDemo />
+															}
+														/>
+														<Route
+															path="/test/rules-engine"
+															element={
+																<RulesEngineUtilitiesDemo />
+															}
+														/>
+														<Route
+															path="/register2"
+															element={<Registration />}
+														/>
+													</Routes>
+												</Container>
 
-											{/* Tutorial Choice Panel */}
-											<TutorialChoicePanel />
-										</div>
-									</TutorialChoiceProvider>
-							</ProductProvider>
-						</AuthProvider>
-					</CartProvider>
-					</ErrorBoundary>
-				</GoogleReCaptchaProvider>
-			</ThemeProvider>
-		</ChakraProvider>
+												{/* Tutorial Choice Panel */}
+												<TutorialChoicePanel />
+											</div>
+										</TutorialChoiceProvider>
+									</ProductProvider>
+								</AuthProvider>
+							</CartProvider>
+						</ErrorBoundary>
+					</GoogleReCaptchaProvider>
+				</ThemeProvider>
+			</ChakraProvider>
 		</Provider>
 	);
 }

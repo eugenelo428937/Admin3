@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Layout Test</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .hero-container {
+            height: 27.95rem !important;
+            background: yellow;
+        }
+        .hero-content {
+            min-height: 58vh;
+            background: rgba(255, 0, 0, 0.3);
+        }
+        .col-test {
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+            background: lightblue;
+        }
+        .video-test {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+        }
+        .overlay-test {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Layout Debug</h1>
+    <p>hero-container height: 27.95rem (~447px)</p>
+    <p>hero-content min-height: 58vh (~580px on 1000px viewport)</p>
+    <div class="hero-container">
+        <div style="height: 100%;">
+            <div class="col-test">
+                <video class="video-test" autoplay loop muted playsinline>
+                    <source src="/video/12595751_2560_1440_30fps.mp4" type="video/mp4">
+                </video>
+                <div class="overlay-test"></div>
+                <div class="hero-content">
+                    <h1 style="color: white; position: relative; z-index: 1;">Content Here</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

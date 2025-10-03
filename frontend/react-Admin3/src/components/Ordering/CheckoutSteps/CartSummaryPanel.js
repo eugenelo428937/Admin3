@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Button } from 'react-bootstrap';
 import { generateProductCode } from '../../../utils/productCodeGenerator';
+import { formatVatLabel } from '../../../utils/vatUtils';
 
 const CartSummaryPanel = ({
   cartItems = [],
@@ -92,21 +93,16 @@ const CartSummaryPanel = ({
               <small>£{vatCalculations.totals.subtotal.toFixed(2)}</small>
             </div>
             <div className="d-flex justify-content-between">
-              <small>
-                VAT{vatCalculations.totals.effective_vat_rate !== undefined &&
-                    vatCalculations.totals.effective_vat_rate !== null
-                  ? ` (${(vatCalculations.totals.effective_vat_rate * 100).toFixed(0)}%)`
-                  : ''}:
-              </small>
+              <small>{formatVatLabel(vatCalculations.totals.effective_vat_rate)}:</small>
               <small>£{vatCalculations.totals.total_vat.toFixed(2)}</small>
             </div>
-            {/* Display fees if present and payment method is card */}
-            {vatCalculations.totals.total_fees > 0 && paymentMethod === 'card' && (
+            {/* Display fees separately from VAT */}
+            {vatCalculations.fees && vatCalculations.fees.length > 0 && (
               <>
-                {vatCalculations.fees?.map((fee, index) => (
+                {vatCalculations.fees.map((fee, index) => (
                   <div key={index} className="d-flex justify-content-between">
                     <small className="text-muted">
-                      {fee.description || 'Additional Fee'}:
+                      {fee.name || fee.description || 'Fee'}:
                     </small>
                     <small>£{parseFloat(fee.amount).toFixed(2)}</small>
                   </div>
@@ -116,11 +112,7 @@ const CartSummaryPanel = ({
             <hr className="my-2" />
             <div className="d-flex justify-content-between">
               <strong>Total:</strong>
-              <strong>£{(
-                paymentMethod === 'card'
-                  ? vatCalculations.totals.total_gross
-                  : vatCalculations.totals.total_gross - vatCalculations.totals.total_fees
-              ).toFixed(2)}</strong>
+              <strong>£{vatCalculations.totals.total_gross.toFixed(2)}</strong>
             </div>
           </div>
         )}

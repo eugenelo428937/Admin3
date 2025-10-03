@@ -37,12 +37,19 @@ const TopNavBar = () => {
 		}
 	}, [location, isAuthenticated, navigate]);
 
-	// Close cart panel when user authenticates
+	const { cartCount, refreshCart } = useCart();
+
+	// Close cart panel and refresh cart when user authenticates
 	useEffect(() => {
 		if (isAuthenticated) {
 			setShowCartPanel(false);
+			// Refresh cart to recalculate VAT with user profile
+			refreshCart().catch(err => {
+				console.error('Failed to refresh cart after login:', err);
+			});
 		}
-	}, [isAuthenticated]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isAuthenticated]); // Only run when isAuthenticated changes, not when refreshCart changes
 
 	// Listen for custom event to show auth modal (from CartPanel checkout)
 	useEffect(() => {
@@ -82,8 +89,6 @@ const TopNavBar = () => {
 		}
 		// If authenticated, the dropdown will handle showing logout option
 	};
-
-	const { cartCount } = useCart();
 
 	// Handle opening the search modal
 	const handleOpenSearchModal = () => {
