@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import { getVatRate, calculateVat, formatVatLabel } from '../../../utils/vatUtils';
+import { formatPrice } from '../../../utils/priceFormatter';
+import { useCart } from "../../../contexts/CartContext";
 import {
 	Button,
 	Card,
@@ -42,6 +45,11 @@ const OnlineClassroomProductCard = React.memo(
 		const [isHovered, setIsHovered] = useState(false);
 		const [showPriceModal, setShowPriceModal] = useState(false);
 
+		const { cartData } = useCart();
+
+		// Get user's VAT region from cart data
+		const userRegion = cartData?.vat_calculations?.region_info?.region || 'UK';
+
 		// Use actual product variations instead of hardcoded options
 		const currentVariation = product.variations?.find(
 			v => v.id.toString() === selectedVariation
@@ -77,25 +85,48 @@ const OnlineClassroomProductCard = React.memo(
 						<Typography variant="body2" color="text.secondary">
 							Product Name: {product.product_name}
 						</Typography>
+						<Typography variant="body2" color="text.secondary">
+							VAT Region: {userRegion}
+						</Typography>
 					</Box>
 					<Table size="small">
 						<TableHead>
 							<TableRow>
 								<TableCell>Format</TableCell>
 								<TableCell>Price Type</TableCell>
-								<TableCell>Price</TableCell>
+								<TableCell align="right">Net Price</TableCell>
+								<TableCell align="right">VAT Rate</TableCell>
+								<TableCell align="right">VAT Amount</TableCell>
+								<TableCell align="right">Total (inc VAT)</TableCell>
 							</TableRow>
 						</TableHead>
 						<TableBody>
 							{product.variations?.map((variation) => (
 								<React.Fragment key={variation.id}>
-									{variation.prices?.map((price) => (
-										<TableRow key={`${variation.id}-${price.price_type}`}>
-											<TableCell>{variation.name}</TableCell>
-											<TableCell>{price.price_type}</TableCell>
-											<TableCell>£{price.amount}</TableCell>
-										</TableRow>
-									))}
+									{variation.prices?.map((price) => {
+										const variationCode = variation.code || product.code || '';
+										const vatRate = getVatRate(userRegion, variationCode);
+										const vatCalc = calculateVat(price.amount, vatRate);
+
+										return (
+											<TableRow key={`${variation.id}-${price.price_type}`}>
+												<TableCell>{variation.name}</TableCell>
+												<TableCell>{price.price_type}</TableCell>
+												<TableCell align="right">
+													{formatPrice(vatCalc.netAmount)}
+												</TableCell>
+												<TableCell align="right">
+													{(vatRate * 100).toFixed(0)}%
+												</TableCell>
+												<TableCell align="right">
+													{formatPrice(vatCalc.vatAmount)}
+												</TableCell>
+												<TableCell align="right">
+													<strong>{formatPrice(vatCalc.grossAmount)}</strong>
+												</TableCell>
+											</TableRow>
+										);
+									})}
 								</React.Fragment>
 							))}
 						</TableBody>
@@ -336,7 +367,7 @@ const OnlineClassroomProductCard = React.memo(
 									variant="fineprint"
 									className="vat-status-text"
 									color="text.secondary">
-									Price includes VAT
+									{product.vat_status_display || "Price includes VAT"}
 								</Typography>
 							</Box>
 							<Button

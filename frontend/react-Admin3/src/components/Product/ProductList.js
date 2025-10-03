@@ -57,7 +57,7 @@ const ProductList = React.memo(() => {
     const dispatch = useDispatch();
 
     // Context hooks
-    const { addToCart } = useCart();
+    const { addToCart, cartData } = useCart();
     
     // Redux state
     const filters = useSelector(selectFilters);
@@ -432,6 +432,7 @@ const ProductList = React.memo(() => {
 							onAddToCart={handleAddToCart}
 							allEsspIds={allEsspIds}
 							bulkDeadlines={bulkDeadlines}
+							vatCalculations={cartData?.vat_calculations}
 							showProductCount
 							showLoadMoreButton
 							emptyStateMessage={

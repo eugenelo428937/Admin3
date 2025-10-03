@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Test</title>
+</head>
+<body>
+    <h1>Video Test</h1>
+    <video autoplay loop muted playsinline controls style="width: 100%; max-width: 800px;">
+        <source src="/video/12595751_2560_1440_30fps.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <script>
+        const video = document.querySelector('video');
+        video.addEventListener('error', (e) => {
+            console.error('Video error:', e);
+            document.body.innerHTML += '<p style="color: red;">Video Error: ' + video.error.code + ' - ' + video.error.message + '</p>';
+        });
+        video.addEventListener('loadeddata', () => {
+            console.log('Video loaded successfully');
+            document.body.innerHTML += '<p style="color: green;">Video loaded successfully!</p>';
+        });
+    </script>
+</body>
+</html>

@@ -274,54 +274,73 @@ const CheckoutSteps = ({ onComplete }) => {
     executeRules();
   }, [cartItems, cartData, currentStep]);
 
-  // Calculate VAT when component mounts or cart changes
+  // Use VAT calculations from backend (cartData)
   useEffect(() => {
-    const calculateVAT = async () => {
-      if (cartItems.length === 0) return;
+    if (cartItems.length === 0) {
+      setVatCalculations(null);
+      return;
+    }
 
-      setVatLoading(true);
-      try {
-        // Calculate subtotal from items
-        const subtotal = cartItems.reduce((total, item) =>
-          total + (parseFloat(item.actual_price) * item.quantity), 0
-        );
+    setVatLoading(true);
+    try {
+      // Use backend VAT calculations from cartData
+      if (cartData?.vat_calculations) {
+        const backendVatCalcs = cartData.vat_calculations;
 
-        // Calculate VAT on subtotal (20% VAT)
-        const vatRate = 0.20;
-        const totalVat = subtotal * vatRate;
-
-        // Calculate fees (VAT exempt) from cartData
+        // Calculate fees from cartData
         const totalFees = cartData?.fees ?
           cartData.fees.reduce((total, fee) =>
             total + parseFloat(fee.amount || 0), 0
           ) : 0;
 
-        // Calculate total: subtotal + VAT + fees
-        const totalGross = subtotal + totalVat + totalFees;
-
+        // Use backend VAT totals and add fees to gross total
         const result = {
           success: true,
           totals: {
-            subtotal: subtotal,
-            total_vat: totalVat,
+            subtotal: backendVatCalcs.totals?.subtotal || 0,
+            total_vat: backendVatCalcs.totals?.total_vat || 0,
             total_fees: totalFees,
-            total_gross: totalGross
+            total_gross: (backendVatCalcs.totals?.total_gross || 0) + totalFees,
+            effective_vat_rate: backendVatCalcs.totals?.effective_vat_rate || 0
           },
           fees: cartData?.fees || [],
-          user_country: 'UK',
-          vat_calculations: []
+          region_info: backendVatCalcs.region_info || {},
+          vat_calculations: backendVatCalcs.items || []
         };
 
         setVatCalculations(result);
-      } catch (err) {
-        console.error('Error calculating VAT:', err);
-        setError('Failed to calculate VAT. Please refresh the page.');
-      } finally {
-        setVatLoading(false);
-      }
-    };
+      } else {
+        console.warn('No VAT calculations from backend, using fallback');
+        // Fallback if backend doesn't provide VAT calculations
+        const subtotal = cartItems.reduce((total, item) =>
+          total + (parseFloat(item.actual_price) * item.quantity), 0
+        );
 
-    calculateVAT();
+        const totalFees = cartData?.fees ?
+          cartData.fees.reduce((total, fee) =>
+            total + parseFloat(fee.amount || 0), 0
+          ) : 0;
+
+        setVatCalculations({
+          success: true,
+          totals: {
+            subtotal: subtotal,
+            total_vat: 0,
+            total_fees: totalFees,
+            total_gross: subtotal + totalFees,
+            effective_vat_rate: 0
+          },
+          fees: cartData?.fees || [],
+          region_info: {},
+          vat_calculations: []
+        });
+      }
+    } catch (err) {
+      console.error('Error processing VAT calculations:', err);
+      setError('Failed to load VAT information. Please refresh the page.');
+    } finally {
+      setVatLoading(false);
+    }
   }, [cartItems, cartData]);
 
   const steps = [

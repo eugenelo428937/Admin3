@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { formatPrice } from '../../../utils/priceFormatter';
+import { getVatRate, calculateVat, formatVatLabel } from '../../../utils/vatUtils';
 import {
 	Button,
 	Chip,
@@ -50,7 +51,10 @@ const MaterialProductCard = React.memo(
 		const theme = useTheme();
 		const cardRef = useRef(null);
 
-		useCart();
+		const { cartData } = useCart();
+
+		// Get user's VAT region from cart data
+		const userRegion = cartData?.vat_calculations?.region_info?.region || 'UK';
 
 		const handleMouseEnter = useCallback(() => {
 			setIsHovered(true);
@@ -189,6 +193,7 @@ const MaterialProductCard = React.memo(
 					productId={product.essp_id || product.id || product.product_id}
 					product={product}
 					variations={product.variations}
+					onAddToCart={onAddToCart}
 				/>
 			);
 		}
@@ -249,7 +254,7 @@ const MaterialProductCard = React.memo(
 				maxWidth="md"
 				fullWidth>
 				<DialogTitle>
-					<Typography variant="h6">Price Information</Typography>
+					Price Information
 				</DialogTitle>
 				<DialogContent>
 					<Box sx={{ mb: 2 }}>
@@ -259,13 +264,19 @@ const MaterialProductCard = React.memo(
 						<Typography variant="body2" color="text.secondary">
 							Product Name: {product.product_name}
 						</Typography>
+						<Typography variant="body2" color="text.secondary">
+							VAT Region: {userRegion}
+						</Typography>
 					</Box>
 					<Table size="small">
 						<TableHead>
 							<TableRow>
 								<TableCell>Variation</TableCell>
 								<TableCell>Price Type</TableCell>
-								<TableCell>Price</TableCell>
+								<TableCell align="right">Net Price</TableCell>
+								<TableCell align="right">VAT Rate</TableCell>
+								<TableCell align="right">VAT Amount</TableCell>
+								<TableCell align="right">Total (inc VAT)</TableCell>
 							</TableRow>
 						</TableHead>
 						<TableBody>
@@ -273,16 +284,31 @@ const MaterialProductCard = React.memo(
 								product.variations.map(
 									(variation) =>
 										variation.prices &&
-										variation.prices.map((price) => (
-											<TableRow
-												key={`${variation.id}-${price.price_type}`}>
-												<TableCell>{variation.name}</TableCell>
-												<TableCell>{price.price_type}</TableCell>
-												<TableCell>
-													{formatPrice(price.amount)}
-												</TableCell>
-											</TableRow>
-										))
+										variation.prices.map((price) => {
+											const variationCode = variation.code || product.code || '';
+											const vatRate = getVatRate(userRegion, variationCode);
+											const vatCalc = calculateVat(price.amount, vatRate);
+
+											return (
+												<TableRow
+													key={`${variation.id}-${price.price_type}`}>
+													<TableCell>{variation.name}</TableCell>
+													<TableCell>{price.price_type}</TableCell>
+													<TableCell align="right">
+														{formatPrice(vatCalc.netAmount)}
+													</TableCell>
+													<TableCell align="right">
+														{(vatRate * 100).toFixed(0)}%
+													</TableCell>
+													<TableCell align="right">
+														{formatPrice(vatCalc.vatAmount)}
+													</TableCell>
+													<TableCell align="right">
+														<strong>{formatPrice(vatCalc.grossAmount)}</strong>
+													</TableCell>
+												</TableRow>
+											);
+										})
 								)}
 						</TableBody>
 					</Table>
@@ -552,7 +578,7 @@ const MaterialProductCard = React.memo(
 									variant="fineprint"
 									className="vat-status-text"
 									color="text.secondary">
-									Price includes VAT
+									{product.vat_status_display || "Price includes VAT"}
 								</Typography>
 							</Box>
 

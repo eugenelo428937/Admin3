@@ -147,78 +147,111 @@ const SearchBox = ({
     };
 
     return (
-        <div className="search-box-container">
-            {/* Search Input */}
-            <Form.Group className="mb-3">
-                <div className="search-input-wrapper">
-                    <Search className="search-icon" />
-                    <Form.Control
-                        ref={searchInputRef}
-                        type="text"
-                        placeholder={placeholder}
-                        value={searchQuery}
-                        onChange={handleSearchChange}
-                        onKeyDown={handleKeyDown}
-                        className="search-input"
-                    />
-                    {loading && (
-                        <Spinner 
-                            animation="border" 
-                            size="sm" 
-                            className="search-spinner"
-                        />
-                    )}
-                </div>
-            </Form.Group>
+			<div className="search-box-container m-top__md">
+				{/* Search Input */}
+				<Form.Group className="mb-3">
+					<div className="search-input-wrapper">
+						<Search className="search-icon" />
+						<Form.Control
+							ref={searchInputRef}
+							type="text"
+							placeholder={placeholder}
+							value={searchQuery}
+							onChange={handleSearchChange}
+							onKeyDown={handleKeyDown}
+							className="search-input"
+						/>
+						{loading && (
+							<Spinner
+								animation="border"
+								size="sm"
+								className="search-spinner"
+							/>
+						)}
+					</div>
+				</Form.Group>
 
-            {/* Selected Filters Display */}
-            {getTotalFilterCount() > 0 && (
-                <div className="selected-filters mb-3">
-                    <div className="d-flex align-items-center mb-2">
-                        <Filter className="me-2" />
-                        <strong>Selected Filters ({getTotalFilterCount()})</strong>
-                        <Button 
-                            variant="link" 
-                            size="sm" 
-                            onClick={clearAllFilters}
-                            className="ms-2 p-0"
-                        >
-                            Clear All
-                        </Button>
-                    </div>
-                    <div>
-                        {selectedFilters.subjects.map(item => 
-                            <Badge key={`selected-subject-${item.id}`} bg="info" className="me-2 mb-1">
-                                {item.code || item.description} <X onClick={() => removeFilter('subjects', item.id)} style={{cursor: 'pointer'}} />
-                            </Badge>
-                        )}
-                        {selectedFilters.product_groups.map(item => 
-                            <Badge key={`selected-group-${item.id}`} bg="success" className="me-2 mb-1">
-                                {item.name} <X onClick={() => removeFilter('product_groups', item.id)} style={{cursor: 'pointer'}} />
-                            </Badge>
-                        )}
-                        {selectedFilters.variations.map(item => 
-                            <Badge key={`selected-variation-${item.id}`} bg="warning" className="me-2 mb-1">
-                                {item.name} <X onClick={() => removeFilter('variations', item.id)} style={{cursor: 'pointer'}} />
-                            </Badge>
-                        )}
-                        {selectedFilters.products.map(item => 
-                            <Badge key={`selected-product-${item.id}`} bg="secondary" className="me-2 mb-1">
-                                {item.shortname || item.product_short_name || item.name} <X onClick={() => removeFilter('products', item.id)} style={{cursor: 'pointer'}} />
-                            </Badge>
-                        )}
-                    </div>
-                </div>
-            )}
+				{/* Selected Filters Display */}
+				{getTotalFilterCount() > 0 && (
+					<div className="selected-filters mb-3">
+						<div className="d-flex align-items-center mb-2">
+							<Filter className="me-2" />
+							<strong>Selected Filters ({getTotalFilterCount()})</strong>
+							<Button
+								variant="link"
+								size="sm"
+								onClick={clearAllFilters}
+								className="ms-2 p-0">
+								Clear All
+							</Button>
+						</div>
+						<div>
+							{selectedFilters.subjects.map((item) => (
+								<Badge
+									key={`selected-subject-${item.id}`}
+									bg="info"
+									className="me-2 mb-1">
+									{item.code || item.description}{" "}
+									<X
+										onClick={() => removeFilter("subjects", item.id)}
+										style={{ cursor: "pointer" }}
+									/>
+								</Badge>
+							))}
+							{selectedFilters.product_groups.map((item) => (
+								<Badge
+									key={`selected-group-${item.id}`}
+									bg="success"
+									className="me-2 mb-1">
+									{item.name}{" "}
+									<X
+										onClick={() =>
+											removeFilter("product_groups", item.id)
+										}
+										style={{ cursor: "pointer" }}
+									/>
+								</Badge>
+							))}
+							{selectedFilters.variations.map((item) => (
+								<Badge
+									key={`selected-variation-${item.id}`}
+									bg="warning"
+									className="me-2 mb-1">
+									{item.name}{" "}
+									<X
+										onClick={() =>
+											removeFilter("variations", item.id)
+										}
+										style={{ cursor: "pointer" }}
+									/>
+								</Badge>
+							))}
+							{selectedFilters.products.map((item) => (
+								<Badge
+									key={`selected-product-${item.id}`}
+									bg="secondary"
+									className="me-2 mb-1">
+									{item.shortname ||
+										item.product_short_name ||
+										item.name}{" "}
+									<X
+										onClick={() => removeFilter("products", item.id)}
+										style={{ cursor: "pointer" }}
+									/>
+								</Badge>
+							))}
+						</div>
+					</div>
+				)}
 
-            {/* Error Display */}
-            {error && (
-                <Alert variant="danger" className="mb-3">
-                    {error}
-                </Alert>
-            )}
-        </div>
-    );
+				{/* Error Display */}
+				{error && (
+					<Alert variant="danger" className="mb-3">
+						{error}
+					</Alert>
+				)}
+			</div>
+		);
 };
 
 export default SearchBox; 

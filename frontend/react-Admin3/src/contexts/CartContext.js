@@ -43,6 +43,30 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Update an existing cart item
+   * Used for tutorial cart integration to merge choices into existing item
+   * @param {number} itemId - Cart item ID to update
+   * @param {Object} product - Updated product data
+   * @param {Object} priceInfo - Updated price information with metadata
+   */
+  const updateCartItem = async (itemId, product, priceInfo = {}) => {
+    try {
+      const res = await cartService.updateItem(itemId, product, priceInfo);
+
+      if (res.data && res.data.items) {
+        setCartData(res.data);
+        setCartItems(res.data.items);
+        return res.data;
+      } else {
+        console.error('🛒 [CartContext] Invalid response structure:', res.data);
+      }
+    } catch (err) {
+      console.error('🛒 [CartContext] Error updating cart item:', err);
+      throw err;
+    }
+  };
+
   const removeFromCart = async (productId) => {
     // Find the cart item by productId
     const item = cartItems.find((i) => i.product === productId);
@@ -82,7 +106,7 @@ export const CartProvider = ({ children }) => {
   const cartCount = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
   return (
-    <CartContext.Provider value={{ cartItems, cartData, addToCart, removeFromCart, clearCart, refreshCart, cartCount, loading }}>
+    <CartContext.Provider value={{ cartItems, cartData, addToCart, updateCartItem, removeFromCart, clearCart, refreshCart, cartCount, loading }}>
       {children}
     </CartContext.Provider>
   );

@@ -55,6 +55,21 @@ const RulesEngineAcknowledgmentModal = ({
 
   console.log('🔍 [RulesEngineAcknowledgmentModal] Messages to display:', messagesList);
 
+  // Ensure body overflow is properly restored when modal closes
+  useEffect(() => {
+    if (!open) {
+      const timer = setTimeout(() => {
+        const currentOverflow = document.body.style.overflow;
+        if (currentOverflow === 'hidden') {
+          // Use combined overflow property for better MUI compatibility
+          document.body.style.overflow = 'visible auto';
+        }
+        document.body.classList.remove('mui-fixed');
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
   // Reset acknowledgment state when modal opens/closes or messages change
   useEffect(() => {
     if (open && messagesList.length > 0) {

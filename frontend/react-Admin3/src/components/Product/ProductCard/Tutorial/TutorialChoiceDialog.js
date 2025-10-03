@@ -59,10 +59,38 @@ const TutorialChoiceDialog = ({
     showChoicePanelForSubject 
   } = useTutorialChoice();
   
-  const { addToCart } = useCart();
+  const { addToCart, cartItems } = useCart();
 
   const subjectChoices = getSubjectChoices(subjectCode);
   const hasChoices = Object.keys(subjectChoices).length > 0;
+
+  // Get choice levels occupied by cart items for this subject
+  const cartOccupiedLevels = useMemo(() => {
+    if (!cartItems || cartItems.length === 0) return [];
+
+    const tutorialItems = cartItems.filter(item =>
+      item.subject_code === subjectCode &&
+      item.type === "Tutorial"
+    );
+
+    const levels = [];
+    tutorialItems.forEach(item => {
+      const metadata = item.metadata || item.priceInfo?.metadata;
+      if (metadata && metadata.locations) {
+        metadata.locations.forEach(loc => {
+          if (loc.choices) {
+            loc.choices.forEach(choice => {
+              if (choice.choice && !levels.includes(choice.choice)) {
+                levels.push(choice.choice);
+              }
+            });
+          }
+        });
+      }
+    });
+
+    return levels;
+  }, [cartItems, subjectCode]);
 
   // Flatten all events from all variations for easier display
   const allEvents = useMemo(() => {
@@ -172,7 +200,11 @@ const TutorialChoiceDialog = ({
 
     const availableLevels = [];
     ["1st", "2nd", "3rd"].forEach(level => {
-      if (!subjectChoices[level]) {
+      // Check if level is occupied in either context or cart
+      const inContext = !!subjectChoices[level];
+      const inCart = cartOccupiedLevels.includes(level);
+
+      if (!inContext && !inCart) {
         availableLevels.push(level);
       }
     });

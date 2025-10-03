@@ -1,0 +1,354 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TutorialChoices localStorage Contract",
+  "description": "Contract for tutorial choice data stored in browser localStorage",
+
+  "storageKey": "tutorialChoices",
+  "storageType": "localStorage",
+  "format": "JSON string",
+  "encoding": "UTF-8",
+
+  "schema": {
+    "type": "object",
+    "description": "Map of subject codes to their tutorial choices",
+    "patternProperties": {
+      "^[A-Z0-9]+$": {
+        "type": "object",
+        "description": "Tutorial choices for a specific subject",
+        "properties": {
+          "1st": { "$ref": "#/definitions/TutorialChoice" },
+          "2nd": { "$ref": "#/definitions/TutorialChoice" },
+          "3rd": { "$ref": "#/definitions/TutorialChoice" }
+        },
+        "additionalProperties": false,
+        "minProperties": 1,
+        "maxProperties": 3
+      }
+    },
+    "additionalProperties": false
+  },
+
+  "definitions": {
+    "TutorialChoice": {
+      "type": "object",
+      "description": "A single tutorial selection for a subject",
+      "required": ["eventId", "choiceLevel", "timestamp", "isDraft"],
+      "properties": {
+        "eventId": {
+          "type": "string",
+          "description": "Unique identifier for the tutorial event",
+          "minLength": 1
+        },
+        "eventCode": {
+          "type": "string",
+          "description": "Human-readable tutorial event code",
+          "pattern": "^TUT-[A-Z0-9]+-[A-Z]+-\\d+$",
+          "examples": ["TUT-CS2-BRI-001", "TUT-CP1-LON-002"]
+        },
+        "location": {
+          "type": "string",
+          "description": "Tutorial location",
+          "minLength": 1,
+          "examples": ["Bristol", "London", "Manchester", "Online"]
+        },
+        "variation": {
+          "type": "object",
+          "description": "Product variation details",
+          "required": ["id", "name", "prices"],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "Product variation ID",
+              "minimum": 1
+            },
+            "name": {
+              "type": "string",
+              "description": "Variation name",
+              "minLength": 1,
+              "examples": ["In-Person Tutorial", "Online Tutorial"]
+            },
+            "prices": {
+              "type": "array",
+              "description": "Available pricing options",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/Price"
+              }
+            }
+          }
+        },
+        "choiceLevel": {
+          "type": "string",
+          "description": "Preference level for this tutorial choice",
+          "enum": ["1st", "2nd", "3rd"]
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "ISO 8601 datetime when choice was made",
+          "format": "date-time",
+          "examples": ["2025-10-03T14:30:00.000Z"]
+        },
+        "isDraft": {
+          "type": "boolean",
+          "description": "State flag: true = draft selection, false = added to cart"
+        }
+      }
+    },
+
+    "Price": {
+      "type": "object",
+      "description": "Price information for a product variation",
+      "required": ["price_type", "amount"],
+      "properties": {
+        "price_type": {
+          "type": "string",
+          "description": "Type of price",
+          "enum": ["standard", "retaker", "discount", "early_bird"],
+          "examples": ["standard", "retaker"]
+        },
+        "amount": {
+          "type": "number",
+          "description": "Price amount in currency units",
+          "minimum": 0,
+          "examples": [125.00, 100.00, 95.50]
+        }
+      }
+    }
+  },
+
+  "examples": [
+    {
+      "description": "Single subject with one choice (draft state)",
+      "data": {
+        "CS2": {
+          "1st": {
+            "eventId": "evt-cs2-bri-001",
+            "eventCode": "TUT-CS2-BRI-001",
+            "location": "Bristol",
+            "variation": {
+              "id": 42,
+              "name": "In-Person Tutorial",
+              "prices": [
+                { "price_type": "standard", "amount": 125.00 },
+                { "price_type": "retaker", "amount": 100.00 }
+              ]
+            },
+            "choiceLevel": "1st",
+            "timestamp": "2025-10-03T14:30:00.000Z",
+            "isDraft": true
+          }
+        }
+      }
+    },
+    {
+      "description": "Single subject with multiple choices (in cart)",
+      "data": {
+        "CS2": {
+          "1st": {
+            "eventId": "evt-cs2-bri-001",
+            "eventCode": "TUT-CS2-BRI-001",
+            "location": "Bristol",
+            "variation": {
+              "id": 42,
+              "name": "In-Person Tutorial",
+              "prices": [{ "price_type": "standard", "amount": 125.00 }]
+            },
+            "choiceLevel": "1st",
+            "timestamp": "2025-10-03T14:30:00.000Z",
+            "isDraft": false
+          },
+          "2nd": {
+            "eventId": "evt-cs2-lon-002",
+            "eventCode": "TUT-CS2-LON-002",
+            "location": "London",
+            "variation": {
+              "id": 42,
+              "name": "In-Person Tutorial",
+              "prices": [{ "price_type": "standard", "amount": 125.00 }]
+            },
+            "choiceLevel": "2nd",
+            "timestamp": "2025-10-03T14:35:00.000Z",
+            "isDraft": false
+          },
+          "3rd": {
+            "eventId": "evt-cs2-man-003",
+            "eventCode": "TUT-CS2-MAN-003",
+            "location": "Manchester",
+            "variation": {
+              "id": 42,
+              "name": "In-Person Tutorial",
+              "prices": [{ "price_type": "standard", "amount": 125.00 }]
+            },
+            "choiceLevel": "3rd",
+            "timestamp": "2025-10-03T14:40:00.000Z",
+            "isDraft": false
+          }
+        }
+      }
+    },
+    {
+      "description": "Multiple subjects with mixed draft/cart states",
+      "data": {
+        "CS2": {
+          "1st": {
+            "eventId": "evt-cs2-bri-001",
+            "eventCode": "TUT-CS2-BRI-001",
+            "location": "Bristol",
+            "variation": { "id": 42, "name": "In-Person Tutorial", "prices": [{ "price_type": "standard", "amount": 125.00 }] },
+            "choiceLevel": "1st",
+            "timestamp": "2025-10-03T14:30:00.000Z",
+            "isDraft": false
+          },
+          "2nd": {
+            "eventId": "evt-cs2-lon-002",
+            "eventCode": "TUT-CS2-LON-002",
+            "location": "London",
+            "variation": { "id": 42, "name": "In-Person Tutorial", "prices": [{ "price_type": "standard", "amount": 125.00 }] },
+            "choiceLevel": "2nd",
+            "timestamp": "2025-10-03T14:35:00.000Z",
+            "isDraft": true
+          }
+        },
+        "CP1": {
+          "1st": {
+            "eventId": "evt-cp1-man-001",
+            "eventCode": "TUT-CP1-MAN-001",
+            "location": "Manchester",
+            "variation": { "id": 43, "name": "Online Tutorial", "prices": [{ "price_type": "standard", "amount": 110.00 }] },
+            "choiceLevel": "1st",
+            "timestamp": "2025-10-03T15:00:00.000Z",
+            "isDraft": false
+          }
+        }
+      }
+    }
+  ],
+
+  "backwardCompatibility": {
+    "description": "Support for legacy format without isDraft field",
+    "legacyFormat": {
+      "description": "TutorialChoice objects without isDraft field",
+      "example": {
+        "CS2": {
+          "1st": {
+            "eventId": "evt-cs2-bri-001",
+            "eventCode": "TUT-CS2-BRI-001",
+            "location": "Bristol",
+            "variation": { "id": 42, "name": "In-Person Tutorial", "prices": [] },
+            "choiceLevel": "1st",
+            "timestamp": "2025-10-03T14:30:00.000Z"
+          }
+        }
+      }
+    },
+    "migrationRules": {
+      "detection": "If any TutorialChoice is missing isDraft field, trigger migration",
+      "transformation": "Add isDraft: false to all existing choices (assume they were in cart)",
+      "backup": "Create backup at localStorage key 'tutorialChoices_backup' before migration",
+      "logging": "Log migration success/failure to console"
+    },
+    "rollbackSupport": true,
+    "rollbackKey": "tutorialChoices_backup",
+    "rollbackProcedure": "Restore from tutorialChoices_backup, delete backup key after successful restore"
+  },
+
+  "validation": {
+    "rules": [
+      {
+        "rule": "Maximum 3 choice levels per subject",
+        "validator": "Object.keys(subject).length <= 3"
+      },
+      {
+        "rule": "Choice levels must be '1st', '2nd', or '3rd'",
+        "validator": "Object.keys(subject).every(level => ['1st', '2nd', '3rd'].includes(level))"
+      },
+      {
+        "rule": "Each choice must have isDraft boolean",
+        "validator": "typeof choice.isDraft === 'boolean'"
+      },
+      {
+        "rule": "Timestamp must be valid ISO 8601",
+        "validator": "!isNaN(Date.parse(choice.timestamp))"
+      },
+      {
+        "rule": "Subject code must be uppercase alphanumeric",
+        "validator": "/^[A-Z0-9]+$/.test(subjectCode)"
+      }
+    ]
+  },
+
+  "operations": {
+    "read": {
+      "description": "Load tutorial choices from localStorage on context mount",
+      "code": "JSON.parse(localStorage.getItem('tutorialChoices') || '{}')",
+      "errorHandling": "Return empty object {} if parse fails or key doesn't exist"
+    },
+    "write": {
+      "description": "Save tutorial choices to localStorage on state change",
+      "code": "localStorage.setItem('tutorialChoices', JSON.stringify(tutorialChoices))",
+      "errorHandling": "Log error to console, continue execution (fail gracefully)"
+    },
+    "migrate": {
+      "description": "Migrate legacy format to new format with isDraft field",
+      "steps": [
+        "Detect if migration needed (check for missing isDraft fields)",
+        "Create backup at 'tutorialChoices_backup'",
+        "Transform: Add isDraft: false to all existing choices",
+        "Save migrated data to 'tutorialChoices'",
+        "Log migration success"
+      ]
+    },
+    "rollback": {
+      "description": "Restore from backup if migration issues occur",
+      "steps": [
+        "Check if 'tutorialChoices_backup' exists",
+        "Restore backup to 'tutorialChoices'",
+        "Delete 'tutorialChoices_backup'",
+        "Log rollback success"
+      ]
+    }
+  },
+
+  "testCases": [
+    {
+      "testName": "Valid data with isDraft fields",
+      "input": { "CS2": { "1st": { "eventId": "evt-1", "choiceLevel": "1st", "timestamp": "2025-10-03T14:30:00.000Z", "isDraft": true } } },
+      "expectedValid": true
+    },
+    {
+      "testName": "Legacy data without isDraft (should trigger migration)",
+      "input": { "CS2": { "1st": { "eventId": "evt-1", "choiceLevel": "1st", "timestamp": "2025-10-03T14:30:00.000Z" } } },
+      "expectedValid": false,
+      "expectedAction": "migrate"
+    },
+    {
+      "testName": "Invalid choice level (4th)",
+      "input": { "CS2": { "4th": { "eventId": "evt-1", "choiceLevel": "4th", "timestamp": "2025-10-03T14:30:00.000Z", "isDraft": true } } },
+      "expectedValid": false
+    },
+    {
+      "testName": "Missing required field (eventId)",
+      "input": { "CS2": { "1st": { "choiceLevel": "1st", "timestamp": "2025-10-03T14:30:00.000Z", "isDraft": true } } },
+      "expectedValid": false
+    },
+    {
+      "testName": "Invalid timestamp format",
+      "input": { "CS2": { "1st": { "eventId": "evt-1", "choiceLevel": "1st", "timestamp": "invalid-date", "isDraft": true } } },
+      "expectedValid": false
+    },
+    {
+      "testName": "More than 3 choices per subject",
+      "input": { "CS2": { "1st": {}, "2nd": {}, "3rd": {}, "4th": {} } },
+      "expectedValid": false
+    }
+  ],
+
+  "contractVersion": "2.0.0",
+  "effectiveDate": "2025-10-03",
+  "author": "Epic 1: Tutorial Cart Integration Fix",
+  "relatedDocuments": [
+    "specs/spec-2025-10-03-120718/spec.md",
+    "specs/spec-2025-10-03-120718/data-model.md",
+    "specs/spec-2025-10-03-120718/research.md"
+  ]
+}

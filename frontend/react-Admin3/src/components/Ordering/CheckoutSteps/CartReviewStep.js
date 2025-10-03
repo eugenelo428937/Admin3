@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import { Info, LocationOn, Receipt } from '@mui/icons-material';
 import { generateProductCode } from '../../../utils/productCodeGenerator';
+import { formatVatLabel } from '../../../utils/vatUtils';
 import AddressSelectionPanel from '../../Address/AddressSelectionPanel';
 import CommunicationDetailsPanel from '../../Communication/CommunicationDetailsPanel';
 
@@ -112,10 +113,7 @@ const CartReviewStep = ({
                   </Box>
                   <Box display="flex" justifyContent="space-between">
                     <Typography variant="body2">
-                      VAT{vatCalculations.totals.effective_vat_rate !== undefined &&
-                          vatCalculations.totals.effective_vat_rate !== null
-                        ? ` (${(vatCalculations.totals.effective_vat_rate * 100).toFixed(0)}%)`
-                        : ''}:
+                      {formatVatLabel(vatCalculations.totals.effective_vat_rate)}:
                     </Typography>
                     <Typography variant="body2">£{vatCalculations.totals.total_vat.toFixed(2)}</Typography>
                   </Box>

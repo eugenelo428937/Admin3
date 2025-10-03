@@ -42,10 +42,11 @@ class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
     fees = CartFeeSerializer(many=True, read_only=True)
     user_context = serializers.SerializerMethodField()
+    vat_calculations = serializers.SerializerMethodField()
 
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'session_key', 'items', 'fees', 'created_at', 'updated_at', 'has_marking', 'has_digital', 'has_tutorial', 'has_material', 'user_context']
+        fields = ['id', 'user', 'session_key', 'items', 'fees', 'created_at', 'updated_at', 'has_marking', 'has_digital', 'has_tutorial', 'has_material', 'user_context', 'vat_calculations']
     
     def get_user_context(self, obj):
         """Get user context including IP and country information and acknowledgments"""
@@ -121,6 +122,49 @@ class CartSerializer(serializers.ModelSerializer):
                 'home_country': None,
                 'work_country': None,
                 'acknowledgments': acknowledgments
+            }
+
+    def get_vat_calculations(self, obj):
+        """Calculate and return VAT calculations for cart"""
+        from vat.service import calculate_vat_for_cart
+        from vat.utils import decimal_to_float
+
+        # Get user from request context
+        request = self.context.get('request')
+        user = request.user if request and hasattr(request, 'user') and request.user.is_authenticated else None
+
+        # Extract client IP for anonymous users (supports proxies via X-Forwarded-For)
+        client_ip = None
+        if request:
+            # X-Forwarded-For header contains comma-separated IPs (client, proxy1, proxy2...)
+            # First IP is the original client IP
+            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+            if x_forwarded_for:
+                client_ip = x_forwarded_for.split(',')[0].strip()
+            else:
+                client_ip = request.META.get('REMOTE_ADDR')
+
+        try:
+            # Calculate VAT for cart (pass client_ip for anonymous user geolocation)
+            vat_result = calculate_vat_for_cart(user, obj, client_ip=client_ip)
+
+            # Return only the vat_calculations portion (convert Decimals to floats for JSON)
+            return decimal_to_float(vat_result.get('vat_calculations', {}))
+        except Exception as e:
+            # Return empty structure on error to prevent serialization failure
+            print(f"[CartSerializer.get_vat_calculations] Error: {e}")
+            return {
+                'items': [],
+                'totals': {
+                    'subtotal': 0.00,
+                    'total_vat': 0.00,
+                    'total_gross': 0.00,
+                    'effective_vat_rate': 0.00
+                },
+                'region_info': {
+                    'country': None,
+                    'region': 'ROW'
+                }
             }
 
 class ActedOrderItemSerializer(serializers.ModelSerializer):

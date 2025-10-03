@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
+import { Box, useTheme, Grid, Divider } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import SearchBox from "../components/SearchBox";
 import SearchResults from "../components/SearchResults";
 import { Row, Col, Alert } from "react-bootstrap";
 import { Typography, Container } from "@mui/material";
-import backgroundVideo from "../assets/video/12595751_2560_1440_30fps.mp4";
 import { rulesEngineHelpers } from "../utils/rulesEngineUtils";
 import rulesEngineService from "../services/rulesEngineService";
 
 const Home = () => {
 	const navigate = useNavigate();
+	const theme = useTheme();
 	const [searchResults, setSearchResults] = useState(null);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedFilters, setSelectedFilters] = useState({
@@ -24,6 +25,17 @@ const Home = () => {
 	const [rulesMessages, setRulesMessages] = useState([]);
 	const [rulesLoading, setRulesLoading] = useState(false);
 
+	// Video path from public folder
+	const backgroundVideo = `${process.env.PUBLIC_URL}/video/12595751_2560_1440_30fps.mp4`;
+	const backgroundVideoPoster = `${process.env.PUBLIC_URL}/bg2.png`;
+
+	// Debug video paths
+	useEffect(() => {
+		console.log("🎥 PUBLIC_URL:", process.env.PUBLIC_URL);
+		console.log("🎥 Video path:", backgroundVideo);
+		console.log("🎥 Poster path:", backgroundVideoPoster);
+	}, [backgroundVideo, backgroundVideoPoster]);
+
 	// Execute home_page_mount rules when component mounts
 	useEffect(() => {
 		const executeRules = async () => {
@@ -31,39 +43,49 @@ const Home = () => {
 			setRulesMessages([]); // Clear previous messages
 
 			try {
-				console.log('🔍 [Home] Executing home page rules...');
+				console.log("🔍 [Home] Executing home page rules...");
 
 				// Use the new helper function for simplified execution
-				const result = await rulesEngineHelpers.executeHomePage(null, rulesEngineService);
+				const result = await rulesEngineHelpers.executeHomePage(
+					null,
+					rulesEngineService
+				);
 
-				console.log('📋 [Home] Rules engine result:', result);
+				console.log("📋 [Home] Rules engine result:", result);
 
 				if (result.success && result.messages?.processed?.length > 0) {
 					// Extract processed display messages for home page (filter out acknowledgments)
-					const displayMessages = result.messages.processed.filter(msg =>
-						!msg.isAcknowledgment &&
-						(msg.display_type !== 'modal' && msg.parsed?.displayType !== 'modal')
+					const displayMessages = result.messages.processed.filter(
+						(msg) =>
+							!msg.isAcknowledgment &&
+							msg.display_type !== "modal" &&
+							msg.parsed?.displayType !== "modal"
 					);
 					setRulesMessages(displayMessages);
 				}
 
 				// Handle any processing errors
 				if (result.errors && result.errors.length > 0) {
-					console.error('🚨 Rules processing errors:', result.errors);
-					if (process.env.NODE_ENV === 'development') {
-						setError(`Development Error: ${result.errors.join(', ')}`);
+					console.error("🚨 Rules processing errors:", result.errors);
+					if (process.env.NODE_ENV === "development") {
+						setError(`Development Error: ${result.errors.join(", ")}`);
 					}
 				}
 			} catch (err) {
-				console.error('Error executing home_page_mount rules:', err);
+				console.error("Error executing home_page_mount rules:", err);
 
 				// Handle schema validation errors specifically
-				if (err.name === 'SchemaValidationError') {
-					console.error('🚨 Schema validation failed for rules engine:', err.details);
-					console.error('🔍 Schema errors:', err.schemaErrors);
+				if (err.name === "SchemaValidationError") {
+					console.error(
+						"🚨 Schema validation failed for rules engine:",
+						err.details
+					);
+					console.error("🔍 Schema errors:", err.schemaErrors);
 					// For development, show schema validation errors to help debugging
-					if (process.env.NODE_ENV === 'development') {
-						setError(`Development Error: Schema validation failed - ${err.details}`);
+					if (process.env.NODE_ENV === "development") {
+						setError(
+							`Development Error: Schema validation failed - ${err.details}`
+						);
 					}
 				}
 				// Don't show other rule engine errors to user - shouldn't block home page
@@ -120,7 +142,7 @@ const Home = () => {
 
 	// Handle "Show Matching Products" button click
 	const handleShowMatchingProducts = (results, filters, query) => {
-			// Use current state if parameters are not provided
+		// Use current state if parameters are not provided
 		const searchQueryToUse = query || searchQuery;
 		const filtersToUse = filters || selectedFilters;
 
@@ -154,13 +176,17 @@ const Home = () => {
 	};
 
 	return (
-		<Container maxWidth="false" className="hero-container">
-			<Row>
+		<Container
+			maxWidth={true}
+			className="hero-container"
+			disableGutters={true}>
+			<Row style={{ height: "100%" }}>
 				<Col
 					className="text-center"
 					style={{
 						position: "relative",
 						overflow: "hidden",
+						height: "100%",
 					}}>
 					{/* Background Video */}
 					<video
@@ -168,6 +194,25 @@ const Home = () => {
 						loop
 						muted
 						playsInline
+						poster={backgroundVideoPoster}
+						onError={(e) => {
+							console.error("🚨 Video error event:", e);
+							console.error("🚨 Video element:", e.target);
+							console.error("🚨 Video currentSrc:", e.target.currentSrc);
+							console.error("🚨 Video error details:", e.target.error);
+						}}
+						onLoadedData={(e) => {
+							console.log("✅ Video loaded successfully");
+							console.log(
+								"📊 Video dimensions:",
+								e.target.videoWidth,
+								"x",
+								e.target.videoHeight
+							);
+							console.log("📊 Video duration:", e.target.duration);
+						}}
+						onLoadStart={() => console.log("📥 Video loading started...")}
+						onCanPlay={() => console.log("▶️ Video can play")}
 						style={{
 							position: "absolute",
 							top: 0,
@@ -175,10 +220,9 @@ const Home = () => {
 							width: "100%",
 							height: "100%",
 							objectFit: "cover",
-							zIndex: -2,
+							zIndex: 0,
 						}}>
 						<source src={backgroundVideo} type="video/mp4" />
-						Your browser does not support the video tag.
 					</video>
 
 					{/* Grey Overlay */}
@@ -190,31 +234,53 @@ const Home = () => {
 							width: "100%",
 							height: "100%",
 							backgroundColor: "rgba(0, 0, 0, 0.75)",
-							zIndex: -1,
+							zIndex: 1,
 						}}
 					/>
 
 					{/* Content */}
 					<Container className="hero-content d-flex flex-column flex-wrap justify-content-center align-items-center">
-						<Typography
-							variant="h1"
-							className="">
-							BPP Actuarial Education
-						</Typography>
-						<Typography
-							variant="h2"
-							className="">
-							Online Store
-						</Typography>
-						<div
-							style={{ maxWidth: "600px", margin: "0 auto" }}
-							className="m-top__xl">
-							<SearchBox
-								onSearchResults={handleSearchResults}
-								onShowMatchingProducts={handleShowMatchingProducts}
-								autoFocus={false}
-							/>
-						</div>
+						<Grid container spacing={2}>
+							<Grid size={{ xs: 12, md: 12, lg: 6 }}>
+								<Box
+									sx={{
+										display: "flex",
+										flexDirection: "column",
+										alignItems: "start",
+									}}>
+									<Typography
+										variant="BPP"
+										color={theme.palette.md3.surfaceVariant}>
+										BPP
+									</Typography>
+									<Typography
+										variant="Acted"
+										color={theme.palette.md3.surfaceVariant}>
+										Actuarial Education
+									</Typography>
+								</Box>
+								<Divider />
+								<Typography
+									variant="h3"
+									align="start"
+									color={theme.palette.md3.surfaceVariant}>
+									Online Store
+								</Typography>
+							</Grid>
+							<Grid size={{ xs: 12, md: 12, lg: 6 }}>
+								<Container
+									style={{ maxWidth: "600px", margin: "0 auto" }}
+									className="m-top__xl">
+									<SearchBox										
+										onSearchResults={handleSearchResults}
+										onShowMatchingProducts={
+											handleShowMatchingProducts
+										}
+										autoFocus={false}
+									/>
+								</Container>
+							</Grid>
+						</Grid>
 					</Container>
 				</Col>
 			</Row>
@@ -228,34 +294,41 @@ const Home = () => {
 					</Alert>
 				)}
 
-				{!rulesLoading && rulesMessages.map((message, index) => {
-					// Use the parsed content from the new utilities
-					const parsed = message.parsed || message;
-					const variant = parsed.variant === 'warning' ? 'warning' :
-								parsed.variant === 'error' ? 'danger' :
-								parsed.variant === 'info' ? 'info' : 'primary';
+				{!rulesLoading &&
+					rulesMessages.map((message, index) => {
+						// Use the parsed content from the new utilities
+						const parsed = message.parsed || message;
+						const variant =
+							parsed.variant === "warning"
+								? "warning"
+								: parsed.variant === "error"
+								? "danger"
+								: parsed.variant === "info"
+								? "info"
+								: "primary";
 
-					return (
-						<Alert
-							key={`alert-${message.template_id || index}`}
-							variant={variant}
-							className="mb-3"
-							data-testid="holiday-message"
-							dismissible={parsed.dismissible || false}
-						>
-							<Alert.Heading>
-								{parsed.icon && <i className={`bi bi-${parsed.icon} me-2`}></i>}
-								{parsed.title || 'Notice'}
-							</Alert.Heading>
-							<div
-								className="mb-0"
-								dangerouslySetInnerHTML={{
-									__html: parsed.message || 'No message content'
-								}}
-							/>
-						</Alert>
-					);
-				})}
+						return (
+							<Alert
+								key={`alert-${message.template_id || index}`}
+								variant={variant}
+								className="mb-3"
+								data-testid="holiday-message"
+								dismissible={parsed.dismissible || false}>
+								<Alert.Heading>
+									{parsed.icon && (
+										<i className={`bi bi-${parsed.icon} me-2`}></i>
+									)}
+									{parsed.title || "Notice"}
+								</Alert.Heading>
+								<div
+									className="mb-0"
+									dangerouslySetInnerHTML={{
+										__html: parsed.message || "No message content",
+									}}
+								/>
+							</Alert>
+						);
+					})}
 			</Container>
 
 			{/* Search Results Section */}

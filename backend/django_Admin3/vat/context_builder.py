@@ -11,26 +11,37 @@ from django.db import models
 from .product_classifier import classify_product
 
 
-def build_vat_context(user, cart):
+def build_vat_context(user, cart, client_ip=None):
     """
     Build VAT calculation context from user and cart data.
 
     Args:
         user: Django User object or None (anonymous)
         cart: Django Cart object with items
+        client_ip: Optional client IP address for anonymous users
 
     Returns:
         dict: Context structure with user, cart, and settings sections
     """
     from country.vat_rates import map_country_to_region
+    from .ip_geolocation import get_region_from_ip, get_country_from_ip
 
     # Build user section
     if user is None or not user.is_authenticated:
-        # Anonymous user
+        # Anonymous user - use IP geolocation if available
+        region = None
+        address = {}
+
+        if client_ip:
+            region = get_region_from_ip(client_ip)
+            country_code = get_country_from_ip(client_ip)
+            if country_code:
+                address['country'] = country_code
+
         user_context = {
             'id': None,
-            'region': None,
-            'address': {}
+            'region': region,
+            'address': address
         }
     else:
         # Authenticated user - extract region from profile

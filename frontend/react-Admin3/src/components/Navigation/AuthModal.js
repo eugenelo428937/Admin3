@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -20,12 +20,29 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 const AuthModal = ({ open, onClose }) => {
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [loginError, setLoginError] = useState('');
+
+  // Ensure body overflow is properly restored when modal closes
+  // Material-UI's ModalManager tracks overflow state, but rapid open/close can cause sync issues
+  useEffect(() => {
+    if (!open) {
+      const timer = setTimeout(() => {
+        const currentOverflow = document.body.style.overflow;
+        if (currentOverflow === 'hidden') {
+          // Restore using combined overflow property (more compatible with MUI's restoration)
+          document.body.style.overflow = 'visible auto';
+        }
+        document.body.classList.remove('mui-fixed');
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
 
   const handleInputChange = (e) => {
     setFormData({

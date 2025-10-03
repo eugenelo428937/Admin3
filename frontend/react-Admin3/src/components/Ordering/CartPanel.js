@@ -5,6 +5,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { X, Trash3, CartCheck } from "react-bootstrap-icons";
 import { generateProductCode } from "../../utils/productCodeGenerator";
+import { formatVatLabel } from "../../utils/vatUtils";
 import "../../styles/cart_panel.css";
 
 const CartPanel = React.memo(({ show, handleClose }) => {
@@ -50,6 +51,31 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 
   // Memoize cart calculations to avoid recalculating on every render
   const cartTotals = useMemo(() => {
+    // Use VAT calculations from cartData if available
+    if (cartData && cartData.vat_calculations) {
+      const vatCalcs = cartData.vat_calculations;
+      const totals = vatCalcs.totals || {};
+
+      let totalFees = 0;
+      // Add cart fees (booking fees, service charges, etc.)
+      if (cartData.fees) {
+        cartData.fees.forEach(fee => {
+          const feeAmount = parseFloat(fee.amount) || 0;
+          totalFees += feeAmount;
+        });
+      }
+
+      return {
+        subtotal: totals.subtotal || 0,
+        totalVat: totals.total_vat || 0,
+        totalFees: totalFees,
+        total: (totals.total_gross || 0) + totalFees,
+        effectiveVatRate: totals.effective_vat_rate,
+        hasVatCalcs: true
+      };
+    }
+
+    // Fallback to manual calculation for backward compatibility
     let subtotal = 0;
     let totalFees = 0;
 
@@ -68,8 +94,11 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 
     return {
       subtotal,
+      totalVat: 0,
       totalFees,
-      total: subtotal + totalFees
+      total: subtotal + totalFees,
+      effectiveVatRate: 0,
+      hasVatCalcs: false
     };
   }, [cartItems, cartData]);
 
@@ -446,6 +475,12 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 								<span>Subtotal:</span>
 								<span>{formatPrice(cartTotals.subtotal)}</span>
 							</div>
+							{cartTotals.hasVatCalcs && (
+								<div className="d-flex justify-content-between">
+									<span>{formatVatLabel(cartTotals.effectiveVatRate)}:</span>
+									<span>{formatPrice(cartTotals.totalVat)}</span>
+								</div>
+							)}
 							{cartTotals.totalFees > 0 && (
 								<div className="d-flex justify-content-between">
 									<span>Fees:</span>

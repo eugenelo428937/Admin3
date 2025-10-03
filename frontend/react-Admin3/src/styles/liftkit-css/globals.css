@@ -403,9 +403,7 @@
 		0 8px 10px -6px hsl(0 0% 0% / 0.1);
 	--Paper-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12);
 	/* Make text look sharper */
-	font-family: "Inter Variable", sans-serif !important;
-	font-family: "Poppins", sans-serif !important;
-	font-family: "DM Sans Variable", sans-serif !important;
+	font-family: "Inter", "Poppins", "DM Sans Variable", sans-serif !important;
 	-ms-text-size-adjust: 100%;
 	-webkit-text-size-adjust: 100%;
 

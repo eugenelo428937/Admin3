@@ -461,7 +461,7 @@ class CartViewSet(viewsets.ViewSet):
         
         # Get updated cart and return response
         cart = self.get_cart(request)
-        serializer = CartSerializer(cart)
+        serializer = CartSerializer(cart, context={'request': request})
         return Response(serializer.data)
 
     @action(detail=False, methods=['patch'], url_path='update_item')
@@ -473,7 +473,7 @@ class CartViewSet(viewsets.ViewSet):
         item.quantity = quantity
         item.save()
         cart = self.get_cart(request)
-        serializer = CartSerializer(cart)
+        serializer = CartSerializer(cart, context={'request': request})
         return Response(serializer.data)
 
     @action(detail=False, methods=['delete'], url_path='remove')
@@ -483,12 +483,12 @@ class CartViewSet(viewsets.ViewSet):
         item = get_object_or_404(CartItem, id=item_id)
         cart = item.cart
         item.delete()
-        
+
         # Update cart-level flags after removing item
         self._update_cart_flags(cart)
-        
+
         cart = self.get_cart(request)
-        serializer = CartSerializer(cart)
+        serializer = CartSerializer(cart, context={'request': request})
         return Response(serializer.data)
 
     @action(detail=False, methods=['post'], url_path='clear')
@@ -496,11 +496,12 @@ class CartViewSet(viewsets.ViewSet):
         """POST /cart/clear/ - Remove all items from cart"""
         cart = self.get_cart(request)
         cart.items.all().delete()
-        
+
         # Update cart-level flags after clearing
         self._update_cart_flags(cart)
-        
-        return Response(CartSerializer(cart).data)
+
+        serializer = CartSerializer(cart, context={'request': request})
+        return Response(serializer.data)
 
     @action(detail=False, methods=['post'], url_path='checkout', permission_classes=[IsAuthenticated])
     def checkout(self, request):
@@ -624,28 +625,82 @@ class CartViewSet(viewsets.ViewSet):
         user_agent = request.META.get('HTTP_USER_AGENT', '')
 
         with transaction.atomic():
-            # Create order and items first
-            order = ActedOrder.objects.create(user=user)
+            # Get VAT calculations from cart
+            from vat.service import calculate_vat_for_cart
+            from vat.utils import decimal_to_string
+            from decimal import Decimal
+
+            try:
+                vat_result = calculate_vat_for_cart(user, cart)
+                vat_calcs = vat_result.get('vat_calculations', {})
+                vat_totals = vat_calcs.get('totals', {})
+                vat_items = vat_calcs.get('items', [])
+                region_info = vat_calcs.get('region_info', {})
+
+                # Create VAT item lookup by cart item ID
+                vat_by_item_id = {item['item_id']: item for item in vat_items}
+            except Exception as e:
+                logger.error(f"Failed to calculate VAT for cart {cart.id}: {str(e)}")
+                # Fallback to zero VAT
+                vat_totals = {
+                    'subtotal': Decimal('0.00'),
+                    'total_vat': Decimal('0.00'),
+                    'total_gross': Decimal('0.00'),
+                    'effective_vat_rate': Decimal('0.00')
+                }
+                vat_by_item_id = {}
+                region_info = {'country': None, 'region': None}
+
+            # Create order with VAT totals (convert Decimals to strings for JSON storage)
+            order = ActedOrder.objects.create(
+                user=user,
+                subtotal=vat_totals.get('subtotal', Decimal('0.00')),
+                vat_amount=vat_totals.get('total_vat', Decimal('0.00')),
+                total_amount=vat_totals.get('total_gross', Decimal('0.00')),
+                vat_rate=vat_totals.get('effective_vat_rate', Decimal('0.00')),
+                vat_country=region_info.get('country'),
+                vat_calculation_type='rules_engine_vat_v1',
+                calculations_applied=decimal_to_string({'vat_calculations': vat_calcs})
+            )
             order_items = []
-            
+
             for item in cart.items.all():
+                # Get VAT info for this item
+                vat_info = vat_by_item_id.get(item.id, {})
+                net_amount = vat_info.get('net_amount', item.actual_price or Decimal('0.00'))
+                vat_amount = vat_info.get('vat_amount', Decimal('0.00'))
+                vat_rate = vat_info.get('vat_rate', Decimal('0.00'))
+
+                # Calculate gross amount
+                gross_amount = net_amount + vat_amount
+
                 order_item = ActedOrderItem.objects.create(
                     order=order,
                     product=item.product,
                     quantity=item.quantity,
                     price_type=item.price_type,
                     actual_price=item.actual_price,
+                    net_amount=net_amount,
+                    vat_amount=vat_amount,
+                    gross_amount=gross_amount,
+                    vat_rate=vat_rate,
+                    is_vat_exempt=(vat_rate == Decimal('0.00')),
                     metadata=item.metadata
                 )
                 order_items.append(order_item)
 
-            # Add cart fees as order items
+            # Add cart fees as order items (fees are typically VAT-exempt or have their own VAT treatment)
             for fee in cart.fees.all():
                 fee_order_item = ActedOrderItem.objects.create(
                     order=order,
                     item_type='fee',
                     quantity=1,
                     actual_price=fee.amount,
+                    net_amount=fee.amount,
+                    vat_amount=Decimal('0.00'),
+                    gross_amount=fee.amount,
+                    vat_rate=Decimal('0.00'),
+                    is_vat_exempt=True,
                     metadata={
                         'fee_type': fee.fee_type,
                         'fee_name': fee.name,
@@ -655,12 +710,6 @@ class CartViewSet(viewsets.ViewSet):
                     }
                 )
                 order_items.append(fee_order_item)
-            
-            # Calculate basic totals (no VAT calculation - will be handled by rules engine in Phase 1)
-            subtotal = sum(float(item.actual_price or 0) * item.quantity for item in cart.items.all())
-            order.subtotal = subtotal
-            order.total_amount = subtotal  # Total equals subtotal until new VAT system is implemented
-            order.save()
 
             # Save user preferences to order
             if user_preferences:

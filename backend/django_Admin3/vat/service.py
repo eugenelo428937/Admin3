@@ -136,13 +136,14 @@ def _determine_exemption_reason(region, classification):
     return None
 
 
-def calculate_vat_for_cart(user, cart):
+def calculate_vat_for_cart(user, cart, client_ip=None):
     """
     Calculate VAT for all items in cart.
 
     Args:
         user: Django User object or None
         cart: Django Cart object
+        client_ip: Optional client IP address for anonymous users
 
     Returns:
         dict: VAT result structure matching cart.vat_result schema:
@@ -168,8 +169,8 @@ def calculate_vat_for_cart(user, cart):
     # Generate unique execution ID
     execution_id = f"exec_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
 
-    # Build full context using Phase 3
-    full_context = build_vat_context(user, cart)
+    # Build full context using Phase 3 (with client_ip for anonymous users)
+    full_context = build_vat_context(user, cart, client_ip=client_ip)
 
     # Calculate VAT for each item
     vat_items = []
@@ -192,9 +193,12 @@ def calculate_vat_for_cart(user, cart):
             rules_executed.append(item_result['vat_rule_applied'])
 
     # Aggregate totals
-    total_net = sum(item['net_amount'] for item in vat_items)
+    subtotal = sum(item['net_amount'] for item in vat_items)
     total_vat = sum(item['vat_amount'] for item in vat_items)
-    total_gross = total_net + total_vat
+    total_gross = subtotal + total_vat
+
+    # Calculate effective VAT rate (for frontend display)
+    effective_vat_rate = (total_vat / subtotal).quantize(Decimal('0.0001'), rounding=ROUND_HALF_UP) if subtotal > 0 else Decimal('0.00')
 
     # Build region info
     user_context = full_context['user']
@@ -214,9 +218,10 @@ def calculate_vat_for_cart(user, cart):
         'vat_calculations': {
             'items': vat_items,
             'totals': {
-                'total_net': total_net,
+                'subtotal': subtotal,
                 'total_vat': total_vat,
-                'total_gross': total_gross
+                'total_gross': total_gross,
+                'effective_vat_rate': effective_vat_rate
             },
             'region_info': region_info
         },
