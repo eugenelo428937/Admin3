@@ -85,7 +85,7 @@ const TutorialProductCard = React.memo(
 			// Filter cart items for this subject
 			const tutorialItems = cartItems.filter(item =>
 				item.subject_code === subjectCode &&
-				item.type === "Tutorial"
+				item.product_type === "tutorial"
 			);
 
 			// Count total choices across all tutorial items
@@ -148,7 +148,7 @@ const TutorialProductCard = React.memo(
 			// 🔍 Lookup: Check if cart already has an item for this subject
 			const existingCartItem = cartItems.find(item =>
 				item.subject_code === subjectCode &&
-				item.type === "Tutorial"
+				item.product_type === "tutorial"
 			);
 
 			if (existingCartItem) {
@@ -163,8 +163,6 @@ const TutorialProductCard = React.memo(
 
 			// ✅ Mark choices as added (state transition: isDraft false)
 			markChoicesAsAdded(subjectCode);
-
-			console.log('✅ [TutorialProductCard] Successfully added/updated cart');
 		} catch (error) {
 			console.error('❌ [TutorialProductCard] Error adding to cart:', error);
 			// TODO: Show user error feedback
