@@ -1,0 +1,8 @@
+vat:
+if not logged in, determine the region by IP address.
+on authneticated, cart vat should be recalculated.
+price info modal should include vat
+cart panel does not show vat
+show vat valculation details in CartSummaryPanel.js and CartReviewStep. info icon next to vat.
+acted_order_items and acted_order_payment does not have vat
+2
