@@ -160,6 +160,14 @@ export const TutorialChoiceProvider = ({ children }) => {
   };
 
   /**
+   * Remove all tutorial choices for all subjects
+   * Used when cart is completely cleared
+   */
+  const removeAllChoices = () => {
+    setTutorialChoices({});
+  };
+
+  /**
    * Get choices for a specific subject with backward compatibility
    * Normalizes legacy choices by adding isDraft field if missing
    * @param {string} subjectCode - Subject identifier
@@ -353,7 +361,11 @@ export const TutorialChoiceProvider = ({ children }) => {
   const updateDraftState = (subjectCode, isDraft) => {
     setTutorialChoices(prev => {
       const subjectChoices = prev[subjectCode];
-      if (!subjectChoices) return prev;
+
+      if (!subjectChoices) {
+        console.warn(`⚠️ [TutorialChoiceContext] No choices found for subject: ${subjectCode}`);
+        return prev;
+      }
 
       const updatedChoices = {};
       Object.entries(subjectChoices).forEach(([level, choice]) => {
@@ -426,6 +438,7 @@ export const TutorialChoiceProvider = ({ children }) => {
     addTutorialChoice,
     removeTutorialChoice,
     removeSubjectChoices,
+    removeAllChoices,
     updateChoiceLevel,
 
     // Getters
