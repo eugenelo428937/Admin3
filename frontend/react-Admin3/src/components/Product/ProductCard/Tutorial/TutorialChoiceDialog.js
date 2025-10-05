@@ -49,14 +49,15 @@ const TutorialChoiceDialog = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [expandedEvents, setExpandedEvents] = useState({});
   
-  const { 
-    getSubjectChoices, 
-    addTutorialChoice, 
-    removeTutorialChoice, 
-    isEventSelected, 
-    getEventChoiceLevel, 
+  const {
+    getSubjectChoices,
+    addTutorialChoice,
+    removeTutorialChoice,
+    isEventSelected,
+    getEventChoiceLevel,
     getNextAvailableChoiceLevel,
-    showChoicePanelForSubject 
+    showChoicePanelForSubject,
+    markChoicesAsAdded
   } = useTutorialChoice();
   
   const { addToCart, cartItems } = useCart();
@@ -70,7 +71,7 @@ const TutorialChoiceDialog = ({
 
     const tutorialItems = cartItems.filter(item =>
       item.subject_code === subjectCode &&
-      item.type === "Tutorial"
+      item.product_type === "tutorial"
     );
 
     const levels = [];
@@ -291,6 +292,9 @@ const TutorialChoiceDialog = ({
       actualPrice: actualPrice,
       metadata: tutorialMetadata
     });
+
+    // ✅ Mark choices as added to cart (isDraft: false)
+    markChoicesAsAdded(subjectCode);
 
     onClose();
   };

@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { Offcanvas, Button, ListGroup, Row } from "react-bootstrap";
 import { useCart } from "../../contexts/CartContext";
+import { useTutorialChoice } from "../../contexts/TutorialChoiceContext";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { X, Trash3, CartCheck } from "react-bootstrap-icons";
@@ -10,6 +11,7 @@ import "../../styles/cart_panel.css";
 
 const CartPanel = React.memo(({ show, handleClose }) => {
   const { cartItems, cartData, clearCart, removeFromCart } = useCart();
+  const { removeAllChoices, restoreChoicesToDraft } = useTutorialChoice();
   // Simple price formatter
   const formatPrice = (amount) => {
     return new Intl.NumberFormat('en-GB', {
@@ -32,6 +34,25 @@ const CartPanel = React.memo(({ show, handleClose }) => {
     setTimeout(() => {
       handleClose && handleClose();
     }, 0);
+  };
+
+  // T022: Handle cart item removal with tutorial choice sync
+  const handleRemoveItem = (item) => {
+    // Check if this is a tutorial item
+    if (item.product_type === 'tutorial' && item.subject_code) {
+      // Restore tutorial choices to draft state for this subject
+      restoreChoicesToDraft(item.subject_code);
+    }
+    // Remove from cart
+    removeFromCart(item.product);
+  };
+
+  // T022: Handle clear cart with tutorial choice reset
+  const handleClearCart = () => {
+    // Remove all tutorial choices from localStorage
+    removeAllChoices();
+    // Clear the cart
+    clearCart();
   };
 
   // Handle checkout button click
@@ -431,7 +452,7 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 										<Button
 											variant=""
 											size="sm"
-											onClick={() => removeFromCart(item.product)}
+											onClick={() => handleRemoveItem(item)}
 											title="Remove from cart">
 											<X
 												className="bi d-flex flex-row align-items-center"
@@ -499,10 +520,7 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 					<Button
 						variant="danger"
 						className="d-flex flex-row flex-wrap align-items-center justify-content-center w-auto"
-						onClick={() => {
-							clearCart();
-							// No need to close cart after clearing - user might want to keep shopping
-						}}
+						onClick={handleClearCart}
 						title="Clear cart">
 						<Trash3 className="bi d-flex flex-row align-items-center" />
 						Clear Cart

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useCart } from "../../contexts/CartContext";
+import { useTutorialChoice } from "../../contexts/TutorialChoiceContext";
 import { useNavigate } from "react-router-dom";
 import cartService from "../../services/cartService";
 import { Container, Alert } from "react-bootstrap";
@@ -7,6 +8,7 @@ import CheckoutSteps from "./CheckoutSteps";
 
 const CheckoutPage = () => {
   const { cartItems, clearCart } = useCart();
+  const { removeAllChoices } = useTutorialChoice();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
@@ -31,8 +33,11 @@ const CheckoutPage = () => {
       
       setSuccess(successMessage);
       setCheckoutComplete(true);
+
+      // Clear cart and remove all tutorial choices after successful checkout
+      removeAllChoices();
       await clearCart();
-      
+
       // Redirect to orders page after a delay to show the order
       //setTimeout(() => navigate("/orders"), 3000);
     } catch (err) {

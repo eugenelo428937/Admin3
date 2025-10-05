@@ -52,6 +52,7 @@ const TutorialChoicePanel = () => {
     getTotalChoices,
     getSubjectPrice,
     getTotalPrice,
+    markChoicesAsAdded,
   } = useTutorialChoice();
 
   const { addToCart } = useCart();
@@ -130,8 +131,8 @@ const TutorialChoicePanel = () => {
       metadata: tutorialMetadata
     });
 
-    // Remove from choices after adding to cart
-    removeSubjectChoices(subjectCode);
+    // ✅ Mark choices as added to cart (isDraft: false)
+    markChoicesAsAdded(subjectCode);
   };
 
   const formatDate = (dateString) => {

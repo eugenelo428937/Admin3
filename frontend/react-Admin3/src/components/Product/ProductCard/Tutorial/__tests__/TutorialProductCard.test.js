@@ -710,7 +710,7 @@ describe('TutorialProductCard', () => {
         expect(mockCartState.addToCart).toHaveBeenCalledWith(
           expect.objectContaining({
             subject_code: 'CS2',
-            type: 'Tutorial'
+            product_type: 'tutorial'
           }),
           expect.objectContaining({
             metadata: expect.objectContaining({
@@ -764,7 +764,7 @@ describe('TutorialProductCard', () => {
           id: 999,
           product: 123,
           subject_code: 'CS2',
-          type: 'Tutorial',
+          product_type: 'tutorial',
           quantity: 1,
           metadata: {
             type: 'tutorial',
@@ -822,7 +822,7 @@ describe('TutorialProductCard', () => {
           999, // Existing cart item ID
           expect.objectContaining({
             subject_code: 'CS2',
-            type: 'Tutorial'
+            product_type: 'tutorial'
           }),
           expect.objectContaining({
             metadata: expect.objectContaining({
@@ -836,7 +836,7 @@ describe('TutorialProductCard', () => {
         mockCartState.items = [{
           id: 999,
           subject_code: 'CS2',
-          type: 'Tutorial',
+          product_type: 'tutorial',
           metadata: { totalChoiceCount: 1 }
         }];
 
@@ -870,7 +870,7 @@ describe('TutorialProductCard', () => {
         mockCartState.items = [{
           id: 999,
           subject_code: 'CS2',
-          type: 'Tutorial',
+          product_type: 'tutorial',
           metadata: { totalChoiceCount: 2 }
         }];
 
@@ -900,7 +900,7 @@ describe('TutorialProductCard', () => {
           999,
           expect.objectContaining({
             subject_code: 'CS2',
-            type: 'Tutorial'
+            product_type: 'tutorial'
           }),
           expect.objectContaining({
             metadata: expect.objectContaining({
@@ -971,8 +971,8 @@ describe('TutorialProductCard', () => {
     describe('T023: Multiple subjects in cart', () => {
       it('should allow CS2 and CP1 to have separate cart items simultaneously', async () => {
         mockCartState.items = [
-          { id: 998, subject_code: 'CS2', type: 'Tutorial', metadata: { totalChoiceCount: 1 } },
-          { id: 999, subject_code: 'CP1', type: 'Tutorial', metadata: { totalChoiceCount: 1 } }
+          { id: 998, subject_code: 'CS2', product_type: 'tutorial', metadata: { totalChoiceCount: 1 } },
+          { id: 999, subject_code: 'CP1', product_type: 'tutorial', metadata: { totalChoiceCount: 1 } }
         ];
 
         const cs2Items = mockCartState.items.filter(item => item.subject_code === 'CS2');
@@ -985,7 +985,7 @@ describe('TutorialProductCard', () => {
 
       it('should not interfere when adding choice to CP1 while CS2 exists in cart', async () => {
         mockCartState.items = [
-          { id: 998, subject_code: 'CS2', type: 'Tutorial' }
+          { id: 998, subject_code: 'CS2', product_type: 'tutorial' }
         ];
 
         const mockChoices = {
@@ -1022,7 +1022,7 @@ describe('TutorialProductCard', () => {
       it.skip('should detect when cart item removed externally and restore draft state', async () => {
         // Setup: Cart has CS2 item, choices marked as added
         mockCartState.items = [
-          { id: 999, subject_code: 'CS2', type: 'Tutorial' }
+          { id: 999, subject_code: 'CS2', product_type: 'tutorial' }
         ];
 
         const mockChoices = {

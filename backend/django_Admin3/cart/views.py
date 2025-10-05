@@ -466,12 +466,33 @@ class CartViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['patch'], url_path='update_item')
     def update_item(self, request):
-        """PATCH /cart/update_item/ - Update quantity of an item in cart"""
+        """PATCH /cart/update_item/ - Update cart item (quantity, metadata, price)"""
         item_id = request.data.get('item_id')
-        quantity = int(request.data.get('quantity', 1))
+        quantity = request.data.get('quantity')
+        metadata = request.data.get('metadata')
+        actual_price = request.data.get('actual_price')
+        price_type = request.data.get('price_type')
+
         item = get_object_or_404(CartItem, id=item_id)
-        item.quantity = quantity
+
+        # Update quantity if provided
+        if quantity is not None:
+            item.quantity = int(quantity)
+
+        # Update metadata if provided (important for tutorial choice updates)
+        if metadata is not None:
+            item.metadata = metadata
+
+        # Update actual_price if provided
+        if actual_price is not None:
+            item.actual_price = actual_price
+
+        # Update price_type if provided
+        if price_type is not None:
+            item.price_type = price_type
+
         item.save()
+
         cart = self.get_cart(request)
         serializer = CartSerializer(cart, context={'request': request})
         return Response(serializer.data)
