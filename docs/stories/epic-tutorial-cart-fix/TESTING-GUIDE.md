@@ -214,45 +214,6 @@ localStorage.getItem('tutorialChoices')
 
 ---
 
-### 🧪 **Test 7: Backward Compatibility Migration** (Story 1.1 - T011)
-
-**Goal:** Verify old localStorage data migrates correctly
-
-**Steps:**
-1. Open Browser DevTools Console
-2. Clear cart: `localStorage.removeItem('cart')`
-3. Set legacy choice data (without isDraft):
-```javascript
-localStorage.setItem('tutorialChoices', JSON.stringify({
-  CS2: {
-    '1st': {
-      eventId: 'evt-123',
-      choiceLevel: '1st',
-      variationId: 42
-      // NO isDraft field
-    }
-  }
-}));
-```
-4. Refresh page
-
-**Expected Results:**
-- ✅ Page loads without errors
-- ✅ Console shows migration message
-- ✅ Backup created in localStorage
-- ✅ Choice data now has isDraft: false (default)
-
-**Verify:**
-```javascript
-localStorage.getItem('tutorialChoices')
-// Should show: isDraft: false added to CS2.1st
-
-localStorage.getItem('tutorialChoices_backup')
-// Should contain original data (backup)
-```
-
----
-
 ## Automated Test Verification
 
 ### Run Frontend Tests
@@ -396,8 +357,6 @@ localStorage.getItem('tutorialChoices')
 
 ### Story 1.1: isDraft State Management
 - [ ] New choices created with `isDraft: true`
-- [ ] Legacy data migrates to include `isDraft: false`
-- [ ] Backup created before migration
 - [ ] `markChoicesAsAdded()` sets `isDraft: false`
 - [ ] `restoreChoicesToDraft()` sets `isDraft: true`
 - [ ] State persists across refreshes
@@ -433,7 +392,6 @@ localStorage.getItem('tutorialChoices')
 | T4 | Multiple subjects | ✅ PASS | 2 separate items |
 | T5 | Cart removal | ✅ PASS | Draft restored |
 | T6 | State persistence | ✅ PASS | Survives refresh |
-| T7 | Migration | ✅ PASS | Backup created |
 
 ### Automated Tests
 - Frontend: 9/9 PASS
