@@ -39,7 +39,7 @@ import {
 	buildTutorialProductData,
 	buildTutorialPriceData
 } from "../../../../utils/tutorialMetadataBuilder";
-import TutorialChoiceDialog from "./TutorialChoiceDialog";
+import TutorialSelectionDialog from "./TutorialSelectionDialog";
 import "../../../../styles/product_card.css";
 
 /**
@@ -56,19 +56,33 @@ const TutorialProductCard = React.memo(
 		product,
 		variations: preloadedVariations = null,
 		onAddToCart = null,
+		dialogOpen = null,
+		onDialogClose = null,
 	}) => {
 		const [variations, setVariations] = useState(preloadedVariations || []);
 		const [loading, setLoading] = useState(!preloadedVariations);
 		const [error, setError] = useState(null);
-		const [showChoiceDialog, setShowChoiceDialog] = useState(false);
+		const [localDialogOpen, setLocalDialogOpen] = useState(false);
+
+		// Use controlled state if dialogOpen prop is provided, otherwise use local state
+		const isDialogOpen = dialogOpen !== null ? dialogOpen : localDialogOpen;
+		const handleDialogClose = onDialogClose || (() => setLocalDialogOpen(false));
+		const handleDialogOpen = () => {
+			if (dialogOpen !== null && onDialogClose) {
+				// In controlled mode, parent handles opening via dialogOpen prop
+				// Do nothing here - parent should set dialogOpen=true
+			} else {
+				setLocalDialogOpen(true);
+			}
+		};
 		const [isHovered, setIsHovered] = useState(false);
 		const [selectedPriceType, setSelectedPriceType] = useState(""); // Empty means standard pricing
 		const [speedDialOpen, setSpeedDialOpen] = useState(false);
 
 		const {
 			getSubjectChoices,
-			showChoicePanelForSubject,
-		markChoicesAsAdded,
+				markChoicesAsAdded,
+		removeTutorialChoice,
 	} = useTutorialChoice();
 
 		const { addToCart, updateCartItem, cartItems } = useCart();
@@ -83,10 +97,11 @@ const TutorialProductCard = React.memo(
 			if (!cartItems || cartItems.length === 0) return 0;
 
 			// Filter cart items for this subject
-			const tutorialItems = cartItems.filter(item =>
-				item.subject_code === subjectCode &&
-				item.product_type === "tutorial"
-			);
+			// Subject code can be at top level or in metadata
+			const tutorialItems = cartItems.filter(item => {
+				const itemSubjectCode = item.subject_code || item.metadata?.subjectCode;
+				return itemSubjectCode === subjectCode && item.product_type === "tutorial";
+			});
 
 			// Count total choices across all tutorial items
 			return tutorialItems.reduce((total, item) => {
@@ -100,7 +115,34 @@ const TutorialProductCard = React.memo(
 			}, 0);
 		}, [cartItems, subjectCode]);
 
-		// SpeedDial event handlers - memoized to prevent unnecessary re-renders
+		// Flatten events from variations for TutorialSelectionDialog
+	const flattenedEvents = useMemo(() => {
+		const events = [];
+		variations.forEach(variation => {
+			if (variation.events) {
+				variation.events.forEach(event => {
+					events.push({
+						eventId: event.id,
+						eventTitle: event.title,
+						eventCode: event.code,
+						location: event.location || location,
+						venue: event.venue,
+						startDate: event.start_date,
+						endDate: event.end_date,
+						variation: {
+							variationId: variation.id,
+							variationName: variation.name,
+							prices: variation.prices,
+						},
+					});
+				});
+			}
+		});
+		// Sort by start date
+		return events.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+	}, [variations, location]);
+
+	// SpeedDial event handlers - memoized to prevent unnecessary re-renders
 		const handleSpeedDialOpen = useCallback(() => setSpeedDialOpen(true), []);
 		const handleSpeedDialClose = useCallback(() => setSpeedDialOpen(false), []);
 
@@ -146,10 +188,11 @@ const TutorialProductCard = React.memo(
 
 		try {
 			// 🔍 Lookup: Check if cart already has an item for this subject
-			const existingCartItem = cartItems.find(item =>
-				item.subject_code === subjectCode &&
-				item.product_type === "tutorial"
-			);
+			// Subject code can be at top level or in metadata
+			const existingCartItem = cartItems.find(item => {
+				const itemSubjectCode = item.subject_code || item.metadata?.subjectCode;
+				return itemSubjectCode === subjectCode && item.product_type === "tutorial";
+			});
 
 			if (existingCartItem) {
 				// ⬆️ Merge: Update existing cart item with new choices
@@ -171,15 +214,19 @@ const TutorialProductCard = React.memo(
 
 		const handleSelectTutorial = useCallback(() => {
 			setSpeedDialOpen(false);
-			setShowChoiceDialog(true);
+			handleDialogOpen();
 		}, []);
 
 		const handleViewSelections = useCallback(() => {
 			setSpeedDialOpen(false);
-			showChoicePanelForSubject(subjectCode);
-		}, [subjectCode, showChoicePanelForSubject]);
+			// Scroll to the summary bar at the bottom of the viewport
+			window.scrollTo({
+				top: document.documentElement.scrollHeight,
+				behavior: 'smooth'
+			});
+		}, []);
 
-		// SpeedDial actions configuration - memoized to prevent unnecessary re-renders
+	// SpeedDial actions configuration - memoized to prevent unnecessary re-renders
 		const speedDialActions = useMemo(() => [
 			{
 				key: "addToCart",
@@ -628,15 +675,13 @@ const TutorialProductCard = React.memo(
 				</Card>
 
 				{/* Tutorial Choice Dialog */}
-				<TutorialChoiceDialog
-					open={showChoiceDialog}
-					onClose={() => setShowChoiceDialog(false)}
-					subjectCode={subjectCode}
-					subjectName={subjectName}
-					location={location}
-					variations={variations}
-					productId={productId}
+				<TutorialSelectionDialog
+					open={isDialogOpen}
+					onClose={handleDialogClose}
+					product={{ subjectCode, subjectName, location }}
+					events={flattenedEvents}
 				/>
+
 			</>
 		);
 	}
@@ -651,6 +696,8 @@ TutorialProductCard.propTypes = {
 	product: PropTypes.object.isRequired,
 	variations: PropTypes.array,
 	onAddToCart: PropTypes.func,
+	dialogOpen: PropTypes.bool,
+	onDialogClose: PropTypes.func,
 };
 
 export default TutorialProductCard;

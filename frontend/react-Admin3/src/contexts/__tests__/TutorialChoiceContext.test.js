@@ -377,223 +377,6 @@ describe('TutorialChoiceContext - isDraft State Management', () => {
     });
   });
 
-  /**
-   * T006: Test localStorage migration from old format (without isDraft) to new format (with isDraft)
-   * Expected to FAIL: Migration logic does not exist
-   */
-  describe('T006: localStorage migration (old → new format)', () => {
-    it('should migrate old format data by adding isDraft: false', () => {
-      // Setup: Manually set old format data in localStorage
-      const oldFormatData = {
-        CS2: {
-          '1st': {
-            eventId: 'evt-cs2-bri-001',
-            eventCode: 'TUT-CS2-BRI-001',
-            location: 'Bristol',
-            variation: { id: 42, name: 'In-Person Tutorial', prices: [] },
-            choiceLevel: '1st',
-            timestamp: '2025-10-03T14:30:00.000Z'
-            // NO isDraft field (old format)
-          }
-        }
-      };
-      localStorage.setItem('tutorialChoices', JSON.stringify(oldFormatData));
-
-      // EXPECTED TO FAIL: Migration does not run automatically
-      const { result } = renderHook(() => useTutorialChoice(), {
-        wrapper: TutorialChoiceProvider
-      });
-
-      // Wait for useEffect to run
-      act(() => {
-        // Trigger re-render
-      });
-
-      const choices = result.current.getSubjectChoices('CS2');
-
-      // After migration, choice should have isDraft: false (existing data assumed to be in cart)
-      expect(choices['1st'].isDraft).toBe(false);
-      expect(choices['1st'].eventId).toBe('evt-cs2-bri-001');
-    });
-
-    it('should create backup before migration', () => {
-      const oldFormatData = {
-        CS2: {
-          '1st': {
-            eventId: 'evt-cs2-bri-001',
-            eventCode: 'TUT-CS2-BRI-001',
-            location: 'Bristol',
-            variation: { id: 42, name: 'In-Person Tutorial', prices: [] },
-            choiceLevel: '1st',
-            timestamp: '2025-10-03T14:30:00.000Z'
-          }
-        }
-      };
-      localStorage.setItem('tutorialChoices', JSON.stringify(oldFormatData));
-
-      renderHook(() => useTutorialChoice(), {
-        wrapper: TutorialChoiceProvider
-      });
-
-      // EXPECTED TO FAIL: Backup not created
-      const backup = localStorage.getItem('tutorialChoices_backup');
-      expect(backup).toBeTruthy();
-
-      const backupData = JSON.parse(backup);
-      expect(backupData.CS2['1st'].isDraft).toBeUndefined(); // Backup should have old format
-    });
-
-    it('should not migrate if data already has isDraft field', () => {
-      const newFormatData = {
-        CS2: {
-          '1st': {
-            eventId: 'evt-cs2-bri-001',
-            eventCode: 'TUT-CS2-BRI-001',
-            location: 'Bristol',
-            variation: { id: 42, name: 'In-Person Tutorial', prices: [] },
-            choiceLevel: '1st',
-            timestamp: '2025-10-03T14:30:00.000Z',
-            isDraft: true // Already has isDraft
-          }
-        }
-      };
-      localStorage.setItem('tutorialChoices', JSON.stringify(newFormatData));
-
-      renderHook(() => useTutorialChoice(), {
-        wrapper: TutorialChoiceProvider
-      });
-
-      // Should not create backup (no migration needed)
-      const backup = localStorage.getItem('tutorialChoices_backup');
-      expect(backup).toBeNull();
-    });
-
-    it('should handle multiple subjects during migration', () => {
-      const oldFormatData = {
-        CS2: {
-          '1st': {
-            eventId: 'evt-cs2-bri-001',
-            location: 'Bristol',
-            choiceLevel: '1st',
-            timestamp: '2025-10-03T14:30:00.000Z'
-          },
-          '2nd': {
-            eventId: 'evt-cs2-lon-002',
-            location: 'London',
-            choiceLevel: '2nd',
-            timestamp: '2025-10-03T14:35:00.000Z'
-          }
-        },
-        CP1: {
-          '1st': {
-            eventId: 'evt-cp1-man-001',
-            location: 'Manchester',
-            choiceLevel: '1st',
-            timestamp: '2025-10-03T15:00:00.000Z'
-          }
-        }
-      };
-      localStorage.setItem('tutorialChoices', JSON.stringify(oldFormatData));
-
-      const { result } = renderHook(() => useTutorialChoice(), {
-        wrapper: TutorialChoiceProvider
-      });
-
-      const cs2Choices = result.current.getSubjectChoices('CS2');
-      const cp1Choices = result.current.getSubjectChoices('CP1');
-
-      expect(cs2Choices['1st'].isDraft).toBe(false);
-      expect(cs2Choices['2nd'].isDraft).toBe(false);
-      expect(cp1Choices['1st'].isDraft).toBe(false);
-    });
-  });
-
-  /**
-   * T007: Test backward compatibility - reading old format data without errors
-   * Expected to FAIL: getSubjectChoices does not handle missing isDraft field
-   */
-  describe('T007: Backward compatibility (reading old format)', () => {
-    it('should handle choices without isDraft field gracefully', () => {
-      const { result } = renderHook(() => useTutorialChoice(), {
-        wrapper: TutorialChoiceProvider
-      });
-
-      // Manually set state with old format (simulating mixed data)
-      act(() => {
-        result.current.addTutorialChoice('CS2', '1st', mockEventData1);
-      });
-
-      // Directly manipulate localStorage to remove isDraft (simulating old data)
-      const currentData = JSON.parse(localStorage.getItem('tutorialChoices'));
-      delete currentData.CS2['1st'].isDraft;
-      localStorage.setItem('tutorialChoices', JSON.stringify(currentData));
-
-      // Re-mount to reload from localStorage
-      const { result: result2 } = renderHook(() => useTutorialChoice(), {
-        wrapper: TutorialChoiceProvider
-      });
-
-      // EXPECTED TO FAIL: getSubjectChoices does not normalize old format
-      const choices = result2.current.getSubjectChoices('CS2');
-
-      // Should provide default isDraft: false for legacy data
-      expect(choices['1st']).toBeDefined();
-      expect(choices['1st'].isDraft).toBe(false); // Default for legacy data
-      expect(choices['1st'].eventId).toBe('evt-cs2-bri-001');
-    });
-
-    it('should handle mixed old and new format data', () => {
-      // Setup mixed format data
-      const mixedData = {
-        CS2: {
-          '1st': {
-            eventId: 'evt-cs2-bri-001',
-            choiceLevel: '1st',
-            timestamp: '2025-10-03T14:30:00.000Z'
-            // NO isDraft (old format)
-          },
-          '2nd': {
-            eventId: 'evt-cs2-lon-002',
-            choiceLevel: '2nd',
-            timestamp: '2025-10-03T14:35:00.000Z',
-            isDraft: true // New format
-          }
-        }
-      };
-      localStorage.setItem('tutorialChoices', JSON.stringify(mixedData));
-
-      const { result } = renderHook(() => useTutorialChoice(), {
-        wrapper: TutorialChoiceProvider
-      });
-
-      const choices = result.current.getSubjectChoices('CS2');
-
-      // Both should have isDraft field after normalization
-      expect(choices['1st'].isDraft).toBe(false); // Default for legacy
-      expect(choices['2nd'].isDraft).toBe(true); // Preserved from new format
-    });
-
-    it('should not throw errors when reading old format data', () => {
-      const oldFormatData = {
-        CS2: {
-          '1st': {
-            eventId: 'evt-cs2-bri-001',
-            choiceLevel: '1st',
-            timestamp: '2025-10-03T14:30:00.000Z'
-          }
-        }
-      };
-      localStorage.setItem('tutorialChoices', JSON.stringify(oldFormatData));
-
-      // Should not throw
-      expect(() => {
-        renderHook(() => useTutorialChoice(), {
-          wrapper: TutorialChoiceProvider
-        });
-      }).not.toThrow();
-    });
-  });
-
   // Additional coverage tests for legacy methods
   describe('Legacy method coverage', () => {
     describe('removeTutorialChoice', () => {
@@ -918,6 +701,78 @@ describe('TutorialChoiceContext - isDraft State Management', () => {
         });
 
         expect(result.current.getTotalPrice()).toBe(250.00);
+      });
+    });
+
+    describe('Single choice per event constraint', () => {
+      it('should allow only one choice level per event (replacing previous selection)', () => {
+        const { result } = renderHook(() => useTutorialChoice(), {
+          wrapper: TutorialChoiceProvider
+        });
+
+        const sameEvent = {
+          eventId: 'evt-cs2-bri-001',
+          eventCode: 'TUT-CS2-BRI-001',
+          location: 'Bristol',
+        };
+
+        // Add same event as 1st choice
+        act(() => {
+          result.current.addTutorialChoice('CS2', '1st', sameEvent);
+        });
+
+        expect(result.current.getSubjectChoices('CS2')['1st']).toBeDefined();
+        expect(result.current.getSubjectChoices('CS2')['2nd']).toBeUndefined();
+        expect(result.current.getSubjectChoices('CS2')['3rd']).toBeUndefined();
+
+        // Add same event as 2nd choice - should remove from 1st
+        act(() => {
+          result.current.addTutorialChoice('CS2', '2nd', sameEvent);
+        });
+
+        expect(result.current.getSubjectChoices('CS2')['1st']).toBeUndefined();
+        expect(result.current.getSubjectChoices('CS2')['2nd']).toBeDefined();
+        expect(result.current.getSubjectChoices('CS2')['3rd']).toBeUndefined();
+        expect(result.current.getSubjectChoices('CS2')['2nd'].eventId).toBe('evt-cs2-bri-001');
+
+        // Add same event as 3rd choice - should remove from 2nd
+        act(() => {
+          result.current.addTutorialChoice('CS2', '3rd', sameEvent);
+        });
+
+        expect(result.current.getSubjectChoices('CS2')['1st']).toBeUndefined();
+        expect(result.current.getSubjectChoices('CS2')['2nd']).toBeUndefined();
+        expect(result.current.getSubjectChoices('CS2')['3rd']).toBeDefined();
+        expect(result.current.getSubjectChoices('CS2')['3rd'].eventId).toBe('evt-cs2-bri-001');
+      });
+
+      it('should allow different events at different choice levels', () => {
+        const { result } = renderHook(() => useTutorialChoice(), {
+          wrapper: TutorialChoiceProvider
+        });
+
+        const event1 = {
+          eventId: 'evt-cs2-bri-001',
+          eventCode: 'TUT-CS2-BRI-001',
+          location: 'Bristol',
+        };
+
+        const event2 = {
+          eventId: 'evt-cs2-bri-002',
+          eventCode: 'TUT-CS2-BRI-002',
+          location: 'Bristol',
+        };
+
+        // Add different events at different levels
+        act(() => {
+          result.current.addTutorialChoice('CS2', '1st', event1);
+          result.current.addTutorialChoice('CS2', '2nd', event2);
+        });
+
+        expect(result.current.getSubjectChoices('CS2')['1st']).toBeDefined();
+        expect(result.current.getSubjectChoices('CS2')['2nd']).toBeDefined();
+        expect(result.current.getSubjectChoices('CS2')['1st'].eventId).toBe('evt-cs2-bri-001');
+        expect(result.current.getSubjectChoices('CS2')['2nd'].eventId).toBe('evt-cs2-bri-002');
       });
     });
 

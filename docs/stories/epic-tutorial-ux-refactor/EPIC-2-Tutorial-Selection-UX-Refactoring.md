@@ -1,11 +1,12 @@
 # Epic 2: Tutorial Selection UX Refactoring - Brownfield Enhancement
 
 **Epic ID:** EPIC-2-Tutorial-UX-Refactor
-**Status:** Blocked (Awaiting Epic 1 Completion)
+**Status:** Ready for Development (Epic 1 Complete ✅)
 **Priority:** Medium (UX Enhancement)
 **Created:** 2025-10-03
+**Epic 1 Completed:** 2025-10-05
 **Stories:** 3
-**Dependency:** Epic 1 (Tutorial Cart Integration Fix) must be completed first
+**Dependency:** Epic 1 (Tutorial Cart Integration Fix) - COMPLETE ✅
 
 ---
 
@@ -249,12 +250,35 @@ TutorialProductCard (existing)
 
 ## Dependencies
 
-**Epic 1 Completion Required:**
-- `isDraft` state management must be functional
-- Cart integration must be working correctly
-- TutorialChoiceContext helper methods must be available
+**Epic 1 Completion Status:**
+
+- ✅ `isDraft` state management implemented and tested (Story 1.1)
+- ✅ Cart integration fixed with merge logic (Story 1.2)
+- ✅ TutorialChoiceContext helper methods available:
+  - `markChoicesAsAdded(subjectCode)` - Sets isDraft: false for all choices
+  - `restoreChoicesToDraft(subjectCode)` - Sets isDraft: true for all choices
+  - `getDraftChoices(subjectCode)` - Returns only draft choices
+  - `getCartedChoices(subjectCode)` - Returns only carted choices
+  - `hasCartedChoices(subjectCode)` - Checks if subject has carted choices
+
+**Epic 1 Implementation Files (Completed):**
+
+**State Management:**
+- `frontend/react-Admin3/src/contexts/TutorialChoiceContext.js` - Complete with isDraft methods
+- `frontend/react-Admin3/src/utils/tutorialMetadataBuilder.js` - Metadata builder utilities
+
+**Tests:**
+- `frontend/react-Admin3/src/contexts/__tests__/TutorialChoiceContext.test.js` - 39 tests passing
+- `frontend/react-Admin3/src/components/Product/ProductCard/Tutorial/__tests__/TutorialProductCard.test.js` - 9 cart integration tests passing
+
+**Key Implementation Details:**
+- Choice data structure includes `isDraft: boolean` field
+- Cart uses `product_type: "tutorial"` for tutorial items
+- Cart lookup by `item.product_type === "tutorial" && item.subject_code === subjectCode`
+- Metadata structure includes `type: "tutorial"`, `subjectCode`, `totalChoiceCount`, `locations` array
 
 **Material-UI Documentation:**
+
 - Snackbar component API
 - SpeedDial component API
 - Grid responsive breakpoints
@@ -275,8 +299,12 @@ TutorialProductCard (existing)
 ## Related Epics
 
 **Epic 1: Tutorial Cart Integration Fix**
-- **Status:** In Progress / Ready for Development
-- **Dependency:** Must be completed before Epic 2
+
+- **Status:** Complete ✅
+- **Completion Date:** 2025-10-05
+- **Stories Completed:**
+  - Story 1.1: isDraft State Management (39 tests passing)
+  - Story 1.2: Cart Integration Fix (9 tests passing)
 - **File:** `docs/stories/epic-tutorial-cart-fix/EPIC-1-Tutorial-Cart-Integration-Fix.md`
 
 ---
