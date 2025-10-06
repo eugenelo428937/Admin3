@@ -35,17 +35,21 @@ chmod +x start-servers.sh
 
 ## Port Configuration
 
+Both backend and frontend ports are configured in a single file: `backend/django_Admin3/.env.development`
+
 ### Backend Port
 Add or update in `backend/django_Admin3/.env.development`:
 ```env
-PORT=8889
+BACKEND_PORT=8889
 ```
 
 ### Frontend Port
-Add or update in `frontend/react-Admin3/.env`:
+Add or update in `backend/django_Admin3/.env.development`:
 ```env
-PORT=3001
+FRONTEND_PORT=3001
 ```
+
+**Note:** Both ports are in the same file to keep configuration centralized. Django's `settings/base.py` automatically builds `CORS_ALLOWED_ORIGINS` and `CSRF_TRUSTED_ORIGINS` from these port values.
 
 ## Worktree Support
 
@@ -54,45 +58,71 @@ Each git worktree can have its own port configuration in its `.env` files. The s
 ### Example: Multiple Worktrees
 
 **Main worktree** (`Admin3`):
-- Backend: `PORT=8888`
-- Frontend: `PORT=3000`
+```env
+# backend/django_Admin3/.env.development
+BACKEND_PORT=8888
+FRONTEND_PORT=3000
+```
 
 **Feature worktree** (`Admin3-003-vat-calculation-rules-engine`):
-- Backend: `PORT=8889`
-- Frontend: `PORT=3001`
+```env
+# backend/django_Admin3/.env.development
+BACKEND_PORT=8889
+FRONTEND_PORT=3001
+```
 
 Run `start-servers.ps1` (or `.sh`) in each worktree directory to start servers on their respective ports.
 
-## Virtual Environment Detection
+## Virtual Environment and Node Modules Detection
 
-The scripts automatically detect the Python virtual environment using the same logic as `create-worktree.ps1`:
+The scripts automatically detect both Python virtual environment and Node.js modules using smart fallback logic:
+
+### Python Virtual Environment Detection
 
 1. **Local venv**: First checks for `.venv/` in the current worktree directory
 2. **Main venv**: If not found, checks for `.venv/` in the main `Admin3` worktree
+3. **Error**: Exits with error if neither is found
+
+### Node Modules Detection
+
+1. **Local node_modules**: First checks for `frontend/react-Admin3/node_modules/` in current worktree
+2. **Main node_modules**: If not found, uses main `Admin3` worktree's `node_modules/`
 3. **Error**: Exits with error if neither is found
 
 ### Example Scenarios
 
 **Scenario 1: Main Worktree**
 ```
-C:\Code\Admin3\.venv\     ← Uses this
+C:\Code\Admin3\
+  ├── .venv\                                    ← Python venv
+  └── frontend\react-Admin3\node_modules\       ← Node modules
 ```
 
-**Scenario 2: Worktree with Own Venv**
+**Scenario 2: Worktree with Own Dependencies**
 ```
-C:\Code\Admin3\.venv\
-C:\Code\Admin3-feature\.venv\     ← Uses this (local venv)
+C:\Code\Admin3\
+  ├── .venv\
+  └── frontend\react-Admin3\node_modules\
+
+C:\Code\Admin3-feature\
+  ├── .venv\                                    ← Uses this (local)
+  └── frontend\react-Admin3\node_modules\       ← Uses this (local)
 ```
 
-**Scenario 3: Worktree Sharing Main Venv**
+**Scenario 3: Worktree Sharing Dependencies (Recommended)**
 ```
-C:\Code\Admin3\.venv\              ← Uses this (main venv)
-C:\Code\Admin3-feature\            (no local venv)
+C:\Code\Admin3\
+  ├── .venv\                                    ← Uses this (main)
+  ├── frontend\react-Admin3\node_modules\       ← Uses this (main)
+  └── backend\django_Admin3\.env.development    (BACKEND_PORT=8888, FRONTEND_PORT=3000)
+
+C:\Code\Admin3-feature\
+  └── backend\django_Admin3\.env.development    (BACKEND_PORT=8889, FRONTEND_PORT=3001)
 ```
 
 This allows worktrees to either:
-- Have their own independent virtual environment
-- Share the main worktree's virtual environment (saves disk space)
+- Have their own independent dependencies (for different package versions)
+- Share the main worktree's dependencies (saves disk space and installation time)
 
 ## Requirements
 
@@ -145,6 +175,39 @@ pip install -r backend\django_Admin3\requirements.txt
 # Then run start-servers from your feature worktree
 cd C:\Code\Admin3-feature
 .\start-servers.ps1  # Will automatically use main venv
+```
+
+### Node Modules Not Found (react-scripts error)
+
+The script will show an error like:
+```
+⚠ No node_modules found.
+  Tried: C:\Code\Admin3-feature\frontend\react-Admin3\node_modules
+  Tried: C:\Code\Admin3\frontend\react-Admin3\node_modules
+```
+
+Or you might see:
+```
+'react-scripts' is not recognized as an internal or external command
+```
+
+**Solutions:**
+
+**Option 1: Create local node_modules in worktree**
+```bash
+cd C:\Code\Admin3-feature\frontend\react-Admin3
+npm install
+```
+
+**Option 2: Use main worktree's node_modules** (recommended for saving disk space)
+```bash
+# Ensure main worktree has node_modules
+cd C:\Code\Admin3\frontend\react-Admin3
+npm install
+
+# Then run start-servers from your feature worktree
+cd C:\Code\Admin3-feature
+.\start-servers.ps1  # Will automatically use main node_modules
 ```
 
 ### Terminal Not Opening (Linux)
