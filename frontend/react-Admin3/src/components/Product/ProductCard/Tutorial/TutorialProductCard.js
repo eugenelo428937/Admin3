@@ -39,7 +39,8 @@ import {
 	buildTutorialProductData,
 	buildTutorialPriceData
 } from "../../../../utils/tutorialMetadataBuilder";
-import TutorialChoiceDialog from "./TutorialChoiceDialog";
+import TutorialSelectionDialog from "./TutorialSelectionDialog";
+import TutorialSelectionSummaryBar from "./TutorialSelectionSummaryBar";
 import "../../../../styles/product_card.css";
 
 /**
@@ -68,7 +69,8 @@ const TutorialProductCard = React.memo(
 		const {
 			getSubjectChoices,
 			showChoicePanelForSubject,
-		markChoicesAsAdded,
+			markChoicesAsAdded,
+		removeTutorialChoice,
 	} = useTutorialChoice();
 
 		const { addToCart, updateCartItem, cartItems } = useCart();
@@ -83,10 +85,11 @@ const TutorialProductCard = React.memo(
 			if (!cartItems || cartItems.length === 0) return 0;
 
 			// Filter cart items for this subject
-			const tutorialItems = cartItems.filter(item =>
-				item.subject_code === subjectCode &&
-				item.product_type === "tutorial"
-			);
+			// Subject code can be at top level or in metadata
+			const tutorialItems = cartItems.filter(item => {
+				const itemSubjectCode = item.subject_code || item.metadata?.subjectCode;
+				return itemSubjectCode === subjectCode && item.product_type === "tutorial";
+			});
 
 			// Count total choices across all tutorial items
 			return tutorialItems.reduce((total, item) => {
@@ -100,7 +103,34 @@ const TutorialProductCard = React.memo(
 			}, 0);
 		}, [cartItems, subjectCode]);
 
-		// SpeedDial event handlers - memoized to prevent unnecessary re-renders
+		// Flatten events from variations for TutorialSelectionDialog
+	const flattenedEvents = useMemo(() => {
+		const events = [];
+		variations.forEach(variation => {
+			if (variation.events) {
+				variation.events.forEach(event => {
+					events.push({
+						eventId: event.id,
+						eventTitle: event.title,
+						eventCode: event.code,
+						location: event.location || location,
+						venue: event.venue,
+						startDate: event.start_date,
+						endDate: event.end_date,
+						variation: {
+							variationId: variation.id,
+							variationName: variation.name,
+							prices: variation.prices,
+						},
+					});
+				});
+			}
+		});
+		// Sort by start date
+		return events.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+	}, [variations, location]);
+
+	// SpeedDial event handlers - memoized to prevent unnecessary re-renders
 		const handleSpeedDialOpen = useCallback(() => setSpeedDialOpen(true), []);
 		const handleSpeedDialClose = useCallback(() => setSpeedDialOpen(false), []);
 
@@ -146,10 +176,11 @@ const TutorialProductCard = React.memo(
 
 		try {
 			// 🔍 Lookup: Check if cart already has an item for this subject
-			const existingCartItem = cartItems.find(item =>
-				item.subject_code === subjectCode &&
-				item.product_type === "tutorial"
-			);
+			// Subject code can be at top level or in metadata
+			const existingCartItem = cartItems.find(item => {
+				const itemSubjectCode = item.subject_code || item.metadata?.subjectCode;
+				return itemSubjectCode === subjectCode && item.product_type === "tutorial";
+			});
 
 			if (existingCartItem) {
 				// ⬆️ Merge: Update existing cart item with new choices
@@ -179,7 +210,21 @@ const TutorialProductCard = React.memo(
 			showChoicePanelForSubject(subjectCode);
 		}, [subjectCode, showChoicePanelForSubject]);
 
-		// SpeedDial actions configuration - memoized to prevent unnecessary re-renders
+		// Summary bar handlers
+	const handleSummaryBarEdit = useCallback(() => {
+		setShowChoiceDialog(true);
+	}, []);
+
+	const handleSummaryBarRemove = useCallback(() => {
+		// Remove all draft choices for this subject
+		Object.entries(subjectChoices).forEach(([level, choice]) => {
+			if (choice.isDraft) {
+				removeTutorialChoice(subjectCode, level);
+			}
+		});
+	}, [subjectCode, subjectChoices]);
+
+	// SpeedDial actions configuration - memoized to prevent unnecessary re-renders
 		const speedDialActions = useMemo(() => [
 			{
 				key: "addToCart",
@@ -628,14 +673,19 @@ const TutorialProductCard = React.memo(
 				</Card>
 
 				{/* Tutorial Choice Dialog */}
-				<TutorialChoiceDialog
+				<TutorialSelectionDialog
 					open={showChoiceDialog}
 					onClose={() => setShowChoiceDialog(false)}
+					product={{ subjectCode, subjectName, location }}
+					events={flattenedEvents}
+				/>
+
+				{/* Tutorial Selection Summary Bar */}
+				<TutorialSelectionSummaryBar
 					subjectCode={subjectCode}
-					subjectName={subjectName}
-					location={location}
-					variations={variations}
-					productId={productId}
+					onEdit={handleSummaryBarEdit}
+					onAddToCart={handleAddToCart}
+					onRemove={handleSummaryBarRemove}
 				/>
 			</>
 		);
