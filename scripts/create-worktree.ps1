@@ -173,16 +173,22 @@ if ($StartFromStep -le 3) {
     if (Test-Path $mainEnvPath) {
         Copy-Item $mainEnvPath $envPath
 
-        # Update database name and add port
+        # Update database name and ports
         $envContent = Get-Content $envPath
         $envContent = $envContent -replace 'DB_NAME=.*', "DB_NAME=$DbName" `
                                    -replace 'DATABASE_URL=.*', "DATABASE_URL=postgres://${PostgresUser}:${PostgresPassword}@127.0.0.1:5432/${DbName}"
 
-        # Add or update PORT setting
-        if ($envContent -match '^PORT=') {
-            $envContent = $envContent -replace '^PORT=.*', "PORT=$BackendPort"
+        # Add or update BACKEND_PORT and FRONTEND_PORT settings
+        if ($envContent -match '^BACKEND_PORT=') {
+            $envContent = $envContent -replace '^BACKEND_PORT=.*', "BACKEND_PORT=$BackendPort"
         } else {
-            $envContent += "`nPORT=$BackendPort"
+            $envContent += "`nBACKEND_PORT=$BackendPort"
+        }
+
+        if ($envContent -match '^FRONTEND_PORT=') {
+            $envContent = $envContent -replace '^FRONTEND_PORT=.*', "FRONTEND_PORT=$FrontendPort"
+        } else {
+            $envContent += "`nFRONTEND_PORT=$FrontendPort"
         }
 
         $envContent | Set-Content $envPath

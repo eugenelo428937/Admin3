@@ -224,17 +224,31 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
+# Build CORS_ALLOWED_ORIGINS and CSRF_TRUSTED_ORIGINS dynamically from ports
+BACKEND_PORT = os.environ.get('BACKEND_PORT', '8888')
+FRONTEND_PORT = os.environ.get('FRONTEND_PORT', '3000')
+
+# Build CORS origins dynamically
+CORS_ALLOWED_ORIGINS = [
+    f"http://localhost:{FRONTEND_PORT}",
+    f"https://localhost:{FRONTEND_PORT}",
+    f"http://127.0.0.1:{FRONTEND_PORT}",
+    f"https://127.0.0.1:{FRONTEND_PORT}",
+]
 
 CORS_ALLOW_CREDENTIALS = True
 
+# Build CSRF trusted origins dynamically
 CSRF_TRUSTED_ORIGINS = [
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:8888",
-    "http://127.0.0.1:8888"
+    f"http://localhost:{FRONTEND_PORT}",
+    f"https://localhost:{FRONTEND_PORT}",
+    f"http://127.0.0.1:{FRONTEND_PORT}",
+    f"https://127.0.0.1:{FRONTEND_PORT}",
+    f"http://localhost:{BACKEND_PORT}",
+    f"https://localhost:{BACKEND_PORT}",
+    f"http://127.0.0.1:{BACKEND_PORT}",
+    f"https://127.0.0.1:{BACKEND_PORT}",
 ]
-CRSF_ALLOWED_ORIGINS = os.environ.get('CRSF_ALLOWED_ORIGINS', '').split(',')
 
 # Allow credentials (cookies) to be included in requests
 CORS_ALLOW_METHODS = [
