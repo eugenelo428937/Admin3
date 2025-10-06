@@ -84,6 +84,9 @@ For each item in cart.items:
         update(item.vat, cart.item.actual_price * country_country.vat_percent)
 ```
 
+
+
+
 ### rule calculate_vat_eu_product, calculate_vat_ie, calculate_vat_sa, calculate_vat_row
 
 ```python
