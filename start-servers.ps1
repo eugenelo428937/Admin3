@@ -6,31 +6,30 @@ $backendEnvPath = "backend/django_Admin3/.env.development"
 $backendPort = 8888  # Default port
 if (Test-Path $backendEnvPath) {
     $backendEnvContent = Get-Content $backendEnvPath
-    $portLine = $backendEnvContent | Select-String -Pattern "^PORT=(.*)$"
+    $portLine = $backendEnvContent | Select-String -Pattern "^BACKEND_PORT=(.*)$"
     if ($portLine) {
         $backendPort = $portLine.Matches.Groups[1].Value.Trim()
         Write-Host "Backend port from .env: $backendPort" -ForegroundColor Cyan
     } else {
-        Write-Host "Backend port not found in .env, using default: $backendPort" -ForegroundColor Yellow
+        Write-Host "BACKEND_PORT not found in .env, using default: $backendPort" -ForegroundColor Yellow
     }
 } else {
     Write-Host "Backend .env not found, using default port: $backendPort" -ForegroundColor Yellow
 }
 
-# Read frontend port from .env
-$frontendEnvPath = "frontend/react-Admin3/.env"
+# Read frontend port from backend .env.development (FRONTEND_PORT)
 $frontendPort = 3000  # Default port
-if (Test-Path $frontendEnvPath) {
-    $frontendEnvContent = Get-Content $frontendEnvPath
-    $portLine = $frontendEnvContent | Select-String -Pattern "^PORT=(.*)$"
+if (Test-Path $backendEnvPath) {
+    $backendEnvContent = Get-Content $backendEnvPath
+    $portLine = $backendEnvContent | Select-String -Pattern "^FRONTEND_PORT=(.*)$"
     if ($portLine) {
         $frontendPort = $portLine.Matches.Groups[1].Value.Trim()
         Write-Host "Frontend port from .env: $frontendPort" -ForegroundColor Cyan
     } else {
-        Write-Host "Frontend port not found in .env, using default: $frontendPort" -ForegroundColor Yellow
+        Write-Host "FRONTEND_PORT not found in .env, using default: $frontendPort" -ForegroundColor Yellow
     }
 } else {
-    Write-Host "Frontend .env not found, using default port: $frontendPort" -ForegroundColor Yellow
+    Write-Host "Backend .env not found, using default frontend port: $frontendPort" -ForegroundColor Yellow
 }
 
 # Find Python virtual environment (same logic as create-worktree.ps1)
@@ -58,6 +57,26 @@ if (Test-Path $localVenv) {
     exit 1
 }
 
+# Find node_modules (similar logic for frontend)
+$localNodeModules = Join-Path $currentDir "frontend\react-Admin3\node_modules"
+$mainNodeModules = Join-Path $mainWorktree "frontend\react-Admin3\node_modules"
+
+if (Test-Path $localNodeModules) {
+    $frontendDir = Join-Path $currentDir "frontend\react-Admin3"
+    $nodeModulesType = "local"
+    Write-Host "Using local node_modules" -ForegroundColor Cyan
+} elseif (Test-Path $mainNodeModules) {
+    $frontendDir = Join-Path $mainWorktree "frontend\react-Admin3"
+    $nodeModulesType = "main"
+    Write-Host "Using main worktree node_modules" -ForegroundColor Cyan
+} else {
+    Write-Host "⚠ No node_modules found." -ForegroundColor Red
+    Write-Host "  Tried: $localNodeModules" -ForegroundColor Gray
+    Write-Host "  Tried: $mainNodeModules" -ForegroundColor Gray
+    Write-Host "  Please run 'npm install' in frontend/react-Admin3 directory." -ForegroundColor Yellow
+    exit 1
+}
+
 # Detect OS and launch servers accordingly
 if ($IsWindows -or $env:OS -eq "Windows_NT") {
     # Windows - use PowerShell
@@ -74,7 +93,7 @@ if ($IsWindows -or $env:OS -eq "Windows_NT") {
 
     # Start React server in new PowerShell window
     Write-Host "Starting React on port $frontendPort..." -ForegroundColor Green
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$currentDir\frontend\react-Admin3\'; npm start"
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$frontendDir'; npm start"
 
 } else {
     # Mac/Linux - use bash
@@ -116,7 +135,7 @@ python manage.py runserver $backendPort
         # Start React server in new Terminal tab (macOS)
         Write-Host "Starting React on port $frontendPort..." -ForegroundColor Green
         $reactScript = @"
-cd '$currentDir/frontend/react-Admin3'
+cd '$frontendDir'
 npm start
 "@
         osascript -e "tell application `"Terminal`" to do script `"$reactScript`""
@@ -155,9 +174,9 @@ npm start
             # Start React server
             Write-Host "Starting React on port $frontendPort..." -ForegroundColor Green
             if ($terminal -eq "gnome-terminal") {
-                & $terminal -- bash -c "cd '$currentDir/frontend/react-Admin3'; npm start; exec bash"
+                & $terminal -- bash -c "cd '$frontendDir'; npm start; exec bash"
             } else {
-                & $terminal -e bash -c "cd '$currentDir/frontend/react-Admin3'; npm start; exec bash"
+                & $terminal -e bash -c "cd '$frontendDir'; npm start; exec bash"
             }
         } else {
             Write-Host "No suitable terminal emulator found. Please install gnome-terminal, konsole, or xterm." -ForegroundColor Red
