@@ -38,10 +38,13 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 
   // T022: Handle cart item removal with tutorial choice sync
   const handleRemoveItem = (item) => {
-    // Check if this is a tutorial item
-    if (item.product_type === 'tutorial' && item.subject_code) {
+    // Check if this is a tutorial item and extract subject code
+    // Subject code can be at top level or in metadata
+    const subjectCode = item.subject_code || item.metadata?.subjectCode;
+
+    if (item.product_type === 'tutorial' && subjectCode) {
       // Restore tutorial choices to draft state for this subject
-      restoreChoicesToDraft(item.subject_code);
+      restoreChoicesToDraft(subjectCode);
     }
     // Remove from cart
     removeFromCart(item.product);
