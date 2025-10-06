@@ -13,10 +13,10 @@
 2. Load design documents → ✅ DONE
    - data-model.md: TutorialChoice, TutorialChoices State, CartItem entities
    - contracts/localStorage-contract.json: localStorage schema and operations
-   - research.md: React Context extension, migration patterns
+   - research.md: React Context extension
 3. Generate tasks by category → ✅ DONE
-   - Story 1.1: isDraft State Management (Tasks T001-T017)
-   - Story 1.2: Cart Integration Fix (Tasks T018-T031)
+   - Story 1.1: isDraft State Management (Tasks T001-T013)
+   - Story 1.2: Cart Integration Fix (Tasks T014-T027)
 4. Apply task rules → ✅ DONE
    - Different files = [P] for parallel execution
    - Tests before implementation (TDD RED-GREEN-REFACTOR)
@@ -89,27 +89,11 @@
   - **Dependencies**: None
   - **Acceptance**: Test fails with "hasCartedChoices is not a function"
 
-- [ ] **T006** [P] **TDD RED**: Write failing test for localStorage migration (old → new format)
-  - **File**: `frontend/react-Admin3/src/contexts/__tests__/TutorialChoiceContext.test.js`
-  - **Description**: Test automatic migration adds isDraft: false to legacy data
-  - **Stage**: RED
-  - **Time**: 1 hour
-  - **Dependencies**: None
-  - **Acceptance**: Test fails with "migration not triggered"
-
-- [ ] **T007** [P] **TDD RED**: Write failing test for backward compatibility (reading old format)
-  - **File**: `frontend/react-Admin3/src/contexts/__tests__/TutorialChoiceContext.test.js`
-  - **Description**: Test that getSubjectChoices handles choices without isDraft gracefully
-  - **Stage**: RED
-  - **Time**: 0.5 hours
-  - **Dependencies**: None
-  - **Acceptance**: Test fails with error reading old format data
-
 ### Phase 1.1.2: Core Implementation (TDD GREEN)
 
-**ONLY proceed after ALL tests T001-T007 are failing**
+**ONLY proceed after ALL tests T001-T005 are failing**
 
-- [ ] **T008** **TDD GREEN**: Implement isDraft flag in `addTutorialChoice` method
+- [ ] **T006** **TDD GREEN**: Implement isDraft flag in `addTutorialChoice` method
   - **File**: `frontend/react-Admin3/src/contexts/TutorialChoiceContext.js`
   - **Tests**: `frontend/react-Admin3/src/contexts/__tests__/TutorialChoiceContext.test.js` (T001)
   - **Description**: Add `isDraft: true` when creating new tutorial choices
@@ -118,86 +102,68 @@
   - **Dependencies**: T001 (test must exist and fail first)
   - **Acceptance**: T001 test passes, choice has isDraft: true
 
-- [ ] **T009** **TDD GREEN**: Implement `markChoicesAsAdded` method
+- [ ] **T007** **TDD GREEN**: Implement `markChoicesAsAdded` method
   - **File**: `frontend/react-Admin3/src/contexts/TutorialChoiceContext.js`
   - **Tests**: `frontend/react-Admin3/src/contexts/__tests__/TutorialChoiceContext.test.js` (T002)
   - **Description**: Create method to set isDraft: false for all subject choices
   - **Stage**: GREEN
   - **Time**: 1 hour
-  - **Dependencies**: T002, T008
+  - **Dependencies**: T002, T006
   - **Acceptance**: T002 test passes, all subject choices have isDraft: false
 
-- [ ] **T010** **TDD GREEN**: Implement `getDraftChoices` method
+- [ ] **T008** **TDD GREEN**: Implement `getDraftChoices` method
   - **File**: `frontend/react-Admin3/src/contexts/TutorialChoiceContext.js`
   - **Tests**: `frontend/react-Admin3/src/contexts/__tests__/TutorialChoiceContext.test.js` (T003)
   - **Description**: Filter and return only choices where isDraft === true
   - **Stage**: GREEN
   - **Time**: 0.5 hours
-  - **Dependencies**: T003, T008
+  - **Dependencies**: T003, T006
   - **Acceptance**: T003 test passes, only draft choices returned
 
-- [ ] **T011** **TDD GREEN**: Implement `getCartedChoices` method
+- [ ] **T009** **TDD GREEN**: Implement `getCartedChoices` method
   - **File**: `frontend/react-Admin3/src/contexts/TutorialChoiceContext.js`
   - **Tests**: `frontend/react-Admin3/src/contexts/__tests__/TutorialChoiceContext.test.js` (T004)
   - **Description**: Filter and return only choices where isDraft === false
   - **Stage**: GREEN
   - **Time**: 0.5 hours
-  - **Dependencies**: T004, T008
+  - **Dependencies**: T004, T006
   - **Acceptance**: T004 test passes, only carted choices returned
 
-- [ ] **T012** **TDD GREEN**: Implement `hasCartedChoices` method
+- [ ] **T010** **TDD GREEN**: Implement `hasCartedChoices` method
   - **File**: `frontend/react-Admin3/src/contexts/TutorialChoiceContext.js`
   - **Tests**: `frontend/react-Admin3/src/contexts/__tests__/TutorialChoiceContext.test.js` (T005)
   - **Description**: Check if any choices have isDraft === false
   - **Stage**: GREEN
   - **Time**: 0.5 hours
-  - **Dependencies**: T005, T008
+  - **Dependencies**: T005, T006
   - **Acceptance**: T005 test passes, correctly detects carted choices
 
-- [ ] **T013** **TDD GREEN**: Implement localStorage migration logic in useEffect
+- [ ] **T011** **TDD GREEN**: Export new methods in Context value
   - **File**: `frontend/react-Admin3/src/contexts/TutorialChoiceContext.js`
-  - **Tests**: `frontend/react-Admin3/src/contexts/__tests__/TutorialChoiceContext.test.js` (T006)
-  - **Description**: Detect old format, create backup, add isDraft: false to existing choices
-  - **Stage**: GREEN
-  - **Time**: 2 hours
-  - **Dependencies**: T006, T008
-  - **Acceptance**: T006 test passes, migration adds isDraft to legacy data, backup created
-
-- [ ] **T014** **TDD GREEN**: Implement backward compatibility in `getSubjectChoices`
-  - **File**: `frontend/react-Admin3/src/contexts/TutorialChoiceContext.js`
-  - **Tests**: `frontend/react-Admin3/src/contexts/__tests__/TutorialChoiceContext.test.js` (T007)
-  - **Description**: Normalize legacy choices by adding isDraft: false if missing
-  - **Stage**: GREEN
-  - **Time**: 1 hour
-  - **Dependencies**: T007, T008
-  - **Acceptance**: T007 test passes, old format data reads correctly
-
-- [ ] **T015** **TDD GREEN**: Export new methods in Context value
-  - **File**: `frontend/react-Admin3/src/contexts/TutorialChoiceContext.js`
-  - **Tests**: All T001-T007 tests
+  - **Tests**: All T001-T005 tests
   - **Description**: Add markChoicesAsAdded, getDraftChoices, getCartedChoices, hasCartedChoices to context value export
   - **Stage**: GREEN
   - **Time**: 0.5 hours
-  - **Dependencies**: T009-T012
+  - **Dependencies**: T007-T010
   - **Acceptance**: All new methods accessible via useTutorialChoice hook
 
 ### Phase 1.1.3: Refactor & Polish
 
-- [ ] **T016** **TDD REFACTOR**: Refactor TutorialChoiceContext for code quality
+- [ ] **T012** **TDD REFACTOR**: Refactor TutorialChoiceContext for code quality
   - **File**: `frontend/react-Admin3/src/contexts/TutorialChoiceContext.js`
-  - **Tests**: All T001-T007 tests must stay green
+  - **Tests**: All T001-T005 tests must stay green
   - **Description**: Remove duplication, improve naming, add JSDoc comments, optimize performance
   - **Stage**: REFACTOR
   - **Time**: 1 hour
-  - **Dependencies**: T008-T015
+  - **Dependencies**: T006-T011
   - **Acceptance**: All tests pass, code coverage 80%+, no console warnings
 
-- [ ] **T017** **Coverage Verification**: Run coverage report for Story 1.1
+- [ ] **T013** **Coverage Verification**: Run coverage report for Story 1.1
   - **Command**: `cd frontend/react-Admin3 && npm test -- --coverage --watchAll=false --testPathPattern=TutorialChoiceContext`
   - **Description**: Verify 80%+ test coverage for TutorialChoiceContext
   - **Stage**: VALIDATION
   - **Time**: 0.5 hours
-  - **Dependencies**: T001-T016
+  - **Dependencies**: T001-T012
   - **Acceptance**: Coverage report shows ≥80% for TutorialChoiceContext.js
 
 ---
@@ -208,7 +174,7 @@
 
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
 
-- [ ] **T018** **Investigation**: Document current cart bug root cause
+- [ ] **T014** **Investigation**: Document current cart bug root cause
   - **File**: `docs/stories/epic-tutorial-cart-fix/cart-bug-investigation.md`
   - **Description**: Analyze TutorialProductCard addToCart logic, document why duplicates occur
   - **Stage**: RESEARCH
@@ -216,120 +182,120 @@
   - **Dependencies**: None
   - **Acceptance**: Investigation document created with root cause analysis
 
-- [ ] **T019** [P] **TDD RED**: Write failing test for first choice creates cart item
+- [ ] **T015** [P] **TDD RED**: Write failing test for first choice creates cart item
   - **File**: `frontend/react-Admin3/src/components/Product/ProductCard/Tutorial/__tests__/TutorialProductCard.test.js`
   - **Description**: Test adding first tutorial choice creates 1 cart item
   - **Stage**: RED
   - **Time**: 1 hour
-  - **Dependencies**: T018
+  - **Dependencies**: T014
   - **Acceptance**: Test fails (cart item not created or created incorrectly)
 
-- [ ] **T020** [P] **TDD RED**: Write failing test for second choice updates cart item (no duplicate)
+- [ ] **T016** [P] **TDD RED**: Write failing test for second choice updates cart item (no duplicate)
   - **File**: `frontend/react-Admin3/src/components/Product/ProductCard/Tutorial/__tests__/TutorialProductCard.test.js`
   - **Description**: Test adding second choice for same subject updates existing cart item
   - **Stage**: RED
   - **Time**: 1 hour
-  - **Dependencies**: T018
+  - **Dependencies**: T014
   - **Acceptance**: Test fails (duplicate cart item created instead of update)
 
-- [ ] **T021** [P] **TDD RED**: Write failing test for third choice updates cart item
+- [ ] **T017** [P] **TDD RED**: Write failing test for third choice updates cart item
   - **File**: `frontend/react-Admin3/src/components/Product/ProductCard/Tutorial/__tests__/TutorialProductCard.test.js`
   - **Description**: Test adding third choice continues to update same cart item
   - **Stage**: RED
   - **Time**: 0.5 hours
-  - **Dependencies**: T018
+  - **Dependencies**: T014
   - **Acceptance**: Test fails (cart logic not updated)
 
-- [ ] **T022** [P] **TDD RED**: Write failing test for cart removal restores draft state
+- [ ] **T018** [P] **TDD RED**: Write failing test for cart removal restores draft state
   - **File**: `frontend/react-Admin3/src/components/Product/ProductCard/Tutorial/__tests__/TutorialProductCard.test.js`
   - **Description**: Test removing cart item sets all choices back to isDraft: true
   - **Stage**: RED
   - **Time**: 1 hour
-  - **Dependencies**: T018
+  - **Dependencies**: T014
   - **Acceptance**: Test fails (state not synced on cart removal)
 
-- [ ] **T023** [P] **TDD RED**: Write failing test for multiple subjects in cart
+- [ ] **T019** [P] **TDD RED**: Write failing test for multiple subjects in cart
   - **File**: `frontend/react-Admin3/src/components/Product/ProductCard/Tutorial/__tests__/TutorialProductCard.test.js`
   - **Description**: Test that CS2 and CP1 can have separate cart items simultaneously
   - **Stage**: RED
   - **Time**: 0.5 hours
-  - **Dependencies**: T018
+  - **Dependencies**: T014
   - **Acceptance**: Test fails (multi-subject cart not handled correctly)
 
-- [ ] **T024** [P] **TDD RED**: Write failing test for cart item deleted externally
+- [ ] **T020** [P] **TDD RED**: Write failing test for cart item deleted externally
   - **File**: `frontend/react-Admin3/src/components/Product/ProductCard/Tutorial/__tests__/TutorialProductCard.test.js`
   - **Description**: Test sync when cart item removed externally (e.g., timeout)
   - **Stage**: RED
   - **Time**: 1 hour
-  - **Dependencies**: T018
+  - **Dependencies**: T014
   - **Acceptance**: Test fails (orphaned state not cleaned up)
 
 ### Phase 1.2.2: Cart Integration Implementation (TDD GREEN)
 
-**ONLY proceed after ALL tests T019-T024 are failing**
+**ONLY proceed after ALL tests T015-T020 are failing**
 
-- [ ] **T025** **TDD GREEN**: Implement lookup-then-merge cart integration pattern
+- [ ] **T021** **TDD GREEN**: Implement lookup-then-merge cart integration pattern
   - **File**: `frontend/react-Admin3/src/components/Product/ProductCard/Tutorial/TutorialProductCard.js`
-  - **Tests**: T019-T021
+  - **Tests**: T015-T017
   - **Description**: Find existing cart item by subject, merge or create as needed
   - **Stage**: GREEN
   - **Time**: 3 hours
-  - **Dependencies**: T019-T021, Story 1.1 complete (T001-T017)
-  - **Acceptance**: T019-T021 tests pass, single cart item per subject
+  - **Dependencies**: T015-T017, Story 1.1 complete (T001-T013)
+  - **Acceptance**: T015-T017 tests pass, single cart item per subject
 
-- [ ] **T026** **TDD GREEN**: Implement state transition on add to cart (isDraft: false)
+- [ ] **T022** **TDD GREEN**: Implement state transition on add to cart (isDraft: false)
   - **File**: `frontend/react-Admin3/src/components/Product/ProductCard/Tutorial/TutorialProductCard.js`
-  - **Tests**: T019-T021
+  - **Tests**: T015-T017
   - **Description**: Call markChoicesAsAdded after successful cart add/update
   - **Stage**: GREEN
   - **Time**: 1 hour
-  - **Dependencies**: T025
+  - **Dependencies**: T021
   - **Acceptance**: Draft choices transition to isDraft: false when added to cart
 
-- [ ] **T027** **TDD GREEN**: Implement state transition on cart removal (isDraft: true)
+- [ ] **T023** **TDD GREEN**: Implement state transition on cart removal (isDraft: true)
   - **File**: `frontend/react-Admin3/src/components/Product/ProductCard/Tutorial/TutorialProductCard.js`
-  - **Tests**: T022
+  - **Tests**: T018
   - **Description**: Restore isDraft: true when cart item is removed
   - **Stage**: GREEN
   - **Time**: 1.5 hours
-  - **Dependencies**: T022, T025
-  - **Acceptance**: T022 test passes, removing cart item restores draft state
+  - **Dependencies**: T018, T021
+  - **Acceptance**: T018 test passes, removing cart item restores draft state
 
-- [ ] **T028** **TDD GREEN**: Implement multi-subject cart handling
+- [ ] **T024** **TDD GREEN**: Implement multi-subject cart handling
   - **File**: `frontend/react-Admin3/src/components/Product/ProductCard/Tutorial/TutorialProductCard.js`
-  - **Tests**: T023
+  - **Tests**: T019
   - **Description**: Ensure lookup-then-merge works correctly for multiple subjects
   - **Stage**: GREEN
   - **Time**: 1 hour
-  - **Dependencies**: T023, T025
-  - **Acceptance**: T023 test passes, multiple subjects have separate cart items
+  - **Dependencies**: T019, T021
+  - **Acceptance**: T019 test passes, multiple subjects have separate cart items
 
-- [ ] **T029** **TDD GREEN**: Implement cart sync for externally deleted items
+- [ ] **T025** **TDD GREEN**: Implement cart sync for externally deleted items
   - **File**: `frontend/react-Admin3/src/components/Product/ProductCard/Tutorial/TutorialProductCard.js`
-  - **Tests**: T024
+  - **Tests**: T020
   - **Description**: useEffect to sync TutorialChoiceContext state when cart items disappear
   - **Stage**: GREEN
   - **Time**: 2 hours
-  - **Dependencies**: T024, T025
-  - **Acceptance**: T024 test passes, orphaned choice states cleaned up
+  - **Dependencies**: T020, T021
+  - **Acceptance**: T020 test passes, orphaned choice states cleaned up
 
 ### Phase 1.2.3: Refactor & Polish
 
-- [ ] **T030** **TDD REFACTOR**: Refactor cart integration code for quality
+- [ ] **T026** **TDD REFACTOR**: Refactor cart integration code for quality
   - **File**: `frontend/react-Admin3/src/components/Product/ProductCard/Tutorial/TutorialProductCard.js`
-  - **Tests**: All T019-T024 tests must stay green
+  - **Tests**: All T015-T020 tests must stay green
   - **Description**: Extract cart logic to helper functions, add JSDoc, optimize re-renders
   - **Stage**: REFACTOR
   - **Time**: 2 hours
-  - **Dependencies**: T025-T029
+  - **Dependencies**: T021-T025
   - **Acceptance**: All tests pass, code is clean and documented
 
-- [ ] **T031** **Coverage Verification**: Run coverage report for Story 1.2 (100% requirement)
+- [ ] **T027** **Coverage Verification**: Run coverage report for Story 1.2 (100% requirement)
   - **Command**: `cd frontend/react-Admin3 && npm test -- --coverage --watchAll=false --testPathPattern=TutorialProductCard`
   - **Description**: Verify 100% test coverage for critical cart integration logic
   - **Stage**: VALIDATION
   - **Time**: 0.5 hours
-  - **Dependencies**: T019-T030
+  - **Dependencies**: T015-T026
   - **Acceptance**: Coverage report shows 100% for cart integration methods in TutorialProductCard.js
 
 ---
@@ -338,33 +304,33 @@
 
 ### Regression Testing
 
-- [ ] **T032** **Regression**: Verify no impact to Materials product cart
+- [ ] **T028** **Regression**: Verify no impact to Materials product cart
   - **Tests**: Run Materials product cart tests
   - **Command**: `npm test -- --testPathPattern=MaterialProductCard`
   - **Time**: 0.5 hours
-  - **Dependencies**: T031
+  - **Dependencies**: T027
   - **Acceptance**: All MaterialProductCard tests pass
 
-- [ ] **T033** **Regression**: Verify no impact to Bundles product cart
+- [ ] **T029** **Regression**: Verify no impact to Bundles product cart
   - **Tests**: Run Bundle product cart tests
   - **Command**: `npm test -- --testPathPattern=BundleCard`
   - **Time**: 0.5 hours
-  - **Dependencies**: T031
+  - **Dependencies**: T027
   - **Acceptance**: All BundleCard tests pass
 
-- [ ] **T034** **Regression**: Run full frontend test suite
+- [ ] **T030** **Regression**: Run full frontend test suite
   - **Command**: `cd frontend/react-Admin3 && npm test -- --watchAll=false`
   - **Time**: 1 hour
-  - **Dependencies**: T032, T033
+  - **Dependencies**: T028, T029
   - **Acceptance**: All tests pass, no regressions
 
 ### Manual Validation
 
-- [ ] **T035** **Manual Testing**: Execute quickstart.md scenarios
+- [ ] **T031** **Manual Testing**: Execute quickstart.md scenarios
   - **File**: `specs/spec-2025-10-03-120718/quickstart.md`
-  - **Description**: Manually test all 6 user scenarios end-to-end
+  - **Description**: Manually test all 5 user scenarios end-to-end
   - **Time**: 2 hours
-  - **Dependencies**: T034
+  - **Dependencies**: T030
   - **Acceptance**: All quickstart scenarios pass
 
 ---
@@ -374,46 +340,42 @@
 ```
 Story 1.1: isDraft State Management
 ─────────────────────────────────────
-T001-T007 (Tests - Parallel)
+T001-T005 (Tests - Parallel)
     ↓
-T008 (Add isDraft flag)
+T006 (Add isDraft flag)
     ↓
-T009-T012 (New methods - Parallel after T008)
+T007-T010 (New methods - Sequential after T006)
     ↓
-T013 (Migration - depends on T008)
+T011 (Export methods - depends on T007-T010)
     ↓
-T014 (Backward compat - depends on T008)
+T012 (Refactor - depends on all implementation)
     ↓
-T015 (Export methods - depends on T009-T012)
-    ↓
-T016 (Refactor - depends on all implementation)
-    ↓
-T017 (Coverage - depends on all)
+T013 (Coverage - depends on all)
     ↓
 Story 1.2: Cart Integration Fix
 ─────────────────────────────────────
-T018 (Investigation)
+T014 (Investigation)
     ↓
-T019-T024 (Tests - Parallel, depend on T018)
+T015-T020 (Tests - Parallel, depend on T014)
     ↓
-T025 (Lookup-merge pattern - depends on Story 1.1 + tests)
+T021 (Lookup-merge pattern - depends on Story 1.1 + tests)
     ↓
-T026 (Add state transition - depends on T025)
-T027 (Remove state transition - depends on T025)
-T028 (Multi-subject - depends on T025)
-T029 (Sync external deletion - depends on T025)
+T022 (Add state transition - depends on T021)
+T023 (Remove state transition - depends on T021)
+T024 (Multi-subject - depends on T021)
+T025 (Sync external deletion - depends on T021)
     ↓
-T030 (Refactor - depends on T025-T029)
+T026 (Refactor - depends on T021-T025)
     ↓
-T031 (Coverage - depends on all)
+T027 (Coverage - depends on all)
     ↓
 Final Validation
 ─────────────────────────────────────
-T032, T033 (Regression - Parallel)
+T028, T029 (Regression - Parallel)
     ↓
-T034 (Full test suite)
+T030 (Full test suite)
     ↓
-T035 (Manual testing)
+T031 (Manual testing)
 ```
 
 ---
@@ -422,21 +384,21 @@ T035 (Manual testing)
 
 ### Phase 1.1.1 (RED): All tests can run in parallel
 ```bash
-# Launch T001-T007 together (all write to same test file but different test cases)
+# Launch T001-T005 together (all write to same test file but different test cases)
 npm test -- --testPathPattern=TutorialChoiceContext --watch
-# Write all 7 test cases in one session
+# Write all 5 test cases in one session
 ```
 
 ### Phase 1.1.2 (GREEN): Implementation tasks are sequential
 ```
-T008 must complete before T009-T012
-T009-T012 can theoretically run in parallel (different methods)
+T006 must complete before T007-T010
+T007-T010 can theoretically run in parallel (different methods)
 but recommend sequential for merge safety
 ```
 
 ### Phase 1.2.1 (RED): All tests can run in parallel
 ```bash
-# Launch T019-T024 together (all write to same test file but different test cases)
+# Launch T015-T020 together (all write to same test file but different test cases)
 npm test -- --testPathPattern=TutorialProductCard --watch
 # Write all 6 test cases in one session
 ```
@@ -445,9 +407,9 @@ npm test -- --testPathPattern=TutorialProductCard --watch
 
 ## Validation Checklist
 
-- [x] All contracts have corresponding tests (localStorage contract → T006, T007, T013, T014)
+- [x] All contracts have corresponding tests (localStorage contract covered in context tests)
 - [x] All entities have model tasks (TutorialChoice → implicit in Context)
-- [x] All tests come before implementation (T001-T007 before T008-T017, T019-T024 before T025-T031)
+- [x] All tests come before implementation (T001-T005 before T006-T013, T015-T020 before T021-T027)
 - [x] Parallel tasks truly independent (test writing tasks are parallelizable)
 - [x] Each task specifies exact file path (all tasks have file paths)
 - [x] No task modifies same file as another [P] task (test tasks write different test cases)
@@ -456,22 +418,22 @@ npm test -- --testPathPattern=TutorialProductCard --watch
 
 ## Task Summary
 
-**Total Tasks**: 35 (31 core + 4 validation)
-**Estimated Time**: ~32 hours
-**Story 1.1 Time**: ~10 hours
-**Story 1.2 Time**: ~18 hours
+**Total Tasks**: 31 (27 core + 4 validation)
+**Estimated Time**: ~27 hours
+**Story 1.1 Time**: ~7 hours
+**Story 1.2 Time**: ~16 hours
 **Validation Time**: ~4 hours
 
 **TDD Breakdown**:
-- RED Phase: 13 tasks (T001-T007, T019-T024)
-- GREEN Phase: 14 tasks (T008-T015, T025-T029)
-- REFACTOR Phase: 2 tasks (T016, T030)
-- Validation: 6 tasks (T017, T031-T035)
+- RED Phase: 11 tasks (T001-T005, T015-T020)
+- GREEN Phase: 11 tasks (T006-T011, T021-T025)
+- REFACTOR Phase: 2 tasks (T012, T026)
+- Validation: 7 tasks (T013, T014, T027-T031)
 
 **Parallelization Opportunities**:
-- T001-T007: Write all tests in parallel
-- T019-T024: Write all tests in parallel
-- T032-T033: Run regression tests in parallel
+- T001-T005: Write all tests in parallel
+- T015-T020: Write all tests in parallel
+- T028-T029: Run regression tests in parallel
 
 ---
 
