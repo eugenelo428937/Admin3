@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {
   Dialog,
   DialogTitle,
@@ -10,6 +11,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import TutorialDetailCard from './TutorialDetailCard';
 import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext';
+import { touchIconButtonStyle, responsiveGridSpacing } from './tutorialStyles';
 
 /**
  * TutorialSelectionDialog - Container component for tutorial event selection
@@ -25,7 +27,11 @@ const TutorialSelectionDialog = React.memo(({ open, onClose, product, events }) 
   // Get current draft choices for this subject
   const subjectChoices = getSubjectChoices(subjectCode);
 
-  // Determine which choice level (1st, 2nd, 3rd) is selected for each event
+  /**
+   * Determine which choice level (1st, 2nd, 3rd) is selected for a given event
+   * @param {number|string} eventId - The event ID to check
+   * @returns {string|null} The choice level ('1st', '2nd', '3rd') or null if not selected
+   */
   const getSelectedChoiceLevel = (eventId) => {
     for (const [choiceLevel, choiceData] of Object.entries(subjectChoices)) {
       if (choiceData.isDraft && choiceData.eventId === eventId) {
@@ -35,7 +41,12 @@ const TutorialSelectionDialog = React.memo(({ open, onClose, product, events }) 
     return null;
   };
 
-  // Handle choice selection from TutorialDetailCard
+  /**
+   * Handle choice selection from TutorialDetailCard and save to context
+   * Adds subject metadata and marks as draft (isDraft: true)
+   * @param {string} choiceLevel - The choice level ('1st', '2nd', or '3rd')
+   * @param {Object} eventData - The event data from TutorialDetailCard
+   */
   const handleSelectChoice = (choiceLevel, eventData) => {
     addTutorialChoice(subjectCode, choiceLevel, {
       ...eventData,
@@ -65,7 +76,10 @@ const TutorialSelectionDialog = React.memo(({ open, onClose, product, events }) 
             color="inherit"
             onClick={onClose}
             aria-label="close"
-            sx={{ marginLeft: 2 }}
+            sx={{
+              marginLeft: 2,
+              ...touchIconButtonStyle,
+            }}
           >
             <CloseIcon />
           </IconButton>
@@ -73,7 +87,7 @@ const TutorialSelectionDialog = React.memo(({ open, onClose, product, events }) 
       </DialogTitle>
 
       <DialogContent>
-        <Grid container spacing={3}>
+        <Grid container spacing={responsiveGridSpacing}>
           {events.map((event) => {
             const selectedChoiceLevel = getSelectedChoiceLevel(event.eventId);
 
@@ -106,5 +120,34 @@ const TutorialSelectionDialog = React.memo(({ open, onClose, product, events }) 
 });
 
 TutorialSelectionDialog.displayName = 'TutorialSelectionDialog';
+
+TutorialSelectionDialog.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  product: PropTypes.shape({
+    subjectCode: PropTypes.string.isRequired,
+    subjectName: PropTypes.string.isRequired,
+    location: PropTypes.string.isRequired,
+  }).isRequired,
+  events: PropTypes.arrayOf(
+    PropTypes.shape({
+      eventId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+      eventTitle: PropTypes.string.isRequired,
+      eventCode: PropTypes.string.isRequired,
+      location: PropTypes.string,
+      venue: PropTypes.string,
+      startDate: PropTypes.string.isRequired,
+      endDate: PropTypes.string.isRequired,
+      variation: PropTypes.shape({
+        variationId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        variationName: PropTypes.string,
+        prices: PropTypes.array,
+      }),
+      variationId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      variationName: PropTypes.string,
+      prices: PropTypes.array,
+    })
+  ).isRequired,
+};
 
 export default TutorialSelectionDialog;

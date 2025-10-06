@@ -704,6 +704,78 @@ describe('TutorialChoiceContext - isDraft State Management', () => {
       });
     });
 
+    describe('Single choice per event constraint', () => {
+      it('should allow only one choice level per event (replacing previous selection)', () => {
+        const { result } = renderHook(() => useTutorialChoice(), {
+          wrapper: TutorialChoiceProvider
+        });
+
+        const sameEvent = {
+          eventId: 'evt-cs2-bri-001',
+          eventCode: 'TUT-CS2-BRI-001',
+          location: 'Bristol',
+        };
+
+        // Add same event as 1st choice
+        act(() => {
+          result.current.addTutorialChoice('CS2', '1st', sameEvent);
+        });
+
+        expect(result.current.getSubjectChoices('CS2')['1st']).toBeDefined();
+        expect(result.current.getSubjectChoices('CS2')['2nd']).toBeUndefined();
+        expect(result.current.getSubjectChoices('CS2')['3rd']).toBeUndefined();
+
+        // Add same event as 2nd choice - should remove from 1st
+        act(() => {
+          result.current.addTutorialChoice('CS2', '2nd', sameEvent);
+        });
+
+        expect(result.current.getSubjectChoices('CS2')['1st']).toBeUndefined();
+        expect(result.current.getSubjectChoices('CS2')['2nd']).toBeDefined();
+        expect(result.current.getSubjectChoices('CS2')['3rd']).toBeUndefined();
+        expect(result.current.getSubjectChoices('CS2')['2nd'].eventId).toBe('evt-cs2-bri-001');
+
+        // Add same event as 3rd choice - should remove from 2nd
+        act(() => {
+          result.current.addTutorialChoice('CS2', '3rd', sameEvent);
+        });
+
+        expect(result.current.getSubjectChoices('CS2')['1st']).toBeUndefined();
+        expect(result.current.getSubjectChoices('CS2')['2nd']).toBeUndefined();
+        expect(result.current.getSubjectChoices('CS2')['3rd']).toBeDefined();
+        expect(result.current.getSubjectChoices('CS2')['3rd'].eventId).toBe('evt-cs2-bri-001');
+      });
+
+      it('should allow different events at different choice levels', () => {
+        const { result } = renderHook(() => useTutorialChoice(), {
+          wrapper: TutorialChoiceProvider
+        });
+
+        const event1 = {
+          eventId: 'evt-cs2-bri-001',
+          eventCode: 'TUT-CS2-BRI-001',
+          location: 'Bristol',
+        };
+
+        const event2 = {
+          eventId: 'evt-cs2-bri-002',
+          eventCode: 'TUT-CS2-BRI-002',
+          location: 'Bristol',
+        };
+
+        // Add different events at different levels
+        act(() => {
+          result.current.addTutorialChoice('CS2', '1st', event1);
+          result.current.addTutorialChoice('CS2', '2nd', event2);
+        });
+
+        expect(result.current.getSubjectChoices('CS2')['1st']).toBeDefined();
+        expect(result.current.getSubjectChoices('CS2')['2nd']).toBeDefined();
+        expect(result.current.getSubjectChoices('CS2')['1st'].eventId).toBe('evt-cs2-bri-001');
+        expect(result.current.getSubjectChoices('CS2')['2nd'].eventId).toBe('evt-cs2-bri-002');
+      });
+    });
+
     describe('Error handling', () => {
       it('should handle corrupted localStorage data gracefully', () => {
         localStorage.setItem('tutorialChoices', '{invalid json}');

@@ -38,7 +38,6 @@ import ResetPasswordForm from "./components/User/ResetPasswordForm";
 import AccountActivation from "./components/User/AccountActivation";
 import ResendActivation from "./components/User/ResendActivation";
 import EmailVerification from "./components/User/EmailVerification";
-import TutorialChoicePanel from "./components/Product/ProductCard/Tutorial/TutorialChoicePanel";
 import ProductCardVariations from "./components/sandbox/ProductCardVariations";
 import ProductCardTestPage from "./components/sandbox/ProductCardTestPage";
 import StyleGuide from "./components/StyleGuide";
@@ -266,9 +265,6 @@ function App() {
 														/>
 													</Routes>
 												</Container>
-
-												{/* Tutorial Choice Panel */}
-												<TutorialChoicePanel />
 											</div>
 										</TutorialChoiceProvider>
 									</ProductProvider>

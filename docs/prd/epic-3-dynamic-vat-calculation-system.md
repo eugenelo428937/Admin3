@@ -12,571 +12,575 @@
 
 ### **Core Design Principles**
 
-1. **Per-Item Rule Evaluation**: Rules execute per cart item (not cart-level array operations) for simplicity, testability, and auditability
-2. **Decimal Precision**: All monetary calculations use Python `Decimal` with explicit quantization (ROUND_HALF_UP)
-3. **Jurisdictional Rounding**: Per-line VAT rounding with configurable strategy
-4. **Audit Trail**: Complete execution history with rule IDs, versions, inputs, outputs, timestamps
-5. **Function Registry**: Whitelisted server-side functions (no arbitrary code execution in rules)
-6. **Versioned VAT Rates**: Database-stored rates with effective dates (not hardcoded in rules)
+1. **Rules Engine First**: ALL VAT logic in Rules Engine (zero Python calculation code)
+2. **Database-Driven Rates**: VAT rates from `utils_countrys.vat_percent` (no hardcoded values)
+3. **Composite Rule Pattern**: Region-based rule cascading (general → specific)
+4. **Cart Context Reuse**: Use existing `cart.items[].product_type` and `metadata` (no separate classifier)
+5. **Decimal Precision**: All monetary calculations use Python `Decimal` with ROUND_HALF_UP
+6. **Audit Trail**: Complete execution history with rule IDs, versions, timestamps
 
 ### **Data Flow Architecture**
 
 ```
-Checkout Request
+Entry Point (add_to_cart / checkout_start / checkout_payment)
     ↓
-Build VAT Context (user, cart, settings)
+Rules Engine: execute_rule("calculate_vat")
     ↓
-For each cart item:
+Determine Region: map country → utils_regions via utils_country_region
     ↓
-    Create item_context = {user, cart, item, settings}
+Execute Region-Specific Rule:
+    calculate_vat_uk / calculate_vat_eu / calculate_vat_sa / calculate_vat_ie / calculate_vat_row
     ↓
-    Execute rules_engine.execute("calculate_vat_per_item", item_context)
+    For each cart.items[]:
+        Execute Product-Specific Rules (priority-ordered):
+            - calculate_vat_{region}_digital_product
+            - calculate_vat_{region}_printed_product
+            - calculate_vat_{region}_flash_card
+            - calculate_vat_{region}_pbor
     ↓
-    Apply rule actions: update item.vat_amount, item.vat_rate, item.vat_rule_applied
+Aggregate Totals: sum item VAT amounts
     ↓
-    Store execution audit: rule_id, version, input_context, output, timestamp
+Store Results: cart.vat_result JSONB + VATAudit record
     ↓
-End for each item
-    ↓
-Apply discount allocation (if applicable)
-    ↓
-Aggregate totals: total_net, total_vat, total_gross
-    ↓
-Persist vat_result JSONB to cart + full audit trail
-    ↓
-Return structured vat_calculations response
+Return: vat_calculations response
 ```
 
 ### **Module Responsibilities**
 
 | **Module** | **Responsibility** | **Location** |
 |------------|-------------------|--------------|
-| `utils_country.vat_rates` | VAT rate registry (Decimal-based) with region mapping | `backend/django_Admin3/country/vat_rates.py` |
-| `vat.context_builder` | Build VAT execution context from user/cart data | `backend/django_Admin3/vat/context_builder.py` |
-| `vat.service` | Per-item VAT calculation orchestration | `backend/django_Admin3/vat/service.py` |
-| `rules_engine.custom_functions` | FunctionRegistry with whitelisted VAT functions | `backend/django_Admin3/rules_engine/custom_functions.py` |
-| `vat.models` | VAT audit trail models | `backend/django_Admin3/vat/models.py` |
+| `utils_regions` | Region master data (UK, IE, EU, SA, ROW) | `backend/django_Admin3/utils/models.py` |
+| `utils_countrys` | **VAT-specific country data** (copy of country_country) | `backend/django_Admin3/utils/models.py` |
+| `utils_country_region` | Country-to-region mapping (uses utils_countrys) | `backend/django_Admin3/utils/models.py` |
+| `utils_countrys.vat_percent` | VAT rate storage per country | `backend/django_Admin3/utils/models.py` |
+| `vat.models.VATAudit` | VAT audit trail | `backend/django_Admin3/vat/models.py` |
+| `cart.models.Cart.vat_result` | VAT result storage (JSONB) | `backend/django_Admin3/cart/models.py` |
+| `rules_engine` | All VAT calculation logic | Rules Engine composite rules |
+
+**Note:** `country_country` remains unchanged for user-related functionality.
 
 ---
 
-## Story 3.1: VAT Rules Engine Foundation and Product Classification
+## Story 3.1: VAT Region & Rate Database Foundation
 
 As a system administrator,
-I want to configure VAT rules based on product types and customer regions,
-so that VAT calculations are automatically applied according to business rules without code changes.
+I want VAT regions and country mappings in the database,
+So that VAT rates are data-driven and configurable without code changes.
 
 **Acceptance Criteria**:
-1. VAT calculation rules execute at `checkout_start` and `checkout_payment` entry points
-2. Per-item rule evaluation: each cart item processed individually through `calculate_vat_per_item` rule
-3. Country determination uses `acted_user_profile_address.country` where `country = acted_user_profile.send_study_material_to`
-4. VAT calculation considers: country, products ordered, and various discounts
-5. Product classification system identifies digital vs physical products
-6. Performance impact under 50ms for VAT calculation per checkout step
-7. All monetary values use `Decimal` with ROUND_HALF_UP quantization
-8. Full audit trail persisted to `vat_audit` table with rule_id, version, context, output, timestamp
+1. `utils_regions` model created with regions: UK, IE, EU, SA, ROW
+2. `utils_countrys` model created as VAT-specific copy of country_country
+3. `utils_country_region` model maps `utils_countrys` to `utils_regions`
+4. `utils_countrys.vat_percent` field stores VAT rate per country
+5. Migration populates initial data:
+   - UK (GB): 20%
+   - IE: 23%
+   - EU countries: 0% (B2B reverse charge)
+   - SA (ZA): 15%
+   - ROW: 0%
+6. Admin interface for managing regions and country mappings
+7. Database queries validated for performance (< 10ms lookups)
+8. `country_country` model remains unchanged (user-related functionality only)
 
-**Implementation Verification**:
-- IV1: All legacy VAT calculation code removed from backend (`cart/services.py:473-485`)
-- IV2: All legacy VAT calculation code removed from frontend
-- IV3: `checkout_start` and `checkout_payment` entry points properly configured
-- IV4: `calculate_vat_per_item` rule executes correctly with per-item context
-- IV5: VAT rates loaded from `utils_country.vat_rates` (not hardcoded in rules)
-- IV6: `cart.vat_result` JSONB field stores complete calculation results
-- IV7: `vat_audit` table captures full execution history
+**Implementation Details:**
 
-**Implementation Details**:
+### Database Schema
 
-### **Entry Points & Rule Structure**
-- **Entry Points**: `checkout_start`, `checkout_payment`
-- **Master Rule**: `calculate_vat` (orchestrates per-item calculation)
-- **Per-Item Rule**: `calculate_vat_per_item` (evaluates single cart item)
-- **Actions**: `update` actions modify `item.vat_amount`, `item.vat_rate`, `item.vat_rule_applied`
+```python
+# backend/django_Admin3/utils/models.py
 
-### **Context Structure (Per-Item)**
+class UtilsRegion(models.Model):
+    """VAT regions master data."""
+    code = models.CharField(max_length=10, unique=True, primary_key=True)  # UK, IE, EU, SA, ROW
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'utils_regions'
+
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+
+
+class UtilsCountrys(models.Model):
+    """VAT-specific country data (copy of country_country structure)."""
+    code = models.CharField(max_length=2, unique=True, primary_key=True)
+    name = models.CharField(max_length=100)
+    vat_percent = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="VAT percentage for this country (e.g., 20.00 for 20%)"
+    )
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'utils_countrys'
+        verbose_name = 'VAT Country'
+        verbose_name_plural = 'VAT Countries'
+
+    def __str__(self):
+        return f"{self.code} - {self.name} ({self.vat_percent}%)"
+
+
+class UtilsCountryRegion(models.Model):
+    """Maps VAT countries to VAT regions."""
+    country = models.ForeignKey('UtilsCountrys', on_delete=models.CASCADE)  # References utils_countrys
+    region = models.ForeignKey(UtilsRegion, on_delete=models.CASCADE)
+    effective_from = models.DateField()
+    effective_to = models.DateField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'utils_country_region'
+        unique_together = [['country', 'effective_from']]
+        indexes = [
+            models.Index(fields=['country', 'effective_from']),
+            models.Index(fields=['region']),
+        ]
+
+    def __str__(self):
+        return f"{self.country.code} → {self.region.code}"
+
+
+# NOTE: country_country model remains UNCHANGED for user-related functionality
+```
+
+### Data Migration
+
+```python
+# backend/django_Admin3/utils/migrations/0XXX_populate_vat_data.py
+
+def populate_vat_data(apps, schema_editor):
+    UtilsRegion = apps.get_model('utils', 'UtilsRegion')
+    UtilsCountrys = apps.get_model('utils', 'UtilsCountrys')
+    UtilsCountryRegion = apps.get_model('utils', 'UtilsCountryRegion')
+    CountryCountry = apps.get_model('country', 'Country')  # Source for copying
+
+    # 1. Create regions
+    regions = [
+        {'code': 'UK', 'name': 'United Kingdom'},
+        {'code': 'IE', 'name': 'Ireland'},
+        {'code': 'EU', 'name': 'European Union'},
+        {'code': 'SA', 'name': 'South Africa'},
+        {'code': 'ROW', 'name': 'Rest of World'},
+    ]
+    for region_data in regions:
+        UtilsRegion.objects.get_or_create(**region_data)
+
+    # 2. Copy countries from country_country to utils_countrys
+    for country in CountryCountry.objects.all():
+        UtilsCountrys.objects.get_or_create(
+            code=country.code,
+            defaults={
+                'name': country.name,
+                'vat_percent': Decimal('0.00'),  # Will be set below
+                'active': country.active if hasattr(country, 'active') else True
+            }
+        )
+
+    # 3. Set VAT percentages and create region mappings
+    uk = UtilsRegion.objects.get(code='UK')
+    ie = UtilsRegion.objects.get(code='IE')
+    eu = UtilsRegion.objects.get(code='EU')
+    sa = UtilsRegion.objects.get(code='SA')
+    row = UtilsRegion.objects.get(code='ROW')
+
+    # UK countries
+    for country_code in ['GB', 'UK']:
+        country = UtilsCountrys.objects.get(code=country_code)
+        country.vat_percent = Decimal('20.00')
+        country.save()
+        UtilsCountryRegion.objects.get_or_create(
+            country=country,
+            region=uk,
+            effective_from=date(2020, 1, 1)
+        )
+
+    # Ireland
+    country = UtilsCountrys.objects.get(code='IE')
+    country.vat_percent = Decimal('23.00')
+    country.save()
+    UtilsCountryRegion.objects.get_or_create(
+        country=country, region=ie, effective_from=date(2020, 1, 1)
+    )
+
+    # EU countries (B2B reverse charge = 0%)
+    eu_codes = ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR',
+                'DE', 'GR', 'HU', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL',
+                'PT', 'RO', 'SK', 'SI', 'ES', 'SE']
+    for country_code in eu_codes:
+        country = UtilsCountrys.objects.get(code=country_code)
+        country.vat_percent = Decimal('0.00')  # B2B reverse charge
+        country.save()
+        UtilsCountryRegion.objects.get_or_create(
+            country=country, region=eu, effective_from=date(2020, 1, 1)
+        )
+
+    # South Africa
+    country = UtilsCountrys.objects.get(code='ZA')
+    country.vat_percent = Decimal('15.00')
+    country.save()
+    UtilsCountryRegion.objects.get_or_create(
+        country=country, region=sa, effective_from=date(2020, 1, 1)
+    )
+
+    # All other countries default to ROW (0%)
+    for country in UtilsCountrys.objects.exclude(
+        code__in=['GB', 'UK', 'IE', 'ZA'] + eu_codes
+    ):
+        UtilsCountryRegion.objects.get_or_create(
+            country=country,
+            region=row,
+            effective_from=date(2020, 1, 1)
+        )
+```
+
+### Helper Functions
+
+```python
+# backend/django_Admin3/vat/utils.py
+
+from decimal import Decimal
+from django.utils import timezone
+from utils.models import UtilsCountryRegion, UtilsCountrys
+
+def get_country_region(country_code: str, effective_date=None) -> str:
+    """Get VAT region for country code using utils_countrys."""
+    if effective_date is None:
+        effective_date = timezone.now().date()
+
+    try:
+        country = UtilsCountrys.objects.get(code=country_code.upper())
+        mapping = UtilsCountryRegion.objects.filter(
+            country=country,
+            effective_from__lte=effective_date
+        ).filter(
+            models.Q(effective_to__isnull=True) |
+            models.Q(effective_to__gte=effective_date)
+        ).first()
+
+        return mapping.region.code if mapping else 'ROW'
+    except UtilsCountrys.DoesNotExist:
+        return 'ROW'
+
+def get_country_vat_rate(country_code: str) -> Decimal:
+    """Get VAT rate for country using utils_countrys."""
+    try:
+        country = UtilsCountrys.objects.get(code=country_code.upper())
+        return country.vat_percent / Decimal('100')  # Convert percentage to decimal
+    except UtilsCountrys.DoesNotExist:
+        return Decimal('0.00')
+```
+
+### Testing Requirements
+
+```python
+# test_vat_regions.py
+def test_utils_regions_populated():
+    assert UtilsRegion.objects.count() == 5
+    assert UtilsRegion.objects.filter(code='UK').exists()
+
+def test_utils_countrys_populated():
+    # Verify data copied from country_country
+    assert UtilsCountrys.objects.count() > 0
+    assert UtilsCountrys.objects.filter(code='GB').exists()
+
+def test_country_region_mapping():
+    assert get_country_region('GB') == 'UK'
+    assert get_country_region('DE') == 'EU'
+    assert get_country_region('ZA') == 'SA'
+    assert get_country_region('US') == 'ROW'
+
+def test_country_vat_rates():
+    assert get_country_vat_rate('GB') == Decimal('0.20')
+    assert get_country_vat_rate('IE') == Decimal('0.23')
+    assert get_country_vat_rate('ZA') == Decimal('0.15')
+
+def test_country_country_unchanged():
+    # Verify country_country model has no vat_percent field
+    from country.models import Country
+    assert not hasattr(Country, 'vat_percent')
+```
+
+---
+
+## Story 3.2: Composite VAT Rules Creation
+
+As a system administrator,
+I want VAT calculation rules in the Rules Engine following composite pattern,
+So that VAT logic is configurable and region/product-specific rules execute correctly.
+
+**Acceptance Criteria**:
+1. Master rule `calculate_vat` executes at entry points: `add_to_cart`, `checkout_start`, `checkout_payment`
+2. Master rule routes to region-specific rules based on `utils_country_region` lookup
+3. Region rules iterate cart items and execute product-specific child rules
+4. Product-specific rules use `cart.items[].product_type` and `metadata` (no separate classifier)
+5. Rules update `item.vat` with value from `utils_countrys.vat_percent * item.actual_price`
+6. All rules execute via Rules Engine (zero Python calculation code)
+7. Rule execution creates VATAudit records
+
+**Implementation Details:**
+
+### Rule Structure
+
+```
+calculate_vat (Master - Priority 100)
+├── calculate_vat_uk (Priority 90)
+│   ├── calculate_vat_uk_digital_product (Priority 95)
+│   ├── calculate_vat_uk_printed_product (Priority 85)
+│   ├── calculate_vat_uk_flash_card (Priority 80)
+│   └── calculate_vat_uk_pbor (Priority 80)
+├── calculate_vat_eu (Priority 90)
+│   └── calculate_vat_eu_product (Priority 85)
+├── calculate_vat_sa (Priority 90)
+│   └── calculate_vat_sa_product (Priority 85)
+├── calculate_vat_ie (Priority 90)
+│   └── calculate_vat_ie_product (Priority 85)
+└── calculate_vat_row (Priority 90)
+    └── calculate_vat_row_product (Priority 85)
+```
+
+### Master Rule: calculate_vat
+
 ```json
 {
-  "user_address": {
-    "country": "GB",
-    "region": "UK"
-  },
-  "item": {
-    "id": "item_123",
-    "product_code": "CM001",
-    "net_amount": "50.00",
-    "product_classification": {
-      "is_digital": true,
-      "is_ebook": true,
-      "is_live_tutorial": false
+  "rule_id": "calculate_vat",
+  "name": "Master VAT Calculation",
+  "entry_point": ["add_to_cart", "checkout_start", "checkout_payment"],
+  "priority": 100,
+  "active": true,
+  "condition": {"==": [1, 1]},
+  "actions": [
+    {
+      "type": "lookup",
+      "target": "context.region",
+      "source": "utils_country_region",
+      "match": {"country": {"var": "user.country"}},
+      "select": "region.code"
+    },
+    {
+      "type": "call_rule",
+      "rule_id": {
+        "if": [
+          {"==": [{"var": "context.region"}, "UK"]}, "calculate_vat_uk",
+          {"==": [{"var": "context.region"}, "EU"]}, "calculate_vat_eu",
+          {"==": [{"var": "context.region"}, "SA"]}, "calculate_vat_sa",
+          {"==": [{"var": "context.region"}, "IE"]}, "calculate_vat_ie",
+          "calculate_vat_row"
+        ]
+      }
+    },
+    {
+      "type": "update",
+      "target": "cart.total_vat",
+      "operation": "sum",
+      "source": "cart.items[].vat"
     }
-  },
-  "settings": {
-    "effective_date": "2025-09-30"
-  }
+  ]
 }
 ```
 
-### **Rule JSON Structure Example**
+### Region Rule: calculate_vat_uk
+
 ```json
 {
-  "rule_id": "vat_uk_ebook_zero",
-  "name": "UK eBook Zero VAT (Post-2020)",
-  "entry_point": "calculate_vat_per_item",
-  "priority": 10,
+  "rule_id": "calculate_vat_uk",
+  "name": "UK VAT Calculation",
+  "priority": 90,
   "active": true,
-  "version": 1,
+  "condition": {"==": [{"var": "context.region"}, "UK"]},
+  "actions": [
+    {
+      "type": "foreach",
+      "collection": "cart.items",
+      "actions": [
+        {"type": "call_rule", "rule_id": "calculate_vat_uk_digital_product"},
+        {"type": "call_rule", "rule_id": "calculate_vat_uk_printed_product"},
+        {"type": "call_rule", "rule_id": "calculate_vat_uk_flash_card"},
+        {"type": "call_rule", "rule_id": "calculate_vat_uk_pbor"}
+      ]
+    }
+  ]
+}
+```
+
+### Product Rule: calculate_vat_uk_digital_product
+
+```json
+{
+  "rule_id": "calculate_vat_uk_digital_product",
+  "name": "UK Digital Product - Zero VAT",
+  "priority": 95,
+  "active": true,
   "condition": {
     "and": [
-      {"==": [{"var": "user_address.region"}, "UK"]},
-      {"==": [{"var": "item.product_classification.is_ebook"}, true]},
-      {">=": [{"var": "settings.effective_date"}, "2020-05-01"]}
+      {"==": [{"var": "item.product_type"}, "digital"]},
+      {"or": [
+        {"==": [{"var": "item.metadata.is_ebook"}, true]},
+        {"==": [{"var": "item.metadata.is_online_classroom"}, true]}
+      ]}
     ]
   },
   "actions": [
     {
       "type": "update",
-      "target": "item.vat_amount",
+      "target": "item.vat",
       "operation": "set",
-      "value": {"function": "calculate_vat_amount", "args": ["item.net_amount", 0.00]}
-    },
-    {
-      "type": "update",
-      "target": "item.vat_rate",
-      "operation": "set",
-      "value": 0.00
+      "value": 0
     },
     {
       "type": "update",
       "target": "item.vat_rule_applied",
       "operation": "set",
-      "value": "vat_uk_ebook_zero:v1"
+      "value": "calculate_vat_uk_digital_product:v1"
     }
   ],
   "stop_processing": true
 }
 ```
 
-### **VAT Rate Registry (utils_country.vat_rates)**
-```python
-# backend/django_Admin3/country/vat_rates.py
-from decimal import Decimal
+### Product Rule: calculate_vat_uk_printed_product
 
-VAT_RATES = {
-    "UK": Decimal("0.20"),
-    "IE": Decimal("0.23"),
-    "SA": Decimal("0.15"),
-    "ROW": Decimal("0.00"),
-    "CH": Decimal("0.00"),
-    "GG": Decimal("0.00"),
-}
-
-REGION_MAP = {
-    'UK': {'GB', 'UK'},
-    'IE': {'IE'},
-    'EC': {'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE',
-           'GR', 'HU', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT',
-           'RO', 'SK', 'SI', 'ES', 'SE'},
-    'SA': {'ZA'},
-    'CH': {'CH'},
-    'GG': {'GG'}
-}
-
-def map_country_to_region(country_code: str) -> str:
-    """Map country code to VAT region."""
-    for region, codes in REGION_MAP.items():
-        if country_code.upper() in codes:
-            return region
-    return 'ROW'
-
-def get_vat_rate(region: str, classification: dict) -> Decimal:
-    """
-    Get VAT rate based on region and product classification.
-
-    Rules:
-    - UK eBooks: 0% (post-2020)
-    - ROW digital: 0%
-    - SA specific products: 15%
-    - Standard: region rate
-    """
-    if region == "UK" and classification.get("is_ebook", False):
-        return Decimal("0.00")
-    if region == "ROW" and classification.get("is_digital", False):
-        return Decimal("0.00")
-    if region == "SA":
-        return Decimal("0.15")
-    return VAT_RATES.get(region, Decimal("0.00"))
-```
-
-### **Function Registry Integration**
-```python
-# backend/django_Admin3/rules_engine/custom_functions.py
-from country.vat_rates import get_vat_rate, map_country_to_region
-from decimal import Decimal, ROUND_HALF_UP
-
-def calculate_vat_amount(net_amount, vat_rate):
-    """Calculate VAT amount with proper rounding."""
-    amount = Decimal(str(net_amount)) * Decimal(str(vat_rate))
-    return amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-
-FUNCTION_REGISTRY = {
-    "get_vat_rate": get_vat_rate,
-    "map_country_to_region": map_country_to_region,
-    "calculate_vat_amount": calculate_vat_amount,
-}
-```
-
-### **Database Schema**
-
-```sql
--- VAT audit trail
-CREATE TABLE vat_audit (
-    id SERIAL PRIMARY KEY,
-    execution_id VARCHAR(100) NOT NULL,
-    cart_id INTEGER REFERENCES cart(id),
-    order_id INTEGER REFERENCES orders(id),
-    rule_id VARCHAR(100) NOT NULL,
-    rule_version INTEGER NOT NULL,
-    input_context JSONB NOT NULL,
-    output_data JSONB NOT NULL,
-    duration_ms INTEGER,
-    created_at TIMESTAMP DEFAULT NOW(),
-    INDEX idx_vat_audit_execution_id (execution_id),
-    INDEX idx_vat_audit_cart_id (cart_id),
-    INDEX idx_vat_audit_rule_id (rule_id)
-);
-
--- Cart VAT result storage
-ALTER TABLE cart ADD COLUMN vat_result JSONB;
-CREATE INDEX idx_cart_vat_result ON cart USING GIN (vat_result);
-```
-
-### **VAT Result Structure (Stored in cart.vat_result)**
 ```json
 {
-  "status": "success",
-  "execution_id": "exec_20250930_001",
-  "vat_calculations": {
-    "items": [
-      {
-        "item_id": "item_123",
-        "net_amount": "50.00",
-        "vat_amount": "0.00",
-        "vat_rate": "0.00",
-        "vat_rule_applied": "vat_uk_ebook_zero:v1",
-        "exemption_reason": "UK eBook post-2020"
-      }
-    ],
-    "totals": {
-      "total_net": "50.00",
-      "total_vat": "0.00",
-      "total_gross": "50.00"
-    },
-    "region_info": {
-      "country": "GB",
-      "region": "UK",
-      "vat_treatment": "exempt"
-    }
+  "rule_id": "calculate_vat_uk_printed_product",
+  "name": "UK Printed Product - Standard VAT",
+  "priority": 85,
+  "active": true,
+  "condition": {
+    "!=": [{"var": "item.product_type"}, "digital"]
   },
-  "rules_executed": [
-    "determine_region:v1",
-    "vat_uk_ebook_zero:v1"
-  ],
-  "execution_time_ms": 15,
-  "created_at": "2025-09-30T10:00:00Z"
+  "actions": [
+    {
+      "type": "lookup",
+      "target": "item.vat_rate",
+      "source": "utils_countrys",
+      "match": {"code": {"var": "user.country"}},
+      "select": "vat_percent"
+    },
+    {
+      "type": "update",
+      "target": "item.vat",
+      "operation": "multiply",
+      "operands": [
+        {"var": "item.actual_price"},
+        {"divide": [{"var": "item.vat_rate"}, 100]}
+      ]
+    },
+    {
+      "type": "update",
+      "target": "item.vat_rule_applied",
+      "operation": "set",
+      "value": "calculate_vat_uk_printed_product:v1"
+    }
+  ]
 }
 ```
 
-### **Discount Allocation Algorithm**
-
-When discounts apply to multiple items, allocate proportionally and recalculate VAT:
+### Testing Requirements
 
 ```python
-def allocate_discounts_and_recalc(context, vat_results):
-    """
-    Allocate discount proportionally across eligible items and recalculate VAT.
+# test_vat_rules.py
+def test_master_rule_routes_to_uk():
+    context = {'user': {'country': 'GB'}, 'cart': {'items': []}}
+    result = execute_rule('calculate_vat', context)
+    assert 'calculate_vat_uk' in result['rules_executed']
 
-    Algorithm:
-    1. Identify eligible items for discount
-    2. Calculate eligible_net_sum
-    3. For each eligible item:
-        item_discount = discount_total * (item.net_amount / eligible_net_sum)
-        adjusted_net = item.net_amount - item_discount
-        vat_amount = calculate_vat_amount(adjusted_net, item.vat_rate)
-    4. Store discount_allocation_id for idempotency
-    """
-    discount = context.get('discount', {})
-    if not discount or discount.get('amount', 0) == 0:
-        return vat_results
-
-    discount_total = Decimal(str(discount['amount']))
-    eligible_items = [
-        r for r in vat_results
-        if r['item']['product_code'] in discount.get('applicable_products', [])
-    ]
-
-    if not eligible_items:
-        return vat_results
-
-    eligible_net_sum = sum(Decimal(str(item['net_amount'])) for item in eligible_items)
-
-    for item_result in eligible_items:
-        net = Decimal(str(item_result['net_amount']))
-        item_discount = discount_total * (net / eligible_net_sum)
-        adjusted_net = net - item_discount
-
-        # Recalculate VAT on adjusted net
-        vat_rate = Decimal(str(item_result['vat_rate']))
-        item_result['net_amount'] = adjusted_net
-        item_result['vat_amount'] = calculate_vat_amount(adjusted_net, vat_rate)
-        item_result['discount_applied'] = item_discount
-
-    return vat_results
-```
-
-### **Testing Requirements**
-
-#### **Unit Tests**
-```python
-# test_vat_rates.py
-def test_map_country_to_region_uk():
-    assert map_country_to_region('GB') == 'UK'
-    assert map_country_to_region('UK') == 'UK'
-
-def test_map_country_to_region_ec():
-    assert map_country_to_region('DE') == 'EC'
-    assert map_country_to_region('FR') == 'EC'
-
-def test_get_vat_rate_uk_ebook():
-    classification = {'is_ebook': True}
-    assert get_vat_rate('UK', classification) == Decimal('0.00')
-
-def test_get_vat_rate_uk_standard():
-    classification = {'is_ebook': False}
-    assert get_vat_rate('UK', classification) == Decimal('0.20')
-
-def test_calculate_vat_amount_rounding():
-    # Test ROUND_HALF_UP
-    result = calculate_vat_amount(Decimal('50.555'), Decimal('0.20'))
-    assert result == Decimal('10.11')  # 10.111 rounds to 10.11
-```
-
-#### **Integration Tests**
-```python
-# test_vat_calculation_integration.py
-def test_calculate_cart_vat_mixed_cart():
-    """Test mixed cart with digital and physical items."""
+def test_uk_digital_product_zero_vat():
     context = {
-        'user_address': {'country': 'GB', 'region': 'UK'},
-        'cart': {
-            'items': [
-                {
-                    'id': 'item1',
-                    'product_code': 'EB001',
-                    'net_amount': '50.00',
-                    'product_classification': {'is_ebook': True}
-                },
-                {
-                    'id': 'item2',
-                    'product_code': 'PM001',
-                    'net_amount': '100.00',
-                    'product_classification': {'is_digital': False}
-                }
-            ]
-        },
-        'settings': {'effective_date': '2025-09-30'}
+        'user': {'country': 'GB'},
+        'cart': {'items': [
+            {'product_type': 'digital', 'metadata': {'is_ebook': True}, 'actual_price': 50}
+        ]}
     }
+    result = execute_rule('calculate_vat', context)
+    assert result['cart']['items'][0]['vat'] == 0
 
-    result = calculate_cart_vat(context)
-
-    assert result['vat_calculations']['items'][0]['vat_amount'] == Decimal('0.00')
-    assert result['vat_calculations']['items'][1]['vat_amount'] == Decimal('20.00')
-    assert result['vat_calculations']['totals']['total_vat'] == Decimal('20.00')
-
-def test_effective_date_changes_rate():
-    """Test that effective_date controls rule application."""
-    # Pre-2020: UK eBooks have 20% VAT
-    # Post-2020: UK eBooks have 0% VAT
-    context_2019 = {
-        'user_address': {'country': 'GB', 'region': 'UK'},
-        'item': {
-            'product_code': 'EB001',
-            'net_amount': '50.00',
-            'product_classification': {'is_ebook': True}
-        },
-        'settings': {'effective_date': '2019-12-31'}
+def test_uk_printed_product_vat():
+    context = {
+        'user': {'country': 'GB'},
+        'cart': {'items': [
+            {'product_type': 'physical', 'actual_price': 100}
+        ]}
     }
-
-    result_2019 = rule_engine.execute('calculate_vat_per_item', context_2019)
-    assert result_2019['vat_amount'] == Decimal('10.00')  # 20% VAT
-
-    context_2020 = {**context_2019, 'settings': {'effective_date': '2020-05-01'}}
-    result_2020 = rule_engine.execute('calculate_vat_per_item', context_2020)
-    assert result_2020['vat_amount'] == Decimal('0.00')  # 0% VAT
+    result = execute_rule('calculate_vat', context)
+    assert result['cart']['items'][0]['vat'] == 20  # 20% of 100
 ```
-
-#### **Contract Tests (API)**
-```python
-# test_vat_api_contract.py
-def test_checkout_start_vat_calculation(api_client, authenticated_user, cart):
-    """Test VAT calculation via checkout_start entry point."""
-    response = api_client.post('/api/rules/engine/execute/', {
-        'entryPoint': 'checkout_start',
-        'context': {
-            'user_id': authenticated_user.id,
-            'cart_id': cart.id
-        }
-    })
-
-    assert response.status_code == 200
-    assert 'vat_calculations' in response.data
-    assert 'rules_executed' in response.data
-    assert 'execution_id' in response.data
-
-    # Verify structure
-    vat_calc = response.data['vat_calculations']
-    assert 'items' in vat_calc
-    assert 'totals' in vat_calc
-    assert 'region_info' in vat_calc
-```
-
-#### **Compliance/Regression Tests**
-```python
-# test_vat_compliance.py
-def test_vat_regression_legacy_vs_new():
-    """Compare legacy VAT calculations with new rules engine."""
-    test_cases = load_legacy_test_cases()
-
-    for test_case in test_cases:
-        legacy_result = legacy_calculate_vat(test_case['cart'])
-        new_result = calculate_cart_vat(test_case['context'])
-
-        assert_vat_match(
-            legacy_result['total_vat'],
-            new_result['vat_calculations']['totals']['total_vat'],
-            tolerance=Decimal('0.01')
-        )
-```
-
-### **Performance & Monitoring**
-
-#### **Performance Requirements**
-- **Latency Target**: < 50ms per cart VAT calculation
-- **Throughput**: 100+ calculations per second
-- **Cache Strategy**:
-  - Cache `vat_rates` and `REGION_MAP` in memory
-  - Cache rule definitions with invalidation on admin update
-  - Pre-compile JSONLogic expressions to ASTs
-
-#### **Observability**
-```python
-# Logging
-logger.info(
-    f"VAT calculation completed",
-    extra={
-        'execution_id': execution_id,
-        'cart_id': cart.id,
-        'rules_executed': rules_executed,
-        'execution_time_ms': duration_ms,
-        'total_vat': total_vat
-    }
-)
-
-# Metrics
-metrics.histogram('vat_calculation.duration_ms', duration_ms)
-metrics.increment('vat_calculation.success')
-metrics.gauge('vat_calculation.total_vat', float(total_vat))
-```
-
-#### **Alerting**
-- Alert on rule engine errors (> 1% error rate)
-- Alert on VAT calculation deviation (> 5% from historical average)
-- Alert on performance degradation (> 100ms latency)
 
 ---
 
-## Story 3.2: Regional VAT Rules Implementation
+## Story 3.3: Regional VAT Rules Implementation
 
 As a customer from different regions,
 I want VAT to be calculated correctly based on my location and product types,
-so that I see accurate pricing that complies with tax regulations.
+So that I see accurate pricing that complies with tax regulations.
 
 **Acceptance Criteria**:
-1. Zero VAT for digital products when customer region is ROW (non-UK/IE/EC)
-2. Standard VAT rates for UK, Ireland, and EC customers on all products
-3. Special South Africa VAT rules for specific product codes
+1. Zero VAT for digital products when customer region is ROW (non-UK/IE/EU)
+2. Standard VAT rates for UK, Ireland, and EU customers based on utils_countrys
+3. Special South Africa VAT rules (15%) for all products
 4. Switzerland and Guernsey treated as ROW for VAT purposes
 5. Live Online Tutorials always have VAT regardless of region
 6. VAT exemption reasons clearly recorded in order data
 
 **Integration Verification**:
-- IV1: Cart totals match legacy VAT calculations
+- IV1: Cart totals match expected VAT calculations
 - IV2: Invoice generation includes correct VAT breakdowns
 - IV3: Order confirmation emails show accurate VAT information
 
-## Story 2.3: Product-Specific VAT Rules
+---
+
+## Story 3.4: Product-Specific VAT Rules
 
 As a business user,
 I want different VAT treatment for different product categories,
-so that eBooks, tutorials, and physical materials are taxed appropriately.
+So that eBooks, tutorials, and physical materials are taxed appropriately.
 
 **Acceptance Criteria**:
 1. Digital products (eBooks, Online Classroom) - zero VAT for ROW customers
 2. Physical products maintain regional VAT regardless of customer location
 3. UK eBook zero VAT rule implemented (effective May 1, 2020)
-4. CM/CS eBook special PBOR VAT handling for UK customers
-5. Bundle discount VAT inheritance from parent products
-6. Product code pattern matching supports all legacy product types
+4. Flash cards (FC product code) apply standard regional VAT
+5. PBOR products apply standard regional VAT
+6. Product type from cart context (`product_type` and `metadata`)
 
 **Integration Verification**:
 - IV1: Product catalog displays correct VAT-inclusive/exclusive pricing
 - IV2: Search and filter functionality unaffected by VAT changes
 - IV3: Product recommendations maintain pricing accuracy
 
-## Story 2.4: Pricing Scenario VAT Calculations
+---
 
-As a customer with special pricing (retaker, reduced price, additional items),
-I want VAT calculated correctly on my discounted rates,
-so that I receive accurate total pricing for my specific situation.
-
-**Acceptance Criteria**:
-1. Additional items use `additnet`/`additvat` with regional VAT rules
-2. Retaker pricing applies VAT correctly with `retakernet`/`retakervat`
-3. Reduced pricing countries get appropriate VAT treatment
-4. Pricing priority: Additional → Retaker → Reduced → Discounted → Standard
-5. VAT scaler adjustments applied when `vat_adjust` is enabled
-6. All pricing scenarios maintain audit trail
-
-**Implementation Verification**:
-- IV1: Legacy pricing VAT logic completely replaced
-- IV2: All pricing scenarios handled by rules engine
-- IV3: Cart and checkout components use new VAT calculation API
-
-## Story 2.5: VAT Administration and Configuration
+## Story 3.5: VAT Administration and Configuration
 
 As a finance administrator,
 I want to manage VAT rules and rates through admin interface,
-so that I can respond to tax regulation changes without requiring code deployments.
+So that I can respond to tax regulation changes without requiring code deployments.
 
 **Acceptance Criteria**:
 1. Admin interface for managing VAT rules by region and product type
-2. VAT rate configuration with effective date support
-3. VAT rule testing with sample cart data
-4. Audit trail of all VAT rule modifications
-5. Bulk update capabilities for product VAT classifications
+2. VAT rate configuration via utils_countrys model
+3. Country-region mapping management via utils_country_region
+4. VAT rule testing with sample cart data
+5. Audit trail of all VAT rule modifications
 6. VAT calculation dry-run mode for testing rule changes
 
 **Implementation Verification**:
-- IV1: New VAT admin interface replaces legacy configuration
+- IV1: New VAT admin interface for utils_countrys and utils_country_region
 - IV2: VAT rule management accessible to authorized users
 - IV3: Admin interface provides comprehensive VAT control
 
-## Story 2.6: VAT Reporting and Compliance
+---
+
+## Story 3.6: VAT Reporting and Compliance
 
 As a finance manager,
 I want comprehensive VAT reporting and audit capabilities,
-so that I can ensure compliance and generate required tax reports.
+So that I can ensure compliance and generate required tax reports.
 
 **Acceptance Criteria**:
-1. VAT calculation audit trail with rule execution history
+1. VAT calculation audit trail with rule execution history via VATAudit model
 2. VAT summary reports by region and time period
 3. Zero VAT exemption reason tracking and reporting
 4. VAT rate change impact analysis
@@ -592,25 +596,38 @@ so that I can ensure compliance and generate required tax reports.
 
 ## 📊 **Implementation Plan Overview**
 
-### **Phase 1: Foundation (Weeks 1-2)**
-- **Stories**: 2.1 (VAT Rules Engine Foundation)
-- **Goal**: Establish VAT rules infrastructure
-- **Deliverable**: Basic VAT rule execution framework
+### **Phase 1: Database Foundation (Week 1)**
+- **Stories**: 3.1 (Region & Rate Models)
+- **Goal**: Establish database-driven VAT rate infrastructure
+- **Deliverable**: utils_regions, utils_countrys, utils_country_region models + data
 
-### **Phase 2: Core VAT Logic (Weeks 3-5)**
-- **Stories**: 2.2 (Regional Rules), 2.3 (Product-Specific Rules)
-- **Goal**: Implement main VAT calculation logic
-- **Deliverable**: Working VAT calculations for common scenarios
+### **Phase 2: VAT Audit Trail (Week 1)**
+- **Stories**: VATAudit model (already complete from previous work)
+- **Goal**: Validate audit trail infrastructure
+- **Deliverable**: VATAudit model confirmed working
 
-### **Phase 3: Advanced Scenarios (Weeks 6-7)**
-- **Stories**: 2.4 (Pricing Scenarios)
-- **Goal**: Handle complex pricing and VAT interactions
-- **Deliverable**: Complete VAT calculation coverage
+### **Phase 3: Rules Engine Integration (Weeks 2-3)**
+- **Stories**: 3.2 (Composite VAT Rules)
+- **Goal**: Implement complete rules-driven VAT calculation
+- **Deliverable**: All regional and product-specific rules created
 
-### **Phase 4: Administration & Compliance (Weeks 8-9)**
-- **Stories**: 2.5 (Administration), 2.6 (Reporting)
-- **Goal**: Enable business user self-service and compliance
-- **Deliverable**: Production-ready VAT system
+### **Phase 4: Regional & Product Rules (Week 3)**
+- **Stories**: 3.3 (Regional Rules), 3.4 (Product Rules)
+- **Goal**: Complete all VAT scenarios
+- **Deliverable**: All region × product combinations implemented
+
+### **Phase 5: Testing & Validation (Week 4)**
+- **Goal**: Validate all VAT scenarios
+- **Deliverable**: 100+ tests covering all regions × products
+
+### **Phase 6: Administration & Reporting (Week 5)**
+- **Stories**: 3.5 (Administration), 3.6 (Reporting)
+- **Goal**: Enable admin self-service and compliance
+- **Deliverable**: Admin interface and reporting tools
+
+### **Phase 7: Frontend Integration (Week 5)**
+- **Goal**: Display dynamic VAT in UI
+- **Deliverable**: Dynamic VAT labels, no hardcoded rates
 
 ---
 
@@ -625,14 +642,15 @@ so that I can ensure compliance and generate required tax reports.
 ### **Testing Strategy**
 - **Unit Tests**: Individual VAT rule testing with comprehensive scenarios
 - **Integration Tests**: End-to-end checkout flow with VAT calculations
-- **Regression Tests**: Ensure legacy VAT calculations match new system
+- **Regression Tests**: Ensure calculations match expected results
 - **Performance Tests**: VAT calculation speed under load
 - **User Acceptance Tests**: Business user validation of admin interface
 
 ### **Risk Mitigation**
+- **Data Separation**: utils_countrys separate from country_country (user data)
 - **Parallel Execution**: Maintain legacy system during transition
-- **Data Validation**: Continuous comparison of old vs new calculations
-- **Rollback Plan**: Ability to revert to legacy system if issues arise
+- **Data Validation**: Continuous comparison of calculations
+- **Rollback Plan**: Ability to revert if issues arise
 - **Monitoring**: Real-time alerts for VAT calculation discrepancies
 
 ---
@@ -640,57 +658,94 @@ so that I can ensure compliance and generate required tax reports.
 ## 🔧 **Technical Implementation Details**
 
 ### **Database Changes Required**
+
 ```sql
--- Product VAT classification
-ALTER TABLE products ADD COLUMN vat_category VARCHAR(50);
-ALTER TABLE products ADD COLUMN is_digital BOOLEAN DEFAULT FALSE;
-
--- Cart VAT tracking
-ALTER TABLE cart ADD COLUMN vat_calculation_method VARCHAR(20) DEFAULT 'legacy';
-ALTER TABLE cart_items ADD COLUMN vat_rule_applied VARCHAR(100);
-
--- VAT audit trail
-CREATE TABLE vat_calculation_log (
-    id SERIAL PRIMARY KEY,
-    order_id INTEGER,
-    cart_id INTEGER,
-    rule_id VARCHAR(100),
-    calculation_input JSONB,
-    calculation_output JSONB,
-    created_at TIMESTAMP DEFAULT NOW()
+-- Region master data
+CREATE TABLE utils_regions (
+    code VARCHAR(10) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    active BOOLEAN DEFAULT TRUE
 );
+
+-- VAT-specific country data (copy of country_country structure)
+CREATE TABLE utils_countrys (
+    code VARCHAR(2) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    vat_percent DECIMAL(5,2) DEFAULT 0.00,
+    active BOOLEAN DEFAULT TRUE
+);
+
+-- Country-to-region mapping (uses utils_countrys)
+CREATE TABLE utils_country_region (
+    id SERIAL PRIMARY KEY,
+    country_code VARCHAR(2) REFERENCES utils_countrys(code),
+    region_code VARCHAR(10) REFERENCES utils_regions(code),
+    effective_from DATE NOT NULL,
+    effective_to DATE,
+    UNIQUE(country_code, effective_from)
+);
+CREATE INDEX idx_country_region_lookup ON utils_country_region(country_code, effective_from);
+
+-- VAT audit trail (already exists from Phase 2)
+-- (no changes needed)
+
+-- Cart VAT result storage (already exists from Phase 2)
+-- (no changes needed)
+
+-- NOTE: country_country table remains UNCHANGED for user-related functionality
 ```
 
 ### **API Endpoints**
+
+**Rules Engine (handles ALL VAT logic):**
 ```
-POST /api/rules/engine/execute/     # VAT calculation execution
-GET  /api/vat/rates/               # Current VAT rates by region
-POST /api/vat/calculate/           # Manual VAT calculation for testing
-GET  /api/vat/audit/{order_id}/    # VAT calculation audit trail
+POST /api/rules/engine/execute/
+  - Entry points: add_to_cart, checkout_start, checkout_payment
+  - Executes: calculate_vat master rule
+  - Returns: vat_calculations with items[], totals, region_info
+
+GET /api/vat/regions/
+  - Returns: Available VAT regions (UK, IE, EU, SA, ROW)
+
+GET /api/vat/countries/
+  - Returns: VAT-specific countries from utils_countrys
+  - Includes: code, name, vat_percent
+
+GET /api/vat/country-mapping/{country_code}/
+  - Source: utils_countrys and utils_country_region
+  - Returns: Region and VAT rate for country
+
+GET /api/vat/audit/{execution_id}/
+  - Returns: VAT calculation audit trail
+
+PUT /api/vat/countries/{country_code}/
+  - Admin only: Update VAT percentage for country
+  - Updates: utils_countrys.vat_percent
 ```
 
-### **Rules Engine Integration**
+### **Rules Engine Context Structure**
+
 ```json
 {
-  "entry_point": "checkout_vat_calculation",
+  "entry_point": "checkout_start",
   "context": {
     "user": {
-      "region": "UK|IE|EC|SA|ROW",
-      "country_code": "GB",
-      "reduced_price_eligible": true
+      "country": "GB"
     },
     "cart": {
       "items": [{
-        "product_code": "CM/CC/001",
-        "product_category": "digital_ebook",
-        "price_type": "standard",
-        "net_amount": 59.99,
-        "current_vat": 11.998
+        "product_code": "MAT-EBOOK-CS2",
+        "product_type": "digital",
+        "metadata": {
+          "is_ebook": true,
+          "is_online_classroom": false
+        },
+        "actual_price": 59.99
       }]
     },
     "settings": {
-      "vat_adjust_enabled": true,
-      "effective_date": "2025-09-23"
+      "effective_date": "2025-09-30"
     }
   }
 }
@@ -701,10 +756,11 @@ GET  /api/vat/audit/{order_id}/    # VAT calculation audit trail
 ## 📈 **Success Metrics**
 
 ### **Technical Metrics**
-- **Accuracy**: 100% match with legacy VAT calculations during parallel run
+- **Accuracy**: 100% correct VAT calculations for all scenarios
 - **Performance**: VAT calculation under 50ms per cart
 - **Reliability**: 99.9% uptime for VAT calculation service
 - **Coverage**: All product types and pricing scenarios supported
+- **Data Separation**: utils_countrys independent of country_country
 
 ### **Business Metrics**
 - **Tax Compliance**: Zero VAT calculation errors in audit
@@ -721,18 +777,24 @@ GET  /api/vat/audit/{order_id}/    # VAT calculation audit trail
 - [ ] Performance benchmarks met under production load
 - [ ] Monitoring and alerting systems operational
 - [ ] Rollback procedures tested and documented
+- [ ] utils_countrys fully populated and validated
+- [ ] All rules created in Rules Engine
+- [ ] Zero Python VAT calculation code remains
 
 ### **Business Readiness**
 - [ ] Finance team trained on new admin interface
 - [ ] VAT compliance verification completed
 - [ ] Customer communication about VAT changes prepared
 - [ ] Support team trained on new VAT calculation system
+- [ ] Data separation verified (utils_countrys vs country_country)
 
 ---
 
 **Document Control**
 - **Created**: 2025-09-23
-- **Based on**: Epic 1 Story 1.2 (Dynamic VAT Calculation System)
+- **Last Updated**: 2025-10-06
+- **Revision**: 2.0 (Rules Engine Architecture)
+- **Based on**: Technical requirements (docs/technical/Vat_implementation_updates.md)
 - **Dependencies**: Epic 1 (Enhanced Rules Engine Foundation)
 - **Owner**: Finance Team / Product Team
-- **Next Review**: 2025-10-07
+- **Next Review**: 2025-10-20
