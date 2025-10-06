@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import {
-  Snackbar,
-  SnackbarContent,
+  Paper,
   Button,
   IconButton,
   Typography,
   Box,
+  useTheme,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext';
+import { touchButtonStyle, touchIconButtonStyle } from './tutorialStyles';
 
 /**
  * TutorialSelectionSummaryBar - Persistent summary bar for tutorial choices
@@ -18,6 +20,7 @@ import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext';
  * Optimized: Memoized to prevent unnecessary re-renders
  */
 const TutorialSelectionSummaryBar = React.memo(({ subjectCode, onEdit, onAddToCart, onRemove }) => {
+  const theme = useTheme();
   const { getSubjectChoices, getDraftChoices, hasCartedChoices } = useTutorialChoice();
   const [isOpen, setIsOpen] = useState(true);
 
@@ -68,91 +71,105 @@ const TutorialSelectionSummaryBar = React.memo(({ subjectCode, onEdit, onAddToCa
       };
     });
 
+  if (!visible) {
+    return null;
+  }
+
   return (
-    <Snackbar
-      open={visible}
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      sx={{ maxWidth: '600px', width: '100%' }}
+    <Paper
+      elevation={6}
+      role="alert"
+      sx={{
+        backgroundColor: theme.palette.colorTheme?.bpp?.cobalt?.['060'] || '#1a365d',
+        color: '#fff',
+        width: '100%',
+        maxWidth: { xs: '100%', sm: '600px' },
+        p: 2,
+        display: 'flex',
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: { xs: 'flex-start', sm: 'center' },
+        justifyContent: 'space-between',
+        gap: 2,
+      }}
     >
-      <SnackbarContent
-        role="alert"
-        message={
+      <Box sx={{ flex: 1 }}>
+        {/* Subject Title */}
+        <Typography variant="h6" gutterBottom color="inherit">
+          {subjectName} Tutorials
+        </Typography>
+
+        {/* Expanded State: Show Choice Details */}
+        {expanded && (
           <Box>
-            {/* Subject Title */}
-            <Typography variant="h6" gutterBottom color="inherit">
-              {subjectName} Tutorials
-            </Typography>
-
-            {/* Expanded State: Show Choice Details */}
-            {expanded && (
-              <Box sx={{ mb: 2 }}>
-                {choiceDetails
-                  .filter(choice => choice.isDraft)
-                  .map((choice, index) => (
-                    <Typography key={choice.level} variant="body2" color="inherit">
-                      {index + 1}. {choice.level} Choice - {choice.location} ({choice.eventCode})
-                    </Typography>
-                  ))}
-              </Box>
-            )}
+            {choiceDetails
+              .filter(choice => choice.isDraft)
+              .map((choice, index) => (
+                <Typography key={choice.level} variant="body2" color="inherit">
+                  {index + 1}. {choice.level} Choice - {choice.location} ({choice.eventCode})
+                </Typography>
+              ))}
           </Box>
-        }
-        action={
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-            {/* Edit Button (Always Visible) */}
+        )}
+      </Box>
+
+      {/* Action Buttons */}
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+        {/* Edit Button (Always Visible) */}
+        <Button
+          size="medium"
+          color="inherit"
+          onClick={onEdit}
+          aria-label="Edit tutorial choices"
+          sx={touchButtonStyle}
+        >
+          Edit
+        </Button>
+
+        {/* Expanded State: Show Add to Cart and Remove Buttons */}
+        {expanded && (
+          <>
             <Button
-              size="small"
+              size="medium"
               color="inherit"
-              onClick={onEdit}
-              aria-label="Edit tutorial choices"
+              onClick={onAddToCart}
+              aria-label="Add tutorial choices to cart"
+              sx={touchButtonStyle}
             >
-              Edit
+              Add to Cart
             </Button>
-
-            {/* Expanded State: Show Add to Cart and Remove Buttons */}
-            {expanded && (
-              <>
-                <Button
-                  size="small"
-                  color="inherit"
-                  onClick={onAddToCart}
-                  aria-label="Add tutorial choices to cart"
-                >
-                  Add to Cart
-                </Button>
-                <Button
-                  size="small"
-                  color="inherit"
-                  onClick={onRemove}
-                  aria-label="Remove tutorial choices"
-                >
-                  Remove
-                </Button>
-              </>
-            )}
-
-            {/* Close Button (Always Visible) */}
-            <IconButton
-              size="small"
-              aria-label="Close"
+            <Button
+              size="medium"
               color="inherit"
-              onClick={handleClose}
+              onClick={onRemove}
+              aria-label="Remove tutorial choices"
+              sx={touchButtonStyle}
             >
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        }
-        sx={{
-          backgroundColor: '#323232',
-          color: '#fff',
-          width: '100%',
-          flexWrap: 'wrap',
-        }}
-      />
-    </Snackbar>
+              Remove
+            </Button>
+          </>
+        )}
+
+        {/* Close Button (Always Visible) */}
+        <IconButton
+          aria-label="Close"
+          color="inherit"
+          onClick={handleClose}
+          sx={touchIconButtonStyle}
+        >
+          <CloseIcon />
+        </IconButton>
+      </Box>
+    </Paper>
   );
 });
 
 TutorialSelectionSummaryBar.displayName = 'TutorialSelectionSummaryBar';
+
+TutorialSelectionSummaryBar.propTypes = {
+  subjectCode: PropTypes.string.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onAddToCart: PropTypes.func.isRequired,
+  onRemove: PropTypes.func.isRequired,
+};
 
 export default TutorialSelectionSummaryBar;

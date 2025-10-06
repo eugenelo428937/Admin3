@@ -439,7 +439,7 @@ const MobileNavigation = ({
 					<div
 						className="mobile-nav-link"
 						onClick={() => {
-							handleNavigation("/products", { tutorial: "true" });
+							handleNavigation("/tutorials");
 						}}>
 						<span>View All Tutorials</span>
 					</div>

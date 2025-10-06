@@ -40,7 +40,6 @@ import {
 	buildTutorialPriceData
 } from "../../../../utils/tutorialMetadataBuilder";
 import TutorialSelectionDialog from "./TutorialSelectionDialog";
-import TutorialSelectionSummaryBar from "./TutorialSelectionSummaryBar";
 import "../../../../styles/product_card.css";
 
 /**
@@ -57,19 +56,32 @@ const TutorialProductCard = React.memo(
 		product,
 		variations: preloadedVariations = null,
 		onAddToCart = null,
+		dialogOpen = null,
+		onDialogClose = null,
 	}) => {
 		const [variations, setVariations] = useState(preloadedVariations || []);
 		const [loading, setLoading] = useState(!preloadedVariations);
 		const [error, setError] = useState(null);
-		const [showChoiceDialog, setShowChoiceDialog] = useState(false);
+		const [localDialogOpen, setLocalDialogOpen] = useState(false);
+
+		// Use controlled state if dialogOpen prop is provided, otherwise use local state
+		const isDialogOpen = dialogOpen !== null ? dialogOpen : localDialogOpen;
+		const handleDialogClose = onDialogClose || (() => setLocalDialogOpen(false));
+		const handleDialogOpen = () => {
+			if (dialogOpen !== null && onDialogClose) {
+				// In controlled mode, parent handles opening via dialogOpen prop
+				// Do nothing here - parent should set dialogOpen=true
+			} else {
+				setLocalDialogOpen(true);
+			}
+		};
 		const [isHovered, setIsHovered] = useState(false);
 		const [selectedPriceType, setSelectedPriceType] = useState(""); // Empty means standard pricing
 		const [speedDialOpen, setSpeedDialOpen] = useState(false);
 
 		const {
 			getSubjectChoices,
-			showChoicePanelForSubject,
-			markChoicesAsAdded,
+				markChoicesAsAdded,
 		removeTutorialChoice,
 	} = useTutorialChoice();
 
@@ -202,27 +214,17 @@ const TutorialProductCard = React.memo(
 
 		const handleSelectTutorial = useCallback(() => {
 			setSpeedDialOpen(false);
-			setShowChoiceDialog(true);
+			handleDialogOpen();
 		}, []);
 
 		const handleViewSelections = useCallback(() => {
 			setSpeedDialOpen(false);
-			showChoicePanelForSubject(subjectCode);
-		}, [subjectCode, showChoicePanelForSubject]);
-
-		// Summary bar handlers
-	const handleSummaryBarEdit = useCallback(() => {
-		setShowChoiceDialog(true);
-	}, []);
-
-	const handleSummaryBarRemove = useCallback(() => {
-		// Remove all draft choices for this subject
-		Object.entries(subjectChoices).forEach(([level, choice]) => {
-			if (choice.isDraft) {
-				removeTutorialChoice(subjectCode, level);
-			}
-		});
-	}, [subjectCode, subjectChoices]);
+			// Scroll to the summary bar at the bottom of the viewport
+			window.scrollTo({
+				top: document.documentElement.scrollHeight,
+				behavior: 'smooth'
+			});
+		}, []);
 
 	// SpeedDial actions configuration - memoized to prevent unnecessary re-renders
 		const speedDialActions = useMemo(() => [
@@ -674,19 +676,12 @@ const TutorialProductCard = React.memo(
 
 				{/* Tutorial Choice Dialog */}
 				<TutorialSelectionDialog
-					open={showChoiceDialog}
-					onClose={() => setShowChoiceDialog(false)}
+					open={isDialogOpen}
+					onClose={handleDialogClose}
 					product={{ subjectCode, subjectName, location }}
 					events={flattenedEvents}
 				/>
 
-				{/* Tutorial Selection Summary Bar */}
-				<TutorialSelectionSummaryBar
-					subjectCode={subjectCode}
-					onEdit={handleSummaryBarEdit}
-					onAddToCart={handleAddToCart}
-					onRemove={handleSummaryBarRemove}
-				/>
 			</>
 		);
 	}
@@ -701,6 +696,8 @@ TutorialProductCard.propTypes = {
 	product: PropTypes.object.isRequired,
 	variations: PropTypes.array,
 	onAddToCart: PropTypes.func,
+	dialogOpen: PropTypes.bool,
+	onDialogClose: PropTypes.func,
 };
 
 export default TutorialProductCard;

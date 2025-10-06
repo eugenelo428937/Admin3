@@ -37,23 +37,39 @@ export const TutorialChoiceProvider = ({ children }) => {
 
   /**
    * Add or update a tutorial choice for a subject
+   * If the same event is already selected at a different choice level, it removes the old level first
+   * This ensures each event can only be selected once (at one choice level)
    * @param {string} subjectCode - Subject identifier (e.g., "CS2")
    * @param {string} choiceLevel - Choice level ("1st", "2nd", or "3rd")
    * @param {Object} eventData - Tutorial event data including eventId, location, variation
    */
   const addTutorialChoice = (subjectCode, choiceLevel, eventData) => {
-    setTutorialChoices(prev => ({
-      ...prev,
-      [subjectCode]: {
-        ...prev[subjectCode],
-        [choiceLevel]: {
-          ...eventData,
-          choiceLevel,
-          timestamp: new Date().toISOString(),
-          isDraft: true  // T008: New choices default to draft state
+    setTutorialChoices(prev => {
+      const subjectChoices = prev[subjectCode] || {};
+
+      // Remove this event from any other choice level if it exists
+      const cleanedChoices = {};
+      Object.entries(subjectChoices).forEach(([level, choice]) => {
+        // Keep the choice only if it's a different event OR it's the same level we're updating
+        if (choice.eventId !== eventData.eventId || level === choiceLevel) {
+          cleanedChoices[level] = choice;
         }
-      }
-    }));
+      });
+
+      // Add the new choice at the specified level
+      return {
+        ...prev,
+        [subjectCode]: {
+          ...cleanedChoices,
+          [choiceLevel]: {
+            ...eventData,
+            choiceLevel,
+            timestamp: new Date().toISOString(),
+            isDraft: true  // T008: New choices default to draft state
+          }
+        }
+      };
+    });
   };
 
   /**

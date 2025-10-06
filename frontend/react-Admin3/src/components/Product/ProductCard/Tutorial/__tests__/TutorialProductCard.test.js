@@ -178,9 +178,9 @@ describe('TutorialProductCard', () => {
       renderWithContext();
 
       // Count SpeedDialAction elements by aria-label
-      const selectAction = screen.queryByLabelText(/select tutorial/i);
-      const viewAction = screen.queryByLabelText(/view selections/i);
-      const addToCartAction = screen.queryByLabelText(/add to cart/i);
+      const selectAction = queryActionButton(/select tutorial/i);
+      const viewAction = queryActionButton(/view selections/i);
+      const addToCartAction = queryActionButton(/add to cart/i);
 
       const actionCount = [selectAction, viewAction, addToCartAction].filter(Boolean).length;
       expect(actionCount).toBe(1);
@@ -212,9 +212,9 @@ describe('TutorialProductCard', () => {
       renderWithContext();
 
       // Check all three actions exist in DOM
-      const selectAction = screen.getByLabelText(/select tutorial/i);
-      const viewAction = screen.getByLabelText(/view selections/i);
-      const addToCartAction = screen.getByLabelText(/add to cart/i);
+      const selectAction = getActionButton(/select tutorial/i);
+      const viewAction = getActionButton(/view selections/i);
+      const addToCartAction = getActionButton(/add to cart/i);
 
       expect(selectAction).toBeInTheDocument();
       expect(viewAction).toBeInTheDocument();
@@ -224,21 +224,21 @@ describe('TutorialProductCard', () => {
     it('should show "View selections" action when tutorials are selected', async () => {
       renderWithContext();
 
-      const viewAction = screen.getByLabelText(/view selections/i);
+      const viewAction = getActionButton(/view selections/i);
       expect(viewAction).toBeInTheDocument();
     });
 
     it('should show "Add to Cart" action when tutorials are selected', async () => {
       renderWithContext();
 
-      const addToCartAction = screen.getByLabelText(/add to cart/i);
+      const addToCartAction = getActionButton(/add to cart/i);
       expect(addToCartAction).toBeInTheDocument();
     });
 
     it('should still show "Select Tutorial" action when tutorials are selected', async () => {
       renderWithContext();
 
-      const selectAction = screen.getByLabelText(/select tutorial/i);
+      const selectAction = getActionButton(/select tutorial/i);
       expect(selectAction).toBeInTheDocument();
     });
 
@@ -246,9 +246,9 @@ describe('TutorialProductCard', () => {
       renderWithContext();
 
       // Count SpeedDialAction elements by aria-label
-      const selectAction = screen.queryByLabelText(/select tutorial/i);
-      const viewAction = screen.queryByLabelText(/view selections/i);
-      const addToCartAction = screen.queryByLabelText(/add to cart/i);
+      const selectAction = queryActionButton(/select tutorial/i);
+      const viewAction = queryActionButton(/view selections/i);
+      const addToCartAction = queryActionButton(/add to cart/i);
 
       const actionCount = [selectAction, viewAction, addToCartAction].filter(Boolean).length;
       expect(actionCount).toBe(3);
@@ -263,7 +263,7 @@ describe('TutorialProductCard', () => {
       await userEvent.click(speedDial);
 
       // Verify action exists in DOM (animations don't execute in JSDOM)
-      const selectAction = screen.getByLabelText(/select tutorial/i);
+      const selectAction = getActionButton(/select tutorial/i);
       expect(selectAction).toBeInTheDocument();
     });
 
@@ -275,7 +275,7 @@ describe('TutorialProductCard', () => {
       await userEvent.click(speedDial);
 
       // Action still exists in DOM but SpeedDial open state is false
-      const selectAction = screen.getByLabelText(/select tutorial/i);
+      const selectAction = getActionButton(/select tutorial/i);
       expect(selectAction).toBeInTheDocument();
     });
 
@@ -287,17 +287,17 @@ describe('TutorialProductCard', () => {
 
       // Wait for SpeedDial to open
       await waitFor(() => {
-        expect(screen.getByLabelText(/select tutorial/i)).toBeInTheDocument();
+        expect(getActionButton(/select tutorial/i)).toBeInTheDocument();
       });
 
-      const selectAction = screen.getByLabelText(/select tutorial/i);
+      const selectAction = getActionButton(/select tutorial/i);
 
       // Use fireEvent instead of userEvent to bypass pointer-events check in JSDOM
       fireEvent.click(selectAction);
 
       // Verify dialog opens (which means action was clicked)
       await waitFor(() => {
-        expect(screen.getByText(/select your tutorial preferences/i)).toBeInTheDocument();
+        expect(screen.getByText(/tutorials - birmingham/i)).toBeInTheDocument();
       });
     });
 
@@ -320,7 +320,7 @@ describe('TutorialProductCard', () => {
       await userEvent.click(backdrop);
 
       // Action still exists in DOM but SpeedDial open state is false
-      const selectAction = screen.getByLabelText(/select tutorial/i);
+      const selectAction = getActionButton(/select tutorial/i);
       expect(selectAction).toBeInTheDocument();
     });
   });
@@ -335,16 +335,16 @@ describe('TutorialProductCard', () => {
 
       // Wait for action to be available
       await waitFor(() => {
-        expect(screen.getByLabelText(/select tutorial/i)).toBeInTheDocument();
+        expect(getActionButton(/select tutorial/i)).toBeInTheDocument();
       });
 
       // Then click the Select Tutorial action using fireEvent
-      const selectAction = screen.getByLabelText(/select tutorial/i);
+      const selectAction = getActionButton(/select tutorial/i);
       fireEvent.click(selectAction);
 
       // Should open tutorial selection dialog
       await waitFor(() => {
-        expect(screen.getByText(/select your tutorial preferences/i)).toBeInTheDocument();
+        expect(screen.getByText(/tutorials - birmingham/i)).toBeInTheDocument();
       });
     });
 
@@ -365,11 +365,11 @@ describe('TutorialProductCard', () => {
 
       // Wait for action to be available
       await waitFor(() => {
-        expect(screen.getByLabelText(/view selections/i)).toBeInTheDocument();
+        expect(getActionButton(/view selections/i)).toBeInTheDocument();
       });
 
       // Then click View selections action using fireEvent
-      const viewAction = screen.getByLabelText(/view selections/i);
+      const viewAction = getActionButton(/view selections/i);
       fireEvent.click(viewAction);
 
       // Should open view selection panel (context showChoicePanel updates)
@@ -380,14 +380,24 @@ describe('TutorialProductCard', () => {
     it('should call handleAddToCart when "Add to Cart" action is clicked', async () => {
       // Setup with selections
       const mockChoices = {
-        CS1: { '1st': { id: 1, location: 'Birmingham', choiceLevel: '1st' } }
+        CS1: {
+          '1st': {
+            id: 1,
+            eventId: 'evt-cs1-001',
+            location: 'Birmingham',
+            choiceLevel: '1st',
+            isDraft: true,
+            variation: {
+              id: 1,
+              name: 'Live Tutorial',
+              prices: [{ price_type: 'standard', amount: 299.00 }]
+            }
+          }
+        }
       };
-      const mockOnAddToCart = jest.fn();
-      Storage.prototype.getItem = jest.fn((key) =>
-        key === 'tutorialChoices' ? JSON.stringify(mockChoices) : null
-      );
+      localStorageData['tutorialChoices'] = JSON.stringify(mockChoices);
 
-      renderWithContext({ ...mockProps, onAddToCart: mockOnAddToCart });
+      renderWithContext(mockProps);
 
       // First open the SpeedDial
       const speedDial = screen.getByRole('button', { name: /actions/i });
@@ -395,23 +405,26 @@ describe('TutorialProductCard', () => {
 
       // Wait for action to be available
       await waitFor(() => {
-        expect(screen.getByLabelText(/add to cart/i)).toBeInTheDocument();
+        expect(getActionButton(/add to cart/i)).toBeInTheDocument();
       });
 
       // Then click Add to Cart action using fireEvent
-      const addToCartAction = screen.getByLabelText(/add to cart/i);
+      const addToCartAction = getActionButton(/add to cart/i);
       fireEvent.click(addToCartAction);
 
-      // Should trigger onAddToCart with correct parameters
+      // Should trigger CartContext.addToCart with correct parameters
       await waitFor(() => {
-        expect(mockOnAddToCart).toHaveBeenCalledWith(
-          mockProps.product,
+        expect(mockCartState.addToCart).toHaveBeenCalledWith(
           expect.objectContaining({
-            variationId: 1,
-            variationName: 'Live Tutorial',
-            choiceLevel: '1st',
-            location: 'Birmingham',
-            tutorialSelection: true
+            subject_code: 'CS1',
+            product_type: 'tutorial'
+          }),
+          expect.objectContaining({
+            metadata: expect.objectContaining({
+              type: 'tutorial',
+              subjectCode: 'CS1',
+              totalChoiceCount: 1
+            })
           })
         );
       });
@@ -437,7 +450,7 @@ describe('TutorialProductCard', () => {
       const speedDial = screen.getByRole('button', { name: /actions/i });
       await userEvent.click(speedDial);
 
-      expect(screen.getByLabelText(/select tutorial/i)).toBeInTheDocument();
+      expect(getActionButton(/select tutorial/i)).toBeInTheDocument();
     });
 
     it('should support keyboard navigation (Tab key)', async () => {
@@ -456,7 +469,7 @@ describe('TutorialProductCard', () => {
       await userEvent.keyboard('{Enter}');
 
       // Verify action exists in DOM (animations don't execute in JSDOM)
-      const selectAction = screen.getByLabelText(/select tutorial/i);
+      const selectAction = getActionButton(/select tutorial/i);
       expect(selectAction).toBeInTheDocument();
     });
 
@@ -468,7 +481,7 @@ describe('TutorialProductCard', () => {
       await userEvent.keyboard(' ');
 
       // Verify action exists in DOM (animations don't execute in JSDOM)
-      const selectAction = screen.getByLabelText(/select tutorial/i);
+      const selectAction = getActionButton(/select tutorial/i);
       expect(selectAction).toBeInTheDocument();
     });
   });

@@ -1,3 +1,34 @@
+// Mock httpService before importing anything else
+jest.mock('../../../services/httpService', () => ({
+  get: jest.fn(),
+  post: jest.fn(),
+}));
+
+// Mock react-router-dom before importing
+jest.mock('react-router-dom', () => ({
+  useNavigate: jest.fn(() => jest.fn()),
+  BrowserRouter: ({ children }) => children,
+  Link: ({ children }) => children,
+  useLocation: jest.fn(() => ({ pathname: '/', search: '', hash: '', state: null })),
+  useParams: jest.fn(() => ({}))
+}));
+
+// Mock useAuth before importing
+jest.mock('../../../hooks/useAuth', () => ({
+  useAuth: jest.fn()
+}));
+
+// Mock cartService before importing
+jest.mock('../../../services/cartService', () => ({
+  __esModule: true,
+  default: {
+    getCart: jest.fn(),
+    addToCart: jest.fn(),
+    updateCartItem: jest.fn(),
+    removeFromCart: jest.fn()
+  }
+}));
+
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import CartPanel from '../CartPanel';
@@ -7,8 +38,6 @@ import { useAuth } from '../../../hooks/useAuth';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock dependencies
-jest.mock('../../../hooks/useAuth');
-jest.mock('../../../services/cartService');
 jest.mock('../../../utils/productCodeGenerator', () => ({
   generateProductCode: jest.fn(() => 'MOCK-CODE')
 }));

@@ -1,3 +1,9 @@
+// Mock httpService before importing anything else
+jest.mock('../../../../../services/httpService', () => ({
+  get: jest.fn(),
+  post: jest.fn(),
+}));
+
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -9,6 +15,12 @@ import { CartProvider } from '../../../../../contexts/CartContext';
 jest.mock('../../../../../services/tutorialService', () => ({
   getTutorialVariations: jest.fn(() => Promise.resolve([]))
 }));
+
+// Helper to get SpeedDialAction button by label (tooltipOpen creates duplicate labels)
+const getActionButton = (labelRegex) => {
+  const elements = screen.getAllByLabelText(labelRegex);
+  return elements.find(el => el.getAttribute('role') === 'menuitem');
+};
 
 describe('TutorialProductCard Integration with Epic 2 Components', () => {
   const mockProduct = {
@@ -104,12 +116,12 @@ describe('TutorialProductCard Integration with Epic 2 Components', () => {
 
     // Wait for SpeedDial actions to appear
     await waitFor(() => {
-      const selectAction = screen.getByLabelText(/select tutorial/i);
+      const selectAction = getActionButton(/select tutorial/i);
       expect(selectAction).toBeInTheDocument();
     });
 
     // Click Select Tutorial action
-    const selectAction = screen.getByLabelText(/select tutorial/i);
+    const selectAction = getActionButton(/select tutorial/i);
     fireEvent.click(selectAction);
 
     // Dialog should open with correct title
@@ -135,7 +147,7 @@ describe('TutorialProductCard Integration with Epic 2 Components', () => {
     fireEvent.click(speedDial);
 
     await waitFor(() => {
-      const selectAction = screen.getByLabelText(/select tutorial/i);
+      const selectAction = getActionButton(/select tutorial/i);
       fireEvent.click(selectAction);
     });
 
