@@ -70,7 +70,7 @@ export const buildTutorialProductData = (productId, subjectCode, subjectName, lo
   subject_code: subjectCode,
   subject_name: subjectName,
   product_name: `${subjectCode} Tutorial - ${location}`,
-  type: "Tutorial",
+  product_type: "tutorial",
   quantity: 1
 });
 

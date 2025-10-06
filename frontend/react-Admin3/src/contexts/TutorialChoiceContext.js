@@ -3,59 +3,8 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 // Constants
 const CHOICE_LEVELS = ["1st", "2nd", "3rd"];
 const STORAGE_KEY = "tutorialChoices";
-const BACKUP_KEY = "tutorialChoices_backup";
-const DEFAULT_IS_DRAFT = false; // For legacy data migration
 
 const TutorialChoiceContext = createContext();
-
-/**
- * Helper Functions
- */
-
-/**
- * Checks if tutorial choices data needs migration to add isDraft field
- * @param {Object} data - Tutorial choices data object
- * @returns {boolean} True if migration is needed
- */
-const needsMigration = (data) => {
-  for (const subjectChoices of Object.values(data)) {
-    for (const choice of Object.values(subjectChoices)) {
-      if (choice.isDraft === undefined) {
-        return true; // Early exit on first missing field
-      }
-    }
-  }
-  return false;
-};
-
-/**
- * Migrates legacy tutorial choice data by adding isDraft field
- * @param {Object} data - Legacy tutorial choices data
- * @returns {Object} Migrated data with isDraft field added
- */
-const migrateChoicesData = (data) => {
-  const migrated = {};
-  Object.entries(data).forEach(([subject, subjectChoices]) => {
-    migrated[subject] = {};
-    Object.entries(subjectChoices).forEach(([level, choice]) => {
-      migrated[subject][level] = {
-        ...choice,
-        isDraft: choice.isDraft ?? DEFAULT_IS_DRAFT
-      };
-    });
-  });
-  return migrated;
-};
-
-/**
- * Normalizes a choice object by ensuring isDraft field exists
- * @param {Object} choice - Tutorial choice object
- * @returns {Object} Normalized choice with isDraft field
- */
-const normalizeChoice = (choice) => ({
-  ...choice,
-  isDraft: choice.isDraft ?? DEFAULT_IS_DRAFT
-});
 
 export const TutorialChoiceProvider = ({ children }) => {
   // Structure: { subjectCode: { "1st": eventData, "2nd": eventData, "3rd": eventData } }
@@ -65,7 +14,6 @@ export const TutorialChoiceProvider = ({ children }) => {
 
   /**
    * Load tutorial choices from localStorage on mount
-   * Handles data migration from legacy format to include isDraft field
    */
   useEffect(() => {
     const savedChoices = localStorage.getItem(STORAGE_KEY);
@@ -73,25 +21,7 @@ export const TutorialChoiceProvider = ({ children }) => {
 
     try {
       const data = JSON.parse(savedChoices);
-
-      // Check if migration is needed (any choice missing isDraft field)
-      if (needsMigration(data)) {
-        console.log('[Migration] Migrating tutorialChoices to isDraft format');
-
-        // Create backup before migration
-        localStorage.setItem(BACKUP_KEY, savedChoices);
-
-        // Migrate data by adding isDraft field
-        const migrated = migrateChoicesData(data);
-
-        // Save migrated data
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
-        setTutorialChoices(migrated);
-
-        console.log(`[Migration] Success - backup saved to ${BACKUP_KEY}`);
-      } else {
-        setTutorialChoices(data);
-      }
+      setTutorialChoices(data);
     } catch (error) {
       console.error("Error loading tutorial choices from localStorage:", error);
       setTutorialChoices({});
@@ -107,23 +37,39 @@ export const TutorialChoiceProvider = ({ children }) => {
 
   /**
    * Add or update a tutorial choice for a subject
+   * If the same event is already selected at a different choice level, it removes the old level first
+   * This ensures each event can only be selected once (at one choice level)
    * @param {string} subjectCode - Subject identifier (e.g., "CS2")
    * @param {string} choiceLevel - Choice level ("1st", "2nd", or "3rd")
    * @param {Object} eventData - Tutorial event data including eventId, location, variation
    */
   const addTutorialChoice = (subjectCode, choiceLevel, eventData) => {
-    setTutorialChoices(prev => ({
-      ...prev,
-      [subjectCode]: {
-        ...prev[subjectCode],
-        [choiceLevel]: {
-          ...eventData,
-          choiceLevel,
-          timestamp: new Date().toISOString(),
-          isDraft: true  // T008: New choices default to draft state
+    setTutorialChoices(prev => {
+      const subjectChoices = prev[subjectCode] || {};
+
+      // Remove this event from any other choice level if it exists
+      const cleanedChoices = {};
+      Object.entries(subjectChoices).forEach(([level, choice]) => {
+        // Keep the choice only if it's a different event OR it's the same level we're updating
+        if (choice.eventId !== eventData.eventId || level === choiceLevel) {
+          cleanedChoices[level] = choice;
         }
-      }
-    }));
+      });
+
+      // Add the new choice at the specified level
+      return {
+        ...prev,
+        [subjectCode]: {
+          ...cleanedChoices,
+          [choiceLevel]: {
+            ...eventData,
+            choiceLevel,
+            timestamp: new Date().toISOString(),
+            isDraft: true  // T008: New choices default to draft state
+          }
+        }
+      };
+    });
   };
 
   /**
@@ -168,21 +114,12 @@ export const TutorialChoiceProvider = ({ children }) => {
   };
 
   /**
-   * Get choices for a specific subject with backward compatibility
-   * Normalizes legacy choices by adding isDraft field if missing
+   * Get choices for a specific subject
    * @param {string} subjectCode - Subject identifier
-   * @returns {Object} Normalized choices object with isDraft field
+   * @returns {Object} Choices object
    */
   const getSubjectChoices = (subjectCode) => {
-    const choices = tutorialChoices[subjectCode] || {};
-
-    // Normalize legacy choices (add isDraft: false if missing)
-    const normalized = {};
-    Object.entries(choices).forEach(([level, choice]) => {
-      normalized[level] = normalizeChoice(choice);
-    });
-
-    return normalized;
+    return tutorialChoices[subjectCode] || {};
   };
 
   /**
