@@ -10,6 +10,12 @@
     font-weight: 200;
     font-style: normal;
 }
+.dropdown-item{
+  font-weight: 300;
+}
+.fw-300{
+  font-weight: 300 !important;
+}
 .body-container {
   padding-top: 0;
 }

@@ -31,7 +31,7 @@ const NavigationMenu = ({
 				menuVariant="light"
 				renderMenuOnMount={true}
 				align="start"
-				style={{ position: "relative"}}
+				style={{ position: "relative" }}
 				className="m-left__sm m-right__sm">
 				<div className="dropdown-submenu">
 					<Row>
@@ -39,77 +39,81 @@ const NavigationMenu = ({
 							<div className="mb-2 text-primary heading">
 								Core Principles
 							</div>
-							{subjects && subjects
-								.filter((s) => /^(CB|CS|CM)/.test(s.code))
-								.map((subject) => (
-									<NavDropdown.Item
-										key={subject.id}
-										onClick={() => {
-											handleSubjectClick(subject.code);
-											onCollapseNavbar && onCollapseNavbar();
-										}}>
-										<span className="fw-lighter w-100 body">
-											{subject.code} - {subject.description}
-										</span>
-									</NavDropdown.Item>
-								))}
+							{subjects &&
+								subjects
+									.filter((s) => /^(CB|CS|CM)/.test(s.code))
+									.map((subject) => (
+										<NavDropdown.Item
+											key={subject.id}
+											onClick={() => {
+												handleSubjectClick(subject.code);
+												onCollapseNavbar && onCollapseNavbar();
+											}}>
+											<span >
+												{subject.code} - {subject.description}
+											</span>
+										</NavDropdown.Item>
+									))}
 						</Col>
 						<Col xl={3}>
 							<div className="fw-bolder mb-2 text-primary heading">
 								Core Practices
 							</div>
-							{subjects && subjects
-								.filter((s) => /^CP[1-3]$/.test(s.code))
-								.map((subject) => (
-									<NavDropdown.Item
-										key={subject.id}
-										onClick={() => {
-											handleSubjectClick(subject.code);
-											onCollapseNavbar && onCollapseNavbar();
-										}}>
-										<span className="fw-lighter w-100 body">
-											{subject.code} - {subject.description}
-										</span>
-									</NavDropdown.Item>
-								))}
+							{subjects &&
+								subjects
+									.filter((s) => /^CP[1-3]$/.test(s.code))
+									.map((subject) => (
+										<NavDropdown.Item
+											key={subject.id}
+											onClick={() => {
+												handleSubjectClick(subject.code);
+												onCollapseNavbar && onCollapseNavbar();
+											}}>
+											<span >
+												{subject.code} - {subject.description}
+											</span>
+										</NavDropdown.Item>
+									))}
 						</Col>
 						<Col xl={3}>
 							<div className="fw-bolder mb-2 text-primary heading">
 								Specialist Principles
 							</div>
-							{subjects && subjects
-								.filter((s) => /^SP/.test(s.code))
-								.map((subject) => (
-									<NavDropdown.Item
-										key={subject.id}
-										onClick={() => {
-											handleSubjectClick(subject.code);
-											onCollapseNavbar && onCollapseNavbar();
-										}}>
-										<span className="fw-lighter w-100 body">
-											{subject.code} - {subject.description}
-										</span>
-									</NavDropdown.Item>
-								))}
+							{subjects &&
+								subjects
+									.filter((s) => /^SP/.test(s.code))
+									.map((subject) => (
+										<NavDropdown.Item
+											key={subject.id}
+											onClick={() => {
+												handleSubjectClick(subject.code);
+												onCollapseNavbar && onCollapseNavbar();
+											}}>
+											<span >
+												{subject.code} - {subject.description}
+											</span>
+										</NavDropdown.Item>
+									))}
 						</Col>
 						<Col xl={3}>
 							<div className="fw-bolder mb-2 text-primary heading">
 								Specialist Advanced
 							</div>
-							{subjects && subjects
-								.filter((s) => /^SA/.test(s.code))
-								.map((subject) => (
-									<NavDropdown.Item
-										key={subject.id}
-										onClick={() => {
-											handleSubjectClick(subject.code);
-											onCollapseNavbar && onCollapseNavbar();
-										}}>
-										<span className="fw-lighter w-100 body">
-											{subject.code} - {subject.description}
-										</span>
-									</NavDropdown.Item>
-								))}
+							{subjects &&
+								subjects
+									.filter((s) => /^SA/.test(s.code))
+									.map((subject) => (
+										<NavDropdown.Item
+											key={subject.id}
+											onClick={() => {
+												handleSubjectClick(subject.code);
+												onCollapseNavbar && onCollapseNavbar();
+											}}>
+											<span >
+												{subject.code} - {subject.description}
+											</span>
+										</NavDropdown.Item>
+									))}
 						</Col>
 					</Row>
 				</div>
@@ -123,7 +127,7 @@ const NavigationMenu = ({
 				className="m-left__sm m-right__sm">
 				<div className="dropdown-submenu">
 					<Row>
-						<NavDropdown.Item							
+						<NavDropdown.Item
 							to="/products"
 							onClick={() => {
 								handleProductClick();
@@ -226,8 +230,11 @@ const NavigationMenu = ({
 												<NavDropdown.Item
 													key={product.id}
 													onClick={() => {
-														handleSpecificProductClick(product.id);
-														onCollapseNavbar && onCollapseNavbar();
+														handleSpecificProductClick(
+															product.id
+														);
+														onCollapseNavbar &&
+															onCollapseNavbar();
 													}}>
 													{product.shortname}
 												</NavDropdown.Item>
@@ -345,8 +352,11 @@ const NavigationMenu = ({
 														<NavDropdown.Item
 															key={product.id}
 															onClick={() => {
-																handleSpecificProductClick(product.id);
-																onCollapseNavbar && onCollapseNavbar();
+																handleSpecificProductClick(
+																	product.id
+																);
+																onCollapseNavbar &&
+																	onCollapseNavbar();
 															}}>
 															{product.shortname}
 														</NavDropdown.Item>
@@ -390,7 +400,9 @@ const NavigationMenu = ({
 											<NavDropdown.Item
 												key={format.filter_type}
 												onClick={() => {
-													handleProductGroupClick(format.group_name);
+													handleProductGroupClick(
+														format.group_name
+													);
 													onCollapseNavbar && onCollapseNavbar();
 												}}>
 												{format.name}
@@ -443,13 +455,22 @@ const NavigationMenu = ({
 					title={<span className="title3">Admin</span>}
 					id="admin-nav-dropdown"
 					className="m-left__sm m-right__sm">
-					<NavDropdown.Item as={NavLink} to="admin/exam-sessions" onClick={() => onCollapseNavbar && onCollapseNavbar()}>
+					<NavDropdown.Item
+						as={NavLink}
+						to="admin/exam-sessions"
+						onClick={() => onCollapseNavbar && onCollapseNavbar()}>
 						<span className="title3">Exam Sessions</span>
 					</NavDropdown.Item>
-					<NavDropdown.Item as={NavLink} to="admin/subjects" onClick={() => onCollapseNavbar && onCollapseNavbar()}>
+					<NavDropdown.Item
+						as={NavLink}
+						to="admin/subjects"
+						onClick={() => onCollapseNavbar && onCollapseNavbar()}>
 						<span className="title3">Subjects</span>
 					</NavDropdown.Item>
-					<NavDropdown.Item as={NavLink} to="admin/products" onClick={() => onCollapseNavbar && onCollapseNavbar()}>
+					<NavDropdown.Item
+						as={NavLink}
+						to="admin/products"
+						onClick={() => onCollapseNavbar && onCollapseNavbar()}>
 						<span className="title3">Products</span>
 					</NavDropdown.Item>
 				</NavDropdown>

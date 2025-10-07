@@ -15,18 +15,17 @@ if (Test-Path $backendEnvPath) {
         $backendPort = $portLine.Matches.Groups[1].Value.Trim()
         Write-Host "Backend port from .env: $backendPort" -ForegroundColor Cyan
     } else {
-        Write-Host "Backend port not found in .env, using default: $backendPort" -ForegroundColor Yellow
+        Write-Host "BACKEND_PORT not found in .env, using default: $backendPort" -ForegroundColor Yellow
     }
 } else {
     Write-Host "Backend .env not found at $backendEnvPath, using default port: $backendPort" -ForegroundColor Yellow
 }
 
-# Read frontend port from .env
-$frontendEnvPath = "frontend/react-Admin3/.env"
+# Read frontend port from backend .env.development (FRONTEND_PORT)
 $frontendPort = 3000  # Default port
-if (Test-Path $frontendEnvPath) {
-    $frontendEnvContent = Get-Content $frontendEnvPath
-    $portLine = $frontendEnvContent | Select-String -Pattern "^PORT=(.*)$"
+if (Test-Path $backendEnvPath) {
+    $backendEnvContent = Get-Content $backendEnvPath
+    $portLine = $backendEnvContent | Select-String -Pattern "^FRONTEND_PORT=(.*)$"
     if ($portLine) {
         $frontendPort = $portLine.Matches.Groups[1].Value.Trim()
         Write-Host "Frontend port from .env: $frontendPort" -ForegroundColor Cyan
@@ -44,7 +43,7 @@ if (Test-Path $frontendEnvPath) {
         Write-Host "Frontend port not found, using default: $frontendPort" -ForegroundColor Yellow
     }
 } else {
-    Write-Host "Frontend .env not found, using default port: $frontendPort" -ForegroundColor Yellow
+    Write-Host "Backend .env not found, using default frontend port: $frontendPort" -ForegroundColor Yellow
 }
 
 # Find Python virtual environment (same logic as create-worktree.ps1)
@@ -69,6 +68,26 @@ if (Test-Path $localVenv) {
     Write-Host "  Tried: $localVenv" -ForegroundColor Gray
     Write-Host "  Tried: $mainVenv" -ForegroundColor Gray
     Write-Host "  Please create a virtual environment or run from the correct directory." -ForegroundColor Yellow
+    exit 1
+}
+
+# Find node_modules (similar logic for frontend)
+$localNodeModules = Join-Path $currentDir "frontend\react-Admin3\node_modules"
+$mainNodeModules = Join-Path $mainWorktree "frontend\react-Admin3\node_modules"
+
+if (Test-Path $localNodeModules) {
+    $frontendDir = Join-Path $currentDir "frontend\react-Admin3"
+    $nodeModulesType = "local"
+    Write-Host "Using local node_modules" -ForegroundColor Cyan
+} elseif (Test-Path $mainNodeModules) {
+    $frontendDir = Join-Path $mainWorktree "frontend\react-Admin3"
+    $nodeModulesType = "main"
+    Write-Host "Using main worktree node_modules" -ForegroundColor Cyan
+} else {
+    Write-Host "⚠ No node_modules found." -ForegroundColor Red
+    Write-Host "  Tried: $localNodeModules" -ForegroundColor Gray
+    Write-Host "  Tried: $mainNodeModules" -ForegroundColor Gray
+    Write-Host "  Please run 'npm install' in frontend/react-Admin3 directory." -ForegroundColor Yellow
     exit 1
 }
 

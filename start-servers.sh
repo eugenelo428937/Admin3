@@ -9,29 +9,28 @@ BACKEND_ENV_PATH="backend/django_Admin3/.env.development"
 BACKEND_PORT=8888  # Default port
 
 if [ -f "$BACKEND_ENV_PATH" ]; then
-    if grep -q "^PORT=" "$BACKEND_ENV_PATH"; then
-        BACKEND_PORT=$(grep "^PORT=" "$BACKEND_ENV_PATH" | cut -d '=' -f2 | tr -d '\r\n ')
+    if grep -q "^BACKEND_PORT=" "$BACKEND_ENV_PATH"; then
+        BACKEND_PORT=$(grep "^BACKEND_PORT=" "$BACKEND_ENV_PATH" | cut -d '=' -f2 | tr -d '\r\n ')
         echo -e "\033[0;36mBackend port from .env: $BACKEND_PORT\033[0m"
     else
-        echo -e "\033[0;33mBackend port not found in .env, using default: $BACKEND_PORT\033[0m"
+        echo -e "\033[0;33mBACKEND_PORT not found in .env, using default: $BACKEND_PORT\033[0m"
     fi
 else
     echo -e "\033[0;33mBackend .env not found, using default port: $BACKEND_PORT\033[0m"
 fi
 
-# Read frontend port from .env
-FRONTEND_ENV_PATH="frontend/react-Admin3/.env"
+# Read frontend port from backend .env.development (FRONTEND_PORT)
 FRONTEND_PORT=3000  # Default port
 
-if [ -f "$FRONTEND_ENV_PATH" ]; then
-    if grep -q "^PORT=" "$FRONTEND_ENV_PATH"; then
-        FRONTEND_PORT=$(grep "^PORT=" "$FRONTEND_ENV_PATH" | cut -d '=' -f2 | tr -d '\r\n ')
+if [ -f "$BACKEND_ENV_PATH" ]; then
+    if grep -q "^FRONTEND_PORT=" "$BACKEND_ENV_PATH"; then
+        FRONTEND_PORT=$(grep "^FRONTEND_PORT=" "$BACKEND_ENV_PATH" | cut -d '=' -f2 | tr -d '\r\n ')
         echo -e "\033[0;36mFrontend port from .env: $FRONTEND_PORT\033[0m"
     else
-        echo -e "\033[0;33mFrontend port not found in .env, using default: $FRONTEND_PORT\033[0m"
+        echo -e "\033[0;33mFRONTEND_PORT not found in .env, using default: $FRONTEND_PORT\033[0m"
     fi
 else
-    echo -e "\033[0;33mFrontend .env not found, using default port: $FRONTEND_PORT\033[0m"
+    echo -e "\033[0;33mBackend .env not found, using default frontend port: $FRONTEND_PORT\033[0m"
 fi
 
 # Get current directory
@@ -59,6 +58,26 @@ else
     exit 1
 fi
 
+# Find node_modules (similar logic for frontend)
+LOCAL_NODE_MODULES="$CURRENT_DIR/frontend/react-Admin3/node_modules"
+MAIN_NODE_MODULES="$MAIN_WORKTREE/frontend/react-Admin3/node_modules"
+
+if [ -d "$LOCAL_NODE_MODULES" ]; then
+    FRONTEND_DIR="$CURRENT_DIR/frontend/react-Admin3"
+    NODE_MODULES_TYPE="local"
+    echo -e "\033[0;36mUsing local node_modules\033[0m"
+elif [ -d "$MAIN_NODE_MODULES" ]; then
+    FRONTEND_DIR="$MAIN_WORKTREE/frontend/react-Admin3"
+    NODE_MODULES_TYPE="main"
+    echo -e "\033[0;36mUsing main worktree node_modules\033[0m"
+else
+    echo -e "\033[0;31m⚠ No node_modules found.\033[0m"
+    echo -e "\033[0;37m  Tried: $LOCAL_NODE_MODULES\033[0m"
+    echo -e "\033[0;37m  Tried: $MAIN_NODE_MODULES\033[0m"
+    echo -e "\033[0;33m  Please run 'npm install' in frontend/react-Admin3 directory.\033[0m"
+    exit 1
+fi
+
 # Detect OS
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
@@ -74,7 +93,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
     # Start React server in new Terminal tab
     echo -e "\033[0;32mStarting React on port $FRONTEND_PORT...\033[0m"
-    osascript -e "tell application \"Terminal\" to do script \"cd '$CURRENT_DIR/frontend/react-Admin3' && npm start\""
+    osascript -e "tell application \"Terminal\" to do script \"cd '$FRONTEND_DIR' && npm start\""
 
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     # Linux
@@ -113,9 +132,9 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     # Start React server
     echo -e "\033[0;32mStarting React on port $FRONTEND_PORT...\033[0m"
     if [ "$TERMINAL" = "gnome-terminal" ]; then
-        $TERMINAL -- bash -c "cd '$CURRENT_DIR/frontend/react-Admin3'; npm start; exec bash" &
+        $TERMINAL -- bash -c "cd '$FRONTEND_DIR'; npm start; exec bash" &
     else
-        $TERMINAL -e bash -c "cd '$CURRENT_DIR/frontend/react-Admin3'; npm start; exec bash" &
+        $TERMINAL -e bash -c "cd '$FRONTEND_DIR'; npm start; exec bash" &
     fi
 
 else
