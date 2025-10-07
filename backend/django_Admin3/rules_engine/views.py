@@ -396,7 +396,7 @@ class RulesEngineViewSet(viewsets.ViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    @action(detail=False, methods=['post'], url_path='calculate-vat', permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['post'], url_path='calculate-vat', permission_classes=[AllowAny])
     def calculate_vat(self, request):
         """POST /rules/calculate-vat/ - Calculate VAT using rules engine"""
         try:

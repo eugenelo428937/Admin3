@@ -25,6 +25,8 @@ env = environ.Env(
     ALLOWED_HOSTS=(list, []),
     CORS_ALLOWED_ORIGINS=(list, []),
     CRSF_ALLOWED_ORIGINS=(list, []),
+    BACKEND_PORT=(str, "8888"),
+    FRONTEND_PORT=(str, "3000")
 )
 
 # Read .env file if it exists
@@ -340,7 +342,7 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@acted.com')
 #     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Password Reset Settings
-FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://127.0.0.1:3000')
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://127.0.0.1:{os.environ.get(FRONTEND_PORT)}')
 PASSWORD_RESET_TIMEOUT_HOURS = float(os.environ.get('PASSWORD_RESET_TIMEOUT_HOURS', '0.25'))  # 0.25 hours = 15 minutes
 PASSWORD_RESET_TIMEOUT = 900  # 15 minutes in seconds for Django's token validation
 
