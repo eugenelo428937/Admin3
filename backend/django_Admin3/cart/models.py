@@ -36,6 +36,88 @@ class Cart(models.Model):
             return f"Cart (User: {self.user.username})"
         return f"Cart (Session: {self.session_key})"
 
+    def calculate_vat(self, country_code):
+        """
+        Calculate VAT for cart items.
+
+        Args:
+            country_code: ISO 3166-1 alpha-2 country code (e.g., 'GB', 'IE')
+
+        Returns:
+            dict: VAT calculation results or error information
+        """
+        from utils.services.vat_service import VATCalculationService
+        from decimal import Decimal
+
+        vat_service = VATCalculationService()
+
+        # Build cart items for VAT calculation
+        cart_items_data = []
+        for item in self.items.all():
+            if item.item_price:
+                cart_items_data.append({
+                    'net_price': Decimal(str(item.item_price)),
+                    'quantity': item.quantity
+                })
+
+        try:
+            if cart_items_data:
+                result = vat_service.calculate_vat_for_cart(
+                    country_code=country_code,
+                    cart_items=cart_items_data
+                )
+            else:
+                # Empty cart
+                result = vat_service.calculate_vat_for_cart(
+                    country_code=country_code,
+                    cart_items=[]
+                )
+
+            return result
+
+        except Exception as e:
+            return {
+                'error': str(e),
+                'country_code': country_code
+            }
+
+    def calculate_and_save_vat(self, country_code):
+        """
+        Calculate VAT and store result in vat_result field.
+
+        Args:
+            country_code: ISO 3166-1 alpha-2 country code
+
+        Returns:
+            dict: VAT calculation results
+        """
+        result = self.calculate_vat(country_code)
+
+        # Convert Decimal to string for JSON storage
+        def decimal_to_str(obj):
+            from decimal import Decimal
+            if isinstance(obj, Decimal):
+                return str(obj)
+            elif isinstance(obj, dict):
+                return {k: decimal_to_str(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [decimal_to_str(item) for item in obj]
+            return obj
+
+        self.vat_result = decimal_to_str(result)
+        self.save(update_fields=['vat_result', 'updated_at'])
+
+        return result
+
+    def get_vat_calculation(self):
+        """
+        Get stored VAT calculation result.
+
+        Returns:
+            dict or None: Stored VAT calculation or None if not calculated
+        """
+        return self.vat_result
+
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, related_name="items", on_delete=models.CASCADE)
     

@@ -126,45 +126,63 @@ class CartSerializer(serializers.ModelSerializer):
 
     def get_vat_calculations(self, obj):
         """Calculate and return VAT calculations for cart"""
-        from vat.service import calculate_vat_for_cart
-        from vat.utils import decimal_to_float
-
         # Get user from request context
         request = self.context.get('request')
-        user = request.user if request and hasattr(request, 'user') and request.user.is_authenticated else None
 
-        # Extract client IP for anonymous users (supports proxies via X-Forwarded-For)
-        client_ip = None
-        if request:
-            # X-Forwarded-For header contains comma-separated IPs (client, proxy1, proxy2...)
-            # First IP is the original client IP
-            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-            if x_forwarded_for:
-                client_ip = x_forwarded_for.split(',')[0].strip()
-            else:
-                client_ip = request.META.get('REMOTE_ADDR')
+        # Try to get country from user profile or use default
+        country_code = 'GB'  # Default to UK
 
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            # Try to get user's billing country from profile
+            try:
+                from userprofile.models import UserProfile
+                from userprofile.models.address import UserProfileAddress
+
+                user_profile = UserProfile.objects.get(user=request.user)
+
+                # Try billing address first, then home address
+                billing_address = UserProfileAddress.objects.filter(
+                    user_profile=user_profile,
+                    address_type='BILLING'
+                ).first()
+
+                if billing_address and billing_address.country:
+                    country_code = billing_address.country
+                else:
+                    home_address = UserProfileAddress.objects.filter(
+                        user_profile=user_profile,
+                        address_type='HOME'
+                    ).first()
+
+                    if home_address and home_address.country:
+                        country_code = home_address.country
+
+            except Exception as e:
+                print(f"[CartSerializer.get_vat_calculations] Could not get user country: {e}")
+
+        # Check if VAT is already calculated and stored
+        if obj.vat_result and isinstance(obj.vat_result, dict):
+            stored_country = obj.vat_result.get('country_code')
+
+            # Return stored result if country matches
+            if stored_country == country_code:
+                return obj.vat_result
+
+        # Calculate and store VAT
         try:
-            # Calculate VAT for cart (pass client_ip for anonymous user geolocation)
-            vat_result = calculate_vat_for_cart(user, obj, client_ip=client_ip)
-
-            # Return only the vat_calculations portion (convert Decimals to floats for JSON)
-            return decimal_to_float(vat_result.get('vat_calculations', {}))
+            obj.calculate_and_save_vat(country_code)
+            return obj.vat_result
         except Exception as e:
             # Return empty structure on error to prevent serialization failure
             print(f"[CartSerializer.get_vat_calculations] Error: {e}")
             return {
+                'country_code': country_code,
+                'vat_rate': '0.00',
+                'total_net_amount': '0.00',
+                'total_vat_amount': '0.00',
+                'total_gross_amount': '0.00',
                 'items': [],
-                'totals': {
-                    'subtotal': 0.00,
-                    'total_vat': 0.00,
-                    'total_gross': 0.00,
-                    'effective_vat_rate': 0.00
-                },
-                'region_info': {
-                    'country': None,
-                    'region': 'ROW'
-                }
+                'error': str(e)
             }
 
 class ActedOrderItemSerializer(serializers.ModelSerializer):

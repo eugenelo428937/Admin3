@@ -416,3 +416,75 @@ def check_expired_marking_deadlines(cart_items, params):
             'expired_products': [],
             'warnings': []
         }
+
+
+# ============================================================================
+# VAT Calculation Integration (Epic 3 - Phase 2)
+# ============================================================================
+
+def calculate_vat_for_context(context, params):
+    """
+    Calculate VAT for a given context using the new VAT calculation service.
+    This function integrates the VAT service with the rules engine.
+
+    Args:
+        context: Dictionary containing country_code, net_amount, or cart_items
+        params: Dictionary with optional parameter overrides
+
+    Returns:
+        dict: VAT calculation results or error information
+
+    Examples:
+        >>> context = {'country_code': 'GB', 'net_amount': Decimal('100.00')}
+        >>> result = calculate_vat_for_context(context, {})
+        >>> result['vat_amount']
+        Decimal('20.00')
+    """
+    try:
+        from utils.services.vat_service import VATCalculationService
+
+        vat_service = VATCalculationService()
+
+        # Get country code from params (override) or context
+        country_code = params.get('country_code') or context.get('country_code')
+
+        if not country_code:
+            return {
+                'error': 'country_code is required for VAT calculation',
+                'success': False
+            }
+
+        # Check if cart items are provided
+        cart_items = context.get('cart_items') or params.get('cart_items')
+
+        if cart_items:
+            # Calculate VAT for cart items
+            result = vat_service.calculate_vat_for_cart(
+                country_code=country_code,
+                cart_items=cart_items
+            )
+        else:
+            # Calculate VAT for single net amount
+            net_amount = params.get('net_amount') or context.get('net_amount')
+
+            if not net_amount:
+                return {
+                    'error': 'net_amount or cart_items is required for VAT calculation',
+                    'success': False
+                }
+
+            result = vat_service.calculate_vat(
+                country_code=country_code,
+                net_amount=Decimal(str(net_amount))
+            )
+
+        result['success'] = True
+        logger.info(f"VAT calculated for {country_code}: {result.get('vat_amount', result.get('total_vat_amount'))}")
+        return result
+
+    except Exception as e:
+        logger.error(f"Error in calculate_vat_for_context: {str(e)}")
+        return {
+            'error': str(e),
+            'success': False
+        }
