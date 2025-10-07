@@ -1,8 +1,30 @@
-# Architectural Change: Summary Bar Vertical Stacking
+# ⚠️ DEPRECATED: Architectural Change: Summary Bar Vertical Stacking
 
-**Date**: 2025-10-06
+**Date**: 2025-10-06 (DEPRECATED 2025-10-07)
 **Branch**: 001-docs-stories-epic
 **Type**: Architectural Refactoring
+**Status**: ⚠️ **DEPRECATED - INCORRECT APPROACH**
+
+---
+
+## 🚨 DEPRECATION NOTICE
+
+**This document describes an INCORRECT architectural approach.**
+
+The implementation described here created a separate `/tutorials` route with `TutorialProductList.js`, which violates the principle that **tutorials are just products**.
+
+**Please refer to the correct architecture:**
+📄 **`ARCHITECTURE_CORRECTION_GLOBAL_SUMMARY_BARS.md`**
+
+### Why This Was Wrong
+- ❌ Created unnecessary `/tutorials` route
+- ❌ Tutorials should be displayed in main `ProductList.js` with all products
+- ❌ Summary bars should be global (App-level), not managed by ProductList
+- ❌ Summary bars should be controlled by `TutorialChoiceContext`, not parent components
+
+---
+
+## Original Document (For Historical Reference Only)
 
 ---
 
@@ -196,15 +218,16 @@ Bottom-left corner:
 
 ### ~~Edit Handler Not Fully Implemented~~ ✅ RESOLVED
 
-**Status:** ✅ **IMPLEMENTED** (2025-10-06)
+**Status:** ✅ **FULLY FUNCTIONAL** (2025-10-07)
 
-**Solution Applied:** Option A (Recommended) - Lift dialog state to `TutorialProductList` level
+**Solution Applied:** Lift dialog state to `TutorialProductList` level
 - ✅ Dialogs are now controlled by parent via `dialogOpen` and `onDialogClose` props
 - ✅ Cards support both controlled and uncontrolled modes (backward compatible)
 - ✅ Edit button opens the correct dialog for the selected subject
-- ✅ Comprehensive tests added and passing (2/2)
+- ✅ Only one dialog can be open at a time
+- ✅ All tests passing (41/41)
 
-**See:** `FEATURE_EDIT_HANDLER_IMPLEMENTATION.md` for full implementation details
+**See:** `EDIT_HANDLER_COMPLETE.md` for implementation details and verification flow
 
 ---
 
@@ -219,9 +242,10 @@ Bottom-left corner:
 6. ✅ Select 1st choice for SP1 tutorial
 7. ✅ Third summary bar appears BELOW the second
 8. ✅ All three bars visible and accessible
-9. ✅ Click "Add to Cart" on CS2 bar → cart increments, bar collapses
-10. ✅ Click "Remove" on CP1 bar → CP1 bar disappears, choices removed
-11. ⚠️ Click "Edit" on SP1 bar → logs to console (dialog not opening - expected)
+9. ✅ Click "Edit" on CS2 bar → CS2 selection dialog opens
+10. ✅ Click "Edit" on SP1 bar → SP1 dialog opens (CS2 closes)
+11. ✅ Click "Add to Cart" on CS2 bar → cart increments, bar collapses
+12. ✅ Click "Remove" on CP1 bar → CP1 bar disappears, choices removed
 
 ### Automated Tests:
 - Run `npm test -- --testPathPattern=Tutorial` to verify no regressions

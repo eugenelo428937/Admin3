@@ -1,10 +1,11 @@
 import React, { useMemo } from "react";
-import { Row, Col, Card, Badge, Button} from "react-bootstrap";
-import{ Container } from "@mui/material";
+import { Badge, Button } from "react-bootstrap";
+import { Card, CardContent, Container, Grid, useTheme } from "@mui/material";
 import { Filter, ArrowRight, X } from "react-bootstrap-icons";
 import ProductCard from "./Product/ProductCard/MaterialProductCard";
 import useProductCardHelpers from "../hooks/useProductCardHelpers";
 import "../styles/search_results.css";
+import { ThemeProvider } from "@mui/material/styles";
 
 const SearchResults = ({
 	searchResults,
@@ -14,14 +15,15 @@ const SearchResults = ({
 	onFilterRemove,
 	onShowMatchingProducts,
 	isFilterSelected,
-	maxSuggestions = 5,
+	maxSuggestions = 3,
 	loading = false,
 	error = null,
 }) => {
+	const theme = useTheme();
 	// Memoize top products calculation to prevent infinite re-renders
 	const topProducts = useMemo(() => {
 		return searchResults?.suggested_products?.length > 0
-			? searchResults.suggested_products.slice(0, 5)
+			? searchResults.suggested_products.slice(0, 3)
 			: [];
 	}, [searchResults?.suggested_products]);
 
@@ -144,7 +146,6 @@ const SearchResults = ({
 		// Use the provided searchQuery, but fallback to search_info if needed
 		const queryToUse = searchQuery || searchResults?.search_info?.query || "";
 
-
 		onShowMatchingProducts(searchResults, selectedFilters, queryToUse);
 	};
 
@@ -152,35 +153,35 @@ const SearchResults = ({
 		<Container className="search-results-container mb-3" maxWidth={false}>
 			{/* Error Display */}
 			{error && (
-				<Row className="mb-3">
-					<Col>
+				<Grid container className="mb-3">
+					<Grid>
 						<div className="alert alert-danger" role="alert">
 							{error}
 						</div>
-					</Col>
-				</Row>
+					</Grid>
+				</Grid>
 			)}
 
 			{/* Loading State */}
 			{loading && (
-				<Row className="mb-3">
-					<Col className="text-center">
+				<Grid container className="mb-3">
+					<Grid className="text-center">
 						<div className="spinner-border text-primary" role="status">
 							<span className="visually-hidden">Loading...</span>
 						</div>
 						<p className="mt-2 text-muted">Searching products...</p>
-					</Col>
-				</Row>
+					</Grid>
+				</Grid>
 			)}
 
 			{/* Two Column Layout */}
 			{!loading && searchResults && (
-				<Row className="w-100">
+				<Grid container spacing={2}>
 					{/* Left Column: Filters */}
-					<Col lg={2} className="mb-4">
+					<Grid size={{ lg: 2 }}>
 						<Card className="suggestion-filters-card h-100">
-							<Card.Body>
-								<div className="d-flex align-items-center mb-3">
+							<CardContent>
+								<div className="d-flex align-items-center mb-3 pb-3">
 									<Filter className="me-2 text-primary" />
 									<h6 className="mb-0">
 										{searchQuery
@@ -263,39 +264,50 @@ const SearchResults = ({
 								)}
 
 								{/* Active Filters Section */}
-								{Object.values(selectedFilters).some(filterArray => filterArray.length > 0) && (
+								{Object.values(selectedFilters).some(
+									(filterArray) => filterArray.length > 0
+								) && (
 									<div className="mt-4 pt-3 border-top">
-										<h6 className="filter-category-title">Active Filters</h6>
+										<h6 className="filter-category-title">
+											Active Filters
+										</h6>
 										<div className="filter-badges-container">
 											{/* Show all selected filters */}
-											{Object.entries(selectedFilters).map(([filterType, filters]) =>
-												filters.map(filter => (
-													<Badge
-														key={`active-${filterType}-${filter.id}`}
-														bg="success"
-														className="me-2 mb-2 filter-badge selected"
-														onClick={() => onFilterRemove(filterType, filter)}
-														style={{ cursor: "pointer" }}>
-														{getDisplayName(filter)}
-														<X className="ms-1" size={12} />
-													</Badge>
-												))
+											{Object.entries(selectedFilters).map(
+												([filterType, filters]) =>
+													filters.map((filter) => (
+														<Badge
+															key={`active-${filterType}-${filter.id}`}
+															bg="success"
+															className="me-2 mb-2 filter-badge selected"
+															onClick={() =>
+																onFilterRemove(
+																	filterType,
+																	filter
+																)
+															}
+															style={{ cursor: "pointer" }}>
+															{getDisplayName(filter)}
+															<X className="ms-1" size={12} />
+														</Badge>
+													))
 											)}
 										</div>
 										<small className="text-muted">
-											Showing {filteredProducts.length} of {topProducts.length} products
+											Showing {filteredProducts.length} of{" "}
+											{topProducts.length} products
 										</small>
 									</div>
 								)}
-							</Card.Body>
+							</CardContent>
 						</Card>
-					</Col>
+					</Grid>
 
 					{/* Right Column: Products */}
-					<Col lg={10}>
+					<Grid size={{ lg: 10 }}>
 						{filteredProducts.length > 0 ? (
 							<Card className="top-products-card">
-								<Card.Body>
+								<CardContent>
 									<div className="d-flex align-items-center justify-content-between mb-3">
 										<div className="d-flex align-items-center">
 											<h5 className="mb-0">
@@ -321,13 +333,13 @@ const SearchResults = ({
 										)}
 									</div>
 
-									<Row>
+									<Grid container spacing={0}>
 										{filteredProducts.map((product, index) => (
-											<Col
-												key={product.id || product.essp_id || index}
-												lg={6}
-												xl={4}
-												className="mb-3">
+											<Grid
+												size={{ xl: 3, lg: 4, md: 6, sm: 12 }}
+												key={
+													product.id || product.essp_id || index
+												} className="d-flex align-items-center justify-content-center flex-wrap">
 												<ProductCard
 													product={{
 														...product,
@@ -349,9 +361,9 @@ const SearchResults = ({
 													allEsspIds={allEsspIds}
 													bulkDeadlines={bulkDeadlines}
 												/>
-											</Col>
+											</Grid>
 										))}
-									</Row>
+									</Grid>
 
 									{/* Show All Results Button */}
 									{searchQuery && (
@@ -371,32 +383,36 @@ const SearchResults = ({
 											</small>
 										</div>
 									)}
-								</Card.Body>
+								</CardContent>
 							</Card>
 						) : (
 							/* No Results State */
 							<Card className="text-center py-5">
-								<Card.Body>
+								<CardContent>
 									<Filter size={48} className="text-muted mb-3" />
 									<h5 className="text-muted">
-										{Object.values(selectedFilters).some(filterArray => filterArray.length > 0)
+										{Object.values(selectedFilters).some(
+											(filterArray) => filterArray.length > 0
+										)
 											? "No products match your filters"
 											: searchQuery
 											? "No results found"
 											: "Start searching to see products"}
 									</h5>
 									<p className="text-muted">
-										{Object.values(selectedFilters).some(filterArray => filterArray.length > 0)
+										{Object.values(selectedFilters).some(
+											(filterArray) => filterArray.length > 0
+										)
 											? `Try removing some filters or search for different terms. ${topProducts.length} products available before filtering.`
 											: searchQuery
 											? `No products found for "${searchQuery}". Try different keywords or check your spelling.`
 											: "Enter keywords in the search box above to find products, subjects, and categories."}
 									</p>
-								</Card.Body>
+								</CardContent>
 							</Card>
 						)}
-					</Col>
-				</Row>
+					</Grid>
+				</Grid>
 			)}
 		</Container>
 	);
