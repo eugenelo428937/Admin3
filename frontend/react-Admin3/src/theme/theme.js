@@ -61,6 +61,8 @@ const theme = createTheme({
 			fontOpticalSizing: "auto",
 			fontStyle: "normal",
 			fontVariationSettings: "'wght' 200",
+			marginTop:
+				"calc( var(--2xs) / var(--halfstep) / var(--halfstep) / var(--eighthstep))",
 		},
 		h1: {
 			fontFamily: "'Inter', sans-serif",

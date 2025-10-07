@@ -8,6 +8,7 @@ import { Typography, Container } from "@mui/material";
 import { rulesEngineHelpers } from "../utils/rulesEngineUtils";
 import rulesEngineService from "../services/rulesEngineService";
 
+
 const Home = () => {
 	const navigate = useNavigate();
 	const theme = useTheme();
@@ -255,7 +256,8 @@ const Home = () => {
 									</Typography>
 									<Typography
 										variant="Acted"
-										color={theme.palette.md3.surfaceVariant}>
+										color={theme.palette.md3.surfaceVariant}
+										className="m-top__xs">
 										Actuarial Education
 									</Typography>
 								</Box>
