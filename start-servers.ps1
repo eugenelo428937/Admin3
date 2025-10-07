@@ -118,8 +118,10 @@ if ($IsWindows -or $env:OS -eq "Windows_NT") {
         Write-Host "Using main worktree node_modules: $reactDir" -ForegroundColor Cyan
     }
 
-    # Set PORT environment variable to override .env file
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$reactDir'; `$env:PORT=$frontendPort; npm start"
+    # Set environment variables to override .env file (use current worktree's backend port)
+    $apiBaseUrl = "http://127.0.0.1:$backendPort"
+    Write-Host "Setting REACT_APP_API_BASE_URL=$apiBaseUrl" -ForegroundColor Yellow
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$reactDir'; `$env:PORT=$frontendPort; `$env:REACT_APP_API_BASE_URL='$apiBaseUrl'; npm start"
 
 } else {
     # Mac/Linux - use bash
@@ -171,9 +173,13 @@ python manage.py runserver $backendPort
             Write-Host "Using main worktree node_modules: $reactDir" -ForegroundColor Cyan
         }
 
+        # Set environment variables to override .env file (use current worktree's backend port)
+        $apiBaseUrl = "http://127.0.0.1:$backendPort"
+        Write-Host "Setting REACT_APP_API_BASE_URL=$apiBaseUrl" -ForegroundColor Yellow
         $reactScript = @"
 cd '$reactDir'
 export PORT=$frontendPort
+export REACT_APP_API_BASE_URL=$apiBaseUrl
 npm start
 "@
         osascript -e "tell application `"Terminal`" to do script `"$reactScript`""
@@ -222,10 +228,14 @@ npm start
                 Write-Host "Using main worktree node_modules: $reactDir" -ForegroundColor Cyan
             }
 
+            # Set environment variables to override .env file (use current worktree's backend port)
+            $apiBaseUrl = "http://127.0.0.1:$backendPort"
+            Write-Host "Setting REACT_APP_API_BASE_URL=$apiBaseUrl" -ForegroundColor Yellow
+
             if ($terminal -eq "gnome-terminal") {
-                & $terminal -- bash -c "cd '$reactDir'; export PORT=$frontendPort; npm start; exec bash"
+                & $terminal -- bash -c "cd '$reactDir'; export PORT=$frontendPort; export REACT_APP_API_BASE_URL=$apiBaseUrl; npm start; exec bash"
             } else {
-                & $terminal -e bash -c "cd '$reactDir'; export PORT=$frontendPort; npm start; exec bash"
+                & $terminal -e bash -c "cd '$reactDir'; export PORT=$frontendPort; export REACT_APP_API_BASE_URL=$apiBaseUrl; npm start; exec bash"
             }
         } else {
             Write-Host "No suitable terminal emulator found. Please install gnome-terminal, konsole, or xterm." -ForegroundColor Red
