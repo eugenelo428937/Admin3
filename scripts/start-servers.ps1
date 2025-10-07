@@ -6,7 +6,11 @@ $backendEnvPath = "backend/django_Admin3/.env.development"
 $backendPort = 8888  # Default port
 if (Test-Path $backendEnvPath) {
     $backendEnvContent = Get-Content $backendEnvPath
+    # Try BACKEND_PORT first, then fallback to PORT
     $portLine = $backendEnvContent | Select-String -Pattern "^BACKEND_PORT=(.*)$"
+    if (-not $portLine) {
+        $portLine = $backendEnvContent | Select-String -Pattern "^PORT=(.*)$"
+    }
     if ($portLine) {
         $backendPort = $portLine.Matches.Groups[1].Value.Trim()
         Write-Host "Backend port from .env: $backendPort" -ForegroundColor Cyan
@@ -14,7 +18,7 @@ if (Test-Path $backendEnvPath) {
         Write-Host "BACKEND_PORT not found in .env, using default: $backendPort" -ForegroundColor Yellow
     }
 } else {
-    Write-Host "Backend .env not found, using default port: $backendPort" -ForegroundColor Yellow
+    Write-Host "Backend .env not found at $backendEnvPath, using default port: $backendPort" -ForegroundColor Yellow
 }
 
 # Read frontend port from backend .env.development (FRONTEND_PORT)
@@ -27,6 +31,16 @@ if (Test-Path $backendEnvPath) {
         Write-Host "Frontend port from .env: $frontendPort" -ForegroundColor Cyan
     } else {
         Write-Host "FRONTEND_PORT not found in .env, using default: $frontendPort" -ForegroundColor Yellow
+    }
+} elseif (Test-Path $backendEnvPath) {
+    # Fallback: Try reading FRONTEND_PORT from backend .env.development
+    $backendEnvContent = Get-Content $backendEnvPath
+    $portLine = $backendEnvContent | Select-String -Pattern "^FRONTEND_PORT=(.*)$"
+    if ($portLine) {
+        $frontendPort = $portLine.Matches.Groups[1].Value.Trim()
+        Write-Host "Frontend port from backend .env: $frontendPort" -ForegroundColor Cyan
+    } else {
+        Write-Host "Frontend port not found, using default: $frontendPort" -ForegroundColor Yellow
     }
 } else {
     Write-Host "Backend .env not found, using default frontend port: $frontendPort" -ForegroundColor Yellow
@@ -93,7 +107,19 @@ if ($IsWindows -or $env:OS -eq "Windows_NT") {
 
     # Start React server in new PowerShell window
     Write-Host "Starting React on port $frontendPort..." -ForegroundColor Green
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$frontendDir'; npm start"
+
+    # Check if node_modules exists locally or use main worktree
+    $localNodeModules = Join-Path $currentDir "frontend\react-Admin3\node_modules"
+    if (Test-Path $localNodeModules) {
+        $reactDir = "$currentDir\frontend\react-Admin3"
+        Write-Host "Using local node_modules: $reactDir" -ForegroundColor Cyan
+    } else {
+        $reactDir = "$mainWorktree\frontend\react-Admin3"
+        Write-Host "Using main worktree node_modules: $reactDir" -ForegroundColor Cyan
+    }
+
+    # Set PORT environment variable to override .env file
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$reactDir'; `$env:PORT=$frontendPort; npm start"
 
 } else {
     # Mac/Linux - use bash
@@ -134,8 +160,20 @@ python manage.py runserver $backendPort
 
         # Start React server in new Terminal tab (macOS)
         Write-Host "Starting React on port $frontendPort..." -ForegroundColor Green
+
+        # Check if node_modules exists locally or use main worktree
+        $localNodeModules = Join-Path $currentDir "frontend/react-Admin3/node_modules"
+        if (Test-Path $localNodeModules) {
+            $reactDir = "$currentDir/frontend/react-Admin3"
+            Write-Host "Using local node_modules: $reactDir" -ForegroundColor Cyan
+        } else {
+            $reactDir = "$mainWorktree/frontend/react-Admin3"
+            Write-Host "Using main worktree node_modules: $reactDir" -ForegroundColor Cyan
+        }
+
         $reactScript = @"
-cd '$frontendDir'
+cd '$reactDir'
+export PORT=$frontendPort
 npm start
 "@
         osascript -e "tell application `"Terminal`" to do script `"$reactScript`""
@@ -173,10 +211,21 @@ npm start
 
             # Start React server
             Write-Host "Starting React on port $frontendPort..." -ForegroundColor Green
-            if ($terminal -eq "gnome-terminal") {
-                & $terminal -- bash -c "cd '$frontendDir'; npm start; exec bash"
+
+            # Check if node_modules exists locally or use main worktree
+            $localNodeModules = Join-Path $currentDir "frontend/react-Admin3/node_modules"
+            if (Test-Path $localNodeModules) {
+                $reactDir = "$currentDir/frontend/react-Admin3"
+                Write-Host "Using local node_modules: $reactDir" -ForegroundColor Cyan
             } else {
-                & $terminal -e bash -c "cd '$frontendDir'; npm start; exec bash"
+                $reactDir = "$mainWorktree/frontend/react-Admin3"
+                Write-Host "Using main worktree node_modules: $reactDir" -ForegroundColor Cyan
+            }
+
+            if ($terminal -eq "gnome-terminal") {
+                & $terminal -- bash -c "cd '$reactDir'; export PORT=$frontendPort; npm start; exec bash"
+            } else {
+                & $terminal -e bash -c "cd '$reactDir'; export PORT=$frontendPort; npm start; exec bash"
             }
         } else {
             Write-Host "No suitable terminal emulator found. Please install gnome-terminal, konsole, or xterm." -ForegroundColor Red
