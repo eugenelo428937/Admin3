@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Button } from 'react-bootstrap';
 import { generateProductCode } from '../../../utils/productCodeGenerator';
-import { formatVatLabel } from '../../../utils/vatUtils';
+import VATBreakdown from '../../Common/VATBreakdown';
 
 const CartSummaryPanel = ({
   cartItems = [],
@@ -88,32 +88,12 @@ const CartSummaryPanel = ({
         {/* Order Summary */}
         {vatCalculations && (
           <div className="border-top pt-2">
-            <div className="d-flex justify-content-between">
-              <small>Subtotal:</small>
-              <small>£{vatCalculations.totals.subtotal.toFixed(2)}</small>
-            </div>
-            <div className="d-flex justify-content-between">
-              <small>{formatVatLabel(vatCalculations.totals.effective_vat_rate)}:</small>
-              <small>£{vatCalculations.totals.total_vat.toFixed(2)}</small>
-            </div>
-            {/* Display fees separately from VAT */}
-            {vatCalculations.fees && vatCalculations.fees.length > 0 && (
-              <>
-                {vatCalculations.fees.map((fee, index) => (
-                  <div key={index} className="d-flex justify-content-between">
-                    <small className="text-muted">
-                      {fee.name || fee.description || 'Fee'}:
-                    </small>
-                    <small>£{parseFloat(fee.amount).toFixed(2)}</small>
-                  </div>
-                ))}
-              </>
-            )}
-            <hr className="my-2" />
-            <div className="d-flex justify-content-between">
-              <strong>Total:</strong>
-              <strong>£{vatCalculations.totals.total_gross.toFixed(2)}</strong>
-            </div>
+            <VATBreakdown
+              vatCalculations={vatCalculations}
+              fees={vatCalculations.fees}
+              variant="inline"
+              className=""
+            />
           </div>
         )}
       </Card.Body>
