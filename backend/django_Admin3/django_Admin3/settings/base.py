@@ -235,6 +235,7 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
+# Build CSRF trusted origins dynamically
 CSRF_TRUSTED_ORIGINS = [
     f"http://127.0.0.1:{env('FRONTEND_PORT')}",
     f"http://127.0.0.1:{env('FRONTEND_PORT')}",
