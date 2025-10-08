@@ -2,7 +2,7 @@
 
 Please see Project Documentation Folder for more information.
 
-1. [Overview](https://github.com/actedoffice/ActEd/wiki/)
+1. [Overview](./docs/0-overview.md)
 1. [Design Specifications](https://github.com/actedoffice/ActEd/wiki/)
 1. [Function Specifications](https://github.com/actedoffice/ActEd/wiki/)
 1. [Information Flow](https://github.com/actedoffice/ActEd/wiki/)

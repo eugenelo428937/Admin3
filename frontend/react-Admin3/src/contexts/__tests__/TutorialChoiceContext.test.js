@@ -793,5 +793,51 @@ describe('TutorialChoiceContext - isDraft State Management', () => {
         }).toThrow('useTutorialChoice must be used within a TutorialChoiceProvider');
       });
     });
+
+    /**
+     * T008: RED Phase Test
+     * Verify openEditDialog sets editDialogOpen state
+     */
+    describe('Dialog management (T008-T009)', () => {
+      it('should set editDialogOpen when openEditDialog called', () => {
+        const { result } = renderHook(() => useTutorialChoice(), {
+          wrapper: TutorialChoiceProvider
+        });
+
+        // Initially should be null
+        expect(result.current.editDialogOpen).toBeNull();
+
+        // Open dialog for CS2
+        act(() => {
+          result.current.openEditDialog('CS2');
+        });
+
+        expect(result.current.editDialogOpen).toBe('CS2');
+      });
+
+      /**
+       * T009: RED Phase Test
+       * Verify closeEditDialog clears editDialogOpen state
+       */
+      it('should clear editDialogOpen when closeEditDialog called', () => {
+        const { result } = renderHook(() => useTutorialChoice(), {
+          wrapper: TutorialChoiceProvider
+        });
+
+        // Open dialog first
+        act(() => {
+          result.current.openEditDialog('CS2');
+        });
+
+        expect(result.current.editDialogOpen).toBe('CS2');
+
+        // Close dialog
+        act(() => {
+          result.current.closeEditDialog();
+        });
+
+        expect(result.current.editDialogOpen).toBeNull();
+      });
+    });
   });
 });
