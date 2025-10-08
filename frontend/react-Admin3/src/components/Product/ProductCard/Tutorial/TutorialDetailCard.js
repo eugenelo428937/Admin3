@@ -7,9 +7,11 @@ import {
   Typography,
   Button,
   Box,
+  IconButton,
 } from '@mui/material';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import moment from 'moment';
-import { touchButtonStyle } from './tutorialStyles';
+import { touchButtonStyle, touchIconButtonStyle } from './tutorialStyles';
 
 /**
  * TutorialDetailCard - Presentational component for displaying tutorial event details
@@ -23,6 +25,7 @@ const TutorialDetailCard = React.memo(({
   variation,
   selectedChoiceLevel,
   onSelectChoice,
+  onResetChoice,
   subjectCode,
 }) => {
   const {
@@ -68,6 +71,15 @@ const TutorialDetailCard = React.memo(({
    */
   const getButtonVariant = (choiceLevel) => {
     return selectedChoiceLevel === choiceLevel ? 'contained' : 'outlined';
+  };
+
+  /**
+   * Handle reset button click - remove selection for this event
+   */
+  const handleResetClick = () => {
+    if (onResetChoice && selectedChoiceLevel) {
+      onResetChoice(selectedChoiceLevel, eventId);
+    }
   };
 
   return (
@@ -121,6 +133,8 @@ const TutorialDetailCard = React.memo(({
           flexWrap: 'wrap',
           gap: 1,
           pb: 2,
+          position: 'relative',
+          alignItems: 'center'
         }}
       >
         <Button
@@ -130,7 +144,7 @@ const TutorialDetailCard = React.memo(({
           onClick={() => handleChoiceClick('1st')}
           aria-pressed={selectedChoiceLevel === '1st'}
           sx={{
-            minWidth: '80px',
+            minWidth: '4.2rem',
             ...touchButtonStyle,
           }}
         >
@@ -143,7 +157,7 @@ const TutorialDetailCard = React.memo(({
           onClick={() => handleChoiceClick('2nd')}
           aria-pressed={selectedChoiceLevel === '2nd'}
           sx={{
-            minWidth: '80px',
+            minWidth: '4.2rem',
             ...touchButtonStyle,
           }}
         >
@@ -156,12 +170,27 @@ const TutorialDetailCard = React.memo(({
           onClick={() => handleChoiceClick('3rd')}
           aria-pressed={selectedChoiceLevel === '3rd'}
           sx={{
-            minWidth: '80px',
+            minWidth: '4.2rem',
             ...touchButtonStyle,
           }}
         >
           3rd
         </Button>
+
+        {/* Reset Button - only show if a choice is selected */}
+        {selectedChoiceLevel && onResetChoice && (
+          <IconButton
+            color="error"
+            size="small"
+            onClick={handleResetClick}
+            aria-label="Reset choice"
+            sx={{                            
+              ...touchIconButtonStyle,
+            }}
+          >
+            <RestartAltIcon />
+          </IconButton>
+        )}
       </CardActions>
     </Card>
   );
@@ -186,6 +215,7 @@ TutorialDetailCard.propTypes = {
   }).isRequired,
   selectedChoiceLevel: PropTypes.oneOf(['1st', '2nd', '3rd', null]),
   onSelectChoice: PropTypes.func.isRequired,
+  onResetChoice: PropTypes.func,
   subjectCode: PropTypes.string.isRequired,
 };
 

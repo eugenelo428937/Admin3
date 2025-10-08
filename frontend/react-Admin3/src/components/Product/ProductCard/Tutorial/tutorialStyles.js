@@ -7,7 +7,7 @@
  * Minimum touch target size for mobile accessibility
  * Following WCAG 2.1 Level AAA guidelines (44x44 CSS pixels)
  */
-export const TOUCH_TARGET_SIZE = '44px';
+export const TOUCH_TARGET_SIZE = '3rem';
 
 /**
  * Common button style for touch-optimized buttons
