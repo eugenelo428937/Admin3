@@ -189,7 +189,7 @@ const MaterialProductCard = React.memo(
 				<TutorialProductCard
 					subjectCode={product.subject_code}
 					subjectName={product.subject_name || product.product_name}
-					location={product.location || product.product_name}
+					location={product.shortname || product.product_name}
 					productId={product.essp_id || product.id || product.product_id}
 					product={product}
 					variations={product.variations}
