@@ -33,6 +33,7 @@ export const buildTutorialMetadata = (choices, subjectCode, location, actualPric
     eventTitle: choice.eventTitle,
     eventCode: choice.eventCode,
     venue: choice.venue,
+    location: choice.location,  // FIX: Include location for each choice
     startDate: choice.startDate,
     endDate: choice.endDate,
     price: `£${actualPrice}`,
