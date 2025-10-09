@@ -123,24 +123,13 @@ const TutorialProductCard = React.memo(
 				return itemSubjectCode === subjectCode && item.product_type === "tutorial";
 			});
 
-			console.log('🔍 [TutorialProductCard] handleDialogOpen for', subjectCode, location);
-			console.log('  Existing cart item:', existingCartItem);
-			if (existingCartItem) {
-				console.log('  Cart item metadata:', JSON.stringify(existingCartItem.metadata, null, 2));
-			}
-
 			if (existingCartItem && existingCartItem.metadata?.locations?.[0]?.choices) {
 				// Extract choices from cart metadata and add to context with isDraft=false
 				const cartChoices = existingCartItem.metadata.locations[0].choices;
-				console.log('  Cart choices to pre-populate:', cartChoices);
 
 				cartChoices.forEach(cartChoice => {
 					const choiceLocation = cartChoice.location || location;
-					console.log('  Adding cart choice to context:', {
-						choice: cartChoice.choice,
-						eventId: cartChoice.eventId,
-						location: choiceLocation,
-					});
+					
 
 					// Convert cart choice format to tutorialChoice format
 					addTutorialChoice(
@@ -232,11 +221,7 @@ const TutorialProductCard = React.memo(
 		const sorted = events.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
 		// DEBUG: Log flattened events
-		console.log('🔍 [TutorialProductCard] Flattened events for', subjectCode, location, ':', {
-			variationsCount: variations.length,
-			eventsCount: sorted.length,
-			events: sorted,
-		});
+		
 
 		return sorted;
 	}, [variations, location, subjectCode]);
@@ -249,7 +234,7 @@ const TutorialProductCard = React.memo(
 		setSpeedDialOpen(false);
 
 		if (!hasChoices) {
-			console.warn("Cannot add to cart: no choices selected");
+
 			return;
 		}
 
@@ -268,7 +253,7 @@ const TutorialProductCard = React.memo(
 		);
 
 		if (!tutorialMetadata) {
-			console.warn("No tutorial metadata generated");
+
 			return;
 		}
 
@@ -295,11 +280,11 @@ const TutorialProductCard = React.memo(
 
 			if (existingCartItem) {
 				// ⬆️ Merge: Update existing cart item with new choices
-				console.log('🛒 [TutorialProductCard] Merging with existing cart item:', existingCartItem.id);
+
 				await updateCartItem(existingCartItem.id, productData, priceData);
 			} else {
 				// ➕ Create: Add new cart item
-				console.log('🛒 [TutorialProductCard] Creating new cart item');
+
 				await addToCart(productData, priceData);
 			}
 

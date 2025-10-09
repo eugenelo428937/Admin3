@@ -28,7 +28,6 @@ import { useCart } from "../../../contexts/CartContext";
 import bundleService from "../../../services/bundleService";
 import "../../../styles/product_card.css";
 
-
 const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 	const [showContentsModal, setShowContentsModal] = useState(false);
 	const [bundleContents, setBundleContents] = useState(null);
@@ -167,11 +166,7 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 			if (result.success && result.cartItems) {
 				// Add each component product to cart sequentially to avoid overwriting
 				for (const cartItem of result.cartItems) {
-					console.log('🛒 [BundleCard] Adding cart item:', {
-						productName: cartItem.product.product_name,
-						esspId: cartItem.product.essp_id,
-						priceInfo: cartItem.priceInfo
-					});
+					
 					
 					const quantity = cartItem.quantity || 1;
 					const priceInfoToSend = {
@@ -180,9 +175,7 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 						priceType: cartItem.priceInfo.priceType,
 						actualPrice: cartItem.priceInfo.actualPrice,
 					};
-					
-					console.log('🛒 [BundleCard] Sending priceInfo:', priceInfoToSend);
-					
+
 					// Add with the correct quantity - CartContext now handles synchronization
 					for (let i = 0; i < quantity; i++) {
 						// Wait for each add to complete before proceeding to prevent race conditions
@@ -193,7 +186,7 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 				// For bundles, we don't call the onAddToCart callback since we've already
 				// processed and added all components. The callback would cause the parent
 				// to try adding the bundle itself as a single product, which fails.
-				console.log(`✅ Bundle "${bundle.bundle_name}" added successfully: ${result.cartItems.length} items`);
+
 			}
 		} catch (error) {
 			console.error("Error adding bundle to cart:", error);
