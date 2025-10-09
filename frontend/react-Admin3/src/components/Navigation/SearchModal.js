@@ -120,8 +120,7 @@ const SearchModal = ({ open, onClose }) => {
 
   // Handle "Show Matching Products" button click from SearchResults
   const handleShowMatchingProducts = (results, filters, query) => {
-    console.log('🚀 [SearchModal] Navigating to search results from modal');
-    
+
     // Use current state if parameters are not provided
     const searchQueryToUse = query || searchQuery;
     const filtersToUse = filters || selectedFilters;

@@ -71,11 +71,7 @@ const PaymentStep = ({
           }
         };
 
-        console.log('💳 [PaymentStep] Executing checkout_payment rules with context:', context);
-
         const result = await rulesEngineService.executeRules(rulesEngineService.ENTRY_POINTS.CHECKOUT_PAYMENT, context);
-
-        console.log('💳 [PaymentStep] Rules engine result:', result);
 
         // Handle acknowledgment messages
         if (result.messages) {
@@ -170,12 +166,10 @@ const PaymentStep = ({
         entry_point_location: 'checkout_payment'
       };
 
-      console.log('💳 [PaymentStep] Sending acknowledgment to backend:', acknowledgmentData);
-
       const response = await rulesEngineService.acknowledgeRule(acknowledgmentData);
 
       if (response.success) {
-        console.log('💳 [PaymentStep] Acknowledgment saved to session successfully');
+
       } else {
         console.error('💳 [PaymentStep] Failed to save acknowledgment:', response);
       }

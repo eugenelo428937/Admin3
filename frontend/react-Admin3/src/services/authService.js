@@ -102,8 +102,7 @@ const authService = {
 	register: async (userData) => {
 		try {
 			// Defensive: ensure all fields exist to avoid undefined errors
-			console.log("Registering user:", userData);
-						
+
 			const response = await httpService.post(
 				`${API_AUTH_URL}/register/`,
 				userData
@@ -188,7 +187,7 @@ const authService = {
 			const response = await httpService.post(`${API_AUTH_URL}/refresh/`, {
 				refresh: refreshToken,
 			});
-			console.log(response.data.token);
+
 			if (response.data.token) {
 				localStorage.setItem("token", response.data.token);
 			}

@@ -38,18 +38,7 @@ const TutorialSelectionDialog = React.memo(({ open, onClose, product, events }) 
   // DEBUG: Log props when dialog receives them
   React.useEffect(() => {
     if (open) {
-      console.log('🔍 [TutorialSelectionDialog] Received props:', {
-        open,
-        product: {
-          subjectCode,
-          location,
-          productId,
-        },
-        events: {
-          count: events.length,
-          eventsList: events,
-        },
-      });
+      
     }
   }, [open, subjectCode, location, productId, events]);
 
@@ -125,7 +114,7 @@ const TutorialSelectionDialog = React.memo(({ open, onClose, product, events }) 
       .reduce((acc, [level, choice]) => ({ ...acc, [level]: choice }), {});
 
     if (Object.keys(choices).length === 0) {
-      console.warn('Cannot add to cart: No draft choices selected');
+
       return;
     }
 
@@ -165,11 +154,11 @@ const TutorialSelectionDialog = React.memo(({ open, onClose, product, events }) 
       if (existingCartItem) {
         // Update existing cart item with new choices
         await updateCartItem(existingCartItem.id, productData, priceData);
-        console.log(`Tutorial updated in cart for ${subjectCode}`);
+
       } else {
         // Add new item to cart
         await addToCart(productData, priceData);
-        console.log(`Tutorial added to cart for ${subjectCode}`);
+
       }
       markChoicesAsAdded(subjectCode);
       onClose(); // Close dialog after adding to cart
@@ -215,7 +204,7 @@ const TutorialSelectionDialog = React.memo(({ open, onClose, product, events }) 
           {events.map((event) => {
             const selectedChoiceLevel = getSelectedChoiceLevel(event.eventId);
             return (
-              <Grid item key={event.eventId} xs={12} md={4}>
+              <Grid key={event.eventId} size={{xs:12, md:4}}>
                 <TutorialDetailCard
                   event={event}
                   variation={event.variation || {

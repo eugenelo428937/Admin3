@@ -42,11 +42,7 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
         entryPoint: 'checkout_preference'
       };
 
-      console.log('🔍 [PreferenceStep] Fetching preferences with context:', context);
-
       const response = await rulesEngineService.executeRules(rulesEngineService.ENTRY_POINTS.CHECKOUT_PREFERENCE, context);
-
-      console.log('📋 [PreferenceStep] Rules engine response:', response);
 
       // Check for both preference_prompts (new) and preferences (legacy) fields
       const preferencesData = response.preference_prompts || response.preferences || [];
@@ -66,7 +62,7 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
 
         setPreferences(prev => ({ ...prev, ...initialPrefs }));
       } else {
-        console.log('📋 [PreferenceStep] No preferences found');
+
       }
 
     } catch (err) {
