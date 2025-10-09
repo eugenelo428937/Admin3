@@ -6,16 +6,20 @@ const STORAGE_KEY = "tutorialChoices";
 
 const TutorialChoiceContext = createContext();
 
-export const TutorialChoiceProvider = ({ children }) => {
+export const TutorialChoiceProvider = ({ children, initialChoices }) => {
   // Structure: { subjectCode: { "1st": eventData, "2nd": eventData, "3rd": eventData } }
-  const [tutorialChoices, setTutorialChoices] = useState({});
+  const [tutorialChoices, setTutorialChoices] = useState(initialChoices || {});
   const [showChoicePanel, setShowChoicePanel] = useState(false);
   const [activeSubject, setActiveSubject] = useState(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(null); // T010: Track which subject's edit dialog is open
 
   /**
    * Load tutorial choices from localStorage on mount
+   * Skip if initialChoices provided (for testing)
    */
   useEffect(() => {
+    if (initialChoices) return; // Skip localStorage load if initial choices provided
+
     const savedChoices = localStorage.getItem(STORAGE_KEY);
     if (!savedChoices) return;
 
@@ -26,7 +30,7 @@ export const TutorialChoiceProvider = ({ children }) => {
       console.error("Error loading tutorial choices from localStorage:", error);
       setTutorialChoices({});
     }
-  }, []);
+  }, [initialChoices]);
 
   /**
    * Save tutorial choices to localStorage whenever they change
@@ -42,8 +46,12 @@ export const TutorialChoiceProvider = ({ children }) => {
    * @param {string} subjectCode - Subject identifier (e.g., "CS2")
    * @param {string} choiceLevel - Choice level ("1st", "2nd", or "3rd")
    * @param {Object} eventData - Tutorial event data including eventId, location, variation
+   * @param {Object} productMetadata - T011: Product metadata for cart integration
+   * @param {number} productMetadata.productId - Product ID from backend
+   * @param {string} productMetadata.productName - Display name of product
+   * @param {string} productMetadata.subjectName - Subject name for display
    */
-  const addTutorialChoice = (subjectCode, choiceLevel, eventData) => {
+  const addTutorialChoice = (subjectCode, choiceLevel, eventData, productMetadata = {}) => {
     setTutorialChoices(prev => {
       const subjectChoices = prev[subjectCode] || {};
 
@@ -65,7 +73,11 @@ export const TutorialChoiceProvider = ({ children }) => {
             ...eventData,
             choiceLevel,
             timestamp: new Date().toISOString(),
-            isDraft: true  // T008: New choices default to draft state
+            isDraft: true,  // T008: New choices default to draft state
+            // T011: Store product metadata for Add to Cart functionality
+            productId: productMetadata.productId,
+            productName: productMetadata.productName,
+            subjectName: productMetadata.subjectName
           }
         }
       };
@@ -262,6 +274,23 @@ export const TutorialChoiceProvider = ({ children }) => {
   };
 
   /**
+   * Open the edit dialog for a specific subject
+   * T010: Used by TutorialSummaryBarContainer to trigger card's edit dialog
+   * @param {string} subjectCode - Subject identifier
+   */
+  const openEditDialog = (subjectCode, location = null) => {
+    setEditDialogOpen({ subjectCode, location });
+  };
+
+  /**
+   * Close the edit dialog
+   * T010: Used by TutorialProductCard after dialog closes
+   */
+  const closeEditDialog = () => {
+    setEditDialogOpen(null);
+  };
+
+  /**
    * Get the price for a subject's tutorial choices
    * Only the 1st choice is charged; 2nd and 3rd choices are free
    * @param {string} subjectCode - Subject identifier
@@ -300,7 +329,7 @@ export const TutorialChoiceProvider = ({ children }) => {
       const subjectChoices = prev[subjectCode];
 
       if (!subjectChoices) {
-        console.warn(`⚠️ [TutorialChoiceContext] No choices found for subject: ${subjectCode}`);
+
         return prev;
       }
 
@@ -370,6 +399,7 @@ export const TutorialChoiceProvider = ({ children }) => {
     tutorialChoices,
     showChoicePanel,
     activeSubject,
+    editDialogOpen, // T010: Dialog state for global summary bar integration
 
     // Choice management
     addTutorialChoice,
@@ -391,6 +421,10 @@ export const TutorialChoiceProvider = ({ children }) => {
     // Panel management
     showChoicePanelForSubject,
     hideChoicePanel,
+
+    // T010: Dialog management for global summary bar
+    openEditDialog,
+    closeEditDialog,
 
     // Pricing
     getSubjectPrice,

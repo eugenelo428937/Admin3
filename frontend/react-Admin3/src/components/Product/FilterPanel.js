@@ -80,7 +80,6 @@ const FilterPanel = ({
         }));
     }, []);
 
-
     /**
      * Handle filter selection
      */
@@ -102,7 +101,7 @@ const FilterPanel = ({
                 dispatch(toggleModeOfDeliveryFilter(value));
                 break;
             default:
-                console.warn(`Unknown filter type: ${filterType}`);
+
         }
     }, [dispatch]);
 
@@ -128,7 +127,6 @@ const FilterPanel = ({
             return total + (Array.isArray(filterArray) ? filterArray.length : 0);
         }, 0);
     }, [filters]);
-
 
     /**
      * Render filter section with checkboxes

@@ -21,6 +21,17 @@ import {
 	SpeedDialIcon,
 	Backdrop,
 	Badge,
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogActions,
+	Table,
+	TableBody,
+	TableCell,
+	TableContainer,
+	TableHead,
+	TableRow,
+	Paper,
 } from "@mui/material";
 import {
 	AddShoppingCart,
@@ -63,11 +74,90 @@ const TutorialProductCard = React.memo(
 		const [loading, setLoading] = useState(!preloadedVariations);
 		const [error, setError] = useState(null);
 		const [localDialogOpen, setLocalDialogOpen] = useState(false);
+		const [isHovered, setIsHovered] = useState(false);
+		const [selectedPriceType, setSelectedPriceType] = useState(""); // Empty means standard pricing
+		const [speedDialOpen, setSpeedDialOpen] = useState(false);
+		const [priceInfoOpen, setPriceInfoOpen] = useState(false);
 
-		// Use controlled state if dialogOpen prop is provided, otherwise use local state
-		const isDialogOpen = dialogOpen !== null ? dialogOpen : localDialogOpen;
-		const handleDialogClose = onDialogClose || (() => setLocalDialogOpen(false));
+		// T014: Get context hooks BEFORE using their values
+		const {
+			getSubjectChoices,
+			markChoicesAsAdded,
+			removeTutorialChoice,
+			editDialogOpen,
+			closeEditDialog,
+			openEditDialog,
+			addTutorialChoice,
+		} = useTutorialChoice();
+
+		const { addToCart, updateCartItem, cartItems } = useCart();
+
+		// T014: Use controlled state from multiple sources
+		// Priority: dialogOpen prop > context editDialogOpen > local state
+		// Check both subjectCode and location (or open if location not specified)
+		const shouldOpenFromContext = editDialogOpen &&
+			editDialogOpen.subjectCode === subjectCode &&
+			(!editDialogOpen.location || editDialogOpen.location === location);
+
+		const isDialogOpen = dialogOpen !== null
+			? dialogOpen
+			: (shouldOpenFromContext ? true : localDialogOpen);
+
+		const handleDialogClose = () => {
+			// T014: Clear context dialog state when closing
+			if (shouldOpenFromContext) {
+				closeEditDialog();
+			}
+			// Clear local state
+			setLocalDialogOpen(false);
+			// Call parent callback if provided
+			if (onDialogClose) {
+				onDialogClose();
+			}
+		};
+
 		const handleDialogOpen = () => {
+			// Pre-populate cart items into context when opening dialog
+			const existingCartItem = cartItems.find(item => {
+				const itemSubjectCode = item.subject_code || item.metadata?.subjectCode;
+				return itemSubjectCode === subjectCode && item.product_type === "tutorial";
+			});
+
+			if (existingCartItem && existingCartItem.metadata?.locations?.[0]?.choices) {
+				// Extract choices from cart metadata and add to context with isDraft=false
+				const cartChoices = existingCartItem.metadata.locations[0].choices;
+
+				cartChoices.forEach(cartChoice => {
+					const choiceLocation = cartChoice.location || location;
+					
+
+					// Convert cart choice format to tutorialChoice format
+					addTutorialChoice(
+						subjectCode,
+						cartChoice.choice, // "1st", "2nd", or "3rd"
+						{
+							eventId: cartChoice.eventId,
+							eventTitle: cartChoice.eventTitle,
+							eventCode: cartChoice.eventCode,
+							venue: cartChoice.venue,
+							startDate: cartChoice.startDate,
+							endDate: cartChoice.endDate,
+							variationId: cartChoice.variationId,
+							variationName: cartChoice.variationName,
+							location: choiceLocation,  // FIX: Use cart choice location, not current product location
+							subjectCode: subjectCode,
+							subjectName: subjectName,
+							isDraft: false, // Mark as not draft since it's from cart
+						},
+						{
+							productId: productId,
+							productName: subjectName,
+							subjectName: subjectName,
+						}
+					);
+				});
+			}
+
 			if (dialogOpen !== null && onDialogClose) {
 				// In controlled mode, parent handles opening via dialogOpen prop
 				// Do nothing here - parent should set dialogOpen=true
@@ -75,17 +165,6 @@ const TutorialProductCard = React.memo(
 				setLocalDialogOpen(true);
 			}
 		};
-		const [isHovered, setIsHovered] = useState(false);
-		const [selectedPriceType, setSelectedPriceType] = useState(""); // Empty means standard pricing
-		const [speedDialOpen, setSpeedDialOpen] = useState(false);
-
-		const {
-			getSubjectChoices,
-				markChoicesAsAdded,
-		removeTutorialChoice,
-	} = useTutorialChoice();
-
-		const { addToCart, updateCartItem, cartItems } = useCart();
 
 		// Get current choices for this subject
 		const subjectChoices = getSubjectChoices(subjectCode);
@@ -139,8 +218,13 @@ const TutorialProductCard = React.memo(
 			}
 		});
 		// Sort by start date
-		return events.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
-	}, [variations, location]);
+		const sorted = events.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+
+		// DEBUG: Log flattened events
+		
+
+		return sorted;
+	}, [variations, location, subjectCode]);
 
 	// SpeedDial event handlers - memoized to prevent unnecessary re-renders
 		const handleSpeedDialOpen = useCallback(() => setSpeedDialOpen(true), []);
@@ -150,7 +234,7 @@ const TutorialProductCard = React.memo(
 		setSpeedDialOpen(false);
 
 		if (!hasChoices) {
-			console.warn("Cannot add to cart: no choices selected");
+
 			return;
 		}
 
@@ -169,7 +253,7 @@ const TutorialProductCard = React.memo(
 		);
 
 		if (!tutorialMetadata) {
-			console.warn("No tutorial metadata generated");
+
 			return;
 		}
 
@@ -196,11 +280,11 @@ const TutorialProductCard = React.memo(
 
 			if (existingCartItem) {
 				// ⬆️ Merge: Update existing cart item with new choices
-				console.log('🛒 [TutorialProductCard] Merging with existing cart item:', existingCartItem.id);
+
 				await updateCartItem(existingCartItem.id, productData, priceData);
 			} else {
 				// ➕ Create: Add new cart item
-				console.log('🛒 [TutorialProductCard] Creating new cart item');
+
 				await addToCart(productData, priceData);
 			}
 
@@ -219,11 +303,16 @@ const TutorialProductCard = React.memo(
 
 		const handleViewSelections = useCallback(() => {
 			setSpeedDialOpen(false);
-			// Scroll to the summary bar at the bottom of the viewport
-			window.scrollTo({
-				top: document.documentElement.scrollHeight,
-				behavior: 'smooth'
-			});
+			// Open edit dialog to show current choices (same as clicking Edit in summary bar)
+			openEditDialog(subjectCode);
+		}, [openEditDialog, subjectCode]);
+
+		const handlePriceInfoOpen = useCallback(() => {
+			setPriceInfoOpen(true);
+		}, []);
+
+		const handlePriceInfoClose = useCallback(() => {
+			setPriceInfoOpen(false);
 		}, []);
 
 	// SpeedDial actions configuration - memoized to prevent unnecessary re-renders
@@ -589,7 +678,7 @@ const TutorialProductCard = React.memo(
 											: "£299.00"}
 									</Typography>
 									<Tooltip title="Show price details">
-										<Button size="small" className="info-button">
+										<Button size="small" className="info-button" onClick={handlePriceInfoOpen}>
 											<InfoOutline />
 										</Button>
 									</Tooltip>
@@ -678,9 +767,93 @@ const TutorialProductCard = React.memo(
 				<TutorialSelectionDialog
 					open={isDialogOpen}
 					onClose={handleDialogClose}
-					product={{ subjectCode, subjectName, location }}
+					product={{
+						subjectCode,
+						location: product.shortname || location,
+						productId,
+					}}
 					events={flattenedEvents}
 				/>
+
+				{/* Price Info Dialog */}
+				<Dialog
+					open={priceInfoOpen}
+					onClose={handlePriceInfoClose}
+					maxWidth="sm"
+					fullWidth
+				>
+					<DialogTitle>
+						{subjectCode} Tutorial - Price Information
+					</DialogTitle>
+					<DialogContent>
+						<TableContainer component={Paper} elevation={0}>
+							<Table>
+								<TableHead>
+									<TableRow>
+										<TableCell><strong>Variation</strong></TableCell>
+										<TableCell align="right"><strong>Price</strong></TableCell>
+									</TableRow>
+								</TableHead>
+								<TableBody>
+									{variations.map((variation) => {
+										const standardPrice = variation.prices?.find(p => p.price_type === 'standard');
+										const retakerPrice = variation.prices?.find(p => p.price_type === 'retaker');
+										const additionalPrice = variation.prices?.find(p => p.price_type === 'additional');
+
+										return (
+											<React.Fragment key={variation.id}>
+												<TableRow>
+													<TableCell>{variation.name}</TableCell>
+													<TableCell align="right">
+														{standardPrice ? formatPrice(standardPrice.amount) : 'N/A'}
+													</TableCell>
+												</TableRow>
+												{retakerPrice && (
+													<TableRow>
+														<TableCell sx={{ pl: 4 }}>
+															<Typography variant="caption" color="text.secondary">
+																Retaker Price
+															</Typography>
+														</TableCell>
+														<TableCell align="right">
+															<Typography variant="caption" color="text.secondary">
+																{formatPrice(retakerPrice.amount)}
+															</Typography>
+														</TableCell>
+													</TableRow>
+												)}
+												{additionalPrice && (
+													<TableRow>
+														<TableCell sx={{ pl: 4 }}>
+															<Typography variant="caption" color="text.secondary">
+																Additional Copy
+															</Typography>
+														</TableCell>
+														<TableCell align="right">
+															<Typography variant="caption" color="text.secondary">
+																{formatPrice(additionalPrice.amount)}
+															</Typography>
+														</TableCell>
+													</TableRow>
+												)}
+											</React.Fragment>
+										);
+									})}
+								</TableBody>
+							</Table>
+						</TableContainer>
+						<Box sx={{ mt: 2 }}>
+							<Typography variant="caption" color="text.secondary">
+								{product.vat_status_display || "Prices include VAT"}
+							</Typography>
+						</Box>
+					</DialogContent>
+					<DialogActions>
+						<Button onClick={handlePriceInfoClose} color="primary">
+							Close
+						</Button>
+					</DialogActions>
+				</Dialog>
 
 			</>
 		);

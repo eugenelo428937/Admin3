@@ -34,7 +34,7 @@ export const isAcknowledgmentMessage = (msg) => {
 export const classifyMessages = (messages = []) => {
   // Ensure we have an array
   if (!Array.isArray(messages)) {
-    console.warn('classifyMessages: messages is not an array', messages);
+
     messages = [];
   }
 
@@ -240,8 +240,7 @@ const extractMessage = (content, fallback) => {
 
   // Debug logging for development
   if (process.env.NODE_ENV === 'development' && !messageText) {
-    console.warn('[extractMessage] No message found in content:', content);
-    console.warn('[extractMessage] Available keys:', Object.keys(content));
+
   }
 
   return messageText || fallback;
@@ -471,7 +470,6 @@ export const buildRulesContext = {
       acknowledgments: {}
     };
 
-
     return context;
   },
 
@@ -651,7 +649,6 @@ export const buildRulesContext = {
       // Don't override acknowledgments - it's already properly set as {} in checkout context
       // The backend expects an object, not an array
     };
-
 
     return context;
   },

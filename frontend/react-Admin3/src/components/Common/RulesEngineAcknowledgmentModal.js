@@ -53,8 +53,6 @@ const RulesEngineAcknowledgmentModal = ({
   // Support both single message and multiple messages
   const messagesList = messages || (message ? [message] : []);
 
-  console.log('🔍 [RulesEngineAcknowledgmentModal] Messages to display:', messagesList);
-
   // Ensure body overflow is properly restored when modal closes
   useEffect(() => {
     if (!open) {
@@ -106,8 +104,6 @@ const RulesEngineAcknowledgmentModal = ({
         return <InfoIcon color="info" {...iconProps} />;
     }
   };
-
-
 
   const handleClose = () => {
     // Only allow closing if not required or if all messages are acknowledged

@@ -230,7 +230,6 @@ const ProductList = React.memo(() => {
             setRulesMessages([]); // Clear previous messages
 
             try {
-                console.log('🔍 [ProductList] Executing product_list_mount rules...');
 
                 // Create context for product list
                 const context = {
@@ -248,8 +247,6 @@ const ProductList = React.memo(() => {
                     rulesEngineService.ENTRY_POINTS.PRODUCT_LIST_MOUNT,
                     context
                 );
-
-                console.log('📋 [ProductList] Rules engine result:', result);
 
                 if (result.success && result.messages?.length > 0) {
                     // Process messages for display - filter out modal messages for inline display
