@@ -32,7 +32,7 @@ import ProductList from "./components/Product/ProductList";
 import CheckoutPage from "./components/Ordering/CheckoutPage";
 import OrderHistory from "./components/User/OrderHistory";
 import ProfileForm from "./components/User/ProfileForm";
-import TutorialProductList from "./components/Product/ProductCard/Tutorial/TutorialProductList";
+import TutorialSummaryBarContainer from "./components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer"; // T015
 import ForgotPasswordForm from "./components/User/ForgotPasswordForm";
 import ResetPasswordForm from "./components/User/ResetPasswordForm";
 import AccountActivation from "./components/User/AccountActivation";
@@ -194,10 +194,6 @@ function App() {
 															}
 														/>
 														<Route
-															path="/tutorials"
-															element={<TutorialProductList />}
-														/>
-														<Route
 															path="/auth/forgot-password"
 															element={<ForgotPasswordForm />}
 														/>
@@ -264,6 +260,9 @@ function App() {
 															element={<Registration />}
 														/>
 													</Routes>
+
+													{/* T015: Global tutorial summary bars - visible across all routes */}
+													<TutorialSummaryBarContainer />
 												</Container>
 											</div>
 										</TutorialChoiceProvider>

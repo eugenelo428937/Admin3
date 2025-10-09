@@ -24,7 +24,7 @@ class CartViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
     
     def dispatch(self, request, *args, **kwargs):
-        print(f"[CartViewSet.dispatch] {request.method} {request.path}")
+
         return super().dispatch(request, *args, **kwargs)
 
     @action(detail=False, methods=['get'])
@@ -1700,7 +1700,6 @@ class CartViewSet(viewsets.ViewSet):
                         logger.warning(f"🔍 [Backend] Failed to parse invoice address data: {e}")
         else:
             logger.warning(f"🔍 [Backend] No user_preferences provided for delivery data extraction")
-
 
         # Create OrderDeliveryDetail record if we have any delivery data
         logger.info(f"🔍 [Backend] Final delivery_data for order {order.id}: {delivery_data}")

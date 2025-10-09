@@ -23,7 +23,7 @@ const TermsConditionsStep = ({
   useEffect(() => {
     const executeTermsRules = async () => {
       if (!cartData) {
-        console.warn('[TermsConditionsStep] No cart data available, skipping rules execution');
+
         setError('Cart data is not available. Please refresh the page.');
         return;
       }
@@ -35,20 +35,16 @@ const TermsConditionsStep = ({
       }
 
       if (cartItems.length === 0) {
-        console.warn('[TermsConditionsStep] Cart is empty, but continuing with rules execution');
+
       }
 
       setRulesLoading(true);
       setError('');
 
       try {
-        console.log('🔍 [TermsConditionsStep] Executing checkout_terms rules...');
 
         // Use the new helper function for simplified execution
         const result = await rulesEngineHelpers.executeCheckoutTerms(cartData, cartItems, rulesEngineService, user);
-
-        console.log('📋 [TermsConditionsStep] Rules result:', result);
-        console.log('📋 [TermsConditionsStep] Messages received:', result.messages?.summary?.totalMessages || 0);
 
         if (result.success && result.messages?.classified) {
           // Handle inline acknowledgment messages (like terms & conditions)
@@ -93,7 +89,7 @@ const TermsConditionsStep = ({
 
         // Check for any blocking requirements
         if (result.blocked || result.requires_acknowledgment) {
-          console.log('⚠️ [TermsConditionsStep] Acknowledgment required for checkout');
+
         }
       } catch (err) {
         console.error('Error executing checkout_terms rules:', err);
@@ -238,7 +234,7 @@ const TermsConditionsStep = ({
                         acknowledged: true,
                         entry_point_location: 'checkout_terms'
                       });
-                      console.log('✅ Terms acknowledgment submitted successfully');
+
                     } catch (err) {
                       console.error('❌ Error submitting terms acknowledgment:', err);
                       // Don't show error to user for this as it's not critical for UX
