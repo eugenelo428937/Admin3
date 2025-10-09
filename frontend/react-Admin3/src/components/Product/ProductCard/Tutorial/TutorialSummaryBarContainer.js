@@ -60,8 +60,6 @@ const TutorialSummaryBarContainer = () => {
     const choices = getSubjectChoices(subjectCode);
 
     // DEBUG: Log choices from context
-    console.log('🔍 [TutorialSummaryBarContainer] handleEdit called for', subjectCode);
-    console.log('  Choices from context:', choices);
 
     // Convert choices to events format
     const events = Object.values(choices).map(choice => ({
@@ -87,15 +85,12 @@ const TutorialSummaryBarContainer = () => {
       return new Date(a.startDate) - new Date(b.startDate);
     });
 
-    console.log('  Events from choices:', {
-      totalEvents: events.length,
-      events: events,
-    });
+    
 
     // Get first choice for product metadata
     const firstChoice = Object.values(choices)[0];
     if (!firstChoice) {
-      console.warn('No choices found for', subjectCode);
+
       return;
     }
 
@@ -105,8 +100,6 @@ const TutorialSummaryBarContainer = () => {
       productId: firstChoice.productId,
       events: events,
     };
-
-    console.log('  Setting unified dialog data:', dialogData);
 
     setUnifiedDialogData(dialogData);
     setUnifiedDialogOpen(true);
@@ -165,11 +158,11 @@ const TutorialSummaryBarContainer = () => {
       if (existingCartItem) {
         // Update existing cart item with new choices
         await updateCartItem(existingCartItem.id, productData, priceData);
-        console.log(`Tutorial updated in cart for ${subjectCode}`);
+
       } else {
         // Add new item to cart
         await addToCart(productData, priceData);
-        console.log(`Tutorial added to cart for ${subjectCode}`);
+
       }
       markChoicesAsAdded(subjectCode);
     } catch (error) {
@@ -223,18 +216,7 @@ const TutorialSummaryBarContainer = () => {
       {/* Unified Edit Dialog showing all locations */}
       {unifiedDialogData && (() => {
         // DEBUG: Log props being passed to unified dialog
-        console.log('🔍 [TutorialSummaryBarContainer] Rendering unified dialog with props:', {
-          open: unifiedDialogOpen,
-          product: {
-            subjectCode: unifiedDialogData.subjectCode,
-            location: unifiedDialogData.location,
-            productId: unifiedDialogData.productId,
-          },
-          events: {
-            count: unifiedDialogData.events?.length || 0,
-            eventsList: unifiedDialogData.events,
-          },
-        });
+        
 
         return (
           <TutorialSelectionDialog

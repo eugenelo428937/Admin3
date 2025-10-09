@@ -5,7 +5,7 @@ const examSessionService = {
 	getAll: async () => {
 		try {			
 			const response = await httpService.get(`${API_URL}/`);
-			console.log(response.data)
+
 			// Ensure we're returning an array
 			if (!response.data) return [];
 			return Array.isArray(response.data) ? response.data : response.data.results || Object.values(response.data) || [];

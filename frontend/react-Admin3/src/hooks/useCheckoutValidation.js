@@ -202,11 +202,7 @@ const useCheckoutValidation = () => {
    * Validate checkout comprehensively
    */
   const validateCheckout = useCallback(async (cartData, cartItems, paymentMethod, userProfile = null) => {
-    console.log('🔍 [useCheckoutValidation] Starting validation...', {
-      cartHasDigital: cartData?.has_digital,
-      cartHasTutorial: cartData?.has_tutorial,
-      paymentMethod
-    });
+    
 
     setValidationState(prev => ({
       ...prev,
@@ -222,12 +218,7 @@ const useCheckoutValidation = () => {
         userProfile
       );
 
-      console.log('🎯 [useCheckoutValidation] Validation result:', {
-        canProceed: result.canProceed,
-        blocked: result.blocked,
-        totalRequired: result.summary?.total_required || 0,
-        totalMissing: result.missingAcknowledgments?.total || 0
-      });
+      
 
       setValidationState({
         isValidating: false,

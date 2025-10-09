@@ -49,13 +49,9 @@ class BundleService {
 	 */
 	async getBundleContents(bundleId) {
 		try {
-			console.log('🔍 [BundleService] Fetching bundle contents for ID:', bundleId);
-			console.log('🔍 [BundleService] Using URL:', `${this.baseURL}/${bundleId}/`);
-			
+
 			const response = await httpService.get(`${this.baseURL}/${bundleId}/`);
-			
-			console.log('🔍 [BundleService] Bundle contents response:', response.data);
-			
+
 			return {
 				success: true,
 				data: response.data,
@@ -161,8 +157,6 @@ class BundleService {
 					priceInfo: priceInfoForCart,
 					quantity: componentQuantity,
 				};
-
-
 
 				// Add this component to the cart items array
 				// Quantity will be handled when adding to cart in BundleCard

@@ -30,13 +30,11 @@ const UserProfile = () => {
         try {
             setLoading(true);
             setError(null);
-            
-            console.log("UserProfile: Fetching profile data...");
+
             const result = await userService.getUserProfile();
-            console.log("UserProfile: API result", result);
-            
+
             if (result.status === "success") {
-                console.log("UserProfile: Profile data received", result.data);
+
                 setProfile(result.data);
                 logger.info("Profile loaded successfully");
             } else {
