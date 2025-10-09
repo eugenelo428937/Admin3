@@ -19,7 +19,7 @@ export const generateProductCode = (item) => {
       return generateMaterialMarkingProductCode(item);
     }
   } catch (error) {
-    console.warn('Error generating product code:', error);
+
     // Fallback to original product code if available
     return item.product_code || 'N/A';
   }

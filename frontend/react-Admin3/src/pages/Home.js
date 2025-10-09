@@ -8,7 +8,6 @@ import { Typography, Container } from "@mui/material";
 import { rulesEngineHelpers } from "../utils/rulesEngineUtils";
 import rulesEngineService from "../services/rulesEngineService";
 
-
 const Home = () => {
 	const navigate = useNavigate();
 	const theme = useTheme();
@@ -32,9 +31,7 @@ const Home = () => {
 
 	// Debug video paths
 	useEffect(() => {
-		console.log("🎥 PUBLIC_URL:", process.env.PUBLIC_URL);
-		console.log("🎥 Video path:", backgroundVideo);
-		console.log("🎥 Poster path:", backgroundVideoPoster);
+
 	}, [backgroundVideo, backgroundVideoPoster]);
 
 	// Execute home_page_mount rules when component mounts
@@ -44,15 +41,12 @@ const Home = () => {
 			setRulesMessages([]); // Clear previous messages
 
 			try {
-				console.log("🔍 [Home] Executing home page rules...");
 
 				// Use the new helper function for simplified execution
 				const result = await rulesEngineHelpers.executeHomePage(
 					null,
 					rulesEngineService
 				);
-
-				console.log("📋 [Home] Rules engine result:", result);
 
 				if (result.success && result.messages?.processed?.length > 0) {
 					// Extract processed display messages for home page (filter out acknowledgments)
@@ -195,25 +189,7 @@ const Home = () => {
 						loop
 						muted
 						playsInline
-						poster={backgroundVideoPoster}
-						onError={(e) => {
-							console.error("🚨 Video error event:", e);
-							console.error("🚨 Video element:", e.target);
-							console.error("🚨 Video currentSrc:", e.target.currentSrc);
-							console.error("🚨 Video error details:", e.target.error);
-						}}
-						onLoadedData={(e) => {
-							console.log("✅ Video loaded successfully");
-							console.log(
-								"📊 Video dimensions:",
-								e.target.videoWidth,
-								"x",
-								e.target.videoHeight
-							);
-							console.log("📊 Video duration:", e.target.duration);
-						}}
-						onLoadStart={() => console.log("📥 Video loading started...")}
-						onCanPlay={() => console.log("▶️ Video can play")}
+						poster={backgroundVideoPoster}							
 						style={{
 							position: "absolute",
 							top: 0,
