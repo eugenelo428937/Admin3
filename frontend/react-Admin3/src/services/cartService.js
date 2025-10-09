@@ -15,8 +15,6 @@ const cartService = {
 			metadata: priceInfo.metadata || {}
 		};
 
-		console.log('🛒 [CartService] Payload being sent:', payload);
-
 		return httpService.post(`${API_BASE}/add/`, payload);
 	},
 	updateItem: (itemId, product, priceInfo = {}) => {
@@ -28,8 +26,6 @@ const cartService = {
 			// Pass through metadata directly (constructed by caller)
 			metadata: priceInfo.metadata || {}
 		};
-
-		console.log('🛒 [CartService] Update payload:', payload);
 
 		return httpService.patch(`${API_BASE}/update_item/`, payload);
 	},

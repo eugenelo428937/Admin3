@@ -310,7 +310,7 @@ const CheckoutSteps = ({ onComplete }) => {
 
         setVatCalculations(result);
       } else {
-        console.warn('No VAT calculations from backend, using fallback');
+
         // Fallback if backend doesn't provide VAT calculations
         const subtotal = cartItems.reduce((total, item) =>
           total + (parseFloat(item.actual_price) * item.quantity), 0
@@ -409,7 +409,6 @@ const CheckoutSteps = ({ onComplete }) => {
       }
       return;
     }
-
 
     if (paymentMethod === 'card') {
       if (!cardNumber || !cardholderName || !expiryMonth || !expiryYear || !cvv) {

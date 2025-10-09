@@ -329,7 +329,7 @@ export const TutorialChoiceProvider = ({ children, initialChoices }) => {
       const subjectChoices = prev[subjectCode];
 
       if (!subjectChoices) {
-        console.warn(`⚠️ [TutorialChoiceContext] No choices found for subject: ${subjectCode}`);
+
         return prev;
       }
 

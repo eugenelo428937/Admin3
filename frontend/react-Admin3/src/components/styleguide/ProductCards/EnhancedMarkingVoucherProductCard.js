@@ -37,7 +37,7 @@ const EnhancedMarkingVoucherProductCard = ({
 	const basePrice = 35; // Base price per voucher
 
 	const handleQuantityChange = (details) => {
-		console.log('NumberInput onChange:', details); // Debug log
+		 // Debug log
 		const value = parseInt(details.value);
 		if (!isNaN(value) && value >= 1 && value <= 99) {
 			setQuantity(value);

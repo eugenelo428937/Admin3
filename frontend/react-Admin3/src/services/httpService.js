@@ -33,7 +33,7 @@ const fetchCsrfToken = async () => {
         
         // Log session establishment for debugging
         if (process.env.NODE_ENV === 'development' && response.data.sessionKey) {
-            console.log('🔐 [httpService] Session established:', response.data.sessionKey);
+
         }
         
         return response.data.csrfToken;
@@ -62,7 +62,7 @@ httpService.interceptors.request.use(
 						config.headers["X-CSRFToken"] = csrfToken;
 					}
 				} catch (error) {
-					console.warn("Failed to fetch CSRF token:", error);
+
 					// Continue without CSRF token - let Django handle the error
 				}
 			}

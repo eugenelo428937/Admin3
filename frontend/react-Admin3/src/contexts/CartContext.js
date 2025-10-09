@@ -13,8 +13,7 @@ export const CartProvider = ({ children }) => {
     const fetchCart = async () => {
       try {
         const res = await cartService.fetchCart();
-        
-        console.log('🛒 [CartContext] Fetched cart data:', res.data);
+
         setCartData(res.data); // Store full cart object
         setCartItems(res.data.items || []);
       } catch (err) {
@@ -93,7 +92,7 @@ export const CartProvider = ({ children }) => {
   const refreshCart = async () => {
     try {
       const res = await cartService.fetchCart();
-      console.log('🛒 [CartContext] Refreshed cart data:', res.data);
+
       setCartData(res.data); // Store full cart object
       setCartItems(res.data.items || []);
       return res.data;

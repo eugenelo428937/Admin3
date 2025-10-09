@@ -81,13 +81,13 @@ const searchService = {
             // Add variation filters
             if (searchParams.variations && searchParams.variations.length > 0) {
                 // This would need to be implemented in the backend
-                console.warn('Variation filters not yet implemented in fuzzy search backend');
+
             }
             
             // Add product filters
             if (searchParams.products && searchParams.products.length > 0) {
                 // This would need to be implemented in the backend
-                console.warn('Product filters not yet implemented in fuzzy search backend');
+
             }
             
             const requestUrl = `${SEARCH_API_URL}/advanced-fuzzy-search/`;
