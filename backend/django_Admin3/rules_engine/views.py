@@ -8,6 +8,16 @@ from .models import (
     MessageTemplate, ActedRule, ActedRuleExecution
 )
 from .services.rule_engine import rule_engine as new_rule_engine
+from django.utils import timezone
+import logging
+from .serializers import (
+    MessageTemplateSerializer,
+    ActedRuleSerializer, RuleExecuteSerializer
+)
+from .models import (
+    MessageTemplate, ActedRule, ActedRuleExecution
+)
+from .services.rule_engine import rule_engine as new_rule_engine
 from rest_framework import status, viewsets, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action, permission_classes, api_view
@@ -40,15 +50,18 @@ class RulesEngineViewSet(viewsets.ViewSet):
             entry_point_code = request.data.get('entry_point_code')
             trigger_type = request.data.get('trigger_type')
 
+
             # Support both new entry_point_code and legacy trigger_type
             if not entry_point_code and not trigger_type:
                 return Response(
+                    {'error': 'Either entry_point_code or trigger_type is required'},
                     {'error': 'Either entry_point_code or trigger_type is required'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
             user = request.user if request.user.is_authenticated else None
             context_data = request.data.get('context', {})
+
 
             # Special handling for cart-related triggers (legacy)
             if (trigger_type == 'checkout_start' or entry_point_code == 'checkout_start') and 'cart_items' in context_data:
@@ -58,7 +71,14 @@ class RulesEngineViewSet(viewsets.ViewSet):
                 cart_items = list(CartItem.objects.filter(
                     id__in=cart_item_ids).select_related('product', 'product__product'))
 
+                cart_items = list(CartItem.objects.filter(
+                    id__in=cart_item_ids).select_related('product', 'product__product'))
+
                 # Remove cart_items from context_data to avoid duplicate argument error
+                filtered_context = {
+                    k: v for k, v in context_data.items() if k != 'cart_items'}
+                result = evaluate_checkout_rules(
+                    user, cart_items, **filtered_context)
                 filtered_context = {
                     k: v for k, v in context_data.items() if k != 'cart_items'}
                 result = evaluate_checkout_rules(
@@ -72,11 +92,14 @@ class RulesEngineViewSet(viewsets.ViewSet):
                     **context_data
                 )
 
+
             return Response(result)
+
 
         except Exception as e:
             logger.error(f"Error evaluating rules: {str(e)}")
             return Response(
+                {'error': 'Internal server error', 'details': str(e)},
                 {'error': 'Internal server error', 'details': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -88,13 +111,18 @@ class RulesEngineViewSet(viewsets.ViewSet):
         try:
             entry_point = request.data.get(
                 'entry_point') or request.data.get('entryPoint')
+            entry_point = request.data.get(
+                'entry_point') or request.data.get('entryPoint')
             context_data = request.data.get('context', {})
+
 
             if not entry_point:
                 return Response(
                     {'error': 'entry_point is required'},
+                    {'error': 'entry_point is required'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+
 
             auth_header = request.META.get('HTTP_AUTHORIZATION', 'None')
             # Only add user context if not already provided in the request or if authenticated
@@ -110,6 +138,7 @@ class RulesEngineViewSet(viewsets.ViewSet):
                         'work_country': None
                     }
 
+
                     # Get user address information for country detection
                     try:
                         from userprofile.models import UserProfile
@@ -118,15 +147,21 @@ class RulesEngineViewSet(viewsets.ViewSet):
                         user_profile = UserProfile.objects.get(
                             user=request.user)
 
+
+                        user_profile = UserProfile.objects.get(
+                            user=request.user)
+
                         # Get home address country
                         try:
                             home_address = UserProfileAddress.objects.get(
+                                user_profile=user_profile,
                                 user_profile=user_profile,
                                 address_type='HOME'
                             )
                             user_context['home_country'] = home_address.country
                         except UserProfileAddress.DoesNotExist:
                             pass
+
 
                         # Get work address country
                         try:
@@ -138,9 +173,11 @@ class RulesEngineViewSet(viewsets.ViewSet):
                         except UserProfileAddress.DoesNotExist:
                             pass
 
+
                     except UserProfile.DoesNotExist:
                         # User profile doesn't exist, keep countries as None
                         pass
+
 
                     context_data['user'] = user_context
                 else:
@@ -148,7 +185,10 @@ class RulesEngineViewSet(viewsets.ViewSet):
                     # This allows proper schema validation for rules that require user context
                     pass
 
+
             # Add session acknowledgments to context for blocking logic
+            session_acknowledgments = request.session.get(
+                'user_acknowledgments', [])
             session_acknowledgments = request.session.get(
                 'user_acknowledgments', [])
             if session_acknowledgments:
@@ -167,6 +207,8 @@ class RulesEngineViewSet(viewsets.ViewSet):
 
                 if acknowledgments_dict:
                     context_data['acknowledgments'] = acknowledgments_dict
+                    logger.info(
+                        f"🎯 Added {len(acknowledgments_dict)} session acknowledgments to context for '{entry_point}'")
 
             # Add request metadata
             context_data['request'] = {
@@ -175,20 +217,35 @@ class RulesEngineViewSet(viewsets.ViewSet):
                 'timestamp': timezone.now().isoformat()
             }
 
+
             # Debug: Log the final context being sent to rules engine
             if 'user' in context_data:
                 user_ctx = context_data['user']
+                # Defensive check: only log if user_ctx is a dictionary
+                if isinstance(user_ctx, dict):
+                    logger.info(
+                        f" User context: id={user_ctx.get('id')}, auth={user_ctx.get('is_authenticated')}, home_country={user_ctx.get('home_country')}, work_country={user_ctx.get('work_country')}")
+                else:
+                    logger.info(
+                        f" User context: {user_ctx} (type: {type(user_ctx).__name__})")
 
             # Execute rules engine
             result = new_rule_engine.execute(entry_point, context_data)
+
 
             # Check for schema validation errors
             if not result.get('success', True) and 'schema_validation_errors' in result:
                 logger.warning(
                     f"Schema validation errors for '{entry_point}': {len(result['schema_validation_errors'])} errors")
+                logger.warning(
+                    f"Schema validation errors for '{entry_point}': {len(result['schema_validation_errors'])} errors")
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
+            logger.info(
+                f"Rules Engine API: '{entry_point}' - {result.get('rules_evaluated', 0)} rules evaluated")
+
             return Response(result)
+
 
         except Exception as e:
             logger.error(f"❌ Rules Engine API error: {str(e)}")
@@ -199,6 +256,7 @@ class RulesEngineViewSet(viewsets.ViewSet):
                     'details': str(e),
                     'rules_evaluated': 0,
                     'execution_time_ms': 0
+                },
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -211,14 +269,19 @@ class RulesEngineViewSet(viewsets.ViewSet):
             pending = rules_engine.get_pending_acknowledgments(
                 request.user, trigger_type)
 
+            pending = rules_engine.get_pending_acknowledgments(
+                request.user, trigger_type)
+
             return Response({
                 'success': True,
                 'pending_acknowledgments': pending
             })
 
+
         except Exception as e:
             logger.error(f"Error getting pending acknowledgments: {str(e)}")
             return Response(
+                {'error': 'Internal server error', 'details': str(e)},
                 {'error': 'Internal server error', 'details': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -232,14 +295,18 @@ class RulesEngineViewSet(viewsets.ViewSet):
             cart = Cart.objects.get(user=request.user)
             cart_items = cart.items.all()
 
+
             # Evaluate checkout rules
             result = evaluate_checkout_rules(request.user, cart_items)
 
+
             return Response(result)
+
 
         except Exception as e:
             logger.error(f"Error validating checkout: {str(e)}")
             return Response(
+                {'error': 'Internal server error', 'details': str(e)},
                 {'error': 'Internal server error', 'details': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -250,18 +317,26 @@ class RulesEngineViewSet(viewsets.ViewSet):
         try:
             from cart.models import ActedOrder, OrderUserAcknowledgment
 
+
             order_id = request.data.get('order_id')
+            general_terms_accepted = request.data.get(
+                'general_terms_accepted', False)
             general_terms_accepted = request.data.get(
                 'general_terms_accepted', False)
             terms_version = request.data.get('terms_version', '1.0')
             product_acknowledgments = request.data.get(
                 'product_acknowledgments', {})
 
+            product_acknowledgments = request.data.get(
+                'product_acknowledgments', {})
+
             if not order_id:
                 return Response(
                     {'error': 'order_id is required'},
+                    {'error': 'order_id is required'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+
 
             # Verify order belongs to user
             try:
@@ -269,13 +344,17 @@ class RulesEngineViewSet(viewsets.ViewSet):
             except ActedOrder.DoesNotExist:
                 return Response(
                     {'error': 'Order not found or access denied'},
+                    {'error': 'Order not found or access denied'},
                     status=status.HTTP_404_NOT_FOUND
                 )
+
 
             # Get client info
             ip_address = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0] or \
                 request.META.get('REMOTE_ADDR', '')
+                request.META.get('REMOTE_ADDR', '')
             user_agent = request.META.get('HTTP_USER_AGENT', '')
+
 
             # Get rules engine evaluation data for this entry point
             rules_evaluation = rules_engine.evaluate_rules(
@@ -284,18 +363,23 @@ class RulesEngineViewSet(viewsets.ViewSet):
                 order_id=order_id
             )
 
+
             # Extract rule_id and template_id from rules evaluation
             rule_id = None
             template_id = None
+
 
             if rules_evaluation.get('success') and rules_evaluation.get('messages'):
                 # Look for T&C related messages in the evaluation results
                 for message in rules_evaluation['messages']:
                     if (message.get('type') in ['message', 'acknowledgment'] and
                             message.get('requires_acknowledgment')):
+                    if (message.get('type') in ['message', 'acknowledgment'] and
+                            message.get('requires_acknowledgment')):
                         rule_id = message.get('rule_id')
                         template_id = message.get('template_id')
                         break
+
 
             # Create or update T&C acknowledgment record
             with transaction.atomic():
@@ -325,6 +409,7 @@ class RulesEngineViewSet(viewsets.ViewSet):
                     }
                 )
 
+
             action = "created" if created else "updated"
             return Response({
                 'success': True,
@@ -340,6 +425,7 @@ class RulesEngineViewSet(viewsets.ViewSet):
             logger.error(f"Error accepting terms: {str(e)}")
             return Response(
                 {'error': 'Internal server error', 'details': str(e)},
+                {'error': 'Internal server error', 'details': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -349,12 +435,15 @@ class RulesEngineViewSet(viewsets.ViewSet):
         try:
             from cart.models import ActedOrder, OrderUserAcknowledgment
 
+
             order_id = request.query_params.get('order_id')
             if not order_id:
                 return Response(
                     {'error': 'order_id is required'},
+                    {'error': 'order_id is required'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+
 
             # Verify order belongs to user
             try:
@@ -362,8 +451,10 @@ class RulesEngineViewSet(viewsets.ViewSet):
             except ActedOrder.DoesNotExist:
                 return Response(
                     {'error': 'Order not found or access denied'},
+                    {'error': 'Order not found or access denied'},
                     status=status.HTTP_404_NOT_FOUND
                 )
+
 
             # Check if T&C acknowledgment exists
             try:
@@ -392,6 +483,7 @@ class RulesEngineViewSet(viewsets.ViewSet):
         except Exception as e:
             logger.error(f"Error getting T&C status: {str(e)}")
             return Response(
+                {'error': 'Internal server error', 'details': str(e)},
                 {'error': 'Internal server error', 'details': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -505,10 +597,12 @@ class RulesEngineViewSet(viewsets.ViewSet):
 #         trigger_type = self.request.query_params.get('trigger_type')
 #         is_active = self.request.query_params.get('is_active')
 
+
 #         if trigger_type:
 #             queryset = queryset.filter(trigger_type=trigger_type)
 #         if is_active is not None:
 #             queryset = queryset.filter(is_active=is_active.lower() == 'true')
+
 
 #         return queryset.order_by('priority', 'id')
 
@@ -527,10 +621,12 @@ class MessageTemplateViewSet(viewsets.ModelViewSet):
         message_type = self.request.query_params.get('message_type')
         is_active = self.request.query_params.get('is_active')
 
+
         if message_type:
             queryset = queryset.filter(message_type=message_type)
         if is_active is not None:
             queryset = queryset.filter(is_active=is_active.lower() == 'true')
+
 
         return queryset.order_by('name')
 
@@ -543,12 +639,17 @@ class MessageTemplateViewSet(viewsets.ModelViewSet):
                 'error': 'template_id parameter is required'
             }, status=status.HTTP_400_BAD_REQUEST)
 
+
         try:
             template = get_object_or_404(MessageTemplate, id=template_id)
             styles = {}
 
+
             # Get template-specific style configuration
             try:
+                template_style = MessageTemplateStyle.objects.get(
+                    message_template=template)
+
                 template_style = MessageTemplateStyle.objects.get(
                     message_template=template)
 
@@ -559,21 +660,27 @@ class MessageTemplateViewSet(viewsets.ModelViewSet):
                         is_active=True
                     ).order_by('priority')
 
+
                     for style in theme_styles:
                         # Add styles by CSS class selector
                         if style.css_class_selector:
                             styles[style.css_class_selector] = style.get_style_object()
 
+
                         # Add styles by element type
                         styles[style.element_type] = style.get_style_object()
 
+
                 # Override with custom styles for this template
+                custom_styles = template_style.custom_styles.filter(
+                    is_active=True).order_by('priority')
                 custom_styles = template_style.custom_styles.filter(
                     is_active=True).order_by('priority')
                 for style in custom_styles:
                     if style.css_class_selector:
                         styles[style.css_class_selector] = style.get_style_object()
                     styles[style.element_type] = style.get_style_object()
+
 
             except MessageTemplateStyle.DoesNotExist:
                 # No specific styling configured, use global styles
@@ -582,10 +689,12 @@ class MessageTemplateViewSet(viewsets.ModelViewSet):
                     is_active=True
                 ).order_by('priority')
 
+
                 for style in global_styles:
                     if style.css_class_selector:
                         styles[style.css_class_selector] = style.get_style_object()
                     styles[style.element_type] = style.get_style_object()
+
 
             return Response({
                 'template_id': template_id,
@@ -594,7 +703,10 @@ class MessageTemplateViewSet(viewsets.ModelViewSet):
                 'cached_at': timezone.now().isoformat()
             })
 
+
         except Exception as e:
+            logger.error(
+                f"Error fetching template styles for template {template_id}: {str(e)}")
             logger.error(
                 f"Error fetching template styles for template {template_id}: {str(e)}")
             return Response({
@@ -619,6 +731,8 @@ class ActedRuleViewSet(viewsets.ModelViewSet):
     serializer_class = ActedRuleSerializer
     # For testing, in production should be [IsAuthenticated]
     permission_classes = [AllowAny]
+    # For testing, in production should be [IsAuthenticated]
+    permission_classes = [AllowAny]
     pagination_class = RulesPagination
     lookup_field = 'rule_id'
 
@@ -627,9 +741,13 @@ class ActedRuleViewSet(viewsets.ModelViewSet):
         queryset = ActedRule.objects.filter(
             active=True).order_by('priority', 'created_at')
 
+        queryset = ActedRule.objects.filter(
+            active=True).order_by('priority', 'created_at')
+
         entry_point = self.request.query_params.get('entry_point')
         if entry_point:
             queryset = queryset.filter(entry_point=entry_point)
+
 
         return queryset
 
@@ -648,12 +766,15 @@ def rules_by_entrypoint(request, entry_point):
     try:
         queryset = ActedRule.objects.filter(
             entry_point=entry_point,
+            entry_point=entry_point,
             active=True
         ).order_by('priority', 'created_at')
+
 
         # Handle pagination
         page = request.GET.get('page')
         page_size = request.GET.get('page_size')
+
 
         if page or page_size:
             paginator = RulesPagination()
@@ -661,19 +782,26 @@ def rules_by_entrypoint(request, entry_point):
             serializer = ActedRuleSerializer(paginated_rules, many=True)
             return paginator.get_paginated_response(serializer.data)
 
+
         serializer = ActedRuleSerializer(queryset, many=True)
         return Response(serializer.data)
+
 
     except Exception as e:
         logger.error(
             f"Error getting rules for entry point {entry_point}: {str(e)}")
+        logger.error(
+            f"Error getting rules for entry point {entry_point}: {str(e)}")
         return Response(
+            {'error': 'Internal server error', 'details': str(e)},
             {'error': 'Internal server error', 'details': str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
 
 @api_view(['POST'])
+# For testing, in production should be [IsAuthenticated]
+@permission_classes([AllowAny])
 # For testing, in production should be [IsAuthenticated]
 @permission_classes([AllowAny])
 def rules_create(request):
@@ -688,9 +816,11 @@ def rules_create(request):
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
     except Exception as e:
         logger.error(f"Error creating rule: {str(e)}")
         return Response(
+            {'error': 'Internal server error', 'details': str(e)},
             {'error': 'Internal server error', 'details': str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
@@ -723,6 +853,8 @@ def rules_acknowledge(request):
         # Get or initialize session acknowledgments
         session_acknowledgments = request.session.get(
             'user_acknowledgments', [])
+        session_acknowledgments = request.session.get(
+            'user_acknowledgments', [])
 
         # Find existing acknowledgment for this message_id and entry_point_location
         existing_ack = None
@@ -730,6 +862,7 @@ def rules_acknowledge(request):
 
         for i, ack in enumerate(session_acknowledgments):
             if (ack.get('message_id') == message_id and
+                    ack.get('entry_point_location') == entry_point_location):
                     ack.get('entry_point_location') == entry_point_location):
                 existing_ack = ack
                 existing_index = i
@@ -788,23 +921,29 @@ def rules_preferences(request):
         preferences = request.data.get('preferences', {})
         user_id = request.data.get('user_id')
 
+
         if not user_id:
             return Response(
+                {'error': 'user_id is required'},
                 {'error': 'user_id is required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+
         # For testing, try to get the actual user
         from django.contrib.auth import get_user_model
         User = get_user_model()
+
 
         try:
             user = User.objects.get(id=user_id)
         except User.DoesNotExist:
             return Response(
                 {'error': 'User not found'},
+                {'error': 'User not found'},
                 status=status.HTTP_404_NOT_FOUND
             )
+
 
         # Note: This endpoint saves standalone preferences, not order-specific ones
         # For order-specific preferences, use OrderUserPreference in cart checkout
@@ -838,6 +977,8 @@ def rules_preferences(request):
                     except ActedRule.DoesNotExist:
                         logger.warning(
                             f"Rule with ID/rule_code {rule_id} not found for preference {key}")
+                        logger.warning(
+                            f"Rule with ID/rule_code {rule_id} not found for preference {key}")
 
                 # For standalone preferences (not order-specific), we can store in session
                 # or create a simple record. For now, just track in the response.
@@ -856,6 +997,7 @@ def rules_preferences(request):
                 logger.error(f"Error processing preference {key}: {str(e)}")
                 continue
 
+
         return Response({
             'success': True,
             'message': 'Preferences saved successfully',
@@ -863,11 +1005,14 @@ def rules_preferences(request):
             'count': len(saved_preferences)
         })
 
+
     except Exception as e:
         logger.error(f"Error saving preferences: {str(e)}")
         return Response(
             {'error': 'Internal server error', 'details': str(e)},
+            {'error': 'Internal server error', 'details': str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
         )
 
 
@@ -928,6 +1073,8 @@ def validate_comprehensive_checkout(request):
         # Get session acknowledgments
         session_acknowledgments = request.session.get(
             "user_acknowledgments", [])
+        logger.info(
+            f"🔍 [Comprehensive Validation] Found {len(session_acknowledgments)} session acknowledgments")
 
         # Convert session acknowledgments to the format expected by rules engine
         acknowledgments_dict = {}
@@ -942,6 +1089,8 @@ def validate_comprehensive_checkout(request):
 
         # Add acknowledgments to context
         context_data["acknowledgments"] = acknowledgments_dict
+        logger.info(
+            f"🎯 [Comprehensive Validation] Context acknowledgments: {list(acknowledgments_dict.keys())}")
 
         # Collect all required acknowledgments from all entry points
         entry_points_to_check = [
@@ -965,6 +1114,8 @@ def validate_comprehensive_checkout(request):
             for req_ack in required_acks:
                 # Add entry point for tracking
                 req_ack["entry_point"] = entry_point
+                # Add entry point for tracking
+                req_ack["entry_point"] = entry_point
                 all_required_acknowledgments.append(req_ack)
 
         # Check which acknowledgments are missing
@@ -980,6 +1131,9 @@ def validate_comprehensive_checkout(request):
 
         # Determine if blocked
         blocked = len(missing_acknowledgments) > 0
+
+        logger.info(
+            f"🚦 [Comprehensive Validation] Result: blocked={blocked}, missing={len(missing_acknowledgments)}, satisfied={len(satisfied_acknowledgments)}")
 
         return Response({
             "success": True,
