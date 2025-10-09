@@ -122,7 +122,7 @@ def validate_and_process_event_excel(file_path, debug=False):
             row_data = row.to_dict()
             row_data['row_number'] = row_number
             row_errors = []            
-            print(row_number)
+
             lms_start_date = row['LMS start date']
             if not row['LMS start date']:
                 lms_start_date = parent_lms_start_date
@@ -1064,8 +1064,7 @@ def create_administrate_events(api_service, valid_data, debug=False):
                 session = parent_event['sessions']['edges'][row_data['session_day']-1]['node']
                 session_result = update_session(api_service, parent_event, row_data, session['id'],
                                session_custom_field_keys, timeZone, debug)
-                            
-        print(f"END : ROW {str(rownum)}")
+
         if (result):                                
                 successful_events.append(row_data)
                 logger.info(
@@ -1483,7 +1482,6 @@ def writeQueryToFile(query):
     f.close()
     return 
 
-
 def writeValidationResultToFile(content):
     f = open(ValidationFilePath, "a")
     f.write(content+"\n")
@@ -1495,7 +1493,6 @@ def writeResultToFile(contentList):
     f.write(contentList+"\n")
     f.close()
     return 
-
 
 # Note: get_events, delete_events, and set_event_websale functions have been moved to
 # administrate.services.event_management_service.EventManagementService
