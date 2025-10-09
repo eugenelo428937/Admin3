@@ -189,20 +189,7 @@ const Home = () => {
 						loop
 						muted
 						playsInline
-						poster={backgroundVideoPoster}
-						onError={(e) => {
-							console.error("🚨 Video error event:", e);
-							console.error("🚨 Video element:", e.target);
-							console.error("🚨 Video currentSrc:", e.target.currentSrc);
-							console.error("🚨 Video error details:", e.target.error);
-						}}
-						onLoadedData={(e) => {
-
-							
-
-						}}
-						onLoadStart={() => }
-						onCanPlay={() => }
+						poster={backgroundVideoPoster}							
 						style={{
 							position: "absolute",
 							top: 0,

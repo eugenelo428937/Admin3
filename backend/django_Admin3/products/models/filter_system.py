@@ -302,8 +302,6 @@ def setup_main_category_filter():
                 filter_configuration=filter_config,
                 filter_group=category,
                 defaults={'is_default': True}
-            )
-
-    else:
+            ) 
 
     return filter_config
