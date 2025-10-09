@@ -114,7 +114,7 @@ class AdministrateAuthService:
                     self.token_cache[self.instance_url] = token
                     return token
             except (json.JSONDecodeError, IOError) as e:
-                print(f"Error reading token file: {str(e)}")
+
                 return None
         return None
 

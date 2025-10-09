@@ -50,7 +50,7 @@ class CartSerializer(serializers.ModelSerializer):
     
     def get_user_context(self, obj):
         """Get user context including IP and country information and acknowledgments"""
-        print("[CartSerializer.get_user_context] Called")
+
         request = self.context.get('request')
         if not request:
             return {
@@ -152,7 +152,7 @@ class CartSerializer(serializers.ModelSerializer):
             return decimal_to_float(vat_result.get('vat_calculations', {}))
         except Exception as e:
             # Return empty structure on error to prevent serialization failure
-            print(f"[CartSerializer.get_vat_calculations] Error: {e}")
+
             return {
                 'items': [],
                 'totals': {

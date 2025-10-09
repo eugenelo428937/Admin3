@@ -37,13 +37,11 @@ class LifecycleState(Enum):
     PUBLISHED = "published"
     CANCELLED = "cancelled"
 
-
 def get_events(api_service, title, first=100, offset=0):    
     query = load_graphql_query('get_events_by_title')
     variables = {"title": title, "first": first, "offset": offset}
     result = api_service.execute_query(query, variables)       
     return result
-
 
 def set_event_active(api_service, event_id, lifecycleState):
     """
@@ -67,7 +65,6 @@ def set_event_active(api_service, event_id, lifecycleState):
 
     return result
 
-
 def set_event_soldout(api_service, event_id, isSoldOut=False):
     query = load_graphql_mutation('set_event_soldout')
     variables = {"eventId": event_id,
@@ -84,7 +81,6 @@ def reactive_learner(api_service, learner_id):
 
     return result
 
-
 def get_drafted_sessions_by_sitting(api_service, title, eventLifeCycleState, sessionLifecycleState, first=100, offset=0):
     query = load_graphql_query('get_drafted_sessions_by_sitting')
     variables = {"title": title, 
@@ -93,7 +89,6 @@ def get_drafted_sessions_by_sitting(api_service, title, eventLifeCycleState, ses
                  "first": first, "offset": offset}
     result = api_service.execute_query(query, variables)
     return result
-
 
 def set_session_active(api_service, session_id, lifecycleState):
     """
@@ -139,10 +134,9 @@ def main():
         if not result['data']['events']['pageInfo']['hasNextPage']:
             break
 
-    print(len(sessionids))
     count = 0       
     for e in sessionids:
-        print(f"{count} : Session ID: {e}")
+
         count += 1
         set_session_active(
             api_service, e, LifecycleState.PUBLISHED.value)
@@ -156,12 +150,11 @@ def main():
     #             bytes("learner:"+str(row[8]), 'utf-8')).decode("utf-8"))
     #         result = reactive_learner(api_service, learnerId_base64)
     #         if 'data' in result and 'errors' in result['data']:
-    #             print(f"Error reactivating learner {row[8]}: {result['data']['errors']}")
+    #             
     # get a list of all contact cancelled
     # reactive all learners in Online Classroom
     # cancel learners in cancelation list 
     return
-
 
 if __name__ == "__main__":
     main()

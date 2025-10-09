@@ -5,7 +5,6 @@ from django.utils import timezone
 from django.apps import apps
 import json
 
-
 class FilterGroup(models.Model):
     """
     Hierarchical filter groups (renamed from ProductGroup)
@@ -55,7 +54,6 @@ class FilterGroup(models.Model):
             level += 1
             parent = parent.parent
         return level
-
 
 class FilterConfiguration(models.Model):
     """
@@ -171,7 +169,6 @@ class FilterConfiguration(models.Model):
         depends_on = self.dependency_rules.get('depends_on', [])
         return other_filter.name in depends_on
 
-
 class FilterConfigurationGroup(models.Model):
     """
     Junction table linking filter configurations to filter groups
@@ -193,7 +190,6 @@ class FilterConfigurationGroup(models.Model):
     
     def __str__(self):
         return f'{self.filter_configuration.display_label} -> {self.filter_group.name}'
-
 
 class FilterPreset(models.Model):
     """
@@ -227,7 +223,6 @@ class FilterPreset(models.Model):
         self.last_used = timezone.now()
         self.save(update_fields=['usage_count', 'last_used'])
 
-
 class FilterUsageAnalytics(models.Model):
     """
     Track filter usage for analytics and optimization
@@ -254,7 +249,6 @@ class FilterUsageAnalytics(models.Model):
     def __str__(self):
         return f'{self.filter_configuration.display_label}: {self.filter_value} ({self.usage_count}x)'
 
-
 # Helper functions for data migration
 def migrate_old_product_groups():
     """
@@ -270,9 +264,6 @@ def migrate_old_product_groups():
             FROM acted_product_group
             ON CONFLICT (id) DO NOTHING;
         """)
-        
-        print("Migrated product groups to filter groups")
-
 
 def setup_main_category_filter():
     """
@@ -312,9 +303,7 @@ def setup_main_category_filter():
                 filter_group=category,
                 defaults={'is_default': True}
             )
-        
-        print(f"Created main category filter with {main_categories.count()} groups")
+
     else:
-        print("Main category filter already exists")
-    
+
     return filter_config
