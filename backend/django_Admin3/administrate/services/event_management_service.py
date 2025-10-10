@@ -61,9 +61,7 @@ class EventManagementService:
                 'edges' in result['data']['events']):
                 for event in result['data']['events']['edges']:
                     events.append(event['node']['id'])
-                    
-            logger.info(f"Retrieved {len(events)} events for sitting {current_sitting} with state {state}")
-            
+
         except Exception as e:
             logger.error(f"Error retrieving events: {str(e)}")
             raise
@@ -88,11 +86,10 @@ class EventManagementService:
         variables = {"eventids": event_ids}
         
         try:
-            logger.info(f"Deleting {len(event_ids)} events")
             result = self.api_service.execute_query(query, variables)
-            
+
             if result and 'data' in result:
-                logger.info(f"Successfully deleted events: {event_ids}")
+                pass
             else:
                 logger.error(f"Failed to delete events. Response: {result}")
                 
@@ -127,9 +124,9 @@ class EventManagementService:
         try:
             logger.debug(f"Setting websale={websale} for event {event_id}")
             result = self.api_service.execute_query(query, variables)
-            
+
             if result and 'data' in result and 'event' in result['data']:
-                logger.info(f"Successfully updated websale for event {event_id}")
+                pass
             else:
                 logger.error(f"Failed to update websale for event {event_id}. Response: {result}")
                 
@@ -159,9 +156,9 @@ class EventManagementService:
         try:
             logger.debug(f"Setting soldout={is_sold_out} for event {event_id}")
             result = self.api_service.execute_query(query, variables)
-            
+
             if result and 'data' in result and 'event' in result['data']:
-                logger.info(f"Successfully updated soldout status for event {event_id}")
+                pass
             else:
                 logger.error(f"Failed to update soldout status for event {event_id}. Response: {result}")
                 
@@ -191,12 +188,7 @@ class EventManagementService:
             
             for cf in custom_fields:
                 custom_field_keys[cf.label] = cf.external_id
-            
-            if debug:
-                logger.info(
-                    f"Retrieved {len(custom_field_keys)} custom field keys for {entity_type}"
-                )
-                
+
             return custom_field_keys
         
         except Exception as e:

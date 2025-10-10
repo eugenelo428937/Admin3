@@ -77,13 +77,23 @@ const MarkingVoucherProductCard = React.memo(({ voucher, onAddToCart }) => {
 
 		setIsLoading(true);
 		try {
+			// Build metadata
+			const metadata = {
+				type: "marking_voucher",
+				productType: "MarkingVoucher",
+				voucherCode: voucher.code,
+				voucherName: voucher.name,
+				expiryDate: voucher.expiry_date,
+			};
+
 			// Call the onAddToCart with voucher details
 			await onAddToCart(voucher, {
 				variationId: null,
 				variationName: 'Marking Voucher',
 				priceType: 'standard',
 				actualPrice: voucher.price,
-				quantity: 1
+				quantity: 1,
+				metadata: metadata,
 			});
 		} catch (error) {
 			console.error('Failed to add voucher to cart:', error);

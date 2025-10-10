@@ -62,8 +62,7 @@ def verify_recaptcha(recaptcha_response: str, user_ip: Optional[str] = None) -> 
         
         # Log the verification attempt
         if result.get("success"):
-            score = result.get("score", "N/A")
-            logger.info(f"reCAPTCHA verification successful. Score: {score}")
+            pass
         else:
             error_codes = result.get("error-codes", [])
             logger.warning(f"reCAPTCHA verification failed. Error codes: {error_codes}")
@@ -147,8 +146,7 @@ def verify_recaptcha_v3(recaptcha_response: str, expected_action: str = None, mi
             "action": action,
             "expected_action": expected_action
         }
-    
-    logger.info(f"reCAPTCHA v3 verification successful. Score: {score}, Action: {action}")
+
     return result
 
 

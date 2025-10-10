@@ -42,8 +42,7 @@ class EmailService:
             original_recipients = to_emails.copy()
             context['dev_original_recipients'] = original_recipients
             context['dev_mode_active'] = True
-            
-            logger.info(f"Development mode: Redirecting email from {original_recipients} to {dev_recipients}")
+
             return dev_recipients
         
         # In production or when override is disabled, return original recipients
@@ -115,7 +114,6 @@ class EmailService:
                 }
                 
                 if template_name in core_email_types:
-                    logger.info(f"Using master template for core email type: {template_name}")
                     return self._send_mjml_email(
                         template_name, 
                         context, 
@@ -138,7 +136,7 @@ class EmailService:
                         enhance_outlook_compatibility
                     )
                 except Exception as e:
-                    logger.info(f"MJML template not found for {template_name}: {str(e)}, falling back to HTML")
+                    pass
             
             # Fallback to regular HTML template
             return self._send_html_email(template_name, context, actual_recipients, subject, from_email)
@@ -186,14 +184,12 @@ class EmailService:
                 scheduled_at=scheduled_at,
                 user=user
             )
-            
-            logger.info(f"Email queued successfully: {queue_item.queue_id}")
+
             return True
             
         except Exception as e:
             logger.error(f"Failed to queue email: {str(e)}")
             # Fallback to immediate send
-            logger.info("Falling back to immediate send")
             return self._send_mjml_email(
                 template_name, context, to_emails, subject, from_email, enhance_outlook_compatibility
             ) if use_mjml else self._send_html_email(template_name, context, to_emails, subject, from_email)
@@ -230,8 +226,7 @@ class EmailService:
             if template_name in core_email_types:
                 # Use master template approach for core email types
                 content_template = core_email_types[template_name]
-                logger.info(f"Using master template approach for {template_name} -> {content_template}")
-                
+
                 # Render using master template
                 mjml_content = self._render_email_with_master_template(
                     content_template=content_template,
@@ -365,8 +360,7 @@ class EmailService:
                 mjml_content,
                 include_loader=include_loader
             )
-            logger.info(f"MJML compilation successful for dynamic content")
-            
+
             # Enhanced Outlook compatibility: Apply Premailer post-processing to MJML output
             if enhance_outlook_compatibility:
                 html_content = self._enhance_outlook_compatibility(html_content)
@@ -458,10 +452,7 @@ class EmailService:
                 
                 logger.error(f"SMTP error sending email to {actual_recipients}: {error_message}")
                 raise smtp_error
-            
-            enhancement_note = " with Outlook enhancement" if enhance_outlook_compatibility else ""
-            logger.info(f"Dynamic MJML email sent successfully{enhancement_note} to {actual_recipients}")
-            
+
         except Exception as e:
             # Capture any other errors
             error_type = type(e).__name__
@@ -629,8 +620,7 @@ class EmailService:
             
             # Send email
             email.send()
-            
-            logger.info(f"HTML email sent successfully to {actual_recipients} using template {template_name}")
+
             return True
             
         except Exception as e:
@@ -715,9 +705,7 @@ class EmailService:
                     content=rendered_content,
                     context=context
                 )
-                
-                logger.info(f"Processed dynamic content for template: {template_name}")
-                
+
             except Exception as content_error:
                 logger.warning(f"Failed to process dynamic content insertion: {str(content_error)}")
                 # Continue with original content if dynamic content processing fails
@@ -815,8 +803,6 @@ class EmailService:
             
             # Try using master template approach directly as last resort
             try:
-                logger.info(f"Attempting master template fallback for order confirmation")
-                
                 # Render using master template directly
                 mjml_content = self._render_email_with_master_template(
                     content_template='order_confirmation_content',
@@ -998,7 +984,6 @@ class EmailService:
                 if os.path.exists(full_path):
                     with open(full_path, 'rb') as f:
                         email.attach(display_name, f.read(), mime_type)
-                    logger.info(f"Attached file: {display_name} ({mime_type})")
                 else:
                     logger.error(f"Attachment file not found: {full_path}")
                     if attachment.get('is_required'):
@@ -1104,8 +1089,7 @@ class EmailService:
             
             # Associate placeholder with template
             template.placeholders.add(placeholder)
-            
-            logger.info(f"Successfully associated placeholder '{placeholder_name}' with template '{template_name}'")
+
             return True
             
         except Exception as e:
