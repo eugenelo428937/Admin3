@@ -1,7 +1,5 @@
 {
-  "tabWidth": 3,
-  "useTabs": true,
-  "htmlWhitespaceSensitivity": "ignore",
-  "bracketSameLine": true,
-  "prettier.printWidth": 50
+  "tabWidth": 2,
+  "useTabs": false,
+  "printWidth":80
 }
