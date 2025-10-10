@@ -128,7 +128,7 @@ class AuthViewSet(viewsets.ViewSet):
                     )
                     
                     if email_success:
-                        logger.info(f"Account activation email sent successfully to {user.email} for user {user.username}")
+                        pass
                     else:
                         logger.warning(f"Account activation email failed to send to {user.email} for user {user.username}")
                         
@@ -270,7 +270,6 @@ class AuthViewSet(viewsets.ViewSet):
             )
             
             if success:
-                logger.info(f"Password reset email queued successfully for user {user.email}")
                 return Response({
                     'success': True,
                     'message': f'Password reset instructions have been sent to {email}. The link will expire in {expiry_hours} hours.',
@@ -324,9 +323,7 @@ class AuthViewSet(viewsets.ViewSet):
                 # Token is valid, set new password
                 user.set_password(new_password)
                 user.save()
-                
-                logger.info(f"Password successfully reset for user {user.email}")
-                
+
                 # Send password reset completion email
                 try:
                     from django.utils import timezone
@@ -348,7 +345,7 @@ class AuthViewSet(viewsets.ViewSet):
                     )
                     
                     if email_success:
-                        logger.info(f"Password reset completion email queued successfully for user {user.email}")
+                        pass
                     else:
                         logger.warning(f"Failed to queue password reset completion email for user {user.email}")
                         
@@ -405,9 +402,7 @@ class AuthViewSet(viewsets.ViewSet):
                 if not user.is_active:
                     user.is_active = True
                     user.save()
-                    
-                    logger.info(f"Account activated successfully for user: {user.email}")
-                    
+
                     return Response({
                         'status': 'success',
                         'message': 'Account activated successfully. You can now log in.'
@@ -485,7 +480,6 @@ class AuthViewSet(viewsets.ViewSet):
             )
             
             if success:
-                logger.info(f"Account activation email sent successfully to: {user.email}")
                 return Response({
                     'status': 'success',
                     'message': 'Activation email sent successfully'
@@ -530,9 +524,7 @@ class AuthViewSet(viewsets.ViewSet):
             # Decode user ID
             user_id = force_str(urlsafe_base64_decode(uid))
             user = User.objects.get(pk=user_id)
-            
-            logger.info(f"Email verification attempt - User: {user.username}, Token: {token[:10]}..., New Email: {new_email}")
-            
+
             # Check if email is already in use by another user
             if User.objects.filter(email=new_email).exclude(pk=user.pk).exists():
                 logger.warning(f"Email verification failed - {new_email} already in use")
@@ -558,9 +550,7 @@ class AuthViewSet(viewsets.ViewSet):
                     pass
                 except Exception as profile_error:
                     logger.warning(f"Could not update UserProfile for {user.username}: {str(profile_error)}")
-                
-                logger.info(f"Email updated successfully from {old_email} to {new_email} for user: {user.username}")
-                
+
                 return Response({
                     'status': 'success',
                     'message': 'Email address verified and updated successfully'
@@ -640,9 +630,7 @@ class AuthViewSet(viewsets.ViewSet):
                 'expiry_hours': expiry_hours,
                 'verification_timestamp': timezone.now()
             }
-            
-            logger.info(f"Generating email verification for user {user.username} - Token: {token[:10]}..., New Email: {new_email}")
-            
+
             # Send email verification to the NEW email address
             success = email_service.send_email_verification(
                 user_email=new_email,  # Send to new email address
@@ -654,7 +642,6 @@ class AuthViewSet(viewsets.ViewSet):
             )
             
             if success:
-                logger.info(f"Email verification sent successfully to: {new_email} for user: {user.email}")
                 return Response({
                     'status': 'success',
                     'message': f'Verification email sent to {new_email}. Please check your inbox. The link will expire in {expiry_hours} hours.',

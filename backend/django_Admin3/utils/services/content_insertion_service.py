@@ -50,8 +50,7 @@ class EmailContentInsertionService:
                 # Replace placeholder with generated content
                 placeholder_pattern = f'{{{{{placeholder_name}}}}}'
                 processed_content = processed_content.replace(placeholder_pattern, dynamic_content)
-            
-            logger.info(f"Processed {len(placeholders)} placeholders in template {template_name}")
+
             return processed_content
             
         except Exception as e:

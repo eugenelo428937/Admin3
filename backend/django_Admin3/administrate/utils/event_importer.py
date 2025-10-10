@@ -73,7 +73,6 @@ def validate_and_process_event_excel(file_path, debug=False):
     
     try:
         # Load Excel file
-        logger.info(f"Loading Excel file: {file_path}")
         df = pd.read_excel(file_path, na_filter=False,
                            skiprows=lambda x: 1 <= x <= 2)
 
@@ -227,10 +226,8 @@ def validate_and_process_event_excel(file_path, debug=False):
                     f"Row {row_number} has validation errors: {row_errors}")
             else:
                 valid_data.append(row_data)
-                # logger.debug(f"Row {row_number} passed validation")                
-        
-        logger.info(f"Validation complete. Valid rows: {len(valid_data)}, Error rows: {len(error_data)}")
-        
+                # logger.debug(f"Row {row_number} passed validation")
+
         return valid_data, error_data
     
     except Exception as e:
@@ -1065,10 +1062,8 @@ def create_administrate_events(api_service, valid_data, debug=False):
                 session_result = update_session(api_service, parent_event, row_data, session['id'],
                                session_custom_field_keys, timeZone, debug)
 
-        if (result):                                
+        if (result):
                 successful_events.append(row_data)
-                logger.info(
-                    f"Successfully created event '{row_data['Event title']}'")
         else:
             # Check for errors
             # errors = []
@@ -1147,9 +1142,7 @@ def create_blended_event(api_service, row_data, event_custom_field_keys, session
         # Add Instructors to event
         add_course_staff(api_service, "event", event['id'],
                         row_data['administrator_ids'], "administrator", debug)
-                
-        logger.info(
-            f"Successfully created event '{row_data['Event title']}' with ID {event['id']}")
+
         writeResultToFile(f"{event['legacyId']}||{event['id']}")
         return event
     else:
@@ -1208,10 +1201,7 @@ def create_lms_event(api_service, row_data, event_custom_field_keys, eventType, 
 
             event = result['data']['event']['createLMS']['event']
             row_data['event_id'] = event['id']
-            
-            logger.info(
-                f"Successfully created event '{row_data['Event title']}' with ID {event['id']}")
-             
+
             writeResultToFile(event['legacyId'])
             return event
         else:
@@ -1355,10 +1345,6 @@ def get_custom_field_keys_by_entity_type(api_service, entity_type, debug):
         for cf in custom_fields:
             custom_field_keys[cf.label] = cf.external_id
 
-        if debug:
-            logger.info(
-                f"Retrieved {len(custom_field_keys)} custom field keys for {entity_type}")
-            
         return custom_field_keys
     
     except Exception as e:
@@ -1381,8 +1367,6 @@ def bulk_upload_events_from_excel(file_path, debug=False, dry_run=False):
     if debug:
         logger.setLevel(logging.DEBUG)
 
-    logger.info(f"Starting bulk upload from {file_path} (dry_run={dry_run})")
-
     try:
         # Step 1: Validate the Excel data
         api_service = AdministrateAPIService()
@@ -1400,7 +1384,6 @@ def bulk_upload_events_from_excel(file_path, debug=False, dry_run=False):
         # 
         # Step 2: Create events if not a dry run
         if not dry_run and valid_data:
-            logger.info(f"Creating {len(valid_data)} events in Administrate")
             create_administrate_events(
                 api_service, valid_data, debug)
 
@@ -1408,11 +1391,8 @@ def bulk_upload_events_from_excel(file_path, debug=False, dry_run=False):
             # results["failed_count"] = len(failed_events)
             # results["created_events"] = successful_events
             # results["failed_events"] = failed_events
-
-            logger.info(
-                f"Event creation complete.")
         elif dry_run:
-            logger.info("Dry run - not creating events")
+            pass
             # results["dry_run"] = True
 
         # return results
@@ -1469,10 +1449,8 @@ def generate_error_report(results, output_path=None):
     if all_errors:
         df = pd.DataFrame(all_errors)
         df.to_excel(output_path, index=False)
-        logger.info(f"Error report generated at {output_path}")
         return output_path
     else:
-        logger.info("No errors to report")
         return None
 
 def writeQueryToFile(query):

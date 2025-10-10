@@ -170,7 +170,6 @@ class OpayoPaymentService:
             
             # Parse response
             response_data = response.json()
-            logger.info(f"Response data: {response_data}")
             # Update payment record
             payment.opayo_response = response_data
             payment.opayo_status_code = response_data.get('statusCode')
@@ -182,9 +181,7 @@ class OpayoPaymentService:
                 payment.transaction_id = response_data.get('transactionId')
                 payment.processed_at = timezone.now()
                 payment.save()
-                
-                logger.info(f"Payment successful for order {order.id}: {response_data.get('transactionId')}")
-                
+
                 return {
                     'success': True,
                     'payment_id': payment.id,
@@ -245,9 +242,7 @@ class OpayoPaymentService:
                 user_agent=user_agent,
                 status='pending'
             )
-            
-            logger.info(f"Invoice payment created for order {order.id}")
-            
+
             return {
                 'success': True,
                 'payment_id': payment.id,

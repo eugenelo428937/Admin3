@@ -547,8 +547,6 @@ class RuleEngine:
         start_time = time.time()
 
         try:
-            logger.info(f" Rules Engine: Executing entry point '{entry_point}'")
-
             # Add defensive context validation to prevent AttributeError
             context_issues = self._validate_context_structure(context)
             if context_issues:
@@ -556,7 +554,6 @@ class RuleEngine:
 
             # Fetch active rules
             rules = self.rule_repository.get_active_rules(entry_point)
-            logger.info(f" Rules Engine: Found {len(rules)} active rules for '{entry_point}'")
             
             if not rules:
                 return {
@@ -601,20 +598,10 @@ class RuleEngine:
                     # Evaluate condition
                     condition_result = self.condition_evaluator.evaluate(rule.condition, context)
 
-                    # Debug logging for ASET rule
-                    if rule.rule_code == 'rule_aset_warning_v1':
-                        logger.info(f"ASET rule evaluation: condition={rule.condition}")
-                        cart_items = context.get('cart', {}).get('items', [])
-                        product_ids = [item.get('product_id') for item in cart_items]
-                        logger.info(f"Cart product_ids: {product_ids}")
-                        logger.info(f"Looking for product_id in [72, 73]")
-                        logger.info(f"Condition result: {condition_result}")
-
                     # Count this rule as evaluated regardless of condition result
                     rules_evaluated += 1
 
                     if condition_result:
-                        logger.info(f" Rule '{rule.rule_code}' condition matched")
                         
                         # Execute actions
                         actions_result = self.action_dispatcher.dispatch(rule.actions, context)
@@ -699,10 +686,9 @@ class RuleEngine:
                             rule.rule_code, entry_point, context, actions_result,
                             "success", execution_time_ms
                         )
-                        
+
                         # Check if we should stop processing
                         if rule.stop_processing:
-                            logger.info(f" Rule '{rule.rule_code}' set stop_processing=True")
                             break
                     else:
                         logger.debug(f"  Rule '{rule.rule_code}' condition not matched")
@@ -765,9 +751,8 @@ class RuleEngine:
             }
             
             if blocked:
-                result['error'] = 'Required acknowledgments not provided' 
-            
-            logger.info(f" Rules Engine: Completed '{entry_point}' - {rules_evaluated} rules evaluated in {total_time_ms:.2f}ms")
+                result['error'] = 'Required acknowledgments not provided'
+
             return result
             
         except Exception as e:

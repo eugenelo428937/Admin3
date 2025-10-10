@@ -314,11 +314,8 @@ class ProductFilterService:
     
     def apply_filters(self, queryset: QuerySet, filters: Dict[str, List[Any]], user=None, session_id=None) -> QuerySet:
         """Apply multiple filters to a queryset"""
-        logger.info(f"Applying filters: {filters}")
-        
         for filter_name, filter_values in filters.items():
             if filter_name in self.strategies and filter_values:
-                logger.info(f"Applying {filter_name} filter with values: {filter_values}")
                 strategy = self.strategies[filter_name]
                 
                 # Set user context for analytics
@@ -434,13 +431,11 @@ class ProductFilterService:
             if filter_name in self.strategies:
                 cache_key = self.strategies[filter_name].get_cache_key()
                 cache.delete(cache_key)
-                logger.info(f"Cache invalidated for {filter_name}: {cache_key}")
     
     def reload_configurations(self):
         """Reload filter configurations from database"""
         self.strategies.clear()
         self._load_filter_configurations()
-        logger.info("Filter configurations reloaded")
 
 
 # Convenience functions

@@ -40,13 +40,11 @@ def get_region_from_ip(ip_address):
 
             if data.get('status') == 'success':
                 country_code = data.get('countryCode')
-                logger.info(f"IP {ip_address} resolved to country: {country_code}")
 
                 # Map country code to VAT region
                 from country.vat_rates import map_country_to_region
                 region = map_country_to_region(country_code)
 
-                logger.info(f"Country {country_code} mapped to VAT region: {region}")
                 return region
             else:
                 logger.warning(f"IP geolocation failed for {ip_address}: {data.get('message')}")
@@ -59,7 +57,6 @@ def get_region_from_ip(ip_address):
         logger.error(f"Unexpected error in IP geolocation for {ip_address}: {str(e)}")
 
     # Fallback to ROW if geolocation fails
-    logger.info(f"Defaulting to ROW for IP {ip_address}")
     return 'ROW'
 
 
