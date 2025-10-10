@@ -160,13 +160,9 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         Get list of all products and exam session bundles with their subject details.
         Optimized with caching and pagination support.
         """
-        logger.info('--- list_products called ---')
-        logger.info(f'Query params: {request.query_params}')
-        
         # Get pagination parameters
         page = int(request.query_params.get('page', 1))
         page_size = int(request.query_params.get('page_size', 50))
-        logger.info(f'Pagination: page={page}, page_size={page_size}')
         
         # ===== DYNAMIC FILTER CONFIGURATION =====
         from products.models.filter_system import FilterConfiguration
@@ -207,7 +203,6 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         # Try to get from cache first
         cached_data = cache.get(cache_key)
         if cached_data:
-            logger.info('Returning cached products and bundles data')
             return Response(cached_data)
         
         # ===== FETCH PRODUCTS =====
@@ -252,10 +247,9 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                             processed_values.append(value)
                     except (ValueError, AttributeError):
                         processed_values.append(value)
-                
+
                 filters[config.name] = processed_values
-                logger.info(f'Added dynamic filter: {config.name} = {processed_values} (from parameter: {config.name})')
-                
+
                 # Check if bundle filter is active
                 if config.filter_type == 'bundle' and 'bundle' in processed_values:
                     bundle_filter_active = True
@@ -271,14 +265,10 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             if 'SUBJECT_FILTER' not in filters:
                 filters['SUBJECT_FILTER'] = []
             filters['SUBJECT_FILTER'].extend(request.query_params.getlist('subject'))
-        
-        logger.info(f'Final dynamic filters being applied: {filters}')
-        logger.info(f'Bundle filter active: {bundle_filter_active}')
-        
+
         # ===== HANDLE BUNDLE FILTER LOGIC =====
         if bundle_filter_active:
             # If bundle filter is active, only return bundles
-            logger.info('Bundle filter is active - returning only bundles')
             products_queryset = products_queryset.none()  # No products when bundle filter is active
             
             # Apply other filters to bundles (except bundle filter)
@@ -297,10 +287,9 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                         subject_filter |= Q(exam_session_subject__subject__id__in=ids)
                     if codes:
                         subject_filter |= Q(exam_session_subject__subject__code__in=codes)
-                    
+
                     if subject_filter:
                         bundles_queryset = bundles_queryset.filter(subject_filter)
-                        logger.info(f'Bundles after subject filtering: {bundles_queryset.count()}')
         else:
             # Normal filtering - apply filters to products and find related bundles
             original_filters = filters.copy()
@@ -308,7 +297,6 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             # Apply filters to products using the filter service
             if filters:
                 products_queryset = filter_service.apply_filters(products_queryset, filters)
-                logger.info(f'Products after dynamic filtering: {products_queryset.count()}')
             
             # Apply subject filtering to bundles (bundles don't have other filter types)
             if filters.get('subject') or filters.get('SUBJECT_FILTER'):
@@ -325,11 +313,10 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                         subject_filter |= Q(exam_session_subject__subject__id__in=ids)
                     if codes:
                         subject_filter |= Q(exam_session_subject__subject__code__in=codes)
-                    
+
                     if subject_filter:
                         bundles_queryset = bundles_queryset.filter(subject_filter)
-                        logger.info(f'Bundles after subject filtering: {bundles_queryset.count()}')
-            
+
             # ===== FIND BUNDLES CONTAINING FILTERED PRODUCTS =====
             # If we have any filters applied, find bundles that contain products matching those filters
             if original_filters:
@@ -366,26 +353,21 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                                     'bundle_products__exam_session_subject_product_variation__product_product_variation__product',
                                     'bundle_products__exam_session_subject_product_variation__product_product_variation__product_variation'
                                 )
-                                
+
                                 # Combine the querysets
                                 bundles_queryset = bundles_queryset.union(additional_bundles)
-                                logger.info(f'Added {len(new_bundle_ids)} bundles containing filtered products')
-                            
+
                 except Exception as e:
                     logger.error(f'Error finding bundles containing filtered products: {e}')
-        
-        logger.info(f'After filter service - products: {products_queryset.count()}, bundles: {bundles_queryset.count()}')
 
         # ===== APPLY NAVBAR FILTERING =====
         group_filter = request.query_params.get('group')
         product_filter = request.query_params.get('product')
-        logger.info(f'Navbar filtering: group={group_filter}, product={product_filter}')
         
         if group_filter:
             try:
                 group = FilterGroup.objects.get(name=group_filter)
                 products_queryset = products_queryset.filter(product__groups=group)
-                logger.info(f'After group filter "{group_filter}" - products: {products_queryset.count()}')
             except FilterGroup.DoesNotExist:
                 logger.warning(f'Filter group "{group_filter}" not found')
                 products_queryset = products_queryset.none()
@@ -394,7 +376,6 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             try:
                 product_id = int(product_filter)
                 products_queryset = products_queryset.filter(product__id=product_id)
-                logger.info(f'After product filter ID {product_id} - products: {products_queryset.count()}')
             except (ValueError, TypeError):
                 logger.warning(f'Invalid product ID: {product_filter}')
                 products_queryset = products_queryset.none()
@@ -404,14 +385,11 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         variation_filter = request.query_params.get('variation')
         distance_learning_filter = request.query_params.get('distance_learning')
         tutorial_filter = request.query_params.get('tutorial')
-        
-        logger.info(f'New navbar filtering: tutorial_format={tutorial_format_filter}, variation={variation_filter}, distance_learning={distance_learning_filter}, tutorial={tutorial_filter}')
-        
+
         if tutorial_format_filter:
             try:
                 format_group = FilterGroup.objects.get(name=tutorial_format_filter)
                 products_queryset = products_queryset.filter(product__groups=format_group)
-                logger.info(f'After tutorial_format filter "{tutorial_format_filter}" - products: {products_queryset.count()}')
             except FilterGroup.DoesNotExist:
                 logger.warning(f'Tutorial format group "{tutorial_format_filter}" not found')
                 products_queryset = products_queryset.none()
@@ -420,7 +398,6 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             try:
                 variation_id = int(variation_filter)
                 products_queryset = products_queryset.filter(product__product_variations__id=variation_id)
-                logger.info(f'After variation filter ID {variation_id} - products: {products_queryset.count()}')
             except (ValueError, TypeError):
                 logger.warning(f'Invalid variation ID: {variation_filter}')
                 products_queryset = products_queryset.none()
@@ -430,7 +407,6 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             try:
                 dl_groups = FilterGroup.objects.filter(name__in=distance_learning_groups)
                 products_queryset = products_queryset.filter(product__groups__in=dl_groups).distinct()
-                logger.info(f'After distance_learning filter - products: {products_queryset.count()}')
             except Exception as e:
                 logger.warning(f'Error applying distance learning filter: {e}')
                 products_queryset = products_queryset.none()
@@ -440,7 +416,6 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 tutorial_group = FilterGroup.objects.get(name='Tutorial')
                 online_classroom_group = FilterGroup.objects.get(name='Online Classroom')
                 products_queryset = products_queryset.filter(product__groups=tutorial_group).exclude(product__groups=online_classroom_group).distinct()
-                logger.info(f'After tutorial filter - products: {products_queryset.count()}')
             except FilterGroup.DoesNotExist as e:
                 logger.warning(f'Tutorial group not found: {e}')
                 products_queryset = products_queryset.none()
@@ -485,10 +460,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         start_index = (page - 1) * page_size
         end_index = start_index + page_size
         paginated_items = all_items[start_index:end_index]
-        
-        logger.info(f'Combined totals - products: {len(transformed_products)}, bundles: {len(transformed_bundles)}, total: {total_count}')
-        logger.info(f'Pagination: total={total_count}, start={start_index}, end={end_index}, page_size={page_size}')
-        
+
         # ===== GET SUBJECTS FOR FILTERS =====
         subjects_data = []
         if page == 1:
@@ -518,11 +490,10 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 'subjects': subjects_data
             } if page == 1 else {}
         }
-        
+
         # Cache the result for 5 minutes
         cache.set(cache_key, response_data, 300)
-        logger.info(f'Paginated items count: {len(paginated_items)}, total: {total_count}, cached with key: {cache_key}')
-        
+
         return Response(response_data)
 
     @action(detail=False, methods=['get'], url_path='fuzzy-search', permission_classes=[AllowAny])
@@ -534,14 +505,10 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         - min_score: Minimum fuzzy match score (default: 60)
         - limit: Maximum number of results (default: 50)
         """
-        logger.info('🔍 [API] Fuzzy search endpoint called')
-        
         # Get search parameters
         query = request.query_params.get('q', '').strip()
         min_score = int(request.query_params.get('min_score', 60))
         limit = int(request.query_params.get('limit', 50))
-        
-        logger.info(f'🔍 [API] Search params - query: "{query}", min_score: {min_score}, limit: {limit}')
         
         if not query or len(query) < 2:
             return Response({
@@ -565,8 +532,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 'suggested_filters': search_results['suggested_filters'],
                 'search_info': search_results['search_info']
             }
-            
-            logger.info(f'🔍 [API] Fuzzy search completed - {len(serializer.data)} products returned')
+
             return Response(response_data)
             
         except Exception as e:
@@ -587,8 +553,6 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         - min_score: Minimum fuzzy match score (default: 60)
         - limit: Maximum number of results (default: 50)
         """
-        logger.info('🔍 [API] Advanced fuzzy search endpoint called')
-        
         # Get search parameters
         query = request.query_params.get('q', '').strip()
         subject_ids_param = request.query_params.get('subjects', '')
@@ -614,9 +578,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 return Response({
                     'error': 'Invalid category IDs format. Use comma-separated integers.'
                 }, status=status.HTTP_400_BAD_REQUEST)
-        
-        logger.info(f'🔍 [API] Advanced search params - query: "{query}", subjects: {subject_ids}, categories: {category_ids}')
-        
+
         try:
             # Initialize search service
             search_service = FuzzySearchService(min_score=min_score)
@@ -639,8 +601,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 'suggested_filters': search_results['suggested_filters'],
                 'search_info': search_results['search_info']
             }
-            
-            logger.info(f'🔍 [API] Advanced fuzzy search completed - {len(serializer.data)} products returned')
+
             return Response(response_data)
             
         except Exception as e:
@@ -659,11 +620,8 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         Query parameters:
         - limit: Maximum number of items per category (default: 5)
         """
-        logger.info('[API] Default search data endpoint called')
-        
         try:
             limit = int(request.query_params.get('limit', 5))
-            logger.info(f' [API] Limit: {limit}')
             
             # Start with a basic response to test the endpoint
             response_data = {
@@ -687,7 +645,6 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 subjects = Subject.objects.all()[:limit]
                 subjects_serializer = SubjectSerializer(subjects, many=True)
                 response_data['suggested_filters']['subjects'] = subjects_serializer.data
-                logger.info(f' [API] Found {len(subjects_serializer.data)} subjects')
             except Exception as e:
                 logger.warning(f' [API] Error getting subjects: {str(e)}')
             
@@ -703,7 +660,6 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                     for group in product_groups
                 ]
                 response_data['suggested_filters']['product_groups'] = product_groups_data
-                logger.info(f' [API] Found {len(product_groups_data)} product groups')
             except Exception as e:
                 logger.warning(f' [API] Error getting product groups: {str(e)}')
             
@@ -717,11 +673,9 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 popular_products_serializer = ProductListSerializer(popular_products_queryset, many=True)
                 response_data['popular_products'] = popular_products_serializer.data
                 response_data['total_count'] = len(popular_products_serializer.data)
-                logger.info(f' [API] Found {len(popular_products_serializer.data)} popular products')
             except Exception as e:
                 logger.warning(f' [API] Error getting popular products: {str(e)}')
-            
-            logger.info(' [API] Default search data completed successfully')
+
             return Response(response_data)
             
         except Exception as e:
@@ -761,9 +715,6 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             }
         }
         """
-        logger.info('🔍 [UNIFIED-SEARCH-V3] Starting optimized product search')
-        logger.info(f'🔍 [UNIFIED-SEARCH-V3] Request data: {request.data}')
-        
         try:
             # Validate request data
             request_serializer = ProductSearchRequestSerializer(data=request.data)
@@ -792,24 +743,16 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             navbar_filters = {}
             if tutorial_format_filter:
                 navbar_filters['tutorial_format'] = tutorial_format_filter
-                logger.info(f'🔍 [UNIFIED-SEARCH-V3] Added navbar filter: tutorial_format={tutorial_format_filter}')
             if group_filter:
                 navbar_filters['group'] = group_filter
-                logger.info(f'🔍 [UNIFIED-SEARCH-V3] Added navbar filter: group={group_filter}')
             if variation_filter:
                 navbar_filters['variation'] = variation_filter
-                logger.info(f'🔍 [UNIFIED-SEARCH-V3] Added navbar filter: variation={variation_filter}')
             if distance_learning_filter:
                 navbar_filters['distance_learning'] = distance_learning_filter
-                logger.info(f'🔍 [UNIFIED-SEARCH-V3] Added navbar filter: distance_learning={distance_learning_filter}')
             if tutorial_filter:
                 navbar_filters['tutorial'] = tutorial_filter
-                logger.info(f'🔍 [UNIFIED-SEARCH-V3] Added navbar filter: tutorial={tutorial_filter}')
             if product_filter:
                 navbar_filters['product'] = product_filter
-                logger.info(f'🔍 [UNIFIED-SEARCH-V3] Added navbar filter: product={product_filter}')
-            
-            logger.info(f'🔍 [UNIFIED-SEARCH-V3] Using OptimizedSearchService')
             
             # Use the optimized search service
             result = optimized_search_service.search_products(
@@ -818,12 +761,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 pagination=pagination,
                 options=options
             )
-            
-            logger.info(
-                f'🔍 [UNIFIED-SEARCH-V3] Completed in {result["performance"]["duration"]:.3f}s, '
-                f'returned {len(result["products"])} results'
-            )
-            
+
             return Response(result)
             
         except Exception as e:
@@ -841,8 +779,6 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         Uses acted_filter_group hierarchy with parent_id to generate dynamic filters.
         This replaces hardcoded filter generation with database-driven approach.
         """
-        logger.info('🔢 [FILTER-COUNTS] Generating database-driven disjunctive facet counts')
-        
         filter_counts = {
             'subjects': {},
             'categories': {},
@@ -853,9 +789,8 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         
         try:
             filter_service = get_filter_service()
-            
+
             # 1. Subjects - Get from acted_subjects (correct approach)
-            logger.info('🔢 [FILTER-COUNTS] Generating subjects from acted_subjects')
             subjects = base_products_queryset.values_list(
                 'exam_session_subject__subject__code',
                 'exam_session_subject__subject__description'
@@ -873,9 +808,8 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                         'count': count,
                         'name': name or code  # Use description if available, otherwise code
                     }
-            
+
             # 2. Categories - Get from acted_filter_group where parent_id IS NULL AND has PRODUCT_CATEGORY config
-            logger.info('🔢 [FILTER-COUNTS] Generating categories from filter groups with PRODUCT_CATEGORY config')
             root_categories = FilterGroup.objects.filter(
                 parent_id__isnull=True, 
                 is_active=True,
@@ -898,9 +832,8 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                         'count': count,
                         'name': category.name
                     }
-            
+
             # 3. Product Types - Get child groups with PRODUCT_TYPE configuration
-            logger.info('🔢 [FILTER-COUNTS] Generating product types from filter groups with PRODUCT_TYPE config')
             # Get all child groups that have PRODUCT_TYPE configuration
             child_groups = FilterGroup.objects.filter(
                 parent_id__isnull=False, 
@@ -920,9 +853,8 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                         'name': group.name,
                         'display_name': group.name  # Just use the child name, no parent prefix
                     }
-            
+
             # 4. Products - Individual products (keep existing logic)
-            logger.info('🔢 [FILTER-COUNTS] Generating individual products')
             distinct_products = base_products_queryset.values_list(
                 'product__id',
                 'product__shortname'
@@ -939,10 +871,8 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                             'name': product_name,
                             'id': product_id
                         }
-            
+
             # 5. Modes of Delivery - Get from product variations but also check for filter groups
-            logger.info('🔢 [FILTER-COUNTS] Generating modes of delivery from variations and filter groups')
-            
             # First get from product variations (existing approach)
             modes = base_products_queryset.values_list(
                 'variations__product_product_variation__product_variation__name',
@@ -975,11 +905,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                         'count': count,
                         'name': group.name
                     }
-            
-            logger.info(f'🔢 [FILTER-COUNTS] Generated database-driven counts: {filter_counts}')
-            logger.info(f'🔢 [FILTER-COUNTS] Categories found: {list(filter_counts["categories"].keys())}')
-            logger.info(f'🔢 [FILTER-COUNTS] Product types found: {list(filter_counts["product_types"].keys())}')
-            
+
         except Exception as e:
             logger.error(f'🔢 [FILTER-COUNTS] Error generating database-driven counts: {str(e)}')
             import traceback

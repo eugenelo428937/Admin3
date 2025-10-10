@@ -337,7 +337,6 @@ class EmailTester:
                             # Fallback to HTML template
                             use_mjml = False
                     except Exception as e:
-                        logger.info(f"MJML template not found for {template_name}: {str(e)}, falling back to HTML")
                         use_mjml = False
                 
                 # Fallback to HTML template
@@ -394,9 +393,7 @@ class EmailTester:
                 
                 with open(filepath, 'w', encoding='utf-8') as f:
                     f.write(content)
-                
-                logger.info(f"Saved preview: {filepath}")
-                
+
             except Exception as e:
                 logger.error(f"Failed to save preview for {template_name} ({fmt}): {str(e)}")
     

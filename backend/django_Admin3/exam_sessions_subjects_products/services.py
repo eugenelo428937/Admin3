@@ -33,8 +33,6 @@ class FuzzySearchService:
         Returns:
             Dictionary containing search results and suggested filters
         """
-        logger.info(f'[FuzzySearchService] Starting search for: "{query}"')
-        
         if not query or len(query.strip()) < 2:
             return self._get_empty_results()
         
@@ -135,8 +133,7 @@ class FuzzySearchService:
                 'matches_found': len(products_with_scores)
             }
         }
-        
-        logger.info(f'[FuzzySearchService] Search completed: {len(top_products)} results returned')
+
         return results
     
     def _build_searchable_text(self, product: ExamSessionSubjectProduct) -> str:
@@ -259,8 +256,6 @@ class FuzzySearchService:
         Returns:
             Filtered and scored results
         """
-        logger.info(f'[FuzzySearchService] Advanced search - query: "{query}", subjects: {subject_ids}, categories: {category_ids}')
-        
         # Start with base queryset
         queryset = ExamSessionSubjectProduct.objects.select_related(
             'exam_session_subject__subject',
@@ -273,11 +268,9 @@ class FuzzySearchService:
         # Apply filters
         if subject_ids:
             queryset = queryset.filter(exam_session_subject__subject__id__in=subject_ids)
-            logger.info(f'Applied subject filter: {len(subject_ids)} subjects')
-        
+
         if category_ids:
             queryset = queryset.filter(product__groups__id__in=category_ids).distinct()
-            logger.info(f'Applied category filter: {len(category_ids)} categories')
         
         # If no text query, return filtered results
         if not query or len(query.strip()) < 2:

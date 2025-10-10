@@ -76,7 +76,6 @@ class EmailQueueService:
             template = None
             try:
                 template = EmailTemplate.objects.get(name=template_name, is_active=True)
-                logger.info(f"Found template configuration for {template_name}")
             except EmailTemplate.DoesNotExist:
                 logger.warning(f"No template configuration found for {template_name}, using defaults")
             
@@ -108,7 +107,6 @@ class EmailQueueService:
                 logger.error(f"Failed to serialize context: {str(serialization_error)}")
                 # Try to clean the context by removing non-serializable items
                 serialized_context = self._clean_context_for_serialization(context)
-                logger.info(f"Used cleaned context for {template_name}")
             
             # Create queue item
             with transaction.atomic():
@@ -128,8 +126,7 @@ class EmailQueueService:
                     tags=tags or [],
                     created_by=user
                 )
-                
-                logger.info(f"Queued email {queue_item.queue_id} for {len(to_emails)} recipients")
+
                 return queue_item
                 
         except Exception as e:
@@ -227,7 +224,6 @@ class EmailQueueService:
             if all_success:
                 queue_item.status = 'sent'
                 queue_item.sent_at = timezone.now()
-                logger.info(f"Successfully processed queue item {queue_item.queue_id}")
             else:
                 # Schedule retry if possible
                 if queue_item.can_retry():
@@ -339,8 +335,7 @@ class EmailQueueService:
                 
                 if success:
                     email_log.mark_sent(response_code, response_message, esp_message_id)
-                    logger.info(f"Email sent successfully to {to_email}")
-                    
+
                     # Update log with detailed ESP response
                     email_log.esp_response = esp_response
                     email_log.save()
@@ -527,8 +522,7 @@ class EmailQueueService:
                         'is_required': template_attachment.is_required
                     }
                     attachments.append(attachment_info)
-            
-            logger.info(f"Found {len(attachments)} attachments for template {template.name}")
+
             return attachments
             
         except Exception as e:
@@ -609,8 +603,7 @@ class EmailQueueService:
                 else:  # logic == 'all'
                     # Include if ALL required types are found
                     include = all(req_type in found_types for req_type in required_product_types)
-                
-                logger.info(f"Product type condition for {template_attachment.attachment.name}: {'INCLUDE' if include else 'EXCLUDE'} (Required: {required_product_types}, Found: {found_types}, Logic: {logic})")
+
                 return include
             
             # Simple key-value condition (backward compatibility)
@@ -669,8 +662,7 @@ class EmailQueueService:
                 results['failed'] += 1
                 results['errors'].append(f"Queue item {queue_item.queue_id}: {str(e)}")
                 logger.error(f"Failed to process queue item {queue_item.queue_id}: {str(e)}")
-        
-        logger.info(f"Processed {results['processed']} queue items: {results['successful']} successful, {results['failed']} failed")
+
         return results
     
     def get_queue_stats(self) -> Dict:

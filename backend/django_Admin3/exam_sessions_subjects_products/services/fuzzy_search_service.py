@@ -31,8 +31,6 @@ class FuzzySearchService:
         Returns:
             dict: Search results with products, counts, and metadata
         """
-        logger.info(f'Performing basic text search for: "{query}"')
-        
         if not query or len(query) < 2:
             return self._empty_result(query)
         
@@ -82,8 +80,6 @@ class FuzzySearchService:
         Returns:
             dict: Search results
         """
-        logger.info(f'Advanced search - query: "{query}", subjects: {subject_ids}')
-        
         queryset = ExamSessionSubjectProduct.objects.select_related(
             'exam_session_subject__subject',
             'product'

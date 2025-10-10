@@ -606,7 +606,6 @@ class CartViewSet(viewsets.ViewSet):
                         'entry_point_location': ack.get('entry_point_location')
                     }
 
-        logger.info(f"🔍 [Checkout Validation] Validating blocking acknowledgments for payment method '{payment_method}'")
 
         # Execute checkout_payment rules to check for blocking conditions
         try:
@@ -632,7 +631,6 @@ class CartViewSet(viewsets.ViewSet):
                     'blocking_rules': validation_result.get('blocking_rules', [])
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            logger.info(f"✅ [Checkout Validation] No blocking conditions found for user {user.id}")
 
         except Exception as e:
             logger.error(f"❌ [Checkout Validation] Failed to validate blocking acknowledgments: {str(e)}")
@@ -736,7 +734,6 @@ class CartViewSet(viewsets.ViewSet):
             if user_preferences:
                 try:
                     self._save_user_preferences_to_order(order, user_preferences)
-                    logger.info(f"Successfully saved {len(user_preferences)} user preferences for order {order.id}")
                 except Exception as e:
                     logger.warning(f"Failed to save user preferences for order {order.id}: {str(e)}")
                     # Continue with checkout - preference saving failure shouldn't block checkout
@@ -745,7 +742,6 @@ class CartViewSet(viewsets.ViewSet):
             # This runs regardless of whether user_preferences exist from rules engine
             try:
                 self._extract_and_save_essential_order_data(order, user, user_preferences)
-                logger.info(f"Successfully extracted essential contact/delivery data for order {order.id}")
             except Exception as e:
                 logger.warning(f"Failed to extract essential order data for order {order.id}: {str(e)}")
                 # Continue with checkout - this is logged but shouldn't block
@@ -802,8 +798,6 @@ class CartViewSet(viewsets.ViewSet):
                     acknowledgment_data=cart_data,
                     rules_engine_context={}  # Will be populated with all acknowledged rules below
                 )
-                
-                logger.info(f"T&C acceptance created for order {order.id}: accepted={general_terms_accepted}")
                 
             except Exception as e:
                 logger.warning(f"Failed to create T&C acceptance record for order {order.id}: {str(e)}")
@@ -894,8 +888,6 @@ class CartViewSet(viewsets.ViewSet):
                     }
                     terms_acknowledgment.save()
                     
-                    logger.info(f"Expired deadline acknowledgment created for order {order.id}: {len(expired_deadline_rules)} rules acknowledged")
-                    
             except Exception as e:
                 logger.warning(f"Failed to create expired deadline acknowledgment for order {order.id}: {str(e)}")
                 # Continue with checkout - acknowledgment is recorded but not blocking
@@ -932,7 +924,6 @@ class CartViewSet(viewsets.ViewSet):
                 # Fallback to default country if no address found (for testing dynamic content rules)
                 if not user_country:
                     user_country = "United Kingdom"  # Default for testing
-                    logger.info(f"Using default country '{user_country}' for user {user.username}")
                 
                 # Prepare comprehensive order data for email service
                 order_data = {
@@ -1039,7 +1030,7 @@ class CartViewSet(viewsets.ViewSet):
                 )
                 
                 if success:
-                    logger.info(f"Order confirmation email queued successfully for order {order_data['order_number']} to {user.email}")
+                    pass
                 else:
                     logger.warning(f"Order confirmation email failed to queue for order {order_data['order_number']} to {user.email}")
                     
@@ -1077,23 +1068,14 @@ class CartViewSet(viewsets.ViewSet):
         try:
             session_acknowledgments = request.session.get('user_acknowledgments', [])
             if not session_acknowledgments:
-                logger.info(f"No session acknowledgments found for order {order.id}")
                 return
-
-            logger.info(f"Found {len(session_acknowledgments)} session acknowledgments for order {order.id}")
 
             # CRITICAL FIX: Get rules that matched in current execution for audit purposes only
             matched_rule_ids = self._get_matched_rules_for_current_execution(order, cart)
-            logger.info(f"Rules that matched in current execution (for audit): {matched_rule_ids}")
 
             # FIXED: Transfer ALL session acknowledgments as separate records
             # No filtering - each acknowledgment gets its own database row
             valid_acknowledgments = session_acknowledgments
-            logger.info(f"Transferring ALL {len(valid_acknowledgments)} session acknowledgments as separate records")
-
-            # DEBUG: Log all valid acknowledgments
-            for i, ack in enumerate(valid_acknowledgments):
-                logger.info(f"DEBUG: Valid acknowledgment {i+1}: ack_key='{ack.get('ack_key')}', message_id='{ack.get('message_id')}', entry_point='{ack.get('entry_point_location')}'")
 
             # Create a separate order acknowledgment record for each acknowledgment
             # This ensures each acknowledgment (terms, digital consent, tutorial credit card, etc.)
@@ -1197,13 +1179,9 @@ class CartViewSet(viewsets.ViewSet):
                     }
                 )
 
-                logger.info(f"Created order acknowledgment {order_acknowledgment.id} for ack_key='{ack_key}', message_id='{message_id}', type='{acknowledgment_type}'")
-
             # Clear session acknowledgments after successful transfer
             request.session['user_acknowledgments'] = []
             request.session.modified = True
-
-            logger.info(f"Successfully transferred ALL {len(valid_acknowledgments)} session acknowledgments to order {order.id} as separate database records")
 
         except Exception as e:
             logger.error(f"Failed to transfer session acknowledgments to order {order.id}: {str(e)}")
@@ -1272,8 +1250,6 @@ class CartViewSet(viewsets.ViewSet):
             from rules_engine.services.rule_engine import rule_engine
 
             for entry_point in entry_points_to_check:
-                logger.info(f"Executing rules for entry point '{entry_point}' to validate acknowledgments for order {order.id}")
-
                 result = rule_engine.execute(entry_point, context)
 
                 if not result.get('success'):
@@ -1297,9 +1273,6 @@ class CartViewSet(viewsets.ViewSet):
                         entry_point_matched_ids.add(str(template_id))
                         matched_rule_ids.add(str(template_id))
 
-                logger.info(f"Entry point '{entry_point}' matched rules: {entry_point_matched_ids}")
-
-            logger.info(f"All rules that matched across entry points for order {order.id}: {matched_rule_ids}")
             return matched_rule_ids
 
         except Exception as e:
@@ -1393,7 +1366,6 @@ class CartViewSet(viewsets.ViewSet):
             )
             
             if success:
-                logger.info(f"Test order confirmation email sent successfully to {test_email}")
                 return Response({
                     'success': True,
                     'message': f'Test order confirmation email sent successfully to {test_email}',
@@ -1585,8 +1557,6 @@ class CartViewSet(viewsets.ViewSet):
                     }
                 )
 
-                logger.info(f"Created order preference {order_preference.id} for key '{preference_key}' with value: {value}")
-
             except Exception as e:
                 logger.error(f"Failed to save preference '{preference_key}': {str(e)}")
                 # Continue with other preferences
@@ -1636,11 +1606,9 @@ class CartViewSet(viewsets.ViewSet):
                     for field, value in contact_data.items():
                         setattr(existing_contact, field, value)
                     existing_contact.save()
-                    logger.info(f"Updated OrderUserContact for order {order.id}")
                 else:
                     # Create new record
                     OrderUserContact.objects.create(order=order, **contact_data)
-                    logger.info(f"Created OrderUserContact for order {order.id} with data: {contact_data}")
             except Exception as e:
                 logger.error(f"Failed to save OrderUserContact for order {order.id}: {str(e)}")
 
@@ -1650,59 +1618,46 @@ class CartViewSet(viewsets.ViewSet):
         import logging
         logger = logging.getLogger(__name__)
 
-        logger.info(f"🔍 [Backend] Extracting delivery data for order {order.id}")
-        logger.info(f"🔍 [Backend] User preferences received: {user_preferences}")
 
         # Check if we have delivery/address data in the preferences
         delivery_data = {}
 
         if user_preferences:
-            logger.info(f"🔍 [Backend] Processing {len(user_preferences)} user preferences for delivery data")
             for pref_key, pref_data in user_preferences.items():
                 value = pref_data.get('value', '') if isinstance(pref_data, dict) else pref_data
-                logger.info(f"🔍 [Backend] Processing delivery preference: {pref_key} = {value}")
 
                 # Handle the new address data structure from frontend
                 if pref_key == 'delivery_address_type':
                     delivery_data['delivery_address_type'] = str(value).lower()
-                    logger.info(f"🔍 [Backend] Set delivery_address_type: {value}")
 
                 elif pref_key == 'delivery_address_data':
                     # Parse JSON address data and store complete object in JSONB field
                     try:
                         import json
                         address_data = json.loads(str(value)) if isinstance(value, str) else value
-                        logger.info(f"🔍 [Backend] Parsed delivery address data: {address_data}")
 
                         if isinstance(address_data, dict):
                             # Store complete address object in JSONB field
                             delivery_data['delivery_address_data'] = address_data
-                            logger.info(f"🔍 [Backend] Set delivery_address_data JSONB: {address_data}")
                     except Exception as e:
                         logger.warning(f"🔍 [Backend] Failed to parse delivery address data: {e}")
 
                 elif pref_key == 'invoice_address_type':
                     delivery_data['invoice_address_type'] = str(value).lower()
-                    logger.info(f"🔍 [Backend] Set invoice_address_type: {value}")
 
                 elif pref_key == 'invoice_address_data':
                     # Parse JSON address data for invoice and store complete object in JSONB field
                     try:
                         import json
                         address_data = json.loads(str(value)) if isinstance(value, str) else value
-                        logger.info(f"🔍 [Backend] Parsed invoice address data: {address_data}")
 
                         if isinstance(address_data, dict):
                             # Store complete address object in JSONB field
                             delivery_data['invoice_address_data'] = address_data
-                            logger.info(f"🔍 [Backend] Set invoice_address_data JSONB: {address_data}")
                     except Exception as e:
                         logger.warning(f"🔍 [Backend] Failed to parse invoice address data: {e}")
-        else:
-            logger.warning(f"🔍 [Backend] No user_preferences provided for delivery data extraction")
 
         # Create OrderDeliveryDetail record if we have any delivery data
-        logger.info(f"🔍 [Backend] Final delivery_data for order {order.id}: {delivery_data}")
         if delivery_data:
             try:
                 # Check if record already exists
@@ -1712,16 +1667,12 @@ class CartViewSet(viewsets.ViewSet):
                     for field, value in delivery_data.items():
                         setattr(existing_detail, field, value)
                     existing_detail.save()
-                    logger.info(f"✅ [Backend] Updated OrderDeliveryDetail {existing_detail.id} for order {order.id} with data: {delivery_data}")
                 else:
                     # Create new record
                     delivery_detail = OrderDeliveryDetail.objects.create(order=order, **delivery_data)
-                    logger.info(f"✅ [Backend] Created OrderDeliveryDetail {delivery_detail.id} for order {order.id} with data: {delivery_data}")
             except Exception as e:
                 logger.error(f"❌ [Backend] Failed to save OrderDeliveryDetail for order {order.id}: {str(e)}")
                 logger.error(f"❌ [Backend] Delivery data that failed: {delivery_data}")
-        else:
-            logger.warning(f"⚠️ [Backend] No delivery data to save for order {order.id}")
 
     def _extract_and_save_essential_order_data(self, order, user, user_preferences=None):
         """
@@ -1749,33 +1700,22 @@ class CartViewSet(viewsets.ViewSet):
         import logging
         logger = logging.getLogger(__name__)
 
-        logger.info(f"🔍 [Backend] Extracting contact data for order {order.id}")
-        logger.info(f"🔍 [Backend] User preferences received: {user_preferences}")
-
         contact_data = {}
 
         # Try to get data from user_preferences first
         if user_preferences:
-            logger.info(f"🔍 [Backend] Processing {len(user_preferences)} user preferences")
             for pref_key, pref_data in user_preferences.items():
                 value = pref_data.get('value', '') if isinstance(pref_data, dict) else pref_data
-                logger.info(f"🔍 [Backend] Processing preference: {pref_key} = {value}")
 
                 # Map preference keys to contact fields with specific mapping
                 if pref_key == 'mobile_phone':
                     contact_data['mobile_phone'] = str(value)
-                    logger.info(f"🔍 [Backend] Set mobile_phone: {value}")
                 elif pref_key == 'home_phone':
                     contact_data['home_phone'] = str(value)
-                    logger.info(f"🔍 [Backend] Set home_phone: {value}")
                 elif pref_key == 'work_phone':
                     contact_data['work_phone'] = str(value)
-                    logger.info(f"🔍 [Backend] Set work_phone: {value}")
                 elif pref_key == 'email_address' or pref_key == 'email':
                     contact_data['email_address'] = str(value)
-                    logger.info(f"🔍 [Backend] Set email_address: {value}")
-        else:
-            logger.warning(f"🔍 [Backend] No user_preferences provided for order {order.id}")
 
         # Fallback to user profile data if no preferences
         if not contact_data.get('email_address') and user:
@@ -1792,16 +1732,12 @@ class CartViewSet(viewsets.ViewSet):
                 pass  # No phone data available
 
         # Create contact record if we have any data
-        logger.info(f"🔍 [Backend] Final contact_data for order {order.id}: {contact_data}")
         if contact_data:
             try:
                 contact_record = OrderUserContact.objects.create(order=order, **contact_data)
-                logger.info(f"✅ [Backend] Successfully created OrderUserContact {contact_record.id} for order {order.id} with data: {contact_data}")
             except Exception as e:
                 logger.error(f"❌ [Backend] Failed to create OrderUserContact for order {order.id}: {str(e)}")
                 logger.error(f"❌ [Backend] Contact data that failed: {contact_data}")
-        else:
-            logger.warning(f"⚠️ [Backend] No contact data to save for order {order.id}")
 
     def _extract_and_save_delivery_preferences_fallback(self, order, user, user_preferences=None):
         """Extract delivery data from user_preferences or fallback to user profile"""
@@ -1851,6 +1787,5 @@ class CartViewSet(viewsets.ViewSet):
         if delivery_data:
             try:
                 OrderDeliveryDetail.objects.create(order=order, **delivery_data)
-                logger.info(f"Created OrderDeliveryDetail for order {order.id} with fallback data")
             except Exception as e:
                 logger.error(f"Failed to create OrderDeliveryDetail for order {order.id}: {str(e)}")

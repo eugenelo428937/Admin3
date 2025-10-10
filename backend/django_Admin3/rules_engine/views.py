@@ -167,8 +167,6 @@ class RulesEngineViewSet(viewsets.ViewSet):
 
                 if acknowledgments_dict:
                     context_data['acknowledgments'] = acknowledgments_dict
-                    logger.info(
-                        f"🎯 Added {len(acknowledgments_dict)} session acknowledgments to context for '{entry_point}'")
 
             # Add request metadata
             context_data['request'] = {
@@ -178,16 +176,8 @@ class RulesEngineViewSet(viewsets.ViewSet):
             }
 
             # Debug: Log the final context being sent to rules engine
-            logger.info(f"📋 Final context keys: {list(context_data.keys())}")
             if 'user' in context_data:
                 user_ctx = context_data['user']
-                # Defensive check: only log if user_ctx is a dictionary
-                if isinstance(user_ctx, dict):
-                    logger.info(
-                        f" User context: id={user_ctx.get('id')}, auth={user_ctx.get('is_authenticated')}, home_country={user_ctx.get('home_country')}, work_country={user_ctx.get('work_country')}")
-                else:
-                    logger.info(
-                        f" User context: {user_ctx} (type: {type(user_ctx).__name__})")
 
             # Execute rules engine
             result = new_rule_engine.execute(entry_point, context_data)
@@ -197,9 +187,6 @@ class RulesEngineViewSet(viewsets.ViewSet):
                 logger.warning(
                     f"Schema validation errors for '{entry_point}': {len(result['schema_validation_errors'])} errors")
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
-
-            logger.info(
-                f"Rules Engine API: '{entry_point}' - {result.get('rules_evaluated', 0)} rules evaluated")
 
             return Response(result)
 
@@ -941,8 +928,6 @@ def validate_comprehensive_checkout(request):
         # Get session acknowledgments
         session_acknowledgments = request.session.get(
             "user_acknowledgments", [])
-        logger.info(
-            f"🔍 [Comprehensive Validation] Found {len(session_acknowledgments)} session acknowledgments")
 
         # Convert session acknowledgments to the format expected by rules engine
         acknowledgments_dict = {}
@@ -957,8 +942,6 @@ def validate_comprehensive_checkout(request):
 
         # Add acknowledgments to context
         context_data["acknowledgments"] = acknowledgments_dict
-        logger.info(
-            f"🎯 [Comprehensive Validation] Context acknowledgments: {list(acknowledgments_dict.keys())}")
 
         # Collect all required acknowledgments from all entry points
         entry_points_to_check = [
@@ -997,9 +980,6 @@ def validate_comprehensive_checkout(request):
 
         # Determine if blocked
         blocked = len(missing_acknowledgments) > 0
-
-        logger.info(
-            f"🚦 [Comprehensive Validation] Result: blocked={blocked}, missing={len(missing_acknowledgments)}, satisfied={len(satisfied_acknowledgments)}")
 
         return Response({
             "success": True,

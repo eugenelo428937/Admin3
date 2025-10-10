@@ -180,11 +180,9 @@ class OptimizedSearchService:
                     # If it's numeric, filter by product ID
                     product_id = int(product)
                     product_q |= Q(product_id=product_id)
-                    logger.info(f"[FILTER] Filtering by product ID: {product_id}")
                 except (ValueError, TypeError):
                     # If it's not numeric, filter by product name using covering index
                     product_q |= Q(product__fullname__icontains=product)
-                    logger.info(f"[FILTER] Filtering by product name: {product}")
             
             if product_q:
                 q_filter &= product_q
@@ -209,8 +207,6 @@ class OptimizedSearchService:
         Apply navbar-style filters for navigation dropdown compatibility.
         These filters use the same logic as the main list() method.
         """
-        logger.info(f'🔍 [NAVBAR-FILTERS] Applying navbar filters: {navbar_filters}')
-        
         # Apply tutorial_format filter (expects code like 'live_online' not name)
         if 'tutorial_format' in navbar_filters:
             try:
@@ -218,7 +214,6 @@ class OptimizedSearchService:
                 # Look up by code instead of name
                 format_group = FilterGroup.objects.get(code=navbar_filters['tutorial_format'])
                 queryset = queryset.filter(product__groups=format_group)
-                logger.info(f'🔍 [NAVBAR-FILTERS] Applied tutorial_format filter code="{navbar_filters["tutorial_format"]}" (name="{format_group.name}") - queryset count: {queryset.count()}')
             except FilterGroup.DoesNotExist:
                 logger.warning(f'🔍 [NAVBAR-FILTERS] Tutorial format group with code "{navbar_filters["tutorial_format"]}" not found')
                 queryset = queryset.none()
@@ -234,7 +229,6 @@ class OptimizedSearchService:
                     # Fall back to name for backward compatibility
                     group = FilterGroup.objects.get(name=navbar_filters['group'])
                 queryset = queryset.filter(product__groups=group)
-                logger.info(f'🔍 [NAVBAR-FILTERS] Applied group filter "{navbar_filters["group"]}" (name="{group.name}") - queryset count: {queryset.count()}')
             except FilterGroup.DoesNotExist:
                 logger.warning(f'🔍 [NAVBAR-FILTERS] Filter group "{navbar_filters["group"]}" not found by code or name')
                 queryset = queryset.none()
@@ -250,7 +244,6 @@ class OptimizedSearchService:
                 ).exclude(
                     product__groups=online_classroom_group
                 ).distinct()
-                logger.info(f'🔍 [NAVBAR-FILTERS] Applied tutorial filter - queryset count: {queryset.count()}')
             except FilterGroup.DoesNotExist as e:
                 logger.warning(f'🔍 [NAVBAR-FILTERS] Tutorial group not found: {e}')
                 queryset = queryset.none()
@@ -260,7 +253,6 @@ class OptimizedSearchService:
             try:
                 variation_id = int(navbar_filters['variation'])
                 queryset = queryset.filter(variations__id=variation_id)
-                logger.info(f'🔍 [NAVBAR-FILTERS] Applied variation filter ID {variation_id} - queryset count: {queryset.count()}')
             except (ValueError, TypeError):
                 logger.warning(f'🔍 [NAVBAR-FILTERS] Invalid variation ID: {navbar_filters["variation"]}')
                 queryset = queryset.none()
@@ -271,7 +263,6 @@ class OptimizedSearchService:
                 from products.models.filter_system import FilterGroup
                 distance_learning_group = FilterGroup.objects.get(name='Material')
                 queryset = queryset.filter(product__groups=distance_learning_group)
-                logger.info(f'🔍 [NAVBAR-FILTERS] Applied distance_learning filter - queryset count: {queryset.count()}')
             except FilterGroup.DoesNotExist:
                 logger.warning(f'🔍 [NAVBAR-FILTERS] Material group not found for distance learning filter')
                 queryset = queryset.none()
@@ -281,7 +272,6 @@ class OptimizedSearchService:
             try:
                 product_id = int(navbar_filters['product'])
                 queryset = queryset.filter(product__id=product_id)
-                logger.info(f'🔍 [NAVBAR-FILTERS] Applied product filter ID={product_id} - queryset count: {queryset.count()}')
             except (ValueError, TypeError):
                 logger.warning(f'🔍 [NAVBAR-FILTERS] Invalid product ID: {navbar_filters["product"]}')
                 queryset = queryset.none()
@@ -300,16 +290,12 @@ class OptimizedSearchService:
             'products': {},
             'modes_of_delivery': {}
         }
-        
+
         try:
-            logger.info(f"[FILTER-COUNTS] Generating filter counts from {base_queryset.count()} products")
-            
             # Get active filter configurations from database
             active_configs = FilterConfiguration.objects.filter(is_active=True)
-            logger.info(f"[FILTER-COUNTS] Found {active_configs.count()} active filter configurations")
-            
+
             for config in active_configs:
-                logger.info(f"[FILTER-COUNTS] Processing {config.display_label} (type: {config.filter_type})")
                 
                 if config.filter_type == 'subject':
                     # Subject filter - get subjects from database
@@ -325,7 +311,6 @@ class OptimizedSearchService:
                                 'count': count,
                                 'name': code  # Subject codes are already human-readable
                             }
-                            logger.info(f"[FILTER-COUNTS] Subject {code}: {count} products")
                 
                 elif config.filter_type == 'filter_group':
                     # Get the mapping for this configuration
@@ -336,9 +321,7 @@ class OptimizedSearchService:
                         config_groups = config.filterconfigurationgroup_set.filter(
                             filter_group__is_active=True
                         ).select_related('filter_group').order_by('display_order')
-                        
-                        logger.info(f"[FILTER-COUNTS] Found {config_groups.count()} groups for {config.name}")
-                        
+
                         for config_group in config_groups:
                             group = config_group.filter_group
                             
@@ -351,7 +334,6 @@ class OptimizedSearchService:
                                     'name': group.name,
                                     'display_name': group.name  # Just use the child name, no parent prefix
                                 }
-                                logger.info(f"[FILTER-COUNTS] {config.display_label} - {group.name}: {count} products")
             
             # Fallback: If no configurations found, still provide subjects
             if not filter_counts['subjects'] and base_queryset.exists():
@@ -373,10 +355,9 @@ class OptimizedSearchService:
             logger.error(f"[FILTER-COUNTS] Error generating filter counts: {str(e)}")
             import traceback
             logger.error(f"[FILTER-COUNTS] Traceback: {traceback.format_exc()}")
-        
+
         # Add product metadata for filtered products (e.g., tutorial locations)
         if applied_filters.get('products'):
-            logger.info(f"[FILTER-COUNTS] Adding metadata for filtered products: {applied_filters['products']}")
             from products.models import Product
             
             for product_id in applied_filters['products']:
@@ -390,11 +371,9 @@ class OptimizedSearchService:
                             'name': product.shortname or product.name,
                             'id': product_id
                         }
-                        logger.info(f"[FILTER-COUNTS] Product {product_id} ({product.shortname}): {count} items")
                 except Exception as e:
                     logger.error(f"[FILTER-COUNTS] Error adding product metadata for {product_id}: {str(e)}")
-        
-        logger.info(f"[FILTER-COUNTS] Final filter counts: {filter_counts}")
+
         return filter_counts
     
     def _get_filter_key_for_config(self, config_name):
@@ -415,8 +394,7 @@ class OptimizedSearchService:
             count = base_queryset.filter(
                 product__groups=group
             ).distinct().count()
-            
-            logger.info(f"[FILTER-COUNTS] {config.display_label} - {group.name}: {count} products (using DB relationship)")
+
             return count
                 
         except Exception as e:
@@ -445,13 +423,6 @@ class OptimizedSearchService:
     def _log_performance(self, operation, filters, duration, result_count):
         """Log performance metrics for monitoring."""
         if self.enable_query_logging:
-            filter_summary = ', '.join([f"{k}({len(v)})" for k, v in filters.items() if v])
-            logger.info(
-                f"SEARCH {operation}: {duration:.3f}s, "
-                f"Results: {result_count}, "
-                f"Filters: [{filter_summary}]"
-            )
-            
             if duration > 0.5:
                 logger.warning(
                     f"SLOW SEARCH: {duration:.3f}s - "
@@ -470,7 +441,6 @@ class CacheManager:
         # In a production environment, you might want to use cache tagging
         # For now, we'll just clear keys by pattern
         cache.clear()
-        logger.info("Search cache invalidated")
     
     @staticmethod
     def warm_popular_searches():
@@ -488,7 +458,6 @@ class CacheManager:
         for filters in popular_combinations:
             try:
                 search_service.search_products(filters=filters)
-                logger.info(f"Warmed cache for filters: {filters}")
             except Exception as e:
                 logger.error(f"Failed to warm cache for {filters}: {str(e)}")
 

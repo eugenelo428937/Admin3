@@ -380,6 +380,18 @@ const OnlineClassroomProductCard = React.memo(
 									const priceType = selectedPriceType || "standard";
 									const priceObj = currentVariation.prices?.find(p => p.price_type === priceType);
 
+									// Build metadata with is_digital flag
+									const metadata = {
+										type: "online_classroom",
+										productType: product.type,
+										variationId: currentVariation.id,
+										variationName: currentVariation.name,
+										variationType: currentVariation.variation_type,
+										subjectCode: product.subject_code,
+										productName: product.product_name,
+										is_digital: true, // Online Classroom is always digital
+									};
+
 									// Construct context similar to MaterialProductCard
 									const context = {
 										// Use actual integer variation ID from database
@@ -387,6 +399,7 @@ const OnlineClassroomProductCard = React.memo(
 										variationName: currentVariation.name,
 										priceType: priceType,
 										actualPrice: priceObj?.amount || "0.00",
+										metadata: metadata,
 									};
 
 									onAddToCart(product, context);

@@ -32,8 +32,6 @@ class UpdateHandler:
         operation = action.get('operation', '')
         value = action.get('value', {})
 
-        logger.info(f"Executing update action: target={target}, operation={operation}")
-
         if target == 'cart.fees' and operation == 'add_fee':
             return self._add_cart_fee(value, context)
         elif target == 'cart.fees' and operation == 'remove_fee':
@@ -108,8 +106,6 @@ class UpdateHandler:
                 # Note: applied_by_rule would need numeric ID, not string code
                 existing_fee.save()
 
-                logger.info(f"Updated existing {fee_type} fee for cart {cart_id}: £{amount}")
-
                 fee_data = {
                     'id': existing_fee.id,
                     'fee_type': fee_type,
@@ -141,8 +137,6 @@ class UpdateHandler:
                     currency='GBP',
                     is_refundable=False
                 )
-
-                logger.info(f"Added {fee_type} fee to cart {cart_id}: £{amount}")
 
                 fee_data = {
                     'id': new_fee.id,
@@ -217,8 +211,6 @@ class UpdateHandler:
             ).delete()
 
             if deleted_count > 0:
-                logger.info(f"Removed {fee_type} fee from cart {cart_id}")
-
                 return {
                     'type': 'update',
                     'success': True,
@@ -233,8 +225,6 @@ class UpdateHandler:
                     }
                 }
             else:
-                logger.info(f"No {fee_type} fee found to remove from cart {cart_id}")
-
                 return {
                     'type': 'update',
                     'success': True,
