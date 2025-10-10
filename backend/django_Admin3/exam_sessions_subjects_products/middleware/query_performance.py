@@ -70,11 +70,7 @@ class QueryPerformanceMiddleware(MiddlewareMixin):
     
     def _log_performance_metrics(self, request, total_time, total_queries):
         """Log standard performance metrics."""
-        logger.info(
-            f"Query Performance - {request.method} {request.path} - "
-            f"Time: {total_time:.3f}s, Queries: {total_queries}, "
-            f"Params: {dict(request.GET)}"
-        )
+        pass
     
     def _log_slow_request(self, request, total_time, total_queries):
         """Log detailed information about slow requests."""

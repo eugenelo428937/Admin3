@@ -14,17 +14,9 @@ def check_same_subject_products(cart_items, params):
         bool: True if matching products found, False otherwise
     """
     try:
-        logger.info(f"DEBUG: check_same_subject_products called")
-        logger.info(f"DEBUG: cart_items type: {type(cart_items)}")
-        logger.info(f"DEBUG: cart_items: {cart_items}")
-        logger.info(f"DEBUG: params: {params}")
-        
         # Get the product IDs from params
         assignment_ids = params.get('assignment_ids', [])
         marking_ids = params.get('marking_ids', [])
-        
-        logger.info(f"DEBUG: assignment_ids: {assignment_ids}")
-        logger.info(f"DEBUG: marking_ids: {marking_ids}")
         
         # Create sets of subject codes for assignments and markings
         assignment_subjects = set()
@@ -32,33 +24,22 @@ def check_same_subject_products(cart_items, params):
         
         # Check each cart item
         for item in cart_items:
-            logger.info(f"DEBUG: Processing item: {item}")
-            
             # Get the product ID from the correct field
             product_id = item.get('product_id')  # This is the ID from acted_products table
-            
+
             # Get subject code from the correct field
             subject_code = item.get('subject_code')
-            
-            logger.info(f"DEBUG: product_id: {product_id}, subject_code: {subject_code}")
-            
+
             if not subject_code:
-                logger.info(f"DEBUG: No subject code for item, skipping")
                 continue
-                
+
             if product_id in assignment_ids:
-                logger.info(f"DEBUG: Found assignment product {product_id} with subject {subject_code}")
                 assignment_subjects.add(subject_code)
             elif product_id in marking_ids:
-                logger.info(f"DEBUG: Found marking product {product_id} with subject {subject_code}")
                 marking_subjects.add(subject_code)
-        
-        logger.info(f"DEBUG: assignment_subjects: {assignment_subjects}")
-        logger.info(f"DEBUG: marking_subjects: {marking_subjects}")
-        
+
         # Check if there's any overlap in subjects
         result = bool(assignment_subjects.intersection(marking_subjects))
-        logger.info(f"DEBUG: Final result: {result}")
         
         return result
         
@@ -79,22 +60,14 @@ def check_tutorial_only_credit_card(cart_items, params):
         bool: True if conditions are met, False otherwise
     """
     try:
-        logger.info(f"DEBUG: check_tutorial_only_credit_card called")
-        logger.info(f"DEBUG: cart_items: {cart_items}")
-        logger.info(f"DEBUG: params: {params}")
-        
         # For testing, use test_cart_items if available, otherwise use cart_items
         items_to_check = params.get('test_cart_items', cart_items)
-        
+
         # Check payment method
         payment_method = params.get('payment_method', '').lower()
         is_credit_card = payment_method in ['credit_card', 'card', 'creditcard']
-        
-        logger.info(f"DEBUG: payment_method: {payment_method}, is_credit_card: {is_credit_card}")
-        logger.info(f"DEBUG: items_to_check: {items_to_check}")
-        
+
         if not is_credit_card:
-            logger.info("DEBUG: Not paying by credit card, condition not met")
             return False
         
         # Check if all items are tutorials
@@ -109,23 +82,17 @@ def check_tutorial_only_credit_card(cart_items, params):
                 ''
             ).lower()
             
-            logger.info(f"DEBUG: Item {item.get('id')}: product_type = {product_type}")
-            
             # Skip booking fee items (they shouldn't count against tutorial-only check)
             if 'booking' in product_type and 'fee' in product_type:
-                logger.info(f"DEBUG: Skipping booking fee item")
                 continue
-            
+
             if 'tutorial' in product_type:
                 tutorial_count += 1
             else:
                 non_tutorial_count += 1
-        
-        logger.info(f"DEBUG: tutorial_count: {tutorial_count}, non_tutorial_count: {non_tutorial_count}")
-        
+
         # Must have at least one tutorial and no non-tutorial items
         result = tutorial_count > 0 and non_tutorial_count == 0
-        logger.info(f"DEBUG: Final result: {result}")
         
         return result
         
@@ -146,17 +113,13 @@ def apply_tutorial_booking_fee(cart_items, params):
         dict: Fee application result
     """
     try:
-        logger.info(f"DEBUG: apply_tutorial_booking_fee called")
-        logger.info(f"DEBUG: params: {params}")
-        
         fee_amount = params.get('fee_amount', 1.00)  # Default £1
         fee_description = params.get('fee_description', 'Tutorial Booking Fee')
         cart_id = params.get('cart_id')
         rule_id = params.get('rule_id')
-        
+
         # For testing, if no cart_id provided, return a mock success
         if not cart_id:
-            logger.info("DEBUG: No cart_id provided - returning mock fee application for testing")
             return {
                 'success': True,
                 'fee_applied': True,
@@ -196,7 +159,6 @@ def apply_tutorial_booking_fee(cart_items, params):
         ).first()
         
         if existing_fee:
-            logger.info("DEBUG: Tutorial booking fee already applied")
             return {
                 'success': True,
                 'fee_applied': False,
@@ -239,8 +201,7 @@ def apply_tutorial_booking_fee(cart_items, params):
             },
             'message': f'{fee_description} of £{fee_amount} applied to cart'
         }
-        
-        logger.info(f"DEBUG: Fee application result: {result}")
+
         return result
         
     except Exception as e:

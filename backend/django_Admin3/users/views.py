@@ -63,7 +63,7 @@ class UserViewSet(viewsets.ModelViewSet):
                         )
                         
                         if email_sent:
-                            logger.info(f"Account activation email sent successfully to {user.email}")
+                            pass
                         else:
                             logger.warning(f"Failed to send account activation email to {user.email}")
                             
@@ -336,7 +336,6 @@ class UserViewSet(viewsets.ModelViewSet):
                         if success:
                             response_data['email_verification_sent'] = True
                             response_data['message'] += f' Verification email sent to {new_email}.'
-                            logger.info(f"Email verification sent to {new_email} for user {user.username}")
                         else:
                             response_data['email_verification_sent'] = False
                             response_data['message'] += ' However, email verification failed to send.'
