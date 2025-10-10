@@ -316,11 +316,26 @@ const MarkingProductCard = React.memo(
 					const priceObj = variation?.prices?.find(
 						(p) => p.price_type === finalPriceType
 					);
+
+					// Build metadata
+					const metadata = {
+						type: "marking",
+						productType: product.type,
+						variationId: variation.id,
+						variationName: variation.name,
+						variationType: variation.variation_type,
+						subjectCode: product.subject_code,
+						productName: product.product_name,
+						deadlineCount: deadlines.length,
+						expiredDeadlineCount: expired.length,
+					};
+
 					onAddToCart(product, {
 						variationId: variation.id,
 						variationName: variation.name,
 						priceType: finalPriceType,
 						actualPrice: priceObj?.amount,
+						metadata: metadata,
 					});
 				});
 			} else if (singleVariation) {
@@ -328,11 +343,26 @@ const MarkingProductCard = React.memo(
 				const priceObj = singleVariation.prices?.find(
 					(p) => p.price_type === finalPriceType
 				);
+
+				// Build metadata
+				const metadata = {
+					type: "marking",
+					productType: product.type,
+					variationId: singleVariation.id,
+					variationName: singleVariation.name,
+					variationType: singleVariation.variation_type,
+					subjectCode: product.subject_code,
+					productName: product.product_name,
+					deadlineCount: deadlines.length,
+					expiredDeadlineCount: expired.length,
+				};
+
 				onAddToCart(product, {
 					variationId: singleVariation.id,
 					variationName: singleVariation.name,
 					priceType: finalPriceType,
 					actualPrice: priceObj?.amount,
+					metadata: metadata,
 				});
 			} else if (!hasVariations) {
 				// Handle products without variations OR marking products where variations weren't loaded
@@ -346,11 +376,25 @@ const MarkingProductCard = React.memo(
 					actualPrice = priceObj?.amount || null;
 				}
 
+				// Build metadata
+				const metadata = {
+					type: "marking",
+					productType: product.type,
+					variationId: currentVariation?.id,
+					variationName: currentVariation?.name,
+					variationType: currentVariation?.variation_type,
+					subjectCode: product.subject_code,
+					productName: product.product_name,
+					deadlineCount: deadlines.length,
+					expiredDeadlineCount: expired.length,
+				};
+
 				onAddToCart(product, {
 					priceType: finalPriceType,
 					actualPrice: actualPrice,
 					variationId: currentVariation?.id,
 					variationName: currentVariation?.name,
+					metadata: metadata,
 				});
 			}
 			setShowExpiredWarning(false);

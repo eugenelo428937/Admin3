@@ -607,20 +607,50 @@ const MaterialProductCard = React.memo(
 											price1 &&
 											price2
 										) {
-											// Add first variation
+											// Add first variation with metadata
+											const metadata1 = {
+												type: "material",
+												productType: product.type,
+												variationId: variation1.id,
+												variationName: variation1.name,
+												variationType: variation1.variation_type,
+												subjectCode: product.subject_code,
+												productName: product.product_name,
+											};
+											// Add is_digital flag for eBook variations
+											if (variation1.variation_type === "eBook") {
+												metadata1.is_digital = true;
+											}
+
 											onAddToCart(product, {
 												variationId: variation1.id,
 												variationName: variation1.name,
 												priceType: priceType,
 												actualPrice: price1.amount,
+												metadata: metadata1,
 											});
 
-											// Add second variation
+											// Add second variation with metadata
+											const metadata2 = {
+												type: "material",
+												productType: product.type,
+												variationId: variation2.id,
+												variationName: variation2.name,
+												variationType: variation2.variation_type,
+												subjectCode: product.subject_code,
+												productName: product.product_name,
+											};
+											// Add is_digital flag for eBook variations
+											if (variation2.variation_type === "eBook") {
+												metadata2.is_digital = true;
+											}
+
 											onAddToCart(product, {
 												variationId: variation2.id,
 												variationName: variation2.name,
 												priceType: priceType,
 												actualPrice: price2.amount,
+												metadata: metadata2,
 											});
 										}
 										return;
@@ -631,11 +661,28 @@ const MaterialProductCard = React.memo(
 									const priceObj = currentVariation.prices?.find(
 										(p) => p.price_type === priceType
 									);
+
+									// Build metadata
+									const metadata = {
+										type: "material",
+										productType: product.type,
+										variationId: currentVariation.id,
+										variationName: currentVariation.name,
+										variationType: currentVariation.variation_type,
+										subjectCode: product.subject_code,
+										productName: product.product_name,
+									};
+									// Add is_digital flag for eBook variations
+									if (currentVariation.variation_type === "eBook") {
+										metadata.is_digital = true;
+									}
+
 									onAddToCart(product, {
 										variationId: currentVariation.id,
 										variationName: currentVariation.name,
 										priceType: priceType,
 										actualPrice: priceObj?.amount,
+										metadata: metadata,
 									});
 								}}
 								disabled={
