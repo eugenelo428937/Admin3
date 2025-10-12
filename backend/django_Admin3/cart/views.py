@@ -213,7 +213,7 @@ class CartViewSet(viewsets.ViewSet):
         price_type = request.data.get('price_type', 'standard')
         actual_price = request.data.get('actual_price')
         metadata = request.data.get('metadata', {})
-        
+
         product = get_object_or_404(ExamSessionSubjectProduct, id=product_id)
         
         # For tutorials, group by subject code across all locations
@@ -352,7 +352,7 @@ class CartViewSet(viewsets.ViewSet):
                     price_type=price_type,
                     metadata__variationId=variation_id
                 ).first()
-                
+
                 if existing_item:
                     # Found existing item with same variation, update quantity
                     existing_item.quantity += quantity
