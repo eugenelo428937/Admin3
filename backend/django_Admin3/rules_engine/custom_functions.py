@@ -215,11 +215,98 @@ def apply_tutorial_booking_fee(cart_items, params):
 
 
 # ============================================================================
-# VAT Calculation Functions (Epic 3 - Phase 1)
+# VAT Calculation Functions (Epic 3 - Phase 1 & Phase 2)
 # ============================================================================
 
 from country.vat_rates import get_vat_rate, map_country_to_region
 from decimal import Decimal, ROUND_HALF_UP
+from django.db.models import Q
+from django.utils import timezone
+
+
+def lookup_region(country_code, effective_date=None):
+    """
+    Lookup VAT region for country code using UtilsCountryRegion.
+
+    Args:
+        country_code: ISO 3166-1 alpha-2 country code (e.g., 'GB', 'IE', 'ZA')
+        effective_date: Optional date to check (defaults to today)
+
+    Returns:
+        str: Region code ('UK', 'IE', 'EU', 'SA', 'ROW')
+
+    Examples:
+        >>> lookup_region('GB')
+        'UK'
+        >>> lookup_region('ZA')
+        'SA'
+        >>> lookup_region('UNKNOWN')
+        'ROW'
+    """
+    from utils.models import UtilsCountrys, UtilsCountryRegion
+
+    if effective_date is None:
+        effective_date = timezone.now().date()
+
+    try:
+        # Normalize country code to uppercase
+        country = UtilsCountrys.objects.get(code=country_code.upper())
+
+        # Query for region mapping with date filtering
+        mapping = UtilsCountryRegion.objects.filter(
+            country=country,
+            effective_from__lte=effective_date
+        ).filter(
+            Q(effective_to__isnull=True) | Q(effective_to__gte=effective_date)
+        ).select_related('region').first()
+
+        if mapping:
+            return mapping.region.code
+        else:
+            logger.warning(f'No region mapping found for country: {country_code}')
+            return 'ROW'
+
+    except UtilsCountrys.DoesNotExist:
+        logger.warning(f'Country not found: {country_code}')
+        return 'ROW'
+
+
+def lookup_vat_rate(country_code):
+    """
+    Get VAT rate percentage from UtilsCountrys.
+
+    Args:
+        country_code: ISO 3166-1 alpha-2 country code (e.g., 'GB', 'IE', 'ZA')
+
+    Returns:
+        Decimal: VAT rate as decimal (e.g., Decimal('0.20') for 20%)
+
+    Examples:
+        >>> lookup_vat_rate('GB')
+        Decimal('0.20')
+        >>> lookup_vat_rate('ZA')
+        Decimal('0.15')
+        >>> lookup_vat_rate('UNKNOWN')
+        Decimal('0.00')
+    """
+    from utils.models import UtilsCountrys
+
+    try:
+        # Normalize country code to uppercase
+        country = UtilsCountrys.objects.get(code=country_code.upper(), active=True)
+
+        # Get VAT percent and convert to decimal rate
+        if country.vat_percent is None:
+            logger.warning(f'VAT percent is NULL for country: {country_code}')
+            return Decimal('0.00')
+
+        # Convert percentage (20.00) to decimal rate (0.20)
+        vat_rate = country.vat_percent / Decimal('100')
+        return vat_rate
+
+    except UtilsCountrys.DoesNotExist:
+        logger.warning(f'Country not found: {country_code}')
+        return Decimal('0.00')
 
 
 def calculate_vat_amount(net_amount, vat_rate):
@@ -245,8 +332,12 @@ def calculate_vat_amount(net_amount, vat_rate):
 
 # Function Registry - maps function names to callable functions for Rules Engine
 FUNCTION_REGISTRY = {
+    # Phase 1 functions (legacy)
     "get_vat_rate": get_vat_rate,
     "map_country_to_region": map_country_to_region,
+    # Phase 2 functions (database-driven)
+    "lookup_region": lookup_region,
+    "lookup_vat_rate": lookup_vat_rate,
     "calculate_vat_amount": calculate_vat_amount,
 }
 
