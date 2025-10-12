@@ -30,6 +30,13 @@ class Cart(models.Model):
         indexes = [
             models.Index(fields=['vat_result'], name='idx_cart_vat_result'),
         ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user'],
+                condition=models.Q(user__isnull=False),
+                name='unique_cart_per_user'
+            ),
+        ]
 
     def __str__(self):
         if self.user:
