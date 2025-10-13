@@ -524,6 +524,49 @@ class CartViewSet(viewsets.ViewSet):
         serializer = CartSerializer(cart, context={'request': request})
         return Response(serializer.data)
 
+    @action(detail=False, methods=['post'], url_path='vat/recalculate')
+    def vat_recalculate(self, request):
+        """
+        POST /cart/vat/recalculate/ - Force fresh VAT calculation for cart
+
+        Phase 4: Manual VAT recalculation endpoint
+        Accepts optional country_code parameter
+        Forces fresh calculation and updates cart item VAT fields
+        """
+        cart = self.get_cart(request)
+
+        # Get country_code from request body or query params
+        country_code = request.data.get('country_code') or request.GET.get('country_code')
+
+        # Default to GB if not provided
+        if not country_code:
+            country_code = 'GB'
+
+        # Force fresh VAT calculation with update_items=True
+        result = cart.calculate_vat_for_all_items(
+            country_code=country_code,
+            update_items=True
+        )
+
+        # Update cart error state based on result
+        if result.get('success'):
+            cart.vat_calculation_error = False
+            cart.vat_calculation_error_message = None
+        else:
+            cart.vat_calculation_error = True
+            cart.vat_calculation_error_message = result.get('error', 'VAT calculation failed')
+
+        # Save cart with updated error state
+        cart.save(update_fields=['vat_calculation_error', 'vat_calculation_error_message'])
+
+        # Return full cart data with fresh VAT totals
+        # Pass update_items=True in context so serializer uses same flag
+        serializer = CartSerializer(cart, context={
+            'request': request,
+            'update_items': True
+        })
+        return Response(serializer.data)
+
     @action(detail=False, methods=['post'], url_path='checkout', permission_classes=[IsAuthenticated])
     def checkout(self, request):
         """POST /cart/checkout/ - Create an order from the authenticated user's cart"""
