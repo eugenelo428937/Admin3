@@ -1,0 +1,454 @@
+openapi: 3.0.3
+info:
+  title: Cart VAT Integration API
+  description: API endpoints for Phase 4 Cart VAT Integration
+  version: 1.0.0
+servers:
+  - url: http://localhost:8888/api
+    description: Development server
+
+paths:
+  /cart/:
+    get:
+      summary: Get cart with VAT calculations
+      description: Retrieves user's cart with per-item and aggregate VAT calculations
+      operationId: getCart
+      tags:
+        - Cart
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Cart retrieved successfully with VAT calculations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartWithVAT'
+              example:
+                cart:
+                  id: 123
+                  user_id: 456
+                  items:
+                    - id: 789
+                      product:
+                        id: 101
+                        name: "Digital Course Materials"
+                        product_type: "Digital"
+                      quantity: 2
+                      item_price: "50.00"
+                      net_amount: "100.00"
+                      vat:
+                        region: "UK"
+                        rate: "0.2000"
+                        rate_percent: "20%"
+                        amount: "20.00"
+                      gross_amount: "120.00"
+                  totals:
+                    total_net_amount: "100.00"
+                    total_vat_amount: "20.00"
+                    total_gross_amount: "120.00"
+                    vat_breakdown:
+                      - region: "UK"
+                        rate: "20%"
+                        amount: "20.00"
+                        item_count: 1
+                  vat_calculated_at: "2025-01-12T10:30:00Z"
+                  vat_calculation_error: false
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Cart not found
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /cart/items/:
+    post:
+      summary: Add item to cart
+      description: Adds item to cart and triggers VAT recalculation
+      operationId: addCartItem
+      tags:
+        - Cart Items
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddCartItemRequest'
+            example:
+              product_id: 101
+              quantity: 2
+              price_type: "standard"
+      responses:
+        '201':
+          description: Item added successfully, VAT calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItemWithVAT'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /cart/items/{item_id}/:
+    patch:
+      summary: Update cart item quantity
+      description: Updates item quantity and triggers VAT recalculation
+      operationId: updateCartItem
+      tags:
+        - Cart Items
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Cart item ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+                  minimum: 1
+                  description: New quantity
+            example:
+              quantity: 3
+      responses:
+        '200':
+          description: Item updated successfully, VAT recalculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItemWithVAT'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Cart item not found
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      summary: Remove cart item
+      description: Removes item from cart and triggers VAT recalculation
+      operationId: deleteCartItem
+      tags:
+        - Cart Items
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Cart item ID
+      responses:
+        '204':
+          description: Item removed successfully, VAT recalculated
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Cart item not found
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /cart/vat/recalculate/:
+    post:
+      summary: Manually recalculate VAT
+      description: Manually triggers VAT recalculation for all cart items (used after error)
+      operationId: recalculateVAT
+      tags:
+        - Cart VAT
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                country_code:
+                  type: string
+                  pattern: '^[A-Z]{2}$'
+                  description: Optional country code override
+            example:
+              country_code: "GB"
+      responses:
+        '200':
+          description: VAT recalculated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartWithVAT'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /cart/vat/audit/:
+    get:
+      summary: Get VAT audit trail for cart
+      description: Retrieves VAT calculation audit history for current cart
+      operationId: getVATAudit
+      tags:
+        - Cart VAT
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            maximum: 100
+          description: Number of audit records to return
+      responses:
+        '200':
+          description: VAT audit records retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  audit_records:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VATAuditRecord'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CartWithVAT:
+      type: object
+      required:
+        - cart
+      properties:
+        cart:
+          type: object
+          required:
+            - id
+            - items
+            - totals
+          properties:
+            id:
+              type: integer
+              description: Cart ID
+            user_id:
+              type: integer
+              description: User ID
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/CartItemWithVAT'
+            totals:
+              $ref: '#/components/schemas/CartTotals'
+            vat_calculated_at:
+              type: string
+              format: date-time
+              nullable: true
+              description: Timestamp of last VAT calculation
+            vat_calculation_error:
+              type: boolean
+              description: Indicates if VAT calculation failed
+            vat_calculation_error_message:
+              type: string
+              nullable: true
+              description: Error message if calculation failed
+
+    CartItemWithVAT:
+      type: object
+      required:
+        - id
+        - product
+        - quantity
+        - net_amount
+        - gross_amount
+      properties:
+        id:
+          type: integer
+          description: Cart item ID
+        product:
+          type: object
+          description: Product details
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            product_type:
+              type: string
+              enum: [Digital, Printed, FlashCard, PBOR, Tutorial]
+        quantity:
+          type: integer
+          minimum: 1
+        item_price:
+          type: string
+          pattern: '^\d+\.\d{2}$'
+          description: Price per unit
+        net_amount:
+          type: string
+          pattern: '^\d+\.\d{2}$'
+          description: Total before VAT (item_price * quantity)
+        vat:
+          $ref: '#/components/schemas/VATDetails'
+          nullable: true
+        gross_amount:
+          type: string
+          pattern: '^\d+\.\d{2}$'
+          description: Total including VAT
+
+    VATDetails:
+      type: object
+      required:
+        - region
+        - rate
+        - rate_percent
+        - amount
+      properties:
+        region:
+          type: string
+          enum: [UK, IE, EU, SA, ROW]
+          description: VAT region classification
+        rate:
+          type: string
+          pattern: '^\d\.\d{4}$'
+          description: VAT rate as decimal (e.g., 0.2000)
+        rate_percent:
+          type: string
+          pattern: '^\d+%$'
+          description: VAT rate as percentage (e.g., 20%)
+        amount:
+          type: string
+          pattern: '^\d+\.\d{2}$'
+          description: VAT amount calculated
+
+    CartTotals:
+      type: object
+      required:
+        - total_net_amount
+        - total_vat_amount
+        - total_gross_amount
+      properties:
+        total_net_amount:
+          type: string
+          pattern: '^\d+\.\d{2}$'
+          description: Sum of all item net amounts
+        total_vat_amount:
+          type: string
+          pattern: '^\d+\.\d{2}$'
+          description: Sum of all VAT amounts
+        total_gross_amount:
+          type: string
+          pattern: '^\d+\.\d{2}$'
+          description: Total including all VAT
+        vat_breakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              region:
+                type: string
+                enum: [UK, IE, EU, SA, ROW]
+              rate:
+                type: string
+              amount:
+                type: string
+              item_count:
+                type: integer
+
+    AddCartItemRequest:
+      type: object
+      required:
+        - product_id
+        - quantity
+      properties:
+        product_id:
+          type: integer
+          description: Product ID to add
+        quantity:
+          type: integer
+          minimum: 1
+          description: Quantity to add
+        price_type:
+          type: string
+          enum: [standard, retaker, additional]
+          default: standard
+
+    VATAuditRecord:
+      type: object
+      properties:
+        execution_id:
+          type: string
+        cart_id:
+          type: integer
+        rule_id:
+          type: string
+        rule_version:
+          type: integer
+        input_context:
+          type: object
+        output_data:
+          type: object
+        duration_ms:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+  responses:
+    Unauthorized:
+      description: Unauthorized - invalid or missing JWT token
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Authentication required"
+
+    BadRequest:
+      description: Bad request - invalid parameters
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Invalid quantity: must be at least 1"
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "VAT calculation failed"

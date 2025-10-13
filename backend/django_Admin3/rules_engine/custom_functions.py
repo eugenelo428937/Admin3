@@ -330,6 +330,25 @@ def calculate_vat_amount(net_amount, vat_rate):
     return amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
 
+# Helper function for adding decimal values
+def add_decimals(value1, value2):
+    """
+    Add two decimal values.
+
+    Args:
+        value1: First decimal value
+        value2: Second decimal value
+
+    Returns:
+        Decimal: Sum of the two values
+
+    Examples:
+        >>> add_decimals(Decimal('100.00'), Decimal('20.00'))
+        Decimal('120.00')
+    """
+    return Decimal(str(value1)) + Decimal(str(value2))
+
+
 # Function Registry - maps function names to callable functions for Rules Engine
 FUNCTION_REGISTRY = {
     # Phase 1 functions (legacy)
@@ -339,6 +358,8 @@ FUNCTION_REGISTRY = {
     "lookup_region": lookup_region,
     "lookup_vat_rate": lookup_vat_rate,
     "calculate_vat_amount": calculate_vat_amount,
+    # Helper functions for Phase 3
+    "add_decimals": add_decimals,
 }
 
 

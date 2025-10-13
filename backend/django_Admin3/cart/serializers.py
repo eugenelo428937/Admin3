@@ -10,27 +10,52 @@ class CartItemSerializer(serializers.ModelSerializer):
     current_product = serializers.IntegerField(source='product.id', read_only=True)
     product_id = serializers.IntegerField(source='product.product.id', read_only=True)
 
+    # Phase 4: VAT fields
+    net_amount = serializers.SerializerMethodField()
+    vat_region = serializers.CharField(read_only=True)
+    vat_rate = serializers.DecimalField(max_digits=5, decimal_places=4, read_only=True)
+    vat_amount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    gross_amount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+
     class Meta:
         model = CartItem
-        fields = ['id', 'current_product', 'product_id', 'product_name', 'product_code', 'subject_code', 'exam_session_code', 'product_type', 'quantity', 'price_type', 'actual_price', 'metadata', 'is_marking', 'has_expired_deadline', 'expired_deadlines_count', 'marking_paper_count']
+        fields = [
+            'id', 'current_product', 'product_id', 'product_name', 'product_code', 'subject_code',
+            'exam_session_code', 'product_type', 'quantity', 'price_type', 'actual_price', 'metadata',
+            'is_marking', 'has_expired_deadline', 'expired_deadlines_count', 'marking_paper_count',
+            # Phase 4: VAT fields
+            'net_amount', 'vat_region', 'vat_rate', 'vat_amount', 'gross_amount'
+        ]
+
+    def get_net_amount(self, obj):
+        """Calculate net amount (price * quantity)"""
+        from decimal import Decimal
+        return (obj.actual_price or Decimal('0.00')) * obj.quantity
 
     def get_product_type(self, obj):
         """Determine product type based on product name or group"""
+        # Handle fee items (no product)
+        if obj.item_type == 'fee':
+            return 'fee'
+
+        if not obj.product:
+            return None
+
         product_name = obj.product.product.fullname.lower()
-        
+
         if hasattr(obj.product.product, 'group_name') and obj.product.product.group_name:
             group_name = obj.product.product.group_name.lower()
             if 'tutorial' in group_name:
                 return 'tutorial'
             elif 'marking' in group_name:
                 return 'marking'
-        
+
         # Fallback to product name if group_name is not available
         if 'tutorial' in product_name:
             return 'tutorial'
         elif 'marking' in product_name:
             return 'marking'
-        
+
         return 'material'
 
 class CartFeeSerializer(serializers.ModelSerializer):
@@ -42,11 +67,21 @@ class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
     fees = CartFeeSerializer(many=True, read_only=True)
     user_context = serializers.SerializerMethodField()
-    vat_calculations = serializers.SerializerMethodField()
+    vat_calculations = serializers.SerializerMethodField()  # Legacy support
+    vat_totals = serializers.SerializerMethodField()  # Phase 4 VAT totals
+    vat_last_calculated_at = serializers.DateTimeField(read_only=True)
+    vat_calculation_error = serializers.BooleanField(read_only=True)
+    vat_calculation_error_message = serializers.CharField(read_only=True)
 
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'session_key', 'items', 'fees', 'created_at', 'updated_at', 'has_marking', 'has_digital', 'has_tutorial', 'has_material', 'user_context', 'vat_calculations']
+        fields = [
+            'id', 'user', 'session_key', 'items', 'fees', 'created_at', 'updated_at',
+            'has_marking', 'has_digital', 'has_tutorial', 'has_material',
+            'user_context', 'vat_calculations',  # Legacy
+            # Phase 4: VAT fields
+            'vat_totals', 'vat_last_calculated_at', 'vat_calculation_error', 'vat_calculation_error_message'
+        ]
     
     def get_user_context(self, obj):
         """Get user context including IP and country information and acknowledgments"""
@@ -123,6 +158,62 @@ class CartSerializer(serializers.ModelSerializer):
                 'work_country': None,
                 'acknowledgments': acknowledgments
             }
+
+    def get_vat_totals(self, obj):
+        """
+        Phase 4: Calculate and return VAT totals using Phase 3 rules engine.
+
+        Returns VAT breakdown and totals for all cart items.
+        """
+        request = self.context.get('request')
+
+        # Get country_code from multiple sources with priority order
+        country_code = None
+
+        if request:
+            # Priority 1: Serializer context (for explicit override)
+            country_code = self.context.get('country_code')
+
+            # Priority 2: Request body (POST data)
+            if not country_code and hasattr(request, 'data'):
+                country_code = request.data.get('country_code')
+
+            # Priority 3: Query parameter (GET data)
+            if not country_code:
+                country_code = request.GET.get('country_code')
+
+            # Priority 4: User profile
+            if not country_code and hasattr(request, 'user') and request.user.is_authenticated:
+                try:
+                    from userprofile.models import UserProfile
+                    from userprofile.models.address import UserProfileAddress
+
+                    user_profile = UserProfile.objects.get(user=request.user)
+
+                    # Try home address
+                    home_address = UserProfileAddress.objects.filter(
+                        user_profile=user_profile,
+                        address_type='HOME'
+                    ).first()
+
+                    if home_address and home_address.country:
+                        # Extract country code from country name (need to map country name to code)
+                        # For now, default to GB if we can't determine
+                        country_code = 'GB'
+
+                except Exception:
+                    pass
+
+        # Default to GB if no country found
+        if not country_code:
+            country_code = 'GB'
+
+        # Call Phase 4 calculate_vat_for_all_items method
+        # Check context for update_items flag (used by recalculate endpoint)
+        update_items = self.context.get('update_items', False)
+        result = obj.calculate_vat_for_all_items(country_code=country_code, update_items=update_items)
+
+        return result
 
     def get_vat_calculations(self, obj):
         """Calculate and return VAT calculations for cart"""
