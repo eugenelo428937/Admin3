@@ -98,4 +98,4 @@ claude-mcp-trello/
 node_modules/
 node_modules/*.mcp.json
 .env.*
-null
+# null - Removed due to Windows compatibility issues (nul is a reserved device name)
