@@ -115,9 +115,9 @@ railway variables set GETADDRESS_ADMIN_KEY="-A-yR_lwoE2LJiIoDzrf_Q46686"
 
 ### Email Configuration
 ```bash
-railway variables set EMAIL_HOST_USER="eugene.lo1030@gmail.com"
-railway variables set EMAIL_HOST_PASSWORD="hhrhthqiymjnehby"
-railway variables set DEFAULT_FROM_EMAIL="eugenelo@acted.com"
+railway variables set EMAIL_HOST_USER="{see .env file}"
+railway variables set EMAIL_HOST_PASSWORD="{see .env file}"
+railway variables set DEFAULT_FROM_EMAIL="{see .env file}"
 ```
 
 ### reCAPTCHA
