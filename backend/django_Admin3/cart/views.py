@@ -5,16 +5,22 @@ from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from decimal import Decimal
 from .models import Cart, CartItem, CartFee, ActedOrder, ActedOrderItem, OrderUserAcknowledgment, OrderUserPreference, OrderUserContact, OrderDeliveryDetail
 from .serializers import CartSerializer, CartItemSerializer, ActedOrderSerializer
 from products.models import Product
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
 from marking.models import MarkingPaper
 from utils.email_service import email_service
+from .services.vat_orchestrator import vat_orchestrator
 import logging
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
+
+# Constants
+CART_VAT_ERROR_FIELDS = ['vat_calculation_error', 'vat_calculation_error_message']
+CART_ITEM_VAT_FIELDS = ['vat_region', 'vat_rate', 'vat_amount', 'gross_amount']
 
 class CartViewSet(viewsets.ViewSet):
     """
@@ -184,7 +190,63 @@ class CartViewSet(viewsets.ViewSet):
 
         if cart_updated:
             cart.save()
-    
+
+    def _trigger_vat_calculation(self, cart):
+        """
+        Trigger VAT calculation for cart using VAT orchestrator service (Phase 5).
+
+        Handles errors gracefully by setting cart error flags.
+        Updates individual CartItem VAT fields from orchestrator result.
+        """
+        try:
+            # Execute VAT calculation via orchestrator
+            result = vat_orchestrator.execute_vat_calculation(cart)
+
+            # Update individual CartItem VAT fields from orchestrator result
+            self._update_cart_item_vat_fields(cart, result)
+
+            # Clear error flags on success
+            cart.vat_calculation_error = False
+            cart.vat_calculation_error_message = None
+            cart.save(update_fields=CART_VAT_ERROR_FIELDS)
+
+            logger.info(f"VAT calculation successful for cart {cart.id}: {result.get('region')}")
+
+        except Exception as e:
+            # Log error and set error flags
+            logger.error(f"VAT calculation failed for cart {cart.id}: {str(e)}")
+
+            cart.vat_calculation_error = True
+            cart.vat_calculation_error_message = str(e)
+            cart.save(update_fields=CART_VAT_ERROR_FIELDS)
+
+    def _update_cart_item_vat_fields(self, cart, vat_result):
+        """
+        Update CartItem VAT fields from orchestrator result.
+
+        Extracts VAT data from orchestrator result and updates
+        individual cart item fields for backward compatibility.
+        """
+        # Get region and items from result
+        region = vat_result.get('region', 'UNKNOWN')
+        items_vat = vat_result.get('items', [])
+
+        # Create lookup map by item ID
+        vat_by_item_id = {item.get('id'): item for item in items_vat}
+
+        # Update each cart item's VAT fields
+        for cart_item in cart.items.all():
+            item_id_str = str(cart_item.id)
+            vat_data = vat_by_item_id.get(item_id_str, {})
+
+            # Update VAT fields
+            cart_item.vat_region = vat_data.get('vat_region', region)
+            cart_item.vat_rate = Decimal(str(vat_data.get('vat_rate', '0.0000')))
+            cart_item.vat_amount = Decimal(str(vat_data.get('vat_amount', '0.00')))
+            cart_item.gross_amount = Decimal(str(vat_data.get('gross_amount', '0.00')))
+
+            cart_item.save(update_fields=CART_ITEM_VAT_FIELDS)
+
     def get_cart(self, request):
         if request.user.is_authenticated:
             cart, _ = Cart.objects.get_or_create(user=request.user)
@@ -458,7 +520,10 @@ class CartViewSet(viewsets.ViewSet):
         
         # Update cart-level flags based on new contents
         self._update_cart_flags(cart)
-        
+
+        # Trigger VAT calculation (Phase 5)
+        self._trigger_vat_calculation(cart)
+
         # Get updated cart and return response
         cart = self.get_cart(request)
         serializer = CartSerializer(cart, context={'request': request})
@@ -493,7 +558,10 @@ class CartViewSet(viewsets.ViewSet):
 
         item.save()
 
+        # Trigger VAT recalculation after item update (Phase 5)
         cart = self.get_cart(request)
+        self._trigger_vat_calculation(cart)
+
         serializer = CartSerializer(cart, context={'request': request})
         return Response(serializer.data)
 
@@ -508,6 +576,9 @@ class CartViewSet(viewsets.ViewSet):
         # Update cart-level flags after removing item
         self._update_cart_flags(cart)
 
+        # Trigger VAT recalculation after item removal (Phase 5)
+        self._trigger_vat_calculation(cart)
+
         cart = self.get_cart(request)
         serializer = CartSerializer(cart, context={'request': request})
         return Response(serializer.data)
@@ -521,6 +592,9 @@ class CartViewSet(viewsets.ViewSet):
         # Update cart-level flags after clearing
         self._update_cart_flags(cart)
 
+        # Trigger VAT recalculation for empty cart (Phase 5)
+        self._trigger_vat_calculation(cart)
+
         serializer = CartSerializer(cart, context={'request': request})
         return Response(serializer.data)
 
@@ -529,42 +603,15 @@ class CartViewSet(viewsets.ViewSet):
         """
         POST /cart/vat/recalculate/ - Force fresh VAT calculation for cart
 
-        Phase 4: Manual VAT recalculation endpoint
-        Accepts optional country_code parameter
-        Forces fresh calculation and updates cart item VAT fields
+        Phase 5: Manual VAT recalculation endpoint using VAT orchestrator
         """
         cart = self.get_cart(request)
 
-        # Get country_code from request body or query params
-        country_code = request.data.get('country_code') or request.GET.get('country_code')
-
-        # Default to GB if not provided
-        if not country_code:
-            country_code = 'GB'
-
-        # Force fresh VAT calculation with update_items=True
-        result = cart.calculate_vat_for_all_items(
-            country_code=country_code,
-            update_items=True
-        )
-
-        # Update cart error state based on result
-        if result.get('success'):
-            cart.vat_calculation_error = False
-            cart.vat_calculation_error_message = None
-        else:
-            cart.vat_calculation_error = True
-            cart.vat_calculation_error_message = result.get('error', 'VAT calculation failed')
-
-        # Save cart with updated error state
-        cart.save(update_fields=['vat_calculation_error', 'vat_calculation_error_message'])
+        # Trigger VAT calculation via orchestrator (handles errors internally)
+        self._trigger_vat_calculation(cart)
 
         # Return full cart data with fresh VAT totals
-        # Pass update_items=True in context so serializer uses same flag
-        serializer = CartSerializer(cart, context={
-            'request': request,
-            'update_items': True
-        })
+        serializer = CartSerializer(cart, context={'request': request})
         return Response(serializer.data)
 
     @action(detail=False, methods=['post'], url_path='checkout', permission_classes=[IsAuthenticated])

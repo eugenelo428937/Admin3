@@ -15,6 +15,7 @@ class RuleEntryPoint(models.Model):
         ('checkout_terms', 'Checkout Terms'),
         ('checkout_payment', 'Checkout Payment'),
         ('user_registration', 'User Registration'),
+        ('cart_calculate_vat', 'Cart Calculate VAT'),
     ]
     
     code = models.CharField(max_length=30, choices=ENTRY_POINTS, unique=True)
