@@ -55,7 +55,9 @@ const productService = {
 			const response = await httpService.get(
 				`${PRODUCTS_API_URL}/navbar-product-groups/`
 			);
-			return response.data.results || response.data;
+			const data = response.data.results || response.data;
+			// Ensure we always return an array
+			return Array.isArray(data) ? data : [];
 		} catch (error) {
 			console.error("Error fetching navbar product groups:", error);
 			throw {
@@ -218,7 +220,9 @@ const productService = {
 			const response = await httpService.get(
 				`${PRODUCTS_API_URL}/distance-learning-dropdown/`
 			);
-			return response.data.results || response.data;
+			const data = response.data.results || response.data;
+			// Ensure we always return an array
+			return Array.isArray(data) ? data : [];
 		} catch (error) {
 			console.error("Error fetching distance learning dropdown:", error);
 			throw {
