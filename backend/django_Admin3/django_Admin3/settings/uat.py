@@ -20,6 +20,9 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Allowed Hosts - Railway provides these via environment variables
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
+# Railway health check requires this domain
+if 'healthcheck.railway.app' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('healthcheck.railway.app')
 
 # Railway provides DATABASE_URL - use dj_database_url for parsing
 database_url = os.environ.get('DATABASE_URL')
