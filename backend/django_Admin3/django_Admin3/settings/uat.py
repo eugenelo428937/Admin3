@@ -23,20 +23,30 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
 # Railway provides DATABASE_URL - use dj_database_url for parsing
 database_url = os.environ.get('DATABASE_URL')
-if not database_url:
-    raise ImproperlyConfigured(
-        "DATABASE_URL environment variable is not set. "
-        "Railway should provide this automatically when a Postgres service is attached."
+if database_url:
+    # Runtime: Use actual Railway Postgres database
+    DATABASES = {
+        'default': dj_database_url.parse(
+            database_url,
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=False  # Railway manages SSL internally
+        )
+    }
+else:
+    # Build time: DATABASE_URL not available during build phase
+    # Use dummy database config for collectstatic (doesn't need DB access)
+    import warnings
+    warnings.warn(
+        "DATABASE_URL not set - using dummy database configuration. "
+        "This is expected during build phase for collectstatic."
     )
-
-DATABASES = {
-    'default': dj_database_url.parse(
-        database_url,
-        conn_max_age=600,
-        conn_health_checks=True,
-        ssl_require=False  # Railway manages SSL internally
-    )
-}
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+        }
+    }
 
 # CORS Configuration - Must match frontend domain
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
