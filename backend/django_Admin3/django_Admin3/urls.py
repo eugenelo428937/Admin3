@@ -26,12 +26,14 @@ urlpatterns = [
     path('api/students/', include('students.urls')),
     path('api/exam-sessions/', include('exam_sessions.urls')),
     # path('api/subjects/', include('subjects.urls')),
+    # Include exam_sessions_subjects_products FIRST for current/list/ endpoints
+    path('api/products/', include('exam_sessions_subjects_products.urls')),
+    # Then include products for other product endpoints
     path('api/products/', include('products.urls')),
     # path('api/', include('products.urls')),
     path('api/', include('subjects.urls')),
     path('api/exam-sessions-subjects/', include('exam_sessions_subjects.urls')),
     path('api/exam-sessions-subjects-products/', include('exam_sessions_subjects_products.urls')),
-    path('api/products/', include('exam_sessions_subjects_products.urls')),
     path('api/cart/', include('cart.urls')),
     path('api/rules/', include('rules_engine.urls')),
     path('api/utils/', include('utils.urls')),
