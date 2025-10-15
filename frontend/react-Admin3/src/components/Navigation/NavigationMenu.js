@@ -142,7 +142,7 @@ const NavigationMenu = ({
 							<Col>
 								<div className="text-muted">Loading products...</div>
 							</Col>
-						) : (
+						) : Array.isArray(navbarProductGroups) && navbarProductGroups.length > 0 ? (
 							navbarProductGroups.map((group) => {
 								// Special handling for Tutorial group - split into two columns
 								if (
@@ -247,6 +247,10 @@ const NavigationMenu = ({
 									</Col>
 								);
 							})
+						) : (
+							<Col>
+								<div className="text-muted">No products available</div>
+							</Col>
 						)}
 					</Row>
 				</div>
@@ -277,7 +281,7 @@ const NavigationMenu = ({
 									Loading distance learning...
 								</div>
 							</Col>
-						) : (
+						) : Array.isArray(distanceLearningData) && distanceLearningData.length > 0 ? (
 							distanceLearningData.map((group) => (
 								<Col key={group.id || group.name}>
 									<NavDropdown.Item
@@ -307,6 +311,10 @@ const NavigationMenu = ({
 									)}
 								</Col>
 							))
+						) : (
+							<Col>
+								<div className="text-muted">No distance learning products available</div>
+							</Col>
 						)}
 					</Row>
 				</div>
