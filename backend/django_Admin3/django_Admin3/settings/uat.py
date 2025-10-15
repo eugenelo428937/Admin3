@@ -3,6 +3,20 @@ from .base import *
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
+# Middleware Configuration - Override base middleware to add HealthCheckMiddleware
+# MUST be placed before SecurityMiddleware to exempt health checks from SSL redirect
+MIDDLEWARE = [
+    'utils.middleware.HealthCheckMiddleware',  # MUST be first - exempts /api/health/ from SSL redirect
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware'
+]
+
 # Security: Production-like settings for UAT
 DEBUG = False
 SECRET_KEY = env('DJANGO_SECRET_KEY')
