@@ -1,6 +1,7 @@
 # uat.py - Railway UAT Environment Settings
 from .base import *
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 
 # Security: Production-like settings for UAT
 DEBUG = False
@@ -21,12 +22,19 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
 # Railway provides DATABASE_URL - use dj_database_url for parsing
+database_url = os.environ.get('DATABASE_URL')
+if not database_url:
+    raise ImproperlyConfigured(
+        "DATABASE_URL environment variable is not set. "
+        "Railway should provide this automatically when a Postgres service is attached."
+    )
+
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
+    'default': dj_database_url.parse(
+        database_url,
         conn_max_age=600,
         conn_health_checks=True,
-        ssl_require=True
+        ssl_require=False  # Railway manages SSL internally
     )
 }
 
