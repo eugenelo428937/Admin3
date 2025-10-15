@@ -4,7 +4,7 @@ import logging
 from decimal import Decimal
 from django.conf import settings
 from django.utils import timezone
-from .models import ActedOrderPayment, Cart, CartItem
+from cart.models import ActedOrderPayment, Cart, CartItem
 from marking_vouchers.models import MarkingVoucher
 
 logger = logging.getLogger(__name__)

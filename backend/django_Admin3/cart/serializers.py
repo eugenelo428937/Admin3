@@ -1,5 +1,8 @@
+import logging
 from rest_framework import serializers
 from .models import Cart, CartItem, CartFee, ActedOrder, ActedOrderItem
+
+logger = logging.getLogger(__name__)
 
 class CartItemSerializer(serializers.ModelSerializer):
     subject_code = serializers.CharField(source='product.exam_session_subject.subject.code', read_only=True)
@@ -10,7 +13,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     current_product = serializers.IntegerField(source='product.id', read_only=True)
     product_id = serializers.IntegerField(source='product.product.id', read_only=True)
 
-    # Phase 4: VAT fields
+    # Phase 5: VAT fields (stored in CartItem model from orchestrator results)
     net_amount = serializers.SerializerMethodField()
     vat_region = serializers.CharField(read_only=True)
     vat_rate = serializers.DecimalField(max_digits=5, decimal_places=4, read_only=True)
@@ -23,12 +26,23 @@ class CartItemSerializer(serializers.ModelSerializer):
             'id', 'current_product', 'product_id', 'product_name', 'product_code', 'subject_code',
             'exam_session_code', 'product_type', 'quantity', 'price_type', 'actual_price', 'metadata',
             'is_marking', 'has_expired_deadline', 'expired_deadlines_count', 'marking_paper_count',
-            # Phase 4: VAT fields
+            # Phase 5: VAT fields
             'net_amount', 'vat_region', 'vat_rate', 'vat_amount', 'gross_amount'
         ]
 
     def get_net_amount(self, obj):
-        """Calculate net amount (price * quantity)"""
+        """
+        Calculate net amount for cart item (price × quantity).
+
+        Returns the line total before VAT. This is used for display purposes
+        and VAT calculations are performed by the orchestrator service.
+
+        Args:
+            obj (CartItem): Cart item instance
+
+        Returns:
+            Decimal: Net amount (actual_price × quantity)
+        """
         from decimal import Decimal
         return (obj.actual_price or Decimal('0.00')) * obj.quantity
 
@@ -67,8 +81,8 @@ class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
     fees = CartFeeSerializer(many=True, read_only=True)
     user_context = serializers.SerializerMethodField()
-    vat_calculations = serializers.SerializerMethodField()  # Legacy support
-    vat_totals = serializers.SerializerMethodField()  # Phase 4 VAT totals
+    vat_calculations = serializers.SerializerMethodField()  # Legacy support (deprecated - use vat_totals)
+    vat_totals = serializers.SerializerMethodField()  # Phase 5: VAT totals from JSONB storage
     vat_last_calculated_at = serializers.DateTimeField(read_only=True)
     vat_calculation_error = serializers.BooleanField(read_only=True)
     vat_calculation_error_message = serializers.CharField(read_only=True)
@@ -78,8 +92,8 @@ class CartSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'user', 'session_key', 'items', 'fees', 'created_at', 'updated_at',
             'has_marking', 'has_digital', 'has_tutorial', 'has_material',
-            'user_context', 'vat_calculations',  # Legacy
-            # Phase 4: VAT fields
+            'user_context', 'vat_calculations',  # Legacy (deprecated)
+            # Phase 5: VAT fields
             'vat_totals', 'vat_last_calculated_at', 'vat_calculation_error', 'vat_calculation_error_message'
         ]
     
@@ -161,120 +175,39 @@ class CartSerializer(serializers.ModelSerializer):
 
     def get_vat_totals(self, obj):
         """
-        Phase 4: Calculate and return VAT totals using Phase 3 rules engine.
+        Phase 5: Return VAT totals from cart.vat_result JSONB storage.
 
-        Returns VAT breakdown and totals for all cart items.
+        Returns VAT breakdown and totals from orchestrator calculation stored in JSONB.
+        Returns None or not_calculated structure if VAT hasn't been calculated yet.
         """
-        request = self.context.get('request')
+        # Phase 5: Return vat_result JSONB data directly
+        if obj.vat_result and isinstance(obj.vat_result, dict):
+            # VAT has been calculated and stored by orchestrator
+            return obj.vat_result
 
-        # Get country_code from multiple sources with priority order
-        country_code = None
-
-        if request:
-            # Priority 1: Serializer context (for explicit override)
-            country_code = self.context.get('country_code')
-
-            # Priority 2: Request body (POST data)
-            if not country_code and hasattr(request, 'data'):
-                country_code = request.data.get('country_code')
-
-            # Priority 3: Query parameter (GET data)
-            if not country_code:
-                country_code = request.GET.get('country_code')
-
-            # Priority 4: User profile
-            if not country_code and hasattr(request, 'user') and request.user.is_authenticated:
-                try:
-                    from userprofile.models import UserProfile
-                    from userprofile.models.address import UserProfileAddress
-
-                    user_profile = UserProfile.objects.get(user=request.user)
-
-                    # Try home address
-                    home_address = UserProfileAddress.objects.filter(
-                        user_profile=user_profile,
-                        address_type='HOME'
-                    ).first()
-
-                    if home_address and home_address.country:
-                        # Extract country code from country name (need to map country name to code)
-                        # For now, default to GB if we can't determine
-                        country_code = 'GB'
-
-                except Exception:
-                    pass
-
-        # Default to GB if no country found
-        if not country_code:
-            country_code = 'GB'
-
-        # Call Phase 4 calculate_vat_for_all_items method
-        # Check context for update_items flag (used by recalculate endpoint)
-        update_items = self.context.get('update_items', False)
-        result = obj.calculate_vat_for_all_items(country_code=country_code, update_items=update_items)
-
-        return result
+        # VAT not yet calculated - return None or minimal structure
+        return None
 
     def get_vat_calculations(self, obj):
-        """Calculate and return VAT calculations for cart"""
-        # Get user from request context
-        request = self.context.get('request')
+        """
+        DEPRECATED: Legacy VAT calculations method.
 
-        # Try to get country from user profile or use default
-        country_code = 'GB'  # Default to UK
+        This method is deprecated in Phase 5 and maintained only for backward compatibility.
+        New code should use get_vat_totals() which returns cart.vat_result JSONB data.
 
-        if request and hasattr(request, 'user') and request.user.is_authenticated:
-            # Try to get user's billing country from profile
-            try:
-                from userprofile.models import UserProfile
-                from userprofile.models.address import UserProfileAddress
+        Phase 5 approach: VAT is calculated by orchestrator service and stored in cart.vat_result.
+        This method now delegates to get_vat_totals() for consistency.
 
-                user_profile = UserProfile.objects.get(user=request.user)
+        Returns:
+            dict or None: VAT totals from cart.vat_result JSONB storage
+        """
+        logger.warning(
+            "get_vat_calculations() is deprecated. Use get_vat_totals() instead. "
+            "This method will be removed in a future version."
+        )
 
-                # Try billing address first, then home address
-                billing_address = UserProfileAddress.objects.filter(
-                    user_profile=user_profile,
-                    address_type='BILLING'
-                ).first()
-
-                if billing_address and billing_address.country:
-                    country_code = billing_address.country
-                else:
-                    home_address = UserProfileAddress.objects.filter(
-                        user_profile=user_profile,
-                        address_type='HOME'
-                    ).first()
-
-                    if home_address and home_address.country:
-                        country_code = home_address.country
-
-            except Exception as e:
-                print(f"[CartSerializer.get_vat_calculations] Could not get user country: {e}")
-
-        # Check if VAT is already calculated and stored
-        if obj.vat_result and isinstance(obj.vat_result, dict):
-            stored_country = obj.vat_result.get('country_code')
-
-            # Return stored result if country matches
-            if stored_country == country_code:
-                return obj.vat_result
-
-        # Calculate and store VAT
-        try:
-            obj.calculate_and_save_vat(country_code)
-            return obj.vat_result
-        except Exception as e:
-            # Return empty structure on error to prevent serialization failure
-
-            return {
-                'country_code': country_code,
-                'vat_rate': '0.00',
-                'total_net_amount': '0.00',
-                'total_vat_amount': '0.00',
-                'total_gross_amount': '0.00',
-                'items': [],
-                'error': str(e)
-            }
+        # Phase 5: Delegate to get_vat_totals() which returns cart.vat_result
+        return self.get_vat_totals(obj)
 
 class ActedOrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.SerializerMethodField()

@@ -191,11 +191,30 @@ class Cart(models.Model):
                 # Calculate net amount (price * quantity)
                 net_amount = (cart_item.actual_price or Decimal('0.00')) * cart_item.quantity
 
+                # Determine product_type from variations
+                product_type = 'Unknown'
+                if cart_item.product:
+                    # Get first variation to determine product type
+                    first_variation = cart_item.product.variations.first()
+                    if first_variation:
+                        variation_type = first_variation.product_product_variation.product_variation.variation_type
+                        # Map variation_type to product_type expected by schema
+                        VARIATION_TO_PRODUCT_TYPE = {
+                            'eBook': 'Digital',
+                            'Hub': 'Digital',
+                            'Printed': 'Printed',
+                            'Tutorial': 'Tutorial',
+                            'Marking': 'Tutorial',  # Marking treated as tutorial/service
+                        }
+                        product_type = VARIATION_TO_PRODUCT_TYPE.get(variation_type, 'Unknown')
+                elif cart_item.item_type == 'fee':
+                    product_type = 'Fee'
+
                 # Build context for rules engine
                 context = {
                     'cart_item': {
                         'id': str(cart_item.id),
-                        'product_type': getattr(cart_item.product.product, 'product_type', 'Unknown') if cart_item.product else 'Fee',
+                        'product_type': product_type,
                         'net_amount': net_amount
                     },
                     'user': {
