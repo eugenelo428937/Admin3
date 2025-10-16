@@ -122,7 +122,7 @@ railway variables set DEFAULT_FROM_EMAIL="{see .env file}"
 
 ### reCAPTCHA
 ```bash
-railway variables set RECAPTCHA_SITE_KEY="6LdhHm0rAAAAAPcWNrdES-7ns_VkwCT8DCKpWWg-"
+railway variables set RECAPTCHA_SITE_KEY="6LdeGW0rAAAAAISTQLDxwgYbjbdYtIINQokRTMAi"
 railway variables set RECAPTCHA_SECRET_KEY="6LdhHm0rAAAAAGZJsCis9q94aUPVN4tRCFIfoxEi"
 railway variables set RECAPTCHA_MIN_SCORE="0.5"
 ```
