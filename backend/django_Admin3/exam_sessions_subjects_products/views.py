@@ -54,9 +54,8 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             permission_classes = self.permission_classes
 
         return [permission() for permission in permission_classes]
-     
+
     @action(detail=False, methods=['post'], url_path='bulk-create')
-    @permission_classes([IsAuthenticated])
     def bulk_create(self, request):
         """
         Bulk create exam session subject products.
@@ -92,7 +91,6 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         }, status=status.HTTP_400_BAD_REQUEST if errors else status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['post'], url_path='add-products')
-    @permission_classes([IsAuthenticated])
     def add_products_to_session_subject(self, request):
         """
         Add products to an exam session subject.
