@@ -130,7 +130,7 @@ jobs:
         echo "EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}" >> .env.production
         echo "DEFAULT_FROM_EMAIL=eugenelo@acted.com" >> .env.production
         echo "PASSWORD_RESET_TIMEOUT_MINUTES=14" >> .env.production
-        echo "RECAPTCHA_SITE_KEY=6LdhHm0rAAAAAPcWNrdES-7ns_VkwCT8DCKpWWg-" >> .env.production
+        echo "RECAPTCHA_SITE_KEY=6LdeGW0rAAAAAISTQLDxwgYbjbdYtIINQokRTMAi" >> .env.production
         echo "RECAPTCHA_SECRET_KEY=${{ secrets.RECAPTCHA_SECRET_KEY }}" >> .env.production
         echo "USE_DUMMY_PAYMENT_GATEWAY=False" >> .env.production
         echo "OPAYO_BASE_URL=https://sandbox.opayo.eu.elavon.com/hosted-payment-pages/vendor/v1/payment-pages" >> .env.production
