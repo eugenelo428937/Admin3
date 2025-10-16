@@ -225,7 +225,12 @@ const CheckoutSteps = ({ onComplete }) => {
       setRulesMessages([]);
 
       try {
-        const total = cartItems.reduce((sum, item) => sum + (parseFloat(item.actual_price) * item.quantity), 0);
+        // Calculate total, treating null/undefined prices as 0
+        const total = cartItems.reduce((sum, item) => {
+          const price = parseFloat(item.actual_price || 0);
+          return sum + (price * item.quantity);
+        }, 0);
+
         const context = {
           cart: {
             id: cartData.id,
@@ -314,9 +319,11 @@ const CheckoutSteps = ({ onComplete }) => {
       } else {
 
         // Fallback if backend doesn't provide VAT calculations
-        const subtotal = cartItems.reduce((total, item) =>
-          total + (parseFloat(item.actual_price) * item.quantity), 0
-        );
+        // Treat null/undefined prices as 0
+        const subtotal = cartItems.reduce((total, item) => {
+          const price = parseFloat(item.actual_price || 0);
+          return total + (price * item.quantity);
+        }, 0);
 
         const totalFees = cartData?.fees ?
           cartData.fees.reduce((total, fee) =>
