@@ -48,14 +48,20 @@ const PaymentStep = ({
 
       setRulesLoading(true);
       try {
+        // Sanitize cart items to ensure actual_price is never null (schema requirement)
+        const sanitizedItems = cartItems.map(item => ({
+          ...item,
+          actual_price: item.actual_price || 0
+        }));
+
         // Calculate cart total
-        const total = cartItems.reduce((sum, item) => sum + (parseFloat(item.actual_price || 0) * item.quantity), 0);
+        const total = sanitizedItems.reduce((sum, item) => sum + (parseFloat(item.actual_price) * item.quantity), 0);
 
         // Build context with cart and payment information
         const context = {
           cart: {
             id: cartData.id,
-            items: cartItems,
+            items: sanitizedItems,
             total: total,
             user: cartData.user || null,
             session_key: cartData.session_key || null,
