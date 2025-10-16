@@ -170,8 +170,9 @@ const CheckoutSteps = ({ onComplete }) => {
 
       setDeliveryAddress(newDeliveryAddress);
 
-      // Trigger real-time validation for Step 1
-      if (currentStep === 1) {
+      // Only trigger validation if we have actual address data (not empty object)
+      // This prevents validation errors on initial page load before addresses are populated
+      if (currentStep === 1 && newDeliveryAddress.addressData && Object.keys(newDeliveryAddress.addressData).length > 0) {
         setTimeout(() => {
           validation.validateStep1(contactData, newDeliveryAddress, invoiceAddress);
         }, 100); // Small delay to ensure state updates
@@ -190,8 +191,9 @@ const CheckoutSteps = ({ onComplete }) => {
 
       setInvoiceAddress(newInvoiceAddress);
 
-      // Trigger real-time validation for Step 1
-      if (currentStep === 1) {
+      // Only trigger validation if we have actual address data (not empty object)
+      // This prevents validation errors on initial page load before addresses are populated
+      if (currentStep === 1 && newInvoiceAddress.addressData && Object.keys(newInvoiceAddress.addressData).length > 0) {
         setTimeout(() => {
           validation.validateStep1(contactData, deliveryAddress, newInvoiceAddress);
         }, 100); // Small delay to ensure state updates
@@ -223,11 +225,22 @@ const CheckoutSteps = ({ onComplete }) => {
       setRulesMessages([]);
 
       try {
-        const total = cartItems.reduce((sum, item) => sum + (parseFloat(item.actual_price) * item.quantity), 0);
+        // Sanitize cart items to ensure actual_price is never null (schema requirement)
+        const sanitizedItems = cartItems.map(item => ({
+          ...item,
+          actual_price: item.actual_price || 0
+        }));
+
+        // Calculate total, treating null/undefined prices as 0
+        const total = sanitizedItems.reduce((sum, item) => {
+          const price = parseFloat(item.actual_price);
+          return sum + (price * item.quantity);
+        }, 0);
+
         const context = {
           cart: {
             id: cartData.id,
-            items: cartItems,
+            items: sanitizedItems,
             total: total,
             user: cartData.user || null,
             session_key: cartData.session_key || null,
@@ -312,9 +325,11 @@ const CheckoutSteps = ({ onComplete }) => {
       } else {
 
         // Fallback if backend doesn't provide VAT calculations
-        const subtotal = cartItems.reduce((total, item) =>
-          total + (parseFloat(item.actual_price) * item.quantity), 0
-        );
+        // Treat null/undefined prices as 0
+        const subtotal = cartItems.reduce((total, item) => {
+          const price = parseFloat(item.actual_price || 0);
+          return total + (price * item.quantity);
+        }, 0);
 
         const totalFees = cartData?.fees ?
           cartData.fees.reduce((total, fee) =>

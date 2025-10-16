@@ -1,40 +1,78 @@
-# development.py
+# uat.py - Railway UAT Environment Settings
 from .base import *
+import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 
-DEBUG = True
+# Middleware Configuration - Override base middleware to add HealthCheckMiddleware
+# MUST be placed before SecurityMiddleware to exempt health checks from SSL redirect
+MIDDLEWARE = [
+    'utils.middleware.HealthCheckMiddleware',  # MUST be first - exempts /api/health/ from SSL redirect
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware'
+]
+
+# Security: Production-like settings for UAT
+DEBUG = False
 SECRET_KEY = env('DJANGO_SECRET_KEY')
 
-# HTTPS settings for development
-SECURE_SSL_REDIRECT = False
-SECURE_HSTS_SECONDS = 0
-SECURE_HSTS_INCLUDE_SUBDOMAINS = False
-SECURE_HSTS_PRELOAD = False
+# Security Settings for Railway HTTPS
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SESSION_COOKIE_SECURE = False  # Set to False for development
-CSRF_COOKIE_SECURE = False    # Set to False for development
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# ALB Health Check Settings
-if os.environ.get('USE_ALB_PROXY') == 'true':
-    # ALB forwards the original protocol in this header
-    USE_X_FORWARDED_HOST = True
-    USE_X_FORWARDED_PORT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    # Disable redirect in development behind ALB
-    SECURE_SSL_REDIRECT = False
+# Allowed Hosts - Railway provides these via environment variables
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
+# Railway health check requires this domain
+if 'healthcheck.railway.app' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('healthcheck.railway.app')
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT'),
+# Railway provides DATABASE_URL - use dj_database_url for parsing
+database_url = os.environ.get('DATABASE_URL')
+if database_url:
+    # Runtime: Use actual Railway Postgres database
+    DATABASES = {
+        'default': dj_database_url.parse(
+            database_url,
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=False  # Railway manages SSL internally
+        )
     }
-}
+else:
+    # Build time: DATABASE_URL not available during build phase
+    # Use dummy database config for collectstatic (doesn't need DB access)
+    import warnings
+    warnings.warn(
+        "DATABASE_URL not set - using dummy database configuration. "
+        "This is expected during build phase for collectstatic."
+    )
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+        }
+    }
 
+# CORS Configuration - Must match frontend domain
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
+
+# Static Files for Railway
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Administrate API Settings
 ADMINISTRATE_INSTANCE_URL = env('ADMINISTRATE_INSTANCE_URL')
@@ -43,33 +81,40 @@ ADMINISTRATE_API_KEY = env('ADMINISTRATE_API_KEY')
 ADMINISTRATE_API_SECRET = env('ADMINISTRATE_API_SECRET')
 ADMINISTRATE_REST_API_URL = env('ADMINISTRATE_REST_API_URL')
 GETADDRESS_API_KEY = env('GETADDRESS_API_KEY')
-GETADDRESS_ADMIN_KEY = env('GETADDRESS_ADMIN_KEY')
+GETADDRESS_ADMIN_KEY = env('GETADDRESS_ADMIN_KEY', default='')
 
-# Opayo Payment Gateway Settings (Development)
+# Opayo Payment Gateway Settings (Test Mode for UAT)
 OPAYO_TEST_MODE = True
 OPAYO_VENDOR_NAME = env('OPAYO_VENDOR_NAME', default='testvendor')
 OPAYO_INTEGRATION_KEY = env('OPAYO_INTEGRATION_KEY', default='test_key')
-OPAYO_INTEGRATION_PASSWORD = env(
-    'OPAYO_INTEGRATION_PASSWORD', default='test_password')
+OPAYO_INTEGRATION_PASSWORD = env('OPAYO_INTEGRATION_PASSWORD', default='test_password')
 
-# Use dummy payment gateway for local development
-USE_DUMMY_PAYMENT_GATEWAY = True
+# Use real payment gateway in UAT (not dummy)
+USE_DUMMY_PAYMENT_GATEWAY = False
 
-# Development Email Override Settings
-# Redirect all emails to these addresses in development environment
-DEV_EMAIL_OVERRIDE = True
-DEV_EMAIL_RECIPIENTS = [
-    'eugenelo@bpp.com',
-    'eugene.lo1030@gmail.com',
-]
+# Email Settings for UAT
+# Do NOT override emails in UAT - send to real recipients for testing
+DEV_EMAIL_OVERRIDE = False
+
+# Email Backend Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@acted.com')
+
+# Frontend URL for password reset emails, etc.
+FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:3000')
 
 # Token Expiry Configuration (in hours)
-# These can be overridden in database via EmailSettings model
 TOKEN_EXPIRY_PASSWORD_RESET_HOURS = 24        # 24 hours (1 day)
 TOKEN_EXPIRY_ACCOUNT_ACTIVATION_HOURS = 168   # 168 hours (7 days)
 TOKEN_EXPIRY_EMAIL_VERIFICATION_HOURS = 24    # 24 hours (1 day)
 TOKEN_EXPIRY_RESEND_ACTIVATION_HOURS = 168    # 168 hours (7 days)
 
+# Logging Configuration - Console output for Railway
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -77,6 +122,7 @@ LOGGING = {
         'verbose': {
             'format': '[{asctime}] {levelname} {name} {message}',
             'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
         },
         'simple': {
             'format': '{levelname} {message}',
@@ -84,37 +130,59 @@ LOGGING = {
         },
     },
     'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'django_debug.log'),
-            'formatter': 'verbose',
-        },
         'console': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+            'formatter': 'verbose',
         },
     },
     'root': {
-        'handlers': ['file', 'console'],
-        'level': 'DEBUG',
+        'handlers': ['console'],
+        'level': 'INFO',
     },
     'loggers': {
-        '': {
-            'handlers': ['file', 'console'],
-            'level': 'DEBUG',
-            'propagate': True,
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'WARNING',  # Set to DEBUG to see SQL queries
+            'propagate': False,
         },
     },
 }
+
+# Cache Configuration - Use DATABASE cache for Railway (no Redis in starter)
+# Can be upgraded to Redis later if needed
 CACHES = {
     'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            # No password needed since Redis is running without auth
-        }
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'django_cache_table',
     }
 }
+
+# Session Configuration
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 86400  # 24 hours
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_SAVE_EVERY_REQUEST = True
+
+# reCAPTCHA Configuration
+RECAPTCHA_SITE_KEY = env('RECAPTCHA_SITE_KEY', default='6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI')
+RECAPTCHA_SECRET_KEY = env('RECAPTCHA_SECRET_KEY', default='6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe')
+RECAPTCHA_VERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify'
+RECAPTCHA_VERSION = '3'
+RECAPTCHA_DEFAULT_MIN_SCORE = float(env('RECAPTCHA_MIN_SCORE', default='0.5'))
+
+# Password Reset Settings
+PASSWORD_RESET_TIMEOUT_HOURS = float(env('PASSWORD_RESET_TIMEOUT_HOURS', default='24'))
+PASSWORD_RESET_TIMEOUT = int(PASSWORD_RESET_TIMEOUT_HOURS * 3600)  # Convert to seconds

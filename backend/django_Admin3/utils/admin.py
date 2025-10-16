@@ -8,7 +8,8 @@ import json
 from .models import (
     EmailTemplate, EmailAttachment, EmailTemplateAttachment,
     EmailQueue, EmailLog, EmailSettings,
-    EmailContentRule, EmailTemplateContentRule, EmailContentPlaceholder
+    EmailContentRule, EmailTemplateContentRule, EmailContentPlaceholder,
+    UtilsRegion, UtilsCountrys, UtilsCountryRegion
 )
 
 
@@ -454,6 +455,68 @@ class EmailContentPlaceholderAdmin(admin.ModelAdmin):
         }),
         ('Metadata', {
             'fields': ('is_active', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
+
+
+# ============================================================================
+# VAT Models Admin (Phase 1: Database Foundation)
+# ============================================================================
+
+@admin.register(UtilsRegion)
+class UtilsRegionAdmin(admin.ModelAdmin):
+    """Admin interface for VAT regions."""
+    list_display = ['code', 'name', 'active', 'created_at']
+    search_fields = ['code', 'name', 'description']
+    list_filter = ['active', 'created_at']
+    readonly_fields = ['created_at', 'updated_at']
+
+    fieldsets = (
+        ('Region Information', {
+            'fields': ('code', 'name', 'description', 'active')
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
+
+
+@admin.register(UtilsCountrys)
+class UtilsCountrysAdmin(admin.ModelAdmin):
+    """Admin interface for VAT countries with inline vat_percent editing."""
+    list_display = ['code', 'name', 'vat_percent', 'active']
+    search_fields = ['code', 'name']
+    list_filter = ['active', 'created_at']
+    list_editable = ['vat_percent', 'active']
+    readonly_fields = ['created_at', 'updated_at']
+
+    fieldsets = (
+        ('Country Information', {
+            'fields': ('code', 'name', 'vat_percent', 'active')
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
+
+
+@admin.register(UtilsCountryRegion)
+class UtilsCountryRegionAdmin(admin.ModelAdmin):
+    """Admin interface for country-region mappings with date filters."""
+    list_display = ['country', 'region', 'effective_from', 'effective_to', 'created_at']
+    list_filter = ['region', 'effective_from', 'created_at']
+    search_fields = ['country__name', 'region__name', 'country__code', 'region__code']
+    readonly_fields = ['created_at', 'updated_at']
+
+    fieldsets = (
+        ('Mapping Information', {
+            'fields': ('country', 'region', 'effective_from', 'effective_to')
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)
         })
     )

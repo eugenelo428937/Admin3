@@ -16,20 +16,24 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from utils.health_check import health_check
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/health/', health_check, name='health_check'),
     path('api/auth/', include('core_auth.urls')),
     path('api/users/', include('users.urls')),
     path('api/students/', include('students.urls')),
     path('api/exam-sessions/', include('exam_sessions.urls')),
     # path('api/subjects/', include('subjects.urls')),
+    # Include products for navigation endpoints (navbar-product-groups, distance-learning-dropdown, etc.)
     path('api/products/', include('products.urls')),
+    # Include exam_sessions_subjects_products under /current/ prefix
+    path('api/products/current/', include('exam_sessions_subjects_products.urls')),
     # path('api/', include('products.urls')),
     path('api/', include('subjects.urls')),
     path('api/exam-sessions-subjects/', include('exam_sessions_subjects.urls')),
     path('api/exam-sessions-subjects-products/', include('exam_sessions_subjects_products.urls')),
-    path('api/products/', include('exam_sessions_subjects_products.urls')),
     path('api/cart/', include('cart.urls')),
     path('api/rules/', include('rules_engine.urls')),
     path('api/utils/', include('utils.urls')),

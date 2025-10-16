@@ -29,22 +29,33 @@ from products.serializers import ExamSessionSubjectBundleSerializer
 
 logger = logging.getLogger(__name__)
 
-class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):    
+class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
     queryset = ExamSessionSubjectProduct.objects.all()
     serializer_class = ExamSessionSubjectProductSerializer
-    
+    permission_classes = [AllowAny]  # Allow public access by default, override with IsAuthenticated where needed
+
     def get_permissions(self):
         """
         Instantiates and returns the list of permissions that this view requires.
+        Public actions (navigation, search) allow anyone.
+        Admin actions (create, update, delete) require authentication.
         """
-        if self.action in ['list_products', 'default_search_data', 'fuzzy_search', 'advanced_fuzzy_search', 'unified_search']:
+        # Public read-only actions
+        public_actions = ['list_products', 'default_search_data', 'fuzzy_search', 'advanced_fuzzy_search', 'unified_search']
+        # Protected write actions
+        protected_actions = ['create', 'update', 'partial_update', 'destroy', 'bulk_create', 'add_products_to_session_subject']
+
+        if self.action in public_actions:
             permission_classes = [AllowAny]
+        elif self.action in protected_actions:
+            permission_classes = [IsAuthenticated]
         else:
+            # Default to the class-level permission (AllowAny)
             permission_classes = self.permission_classes
+
         return [permission() for permission in permission_classes]
-     
+
     @action(detail=False, methods=['post'], url_path='bulk-create')
-    @permission_classes([IsAuthenticated])
     def bulk_create(self, request):
         """
         Bulk create exam session subject products.
@@ -80,7 +91,6 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         }, status=status.HTTP_400_BAD_REQUEST if errors else status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['post'], url_path='add-products')
-    @permission_classes([IsAuthenticated])
     def add_products_to_session_subject(self, request):
         """
         Add products to an exam session subject.
