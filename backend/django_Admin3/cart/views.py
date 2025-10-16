@@ -630,9 +630,11 @@ class CartViewSet(viewsets.ViewSet):
         card_data = payment_data.get('card_data', None)
         user_preferences = payment_data.get('user_preferences', {})
 
-        # Extract T&C acceptance data
+        # Extract T&C acceptance data - support both nested and root-level formats
         terms_acceptance_data = payment_data.get('terms_acceptance', {})
-        general_terms_accepted = terms_acceptance_data.get('general_terms_accepted', False)
+        # Check root level first (new format), then nested (legacy format)
+        general_terms_accepted = payment_data.get('general_terms_accepted',
+                                                  terms_acceptance_data.get('general_terms_accepted', False))
         terms_version = terms_acceptance_data.get('terms_version', '1.0')
         product_acknowledgments = terms_acceptance_data.get('product_acknowledgments', {})
 
