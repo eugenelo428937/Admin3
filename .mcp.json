@@ -1,44 +1,57 @@
 {
 	"mcpServers": {
-		"trello": {
-			"command": "node",
-			"args": ["./scripts/trello-mcp-wrapper.mjs"]
-		},
-		"browsermcp": {
-			"command": "node",
-			"args": ["./scripts/run-mcp.js", "browsermcp"]
-		},
-		"github": {
-			"command": "node",
-			"args": ["./scripts/run-mcp.js", "github"]
-		},
-		"tdd-guard Docs": {
-			"command": "node",
-			"args": ["./scripts/run-mcp.js", "tdd-guard Docs"]
-		},
-		"material-ui Docs": {
-			"command": "node",
-			"args": ["./scripts/run-mcp.js", "material-ui Docs"]
-		},
-		"json-logic-py Docs": {
-			"command": "node",
-			"args": ["./scripts/run-mcp.js", "json-logic-py Docs"]
-		},
-		"mui-mcp": {
-			"command": "node",
-			"args": ["./scripts/run-mcp.js", "mui-mcp"]
-		},
-		"spec-kit Docs": {
-			"command": "node",
-			"args": ["./scripts/run-mcp.js", "spec-kit Docs"]
-		},
-		"BMAD-METHOD Docs": {
-			"command": "node",
-			"args": ["./scripts/run-mcp.js", "BMAD-METHOD Docs"]
-		},
-		"chrome-devtools-mcp Docs": {
-			"command": "node",
-			"args": ["./scripts/run-mcp.js", "chrome-devtools-mcp Docs"]
-		}
-	}
+      "trello": {
+         "command": "node",
+         "args": ["./scripts/trello-mcp-wrapper.mjs"]
+      },
+      "browsermcp": {
+         "command": "node",
+         "args": ["./scripts/run-mcp.js", "browsermcp"]
+      },
+      "github": {
+         "command": "node",
+         "args": ["./scripts/run-mcp.js", "github"]
+      },
+      "tdd-guard Docs": {
+         "command": "node",
+         "args": ["./scripts/run-mcp.js", "tdd-guard Docs"]
+      },
+      "material-ui Docs": {
+         "command": "node",
+         "args": ["./scripts/run-mcp.js", "material-ui Docs"]
+      },
+      "json-logic-py Docs": {
+         "command": "node",
+         "args": ["./scripts/run-mcp.js", "json-logic-py Docs"]
+      },
+      "mui-mcp": {
+         "command": "node",
+         "args": ["./scripts/run-mcp.js", "mui-mcp"]
+      },
+      "spec-kit Docs": {
+         "command": "node",
+         "args": ["./scripts/run-mcp.js", "spec-kit Docs"]
+      },
+      "BMAD-METHOD Docs": {
+         "command": "node",
+         "args": ["./scripts/run-mcp.js", "BMAD-METHOD Docs"]
+      },
+      "chrome-devtools-mcp Docs": {
+         "command": "node",
+         "args": ["./scripts/run-mcp.js", "chrome-devtools-mcp Docs"]
+      },
+      "railway-cli Docs": {
+         "command": "node",
+         "args": ["./scripts/run-mcp.js", "railway-cli Docs"]
+      },
+      "railway-Docs Docs": {
+         "command": "node",
+         "args": ["./scripts/run-mcp.js", "railway-Docs Docs"]
+      },
+      "railway-mcp-server": {
+         "type": "stdio",
+         "command": "node",
+         "args": ["./scripts/run-mcp.js", "railway-mcp-server"]
+      }
+   }
 }

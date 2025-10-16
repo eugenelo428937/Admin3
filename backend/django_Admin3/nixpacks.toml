@@ -1,0 +1,5 @@
+# Nixpacks configuration for Railway
+# Force Python detection for Django project
+
+[phases.setup]
+nixPkgs = ["python311", "postgresql"]

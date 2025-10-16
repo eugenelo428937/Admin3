@@ -1,5 +1,8 @@
+import logging
 from rest_framework import serializers
 from .models import Cart, CartItem, CartFee, ActedOrder, ActedOrderItem
+
+logger = logging.getLogger(__name__)
 
 class CartItemSerializer(serializers.ModelSerializer):
     subject_code = serializers.CharField(source='product.exam_session_subject.subject.code', read_only=True)
@@ -10,27 +13,63 @@ class CartItemSerializer(serializers.ModelSerializer):
     current_product = serializers.IntegerField(source='product.id', read_only=True)
     product_id = serializers.IntegerField(source='product.product.id', read_only=True)
 
+    # Phase 5: VAT fields (stored in CartItem model from orchestrator results)
+    net_amount = serializers.SerializerMethodField()
+    vat_region = serializers.CharField(read_only=True)
+    vat_rate = serializers.DecimalField(max_digits=5, decimal_places=4, read_only=True)
+    vat_amount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    gross_amount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+
     class Meta:
         model = CartItem
-        fields = ['id', 'current_product', 'product_id', 'product_name', 'product_code', 'subject_code', 'exam_session_code', 'product_type', 'quantity', 'price_type', 'actual_price', 'metadata', 'is_marking', 'has_expired_deadline', 'expired_deadlines_count', 'marking_paper_count']
+        fields = [
+            'id', 'current_product', 'product_id', 'product_name', 'product_code', 'subject_code',
+            'exam_session_code', 'product_type', 'quantity', 'price_type', 'actual_price', 'metadata',
+            'is_marking', 'has_expired_deadline', 'expired_deadlines_count', 'marking_paper_count',
+            # Phase 5: VAT fields
+            'net_amount', 'vat_region', 'vat_rate', 'vat_amount', 'gross_amount'
+        ]
+
+    def get_net_amount(self, obj):
+        """
+        Calculate net amount for cart item (price × quantity).
+
+        Returns the line total before VAT. This is used for display purposes
+        and VAT calculations are performed by the orchestrator service.
+
+        Args:
+            obj (CartItem): Cart item instance
+
+        Returns:
+            Decimal: Net amount (actual_price × quantity)
+        """
+        from decimal import Decimal
+        return (obj.actual_price or Decimal('0.00')) * obj.quantity
 
     def get_product_type(self, obj):
         """Determine product type based on product name or group"""
+        # Handle fee items (no product)
+        if obj.item_type == 'fee':
+            return 'fee'
+
+        if not obj.product:
+            return None
+
         product_name = obj.product.product.fullname.lower()
-        
+
         if hasattr(obj.product.product, 'group_name') and obj.product.product.group_name:
             group_name = obj.product.product.group_name.lower()
             if 'tutorial' in group_name:
                 return 'tutorial'
             elif 'marking' in group_name:
                 return 'marking'
-        
+
         # Fallback to product name if group_name is not available
         if 'tutorial' in product_name:
             return 'tutorial'
         elif 'marking' in product_name:
             return 'marking'
-        
+
         return 'material'
 
 class CartFeeSerializer(serializers.ModelSerializer):
@@ -42,11 +81,21 @@ class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
     fees = CartFeeSerializer(many=True, read_only=True)
     user_context = serializers.SerializerMethodField()
-    vat_calculations = serializers.SerializerMethodField()
+    vat_calculations = serializers.SerializerMethodField()  # Legacy support (deprecated - use vat_totals)
+    vat_totals = serializers.SerializerMethodField()  # Phase 5: VAT totals from JSONB storage
+    vat_last_calculated_at = serializers.DateTimeField(read_only=True)
+    vat_calculation_error = serializers.BooleanField(read_only=True)
+    vat_calculation_error_message = serializers.CharField(read_only=True)
 
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'session_key', 'items', 'fees', 'created_at', 'updated_at', 'has_marking', 'has_digital', 'has_tutorial', 'has_material', 'user_context', 'vat_calculations']
+        fields = [
+            'id', 'user', 'session_key', 'items', 'fees', 'created_at', 'updated_at',
+            'has_marking', 'has_digital', 'has_tutorial', 'has_material',
+            'user_context', 'vat_calculations',  # Legacy (deprecated)
+            # Phase 5: VAT fields
+            'vat_totals', 'vat_last_calculated_at', 'vat_calculation_error', 'vat_calculation_error_message'
+        ]
     
     def get_user_context(self, obj):
         """Get user context including IP and country information and acknowledgments"""
@@ -124,48 +173,41 @@ class CartSerializer(serializers.ModelSerializer):
                 'acknowledgments': acknowledgments
             }
 
+    def get_vat_totals(self, obj):
+        """
+        Phase 5: Return VAT totals from cart.vat_result JSONB storage.
+
+        Returns VAT breakdown and totals from orchestrator calculation stored in JSONB.
+        Returns None or not_calculated structure if VAT hasn't been calculated yet.
+        """
+        # Phase 5: Return vat_result JSONB data directly
+        if obj.vat_result and isinstance(obj.vat_result, dict):
+            # VAT has been calculated and stored by orchestrator
+            return obj.vat_result
+
+        # VAT not yet calculated - return None or minimal structure
+        return None
+
     def get_vat_calculations(self, obj):
-        """Calculate and return VAT calculations for cart"""
-        from vat.service import calculate_vat_for_cart
-        from vat.utils import decimal_to_float
+        """
+        DEPRECATED: Legacy VAT calculations method.
 
-        # Get user from request context
-        request = self.context.get('request')
-        user = request.user if request and hasattr(request, 'user') and request.user.is_authenticated else None
+        This method is deprecated in Phase 5 and maintained only for backward compatibility.
+        New code should use get_vat_totals() which returns cart.vat_result JSONB data.
 
-        # Extract client IP for anonymous users (supports proxies via X-Forwarded-For)
-        client_ip = None
-        if request:
-            # X-Forwarded-For header contains comma-separated IPs (client, proxy1, proxy2...)
-            # First IP is the original client IP
-            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-            if x_forwarded_for:
-                client_ip = x_forwarded_for.split(',')[0].strip()
-            else:
-                client_ip = request.META.get('REMOTE_ADDR')
+        Phase 5 approach: VAT is calculated by orchestrator service and stored in cart.vat_result.
+        This method now delegates to get_vat_totals() for consistency.
 
-        try:
-            # Calculate VAT for cart (pass client_ip for anonymous user geolocation)
-            vat_result = calculate_vat_for_cart(user, obj, client_ip=client_ip)
+        Returns:
+            dict or None: VAT totals from cart.vat_result JSONB storage
+        """
+        logger.warning(
+            "get_vat_calculations() is deprecated. Use get_vat_totals() instead. "
+            "This method will be removed in a future version."
+        )
 
-            # Return only the vat_calculations portion (convert Decimals to floats for JSON)
-            return decimal_to_float(vat_result.get('vat_calculations', {}))
-        except Exception as e:
-            # Return empty structure on error to prevent serialization failure
-
-            return {
-                'items': [],
-                'totals': {
-                    'subtotal': 0.00,
-                    'total_vat': 0.00,
-                    'total_gross': 0.00,
-                    'effective_vat_rate': 0.00
-                },
-                'region_info': {
-                    'country': None,
-                    'region': 'ROW'
-                }
-            }
+        # Phase 5: Delegate to get_vat_totals() which returns cart.vat_result
+        return self.get_vat_totals(obj)
 
 class ActedOrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.SerializerMethodField()

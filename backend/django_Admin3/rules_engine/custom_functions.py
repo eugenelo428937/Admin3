@@ -2,105 +2,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def check_same_subject_products(cart_items, params):
-    """
-    Check if cart contains assignment and marking products of the same subject.
-    
-    Args:
-        cart_items: List of cart items
-        params: Dictionary containing assignment_ids and marking_ids
-        
-    Returns:
-        bool: True if matching products found, False otherwise
-    """
-    try:
-        # Get the product IDs from params
-        assignment_ids = params.get('assignment_ids', [])
-        marking_ids = params.get('marking_ids', [])
-        
-        # Create sets of subject codes for assignments and markings
-        assignment_subjects = set()
-        marking_subjects = set()
-        
-        # Check each cart item
-        for item in cart_items:
-            # Get the product ID from the correct field
-            product_id = item.get('product_id')  # This is the ID from acted_products table
-
-            # Get subject code from the correct field
-            subject_code = item.get('subject_code')
-
-            if not subject_code:
-                continue
-
-            if product_id in assignment_ids:
-                assignment_subjects.add(subject_code)
-            elif product_id in marking_ids:
-                marking_subjects.add(subject_code)
-
-        # Check if there's any overlap in subjects
-        result = bool(assignment_subjects.intersection(marking_subjects))
-        
-        return result
-        
-    except Exception as e:
-        logger.error(f"Error in check_same_subject_products: {str(e)}")
-        return False
-
-
-def check_tutorial_only_credit_card(cart_items, params):
-    """
-    Check if cart contains only tutorial products and payment method is credit card.
-    
-    Args:
-        cart_items: List of cart items (can be empty for testing)
-        params: Dictionary containing payment_method and other context including test_cart_items
-        
-    Returns:
-        bool: True if conditions are met, False otherwise
-    """
-    try:
-        # For testing, use test_cart_items if available, otherwise use cart_items
-        items_to_check = params.get('test_cart_items', cart_items)
-
-        # Check payment method
-        payment_method = params.get('payment_method', '').lower()
-        is_credit_card = payment_method in ['credit_card', 'card', 'creditcard']
-
-        if not is_credit_card:
-            return False
-        
-        # Check if all items are tutorials
-        tutorial_count = 0
-        non_tutorial_count = 0
-        
-        for item in items_to_check:
-            # Check different possible fields for product type
-            product_type = (
-                item.get('product_type') or 
-                item.get('type') or 
-                ''
-            ).lower()
-            
-            # Skip booking fee items (they shouldn't count against tutorial-only check)
-            if 'booking' in product_type and 'fee' in product_type:
-                continue
-
-            if 'tutorial' in product_type:
-                tutorial_count += 1
-            else:
-                non_tutorial_count += 1
-
-        # Must have at least one tutorial and no non-tutorial items
-        result = tutorial_count > 0 and non_tutorial_count == 0
-        
-        return result
-        
-    except Exception as e:
-        logger.error(f"Error in check_tutorial_only_credit_card: {str(e)}")
-        return False
-
-
 def apply_tutorial_booking_fee(cart_items, params):
     """
     Apply tutorial booking fee to the cart.
@@ -215,11 +116,98 @@ def apply_tutorial_booking_fee(cart_items, params):
 
 
 # ============================================================================
-# VAT Calculation Functions (Epic 3 - Phase 1)
+# VAT Calculation Functions (Epic 3 - Phase 1 & Phase 2)
 # ============================================================================
 
 from country.vat_rates import get_vat_rate, map_country_to_region
 from decimal import Decimal, ROUND_HALF_UP
+from django.db.models import Q
+from django.utils import timezone
+
+
+def lookup_region(country_code, effective_date=None):
+    """
+    Lookup VAT region for country code using UtilsCountryRegion.
+
+    Args:
+        country_code: ISO 3166-1 alpha-2 country code (e.g., 'GB', 'IE', 'ZA')
+        effective_date: Optional date to check (defaults to today)
+
+    Returns:
+        str: Region code ('UK', 'IE', 'EU', 'SA', 'ROW')
+
+    Examples:
+        >>> lookup_region('GB')
+        'UK'
+        >>> lookup_region('ZA')
+        'SA'
+        >>> lookup_region('UNKNOWN')
+        'ROW'
+    """
+    from utils.models import UtilsCountrys, UtilsCountryRegion
+
+    if effective_date is None:
+        effective_date = timezone.now().date()
+
+    try:
+        # Normalize country code to uppercase
+        country = UtilsCountrys.objects.get(code=country_code.upper())
+
+        # Query for region mapping with date filtering
+        mapping = UtilsCountryRegion.objects.filter(
+            country=country,
+            effective_from__lte=effective_date
+        ).filter(
+            Q(effective_to__isnull=True) | Q(effective_to__gte=effective_date)
+        ).select_related('region').first()
+
+        if mapping:
+            return mapping.region.code
+        else:
+            logger.warning(f'No region mapping found for country: {country_code}')
+            return 'ROW'
+
+    except UtilsCountrys.DoesNotExist:
+        logger.warning(f'Country not found: {country_code}')
+        return 'ROW'
+
+
+def lookup_vat_rate(country_code):
+    """
+    Get VAT rate percentage from UtilsCountrys.
+
+    Args:
+        country_code: ISO 3166-1 alpha-2 country code (e.g., 'GB', 'IE', 'ZA')
+
+    Returns:
+        Decimal: VAT rate as decimal (e.g., Decimal('0.20') for 20%)
+
+    Examples:
+        >>> lookup_vat_rate('GB')
+        Decimal('0.20')
+        >>> lookup_vat_rate('ZA')
+        Decimal('0.15')
+        >>> lookup_vat_rate('UNKNOWN')
+        Decimal('0.00')
+    """
+    from utils.models import UtilsCountrys
+
+    try:
+        # Normalize country code to uppercase
+        country = UtilsCountrys.objects.get(code=country_code.upper(), active=True)
+
+        # Get VAT percent and convert to decimal rate
+        if country.vat_percent is None:
+            logger.warning(f'VAT percent is NULL for country: {country_code}')
+            return Decimal('0.00')
+
+        # Convert percentage (20.00) to decimal rate (0.20)
+        vat_rate = country.vat_percent / Decimal('100')
+        return vat_rate
+
+    except UtilsCountrys.DoesNotExist:
+        logger.warning(f'Country not found: {country_code}')
+        return Decimal('0.00')
 
 
 def calculate_vat_amount(net_amount, vat_rate):
@@ -243,137 +231,105 @@ def calculate_vat_amount(net_amount, vat_rate):
     return amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
 
+# Helper function for adding decimal values
+def add_decimals(value1, value2):
+    """
+    Add two decimal values.
+
+    Args:
+        value1: First decimal value
+        value2: Second decimal value
+
+    Returns:
+        Decimal: Sum of the two values
+
+    Examples:
+        >>> add_decimals(Decimal('100.00'), Decimal('20.00'))
+        Decimal('120.00')
+    """
+    return Decimal(str(value1)) + Decimal(str(value2))
+
+
 # Function Registry - maps function names to callable functions for Rules Engine
 FUNCTION_REGISTRY = {
+    # Phase 1 functions (legacy)
     "get_vat_rate": get_vat_rate,
     "map_country_to_region": map_country_to_region,
+    # Phase 2 functions (database-driven)
+    "lookup_region": lookup_region,
+    "lookup_vat_rate": lookup_vat_rate,
     "calculate_vat_amount": calculate_vat_amount,
+    # Helper functions for Phase 3
+    "add_decimals": add_decimals,
 }
 
+# ============================================================================
+# VAT Calculation Integration (Epic 3 - Phase 2)
+# ============================================================================
 
-def check_expired_marking_deadlines(cart_items, params):
+def calculate_vat_for_context(context, params):
     """
-    Check if cart contains marking products with expired deadlines.
-    
+    Calculate VAT for a given context using the new VAT calculation service.
+    This function integrates the VAT service with the rules engine.
+
     Args:
-        cart_items: List of cart items with product information
-        params: Dictionary with function parameters
-        
+        context: Dictionary containing country_code, net_amount, or cart_items
+        params: Dictionary with optional parameter overrides
+
     Returns:
-        dict: Results containing expired deadline information
+        dict: VAT calculation results or error information
+
+    Examples:
+        >>> context = {'country_code': 'GB', 'net_amount': Decimal('100.00')}
+        >>> result = calculate_vat_for_context(context, {})
+        >>> result['vat_amount']
+        Decimal('20.00')
     """
     try:
-        from marking.models import MarkingPaper
-        from django.utils import timezone
-        from collections import defaultdict
-        
-        # logger.info("DEBUG: check_expired_marking_deadlines called")
-        # logger.info(f"DEBUG: cart_items: {cart_items}")
-        # logger.info(f"DEBUG: params: {params}")
-        
-        current_time = timezone.now()
-        expired_products = []
-        warnings = []
-        
-        # Process each cart item
-        for item in cart_items:
-            # Check if this is a marking product
-            product_type = (item.get('product_type') or '').lower()
-            product_name = item.get('product_name', '')
-            subject_code = item.get('subject_code', '')
-            
-            # logger.info(f"DEBUG: Checking item - Product: {product_name}, Type: {product_type}, Subject: {subject_code}")
-            
-            # Check if this is a marking product (contains "marking" in name or type)
-            if 'marking' in product_name.lower() or 'marking' in product_type:
-                try:
-                    # Get the ExamSessionSubjectProduct ID from the cart item
-                    # This should be available as the cart item's product field references ExamSessionSubjectProduct
-                    essp_id = item.get('id')  # This might be the cart item ID, not the product ID
-                    
-                    # We need to get the actual ExamSessionSubjectProduct ID
-                    # Let's try to find it by matching the product information
-                    from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
-                    
-                    # Try to find the ExamSessionSubjectProduct by subject code and product name
-                    marking_products = ExamSessionSubjectProduct.objects.filter(
-                        exam_session_subject__subject__code=subject_code,
-                        product__fullname__icontains='marking'
-                    ).select_related(
-                        'exam_session_subject__subject',
-                        'product'
-                    ).prefetch_related('marking_papers')
-                    
-                    # logger.info(f"DEBUG: Found {marking_products.count()} marking products for {subject_code}")
-                    
-                    for marking_product in marking_products:
-                        # Check if this matches our cart item
-                        if marking_product.product.fullname.lower() == product_name.lower():
-                            # logger.info(f"DEBUG: Matched product: {marking_product.product.fullname}")
-                            
-                            # Get all marking papers for this product
-                            marking_papers = marking_product.marking_papers.all()
-                            total_papers = marking_papers.count()
-                            expired_papers = []
-                            
-                            # logger.info(f"DEBUG: Found {total_papers} marking papers")
-                            
-                            for paper in marking_papers:
-                                if paper.deadline < current_time:
-                                    expired_papers.append(paper.name)
-                                    # logger.info(f"DEBUG: Paper {paper.name} expired on {paper.deadline}")
-                                # else:
-                                    # logger.info(f"DEBUG: Paper {paper.name} deadline {paper.deadline} is still valid")
-                            
-                            expired_count = len(expired_papers)
-                            
-                            if expired_count > 0:
-                                expired_info = {
-                                    'product_name': product_name,
-                                    'subject': subject_code,
-                                    'expired_count': expired_count,
-                                    'paper_count': total_papers,  # Add paper_count alias
-                                    'total_papers': total_papers,
-                                    'expired_papers': ', '.join(expired_papers)
-                                }
-                                
-                                expired_products.append(expired_info)
-                                
-                                # Create warning message
-                                warning_message = f"{expired_count}/{total_papers} deadlines for {subject_code} {product_name} has expired. If you need marking for this study session then please purchase Marking Vouchers instead."
-                                warnings.append({
-                                    'type': 'expired_deadline',
-                                    'message': warning_message,
-                                    'product_details': expired_info
-                                })
-                                
-                                # logger.info(f"DEBUG: Added warning for {product_name}: {expired_count}/{total_papers} expired")
-                            break
-                    
-                except Exception as e:
-                    logger.error(f"Error checking marking deadlines for {product_name}: {str(e)}")
-                    continue
-        
-        # Prepare the result
-        has_expired_deadlines = len(expired_products) > 0
-        
-        result = {
-            'success': True,
-            'has_expired_deadlines': has_expired_deadlines,
-            'expired_products': expired_products,
-            'warnings': warnings,
-            'total_warnings': len(warnings)
-        }
-        
-        # logger.info(f"DEBUG: check_expired_marking_deadlines result: {result}")
+        from utils.services.vat_service import VATCalculationService
+
+        vat_service = VATCalculationService()
+
+        # Get country code from params (override) or context
+        country_code = params.get('country_code') or context.get('country_code')
+
+        if not country_code:
+            return {
+                'error': 'country_code is required for VAT calculation',
+                'success': False
+            }
+
+        # Check if cart items are provided
+        cart_items = context.get('cart_items') or params.get('cart_items')
+
+        if cart_items:
+            # Calculate VAT for cart items
+            result = vat_service.calculate_vat_for_cart(
+                country_code=country_code,
+                cart_items=cart_items
+            )
+        else:
+            # Calculate VAT for single net amount
+            net_amount = params.get('net_amount') or context.get('net_amount')
+
+            if not net_amount:
+                return {
+                    'error': 'net_amount or cart_items is required for VAT calculation',
+                    'success': False
+                }
+
+            result = vat_service.calculate_vat(
+                country_code=country_code,
+                net_amount=Decimal(str(net_amount))
+            )
+
+        result['success'] = True
+        logger.info(f"VAT calculated for {country_code}: {result.get('vat_amount', result.get('total_vat_amount'))}")
         return result
-        
+
     except Exception as e:
-        logger.error(f"Error in check_expired_marking_deadlines: {str(e)}")
+        logger.error(f"Error in calculate_vat_for_context: {str(e)}")
         return {
-            'success': False,
             'error': str(e),
-            'has_expired_deadlines': False,
-            'expired_products': [],
-            'warnings': []
+            'success': False
         }
