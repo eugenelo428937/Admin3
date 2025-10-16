@@ -22,6 +22,22 @@ class Cart(models.Model):
         help_text="VAT calculation results from rules engine (Epic 3)"
     )
 
+    # Phase 4: VAT error tracking fields
+    vat_calculation_error = models.BooleanField(
+        default=False,
+        help_text="Indicates if VAT calculation failed for this cart"
+    )
+    vat_calculation_error_message = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Error message if VAT calculation failed"
+    )
+    vat_last_calculated_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp of last VAT calculation attempt"
+    )
+
     class Meta:
         db_table = 'acted_carts'
         verbose_name = 'Cart'
@@ -42,6 +58,263 @@ class Cart(models.Model):
         if self.user:
             return f"Cart (User: {self.user.username})"
         return f"Cart (Session: {self.session_key})"
+
+    def calculate_vat(self, country_code):
+        """
+        Calculate VAT for cart items.
+
+        Args:
+            country_code: ISO 3166-1 alpha-2 country code (e.g., 'GB', 'IE')
+
+        Returns:
+            dict: VAT calculation results or error information
+        """
+        from utils.services.vat_service import VATCalculationService
+        from decimal import Decimal
+
+        vat_service = VATCalculationService()
+
+        # Build cart items for VAT calculation
+        cart_items_data = []
+        for item in self.items.all():
+            if item.item_price:
+                cart_items_data.append({
+                    'net_price': Decimal(str(item.item_price)),
+                    'quantity': item.quantity
+                })
+
+        try:
+            if cart_items_data:
+                result = vat_service.calculate_vat_for_cart(
+                    country_code=country_code,
+                    cart_items=cart_items_data
+                )
+            else:
+                # Empty cart
+                result = vat_service.calculate_vat_for_cart(
+                    country_code=country_code,
+                    cart_items=[]
+                )
+
+            return result
+
+        except Exception as e:
+            return {
+                'error': str(e),
+                'country_code': country_code
+            }
+
+    def calculate_and_save_vat(self, country_code):
+        """
+        Calculate VAT and store result in vat_result field.
+
+        Args:
+            country_code: ISO 3166-1 alpha-2 country code
+
+        Returns:
+            dict: VAT calculation results
+        """
+        result = self.calculate_vat(country_code)
+
+        # Convert Decimal to string for JSON storage
+        def decimal_to_str(obj):
+            from decimal import Decimal
+            if isinstance(obj, Decimal):
+                return str(obj)
+            elif isinstance(obj, dict):
+                return {k: decimal_to_str(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [decimal_to_str(item) for item in obj]
+            return obj
+
+        self.vat_result = decimal_to_str(result)
+        self.save(update_fields=['vat_result', 'updated_at'])
+
+        return result
+
+    def get_vat_calculation(self):
+        """
+        Get stored VAT calculation result.
+
+        Returns:
+            dict or None: Stored VAT calculation or None if not calculated
+        """
+        return self.vat_result
+
+    def calculate_vat_for_all_items(self, country_code, update_items=False):
+        """
+        Phase 4: Calculate VAT for all cart items using Phase 3 rules engine.
+
+        Args:
+            country_code: ISO 3166-1 alpha-2 country code (e.g., 'GB', 'ZA')
+            update_items: If True, update CartItem VAT fields with calculated values
+
+        Returns:
+            dict: {
+                'success': bool,
+                'items': [{cart_item_id, net_amount, vat_amount, gross_amount, vat_region, vat_rate}],
+                'total_net_amount': Decimal,
+                'total_vat_amount': Decimal,
+                'total_gross_amount': Decimal,
+                'vat_breakdown': [{region, rate, amount, item_count}],
+                'error': str (if success=False)
+            }
+        """
+        from decimal import Decimal
+        from rules_engine.services.rule_engine import rule_engine
+        import logging
+
+        logger = logging.getLogger(__name__)
+
+        # Initialize result structure
+        result = {
+            'success': True,
+            'items': [],
+            'total_net_amount': Decimal('0.00'),
+            'total_vat_amount': Decimal('0.00'),
+            'total_gross_amount': Decimal('0.00'),
+            'vat_breakdown': []
+        }
+
+        # Get all cart items
+        cart_items = self.items.all()
+
+        # Empty cart - return success with zeros
+        if not cart_items.exists():
+            return result
+
+        # Track VAT by region for breakdown
+        vat_by_region = {}
+
+        try:
+            for cart_item in cart_items:
+                # Calculate net amount (price * quantity)
+                net_amount = (cart_item.actual_price or Decimal('0.00')) * cart_item.quantity
+
+                # Determine product_type from variations
+                product_type = 'Unknown'
+                if cart_item.product:
+                    # Get first variation to determine product type
+                    first_variation = cart_item.product.variations.first()
+                    if first_variation:
+                        variation_type = first_variation.product_product_variation.product_variation.variation_type
+                        # Map variation_type to product_type expected by schema
+                        VARIATION_TO_PRODUCT_TYPE = {
+                            'eBook': 'Digital',
+                            'Hub': 'Digital',
+                            'Printed': 'Printed',
+                            'Tutorial': 'Tutorial',
+                            'Marking': 'Tutorial',  # Marking treated as tutorial/service
+                        }
+                        product_type = VARIATION_TO_PRODUCT_TYPE.get(variation_type, 'Unknown')
+                elif cart_item.item_type == 'fee':
+                    product_type = 'Fee'
+
+                # Build context for rules engine
+                context = {
+                    'cart_item': {
+                        'id': str(cart_item.id),
+                        'product_type': product_type,
+                        'net_amount': net_amount
+                    },
+                    'user': {
+                        'id': str(self.user.id) if self.user else 'anonymous',
+                        'country_code': country_code
+                    },
+                    'vat': {}
+                }
+
+                # Call Phase 3 rules engine
+                rules_result = rule_engine.execute('cart_calculate_vat', context)
+
+                # Extract VAT details from rules result
+                vat_info = rules_result.get('vat', {})
+                cart_item_result = rules_result.get('cart_item', {})
+
+                vat_region = vat_info.get('region', 'ROW')
+                vat_rate = vat_info.get('rate', Decimal('0.0000'))
+                vat_amount = cart_item_result.get('vat_amount', Decimal('0.00'))
+                gross_amount = cart_item_result.get('gross_amount', net_amount)
+                rule_version = rules_result.get('rule_version')
+
+                # Add to result items
+                item_result = {
+                    'cart_item_id': cart_item.id,
+                    'net_amount': net_amount,
+                    'vat_amount': vat_amount,
+                    'gross_amount': gross_amount,
+                    'vat_region': vat_region,
+                    'vat_rate': vat_rate
+                }
+                result['items'].append(item_result)
+
+                # Update totals
+                result['total_net_amount'] += net_amount
+                result['total_vat_amount'] += vat_amount
+                result['total_gross_amount'] += gross_amount
+
+                # Track VAT by region
+                if vat_region not in vat_by_region:
+                    vat_by_region[vat_region] = {
+                        'region': vat_region,
+                        'rate': f"{float(vat_rate) * 100:.0f}%",
+                        'amount': Decimal('0.00'),
+                        'item_count': 0
+                    }
+                vat_by_region[vat_region]['amount'] += vat_amount
+                vat_by_region[vat_region]['item_count'] += 1
+
+                # Update CartItem fields if requested
+                if update_items:
+                    cart_item.vat_region = vat_region
+                    cart_item.vat_rate = vat_rate
+                    cart_item.vat_amount = vat_amount
+                    cart_item.gross_amount = gross_amount
+                    cart_item.vat_calculated_at = timezone.now()
+                    if rule_version:
+                        cart_item.vat_rule_version = rule_version
+                    cart_item.save(update_fields=[
+                        'vat_region', 'vat_rate', 'vat_amount', 'gross_amount',
+                        'vat_calculated_at', 'vat_rule_version'
+                    ])
+
+            # Build VAT breakdown
+            result['vat_breakdown'] = list(vat_by_region.values())
+
+            # Update Cart timestamp and clear error flags if successful
+            if update_items:
+                self.vat_last_calculated_at = timezone.now()
+                self.vat_calculation_error = False
+                self.vat_calculation_error_message = None
+                self.save(update_fields=['vat_last_calculated_at', 'vat_calculation_error', 'vat_calculation_error_message'])
+
+        except Exception as e:
+            logger.error(f"VAT calculation failed for cart {self.id}: {str(e)}")
+
+            # Set error result
+            result['success'] = False
+            result['error'] = str(e)
+
+            # Fallback: Set all items to 0% VAT (ROW)
+            if update_items:
+                for cart_item in cart_items:
+                    net_amount = (cart_item.actual_price or Decimal('0.00')) * cart_item.quantity
+                    cart_item.vat_region = 'ROW'
+                    cart_item.vat_rate = Decimal('0.0000')
+                    cart_item.vat_amount = Decimal('0.00')
+                    cart_item.gross_amount = net_amount
+                    cart_item.vat_calculated_at = timezone.now()
+                    cart_item.save(update_fields=[
+                        'vat_region', 'vat_rate', 'vat_amount', 'gross_amount', 'vat_calculated_at'
+                    ])
+
+                # Set Cart error flags
+                self.vat_calculation_error = True
+                self.vat_calculation_error_message = str(e)
+                self.vat_last_calculated_at = timezone.now()
+                self.save(update_fields=['vat_calculation_error', 'vat_calculation_error_message', 'vat_last_calculated_at'])
+
+        return result
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, related_name="items", on_delete=models.CASCADE)
@@ -68,6 +341,45 @@ class CartItem(models.Model):
     metadata = models.JSONField(default=dict, blank=True, help_text="Additional product-specific data (e.g., tutorial choices, variation IDs)")
     added_at = models.DateTimeField(auto_now_add=True)
 
+    # Phase 4: VAT calculation fields
+    vat_region = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        help_text="Regional VAT classification (UK, IE, EU, SA, ROW)"
+    )
+    vat_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="VAT rate applied (e.g., 0.2000 for 20%)"
+    )
+    vat_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Calculated VAT amount"
+    )
+    gross_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Total including VAT (net + VAT)"
+    )
+    vat_calculated_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp of last VAT calculation"
+    )
+    vat_rule_version = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Version of rule that calculated VAT"
+    )
+
     class Meta:
         db_table = 'acted_cart_items'
         verbose_name = 'Cart Item'
@@ -85,7 +397,35 @@ class CartItem(models.Model):
             models.CheckConstraint(
                 check=~(models.Q(product__isnull=False) & models.Q(marking_voucher__isnull=False)),
                 name='cart_item_not_both_product_and_voucher'
+            ),
+            # Phase 4: VAT validation constraints
+            models.CheckConstraint(
+                check=(
+                    models.Q(vat_rate__isnull=True) |
+                    (models.Q(vat_rate__gte=0.0000) & models.Q(vat_rate__lte=1.0000))
+                ),
+                name='cart_item_vat_rate_range'
+            ),
+            models.CheckConstraint(
+                check=(
+                    models.Q(vat_amount__isnull=True) |
+                    models.Q(vat_amount__gte=0)
+                ),
+                name='cart_item_vat_amount_non_negative'
+            ),
+            models.CheckConstraint(
+                check=(
+                    models.Q(gross_amount__isnull=True) |
+                    models.Q(gross_amount__gte=0)
+                ),
+                name='cart_item_gross_amount_non_negative'
             )
+        ]
+        indexes = [
+            # Phase 4: VAT indexes for query optimization
+            models.Index(fields=['vat_region'], name='idx_cartitem_vat_region'),
+            models.Index(fields=['vat_calculated_at'], name='idx_cartitem_vat_calc_at'),
+            models.Index(fields=['cart', 'vat_region'], name='idx_cartitem_cart_vat_region'),
         ]
 
     def __str__(self):

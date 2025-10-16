@@ -8,7 +8,8 @@ Follows TDD methodology - tests in vat/tests/test_context_builder.py
 from decimal import Decimal
 from datetime import date
 from django.db import models
-from .product_classifier import classify_product
+# PHASE 1 CLEANUP: Removed import from deleted product_classifier.py
+# TODO Phase 2: Product classification will be handled by Rules Engine
 
 
 def build_vat_context(user, cart, client_ip=None):
@@ -23,7 +24,8 @@ def build_vat_context(user, cart, client_ip=None):
     Returns:
         dict: Context structure with user, cart, and settings sections
     """
-    from country.vat_rates import map_country_to_region
+    # PHASE 1 CLEANUP: Removed import from legacy country.vat_rates
+    # TODO Phase 2: Region lookup will be handled by Rules Engine custom functions
     from .ip_geolocation import get_region_from_ip, get_country_from_ip
 
     # Build user section
@@ -84,9 +86,11 @@ def build_vat_context(user, cart, client_ip=None):
                     if postcode:
                         address['postcode'] = postcode
 
-            # Map country to region using Phase 1 function
+            # PHASE 1 CLEANUP: Removed legacy map_country_to_region() call
+            # TODO Phase 2: Region will be determined by Rules Engine lookup_region() custom function
+            # For now, region remains None and will be set by Rules Engine at entry points
             if country_code:
-                region = map_country_to_region(country_code)
+                region = None  # Will be set by Rules Engine
 
         user_context = {
             'id': user.id,
@@ -153,13 +157,15 @@ def build_item_context(cart_item):
         elif hasattr(product, 'code'):
             product_code = product.code
 
-    # Get classification from metadata (if provided) or classify from product_code
+    # Get classification from metadata (if provided)
+    # PHASE 1 CLEANUP: Removed classify_product() call (function deleted)
+    # TODO Phase 2: Classification will be handled by Rules Engine
     classification = None
     if cart_item.metadata and 'classification' in cart_item.metadata:
         classification = cart_item.metadata['classification']
     else:
-        # Classify based on product_code
-        classification = classify_product({'product_code': product_code} if product_code else None)
+        # Classification will be determined by Rules Engine based on product_code
+        classification = {'product_type': 'unknown', 'metadata': {}}
 
     # Calculate net amount using actual_price (not price)
     actual_price = cart_item.actual_price if cart_item.actual_price is not None else Decimal('0.00')

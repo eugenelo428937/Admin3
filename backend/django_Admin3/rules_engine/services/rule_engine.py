@@ -43,7 +43,7 @@ class RuleRepository:
             rules = list(ActedRule.objects.filter(
                 entry_point=entry_point,
                 active=True
-            ).order_by('priority', 'created_at'))
+            ).order_by('-priority', '-created_at'))
             
             cache.set(cache_key, rules, timeout=self.cache_timeout)
             logger.debug(f"Cached {len(rules)} rules for {entry_point}")
@@ -483,7 +483,73 @@ class ActionDispatcher:
                     "success": False,
                     "error": result.get('error', 'Update action failed')
                 }
-        
+
+        elif action_type == "call_function":
+            # Handle custom function calls
+            function_name = action.get("function")
+            args = action.get("args", [])
+            store_result_in = action.get("store_result_in")
+
+            try:
+                # Import FUNCTION_REGISTRY
+                from ..custom_functions import FUNCTION_REGISTRY
+
+                # Get the function from the registry
+                if function_name not in FUNCTION_REGISTRY:
+                    logger.error(f"Function '{function_name}' not found in FUNCTION_REGISTRY")
+                    return {
+                        "type": "call_function",
+                        "success": False,
+                        "error": f"Function '{function_name}' not found"
+                    }
+
+                func = FUNCTION_REGISTRY[function_name]
+
+                # Resolve args using JSONLogic
+                evaluator = ConditionEvaluator()
+                resolved_args = []
+                for arg in args:
+                    if isinstance(arg, dict) and "var" in arg:
+                        # This is a variable reference - resolve it
+                        resolved_arg = evaluator._evaluate_jsonlogic(arg, context)
+                    else:
+                        resolved_arg = arg
+                    resolved_args.append(resolved_arg)
+
+                # Call the function
+                result = func(*resolved_args)
+
+                # Store result in context if store_result_in is specified
+                if store_result_in:
+                    keys = store_result_in.split('.')
+                    current = context
+
+                    # Navigate to parent, creating nested dicts as needed
+                    for key in keys[:-1]:
+                        if key not in current:
+                            current[key] = {}
+                        current = current[key]
+
+                    # Set the final value
+                    current[keys[-1]] = result
+                    logger.debug(f"Stored function result in context: {store_result_in} = {result}")
+
+                return {
+                    "type": "call_function",
+                    "success": True,
+                    "function": function_name,
+                    "result": result,
+                    "stored_in": store_result_in
+                }
+
+            except Exception as e:
+                logger.error(f"Error calling function '{function_name}': {e}")
+                return {
+                    "type": "call_function",
+                    "success": False,
+                    "error": str(e)
+                }
+
         else:
             logger.warning(f"Unknown action type: {action_type}")
             return {
@@ -495,21 +561,38 @@ class ActionDispatcher:
 
 class ExecutionStore:
     """Store execution audit trail"""
-    
-    def store_execution(self, rule_id: str, entry_point: str, context: Dict[str, Any], 
-                       actions_result: List[Dict[str, Any]], outcome: str, 
+
+    def store_execution(self, rule_id: str, entry_point: str, context: Dict[str, Any],
+                       actions_result: List[Dict[str, Any]], outcome: str,
                        execution_time_ms: float, error_message: str = "") -> str:
         """Store rule execution record"""
         execution_seq_no = f"exec_{int(time.time())}_{uuid.uuid4().hex[:8]}"
-        
-        
+
         try:
+            # Convert Decimal objects to strings for JSON serialization
+            from decimal import Decimal
+
+            def convert_decimals(obj):
+                """Recursively convert Decimal objects to strings"""
+                if isinstance(obj, Decimal):
+                    return str(obj)
+                elif isinstance(obj, dict):
+                    return {k: convert_decimals(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [convert_decimals(item) for item in obj]
+                else:
+                    return obj
+
+            # Convert context and actions_result
+            serializable_context = convert_decimals(context)
+            serializable_actions = convert_decimals(actions_result)
+
             ActedRuleExecution.objects.create(
                 execution_seq_no=execution_seq_no,
                 rule_code=rule_id,
                 entry_point=entry_point,
-                context_snapshot=context,
-                actions_result=actions_result,
+                context_snapshot=serializable_context,
+                actions_result=serializable_actions,
                 outcome=outcome,
                 execution_time_ms=execution_time_ms,
                 error_message=error_message
@@ -749,7 +832,11 @@ class RuleEngine:
                 "context_updates": context_updates,
                 "updates": update_results,
             }
-            
+
+            # Merge the modified context into the result
+            # This allows tests and callers to access enriched context fields
+            result.update(context)
+
             if blocked:
                 result['error'] = 'Required acknowledgments not provided'
 

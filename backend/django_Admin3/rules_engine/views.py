@@ -396,89 +396,90 @@ class RulesEngineViewSet(viewsets.ViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    @action(detail=False, methods=['post'], url_path='calculate-vat', permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['post'], url_path='calculate-vat', permission_classes=[AllowAny])
     def calculate_vat(self, request):
-        """POST /rules/calculate-vat/ - Calculate VAT using rules engine"""
+        """
+        POST /api/rules/engine/calculate-vat/ - Calculate VAT using new VAT service
+
+        Request body:
+        {
+            "country_code": "GB",  # Required: ISO 3166-1 alpha-2 country code
+            "net_amount": "100.00",  # Optional: For single amount calculation
+            "cart_items": [  # Optional: For cart calculation
+                {"net_price": "50.00", "quantity": 2},
+                {"net_price": "30.00", "quantity": 1}
+            ]
+        }
+        """
         try:
-            # Get parameters from request
-            cart_items_data = request.data.get('cart_items', [])
-            user_country = request.data.get('user_country', 'GB')
-            customer_type = request.data.get('customer_type', 'individual')
+            from utils.services.vat_service import VATCalculationService
+            from decimal import Decimal
+            from django.core.exceptions import ValidationError
 
-            # Get user's actual cart items if no specific items provided
-            if not cart_items_data:
-                from cart.models import Cart
+            # Get country code from request
+            country_code = request.data.get('country_code')
+
+            if not country_code:
+                return Response({
+                    'error': 'country_code is required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Initialize VAT service
+            vat_service = VATCalculationService()
+
+            # Check if cart items or single amount
+            cart_items = request.data.get('cart_items')
+            net_amount = request.data.get('net_amount')
+
+            if cart_items is not None:
+                # Calculate VAT for cart items
+                result = vat_service.calculate_vat_for_cart(
+                    country_code=country_code,
+                    cart_items=cart_items
+                )
+            elif net_amount is not None:
+                # Calculate VAT for single amount
                 try:
-                    cart = Cart.objects.get(user=request.user)
-                    cart_items = cart.items.all().select_related('product', 'product__product')
-                except Cart.DoesNotExist:
+                    net_amount_decimal = Decimal(str(net_amount))
+                except (ValueError, TypeError):
                     return Response({
-                        'error': 'No cart found for user and no cart items provided'
+                        'error': 'Invalid net_amount format'
                     }, status=status.HTTP_400_BAD_REQUEST)
+
+                result = vat_service.calculate_vat(
+                    country_code=country_code,
+                    net_amount=net_amount_decimal
+                )
             else:
-                # If specific cart items provided, get them from database
-                from cart.models import CartItem
-                cart_item_ids = [item.get('id')
-                                 for item in cart_items_data if item.get('id')]
-                cart_items = CartItem.objects.filter(
-                    id__in=cart_item_ids).select_related('product', 'product__product')
+                return Response({
+                    'error': 'Either net_amount or cart_items is required'
+                }, status=status.HTTP_400_BAD_REQUEST)
 
-            # Prepare context for VAT calculation
-            context = {
-                'user_country': user_country,
-                'customer_type': customer_type,
-                'is_business_customer': customer_type == 'business'
-            }
+            # Convert Decimal values to strings for JSON serialization
+            def decimal_to_str(obj):
+                if isinstance(obj, Decimal):
+                    return str(obj)
+                elif isinstance(obj, dict):
+                    return {k: decimal_to_str(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [decimal_to_str(item) for item in obj]
+                return obj
 
-            # Evaluate checkout rules to get calculations
-            result = evaluate_checkout_rules(
-                request.user, cart_items, **context)
+            result = decimal_to_str(result)
 
-            # Extract VAT calculations from the results
-            vat_calculations = []
-            total_calculations = {
-                'subtotal': 0,
-                'total_vat': 0,
-                'total_gross': 0,
-                'calculations_applied': []
-            }
+            return Response(result, status=status.HTTP_200_OK)
 
-            if result.get('calculations'):
-                for calc in result['calculations']:
-                    if calc.get('calculation_type') == 'vat':
-                        vat_calculations.append(calc)
-                        calc_result = calc.get('result', {})
-
-                        # Aggregate totals
-                        total_calculations['subtotal'] += calc_result.get(
-                            'total_net', 0)
-                        total_calculations['total_vat'] += calc_result.get(
-                            'total_vat', 0)
-                        total_calculations['total_gross'] += calc_result.get(
-                            'total_gross', 0)
-                        total_calculations['calculations_applied'].append({
-                            'rule_id': calc.get('rule_id'),
-                            'rule_name': calc.get('rule_name'),
-                            'calculation_type': calc.get('calculation_type'),
-                            'function_name': calc.get('result', {}).get('function_name'),
-                            'applied_at': calc.get('applied_at')
-                        })
-
+        except ValidationError as e:
+            logger.warning(f"VAT calculation validation error: {str(e)}")
             return Response({
-                'success': True,
-                'vat_calculations': vat_calculations,
-                'totals': total_calculations,
-                'user_country': user_country,
-                'customer_type': customer_type,
-                'cart_item_count': len(cart_items)
-            })
-
+                'error': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.error(f"Error calculating VAT: {str(e)}")
-            return Response(
-                {'error': 'Internal server error', 'details': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({
+                'error': 'Internal server error',
+                'details': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def _get_client_ip(self, request):
         """Get client IP address"""
