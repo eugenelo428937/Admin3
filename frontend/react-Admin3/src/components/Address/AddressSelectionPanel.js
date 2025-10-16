@@ -63,7 +63,7 @@ const AddressSelectionPanel = ({
         addressData: addressData
       });
     }
-  }, [selectedAddressType, userProfile?.home_address, userProfile?.work_address]);
+  }, [selectedAddressType, userProfile?.home_address, userProfile?.work_address, onAddressChange]);
 
   // Handle dropdown selection change
   const handleAddressTypeChange = (event) => {
