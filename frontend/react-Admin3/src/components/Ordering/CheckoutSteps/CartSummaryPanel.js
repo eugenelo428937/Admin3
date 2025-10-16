@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Button } from 'react-bootstrap';
 import { generateProductCode } from '../../../utils/productCodeGenerator';
-import VATBreakdown from '../../Common/VATBreakdown';
+// TODO Phase 8: import VATBreakdown from '../../Common/VATBreakdown';
 
 const CartSummaryPanel = ({
   cartItems = [],
@@ -88,12 +88,14 @@ const CartSummaryPanel = ({
         {/* Order Summary */}
         {vatCalculations && (
           <div className="border-top pt-2">
+            {/* TODO Phase 8: VATBreakdown component
             <VATBreakdown
               vatCalculations={vatCalculations}
               fees={vatCalculations.fees}
               variant="inline"
               className=""
             />
+            */}
           </div>
         )}
       </Card.Body>
