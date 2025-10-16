@@ -26,10 +26,10 @@ urlpatterns = [
     path('api/students/', include('students.urls')),
     path('api/exam-sessions/', include('exam_sessions.urls')),
     # path('api/subjects/', include('subjects.urls')),
-    # Include exam_sessions_subjects_products FIRST for current/list/ endpoints
-    path('api/products/', include('exam_sessions_subjects_products.urls')),
-    # Then include products for other product endpoints
+    # Include products for navigation endpoints (navbar-product-groups, distance-learning-dropdown, etc.)
     path('api/products/', include('products.urls')),
+    # Include exam_sessions_subjects_products under /current/ prefix
+    path('api/products/current/', include('exam_sessions_subjects_products.urls')),
     # path('api/', include('products.urls')),
     path('api/', include('subjects.urls')),
     path('api/exam-sessions-subjects/', include('exam_sessions_subjects.urls')),
