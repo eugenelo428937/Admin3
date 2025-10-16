@@ -225,16 +225,22 @@ const CheckoutSteps = ({ onComplete }) => {
       setRulesMessages([]);
 
       try {
+        // Sanitize cart items to ensure actual_price is never null (schema requirement)
+        const sanitizedItems = cartItems.map(item => ({
+          ...item,
+          actual_price: item.actual_price || 0
+        }));
+
         // Calculate total, treating null/undefined prices as 0
-        const total = cartItems.reduce((sum, item) => {
-          const price = parseFloat(item.actual_price || 0);
+        const total = sanitizedItems.reduce((sum, item) => {
+          const price = parseFloat(item.actual_price);
           return sum + (price * item.quantity);
         }, 0);
 
         const context = {
           cart: {
             id: cartData.id,
-            items: cartItems,
+            items: sanitizedItems,
             total: total,
             user: cartData.user || null,
             session_key: cartData.session_key || null,

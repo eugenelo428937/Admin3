@@ -21,6 +21,12 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
       setError('');
 
       // Build context for rules engine
+      // Sanitize cart items to ensure actual_price is never null
+      const sanitizedItems = (cartData?.items || []).map(item => ({
+        ...item,
+        actual_price: item.actual_price || 0
+      }));
+
       const context = {
         user: {
           id: isAuthenticated && user ? user.id : 'anonymous',
@@ -29,7 +35,7 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
         },
         cart: {
           id: cartData?.id || null,
-          items: cartData?.items || [],
+          items: sanitizedItems,
           has_digital: cartData?.has_digital || false,
           has_tutorial: cartData?.has_tutorial || false,
           has_material: cartData?.has_material || false,
