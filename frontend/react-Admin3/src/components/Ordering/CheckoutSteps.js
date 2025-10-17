@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Button, Alert } from 'react-bootstrap';
+import { Grid } from '@mui/material';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../hooks/useAuth';
 import httpService from '../../services/httpService';
@@ -80,9 +81,6 @@ const CheckoutSteps = ({ onComplete }) => {
   // Acknowledgment state for blocking validation
   const [acknowledgmentStates, setAcknowledgmentStates] = useState({});
   const [requiredAcknowledgments, setRequiredAcknowledgments] = useState([]);
-
-  // Cart summary panel state
-  const [isCartSummaryCollapsed, setIsCartSummaryCollapsed] = useState(true);
 
   useEffect(() => {
     // Check if we're in development environment
@@ -306,18 +304,27 @@ const CheckoutSteps = ({ onComplete }) => {
             total + parseFloat(fee.amount || 0), 0
           ) : 0;
 
+        // Phase 5: Backend returns {totals: {net, vat, gross}, region, items}
+        // Map to frontend expected field names for compatibility
+        const net = parseFloat(backendVatCalcs.totals?.net || 0);
+        const vat = parseFloat(backendVatCalcs.totals?.vat || 0);
+        const gross = parseFloat(backendVatCalcs.totals?.gross || 0);
+
+        // Calculate effective VAT rate (vat / net * 100)
+        const effectiveVatRate = net > 0 ? (vat / net) : 0;
+
         // Use backend VAT totals and add fees to gross total
         const result = {
           success: true,
           totals: {
-            subtotal: backendVatCalcs.totals?.subtotal || 0,
-            total_vat: backendVatCalcs.totals?.total_vat || 0,
+            subtotal: net,              // Map: net -> subtotal
+            total_vat: vat,             // Map: vat -> total_vat
             total_fees: totalFees,
-            total_gross: (backendVatCalcs.totals?.total_gross || 0) + totalFees,
-            effective_vat_rate: backendVatCalcs.totals?.effective_vat_rate || 0
+            total_gross: gross + totalFees,  // Map: gross -> total_gross (+ fees)
+            effective_vat_rate: effectiveVatRate
           },
           fees: cartData?.fees || [],
-          region_info: backendVatCalcs.region_info || {},
+          region_info: { region: backendVatCalcs.region || 'UNKNOWN' },
           vat_calculations: backendVatCalcs.items || []
         };
 
@@ -550,111 +557,114 @@ const CheckoutSteps = ({ onComplete }) => {
   };
 
   return (
-    <div className="checkout-page-wrapper">
-      {error && <Alert variant="danger">{error}</Alert>}
-      {success && <Alert variant="success">{success}</Alert>}
-      {vatLoading && <Alert variant="info">Calculating VAT...</Alert>}
-      {validation.validationMessage && !error && (
-        <Alert variant="warning">{validation.validationMessage}</Alert>
-      )}
+     <div className="checkout-page-wrapper">
+        {error && <Alert variant="danger">{error}</Alert>}
+        {success && <Alert variant="success">{success}</Alert>}
+        {vatLoading && <Alert variant="info">Calculating VAT...</Alert>}
+        {validation.validationMessage && !error && (
+           <Alert variant="warning">{validation.validationMessage}</Alert>
+        )}
 
-      {/* Step Progress */}
-      <div className="d-flex justify-content-between mb-4">
-        {steps.map((step, index) => (
-          <div
-            key={index}
-            className={`flex-fill text-center ${
-              index + 1 === currentStep ? 'text-primary' :
-              index + 1 < currentStep ? 'text-success' : 'text-muted'
-            }`}
-          >
-            <div className={`rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center ${
-              index + 1 === currentStep ? 'bg-primary text-white' :
-              index + 1 < currentStep ? 'bg-success text-white' : 'bg-light'
-            }`} style={{ width: '40px', height: '40px' }}>
-              {index + 1 < currentStep ? '✓' : index + 1}
-            </div>
-            <h6 className="mb-1">{step.title}</h6>
-            <small>{step.description}</small>
-          </div>
-        ))}
-      </div>
-
-      <Card>
-        <Card.Body>
-          {currentStep === 1 ? (
-            // Step 1: Show full cart review
-            renderStepContent()
-          ) : (
-            // Steps 2+: Show cart summary panel + step content layout
-            <div className="row g-3">
-              <div className={`col-12 col-lg-${isCartSummaryCollapsed ? '10' : '8'} transition-col checkout-step-content-mobile`}>
-                <div className="checkout-step-content">
-                  {renderStepContent()}
-                </div>
-              </div>
-              <div className={`col-12 col-lg-${isCartSummaryCollapsed ? '2' : '4'} transition-col checkout-cart-summary-mobile`}>
-                <div className="cart-summary-panel">
-                  <CartSummaryPanel
-                    cartItems={cartItems}
-                    vatCalculations={vatCalculations}
-                    isCollapsed={isCartSummaryCollapsed}
-                    onToggleCollapse={setIsCartSummaryCollapsed}
-                    paymentMethod={paymentMethod}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-        </Card.Body>
-        <Card.Footer>
-          <div className="d-flex justify-content-between">
-            <Button
-              variant="outline-secondary"
-              onClick={handleBack}
-              disabled={currentStep === 1}
-            >
-              Back
-            </Button>
-
-            {currentStep < steps.length - 1 ? (
-              <Button
-                variant="primary"
-                onClick={handleNext}
-                disabled={
-                  (currentStep === 1 && !isStep1Valid()) ||
-                  (currentStep === 2 && !generalTermsAccepted)
-                }
+        {/* Step Progress */}
+        <div className="d-flex justify-content-between mb-4">
+           {steps.map((step, index) => (
+              <div
+                 key={index}
+                 className={`flex-fill text-center ${
+                    index + 1 === currentStep
+                       ? "text-primary"
+                       : index + 1 < currentStep
+                       ? "text-success"
+                       : "text-muted"
+                 }`}
               >
-                {currentStep === 1 ? 'Continue to Terms' : 'Next'}
-              </Button>
-            ) : (
-              <Button
-                variant="success"
-                onClick={handleComplete}
-                disabled={
-                  loading ||
-                  !generalTermsAccepted ||
-                  validation.isValidating
-                }
-              >
-                {loading ? 'Processing...' : validation.isValidating ? 'Validating...' : 'Complete Order'}
-              </Button>
-            )}
-          </div>
-        </Card.Footer>
-      </Card>
+                 <div
+                    className={`rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center ${
+                       index + 1 === currentStep
+                          ? "bg-primary text-white"
+                          : index + 1 < currentStep
+                          ? "bg-success text-white"
+                          : "bg-light"
+                    }`}
+                    style={{ width: "40px", height: "40px" }}
+                 >
+                    {index + 1 < currentStep ? "✓" : index + 1}
+                 </div>
+                 <h6 className="mb-1">{step.title}</h6>
+                 <small>{step.description}</small>
+              </div>
+           ))}
+        </div>
 
-      {/* Rules Engine Modal for displaying modal messages */}
-      <RulesEngineModal
-        open={showRulesModal}
-        onClose={() => setShowRulesModal(false)}
-        messages={modalMessages}
-        closeButtonText="I Understand"
-        backdrop="static"
-        disableEscapeKeyDown={true}
-      />
-    </div>
+        <Card>
+           <Card.Body className="p-left__2xl p-right__2xl">
+              {/* Two-column grid layout for all steps */}
+              <Grid container spacing={3} className="justify-content-center">
+                 {/* Left column: Step content (lg:8, md:12) */}
+                 <Grid size={{ md: 12, lg: 8 }}>{renderStepContent()}</Grid>
+
+                 {/* Right column: Cart Summary Panel (lg:4, md:12) */}
+                 <Grid size={{ md: 12, lg: 4 }}>
+                    <CartSummaryPanel
+                       cartItems={cartItems}
+                       vatCalculations={vatCalculations}
+                       paymentMethod={paymentMethod}
+                    />
+                 </Grid>
+              </Grid>
+           </Card.Body>
+           <Card.Footer>
+              <div className="d-flex justify-content-between">
+                 <Button
+                    variant="outline-secondary"
+                    onClick={handleBack}
+                    disabled={currentStep === 1}
+                 >
+                    Back
+                 </Button>
+
+                 {currentStep < steps.length - 1 ? (
+                    <Button
+                       variant="primary"
+                       onClick={handleNext}
+                       disabled={
+                          (currentStep === 1 && !isStep1Valid()) ||
+                          (currentStep === 2 && !generalTermsAccepted)
+                       }
+                    >
+                       {currentStep === 1 ? "Continue to Terms" : "Next"}
+                    </Button>
+                 ) : (
+                    <Button
+                       variant="success"
+                       onClick={handleComplete}
+                       disabled={
+                          loading ||
+                          !generalTermsAccepted ||
+                          validation.isValidating
+                       }
+                    >
+                       {loading
+                          ? "Processing..."
+                          : validation.isValidating
+                          ? "Validating..."
+                          : "Complete Order"}
+                    </Button>
+                 )}
+              </div>
+           </Card.Footer>
+        </Card>
+
+        {/* Rules Engine Modal for displaying modal messages */}
+        <RulesEngineModal
+           open={showRulesModal}
+           onClose={() => setShowRulesModal(false)}
+           messages={modalMessages}
+           closeButtonText="I Understand"
+           backdrop="static"
+           disableEscapeKeyDown={true}
+        />
+     </div>
   );
 };
 

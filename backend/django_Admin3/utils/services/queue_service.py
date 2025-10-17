@@ -102,7 +102,6 @@ class EmailQueueService:
             # Serialize context to ensure JSON compatibility
             try:
                 serialized_context = json.loads(json.dumps(context, default=datetime_serializer))
-                logger.debug(f"Successfully serialized context for {template_name}")
             except Exception as serialization_error:
                 logger.error(f"Failed to serialize context: {str(serialization_error)}")
                 # Try to clean the context by removing non-serializable items
@@ -286,15 +285,7 @@ class EmailQueueService:
             
             # Get attachments for the template
             attachments = self._get_template_attachments(queue_item.template, queue_item.email_context)
-            
-            # Debug logging for template resolution
-            if queue_item.template:
-                logger.debug(f"DEBUG: Processing template '{queue_item.template.name}' (ID: {queue_item.template.id})")
-                logger.debug(f"DEBUG: Use master template: {queue_item.template.use_master_template}")
-                logger.debug(f"DEBUG: Content template name: {queue_item.template.content_template_name}")
-            else:
-                logger.debug(f"DEBUG: No template configuration found, using default template")
-            
+
             # Initialize response data
             response_data = {
                 'success': False,
@@ -308,14 +299,12 @@ class EmailQueueService:
             try:
                 if queue_item.template and queue_item.template.use_master_template:
                     # Use master template system
-                    logger.debug(f"DEBUG: Using MASTER TEMPLATE system for {queue_item.template.name}")
                     response_data = self._send_with_master_template(
                         queue_item, to_email, attachments
                     )
                 else:
                     # Use regular template system
                     template_name = queue_item.template.content_template_name if queue_item.template else 'default'
-                    logger.debug(f"DEBUG: Using REGULAR TEMPLATE system with template: {template_name}")
                     response_data = self.email_service._send_mjml_email(
                         template_name=template_name,
                         context=queue_item.email_context,
@@ -406,15 +395,7 @@ class EmailQueueService:
             
             if queue_item.template.name in template_map:
                 content_template = template_map[queue_item.template.name]
-                logger.debug(f"DEBUG: Master template mapping: {queue_item.template.name} -> {content_template}")
-                
-                # Show full template path for debugging
-                import os
-                from django.conf import settings
-                content_template_path = os.path.join(settings.BASE_DIR, 'utils', 'templates', 'emails', 'mjml', f'{content_template}.mjml')
-                logger.debug(f"DEBUG: Content template file path: {content_template_path}")
-                logger.debug(f"DEBUG: Content template file exists: {os.path.exists(content_template_path)}")
-                
+
                 # Render using master template
                 mjml_content = self.email_service._render_email_with_master_template(
                     content_template=content_template,
@@ -435,7 +416,6 @@ class EmailQueueService:
                 )
             else:
                 # Use regular template with detailed response
-                logger.debug(f"DEBUG: Template {queue_item.template.name} not in master template map, using regular template")
                 return self.email_service._send_mjml_email(
                     template_name=queue_item.template.content_template_name,
                     context=queue_item.email_context,
@@ -533,18 +513,14 @@ class EmailQueueService:
         """Check if an attachment should be included based on conditions."""
         # If no conditions, always include
         if not template_attachment.include_condition:
-            logger.debug(f"No conditions for attachment {template_attachment.attachment.name}, including by default")
             return True
-        
+
         try:
             conditions = template_attachment.include_condition
             condition_type = conditions.get('type', 'no_condition')
-            
-            logger.debug(f"Evaluating attachment condition for {template_attachment.attachment.name}: {condition_type}")
-            
+
             # Always include condition
             if condition_type == 'always_include':
-                logger.debug(f"Always include condition met for {template_attachment.attachment.name}")
                 return True
             
             # Product type-based condition
@@ -555,9 +531,8 @@ class EmailQueueService:
                 # Get order items from context
                 items = context.get('items', [])
                 if not items:
-                    logger.debug(f"No items in context for product type condition")
                     return False
-                
+
                 # Check product types in order items
                 found_types = []
                 for item in items:
@@ -589,13 +564,10 @@ class EmailQueueService:
                     
                     if product_type:
                         found_types.append(product_type.lower())
-                        logger.debug(f"Found product type: {product_type} for item")
-                
+
                 # Normalize required types to lowercase
                 required_product_types = [t.lower() for t in required_product_types]
-                
-                logger.debug(f"Required types: {required_product_types}, Found types: {found_types}")
-                
+
                 # Check logic
                 if logic == 'any':
                     # Include if ANY product matches required types
@@ -610,10 +582,8 @@ class EmailQueueService:
             else:
                 for key, expected_value in conditions.items():
                     if key not in context or context[key] != expected_value:
-                        logger.debug(f"Simple condition not met: {key}={context.get(key)} != {expected_value}")
                         return False
-                
-                logger.debug(f"Simple conditions met for {template_attachment.attachment.name}")
+
                 return True
             
         except Exception as e:

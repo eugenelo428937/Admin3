@@ -15,7 +15,7 @@ from vat.models import VATAudit
 logger = logging.getLogger(__name__)
 
 # Constants
-DEFAULT_ENTRY_POINT = 'calculate_vat'
+DEFAULT_ENTRY_POINT = 'cart_calculate_vat'  # FIXED: Changed from 'calculate_vat' to match actual Rules Engine entry point
 DEFAULT_COUNTRY = 'GB'
 DEFAULT_PRODUCT_TYPE = 'Digital'
 STATUS_CALCULATED = 'calculated'
@@ -47,9 +47,12 @@ class VATOrchestrator:
         """
         Execute VAT calculation for a cart through Rules Engine.
 
+        NOTE: Rules Engine processes ONE item at a time. This method loops through
+        cart items and calls Rules Engine for each item individually.
+
         Args:
             cart: Cart instance to calculate VAT for
-            entry_point: Rules Engine entry point (default: 'calculate_vat')
+            entry_point: Rules Engine entry point (default: 'cart_calculate_vat')
 
         Returns:
             dict: VAT calculation result with structure:
@@ -70,82 +73,149 @@ class VATOrchestrator:
             Exception: If Rules Engine execution fails
         """
         try:
-            # Build context for Rules Engine
-            context = self._build_context(cart)
-
-            # Execute Rules Engine
             logger.info(f"Executing VAT calculation for cart {cart.id} at entry point '{entry_point}'")
-            results = rule_engine.execute(entry_point, context)
 
-            # Check for errors
-            if not results.get('success', False):
-                error_msg = results.get('error', 'Unknown error')
-                logger.error(f"Rules Engine execution failed: {error_msg}")
-                raise Exception(f"Rules Engine execution failed: {error_msg}")
+            # Build user context once (shared across all items)
+            user_context = self._build_user_context(cart)
 
-            # Aggregate totals from results
-            aggregated = self._aggregate_totals(results)
+            # Process each cart item individually through Rules Engine
+            processed_items = []
+            all_results = []
+
+            for cart_item in cart.items.all():
+                # Build context for this specific item
+                item_context = self._build_item_context(cart_item, user_context)
+
+                # Execute Rules Engine for this item
+                logger.debug(f"Processing cart item {cart_item.id}")
+                result = rule_engine.execute(entry_point, item_context)
+
+                # Check for errors
+                if not result.get('success', False):
+                    error_msg = result.get('error', 'Unknown error')
+                    logger.error(f"Rules Engine execution failed for item {cart_item.id}: {error_msg}")
+                    raise Exception(f"Rules Engine execution failed: {error_msg}")
+
+                # Extract the processed cart_item from results (at top level, not in context)
+                processed_item = result.get('cart_item', {})
+                if processed_item:
+                    processed_items.append(processed_item)
+
+                all_results.append(result)
+
+            # Aggregate totals from all processed items
+            aggregated = self._aggregate_item_totals(processed_items)
 
             # Store results in cart JSONB field
-            self._store_vat_result(cart, aggregated, results)
+            self._store_vat_result(cart, aggregated, all_results)
 
             # Create audit record
-            self._create_audit_record(cart, context, results)
+            self._create_audit_record(cart, {'user': user_context, 'items': processed_items}, all_results)
 
             # Return formatted result
-            return self._build_calculation_result(aggregated, results)
+            return self._build_calculation_result(aggregated, all_results, user_context)
 
         except Exception as e:
             logger.error(f"VAT calculation failed for cart {cart.id}: {str(e)}")
             raise
 
-    def _build_context(self, cart) -> Dict[str, Any]:
+    def _build_user_context(self, cart) -> Dict[str, Any]:
         """
-        Build Rules Engine context from cart data.
+        Build user context for Rules Engine using context builder.
 
         Args:
             cart: Cart instance
 
         Returns:
-            dict: Context structure with user, cart, and settings
+            dict: User context with id and country_code (matching schema)
         """
-        # Get cart items
-        cart_items = cart.items.all()
+        from vat.context_builder import build_vat_context
 
-        # Build items array
-        items = []
-        for item in cart_items:
-            item_context = {
-                'id': str(item.id),
-                'product_type': self._get_product_type(item),
-                'actual_price': str(item.actual_price),
-                'quantity': item.quantity
-            }
-            items.append(item_context)
+        # TODO Phase 5: Pass client_ip from request for IP geolocation
+        client_ip = None
 
-        # Get user country
-        user_country = self._get_user_country(cart.user)
+        # Build comprehensive context to get user data
+        context = build_vat_context(cart.user, cart, client_ip)
+        user_data = context.get('user', {})
 
-        # Build context
-        context = {
-            'user': {
-                'id': str(cart.user.id),
-                'country': user_country
-            },
-            'cart': {
-                'id': str(cart.id),
-                'items': items
-            },
-            'settings': {
-                'vat_enabled': True
-            }
+        # Transform to match Rules Engine schema (country_code not country)
+        country = user_data.get('address', {}).get('country', DEFAULT_COUNTRY)
+
+        # Schema requires user.id to be a string (not None)
+        user_id = user_data.get('id')
+        if user_id:
+            user_id = str(user_id)
+        else:
+            user_id = 'anonymous'  # Default for anonymous users
+
+        return {
+            'id': user_id,
+            'country_code': country  # Schema requires country_code (2-letter uppercase)
         }
 
-        return context
+    def _build_item_context(self, cart_item, user_context: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Build context for a single cart item matching Rules Engine schema.
+
+        Schema expects: { user: {...}, cart_item: {...} }
+
+        Args:
+            cart_item: CartItem instance
+            user_context: Pre-built user context
+
+        Returns:
+            dict: Context for single item with user and cart_item
+        """
+        # Calculate net amount (actual_price * quantity)
+        actual_price = cart_item.actual_price if cart_item.actual_price is not None else Decimal('0.00')
+        quantity = cart_item.quantity if cart_item.quantity else 1
+        net_amount = actual_price * quantity
+
+        # Get product type
+        product_type = self._get_product_type(cart_item)
+
+        # Extract product_code from metadata
+        product_code = ''
+        if cart_item.metadata:
+            product_code = cart_item.metadata.get('productCode', '')
+
+        # Build cart_item structure matching schema
+        cart_item_context = {
+            'id': str(cart_item.id),
+            'product_type': product_type,
+            'product_code': product_code,  # Product code for rule matching (FC, PBOR, etc.)
+            'net_amount': float(net_amount),  # Schema expects number, not string
+            # vat_amount and gross_amount will be added by Rules Engine
+        }
+
+        return {
+            'user': user_context,
+            'cart_item': cart_item_context  # Schema requires cart_item (singular)
+        }
+
+    def _extract_product_type_from_classification(self, item: Dict[str, Any]) -> str:
+        """
+        Extract product type from context builder's classification structure.
+
+        Args:
+            item: Item dict from context builder with 'classification' key
+
+        Returns:
+            str: Product type (Digital, Printed, Tutorial, etc.)
+        """
+        classification = item.get('classification', {})
+        if isinstance(classification, dict):
+            product_type = classification.get('product_type', DEFAULT_PRODUCT_TYPE)
+            # Map 'unknown' to default
+            return product_type if product_type != 'unknown' else DEFAULT_PRODUCT_TYPE
+        return DEFAULT_PRODUCT_TYPE
 
     def _get_product_type(self, cart_item) -> str:
         """
         Get product type from cart item.
+
+        NOTE: Product-specific VAT rules now use product_code (FC, PBOR) instead of
+        product_type for special cases like Flash Cards and PBOR products.
 
         Args:
             cart_item: CartItem instance
@@ -153,47 +223,63 @@ class VATOrchestrator:
         Returns:
             str: Product type (Digital, Printed, Tutorial, etc.)
         """
-        # Return default if no product
-        if not cart_item.product:
-            return DEFAULT_PRODUCT_TYPE
+        # PRIORITY 1: Check metadata for variationType (user's selected variation)
+        if cart_item.metadata and 'variationType' in cart_item.metadata:
+            variation_type = cart_item.metadata.get('variationType', '')
+            if variation_type:
+                # Map variation type to product type
+                mapped_type = VARIATION_TYPE_TO_PRODUCT_TYPE.get(variation_type, DEFAULT_PRODUCT_TYPE)
+                logger.debug(f"Using variation type from metadata: {variation_type} → {mapped_type}")
+                return mapped_type
 
-        # Get variation type from product
-        variation_type = self._extract_variation_type(cart_item.product)
+        # PRIORITY 2: Fallback to product's first variation (legacy)
+        if cart_item.product:
+            variation_type = self._extract_variation_type(cart_item.product)
+            if variation_type:
+                mapped_type = VARIATION_TYPE_TO_PRODUCT_TYPE.get(variation_type, DEFAULT_PRODUCT_TYPE)
+                logger.debug(f"Using variation type from product: {variation_type} → {mapped_type}")
+                return mapped_type
 
-        # Map variation type to product type
-        return VARIATION_TYPE_TO_PRODUCT_TYPE.get(variation_type, DEFAULT_PRODUCT_TYPE)
+        # PRIORITY 3: Default
+        logger.warning(f"No variation type found for cart item {cart_item.id}, using default: {DEFAULT_PRODUCT_TYPE}")
+        return DEFAULT_PRODUCT_TYPE
 
-    def _aggregate_totals(self, results: Dict[str, Any]) -> Dict[str, Any]:
+    def _aggregate_item_totals(self, processed_items: list) -> Dict[str, Any]:
         """
-        Aggregate VAT totals from Rules Engine results.
+        Aggregate VAT totals from individually processed cart items.
 
         Args:
-            results: Rules Engine execution results
+            processed_items: List of cart_item dicts from Rules Engine results
 
         Returns:
-            dict: Aggregated totals and items
+            dict: Aggregated totals and items with VAT data
         """
-        # Extract items from results
-        cart_data = results.get('cart', {})
-        items = cart_data.get('items', [])
-
         # Initialize totals
         total_net = Decimal('0.00')
         total_vat = Decimal('0.00')
 
-        # Aggregate from items
-        for item in items:
-            # Get item values
-            actual_price = Decimal(str(item.get('actual_price', '0.00')))
-            quantity = int(item.get('quantity', 1))
+        # Aggregate from processed items
+        items_with_vat = []
+        for item in processed_items:
+            # Get item values (Rules Engine adds vat_amount to cart_item)
+            net_amount = Decimal(str(item.get('net_amount', '0.00')))
             vat_amount = Decimal(str(item.get('vat_amount', '0.00')))
+            gross_amount = Decimal(str(item.get('gross_amount', '0.00')))
 
-            # Calculate item net
-            item_net = actual_price * quantity
-            total_net += item_net
+            # Aggregate totals
+            total_net += net_amount
             total_vat += vat_amount
 
-        # Calculate gross
+            # Build item result with VAT data
+            items_with_vat.append({
+                'id': item.get('id'),
+                'product_type': item.get('product_type'),
+                'net_amount': str(net_amount),
+                'vat_amount': str(vat_amount),
+                'gross_amount': str(gross_amount)
+            })
+
+        # Calculate total gross
         total_gross = total_net + total_vat
 
         # Round to 2 decimal places
@@ -207,27 +293,41 @@ class VATOrchestrator:
                 'vat': str(total_vat),
                 'gross': str(total_gross)
             },
-            'items': items
+            'items': items_with_vat
         }
 
-    def _store_vat_result(self, cart, aggregated: Dict[str, Any], results: Dict[str, Any]) -> None:
+    def _store_vat_result(self, cart, aggregated: Dict[str, Any], all_results: list) -> None:
         """
         Store VAT result in cart.vat_result JSONB field.
 
         Args:
             cart: Cart instance
             aggregated: Aggregated totals and items
-            results: Full Rules Engine results
+            all_results: List of Rules Engine results from all items
         """
+        # Extract region from first result (region is user-based, stored in result['vat'])
+        region = REGION_UNKNOWN
+        execution_id = f"exec_{int(timezone.now().timestamp())}"
+        all_rules_executed = []
+
+        if all_results:
+            first_result = all_results[0]
+            region = first_result.get('vat', {}).get('region', REGION_UNKNOWN)
+            execution_id = first_result.get('execution_id', execution_id)
+
+            # Collect all executed rules from all results
+            for result in all_results:
+                all_rules_executed.extend(result.get('rules_executed', []))
+
         # Build JSONB structure using extracted data
         vat_result = {
             'status': STATUS_CALCULATED,
-            'region': self._extract_region(results),
+            'region': region,
             'totals': aggregated['totals'],
             'items': aggregated['items'],
-            'execution_id': self._get_execution_id(results),
+            'execution_id': execution_id,
             'timestamp': timezone.now().isoformat(),
-            'rules_executed': results.get('rules_executed', [])
+            'rules_executed': all_rules_executed
         }
 
         # Store in cart
@@ -236,14 +336,14 @@ class VATOrchestrator:
 
         logger.info(f"Stored VAT result in cart {cart.id}")
 
-    def _create_audit_record(self, cart, context: Dict[str, Any], results: Dict[str, Any]) -> None:
+    def _create_audit_record(self, cart, context: Dict[str, Any], all_results: list) -> None:
         """
         Create VATAudit record for compliance tracking.
 
         Args:
             cart: Cart instance
             context: Input context sent to Rules Engine
-            results: Rules Engine execution results
+            all_results: List of Rules Engine execution results from all items
         """
         try:
             VATAudit.objects.create(
@@ -251,7 +351,7 @@ class VATOrchestrator:
                 order=None,  # No order at cart stage
                 input_context=context,
                 output_data={
-                    'results': results,
+                    'results': all_results,  # Store all item results
                     'timestamp': timezone.now().isoformat()
                 }
             )
@@ -263,23 +363,35 @@ class VATOrchestrator:
 
     # Helper methods
 
-    def _build_calculation_result(self, aggregated: Dict[str, Any], results: Dict[str, Any]) -> Dict[str, Any]:
+    def _build_calculation_result(self, aggregated: Dict[str, Any], all_results: list, user_context: Dict[str, Any]) -> Dict[str, Any]:
         """
         Build the final calculation result structure.
 
         Args:
             aggregated: Aggregated totals and items
-            results: Full Rules Engine results
+            all_results: List of Rules Engine results from all items
+            user_context: User context with country_code
 
         Returns:
             dict: Formatted calculation result
         """
+        # Extract region from first result (region is stored in result['vat'])
+        region = REGION_UNKNOWN
+        if all_results:
+            first_result = all_results[0]
+            region = first_result.get('vat', {}).get('region', REGION_UNKNOWN)
+
+        # Get execution ID from first result
+        execution_id = f"exec_{int(timezone.now().timestamp())}"
+        if all_results:
+            execution_id = all_results[0].get('execution_id', execution_id)
+
         return {
             'status': STATUS_CALCULATED,
-            'region': self._extract_region(results),
+            'region': region,
             'totals': aggregated['totals'],
             'items': aggregated['items'],
-            'execution_id': self._get_execution_id(results),
+            'execution_id': execution_id,
             'timestamp': timezone.now().isoformat()
         }
 
