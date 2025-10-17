@@ -455,7 +455,42 @@ class ActionDispatcher:
             }
 
         elif action_type == "update":
-            # Handle update actions (e.g., add fees to cart)
+            # Handle update actions (e.g., add fees to cart, set VAT rate)
+            target = action.get("target")
+            operation = action.get("operation")
+            value = action.get("value")
+
+            # IMPORTANT: Update context IMMEDIATELY so subsequent actions see the change
+            if target and operation == 'set':
+                # Set nested value in context
+                keys = target.split('.')
+                current = context
+
+                # Navigate to parent, creating nested dicts as needed
+                for key in keys[:-1]:
+                    if key not in current:
+                        current[key] = {}
+                    current = current[key]
+
+                # Set the final value
+                current[keys[-1]] = value
+                logger.debug(f"Updated context during dispatch: {target} = {value}")
+
+                return {
+                    "type": "update",
+                    "success": True,
+                    "target": target,
+                    "value": value,
+                    "message": {
+                        "type": "update",
+                        "target": target,
+                        "operation": operation,
+                        "value": value,
+                        "description": action.get("description", "Value updated")
+                    }
+                }
+
+            # For other operations (increment, add fees, etc), use UpdateHandler
             from .action_handlers import UpdateHandler
             handler = UpdateHandler()
             result = handler.execute(action, context)
