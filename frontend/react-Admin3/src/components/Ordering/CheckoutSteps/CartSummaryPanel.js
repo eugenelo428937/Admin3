@@ -1,108 +1,149 @@
-import React from 'react';
-import { Card, Button } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  Typography,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Divider,
+  Box,
+  IconButton,
+  Collapse,
+  useMediaQuery,
+  useTheme
+} from '@mui/material';
+import { ExpandMore, ExpandLess } from '@mui/icons-material';
 import { generateProductCode } from '../../../utils/productCodeGenerator';
-// TODO Phase 8: import VATBreakdown from '../../Common/VATBreakdown';
+import { formatVatLabel } from '../../../utils/vatUtils';
 
 const CartSummaryPanel = ({
   cartItems = [],
   vatCalculations,
-  isCollapsed = false,
-  onToggleCollapse = () => {},
   paymentMethod = 'card'
 }) => {
-  const containerStyle = {
-    transition: 'all 0.3s ease-in-out',
-    overflow: 'hidden'
+  const theme = useTheme();
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
+
+  // Default: collapsed on md or smaller, expanded on lg+
+  const [isExpanded, setIsExpanded] = useState(isLargeScreen);
+
+  // Update expansion state when screen size changes
+  useEffect(() => {
+    setIsExpanded(isLargeScreen);
+  }, [isLargeScreen]);
+
+  const handleToggle = () => {
+    setIsExpanded(!isExpanded);
   };
 
-  const renderCollapsedView = () => (
-    <Card className="h-100" style={containerStyle}>
-      <Card.Header className="d-flex justify-content-between align-items-center">
-        <h6 className="mb-0">Cart Summary</h6>
-        <Button
-          variant="outline-primary"
-          size="sm"
-          onClick={() => onToggleCollapse(false)}
-          aria-label="expand cart summary"
-        >
-          <i className="bi bi-chevron-right"></i> Expand
-        </Button>
-      </Card.Header>
-      <Card.Body className="text-center">
-        <div className="mb-2">
-          <small className="text-muted">{cartItems.length} items</small>
-        </div>
-        {vatCalculations && (
-          <div>
-            <strong>Total: £{(
-              paymentMethod === 'card'
-                ? vatCalculations.totals.total_gross
-                : vatCalculations.totals.total_gross - vatCalculations.totals.total_fees
-            ).toFixed(2)}</strong>
-          </div>
+  return (
+    <Card sx={{ height: 'fit-content'}} className='w-100'>
+      <CardHeader
+        title={
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6" component="h2">
+              Order Summary
+            </Typography>
+            {/* Collapse button - only visible and enabled on md or smaller */}
+            {!isLargeScreen && (
+              <IconButton
+                onClick={handleToggle}
+                aria-label={isExpanded ? 'collapse cart summary' : 'expand cart summary'}
+                size="small"
+              >
+                {isExpanded ? <ExpandLess /> : <ExpandMore />}
+              </IconButton>
+            )}
+          </Box>
+        }
+        sx={{ pb: 0 }}
+      />
+      <CardContent>
+        {/* Always show item count */}
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
+        </Typography>
+
+        {/* Collapsible content */}
+        <Collapse in={isExpanded} timeout="auto">
+          {/* Cart Items Table */}
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Product</TableCell>
+                <TableCell align="center">Qty</TableCell>
+                <TableCell align="right">Total</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {cartItems.map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight="bold">
+                      {item.product_name}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {item.subject_code} • {item.variation_name}
+                    </Typography>
+                    <br />
+                    <Typography variant="caption" component="code">
+                      {generateProductCode(item)}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="center">{item.quantity}</TableCell>
+                  <TableCell align="right">
+                    £{(parseFloat(item.actual_price) * item.quantity).toFixed(2)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          {/* Order Summary */}
+          {vatCalculations && (
+            <Box sx={{ mt: 2 }}>
+              <Divider sx={{ my: 1 }} />
+              <Box display="flex" justifyContent="space-between">
+                <Typography variant="body2">Subtotal:</Typography>
+                <Typography variant="body2">£{vatCalculations.totals.subtotal.toFixed(2)}</Typography>
+              </Box>
+              <Box display="flex" justifyContent="space-between">
+                <Typography variant="body2">
+                  {formatVatLabel(vatCalculations.totals.effective_vat_rate)}:
+                </Typography>
+                <Typography variant="body2">£{vatCalculations.totals.total_vat.toFixed(2)}</Typography>
+              </Box>
+              <Divider sx={{ my: 1 }} />
+              <Box display="flex" justifyContent="space-between">
+                <Typography variant="h6" fontWeight="bold">Total:</Typography>
+                <Typography variant="h6" fontWeight="bold">£{vatCalculations.totals.total_gross.toFixed(2)}</Typography>
+              </Box>
+            </Box>
+          )}
+        </Collapse>
+
+        {/* Collapsed view - show total only */}
+        {!isExpanded && vatCalculations && (
+          <Box sx={{ mt: 2 }}>
+            <Box display="flex" justifyContent="space-between">
+              <Typography variant="h6" fontWeight="bold">Total:</Typography>
+              <Typography variant="h6" fontWeight="bold">
+                £{(
+                  paymentMethod === 'card'
+                    ? vatCalculations.totals.total_gross
+                    : vatCalculations.totals.total_gross - vatCalculations.totals.total_fees
+                ).toFixed(2)}
+              </Typography>
+            </Box>
+          </Box>
         )}
-      </Card.Body>
+      </CardContent>
     </Card>
   );
-
-  const renderExpandedView = () => (
-    <Card className="h-100" style={containerStyle}>
-      <Card.Header className="d-flex justify-content-between align-items-center">
-        <h6 className="mb-0">Cart Summary</h6>
-        <Button
-          variant="outline-primary"
-          size="sm"
-          onClick={() => onToggleCollapse(true)}
-          aria-label="collapse cart summary"
-        >
-          <i className="bi bi-chevron-left"></i> Collapse
-        </Button>
-      </Card.Header>
-      <Card.Body style={{ maxHeight: '400px', overflowY: 'auto' }}>
-        {/* Cart Items */}
-        {cartItems.map((item, index) => (
-          <div key={index} className="border-bottom pb-2 mb-2">
-            <div className="d-flex justify-content-between align-items-start">
-              <div className="flex-grow-1">
-                <small className="fw-bold">{item.product_name}</small>
-                <br />
-                <small className="text-muted">
-                  {item.subject_code} • {item.variation_name}
-                </small>
-                <br />
-                <small className="text-muted">
-                  Code: {generateProductCode(item)}
-                </small>
-              </div>
-              <div className="text-end">
-                <small>Qty: {item.quantity}</small>
-                <br />
-                <small className="fw-bold">
-                  £{(parseFloat(item.actual_price) * item.quantity).toFixed(2)}
-                </small>
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Order Summary */}
-        {vatCalculations && (
-          <div className="border-top pt-2">
-            {/* TODO Phase 8: VATBreakdown component
-            <VATBreakdown
-              vatCalculations={vatCalculations}
-              fees={vatCalculations.fees}
-              variant="inline"
-              className=""
-            />
-            */}
-          </div>
-        )}
-      </Card.Body>
-    </Card>
-  );
-
-  return isCollapsed ? renderCollapsedView() : renderExpandedView();
 };
 
 export default CartSummaryPanel;

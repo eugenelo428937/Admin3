@@ -10,6 +10,10 @@ from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
+# Suppress CSS parser warnings (cssutils) that are non-critical
+logging.getLogger('cssutils').setLevel(logging.CRITICAL)
+logging.getLogger('premailer').setLevel(logging.WARNING)
+
 class EmailService:
     """
     Email service with responsive template support and cross-client compatibility.
@@ -515,8 +519,7 @@ class EmailService:
             
             # Additional Outlook-specific fixes
             enhanced_html = self._apply_outlook_specific_fixes(enhanced_html)
-            
-            logger.debug("Applied Outlook compatibility enhancements to MJML-generated HTML")
+
             return enhanced_html
             
         except Exception as e:
@@ -653,8 +656,7 @@ class EmailService:
             placeholder_context = {}
             for placeholder_name in placeholders:
                 placeholder_context[placeholder_name] = f'{{{{{placeholder_name}}}}}'
-                
-            logger.debug(f"Found {len(placeholder_context)} placeholders for template {template_name}: {list(placeholder_context.keys())}")
+
             return placeholder_context
             
         except Exception as e:

@@ -735,55 +735,64 @@ class CartViewSet(viewsets.ViewSet):
         client_ip = self._get_client_ip(request)
         user_agent = request.META.get('HTTP_USER_AGENT', '')
 
+        # IMPORTANT: Calculate VAT OUTSIDE transaction.atomic() block
+        # If VAT calculation fails inside atomic block, it breaks the transaction
+        try:
+            vat_result = vat_orchestrator.execute_vat_calculation(cart)
+            vat_totals = vat_result.get('totals', {})
+            vat_items = vat_result.get('items', [])
+            region = vat_result.get('region', 'UNKNOWN')
+
+            # Create VAT item lookup by cart item ID (orchestrator uses 'id' not 'item_id')
+            vat_by_item_id = {str(item.get('id')): item for item in vat_items}
+        except Exception as e:
+            logger.error(f"Failed to calculate VAT for cart {cart.id}: {str(e)}")
+            # Fallback to zero VAT (using orchestrator field names)
+            vat_totals = {
+                'net': '0.00',
+                'vat': '0.00',
+                'gross': '0.00'
+            }
+            vat_by_item_id = {}
+            region = 'UNKNOWN'
+
+        # Now enter atomic block for order creation with calculated VAT data
         with transaction.atomic():
-            # Get VAT calculations from cart
-            from vat.service import calculate_vat_for_cart
-            from vat.utils import decimal_to_string
-            from decimal import Decimal
-
-            try:
-                vat_result = calculate_vat_for_cart(user, cart)
-                vat_calcs = vat_result.get('vat_calculations', {})
-                vat_totals = vat_calcs.get('totals', {})
-                vat_items = vat_calcs.get('items', [])
-                region_info = vat_calcs.get('region_info', {})
-
-                # Create VAT item lookup by cart item ID
-                vat_by_item_id = {item['item_id']: item for item in vat_items}
-            except Exception as e:
-                logger.error(f"Failed to calculate VAT for cart {cart.id}: {str(e)}")
-                # Fallback to zero VAT
-                vat_totals = {
-                    'subtotal': Decimal('0.00'),
-                    'total_vat': Decimal('0.00'),
-                    'total_gross': Decimal('0.00'),
-                    'effective_vat_rate': Decimal('0.00')
-                }
-                vat_by_item_id = {}
-                region_info = {'country': None, 'region': None}
-
-            # Create order with VAT totals (convert Decimals to strings for JSON storage)
+            # Convert VAT totals to Decimal and create order
             order = ActedOrder.objects.create(
                 user=user,
-                subtotal=vat_totals.get('subtotal', Decimal('0.00')),
-                vat_amount=vat_totals.get('total_vat', Decimal('0.00')),
-                total_amount=vat_totals.get('total_gross', Decimal('0.00')),
-                vat_rate=vat_totals.get('effective_vat_rate', Decimal('0.00')),
-                vat_country=region_info.get('country'),
+                subtotal=Decimal(vat_totals.get('net', '0.00')),
+                vat_amount=Decimal(vat_totals.get('vat', '0.00')),
+                total_amount=Decimal(vat_totals.get('gross', '0.00')),
+                vat_rate=Decimal('0.00'),  # Rate is stored per-item, not order-level
+                vat_country=region if region != 'UNKNOWN' else None,
                 vat_calculation_type='rules_engine_vat_v1',
-                calculations_applied=decimal_to_string({'vat_calculations': vat_calcs})
+                calculations_applied={'vat_result': vat_result}  # Store full VAT result
             )
             order_items = []
 
             for item in cart.items.all():
-                # Get VAT info for this item
-                vat_info = vat_by_item_id.get(item.id, {})
-                net_amount = vat_info.get('net_amount', item.actual_price or Decimal('0.00'))
-                vat_amount = vat_info.get('vat_amount', Decimal('0.00'))
-                vat_rate = vat_info.get('vat_rate', Decimal('0.00'))
+                # Get VAT info for this item (orchestrator uses string IDs)
+                vat_info = vat_by_item_id.get(str(item.id), {})
 
-                # Calculate gross amount
-                gross_amount = net_amount + vat_amount
+                # Orchestrator returns string values, convert to Decimal
+                # Calculate net_amount from item's actual_price * quantity
+                item_net = (item.actual_price or Decimal('0.00')) * item.quantity
+
+                # Get VAT amount from orchestrator result (string to Decimal)
+                vat_amount = Decimal(str(vat_info.get('vat_amount', '0.00')))
+
+                # Calculate VAT rate as decimal fraction (e.g., 0.20 for 20%, not 20.00)
+                # Field is DECIMAL(5,4) which stores values like 0.2000
+                if item_net > 0:
+                    vat_rate = (vat_amount / item_net).quantize(Decimal('0.0001'))
+                else:
+                    vat_rate = Decimal('0.0000')
+
+                # Calculate gross amount (net + VAT per unit)
+                net_amount = item.actual_price or Decimal('0.00')
+                vat_per_unit = vat_amount / item.quantity if item.quantity > 0 else Decimal('0.00')
+                gross_amount = net_amount + vat_per_unit
 
                 order_item = ActedOrderItem.objects.create(
                     order=order,

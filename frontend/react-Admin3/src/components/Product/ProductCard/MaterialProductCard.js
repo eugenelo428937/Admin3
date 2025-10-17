@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { formatPrice } from '../../../utils/priceFormatter';
-import { getVatRate, calculateVat, formatVatLabel } from '../../../utils/vatUtils';
+import { formatVatLabel } from '../../../utils/vatUtils';
 import {
 	Button,
 	Chip,
@@ -113,17 +113,16 @@ const MaterialProductCard = React.memo(
 					: singleVariation || product.variations[0]
 				: singleVariation;
 
-			// Initialize selectedVariation if not set
-			if (
-				hasVariations &&
-				!selectedVariation &&
-				product.variations.length > 0
-			) {
-				setSelectedVariation(product.variations[0].id.toString());
-			}
 
 			return { hasVariations, singleVariation, currentVariation };
 		}, [product.variations, selectedVariation]);
+
+	// Initialize selectedVariation when product loads
+	useEffect(() => {
+		if (product.variations && product.variations.length > 0 && !selectedVariation) {
+			setSelectedVariation(product.variations[0].id.toString());
+		}
+	}, [product.id, product.essp_id]); // Only when product changes
 
 		// Memoize price calculation to avoid recalculating on every render
 		const getPrice = useMemo(() => {
@@ -264,19 +263,13 @@ const MaterialProductCard = React.memo(
 						<Typography variant="body2" color="text.secondary">
 							Product Name: {product.product_name}
 						</Typography>
-						<Typography variant="body2" color="text.secondary">
-							VAT Region: {userRegion}
-						</Typography>
 					</Box>
 					<Table size="small">
 						<TableHead>
 							<TableRow>
 								<TableCell>Variation</TableCell>
 								<TableCell>Price Type</TableCell>
-								<TableCell align="right">Net Price</TableCell>
-								<TableCell align="right">VAT Rate</TableCell>
-								<TableCell align="right">VAT Amount</TableCell>
-								<TableCell align="right">Total (inc VAT)</TableCell>
+								<TableCell align="right">Price</TableCell>
 							</TableRow>
 						</TableHead>
 						<TableBody>
@@ -285,26 +278,13 @@ const MaterialProductCard = React.memo(
 									(variation) =>
 										variation.prices &&
 										variation.prices.map((price) => {
-											const variationCode = variation.code || product.code || '';
-											const vatRate = getVatRate(userRegion, variationCode);
-											const vatCalc = calculateVat(price.amount, vatRate);
-
 											return (
 												<TableRow
 													key={`${variation.id}-${price.price_type}`}>
 													<TableCell>{variation.name}</TableCell>
 													<TableCell>{price.price_type}</TableCell>
 													<TableCell align="right">
-														{formatPrice(vatCalc.netAmount)}
-													</TableCell>
-													<TableCell align="right">
-														{(vatRate * 100).toFixed(0)}%
-													</TableCell>
-													<TableCell align="right">
-														{formatPrice(vatCalc.vatAmount)}
-													</TableCell>
-													<TableCell align="right">
-														<strong>{formatPrice(vatCalc.grossAmount)}</strong>
+														{formatPrice(price.amount)}
 													</TableCell>
 												</TableRow>
 											);
@@ -312,6 +292,11 @@ const MaterialProductCard = React.memo(
 								)}
 						</TableBody>
 					</Table>
+					<Box sx={{ mt: 2 }}>
+						<Typography variant="caption" color="text.secondary">
+							{product.vat_status_display || 'VAT calculated at checkout based on your location'}
+						</Typography>
+					</Box>
 				</DialogContent>
 				<DialogActions>
 					<Button onClick={() => setShowPriceModal(false)}>Close</Button>

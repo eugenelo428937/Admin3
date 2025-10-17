@@ -5,21 +5,11 @@ import {
   CardHeader,
   CardContent,
   Typography,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
   Alert,
   CircularProgress,
-  Divider,
-  Box,
-  useMediaQuery,
-  useTheme
+  Box
 } from '@mui/material';
-import { Info, LocationOn, Receipt } from '@mui/icons-material';
-import { generateProductCode } from '../../../utils/productCodeGenerator';
-import { formatVatLabel } from '../../../utils/vatUtils';
+import { LocationOn, Receipt } from '@mui/icons-material';
 import AddressSelectionPanel from '../../Address/AddressSelectionPanel';
 import CommunicationDetailsPanel from '../../Communication/CommunicationDetailsPanel';
 
@@ -35,16 +25,6 @@ const CartReviewStep = ({
   addressValidation = null, // Validation state for addresses
   contactValidation = null // Validation state for contact info
 }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
-  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
-
-  const getResponsiveLayout = () => {
-    if (isMobile) return 'stacked';
-    if (isTablet) return 'stacked';
-    return 'side-by-side';
-  };
 
   return (
     <Box>
@@ -52,84 +32,10 @@ const CartReviewStep = ({
         Step 1: Review Your Cart
       </Typography>
 
-      {/* Enhanced Layout with 1/3 + 2/3 split */}
-      <Grid
-        container
-        spacing={3}
-        data-testid="cart-review-layout"
-        data-responsive={getResponsiveLayout()}
-      >
-        {/* Left 1/3: Cart Summary */}
-        <Grid size={{ xs: 12, lg: 4 }} data-testid="cart-summary-section">
-          <Card data-testid="cart-summary-card" sx={{ height: 'fit-content' }}>
-            <CardHeader
-              title={
-                <Typography variant="h6" component="h2">
-                  Order Summary
-                </Typography>
-              }
-            />
-            <CardContent>
-              {/* Cart Items Table */}
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Product</TableCell>
-                    <TableCell align="center">Qty</TableCell>
-                    <TableCell align="right">Total</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {cartItems.map((item, index) => (
-                    <TableRow key={index}>
-                      <TableCell>
-                        <Typography variant="body2" fontWeight="bold">
-                          {item.product_name}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {item.subject_code} • {item.variation_name}
-                        </Typography>
-                        <br />
-                        <Typography variant="caption" component="code">
-                          {generateProductCode(item)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">{item.quantity}</TableCell>
-                      <TableCell align="right">
-                        £{(parseFloat(item.actual_price) * item.quantity).toFixed(2)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-
-              {/* Order Summary */}
-              {vatCalculations && (
-                <Box sx={{ mt: 2 }}>
-                  <Divider sx={{ my: 1 }} />
-                  <Box display="flex" justifyContent="space-between">
-                    <Typography variant="body2">Subtotal:</Typography>
-                    <Typography variant="body2">£{vatCalculations.totals.subtotal.toFixed(2)}</Typography>
-                  </Box>
-                  <Box display="flex" justifyContent="space-between">
-                    <Typography variant="body2">
-                      {formatVatLabel(vatCalculations.totals.effective_vat_rate)}:
-                    </Typography>
-                    <Typography variant="body2">£{vatCalculations.totals.total_vat.toFixed(2)}</Typography>
-                  </Box>
-                  <Divider sx={{ my: 1 }} />
-                  <Box display="flex" justifyContent="space-between">
-                    <Typography variant="h6" fontWeight="bold">Total:</Typography>
-                    <Typography variant="h6" fontWeight="bold">£{vatCalculations.totals.total_gross.toFixed(2)}</Typography>
-                  </Box>
-                </Box>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Right 2/3: Address Sections */}
-        <Grid size={{ xs: 12, lg: 8 }} data-testid="address-sections-container">
+      {/* Address Sections Layout */}
+      <Grid container spacing={3} data-testid="cart-review-layout">
+        {/* Address Sections Container - Full Width */}
+        <Grid size={{ xs: 12 }} data-testid="address-sections-container">
           <Grid container spacing={2}>
             {/* Delivery Address Panel */}
             <Grid size={{ xs: 12, md: 6 }}>
