@@ -174,10 +174,13 @@ class VATOrchestrator:
         # Get product type
         product_type = self._get_product_type(cart_item)
 
-        # Extract product_code from metadata
+        # Extract product_code from related product
         product_code = ''
-        if cart_item.metadata:
-            product_code = cart_item.metadata.get('productCode', '')
+        try:
+            if cart_item.product and cart_item.product.product:
+                product_code = cart_item.product.product.code or ''
+        except (AttributeError, Exception) as e:
+            logger.debug(f"Could not extract product_code: {e}")
 
         # Build cart_item structure matching schema
         cart_item_context = {
