@@ -104,7 +104,7 @@ class VATOrchestrator:
                 all_results.append(result)
 
             # Aggregate totals from all processed items
-            aggregated = self._aggregate_item_totals(processed_items)
+            aggregated = self._aggregate_item_totals(processed_items, all_results)
 
             # Store results in cart JSONB field
             self._store_vat_result(cart, aggregated, all_results)
@@ -247,12 +247,13 @@ class VATOrchestrator:
         logger.warning(f"No variation type found for cart item {cart_item.id}, using default: {DEFAULT_PRODUCT_TYPE}")
         return DEFAULT_PRODUCT_TYPE
 
-    def _aggregate_item_totals(self, processed_items: list) -> Dict[str, Any]:
+    def _aggregate_item_totals(self, processed_items: list, all_results: list) -> Dict[str, Any]:
         """
         Aggregate VAT totals from individually processed cart items.
 
         Args:
             processed_items: List of cart_item dicts from Rules Engine results
+            all_results: List of full Rules Engine results (to extract vat.rate)
 
         Returns:
             dict: Aggregated totals and items with VAT data
@@ -263,11 +264,21 @@ class VATOrchestrator:
 
         # Aggregate from processed items
         items_with_vat = []
-        for item in processed_items:
+        for idx, item in enumerate(processed_items):
             # Get item values (Rules Engine adds vat_amount to cart_item)
             net_amount = Decimal(str(item.get('net_amount', '0.00')))
             vat_amount = Decimal(str(item.get('vat_amount', '0.00')))
             gross_amount = Decimal(str(item.get('gross_amount', '0.00')))
+
+            # Extract vat_rate and vat_region from corresponding Rules Engine result
+            vat_rate = Decimal('0.0000')
+            vat_region = 'UNKNOWN'
+            if idx < len(all_results):
+                result = all_results[idx]
+                vat_context = result.get('vat', {})
+                rate_str = vat_context.get('rate', '0.0000')
+                vat_rate = Decimal(str(rate_str))
+                vat_region = vat_context.get('region', 'UNKNOWN')
 
             # Aggregate totals
             total_net += net_amount
@@ -278,6 +289,8 @@ class VATOrchestrator:
                 'id': item.get('id'),
                 'product_type': item.get('product_type'),
                 'net_amount': str(net_amount),
+                'vat_region': vat_region,  # Add vat_region
+                'vat_rate': str(vat_rate),  # Add vat_rate
                 'vat_amount': str(vat_amount),
                 'gross_amount': str(gross_amount)
             })
