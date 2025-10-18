@@ -1,6 +1,7 @@
 """
 Utils services package.
 """
-from .vat_service import VATCalculationService
+# VAT service moved to vat app - import removed to prevent errors
+# from .vat_service import VATCalculationService
 
-__all__ = ['VATCalculationService']
+__all__ = []

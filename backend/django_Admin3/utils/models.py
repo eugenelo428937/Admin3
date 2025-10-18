@@ -75,6 +75,29 @@ class UtilsCountryRegion(models.Model):
         if self.effective_to and self.effective_to <= self.effective_from:
             raise ValidationError('effective_to must be after effective_from')
 
+    def is_current(self):
+        """
+        Check if mapping is currently active.
+
+        Returns:
+            bool: True if mapping is active today, False otherwise
+        """
+        from datetime import date
+        today = date.today()
+
+        # Check if mapping has started
+        if self.effective_from > today:
+            return False
+
+        # Check if mapping has expired
+        if self.effective_to and self.effective_to < today:
+            return False
+
+        return True
+
+    is_current.boolean = True  # Display as boolean icon in admin
+    is_current.short_description = 'Current?'
+
     def __str__(self):
         return f"{self.country.code} → {self.region.code} (from {self.effective_from})"
 
@@ -899,65 +922,4 @@ class EmailContentPlaceholder(models.Model):
     
     def __str__(self):
         return f"{self.display_name} ({self.name})"
-
-
-class AssignmentDeadline(models.Model):
-    """Store assignment deadlines for ICS calendar generation."""
-
-    MODULE_GROUPS = [
-        ('CM1', 'CM1 - Certificate in Mathematics 1'),
-        ('CM2', 'CM2 - Certificate in Mathematics 2'),
-        ('CS1', 'CS1 - Certificate in Statistics 1'),
-        ('CS2', 'CS2 - Certificate in Statistics 2'),
-        ('CB', 'CB - Certificate in Business'),
-        ('CP1', 'CP1 - Certificate in Probability 1'),
-        ('CP2', 'CP2 - Certificate in Probability 2'),
-        ('CP3', 'CP3 - Certificate in Probability 3'),
-        ('SP', 'SP - Statistics and Probability'),
-        ('SA', 'SA - Statistical Analysis'),
-    ]
-
-    module_code = models.CharField(max_length=10, help_text="Full module code (e.g., CM1A01)")
-    module_group = models.CharField(max_length=5, choices=MODULE_GROUPS, help_text="Module group for calendar categorization")
-    assignment_code = models.CharField(max_length=20, help_text="Assignment identifier")
-    title = models.CharField(max_length=200, help_text="Assignment title")
-
-    # Dates
-    recommend_date = models.DateField(null=True, blank=True, help_text="Recommended completion date")
-    deadline_date = models.DateField(help_text="Assignment deadline")
-
-    # Calendar metadata
-    is_active = models.BooleanField(default=True, help_text="Include in calendar generation")
-    academic_year = models.CharField(max_length=10, default="2026", help_text="Academic year")
-
-    # Tracking
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'utils_assignment_deadline'
-        ordering = ['module_group', 'deadline_date', 'module_code']
-        unique_together = ['module_code', 'assignment_code', 'academic_year']
-        indexes = [
-            models.Index(fields=['module_group', 'deadline_date']),
-            models.Index(fields=['is_active', 'deadline_date']),
-        ]
-        verbose_name = 'Assignment Deadline'
-        verbose_name_plural = 'Assignment Deadlines'
-
-    def __str__(self):
-        return f"{self.module_code} {self.assignment_code} - {self.deadline_date}"
-
-    @property
-    def event_title(self):
-        """Generate calendar event title."""
-        return f"{self.module_code} {self.assignment_code} deadline"
-
-    @classmethod
-    def get_module_group(cls, module_code):
-        """Extract module group from full module code."""
-        module_upper = module_code.strip().upper()
-        for group_code, _ in cls.MODULE_GROUPS:
-            if module_upper.startswith(group_code):
-                return group_code
-        return None
+        

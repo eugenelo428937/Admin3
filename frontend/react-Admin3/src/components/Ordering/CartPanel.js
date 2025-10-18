@@ -6,7 +6,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { X, Trash3, CartCheck } from "react-bootstrap-icons";
 import { generateProductCode } from "../../utils/productCodeGenerator";
-import VATBreakdown from "../Common/VATBreakdown";
+// TODO Phase 8: import VATBreakdown from "../Common/VATBreakdown";
 import "../../styles/cart_panel.css";
 
 const CartPanel = React.memo(({ show, handleClose }) => {
@@ -442,12 +442,14 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 
 						{/* Cart Totals */}
 						<div className="cart-totals mt-3 p-3 border-top">
+							{/* TODO Phase 8: VATBreakdown component
 							<VATBreakdown
 								vatCalculations={cartData?.vat_calculations}
 								fees={cartData?.fees}
 								variant="inline"
 								className=""
 							/>
+							*/}
 						</div>
 					</>
 				)}

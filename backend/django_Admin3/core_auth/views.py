@@ -23,6 +23,28 @@ from students.models import Student
 from django.db import transaction
 logger = logging.getLogger(__name__)
 
+
+def serialize_user_for_email(user):
+    """
+    Convert User object to JSON-serializable dictionary for email contexts.
+
+    Args:
+        user: Django User object
+
+    Returns:
+        dict: Serialized user data safe for JSON storage
+    """
+    return {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'is_active': user.is_active,
+        'date_joined': user.date_joined.isoformat() if user.date_joined else None
+    }
+
+
 class AuthViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
     
@@ -113,7 +135,7 @@ class AuthViewSet(viewsets.ViewSet):
                     
                     # Prepare activation email data
                     activation_data = {
-                        'user': user,
+                        'user': serialize_user_for_email(user),
                         'activation_url': activation_url
                     }
                     
@@ -254,7 +276,7 @@ class AuthViewSet(viewsets.ViewSet):
             
             # Prepare email data
             reset_data = {
-                'user': user,
+                'user': serialize_user_for_email(user),
                 'reset_url': reset_url,
                 'expiry_hours': expiry_hours
             }
@@ -328,9 +350,9 @@ class AuthViewSet(viewsets.ViewSet):
                 try:
                     from django.utils import timezone
                     from utils.email_service import email_service
-                    
+
                     completion_data = {
-                        'user': user,
+                        'user': serialize_user_for_email(user),
                         'reset_timestamp': timezone.now()
                     }
                     
@@ -462,13 +484,13 @@ class AuthViewSet(viewsets.ViewSet):
             # Create activation URL
             frontend_url = getattr(settings, 'FRONTEND_URL', 'http://127.0.0.1:3000')
             activation_url = f"{frontend_url}/auth/activate?uid={uid}&token={token}"
-            
+
             # Prepare email data
             activation_data = {
-                'user': user,
+                'user': serialize_user_for_email(user),
                 'activation_url': activation_url
             }
-            
+
             # Send account activation email
             success = email_service.send_account_activation(
                 user_email=user.email,
@@ -624,7 +646,7 @@ class AuthViewSet(viewsets.ViewSet):
             
             # Prepare email data
             verification_data = {
-                'user': user,
+                'user': serialize_user_for_email(user),
                 'verification_email': new_email,
                 'verification_url': verification_url,
                 'expiry_hours': expiry_hours,
