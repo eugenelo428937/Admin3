@@ -89,7 +89,7 @@ class ActedRuleAdmin(admin.ModelAdmin):
             'fields': ['entry_point', 'priority', 'active', 'stop_processing']
         }),
         ('Rule Definition', {
-            'fields': ['rules_fields', 'rule_data'],
+            'fields': ['rules_fields_code', 'condition', 'actions'],
             'classes': ['wide']
         }),
         ('Schedule', {
