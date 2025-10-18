@@ -41,9 +41,9 @@ def get_region_from_ip(ip_address):
             if data.get('status') == 'success':
                 country_code = data.get('countryCode')
 
-                # Map country code to VAT region
-                from country.vat_rates import map_country_to_region
-                region = map_country_to_region(country_code)
+                # Map country code to VAT region (Phase 6: Use database-driven function)
+                from rules_engine.custom_functions import lookup_region
+                region = lookup_region(country_code)
 
                 return region
             else:

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { formatPrice } from '../../../utils/priceFormatter';
-import { getVatRate, calculateVat, formatVatLabel } from '../../../utils/vatUtils';
+import { formatVatLabel } from '../../../utils/vatUtils';
 import { useCart } from "../../../contexts/CartContext";
 import {
 	Alert,
@@ -417,19 +417,13 @@ const MarkingProductCard = React.memo(
 						<Typography variant="body2" color="text.secondary">
 							Product Name: {product.product_name}
 						</Typography>
-						<Typography variant="body2" color="text.secondary">
-							VAT Region: {userRegion}
-						</Typography>
 					</Box>
 					<Table size="small">
 						<TableHead>
 							<TableRow>
 								<TableCell>Variation</TableCell>
 								<TableCell>Price Type</TableCell>
-								<TableCell align="right">Net Price</TableCell>
-								<TableCell align="right">VAT Rate</TableCell>
-								<TableCell align="right">VAT Amount</TableCell>
-								<TableCell align="right">Total (inc VAT)</TableCell>
+								<TableCell align="right">Price</TableCell>
 							</TableRow>
 						</TableHead>
 						<TableBody>
@@ -438,26 +432,13 @@ const MarkingProductCard = React.memo(
 									(variation) =>
 										variation.prices &&
 										variation.prices.map((price) => {
-											const variationCode = variation.code || product.code || '';
-											const vatRate = getVatRate(userRegion, variationCode);
-											const vatCalc = calculateVat(price.amount, vatRate);
-
 											return (
 												<TableRow
 													key={`${variation.id}-${price.price_type}`}>
 													<TableCell>{variation.name}</TableCell>
 													<TableCell>{price.price_type}</TableCell>
 													<TableCell align="right">
-														{formatPrice(vatCalc.netAmount)}
-													</TableCell>
-													<TableCell align="right">
-														{(vatRate * 100).toFixed(0)}%
-													</TableCell>
-													<TableCell align="right">
-														{formatPrice(vatCalc.vatAmount)}
-													</TableCell>
-													<TableCell align="right">
-														<strong>{formatPrice(vatCalc.grossAmount)}</strong>
+														{formatPrice(price.amount)}
 													</TableCell>
 												</TableRow>
 											);
@@ -465,6 +446,11 @@ const MarkingProductCard = React.memo(
 								)}
 						</TableBody>
 					</Table>
+					<Box sx={{ mt: 2 }}>
+						<Typography variant="caption" color="text.secondary">
+							{product.vat_status_display || 'VAT calculated at checkout based on your location'}
+						</Typography>
+					</Box>
 				</DialogContent>
 				<DialogActions>
 					<Button onClick={() => setShowPriceModal(false)}>Close</Button>
