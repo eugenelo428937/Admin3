@@ -1,14 +1,25 @@
 /**
- * VAT Utility Functions
+ * VAT Utility Functions - Phase 8 Updated
  *
- * Centralized utility functions for VAT-related formatting and display logic.
+ * Frontend utilities for VAT formatting and display.
+ *
+ * IMPORTANT: This file contains ONLY formatting utilities.
+ * All VAT calculations are performed by the backend API via Rules Engine.
+ * Do NOT add VAT calculation logic here.
+ *
  * Used across product cards, cart components, and checkout flows.
  */
 
 /**
- * Format VAT label with percentage
- * @param {number} effectiveVatRate - VAT rate as decimal (e.g., 0.20 for 20%)
+ * Format VAT label with percentage.
+ *
+ * @param {number|null} effectiveVatRate - VAT rate as decimal from API (e.g., 0.20 for 20%)
  * @returns {string} Formatted VAT label (e.g., "VAT (20%)")
+ *
+ * @example
+ * formatVatLabel(0.20)  // "VAT (20%)"
+ * formatVatLabel(0.00)  // "VAT (0%)"
+ * formatVatLabel(null)  // "VAT"
  */
 export const formatVatLabel = (effectiveVatRate) => {
   if (effectiveVatRate !== undefined && effectiveVatRate !== null) {
@@ -19,79 +30,126 @@ export const formatVatLabel = (effectiveVatRate) => {
 };
 
 /**
- * Get VAT status display text based on status code
+ * Get VAT status display text based on status code from API.
+ *
  * @param {string} vatStatus - VAT status code from backend
  * @returns {string} Human-readable VAT status text
+ *
+ * @example
+ * getVatStatusDisplay('included')       // "Price includes VAT"
+ * getVatStatusDisplay('exempt')         // "VAT exempt"
+ * getVatStatusDisplay('reverse_charge') // "Reverse charge applies"
  */
 export const getVatStatusDisplay = (vatStatus) => {
   const statusMap = {
+    'included': 'Price includes VAT',
     'standard': 'Price includes VAT',
+    'exempt': 'VAT exempt',
     'zero': 'VAT exempt',
-    'reverse_charge': 'Reverse charge applies'
+    'zero_rated': 'Zero-rated for VAT',
+    'reverse_charge': 'Reverse charge applies',
+    'not_applicable': ''
   };
   return statusMap[vatStatus] || 'Price includes VAT';
 };
 
 /**
- * Format price with currency symbol
+ * Format price with currency symbol.
+ *
  * @param {number} price - Price value
- * @param {string} currency - Currency symbol (default: '£')
+ * @param {string} currency - Currency code (default: 'GBP')
  * @returns {string} Formatted price string
+ *
+ * @example
+ * formatPrice(100.00)           // "£100.00"
+ * formatPrice(100.00, 'GBP')    // "£100.00"
+ * formatPrice(100.00, 'USD')    // "$100.00"
+ * formatPrice(100.00, 'EUR')    // "€100.00"
  */
-export const formatPrice = (price, currency = '£') => {
+export const formatPrice = (price, currency = 'GBP') => {
   if (price === undefined || price === null) {
-    return `${currency}0.00`;
+    return getCurrencySymbol(currency) + '0.00';
   }
-  return `${currency}${parseFloat(price).toFixed(2)}`;
+  return getCurrencySymbol(currency) + parseFloat(price).toFixed(2);
 };
 
 /**
- * Determine VAT rate based on region and product code
- * Simplified frontend logic based on backend product_classifier.py
- * @param {string} region - User's VAT region (UK, EU, ROW, SA, etc.)
- * @param {string} productCode - Product code (e.g., EBOOK, DOWNLOAD, etc.)
- * @returns {number} VAT rate as decimal (e.g., 0.20 for 20%)
+ * Get currency symbol for currency code.
+ *
+ * @param {string} currency - Currency code (GBP, USD, EUR, ZAR)
+ * @returns {string} Currency symbol
+ *
+ * @example
+ * getCurrencySymbol('GBP')  // "£"
+ * getCurrencySymbol('USD')  // "$"
+ * getCurrencySymbol('EUR')  // "€"
+ * getCurrencySymbol('ZAR')  // "R"
  */
-export const getVatRate = (region, productCode = '') => {
-  const code = productCode ? productCode.toUpperCase() : '';
-
-  // UK eBooks are zero-rated
-  if (region === 'UK' && code.includes('EBOOK')) {
-    return 0.00;
-  }
-
-  // ROW digital products are zero-rated
-  if (region === 'ROW' && (code.includes('DOWNLOAD') || code.includes('PDF') || code.includes('ONLINE'))) {
-    return 0.00;
-  }
-
-  // Standard rates by region
-  const standardRates = {
-    'UK': 0.20,    // 20%
-    'SA': 0.15,    // 15%
-    'EU': 0.00,    // Zero-rated for EU customers
-    'ROW': 0.00    // Zero-rated for ROW customers
+export const getCurrencySymbol = (currency) => {
+  const symbols = {
+    'GBP': '£',
+    'USD': '$',
+    'EUR': '€',
+    'ZAR': 'R'
   };
-
-  return standardRates[region] || 0.00;
+  return symbols[currency] || '£';
 };
 
 /**
- * Calculate VAT amount and gross total
- * @param {number} netAmount - Net price (excluding VAT)
- * @param {number} vatRate - VAT rate as decimal (e.g., 0.20 for 20%)
- * @returns {object} { vatAmount, grossAmount, vatRate }
+ * Format VAT amount as currency.
+ *
+ * @param {number} vatAmount - VAT amount from API
+ * @param {string} currency - Currency code (default: 'GBP')
+ * @returns {string} Formatted currency string
+ *
+ * @example
+ * formatVatAmount(20.00)       // "£20.00"
+ * formatVatAmount(0.00)        // "£0.00"
+ * formatVatAmount(20.00, 'EUR')  // "€20.00"
  */
-export const calculateVat = (netAmount, vatRate) => {
-  const net = parseFloat(netAmount) || 0;
-  const rate = parseFloat(vatRate) || 0;
-  const vatAmount = net * rate;
-  const grossAmount = net + vatAmount;
+export const formatVatAmount = (vatAmount, currency = 'GBP') => {
+  return formatPrice(vatAmount, currency);
+};
+
+/**
+ * Get VAT breakdown for display from API vatCalculations.
+ *
+ * @param {object} vatCalculations - VAT calculations from API
+ * @param {string} currency - Currency code (default: 'GBP')
+ * @returns {object} VAT breakdown with formatted values
+ *
+ * @example
+ * const breakdown = getVatBreakdown(cart.vatCalculations);
+ * // {
+ * //   netAmount: "£100.00",
+ * //   vatAmount: "£20.00",
+ * //   grossAmount: "£120.00",
+ * //   vatLabel: "VAT (20%)",
+ * //   vatRate: 0.20,
+ * //   region: "UK"
+ * // }
+ */
+export const getVatBreakdown = (vatCalculations, currency = 'GBP') => {
+  if (!vatCalculations || !vatCalculations.totals) {
+    return {
+      netAmount: formatPrice(0, currency),
+      vatAmount: formatPrice(0, currency),
+      grossAmount: formatPrice(0, currency),
+      vatLabel: 'VAT',
+      vatRate: 0,
+      region: 'Unknown'
+    };
+  }
+
+  const { totals, region_info } = vatCalculations;
+  const effectiveVatRate = totals.effective_vat_rate || 0;
 
   return {
-    netAmount: net,
-    vatAmount: parseFloat(vatAmount.toFixed(2)),
-    grossAmount: parseFloat(grossAmount.toFixed(2)),
-    vatRate: rate
+    netAmount: formatPrice(totals.total_net || totals.net, currency),
+    vatAmount: formatPrice(totals.total_vat || totals.vat, currency),
+    grossAmount: formatPrice(totals.total_gross || totals.gross, currency),
+    vatLabel: formatVatLabel(effectiveVatRate),
+    vatRate: effectiveVatRate,
+    region: region_info?.region || region || 'Unknown'
   };
 };

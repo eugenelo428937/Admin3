@@ -334,7 +334,7 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@acted.com')
 #     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Password Reset Settings
-FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://127.0.0.1:{os.environ.get(FRONTEND_PORT)}')
+FRONTEND_URL = env('FRONTEND_URL', default=f'http://127.0.0.1:{env("FRONTEND_PORT")}')
 PASSWORD_RESET_TIMEOUT_HOURS = float(os.environ.get('PASSWORD_RESET_TIMEOUT_HOURS', '0.25'))  # 0.25 hours = 15 minutes
 PASSWORD_RESET_TIMEOUT = 900  # 15 minutes in seconds for Django's token validation
 

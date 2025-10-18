@@ -5,11 +5,11 @@ logger = logging.getLogger(__name__)
 def apply_tutorial_booking_fee(cart_items, params):
     """
     Apply tutorial booking fee to the cart.
-    
+
     Args:
         cart_items: List of cart items or cart object (can be empty for testing)
         params: Dictionary containing fee parameters including cart_id and rule_id
-        
+
     Returns:
         dict: Fee application result
     """
@@ -38,10 +38,10 @@ def apply_tutorial_booking_fee(cart_items, params):
                 },
                 'message': f'{fee_description} of £{fee_amount} applied to cart (TEST MODE)'
             }
-        
+
         # Import here to avoid circular imports
         from cart.models import Cart, CartFee
-        
+
         try:
             cart = Cart.objects.get(id=cart_id)
         except Cart.DoesNotExist:
@@ -52,13 +52,13 @@ def apply_tutorial_booking_fee(cart_items, params):
                 'fee_applied': False,
                 'fee_amount': 0
             }
-        
+
         # Check if fee already exists
         existing_fee = CartFee.objects.filter(
             cart=cart,
             fee_type='tutorial_booking_fee'
         ).first()
-        
+
         if existing_fee:
             return {
                 'success': True,
@@ -67,7 +67,7 @@ def apply_tutorial_booking_fee(cart_items, params):
                 'fee_amount': existing_fee.amount,
                 'fee_id': existing_fee.id
             }
-        
+
         # Create the fee
         cart_fee = CartFee.objects.create(
             cart=cart,
@@ -84,7 +84,7 @@ def apply_tutorial_booking_fee(cart_items, params):
                 'application_timestamp': params.get('timestamp')
             }
         )
-        
+
         result = {
             'success': True,
             'fee_applied': True,
@@ -104,7 +104,7 @@ def apply_tutorial_booking_fee(cart_items, params):
         }
 
         return result
-        
+
     except Exception as e:
         logger.error(f"Error in apply_tutorial_booking_fee: {str(e)}")
         return {
@@ -116,10 +116,9 @@ def apply_tutorial_booking_fee(cart_items, params):
 
 
 # ============================================================================
-# VAT Calculation Functions (Epic 3 - Phase 1 & Phase 2)
+# VAT Calculation Functions (Epic 3 - Phase 2)
 # ============================================================================
-
-from country.vat_rates import get_vat_rate, map_country_to_region
+# Phase 6: Removed legacy country.vat_rates import - now using database-driven functions
 from decimal import Decimal, ROUND_HALF_UP
 from django.db.models import Q
 from django.utils import timezone
@@ -170,7 +169,7 @@ def lookup_region(country_code, effective_date=None):
     except UtilsCountrys.DoesNotExist:
         logger.warning(f'Country not found: {country_code}')
         return 'ROW'
-
+# refactor to util_country
 
 def lookup_vat_rate(country_code):
     """
@@ -209,7 +208,7 @@ def lookup_vat_rate(country_code):
         logger.warning(f'Country not found: {country_code}')
         return Decimal('0.00')
 
-
+# refactor to update_handler.py
 def calculate_vat_amount(net_amount, vat_rate):
     """
     Calculate VAT amount with proper rounding (ROUND_HALF_UP to 2 decimal places).
@@ -230,7 +229,7 @@ def calculate_vat_amount(net_amount, vat_rate):
     amount = Decimal(str(net_amount)) * Decimal(str(vat_rate))
     return amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
-
+# refactor to update_handler.py
 # Helper function for adding decimal values
 def add_decimals(value1, value2):
     """
@@ -249,24 +248,23 @@ def add_decimals(value1, value2):
     """
     return Decimal(str(value1)) + Decimal(str(value2))
 
-
+# refactor to update_handler.py
 # Function Registry - maps function names to callable functions for Rules Engine
+# Phase 6: Removed legacy Phase 1 functions (get_vat_rate, map_country_to_region)
+# All VAT logic now uses database-driven Phase 2 functions
 FUNCTION_REGISTRY = {
-    # Phase 1 functions (legacy)
-    "get_vat_rate": get_vat_rate,
-    "map_country_to_region": map_country_to_region,
-    # Phase 2 functions (database-driven)
+    # Phase 2 functions (database-driven from utils models)
     "lookup_region": lookup_region,
     "lookup_vat_rate": lookup_vat_rate,
     "calculate_vat_amount": calculate_vat_amount,
-    # Helper functions for Phase 3
+    # Helper functions
     "add_decimals": add_decimals,
 }
 
 # ============================================================================
 # VAT Calculation Integration (Epic 3 - Phase 2)
 # ============================================================================
-
+# refactor to update_handler.py
 def calculate_vat_for_context(context, params):
     """
     Calculate VAT for a given context using the new VAT calculation service.
