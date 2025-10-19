@@ -65,12 +65,18 @@ const MainNavActions = ({
 				</IconButton>
 			)}
 
-			{/* Shopping Cart */}
+			{/* Shopping Cart - Show on desktop always, on mobile only when cart has items */}
 			<Tooltip title="Shopping Cart">
 				<Button
 					onClick={onOpenCart}
 					variant="transparent-background"
-					size="medium"					
+					size="medium"
+					sx={{
+						display: {
+							xs: cartCount > 0 ? "flex" : "none",
+							md: "flex"
+						}
+					}}
 					startIcon={
 						<Badge
 							badgeContent={cartCount}
@@ -89,20 +95,29 @@ const MainNavActions = ({
 					<Typography
 						variant="button"
 						noWrap
-						color={theme.palette.offwhite["000"]}>
+						sx={{
+							display: { xs: "none", md: "block" },
+							color: theme.palette.offwhite["000"]
+						}}>
 						Cart
 					</Typography>
 				</Button>
 			</Tooltip>
 
-			{/* User Profile / Login */}
+			{/* User Profile / Login - Show on desktop always, on mobile only when cart is empty */}
 			{isAuthenticated ? (
 				<>
 					<Tooltip title="User Profile">
 						<Button
 							variant="transparent-background"
 							onClick={handleProfileOpen}
-							sx={{ color: "text.primary" }}
+							sx={{
+								color: "text.primary",
+								display: {
+									xs: cartCount === 0 ? "flex" : "none",
+									md: "flex"
+								}
+							}}
 							aria-label="user profile menu"
 							startIcon={
 								<Avatar
@@ -126,7 +141,10 @@ const MainNavActions = ({
 							<Typography
 								variant="button"
 								noWrap
-								color={theme.palette.offwhite["000"]}>
+								sx={{
+									display: { xs: "none", md: "block" },
+									color: theme.palette.offwhite["000"]
+								}}>
 								{user?.first_name ? `${user.first_name}` : user?.email}
 							</Typography>
 						</Button>
@@ -179,18 +197,29 @@ const MainNavActions = ({
 					</Menu>
 				</>
 			) : (
-				<Button
-					onClick={onOpenAuth}
-					variant="transparent-background"
-					size="medium"
-					startIcon={<LoginIcon sx={{ color: theme.palette.offwhite["000"] }} />}>
-					<Typography
-						variant="button"
-						noWrap
-						color={theme.palette.offwhite["000"]}>
-						Login
-					</Typography>
-				</Button>
+				<Tooltip title="Login">
+					<Button
+						onClick={onOpenAuth}
+						variant="transparent-background"
+						size="medium"
+						sx={{
+							display: {
+								xs: cartCount === 0 ? "flex" : "none",
+								md: "flex"
+							}
+						}}
+						startIcon={<LoginIcon sx={{ color: theme.palette.offwhite["000"] }} />}>
+						<Typography
+							variant="button"
+							noWrap
+							sx={{
+								display: { xs: "none", md: "block" },
+								color: theme.palette.offwhite["000"]
+							}}>
+							Login
+						</Typography>
+					</Button>
+				</Tooltip>
 			)}
 		</Box>
 	);
