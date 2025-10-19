@@ -150,6 +150,6 @@ export const getVatBreakdown = (vatCalculations, currency = 'GBP') => {
     grossAmount: formatPrice(totals.total_gross || totals.gross, currency),
     vatLabel: formatVatLabel(effectiveVatRate),
     vatRate: effectiveVatRate,
-    region: region_info?.region || region || 'Unknown'
+    region: region_info?.region || 'Unknown'
   };
 };
