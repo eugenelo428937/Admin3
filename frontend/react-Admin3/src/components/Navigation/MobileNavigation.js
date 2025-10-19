@@ -75,85 +75,85 @@ const MobileNavigation = ({
 	const MobileNavHeader = ({ title = "", showBackButton = false }) => (
 		<div className="mobile-nav-header" style={{
 			display: "flex",
-			justifyContent: "space-between",
-			alignItems: "center",
-			padding: "0.5rem 0.75rem",
-			gap: "0.5rem"
+			flexDirection: "column",
+			padding: "0.5rem 0 0.5rem 0",
+			gap: "0.5rem",
+			borderBottom: "1px solid rgba(255, 255, 255, 0.12)"
 		}}>
-			{/* Left side - Action icons */}
-			<div style={{ display: "flex", gap: "0.25rem", alignItems: "center", flexShrink: 0 }}>
-				{/* Search Icon */}
-				<IconButton
-					onClick={() => {
-						if (onOpenSearch) {
-							onOpenSearch();
-							closeNavigation();
-						}
-					}}
-					size="small"
-					sx={{ padding: "4px" }}
-					aria-label="search">
-					<Search fontSize="small" />
-				</IconButton>
+			{/* Top row - Action icons on left */}
+			<div style={{ display: "flex", alignItems: "center", minHeight: "40px" }}>
+				{/* Search, Cart, Login icons */}
+				<div style={{ display: "flex", gap: "0.25rem", alignItems: "center" }}>
+					{/* Search Icon */}
+					<IconButton
+						onClick={() => {
+							if (onOpenSearch) {
+								onOpenSearch();
+								closeNavigation();
+							}
+						}}
+						size="medium"
+						sx={{ padding: "6px", color: "white" }}
+						aria-label="search">
+						<Search fontSize="medium" />
+					</IconButton>
 
-				{/* Cart Icon */}
-				<IconButton
-					onClick={() => {
-						if (onOpenCart) {
-							onOpenCart();
-							closeNavigation();
-						}
-					}}
-					size="small"
-					sx={{ padding: "4px" }}
-					aria-label="shopping cart">
-					<Badge badgeContent={cartCount} color="primary" max={99}>
-						<ShoppingCartOutlined fontSize="small" />
-					</Badge>
-				</IconButton>
+					{/* Cart Icon */}
+					<IconButton
+						onClick={() => {
+							if (onOpenCart) {
+								onOpenCart();
+								closeNavigation();
+							}
+						}}
+						size="medium"
+						sx={{ padding: "6px", color: "white" }}
+						aria-label="shopping cart">
+						<Badge badgeContent={cartCount} color="primary" max={99}>
+							<ShoppingCartOutlined fontSize="medium" />
+						</Badge>
+					</IconButton>
 
-				{/* Login/Profile Icon */}
-				<IconButton
-					onClick={() => {
-						if (onOpenAuth) {
-							onOpenAuth();
-							closeNavigation();
-						}
-					}}
-					size="small"
-					sx={{ padding: "4px" }}
-					aria-label={isAuthenticated ? "profile" : "login"}>
-					{isAuthenticated ? <AccountCircle fontSize="small" /> : <Login fontSize="small" />}
-				</IconButton>
+					{/* Login/Profile Icon */}
+					<IconButton
+						onClick={() => {
+							if (onOpenAuth) {
+								onOpenAuth();
+								closeNavigation();
+							}
+						}}
+						size="medium"
+						sx={{ padding: "6px", color: "white" }}
+						aria-label={isAuthenticated ? "profile" : "login"}>
+						{isAuthenticated ? <AccountCircle fontSize="medium" /> : <Login fontSize="medium" />}
+					</IconButton>
+				</div>
 			</div>
 
-			{/* Center - Title (if exists) */}
-			{title && (
-				<div className="mobile-nav-title" style={{ flex: 1, textAlign: "center", fontSize: "1rem", fontWeight: "500" }}>
-					{title}
+			{/* Bottom row - Back button and Title (only show when on sub-panel) */}
+			{showBackButton && (
+				<div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+					{/* Back button */}
+					<IconButton onClick={navigateBack} size="medium" sx={{ padding: "6px", color: "white" }} aria-label="go back">
+						<NavigateBefore fontSize="medium" />
+					</IconButton>
+
+					{/* Title */}
+					{title && (
+						<div className="mobile-nav-title" style={{ flex: 1, fontSize: "1.1rem", fontWeight: "500", color: "white" }}>
+							{title}
+						</div>
+					)}
 				</div>
 			)}
-
-			{/* Right side - Back or Close button */}
-			<div style={{ flexShrink: 0 }}>
-				{showBackButton ? (
-					<IconButton onClick={navigateBack} size="small" sx={{ padding: "4px" }} aria-label="go back">
-						<NavigateBefore />
-					</IconButton>
-				) : (
-					<IconButton onClick={closeNavigation} size="small" sx={{ padding: "4px" }} aria-label="close navigation">
-						<NavigateBefore />
-					</IconButton>
-				)}
-			</div>
 		</div>
 	);
 
 	// Main navigation panel
 	const MainPanel = () => (
-		<div className="mobile-nav-content p-left__md">
+		<div className="mobile-nav-content">
 			<MobileNavHeader title="" showBackButton={false} />
-			<ul className="mobile-nav-list">
+			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
 				<li className="mobile-nav-list-item">
 					<NavLink
 						to="/home"
@@ -255,9 +255,9 @@ const MobileNavigation = ({
 
 	// Subjects panel
 	const SubjectsPanel = () => (
-		<div className="mobile-nav-content p-left__md">
+		<div className="mobile-nav-content">
 			<MobileNavHeader title="Subjects" showBackButton={true} />
-			<ul className="mobile-nav-list">
+			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
 				<li className="mobile-nav-list-item">
 					<div
 						className="mobile-nav-link"
@@ -328,9 +328,9 @@ const MobileNavigation = ({
 
 	// Subject category panel (Core Principles, etc.)
 	const SubjectCategoryPanel = ({ data }) => (
-		<div className="mobile-nav-content p-left__md">
+		<div className="mobile-nav-content">
 			<MobileNavHeader title={currentPanel.title} showBackButton={true} />
-			<ul className="mobile-nav-list">
+			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
 				{data &&
 					data.map((subject) => (
 						<li key={subject.id} className="mobile-nav-list-item">
@@ -352,9 +352,9 @@ const MobileNavigation = ({
 
 	// Products panel
 	const ProductsPanel = () => (
-		<div className="mobile-nav-content p-left__md">
+		<div className="mobile-nav-content">
 			<MobileNavHeader title="Products" showBackButton={true} />
-			<ul className="mobile-nav-list">
+			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
 				<li className="mobile-nav-list-item">
 					<div
 						className="mobile-nav-link"
@@ -396,9 +396,9 @@ const MobileNavigation = ({
 
 	// Product group panel
 	const ProductGroupPanel = ({ data }) => (
-		<div className="mobile-nav-content p-left__md">
+		<div className="mobile-nav-content">
 			<MobileNavHeader title={currentPanel.title} showBackButton={true} />
-			<ul className="mobile-nav-list">
+			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
 				<li className="mobile-nav-list-item">
 					<div
 						className="mobile-nav-link"
@@ -435,9 +435,9 @@ const MobileNavigation = ({
 
 	// Distance Learning panel
 	const DistanceLearningPanel = () => (
-		<div className="mobile-nav-content p-left__md">
+		<div className="mobile-nav-content">
 			<MobileNavHeader title="Distance Learning" showBackButton={true} />
-			<ul className="mobile-nav-list">
+			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
 				<li className="mobile-nav-list-item">
 					<div
 						className="mobile-nav-link"
@@ -484,9 +484,9 @@ const MobileNavigation = ({
 
 	// Tutorials panel
 	const TutorialsPanel = () => (
-		<div className="mobile-nav-content p-left__md">
+		<div className="mobile-nav-content">
 			<MobileNavHeader title="Tutorials" showBackButton={true} />
-			<ul className="mobile-nav-list">
+			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
 				<li className="mobile-nav-list-item">
 					<div
 						className="mobile-nav-link"
@@ -573,9 +573,9 @@ const MobileNavigation = ({
 
 	// Tutorial category panels
 	const TutorialCategoryPanel = ({ data, type }) => (
-		<div className="mobile-nav-content p-left__md">
+		<div className="mobile-nav-content">
 			<MobileNavHeader title={currentPanel.title} showBackButton={true} />
-			<ul className="mobile-nav-list">
+			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
 				{type === "format" ? (
 					data.map((format) => (
 						<li key={format.filter_type} className="mobile-nav-list-item">
@@ -639,9 +639,9 @@ const MobileNavigation = ({
 
 	// Admin panel
 	const AdminPanel = () => (
-		<div className="mobile-nav-content p-left__md">
+		<div className="mobile-nav-content">
 			<MobileNavHeader title="Admin" showBackButton={true} />
-			<ul className="mobile-nav-list">
+			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
 				<li className="mobile-nav-list-item">
 					<div
 						className="mobile-nav-link"

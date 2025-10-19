@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "URLParameters",
+  "description": "Valid URL query parameters for product filtering. Supports multiple formats: indexed (subject_code, subject_1), comma-separated (group=MAT,TUT), and boolean (tutorial=1).",
+  "type": "object",
+  "properties": {
+    "subject_code": {
+      "type": "string",
+      "description": "Primary subject filter (indexed format: subject_code=CB1)"
+    },
+    "subject_1": {
+      "type": "string",
+      "description": "Additional subject filter (indexed format continuation)"
+    },
+    "subject_2": {
+      "type": "string",
+      "description": "Additional subject filter (indexed format continuation)"
+    },
+    "subject_3": {
+      "type": "string",
+      "description": "Additional subject filter (indexed format continuation)"
+    },
+    "subject_4": {
+      "type": "string",
+      "description": "Additional subject filter (indexed format continuation)"
+    },
+    "category_code": {
+      "type": "string",
+      "description": "Primary category filter (indexed format: category_code=MAT)"
+    },
+    "category_1": {
+      "type": "string",
+      "description": "Additional category filter (indexed format continuation)"
+    },
+    "category_2": {
+      "type": "string",
+      "description": "Additional category filter (indexed format continuation)"
+    },
+    "category_3": {
+      "type": "string",
+      "description": "Additional category filter (indexed format continuation)"
+    },
+    "group": {
+      "type": "string",
+      "description": "Product type filter (comma-separated format: group=PRINTED,EBOOK). Legacy parameter name for product_type_code."
+    },
+    "product": {
+      "type": "string",
+      "description": "Specific product filter (comma-separated format: product=PROD1,PROD2)"
+    },
+    "mode_of_delivery": {
+      "type": "string",
+      "description": "Mode of delivery filter (comma-separated format)"
+    },
+    "tutorial_format": {
+      "type": "string",
+      "enum": [
+        "online",
+        "in_person",
+        "hybrid"
+      ],
+      "description": "Tutorial format filter (single value)"
+    },
+    "distance_learning": {
+      "type": "string",
+      "enum": [
+        "1"
+      ],
+      "description": "Distance learning filter flag (boolean format: '1' if true, absent if false)"
+    },
+    "tutorial": {
+      "type": "string",
+      "enum": [
+        "1"
+      ],
+      "description": "Tutorial products filter flag (boolean format: '1' if true, absent if false)"
+    },
+    "search_query": {
+      "type": "string",
+      "description": "Search query text"
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "subject_code": "CB1",
+      "subject_1": "CB2",
+      "category_code": "MAT",
+      "tutorial": "1"
+    },
+    {
+      "group": "PRINTED,EBOOK",
+      "search_query": "exam materials"
+    },
+    {
+      "tutorial_format": "online",
+      "distance_learning": "1"
+    }
+  ]
+}
