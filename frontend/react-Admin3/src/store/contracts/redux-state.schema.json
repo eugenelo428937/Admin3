@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FilterState",
+  "description": "Redux state schema for product filter state management",
+  "type": "object",
+  "properties": {
+    "subject_code": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Subject filter selections (e.g., ['CB1', 'CB2'])"
+    },
+    "category_code": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Category filter selections (e.g., ['MAT', 'TUT'])"
+    },
+    "product_type_code": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Product type filter selections (e.g., ['PRINTED', 'EBOOK'])"
+    },
+    "product_code": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Specific product filter selections"
+    },
+    "mode_of_delivery_code": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Mode of delivery filter selections"
+    },
+    "tutorial_format": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "online",
+        "in_person",
+        "hybrid",
+        null
+      ],
+      "default": null,
+      "description": "Tutorial format filter (single selection)"
+    },
+    "distance_learning": {
+      "type": "boolean",
+      "default": false,
+      "description": "Distance learning filter flag"
+    },
+    "tutorial": {
+      "type": "boolean",
+      "default": false,
+      "description": "Tutorial products filter flag"
+    },
+    "search_query": {
+      "type": "string",
+      "default": "",
+      "description": "Search query text"
+    },
+    "lastUpdated": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "default": null,
+      "description": "Timestamp of last filter update (for change detection)"
+    },
+    "filterCounts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      },
+      "default": {},
+      "description": "Product counts per filter type"
+    },
+    "validationErrors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "message"
+        ]
+      },
+      "default": [],
+      "description": "Validation error messages (Phase 3 feature)"
+    }
+  },
+  "required": [
+    "subject_code",
+    "category_code",
+    "product_type_code",
+    "product_code",
+    "mode_of_delivery_code",
+    "tutorial_format",
+    "distance_learning",
+    "tutorial",
+    "search_query"
+  ],
+  "additionalProperties": false
+}
