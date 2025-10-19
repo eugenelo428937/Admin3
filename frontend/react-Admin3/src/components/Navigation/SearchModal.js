@@ -13,15 +13,22 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import {
+  setSearchQuery,
+  setSubjects,
+  resetFilters,
+} from '../../store/slices/filtersSlice';
 import SearchBox from '../SearchBox';
 import SearchResults from '../SearchResults';
 
 const SearchModal = ({ open, onClose }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // State for search modal
   const [searchResults, setSearchResults] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setLocalSearchQuery] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({
     subjects: [],
     product_groups: [],
@@ -52,7 +59,7 @@ const SearchModal = ({ open, onClose }) => {
     // Reset search state after a brief delay to avoid visual glitches
     setTimeout(() => {
       setSearchResults(null);
-      setSearchQuery('');
+      setLocalSearchQuery('');
       setSelectedFilters({
         subjects: [],
         product_groups: [],
@@ -82,7 +89,7 @@ const SearchModal = ({ open, onClose }) => {
   // Handle search results from SearchBox
   const handleSearchResults = (results, query) => {
     setSearchResults(results);
-    setSearchQuery(query || '');
+    setLocalSearchQuery(query || '');
     setSearchError(null);
   };
 
@@ -119,40 +126,34 @@ const SearchModal = ({ open, onClose }) => {
   };
 
   // Handle "Show Matching Products" button click from SearchResults
+  // Story 1.4: Use Redux dispatch instead of manual URL construction
   const handleShowMatchingProducts = (results, filters, query) => {
-
     // Use current state if parameters are not provided
     const searchQueryToUse = query || searchQuery;
     const filtersToUse = filters || selectedFilters;
-    
-    const searchParams = new URLSearchParams();
-    
-    if (searchQueryToUse?.trim()) {
-      searchParams.append('q', searchQueryToUse.trim());
-    }
-    
-    // Add selected filters
-    filtersToUse.subjects.forEach(subject => {
-      searchParams.append('subjects', subject.code || subject.id);
-    });
-    
-    filtersToUse.product_groups.forEach(group => {
-      searchParams.append('groups', group.id);
-    });
-    
-    filtersToUse.variations.forEach(variation => {
-      searchParams.append('variations', variation.id);
-    });
-    
-    filtersToUse.products.forEach(product => {
-      searchParams.append('products', product.id);
-    });
 
-    const finalUrl = `/products?${searchParams.toString()}`;
-    
-    // Close the modal and navigate
+    // Clear existing filters first
+    dispatch(resetFilters());
+
+    // Dispatch search query to Redux (if present)
+    if (searchQueryToUse?.trim()) {
+      dispatch(setSearchQuery(searchQueryToUse.trim()));
+    }
+
+    // Dispatch subject filters to Redux
+    if (filtersToUse.subjects.length > 0) {
+      const subjectCodes = filtersToUse.subjects.map(subject => subject.code || subject.id);
+      dispatch(setSubjects(subjectCodes));
+    }
+
+    // Note: Product groups, variations, and products filters from SearchModal
+    // are not yet integrated with Redux filter state (Story 1.4 scope: subjects + search only)
+    // Future enhancement: Add setProductTypes, setProducts actions for complete integration
+
+    // Close the modal and navigate to products page
+    // URL sync middleware will automatically update URL with filters
     handleCloseSearchModal();
-    navigate(finalUrl);
+    navigate('/products');
   };
 
   return (
