@@ -136,9 +136,14 @@ const ProductList = React.memo(() => {
      */
     useEffect(() => {
         const handlePopState = () => {
+            console.log('🔙 [POPSTATE] Browser back/forward detected');
+            console.log('🔙 [POPSTATE] Current URL:', window.location.href);
+
             // Parse URL and update Redux state
             const searchParams = new URLSearchParams(window.location.search);
             const filtersFromUrl = parseUrlToFilters(searchParams);
+
+            console.log('🔙 [POPSTATE] Filters from URL:', filtersFromUrl);
 
             // Clear existing filters first to ensure clean state
             dispatch(resetFilters());
@@ -171,10 +176,13 @@ const ProductList = React.memo(() => {
             if (filtersFromUrl.searchQuery) {
                 dispatch(setSearchQuery(filtersFromUrl.searchQuery));
             }
+
+            console.log('🔙 [POPSTATE] Redux state updated, products should reload now');
         };
 
         // Listen to popstate event (browser back/forward)
         window.addEventListener('popstate', handlePopState);
+        console.log('🔙 [POPSTATE] Listener registered');
 
         // Cleanup listener on unmount
         return () => {
