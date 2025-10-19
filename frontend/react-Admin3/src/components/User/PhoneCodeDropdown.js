@@ -1,10 +1,10 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Form } from "react-bootstrap";
+import { Select, MenuItem } from "@mui/material";
 
 const PhoneCodeDropdown = ({ countries, selectedCountry, onChange, name }) => {
   return (
-    <Form.Select
+    <Select
       name={name}
       value={selectedCountry ? selectedCountry.phone_code : ""}
       onChange={e => {
@@ -12,17 +12,17 @@ const PhoneCodeDropdown = ({ countries, selectedCountry, onChange, name }) => {
         const country = countries.find(c => c.phone_code === code);
         if (country) onChange(country);
       }}
-      style={{ maxWidth: 100, display: "inline-block", marginRight: 8 }}
+      sx={{ maxWidth: 100, display: "inline-block", mr: 1 }}
     >
-      <option value="">Code</option>
+      <MenuItem value="">Code</MenuItem>
       {countries
         .filter(c => c.phone_code)
         .map(c => (
-          <option key={c.iso_code} value={c.phone_code}>
+          <MenuItem key={c.iso_code} value={c.phone_code}>
             {c.phone_code} {c.name}
-          </option>
+          </MenuItem>
         ))}
-    </Form.Select>
+    </Select>
   );
 };
 

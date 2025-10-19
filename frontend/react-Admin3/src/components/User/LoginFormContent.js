@@ -86,18 +86,6 @@ const LoginFormContent = ({
             mt: theme.liftkit.spacing.md,            
           }}>
 					<Button
-						type="submit"
-						variant="contained"
-						disabled={isLoading}
-						sx={{
-							px: theme.liftkit.spacing.md,
-							py: theme.liftkit.spacing.xs2,
-							width: "auto",
-						}}>
-						{isLoading ? "Logging in..." : "Login"}
-					</Button>
-
-					<Button
 						variant="contained"
 						onClick={() => {
 							onHide();
@@ -111,6 +99,19 @@ const LoginFormContent = ({
 						}}>
 						Create account
 					</Button>
+					<Button
+						type="submit"
+						variant="contained"
+						disabled={isLoading}
+						sx={{
+							px: theme.liftkit.spacing.md,
+							py: theme.liftkit.spacing.xs2,
+							width: "auto",
+						}}>
+						{isLoading ? "Logging in..." : "Login"}
+					</Button>
+
+					
 				</Stack>
 			</Box>
 		</Box>

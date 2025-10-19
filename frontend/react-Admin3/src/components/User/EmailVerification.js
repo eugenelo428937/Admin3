@@ -1,6 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Card, Row, Col, Alert, Spinner, Button } from "react-bootstrap";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  Grid,
+  Alert,
+  AlertTitle,
+  CircularProgress,
+  Button,
+  Typography,
+  Box
+} from "@mui/material";
+import {
+  CheckCircle as CheckCircleIcon,
+  Warning as WarningIcon,
+  Info as InfoIcon,
+  Person as PersonIcon,
+  Login as LoginIcon,
+  Refresh as RefreshIcon,
+  Lightbulb as LightbulbIcon
+} from "@mui/icons-material";
 import authService from "../../services/authService";
 import logger from "../../services/loggerService";
 
@@ -63,99 +83,106 @@ const EmailVerification = () => {
 
     if (loading) {
         return (
-            <Row className="justify-content-center">
-                <Col md={6} lg={4}>
+            <Grid container justifyContent="center">
+                <Grid size={{ xs: 12, md: 6, lg: 4 }}>
                     <Card>
-                        <Card.Body className="text-center py-5">
-                            <Spinner animation="border" variant="primary" className="mb-3" />
-                            <h5>Verifying Email</h5>
-                            <p className="text-muted">Please wait while we verify your new email address...</p>
-                        </Card.Body>
+                        <CardContent sx={{ textAlign: 'center', py: 5 }}>
+                            <CircularProgress color="primary" sx={{ mb: 3 }} />
+                            <Typography variant="h5">Verifying Email</Typography>
+                            <Typography color="text.secondary">Please wait while we verify your new email address...</Typography>
+                        </CardContent>
                     </Card>
-                </Col>
-            </Row>
+                </Grid>
+            </Grid>
         );
     }
 
     return (
-        <Row className="justify-content-center">
-            <Col md={8} lg={6}>
+        <Grid container justifyContent="center">
+            <Grid size={{ xs: 12, md: 8, lg: 6 }}>
                 <Card>
-                    <Card.Header className={`text-white ${verificationStatus === 'success' ? 'bg-success' : 'bg-danger'}`}>
-                        <h4 className="mb-0">
-                            <i className={`bi ${verificationStatus === 'success' ? 'bi-check-circle' : 'bi-exclamation-triangle'} me-2`}></i>
-                            Email Verification
-                        </h4>
-                    </Card.Header>
-                    <Card.Body>
+                    <CardHeader
+                        title={
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                {verificationStatus === 'success' ? (
+                                    <CheckCircleIcon sx={{ mr: 2 }} />
+                                ) : (
+                                    <WarningIcon sx={{ mr: 2 }} />
+                                )}
+                                Email Verification
+                            </Box>
+                        }
+                        sx={{
+                            bgcolor: verificationStatus === 'success' ? 'success.main' : 'error.main',
+                            color: 'white'
+                        }}
+                        titleTypographyProps={{ variant: 'h4', sx: { mb: 0 } }}
+                    />
+                    <CardContent>
                         {verificationStatus === "success" && (
-                            <Alert variant="success">
-                                <Alert.Heading>
-                                    <i className="bi bi-check-circle-fill me-2"></i>
+                            <Alert severity="success">
+                                <AlertTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                                    <CheckCircleIcon sx={{ mr: 2 }} />
                                     Email Verified Successfully!
-                                </Alert.Heading>
-                                <p className="mb-3">
+                                </AlertTitle>
+                                <Typography sx={{ mb: 3 }}>
                                     Your email address has been changed to <strong>{newEmail}</strong> and verified successfully.
-                                </p>
-                                <div className="bg-light p-3 rounded mb-3">
-                                    <p className="mb-2 fw-bold">
-                                        <i className="bi bi-info-circle me-2"></i>
+                                </Typography>
+                                <Box sx={{ bgcolor: 'grey.100', p: 3, borderRadius: 1, mb: 3 }}>
+                                    <Typography sx={{ mb: 2, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                                        <InfoIcon sx={{ mr: 2 }} />
                                         What's next:
-                                    </p>
-                                    <ul className="mb-0">
+                                    </Typography>
+                                    <Box component="ul" sx={{ mb: 0 }}>
                                         <li>You can now use your new email address to log in</li>
                                         <li>All future communications will be sent to your new email</li>
                                         <li>Your profile has been updated with the new email address</li>
-                                    </ul>
-                                </div>
-                                <div className="d-flex gap-2 flex-wrap">
-                                    <Button variant="primary" onClick={handleBackToProfile}>
-                                        <i className="bi bi-person-circle me-1"></i>
+                                    </Box>
+                                </Box>
+                                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                                    <Button variant="contained" onClick={handleBackToProfile} startIcon={<PersonIcon />}>
                                         Back to Profile
                                     </Button>
-                                    <Button variant="outline-primary" onClick={handleBackToLogin}>
-                                        <i className="bi bi-box-arrow-in-right me-1"></i>
+                                    <Button variant="outlined" onClick={handleBackToLogin} startIcon={<LoginIcon />}>
                                         Login with New Email
                                     </Button>
-                                </div>
+                                </Box>
                             </Alert>
                         )}
 
                         {error && (
-                            <Alert variant="danger">
-                                <Alert.Heading>
-                                    <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                            <Alert severity="error">
+                                <AlertTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                                    <WarningIcon sx={{ mr: 2 }} />
                                     Verification Failed
-                                </Alert.Heading>
-                                <p className="mb-3">{error}</p>
-                                <div className="bg-light p-3 rounded mb-3">
-                                    <p className="mb-2 fw-bold">
-                                        <i className="bi bi-lightbulb me-2"></i>
+                                </AlertTitle>
+                                <Typography sx={{ mb: 3 }}>{error}</Typography>
+                                <Box sx={{ bgcolor: 'grey.100', p: 3, borderRadius: 1, mb: 3 }}>
+                                    <Typography sx={{ mb: 2, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                                        <LightbulbIcon sx={{ mr: 2 }} />
                                         Possible reasons:
-                                    </p>
-                                    <ul className="mb-0">
+                                    </Typography>
+                                    <Box component="ul" sx={{ mb: 0 }}>
                                         <li>The verification link has expired (links are valid for 24 hours)</li>
                                         <li>The link has already been used</li>
                                         <li>The link was copied incorrectly</li>
                                         <li>The email address is already in use by another account</li>
-                                    </ul>
-                                </div>
-                                <div className="d-flex gap-2 flex-wrap">
-                                    <Button variant="primary" onClick={handleBackToProfile}>
-                                        <i className="bi bi-person-circle me-1"></i>
+                                    </Box>
+                                </Box>
+                                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                                    <Button variant="contained" onClick={handleBackToProfile} startIcon={<PersonIcon />}>
                                         Back to Profile
                                     </Button>
-                                    <Button variant="outline-danger" onClick={() => window.location.reload()}>
-                                        <i className="bi bi-arrow-clockwise me-1"></i>
+                                    <Button variant="outlined" color="error" onClick={() => window.location.reload()} startIcon={<RefreshIcon />}>
                                         Try Again
                                     </Button>
-                                </div>
+                                </Box>
                             </Alert>
                         )}
-                    </Card.Body>
+                    </CardContent>
                 </Card>
-            </Col>
-        </Row>
+            </Grid>
+        </Grid>
     );
 };
 

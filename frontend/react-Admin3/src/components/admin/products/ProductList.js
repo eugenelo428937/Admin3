@@ -3,7 +3,15 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import productService from "../../../services/productService";
 import ProductTable from "./ProductTable";
-import { Button, Container, Row, Col } from "react-bootstrap";
+import {
+  Button,
+  Container,
+  Grid,
+  Typography,
+  Alert,
+  Box,
+  CircularProgress
+} from "@mui/material";
 
 const AdminProductList = () => {
     const [products, setProducts] = useState([]);
@@ -40,27 +48,29 @@ const AdminProductList = () => {
         }
     };
 
-    if (loading) return <div>Loading products...</div>;
-    if (error) return <div className="alert alert-danger">{error}</div>;
+    if (loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
+    if (error) return <Alert severity="error" sx={{ mt: 4 }}>{error}</Alert>;
 
     return (
-			<Container className="mt-4">
-				<Row className="mb-3">
-					<Col>
-						<h2>Products</h2>
-					</Col>
-					<Col className="text-end">
-						<Link to="/products/new">
-							<Button variant="primary">Add New Product</Button>
-						</Link>{" "}
-						<Link to="/products/import">
-							<Button variant="secondary">Import Products</Button>
-						</Link>
-					</Col>
-				</Row>
+			<Container sx={{ mt: 4 }}>
+				<Grid container sx={{ mb: 3 }}>
+					<Grid size={{ xs: 12, md: 6 }}>
+						<Typography variant="h4" component="h2">Products</Typography>
+					</Grid>
+					<Grid size={{ xs: 12, md: 6 }} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+						<Box sx={{ display: 'flex', gap: 2, justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
+							<Button component={Link} to="/products/new" variant="contained">
+								Add New Product
+							</Button>
+							<Button component={Link} to="/products/import" variant="outlined">
+								Import Products
+							</Button>
+						</Box>
+					</Grid>
+				</Grid>
 
 				{products.length === 0 ? (
-					<div>No products found</div>
+					<Alert severity="info">No products found</Alert>
 				) : (
 					<ProductTable
 						products={products}

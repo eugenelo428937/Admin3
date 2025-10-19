@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Form, Badge, Button, Alert, Spinner } from 'react-bootstrap';
-import { Search, Filter, X } from 'react-bootstrap-icons';
+import { TextField, Chip, Button, Alert, CircularProgress, Box, IconButton, InputAdornment } from '@mui/material';
+import { Search as SearchIcon, FilterList as FilterIcon, Close as CloseIcon } from '@mui/icons-material';
 import searchService from '../services/searchService';
 import '../styles/search_box.css';
 
@@ -147,110 +147,101 @@ const SearchBox = ({
     };
 
     return (
-			<div className="search-box-container m-top__md">
+			<Box className="search-box-container m-top__md">
 				{/* Search Input */}
-				<Form.Group className="mb-3">
-					<div className="search-input-wrapper">
-						<Search className="search-icon" />
-						<Form.Control
-							ref={searchInputRef}
-							type="text"
-							placeholder={placeholder}
-							value={searchQuery}
-							onChange={handleSearchChange}
-							onKeyDown={handleKeyDown}
-							className="search-input"
-						/>
-						{loading && (
-							<Spinner
-								animation="border"
-								size="sm"
-								className="search-spinner"
-							/>
-						)}
-					</div>
-				</Form.Group>
+				<Box sx={{ mb: 3 }}>
+					<TextField
+						inputRef={searchInputRef}
+						type="text"
+						placeholder={placeholder}
+						value={searchQuery}
+						onChange={handleSearchChange}
+						onKeyDown={handleKeyDown}
+						fullWidth
+						variant="outlined"
+						size="medium"
+						InputProps={{
+							startAdornment: (
+								<InputAdornment position="start">
+									<SearchIcon />
+								</InputAdornment>
+							),
+							endAdornment: loading && (
+								<InputAdornment position="end">
+									<CircularProgress size={20} />
+								</InputAdornment>
+							)
+						}}
+						className="search-input"
+					/>
+				</Box>
 
 				{/* Selected Filters Display */}
 				{getTotalFilterCount() > 0 && (
-					<div className="selected-filters mb-3">
-						<div className="d-flex align-items-center mb-2">
-							<Filter className="me-2" />
-							<strong>Selected Filters ({getTotalFilterCount()})</strong>
+					<Box className="selected-filters" sx={{ mb: 3 }}>
+						<Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+							<FilterIcon sx={{ mr: 2 }} />
+							<Box component="strong">Selected Filters ({getTotalFilterCount()})</Box>
 							<Button
-								variant="link"
-								size="sm"
+								variant="text"
+								size="small"
 								onClick={clearAllFilters}
-								className="ms-2 p-0">
+								sx={{ ml: 2, p: 0 }}>
 								Clear All
 							</Button>
-						</div>
-						<div>
+						</Box>
+						<Box>
 							{selectedFilters.subjects.map((item) => (
-								<Badge
+								<Chip
 									key={`selected-subject-${item.id}`}
-									bg="info"
-									className="me-2 mb-1">
-									{item.code || item.description}{" "}
-									<X
-										onClick={() => removeFilter("subjects", item.id)}
-										style={{ cursor: "pointer" }}
-									/>
-								</Badge>
+									label={item.code || item.description}
+									color="info"
+									onDelete={() => removeFilter("subjects", item.id)}
+									deleteIcon={<CloseIcon />}
+									sx={{ mr: 2, mb: 1 }}
+								/>
 							))}
 							{selectedFilters.product_groups.map((item) => (
-								<Badge
+								<Chip
 									key={`selected-group-${item.id}`}
-									bg="success"
-									className="me-2 mb-1">
-									{item.name}{" "}
-									<X
-										onClick={() =>
-											removeFilter("product_groups", item.id)
-										}
-										style={{ cursor: "pointer" }}
-									/>
-								</Badge>
+									label={item.name}
+									color="success"
+									onDelete={() => removeFilter("product_groups", item.id)}
+									deleteIcon={<CloseIcon />}
+									sx={{ mr: 2, mb: 1 }}
+								/>
 							))}
 							{selectedFilters.variations.map((item) => (
-								<Badge
+								<Chip
 									key={`selected-variation-${item.id}`}
-									bg="warning"
-									className="me-2 mb-1">
-									{item.name}{" "}
-									<X
-										onClick={() =>
-											removeFilter("variations", item.id)
-										}
-										style={{ cursor: "pointer" }}
-									/>
-								</Badge>
+									label={item.name}
+									color="warning"
+									onDelete={() => removeFilter("variations", item.id)}
+									deleteIcon={<CloseIcon />}
+									sx={{ mr: 2, mb: 1 }}
+								/>
 							))}
 							{selectedFilters.products.map((item) => (
-								<Badge
+								<Chip
 									key={`selected-product-${item.id}`}
-									bg="secondary"
-									className="me-2 mb-1">
-									{item.shortname ||
-										item.product_short_name ||
-										item.name}{" "}
-									<X
-										onClick={() => removeFilter("products", item.id)}
-										style={{ cursor: "pointer" }}
-									/>
-								</Badge>
+									label={item.shortname || item.product_short_name || item.name}
+									color="default"
+									onDelete={() => removeFilter("products", item.id)}
+									deleteIcon={<CloseIcon />}
+									sx={{ mr: 2, mb: 1 }}
+								/>
 							))}
-						</div>
-					</div>
+						</Box>
+					</Box>
 				)}
 
 				{/* Error Display */}
 				{error && (
-					<Alert variant="danger" className="mb-3">
+					<Alert severity="error" sx={{ mb: 3 }}>
 						{error}
 					</Alert>
 				)}
-			</div>
+			</Box>
 		);
 };
 

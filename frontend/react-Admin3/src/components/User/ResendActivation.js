@@ -1,6 +1,25 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Button, Alert, Container, Row, Col, Spinner } from 'react-bootstrap';
+import {
+  Container,
+  Grid,
+  TextField,
+  Button,
+  Alert,
+  CircularProgress,
+  Box,
+  Typography,
+  FormControl,
+  FormLabel,
+  AlertTitle,
+  Divider
+} from '@mui/material';
+import {
+  Email as EmailIcon,
+  Login as LoginIcon,
+  ArrowBack as ArrowBackIcon,
+  Warning as WarningIcon
+} from '@mui/icons-material';
 import authService from '../../services/authService';
 
 const ResendActivation = () => {
@@ -52,100 +71,88 @@ const ResendActivation = () => {
     };
 
     return (
-        <Container className="mt-5">
-            <Row className="justify-content-center">
-                <Col md={6} lg={4}>
-                    <div className="text-center mb-4">
-                        <h2>Resend Activation Email</h2>
-                        <p className="text-muted">
+        <Container sx={{ mt: 5 }}>
+            <Grid container justifyContent="center">
+                <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+                    <Box sx={{ textAlign: 'center', mb: 4 }}>
+                        <Typography variant="h4" component="h2">
+                            Resend Activation Email
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary">
                             Enter your email address to receive a new activation link.
-                        </p>
-                    </div>
+                        </Typography>
+                    </Box>
 
                     {status === 'success' && (
-                        <Alert variant="success" className="mb-4">                            
-                            <p className="mb-3">{message}</p>
-                            <div className="bg-light p-3 rounded">
-                                <p className="mb-2 fw-bold">
-                                    <i className="fas fa-envelope me-2"></i>
+                        <Alert severity="success" sx={{ mb: 4 }}>
+                            <Typography sx={{ mb: 3 }}>{message}</Typography>
+                            <Box sx={{ bgcolor: 'grey.100', p: 3, borderRadius: 1 }}>
+                                <Typography sx={{ mb: 2, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                                    <EmailIcon sx={{ mr: 2 }} />
                                     Next steps:
-                                </p>
-                                <p>Check your email inbox (and spam folder) and click the activation link in the email</p>
-                            </div>
-                            <hr />
-                            <div className="d-grid">
-                                <Button variant="outline-primary" onClick={handleBackToLogin}>
-                                    <i className="fas fa-sign-in-alt me-2"></i>
+                                </Typography>
+                                <Typography>
+                                    Check your email inbox (and spam folder) and click the activation link in the email
+                                </Typography>
+                            </Box>
+                            <Divider sx={{ my: 2 }} />
+                            <Box sx={{ display: 'grid' }}>
+                                <Button variant="outlined" onClick={handleBackToLogin} startIcon={<LoginIcon />}>
                                     Back to Login
                                 </Button>
-                            </div>
+                            </Box>
                         </Alert>
                     )}
 
                     {status === 'error' && (
-                        <Alert variant="danger" className="mb-4">
-                            <Alert.Heading>
-                                <i className="fas fa-exclamation-triangle me-2"></i>
+                        <Alert severity="error" sx={{ mb: 4 }}>
+                            <AlertTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                                <WarningIcon sx={{ mr: 2 }} />
                                 Error
-                            </Alert.Heading>
-                            <p>{message}</p>
+                            </AlertTitle>
+                            <Typography>{message}</Typography>
                         </Alert>
                     )}
 
                     {status !== 'success' && (
-                        <Form onSubmit={handleSubmit}>
-                            <Form.Group className="mb-3">
-                                <Form.Label>Email Address</Form.Label>
-                                <Form.Control
+                        <Box component="form" onSubmit={handleSubmit}>
+                            <FormControl fullWidth sx={{ mb: 3 }}>
+                                <FormLabel>Email Address</FormLabel>
+                                <TextField
                                     type="email"
                                     placeholder="Enter your email address"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
                                     disabled={isLoading}
+                                    fullWidth
                                 />
-                            </Form.Group>
+                            </FormControl>
 
-                            <div className="d-grid gap-2">
+                            <Box sx={{ display: 'grid', gap: 2 }}>
                                 <Button
                                     type="submit"
-                                    variant="primary"
+                                    variant="contained"
                                     disabled={isLoading}
-                                    size="lg"
+                                    size="large"
+                                    startIcon={isLoading ? <CircularProgress size={20} /> : <EmailIcon />}
                                 >
-                                    {isLoading ? (
-                                        <>
-                                            <Spinner
-                                                as="span"
-                                                animation="border"
-                                                size="sm"
-                                                role="status"
-                                                aria-hidden="true"
-                                                className="me-2"
-                                            />
-                                            Sending...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <i className="fas fa-envelope me-2"></i>
-                                            Send Activation Email
-                                        </>
-                                    )}
+                                    {isLoading ? 'Sending...' : 'Send Activation Email'}
                                 </Button>
-                                
+
                                 <Button
-                                    variant="outline-secondary"
+                                    variant="outlined"
                                     onClick={handleBackToLogin}
                                     disabled={isLoading}
+                                    startIcon={<ArrowBackIcon />}
                                 >
-                                    <i className="fas fa-arrow-left me-2"></i>
                                     Back to Login
                                 </Button>
-                            </div>
-                        </Form>
+                            </Box>
+                        </Box>
                     )}
-                </Col>
-            </Row>
+                </Grid>
+            </Grid>
         </Container>
     );
 };
