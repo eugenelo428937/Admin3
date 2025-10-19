@@ -76,7 +76,9 @@ const MobileNavigation = ({
 		<div className="mobile-nav-header" style={{
 			display: "flex",
 			flexDirection: "column",
-			padding: "0.5rem 0 0.5rem 0",
+			alignItems:"start",
+			padding: "2rem",
+    		paddingTop: "1.2rem",
 			gap: "0.5rem",
 			borderBottom: "1px solid rgba(255, 255, 255, 0.12)"
 		}}>

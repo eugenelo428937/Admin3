@@ -87,7 +87,6 @@ export const useProductsSearch = (options = {}) => {
    */
   const executeSearch = useCallback(async (forceSearch = false) => {
     try {
-      console.log('🔍 [SEARCH HOOK] executeSearch called');
       dispatch(setLoading(true));
       dispatch(clearError());
 
@@ -227,8 +226,6 @@ export const useProductsSearch = (options = {}) => {
   // Auto-search when filters change (if enabled)
   useEffect(() => {
     if (autoSearch) {
-      console.log('🔍 [SEARCH HOOK] Filter change detected, filterHash:', filterHash);
-
       // Clear existing timer first
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
@@ -236,7 +233,6 @@ export const useProductsSearch = (options = {}) => {
 
       // Set new debounced search
       debounceTimerRef.current = setTimeout(() => {
-        console.log('🔍 [SEARCH HOOK] Debounce complete, executing search...');
         executeSearch();
       }, debounceDelay);
     }
