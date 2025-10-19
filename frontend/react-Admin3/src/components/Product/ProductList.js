@@ -34,10 +34,19 @@ import {
     selectError,
     setSearchQuery,
     setMultipleFilters,
+    setSubjects,
+    setCategories,
+    setProductTypes,
+    setProducts,
+    setModesOfDelivery,
+    setTutorialFormat,
+    setDistanceLearning,
+    setTutorial,
     resetFilters,
     setCurrentPage,
     clearError
 } from '../../store/slices/filtersSlice';
+import { parseUrlToFilters } from '../../store/middleware/urlSyncMiddleware';
 
 // Component imports
 import FilterPanel from './FilterPanel';
@@ -84,89 +93,49 @@ const ProductList = React.memo(() => {
     const [rulesLoading, setRulesLoading] = useState(false);
 
     /**
-     * Parse URL parameters on component mount and location changes
+     * Restore filters from URL on component mount (Story 1.6)
+     * Uses parseUrlToFilters() to convert URL params → Redux state
      */
-    const urlParams = useMemo(() => {
-        const queryParams = new URLSearchParams(location.search);
-        
-        // Parse additional subject parameters
-        const additionalSubjects = [];
-        for (let i = 1; i <= 10; i++) {
-            const additionalSubject = queryParams.get(`subject_${i}`);
-            if (additionalSubject) {
-                additionalSubjects.push(additionalSubject);
-            }
+    useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        const filtersFromUrl = parseUrlToFilters(searchParams);
+
+        // Dispatch each filter type to Redux
+        if (filtersFromUrl.subjects && filtersFromUrl.subjects.length > 0) {
+            dispatch(setSubjects(filtersFromUrl.subjects));
         }
-        
-        return {
-            subjectFilter: queryParams.get("subject_code") || queryParams.get("subject"),
-            additionalSubjects,
-            categoryFilter: queryParams.get("main_category") || queryParams.get("category"),
-            groupFilter: queryParams.get("group"),
-            productFilter: queryParams.get("product"),
-            variationFilter: queryParams.get("variation"),
-            tutorialFormatFilter: queryParams.get("tutorial_format"),
-            modeOfDeliveryFilter: queryParams.get("mode_of_delivery"),
-            searchQuery: queryParams.get("q") || queryParams.get("search"),
-        };
-    }, [location.search]);
+        if (filtersFromUrl.categories && filtersFromUrl.categories.length > 0) {
+            dispatch(setCategories(filtersFromUrl.categories));
+        }
+        if (filtersFromUrl.product_types && filtersFromUrl.product_types.length > 0) {
+            dispatch(setProductTypes(filtersFromUrl.product_types));
+        }
+        if (filtersFromUrl.products && filtersFromUrl.products.length > 0) {
+            dispatch(setProducts(filtersFromUrl.products));
+        }
+        if (filtersFromUrl.modes_of_delivery && filtersFromUrl.modes_of_delivery.length > 0) {
+            dispatch(setModesOfDelivery(filtersFromUrl.modes_of_delivery));
+        }
+        if (filtersFromUrl.tutorial_format) {
+            dispatch(setTutorialFormat(filtersFromUrl.tutorial_format));
+        }
+        if (filtersFromUrl.distance_learning) {
+            dispatch(setDistanceLearning(filtersFromUrl.distance_learning));
+        }
+        if (filtersFromUrl.tutorial) {
+            dispatch(setTutorial(filtersFromUrl.tutorial));
+        }
+        if (filtersFromUrl.searchQuery) {
+            dispatch(setSearchQuery(filtersFromUrl.searchQuery));
+        }
+    }, []); // Run once on mount
 
     /**
      * Determine if we're in search mode
      */
     const isSearchMode = useMemo(() => {
-        return Boolean(urlParams.searchQuery || searchQuery);
-    }, [urlParams.searchQuery, searchQuery]);
-
-    /**
-     * Apply URL parameters to Redux store on mount/location change
-     */
-    useEffect(() => {
-        const filtersFromUrl = {};
-        
-        // Map URL parameters to Redux filters
-        if (urlParams.subjectFilter) {
-            filtersFromUrl.subjects = [urlParams.subjectFilter];
-        }
-        
-        if (urlParams.additionalSubjects.length > 0) {
-            filtersFromUrl.subjects = [
-                ...(filtersFromUrl.subjects || []),
-                ...urlParams.additionalSubjects
-            ];
-        }
-        
-        if (urlParams.categoryFilter) {
-            filtersFromUrl.categories = [urlParams.categoryFilter];
-        }
-        
-        if (urlParams.productFilter) {
-            filtersFromUrl.products = [urlParams.productFilter];
-        }
-        
-        if (urlParams.variationFilter) {
-            filtersFromUrl.modes_of_delivery = [urlParams.variationFilter];
-        }
-        
-        // Handle mode_of_delivery parameter from navbar clicks
-        if (urlParams.modeOfDeliveryFilter) {
-            filtersFromUrl.modes_of_delivery = [urlParams.modeOfDeliveryFilter];
-        }
-        
-        // Handle tutorial_format parameter from navbar clicks
-        // Note: tutorialFormatFilter is handled via URL parameter, not Redux state
-        // This is intentionally separate from the Redux filters system
-        
-        // Apply filters if we have any
-        if (Object.keys(filtersFromUrl).length > 0) {
-            dispatch(setMultipleFilters(filtersFromUrl));
-        }
-        
-        // Set search query if present
-        if (urlParams.searchQuery && urlParams.searchQuery !== searchQuery) {
-            dispatch(setSearchQuery(urlParams.searchQuery));
-        }
-    }, [dispatch, urlParams, searchQuery]);
+        return Boolean(searchQuery);
+    }, [searchQuery]);
 
     /**
      * Handle search functionality
@@ -174,16 +143,8 @@ const ProductList = React.memo(() => {
     const handleSearch = React.useCallback((query) => {
         dispatch(setSearchQuery(query));
         dispatch(setCurrentPage(1)); // Reset to first page on search
-        
-        // Update URL with search parameter
-        const newParams = new URLSearchParams(location.search);
-        if (query) {
-            newParams.set('q', query);
-        } else {
-            newParams.delete('q');
-        }
-        navigate(`${location.pathname}?${newParams.toString()}`, { replace: true });
-    }, [dispatch, navigate, location]);
+        // URL sync middleware will automatically update the URL with search_query parameter
+    }, [dispatch]);
 
     /**
      * Handle add to cart

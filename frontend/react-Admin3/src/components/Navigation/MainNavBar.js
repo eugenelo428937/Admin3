@@ -5,7 +5,7 @@ import {
 	Button,
 	Navbar,
 } from "react-bootstrap";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import {
 	Download as DownloadIcon,
@@ -35,7 +35,6 @@ import "../../styles/navbar.css";
 const MainNavBar = () => {
 	// Auth hook is no longer needed in MainNavBar - used by child components
 	const navigate = useNavigate();
-	const location = useLocation();
 	const dispatch = useDispatch();
 	
 	// State for navbar expansion
@@ -150,8 +149,8 @@ const MainNavBar = () => {
 	const handleSubjectClick = (subjectCode) => {
 		// Dispatch Redux action for navigation behavior (clear existing subjects, then apply new subject)
 		dispatch(navSelectSubject(subjectCode));
-		// Also navigate via URL for direct linking support
-		navigate(`/products?subject_code=${subjectCode}`);
+		// Navigate to products page (URL sync middleware will update URL automatically)
+		navigate('/products');
 		setExpanded(false); // Close mobile menu
 	};
 
@@ -168,8 +167,8 @@ const MainNavBar = () => {
 	const handleProductGroupClick = (groupName) => {
 		// Dispatch Redux action for product group selection (clear all except subjects, then apply product type filter)
 		dispatch(navSelectProductGroup(groupName));
-		// Also navigate via URL for direct linking support
-		navigate(`/products?group=${encodeURIComponent(groupName)}`);
+		// Navigate to products page (URL sync middleware will update URL automatically)
+		navigate('/products');
 		setExpanded(false); // Close mobile menu
 	};
 
@@ -177,26 +176,26 @@ const MainNavBar = () => {
 	const handleSpecificProductClick = (productId) => {
 		// Dispatch Redux action for product selection (clear all except subjects, then apply product filter)
 		dispatch(navSelectProduct(productId));
-		// Preserve existing URL parameters when adding product filter
-		const currentParams = new URLSearchParams(location.search);
-		currentParams.set('product', productId);
-		navigate(`/products?${currentParams.toString()}`);
+		// Navigate to products page (URL sync middleware will update URL automatically)
+		navigate('/products');
 		setExpanded(false); // Close mobile menu
 	};
 
 	// Handle navigating to product variation
 	const handleProductVariationClick = (variationId) => {
-		// Preserve existing URL parameters when adding variation filter
-		const currentParams = new URLSearchParams(location.search);
-		currentParams.set('variation', variationId);
-		navigate(`/products?${currentParams.toString()}`);
+		// Note: Variation filtering not yet integrated with Redux filters
+		// This handler may need Redux action in future story
+		navigate('/products');
 		setExpanded(false); // Close mobile menu
 	};
 
 	// Handle navigating to marking vouchers
 	const handleMarkingVouchersClick = (e) => {
 		e.preventDefault();
-		navigate(`/products?group=8`); // Navigate to Marking Vouchers group (id: 8)
+		// Dispatch Redux action for marking vouchers (group 8)
+		dispatch(navSelectProductGroup('8'));
+		// Navigate to products page (URL sync middleware will update URL automatically)
+		navigate('/products');
 		setExpanded(false); // Close mobile menu
 	};
 
