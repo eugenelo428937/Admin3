@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Form, Alert } from 'react-bootstrap';
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  FormControlLabel,
+  Checkbox,
+  Alert,
+  Typography,
+  Box,
+  CircularProgress
+} from '@mui/material';
 import { rulesEngineHelpers, parseMessageContent } from '../../../utils/rulesEngineUtils';
 import rulesEngineService from '../../../services/rulesEngineService';
 import RulesEngineAcknowledgmentModal from '../../Common/RulesEngineAcknowledgmentModal';
@@ -131,45 +141,60 @@ const TermsConditionsStep = ({
     if (termsContent) {
       // If we have content from the rules engine
       return (
-        <div>
-          {termsContent.title && <h5>{termsContent.title}</h5>}
-          {typeof termsContent.message === 'string' ? (
-            <p style={{ whiteSpace: 'pre-wrap' }}>{termsContent.message}</p>
-          ) : termsContent.content ? (
-            <p style={{ whiteSpace: 'pre-wrap' }}>{termsContent.content}</p>
-          ) : (
-            <p>{JSON.stringify(termsContent)}</p>
+        <Box>
+          {termsContent.title && (
+            <Typography variant="h6" component="h5" gutterBottom>
+              {termsContent.title}
+            </Typography>
           )}
-        </div>
+          {typeof termsContent.message === 'string' ? (
+            <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+              {termsContent.message}
+            </Typography>
+          ) : termsContent.content ? (
+            <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+              {termsContent.content}
+            </Typography>
+          ) : (
+            <Typography variant="body2">{JSON.stringify(termsContent)}</Typography>
+          )}
+        </Box>
       );
     }
 
     // Fallback to static content
     return (
-      <div>
-        <h5>Terms & Conditions</h5>
-        <p>
+      <Box>
+        <Typography variant="h6" component="h5" gutterBottom>
+          Terms & Conditions
+        </Typography>
+        <Typography variant="body2" paragraph>
           ActEd's full Terms & Conditions, which include ActEd's policy on cancellation and refunds,
           are set out in the Professional Training Brochure available from the website
           (see Helpful Information tab/Professional Exams).
-        </p>
-        <p>
+        </Typography>
+        <Typography variant="body2">
           By purchasing from us you acknowledge that you have read and agree to be bound by
           these terms & conditions.
-        </p>
-      </div>
+        </Typography>
+      </Box>
     );
   };
 
   return (
-    <div>
-      <h4>Step 2: Terms & Conditions</h4>
+    <Box>
+      <Typography variant="h5" component="h4" gutterBottom>
+        Step 2: Terms & Conditions
+      </Typography>
 
-      {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mt: 3 }}>
+          {error}
+        </Alert>
+      )}
 
       {rulesLoading ? (
-        <Alert variant="info" className="mt-3">
-          <i className="bi bi-hourglass-split me-2"></i>
+        <Alert severity="info" icon={<CircularProgress size={20} />} sx={{ mt: 3 }}>
           Loading terms and conditions...
         </Alert>
       ) : (
@@ -178,23 +203,21 @@ const TermsConditionsStep = ({
           {rulesMessages.map((message, index) => {
             // Use the parsed content from the new utilities
             const parsed = message.parsed || message;
-            const variant = parsed.variant === 'warning' ? 'warning' :
-                          parsed.variant === 'error' ? 'danger' :
-                          parsed.variant === 'info' ? 'info' : 'primary';
+            const severity = parsed.variant === 'warning' ? 'warning' :
+                          parsed.variant === 'error' ? 'error' :
+                          parsed.variant === 'info' ? 'info' : 'info';
 
             return (
               <Alert
                 key={`alert-${message.template_id || index}`}
-                variant={variant}
-                className="mt-3"
-                dismissible={parsed.dismissible || false}
+                severity={severity}
+                sx={{ mt: 3 }}
+                onClose={parsed.dismissible ? () => {} : undefined}
               >
-                <Alert.Heading>
-                  {parsed.icon && <i className={`bi bi-${parsed.icon} me-2`}></i>}
+                <Typography variant="h6" component="h4">
                   {parsed.title || 'Notice'}
-                </Alert.Heading>
-                <div
-                  className="mb-0"
+                </Typography>
+                <Box
                   dangerouslySetInnerHTML={{
                     __html: parsed.message || 'No message content'
                   }}
@@ -203,47 +226,53 @@ const TermsConditionsStep = ({
             );
           })}
 
-          <Card className="mt-3">
-            <Card.Header>Terms & Conditions</Card.Header>
-            <Card.Body>
-              <div style={{
-                maxHeight: '300px',
-                overflowY: 'auto',
-                border: '1px solid #dee2e6',
-                padding: '15px',
-                borderRadius: '4px'
-              }}>
-                {renderTermsContent()}
-              </div>
-
-              <Form.Check
-                type="checkbox"
-                id="general-terms-checkbox"
-                label={termsContent?.checkbox_text || "I have read and accept the Terms & Conditions"}
-                checked={generalTermsAccepted}
-                onChange={async (e) => {
-                  const isChecked = e.target.checked;
-                  setGeneralTermsAccepted(isChecked);
-
-                  // Submit acknowledgment to backend if checked and we have terms content from rules engine
-                  if (isChecked && termsContent) {
-                    try {
-                      await rulesEngineService.acknowledgeRule({
-                        ackKey: 'terms_conditions_v1', // Required acknowledgment key
-                        message_id: 11, // Template ID for terms & conditions
-                        acknowledged: true,
-                        entry_point_location: 'checkout_terms'
-                      });
-
-                    } catch (err) {
-                      console.error('❌ Error submitting terms acknowledgment:', err);
-                      // Don't show error to user for this as it's not critical for UX
-                    }
-                  }
+          <Card sx={{ mt: 3 }}>
+            <CardHeader title="Terms & Conditions" />
+            <CardContent>
+              <Box
+                sx={{
+                  maxHeight: '300px',
+                  overflowY: 'auto',
+                  border: 1,
+                  borderColor: 'divider',
+                  p: 2,
+                  borderRadius: 1,
+                  mb: 3
                 }}
-                className="mt-3"
+              >
+                {renderTermsContent()}
+              </Box>
+
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    id="general-terms-checkbox"
+                    checked={generalTermsAccepted}
+                    onChange={async (e) => {
+                      const isChecked = e.target.checked;
+                      setGeneralTermsAccepted(isChecked);
+
+                      // Submit acknowledgment to backend if checked and we have terms content from rules engine
+                      if (isChecked && termsContent) {
+                        try {
+                          await rulesEngineService.acknowledgeRule({
+                            ackKey: 'terms_conditions_v1', // Required acknowledgment key
+                            message_id: 11, // Template ID for terms & conditions
+                            acknowledged: true,
+                            entry_point_location: 'checkout_terms'
+                          });
+
+                        } catch (err) {
+                          console.error('❌ Error submitting terms acknowledgment:', err);
+                          // Don't show error to user for this as it's not critical for UX
+                        }
+                      }
+                    }}
+                  />
+                }
+                label={termsContent?.checkbox_text || "I have read and accept the Terms & Conditions"}
               />
-            </Card.Body>
+            </CardContent>
           </Card>
         </>
       )}
@@ -256,7 +285,7 @@ const TermsConditionsStep = ({
         entryPointLocation="checkout_terms"
         onAcknowledge={handleAcknowledgmentComplete}
       />
-    </div>
+    </Box>
   );
 };
 

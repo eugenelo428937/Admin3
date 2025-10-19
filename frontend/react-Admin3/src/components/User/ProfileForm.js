@@ -1,5 +1,30 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Form, Button, Alert, Row, Col } from "react-bootstrap";
+import {
+  TextField,
+  Button,
+  Alert,
+  AlertTitle,
+  Grid,
+  FormControl,
+  FormLabel,
+  FormHelperText,
+  Select,
+  MenuItem,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  Box,
+  Typography,
+  CircularProgress,
+  Divider
+} from "@mui/material";
+import {
+  CheckCircle as CheckCircleIcon,
+  Warning as WarningIcon,
+  Info as InfoIcon,
+  Login as LoginIcon,
+  MarkEmailRead as MarkEmailReadIcon
+} from "@mui/icons-material";
 import authService from "../../services/authService";
 import userService from "../../services/userService";
 import config from "../../config";
@@ -65,14 +90,14 @@ const ProfileForm = ({
   const [success, setSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [emailVerificationSent, setEmailVerificationSent] = useState(false);
-  
+
   // Address search states
   const [showHomeAddressFields, setShowHomeAddressFields] = useState(false);
   const [homeAddressSearch, setHomeAddressSearch] = useState({ postcode: '', country: '', line1: '' });
   const [homeAddressResults, setHomeAddressResults] = useState([]);
   const [homeAddressSearchLoading, setHomeAddressSearchLoading] = useState(false);
   const [homeAddressSearchError, setHomeAddressSearchError] = useState("");
-  
+
   // Country and phone states
   const [countryList, setCountryList] = useState([]);
   const [homeCountryObj, setHomeCountryObj] = useState(null);
@@ -125,7 +150,7 @@ const ProfileForm = ({
         last_name: initialData.user?.last_name || "",
         title: initialData.profile?.title || "",
         email: initialData.user?.email || "",
-        
+
         // Home address
         home_building: initialData.home_address?.building || "",
         home_street: initialData.home_address?.street || "",
@@ -135,7 +160,7 @@ const ProfileForm = ({
         home_postcode: initialData.home_address?.postcode || "",
         home_state: initialData.home_address?.state || "",
         home_country: initialData.home_address?.country || "",
-        
+
         // Work address
         work_company: initialData.work_address?.company || "",
         work_department: initialData.work_address?.department || "",
@@ -147,35 +172,35 @@ const ProfileForm = ({
         work_postcode: initialData.work_address?.postcode || "",
         work_state: initialData.work_address?.state || "",
         work_country: initialData.work_address?.country || "",
-        
+
         // Preferences
         send_invoices_to: initialData.profile?.send_invoices_to || "HOME",
         send_study_material_to: initialData.profile?.send_study_material_to || "HOME",
-        
+
         // Contact numbers
         home_phone: initialData.contact_numbers?.home_phone || "",
         work_phone: initialData.contact_numbers?.work_phone || "",
         mobile_phone: initialData.contact_numbers?.mobile_phone || "",
-        
+
         // Password fields empty in profile mode
         password: "",
         confirmPassword: ""
       };
 
       setForm(newForm);
-      
+
       // Set work address visibility
       const hasWorkAddress = initialData.work_address && (
-        initialData.work_address.company || 
-        initialData.work_address.street || 
+        initialData.work_address.company ||
+        initialData.work_address.street ||
         initialData.work_address.town
       );
 
       setShowWork(!!hasWorkAddress);
-      
+
       // Auto-show address fields if we have address data
       const hasHomeAddress = initialData.home_address && (
-        initialData.home_address.street || 
+        initialData.home_address.street ||
         initialData.home_address.town
       );
 
@@ -216,22 +241,22 @@ const ProfileForm = ({
     if (!form.home_country) errors.home_country = "Home country is required.";
     if (!form.home_phone) errors.home_phone = "Home phone is required.";
     if (!form.mobile_phone) errors.mobile_phone = "Mobile phone is required.";
-    
+
     // Password validation
     if (isRegistrationMode) {
       // Registration: password required
       if (!form.password) errors.password = "Password is required.";
       if (!form.confirmPassword) errors.confirmPassword = "Please confirm your password.";
-      if (form.password && form.confirmPassword && form.password !== form.confirmPassword) 
+      if (form.password && form.confirmPassword && form.password !== form.confirmPassword)
         errors.confirmPassword = "Passwords do not match.";
     } else {
       // Profile mode: password optional but if provided, confirmation required
-      if (form.password && !form.confirmPassword) 
+      if (form.password && !form.confirmPassword)
         errors.confirmPassword = "Please confirm your password.";
-      if (form.password && form.confirmPassword && form.password !== form.confirmPassword) 
+      if (form.password && form.confirmPassword && form.password !== form.confirmPassword)
         errors.confirmPassword = "Passwords do not match.";
     }
-    
+
     // Work address validation if shown
     if (showWork) {
       if (!form.work_company) errors.work_company = "Work company is required.";
@@ -242,13 +267,13 @@ const ProfileForm = ({
       if (!form.work_country) errors.work_country = "Work country is required.";
       if (!form.work_phone) errors.work_phone = "Work phone is required.";
     }
-    
+
     return errors;
   };
 
   const focusFirstError = (errors) => {
     const errorOrder = [
-      "first_name", "last_name", "email", "home_street", "home_town", "home_postcode", 
+      "first_name", "last_name", "email", "home_street", "home_town", "home_postcode",
       "home_state", "home_country", "home_phone", "mobile_phone", "password", "confirmPassword"
     ];
     for (const key of errorOrder) {
@@ -263,10 +288,10 @@ const ProfileForm = ({
     e.preventDefault();
     setError("");
     setEmailVerificationSent(false);
-    
+
     const errors = validate();
     setFieldErrors(errors);
-    
+
     if (Object.keys(errors).length > 0) {
       focusFirstError(errors);
       if (onError) {
@@ -276,7 +301,7 @@ const ProfileForm = ({
     }
 
     setIsLoading(true);
-    
+
     try {
       if (isProfileMode && onSubmit) {
         // Profile update mode
@@ -326,7 +351,7 @@ const ProfileForm = ({
         }
 
         await onSubmit(profileData);
-        
+
       } else if (isRegistrationMode) {
         // Registration mode
         const profile = {
@@ -359,7 +384,7 @@ const ProfileForm = ({
           work_phone: showWork ? form.work_phone : "",
           mobile_phone: form.mobile_phone
         };
-        
+
         const payload = {
           username: form.email,
           password: form.password,
@@ -368,7 +393,7 @@ const ProfileForm = ({
           last_name: form.last_name,
           profile,
         };
-        
+
         let result;
         if (handleRegister) {
           // Use custom handler if provided
@@ -377,14 +402,14 @@ const ProfileForm = ({
           // Use default auth service
           result = await authService.register(payload);
         }
-        
+
         if (result.status === "success") {
           setSuccess(true);
           setSuccessMessage(
-            result.message || 
+            result.message ||
             "Account created successfully! Please check your email for account activation instructions."
           );
-          
+
           // Reset form for potential next registration
           setForm(initialForm);
           setShowWork(false);
@@ -414,16 +439,16 @@ const ProfileForm = ({
     setHomeAddressSearchError("");
     setHomeAddressSearchLoading(true);
     setHomeAddressResults([]);
-    
+
     const postcode = homeAddressSearch.postcode.trim();
     const country = homeAddressSearch.country.trim().toLowerCase();
-    
+
     if (!postcode || !country) {
       setHomeAddressSearchError("Please enter both postcode and country.");
       setHomeAddressSearchLoading(false);
       return;
     }
-    
+
     try {
       let addresses = [];
       if (country === "uk" || country === "united kingdom" || country === "gb" || country === "great britain") {
@@ -448,7 +473,7 @@ const ProfileForm = ({
         }
       }
       // Add other country logic here...
-      
+
       setHomeAddressResults(addresses);
     } catch (err) {
       setHomeAddressSearchError(err.message || "Address search failed.");
@@ -473,342 +498,333 @@ const ProfileForm = ({
   };
 
   return (
-    <section
-      className="profile-form-panel"
-      style={{
+    <Box
+      sx={{
         maxWidth: 900,
         margin: "0 auto",
-        padding: 24,
+        padding: 3,
         background: "#fff",
-        borderRadius: 8,
+        borderRadius: 2,
         boxShadow: "0 2px 8px #eee",
       }}>
-      
+
       {/* Dynamic Title */}
-      <h2 className="mb-4">
+      <Typography variant="h4" component="h2" sx={{ mb: 4 }}>
         {title || (isProfileMode ? "Update Profile" : "Register")}
-      </h2>
-      
+      </Typography>
+
       {/* Dynamic Subtitle */}
       {subtitle && (
-        <p className="text-muted mb-4">{subtitle}</p>
+        <Typography color="text.secondary" sx={{ mb: 4 }}>{subtitle}</Typography>
       )}
-      
+
       {/* Success Message - Only show in registration mode if showSuccessMessage is true */}
       {success && showSuccessMessage && isRegistrationMode && (
-        <Alert variant="success" className="mb-4">
-          <Alert.Heading>
-            <i className="fas fa-check-circle me-2"></i>
+        <Alert severity="success" sx={{ mb: 4 }}>
+          <AlertTitle sx={{ display: 'flex', alignItems: 'center' }}>
+            <CheckCircleIcon sx={{ mr: 1 }} />
             Registration Successful!
-          </Alert.Heading>
-          <p className="mb-3">{successMessage}</p>
-          <div className="d-flex gap-2 flex-wrap">            
+          </AlertTitle>
+          <Typography sx={{ mb: 3 }}>{successMessage}</Typography>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             {switchToLogin && (
-              <Button variant="outline-primary" size="sm" onClick={switchToLogin}>
-                <i className="fas fa-sign-in-alt me-1"></i>
+              <Button variant="outlined" size="small" onClick={switchToLogin} startIcon={<LoginIcon />}>
                 Back to Login
               </Button>
             )}
-          </div>
+          </Box>
         </Alert>
       )}
-      
+
       {/* Error Messages */}
       {(registerError || error) && !success && (
-        <Alert variant="danger">
-          <i className="fas fa-exclamation-triangle me-2"></i>
+        <Alert severity="error" sx={{ mb: 3 }}>
+          <AlertTitle sx={{ display: 'flex', alignItems: 'center' }}>
+            <WarningIcon sx={{ mr: 1 }} />
+            Error
+          </AlertTitle>
           {registerError || error}
         </Alert>
       )}
-      
+
       {/* Email verification alert in profile mode */}
       {isProfileMode && emailVerificationSent && (
-        <Alert variant="info" className="mb-4">
-          <i className="bi bi-envelope-check me-2"></i>
+        <Alert severity="info" sx={{ mb: 4 }}>
+          <AlertTitle sx={{ display: 'flex', alignItems: 'center' }}>
+            <MarkEmailReadIcon sx={{ mr: 1 }} />
+            Verification Email Sent
+          </AlertTitle>
           Email verification sent! Please check your new email address and click the verification link.
         </Alert>
       )}
-      
+
       {/* Show form only if not successful in registration OR in profile mode */}
       {(!success || isProfileMode) && (
-        <Form onSubmit={handleSubmit} autoComplete="off">
+        <Box component="form" onSubmit={handleSubmit} autoComplete="off">
           {/* Contact Name */}
-          <h5>Contact Name</h5>
-          <Row>
-            <Col md={2}>
-              <Form.Group className="mb-2">
-                <Form.Label>Title</Form.Label>
-                <Form.Select
+          <Typography variant="h5" sx={{ mb: 2 }}>Contact Name</Typography>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 2 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <FormLabel>Title</FormLabel>
+                <Select
                   name="title"
                   value={form.title || ""}
                   onChange={handleChange}>
-                  <option value=""></option>
-                  <option>Mr</option>
-                  <option>Miss</option>
-                  <option>Mrs</option>
-                  <option>Ms</option>
-                  <option>Dr</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={5}>
-              <Form.Group className="mb-2">
-                <Form.Label>First Name *</Form.Label>
-                <Form.Control
-                  type="text"
+                  <MenuItem value=""></MenuItem>
+                  <MenuItem value="Mr">Mr</MenuItem>
+                  <MenuItem value="Miss">Miss</MenuItem>
+                  <MenuItem value="Mrs">Mrs</MenuItem>
+                  <MenuItem value="Ms">Ms</MenuItem>
+                  <MenuItem value="Dr">Dr</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, md: 5 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <FormLabel>First Name *</FormLabel>
+                <TextField
                   name="first_name"
                   value={form.first_name || ""}
                   onChange={handleChange}
-                  isInvalid={!!fieldErrors.first_name}
-                  ref={fieldRefs.first_name}
+                  error={!!fieldErrors.first_name}
+                  helperText={fieldErrors.first_name}
+                  inputRef={fieldRefs.first_name}
+                  fullWidth
                 />
-                <Form.Control.Feedback type="invalid">
-                  {fieldErrors.first_name}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-            <Col md={5}>
-              <Form.Group className="mb-2">
-                <Form.Label>Last Name *</Form.Label>
-                <Form.Control
-                  type="text"
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, md: 5 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <FormLabel>Last Name *</FormLabel>
+                <TextField
                   name="last_name"
                   value={form.last_name || ""}
                   onChange={handleChange}
-                  isInvalid={!!fieldErrors.last_name}
-                  ref={fieldRefs.last_name}
+                  error={!!fieldErrors.last_name}
+                  helperText={fieldErrors.last_name}
+                  inputRef={fieldRefs.last_name}
+                  fullWidth
                 />
-                <Form.Control.Feedback type="invalid">
-                  {fieldErrors.last_name}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
-          <hr />
-          
+              </FormControl>
+            </Grid>
+          </Grid>
+          <Divider sx={{ my: 3 }} />
+
           {/* Email */}
-          <h5>Email</h5>
+          <Typography variant="h5" sx={{ mb: 2 }}>Email</Typography>
           {isProfileMode && (
-            <div className="mb-2">
-              <Alert variant="info" className="py-2">
-                <small>
-                  <i className="bi bi-info-circle me-1"></i>
+            <Box sx={{ mb: 2 }}>
+              <Alert severity="info" sx={{ py: 1 }}>
+                <Typography variant="body2">
+                  <InfoIcon sx={{ mr: 1, fontSize: '1rem', verticalAlign: 'middle' }} />
                   If you change your email address, you'll need to verify the new email before it becomes active.
-                </small>
+                </Typography>
               </Alert>
-            </div>
+            </Box>
           )}
-          <Row>
-            <Col md={6}>
-              <Form.Group className="mb-2">
-                <Form.Label>Email *</Form.Label>
-                <Form.Control
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <FormLabel>Email *</FormLabel>
+                <TextField
                   type="email"
                   name="email"
                   value={form.email || ""}
                   onChange={handleChange}
-                  isInvalid={!!fieldErrors.email}
-                  ref={fieldRefs.email}
+                  error={!!fieldErrors.email}
+                  helperText={fieldErrors.email}
+                  inputRef={fieldRefs.email}
+                  fullWidth
                 />
-                <Form.Control.Feedback type="invalid">
-                  {fieldErrors.email}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
-          <hr />
+              </FormControl>
+            </Grid>
+          </Grid>
+          <Divider sx={{ my: 3 }} />
 
           {/* Home Address Section */}
-          <h5>Home Address</h5>
+          <Typography variant="h5" sx={{ mb: 2 }}>Home Address</Typography>
           {!showHomeAddressFields ? (
-            <Row>
-              <Col md={12}>
-                <div style={{ border: "1px solid #eee", borderRadius: 6, padding: 16, marginBottom: 16 }}>
-                  <div style={{ marginBottom: 8 }}>
-                    <Form.Label>Find your address</Form.Label>
-                  </div>
-                  <Row>
-                    <Col md={3}>
-                      <Form.Control
-                        type="text"
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12 }}>
+                <Box sx={{ border: "1px solid #eee", borderRadius: 1.5, padding: 2, mb: 2 }}>
+                  <Box sx={{ mb: 1 }}>
+                    <FormLabel>Find your address</FormLabel>
+                  </Box>
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 12, md: 3 }}>
+                      <TextField
                         placeholder="Postcode"
                         value={homeAddressSearch.postcode}
                         onChange={(e) => setHomeAddressSearch((s) => ({ ...s, postcode: e.target.value }))}
+                        fullWidth
                       />
-                    </Col>
-                    <Col md={3}>
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 3 }}>
                       <CountryAutocomplete
                         name="country"
                         value={homeAddressSearch.country}
                         onChange={(e) => setHomeAddressSearch((s) => ({ ...s, country: e.target.value }))}
                         placeholder="Country"
                       />
-                    </Col>
-                    <Col md={4}>
-                      <Form.Control
-                        type="text"
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
                         placeholder="First line of address (optional)"
                         value={homeAddressSearch.line1}
                         onChange={(e) => setHomeAddressSearch((s) => ({ ...s, line1: e.target.value }))}
+                        fullWidth
                       />
-                    </Col>
-                    <Col md={2}>
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 2 }}>
                       <Button
-                        variant="primary"
+                        variant="contained"
                         onClick={handleHomeAddressSearch}
                         disabled={homeAddressSearchLoading}
-                        style={{ width: "100%" }}>
+                        fullWidth>
                         {homeAddressSearchLoading ? "Searching..." : "Search Address"}
                       </Button>
-                    </Col>
-                  </Row>
+                    </Grid>
+                  </Grid>
                   {homeAddressSearchError && (
-                    <div style={{ color: "red", marginTop: 8 }}>
+                    <Typography color="error" sx={{ mt: 1 }}>
                       {homeAddressSearchError}
-                    </div>
+                    </Typography>
                   )}
                   {homeAddressResults.length > 0 && (
-                    <div style={{ marginTop: 16 }}>
-                      <div style={{ marginBottom: 8 }}>Select your address:</div>
-                      <ul style={{ listStyle: "none", padding: 0, maxHeight: 200, overflowY: "auto" }}>
+                    <Box sx={{ mt: 2 }}>
+                      <Typography sx={{ mb: 1 }}>Select your address:</Typography>
+                      <Box component="ul" sx={{ listStyle: "none", padding: 0, maxHeight: 200, overflowY: "auto" }}>
                         {homeAddressResults.map((addr, idx) => (
-                          <li key={idx} style={{ marginBottom: 4 }}>
+                          <Box component="li" key={idx} sx={{ mb: 0.5 }}>
                             <Button
-                              variant="outline-secondary"
-                              size="sm"
-                              style={{ textAlign: "left", width: "100%" }}
+                              variant="outlined"
+                              size="small"
+                              sx={{ textAlign: "left", width: "100%", justifyContent: "flex-start" }}
                               onClick={() => handleSelectHomeAddress(addr)}>
                               {[addr.line1, addr.line2, addr.town, addr.county, addr.state, addr.country, addr.postcode]
                                 .filter(Boolean).join(", ")}
                             </Button>
-                          </li>
+                          </Box>
                         ))}
-                      </ul>
-                    </div>
+                      </Box>
+                    </Box>
                   )}
-                  <div style={{ marginTop: 16 }}>
-                    <Button variant="link" onClick={() => setShowHomeAddressFields(true)}>
+                  <Box sx={{ mt: 2 }}>
+                    <Button onClick={() => setShowHomeAddressFields(true)}>
                       Enter address manually
                     </Button>
-                  </div>
-                </div>
-              </Col>
-            </Row>
+                  </Box>
+                </Box>
+              </Grid>
+            </Grid>
           ) : (
             <>
-              <Row>
-                <Col md={12}>
-                  <Button variant="link" onClick={() => setShowHomeAddressFields(false)}>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12 }}>
+                  <Button onClick={() => setShowHomeAddressFields(false)}>
                     &larr; Back to address search
                   </Button>
-                </Col>
-              </Row>
-              <Row>
-                <Col md={4}>
-                  <Form.Group className="mb-2">
-                    <Form.Label>Building name</Form.Label>
-                    <Form.Control
-                      type="text"
+                </Grid>
+              </Grid>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <FormLabel>Building name</FormLabel>
+                    <TextField
                       name="home_building"
                       value={form.home_building || ""}
                       onChange={handleChange}
+                      fullWidth
                     />
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group className="mb-2">
-                    <Form.Label>Street *</Form.Label>
-                    <Form.Control
-                      type="text"
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <FormLabel>Street *</FormLabel>
+                    <TextField
                       name="home_street"
                       value={form.home_street || ""}
                       onChange={handleChange}
-                      isInvalid={!!fieldErrors.home_street}
-                      ref={fieldRefs.home_street}
+                      error={!!fieldErrors.home_street}
+                      helperText={fieldErrors.home_street}
+                      inputRef={fieldRefs.home_street}
+                      fullWidth
                     />
-                    <Form.Control.Feedback type="invalid">
-                      {fieldErrors.home_street}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group className="mb-2">
-                    <Form.Label>District</Form.Label>
-                    <Form.Control
-                      type="text"
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <FormLabel>District</FormLabel>
+                    <TextField
                       name="home_district"
                       value={form.home_district || ""}
                       onChange={handleChange}
+                      fullWidth
                     />
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row>
-                <Col md={4}>
-                  <Form.Group className="mb-2">
-                    <Form.Label>Town or City *</Form.Label>
-                    <Form.Control
-                      type="text"
+                  </FormControl>
+                </Grid>
+              </Grid>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <FormLabel>Town or City *</FormLabel>
+                    <TextField
                       name="home_town"
                       value={form.home_town || ""}
                       onChange={handleChange}
-                      isInvalid={!!fieldErrors.home_town}
-                      ref={fieldRefs.home_town}
+                      error={!!fieldErrors.home_town}
+                      helperText={fieldErrors.home_town}
+                      inputRef={fieldRefs.home_town}
+                      fullWidth
                     />
-                    <Form.Control.Feedback type="invalid">
-                      {fieldErrors.home_town}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group className="mb-2">
-                    <Form.Label>County</Form.Label>
-                    <Form.Control
-                      type="text"
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <FormLabel>County</FormLabel>
+                    <TextField
                       name="home_county"
                       value={form.home_county || ""}
                       onChange={handleChange}
+                      fullWidth
                     />
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group className="mb-2">
-                    <Form.Label>Postcode/ZIP *</Form.Label>
-                    <Form.Control
-                      type="text"
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <FormLabel>Postcode/ZIP *</FormLabel>
+                    <TextField
                       name="home_postcode"
                       value={form.home_postcode || ""}
                       onChange={handleChange}
-                      isInvalid={!!fieldErrors.home_postcode}
-                      style={{ textTransform: "uppercase" }}
-                      ref={fieldRefs.home_postcode}
+                      error={!!fieldErrors.home_postcode}
+                      helperText={fieldErrors.home_postcode}
+                      inputRef={fieldRefs.home_postcode}
+                      sx={{ textTransform: "uppercase" }}
+                      fullWidth
                     />
-                    <Form.Control.Feedback type="invalid">
-                      {fieldErrors.home_postcode}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row>
-                <Col md={6}>
-                  <Form.Group className="mb-2">
-                    <Form.Label>State *</Form.Label>
-                    <Form.Control
-                      type="text"
+                  </FormControl>
+                </Grid>
+              </Grid>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <FormLabel>State *</FormLabel>
+                    <TextField
                       name="home_state"
                       value={form.home_state || ""}
                       onChange={handleChange}
-                      isInvalid={!!fieldErrors.home_state}
-                      ref={fieldRefs.home_state}
+                      error={!!fieldErrors.home_state}
+                      helperText={fieldErrors.home_state}
+                      inputRef={fieldRefs.home_state}
+                      fullWidth
                     />
-                    <Form.Control.Feedback type="invalid">
-                      {fieldErrors.home_state}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-2">
-                    <Form.Label>Country *</Form.Label>
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <FormLabel>Country *</FormLabel>
                     <CountryAutocomplete
                       name="home_country"
                       value={form.home_country}
@@ -818,131 +834,106 @@ const ProfileForm = ({
                       inputRef={fieldRefs.home_country}
                       placeholder="Country"
                     />
-                  </Form.Group>
-                </Col>
-              </Row>
+                  </FormControl>
+                </Grid>
+              </Grid>
             </>
           )}
-          <hr />
+          <Divider sx={{ my: 3 }} />
 
           {/* Work Address Section */}
-          <h5>
+          <Typography variant="h5" sx={{ mb: 2 }}>
             Work/University/College Address{" "}
             <Button
-              variant="outline-secondary"
-              size="sm"
+              variant="outlined"
+              size="small"
               onClick={() => setShowWork((v) => !v)}>
               {showWork ? "Remove work details" : "Add work details"}
             </Button>
-          </h5>
+          </Typography>
           {showWork && (
             <>
               {/* Work address fields similar to home address but condensed for space */}
-              <Row>
-                <Col md={4}>
-                  <Form.Group className="mb-2">
-                    <Form.Label>Company</Form.Label>
-                    <Form.Control
-                      type="text"
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <FormLabel>Company</FormLabel>
+                    <TextField
                       name="work_company"
                       value={form.work_company || ""}
                       onChange={handleChange}
-                      isInvalid={!!fieldErrors.work_company}
+                      error={!!fieldErrors.work_company}
+                      helperText={fieldErrors.work_company}
+                      fullWidth
                     />
-                    <Form.Control.Feedback type="invalid">
-                      {fieldErrors.work_company}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group className="mb-2">
-                    <Form.Label>Department</Form.Label>
-                    <Form.Control
-                      type="text"
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <FormLabel>Department</FormLabel>
+                    <TextField
                       name="work_department"
                       value={form.work_department || ""}
                       onChange={handleChange}
+                      fullWidth
                     />
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group className="mb-2">
-                    <Form.Label>Building name</Form.Label>
-                    <Form.Control
-                      type="text"
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <FormLabel>Building name</FormLabel>
+                    <TextField
                       name="work_building"
                       value={form.work_building || ""}
                       onChange={handleChange}
+                      fullWidth
                     />
-                  </Form.Group>
-                </Col>
-              </Row>
-              {/* Additional work address fields... */}
-              <hr />
+                  </FormControl>
+                </Grid>
+              </Grid>
+              <Divider sx={{ my: 3 }} />
             </>
           )}
 
           {/* Preferences */}
-          <h5>Preferences and Communication Details</h5>
-          <Row>
-            <Col md={6}>
-              <Form.Group className="mb-2">
-                <Form.Label>Send invoices to *</Form.Label>
-                <br />
-                <Form.Check
-                  inline
-                  type="radio"
-                  label="Home"
+          <Typography variant="h5" sx={{ mb: 2 }}>Preferences and Communication Details</Typography>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <FormLabel>Send invoices to *</FormLabel>
+                <RadioGroup
+                  row
                   name="send_invoices_to"
-                  value="HOME"
-                  checked={form.send_invoices_to === "HOME"}
-                  onChange={handleChange}
-                />
-                <Form.Check
-                  inline
-                  type="radio"
-                  label="Work"
-                  name="send_invoices_to"
-                  value="WORK"
-                  checked={form.send_invoices_to === "WORK"}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-2">
-                <Form.Label>Send study material to *</Form.Label>
-                <br />
-                <Form.Check
-                  inline
-                  type="radio"
-                  label="Home"
+                  value={form.send_invoices_to}
+                  onChange={handleChange}>
+                  <FormControlLabel value="HOME" control={<Radio />} label="Home" />
+                  <FormControlLabel value="WORK" control={<Radio />} label="Work" />
+                </RadioGroup>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <FormLabel>Send study material to *</FormLabel>
+                <RadioGroup
+                  row
                   name="send_study_material_to"
-                  value="HOME"
-                  checked={form.send_study_material_to === "HOME"}
-                  onChange={handleChange}
-                />
-                <Form.Check
-                  inline
-                  type="radio"
-                  label="Work"
-                  name="send_study_material_to"
-                  value="WORK"
-                  checked={form.send_study_material_to === "WORK"}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          <hr />
+                  value={form.send_study_material_to}
+                  onChange={handleChange}>
+                  <FormControlLabel value="HOME" control={<Radio />} label="Home" />
+                  <FormControlLabel value="WORK" control={<Radio />} label="Work" />
+                </RadioGroup>
+              </FormControl>
+            </Grid>
+          </Grid>
+          <Divider sx={{ my: 3 }} />
 
           {/* Contact Numbers */}
-          <h5>Contact Numbers</h5>
-          <Row>
-            <Col md={4}>
-              <Form.Group className="mb-2">
-                <Form.Label>Phone (home) *</Form.Label>
-                <div style={{ display: "flex", alignItems: "center" }}>
+          <Typography variant="h5" sx={{ mb: 2 }}>Contact Numbers</Typography>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <FormLabel>Phone (home) *</FormLabel>
+                <Box sx={{ display: "flex", alignItems: "flex-start" }}>
                   <PhoneCodeAutocomplete
                     countries={countryList}
                     selectedCountry={homePhoneCountry}
@@ -950,27 +941,24 @@ const ProfileForm = ({
                     name="home_phone_code"
                     autoComplete="new-password"
                   />
-                  <Form.Control
-                    type="text"
+                  <TextField
                     name="home_phone"
                     value={form.home_phone || ""}
                     onChange={handleChange}
-                    isInvalid={!!fieldErrors.home_phone}
-                    ref={fieldRefs.home_phone}
-                    style={{ flex: 1 }}
+                    error={!!fieldErrors.home_phone}
+                    helperText={fieldErrors.home_phone}
+                    inputRef={fieldRefs.home_phone}
+                    sx={{ flex: 1 }}
                     autoComplete="tel"
-                    inputMode="tel"
+                    inputProps={{ inputMode: "tel" }}
                   />
-                </div>
-                <Form.Control.Feedback type="invalid">
-                  {fieldErrors.home_phone}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-            <Col md={4}>
-              <Form.Group className="mb-2">
-                <Form.Label>Phone (mobile) *</Form.Label>
-                <div style={{ display: "flex", alignItems: "center" }}>
+                </Box>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <FormLabel>Phone (mobile) *</FormLabel>
+                <Box sx={{ display: "flex", alignItems: "flex-start" }}>
                   <PhoneCodeAutocomplete
                     countries={countryList}
                     selectedCountry={mobilePhoneCountry}
@@ -978,97 +966,94 @@ const ProfileForm = ({
                     name="mobile_phone_code"
                     autoComplete="new-password"
                   />
-                  <Form.Control
-                    type="text"
+                  <TextField
                     name="mobile_phone"
                     value={form.mobile_phone || ""}
                     onChange={handleChange}
-                    isInvalid={!!fieldErrors.mobile_phone}
-                    ref={fieldRefs.mobile_phone}
-                    style={{ flex: 1 }}
+                    error={!!fieldErrors.mobile_phone}
+                    helperText={fieldErrors.mobile_phone}
+                    inputRef={fieldRefs.mobile_phone}
+                    sx={{ flex: 1 }}
                     autoComplete="tel"
-                    inputMode="tel"
+                    inputProps={{ inputMode: "tel" }}
                   />
-                </div>
-                <Form.Control.Feedback type="invalid">
-                  {fieldErrors.mobile_phone}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
-          <hr />
+                </Box>
+              </FormControl>
+            </Grid>
+          </Grid>
+          <Divider sx={{ my: 3 }} />
 
           {/* Password Section */}
-          <h5>{isProfileMode ? "Change Password (Optional)" : "Set Password"}</h5>
+          <Typography variant="h5" sx={{ mb: 2 }}>
+            {isProfileMode ? "Change Password (Optional)" : "Set Password"}
+          </Typography>
           {isProfileMode && (
-            <div className="mb-3">
-              <Alert variant="info" className="py-2">
-                <small>
-                  <i className="bi bi-info-circle me-1"></i>
+            <Box sx={{ mb: 3 }}>
+              <Alert severity="info" sx={{ py: 1 }}>
+                <Typography variant="body2">
+                  <InfoIcon sx={{ mr: 1, fontSize: '1rem', verticalAlign: 'middle' }} />
                   Leave password fields empty to keep your current password unchanged.
-                </small>
+                </Typography>
               </Alert>
-            </div>
+            </Box>
           )}
-          <Row>
-            <Col md={6}>
-              <Form.Group className="mb-2">
-                <Form.Label>Password {!isProfileMode ? "*" : ""}</Form.Label>
-                <Form.Control
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <FormLabel>Password {!isProfileMode ? "*" : ""}</FormLabel>
+                <TextField
                   type="password"
                   name="password"
                   value={form.password || ""}
                   onChange={handleChange}
-                  isInvalid={!!fieldErrors.password}
-                  ref={fieldRefs.password}
+                  error={!!fieldErrors.password}
+                  helperText={fieldErrors.password}
+                  inputRef={fieldRefs.password}
                   placeholder={isProfileMode ? "Enter new password (optional)" : ""}
+                  fullWidth
                 />
-                <Form.Control.Feedback type="invalid">
-                  {fieldErrors.password}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-2">
-                <Form.Label>Confirm Password {!isProfileMode ? "*" : ""}</Form.Label>
-                <Form.Control
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <FormLabel>Confirm Password {!isProfileMode ? "*" : ""}</FormLabel>
+                <TextField
                   type="password"
                   name="confirmPassword"
                   value={form.confirmPassword || ""}
                   onChange={handleChange}
-                  isInvalid={!!fieldErrors.confirmPassword}
-                  ref={fieldRefs.confirmPassword}
+                  error={!!fieldErrors.confirmPassword}
+                  helperText={fieldErrors.confirmPassword}
+                  inputRef={fieldRefs.confirmPassword}
                   placeholder={isProfileMode ? "Confirm new password" : ""}
+                  fullWidth
                 />
-                <Form.Control.Feedback type="invalid">
-                  {fieldErrors.confirmPassword}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
+              </FormControl>
+            </Grid>
+          </Grid>
 
           {/* Submit Button */}
-          <div className="d-flex justify-content-between align-items-center mt-3">
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
             <Button
-              variant="primary"
+              variant="contained"
               type="submit"
               disabled={isLoading || isLoadingProp || submitButtonDisabled}>
               {submitButtonText || (
-                isLoading || isLoadingProp ? 
-                  (isProfileMode ? "Updating..." : "Registering...") : 
+                isLoading || isLoadingProp ?
+                  (isProfileMode ? "Updating..." : "Registering...") :
                   (isProfileMode ? "Update Profile" : "Register")
               )}
             </Button>
             {switchToLogin && isRegistrationMode && (
-              <Button variant="link" onClick={switchToLogin}>
+              <Button onClick={switchToLogin}>
                 Already have an account? Login
               </Button>
             )}
-          </div>
-        </Form>
+          </Box>
+        </Box>
       )}
-    </section>
+    </Box>
   );
 };
 
-export default ProfileForm; 
+export default ProfileForm;

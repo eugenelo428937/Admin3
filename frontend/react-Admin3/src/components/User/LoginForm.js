@@ -1,5 +1,17 @@
 import React from "react";
-import { Modal, Form, Button, Alert } from "react-bootstrap";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  Button,
+  Alert,
+  Box,
+  FormControl,
+  FormLabel,
+  IconButton
+} from "@mui/material";
+import { Close as CloseIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
 const LoginForm = ({
@@ -15,56 +27,61 @@ const LoginForm = ({
   const navigate = useNavigate();
 
   return (
-    <Modal show={show} onHide={onHide}>
-      <Modal.Header closeButton>
-        <Modal.Title>Login</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {loginError && <Alert variant="danger">{loginError}</Alert>}
-        <Form onSubmit={handleLogin} noValidate>
-          <Form.Group className="mb-3">
-            <Form.Label>Email</Form.Label>
-            <Form.Control
+    <Dialog open={show} onClose={onHide} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        Login
+        <IconButton onClick={onHide} size="small">
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent>
+        {loginError && <Alert severity="error" sx={{ mb: 2 }}>{loginError}</Alert>}
+        <Box component="form" onSubmit={handleLogin} noValidate>
+          <FormControl fullWidth sx={{ mb: 3 }}>
+            <FormLabel>Email</FormLabel>
+            <TextField
               type="email"
               name="email"
               value={formData.email}
               onChange={handleInputChange}
               required
+              fullWidth
             />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Password</Form.Label>
-            <Form.Control
+          </FormControl>
+          <FormControl fullWidth sx={{ mb: 3 }}>
+            <FormLabel>Password</FormLabel>
+            <TextField
               type="password"
               name="password"
               value={formData.password}
               onChange={handleInputChange}
               required
+              fullWidth
             />
-          </Form.Group>
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <Button variant="primary" type="submit" disabled={isLoading}>
+          </FormControl>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Button variant="contained" type="submit" disabled={isLoading}>
               {isLoading ? "Logging in..." : "Login"}
             </Button>
-            <Button variant="link" type="button" onClick={() => { onHide(); navigate('/register'); }}>
+            <Button variant="text" type="button" onClick={() => { onHide(); navigate('/register'); }}>
               Need an account? Register
             </Button>
-            <Button variant="link" type="button" onClick={() => { onHide(); navigate('/register2'); }}>
+            <Button variant="text" type="button" onClick={() => { onHide(); navigate('/register2'); }}>
               Need an account? Register2
             </Button>
-          </div>
-          <div className="text-center">
-            <Button 
-              variant="link" 
-              size="sm"
+          </Box>
+          <Box sx={{ textAlign: 'center' }}>
+            <Button
+              variant="text"
+              size="small"
               onClick={() => { onHide(); navigate('/auth/forgot-password'); }}
             >
               Forgot Password?
             </Button>
-          </div>
-        </Form>
-      </Modal.Body>
-    </Modal>
+          </Box>
+        </Box>
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -1,6 +1,15 @@
 // src/components/ExamSessionForm.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { Form, Button, Container, Alert } from 'react-bootstrap';
+import {
+  TextField,
+  Button,
+  Container,
+  Alert,
+  Box,
+  Typography,
+  FormControl,
+  FormLabel
+} from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import examSessionService from "../../../services/examSessionService";
 import moment from 'moment';
@@ -68,60 +77,67 @@ const AdminExamSessionForm = () => {
 	};
 
 	return (
-		<Container>
-			<h2 className="my-4">{id ? "Edit" : "Create"} Exam Session</h2>
+		<Container sx={{ mt: 4 }}>
+			<Typography variant="h4" component="h2" sx={{ mb: 4 }}>
+				{id ? "Edit" : "Create"} Exam Session
+			</Typography>
 
-			{error && <Alert variant="danger">{error}</Alert>}
+			{error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
-			<Form onSubmit={handleSubmit}>
-				<Form.Group className="mb-3">
-					<Form.Label>Session Code</Form.Label>
-					<Form.Control
-						type="text"
+			<Box component="form" onSubmit={handleSubmit}>
+				<FormControl fullWidth sx={{ mb: 3 }}>
+					<FormLabel>Session Code</FormLabel>
+					<TextField
 						name="session_code"
 						value={formData.session_code}
 						onChange={handleChange}
 						required
 						disabled={isSubmitting}
+						fullWidth
 					/>
-				</Form.Group>
+				</FormControl>
 
-				<Form.Group className="mb-3">
-					<Form.Label>Start Date</Form.Label>
-					<Form.Control
+				<FormControl fullWidth sx={{ mb: 3 }}>
+					<FormLabel>Start Date</FormLabel>
+					<TextField
 						type="datetime-local"
 						name="start_date"
 						value={formData.start_date}
 						onChange={handleChange}
 						required
 						disabled={isSubmitting}
+						fullWidth
+						InputLabelProps={{ shrink: true }}
 					/>
-				</Form.Group>
+				</FormControl>
 
-				<Form.Group className="mb-3">
-					<Form.Label>End Date</Form.Label>
-					<Form.Control
+				<FormControl fullWidth sx={{ mb: 3 }}>
+					<FormLabel>End Date</FormLabel>
+					<TextField
 						type="datetime-local"
 						name="end_date"
 						value={formData.end_date}
 						onChange={handleChange}
 						required
 						disabled={isSubmitting}
+						fullWidth
+						InputLabelProps={{ shrink: true }}
 					/>
-				</Form.Group>
+				</FormControl>
 
-				<Button variant="primary" type="submit" disabled={isSubmitting}>
-					{isSubmitting ? "Saving..." : id ? "Update" : "Create"} Exam
-					Session
-				</Button>
-				<Button
-					variant="secondary"
-					className="ms-2"
-					onClick={() => navigate("/exam-sessions")}
-					disabled={isSubmitting}>
-					Cancel
-				</Button>
-			</Form>
+				<Box sx={{ display: 'flex', gap: 2 }}>
+					<Button variant="contained" type="submit" disabled={isSubmitting}>
+						{isSubmitting ? "Saving..." : id ? "Update" : "Create"} Exam Session
+					</Button>
+					<Button
+						variant="outlined"
+						onClick={() => navigate("/exam-sessions")}
+						disabled={isSubmitting}
+					>
+						Cancel
+					</Button>
+				</Box>
+			</Box>
 		</Container>
 	);
 };

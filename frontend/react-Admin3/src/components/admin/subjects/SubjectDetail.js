@@ -1,13 +1,24 @@
 // src/components/subjects/SubjectDetail.js
 import React, { useState, useEffect } from 'react';
-import { Container, Card, Button, Alert } from 'react-bootstrap';
+import {
+  Container,
+  Card,
+  CardHeader,
+  CardContent,
+  CardActions,
+  Button,
+  Alert,
+  Box,
+  Typography,
+  CircularProgress
+} from '@mui/material';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import subjectService from "../../../services/subjectService";
-//asdasd
+
 const AdminSubjectDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [subject, setSubject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,11 +34,9 @@ const AdminSubjectDetail = () => {
 				setLoading(false);
 			}
 		};
-    
+
     fetchSubject();
   }, [id]);
-
-  
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this subject?')) {
@@ -40,41 +49,44 @@ const AdminSubjectDetail = () => {
     }
   };
 
-  if (loading) return <div className="text-center mt-5">Loading...</div>;
-  if (error) return <Alert variant="danger">{error}</Alert>;
-  if (!subject) return <Alert variant="warning">Subject not found.</Alert>;
+  if (loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
+  if (error) return <Alert severity="error" sx={{ mt: 4 }}>{error}</Alert>;
+  if (!subject) return <Alert severity="warning" sx={{ mt: 4 }}>Subject not found.</Alert>;
 
   return (
-    <Container className="mt-4">
+    <Container sx={{ mt: 4 }}>
       <Card>
-        <Card.Header as="h4">{subject.code}</Card.Header>
-        <Card.Body>
-          <Card.Text>
+        <CardHeader
+          title={subject.code}
+          titleTypographyProps={{ variant: 'h4' }}
+        />
+        <CardContent>
+          <Typography sx={{ mb: 2 }}>
             <strong>Description:</strong> {subject.description || 'No description available.'}
-          </Card.Text>          
-          <Card.Text>
+          </Typography>
+          <Typography sx={{ mb: 2 }}>
             <strong>Status:</strong> {subject.active ? 'Active' : 'Inactive'}
-          </Card.Text>
-          <Card.Text>
+          </Typography>
+          <Typography sx={{ mb: 2 }}>
             <strong>Created:</strong> {new Date(subject.created_at).toLocaleString()}
-          </Card.Text>
-          <Card.Text>
+          </Typography>
+          <Typography sx={{ mb: 2 }}>
             <strong>Last Updated:</strong> {new Date(subject.updated_at).toLocaleString()}
-          </Card.Text>
-        </Card.Body>
-        <Card.Footer className="d-flex justify-content-between">
-          <div>
-            <Link to={`/subjects/${id}/edit`} className="btn btn-primary me-2">
+          </Typography>
+        </CardContent>
+        <CardActions sx={{ display: 'flex', justifyContent: 'space-between', p: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button component={Link} to={`/subjects/${id}/edit`} variant="contained">
               Edit
-            </Link>
-            <Button variant="danger" onClick={handleDelete}>
+            </Button>
+            <Button variant="contained" color="error" onClick={handleDelete}>
               Delete
             </Button>
-          </div>
-          <Button variant="secondary" onClick={() => navigate('/subjects')}>
+          </Box>
+          <Button variant="outlined" onClick={() => navigate('/subjects')}>
             Back to Subjects
           </Button>
-        </Card.Footer>
+        </CardActions>
       </Card>
     </Container>
   );

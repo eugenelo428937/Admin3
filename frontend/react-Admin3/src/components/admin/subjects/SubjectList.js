@@ -1,6 +1,20 @@
 // src/components/subjects/SubjectList.js
 import React, { useState, useEffect } from 'react';
-import { Container, Table, Button, Alert } from 'react-bootstrap';
+import {
+  Container,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+  Alert,
+  Paper,
+  Typography,
+  Box,
+  CircularProgress
+} from '@mui/material';
 import { Link } from 'react-router-dom';
 import subjectService from '../../../services/subjectService';
 
@@ -17,7 +31,7 @@ const AdminSubjectList = () => {
 	const fetchSubjects = async () => {
 		try {
 			const data = await subjectService.getAll();
-						
+
 			// Ensure subjects is always an array
 			if (Array.isArray(data)) {
 				setSubjects(data);
@@ -54,66 +68,78 @@ const AdminSubjectList = () => {
 		}
 	};
 
-	if (loading) return <div className="text-center mt-5">Loading...</div>;
+	if (loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
 
 	return (
-		<Container className="mt-4">
-			<div className="d-flex justify-content-between align-items-center mb-4">
-				<h2>Subjects</h2>
-				<Link to="/subjects/new">
-					<Button variant="primary">Add New Subject</Button>
-				</Link>
-				<Link to="/subjects/import">
-					<Button variant="primary">Upload Subject</Button>
-				</Link>
-			</div>
+		<Container sx={{ mt: 4 }}>
+			<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+				<Typography variant="h4" component="h2">Subjects</Typography>
+				<Box sx={{ display: 'flex', gap: 2 }}>
+					<Button component={Link} to="/subjects/new" variant="contained">
+						Add New Subject
+					</Button>
+					<Button component={Link} to="/subjects/import" variant="contained">
+						Upload Subject
+					</Button>
+				</Box>
+			</Box>
 
-			{error && <Alert variant="danger">{error}</Alert>}
+			{error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
 			{subjects.length === 0 ? (
-				<Alert variant="info">No subjects found.</Alert>
+				<Alert severity="info">No subjects found.</Alert>
 			) : (
-				<Table
-					striped
-					bordered
-					hover
-					responsive>
-					<thead>
-						<tr>
-							<th>Code</th>
-							<th>Description</th>
-							<th>Status</th>
-							<th>Actions</th>
-						</tr>
-					</thead>
-					<tbody>
-						{subjects.map((subject) => (
-							<tr key={subject.id}>
-								<td>{subject.code}</td>
-								<td>{subject.description}</td>
-								<td>{subject.active ? "Active" : "Inactive"}</td>
-								<td>
-									<Link
-										to={`/subjects/${subject.id}`}
-										className="btn btn-info btn-sm me-2">
-										View
-									</Link>
-									<Link
-										to={`/subjects/${subject.id}/edit`}
-										className="btn btn-warning btn-sm me-2">
-										Edit
-									</Link>
-									<Button
-										variant="danger"
-										size="sm"
-										onClick={() => handleDelete(subject.id)}>
-										Delete
-									</Button>
-								</td>
-							</tr>
-						))}
-					</tbody>
-				</Table>
+				<TableContainer component={Paper}>
+					<Table>
+						<TableHead>
+							<TableRow>
+								<TableCell>Code</TableCell>
+								<TableCell>Description</TableCell>
+								<TableCell>Status</TableCell>
+								<TableCell>Actions</TableCell>
+							</TableRow>
+						</TableHead>
+						<TableBody>
+							{subjects.map((subject) => (
+								<TableRow key={subject.id} hover>
+									<TableCell>{subject.code}</TableCell>
+									<TableCell>{subject.description}</TableCell>
+									<TableCell>{subject.active ? "Active" : "Inactive"}</TableCell>
+									<TableCell>
+										<Box sx={{ display: 'flex', gap: 1 }}>
+											<Button
+												component={Link}
+												to={`/subjects/${subject.id}`}
+												variant="contained"
+												color="info"
+												size="small"
+											>
+												View
+											</Button>
+											<Button
+												component={Link}
+												to={`/subjects/${subject.id}/edit`}
+												variant="contained"
+												color="warning"
+												size="small"
+											>
+												Edit
+											</Button>
+											<Button
+												variant="contained"
+												color="error"
+												size="small"
+												onClick={() => handleDelete(subject.id)}
+											>
+												Delete
+											</Button>
+										</Box>
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</TableContainer>
 			)}
 		</Container>
 	);

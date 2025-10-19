@@ -1,66 +1,45 @@
-import React, { useState, useMemo } from "react";
+import React from "react";
 import PropTypes from "prop-types";
-import { Form } from "react-bootstrap";
+import { Autocomplete, TextField, Box } from "@mui/material";
 
 const PhoneCodeAutocomplete = ({ countries, selectedCountry, onSelect, name, placeholder }) => {
-  const [inputValue, setInputValue] = useState(selectedCountry?.phone_code || "");
-  const [showDropdown, setShowDropdown] = useState(false);
-
-  const filtered = useMemo(() => {
-    if (!inputValue) return countries.filter(c => c.phone_code);
-    return countries.filter(
-      c => c.phone_code && c.phone_code.replace('+', '').startsWith(inputValue.replace('+', ''))
-        || c.name.toLowerCase().includes(inputValue.toLowerCase())
-    );
-  }, [inputValue, countries]);
-
-  const handleSelect = (country) => {
-    setInputValue(country.phone_code);
-    onSelect(country);
-    setShowDropdown(false);
-  };
+  const validCountries = countries.filter(c => c.phone_code);
 
   return (
-    <div style={{ position: "relative", maxWidth: 120, marginRight: 8 }}>
-      <Form.Control
-        type="text"
-        name={name}
-        value={inputValue}
-        placeholder={placeholder || "Code"}
-        autoComplete="off"
-        onChange={e => {
-          setInputValue(e.target.value);
-          setShowDropdown(true);
+    <Box sx={{ maxWidth: 120, mr: 1 }}>
+      <Autocomplete
+        value={selectedCountry || null}
+        onChange={(event, newValue) => {
+          if (newValue) {
+            onSelect(newValue);
+          }
         }}
-        onFocus={() => setShowDropdown(true)}
-        style={{ minWidth: 80, display: "inline-block" }}
+        options={validCountries}
+        getOptionLabel={(option) => option.phone_code || ""}
+        renderOption={(props, option) => (
+          <li {...props} key={option.iso_code}>
+            {option.phone_code} {option.name}
+          </li>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            name={name}
+            placeholder={placeholder || "Code"}
+            sx={{ minWidth: 80 }}
+          />
+        )}
+        isOptionEqualToValue={(option, value) => option.iso_code === value.iso_code}
+        filterOptions={(options, { inputValue }) => {
+          if (!inputValue) return options;
+          return options.filter(
+            c => c.phone_code.replace('+', '').startsWith(inputValue.replace('+', ''))
+              || c.name.toLowerCase().includes(inputValue.toLowerCase())
+          );
+        }}
+        sx={{ display: "inline-block" }}
       />
-      {showDropdown && (
-        <div style={{
-          position: "absolute",
-          zIndex: 1000,
-          background: "#fff",
-          border: "1px solid #ccc",
-          width: "100%",
-          maxHeight: 200,
-          overflowY: "auto"
-        }}>
-          {filtered.length === 0 ? (
-            <div style={{ padding: 8, color: '#888' }}>No codes found</div>
-          ) : (
-            filtered.map((country) => (
-              <div
-                key={country.iso_code}
-                style={{ padding: 8, cursor: "pointer" }}
-                onMouseDown={() => handleSelect(country)}
-              >
-                {country.phone_code} {country.name}
-              </div>
-            ))
-          )}
-        </div>
-      )}
-    </div>
+    </Box>
   );
 };
 

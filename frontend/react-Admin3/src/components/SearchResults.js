@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
-import { Badge, Button } from "react-bootstrap";
-import { Card, CardContent, Container, Grid, useTheme } from "@mui/material";
-import { Filter, ArrowRight, X } from "react-bootstrap-icons";
+import { Card, CardContent, Container, Grid, useTheme, Chip, Button, Box, Typography, CircularProgress, Alert } from "@mui/material";
+import { FilterList as FilterIcon, ArrowForward as ArrowRightIcon, Close as CloseIcon } from "@mui/icons-material";
 import ProductCard from "./Product/ProductCard/MaterialProductCard";
 import useProductCardHelpers from "../hooks/useProductCardHelpers";
 import "../styles/search_results.css";
@@ -121,15 +120,17 @@ const SearchResults = ({
 		const isSelected = isFilterSelected(filterType, item);
 
 		return (
-			<Badge
+			<Chip
 				key={`${filterType}-${item.id}`}
-				bg={isSelected ? "primary" : "outline-secondary"}
-				className={`me-2 mb-2 filter-badge ${isSelected ? "selected" : ""}`}
+				label={displayName}
+				color={isSelected ? "primary" : "default"}
+				variant={isSelected ? "filled" : "outlined"}
 				onClick={() => onFilterSelect(filterType, item)}
-				style={{ cursor: "pointer" }}>
-				{displayName}
-				{isSelected && <X className="ms-1" size={12} />}
-			</Badge>
+				onDelete={isSelected ? () => onFilterSelect(filterType, item) : undefined}
+				deleteIcon={isSelected ? <CloseIcon /> : undefined}
+				sx={{ mr: 2, mb: 2, cursor: "pointer" }}
+				className={`filter-badge ${isSelected ? "selected" : ""}`}
+			/>
 		);
 	};
 
@@ -150,26 +151,26 @@ const SearchResults = ({
 	};
 
 	return (
-		<Container className="search-results-container mb-3" maxWidth={false}>
+		<Container className="search-results-container" maxWidth={false} sx={{ mb: 3 }}>
 			{/* Error Display */}
 			{error && (
-				<Grid container className="mb-3">
+				<Grid container sx={{ mb: 3 }}>
 					<Grid>
-						<div className="alert alert-danger" role="alert">
+						<Alert severity="error">
 							{error}
-						</div>
+						</Alert>
 					</Grid>
 				</Grid>
 			)}
 
 			{/* Loading State */}
 			{loading && (
-				<Grid container className="mb-3">
-					<Grid className="text-center">
-						<div className="spinner-border text-primary" role="status">
-							<span className="visually-hidden">Loading...</span>
-						</div>
-						<p className="mt-2 text-muted">Searching products...</p>
+				<Grid container sx={{ mb: 3 }}>
+					<Grid sx={{ textAlign: 'center' }}>
+						<CircularProgress color="primary" />
+						<Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+							Searching products...
+						</Typography>
 					</Grid>
 				</Grid>
 			)}
@@ -179,125 +180,120 @@ const SearchResults = ({
 				<Grid container spacing={2}>
 					{/* Left Column: Filters */}
 					<Grid size={{ lg: 2 }}>
-						<Card className="suggestion-filters-card h-100">
+						<Card className="suggestion-filters-card" sx={{ height: '100%' }}>
 							<CardContent>
-								<div className="d-flex align-items-center mb-3 pb-3">
-									<Filter className="me-2 text-primary" />
-									<h6 className="mb-0">
+								<Box sx={{ display: 'flex', alignItems: 'center', mb: 3, pb: 3 }}>
+									<FilterIcon color="primary" sx={{ mr: 2 }} />
+									<Typography variant="h6" component="h6" sx={{ mb: 0 }}>
 										{searchQuery
 											? "Suggested Filters"
 											: "Popular Filters"}
-									</h6>
-								</div>
+									</Typography>
+								</Box>
 								{searchQuery && (
-									<small className="text-muted d-block mb-3">
+									<Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 3 }}>
 										for "{searchQuery}"
-									</small>
+									</Typography>
 								)}
 
 								{/* Subjects */}
 								{searchResults?.suggested_filters?.subjects?.length >
 									0 && (
-									<div className="mb-3">
-										<h6 className="filter-category-title">
+									<Box sx={{ mb: 3 }}>
+										<Typography variant="h6" className="filter-category-title">
 											Subjects
-										</h6>
-										<div className="filter-badges-container">
+										</Typography>
+										<Box className="filter-badges-container">
 											{searchResults?.suggested_filters?.subjects
 												?.slice(0, maxSuggestions)
 												?.map((item) =>
 													renderFilterBadge("subjects", item)
 												)}
-										</div>
-									</div>
+										</Box>
+									</Box>
 								)}
 
 								{/* Product Groups */}
 								{searchResults?.suggested_filters?.product_groups
 									?.length > 0 && (
-									<div className="mb-3">
-										<h6 className="filter-category-title">
+									<Box sx={{ mb: 3 }}>
+										<Typography variant="h6" className="filter-category-title">
 											Categories
-										</h6>
-										<div className="filter-badges-container">
+										</Typography>
+										<Box className="filter-badges-container">
 											{searchResults?.suggested_filters?.product_groups
 												?.slice(0, maxSuggestions)
 												?.map((item) =>
 													renderFilterBadge("product_groups", item)
 												)}
-										</div>
-									</div>
+										</Box>
+									</Box>
 								)}
 
 								{/* Variations */}
 								{searchResults?.suggested_filters?.variations?.length >
 									0 && (
-									<div className="mb-3">
-										<h6 className="filter-category-title">
+									<Box sx={{ mb: 3 }}>
+										<Typography variant="h6" className="filter-category-title">
 											Product Types
-										</h6>
-										<div className="filter-badges-container">
+										</Typography>
+										<Box className="filter-badges-container">
 											{searchResults?.suggested_filters?.variations
 												?.slice(0, maxSuggestions)
 												?.map((item) =>
 													renderFilterBadge("variations", item)
 												)}
-										</div>
-									</div>
+										</Box>
+									</Box>
 								)}
 
 								{/* Product Suggestions */}
 								{searchResults?.suggested_filters?.products?.length >
 									0 && (
-									<div className="mb-3">
-										<h6 className="filter-category-title">
+									<Box sx={{ mb: 3 }}>
+										<Typography variant="h6" className="filter-category-title">
 											Products
-										</h6>
-										<div className="filter-badges-container">
+										</Typography>
+										<Box className="filter-badges-container">
 											{searchResults?.suggested_filters?.products
 												?.slice(0, maxSuggestions)
 												?.map((item) =>
 													renderFilterBadge("products", item)
 												)}
-										</div>
-									</div>
+										</Box>
+									</Box>
 								)}
 
 								{/* Active Filters Section */}
 								{Object.values(selectedFilters).some(
 									(filterArray) => filterArray.length > 0
 								) && (
-									<div className="mt-4 pt-3 border-top">
-										<h6 className="filter-category-title">
+									<Box sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: 'divider' }}>
+										<Typography variant="h6" className="filter-category-title">
 											Active Filters
-										</h6>
-										<div className="filter-badges-container">
+										</Typography>
+										<Box className="filter-badges-container">
 											{/* Show all selected filters */}
 											{Object.entries(selectedFilters).map(
 												([filterType, filters]) =>
 													filters.map((filter) => (
-														<Badge
+														<Chip
 															key={`active-${filterType}-${filter.id}`}
-															bg="success"
-															className="me-2 mb-2 filter-badge selected"
-															onClick={() =>
-																onFilterRemove(
-																	filterType,
-																	filter
-																)
-															}
-															style={{ cursor: "pointer" }}>
-															{getDisplayName(filter)}
-															<X className="ms-1" size={12} />
-														</Badge>
+															label={getDisplayName(filter)}
+															color="success"
+															onDelete={() => onFilterRemove(filterType, filter)}
+															deleteIcon={<CloseIcon />}
+															sx={{ mr: 2, mb: 2, cursor: "pointer" }}
+															className="filter-badge selected"
+														/>
 													))
 											)}
-										</div>
-										<small className="text-muted">
+										</Box>
+										<Typography variant="caption" color="text.secondary">
 											Showing {filteredProducts.length} of{" "}
 											{topProducts.length} products
-										</small>
-									</div>
+										</Typography>
+									</Box>
 								)}
 							</CardContent>
 						</Card>
@@ -308,38 +304,37 @@ const SearchResults = ({
 						{filteredProducts.length > 0 ? (
 							<Card className="top-products-card">
 								<CardContent>
-									<div className="d-flex align-items-center justify-content-between mb-3">
-										<div className="d-flex align-items-center">
-											<h5 className="mb-0">
+									<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+										<Box sx={{ display: 'flex', alignItems: 'center' }}>
+											<Typography variant="h5" component="h5" sx={{ mb: 0 }}>
 												{searchQuery
 													? "Top Matching Products"
 													: "Popular Products"}
-											</h5>
-											<small className="text-muted ms-2">
+											</Typography>
+											<Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
 												({filteredProducts.length} of{" "}
 												{searchResults?.total_count || 0}{" "}
 												{searchQuery ? "results" : "products"})
-											</small>
-										</div>
+											</Typography>
+										</Box>
 										{searchQuery && (
 											<Button
-												variant="primary"
-												size="sm"
+												variant="contained"
+												size="small"
 												onClick={handleShowMatchingProducts}
-												className="d-flex align-items-center">
+												endIcon={<ArrowRightIcon />}
+												sx={{ display: 'flex', alignItems: 'center' }}>
 												View All Results
-												<ArrowRight className="ms-1" size={16} />
 											</Button>
 										)}
-									</div>
+									</Box>
 
 									<Grid container spacing={0}>
 										{filteredProducts.map((product, index) => (
 											<Grid
 												size={{ xl: 3, lg: 4, md: 6, sm: 12 }}
-												key={
-													product.id || product.essp_id || index
-												} className="d-flex align-items-center justify-content-center flex-wrap">
+												key={product.id || product.essp_id || index}
+												sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
 												<ProductCard
 													product={{
 														...product,
@@ -367,30 +362,30 @@ const SearchResults = ({
 
 									{/* Show All Results Button */}
 									{searchQuery && (
-										<div className="text-center mt-3">
+										<Box sx={{ textAlign: 'center', mt: 3 }}>
 											<Button
-												variant="primary"
-												size="lg"
+												variant="contained"
+												size="large"
 												onClick={handleShowMatchingProducts}
-												className="d-flex align-items-center mx-auto px-4 py-2">
+												endIcon={<ArrowRightIcon />}
+												sx={{ display: 'flex', alignItems: 'center', mx: 'auto', px: 4, py: 2 }}>
 												Show All Matching Products
-												<ArrowRight className="ms-2" size={20} />
 											</Button>
-											<small className="text-muted d-block mt-2">
+											<Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
 												Found {filteredProducts.length} of{" "}
 												{searchResults?.total_count || 0} products
 												matching "{searchQuery}"
-											</small>
-										</div>
+											</Typography>
+										</Box>
 									)}
 								</CardContent>
 							</Card>
 						) : (
 							/* No Results State */
-							<Card className="text-center py-5">
+							<Card sx={{ textAlign: 'center', py: 5 }}>
 								<CardContent>
-									<Filter size={48} className="text-muted mb-3" />
-									<h5 className="text-muted">
+									<FilterIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 3 }} />
+									<Typography variant="h5" color="text.secondary">
 										{Object.values(selectedFilters).some(
 											(filterArray) => filterArray.length > 0
 										)
@@ -398,8 +393,8 @@ const SearchResults = ({
 											: searchQuery
 											? "No results found"
 											: "Start searching to see products"}
-									</h5>
-									<p className="text-muted">
+									</Typography>
+									<Typography variant="body1" color="text.secondary">
 										{Object.values(selectedFilters).some(
 											(filterArray) => filterArray.length > 0
 										)
@@ -407,7 +402,7 @@ const SearchResults = ({
 											: searchQuery
 											? `No products found for "${searchQuery}". Try different keywords or check your spelling.`
 											: "Enter keywords in the search box above to find products, subjects, and categories."}
-									</p>
+									</Typography>
 								</CardContent>
 							</Card>
 						)}

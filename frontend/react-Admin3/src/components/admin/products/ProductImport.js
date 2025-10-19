@@ -1,8 +1,23 @@
 // src/components/products/ProductImport.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Form, Button, Container, Alert } from "react-bootstrap";
-import Papa from "papaparse"; // You'll need to install this: npm install papaparse
+import {
+  Button,
+  Container,
+  Alert,
+  Box,
+  Typography,
+  FormControl,
+  FormLabel,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper
+} from "@mui/material";
+import Papa from "papaparse";
 import productService from "../../../services/productService";
 
 const AdminProductImport = () => {
@@ -16,15 +31,14 @@ const AdminProductImport = () => {
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
         setFile(selectedFile);
-        
+
         if (selectedFile) {
             Papa.parse(selectedFile, {
                 header: true,
                 skipEmptyLines: true,
                 complete: (result) => {
-                    // Limit preview to first 5 rows
                     setPreview(result.data.slice(0, 5));
-                    
+
                     if (result.errors.length > 0) {
                         setError(`CSV parsing errors: ${result.errors.map(e => e.message).join(', ')}`);
                     } else {
@@ -44,9 +58,8 @@ const AdminProductImport = () => {
 
         setLoading(true);
         setError(null);
-        
+
         try {
-            // Parse the entire CSV file
             Papa.parse(file, {
                 header: true,
                 skipEmptyLines: true,
@@ -58,21 +71,17 @@ const AdminProductImport = () => {
                     }
 
                     try {
-                        // Process data to ensure values are handled correctly
                         const products = result.data.map(product => ({
                             ...product,
                             active: product.active === "true" || product.active === true
                         }));
 
-                        // Send to bulk import API
                         const response = await productService.bulkImport(products);
                         setSuccess(`Successfully imported ${response.created || products.length} products.`);
-                        
-                        // Clear the form
+
                         setFile(null);
                         setPreview([]);
-                        
-                        // Show success for a few seconds then redirect
+
                         setTimeout(() => {
                             navigate("/products");
                         }, 3000);
@@ -90,77 +99,93 @@ const AdminProductImport = () => {
     };
 
     return (
-			<Container>
-				<h2>Import Products</h2>
+			<Container sx={{ mt: 4 }}>
+				<Typography variant="h4" component="h2" sx={{ mb: 4 }}>Import Products</Typography>
 
-				{error && <Alert variant="danger">{error}</Alert>}
-				{success && <Alert variant="success">{success}</Alert>}
+				{error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+				{success && <Alert severity="success" sx={{ mb: 3 }}>{success}</Alert>}
 
-				<Form onSubmit={handleSubmit}>
-					<Form.Group className="mb-3">
-						<Form.Label>Upload CSV File</Form.Label>
-						<Form.Control
+				<Box component="form" onSubmit={handleSubmit}>
+					<FormControl fullWidth sx={{ mb: 3 }}>
+						<FormLabel>Upload CSV File</FormLabel>
+						<input
 							type="file"
 							accept=".csv"
 							onChange={handleFileChange}
 							required
+							style={{ marginTop: '8px' }}
 						/>
-						<Form.Text className="text-muted">
+						<Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
 							The CSV file should include columns: code, name, description (optional), active (true/false).
-						</Form.Text>
-					</Form.Group>
-					{preview.length > 0 && (
-						<div className="mb-3">
-							<h5>Preview</h5>
-							<div className="table-responsive">
-								<table className="table table-sm table-bordered">
-									<thead>
-										<tr>
-											{Object.keys(preview[0]).map((key) => (
-												<th key={key}>{key}</th>
-											))}
-										</tr>
-									</thead>
-									<tbody>
-										{preview.map((row, i) => (
-											<tr key={i}>
-												{Object.values(row).map((val, j) => (
-													<td key={j}>{val}</td>
-												))}
-											</tr>
-										))}
-									</tbody>
-								</table>
-							</div>
-							<p className="text-muted">Showing first {preview.length} rows</p>
-						</div>
-					)}
-					<Button
-						variant="primary"
-						type="submit"
-						disabled={loading || !file}>
-						{loading ? "Importing..." : "Import Products"}
-					</Button>{" "}
-					<Button
-						variant="secondary"
-						onClick={() => navigate("/products")}>
-						Cancel
-					</Button>
-				</Form>
+						</Typography>
+					</FormControl>
 
-				<div className="mt-4">
-					<h4>CSV Format Guide</h4>
-					<p>Your CSV file should follow this format:</p>
-					<pre className="bg-light p-3 border rounded">
-						code,fullname,shortname,description,active
-						<br />
-						PRD001,Product One Complete Name,Prod1,This is product one,true
-						<br />
-						PRD002,Product Two Complete Name,Prod2,This is product two,true
-						<br />
+					{preview.length > 0 && (
+						<Box sx={{ mb: 3 }}>
+							<Typography variant="h5" sx={{ mb: 2 }}>Preview</Typography>
+							<TableContainer component={Paper}>
+								<Table size="small">
+									<TableHead>
+										<TableRow>
+											{Object.keys(preview[0]).map((key) => (
+												<TableCell key={key}>{key}</TableCell>
+											))}
+										</TableRow>
+									</TableHead>
+									<TableBody>
+										{preview.map((row, i) => (
+											<TableRow key={i}>
+												{Object.values(row).map((val, j) => (
+													<TableCell key={j}>{val}</TableCell>
+												))}
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+							</TableContainer>
+							<Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+								Showing first {preview.length} rows
+							</Typography>
+						</Box>
+					)}
+
+					<Box sx={{ display: 'flex', gap: 2 }}>
+						<Button
+							variant="contained"
+							type="submit"
+							disabled={loading || !file}
+						>
+							{loading ? "Importing..." : "Import Products"}
+						</Button>
+						<Button
+							variant="outlined"
+							onClick={() => navigate("/products")}
+						>
+							Cancel
+						</Button>
+					</Box>
+				</Box>
+
+				<Box sx={{ mt: 4 }}>
+					<Typography variant="h5" sx={{ mb: 2 }}>CSV Format Guide</Typography>
+					<Typography sx={{ mb: 2 }}>Your CSV file should follow this format:</Typography>
+					<Box
+						component="pre"
+						sx={{
+							bgcolor: 'grey.100',
+							p: 3,
+							border: 1,
+							borderColor: 'divider',
+							borderRadius: 1,
+							overflowX: 'auto'
+						}}
+					>
+						code,fullname,shortname,description,active{"\n"}
+						PRD001,Product One Complete Name,Prod1,This is product one,true{"\n"}
+						PRD002,Product Two Complete Name,Prod2,This is product two,true{"\n"}
 						PRD003,Product Three Complete Name,Prod3,This is product three,false
-					</pre>
-					<ul>
+					</Box>
+					<Box component="ul" sx={{ mt: 2 }}>
 						<li>
 							<strong>code</strong> - Unique product identifier (required)
 						</li>
@@ -176,8 +201,8 @@ const AdminProductImport = () => {
 						<li>
 							<strong>active</strong> - Product status (true/false)
 						</li>
-					</ul>
-				</div>
+					</Box>
+				</Box>
 			</Container>
 		);
 };

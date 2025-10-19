@@ -1,7 +1,18 @@
 // src/components/products/ProductDetail.js
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Button, Card, Container } from "react-bootstrap";
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardContent,
+  CardActions,
+  Container,
+  Alert,
+  Box,
+  Typography,
+  CircularProgress
+} from "@mui/material";
 import productService from "../../../services/productService";
 
 const AdminProductDetail = () => {
@@ -40,45 +51,62 @@ const AdminProductDetail = () => {
         }
     };
 
-    if (loading) return <div>Loading product details...</div>;
-    if (error) return <div className="alert alert-danger">{error}</div>;
-    if (!product) return <div>Product not found</div>;
+    if (loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
+    if (error) return <Alert severity="error" sx={{ mt: 4 }}>{error}</Alert>;
+    if (!product) return <Alert severity="warning" sx={{ mt: 4 }}>Product not found</Alert>;
 
     return (
-			<Container>
-				<h2>Product Details</h2>
+			<Container sx={{ mt: 4 }}>
+				<Typography variant="h4" component="h2" sx={{ mb: 4 }}>Product Details</Typography>
 				<Card>
-					<Card.Body>
-						<Card.Title>{product.fullname}</Card.Title>
-						<Card.Text>
+					<CardHeader
+						title={product.fullname}
+						titleTypographyProps={{ variant: 'h5' }}
+					/>
+					<CardContent>
+						<Typography sx={{ mb: 1 }}>
 							<strong>Code:</strong> {product.code}
-							<br />
+						</Typography>
+						<Typography sx={{ mb: 1 }}>
 							<strong>Short Name:</strong> {product.shortname}
-							<br />
+						</Typography>
+						<Typography sx={{ mb: 1 }}>
 							<strong>Description:</strong> {product.description || "No description"}
-							<br />
+						</Typography>
+						<Typography sx={{ mb: 1 }}>
 							<strong>Status:</strong> {product.active ? "Active" : "Inactive"}
-							<br />
+						</Typography>
+						<Typography sx={{ mb: 1 }}>
 							<strong>Created:</strong> {new Date(product.created_at).toLocaleString()}
-							<br />
+						</Typography>
+						<Typography sx={{ mb: 1 }}>
 							<strong>Last Updated:</strong> {new Date(product.updated_at).toLocaleString()}
-						</Card.Text>
-						<Link to={`/products/edit/${product.id}`}>
-							<Button
-								variant="warning"
-								className="me-2">
-								Edit
+						</Typography>
+					</CardContent>
+					<CardActions>
+						<Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'space-between', p: 1 }}>
+							<Box sx={{ display: 'flex', gap: 2 }}>
+								<Button
+									component={Link}
+									to={`/products/edit/${product.id}`}
+									variant="contained"
+									color="warning"
+								>
+									Edit
+								</Button>
+								<Button
+									variant="contained"
+									color="error"
+									onClick={handleDelete}
+								>
+									Delete
+								</Button>
+							</Box>
+							<Button component={Link} to="/products" variant="outlined">
+								Back to List
 							</Button>
-						</Link>
-						<Button
-							variant="danger"
-							onClick={handleDelete}>
-							Delete
-						</Button>{" "}
-						<Link to="/products">
-							<Button variant="secondary">Back to List</Button>
-						</Link>
-					</Card.Body>
+						</Box>
+					</CardActions>
 				</Card>
 			</Container>
 		);

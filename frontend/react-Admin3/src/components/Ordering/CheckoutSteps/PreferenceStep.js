@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Alert, Card, Form, Button, Row, Col, Spinner } from 'react-bootstrap';
+import {
+  Alert,
+  Card,
+  CardContent,
+  FormControl,
+  FormLabel,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+  Checkbox,
+  TextField,
+  Typography,
+  Box,
+  Grid,
+  CircularProgress
+} from '@mui/material';
 import rulesEngineService from '../../../services/rulesEngineService';
 import { useCart } from '../../../contexts/CartContext';
 import { useAuth } from '../../../hooks/useAuth';
@@ -123,28 +138,35 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
     switch (preference.inputType) {
       case 'radio':
         return (
-          <div key={preference.preferenceKey}>
-            <Card className="mb-3">
-              <Card.Body>
-                <h6 className="mb-3">{preference.title}</h6>
-                {contentText && <p className="text-muted mb-3">{contentText}</p>}
+          <Card key={preference.preferenceKey} sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" component="h6" gutterBottom>
+                {preference.title}
+              </Typography>
+              {contentText && (
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  {contentText}
+                </Typography>
+              )}
 
-                {preference.options?.map((option, index) => (
-                  <Form.Check
-                    key={index}
-                    type="radio"
-                    id={`${preference.preferenceKey}_${option.value}`}
-                    name={preference.preferenceKey}
-                    label={option.label}
-                    value={option.value}
-                    checked={currentValue === option.value}
-                    onChange={(e) => handlePreferenceChange(preference.preferenceKey, e.target.value)}
-                    className="mb-2"
-                  />
-                ))}
-              </Card.Body>
-            </Card>
-          </div>
+              <FormControl component="fieldset">
+                <RadioGroup
+                  name={preference.preferenceKey}
+                  value={currentValue}
+                  onChange={(e) => handlePreferenceChange(preference.preferenceKey, e.target.value)}
+                >
+                  {preference.options?.map((option, index) => (
+                    <FormControlLabel
+                      key={index}
+                      value={option.value}
+                      control={<Radio />}
+                      label={option.label}
+                    />
+                  ))}
+                </RadioGroup>
+              </FormControl>
+            </CardContent>
+          </Card>
         );
 
       case 'checkbox':
@@ -154,64 +176,76 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
           const isChecked = typeof currentValue === 'boolean' ? currentValue : currentValue === option.value;
 
           return (
-            <div key={preference.preferenceKey}>
-              <Card className="mb-3">
-                <Card.Body>
-                  <h6 className="mb-3">{preference.title}</h6>
-                  {contentText && <p className="text-muted mb-3">{contentText}</p>}
+            <Card key={preference.preferenceKey} sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" component="h6" gutterBottom>
+                  {preference.title}
+                </Typography>
+                {contentText && (
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    {contentText}
+                  </Typography>
+                )}
 
-                  <Form.Check
-                    type="checkbox"
-                    id={`${preference.preferenceKey}_single`}
-                    label={option.label}
-                    checked={isChecked}
-                    onChange={(e) => {
-                      handlePreferenceChange(preference.preferenceKey, e.target.checked);
-                    }}
-                    className="mb-2"
-                  />
-                </Card.Body>
-              </Card>
-            </div>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={isChecked}
+                      onChange={(e) => {
+                        handlePreferenceChange(preference.preferenceKey, e.target.checked);
+                      }}
+                    />
+                  }
+                  label={option.label}
+                />
+              </CardContent>
+            </Card>
           );
         }
 
         // Handle multiple checkboxes (original implementation)
         return (
-          <div key={preference.preferenceKey}>
-            <Card className="mb-3">
-              <Card.Body>
-                <h6 className="mb-3">{preference.title}</h6>
-                {contentText && <p className="text-muted mb-3">{contentText}</p>}
+          <Card key={preference.preferenceKey} sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" component="h6" gutterBottom>
+                {preference.title}
+              </Typography>
+              {contentText && (
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  {contentText}
+                </Typography>
+              )}
 
+              <FormControl component="fieldset">
                 {preference.options?.map((option, index) => {
                   const isChecked = Array.isArray(currentValue) && currentValue.includes(option.value);
 
                   return (
-                    <Form.Check
+                    <FormControlLabel
                       key={index}
-                      type="checkbox"
-                      id={`${preference.preferenceKey}_${option.value}`}
+                      control={
+                        <Checkbox
+                          checked={isChecked}
+                          onChange={(e) => {
+                            let newValue = Array.isArray(currentValue) ? [...currentValue] : [];
+                            if (e.target.checked) {
+                              if (!newValue.includes(option.value)) {
+                                newValue.push(option.value);
+                              }
+                            } else {
+                              newValue = newValue.filter(v => v !== option.value);
+                            }
+                            handlePreferenceChange(preference.preferenceKey, newValue);
+                          }}
+                        />
+                      }
                       label={option.label}
-                      checked={isChecked}
-                      onChange={(e) => {
-                        let newValue = Array.isArray(currentValue) ? [...currentValue] : [];
-                        if (e.target.checked) {
-                          if (!newValue.includes(option.value)) {
-                            newValue.push(option.value);
-                          }
-                        } else {
-                          newValue = newValue.filter(v => v !== option.value);
-                        }
-                        handlePreferenceChange(preference.preferenceKey, newValue);
-                      }}
-                      className="mb-2"
                     />
                   );
                 })}
-              </Card.Body>
-            </Card>
-          </div>
+              </FormControl>
+            </CardContent>
+          </Card>
         );
 
       case 'combined_checkbox_textarea':
@@ -220,74 +254,86 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
           : { special_needs: false, details: '' };
 
         return (
-          <div key={preference.preferenceKey}>
-            <Card className="mb-3">
-              <Card.Body>
-                <h6 className="mb-3">{preference.title}</h6>
-                {contentText && <p className="text-muted mb-3">{contentText}</p>}
+          <Card key={preference.preferenceKey} sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" component="h6" gutterBottom>
+                {preference.title}
+              </Typography>
+              {contentText && (
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  {contentText}
+                </Typography>
+              )}
 
-                {/* Checkbox */}
-                <Form.Check
-                  type="checkbox"
-                  id={`${preference.preferenceKey}_checkbox`}
-                  label={preference.checkboxLabel || "If you have a special educational need or health condition that you would like us to be aware of, please click this box"}
-                  checked={combinedValue.special_needs}
-                  onChange={(e) => {
-                    const newValue = {
-                      ...combinedValue,
-                      special_needs: e.target.checked
-                    };
-                    handlePreferenceChange(preference.preferenceKey, newValue);
-                  }}
-                  className="mb-3"
-                />
-
-                {/* Textarea - always visible but labeled as optional */}
-                <div>
-                  {preference.textareaLabel && (
-                    <Form.Label className="text-muted">
-                      {preference.textareaLabel}
-                    </Form.Label>
-                  )}
-                  <Form.Control
-                    as="textarea"
-                    rows={4}
-                    placeholder={preference.textareaPlaceholder || "Please tell us more about your special educational need or health condition and how we might be able to help..."}
-                    value={combinedValue.details}
+              {/* Checkbox */}
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={combinedValue.special_needs}
                     onChange={(e) => {
                       const newValue = {
                         ...combinedValue,
-                        details: e.target.value
+                        special_needs: e.target.checked
                       };
                       handlePreferenceChange(preference.preferenceKey, newValue);
                     }}
                   />
-                </div>
-              </Card.Body>
-            </Card>
-          </div>
+                }
+                label={preference.checkboxLabel || "If you have a special educational need or health condition that you would like us to be aware of, please click this box"}
+                sx={{ mb: 3 }}
+              />
+
+              {/* Textarea - always visible but labeled as optional */}
+              <Box>
+                {preference.textareaLabel && (
+                  <FormLabel sx={{ color: 'text.secondary', mb: 1 }}>
+                    {preference.textareaLabel}
+                  </FormLabel>
+                )}
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  placeholder={preference.textareaPlaceholder || "Please tell us more about your special educational need or health condition and how we might be able to help..."}
+                  value={combinedValue.details}
+                  onChange={(e) => {
+                    const newValue = {
+                      ...combinedValue,
+                      details: e.target.value
+                    };
+                    handlePreferenceChange(preference.preferenceKey, newValue);
+                  }}
+                />
+              </Box>
+            </CardContent>
+          </Card>
         );
 
       case 'text':
       case 'textarea':
         return (
-          <div key={preference.preferenceKey}>
-            <Card className="mb-3">
-              <Card.Body>
-                <h6 className="mb-3">{preference.title}</h6>
-                {contentText && <p className="text-muted mb-3">{contentText}</p>}
+          <Card key={preference.preferenceKey} sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" component="h6" gutterBottom>
+                {preference.title}
+              </Typography>
+              {contentText && (
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  {contentText}
+                </Typography>
+              )}
 
-                <Form.Control
-                  as={preference.inputType === 'textarea' ? 'textarea' : 'input'}
-                  type={preference.inputType === 'text' ? 'text' : undefined}
-                  rows={preference.inputType === 'textarea' ? 4 : undefined}
-                  placeholder={preference.placeholder || `Enter your ${preference.title.toLowerCase()}`}
-                  value={currentValue}
-                  onChange={(e) => handlePreferenceChange(preference.preferenceKey, e.target.value)}
-                />
-              </Card.Body>
-            </Card>
-          </div>
+              <TextField
+                fullWidth
+                multiline={preference.inputType === 'textarea'}
+                rows={preference.inputType === 'textarea' ? 4 : undefined}
+                type={preference.inputType === 'text' ? 'text' : undefined}
+                placeholder={preference.placeholder || `Enter your ${preference.title.toLowerCase()}`}
+                value={currentValue}
+                onChange={(e) => handlePreferenceChange(preference.preferenceKey, e.target.value)}
+              />
+            </CardContent>
+          </Card>
         );
 
       default:
@@ -297,46 +343,53 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
 
   if (loading) {
     return (
-      <div className="text-center py-4">
-        <Spinner animation="border" variant="primary" />
-        <p className="mt-2">Loading preferences...</p>
-      </div>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 4 }}>
+        <CircularProgress />
+        <Typography variant="body1" sx={{ mt: 2 }}>
+          Loading preferences...
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <div>
-      <h4 className="mb-4">Preferences</h4>
+    <Box>
+      <Typography variant="h5" component="h4" gutterBottom sx={{ mb: 4 }}>
+        Preferences
+      </Typography>
 
-      {error && <Alert variant="danger">{error}</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       {rulesPreferences.length === 0 ? (
-        <Alert variant="info">
+        <Alert severity="info">
           No preferences need to be set at this time. You can continue to payment.
         </Alert>
       ) : (
-        <div>
-          <p className="text-muted mb-4">
+        <Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
             Please review and update your preferences below. These settings will help us provide you with the best possible experience.
-          </p>
+          </Typography>
 
           {rulesPreferences.map(preference => renderPreferenceInput(preference))}
 
-          <Row className="mt-4">
-            <Col>
-              <Alert variant="light" className="border">
-                <div className="d-flex align-items-center">
-                  <i className="fas fa-info-circle text-info me-2"></i>
-                  <small className="text-muted">
+          <Grid container sx={{ mt: 4 }}>
+            <Grid size={12}>
+              <Alert severity="info" variant="outlined">
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
                     You can change these preferences at any time from your account settings.
-                  </small>
-                </div>
+                  </Typography>
+                </Box>
               </Alert>
-            </Col>
-          </Row>
-        </div>
+            </Grid>
+          </Grid>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };
 

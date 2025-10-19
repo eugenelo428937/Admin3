@@ -1,50 +1,71 @@
 // src/components/products/ProductTable.js
 import React from "react";
 import { Link } from "react-router-dom";
-import { Table, Button } from "react-bootstrap";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+  Paper,
+  Box
+} from "@mui/material";
 
 const AdminProductTable = ({ products, onDelete }) => {
     return (
-        <Table striped bordered hover>
-            <thead>
-                <tr>
-                    <th>Code</th>
-                    <th>Name</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {products.map((product) => (
-                    <tr key={product.id}>
-                        <td>{product.code}</td>
-                        <td>{product.name}</td>
-                        <td>{product.active ? "Active" : "Inactive"}</td>
-                        <td>
-                            <Link to={`/products/${product.id}`}>
-                                <Button variant="info" size="sm">
-                                    View
-                                </Button>
-                            </Link>
-                            {" "}
-                            <Link to={`/products/edit/${product.id}`}>
-                                <Button variant="warning" size="sm">
-                                    Edit
-                                </Button>
-                            </Link>
-                            {" "}
-                            <Button
-                                variant="danger"
-                                size="sm"
-                                onClick={() => onDelete(product.id)}
-                            >
-                                Delete
-                            </Button>
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </Table>
+        <TableContainer component={Paper}>
+            <Table>
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Code</TableCell>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Actions</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {products.map((product) => (
+                        <TableRow key={product.id} hover>
+                            <TableCell>{product.code}</TableCell>
+                            <TableCell>{product.name}</TableCell>
+                            <TableCell>{product.active ? "Active" : "Inactive"}</TableCell>
+                            <TableCell>
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                    <Button
+                                        component={Link}
+                                        to={`/products/${product.id}`}
+                                        variant="contained"
+                                        color="info"
+                                        size="small"
+                                    >
+                                        View
+                                    </Button>
+                                    <Button
+                                        component={Link}
+                                        to={`/products/edit/${product.id}`}
+                                        variant="contained"
+                                        color="warning"
+                                        size="small"
+                                    >
+                                        Edit
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        color="error"
+                                        size="small"
+                                        onClick={() => onDelete(product.id)}
+                                    >
+                                        Delete
+                                    </Button>
+                                </Box>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </TableContainer>
     );
 };
 

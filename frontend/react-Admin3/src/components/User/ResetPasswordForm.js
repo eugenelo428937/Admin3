@@ -1,5 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
+import {
+  Container,
+  Grid,
+  Card,
+  CardHeader,
+  CardContent,
+  TextField,
+  Button,
+  Alert,
+  CircularProgress,
+  Box,
+  Typography,
+  FormControl,
+  FormLabel,
+  FormHelperText
+} from '@mui/material';
+import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 
@@ -129,39 +145,41 @@ const ResetPasswordForm = () => {
 
   const getPasswordStrengthColor = () => {
     switch (passwordStrength) {
-      case 'Weak': return 'danger';
+      case 'Weak': return 'error';
       case 'Medium': return 'warning';
       case 'Strong': return 'success';
-      default: return 'secondary';
+      default: return 'text.secondary';
     }
   };
 
   // Show error if token is invalid
   if (tokenValid === false) {
     return (
-      <Container className="mt-5">
-        <Row className="justify-content-center">
-          <Col md={6} lg={5}>
+      <Container sx={{ mt: 5 }}>
+        <Grid container justifyContent="center">
+          <Grid size={{ xs: 12, md: 6, lg: 5 }}>
             <Card>
-              <Card.Header className="bg-danger text-white text-center">
-                <h4>Invalid Reset Link</h4>
-              </Card.Header>
-              <Card.Body className="text-center">
-                <Alert variant="danger">
+              <CardHeader
+                title="Invalid Reset Link"
+                sx={{ bgcolor: 'error.main', color: 'white', textAlign: 'center' }}
+                titleTypographyProps={{ variant: 'h4' }}
+              />
+              <CardContent sx={{ textAlign: 'center' }}>
+                <Alert severity="error" sx={{ mb: 3 }}>
                   This password reset link is invalid or has expired. Please request a new password reset.
                 </Alert>
-                <div className="d-grid gap-2">
-                  <Button variant="primary" onClick={() => navigate('/auth/forgot-password')}>
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  <Button variant="contained" onClick={() => navigate('/auth/forgot-password')}>
                     Request New Reset Link
                   </Button>
-                  <Button variant="outline-secondary" onClick={handleBackToLogin}>
+                  <Button variant="outlined" onClick={handleBackToLogin}>
                     Back to Login
                   </Button>
-                </div>
-              </Card.Body>
+                </Box>
+              </CardContent>
             </Card>
-          </Col>
-        </Row>
+          </Grid>
+        </Grid>
       </Container>
     );
   }
@@ -169,51 +187,54 @@ const ResetPasswordForm = () => {
   // Show success message
   if (success) {
     return (
-      <Container className="mt-5">
-        <Row className="justify-content-center">
-          <Col md={6} lg={5}>
+      <Container sx={{ mt: 5 }}>
+        <Grid container justifyContent="center">
+          <Grid size={{ xs: 12, md: 6, lg: 5 }}>
             <Card>
-              <Card.Header className="bg-success text-white text-center">
-                <h4>Password Reset Successful</h4>
-              </Card.Header>
-              <Card.Body className="text-center">
-                <div className="mb-4">
-                  <i className="bi bi-check-circle" style={{ fontSize: '3rem', color: '#28a745' }}></i>
-                </div>
-                <Alert variant="success">
+              <CardHeader
+                title="Password Reset Successful"
+                sx={{ bgcolor: 'success.main', color: 'white', textAlign: 'center' }}
+                titleTypographyProps={{ variant: 'h4' }}
+              />
+              <CardContent sx={{ textAlign: 'center' }}>
+                <Box sx={{ mb: 4 }}>
+                  <CheckCircleIcon sx={{ fontSize: '3rem', color: 'success.main' }} />
+                </Box>
+                <Alert severity="success" sx={{ mb: 3 }}>
                   Your password has been reset successfully. You can now login with your new password.
                 </Alert>
-                <div className="d-grid">
-                  <Button variant="primary" onClick={handleBackToLogin}>
+                <Box sx={{ display: 'grid' }}>
+                  <Button variant="contained" onClick={handleBackToLogin}>
                     Go to Login
                   </Button>
-                </div>
-              </Card.Body>
+                </Box>
+              </CardContent>
             </Card>
-          </Col>
-        </Row>
+          </Grid>
+        </Grid>
       </Container>
     );
   }
 
   return (
-    <Container className="mt-5">
-      <Row className="justify-content-center">
-        <Col md={6} lg={5}>
+    <Container sx={{ mt: 5 }}>
+      <Grid container justifyContent="center">
+        <Grid size={{ xs: 12, md: 6, lg: 5 }}>
           <Card>
-            <Card.Header className="text-center">
-              <h4>Set New Password</h4>
-              <small className="text-muted">
-                Please enter your new password below.
-              </small>
-            </Card.Header>
-            <Card.Body>
-              {error && <Alert variant="danger">{error}</Alert>}
-              
-              <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3">
-                  <Form.Label>New Password</Form.Label>
-                  <Form.Control
+            <CardHeader
+              title="Set New Password"
+              subheader="Please enter your new password below."
+              sx={{ textAlign: 'center' }}
+              titleTypographyProps={{ variant: 'h4' }}
+              subheaderTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+            />
+            <CardContent>
+              {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+
+              <Box component="form" onSubmit={handleSubmit}>
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                  <FormLabel>New Password</FormLabel>
+                  <TextField
                     type="password"
                     name="newPassword"
                     placeholder="Enter new password"
@@ -221,22 +242,23 @@ const ResetPasswordForm = () => {
                     onChange={handlePasswordChange}
                     required
                     disabled={isLoading}
+                    fullWidth
                   />
                   {passwords.newPassword && (
-                    <div className="mt-2">
-                      <small className={`text-${getPasswordStrengthColor()}`}>
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="body2" color={getPasswordStrengthColor()}>
                         Password strength: {passwordStrength}
-                      </small>
-                    </div>
+                      </Typography>
+                    </Box>
                   )}
-                  <Form.Text className="text-muted">
+                  <FormHelperText>
                     Password must be at least 8 characters with uppercase, lowercase, and numbers.
-                  </Form.Text>
-                </Form.Group>
+                  </FormHelperText>
+                </FormControl>
 
-                <Form.Group className="mb-3">
-                  <Form.Label>Confirm New Password</Form.Label>
-                  <Form.Control
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                  <FormLabel>Confirm New Password</FormLabel>
+                  <TextField
                     type="password"
                     name="confirmPassword"
                     placeholder="Confirm new password"
@@ -244,26 +266,24 @@ const ResetPasswordForm = () => {
                     onChange={handlePasswordChange}
                     required
                     disabled={isLoading}
+                    fullWidth
                   />
                   {passwords.confirmPassword && passwords.newPassword !== passwords.confirmPassword && (
-                    <small className="text-danger">Passwords do not match</small>
+                    <FormHelperText error>Passwords do not match</FormHelperText>
                   )}
-                </Form.Group>
+                </FormControl>
 
-                <div className="d-grid gap-2">
-                  <Button 
-                    variant="primary" 
-                    type="submit" 
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  <Button
+                    variant="contained"
+                    type="submit"
                     disabled={isLoading || passwords.newPassword !== passwords.confirmPassword}
                   >
                     {isLoading ? (
                       <>
-                        <Spinner
-                          as="span"
-                          animation="border"
-                          size="sm"
-                          role="status"
-                          className="me-2"
+                        <CircularProgress
+                          size={20}
+                          sx={{ mr: 2 }}
                         />
                         Resetting Password...
                       </>
@@ -271,20 +291,20 @@ const ResetPasswordForm = () => {
                       'Reset Password'
                     )}
                   </Button>
-                  
-                  <Button 
-                    variant="outline-secondary" 
+
+                  <Button
+                    variant="outlined"
                     onClick={handleBackToLogin}
                     disabled={isLoading}
                   >
                     Back to Login
                   </Button>
-                </div>
-              </Form>
-            </Card.Body>
+                </Box>
+              </Box>
+            </CardContent>
           </Card>
-        </Col>
-      </Row>
+        </Grid>
+      </Grid>
     </Container>
   );
 };

@@ -1,6 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Alert, Spinner, Button, Container, Row, Col } from 'react-bootstrap';
+import {
+  Alert,
+  AlertTitle,
+  CircularProgress,
+  Button,
+  Container,
+  Grid,
+  Box,
+  Typography
+} from '@mui/material';
+import {
+  CheckCircle as CheckCircleIcon,
+  Email as EmailIcon,
+  Warning as WarningIcon,
+  Person as PersonIcon,
+  Login as LoginIcon,
+  Refresh as RefreshIcon,
+  Home as HomeIcon,
+  Info as InfoIcon,
+  Lightbulb as LightbulbIcon
+} from '@mui/icons-material';
 import authService from '../../services/authService';
 
 const AccountActivation = () => {
@@ -88,7 +108,7 @@ const AccountActivation = () => {
     };
 
     const getSuccessIcon = () => {
-        return mode === 'email_verification' ? 'fas fa-envelope-check' : 'fas fa-check-circle';
+        return mode === 'email_verification' ? <EmailIcon sx={{ mr: 2 }} /> : <CheckCircleIcon sx={{ mr: 2 }} />;
     };
 
     const getSuccessHeading = () => {
@@ -104,141 +124,140 @@ const AccountActivation = () => {
     };
 
     return (
-        <Container className="mt-5">
-            <Row className="justify-content-center">
-                <Col md={8} lg={6}>
-                    <div className="text-center mb-4">
-                        <h2>{getTitle()}</h2>
-                    </div>
+        <Container sx={{ mt: 5 }}>
+            <Grid container justifyContent="center">
+                <Grid size={{ xs: 12, md: 8, lg: 6 }}>
+                    <Box sx={{ textAlign: 'center', mb: 4 }}>
+                        <Typography variant="h4" component="h2">{getTitle()}</Typography>
+                    </Box>
 
                     {isLoading && (
-                        <div className="text-center">
-                            <Spinner animation="border" role="status" className="mb-3">
-                                <span className="visually-hidden">Loading...</span>
-                            </Spinner>
-                            <p>{getLoadingMessage()}</p>
-                        </div>
+                        <Box sx={{ textAlign: 'center' }}>
+                            <CircularProgress sx={{ mb: 3 }} />
+                            <Typography>{getLoadingMessage()}</Typography>
+                        </Box>
                     )}
 
                     {!isLoading && status === 'success' && (
-                        <Alert variant="success">
-                            <Alert.Heading>
-                                <i className={`${getSuccessIcon()} me-2`}></i>
+                        <Alert severity="success">
+                            <AlertTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                                {getSuccessIcon()}
                                 {getSuccessHeading()}
-                            </Alert.Heading>
-                            <p className="mb-3">{message}</p>
-                            
+                            </AlertTitle>
+                            <Typography sx={{ mb: 3 }}>{message}</Typography>
+
                             {mode === 'email_verification' && newEmail && (
-                                <div className="bg-light p-3 rounded mb-3">
-                                    <p className="mb-2 fw-bold">
-                                        <i className="bi bi-info-circle me-2"></i>
+                                <Box sx={{ bgcolor: 'grey.100', p: 3, borderRadius: 1, mb: 3 }}>
+                                    <Typography sx={{ mb: 2, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                                        <InfoIcon sx={{ mr: 2 }} />
                                         What's next:
-                                    </p>
-                                    <ul className="mb-0">
+                                    </Typography>
+                                    <Box component="ul" sx={{ mb: 0 }}>
                                         <li>You can now use <strong>{newEmail}</strong> to log in</li>
                                         <li>All future communications will be sent to your new email</li>
                                         <li>Your profile has been updated with the new email address</li>
-                                    </ul>
-                                </div>
+                                    </Box>
+                                </Box>
                             )}
-                            
-                            <div className="d-grid gap-2">
+
+                            <Box sx={{ display: 'grid', gap: 2 }}>
                                 {mode === 'email_verification' ? (
                                     <>
-                                        <Button 
-                                            variant="primary" 
-                                            size="lg"
+                                        <Button
+                                            variant="contained"
+                                            size="large"
                                             onClick={handleProfileRedirect}
+                                            startIcon={<PersonIcon />}
                                         >
-                                            <i className="fas fa-user me-2"></i>
                                             Back to Profile
                                         </Button>
-                                        <Button 
-                                            variant="outline-primary"
+                                        <Button
+                                            variant="outlined"
                                             onClick={handleLoginRedirect}
+                                            startIcon={<LoginIcon />}
                                         >
-                                            <i className="fas fa-sign-in-alt me-2"></i>
                                             Login with New Email
                                         </Button>
                                     </>
                                 ) : (
-                                    <Button 
-                                        variant="primary" 
-                                        size="lg"
+                                    <Button
+                                        variant="contained"
+                                        size="large"
                                         onClick={handleLoginRedirect}
+                                        startIcon={<LoginIcon />}
                                     >
-                                        <i className="fas fa-sign-in-alt me-2"></i>
                                         Go to Login
                                     </Button>
                                 )}
-                            </div>
+                            </Box>
                         </Alert>
                     )}
 
                     {!isLoading && status === 'error' && (
-                        <Alert variant="danger">
-                            <Alert.Heading>
-                                <i className="fas fa-exclamation-triangle me-2"></i>
+                        <Alert severity="error">
+                            <AlertTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                                <WarningIcon sx={{ mr: 2 }} />
                                 {getErrorHeading()}
-                            </Alert.Heading>
-                            <p className="mb-3">{message}</p>
-                            
+                            </AlertTitle>
+                            <Typography sx={{ mb: 3 }}>{message}</Typography>
+
                             {mode === 'email_verification' && (
-                                <div className="bg-light p-3 rounded mb-3">
-                                    <p className="mb-2 fw-bold">
-                                        <i className="bi bi-lightbulb me-2"></i>
+                                <Box sx={{ bgcolor: 'grey.100', p: 3, borderRadius: 1, mb: 3 }}>
+                                    <Typography sx={{ mb: 2, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                                        <LightbulbIcon sx={{ mr: 2 }} />
                                         Possible reasons:
-                                    </p>
-                                    <ul className="mb-0">
+                                    </Typography>
+                                    <Box component="ul" sx={{ mb: 0 }}>
                                         <li>The verification link has expired (links are valid for 24 hours)</li>
                                         <li>The link has already been used</li>
                                         <li>The link was copied incorrectly</li>
                                         <li>The email address is already in use by another account</li>
-                                    </ul>
-                                </div>
+                                    </Box>
+                                </Box>
                             )}
-                            
-                            <div className="d-grid gap-2">
+
+                            <Box sx={{ display: 'grid', gap: 2 }}>
                                 {mode === 'email_verification' ? (
                                     <>
-                                        <Button 
-                                            variant="primary"
+                                        <Button
+                                            variant="contained"
                                             onClick={handleProfileRedirect}
+                                            startIcon={<PersonIcon />}
                                         >
-                                            <i className="fas fa-user me-2"></i>
                                             Back to Profile
                                         </Button>
-                                        <Button 
-                                            variant="outline-danger"
+                                        <Button
+                                            variant="outlined"
+                                            color="error"
                                             onClick={() => window.location.reload()}
+                                            startIcon={<RefreshIcon />}
                                         >
-                                            <i className="fas fa-redo me-2"></i>
                                             Try Again
                                         </Button>
                                     </>
                                 ) : (
                                     <>
-                                        <Button 
-                                            variant="outline-primary"
+                                        <Button
+                                            variant="outlined"
                                             onClick={handleResendActivation}
+                                            startIcon={<EmailIcon />}
                                         >
-                                            <i className="fas fa-envelope me-2"></i>
                                             Resend Activation Email
                                         </Button>
-                                        <Button 
-                                            variant="secondary"
+                                        <Button
+                                            variant="outlined"
                                             onClick={() => navigate('/')}
+                                            startIcon={<HomeIcon />}
                                         >
-                                            <i className="fas fa-home me-2"></i>
                                             Go to Home
                                         </Button>
                                     </>
                                 )}
-                            </div>
+                            </Box>
                         </Alert>
                     )}
-                </Col>
-            </Row>
+                </Grid>
+            </Grid>
         </Container>
     );
 };

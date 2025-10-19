@@ -1,6 +1,19 @@
 // src/components/ExamSessionList.js
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Container, Alert } from 'react-bootstrap';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+  Container,
+  Alert,
+  Paper,
+  Typography,
+  Box
+} from '@mui/material';
 import { Link } from 'react-router-dom';
 import examSessionService from '../../../services/examSessionService';
 import moment from 'moment';
@@ -15,7 +28,7 @@ const AdminExamSessionList = () => {
 
     const fetchExamSessions = async () => {
         try {
-            const data = await examSessionService.getAll();            
+            const data = await examSessionService.getAll();
             setExamSessions(data);
         } catch (err) {
             console.error('Error fetching exam sessions:', err);
@@ -35,48 +48,64 @@ const AdminExamSessionList = () => {
     };
 
     return (
-        <Container>
-            <h2 className="my-4">Exam Sessions</h2>
-            <Link to="/exam-sessions/new" className="btn btn-primary mb-3">
-                Create New Exam Session
-            </Link>
-            
-            {error && <Alert variant="danger">{error}</Alert>}
+        <Container sx={{ mt: 4 }}>
+            <Typography variant="h4" component="h2" sx={{ mb: 4 }}>
+                Exam Sessions
+            </Typography>
 
-            <Table striped bordered hover>
-                <thead>
-                    <tr>
-                        <th>Session Code</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {Array.isArray(examSessions) && examSessions.map(session => (
-                        <tr key={session.id}>
-                            <td>{session.session_code}</td>
-                            <td>{moment(session.start_date).format('YYYY-MM-DD HH:mm')}</td>
-                            <td>{moment(session.end_date).format('YYYY-MM-DD HH:mm')}</td>
-                            <td>
-                                <Link 
-                                    to={`/exam-sessions/edit/${session.id}`} 
-                                    className="btn btn-sm btn-info me-2"
-                                >
-                                    Edit
-                                </Link>
-                                <Button 
-                                    variant="danger" 
-                                    size="sm"
-                                    onClick={() => handleDelete(session.id)}
-                                >
-                                    Delete
-                                </Button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </Table>
+            <Button
+                component={Link}
+                to="/exam-sessions/new"
+                variant="contained"
+                sx={{ mb: 3 }}
+            >
+                Create New Exam Session
+            </Button>
+
+            {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+
+            <TableContainer component={Paper}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Session Code</TableCell>
+                            <TableCell>Start Date</TableCell>
+                            <TableCell>End Date</TableCell>
+                            <TableCell>Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {Array.isArray(examSessions) && examSessions.map(session => (
+                            <TableRow key={session.id} hover>
+                                <TableCell>{session.session_code}</TableCell>
+                                <TableCell>{moment(session.start_date).format('YYYY-MM-DD HH:mm')}</TableCell>
+                                <TableCell>{moment(session.end_date).format('YYYY-MM-DD HH:mm')}</TableCell>
+                                <TableCell>
+                                    <Box sx={{ display: 'flex', gap: 1 }}>
+                                        <Button
+                                            component={Link}
+                                            to={`/exam-sessions/edit/${session.id}`}
+                                            variant="contained"
+                                            color="info"
+                                            size="small"
+                                        >
+                                            Edit
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="error"
+                                            size="small"
+                                            onClick={() => handleDelete(session.id)}
+                                        >
+                                            Delete
+                                        </Button>
+                                    </Box>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
         </Container>
     );
 };

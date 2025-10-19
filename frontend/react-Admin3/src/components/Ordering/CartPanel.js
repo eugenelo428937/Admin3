@@ -1,10 +1,19 @@
 import React, { useMemo } from "react";
-import { Offcanvas, Button, ListGroup, Row } from "react-bootstrap";
+import {
+  Drawer,
+  Button,
+  List,
+  ListItem,
+  Typography,
+  Box,
+  IconButton,
+  Divider
+} from "@mui/material";
+import { Close as CloseIcon, Delete as DeleteIcon, ShoppingCart as ShoppingCartIcon } from "@mui/icons-material";
 import { useCart } from "../../contexts/CartContext";
 import { useTutorialChoice } from "../../contexts/TutorialChoiceContext";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { X, Trash3, CartCheck } from "react-bootstrap-icons";
 import { generateProductCode } from "../../utils/productCodeGenerator";
 // TODO Phase 8: import VATBreakdown from "../Common/VATBreakdown";
 import "../../styles/cart_panel.css";
@@ -82,25 +91,33 @@ const CartPanel = React.memo(({ show, handleClose }) => {
   }, []);
 
   return (
-		<Offcanvas
-			show={show}
-			onHide={handleSafeClose}
-			placement="end"
-			restoreFocus={false}
-			enforceFocus={false}>
-			<Offcanvas.Header closeButton>
-				<div className="d-flex justify-content-between align-items-center w-100 me-3">
-					<Offcanvas.Title>Shopping Cart</Offcanvas.Title>
-				</div>
-			</Offcanvas.Header>
-			<Offcanvas.Body className="">
+		<Drawer
+			anchor="right"
+			open={show}
+			onClose={handleSafeClose}
+			ModalProps={{
+				keepMounted: false,
+			}}
+			PaperProps={{
+				sx: { width: { xs: '100%', sm: 400 } }
+			}}
+		>
+			<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, borderBottom: 1, borderColor: 'divider' }}>
+				<Typography variant="h6" component="h2">
+					Shopping Cart
+				</Typography>
+				<IconButton onClick={handleSafeClose} edge="end">
+					<CloseIcon />
+				</IconButton>
+			</Box>
+			<Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
 				{cartItems.length === 0 ? (
-					<div>Your cart is empty.</div>
+					<Typography>Your cart is empty.</Typography>
 				) : (
 					<>
-						<ListGroup variant="flush">
+						<List sx={{ p: 0 }}>
 							{cartItems.map((item) => (
-								<ListGroup.Item key={item.id}>
+								<ListItem key={item.id} sx={{ display: 'block', p: 2, borderBottom: 1, borderColor: 'divider' }}>
 									<div className="d-flex justify-content-between align-items-center">
 										<div className="w-100">
 											<strong className="me-2">
@@ -399,49 +416,47 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 												</>
 											)}
 										</div>
-										<Button
-											variant=""
-											size="sm"
+										<IconButton
+											size="small"
 											onClick={() => handleRemoveItem(item)}
-											title="Remove from cart">
-											<X
-												className="bi d-flex flex-row align-items-center"
-												size={18}></X>
-										</Button>
+											title="Remove from cart"
+											edge="end"
+										>
+											<CloseIcon fontSize="small" />
+										</IconButton>
 									</div>
-								</ListGroup.Item>
+								</ListItem>
 							))}
-						</ListGroup>
+						</List>
 
 						{/* Cart Fees */}
 						{cartData && cartData.fees && cartData.fees.length > 0 && (
 							<>
-								<div className="mt-3 mb-2">
-									<small className="text-muted">Additional Fees:</small>
-								</div>
-								<ListGroup>
+								<Typography variant="caption" color="text.secondary" sx={{ mt: 3, mb: 2, display: 'block' }}>
+									Additional Fees:
+								</Typography>
+								<List sx={{ p: 0 }}>
 									{cartData.fees.map((fee) => (
-										<ListGroup.Item key={fee.id} className="border-0 py-1">
-											<div className="d-flex justify-content-between align-items-center">
-												<div>
-													<span>{fee.name}</span>
+										<ListItem key={fee.id} sx={{ border: 0, py: 1 }}>
+											<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+												<Box>
+													<Typography variant="body2">{fee.name}</Typography>
 													{fee.description && (
-														<>
-															<br />
-															<small className="text-muted">{fee.description}</small>
-														</>
+														<Typography variant="caption" color="text.secondary">
+															{fee.description}
+														</Typography>
 													)}
-												</div>
-												<span>{formatPrice(parseFloat(fee.amount))}</span>
-											</div>
-										</ListGroup.Item>
+												</Box>
+												<Typography variant="body2">{formatPrice(parseFloat(fee.amount))}</Typography>
+											</Box>
+										</ListItem>
 									))}
-								</ListGroup>
+								</List>
 							</>
 						)}
 
 						{/* Cart Totals */}
-						<div className="cart-totals mt-3 p-3 border-top">
+						<Box sx={{ mt: 3, p: 3, borderTop: 1, borderColor: 'divider' }}>
 							{/* TODO Phase 8: VATBreakdown component
 							<VATBreakdown
 								vatCalculations={cartData?.vat_calculations}
@@ -450,28 +465,32 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 								className=""
 							/>
 							*/}
-						</div>
+						</Box>
 					</>
 				)}
-				<Row className="d-flex flex-row align-items-center justify-content-between mt-3 mx-3 cart-panel-buttons">
-					<Button
-						variant="danger"
-						className="d-flex flex-row flex-wrap align-items-center justify-content-center w-auto"
-						onClick={handleClearCart}
-						title="Clear cart">
-						<Trash3 className="bi d-flex flex-row align-items-center" />
-						Clear Cart
-					</Button>
-					<Button
-						variant="primary"
-						className="d-flex flex-row flex-wrap align-items-center justify-content-center"
-						onClick={handleCheckout}>
-						<CartCheck className="bi d-flex flex-row align-items-center" />
-						Checkout
-					</Button>
-				</Row>
-			</Offcanvas.Body>
-		</Offcanvas>
+			</Box>
+			<Box sx={{ p: 2, borderTop: 1, borderColor: 'divider', display: 'flex', gap: 2, justifyContent: 'space-between' }}>
+				<Button
+					variant="outlined"
+					color="error"
+					startIcon={<DeleteIcon />}
+					onClick={handleClearCart}
+					title="Clear cart"
+					sx={{ flex: 1 }}
+				>
+					Clear Cart
+				</Button>
+				<Button
+					variant="contained"
+					color="primary"
+					startIcon={<ShoppingCartIcon />}
+					onClick={handleCheckout}
+					sx={{ flex: 1 }}
+				>
+					Checkout
+				</Button>
+			</Box>
+		</Drawer>
   );
 });
 

@@ -41,7 +41,7 @@ const CartSummaryPanel = ({
   };
 
   return (
-    <Card sx={{ height: 'fit-content'}} className='w-100'>
+    <Card sx={{ height: 'fit-content', width: '100%' }}>
       <CardHeader
         title={
           <Box display="flex" justifyContent="space-between" alignItems="center">

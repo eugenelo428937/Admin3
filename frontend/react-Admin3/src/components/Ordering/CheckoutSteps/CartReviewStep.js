@@ -31,7 +31,27 @@ const CartReviewStep = ({
       <Typography variant="h4" component="h1" gutterBottom>
         Step 1: Review Your Cart
       </Typography>
+      {!rulesLoading && rulesMessages.map((message, index) => {
+        const severity = message.message_type === 'warning' ? 'warning' :
+                        message.message_type === 'error' ? 'error' :
+                        message.message_type === 'info' ? 'info' : 'info';
 
+        return (
+          <Alert
+            key={`alert-${message.template_id}-${index}`}
+            severity={severity}
+            sx={{ mt: 3 }}
+            data-testid={`rules-alert-${index}`}
+          >
+            <Typography variant="h6" component="h4">
+              {message.content?.title || 'Notice'}
+            </Typography>
+            <Typography variant="body2">
+              {message.content?.message || message.content}
+            </Typography>
+          </Alert>
+        );
+      })}
       {/* Address Sections Layout */}
       <Grid container spacing={3} data-testid="cart-review-layout">
         {/* Address Sections Container - Full Width */}
@@ -110,27 +130,7 @@ const CartReviewStep = ({
         </Alert>
       )}
 
-      {!rulesLoading && rulesMessages.map((message, index) => {
-        const severity = message.message_type === 'warning' ? 'warning' :
-                        message.message_type === 'error' ? 'error' :
-                        message.message_type === 'info' ? 'info' : 'info';
-
-        return (
-          <Alert
-            key={`alert-${message.template_id}-${index}`}
-            severity={severity}
-            sx={{ mt: 3 }}
-            data-testid={`rules-alert-${index}`}
-          >
-            <Typography variant="h6" component="h4">
-              {message.content?.title || 'Notice'}
-            </Typography>
-            <Typography variant="body2">
-              {message.content?.message || message.content}
-            </Typography>
-          </Alert>
-        );
-      })}
+      
     </Box>
   );
 };
