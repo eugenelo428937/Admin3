@@ -36,6 +36,42 @@ The frontend uses Redux Toolkit for centralized product filter state management 
 - `src/store/middleware/urlSyncMiddleware.js` - Redux ↔ URL synchronization
 - `src/store/api/catalogApi.js` - RTK Query API endpoints
 
+#### Redux DevTools Configuration
+
+**IMPORTANT**: We use **Redux Toolkit**, not legacy Redux. DevTools setup is different:
+
+**✅ Redux Toolkit (What we use)**:
+```javascript
+// src/store/index.js
+export const store = configureStore({
+  reducer: { ... },
+  devTools: process.env.NODE_ENV !== 'production', // ✅ Automatic DevTools!
+});
+```
+
+**❌ Legacy Redux (What you'll see in old docs)**:
+```javascript
+// DON'T USE THIS - This is for legacy Redux createStore
+const store = createStore(
+  reducer,
+  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+);
+```
+
+**Key Points**:
+- Redux Toolkit's `configureStore` **automatically enables DevTools** - no manual setup needed
+- You will **NOT** find `window.__REDUX_DEVTOOLS_EXTENSION__` in our codebase - it's handled internally
+- DevTools are **enabled in development**, **disabled in production** (automatic)
+- See verification guide: `docs/redux-devtools-verification.md`
+
+**To Use Redux DevTools**:
+1. Install browser extension: [Chrome](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd) / [Firefox](https://addons.mozilla.org/en-US/firefox/addon/reduxdevtools/)
+2. Run `npm start` (DevTools only work in development)
+3. Open browser DevTools (F12) → Look for "Redux" tab
+4. View state, actions, and time-travel debugging
+
+**Official Docs**: https://redux-toolkit.js.org/api/configureStore#devtools
+
 #### Filter State Structure
 
 ```javascript
