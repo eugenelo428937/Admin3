@@ -20,9 +20,9 @@ import '@testing-library/jest-dom';
 
 import filtersReducer from '../../../store/slices/filtersSlice';
 import { urlSyncMiddleware } from '../../../store/middleware/urlSyncMiddleware';
-import ProductList from '../ProductList';
-import FilterPanel from '../FilterPanel';
-import MainNavBar from '../../MainNavBar';
+import ProductList from '../../Product/ProductList';
+import FilterPanel from '../../Product/FilterPanel';
+import MainNavBar from '../../Navigation/MainNavBar';
 
 // Mock API calls
 jest.mock('../../../services/productService', () => ({
