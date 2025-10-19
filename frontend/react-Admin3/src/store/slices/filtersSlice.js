@@ -14,22 +14,27 @@ const initialState = {
   product_types: [],
   products: [],
   modes_of_delivery: [],
-  
+
   // Search query
   searchQuery: '',
-  
+
+  // Navbar filters (Story 1.2)
+  tutorial_format: null,        // 'online' | 'in_person' | 'hybrid' | null
+  distance_learning: false,     // boolean
+  tutorial: false,              // boolean
+
   // Pagination
   currentPage: 1,
   pageSize: 20,
-  
+
   // UI state
   isFilterPanelOpen: false,
   appliedFilters: {}, // Cache of currently applied filters
-  
+
   // Loading states
   isLoading: false,
   error: null,
-  
+
   // Filter counts from API responses
   filterCounts: {
     subjects: {},
@@ -38,7 +43,7 @@ const initialState = {
     products: {},
     modes_of_delivery: {}
   },
-  
+
   // Last updated timestamp for cache management
   lastUpdated: null,
 };
@@ -83,7 +88,26 @@ const filtersSlice = createSlice({
       state.currentPage = 1;
       state.lastUpdated = Date.now();
     },
-    
+
+    // Navbar filter actions (Story 1.2)
+    setTutorialFormat: (state, action) => {
+      state.tutorial_format = action.payload;
+      state.currentPage = 1;
+      state.lastUpdated = Date.now();
+    },
+
+    setDistanceLearning: (state, action) => {
+      state.distance_learning = action.payload;
+      state.currentPage = 1;
+      state.lastUpdated = Date.now();
+    },
+
+    setTutorial: (state, action) => {
+      state.tutorial = action.payload;
+      state.currentPage = 1;
+      state.lastUpdated = Date.now();
+    },
+
     // Multi-filter update action
     setMultipleFilters: (state, action) => {
       const { subjects, categories, product_types, products, modes_of_delivery } = action.payload;
@@ -229,6 +253,10 @@ const filtersSlice = createSlice({
       state.products = [];
       state.modes_of_delivery = [];
       state.searchQuery = '';
+      // Reset navbar filters (Story 1.2)
+      state.tutorial_format = null;
+      state.distance_learning = false;
+      state.tutorial = false;
       state.currentPage = 1;
       state.lastUpdated = Date.now();
     },
@@ -332,6 +360,10 @@ const filtersSlice = createSlice({
       state.products = [];
       state.modes_of_delivery = [];
       state.searchQuery = '';
+      // Reset navbar filters (Story 1.2)
+      state.tutorial_format = null;
+      state.distance_learning = false;
+      state.tutorial = false;
       state.currentPage = 1;
       state.error = null;
       state.lastUpdated = Date.now();
@@ -374,6 +406,9 @@ export const {
   setProducts,
   setModesOfDelivery,
   setSearchQuery,
+  setTutorialFormat,
+  setDistanceLearning,
+  setTutorial,
   setMultipleFilters,
   toggleSubjectFilter,
   toggleCategoryFilter,
