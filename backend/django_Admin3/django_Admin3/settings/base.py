@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 # settings.py
+# Version: 0.1.1 - Added GitHub Actions CI/CD support for uat branch
 
 from datetime import timedelta
 import os
