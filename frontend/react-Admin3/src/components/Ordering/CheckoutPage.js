@@ -3,7 +3,7 @@ import { useCart } from "../../contexts/CartContext";
 import { useTutorialChoice } from "../../contexts/TutorialChoiceContext";
 import { useNavigate } from "react-router-dom";
 import cartService from "../../services/cartService";
-import { Container, Alert } from "react-bootstrap";
+import { Container, Alert, Typography, Box } from "@mui/material";
 import CheckoutSteps from "./CheckoutSteps";
 
 const CheckoutPage = () => {
@@ -53,39 +53,52 @@ const CheckoutPage = () => {
 
   if (checkoutComplete) {
     return (
-      <Container className="mt-4">
-        <Alert variant="success">
-          <h4>Order Completed Successfully! 🎉</h4>
-          <p>Thank you for your purchase. Your order has been processed and you should receive a confirmation email shortly.</p>
-          <p>
-            <strong>What's next?</strong>
-            <br />
-            • Check your email for order confirmation details
-            <br />
-            • You can view your order history in the Orders section
-            <br />
-            • If you have any questions, please contact our support team
-          </p>
-          <hr />
-          <p className="mb-0">You will be redirected to your order history in a few seconds...</p>
+      <Container sx={{ mt: 4 }}>
+        <Alert severity="success">
+          <Typography variant="h5" component="h4" gutterBottom>
+            Order Completed Successfully! 🎉
+          </Typography>
+          <Typography variant="body1" paragraph>
+            Thank you for your purchase. Your order has been processed and you should receive a confirmation email shortly.
+          </Typography>
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body1" component="strong" sx={{ fontWeight: 'bold' }}>
+              What's next?
+            </Typography>
+            <Typography variant="body2" component="div" sx={{ mt: 1 }}>
+              • Check your email for order confirmation details<br />
+              • You can view your order history in the Orders section<br />
+              • If you have any questions, please contact our support team
+            </Typography>
+          </Box>
+          <Box sx={{ borderTop: 1, borderColor: 'divider', pt: 2 }}>
+            <Typography variant="body2">
+              You will be redirected to your order history in a few seconds...
+            </Typography>
+          </Box>
         </Alert>
       </Container>
     );
   }
 
   if (cartItems.length === 0) {
-    return <Container className="mt-4"><Alert variant="info">Your cart is empty.</Alert></Container>;
+    return (
+      <Container sx={{ mt: 4 }}>
+        <Alert severity="info">Your cart is empty.</Alert>
+      </Container>
+    );
   }
 
   return (
-    <Container className="mt-4">
-      <h2>Checkout</h2>
-      
-      
-      {error && <Alert variant="danger">{error}</Alert>}
-      {success && <Alert variant="success">{success}</Alert>}
-      
-      <CheckoutSteps 
+    <Container sx={{ mt: 4 }}>
+      <Typography variant="h4" component="h2" gutterBottom>
+        Checkout
+      </Typography>
+
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+
+      <CheckoutSteps
         onComplete={handleCheckoutComplete}
       />
     </Container>

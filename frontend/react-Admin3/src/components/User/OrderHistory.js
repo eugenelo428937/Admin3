@@ -2,7 +2,21 @@
 import React, { useEffect, useState } from "react";
 import cartService from "../../services/cartService";
 import { generateProductCode } from "../../utils/productCodeGenerator";
-import { Container, Table, Alert, Spinner } from "react-bootstrap";
+import {
+  Container,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Alert,
+  CircularProgress,
+  Paper,
+  Typography,
+  Box,
+  Chip
+} from "@mui/material";
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
@@ -23,103 +37,101 @@ const OrderHistory = () => {
     fetchOrders();
   }, []);
 
-  if (loading) return <Spinner animation="border" className="mt-4" />;
-  if (error) return <Alert variant="danger" className="mt-4">{error}</Alert>;
-  if (!orders.length) return <Alert variant="info" className="mt-4">No orders found.</Alert>;
+  if (loading) return <Box sx={{ mt: 4, textAlign: 'center' }}><CircularProgress /></Box>;
+  if (error) return <Alert severity="error" sx={{ mt: 4 }}>{error}</Alert>;
+  if (!orders.length) return <Alert severity="info" sx={{ mt: 4 }}>No orders found.</Alert>;
 
   return (
-    <Container className="mt-4">
-      <h2>Order History</h2>
-      <Table striped bordered hover responsive>
-        <thead>
-          <tr>
-            <th>Order #</th>
-            <th>Date</th>
-            <th>Items</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.map((order) => (
-            <tr key={order.id}>
-              <td>{order.id}</td>
-              <td>{new Date(order.created_at).toLocaleString()}</td>
-              <td>                <ul className="mb-0">
+    <Container sx={{ mt: 4 }}>
+      <Typography variant="h4" component="h2" sx={{ mb: 3 }}>Order History</Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Order #</TableCell>
+              <TableCell>Date</TableCell>
+              <TableCell>Items</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {orders.map((order) => (
+              <TableRow key={order.id} hover>
+                <TableCell>{order.id}</TableCell>
+                <TableCell>{new Date(order.created_at).toLocaleString()}</TableCell>
+                <TableCell>
+                  <Box component="ul" sx={{ mb: 0, pl: 2 }}>
                   {order.items && order.items.map((item) => (
-                    <li key={item.id} className="mb-3">
-                      <strong>
+                    <Box component="li" key={item.id} sx={{ mb: 3 }}>
+                      <Typography component="strong" fontWeight="bold">
                         {item.metadata?.type === 'tutorial' ? item.metadata.title : (item.product_name || item.product)}
-                      </strong>
+                      </Typography>
                       <br />
-                      
+
                       {/* Tutorial-specific display */}
                       {item.metadata?.type === 'tutorial' ? (
                         <>
-                          <span className="text-muted" style={{fontSize: '0.9em'}}>
+                          <Typography component="span" color="text.secondary" sx={{ fontSize: '0.9em' }}>
                             {item.metadata.subjectCode} - {item.metadata.location}
-                          </span>
-                          <div className="mt-2 mb-2" style={{fontSize: '0.85em'}}>
+                          </Typography>
+                          <Box sx={{ mt: 2, mb: 2, fontSize: '0.85em' }}>
                             {item.metadata.locations ? (
                               /* New multi-location format */
                               <>
-                                <strong>Tutorial Locations ({item.metadata.totalChoiceCount} total choices):</strong>
+                                <Typography component="strong" fontWeight="bold">Tutorial Locations ({item.metadata.totalChoiceCount} total choices):</Typography>
                                 {item.metadata.locations.map((location, locationIndex) => (
-                                  <div key={locationIndex} className="mt-2 border rounded p-2">
-                                    <h6 className="mb-2 text-primary">{location.location}</h6>
+                                  <Box key={locationIndex} sx={{ mt: 2, border: 1, borderColor: 'divider', borderRadius: 1, p: 2 }}>
+                                    <Typography variant="h6" color="primary" sx={{ mb: 2 }}>{location.location}</Typography>
                                     {location.choices.map((choice, choiceIndex) => (
-                                      <div key={choiceIndex} className="mt-1 p-2 border rounded" style={{fontSize: '0.8em'}}>
-                                        <div className="d-flex justify-content-between align-items-center mb-1">
-                                          <strong>{choice.eventTitle || choice.eventCode}</strong>
-                                          <span className={`badge ${
-                                            choice.choice === '1st' ? 'bg-success' : 
-                                            choice.choice === '2nd' ? 'bg-warning' : 
-                                            'bg-info'
-                                          }`}>
-                                            {choice.choice} Choice
-                                          </span>
-                                        </div>
-                                        <ul style={{fontSize: '0.75em', paddingLeft: '1rem', marginBottom: '0'}}>
+                                      <Box key={choiceIndex} sx={{ mt: 1, p: 2, border: 1, borderColor: 'divider', borderRadius: 1, fontSize: '0.8em' }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                          <Typography component="strong" fontWeight="bold">{choice.eventTitle || choice.eventCode}</Typography>
+                                          <Chip
+                                            label={`${choice.choice} Choice`}
+                                            color={choice.choice === '1st' ? 'success' : choice.choice === '2nd' ? 'warning' : 'info'}
+                                            size="small"
+                                          />
+                                        </Box>
+                                        <Box component="ul" sx={{ fontSize: '0.75em', pl: 2, mb: 0 }}>
                                           {choice.eventCode && <li>Event Code: {choice.eventCode}</li>}
                                           {choice.venue && <li>Venue: {choice.venue}</li>}
                                           {choice.startDate && <li>Start: {new Date(choice.startDate).toLocaleDateString()}</li>}
                                           {choice.endDate && <li>End: {new Date(choice.endDate).toLocaleDateString()}</li>}
-                                        </ul>
-                                      </div>
+                                        </Box>
+                                      </Box>
                                     ))}
-                                  </div>
+                                  </Box>
                                 ))}
                               </>
                             ) : item.metadata.choices ? (
                               /* Legacy single-location format */
                               <>
-                                <strong>Tutorial Choices ({item.metadata.choiceCount || item.metadata.choices.length}):</strong>
+                                <Typography component="strong" fontWeight="bold">Tutorial Choices ({item.metadata.choiceCount || item.metadata.choices.length}):</Typography>
                                 {item.metadata.choices.map((choice, index) => (
-                                  <div key={index} className="mt-1 p-2 border rounded" style={{fontSize: '0.8em'}}>
-                                    <div className="d-flex justify-content-between align-items-center mb-1">
-                                      <strong>{choice.eventTitle || choice.eventCode}</strong>
-                                      <span className={`badge ${
-                                        choice.choice === '1st' ? 'bg-success' : 
-                                        choice.choice === '2nd' ? 'bg-warning' : 
-                                        'bg-info'
-                                      }`}>
-                                        {choice.choice} Choice
-                                      </span>
-                                    </div>
-                                    <ul style={{fontSize: '0.75em', paddingLeft: '1rem', marginBottom: '0'}}>
+                                  <Box key={index} sx={{ mt: 1, p: 2, border: 1, borderColor: 'divider', borderRadius: 1, fontSize: '0.8em' }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                      <Typography component="strong" fontWeight="bold">{choice.eventTitle || choice.eventCode}</Typography>
+                                      <Chip
+                                        label={`${choice.choice} Choice`}
+                                        color={choice.choice === '1st' ? 'success' : choice.choice === '2nd' ? 'warning' : 'info'}
+                                        size="small"
+                                      />
+                                    </Box>
+                                    <Box component="ul" sx={{ fontSize: '0.75em', pl: 2, mb: 0 }}>
                                       {choice.eventCode && <li>Event Code: {choice.eventCode}</li>}
                                       {choice.venue && <li>Venue: {choice.venue}</li>}
                                       {choice.startDate && <li>Start: {new Date(choice.startDate).toLocaleDateString()}</li>}
                                       {choice.endDate && <li>End: {new Date(choice.endDate).toLocaleDateString()}</li>}
-                                    </ul>
-                                  </div>
+                                    </Box>
+                                  </Box>
                                 ))}
                               </>
                             ) : (
                               /* Legacy single-choice format */
                               <>
-                                <span className="text-muted">
+                                <Typography component="span" color="text.secondary">
                                   Event Code: {item.metadata.eventCode || 'N/A'}
-                                </span>
-                                <ul className="mt-2 mb-2" style={{paddingLeft: '1.2rem'}}>
+                                </Typography>
+                                <Box component="ul" sx={{ mt: 2, mb: 2, pl: 2.4 }}>
                                   {item.metadata.venue && (
                                     <li>Venue: {item.metadata.venue}</li>
                                   )}
@@ -131,63 +143,64 @@ const OrderHistory = () => {
                                   )}
                                   {item.metadata.choice && (
                                     <li>
-                                      <span className={`badge ${
-                                        item.metadata.choice === '1st' ? 'bg-success' : 
-                                        item.metadata.choice === '2nd' ? 'bg-warning' : 
-                                        'bg-info'
-                                      }`}>
-                                        {item.metadata.choice} Choice
-                                      </span>
+                                      <Chip
+                                        label={`${item.metadata.choice} Choice`}
+                                        color={item.metadata.choice === '1st' ? 'success' : item.metadata.choice === '2nd' ? 'warning' : 'info'}
+                                        size="small"
+                                      />
                                     </li>
                                   )}
-                                </ul>
+                                </Box>
                               </>
                             )}
-                          </div>
+                          </Box>
                         </>
                       ) : (
                         /* Regular product display */
                         <>
-                          <span className="text-muted" style={{fontSize: '0.9em'}}>
+                          <Typography component="span" color="text.secondary" sx={{ fontSize: '0.9em' }}>
                             Product Code: {generateProductCode(item)}
-                          </span>
+                          </Typography>
                           {item.metadata?.variationName && (
                             <>
                               <br />
-                              <span className="text-info" style={{fontSize: '0.9em'}}>
+                              <Typography component="span" color="info.main" sx={{ fontSize: '0.9em' }}>
                                 Variation: {item.metadata.variationName}
-                              </span>
+                              </Typography>
                             </>
                           )}
                         </>
                       )}
-                      
+
                       <br />
                       Quantity: {item.quantity}
                       {item.price_type && item.price_type !== 'standard' && (
                         <>
                           <br />
-                          <span className="badge bg-secondary">
-                            {item.price_type === 'retaker' ? 'Retaker' : 
-                             item.price_type === 'additional' ? 'Additional Copy' : 
-                             item.price_type}
-                          </span>
+                          <Chip
+                            label={item.price_type === 'retaker' ? 'Retaker' :
+                                   item.price_type === 'additional' ? 'Additional Copy' :
+                                   item.price_type}
+                            size="small"
+                            sx={{ bgcolor: 'grey.500', color: 'white' }}
+                          />
                         </>
                       )}
                       {item.actual_price && (
                         <>
                           <br />
-                          <span className="text-success fw-bold">£{item.actual_price}</span>
+                          <Typography component="span" color="success.main" fontWeight="bold">£{item.actual_price}</Typography>
                         </>
                       )}
-                    </li>
+                    </Box>
                   ))}
-                </ul>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Container>
   );
 };
