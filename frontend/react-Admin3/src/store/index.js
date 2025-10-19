@@ -38,8 +38,11 @@ export const store = configureStore({
       .prepend(urlSyncMiddleware.middleware) // Story 1.1: Redux → URL sync
       .concat(catalogApi.middleware)
       .concat(cookiePersistenceMiddleware),
-      
-  // Enable Redux DevTools Extension in development
+
+  // Enable Redux DevTools Extension in development (Story 1.2 - AC13)
+  // Redux Toolkit's configureStore automatically connects to Redux DevTools Extension
+  // No need for window.__REDUX_DEVTOOLS_EXTENSION__ - it's handled internally!
+  // See: https://redux-toolkit.js.org/api/configureStore#devtools
   devTools: process.env.NODE_ENV !== 'production',
 });
 
