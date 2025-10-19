@@ -1,5 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
+import {
+  Container,
+  Grid,
+  Card,
+  CardHeader,
+  CardContent,
+  TextField,
+  Button,
+  Alert,
+  CircularProgress,
+  Box,
+  Typography,
+  FormControl,
+  FormLabel,
+  Link
+} from '@mui/material';
+import { EmailOutlined as EmailIcon, AccessTime as ClockIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import axios from 'axios';
@@ -132,154 +148,163 @@ const ForgotPasswordForm = () => {
 
   if (isSubmitted) {
     return (
-      <Container className="mt-5">
-        <Row className="justify-content-center">
-          <Col md={6} lg={5}>
+      <Container sx={{ mt: 5 }}>
+        <Grid container justifyContent="center">
+          <Grid size={{ xs: 12, md: 6, lg: 5 }}>
             <Card>
-              <Card.Header className="bg-success text-white text-center">
-                <h4>Check Your Email</h4>
-              </Card.Header>
-              <Card.Body className="text-center">
-                <div className="mb-4">
-                  <i className="bi bi-envelope-check" style={{ fontSize: '3rem', color: '#28a745' }}></i>
-                </div>
-                <Alert variant="success" className="text-left">
+              <CardHeader
+                title="Check Your Email"
+                sx={{ bgcolor: 'success.main', color: 'white', textAlign: 'center' }}
+                titleTypographyProps={{ variant: 'h4' }}
+              />
+              <CardContent sx={{ textAlign: 'center' }}>
+                <Box sx={{ mb: 4 }}>
+                  <EmailIcon sx={{ fontSize: '3rem', color: 'success.main' }} />
+                </Box>
+                <Alert severity="success" sx={{ textAlign: 'left', mb: 3 }}>
                   {message}
                 </Alert>
-                <div className="mb-3">
-                  <small className="text-muted">
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="body2" color="text.secondary">
                     The reset link will expire in <strong>{expiryHours} minutes</strong>.
-                  </small>
-                </div>
-                <div className="mb-3">
-                  <Alert variant="info" className="d-flex align-items-center">
-                    <i className="bi bi-clock me-2"></i>
+                  </Typography>
+                </Box>
+                <Box sx={{ mb: 3 }}>
+                  <Alert severity="info" sx={{ display: 'flex', alignItems: 'center' }}>
+                    <ClockIcon sx={{ mr: 2 }} />
                     <span>Redirecting to login in <strong>{countdown}</strong> seconds...</span>
                   </Alert>
-                </div>
-                <div className="d-grid gap-2">
-                  <Button variant="primary" onClick={handleBackToLogin}>
+                </Box>
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  <Button variant="contained" onClick={handleBackToLogin}>
                     Back to Login Now
                   </Button>
-                  <Button variant="outline-secondary" onClick={handleResendEmail}>
+                  <Button variant="outlined" onClick={handleResendEmail}>
                     Send Another Reset Email
                   </Button>
-                </div>
-              </Card.Body>
+                </Box>
+              </CardContent>
             </Card>
-          </Col>
-        </Row>
+          </Grid>
+        </Grid>
       </Container>
     );
   }
 
   return (
-		<Container className="mt-5">
-			<Row className="justify-content-center">
-				<Col md={6} lg={5}>
-					<Card>
-						<Card.Header className="text-center">
-							<h4>Reset Your Password</h4>
-							<small className="text-muted">
-								Enter your email address and we'll send you a link to
-								reset your password if there is an account associated
-								with this email address.
-							</small>
-						</Card.Header>
-						<Card.Body>
-							{error && <Alert variant="danger">{error}</Alert>}
+    <Container sx={{ mt: 5 }}>
+      <Grid container justifyContent="center">
+        <Grid size={{ xs: 12, md: 6, lg: 5 }}>
+          <Card>
+            <CardHeader
+              title="Reset Your Password"
+              subheader="Enter your email address and we'll send you a link to reset your password if there is an account associated with this email address."
+              sx={{ textAlign: 'center' }}
+              titleTypographyProps={{ variant: 'h4' }}
+              subheaderTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+            />
+            <CardContent>
+              {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
-							<Form onSubmit={handleSubmit}>
-								<Form.Group className="mb-3">
-									<Form.Label>Email Address</Form.Label>
-									<Form.Control
-										type="email"
-										placeholder="Enter your email"
-										value={email}
-										onChange={(e) => setEmail(e.target.value)}
-										required
-										disabled={isLoading}
-									/>									
-								</Form.Group>
+              <Box component="form" onSubmit={handleSubmit}>
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                  <FormLabel>Email Address</FormLabel>
+                  <TextField
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={isLoading}
+                    fullWidth
+                  />
+                </FormControl>
 
-								{!DISABLE_RECAPTCHA_IN_DEV && (
-									<Form.Group className="mb-3">
-										<div className="d-flex rounded">
-											<div className="d-flex align-items-center recaptcha-notice border rounded p-3 bg-light">
-												<img
-													src="https://www.gstatic.com/recaptcha/api2/logo_48.png"
-													alt="reCAPTCHA"
-													width="24"
-													height="24"
-													className="me-2"
-												/>
-												<div>
-													<small className="text-muted d-block">
-														Protected by reCAPTCHA
-													</small>
-													<div className="d-flex align-items-center">
-														<a
-															href="https://policies.google.com/privacy"
-															target="_blank"
-															rel="noopener noreferrer"
-															className="text-decoration-none me-2"
-															style={{ fontSize: "11px" }}>
-															Privacy
-														</a>
-														<span
-															style={{ fontSize: "11px" }}
-															className="text-muted me-2">
-															-
-														</span>
-														<a
-															href="https://policies.google.com/terms"
-															target="_blank"
-															rel="noopener noreferrer"
-															className="text-decoration-none"
-															style={{ fontSize: "11px" }}>
-															Terms
-														</a>
-													</div>
-												</div>
-											</div>
-										</div>
-									</Form.Group>
-								)}
+                {!DISABLE_RECAPTCHA_IN_DEV && (
+                  <FormControl fullWidth sx={{ mb: 3 }}>
+                    <Box sx={{ display: 'flex', borderRadius: 1 }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          border: 1,
+                          borderColor: 'divider',
+                          borderRadius: 1,
+                          p: 3,
+                          bgcolor: 'grey.100'
+                        }}
+                      >
+                        <img
+                          src="https://www.gstatic.com/recaptcha/api2/logo_48.png"
+                          alt="reCAPTCHA"
+                          width="24"
+                          height="24"
+                          style={{ marginRight: '8px' }}
+                        />
+                        <Box>
+                          <Typography variant="body2" color="text.secondary" sx={{ display: 'block' }}>
+                            Protected by reCAPTCHA
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Link
+                              href="https://policies.google.com/privacy"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              sx={{ fontSize: '11px', mr: 2 }}
+                            >
+                              Privacy
+                            </Link>
+                            <Typography sx={{ fontSize: '11px', color: 'text.secondary', mr: 2 }}>
+                              -
+                            </Typography>
+                            <Link
+                              href="https://policies.google.com/terms"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              sx={{ fontSize: '11px' }}
+                            >
+                              Terms
+                            </Link>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </FormControl>
+                )}
 
-								<div className="d-grid gap-2">
-									<Button
-										variant="primary"
-										type="submit"
-										disabled={isLoading}>
-										{isLoading ? (
-											<>
-												<Spinner
-													as="span"
-													animation="border"
-													size="sm"
-													role="status"
-													className="me-2"
-												/>
-												Sending Reset Email...
-											</>
-										) : (
-											"Send Reset Email"
-										)}
-									</Button>
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  <Button
+                    variant="contained"
+                    type="submit"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <CircularProgress
+                          size={20}
+                          sx={{ mr: 2 }}
+                        />
+                        Sending Reset Email...
+                      </>
+                    ) : (
+                      "Send Reset Email"
+                    )}
+                  </Button>
 
-									<Button
-										variant="outline-secondary"
-										onClick={handleBackToLogin}
-										disabled={isLoading}>
-										Back to Login
-									</Button>
-								</div>
-							</Form>
-						</Card.Body>
-					</Card>
-				</Col>
-			</Row>
-		</Container>
+                  <Button
+                    variant="outlined"
+                    onClick={handleBackToLogin}
+                    disabled={isLoading}
+                  >
+                    Back to Login
+                  </Button>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Container>
   );
 };
 

@@ -1,6 +1,18 @@
 // src/components/subjects/SubjectForm.js
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Container, Alert } from 'react-bootstrap';
+import {
+  TextField,
+  Button,
+  Container,
+  Alert,
+  Box,
+  Typography,
+  FormControl,
+  FormLabel,
+  Checkbox,
+  FormControlLabel,
+  CircularProgress
+} from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import subjectService from "../../../services/subjectService";
 
@@ -8,16 +20,15 @@ const AdminSubjectForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditMode = !!id;
-  
+
   const [formData, setFormData] = useState({
-    code: '',    
-    description: '',    
+    code: '',
+    description: '',
     active: true
   });
-  
+
   const [loading, setLoading] = useState(isEditMode);
   const [error, setError] = useState(null);
-  const [validated, setValidated] = useState(false);
 
   useEffect(() => {
 		const fetchSubject = async () => {
@@ -34,7 +45,7 @@ const AdminSubjectForm = () => {
 		if (isEditMode) {
 			fetchSubject();
 		}
-  }, [id, isEditMode]);  
+  }, [id, isEditMode]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -46,11 +57,9 @@ const AdminSubjectForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    
-    if (form.checkValidity() === false) {
-      e.stopPropagation();
-      setValidated(true);
+
+    if (!formData.code) {
+      setError('Please provide a subject code.');
       return;
     }
 
@@ -66,58 +75,66 @@ const AdminSubjectForm = () => {
     }
   };
 
-  if (loading) return <div className="text-center mt-5">Loading...</div>;
+  if (loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
 
   return (
-    <Container className="mt-4">
-      <h2>{isEditMode ? 'Edit Subject' : 'Add New Subject'}</h2>
-      {error && <Alert variant="danger">{error}</Alert>}
-      
-      <Form noValidate validated={validated} onSubmit={handleSubmit}>
-        <Form.Group className="mb-3">
-          <Form.Label>Subject Code</Form.Label>
-          <Form.Control
+    <Container sx={{ mt: 4 }}>
+      <Typography variant="h4" component="h2" sx={{ mb: 4 }}>
+        {isEditMode ? 'Edit Subject' : 'Add New Subject'}
+      </Typography>
+
+      {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+
+      <Box component="form" onSubmit={handleSubmit}>
+        <FormControl fullWidth sx={{ mb: 3 }}>
+          <FormLabel>Subject Code</FormLabel>
+          <TextField
             required
-            type="text"
             name="code"
             value={formData.code}
             onChange={handleChange}
             placeholder="Enter subject code (e.g. MATH101)"
+            fullWidth
+            error={!formData.code && error !== null}
+            helperText={!formData.code && error !== null ? 'Please provide a subject code.' : ''}
           />
-          <Form.Control.Feedback type="invalid">
-            Please provide a subject code.
-          </Form.Control.Feedback>
-        </Form.Group>
-        
-        <Form.Group className="mb-3">
-          <Form.Label>Description</Form.Label>
-          <Form.Control
-            as="textarea"
+        </FormControl>
+
+        <FormControl fullWidth sx={{ mb: 3 }}>
+          <FormLabel>Description</FormLabel>
+          <TextField
+            multiline
             rows={3}
             name="description"
             value={formData.description || ''}
             onChange={handleChange}
             placeholder="Enter subject description"
+            fullWidth
           />
-        </Form.Group>        
+        </FormControl>
 
-        <Form.Group className="mb-3">
-          <Form.Check
-            type="checkbox"
-            name="active"
+        <FormControl fullWidth sx={{ mb: 3 }}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                name="active"
+                checked={formData.active}
+                onChange={handleChange}
+              />
+            }
             label="Active"
-            checked={formData.active}
-            onChange={handleChange}
           />
-        </Form.Group>
+        </FormControl>
 
-        <Button variant="primary" type="submit">
-          {isEditMode ? 'Update Subject' : 'Create Subject'}
-        </Button>
-        <Button variant="secondary" className="ms-2" onClick={() => navigate('/subjects')}>
-          Cancel
-        </Button>
-      </Form>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button variant="contained" type="submit">
+            {isEditMode ? 'Update Subject' : 'Create Subject'}
+          </Button>
+          <Button variant="outlined" onClick={() => navigate('/subjects')}>
+            Cancel
+          </Button>
+        </Box>
+      </Box>
     </Container>
   );
 };

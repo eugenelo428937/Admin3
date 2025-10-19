@@ -1,6 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Alert, Button } from 'react-bootstrap';
-import { Snackbar, Alert as MuiAlert } from '@mui/material';
+import {
+  FormControl,
+  FormLabel,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+  Checkbox,
+  TextField,
+  Select,
+  MenuItem,
+  Alert,
+  Button,
+  Typography,
+  Box,
+  Grid,
+  Snackbar,
+  Alert as MuiAlert
+} from '@mui/material';
 import { useCart } from '../../../contexts/CartContext';
 import rulesEngineService from '../../../services/rulesEngineService';
 
@@ -186,166 +202,188 @@ const PaymentStep = ({
   };
 
   return (
-    <div>
-      <h4>Step 3: Payment</h4>
+    <Box>
+      <Typography variant="h5" component="h4" gutterBottom>
+        Step 3: Payment
+      </Typography>
 
-      <Form>
-        <Form.Group className="mb-3">
-          <Form.Label>Payment Method</Form.Label>
-          <div>
-            <Form.Check
-              type="radio"
-              id="payment-card"
-              name="payment-method"
+      <Box component="form">
+        <FormControl component="fieldset" sx={{ mb: 3 }}>
+          <FormLabel component="legend">Payment Method</FormLabel>
+          <RadioGroup
+            name="payment-method"
+            value={paymentMethod}
+            onChange={(e) => setPaymentMethod(e.target.value)}
+          >
+            <FormControlLabel
+              value="card"
+              control={<Radio />}
               label="Credit/Debit Card"
-              checked={paymentMethod === 'card'}
-              onChange={() => setPaymentMethod('card')}
             />
-            <Form.Check
-              type="radio"
-              id="payment-invoice"
-              name="payment-method"
+            <FormControlLabel
+              value="invoice"
+              control={<Radio />}
               label="Invoice (Corporate accounts only)"
-              checked={paymentMethod === 'invoice'}
-              onChange={() => setPaymentMethod('invoice')}
             />
-          </div>
-        </Form.Group>
+          </RadioGroup>
+        </FormControl>
 
         {/* Display acknowledgment messages for this payment step */}
         {acknowledgmentMessages.length > 0 && (
-          <div className="mb-4">
+          <Box sx={{ mb: 4 }}>
             {acknowledgmentMessages.map((message) => (
-              <div key={message.ack_key} className="border rounded p-3 mb-3" style={{ backgroundColor: '#f8f9fa' }}>
-                <h6 className="mb-2">{message.title}</h6>
-                <p className="mb-3 text-muted">
+              <Box
+                key={message.ack_key}
+                sx={{
+                  border: 1,
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  p: 3,
+                  mb: 3,
+                  backgroundColor: 'grey.50'
+                }}
+              >
+                <Typography variant="h6" component="h6" gutterBottom>
+                  {message.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                   {message.content?.content?.message || message.content}
-                </p>
-                <Form.Check
-                  type="checkbox"
-                  id={`ack-${message.ack_key}`}
+                </Typography>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={actualAcknowledgmentStates[message.ack_key] || false}
+                      onChange={(e) => handleAcknowledgmentChange(message.ack_key, e.target.checked)}
+                    />
+                  }
                   label={message.content?.content?.checkbox_text || "I acknowledge and agree"}
-                  checked={actualAcknowledgmentStates[message.ack_key] || false}
-                  onChange={(e) => handleAcknowledgmentChange(message.ack_key, e.target.checked)}
-                  className="fw-bold"
+                  sx={{ fontWeight: 'bold' }}
                 />
                 {message.required && (
-                  <small className="text-danger d-block mt-1">
+                  <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
                     * This acknowledgment is required to proceed
-                  </small>
+                  </Typography>
                 )}
-              </div>
+              </Box>
             ))}
-          </div>
+          </Box>
         )}
 
         {paymentMethod === 'card' && (
-          <div>
+          <Box>
             {isDevelopment && (
-              <Alert variant="info" className="mb-3">
-                <strong>Development Mode:</strong> Use test cards below
-                <div className="mt-2">
+              <Alert severity="info" sx={{ mb: 3 }}>
+                <Typography variant="body2" component="strong" sx={{ fontWeight: 'bold' }}>
+                  Development Mode:
+                </Typography>{' '}
+                Use test cards below
+                <Box sx={{ mt: 2 }}>
                   {testCards.map((card, index) => (
                     <Button
                       key={index}
-                      variant="outline-secondary"
-                      size="sm"
-                      className="me-2 mb-2"
+                      variant="outlined"
+                      size="small"
+                      sx={{ mr: 2, mb: 2 }}
                       onClick={() => handleCardSelection(card)}
                     >
                       {card.name}
                     </Button>
                   ))}
-                </div>
+                </Box>
               </Alert>
             )}
 
-            <Form.Group className="mb-3">
-              <Form.Label>Card Number</Form.Label>
-              <Form.Control
+            <FormControl fullWidth sx={{ mb: 3 }}>
+              <FormLabel>Card Number</FormLabel>
+              <TextField
                 type="text"
                 value={cardNumber}
                 onChange={(e) => setCardNumber(e.target.value)}
                 placeholder="1234 5678 9012 3456"
+                fullWidth
               />
-            </Form.Group>
+            </FormControl>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Cardholder Name</Form.Label>
-              <Form.Control
+            <FormControl fullWidth sx={{ mb: 3 }}>
+              <FormLabel>Cardholder Name</FormLabel>
+              <TextField
                 type="text"
                 value={cardholderName}
                 onChange={(e) => setCardholderName(e.target.value)}
                 placeholder="John Doe"
+                fullWidth
               />
-            </Form.Group>
+            </FormControl>
 
-            <div className="row">
-              <div className="col-md-6">
-                <Form.Group className="mb-3">
-                  <Form.Label>Expiry Month</Form.Label>
-                  <Form.Select
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                  <FormLabel>Expiry Month</FormLabel>
+                  <Select
                     value={expiryMonth}
                     onChange={(e) => setExpiryMonth(e.target.value)}
+                    displayEmpty
                   >
-                    <option value="">Select Month</option>
+                    <MenuItem value="">Select Month</MenuItem>
                     {Array.from({ length: 12 }, (_, i) => (
-                      <option key={i + 1} value={String(i + 1).padStart(2, '0')}>
+                      <MenuItem key={i + 1} value={String(i + 1).padStart(2, '0')}>
                         {String(i + 1).padStart(2, '0')}
-                      </option>
+                      </MenuItem>
                     ))}
-                  </Form.Select>
-                </Form.Group>
-              </div>
-              <div className="col-md-6">
-                <Form.Group className="mb-3">
-                  <Form.Label>Expiry Year</Form.Label>
-                  <Form.Select
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                  <FormLabel>Expiry Year</FormLabel>
+                  <Select
                     value={expiryYear}
                     onChange={(e) => setExpiryYear(e.target.value)}
+                    displayEmpty
                   >
-                    <option value="">Select Year</option>
+                    <MenuItem value="">Select Year</MenuItem>
                     {Array.from({ length: 10 }, (_, i) => {
                       const year = String(new Date().getFullYear() + i).slice(-2);
                       return (
-                        <option key={year} value={year}>
+                        <MenuItem key={year} value={year}>
                           {year}
-                        </option>
+                        </MenuItem>
                       );
                     })}
-                  </Form.Select>
-                </Form.Group>
-              </div>
-            </div>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
 
-            <Form.Group className="mb-3">
-              <Form.Label>CVV</Form.Label>
-              <Form.Control
+            <FormControl sx={{ mb: 3 }}>
+              <FormLabel>CVV</FormLabel>
+              <TextField
                 type="text"
                 value={cvv}
                 onChange={(e) => setCvv(e.target.value)}
                 placeholder="123"
-                style={{ maxWidth: '100px' }}
+                sx={{ maxWidth: '100px' }}
               />
-            </Form.Group>
-          </div>
+            </FormControl>
+          </Box>
         )}
 
         {paymentMethod === 'invoice' && (
-          <Form.Group className="mb-3">
-            <Form.Label>Employer Code</Form.Label>
-            <Form.Control
+          <FormControl fullWidth sx={{ mb: 3 }}>
+            <FormLabel>Employer Code</FormLabel>
+            <TextField
               type="text"
               value={employerCode}
               onChange={(e) => setEmployerCode(e.target.value)}
               placeholder="Enter your employer code"
+              fullWidth
             />
-            <Form.Text className="text-muted">
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
               Corporate customers only. Please contact us if you don't have an employer code.
-            </Form.Text>
-          </Form.Group>
+            </Typography>
+          </FormControl>
         )}
-      </Form>
+      </Box>
 
       {/* MUI Snackbar for booking fee notification */}
       <Snackbar
@@ -362,7 +400,7 @@ const PaymentStep = ({
           {bookingFeeNotification}
         </MuiAlert>
       </Snackbar>
-    </div>
+    </Box>
   );
 };
 

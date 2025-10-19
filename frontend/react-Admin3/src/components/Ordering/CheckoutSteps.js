@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Button, Alert } from 'react-bootstrap';
-import { Grid } from '@mui/material';
+import { Button, Alert, Card, CardActions, CardContent, Grid, Box, useTheme, Stepper, Step, StepLabel, Typography } from '@mui/material';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../hooks/useAuth';
 import httpService from '../../services/httpService';
@@ -19,6 +18,7 @@ import PaymentStep from './CheckoutSteps/PaymentStep';
 import CartSummaryPanel from './CheckoutSteps/CartSummaryPanel';
 
 const CheckoutSteps = ({ onComplete }) => {
+  const theme = useTheme();
   const { cartItems, cartData } = useCart();
   const { isAuthenticated } = useAuth();
   const validation = useCheckoutValidation();
@@ -557,114 +557,95 @@ const CheckoutSteps = ({ onComplete }) => {
   };
 
   return (
-     <div className="checkout-page-wrapper">
-        {error && <Alert variant="danger">{error}</Alert>}
-        {success && <Alert variant="success">{success}</Alert>}
-        {vatLoading && <Alert variant="info">Calculating VAT...</Alert>}
+     <Box sx={{ width: '100%' }}>
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+        {vatLoading && <Alert severity="info" sx={{ mb: 2 }}>Calculating VAT...</Alert>}
         {validation.validationMessage && !error && (
-           <Alert variant="warning">{validation.validationMessage}</Alert>
+           <Alert severity="warning" sx={{ mb: 2 }}>{validation.validationMessage}</Alert>
         )}
 
         {/* Step Progress */}
-        <div className="d-flex justify-content-between mb-4">
+        <Stepper activeStep={currentStep - 1} sx={{ mb: 4 }}>
            {steps.map((step, index) => (
-              <div
-                 key={index}
-                 className={`flex-fill text-center ${
-                    index + 1 === currentStep
-                       ? "text-primary"
-                       : index + 1 < currentStep
-                       ? "text-success"
-                       : "text-muted"
-                 }`}
-              >
-                 <div
-                    className={`rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center ${
-                       index + 1 === currentStep
-                          ? "bg-primary text-white"
-                          : index + 1 < currentStep
-                          ? "bg-success text-white"
-                          : "bg-light"
-                    }`}
-                    style={{ width: "40px", height: "40px" }}
-                 >
-                    {index + 1 < currentStep ? "✓" : index + 1}
-                 </div>
-                 <h6 className="mb-1">{step.title}</h6>
-                 <small>{step.description}</small>
-              </div>
+              <Step key={index} completed={index + 1 < currentStep}>
+                 <StepLabel>
+                    <Typography variant="subtitle2">{step.title}</Typography>
+                    <Typography variant="caption" color="text.secondary">{step.description}</Typography>
+                 </StepLabel>
+              </Step>
            ))}
-        </div>
+        </Stepper>
 
         <Card>
-           <Card.Body className="p-left__2xl p-right__2xl">
-              {/* Two-column grid layout for all steps */}
-              <Grid container spacing={3} className="justify-content-center">
-                 {/* Left column: Step content (lg:8, md:12) */}
-                 <Grid size={{ md: 12, lg: 8 }}>{renderStepContent()}</Grid>
+           <CardContent sx={{ px: 0 }}>
+              {/* Rules Engine Modal for displaying modal messages */}
+              <RulesEngineModal
+                open={showRulesModal}
+                onClose={() => setShowRulesModal(false)}
+                messages={modalMessages}
+                closeButtonText="I Understand"
+                backdrop="static"
+                disableEscapeKeyDown={true}
+              />
+              <Box sx={{ px: { xs: theme.liftkit.spacing.sm, md: theme.liftkit.spacing.md, lg: theme.liftkit.spacing.md } }}>
+                 {/* Two-column grid layout for all steps */}
+                 <Grid container spacing={3} className="justify-content-center">
+                    {/* Left column: Step content (lg:8, md:12) */}
+                    <Grid size={{ md: 12, lg: 8 }}>{renderStepContent()}</Grid>
 
-                 {/* Right column: Cart Summary Panel (lg:4, md:12) */}
-                 <Grid size={{ md: 12, lg: 4 }}>
-                    <CartSummaryPanel
-                       cartItems={cartItems}
-                       vatCalculations={vatCalculations}
-                       paymentMethod={paymentMethod}
-                    />
+                    {/* Right column: Cart Summary Panel (lg:4, md:12) */}
+                    <Grid size={{ md: 12, lg: 4 }}>
+                       <CartSummaryPanel
+                          cartItems={cartItems}
+                          vatCalculations={vatCalculations}
+                          paymentMethod={paymentMethod}
+                       />
+                    </Grid>
                  </Grid>
-              </Grid>
-           </Card.Body>
-           <Card.Footer>
-              <div className="d-flex justify-content-between">
+              </Box>
+           </CardContent>
+           <CardActions sx={{ justifyContent: 'space-between', p: 2 }}>
+              <Button
+                 variant="outlined"
+                 onClick={handleBack}
+                 disabled={currentStep === 1}
+              >
+                 Back
+              </Button>
+
+              {currentStep < steps.length - 1 ? (
                  <Button
-                    variant="outline-secondary"
-                    onClick={handleBack}
-                    disabled={currentStep === 1}
+                    variant="contained"
+                    onClick={handleNext}
+                    disabled={
+                       (currentStep === 1 && !isStep1Valid()) ||
+                       (currentStep === 2 && !generalTermsAccepted)
+                    }
                  >
-                    Back
+                    {currentStep === 1 ? "Continue to Terms" : "Next"}
                  </Button>
-
-                 {currentStep < steps.length - 1 ? (
-                    <Button
-                       variant="primary"
-                       onClick={handleNext}
-                       disabled={
-                          (currentStep === 1 && !isStep1Valid()) ||
-                          (currentStep === 2 && !generalTermsAccepted)
-                       }
-                    >
-                       {currentStep === 1 ? "Continue to Terms" : "Next"}
-                    </Button>
-                 ) : (
-                    <Button
-                       variant="success"
-                       onClick={handleComplete}
-                       disabled={
-                          loading ||
-                          !generalTermsAccepted ||
-                          validation.isValidating
-                       }
-                    >
-                       {loading
-                          ? "Processing..."
-                          : validation.isValidating
-                          ? "Validating..."
-                          : "Complete Order"}
-                    </Button>
-                 )}
-              </div>
-           </Card.Footer>
+              ) : (
+                 <Button
+                    variant="contained"
+                    color="success"
+                    onClick={handleComplete}
+                    disabled={
+                       loading ||
+                       !generalTermsAccepted ||
+                       validation.isValidating
+                    }
+                 >
+                    {loading
+                       ? "Processing..."
+                       : validation.isValidating
+                       ? "Validating..."
+                       : "Complete Order"}
+                 </Button>
+              )}
+           </CardActions>
         </Card>
-
-        {/* Rules Engine Modal for displaying modal messages */}
-        <RulesEngineModal
-           open={showRulesModal}
-           onClose={() => setShowRulesModal(false)}
-           messages={modalMessages}
-           closeButtonText="I Understand"
-           backdrop="static"
-           disableEscapeKeyDown={true}
-        />
-     </div>
+     </Box>
   );
 };
 

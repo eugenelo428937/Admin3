@@ -1,25 +1,36 @@
 // src/components/products/ProductForm.js
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Form, Button, Container } from "react-bootstrap";
+import {
+  TextField,
+  Button,
+  Container,
+  Alert,
+  Box,
+  Typography,
+  FormControl,
+  FormLabel,
+  Checkbox,
+  FormControlLabel,
+  CircularProgress
+} from "@mui/material";
 import productService from "../../../services/productService";
 
 const AdminProductForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const isEditMode = !!id;
-    
+
     const [formData, setFormData] = useState({
         code: "",
-        fullname: "",    // Changed from name to fullname
-        shortname: "",   // Added shortname field
+        fullname: "",
+        shortname: "",
         description: "",
         active: true
     });
-    
+
     const [loading, setLoading] = useState(isEditMode);
     const [error, setError] = useState(null);
-    const [validated, setValidated] = useState(false);
 
     useEffect(() => {
         if (isEditMode) {
@@ -28,8 +39,8 @@ const AdminProductForm = () => {
                     const data = await productService.getById(id);
                     setFormData({
                         code: data.code || "",
-                        fullname: data.fullname || "",    // Match backend field names
-                        shortname: data.shortname || "",  // Match backend field names
+                        fullname: data.fullname || "",
+                        shortname: data.shortname || "",
                         description: data.description || "",
                         active: data.active
                     });
@@ -56,18 +67,14 @@ const AdminProductForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const form = e.currentTarget;
-        
-        if (form.checkValidity() === false) {
-            e.stopPropagation();
-            setValidated(true);
+
+        if (!formData.code || !formData.fullname || !formData.shortname) {
+            setError("Please fill in all required fields");
             return;
         }
 
         try {
-            const productData = {
-                ...formData
-            };
+            const productData = { ...formData };
 
             if (isEditMode) {
                 await productService.update(id, productData);
@@ -81,88 +88,88 @@ const AdminProductForm = () => {
         }
     };
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
 
     return (
-        <Container>
-            <h2>{isEditMode ? "Edit Product" : "Add New Product"}</h2>
-            {error && <div className="alert alert-danger">{error}</div>}
-            
-            <Form noValidate validated={validated} onSubmit={handleSubmit}>
-                <Form.Group className="mb-3">
-                    <Form.Label>Code</Form.Label>
-                    <Form.Control
-                        type="text"
+        <Container sx={{ mt: 4 }}>
+            <Typography variant="h4" component="h2" sx={{ mb: 4 }}>
+                {isEditMode ? "Edit Product" : "Add New Product"}
+            </Typography>
+
+            {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+
+            <Box component="form" onSubmit={handleSubmit}>
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                    <FormLabel>Code</FormLabel>
+                    <TextField
                         name="code"
                         value={formData.code}
                         onChange={handleChange}
                         required
-                        maxLength="10"
-                        disabled={isEditMode} // Typically codes shouldn't be changed once created
+                        inputProps={{ maxLength: 10 }}
+                        disabled={isEditMode}
+                        fullWidth
+                        helperText={isEditMode ? "Codes cannot be changed after creation" : ""}
                     />
-                    <Form.Control.Feedback type="invalid">
-                        Please provide a product code.
-                    </Form.Control.Feedback>
-                </Form.Group>
+                </FormControl>
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Full Name</Form.Label>
-                    <Form.Control
-                        type="text"
-                        name="fullname"  // Changed from name to fullname
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                    <FormLabel>Full Name</FormLabel>
+                    <TextField
+                        name="fullname"
                         value={formData.fullname}
                         onChange={handleChange}
                         required
+                        fullWidth
                     />
-                    <Form.Control.Feedback type="invalid">
-                        Please provide a full product name.
-                    </Form.Control.Feedback>
-                </Form.Group>
+                </FormControl>
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Short Name</Form.Label>
-                    <Form.Control
-                        type="text"
-                        name="shortname"  // New field for shortname
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                    <FormLabel>Short Name</FormLabel>
+                    <TextField
+                        name="shortname"
                         value={formData.shortname}
                         onChange={handleChange}
                         required
-                        maxLength="20"
+                        inputProps={{ maxLength: 20 }}
+                        fullWidth
                     />
-                    <Form.Control.Feedback type="invalid">
-                        Please provide a short product name.
-                    </Form.Control.Feedback>
-                </Form.Group>
+                </FormControl>
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Description</Form.Label>
-                    <Form.Control
-                        as="textarea"
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                    <FormLabel>Description</FormLabel>
+                    <TextField
+                        multiline
                         rows={3}
                         name="description"
                         value={formData.description}
                         onChange={handleChange}
+                        fullWidth
                     />
-                </Form.Group>
+                </FormControl>
 
-                <Form.Group className="mb-3">
-                    <Form.Check
-                        type="checkbox"
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                name="active"
+                                checked={formData.active}
+                                onChange={handleChange}
+                            />
+                        }
                         label="Active"
-                        name="active"
-                        checked={formData.active}
-                        onChange={handleChange}
                     />
-                </Form.Group>
+                </FormControl>
 
-                <Button variant="primary" type="submit">
-                    {isEditMode ? "Update Product" : "Create Product"}
-                </Button>
-                {" "}
-                <Button variant="secondary" onClick={() => navigate("/products")}>
-                    Cancel
-                </Button>
-            </Form>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button variant="contained" type="submit">
+                        {isEditMode ? "Update Product" : "Create Product"}
+                    </Button>
+                    <Button variant="outlined" onClick={() => navigate("/products")}>
+                        Cancel
+                    </Button>
+                </Box>
+            </Box>
         </Container>
     );
 };
