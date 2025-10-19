@@ -174,11 +174,150 @@ export const parseUrlToFilters = (params) => {
 };
 
 /**
+ * Build URL query string from Redux filter state
+ *
+ * Converts Redux filter state into URLSearchParams using defined mapping
+ *
+ * @param {Object} filters - Redux filter state
+ * @returns {URLSearchParams} URL query parameters
+ */
+const buildUrlFromFilters = (filters) => {
+  const params = new URLSearchParams();
+
+  // Helper to add indexed parameters (subject_code, subject_1, subject_2)
+  const addIndexedParams = (values, baseParam, indexedBase) => {
+    if (!values || values.length === 0) return;
+
+    // First value uses base parameter name
+    params.set(baseParam, values[0]);
+
+    // Additional values use indexed names
+    for (let i = 1; i < values.length; i++) {
+      params.set(`${indexedBase}_${i}`, values[i]);
+    }
+  };
+
+  // Helper to add comma-separated parameters
+  const addCommaSeparatedParam = (values, paramName) => {
+    if (!values || values.length === 0) return;
+    params.set(paramName, values.join(','));
+  };
+
+  // Helper to add boolean parameters ('1' if true, omit if false)
+  const addBooleanParam = (value, paramName) => {
+    if (value === true) {
+      params.set(paramName, '1');
+    }
+    // Omit parameter if false
+  };
+
+  // Add subjects (indexed format)
+  addIndexedParams(filters.subjects, 'subject_code', 'subject');
+
+  // Add categories (indexed format)
+  addIndexedParams(filters.categories, 'category_code', 'category');
+
+  // Add product types (comma-separated, legacy name 'group')
+  addCommaSeparatedParam(filters.product_types, 'group');
+
+  // Add products (comma-separated)
+  addCommaSeparatedParam(filters.products, 'product');
+
+  // Add modes of delivery (comma-separated)
+  addCommaSeparatedParam(filters.modes_of_delivery, 'mode_of_delivery');
+
+  // Add tutorial_format (single value, only if not null and valid)
+  if (filters.tutorial_format) {
+    const validFormats = ['online', 'in_person', 'hybrid'];
+    if (validFormats.includes(filters.tutorial_format)) {
+      params.set('tutorial_format', filters.tutorial_format);
+    }
+    // Invalid values are silently ignored (not added to URL)
+  }
+
+  // Add boolean filters
+  addBooleanParam(filters.distance_learning, 'distance_learning');
+  addBooleanParam(filters.tutorial, 'tutorial');
+
+  // Add search query (only if not empty)
+  if (filters.searchQuery && filters.searchQuery.trim()) {
+    params.set('search_query', filters.searchQuery);
+  }
+
+  return params;
+};
+
+/**
  * URL Sync Middleware (Story 1.1)
  *
  * Listener middleware that automatically updates the URL when filter actions are dispatched
- * Will be implemented in T013
  */
 export const urlSyncMiddleware = createListenerMiddleware();
 
-// Middleware configuration will be added in T013
+// Track last URL parameters to prevent infinite loops
+let lastUrlParams = null;
+
+// Define all filter action types that should trigger URL updates
+const FILTER_ACTION_TYPES = [
+  'filters/setSubjects',
+  'filters/setCategories',
+  'filters/setProductTypes',
+  'filters/setProducts',
+  'filters/setModesOfDelivery',
+  'filters/setSearchQuery',
+  'filters/setTutorialFormat',
+  'filters/setDistanceLearning',
+  'filters/setTutorial',
+  'filters/setMultipleFilters',
+  'filters/toggleSubjectFilter',
+  'filters/toggleCategoryFilter',
+  'filters/toggleProductTypeFilter',
+  'filters/toggleProductFilter',
+  'filters/toggleModeOfDeliveryFilter',
+  'filters/removeSubjectFilter',
+  'filters/removeCategoryFilter',
+  'filters/removeProductTypeFilter',
+  'filters/removeProductFilter',
+  'filters/removeModeOfDeliveryFilter',
+  'filters/clearFilterType',
+  'filters/clearAllFilters',
+  'filters/resetFilters',
+  'filters/navSelectSubject',
+  'filters/navViewAllProducts',
+  'filters/navSelectProductGroup',
+  'filters/navSelectProduct',
+  'filters/navSelectModeOfDelivery',
+];
+
+// Start listening to filter actions
+urlSyncMiddleware.startListening({
+  predicate: (action) => {
+    // Listen to all filter actions
+    return FILTER_ACTION_TYPES.includes(action.type);
+  },
+  effect: (action, listenerApi) => {
+    // Get current filter state
+    const state = listenerApi.getState();
+    const filters = state.filters;
+
+    // Build URL parameters from current state
+    const params = buildUrlFromFilters(filters);
+    const urlString = params.toString();
+
+    // Loop prevention: Skip if URL hasn't changed
+    if (urlString === lastUrlParams) {
+      return;
+    }
+
+    // Update last URL params
+    lastUrlParams = urlString;
+
+    // Update browser URL using replaceState (not pushState)
+    // This avoids creating a new history entry for each filter change
+    const newUrl = urlString ? `?${urlString}` : window.location.pathname;
+
+    if (typeof window !== 'undefined' && window.history) {
+      window.history.replaceState({}, '', newUrl);
+    }
+  },
+});
