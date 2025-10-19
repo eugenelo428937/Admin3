@@ -312,12 +312,12 @@ urlSyncMiddleware.startListening({
     // Update last URL params
     lastUrlParams = urlString;
 
-    // Update browser URL using replaceState (not pushState)
-    // This avoids creating a new history entry for each filter change
+    // Update browser URL using pushState to create history entries
+    // This allows browser back/forward buttons to work correctly
     const newUrl = urlString ? `?${urlString}` : window.location.pathname;
 
     if (typeof window !== 'undefined' && window.history) {
-      window.history.replaceState({}, '', newUrl);
+      window.history.pushState({}, '', newUrl);
     }
   },
 });
