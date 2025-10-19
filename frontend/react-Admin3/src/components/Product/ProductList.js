@@ -131,6 +131,58 @@ const ProductList = React.memo(() => {
     }, []); // Run once on mount
 
     /**
+     * Listen to browser back/forward navigation (Story 1.1 - Browser History)
+     * When user clicks back/forward, update Redux state from URL
+     */
+    useEffect(() => {
+        const handlePopState = () => {
+            // Parse URL and update Redux state
+            const searchParams = new URLSearchParams(window.location.search);
+            const filtersFromUrl = parseUrlToFilters(searchParams);
+
+            // Clear existing filters first to ensure clean state
+            dispatch(resetFilters());
+
+            // Dispatch each filter type to Redux
+            if (filtersFromUrl.subjects && filtersFromUrl.subjects.length > 0) {
+                dispatch(setSubjects(filtersFromUrl.subjects));
+            }
+            if (filtersFromUrl.categories && filtersFromUrl.categories.length > 0) {
+                dispatch(setCategories(filtersFromUrl.categories));
+            }
+            if (filtersFromUrl.product_types && filtersFromUrl.product_types.length > 0) {
+                dispatch(setProductTypes(filtersFromUrl.product_types));
+            }
+            if (filtersFromUrl.products && filtersFromUrl.products.length > 0) {
+                dispatch(setProducts(filtersFromUrl.products));
+            }
+            if (filtersFromUrl.modes_of_delivery && filtersFromUrl.modes_of_delivery.length > 0) {
+                dispatch(setModesOfDelivery(filtersFromUrl.modes_of_delivery));
+            }
+            if (filtersFromUrl.tutorial_format) {
+                dispatch(setTutorialFormat(filtersFromUrl.tutorial_format));
+            }
+            if (filtersFromUrl.distance_learning) {
+                dispatch(setDistanceLearning(filtersFromUrl.distance_learning));
+            }
+            if (filtersFromUrl.tutorial) {
+                dispatch(setTutorial(filtersFromUrl.tutorial));
+            }
+            if (filtersFromUrl.searchQuery) {
+                dispatch(setSearchQuery(filtersFromUrl.searchQuery));
+            }
+        };
+
+        // Listen to popstate event (browser back/forward)
+        window.addEventListener('popstate', handlePopState);
+
+        // Cleanup listener on unmount
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, [dispatch]);
+
+    /**
      * Determine if we're in search mode
      */
     const isSearchMode = useMemo(() => {
