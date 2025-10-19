@@ -233,32 +233,35 @@ const MainNavBar = () => {
 
 	return (
 		<div className="sticky-top">
-			<TopNavBar />
+			{/* TopNavBar hidden on mobile (sm and smaller) */}
+			<div className="d-none d-sm-block">
+				<TopNavBar />
+			</div>
 			<Navbar
 				expand="md"
 				expanded={expanded}
 				onToggle={setExpanded}
 				sticky="top"
-				className="navbar navbar-expand-md navbar-main align-content-center justify-content-between p-left__xl p-right__xl pt-md-2 py-lg-2">
-				<Container	
+				className="navbar navbar-expand-md navbar-main align-content-center justify-content-between p-left__md p-right__md pt-md-2 py-lg-2">
+				<Container
 					fluid
 					className="d-flex flex-row justify-content-between align-items-center">
-					{/* Left Section - Brand/Logo */}
-					<NavbarBrand />
+					{/* Left Box - Cart/Login icons (mobile only, left-aligned) */}
+					<div className="d-flex justify-content-start align-items-center order-0 order-md-0 d-md-none">
+						<MainNavActions
+							onOpenAuth={handleOpenAuthModal}
+							onOpenCart={handleOpenCartPanel}
+							onToggleMobileMenu={() => setExpanded(!expanded)}
+							isMobile={false}
+						/>
+					</div>
 
-					<Navbar.Toggle
-						className={`navbar-toggler menu-button justify-content-between order-3 order-md-1 ${
-							expanded ? "active" : ""
-						} me-2`}
-						aria-controls="navbar-menu"
-						aria-label="Toggle navigation"
-						id="navbar-menu-toggle">
-						<span className="toggler-icon top-bar"></span>
-						<span className="toggler-icon middle-bar"></span>
-						<span className="toggler-icon bottom-bar"></span>
-					</Navbar.Toggle>
+					{/* Center Box - Brand/Logo (centered on mobile, left on desktop) */}
+					<div className="d-flex justify-content-center justify-content-md-start align-items-center order-1 order-md-0">
+						<NavbarBrand />
+					</div>
 
-					{/* Center Section - Navigation Menu */}
+					{/* Center Section - Navigation Menu (Desktop) */}
 					<Navbar.Collapse
 						id="navbar-menu"
 						className="px-md-1 px-0 m-auto justify-content-lg-center justify-content-md-start order-4 order-md-2">
@@ -300,18 +303,37 @@ const MainNavBar = () => {
 									handleProductVariationClick
 								}
 								handleMarkingVouchersClick={handleMarkingVouchersClick}
+								onOpenSearch={handleOpenSearchModal}
+								onOpenCart={handleOpenCartPanel}
+								onOpenAuth={handleOpenAuthModal}
 										/>
 						</div>
 					</Navbar.Collapse>
 
-					{/* Right Section - MainNavActions (Login and Cart) */}
-					<div className="order-0 order-md-4">
-						<MainNavActions
-							onOpenAuth={handleOpenAuthModal}
-							onOpenCart={handleOpenCartPanel}
-							onToggleMobileMenu={() => setExpanded(!expanded)}
-							isMobile={false}
-						/>
+					{/* Right Box - Cart/Login (desktop only) and Hamburger */}
+					<div className="d-flex justify-content-end align-items-center gap-2 order-2 order-md-4">
+						{/* Desktop actions - hidden on mobile */}
+						<div className="d-none d-md-flex">
+							<MainNavActions
+								onOpenAuth={handleOpenAuthModal}
+								onOpenCart={handleOpenCartPanel}
+								onToggleMobileMenu={() => setExpanded(!expanded)}
+								isMobile={false}
+							/>
+						</div>
+
+						{/* Hamburger menu toggle - visible on all screens */}
+						<Navbar.Toggle
+							className={`navbar-toggler menu-button justify-content-between ${
+								expanded ? "active" : ""
+							}`}
+							aria-controls="navbar-menu"
+							aria-label="Toggle navigation"
+							id="navbar-menu-toggle">
+							<span className="toggler-icon top-bar"></span>
+							<span className="toggler-icon middle-bar"></span>
+							<span className="toggler-icon bottom-bar"></span>
+						</Navbar.Toggle>
 					</div>
 				</Container>
 			</Navbar>

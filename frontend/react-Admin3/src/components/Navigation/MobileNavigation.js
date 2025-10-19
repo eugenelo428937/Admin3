@@ -3,7 +3,9 @@ import React, { useState } from "react";
 import { Nav } from "react-bootstrap";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { NavigateBefore, ExpandMore } from "@mui/icons-material";
+import { useCart } from "../../contexts/CartContext";
+import { NavigateBefore, ExpandMore, Search, ShoppingCartOutlined, Login, AccountCircle } from "@mui/icons-material";
+import { IconButton, Badge } from "@mui/material";
 
 const MobileNavigation = ({
 	open,
@@ -21,8 +23,12 @@ const MobileNavigation = ({
 	handleSpecificProductClick,
 	handleProductVariationClick,
 	handleMarkingVouchersClick,
+	onOpenSearch,
+	onOpenCart,
+	onOpenAuth,
 }) => {
-	const { isSuperuser, isApprentice, isStudyPlus } = useAuth();
+	const { isSuperuser, isApprentice, isStudyPlus, isAuthenticated } = useAuth();
+	const { cartCount } = useCart();
 	const navigate = useNavigate();
 
 	// Navigation state management
@@ -65,12 +71,88 @@ const MobileNavigation = ({
 	// Don't render if not open
 	if (!open) return null;
 
+	// Reusable header component
+	const MobileNavHeader = ({ title = "", showBackButton = false }) => (
+		<div className="mobile-nav-header" style={{
+			display: "flex",
+			justifyContent: "space-between",
+			alignItems: "center",
+			padding: "0.5rem 0.75rem",
+			gap: "0.5rem"
+		}}>
+			{/* Left side - Action icons */}
+			<div style={{ display: "flex", gap: "0.25rem", alignItems: "center", flexShrink: 0 }}>
+				{/* Search Icon */}
+				<IconButton
+					onClick={() => {
+						if (onOpenSearch) {
+							onOpenSearch();
+							closeNavigation();
+						}
+					}}
+					size="small"
+					sx={{ padding: "4px" }}
+					aria-label="search">
+					<Search fontSize="small" />
+				</IconButton>
+
+				{/* Cart Icon */}
+				<IconButton
+					onClick={() => {
+						if (onOpenCart) {
+							onOpenCart();
+							closeNavigation();
+						}
+					}}
+					size="small"
+					sx={{ padding: "4px" }}
+					aria-label="shopping cart">
+					<Badge badgeContent={cartCount} color="primary" max={99}>
+						<ShoppingCartOutlined fontSize="small" />
+					</Badge>
+				</IconButton>
+
+				{/* Login/Profile Icon */}
+				<IconButton
+					onClick={() => {
+						if (onOpenAuth) {
+							onOpenAuth();
+							closeNavigation();
+						}
+					}}
+					size="small"
+					sx={{ padding: "4px" }}
+					aria-label={isAuthenticated ? "profile" : "login"}>
+					{isAuthenticated ? <AccountCircle fontSize="small" /> : <Login fontSize="small" />}
+				</IconButton>
+			</div>
+
+			{/* Center - Title (if exists) */}
+			{title && (
+				<div className="mobile-nav-title" style={{ flex: 1, textAlign: "center", fontSize: "1rem", fontWeight: "500" }}>
+					{title}
+				</div>
+			)}
+
+			{/* Right side - Back or Close button */}
+			<div style={{ flexShrink: 0 }}>
+				{showBackButton ? (
+					<IconButton onClick={navigateBack} size="small" sx={{ padding: "4px" }} aria-label="go back">
+						<NavigateBefore />
+					</IconButton>
+				) : (
+					<IconButton onClick={closeNavigation} size="small" sx={{ padding: "4px" }} aria-label="close navigation">
+						<NavigateBefore />
+					</IconButton>
+				)}
+			</div>
+		</div>
+	);
+
 	// Main navigation panel
 	const MainPanel = () => (
 		<div className="mobile-nav-content p-left__md">
-			<div className="mobile-nav-header">
-				<div className="mobile-nav-title"></div>
-			</div>
+			<MobileNavHeader title="" showBackButton={false} />
 			<ul className="mobile-nav-list">
 				<li className="mobile-nav-list-item">
 					<NavLink
@@ -174,12 +256,7 @@ const MobileNavigation = ({
 	// Subjects panel
 	const SubjectsPanel = () => (
 		<div className="mobile-nav-content p-left__md">
-			<div className="mobile-nav-header">
-				<button className="mobile-nav-back-btn" onClick={navigateBack}>
-					<NavigateBefore />
-				</button>
-				<div className="mobile-nav-title">Subjects</div>
-			</div>
+			<MobileNavHeader title="Subjects" showBackButton={true} />
 			<ul className="mobile-nav-list">
 				<li className="mobile-nav-list-item">
 					<div
@@ -252,12 +329,7 @@ const MobileNavigation = ({
 	// Subject category panel (Core Principles, etc.)
 	const SubjectCategoryPanel = ({ data }) => (
 		<div className="mobile-nav-content p-left__md">
-			<div className="mobile-nav-header">
-				<button className="mobile-nav-back-btn" onClick={navigateBack}>
-					<NavigateBefore />
-				</button>
-				<div className="mobile-nav-title">{currentPanel.title}</div>
-			</div>
+			<MobileNavHeader title={currentPanel.title} showBackButton={true} />
 			<ul className="mobile-nav-list">
 				{data &&
 					data.map((subject) => (
@@ -281,12 +353,7 @@ const MobileNavigation = ({
 	// Products panel
 	const ProductsPanel = () => (
 		<div className="mobile-nav-content p-left__md">
-			<div className="mobile-nav-header">
-				<button className="mobile-nav-back-btn" onClick={navigateBack}>
-					<NavigateBefore />
-				</button>
-				<div className="mobile-nav-title">Products</div>
-			</div>
+			<MobileNavHeader title="Products" showBackButton={true} />
 			<ul className="mobile-nav-list">
 				<li className="mobile-nav-list-item">
 					<div
@@ -330,12 +397,7 @@ const MobileNavigation = ({
 	// Product group panel
 	const ProductGroupPanel = ({ data }) => (
 		<div className="mobile-nav-content p-left__md">
-			<div className="mobile-nav-header">
-				<button className="mobile-nav-back-btn" onClick={navigateBack}>
-					<NavigateBefore />
-				</button>
-				<div className="mobile-nav-title">{currentPanel.title}</div>
-			</div>
+			<MobileNavHeader title={currentPanel.title} showBackButton={true} />
 			<ul className="mobile-nav-list">
 				<li className="mobile-nav-list-item">
 					<div
@@ -374,12 +436,7 @@ const MobileNavigation = ({
 	// Distance Learning panel
 	const DistanceLearningPanel = () => (
 		<div className="mobile-nav-content p-left__md">
-			<div className="mobile-nav-header">
-				<button className="mobile-nav-back-btn" onClick={navigateBack}>
-					<NavigateBefore />
-				</button>
-				<div className="mobile-nav-title">Distance Learning</div>
-			</div>
+			<MobileNavHeader title="Distance Learning" showBackButton={true} />
 			<ul className="mobile-nav-list">
 				<li className="mobile-nav-list-item">
 					<div
@@ -428,12 +485,7 @@ const MobileNavigation = ({
 	// Tutorials panel
 	const TutorialsPanel = () => (
 		<div className="mobile-nav-content p-left__md">
-			<div className="mobile-nav-header">
-				<button className="mobile-nav-back-btn" onClick={navigateBack}>
-					<NavigateBefore />
-				</button>
-				<div className="mobile-nav-title">Tutorials</div>
-			</div>
+			<MobileNavHeader title="Tutorials" showBackButton={true} />
 			<ul className="mobile-nav-list">
 				<li className="mobile-nav-list-item">
 					<div
@@ -522,12 +574,7 @@ const MobileNavigation = ({
 	// Tutorial category panels
 	const TutorialCategoryPanel = ({ data, type }) => (
 		<div className="mobile-nav-content p-left__md">
-			<div className="mobile-nav-header">
-				<button className="mobile-nav-back-btn" onClick={navigateBack}>
-					<NavigateBefore />
-				</button>
-				<div className="mobile-nav-title">{currentPanel.title}</div>
-			</div>
+			<MobileNavHeader title={currentPanel.title} showBackButton={true} />
 			<ul className="mobile-nav-list">
 				{type === "format" ? (
 					data.map((format) => (
@@ -593,12 +640,7 @@ const MobileNavigation = ({
 	// Admin panel
 	const AdminPanel = () => (
 		<div className="mobile-nav-content p-left__md">
-			<div className="mobile-nav-header">
-				<button className="mobile-nav-back-btn" onClick={navigateBack}>
-					<NavigateBefore />
-				</button>
-				<div className="mobile-nav-title">Admin</div>
-			</div>
+			<MobileNavHeader title="Admin" showBackButton={true} />
 			<ul className="mobile-nav-list">
 				<li className="mobile-nav-list-item">
 					<div

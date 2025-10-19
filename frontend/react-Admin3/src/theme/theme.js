@@ -45,7 +45,7 @@ const theme = createTheme({
 			fontFamily: "'Inter', sans-serif",
 			fontWeight: 600,
 			fontSize:
-				"calc(1em * var(--wholestep) * var(--wholestep) * var(--wholestep)) !important",
+				"calc(1em * var(--wholestep) * var(--wholestep) * var(--halfstep)) !important",
 			lineHeight: "var(--halfstep-dec) !important",
 			letterSpacing: "-0.022em",
 			fontOpticalSizing: "auto",
@@ -55,7 +55,7 @@ const theme = createTheme({
 		Acted: {
 			fontFamily: "'Inter', sans-serif",
 			fontWeight: 200,
-			fontSize: "calc(1em * var(--wholestep) * var(--wholestep)) !important",
+			fontSize: "calc(1em * var(--wholestep) * var(--halfstep)) !important",
 			lineHeight: "var(--halfstep) !important",
 			letterSpacing: "-0.022em !important",
 			fontOpticalSizing: "auto",
