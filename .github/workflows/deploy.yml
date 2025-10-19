@@ -2,9 +2,9 @@ name: Deploy Admin3 Application
 
 on:
   push:
-    branches: [main]
+    branches: [main, uat]
   pull_request:
-    branches: [main]
+    branches: [main, uat]
 
 jobs:
   test-backend:
@@ -37,24 +37,25 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    
-    - name: Create test environment file
-      working-directory: ./backend/django_Admin3
-      run: |
-        echo "DJANGO_SETTINGS_MODULE=django_Admin3.settings.development" >> .env.test
-        echo "DJANGO_DEBUG=False" >> .env.test
-        echo "DJANGO_ENV=test" >> .env.test
-        echo "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" >> .env.test
-        echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/test_admin3" >> .env.test
-        echo "ALLOWED_HOSTS=localhost,127.0.0.1" >> .env.test
-        echo "EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend" >> .env.test
-    
+
     - name: Run Django migrations
       working-directory: ./backend/django_Admin3
+      env:
+        DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_admin3
+        DJANGO_DEBUG: "False"
+        ALLOWED_HOSTS: localhost,127.0.0.1
+        EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
       run: python manage.py migrate --settings=django_Admin3.settings.development
-    
+
     - name: Run Django tests
       working-directory: ./backend/django_Admin3
+      env:
+        DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_admin3
+        DJANGO_DEBUG: "False"
+        ALLOWED_HOSTS: localhost,127.0.0.1
+        EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
       run: python manage.py test --settings=django_Admin3.settings.development
 
   test-frontend:
