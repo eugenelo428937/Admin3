@@ -11,6 +11,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { catalogApi } from './api/catalogApi';
 import filtersReducer from './slices/filtersSlice';
 import cookiePersistenceMiddleware from '../utils/cookiePersistenceMiddleware';
+import { urlSyncMiddleware } from './middleware/urlSyncMiddleware';
 
 export const store = configureStore({
   reducer: {
@@ -34,6 +35,7 @@ export const store = configureStore({
         ],
       },
     })
+      .prepend(urlSyncMiddleware.middleware) // Story 1.1: Redux → URL sync
       .concat(catalogApi.middleware)
       .concat(cookiePersistenceMiddleware),
       
