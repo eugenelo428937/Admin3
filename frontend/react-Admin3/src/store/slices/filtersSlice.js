@@ -18,11 +18,6 @@ const initialState = {
   // Search query
   searchQuery: '',
 
-  // Navbar filters (Story 1.2)
-  tutorial_format: null,        // 'online' | 'in_person' | 'hybrid' | null
-  distance_learning: false,     // boolean
-  tutorial: false,              // boolean
-
   // Pagination
   currentPage: 1,
   pageSize: 20,
@@ -85,25 +80,6 @@ const filtersSlice = createSlice({
     
     setSearchQuery: (state, action) => {
       state.searchQuery = action.payload;
-      state.currentPage = 1;
-      state.lastUpdated = Date.now();
-    },
-
-    // Navbar filter actions (Story 1.2)
-    setTutorialFormat: (state, action) => {
-      state.tutorial_format = action.payload;
-      state.currentPage = 1;
-      state.lastUpdated = Date.now();
-    },
-
-    setDistanceLearning: (state, action) => {
-      state.distance_learning = action.payload;
-      state.currentPage = 1;
-      state.lastUpdated = Date.now();
-    },
-
-    setTutorial: (state, action) => {
-      state.tutorial = action.payload;
       state.currentPage = 1;
       state.lastUpdated = Date.now();
     },
@@ -253,10 +229,6 @@ const filtersSlice = createSlice({
       state.products = [];
       state.modes_of_delivery = [];
       state.searchQuery = '';
-      // Reset navbar filters (Story 1.2)
-      state.tutorial_format = null;
-      state.distance_learning = false;
-      state.tutorial = false;
       state.currentPage = 1;
       state.lastUpdated = Date.now();
     },
@@ -360,10 +332,6 @@ const filtersSlice = createSlice({
       state.products = [];
       state.modes_of_delivery = [];
       state.searchQuery = '';
-      // Reset navbar filters (Story 1.2)
-      state.tutorial_format = null;
-      state.distance_learning = false;
-      state.tutorial = false;
       state.currentPage = 1;
       state.error = null;
       state.lastUpdated = Date.now();
@@ -406,9 +374,6 @@ export const {
   setProducts,
   setModesOfDelivery,
   setSearchQuery,
-  setTutorialFormat,
-  setDistanceLearning,
-  setTutorial,
   setMultipleFilters,
   toggleSubjectFilter,
   toggleCategoryFilter,
@@ -478,12 +443,9 @@ export const selectHasActiveFilters = createSelector(
 export const selectActiveFilterCount = createSelector(
   [
     selectFilters,
-    selectSearchQuery,
-    (state) => state.filters.tutorial_format,
-    (state) => state.filters.distance_learning,
-    (state) => state.filters.tutorial
+    selectSearchQuery
   ],
-  (filters, searchQuery, tutorialFormat, distanceLearning, tutorial) => {
+  (filters, searchQuery) => {
     let count = 0;
     count += filters.subjects.length;
     count += filters.categories.length;
@@ -491,10 +453,6 @@ export const selectActiveFilterCount = createSelector(
     count += filters.products.length;
     count += filters.modes_of_delivery.length;
     if (searchQuery.trim().length > 0) count += 1;
-    // Navbar filters (Story 1.8)
-    if (tutorialFormat) count += 1;
-    if (distanceLearning) count += 1;
-    if (tutorial) count += 1;
 
     return count;
   }
