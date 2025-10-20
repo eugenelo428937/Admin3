@@ -250,12 +250,6 @@ const RulesEngineAcknowledgmentModal = ({
           );
         })}
 
-        {/* Required notice */}
-        {required && (
-          <Alert severity="info" sx={{ mt: 2 }}>
-            {messagesList.length === 1 ? 'This acknowledgment is required to proceed.' : 'All acknowledgments are required to proceed.'}
-          </Alert>
-        )}
       </DialogContent>
 
       <DialogActions sx={{ px: 3, py: 2 }}>

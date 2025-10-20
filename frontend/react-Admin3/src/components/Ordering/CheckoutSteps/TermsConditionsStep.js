@@ -248,6 +248,8 @@ const TermsConditionsStep = ({
                   <Checkbox
                     id="general-terms-checkbox"
                     checked={generalTermsAccepted}
+                    required
+                    error={true}
                     onChange={async (e) => {
                       const isChecked = e.target.checked;
                       setGeneralTermsAccepted(isChecked);
