@@ -171,161 +171,179 @@ const Home = () => {
 	};
 
 	return (
-		<Container
-			maxWidth={true}
-			className="hero-container"
-			disableGutters={true}>
-			<Row style={{ height: "100%" }}>
-				<Col
-					className="text-center"
-					style={{
-						position: "relative",
-						overflow: "hidden",
-						height: "100%",
-					}}>
-					{/* Background Video */}
-					<video
-						autoPlay
-						loop
-						muted
-						playsInline
-						poster={backgroundVideoPoster}							
-						style={{
-							position: "absolute",
-							top: 0,
-							left: 0,
-							width: "100%",
-							height: "100%",
-							objectFit: "cover",
-							zIndex: 0,
-						}}>
-						<source src={backgroundVideo} type="video/mp4" />
-					</video>
+      <Container
+         maxWidth={true}
+         className="hero-container"
+         disableGutters={true}
+      >
+         <Row style={{ height: "100%" }}>
+            <Col
+               className="text-center"
+               style={{
+                  position: "relative",
+                  overflow: "hidden",
+                  height: "100%",
+               }}
+            >
+               {/* Background Video */}
+               <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  poster={backgroundVideoPoster}
+                  style={{
+                     position: "absolute",
+                     top: 0,
+                     left: 0,
+                     width: "100%",
+                     height: "100%",
+                     objectFit: "cover",
+                     zIndex: 0,
+                  }}
+               >
+                  <source src={backgroundVideo} type="video/mp4" />
+               </video>
 
-					{/* Grey Overlay */}
-					<div
-						style={{
-							position: "absolute",
-							top: 0,
-							left: 0,
-							width: "100%",
-							height: "100%",
-							backgroundColor: "rgba(0, 0, 0, 0.75)",
-							zIndex: 1,
-						}}
-					/>
+               {/* Grey Overlay */}
+               <div
+                  style={{
+                     position: "absolute",
+                     top: 0,
+                     left: 0,
+                     width: "100%",
+                     height: "100%",
+                     backgroundColor: "rgba(0, 0, 0, 0.75)",
+                     zIndex: 1,
+                  }}
+               />
 
-					{/* Content */}
-					<Container className="hero-content d-flex flex-column flex-wrap justify-content-center align-items-center">
-						<Grid container spacing={2}>
-							<Grid size={{ xs: 12, md: 12, lg: 6 }}>
-								<Box
-									sx={{
-										display: "flex",
-										flexDirection: "column",
-										alignItems: "start",
-									}}>
-									<Typography
-										variant="BPP"
-										color={theme.palette.md3.surfaceVariant}>
-										BPP
-									</Typography>
-									<Typography
-										variant="Acted"
-										color={theme.palette.md3.surfaceVariant}
-										className="m-top__xs">
-										Actuarial Education
-									</Typography>
-								</Box>
-								<Divider />
-								<Typography
-									variant="h3"
-									align="start"
-									color={theme.palette.md3.surfaceVariant}>
-									Online Store
-								</Typography>
-							</Grid>
-							<Grid size={{ xs: 12, md: 12, lg: 6 }}>
-								<Container
-									style={{ maxWidth: "600px", margin: "0 auto" }}
-									className="m-top__xl">
-									<SearchBox										
-										onSearchResults={handleSearchResults}
-										onShowMatchingProducts={
-											handleShowMatchingProducts
-										}
-										autoFocus={false}
-									/>
-								</Container>
-							</Grid>
-						</Grid>
-					</Container>
-				</Col>
-			</Row>
+               {/* Content */}
+               <Container
+                  className="hero-content d-flex flex-column flex-wrap justify-content-center align-items-center"
+                  sx={{
+                     paddingLeft: {
+                        xs : theme.liftkit.spacing.xl,                        
+						lg : theme.liftkit.spacing.xl2,
+                     },
+                  }}
+               >
+                  <Grid container spacing={2}>
+                     <Grid size={{ xs: 12, md: 12, lg: 6 }}>
+                        <Box
+                           sx={{
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "start",
+                           }}
+                        >
+                           <Typography
+                              variant="BPP"
+                              color={theme.palette.md3.surfaceVariant}
+                           >
+                              BPP
+                           </Typography>
+                           <Typography
+                              variant="Acted"
+                              color={theme.palette.md3.surfaceVariant}
+                              className="m-top__xs"
+                           >
+                              Actuarial Education
+                           </Typography>
+                           <Divider />
+                        </Box>
 
-			{/* Rules Engine Messages Section (Holiday Messages, etc.) */}
-			<Container maxWidth="xl" className="mt-4">
-				{rulesLoading && (
-					<Alert variant="info" className="text-center">
-						<i className="bi bi-hourglass-split me-2"></i>
-						Checking for important notices...
-					</Alert>
-				)}
+                        <Typography
+                           variant="h3"
+                           align="start"
+                           color={theme.palette.md3.surfaceVariant}
+                        >
+                           Online Store
+                        </Typography>
+                     </Grid>
+                     <Grid size={{ xs: 12, md: 12, lg: 6 }}>
+                        <Container
+                           style={{ maxWidth: "600px", margin: "0 auto" }}
+                           className="m-top__xl"
+                        >
+                           <SearchBox
+                              onSearchResults={handleSearchResults}
+                              onShowMatchingProducts={
+                                 handleShowMatchingProducts
+                              }
+                              autoFocus={false}
+                           />
+                        </Container>
+                     </Grid>
+                  </Grid>
+               </Container>
+            </Col>
+         </Row>
 
-				{!rulesLoading &&
-					rulesMessages.map((message, index) => {
-						// Use the parsed content from the new utilities
-						const parsed = message.parsed || message;
-						const variant =
-							parsed.variant === "warning"
-								? "warning"
-								: parsed.variant === "error"
-								? "danger"
-								: parsed.variant === "info"
-								? "info"
-								: "primary";
+         {/* Rules Engine Messages Section (Holiday Messages, etc.) */}
+         <Container maxWidth="xl" className="mt-4">
+            {rulesLoading && (
+               <Alert variant="info" className="text-center">
+                  <i className="bi bi-hourglass-split me-2"></i>
+                  Checking for important notices...
+               </Alert>
+            )}
 
-						return (
-							<Alert
-								key={`alert-${message.template_id || index}`}
-								variant={variant}
-								className="mb-3"
-								data-testid="holiday-message"
-								dismissible={parsed.dismissible || false}>
-								<Alert.Heading>
-									{parsed.icon && (
-										<i className={`bi bi-${parsed.icon} me-2`}></i>
-									)}
-									{parsed.title || "Notice"}
-								</Alert.Heading>
-								<div
-									className="mb-0"
-									dangerouslySetInnerHTML={{
-										__html: parsed.message || "No message content",
-									}}
-								/>
-							</Alert>
-						);
-					})}
-			</Container>
+            {!rulesLoading &&
+               rulesMessages.map((message, index) => {
+                  // Use the parsed content from the new utilities
+                  const parsed = message.parsed || message;
+                  const variant =
+                     parsed.variant === "warning"
+                        ? "warning"
+                        : parsed.variant === "error"
+                        ? "danger"
+                        : parsed.variant === "info"
+                        ? "info"
+                        : "primary";
 
-			{/* Search Results Section */}
-			<Container disableGutters={true} maxWidth="xl">
-				<SearchResults
-					searchResults={searchResults}
-					searchQuery={searchQuery}
-					selectedFilters={selectedFilters}
-					onFilterSelect={handleFilterSelect}
-					onFilterRemove={handleFilterRemove}
-					onShowMatchingProducts={handleShowMatchingProducts}
-					isFilterSelected={isFilterSelected}
-					loading={false}
-					error={error}
-					maxSuggestions={5}
-				/>
-			</Container>
-		</Container>
-	);
+                  return (
+                     <Alert
+                        key={`alert-${message.template_id || index}`}
+                        variant={variant}
+                        className="mb-3"
+                        data-testid="holiday-message"
+                        dismissible={parsed.dismissible || false}
+                     >
+                        <Alert.Heading>
+                           {parsed.icon && (
+                              <i className={`bi bi-${parsed.icon} me-2`}></i>
+                           )}
+                           {parsed.title || "Notice"}
+                        </Alert.Heading>
+                        <div
+                           className="mb-0"
+                           dangerouslySetInnerHTML={{
+                              __html: parsed.message || "No message content",
+                           }}
+                        />
+                     </Alert>
+                  );
+               })}
+         </Container>
+
+         {/* Search Results Section */}
+         <Container disableGutters={true} maxWidth="xl">
+            <SearchResults
+               searchResults={searchResults}
+               searchQuery={searchQuery}
+               selectedFilters={selectedFilters}
+               onFilterSelect={handleFilterSelect}
+               onFilterRemove={handleFilterRemove}
+               onShowMatchingProducts={handleShowMatchingProducts}
+               isFilterSelected={isFilterSelected}
+               loading={false}
+               error={error}
+               maxSuggestions={5}
+            />
+         </Container>
+      </Container>
+   );
 };
 
 export default Home;
