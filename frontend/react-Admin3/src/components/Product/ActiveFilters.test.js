@@ -42,12 +42,17 @@ const createTestStore = (initialState = {}) => {
                 products: [],
                 modes_of_delivery: [],
                 searchQuery: '',
+                // Navbar filters (Story 1.2)
+                tutorial_format: null,
+                distance_learning: false,
+                tutorial: false,
                 currentPage: 1,
                 pageSize: 20,
                 isLoading: false,
                 error: null,
                 isFilterPanelOpen: false,
                 appliedFilters: {},
+                filterCounts: {},
                 lastUpdated: null,
                 ...initialState,
             },
@@ -510,10 +515,155 @@ describe('ActiveFilters Component', () => {
             const initialState = {
                 subjects: ['CM1', 'CM2', 'SA1'],
             };
-            
+
             renderWithProviders(<ActiveFilters maxChipsToShow={2} />, { initialState });
-            
+
             expect(screen.getByText('+1 more')).toBeInTheDocument();
+        });
+    });
+
+    /**
+     * Navbar Filter Chips Tests (Stories 1.7-1.8)
+     * These tests verify that navbar filters appear as removable chips
+     */
+    describe('Navbar filter chips', () => {
+        test('should render Tutorial Format chip when tutorial_format in state', () => {
+            const initialState = {
+                tutorial_format: 'online',
+            };
+
+            renderWithProviders(<ActiveFilters />, { initialState });
+
+            // T016: Chip should exist with correct label
+            expect(screen.getByText('Online')).toBeInTheDocument();
+
+            // Chip should have delete icon
+            const chips = screen.getAllByRole('button');
+            const tutorialFormatChip = chips.find(chip =>
+                chip.textContent.includes('Online')
+            );
+            expect(tutorialFormatChip).toBeInTheDocument();
+        });
+
+        test('should render Distance Learning chip when distance_learning true', () => {
+            const initialState = {
+                distance_learning: true,
+            };
+
+            renderWithProviders(<ActiveFilters />, { initialState });
+
+            // T017: Chip should exist with correct label
+            expect(screen.getByText('Distance Learning')).toBeInTheDocument();
+
+            // Chip should have delete icon
+            const chips = screen.getAllByRole('button');
+            const distanceLearningChip = chips.find(chip =>
+                chip.textContent.includes('Distance Learning')
+            );
+            expect(distanceLearningChip).toBeInTheDocument();
+        });
+
+        test('should render Tutorial Products chip when tutorial true', () => {
+            const initialState = {
+                tutorial: true,
+            };
+
+            renderWithProviders(<ActiveFilters />, { initialState });
+
+            // T018: Chip should exist with correct label
+            expect(screen.getByText('Tutorial Products')).toBeInTheDocument();
+
+            // Chip should have delete icon
+            const chips = screen.getAllByRole('button');
+            const tutorialChip = chips.find(chip =>
+                chip.textContent.includes('Tutorial Products')
+            );
+            expect(tutorialChip).toBeInTheDocument();
+        });
+
+        test('should dispatch setTutorialFormat(null) when Tutorial Format chip deleted', async () => {
+            const user = userEvent.setup();
+            mockDispatch.mockClear();
+            const initialState = {
+                tutorial_format: 'online',
+            };
+
+            renderWithProviders(<ActiveFilters />, { initialState });
+
+            // T019: Click delete button on Tutorial Format chip
+            // Get all ClearIcons: [0] = Clear All button, [1] = chip delete icon
+            const clearIcons = screen.getAllByTestId('ClearIcon');
+            await user.click(clearIcons[1]);
+
+            // Should dispatch setTutorialFormat(null)
+            expect(mockDispatch).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: 'filters/setTutorialFormat',
+                    payload: null
+                })
+            );
+        });
+
+        test('should dispatch setDistanceLearning(false) when Distance Learning chip deleted', async () => {
+            const user = userEvent.setup();
+            mockDispatch.mockClear();
+            const initialState = {
+                distance_learning: true,
+            };
+
+            renderWithProviders(<ActiveFilters />, { initialState });
+
+            // T020: Click delete button on Distance Learning chip
+            const clearIcons = screen.getAllByTestId('ClearIcon');
+            await user.click(clearIcons[1]);
+
+            // Should dispatch setDistanceLearning(false)
+            expect(mockDispatch).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: 'filters/setDistanceLearning',
+                    payload: false
+                })
+            );
+        });
+
+        test('should dispatch setTutorial(false) when Tutorial Products chip deleted', async () => {
+            const user = userEvent.setup();
+            mockDispatch.mockClear();
+            const initialState = {
+                tutorial: true,
+            };
+
+            renderWithProviders(<ActiveFilters />, { initialState });
+
+            // T021: Click delete button on Tutorial Products chip
+            const clearIcons = screen.getAllByTestId('ClearIcon');
+            await user.click(clearIcons[1]);
+
+            // Should dispatch setTutorial(false)
+            expect(mockDispatch).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: 'filters/setTutorial',
+                    payload: false
+                })
+            );
+        });
+
+        test('should render all three navbar chips when all filters active', () => {
+            const initialState = {
+                tutorial_format: 'hybrid',
+                distance_learning: true,
+                tutorial: true,
+            };
+
+            renderWithProviders(<ActiveFilters />, { initialState });
+
+            // T022: All three chips should exist
+            expect(screen.getByText('Hybrid')).toBeInTheDocument();
+            expect(screen.getByText('Distance Learning')).toBeInTheDocument();
+            expect(screen.getByText('Tutorial Products')).toBeInTheDocument();
+
+            // Should show correct total filter count
+            expect(screen.getByText('3 Active Filters')).toBeInTheDocument();
         });
     });
 });

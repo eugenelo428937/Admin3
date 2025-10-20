@@ -476,8 +476,14 @@ export const selectHasActiveFilters = createSelector(
 );
 
 export const selectActiveFilterCount = createSelector(
-  [selectFilters, selectSearchQuery],
-  (filters, searchQuery) => {
+  [
+    selectFilters,
+    selectSearchQuery,
+    (state) => state.filters.tutorial_format,
+    (state) => state.filters.distance_learning,
+    (state) => state.filters.tutorial
+  ],
+  (filters, searchQuery, tutorialFormat, distanceLearning, tutorial) => {
     let count = 0;
     count += filters.subjects.length;
     count += filters.categories.length;
@@ -485,6 +491,10 @@ export const selectActiveFilterCount = createSelector(
     count += filters.products.length;
     count += filters.modes_of_delivery.length;
     if (searchQuery.trim().length > 0) count += 1;
+    // Navbar filters (Story 1.8)
+    if (tutorialFormat) count += 1;
+    if (distanceLearning) count += 1;
+    if (tutorial) count += 1;
 
     return count;
   }

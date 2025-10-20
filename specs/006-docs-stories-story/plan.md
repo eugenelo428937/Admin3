@@ -1,8 +1,8 @@
 
-# Implementation Plan: [FEATURE]
+# Implementation Plan: Display Navbar Filters in FilterPanel and ActiveFilters
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Branch**: `006-docs-stories-story` | **Date**: 2025-10-19 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `/Users/work/Documents/Code/Admin3/specs/006-docs-stories-story/spec.md`
 
 ## Execution Flow (/plan command scope)
 ```
@@ -31,23 +31,53 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-[Extract from feature spec: primary requirement + technical approach from research]
+
+**Primary Requirement**: Make navbar filters (tutorial_format, distance_learning, tutorial) visible and manageable in the product filtering UI by adding filter sections to FilterPanel sidebar and removable chips to ActiveFilters chip bar.
+
+**Technical Approach**: Extend existing React components (FilterPanel.js, ActiveFilters.js) with new sections for navbar filters. Use Redux Toolkit for state management (already implemented in Story 1.2). Follow existing Material-UI patterns for accordion sections and chip components. Integrate with existing URL synchronization middleware and product search API.
+
+**User Impact**: Resolves critical usability issue where users could not see or clear navigation menu filters. Users gain transparency into active filters and one-click removal capability.
 
 ## Technical Context
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: JavaScript ES2022, React 18.2
+**Primary Dependencies**: React 18, Material-UI v5, Redux Toolkit 1.9, React Router v6
+**Storage**: Browser state (Redux) + URL query parameters
+**Testing**: Jest 29, React Testing Library 14
+**Target Platform**: Modern browsers (Chrome 90+, Firefox 88+, Safari 14+, Edge 90+)
+**Project Type**: web (frontend React + backend Django)
+**Performance Goals**: < 5ms FilterPanel render, < 50ms chip click response, < 250ms API call debounce
+**Constraints**: Must match existing UI patterns exactly, maintain 60fps animations, 44×44px touch targets on mobile
+**Scale/Scope**: ~150 LOC additions to FilterPanel.js, ~100 LOC to ActiveFilters.js, 3 new filter sections, comprehensive test coverage
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+**Status**: ✅ PASS - No project constitution defined (template only). Applying general best practices:
+
+**Test-Driven Development**:
+- ✅ All tests written before implementation (React Testing Library tests for FilterPanel and ActiveFilters)
+- ✅ Tests must fail initially (verifying new sections/chips don't exist yet)
+- ✅ Red-Green-Refactor cycle enforced
+
+**Existing Pattern Consistency**:
+- ✅ Follows existing FilterPanel accordion pattern (no new components)
+- ✅ Follows existing ActiveFilters chip pattern (no new architecture)
+- ✅ Redux actions already exist from Story 1.2 (dependency)
+- ✅ URL sync middleware already implemented (Story 1.1)
+
+**Simplicity**:
+- ✅ Additive changes only (no breaking changes to existing filters)
+- ✅ Reuses existing Material-UI components (Accordion, Checkbox, Radio, Chip)
+- ✅ No new abstractions or patterns introduced
+- ✅ Minimal code additions (~250 LOC total)
+
+**Performance**:
+- ✅ No additional API calls (uses existing product search endpoint)
+- ✅ No new state management overhead (Redux already in use)
+- ✅ Debouncing already implemented for API calls (250ms)
+- ✅ Performance targets defined and measurable
+
+**No violations identified** - This is a straightforward UI extension following established patterns.
 
 ## Project Structure
 
@@ -99,7 +129,21 @@ ios/ or android/
 └── [platform-specific structure]
 ```
 
-**Structure Decision**: [DEFAULT to Option 1 unless Technical Context indicates web/mobile app]
+**Structure Decision**: Option 2 (Web application) - Frontend React + Backend Django detected in Technical Context. This feature modifies frontend only:
+
+```
+frontend/react-Admin3/src/
+├── components/Product/
+│   ├── FilterPanel.js          # Modified (add navbar filter sections)
+│   ├── ActiveFilters.js        # Modified (add navbar filter chips)
+│   └── __tests__/
+│       ├── FilterPanel.test.js # Modified (add tests for new sections)
+│       └── ActiveFilters.test.js # Modified (add tests for new chips)
+├── store/slices/
+│   └── filtersSlice.js        # Already has navbar filter actions (Story 1.2)
+└── store/middleware/
+    └── urlSyncMiddleware.js   # Already syncs navbar filters (Story 1.1)
+```
 
 ## Phase 0: Outline & Research
 1. **Extract unknowns from Technical Context** above:
@@ -195,18 +239,18 @@ ios/ or android/
 *This checklist is updated during execution flow*
 
 **Phase Status**:
-- [ ] Phase 0: Research complete (/plan command)
-- [ ] Phase 1: Design complete (/plan command)
-- [ ] Phase 2: Task planning complete (/plan command - describe approach only)
-- [ ] Phase 3: Tasks generated (/tasks command)
+- [x] Phase 0: Research complete (/plan command) - ✅ research.md created
+- [x] Phase 1: Design complete (/plan command) - ✅ data-model.md, quickstart.md, contracts/README.md created, CLAUDE.md updated
+- [x] Phase 2: Task planning complete (/plan command - describe approach only) - ✅ Task generation strategy documented
+- [x] Phase 3: Tasks generated (/tasks command) - ✅ tasks.md created with 41 TDD-ordered tasks
 - [ ] Phase 4: Implementation complete
 - [ ] Phase 5: Validation passed
 
 **Gate Status**:
-- [ ] Initial Constitution Check: PASS
-- [ ] Post-Design Constitution Check: PASS
-- [ ] All NEEDS CLARIFICATION resolved
-- [ ] Complexity deviations documented
+- [x] Initial Constitution Check: PASS - ✅ No violations, following TDD and existing patterns
+- [x] Post-Design Constitution Check: PASS - ✅ Pure UI extension, no new complexity
+- [x] All NEEDS CLARIFICATION resolved - ✅ No unknowns, Stories 1.7-1.8 fully detailed
+- [x] Complexity deviations documented - ✅ N/A - No deviations
 
 ---
 *Based on Constitution v2.1.1 - See `/memory/constitution.md`*

@@ -1,9 +1,36 @@
 /**
  * ActiveFilters Component
- * 
+ *
  * Displays active filters as removable pills/chips.
  * Provides visual feedback for current filter state and easy filter removal.
  * Integrates with Redux store for filter management.
+ *
+ * **Filter Types Supported:**
+ * - Array filters: Subjects, Categories, Product Types, Products, Modes of Delivery
+ * - Navbar filters (Story 1.8):
+ *   - tutorial_format: Single-value filter ('online', 'in_person', 'hybrid')
+ *   - distance_learning: Boolean filter
+ *   - tutorial: Boolean filter
+ *
+ * **Redux Integration:**
+ * - Dispatches removal actions:
+ *   - setTutorialFormat(null) - clears tutorial format
+ *   - setDistanceLearning(false) - clears distance learning
+ *   - setTutorial(false) - clears tutorial filter
+ * - Reads state from: state.filters.tutorial_format, distance_learning, tutorial
+ * - Depends on Story 1.2 Redux state structure
+ *
+ * **FILTER_CONFIG:**
+ * - tutorial_format: Uses getDisplayValue() to map values to labels (Online/In-Person/Hybrid)
+ * - distance_learning, tutorial: Display constant labels (not value-dependent)
+ *
+ * @component
+ * @example
+ * // Basic usage
+ * <ActiveFilters />
+ *
+ * // With custom variants
+ * <ActiveFilters variant="compact" showClearAll={true} />
  */
 
 import React, { useMemo, useCallback } from 'react';
@@ -31,8 +58,10 @@ import {
     removeProductTypeFilter,
     removeProductFilter,
     removeModeOfDeliveryFilter,
-    clearAllFilters,
-    clearFilterType
+    setTutorialFormat,
+    setDistanceLearning,
+    setTutorial,
+    clearAllFilters
 } from '../../store/slices/filtersSlice';
 
 /**
@@ -47,7 +76,7 @@ const FILTER_CONFIG = {
     },
     categories: {
         label: 'Category',
-        pluralLabel: 'Categories', 
+        pluralLabel: 'Categories',
         removeAction: removeCategoryFilter,
         color: 'secondary'
     },
@@ -68,6 +97,35 @@ const FILTER_CONFIG = {
         pluralLabel: 'Product Types',
         removeAction: removeModeOfDeliveryFilter,
         color: 'warning'
+    },
+    // Navbar filters (Story 1.8)
+    tutorial_format: {
+        label: 'Tutorial Format',
+        getDisplayValue: (value) => {
+            const formatLabels = {
+                online: 'Online',
+                in_person: 'In-Person',
+                hybrid: 'Hybrid',
+            };
+            return formatLabels[value] || value;
+        },
+        removeAction: setTutorialFormat,
+        removeValue: null,
+        color: 'secondary'
+    },
+    distance_learning: {
+        label: 'Distance Learning',
+        getDisplayValue: () => 'Distance Learning',
+        removeAction: setDistanceLearning,
+        removeValue: false,
+        color: 'secondary'
+    },
+    tutorial: {
+        label: 'Tutorial Products',
+        getDisplayValue: () => 'Tutorial Products',
+        removeAction: setTutorial,
+        removeValue: false,
+        color: 'secondary'
     }
 };
 
@@ -86,13 +144,20 @@ const ActiveFilters = ({
     const filterCounts = useSelector(selectFilterCounts);
     const activeFilterCount = useSelector(selectActiveFilterCount);
 
+    // Navbar filter state (Story 1.8)
+    const tutorialFormat = useSelector(state => state.filters.tutorial_format);
+    const distanceLearning = useSelector(state => state.filters.distance_learning);
+    const tutorial = useSelector(state => state.filters.tutorial);
+
     /**
      * Handle removing a specific filter value
      */
     const handleRemoveFilter = useCallback((filterType, value) => {
         const config = FILTER_CONFIG[filterType];
         if (config) {
-            dispatch(config.removeAction(value));
+            // Navbar filters use removeValue, array filters use the passed value
+            const valueToRemove = config.removeValue !== undefined ? config.removeValue : value;
+            dispatch(config.removeAction(valueToRemove));
         }
     }, [dispatch]);
 
@@ -101,13 +166,6 @@ const ActiveFilters = ({
      */
     const handleClearAll = useCallback(() => {
         dispatch(clearAllFilters());
-    }, [dispatch]);
-
-    /**
-     * Handle clearing a specific filter type
-     */
-    const handleClearFilterType = useCallback((filterType) => {
-        dispatch(clearFilterType(filterType));
     }, [dispatch]);
 
     /**
@@ -135,19 +193,19 @@ const ActiveFilters = ({
      */
     const activeFilterChips = useMemo(() => {
         const chips = [];
-        
+
         Object.entries(filters).forEach(([filterType, values]) => {
             if (Array.isArray(values) && values.length > 0) {
                 const config = FILTER_CONFIG[filterType];
                 if (!config) return;
-                
+
                 values.forEach((value, index) => {
                     // Limit number of chips shown
                     if (chips.length >= maxChipsToShow) return;
-                    
+
                     const displayLabel = getDisplayLabel(filterType, value, filterCounts);
                     const chipKey = `${filterType}-${value}-${index}`;
-                    
+
                     chips.push({
                         key: chipKey,
                         filterType,
@@ -160,9 +218,49 @@ const ActiveFilters = ({
                 });
             }
         });
-        
+
+        // Handle navbar filters (Story 1.8) - single values, not arrays
+        if (tutorialFormat && chips.length < maxChipsToShow) {
+            const config = FILTER_CONFIG.tutorial_format;
+            chips.push({
+                key: 'tutorial_format',
+                filterType: 'tutorial_format',
+                value: tutorialFormat,
+                label: config.getDisplayValue(tutorialFormat),
+                typeLabel: config.label,
+                color: config.color,
+                fullLabel: `${config.label}: ${config.getDisplayValue(tutorialFormat)}`
+            });
+        }
+
+        if (distanceLearning && chips.length < maxChipsToShow) {
+            const config = FILTER_CONFIG.distance_learning;
+            chips.push({
+                key: 'distance_learning',
+                filterType: 'distance_learning',
+                value: distanceLearning,
+                label: config.getDisplayValue(),
+                typeLabel: config.label,
+                color: config.color,
+                fullLabel: config.label
+            });
+        }
+
+        if (tutorial && chips.length < maxChipsToShow) {
+            const config = FILTER_CONFIG.tutorial;
+            chips.push({
+                key: 'tutorial',
+                filterType: 'tutorial',
+                value: tutorial,
+                label: config.getDisplayValue(),
+                typeLabel: config.label,
+                color: config.color,
+                fullLabel: config.label
+            });
+        }
+
         return chips;
-    }, [filters, filterCounts, maxChipsToShow, getDisplayLabel]);
+    }, [filters, filterCounts, maxChipsToShow, getDisplayLabel, tutorialFormat, distanceLearning, tutorial]);
 
     /**
      * Calculate remaining chips count if we're limiting display

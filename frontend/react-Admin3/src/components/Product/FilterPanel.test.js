@@ -51,12 +51,17 @@ const createTestStore = (initialState = {}) => {
                 products: [],
                 modes_of_delivery: [],
                 searchQuery: '',
+                // Navbar filters (Story 1.2)
+                tutorial_format: null,
+                distance_learning: false,
+                tutorial: false,
                 currentPage: 1,
                 pageSize: 20,
                 isLoading: false,
                 error: null,
                 isFilterPanelOpen: false,
                 appliedFilters: {},
+                filterCounts: {},
                 lastUpdated: null,
                 ...initialState,
             },
@@ -450,15 +455,175 @@ describe('FilterPanel Component', () => {
                     'Very Long Subject Name That Should Be Truncated Properly': 5,
                 },
             };
-            
+
             const initialState = {
                 filterCounts: longFilterCounts,
             };
-            
+
             renderWithProviders(<FilterPanel />, { initialState });
-            
+
             // Should render without breaking layout
             expect(screen.getByText('Subjects')).toBeInTheDocument();
+        });
+    });
+
+    /**
+     * Navbar Filter Sections Tests (Stories 1.7-1.8)
+     * These tests verify that navbar filters are displayed in FilterPanel
+     */
+    describe('Tutorial Format filter section', () => {
+        test('should render Tutorial Format accordion section with radio options', () => {
+            renderWithProviders(<FilterPanel />);
+
+            // T007: Section should exist
+            const accordionSection = screen.getByText('Tutorial Format');
+            expect(accordionSection).toBeInTheDocument();
+
+            // Radio options should exist
+            expect(screen.getByLabelText('Online')).toBeInTheDocument();
+            expect(screen.getByLabelText('In-Person')).toBeInTheDocument();
+            expect(screen.getByLabelText('Hybrid')).toBeInTheDocument();
+
+            // No radio should be checked initially (tutorial_format = null)
+            expect(screen.getByLabelText('Online')).not.toBeChecked();
+            expect(screen.getByLabelText('In-Person')).not.toBeChecked();
+            expect(screen.getByLabelText('Hybrid')).not.toBeChecked();
+        });
+
+        test('should dispatch setTutorialFormat action when radio button clicked', () => {
+            mockDispatch.mockClear();
+            renderWithProviders(<FilterPanel />);
+
+            // T008: Click "Online" radio button
+            const onlineRadio = screen.getByLabelText('Online');
+            fireEvent.click(onlineRadio);
+
+            // Should dispatch setTutorialFormat with 'online'
+            expect(mockDispatch).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: 'filters/setTutorialFormat',
+                    payload: 'online'
+                })
+            );
+        });
+
+        test('should display checked radio when tutorial_format in Redux state', () => {
+            const initialState = {
+                tutorial_format: 'hybrid',
+            };
+
+            renderWithProviders(<FilterPanel />, { initialState });
+
+            // T009: "Hybrid" radio should be checked
+            expect(screen.getByLabelText('Hybrid')).toBeChecked();
+            expect(screen.getByLabelText('Online')).not.toBeChecked();
+            expect(screen.getByLabelText('In-Person')).not.toBeChecked();
+        });
+    });
+
+    describe('Distance Learning filter section', () => {
+        test('should render Distance Learning accordion section with checkbox', () => {
+            renderWithProviders(<FilterPanel />);
+
+            // T010: Section should exist
+            const accordionSection = screen.getByText('Distance Learning');
+            expect(accordionSection).toBeInTheDocument();
+
+            // Checkbox should exist
+            const checkbox = screen.getByLabelText('Distance Learning Only');
+            expect(checkbox).toBeInTheDocument();
+
+            // Checkbox should be unchecked initially (distance_learning = false)
+            expect(checkbox).not.toBeChecked();
+
+            // Helper text should exist
+            expect(screen.getByText('Show only products available through distance learning')).toBeInTheDocument();
+        });
+
+        test('should dispatch setDistanceLearning action when checkbox clicked', () => {
+            mockDispatch.mockClear();
+            const initialState = {
+                distance_learning: false,
+            };
+
+            renderWithProviders(<FilterPanel />, { initialState });
+
+            // T011: Click checkbox
+            const checkbox = screen.getByLabelText('Distance Learning Only');
+            fireEvent.click(checkbox);
+
+            // Should dispatch setDistanceLearning(true)
+            expect(mockDispatch).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: 'filters/setDistanceLearning',
+                    payload: true
+                })
+            );
+        });
+
+        test('should display checked checkbox when distance_learning true in Redux state', () => {
+            const initialState = {
+                distance_learning: true,
+            };
+
+            renderWithProviders(<FilterPanel />, { initialState });
+
+            // T012: Checkbox should be checked
+            const checkbox = screen.getByLabelText('Distance Learning Only');
+            expect(checkbox).toBeChecked();
+        });
+    });
+
+    describe('Tutorial filter section', () => {
+        test('should render Tutorial accordion section with checkbox', () => {
+            renderWithProviders(<FilterPanel />);
+
+            // T013: Section should exist
+            const accordionSection = screen.getByText(/^Tutorial$/);
+            expect(accordionSection).toBeInTheDocument();
+
+            // Checkbox should exist
+            const checkbox = screen.getByLabelText('Tutorial Products Only');
+            expect(checkbox).toBeInTheDocument();
+
+            // Checkbox should be unchecked initially (tutorial = false)
+            expect(checkbox).not.toBeChecked();
+
+            // Helper text should exist
+            expect(screen.getByText('Show only tutorial products')).toBeInTheDocument();
+        });
+
+        test('should dispatch setTutorial action when checkbox clicked', () => {
+            mockDispatch.mockClear();
+            const initialState = {
+                tutorial: false,
+            };
+
+            renderWithProviders(<FilterPanel />, { initialState });
+
+            // T014: Click checkbox (check it)
+            const checkbox = screen.getByLabelText('Tutorial Products Only');
+            fireEvent.click(checkbox);
+
+            // Should dispatch setTutorial(true)
+            expect(mockDispatch).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: 'filters/setTutorial',
+                    payload: true
+                })
+            );
+        });
+
+        test('should display checked checkbox when tutorial true in Redux state', () => {
+            const initialState = {
+                tutorial: true,
+            };
+
+            renderWithProviders(<FilterPanel />, { initialState });
+
+            // T015: Checkbox should be checked
+            const checkbox = screen.getByLabelText('Tutorial Products Only');
+            expect(checkbox).toBeChecked();
         });
     });
 });

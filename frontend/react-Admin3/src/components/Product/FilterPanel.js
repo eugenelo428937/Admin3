@@ -1,9 +1,26 @@
 /**
  * FilterPanel Component
- * 
- * Handles checkbox interface for product filtering with proper counts.
+ *
+ * Handles checkbox and radio interface for product filtering with proper counts.
  * Integrates with Redux store and displays disjunctive facet counts.
  * Replaces complex filtering logic from the original ProductList component.
+ *
+ * **Features:**
+ * - Array-based filters: Subjects, Categories, Product Types, Products, Modes of Delivery
+ * - Navbar filters (Story 1.7-1.8):
+ *   - Tutorial Format: Radio group (online/in_person/hybrid)
+ *   - Distance Learning: Boolean checkbox filter
+ *   - Tutorial: Boolean checkbox filter
+ *
+ * **Redux Integration:**
+ * - Dispatches filter actions: setTutorialFormat(), setDistanceLearning(), setTutorial()
+ * - Reads state from: state.filters.tutorial_format, distance_learning, tutorial
+ * - Depends on Story 1.2 Redux state structure
+ *
+ * @component
+ * @example
+ * // In ProductList component
+ * <FilterPanel />
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
@@ -18,6 +35,8 @@ import {
     FormGroup,
     FormControlLabel,
     Checkbox,
+    Radio,
+    RadioGroup,
     Button,
     IconButton,
     Drawer,
@@ -42,6 +61,9 @@ import {
     toggleProductTypeFilter,
     toggleProductFilter,
     toggleModeOfDeliveryFilter,
+    setTutorialFormat,
+    setDistanceLearning,
+    setTutorial,
     clearAllFilters,
     clearFilterType
 } from '../../store/slices/filtersSlice';
@@ -59,14 +81,22 @@ const FilterPanel = ({
     const filterCounts = useSelector(selectFilterCounts);
     const isLoading = useSelector(state => state.filters.isLoading);
     const error = useSelector(state => state.filters.error);
-    
+
+    // Navbar filter state (Story 1.7-1.8)
+    const tutorialFormat = useSelector(state => state.filters.tutorial_format);
+    const distanceLearning = useSelector(state => state.filters.distance_learning);
+    const tutorial = useSelector(state => state.filters.tutorial);
+
     // Local state
     const [expandedPanels, setExpandedPanels] = useState({
         subjects: true,
         categories: false,
         productTypes: false,
         products: false,
-        modesOfDelivery: false
+        modesOfDelivery: false,
+        tutorialFormat: false,
+        distanceLearning: false,
+        tutorial: false
     });
     const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -302,6 +332,137 @@ const FilterPanel = ({
                 filterCounts.subjects
             )}
 
+            {/* Tutorial Format Filter (Story 1.7) */}
+            <Accordion
+                expanded={expandedPanels.tutorialFormat}
+                onChange={handlePanelChange('tutorialFormat')}
+                sx={{
+                    '&:before': { display: 'none' },
+                    boxShadow: 'none',
+                    backgroundColor: 'transparent'
+                }}
+            >
+                <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    sx={{
+                        minHeight: 48,
+                        '&.Mui-expanded': {
+                            minHeight: 48,
+                        }
+                    }}
+                >
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'medium' }}>
+                        Tutorial Format
+                    </Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ pt: 0 }}>
+                    <RadioGroup
+                        value={tutorialFormat || ''}
+                        onChange={(e) => dispatch(setTutorialFormat(e.target.value || null))}
+                    >
+                        <FormControlLabel
+                            value="online"
+                            control={<Radio size="small" />}
+                            label="Online"
+                        />
+                        <FormControlLabel
+                            value="in_person"
+                            control={<Radio size="small" />}
+                            label="In-Person"
+                        />
+                        <FormControlLabel
+                            value="hybrid"
+                            control={<Radio size="small" />}
+                            label="Hybrid"
+                        />
+                    </RadioGroup>
+                </AccordionDetails>
+            </Accordion>
+
+            {/* Distance Learning Filter (Story 1.7) */}
+            <Accordion
+                expanded={expandedPanels.distanceLearning}
+                onChange={handlePanelChange('distanceLearning')}
+                sx={{
+                    '&:before': { display: 'none' },
+                    boxShadow: 'none',
+                    backgroundColor: 'transparent'
+                }}
+            >
+                <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    sx={{
+                        minHeight: 48,
+                        '&.Mui-expanded': {
+                            minHeight: 48,
+                        }
+                    }}
+                >
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'medium' }}>
+                        Distance Learning
+                    </Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ pt: 0 }}>
+                    <FormGroup>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={distanceLearning}
+                                    onChange={(e) => dispatch(setDistanceLearning(e.target.checked))}
+                                    size="small"
+                                />
+                            }
+                            label="Distance Learning Only"
+                        />
+                        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, ml: 4 }}>
+                            Show only products available through distance learning
+                        </Typography>
+                    </FormGroup>
+                </AccordionDetails>
+            </Accordion>
+
+            {/* Tutorial Filter (Story 1.7) */}
+            <Accordion
+                expanded={expandedPanels.tutorial}
+                onChange={handlePanelChange('tutorial')}
+                sx={{
+                    '&:before': { display: 'none' },
+                    boxShadow: 'none',
+                    backgroundColor: 'transparent'
+                }}
+            >
+                <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    sx={{
+                        minHeight: 48,
+                        '&.Mui-expanded': {
+                            minHeight: 48,
+                        }
+                    }}
+                >
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'medium' }}>
+                        Tutorial
+                    </Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ pt: 0 }}>
+                    <FormGroup>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={tutorial}
+                                    onChange={(e) => dispatch(setTutorial(e.target.checked))}
+                                    size="small"
+                                />
+                            }
+                            label="Tutorial Products Only"
+                        />
+                        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, ml: 4 }}>
+                            Show only tutorial products
+                        </Typography>
+                    </FormGroup>
+                </AccordionDetails>
+            </Accordion>
+
             {/* Categories Filter */}
             {renderFilterSection(
                 'Categories',
@@ -335,11 +496,19 @@ const FilterPanel = ({
             )}
         </Box>
     ), [
-        error, 
-        totalActiveFilters, 
-        filterCounts, 
-        handleClearAllFilters, 
-        renderFilterSection
+        error,
+        totalActiveFilters,
+        filterCounts,
+        handleClearAllFilters,
+        renderFilterSection,
+        expandedPanels.tutorialFormat,
+        expandedPanels.distanceLearning,
+        expandedPanels.tutorial,
+        tutorialFormat,
+        distanceLearning,
+        tutorial,
+        dispatch,
+        handlePanelChange
     ]);
 
     // Mobile drawer
@@ -353,7 +522,7 @@ const FilterPanel = ({
                     sx={{ mb: 2 }}
                     endIcon={
                         totalActiveFilters > 0 && (
-                            <Badge badgeContent={totalActiveFilters} color="primary" />
+                            <Badge badgeContent={totalActiveFilters} color="primary" sx={{marginLeft : "0.5rem"}}/>
                         )
                     }
                 >
