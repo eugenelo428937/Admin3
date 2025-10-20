@@ -83,11 +83,6 @@ const store = createStore(
   products: [],              // Product IDs
   modes_of_delivery: [],     // Delivery mode codes
 
-  // Navbar filters
-  tutorial_format: null,     // 'online' | 'in_person' | 'hybrid' | null
-  distance_learning: false,  // boolean
-  tutorial: false,           // boolean
-
   // Search
   searchQuery: '',           // Search query string
 
@@ -135,8 +130,6 @@ dispatch(setSubjects(filtersFromUrl.subjects));
 **URL Parameter Formats**:
 - **Indexed**: `subject_code=CB1&subject_1=CB2&subject_2=CB3`
 - **Comma-separated**: `group=PRINTED,EBOOK`
-- **Boolean**: `tutorial=1` (present) or absent (false)
-- **Single value**: `tutorial_format=online`
 
 **Performance**: URL updates occur in < 0.1ms (target: < 5ms)
 
@@ -187,13 +180,10 @@ const handleToggle = (filterType, value) => {
 **Product Search** (`useProductsSearch.js`):
 ```javascript
 const filters = useSelector(selectFilters);
-const tutorial_format = useSelector(state => state.filters.tutorial_format);
-const distance_learning = useSelector(state => state.filters.distance_learning);
 
 // Hook reads ALL filters from Redux (single source of truth)
 const searchParams = {
-  filters: { ...filters },
-  navbarFilters: { tutorial_format, distance_learning, tutorial }
+  filters: { ...filters }
 };
 ```
 
