@@ -270,7 +270,7 @@ if ($StartFromStep -le 5) {
 # Step 6: Copy data from main database (optional)
 if ($StartFromStep -le 6) {
     Write-Host "`n[6/8] Copy data from main database?" -ForegroundColor Yellow
-    $copyData = Read-Host "Copy data from ACTEDDBDEV01? (y/N) [default: n]"
+    $copyData = Read-Host "Copy data from ACTEDDBDEV02? (y/N) [default: n]"
     if ($copyData -eq "Y" -or $copyData -eq "y") {
         if (-not $psqlPath -or -not $pgDumpPath) {
             Write-Host "⚠ PostgreSQL tools not found. Cannot copy data." -ForegroundColor Yellow
@@ -281,10 +281,10 @@ if ($StartFromStep -le 6) {
             $env:PGPASSWORD = $PostgresPassword
 
             $dumpFile = "admin3_main_dump.sql"
-            Write-Host "Exporting data from ACTEDDBDEV01 using pg_dump..." -ForegroundColor Cyan
-            "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') - Starting pg_dump from ACTEDDBDEV01..." | Out-File -Append $logFile
+            Write-Host "Exporting data from ACTEDDBDEV02 using pg_dump..." -ForegroundColor Cyan
+            "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') - Starting pg_dump from ACTEDDBDEV02..." | Out-File -Append $logFile
 
-            $exportErrors = & $pgDumpPath -U $PostgresUser -d ACTEDDBDEV01 --data-only --column-inserts -f $dumpFile 2>&1
+            $exportErrors = & $pgDumpPath -U $PostgresUser -d ACTEDDBDEV02 --data-only --column-inserts -f $dumpFile 2>&1
             $exportErrors | Out-File -Append $logFile
 
             if ($LASTEXITCODE -eq 0) {
