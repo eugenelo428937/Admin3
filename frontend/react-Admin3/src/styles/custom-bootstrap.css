@@ -21,7 +21,7 @@
 }
 
 .hero-content {
-  min-height: 58vh;
+  min-height: calc(100vh * var(--wholestep-dec));
   position: relative;
   z-index: 2;
 }
