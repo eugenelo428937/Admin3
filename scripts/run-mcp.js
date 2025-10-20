@@ -82,19 +82,7 @@ const servers = {
          command: "npx",
          args: ["mcp-remote", "https://gitmcp.io/nadirizr/json-logic-py"],
       },
-   },
-   "mui-mcp": {
-      windows: {
-         type: "stdio",
-         command: "cmd",
-         args: ["/c", "npx", "-y", "@mui/mcp@latest"],
-      },
-      default: {
-         type: "stdio",
-         command: "npx",
-         args: ["-y", "@mui/mcp@latest"],
-      },
-   },
+   },   
    "spec-kit Docs": {
       windows: {
          command: "cmd",
