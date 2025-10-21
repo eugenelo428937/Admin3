@@ -347,13 +347,7 @@ const FilterPanel = ({
         totalActiveFilters,
         filterCounts,
         handleClearAllFilters,
-        renderFilterSection,
-        expandedPanels.tutorialFormat,
-        expandedPanels.distanceLearning,
-        expandedPanels.tutorial,
-        tutorialFormat,
-        distanceLearning,
-        tutorial,
+        renderFilterSection,       
         dispatch,
         handlePanelChange
     ]);
