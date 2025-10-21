@@ -102,7 +102,7 @@ so that I can ensure accurate communication and delivery coordination.
 
 ### File List
 *Files to be created/modified during implementation:*
-- **Created**: `frontend/react-Admin3/src/components/Communication/CommunicationDetailsPanel.js`
+- **Created**: `frontend/react-Admin3/src/components/Common/CommunicationDetailsPanel.js`
 - **Modified**: `frontend/react-Admin3/src/components/Ordering/CheckoutSteps/CartReviewStep.js`
 - **Created**: `frontend/react-Admin3/src/components/Communication/__tests__/CommunicationDetailsPanel.test.js`
 - **Created**: `docs/stories/story-2-4-communication-details-panel.md`

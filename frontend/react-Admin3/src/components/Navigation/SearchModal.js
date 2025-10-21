@@ -13,22 +13,13 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import {
-  selectFilters,
-  selectSearchQuery,
-} from '../../store/slices/filtersSlice';
 import SearchBox from '../SearchBox';
 import SearchResults from '../SearchResults';
 
 const SearchModal = ({ open, onClose }) => {
   const navigate = useNavigate();
 
-  // T024: Read filter state from Redux instead of local state
-  const filters = useSelector(selectFilters);
-  const searchQuery = useSelector(selectSearchQuery);
-
-  // T023: Only UI state remains local (not filter data)
+  // Only UI state (search results display)
   const [searchResults, setSearchResults] = useState(null);
   const [searchLoading] = useState(false);
   const [searchError, setSearchError] = useState(null);
@@ -49,10 +40,9 @@ const SearchModal = ({ open, onClose }) => {
   }, [open]);
 
   // Handle closing the search modal
-  // T023: Don't clear Redux filter state - filters persist across modal lifecycle
   const handleCloseSearchModal = useCallback(() => {
     onClose();
-    // Reset only UI state after a brief delay to avoid visual glitches
+    // Reset UI state after a brief delay to avoid visual glitches
     setTimeout(() => {
       setSearchResults(null);
       setSearchError(null);
@@ -76,21 +66,14 @@ const SearchModal = ({ open, onClose }) => {
   }, [open, handleCloseSearchModal]);
 
   // Handle search results from SearchBox
-  // T023: Don't track searchQuery locally - it's already in Redux via SearchBox
   const handleSearchResults = (results) => {
     setSearchResults(results);
     setSearchError(null);
   };
 
-  // T025: Filter management logic removed
-  // SearchBox now manages all filter state via Redux
-  // No need for handleFilterSelect, isFilterSelected, handleFilterRemove
-
-  // T026: Simplified navigation - filters already in Redux from SearchBox
+  // Navigate to products page (no filter management needed - search only)
   const handleShowMatchingProducts = () => {
     // Close modal and navigate to products page
-    // Filters are already in Redux (updated by SearchBox)
-    // URL sync middleware automatically updates URL
     handleCloseSearchModal();
     navigate('/products');
   };
@@ -162,8 +145,6 @@ const SearchModal = ({ open, onClose }) => {
           className="search-results-container">
           <SearchResults
             searchResults={searchResults}
-            searchQuery={searchQuery}
-            selectedFilters={filters}
             onShowMatchingProducts={handleShowMatchingProducts}
             loading={searchLoading}
             error={searchError}

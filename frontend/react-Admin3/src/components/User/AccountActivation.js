@@ -48,7 +48,7 @@ const AccountActivation = () => {
             // Determine mode based on presence of email parameter
             const verificationMode = email ? 'email_verification' : 'activation';
             setMode(verificationMode);
-            
+
             if (email) {
                 setNewEmail(email);
             }
@@ -68,7 +68,7 @@ const AccountActivation = () => {
                     // Account activation mode
                     response = await authService.activateAccount(uid, token);
                 }
-                
+
                 if (response.status === 'success') {
                     setStatus('success');
                     if (verificationMode === 'email_verification') {
@@ -90,6 +90,14 @@ const AccountActivation = () => {
 
         handleVerification();
     }, [searchParams]);
+
+    // Redirect to products page after successful account activation
+    useEffect(() => {
+        if (status === 'success' && mode === 'activation' && !isLoading) {
+            // Navigate to products page after successful activation
+            navigate('/products');
+        }
+    }, [status, mode, isLoading, navigate]);
 
     const handleLoginRedirect = () => {
         navigate('/auth/login');
