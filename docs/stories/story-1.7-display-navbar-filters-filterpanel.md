@@ -908,7 +908,14 @@ grep -c "<Accordion" frontend/react-Admin3/src/components/Product/FilterPanel.js
 
 ---
 
-**Story Status**: Ready for Development (after Story 1.2 complete)
-**Assigned To**: [Pending]
-**Started**: [Pending]
-**Completed**: [Pending]
+**Story Status**: ❌ **CANCELLED/REMOVED**
+**Reason**: Feature implemented but subsequently removed (not needed)
+**Removal Date**: 2025-10-20
+**Removal Commit**: 026f2f23 - `refactor(filters): Remove navbar filters from FilterPanel, ActiveFilters, and Redux store`
+
+**Original Status**: Ready for Development (after Story 1.2 complete)
+**Assigned To**: [N/A]
+**Started**: [N/A]
+**Completed**: Implemented then removed
+
+**Note**: The navbar filters (tutorial_format, distance_learning, tutorial) were initially implemented in FilterPanel and ActiveFilters components, but were later determined to be unnecessary and removed from the codebase. All related code, tests, and documentation have been removed.
