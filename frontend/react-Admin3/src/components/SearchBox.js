@@ -35,30 +35,41 @@ const SearchBox = ({
         }
     }, [autoFocus]);
 
+    // Issue #1 Fix: Reload search results when modal opens with persisted query
+    useEffect(() => {
+        if (searchQuery && searchQuery.length >= 2) {
+            performSearch(searchQuery);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Run once on mount
+
     // Debounced search function
     const performSearch = async (query) => {
         try {
             setLoading(true);
             setError('');
-            
-            let results;
+
+            // Issue #3 Fix: Don't search for empty or short queries (< 2 characters)
             if (!query || query.length < 2) {
-                // Get default data when no search query
-                results = await searchService.getDefaultSearchData();
-            } else {
-                // Perform actual search
-                results = await searchService.fuzzySearch(query);
+                setSearchResults(null);
+                if (onSearchResults) {
+                    onSearchResults(null, query);
+                }
+                setLoading(false);
+                return; // Exit early - no API call
             }
-            
+
+            // Perform actual search (only for queries >= 2 chars)
+            const results = await searchService.fuzzySearch(query);
             setSearchResults(results);
-            
+
             if (onSearchResults) {
                 onSearchResults(results, query);
             }
         } catch (err) {
             console.error('Search error:', err);
             setError('Search failed. Please try again.');
-            
+
             // Provide fallback empty results instead of null
             const fallbackResults = {
                 suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
@@ -67,7 +78,7 @@ const SearchBox = ({
                 total_count: 0
             };
             setSearchResults(fallbackResults);
-            
+
             if (onSearchResults) {
                 onSearchResults(fallbackResults, query);
             }
@@ -94,8 +105,9 @@ const SearchBox = ({
 
     const handleShowMatchingProducts = () => {
         if (onShowMatchingProducts) {
-            // Simply call callback - no filter management in search modal
-            onShowMatchingProducts();
+            // Issue #2 Fix: Pass product IDs from search results
+            const productIds = searchResults?.suggested_products?.map(p => p.id || p.essp_id) || [];
+            onShowMatchingProducts(productIds);
         }
     };
 
