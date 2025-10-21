@@ -956,18 +956,6 @@ const RegistrationWizard = ({ onSuccess, onError, onSwitchToLogin }) => {
 								</Box>
 							</Grid>
 						</Grid>
-
-						<Alert severity="info" sx={{ mt: 4 }}>
-							<Typography variant="h6" gutterBottom>
-								Delivery Information
-							</Typography>
-							<Typography variant="body2">
-								Please order your study materials well in advance.
-								Materials are printed to order and may take 2+ weeks for
-								delivery. Consider eBooks for faster access - they're
-								usually processed in 2-3 working days.
-							</Typography>
-						</Alert>
 					</Box>
 				);
 

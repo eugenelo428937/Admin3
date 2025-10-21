@@ -2,10 +2,10 @@
 .search-box-container {
     position: relative;
     width: 100%;
-    max-width: 20rem;
+    max-width: 23rem;
     margin: 0 auto;
     z-index: 999 ;
-    overflow: visible;
+    overflow: visible;        
 }
 
 .search-input-wrapper {
@@ -16,9 +16,9 @@
 }
 
 .search-input {
-    border-radius: 25px;
+    border-radius: 50px;
     border: 2px solid #e0e0e0;    
-    height: 50px;
+    /* height: 3rem; */
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -162,16 +162,12 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .search-box-container {
-        max-width: 100%;
-        padding: 0 15px;
+    .search-box-container {        
         z-index: 999  !important;
     }
     
     .search-input {
-        height: 45px;        
-        padding-left: 40px !important;
-        padding-right: 40px !important;
+        /* height: 45px;                 */
     }
     
     .search-icon {
