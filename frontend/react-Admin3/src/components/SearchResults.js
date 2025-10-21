@@ -1,23 +1,35 @@
 import React, { useMemo } from "react";
 import { Card, CardContent, Container, Grid, useTheme, Chip, Button, Box, Typography, CircularProgress, Alert } from "@mui/material";
 import { FilterList as FilterIcon, ArrowForward as ArrowRightIcon, Close as CloseIcon } from "@mui/icons-material";
+import { useDispatch, useSelector } from 'react-redux';
+import {
+	toggleSubjectFilter,
+	toggleProductTypeFilter,
+	toggleProductFilter,
+	removeSubjectFilter,
+	removeProductTypeFilter,
+	removeProductFilter,
+	selectFilters,
+	selectSearchQuery,
+} from '../store/slices/filtersSlice';
 import ProductCard from "./Product/ProductCard/MaterialProductCard";
 import useProductCardHelpers from "../hooks/useProductCardHelpers";
 import "../styles/search_results.css";
 import { ThemeProvider } from "@mui/material/styles";
 
+// T027: Updated to use Redux for filter state management
 const SearchResults = ({
 	searchResults,
-	searchQuery,
-	selectedFilters,
-	onFilterSelect,
-	onFilterRemove,
 	onShowMatchingProducts,
-	isFilterSelected,
 	maxSuggestions = 3,
 	loading = false,
 	error = null,
 }) => {
+	const dispatch = useDispatch();
+
+	// T027: Read filter state from Redux instead of props
+	const selectedFilters = useSelector(selectFilters);
+	const searchQuery = useSelector(selectSearchQuery);
 	const theme = useTheme();
 	// Memoize top products calculation to prevent infinite re-renders
 	const topProducts = useMemo(() => {
@@ -26,62 +38,47 @@ const SearchResults = ({
 			: [];
 	}, [searchResults?.suggested_products]);
 
-	// Filter products based on selected filters
+	// T027: Filter products based on Redux filter state (stores codes/IDs as strings)
 	const filteredProducts = useMemo(() => {
 		if (!topProducts.length) return [];
 
 		// If no filters are selected, return all products
-		const hasActiveFilters = Object.values(selectedFilters).some(
-			(filterArray) => filterArray.length > 0
-		);
+		const hasActiveFilters =
+			selectedFilters.subjects.length > 0 ||
+			selectedFilters.product_types.length > 0 ||
+			selectedFilters.products.length > 0;
+
 		if (!hasActiveFilters) {
 			return topProducts;
 		}
 
 		return topProducts.filter((product) => {
-			// Check subject filter
+			// Check subject filter (Redux stores codes like 'CB1', 'CB2')
 			if (selectedFilters.subjects.length > 0) {
 				const matchesSubject = selectedFilters.subjects.some(
-					(filter) =>
-						product.subject_code === filter.code ||
-						product.subject_code === filter.id ||
-						product.subject_name === filter.description ||
-						product.subject_name === filter.name
+					(code) => product.subject_code === code
 				);
 				if (!matchesSubject) return false;
 			}
 
-			// Check product group filter
-			if (selectedFilters.product_groups.length > 0) {
-				const matchesGroup = selectedFilters.product_groups.some(
-					(filter) =>
-						product.product_group_id === filter.id ||
-						product.product_group_name === filter.name ||
-						product.group_name === filter.name
+			// Check product types filter (includes both product_groups and variations)
+			// Redux stores product_types codes like '8', '9'
+			if (selectedFilters.product_types.length > 0) {
+				const matchesProductType = selectedFilters.product_types.some(
+					(code) =>
+						String(product.product_group_id) === code ||
+						String(product.variation_id) === code
 				);
-				if (!matchesGroup) return false;
+				if (!matchesProductType) return false;
 			}
 
-			// Check variation filter
-			if (selectedFilters.variations.length > 0) {
-				const matchesVariation = selectedFilters.variations.some(
-					(filter) =>
-						product.variation_id === filter.id ||
-						product.variation_name === filter.name ||
-						product.type === filter.name
-				);
-				if (!matchesVariation) return false;
-			}
-
-			// Check specific product filter
+			// Check specific product filter (Redux stores product IDs)
 			if (selectedFilters.products.length > 0) {
 				const matchesProduct = selectedFilters.products.some(
-					(filter) =>
-						product.id === filter.id ||
-						product.essp_id === filter.id ||
-						product.product_id === filter.id ||
-						product.product_name === filter.name ||
-						product.shortname === filter.shortname
+					(id) =>
+						String(product.id) === id ||
+						String(product.essp_id) === id ||
+						String(product.product_id) === id
 				);
 				if (!matchesProduct) return false;
 			}
@@ -94,9 +91,9 @@ const SearchResults = ({
 	const { handleAddToCart, allEsspIds, bulkDeadlines } =
 		useProductCardHelpers(filteredProducts);
 
-	// Show component even if no search query (will show default data)
-	// Only hide if there's an error and no data at all
-	if (!searchResults && !loading && error) {
+	// Only show component when there's a search query
+	// Don't show "popular filters" or default data
+	if (!searchQuery || (!searchResults && !loading)) {
 		return null;
 	}
 
@@ -114,7 +111,42 @@ const SearchResults = ({
 		);
 	};
 
-	// Render filter badge
+	// T027: Render filter badge with Redux dispatch
+	const handleFilterClick = (filterType, item) => {
+		const filterCode = item.code || item.id;
+
+		switch (filterType) {
+			case 'subjects':
+				dispatch(toggleSubjectFilter(filterCode));
+				break;
+			case 'product_groups':
+			case 'variations':
+				dispatch(toggleProductTypeFilter(filterCode));
+				break;
+			case 'products':
+				dispatch(toggleProductFilter(filterCode));
+				break;
+			default:
+				console.warn(`Unknown filter type: ${filterType}`);
+		}
+	};
+
+	const isFilterSelected = (filterType, item) => {
+		const filterCode = item.code || item.id;
+
+		switch (filterType) {
+			case 'subjects':
+				return selectedFilters.subjects.includes(filterCode);
+			case 'product_groups':
+			case 'variations':
+				return selectedFilters.product_types.includes(filterCode);
+			case 'products':
+				return selectedFilters.products.includes(filterCode);
+			default:
+				return false;
+		}
+	};
+
 	const renderFilterBadge = (filterType, item) => {
 		const displayName = getDisplayName(item);
 		const isSelected = isFilterSelected(filterType, item);
@@ -125,8 +157,8 @@ const SearchResults = ({
 				label={displayName}
 				color={isSelected ? "primary" : "default"}
 				variant={isSelected ? "filled" : "outlined"}
-				onClick={() => onFilterSelect(filterType, item)}
-				onDelete={isSelected ? () => onFilterSelect(filterType, item) : undefined}
+				onClick={() => handleFilterClick(filterType, item)}
+				onDelete={isSelected ? () => handleFilterClick(filterType, item) : undefined}
 				deleteIcon={isSelected ? <CloseIcon /> : undefined}
 				sx={{ mr: 2, mb: 2, cursor: "pointer" }}
 				className={`filter-badge ${isSelected ? "selected" : ""}`}
@@ -142,12 +174,9 @@ const SearchResults = ({
 			searchResults.suggested_filters.variations?.length > 0 ||
 			searchResults.suggested_filters.products?.length > 0);
 
-	// Helper function to ensure we always pass the correct search parameters
+	// T027: Simplified - filters already in Redux, just call navigation callback
 	const handleShowMatchingProducts = () => {
-		// Use the provided searchQuery, but fallback to search_info if needed
-		const queryToUse = searchQuery || searchResults?.search_info?.query || "";
-
-		onShowMatchingProducts(searchResults, selectedFilters, queryToUse);
+		onShowMatchingProducts();
 	};
 
 	return (
@@ -185,16 +214,12 @@ const SearchResults = ({
 								<Box sx={{ display: 'flex', alignItems: 'center', mb: 3, pb: 3 }}>
 									<FilterIcon color="primary" sx={{ mr: 2 }} />
 									<Typography variant="h6" component="h6" sx={{ mb: 0 }}>
-										{searchQuery
-											? "Suggested Filters"
-											: "Popular Filters"}
+										Suggested Filters
 									</Typography>
 								</Box>
-								{searchQuery && (
-									<Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 3 }}>
-										for "{searchQuery}"
-									</Typography>
-								)}
+								<Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 3 }}>
+									for "{searchQuery}"
+								</Typography>
 
 								{/* Subjects */}
 								{searchResults?.suggested_filters?.subjects?.length >
@@ -264,30 +289,51 @@ const SearchResults = ({
 									</Box>
 								)}
 
-								{/* Active Filters Section */}
-								{Object.values(selectedFilters).some(
-									(filterArray) => filterArray.length > 0
-								) && (
+								{/* Active Filters Section - T027: Updated for Redux (stores codes/IDs) */}
+								{(selectedFilters.subjects.length > 0 ||
+									selectedFilters.product_types.length > 0 ||
+									selectedFilters.products.length > 0) && (
 									<Box sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: 'divider' }}>
 										<Typography variant="h6" className="filter-category-title">
 											Active Filters
 										</Typography>
 										<Box className="filter-badges-container">
-											{/* Show all selected filters */}
-											{Object.entries(selectedFilters).map(
-												([filterType, filters]) =>
-													filters.map((filter) => (
-														<Chip
-															key={`active-${filterType}-${filter.id}`}
-															label={getDisplayName(filter)}
-															color="success"
-															onDelete={() => onFilterRemove(filterType, filter)}
-															deleteIcon={<CloseIcon />}
-															sx={{ mr: 2, mb: 2, cursor: "pointer" }}
-															className="filter-badge selected"
-														/>
-													))
-											)}
+											{/* Subjects */}
+											{selectedFilters.subjects.map((code) => (
+												<Chip
+													key={`active-subject-${code}`}
+													label={code}
+													color="success"
+													onDelete={() => dispatch(removeSubjectFilter(code))}
+													deleteIcon={<CloseIcon />}
+													sx={{ mr: 2, mb: 2, cursor: "pointer" }}
+													className="filter-badge selected"
+												/>
+											))}
+											{/* Product Types */}
+											{selectedFilters.product_types.map((code) => (
+												<Chip
+													key={`active-type-${code}`}
+													label={code}
+													color="success"
+													onDelete={() => dispatch(removeProductTypeFilter(code))}
+													deleteIcon={<CloseIcon />}
+													sx={{ mr: 2, mb: 2, cursor: "pointer" }}
+													className="filter-badge selected"
+												/>
+											))}
+											{/* Products */}
+											{selectedFilters.products.map((id) => (
+												<Chip
+													key={`active-product-${id}`}
+													label={id}
+													color="success"
+													onDelete={() => dispatch(removeProductFilter(id))}
+													deleteIcon={<CloseIcon />}
+													sx={{ mr: 2, mb: 2, cursor: "pointer" }}
+													className="filter-badge selected"
+												/>
+											))}
 										</Box>
 										<Typography variant="caption" color="text.secondary">
 											Showing {filteredProducts.length} of{" "}
@@ -381,23 +427,23 @@ const SearchResults = ({
 								</CardContent>
 							</Card>
 						) : (
-							/* No Results State */
+							/* No Results State - T027: Updated for Redux state structure */
 							<Card sx={{ textAlign: 'center', py: 5 }}>
 								<CardContent>
 									<FilterIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 3 }} />
 									<Typography variant="h5" color="text.secondary">
-										{Object.values(selectedFilters).some(
-											(filterArray) => filterArray.length > 0
-										)
+										{(selectedFilters.subjects.length > 0 ||
+											selectedFilters.product_types.length > 0 ||
+											selectedFilters.products.length > 0)
 											? "No products match your filters"
 											: searchQuery
 											? "No results found"
 											: "Start searching to see products"}
 									</Typography>
 									<Typography variant="body1" color="text.secondary">
-										{Object.values(selectedFilters).some(
-											(filterArray) => filterArray.length > 0
-										)
+										{(selectedFilters.subjects.length > 0 ||
+											selectedFilters.product_types.length > 0 ||
+											selectedFilters.products.length > 0)
 											? `Try removing some filters or search for different terms. ${topProducts.length} products available before filtering.`
 											: searchQuery
 											? `No products found for "${searchQuery}". Try different keywords or check your spelling.`

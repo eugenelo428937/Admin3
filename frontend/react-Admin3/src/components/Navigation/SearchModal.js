@@ -13,28 +13,23 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
-  setSearchQuery,
-  setSubjects,
-  resetFilters,
+  selectFilters,
+  selectSearchQuery,
 } from '../../store/slices/filtersSlice';
 import SearchBox from '../SearchBox';
 import SearchResults from '../SearchResults';
 
 const SearchModal = ({ open, onClose }) => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
-  // State for search modal
+  // T024: Read filter state from Redux instead of local state
+  const filters = useSelector(selectFilters);
+  const searchQuery = useSelector(selectSearchQuery);
+
+  // T023: Only UI state remains local (not filter data)
   const [searchResults, setSearchResults] = useState(null);
-  const [searchQuery, setLocalSearchQuery] = useState('');
-  const [selectedFilters, setSelectedFilters] = useState({
-    subjects: [],
-    product_groups: [],
-    variations: [],
-    products: []
-  });
   const [searchLoading] = useState(false);
   const [searchError, setSearchError] = useState(null);
 
@@ -53,19 +48,13 @@ const SearchModal = ({ open, onClose }) => {
     }
   }, [open]);
 
-  // Handle closing the search modal and resetting state
+  // Handle closing the search modal
+  // T023: Don't clear Redux filter state - filters persist across modal lifecycle
   const handleCloseSearchModal = useCallback(() => {
     onClose();
-    // Reset search state after a brief delay to avoid visual glitches
+    // Reset only UI state after a brief delay to avoid visual glitches
     setTimeout(() => {
       setSearchResults(null);
-      setLocalSearchQuery('');
-      setSelectedFilters({
-        subjects: [],
-        product_groups: [],
-        variations: [],
-        products: []
-      });
       setSearchError(null);
     }, 300);
   }, [onClose]);
@@ -87,71 +76,21 @@ const SearchModal = ({ open, onClose }) => {
   }, [open, handleCloseSearchModal]);
 
   // Handle search results from SearchBox
-  const handleSearchResults = (results, query) => {
+  // T023: Don't track searchQuery locally - it's already in Redux via SearchBox
+  const handleSearchResults = (results) => {
     setSearchResults(results);
-    setLocalSearchQuery(query || '');
     setSearchError(null);
   };
 
-  // Handle filter selection from SearchResults
-  const handleFilterSelect = (filterType, item) => {
-    const isSelected = isFilterSelected(filterType, item);
-    
-    if (isSelected) {
-      // Remove filter
-      setSelectedFilters(prev => ({
-        ...prev,
-        [filterType]: prev[filterType].filter(selected => selected.id !== item.id)
-      }));
-    } else {
-      // Add filter
-      setSelectedFilters(prev => ({
-        ...prev,
-        [filterType]: [...prev[filterType], item]
-      }));
-    }
-  };
+  // T025: Filter management logic removed
+  // SearchBox now manages all filter state via Redux
+  // No need for handleFilterSelect, isFilterSelected, handleFilterRemove
 
-  // Check if filter is selected
-  const isFilterSelected = (filterType, item) => {
-    return selectedFilters[filterType].some(selected => selected.id === item.id);
-  };
-
-  // Remove filter
-  const handleFilterRemove = (filterType, itemId) => {
-    setSelectedFilters(prev => ({
-      ...prev,
-      [filterType]: prev[filterType].filter(item => item.id !== itemId)
-    }));
-  };
-
-  // Handle "Show Matching Products" button click from SearchResults
-  // Story 1.4: Use Redux dispatch instead of manual URL construction
-  const handleShowMatchingProducts = (results, filters, query) => {
-    // Use current state if parameters are not provided
-    const searchQueryToUse = query || searchQuery;
-    const filtersToUse = filters || selectedFilters;
-
-    // Clear existing filters first
-    dispatch(resetFilters());
-
-    // Dispatch search query to Redux (if present)
-    if (searchQueryToUse?.trim()) {
-      dispatch(setSearchQuery(searchQueryToUse.trim()));
-    }
-
-    // Dispatch subject filters to Redux
-    if (filtersToUse.subjects.length > 0) {
-      const subjectCodes = filtersToUse.subjects.map(subject => subject.code || subject.id);
-      dispatch(setSubjects(subjectCodes));
-    }
-
-    // Note: Product groups, variations, and products filters from SearchModal
-    // are not yet integrated with Redux filter state (Story 1.4 scope: subjects + search only)
-    // Future enhancement: Add setProductTypes, setProducts actions for complete integration
-
-    // Close the modal and navigate to products page
-    // URL sync middleware will automatically update URL with filters
+  // T026: Simplified navigation - filters already in Redux from SearchBox
+  const handleShowMatchingProducts = () => {
+    // Close modal and navigate to products page
+    // Filters are already in Redux (updated by SearchBox)
+    // URL sync middleware automatically updates URL
     handleCloseSearchModal();
     navigate('/products');
   };
@@ -203,22 +142,14 @@ const SearchModal = ({ open, onClose }) => {
           backgroundColor: "#f8f9fa",
           padding: 3,
         }}>
-        <Paper
-          elevation={0}
-          sx={{
-            paddingTop: 4,
-            alignItems: "center",
-            marginBottom: 2,
-            backgroundColor: "#E9ECEF00",
-          }}
-          className="search-box-container">
-          <SearchBox
-            onSearchResults={handleSearchResults}
-            onShowMatchingProducts={handleShowMatchingProducts}
-            autoFocus={true}
-            placeholder="Search for products, subjects, categories..."
-          />
-        </Paper>
+        
+        <SearchBox
+          onSearchResults={handleSearchResults}
+          onShowMatchingProducts={handleShowMatchingProducts}
+          autoFocus={true}
+          placeholder="Search for products, subjects, categories..."
+        />
+        
         <Paper
           elevation={0}
           sx={{
@@ -232,11 +163,8 @@ const SearchModal = ({ open, onClose }) => {
           <SearchResults
             searchResults={searchResults}
             searchQuery={searchQuery}
-            selectedFilters={selectedFilters}
-            onFilterSelect={handleFilterSelect}
-            onFilterRemove={handleFilterRemove}
+            selectedFilters={filters}
             onShowMatchingProducts={handleShowMatchingProducts}
-            isFilterSelected={isFilterSelected}
             loading={searchLoading}
             error={searchError}
             maxSuggestions={5}

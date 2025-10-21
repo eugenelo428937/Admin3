@@ -100,8 +100,9 @@ export const useProductsSearch = (options = {}) => {
       const searchParams = {
         filters: {
           ...filters,
-          // Add search query to filters if present
-          ...(searchQuery && { searchQuery }),
+          // Note: searchQuery is NOT sent to unified_search endpoint
+          // Text search is handled by the fuzzy-search endpoint in SearchBox
+          // The unified_search endpoint only accepts: subjects, categories, product_types, products, modes_of_delivery
         },
         navbarFilters,
         pagination: {
@@ -116,7 +117,8 @@ export const useProductsSearch = (options = {}) => {
       
       // Check if search parameters have changed (avoid duplicate requests)
       // Use a fast hash instead of JSON.stringify for performance
-      const paramsHash = `${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.products?.join(',')||''}|${searchQuery}|${currentPage}|${pageSize}|${tutorial_format||''}|${distance_learning}|${tutorial}`;
+      // Note: searchQuery removed since it's not sent to unified_search endpoint
+      const paramsHash = `${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.products?.join(',')||''}|${currentPage}|${pageSize}|${tutorial_format||''}|${distance_learning}|${tutorial}`;
 
       if (!forceSearch && lastSearchParamsRef.current === paramsHash) {
         dispatch(setLoading(false));
@@ -219,9 +221,10 @@ export const useProductsSearch = (options = {}) => {
   }, [clearDebounce, dispatch]);
   
   // Create stable references for effect dependencies
+  // Note: searchQuery removed since it's not sent to unified_search endpoint
   const filterHash = useMemo(() => {
-    return `${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.products?.join(',')||''}|${searchQuery}|${currentPage}|${pageSize}|${tutorial_format||''}|${distance_learning}|${tutorial}`;
-  }, [filters.subjects, filters.categories, filters.products, searchQuery, currentPage, pageSize, tutorial_format, distance_learning, tutorial]);
+    return `${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.products?.join(',')||''}|${currentPage}|${pageSize}|${tutorial_format||''}|${distance_learning}|${tutorial}`;
+  }, [filters.subjects, filters.categories, filters.product_types, filters.products, currentPage, pageSize, tutorial_format, distance_learning, tutorial]);
 
   // Auto-search when filters change (if enabled)
   useEffect(() => {

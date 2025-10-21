@@ -2,7 +2,7 @@
 .search-box-container {
     position: relative;
     width: 100%;
-    max-width: 800px;
+    max-width: 20rem;
     margin: 0 auto;
     z-index: 999 ;
     overflow: visible;
@@ -16,8 +16,6 @@
 }
 
 .search-input {
-    padding-left: 45px !important;
-    padding-right: 45px !important;
     border-radius: 25px;
     border: 2px solid #e0e0e0;    
     height: 50px;
