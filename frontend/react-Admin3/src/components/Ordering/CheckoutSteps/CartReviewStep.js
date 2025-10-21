@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import { LocationOn, Receipt } from '@mui/icons-material';
 import AddressSelectionPanel from '../../Address/AddressSelectionPanel';
-import CommunicationDetailsPanel from '../../Communication/CommunicationDetailsPanel';
+import CommunicationDetailsPanel from '../../Common/CommunicationDetailsPanel';
 import RulesEngineInlineAlert from '../../Common/RulesEngineInlineAlert';
 
 const CartReviewStep = ({

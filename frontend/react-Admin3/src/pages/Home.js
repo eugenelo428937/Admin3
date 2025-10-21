@@ -152,6 +152,12 @@ const Home = () => {
                      paddingRight: {
                         xs: theme.liftkit.spacing.lg,
                      },
+                     paddingTop: {
+                        lg: theme.liftkit.spacing.xl2,
+                     },
+                     paddingBottom: {
+                        lg: theme.liftkit.spacing.xl2,
+                     },
                   }}
                >
                   <Box
@@ -185,8 +191,8 @@ const Home = () => {
                   </Box>
 
                   <Container
-                     style={{ maxWidth: "600px", margin: "0 auto" }}
-                     className="m-top__xl"
+                     style={{ maxWidth: "600px", margin: "0 auto" }}                     
+                     disableGutters="true"
                   >
                      <SearchBox
                         onSearchResults={handleSearchResults}
@@ -245,18 +251,18 @@ const Home = () => {
                })}
          </Container>
 
-			{/* Search Results Section */}
-			<Container disableGutters={true} maxWidth="xl">
-				<SearchResults
-					searchResults={searchResults}
-					onShowMatchingProducts={handleShowMatchingProducts}
-					loading={false}
-					error={error}
-					maxSuggestions={5}
-				/>
-			</Container>
-		</Container>
-	);
+         {/* Search Results Section */}
+         <Container disableGutters={true} maxWidth="xl">
+            <SearchResults
+               searchResults={searchResults}
+               onShowMatchingProducts={handleShowMatchingProducts}
+               loading={false}
+               error={error}
+               maxSuggestions={5}
+            />
+         </Container>
+      </Container>
+   );
 };
 
 export default Home;

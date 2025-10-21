@@ -65,6 +65,10 @@ const CartPanel = React.memo(({ show, handleClose }) => {
     removeAllChoices();
     // Clear the cart
     clearCart();
+    // Close the cart panel
+    handleSafeClose();
+    // Navigate to products page
+    navigate('/products');
   };
 
   // Handle checkout button click
