@@ -31,7 +31,7 @@ As a customer completing my order, I want to provide and edit my contact informa
 ## Implementation Details
 
 ### Components
-- **Location**: `frontend/react-Admin3/src/components/Communication/CommunicationDetailsPanel.js`
+- **Location**: `frontend/react-Admin3/src/components/Common/CommunicationDetailsPanel.js`
 - **Tests**: `frontend/react-Admin3/src/components/Communication/__tests__/CommunicationDetailsPanel.test.js`
 
 ### Key Features Implemented
@@ -192,7 +192,7 @@ const getPhoneNumber = (type) => {
 - **Validation**: Integrated with existing ValidatedPhoneInput component
 
 ### Files Modified
-1. `frontend/react-Admin3/src/components/Communication/CommunicationDetailsPanel.js` - Main implementation
+1. `frontend/react-Admin3/src/components/Common/CommunicationDetailsPanel.js` - Main implementation
 2. `frontend/react-Admin3/src/components/Communication/__tests__/CommunicationDetailsPanel.test.js` - Test updates
 
 ### Testing Notes
