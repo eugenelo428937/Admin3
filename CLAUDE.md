@@ -189,13 +189,15 @@ const searchParams = {
 
 **Search Modal** (`SearchModal.js`):
 ```javascript
-const handleShowMatchingProducts = (query, selectedFilters) => {
-  dispatch(resetFilters());
-  dispatch(setSearchQuery(query));
-  dispatch(setSubjects(selectedFilters.subjects));
+const handleShowMatchingProducts = () => {
+  // Search modal is search-only - NO filter management
+  // Search query stored in Redux (filters.searchQuery)
+  handleCloseSearchModal();
   navigate('/products'); // URL sync automatic
 };
 ```
+
+**Note**: Search modal provides **search-only functionality** (as of 2025-10-21). All filtering happens on the products page via FilterPanel. SearchBox uses Redux for search query persistence only (`setSearchQuery` action), NOT for filter selections. See `specs/spec-filter-searching-refinement-20251021.md` for details
 
 #### Important Rules
 
