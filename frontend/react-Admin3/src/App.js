@@ -4,7 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { Provider } from 'react-redux';
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import { ThemeProvider } from "@mui/material/styles";
-import { CssBaseline, Typography } from "@mui/material";
+import { CssBaseline } from "@mui/material";
 import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
 import theme from "./theme/theme";
 import { store } from './store';
@@ -38,17 +38,8 @@ import ResetPasswordForm from "./components/User/ResetPasswordForm";
 import AccountActivation from "./components/User/AccountActivation";
 import ResendActivation from "./components/User/ResendActivation";
 import EmailVerification from "./components/User/EmailVerification";
-import ProductCardVariations from "./components/sandbox/ProductCardVariations";
-import ProductCardTestPage from "./components/sandbox/ProductCardTestPage";
 import StyleGuide from "./components/StyleGuide";
 import Registration from './pages/Registration';
-import Login from './pages/Login';
-import MessageClassificationDemo from "./components/Test/MessageClassificationDemo";
-import ContentParsingDemo from "./components/Test/ContentParsingDemo";
-import ContextBuildingDemo from "./components/Test/ContextBuildingDemo";
-import ProcessingPipelineDemo from "./components/Test/ProcessingPipelineDemo";
-import RulesEngineUtilitiesDemo from "./components/Test/RulesEngineUtilitiesDemo";
-import TestAddressPanel from "./pages/TestAddressPanel";
 import "./App.css";
 
 const system = createSystem(defaultConfig);
@@ -107,15 +98,7 @@ function App() {
 														<Route
 															path="/home"
 															element={<Home />}
-														/>
-														<Route
-															path="/login"
-															element={<Login />}
-														/>
-														<Route
-															path="/test-address"
-															element={<TestAddressPanel />}
-														/>
+														/>						
 														<Route
 															path="/profile"
 															element={<UserProfile />}
@@ -220,41 +203,7 @@ function App() {
 														<Route
 															path="*"
 															element={<NoMatch />}
-														/>
-														<Route
-															path="/product-card-variations"
-															element={<ProductCardVariations />}
-														/>
-														<Route
-															path="/sandbox/product-card-test"
-															element={<ProductCardTestPage />}
-														/>
-														<Route
-															path="/test/message-classification"
-															element={
-																<MessageClassificationDemo />
-															}
-														/>
-														<Route
-															path="/test/content-parsing"
-															element={<ContentParsingDemo />}
-														/>
-														<Route
-															path="/test/context-building"
-															element={<ContextBuildingDemo />}
-														/>
-														<Route
-															path="/test/processing-pipeline"
-															element={
-																<ProcessingPipelineDemo />
-															}
-														/>
-														<Route
-															path="/test/rules-engine"
-															element={
-																<RulesEngineUtilitiesDemo />
-															}
-														/>
+														/>																
 														<Route
 															path="/register2"
 															element={<Registration />}
