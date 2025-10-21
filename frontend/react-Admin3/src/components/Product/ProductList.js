@@ -51,6 +51,7 @@ import ActiveFilters from './ActiveFilters';
 import ProductGrid from './ProductGrid';
 import SearchBox from '../SearchBox';
 import FilterDebugger from './FilterDebugger';
+import RulesEngineInlineAlert from '../Common/RulesEngineInlineAlert';
 
 // Styles
 import "../../styles/product_list.css";
@@ -359,46 +360,11 @@ const ProductList = React.memo(() => {
 							)} */}
 
 							{/* Rules Engine Messages (Delivery Information, etc.) */}
-							{rulesLoading && (
-								<Alert severity="info" sx={{ mt: 2, mb: 2 }}>
-									<i
-										className="bi bi-hourglass-split"
-										style={{ marginRight: 8 }}></i>
-									Loading delivery information...
-								</Alert>
-							)}
-
-							{!rulesLoading &&
-								rulesMessages.map((message, index) => {
-									const variant =
-										message.variant === "warning"
-											? "warning"
-											: message.variant === "error"
-											? "error"
-											: message.variant === "info"
-											? "info"
-											: "info";
-
-									return (
-										<Alert
-											key={`rules-message-${
-												message.template_id || index
-											}`}
-											severity={variant}
-											sx={{ mt: 2, mb: 2 }}
-											data-testid="product-list-delivery-message">
-											<strong>{message.title}</strong>
-											<div
-												style={{ marginTop: 4 }}
-												dangerouslySetInnerHTML={{
-													__html:
-														message.message ||
-														"No message content",
-												}}
-											/>
-										</Alert>
-									);
-								})}
+							<RulesEngineInlineAlert
+							messages={rulesMessages}
+							loading={rulesLoading}
+							loadingMessage="Loading delivery information..."
+						/>
 
 							{/* Debug Information (Development Only) */}
 							{/* {process.env.NODE_ENV === 'development' && (
