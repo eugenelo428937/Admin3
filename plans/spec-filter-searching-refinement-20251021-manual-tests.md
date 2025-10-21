@@ -1,44 +1,29 @@
-# Quickstart Guide: Search-Only Modal Implementation
+# Manual Testing Checklist: Search-Only Modal Implementation
 
-**Date**: 2025-10-20 (Updated: 2025-10-21 for search-only implementation)
+**Date**: 2025-10-21
 **Feature**: Search Modal Filter Removal and Simplification
-**Original Feature**: SearchBox Redux Migration (now simplified to search-only)
-
----
-
-## ⚠️ **Important Notice**
-
-This quickstart guide has been **completely replaced** to reflect the current search-only modal implementation.
-
-**What Changed**:
-- **Original implementation** (spec-2025-10-20-000000.md): SearchBox with Redux filter selection
-- **Current implementation** (spec-filter-searching-refinement-20251021.md): Search-only modal, NO filter selection
-
-**Key Change**: ALL filter selection functionality was removed from the search modal during implementation. The search modal now provides **search query input only**. All filtering happens on the products page via FilterPanel.
-
----
+**Spec**: `specs/spec-filter-searching-refinement-20251021.md`
+**Status**: Ready for Manual Execution
 
 ## Purpose
 
-This quickstart guide provides step-by-step instructions to verify that the search-only modal is working correctly. It covers both developer testing (Redux DevTools) and user-facing functionality (search query persistence, navigation).
+This checklist provides step-by-step instructions to verify the search-only modal implementation. It replaces the outdated `plans/spec-2025-10-20-000000/quickstart.md` which tests filter selection functionality that was removed.
 
-**Total Steps**: 7 manual testing steps
+**Key Change**: Search modal now provides **search-only functionality**. All filtering happens on the products page via FilterPanel.
 
-For detailed manual testing checklist, see: `plans/spec-filter-searching-refinement-20251021-manual-tests.md`
-
----
+**Total Steps**: 7 manual tests
 
 ## Prerequisites
 
-- Admin3 application running (`npm start` in frontend directory)
+- Admin3 application running (`npm start` in `frontend/react-Admin3` directory)
 - Redux DevTools browser extension installed
 - Browser: Chrome, Firefox, or Edge (latest version)
 
 ---
 
-## Part 1: Basic Search
+## V007: Basic Search
 
-### Step 1: Open Search Modal and Redux DevTools
+### Step 1: Open Search Modal
 
 **Action**:
 1. Navigate to homepage: `http://localhost:3000`
@@ -51,17 +36,18 @@ For detailed manual testing checklist, see: `plans/spec-filter-searching-refinem
 - ✅ Search input is auto-focused
 - ✅ **No default/popular filters shown** (search-only implementation)
 - ✅ **No "Suggested Filters" section** (filter UI completely removed)
-- ✅ Search results area shows helpful message
+- ✅ Search results area shows helpful message: "Enter search query..."
 
 **Expected Result - Redux DevTools**:
 - ✅ Click "State" subtab in Redux DevTools
 - ✅ See `filters.searchQuery: ''` (empty initially)
-- ✅ **No filter actions** when modal opens
+- ✅ See `filters.subjects: []` (empty)
+- ✅ **No filter-related state changes** when modal opens
 
 ### Step 2: Enter Search Query
 
 **Action**:
-1. Type "mock" into the search input (or "pack", "tutorial", "materials")
+1. Type "mock" into the search input
 2. Wait for search results to load (~300ms debounce)
 
 **Expected Result - UI**:
@@ -80,9 +66,11 @@ For detailed manual testing checklist, see: `plans/spec-filter-searching-refinem
 4. ✅ See updated state: `filters.searchQuery: "mock"`
 5. ✅ **No filter actions** dispatched (no `toggleSubjectFilter`, etc.)
 
+**Result**: [ ] PASS / [ ] FAIL
+
 ---
 
-## Part 2: Search Query Persistence
+## V008: Search Query Persistence
 
 ### Step 3: Close and Reopen Modal
 
@@ -101,13 +89,16 @@ For detailed manual testing checklist, see: `plans/spec-filter-searching-refinem
 **Expected Result - Redux DevTools**:
 - ✅ State unchanged during modal close
 - ✅ `filters.searchQuery: "mock"` still present
+- ✅ **No filter state** changes
 
 **Verification**:
-This confirms search query persists across component unmount/remount cycles (FR-001, FR-013 from spec).
+This confirms search query persists across component unmount/remount cycles (FR-001, FR-013).
+
+**Result**: [ ] PASS / [ ] FAIL
 
 ---
 
-## Part 3: Navigation to Products Page
+## V009: Navigation to Products Page
 
 ### Step 4: Navigate via "Show All Matching Products" Button
 
@@ -127,12 +118,16 @@ This confirms search query persists across component unmount/remount cycles (FR-
 
 **Expected Result - Redux DevTools**:
 - ✅ `filters.searchQuery: "mock"` (unchanged - persisted in Redux)
+- ✅ `filters.subjects: []` (no filters)
+- ✅ `filters.product_types: []` (no filters)
 
 **Note**: Search query persists in Redux for UI purposes but is NOT sent as a filter to the products page. Users must use FilterPanel to filter products.
 
+**Result**: [ ] PASS / [ ] FAIL
+
 ---
 
-## Part 4: Enter Key Navigation
+## V010: Enter Key Navigation
 
 ### Step 5: Navigate via Enter Key
 
@@ -146,39 +141,55 @@ This confirms search query persists across component unmount/remount cycles (FR-
 - ✅ Browser navigates to `/products`
 - ✅ Search query "tutorial" persisted in Redux
 
+**Expected Result - Redux DevTools**:
+- ✅ `filters.searchQuery: "tutorial"`
+
 **Verification**:
 This confirms FR-006: "Users MUST be able to navigate to products page by pressing Enter in search input"
 
+**Result**: [ ] PASS / [ ] FAIL
+
 ---
 
-## Part 5: Error Handling
+## V011: Error Handling
 
-### Step 6: Test No Matches and Short Query
+### Step 6A: No Matches
 
-**Test 6A: No Matches**:
+**Action**:
 1. Open search modal (`Ctrl+K`)
 2. Type "zzzzzzzzz" (nonsense query with no matches)
 3. Wait for search to complete
 
-**Expected Result**:
+**Expected Result - UI**:
 - ✅ "No results found" message displayed (FR-009)
 - ✅ Helpful message shown (e.g., "Try different search terms")
 - ✅ No products displayed
+- ✅ **No filter UI** shown
 
-**Test 6B: Short Query (< 2 characters)**:
+**Result**: [ ] PASS / [ ] FAIL
+
+### Step 6B: Short Query (< 2 characters)
+
+**Action**:
 1. Open search modal (`Ctrl+K`)
 2. Type single character "a"
 3. Wait for debounce (300ms)
 
-**Expected Result**:
+**Expected Result - UI**:
 - ✅ No search executed (query too short)
+- ✅ Helpful message shown: "Enter at least 2 characters to search"
 - ✅ No products displayed
 - ✅ No loading spinner
-- ✅ Redux state: `filters.searchQuery: "a"` (state updated but no API call)
+
+**Expected Result - Redux DevTools**:
+- ✅ `filters.searchQuery: "a"` (state updated)
+- ✅ No API call made (query too short)
+
+**Result**: [ ] PASS / [ ] FAIL
 
 ---
 
-## Part 6: Redux DevTools Visibility
+## V012: Redux DevTools Visibility
 
 ### Step 7: Verify Redux Actions
 
@@ -199,9 +210,11 @@ This confirms FR-006: "Users MUST be able to navigate to products page by pressi
 **Verification**:
 This confirms FR-016, FR-017: Search query changes visible in Redux DevTools for debugging.
 
+**Result**: [ ] PASS / [ ] FAIL
+
 ---
 
-## Part 7: Escape Key Closes Modal
+## V013: Escape Key Closes Modal
 
 ### Step 8: Close Modal with Escape
 
@@ -210,38 +223,45 @@ This confirms FR-016, FR-017: Search query changes visible in Redux DevTools for
 2. Type search query "mock"
 3. Press `Esc` key
 
-**Expected Result**:
+**Expected Result - UI**:
 - ✅ Modal closes immediately
 - ✅ Search query persisted in Redux (verified by reopening modal)
+
+**Expected Result - Redux DevTools**:
+- ✅ `filters.searchQuery: "mock"` (unchanged - not cleared on Esc)
 - ✅ No actions dispatched on modal close
 
 **Verification**:
 This confirms FR-008: "Search modal MUST close when user presses Escape key"
 
+**Result**: [ ] PASS / [ ] FAIL
+
 ---
 
 ## Success Criteria Summary
 
-All test steps in this quickstart must be ✅ PASS for successful validation.
+All 7 manual tests above must **PASS** for successful validation.
 
-### Functional Requirements ✅
-- [x] Search query persists across modal close/reopen (Step 3)
-- [x] Search debounced by 300ms (Step 2)
-- [x] Top 3 products displayed (Step 2)
-- [x] "Show All Matching Products" navigates to /products (Step 4)
-- [x] Enter key navigates to /products (Step 5)
-- [x] "No results found" message shown (Step 6A)
-- [x] No filter UI in modal (Steps 1-2)
-- [x] Search query visible in Redux DevTools (Step 7)
-- [x] Escape key closes modal (Step 8)
+### Functional Requirements Validated
+- [x] FR-001: Search query persists across modal close/reopen (V008)
+- [x] FR-002: Search debounced by 300ms (V007 Step 2)
+- [x] FR-003: Top 3 products displayed (V007 Step 2)
+- [x] FR-005: "Show All Matching Products" navigates to /products (V009)
+- [x] FR-006: Enter key navigates to /products (V010)
+- [x] FR-008: Escape key closes modal (V013)
+- [x] FR-009: "No results found" message shown (V011 Step 6A)
+- [x] FR-012: No filter UI in modal (V007, V008, V009)
+- [x] FR-013: Search query persists across modal cycles (V008)
+- [x] FR-016: Search query visible in Redux DevTools (V012)
+- [x] FR-017: `filters/setSearchQuery` action logged (V012)
 
-### Non-Functional Requirements ✅
-- [x] Search debounce = 300ms (Step 2)
-- [x] Modal render time acceptable (Step 1)
+### Non-Functional Requirements Validated
+- [ ] NFR-002: Modal render time < 100ms (requires React DevTools Profiler)
+- [ ] NFR-003: Search debounce = 300ms (observe timing in V007)
 
 ---
 
-## Differences from Original Quickstart (spec-2025-10-20-000000.md)
+## Differences from Original quickstart.md
 
 **Removed Steps** (filter functionality no longer exists):
 - ~~Step 3: Select Subject Filter~~ - Filter selection removed from modal
@@ -258,79 +278,15 @@ All test steps in this quickstart must be ✅ PASS for successful validation.
 
 ---
 
-## What Search Modal Does vs. What It Doesn't Do
+## Next Steps After Manual Testing
 
-### ✅ Search Modal DOES:
-- Provide search query input
-- Display top 3 matching products
-- Persist search query in Redux across modal open/close
-- Navigate to products page on "Show All Matching Products" or Enter key
-- Show loading indicators during search
-- Handle error cases (no matches, short queries)
-
-### ❌ Search Modal DOES NOT:
-- Display filter chips or "Suggested Filters" section
-- Allow subject/category/product type selection
-- Manage filter state (only search query state)
-- Pre-populate filters from URL or Redux
-- Show default/popular products on mount
-- Apply filters when navigating to products page
-
-### 🎯 Where Filtering Happens:
-All filtering happens on the **products page** (`/products`) via the **FilterPanel** component on the left side. The search modal is exclusively for search query input.
+1. **Document Results**: Record PASS/FAIL for each step (V007-V013)
+2. **Create Issues**: For any FAIL results, create GitHub issues with reproduction steps
+3. **Update Coverage**: If tests pass, proceed to Phase V3 (Documentation Validation)
+4. **Performance Validation**: Run Phase V4 tests (React DevTools Profiler measurements)
 
 ---
 
-## Troubleshooting
-
-### Issue: Search query doesn't persist across modal close/reopen
-
-**Diagnosis**:
-1. Check Redux DevTools → State tab
-2. Verify state not cleared when modal closes
-3. Look for unwanted `resetFilters` or `clearSearchQuery` action
-
-**Fix**:
-- Remove any search query clearing logic from SearchModal `onClose` handler
-- Ensure Redux state only cleared intentionally (not on component unmount)
-
-### Issue: Redux DevTools shows no actions
-
-**Diagnosis**:
-1. Check Redux store configuration in `src/store/index.js`
-2. Verify `devTools: true` in configureStore
-3. Check Redux DevTools extension is installed and enabled
-
-**Fix**:
-- Reinstall Redux DevTools browser extension
-- Ensure running in development mode (not production build)
-
-### Issue: Search results not loading
-
-**Diagnosis**:
-1. Check browser console for errors
-2. Verify search API endpoint responding (Network tab)
-3. Check search query length (must be >= 2 characters)
-
-**Fix**:
-- Verify backend server running
-- Check search service configuration
-- Test search API directly with Postman/curl
-
----
-
-## Conclusion
-
-If all steps in this quickstart pass, the search-only modal implementation is working correctly. The feature meets all functional requirements for search query persistence, navigation, and user experience.
-
-**Next Steps**:
-- Run automated test suite: `npm test`
-- Code review before merging to main branch
-- Performance validation with React DevTools Profiler
-
----
-
-**Quickstart Status**: ✅ Updated for Search-Only Implementation (2025-10-21)
-**Replaces**: Original filter-based quickstart (outdated)
-**Spec Reference**: `specs/spec-filter-searching-refinement-20251021.md`
-**Detailed Testing**: `plans/spec-filter-searching-refinement-20251021-manual-tests.md`
+**Manual Testing Status**: ⏳ Pending User Execution
+**Created**: 2025-10-21
+**Replaces**: `plans/spec-2025-10-20-000000/quickstart.md` (outdated)

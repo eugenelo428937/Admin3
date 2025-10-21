@@ -876,33 +876,38 @@ If SearchBox Redux migration breaks search functionality:
 
 ## UX Simplifications
 
-### Search Results Display Simplified (2025-10-21)
+### Search-Only Modal Implementation (2025-10-21)
 
-During implementation, the search UX was simplified to improve clarity and focus:
+During implementation, **ALL filter selection functionality was removed from the search modal** to create a clearer, more focused user experience:
 
 **Changes Made**:
-1. **Removed "popular filters" feature**: SearchBox no longer loads default/popular filters on mount
-2. **Search-first approach**: SearchResults only displays when user has entered a search query
-3. **Clear UX flow**: User must type search query first → then use suggested filters to refine results
-4. **Simplified Home.js**: Removed all local filter state management and prop drilling to SearchResults
+1. **Removed ALL filter UI from search modal**: No filter chips, no "Suggested Filters" section, no filter selection anywhere in modal
+2. **Search-only functionality**: SearchBox provides search query input only, no filter management
+3. **Redux for search query only**: SearchBox uses Redux for `searchQuery` persistence only, NOT for filter selections
+4. **FilterPanel exclusive**: All filtering happens on products page via FilterPanel (left sidebar), NOT in search modal
+5. **Simplified navigation**: "Show All Matching Products" navigates to `/products` without applying filters
 
 **Files Modified**:
-- `SearchBox.js`: Removed useEffect that loads default data on mount
-- `SearchResults.js`: Updated visibility condition to require searchQuery
-- `Home.js`: Removed local filter state, simplified to only pass search results and callbacks
-- `quickstart.md`: Updated manual testing guide to reflect simplified flow
+- `SearchBox.js`: Uses Redux for search query only (`setSearchQuery` action), removed all filter state management
+- `SearchResults.js`: Displays top 3 products, full-width layout (no filter column), no filter UI components
+- `SearchModal.js`: Simplified navigation (`navigate('/products')`), no filter prop passing
+- `Home.js`: Removed local filter state management
+- `quickstart.md`: Completely replaced to reflect search-only workflow
 
 **Rationale**:
-- Eliminates confusion caused by showing default/popular products before search
-- Clearer intent: search is for finding specific products, not browsing
-- Reduces "no matches" issues when users filtered small default dataset
-- Simplifies codebase by removing unnecessary data loading
+- **Clearer UX**: Search is for finding, filtering is for refining (on products page)
+- **Eliminates dual filter management**: No confusion about where to filter (modal or products page?)
+- **Simpler codebase**: No filter state management in search modal, fewer props, less complexity
+- **Better performance**: Fewer Redux actions dispatched in modal, faster render time
+- **Existing solution**: FilterPanel already provides comprehensive filtering - no need to duplicate in modal
+
+**Spec Reference**: See `specs/spec-filter-searching-refinement-20251021.md` for full search-only implementation details
 
 **No Impact on Core Story Goals**:
-- Redux migration still completed as specified
-- Filter state management still centralized in Redux
-- Redux DevTools visibility maintained
-- All persistence and consistency requirements met
+- Redux migration still completed as specified (for search query)
+- Search query state management centralized in Redux
+- Redux DevTools visibility maintained (search query actions visible)
+- All persistence and consistency requirements met (search query persists)
 
 ---
 
