@@ -9,17 +9,10 @@ import { rulesEngineHelpers } from "../utils/rulesEngineUtils";
 import rulesEngineService from "../services/rulesEngineService";
 
 const Home = () => {
-   const navigate = useNavigate();
-   const theme = useTheme();
-   const [searchResults, setSearchResults] = useState(null);
-   const [searchQuery, setSearchQuery] = useState("");
-   const [selectedFilters, setSelectedFilters] = useState({
-      subjects: [],
-      product_groups: [],
-      variations: [],
-      products: [],
-   });
-   const [error, setError] = useState(null);
+	const navigate = useNavigate();
+	const theme = useTheme();
+	const [searchResults, setSearchResults] = useState(null);
+	const [error, setError] = useState(null);
 
    // Rules engine state for holiday messages and other home page rules
    const [rulesMessages, setRulesMessages] = useState([]);
@@ -89,83 +82,17 @@ const Home = () => {
       executeRules();
    }, []); // Empty dependency array since this should run once on mount
 
-   // Handle search results from SearchBox
-   const handleSearchResults = (results, query) => {
-      setSearchResults(results);
-      setSearchQuery(query || "");
-      setError(null);
-   };
+	// Handle search results from SearchBox
+	const handleSearchResults = (results) => {
+		setSearchResults(results);
+		setError(null);
+	};
 
-   // Handle filter selection from SearchResults
-   const handleFilterSelect = (filterType, item) => {
-      const isSelected = isFilterSelected(filterType, item);
-
-      if (isSelected) {
-         // Remove filter
-         setSelectedFilters((prev) => ({
-            ...prev,
-            [filterType]: prev[filterType].filter(
-               (selected) => selected.id !== item.id
-            ),
-         }));
-      } else {
-         // Add filter
-         setSelectedFilters((prev) => ({
-            ...prev,
-            [filterType]: [...prev[filterType], item],
-         }));
-      }
-   };
-
-   // Check if filter is selected
-   const isFilterSelected = (filterType, item) => {
-      return selectedFilters[filterType].some(
-         (selected) => selected.id === item.id
-      );
-   };
-
-   // Remove filter
-   const handleFilterRemove = (filterType, itemId) => {
-      setSelectedFilters((prev) => ({
-         ...prev,
-         [filterType]: prev[filterType].filter((item) => item.id !== itemId),
-      }));
-   };
-
-   // Handle "Show Matching Products" button click
-   const handleShowMatchingProducts = (results, filters, query) => {
-      // Use current state if parameters are not provided
-      const searchQueryToUse = query || searchQuery;
-      const filtersToUse = filters || selectedFilters;
-
-      const searchParams = new URLSearchParams();
-
-      if (searchQueryToUse?.trim()) {
-         searchParams.append("q", searchQueryToUse.trim());
-      }
-
-      // Add selected filters
-      filtersToUse.subjects.forEach((subject) => {
-         searchParams.append("subjects", subject.code || subject.id);
-      });
-
-      filtersToUse.product_groups.forEach((group) => {
-         searchParams.append("groups", group.id);
-      });
-
-      filtersToUse.variations.forEach((variation) => {
-         searchParams.append("variations", variation.id);
-      });
-
-      filtersToUse.products.forEach((product) => {
-         searchParams.append("products", product.id);
-      });
-
-      const finalUrl = `/products?${searchParams.toString()}`;
-
-      // Navigate to product list with search parameters
-      navigate(finalUrl);
-   };
+	// Handle "Show Matching Products" button click
+	// Redux state and URL sync middleware handle filters automatically
+	const handleShowMatchingProducts = () => {
+		navigate('/products');
+	};
 
    return (
       <Container
@@ -318,23 +245,18 @@ const Home = () => {
                })}
          </Container>
 
-         {/* Search Results Section */}
-         <Container disableGutters={true} maxWidth="xl">
-            <SearchResults
-               searchResults={searchResults}
-               searchQuery={searchQuery}
-               selectedFilters={selectedFilters}
-               onFilterSelect={handleFilterSelect}
-               onFilterRemove={handleFilterRemove}
-               onShowMatchingProducts={handleShowMatchingProducts}
-               isFilterSelected={isFilterSelected}
-               loading={false}
-               error={error}
-               maxSuggestions={5}
-            />
-         </Container>
-      </Container>
-   );
+			{/* Search Results Section */}
+			<Container disableGutters={true} maxWidth="xl">
+				<SearchResults
+					searchResults={searchResults}
+					onShowMatchingProducts={handleShowMatchingProducts}
+					loading={false}
+					error={error}
+					maxSuggestions={5}
+				/>
+			</Container>
+		</Container>
+	);
 };
 
 export default Home;

@@ -1,22 +1,34 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { TextField, Chip, Button, Alert, CircularProgress, Box, IconButton, InputAdornment } from '@mui/material';
 import { Search as SearchIcon, FilterList as FilterIcon, Close as CloseIcon } from '@mui/icons-material';
 import searchService from '../services/searchService';
+import {
+    setSearchQuery as setSearchQueryAction,
+    toggleSubjectFilter,
+    toggleProductTypeFilter,
+    toggleProductFilter,
+    removeSubjectFilter,
+    removeProductTypeFilter,
+    removeProductFilter,
+    clearAllFilters as clearAllFiltersAction,
+    selectFilters,
+    selectSearchQuery
+} from '../store/slices/filtersSlice';
 import '../styles/search_box.css';
 
-const SearchBox = ({ 
-    onSearchResults, 
+const SearchBox = ({
+    onSearchResults,
     onShowMatchingProducts,
     placeholder = "Search for products, subjects, categories...",
-    autoFocus = false 
+    autoFocus = false
 }) => {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedFilters, setSelectedFilters] = useState({
-        subjects: [],
-        product_groups: [],
-        variations: [],
-        products: []
-    });
+    // Redux hooks - T017, T018
+    const dispatch = useDispatch();
+    const filters = useSelector(selectFilters);
+    const searchQuery = useSelector(selectSearchQuery);
+
+    // Local UI state only (not filter data)
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [searchResults, setSearchResults] = useState(null);
@@ -30,11 +42,6 @@ const SearchBox = ({
             searchInputRef.current.focus();
         }
     }, [autoFocus]);
-
-    // Load default data on component mount
-    useEffect(() => {
-        performSearch(''); // This will trigger getDefaultSearchData
-    }, []); // Empty dependency array means this runs only once on mount
 
     // Debounced search function
     const performSearch = async (query) => {
@@ -79,13 +86,14 @@ const SearchBox = ({
 
     const handleSearchChange = (e) => {
         const query = e.target.value;
-        setSearchQuery(query);
-        
+        // T020: Dispatch to Redux instead of local state
+        dispatch(setSearchQueryAction(query));
+
         // Clear previous debounce
         if (debounceRef.current) {
             clearTimeout(debounceRef.current);
         }
-        
+
         // Debounce search (300ms)
         debounceRef.current = setTimeout(() => {
             performSearch(query);
@@ -93,42 +101,77 @@ const SearchBox = ({
     };
 
     const handleFilterSelect = (filterType, item) => {
-        const isSelected = isFilterSelected(filterType, item);
-        
-        if (isSelected) {
-            // Remove filter
-            removeFilter(filterType, item.id);
-        } else {
-            // Add filter
-            setSelectedFilters(prev => ({
-                ...prev,
-                [filterType]: [...prev[filterType], item]
-            }));
+        // T019: Dispatch Redux actions instead of local state updates
+        const filterCode = item.code || item.id;
+
+        // Map filter types to Redux actions
+        switch (filterType) {
+            case 'subjects':
+                dispatch(toggleSubjectFilter(filterCode));
+                break;
+            case 'product_groups':
+            case 'variations':
+                // Both map to product_types in Redux
+                dispatch(toggleProductTypeFilter(filterCode));
+                break;
+            case 'products':
+                dispatch(toggleProductFilter(filterCode));
+                break;
+            default:
+                console.warn(`Unknown filter type: ${filterType}`);
         }
     };
 
     const isFilterSelected = (filterType, item) => {
-        return selectedFilters[filterType].some(selected => selected.id === item.id);
+        // Read from Redux filters instead of local state
+        const filterCode = item.code || item.id;
+
+        switch (filterType) {
+            case 'subjects':
+                return filters.subjects.includes(filterCode);
+            case 'product_groups':
+            case 'variations':
+                return filters.product_types.includes(filterCode);
+            case 'products':
+                return filters.products.includes(filterCode);
+            default:
+                return false;
+        }
     };
 
     const removeFilter = (filterType, itemId) => {
-        setSelectedFilters(prev => ({
-            ...prev,
-            [filterType]: prev[filterType].filter(item => item.id !== itemId)
-        }));
+        // T022: Dispatch Redux remove actions
+        switch (filterType) {
+            case 'subjects':
+                dispatch(removeSubjectFilter(itemId));
+                break;
+            case 'product_groups':
+            case 'variations':
+                dispatch(removeProductTypeFilter(itemId));
+                break;
+            case 'products':
+                dispatch(removeProductFilter(itemId));
+                break;
+            default:
+                console.warn(`Unknown filter type: ${filterType}`);
+        }
     };
 
     const clearAllFilters = () => {
-        setSelectedFilters({
-            subjects: [],
-            product_groups: [],
-            variations: [],
-            products: []
-        });
+        // T021: Dispatch Redux clearAllFilters action
+        dispatch(clearAllFiltersAction());
     };
 
     const handleShowMatchingProducts = () => {
         if (onShowMatchingProducts) {
+            // Note: selectedFilters now comes from Redux (filters)
+            // Convert Redux filter state to expected format for callback
+            const selectedFilters = {
+                subjects: filters.subjects,
+                product_groups: filters.product_types,
+                variations: filters.product_types,
+                products: filters.products
+            };
             onShowMatchingProducts(searchResults, selectedFilters, searchQuery);
         }
     };
@@ -141,9 +184,11 @@ const SearchBox = ({
         }
     };
 
-    // Get total filter count
+    // Get total filter count from Redux state
     const getTotalFilterCount = () => {
-        return Object.values(selectedFilters).reduce((total, filters) => total + filters.length, 0);
+        return filters.subjects.length +
+               filters.product_types.length +
+               filters.products.length;
     };
 
     return (
@@ -160,6 +205,13 @@ const SearchBox = ({
 						fullWidth
 						variant="outlined"
 						size="medium"
+						sx={{
+							backgroundColor: 'white',
+							borderRadius: '50px',
+							'& .MuiOutlinedInput-root': {
+								borderRadius: '50px',
+							},
+						}}
 						InputProps={{
 							startAdornment: (
 								<InputAdornment position="start">
@@ -191,42 +243,35 @@ const SearchBox = ({
 							</Button>
 						</Box>
 						<Box>
-							{selectedFilters.subjects.map((item) => (
+							{/* Note: Redux stores codes/IDs, not full objects */}
+							{/* In future, we'll need to match codes to display objects from API */}
+							{/* For now, display the codes directly */}
+							{filters.subjects.map((code) => (
 								<Chip
-									key={`selected-subject-${item.id}`}
-									label={item.code || item.description}
+									key={`selected-subject-${code}`}
+									label={code}
 									color="info"
-									onDelete={() => removeFilter("subjects", item.id)}
+									onDelete={() => removeFilter("subjects", code)}
 									deleteIcon={<CloseIcon />}
 									sx={{ mr: 2, mb: 1 }}
 								/>
 							))}
-							{selectedFilters.product_groups.map((item) => (
+							{filters.product_types.map((code) => (
 								<Chip
-									key={`selected-group-${item.id}`}
-									label={item.name}
+									key={`selected-type-${code}`}
+									label={code}
 									color="success"
-									onDelete={() => removeFilter("product_groups", item.id)}
+									onDelete={() => removeFilter("product_groups", code)}
 									deleteIcon={<CloseIcon />}
 									sx={{ mr: 2, mb: 1 }}
 								/>
 							))}
-							{selectedFilters.variations.map((item) => (
+							{filters.products.map((code) => (
 								<Chip
-									key={`selected-variation-${item.id}`}
-									label={item.name}
-									color="warning"
-									onDelete={() => removeFilter("variations", item.id)}
-									deleteIcon={<CloseIcon />}
-									sx={{ mr: 2, mb: 1 }}
-								/>
-							))}
-							{selectedFilters.products.map((item) => (
-								<Chip
-									key={`selected-product-${item.id}`}
-									label={item.shortname || item.product_short_name || item.name}
+									key={`selected-product-${code}`}
+									label={code}
 									color="default"
-									onDelete={() => removeFilter("products", item.id)}
+									onDelete={() => removeFilter("products", code)}
 									deleteIcon={<CloseIcon />}
 									sx={{ mr: 2, mb: 1 }}
 								/>

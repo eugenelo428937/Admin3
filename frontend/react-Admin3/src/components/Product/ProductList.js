@@ -38,10 +38,7 @@ import {
     setCategories,
     setProductTypes,
     setProducts,
-    setModesOfDelivery,
-    setTutorialFormat,
-    setDistanceLearning,
-    setTutorial,
+    setModesOfDelivery,    
     resetFilters,
     setCurrentPage,
     clearError
@@ -116,16 +113,7 @@ const ProductList = React.memo(() => {
         }
         if (filtersFromUrl.modes_of_delivery && filtersFromUrl.modes_of_delivery.length > 0) {
             dispatch(setModesOfDelivery(filtersFromUrl.modes_of_delivery));
-        }
-        if (filtersFromUrl.tutorial_format) {
-            dispatch(setTutorialFormat(filtersFromUrl.tutorial_format));
-        }
-        if (filtersFromUrl.distance_learning) {
-            dispatch(setDistanceLearning(filtersFromUrl.distance_learning));
-        }
-        if (filtersFromUrl.tutorial) {
-            dispatch(setTutorial(filtersFromUrl.tutorial));
-        }
+        }       
         if (filtersFromUrl.searchQuery) {
             dispatch(setSearchQuery(filtersFromUrl.searchQuery));
         }
@@ -159,16 +147,7 @@ const ProductList = React.memo(() => {
             }
             if (filtersFromUrl.modes_of_delivery && filtersFromUrl.modes_of_delivery.length > 0) {
                 dispatch(setModesOfDelivery(filtersFromUrl.modes_of_delivery));
-            }
-            if (filtersFromUrl.tutorial_format) {
-                dispatch(setTutorialFormat(filtersFromUrl.tutorial_format));
-            }
-            if (filtersFromUrl.distance_learning) {
-                dispatch(setDistanceLearning(filtersFromUrl.distance_learning));
-            }
-            if (filtersFromUrl.tutorial) {
-                dispatch(setTutorial(filtersFromUrl.tutorial));
-            }
+            }           
             if (filtersFromUrl.searchQuery) {
                 dispatch(setSearchQuery(filtersFromUrl.searchQuery));
             }
