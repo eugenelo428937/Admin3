@@ -5,13 +5,12 @@ import {
   CardHeader,
   CardContent,
   Typography,
-  Alert,
-  CircularProgress,
   Box
 } from '@mui/material';
 import { LocationOn, Receipt } from '@mui/icons-material';
 import AddressSelectionPanel from '../../Address/AddressSelectionPanel';
 import CommunicationDetailsPanel from '../../Communication/CommunicationDetailsPanel';
+import RulesEngineInlineAlert from '../../Common/RulesEngineInlineAlert';
 
 const CartReviewStep = ({
   cartItems,
@@ -31,27 +30,11 @@ const CartReviewStep = ({
       <Typography variant="h4" component="h1" gutterBottom>
         Step 1: Review Your Cart
       </Typography>
-      {!rulesLoading && rulesMessages.map((message, index) => {
-        const severity = message.message_type === 'warning' ? 'warning' :
-                        message.message_type === 'error' ? 'error' :
-                        message.message_type === 'info' ? 'info' : 'info';
-
-        return (
-          <Alert
-            key={`alert-${message.template_id}-${index}`}
-            severity={severity}
-            sx={{ mt: 3 }}
-            data-testid={`rules-alert-${index}`}
-          >
-            <Typography variant="h6" component="h4">
-              {message.content?.title || 'Notice'}
-            </Typography>
-            <Typography variant="body2">
-              {message.content?.message || message.content}
-            </Typography>
-          </Alert>
-        );
-      })}
+      <RulesEngineInlineAlert
+        messages={rulesMessages}
+        loading={rulesLoading}
+        loadingMessage="Checking for important notices..."
+      />
       {/* Address Sections Layout */}
       <Grid container spacing={3} data-testid="cart-review-layout">
         {/* Address Sections Container - Full Width */}
@@ -122,15 +105,6 @@ const CartReviewStep = ({
           </Grid>
         </Grid>
       </Grid>
-
-      {/* Rules Engine Messages */}
-      {rulesLoading && (
-        <Alert severity="info" icon={<CircularProgress size={20} />} sx={{ mt: 3 }}>
-          Checking for important notices...
-        </Alert>
-      )}
-
-      
     </Box>
   );
 };

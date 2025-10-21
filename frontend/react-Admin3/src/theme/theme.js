@@ -90,7 +90,7 @@ const theme = createTheme({
             textAlign: "start",
             lineHeight:
                "calc(1em * var(--wholestep-dec) * var(--quarterstep)  * var(--eighthstep) * var(--eighthstep)) !important",
-            marginBottom: liftKitTheme.spacing.xs,
+            marginBottom: liftKitTheme.spacing.xs3,
          },
       },
       h1: {
