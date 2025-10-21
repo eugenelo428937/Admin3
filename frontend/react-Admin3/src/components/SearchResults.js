@@ -34,6 +34,12 @@ const SearchResults = ({
 	const { handleAddToCart, allEsspIds, bulkDeadlines } =
 		useProductCardHelpers(topProducts);
 
+	// Issue #2 Fix: Extract product IDs for filtering
+	const productIds = useMemo(() =>
+		topProducts.map(p => p.id || p.essp_id),
+		[topProducts]
+	);
+
 	// Only show component when there's a search query
 	// Don't show "popular filters" or default data
 	if (!searchQuery || (!searchResults && !loading)) {
@@ -104,7 +110,7 @@ const SearchResults = ({
                                  <Button
                                     variant="contained"
                                     size="small"
-                                    onClick={onShowMatchingProducts}
+                                    onClick={() => onShowMatchingProducts(productIds)}
                                     endIcon={<ArrowRightIcon />}
                                     sx={{
                                        display: "flex",
@@ -159,7 +165,7 @@ const SearchResults = ({
                                  <Button
                                     variant="contained"
                                     size="large"
-                                    onClick={onShowMatchingProducts}
+                                    onClick={() => onShowMatchingProducts(productIds)}
                                     endIcon={<ArrowRightIcon />}
                                     sx={{
                                        display: "flex",

@@ -18,6 +18,9 @@ const initialState = {
   // Search query
   searchQuery: '',
 
+  // Search filter product IDs (from fuzzy search - Issue #2 fix)
+  searchFilterProductIds: [],
+
   // Pagination
   currentPage: 1,
   pageSize: 20,
@@ -80,6 +83,13 @@ const filtersSlice = createSlice({
     
     setSearchQuery: (state, action) => {
       state.searchQuery = action.payload;
+      state.currentPage = 1;
+      state.lastUpdated = Date.now();
+    },
+
+    // Issue #2 Fix: Set product IDs from fuzzy search
+    setSearchFilterProductIds: (state, action) => {
+      state.searchFilterProductIds = action.payload;
       state.currentPage = 1;
       state.lastUpdated = Date.now();
     },
@@ -229,6 +239,7 @@ const filtersSlice = createSlice({
       state.products = [];
       state.modes_of_delivery = [];
       state.searchQuery = '';
+      state.searchFilterProductIds = [];
       state.currentPage = 1;
       state.lastUpdated = Date.now();
     },
@@ -332,6 +343,7 @@ const filtersSlice = createSlice({
       state.products = [];
       state.modes_of_delivery = [];
       state.searchQuery = '';
+      state.searchFilterProductIds = [];
       state.currentPage = 1;
       state.error = null;
       state.lastUpdated = Date.now();
@@ -374,6 +386,7 @@ export const {
   setProducts,
   setModesOfDelivery,
   setSearchQuery,
+  setSearchFilterProductIds,
   setMultipleFilters,
   toggleSubjectFilter,
   toggleCategoryFilter,
@@ -418,6 +431,7 @@ export const selectFilters = createSelector(
 );
 
 export const selectSearchQuery = (state) => state.filters.searchQuery;
+export const selectSearchFilterProductIds = (state) => state.filters.searchFilterProductIds;
 export const selectCurrentPage = (state) => state.filters.currentPage;
 export const selectPageSize = (state) => state.filters.pageSize;
 export const selectIsFilterPanelOpen = (state) => state.filters.isFilterPanelOpen;
