@@ -14,10 +14,7 @@ import filtersReducer, {
   setCategories,
   setProductTypes,
   setProducts,
-  setModesOfDelivery,
-  setTutorialFormat,
-  setDistanceLearning,
-  setTutorial,
+  setModesOfDelivery,  
   setSearchQuery,
   clearAllFilters,
 } from '../../slices/filtersSlice';
