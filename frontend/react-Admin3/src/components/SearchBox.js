@@ -192,7 +192,7 @@ const SearchBox = ({
     };
 
     return (
-			<Box className="search-box-container m-top__md">
+			<Box className="search-box-container">
 				{/* Search Input */}
 				<Box sx={{ mb: 3 }}>
 					<TextField
