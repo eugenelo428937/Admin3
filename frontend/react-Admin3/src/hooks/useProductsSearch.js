@@ -11,6 +11,7 @@ import { useLazyUnifiedSearchQuery } from '../store/api/catalogApi';
 import {
   selectFilters,
   selectSearchQuery,
+  selectSearchFilterProductIds,
   selectCurrentPage,
   selectPageSize,
   setLoading,
@@ -41,6 +42,7 @@ export const useProductsSearch = (options = {}) => {
   // Redux state selectors
   const filters = useSelector(selectFilters);
   const searchQuery = useSelector(selectSearchQuery);
+  const searchFilterProductIds = useSelector(selectSearchFilterProductIds);
   const currentPage = useSelector(selectCurrentPage);
   const pageSize = useSelector(selectPageSize);
   const isLoading = useSelector(state => state.filters.isLoading);
@@ -96,10 +98,16 @@ export const useProductsSearch = (options = {}) => {
       if (distance_learning) navbarFilters.distance_learning = distance_learning ? '1' : undefined;
       if (tutorial) navbarFilters.tutorial = tutorial ? '1' : undefined;
 
+      // Issue #2 Fix: Use searchFilterProductIds if present (from fuzzy search)
+      const effectiveProducts = searchFilterProductIds.length > 0
+        ? searchFilterProductIds
+        : filters.products;
+
       // Prepare search parameters
       const searchParams = {
         filters: {
           ...filters,
+          products: effectiveProducts, // Use fuzzy search IDs if available
           // Note: searchQuery is NOT sent to unified_search endpoint
           // Text search is handled by the fuzzy-search endpoint in SearchBox
           // The unified_search endpoint only accepts: subjects, categories, product_types, products, modes_of_delivery
@@ -118,7 +126,8 @@ export const useProductsSearch = (options = {}) => {
       // Check if search parameters have changed (avoid duplicate requests)
       // Use a fast hash instead of JSON.stringify for performance
       // Note: searchQuery removed since it's not sent to unified_search endpoint
-      const paramsHash = `${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.products?.join(',')||''}|${currentPage}|${pageSize}|${tutorial_format||''}|${distance_learning}|${tutorial}`;
+      // Issue #2 Fix: Include searchFilterProductIds in hash
+      const paramsHash = `${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${effectiveProducts?.join(',')||''}|${currentPage}|${pageSize}|${tutorial_format||''}|${distance_learning}|${tutorial}`;
 
       if (!forceSearch && lastSearchParamsRef.current === paramsHash) {
         dispatch(setLoading(false));
@@ -169,7 +178,7 @@ export const useProductsSearch = (options = {}) => {
       dispatch(setError(errorMessage));
       dispatch(setLoading(false));
     }
-  }, [filters, searchQuery, currentPage, pageSize, tutorial_format, distance_learning, tutorial, triggerSearch, dispatch]);
+  }, [filters, searchQuery, searchFilterProductIds, currentPage, pageSize, tutorial_format, distance_learning, tutorial, triggerSearch, dispatch]);
   
   /**
    * Debounced search function
@@ -222,9 +231,11 @@ export const useProductsSearch = (options = {}) => {
   
   // Create stable references for effect dependencies
   // Note: searchQuery removed since it's not sent to unified_search endpoint
+  // Issue #2 Fix: Include searchFilterProductIds in filter hash
   const filterHash = useMemo(() => {
-    return `${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.products?.join(',')||''}|${currentPage}|${pageSize}|${tutorial_format||''}|${distance_learning}|${tutorial}`;
-  }, [filters.subjects, filters.categories, filters.product_types, filters.products, currentPage, pageSize, tutorial_format, distance_learning, tutorial]);
+    const effectiveProducts = searchFilterProductIds.length > 0 ? searchFilterProductIds : filters.products;
+    return `${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${effectiveProducts?.join(',')||''}|${currentPage}|${pageSize}|${tutorial_format||''}|${distance_learning}|${tutorial}`;
+  }, [filters.subjects, filters.categories, filters.product_types, filters.products, searchFilterProductIds, currentPage, pageSize, tutorial_format, distance_learning, tutorial]);
 
   // Auto-search when filters change (if enabled)
   useEffect(() => {
