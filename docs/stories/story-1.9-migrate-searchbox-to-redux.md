@@ -874,6 +874,38 @@ If SearchBox Redux migration breaks search functionality:
 
 ---
 
+## UX Simplifications
+
+### Search Results Display Simplified (2025-10-21)
+
+During implementation, the search UX was simplified to improve clarity and focus:
+
+**Changes Made**:
+1. **Removed "popular filters" feature**: SearchBox no longer loads default/popular filters on mount
+2. **Search-first approach**: SearchResults only displays when user has entered a search query
+3. **Clear UX flow**: User must type search query first → then use suggested filters to refine results
+4. **Simplified Home.js**: Removed all local filter state management and prop drilling to SearchResults
+
+**Files Modified**:
+- `SearchBox.js`: Removed useEffect that loads default data on mount
+- `SearchResults.js`: Updated visibility condition to require searchQuery
+- `Home.js`: Removed local filter state, simplified to only pass search results and callbacks
+- `quickstart.md`: Updated manual testing guide to reflect simplified flow
+
+**Rationale**:
+- Eliminates confusion caused by showing default/popular products before search
+- Clearer intent: search is for finding specific products, not browsing
+- Reduces "no matches" issues when users filtered small default dataset
+- Simplifies codebase by removing unnecessary data loading
+
+**No Impact on Core Story Goals**:
+- Redux migration still completed as specified
+- Filter state management still centralized in Redux
+- Redux DevTools visibility maintained
+- All persistence and consistency requirements met
+
+---
+
 ## Verification Script
 
 ```bash
@@ -896,11 +928,18 @@ grep -n "toggleSubject\|toggleProductType\|setSearchQuery" frontend/react-Admin3
 grep -n "setState\|setSelected" frontend/react-Admin3/src/components/SearchBox.js
 
 # Should find minimal or zero occurrences
+
+# Verify simplified search UX
+grep -n "performSearch('')" frontend/react-Admin3/src/components/SearchBox.js
+# Should find ZERO occurrences (no default data loading)
+
+grep -n "if (!searchQuery" frontend/react-Admin3/src/components/SearchResults.js
+# Should find early return requiring searchQuery
 ```
 
 ---
 
-**Story Status**: Ready for Development (after Story 1.2 complete)
-**Assigned To**: [Pending]
-**Started**: [Pending]
-**Completed**: [Pending]
+**Story Status**: ✅ Completed (2025-10-21)
+**Assigned To**: Claude Code
+**Started**: 2025-10-20
+**Completed**: 2025-10-21
