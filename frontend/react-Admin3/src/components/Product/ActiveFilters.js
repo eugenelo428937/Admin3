@@ -37,11 +37,14 @@ import {
     selectFilters,
     selectFilterCounts,
     selectActiveFilterCount,
+    selectSearchQuery,
     removeSubjectFilter,
     removeCategoryFilter,
     removeProductTypeFilter,
     removeProductFilter,
     removeModeOfDeliveryFilter,
+    setSearchQuery,
+    setSearchFilterProductIds,
     clearAllFilters
 } from '../../store/slices/filtersSlice';
 
@@ -95,6 +98,7 @@ const ActiveFilters = ({
     const filters = useSelector(selectFilters);
     const filterCounts = useSelector(selectFilterCounts);
     const activeFilterCount = useSelector(selectActiveFilterCount);
+    const searchQuery = useSelector(selectSearchQuery);
 
     /**
      * Handle removing a specific filter value
@@ -106,6 +110,14 @@ const ActiveFilters = ({
             const valueToRemove = config.removeValue !== undefined ? config.removeValue : value;
             dispatch(config.removeAction(valueToRemove));
         }
+    }, [dispatch]);
+
+    /**
+     * Handle clearing search query filter
+     */
+    const handleClearSearchQuery = useCallback(() => {
+        dispatch(setSearchQuery(''));
+        dispatch(setSearchFilterProductIds([]));
     }, [dispatch]);
 
     /**
@@ -141,6 +153,20 @@ const ActiveFilters = ({
     const activeFilterChips = useMemo(() => {
         const chips = [];
 
+        // Add search query chip first if present
+        if (searchQuery && searchQuery.length >= 3) {
+            chips.push({
+                key: 'search-query',
+                filterType: 'searchQuery',
+                value: searchQuery,
+                label: `Search Results for "${searchQuery}"`,
+                typeLabel: 'Search',
+                color: 'info',
+                fullLabel: `Search: ${searchQuery}`,
+                isSearchQuery: true // Special flag for search query
+            });
+        }
+
         Object.entries(filters).forEach(([filterType, values]) => {
             if (Array.isArray(values) && values.length > 0) {
                 const config = FILTER_CONFIG[filterType];
@@ -167,7 +193,7 @@ const ActiveFilters = ({
         });
 
         return chips;
-    }, [filters, filterCounts, maxChipsToShow, getDisplayLabel]);
+    }, [filters, filterCounts, maxChipsToShow, getDisplayLabel, searchQuery]);
 
     /**
      * Calculate remaining chips count if we're limiting display
@@ -280,13 +306,13 @@ const ActiveFilters = ({
                     <Chip
                         key={chip.key}
                         label={chip.label}
-                        onDelete={() => handleRemoveFilter(chip.filterType, chip.value)}
+                        onDelete={chip.isSearchQuery ? handleClearSearchQuery : () => handleRemoveFilter(chip.filterType, chip.value)}
                         deleteIcon={<ClearIcon />}
                         color={chip.color}
                         variant="outlined"
                         size={isMobile ? "small" : "medium"}
                         sx={{
-                            maxWidth: isMobile ? 120 : 200,
+                            maxWidth: isMobile ? 120 : 300,
                             '& .MuiChip-label': {
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis'
