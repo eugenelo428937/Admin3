@@ -1,25 +1,79 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "permissions": {
-    "allow": [
-      "Bash(c:/Code/Admin3/.venv/Scripts/python.exe manage.py check)",
-      "Bash(c:/Code/Admin3/.venv/Scripts/python.exe manage.py makemigrations vat)",
-      "Bash(c:/Code/Admin3/.venv/Scripts/python.exe manage.py migrate)",
-      "Bash(c:/Code/Admin3/.venv/Scripts/python.exe manage.py test vat.tests.test_models -v 2)",
-      "Bash(c:/Code/Admin3/.venv/Scripts/python.exe manage.py test vat.tests.test_models --keepdb -v 2)"
-    ],
-    "deny": [],
-    "ask": [],
-    "defaultMode": "bypassPermissions"
-  },
-  "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [
-    "trello",
-    "browsermcp"
-  ],
-  "statusLine": {
-    "type": "command",
-    "command": "npx -y ccstatusline@latest",
-    "padding": 0
-  }
+   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+   "permissions": {
+      "allow": [
+         "Bash(c:/Code/Admin3/.venv/Scripts/python.exe manage.py check)",
+         "Bash(c:/Code/Admin3/.venv/Scripts/python.exe manage.py makemigrations vat)",
+         "Bash(c:/Code/Admin3/.venv/Scripts/python.exe manage.py migrate)",
+         "Bash(c:/Code/Admin3/.venv/Scripts/python.exe manage.py test vat.tests.test_models -v 2)",
+         "Bash(c:/Code/Admin3/.venv/Scripts/python.exe manage.py test vat.tests.test_models --keepdb -v 2)"
+      ],
+      "deny": [
+         "Read(.claude/tdd-guard/**)",
+         "Write(.claude/tdd-guard/**)",
+         "Edit(.claude/tdd-guard/**)",
+         "Write(**/tdd-guard.config.js)",
+         "Edit(**/tdd-guard.config.js)",
+         "Bash(echo:*)",
+         "Bash(printf:*)",
+         "Bash(sed:*)",
+         "Bash(awk:*)",
+         "Bash(perl:*)"
+      ],
+      "ask": [],
+      "defaultMode": "bypassPermissions"
+   },
+   "enableAllProjectMcpServers": true,
+   "enabledMcpjsonServers": ["trello", "browsermcp"],
+   "hooks": {
+      "PreToolUse": [
+         {
+            "matcher": "Write|Edit|MultiEdit|TodoWrite",
+            "hooks": [
+               {
+                  "type": "command",
+                  "command": "tdd-guard"
+               }
+            ]
+         }
+      ],
+      "SessionStart": [
+         {
+            "matcher": "startup|resume|clear",
+            "hooks": [
+               {
+                  "type": "command",
+                  "command": "tdd-guard"
+               }
+            ]
+         }
+      ],
+      "UserPromptSubmit": [
+         {
+            "matcher": "",
+            "hooks": [
+               {
+                  "type": "command",
+                  "command": "tdd-guard"
+               }
+            ]
+         }
+      ],
+      "PostToolUse": [
+         {
+            "matcher": "Write|Edit|MultiEdit",
+            "hooks": [
+               {
+                  "type": "command",
+                  "command": "tdd-guard"
+               }
+            ]
+         }
+      ]
+   },
+   "statusLine": {
+      "type": "command",
+      "command": "npx -y ccstatusline@latest",
+      "padding": 0
+   }
 }
