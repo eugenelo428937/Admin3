@@ -99,9 +99,14 @@ export const useProductsSearch = (options = {}) => {
       if (tutorial) navbarFilters.tutorial = tutorial ? '1' : undefined;
 
       // Issue #2 Fix: Use searchFilterProductIds if present (from fuzzy search)
+      // searchFilterProductIds contains ESSP IDs (ExamSessionSubjectProduct.id), not Product IDs
+      // This ensures we only show the specific ESSPs returned by fuzzy search (e.g., CB1 only)
       const effectiveProducts = searchFilterProductIds.length > 0
         ? searchFilterProductIds
         : filters.products;
+
+      console.log('[useProductsSearch] DEBUG: searchFilterProductIds (ESSP IDs) from Redux:', searchFilterProductIds);
+      console.log('[useProductsSearch] DEBUG: effectiveProducts (ESSP IDs) for API:', effectiveProducts);
 
       // Prepare search parameters
       const searchParams = {
@@ -139,7 +144,13 @@ export const useProductsSearch = (options = {}) => {
       
       // Trigger the search
       const result = await triggerSearch(searchParams).unwrap();
-      
+
+      console.log('[useProductsSearch] DEBUG: API response:', {
+        productsCount: result.products?.length || 0,
+        totalCount: result.pagination?.total_count || 0,
+        firstProduct: result.products?.[0]
+      });
+
       // Update local state with results
       const data = {
         products: result.products || [],
@@ -152,7 +163,7 @@ export const useProductsSearch = (options = {}) => {
           has_previous: false,
         },
       };
-      
+
       setSearchData(data);
       
       // Update Redux store with filter counts for FilterPanel

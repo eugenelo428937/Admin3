@@ -18,8 +18,10 @@ const initialState = {
   // Search query
   searchQuery: '',
 
-  // Search filter product IDs (from fuzzy search - Issue #2 fix)
-  searchFilterProductIds: [],
+  // Search filter ESSP IDs (from fuzzy search - Issue #2 fix)
+  // Stores ExamSessionSubjectProduct.id values (e.g., 2946, 2947, ...) NOT product.id
+  // This ensures we only show the specific ESSPs from fuzzy search (e.g., CB1 only)
+  searchFilterProductIds: [], // Name kept for compatibility, but stores ESSP IDs
 
   // Pagination
   currentPage: 1,
@@ -87,7 +89,9 @@ const filtersSlice = createSlice({
       state.lastUpdated = Date.now();
     },
 
-    // Issue #2 Fix: Set product IDs from fuzzy search
+    // Issue #2 Fix: Set ESSP IDs from fuzzy search
+    // Receives ExamSessionSubjectProduct.id values (e.g., [2946, 2947, ...])
+    // NOT product.id values - this ensures we only filter to the specific ESSPs returned
     setSearchFilterProductIds: (state, action) => {
       state.searchFilterProductIds = action.payload;
       state.currentPage = 1;

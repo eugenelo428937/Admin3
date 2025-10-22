@@ -172,18 +172,24 @@ class OptimizedSearchService:
                 q_filter &= product_type_q
         
         # Specific product filter
+        # This can receive either ESSP IDs (from fuzzy search) or product names (from other filters)
         if filters.get('products'):
+            logger.info(f'🔍 [SEARCH-DEBUG] Products filter received: {filters["products"]}')
             product_q = Q()
             for product in filters['products']:
-                # Check if the filter value is a product ID (numeric) or product name (string)
+                # Check if the filter value is an ESSP ID (numeric) or product name (string)
                 try:
-                    # If it's numeric, filter by product ID
-                    product_id = int(product)
-                    product_q |= Q(product_id=product_id)
+                    # If it's numeric, treat it as ESSP ID (ExamSessionSubjectProduct.id)
+                    # This ensures we only get the specific ESSPs from fuzzy search (e.g., CB1 only)
+                    # NOT product_id which would return ALL ESSPs with that product (CB1, CB2, etc.)
+                    essp_id = int(product)
+                    logger.info(f'🔍 [SEARCH-DEBUG] Filtering by ESSP ID: {essp_id}')
+                    product_q |= Q(id=essp_id)
                 except (ValueError, TypeError):
                     # If it's not numeric, filter by product name using covering index
+                    logger.info(f'🔍 [SEARCH-DEBUG] Filtering by product name: {product}')
                     product_q |= Q(product__fullname__icontains=product)
-            
+
             if product_q:
                 q_filter &= product_q
         
@@ -199,7 +205,8 @@ class OptimizedSearchService:
         
         if q_filter:
             queryset = queryset.filter(q_filter).distinct()
-        
+            logger.info(f'🔍 [SEARCH-DEBUG] Filtered queryset count: {queryset.count()}')
+
         return queryset
     
     def _apply_navbar_filters(self, queryset, navbar_filters):
