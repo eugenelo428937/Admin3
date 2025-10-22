@@ -43,6 +43,7 @@ class FuzzySearchService:
                 Q(product__fullname__icontains=query) |
                 Q(product__shortname__icontains=query) |
                 Q(product__description__icontains=query) |
+                Q(exam_session_subject__subject__code__icontains=query) |  # Subject CODE search
                 Q(exam_session_subject__subject__description__icontains=query)
             ).distinct()[:limit]
             

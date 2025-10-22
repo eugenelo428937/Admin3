@@ -66,15 +66,20 @@ const SearchBox = ({
             const results = await searchService.fuzzySearch(query);
             setSearchResults(results);
 
-            // Issue #2 Fix: Extract product IDs and dispatch to Redux for products page filtering
-            // Use product_id (Product table ID) not id/essp_id (ExamSessionSubjectProduct ID)
+            // Issue #2 Fix: Extract ESSP IDs and dispatch to Redux for products page filtering
+            // Use id/essp_id (ExamSessionSubjectProduct ID) not product_id (Product table ID)
+            // This ensures we only get the specific ESSPs returned by fuzzy search (e.g., CB1 products only)
+            // If we used product_id, we'd get ALL ESSPs with that product (CB1, CB2, etc.)
             if (results && results.suggested_products && Array.isArray(results.suggested_products)) {
-                const productIds = results.suggested_products
-                    .map(product => product.product_id)
+                const esspIds = results.suggested_products
+                    .map(product => product.id || product.essp_id)
                     .filter(id => id !== undefined && id !== null);
-                dispatch(setSearchFilterProductIds(productIds));
+                console.log('[SearchBox] DEBUG: Fuzzy search results:', results.suggested_products.slice(0, 2));
+                console.log('[SearchBox] DEBUG: Extracted ESSP IDs:', esspIds);
+                dispatch(setSearchFilterProductIds(esspIds));
             } else {
                 // No valid results, clear the filter
+                console.log('[SearchBox] DEBUG: No valid results, clearing ESSP IDs');
                 dispatch(setSearchFilterProductIds([]));
             }
 
