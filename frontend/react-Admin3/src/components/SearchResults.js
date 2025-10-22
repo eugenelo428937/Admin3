@@ -40,6 +40,21 @@ const SearchResults = ({
 		[topProducts]
 	);
 
+	// Show helpful message when query is too short
+	if (searchQuery && searchQuery.length > 0 && searchQuery.length < 3) {
+		return (
+			<Container
+				className="search-results-container"
+				maxWidth={false}
+				sx={{ mb: 3 }}
+			>
+				<Alert severity="info" sx={{ mt: 2 }}>
+					Enter at least 3 characters to search
+				</Alert>
+			</Container>
+		);
+	}
+
 	// Only show component when there's a search query
 	// Don't show "popular filters" or default data
 	if (!searchQuery || (!searchResults && !loading)) {
