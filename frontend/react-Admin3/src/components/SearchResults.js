@@ -115,7 +115,7 @@ const SearchResults = ({
                                     {searchQuery ? "results" : "products"})
                                  </Typography>
                               </Box>
-                              {searchQuery && (
+                              {searchQuery && topProducts.length > 0 && (
                                  <Button
                                     variant="contained"
                                     size="small"
@@ -169,7 +169,7 @@ const SearchResults = ({
                            </Grid>
 
                            {/* Show All Results Button */}
-                           {searchQuery && (
+                           {searchQuery && topProducts.length > 0 && (
                               <Box sx={{ textAlign: "center", mt: 3 }}>
                                  <Button
                                     variant="contained"

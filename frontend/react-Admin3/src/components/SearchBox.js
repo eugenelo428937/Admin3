@@ -133,7 +133,11 @@ const SearchBox = ({
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            handleShowMatchingProducts();
+            // Only navigate if there are search results with products
+            if (searchResults && searchResults.suggested_products && searchResults.suggested_products.length > 0) {
+                handleShowMatchingProducts();
+            }
+            // If no results, do nothing (user will see "No results found" message in modal)
         }
     };
 
