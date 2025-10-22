@@ -34,12 +34,6 @@ const SearchResults = ({
 	const { handleAddToCart, allEsspIds, bulkDeadlines } =
 		useProductCardHelpers(topProducts);
 
-	// Issue #2 Fix: Extract product IDs for filtering
-	const productIds = useMemo(() =>
-		topProducts.map(p => p.id || p.essp_id),
-		[topProducts]
-	);
-
 	// Show helpful message when query is too short
 	if (searchQuery && searchQuery.length > 0 && searchQuery.length < 3) {
 		return (
@@ -125,7 +119,7 @@ const SearchResults = ({
                                  <Button
                                     variant="contained"
                                     size="small"
-                                    onClick={() => onShowMatchingProducts(productIds)}
+                                    onClick={onShowMatchingProducts}
                                     endIcon={<ArrowRightIcon />}
                                     sx={{
                                        display: "flex",
