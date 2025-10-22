@@ -113,21 +113,29 @@ This confirms search query persists across component unmount/remount cycles (FR-
 - ✅ **URL does NOT contain filter parameters** (no filters set)
 
 **Expected Result - Product List**:
-- ✅ Product list displays ALL products (not filtered by search)
-- ✅ FilterPanel on left shows NO active filters
+- ✅ Product list displays products matching search query "mock" (filtered by ESSP IDs from fuzzy search)
+- ✅ ActiveFilters panel shows chip: **"Search Results for 'mock'"**
+- ✅ Only products returned by fuzzy search API are displayed
 
 **Expected Result - Redux DevTools**:
 - ✅ `filters.searchQuery: "mock"` (unchanged - persisted in Redux)
-- ✅ `filters.subjects: []` (no filters)
-- ✅ `filters.product_types: []` (no filters)
+- ✅ `filters.searchFilterProductIds: [2946, 2947, ...]` (array of ESSP IDs from fuzzy search)
+- ✅ `filters.subjects: []` (no subject filters)
+- ✅ `filters.product_types: []` (no product type filters)
 
-**Note**: Search query persists in Redux for UI purposes but is NOT sent as a filter to the products page. Users must use FilterPanel to filter products.
+**Technical Note**: Fuzzy search returns ExamSessionSubjectProduct IDs (ESSP IDs), not Product IDs. This ensures subject-specific filtering (e.g., "mock" in CB1 returns only CB1 products with "mock", not all subjects).
 
-**Result**: [ ] PASS / [x ] FAIL
+**Result**: [x] PASS / [ ] FAIL
 
-**Finding**: The expected result is not correctly defined.
-
-When i click on show all matching products after I search for "Mock", the product list is saying "No products found for your search criteria." The api call /api/products/current/fuzzy-search/?q=mock&min_score=60&limit=50 is returning related products. The active filter panel should show 'Matching result for "{searchQuery}"'. At the moment the active filter panel shows 1 Active filter but did not display what the filter is.
+**Fix Applied (2025-10-22)**:
+- **Issue**: Products page was showing ALL products instead of search results
+- **Root Cause**: Frontend was extracting `product_id` (Product table ID) instead of `id` (ESSP ID)
+- **Solution**: Changed SearchBox.js to extract ESSP IDs and backend to filter by `Q(id=essp_id)`
+- **Files Changed**:
+  - `frontend/react-Admin3/src/components/SearchBox.js` (line 75)
+  - `frontend/react-Admin3/src/hooks/useProductsSearch.js` (lines 101-109)
+  - `backend/django_Admin3/exam_sessions_subjects_products/services/optimized_search_service.py` (line 187)
+- **Documentation**: See `FIX-SUMMARY-CB1-SEARCH-FILTER.md` for complete details
 
 ---
 
@@ -144,9 +152,12 @@ When i click on show all matching products after I search for "Mock", the produc
 - ✅ Modal closes
 - ✅ Browser navigates to `/products`
 - ✅ Search query "tutorial" persisted in Redux
+- ✅ Product list shows only products matching "tutorial" (filtered by ESSP IDs)
+- ✅ ActiveFilters panel shows: **"Search Results for 'tutorial'"**
 
 **Expected Result - Redux DevTools**:
 - ✅ `filters.searchQuery: "tutorial"`
+- ✅ `filters.searchFilterProductIds: [...]` (ESSP IDs from fuzzy search)
 
 **Verification**:
 This confirms FR-006: "Users MUST be able to navigate to products page by pressing Enter in search input"
@@ -171,27 +182,41 @@ This confirms FR-006: "Users MUST be able to navigate to products page by pressi
 - ✅ Helpful message shown (e.g., "Try different search terms")
 - ✅ No products displayed
 - ✅ **No filter UI** shown
+- ✅ **Navigation buttons hidden** (no "Show All Matching Products" button when no results)
+
+**Expected Result - Navigation**:
+- ✅ Pressing Enter does nothing (no navigation when no results)
+- ✅ User stays in search modal
 
 **Result**: [x] PASS / [ ] FAIL
 
-### Step 6B: Short Query (< 2 characters)
+**Fix Applied (2025-10-22)**:
+- Added navigation guard in SearchBox.js to prevent navigation when no results exist
+- This prevents confusing behavior where empty search navigates to show ALL products
+
+### Step 6B: Short Query (< 3 characters)
 
 **Action**:
 1. Open search modal (`Ctrl+K`)
-2. Type single character "a"
+2. Type "ab" (2 characters)
 3. Wait for debounce (300ms)
 
 **Expected Result - UI**:
 - ✅ No search executed (query too short)
-- ✅ Helpful message shown: "Enter at least 2 characters to search"
+- ✅ Helpful message shown: **"Enter at least 3 characters to search"**
 - ✅ No products displayed
 - ✅ No loading spinner
 
 **Expected Result - Redux DevTools**:
-- ✅ `filters.searchQuery: "a"` (state updated)
+- ✅ `filters.searchQuery: "ab"` (state updated)
 - ✅ No API call made (query too short)
 
 **Result**: [x] PASS / [ ] FAIL
+
+**Fix Applied (2025-10-22)**:
+- Changed minimum query length from 2 to 3 characters
+- Updated helper message: "Enter at least 3 characters to search"
+- Updated both frontend (SearchBox.js, SearchResults.js) and backend (fuzzy_search API)
 
 
 ---
