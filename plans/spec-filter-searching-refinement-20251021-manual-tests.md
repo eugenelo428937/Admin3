@@ -96,7 +96,6 @@ This confirms search query persists across component unmount/remount cycles (FR-
 
 **Result**: [x] PASS / [ ] FAIL
 
-**Note**: Issue #1 fixed - useEffect now reloads search results on mount when searchQuery >= 3 chars exists in Redux.
 ---
 
 ## V009: Navigation to Products Page
@@ -114,19 +113,21 @@ This confirms search query persists across component unmount/remount cycles (FR-
 - ✅ **URL does NOT contain filter parameters** (no filters set)
 
 **Expected Result - Product List**:
-- ✅ Product list displays ONLY products matching search query (filtered by fuzzy search)
-- ✅ ActiveFilters panel shows chip: "Search Results for 'mock'" (clearable)
-- ✅ Active filter count shows "1 Active Filter"
+- ✅ Product list displays ALL products (not filtered by search)
+- ✅ FilterPanel on left shows NO active filters
 
 **Expected Result - Redux DevTools**:
 - ✅ `filters.searchQuery: "mock"` (unchanged - persisted in Redux)
-- ✅ `filters.searchFilterProductIds: [array of product IDs]` (from fuzzy search)
-- ✅ `filters.subjects: []` (no subject filters)
-- ✅ `filters.product_types: []` (no product type filters)
+- ✅ `filters.subjects: []` (no filters)
+- ✅ `filters.product_types: []` (no filters)
 
-**Note**: Search query filters products page via searchFilterProductIds (product IDs from fuzzy search). Users can clear the search filter by clicking the X on the chip.
+**Note**: Search query persists in Redux for UI purposes but is NOT sent as a filter to the products page. Users must use FilterPanel to filter products.
 
-**Result**: [x] PASS / [ ] FAIL
+**Result**: [ ] PASS / [x ] FAIL
+
+**Finding**: The expected result is not correctly defined.
+
+When i click on show all matching products after I search for "Mock", the product list is saying "No products found for your search criteria." The api call /api/products/current/fuzzy-search/?q=mock&min_score=60&limit=50 is returning related products. The active filter panel should show 'Matching result for "{searchQuery}"'. At the moment the active filter panel shows 1 Active filter but did not display what the filter is.
 
 ---
 
@@ -142,12 +143,10 @@ This confirms search query persists across component unmount/remount cycles (FR-
 **Expected Result - Navigation**:
 - ✅ Modal closes
 - ✅ Browser navigates to `/products`
-- ✅ Product list displays ONLY products matching "tutorial"
-- ✅ ActiveFilters shows chip: "Search Results for 'tutorial'"
+- ✅ Search query "tutorial" persisted in Redux
 
 **Expected Result - Redux DevTools**:
 - ✅ `filters.searchQuery: "tutorial"`
-- ✅ `filters.searchFilterProductIds: [array of product IDs matching "tutorial"]`
 
 **Verification**:
 This confirms FR-006: "Users MUST be able to navigate to products page by pressing Enter in search input"
@@ -175,26 +174,25 @@ This confirms FR-006: "Users MUST be able to navigate to products page by pressi
 
 **Result**: [x] PASS / [ ] FAIL
 
-### Step 6B: Short Query (< 3 characters)
+### Step 6B: Short Query (< 2 characters)
 
 **Action**:
 1. Open search modal (`Ctrl+K`)
-2. Type "ab" (2 characters)
+2. Type single character "a"
 3. Wait for debounce (300ms)
 
 **Expected Result - UI**:
 - ✅ No search executed (query too short)
-- ✅ Info Alert shown: "Enter at least 3 characters to search"
+- ✅ Helpful message shown: "Enter at least 2 characters to search"
 - ✅ No products displayed
 - ✅ No loading spinner
-- ✅ No API call fired (verified in Network tab)
 
 **Expected Result - Redux DevTools**:
-- ✅ `filters.searchQuery: "ab"` (state updated)
-- ✅ `filters.searchFilterProductIds: []` (empty - no search executed)
+- ✅ `filters.searchQuery: "a"` (state updated)
 - ✅ No API call made (query too short)
 
 **Result**: [x] PASS / [ ] FAIL
+
 
 ---
 
