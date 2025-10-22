@@ -55,10 +55,22 @@ class FuzzySearchService:
         for product in queryset:
             # Create searchable text combining multiple fields
             searchable_text = self._build_searchable_text(product)
-            
-            # Calculate fuzzy match score
-            score = fuzz.partial_ratio(query, searchable_text)
-            
+
+            # For short queries (<=4 chars), prioritize exact/prefix matches (subject codes, etc.)
+            if len(query) <= 4:
+                # Check for exact match (case-insensitive)
+                if query in searchable_text:
+                    score = 100  # Perfect match
+                # Check for word start match (e.g., "cb1" matches "cb1 subject name")
+                elif any(word.startswith(query) for word in searchable_text.split()):
+                    score = 95  # High priority for prefix match
+                else:
+                    # Still use fuzzy matching as fallback
+                    score = fuzz.partial_ratio(query, searchable_text)
+            else:
+                # For longer queries, use fuzzy matching
+                score = fuzz.partial_ratio(query, searchable_text)
+
             if score >= self.min_score:
                 products_with_scores.append((product, score, searchable_text))
                 
