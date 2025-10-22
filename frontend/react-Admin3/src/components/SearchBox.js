@@ -38,7 +38,7 @@ const SearchBox = ({
 
     // Issue #1 Fix: Reload search results when modal opens with persisted query
     useEffect(() => {
-        if (searchQuery && searchQuery.length >= 2) {
+        if (searchQuery && searchQuery.length >= 3) {
             performSearch(searchQuery);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -50,8 +50,8 @@ const SearchBox = ({
             setLoading(true);
             setError('');
 
-            // Issue #3 Fix: Don't search for empty or short queries (< 2 characters)
-            if (!query || query.length < 2) {
+            // Issue #3 Fix: Don't search for empty or short queries (< 3 characters)
+            if (!query || query.length < 3) {
                 setSearchResults(null);
                 // Issue #2 Fix: Clear search filter when query is cleared
                 dispatch(setSearchFilterProductIds([]));
@@ -62,14 +62,15 @@ const SearchBox = ({
                 return; // Exit early - no API call
             }
 
-            // Perform actual search (only for queries >= 2 chars)
+            // Perform actual search (only for queries >= 3 chars)
             const results = await searchService.fuzzySearch(query);
             setSearchResults(results);
 
             // Issue #2 Fix: Extract product IDs and dispatch to Redux for products page filtering
+            // Use product_id (Product table ID) not id/essp_id (ExamSessionSubjectProduct ID)
             if (results && results.suggested_products && Array.isArray(results.suggested_products)) {
                 const productIds = results.suggested_products
-                    .map(product => product.id)
+                    .map(product => product.product_id)
                     .filter(id => id !== undefined && id !== null);
                 dispatch(setSearchFilterProductIds(productIds));
             } else {
