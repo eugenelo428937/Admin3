@@ -174,7 +174,7 @@ const SearchResults = ({
                                  <Button
                                     variant="contained"
                                     size="large"
-                                    onClick={() => onShowMatchingProducts(productIds)}
+                                    onClick={onShowMatchingProducts}
                                     endIcon={<ArrowRightIcon />}
                                     sx={{
                                        display: "flex",
