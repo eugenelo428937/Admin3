@@ -5,6 +5,7 @@ import { Search as SearchIcon } from '@mui/icons-material';
 import searchService from '../services/searchService';
 import {
     setSearchQuery as setSearchQueryAction,
+    setSearchFilterProductIds,
     selectSearchQuery
 } from '../store/slices/filtersSlice';
 import '../styles/search_box.css';
@@ -52,6 +53,8 @@ const SearchBox = ({
             // Issue #3 Fix: Don't search for empty or short queries (< 2 characters)
             if (!query || query.length < 2) {
                 setSearchResults(null);
+                // Issue #2 Fix: Clear search filter when query is cleared
+                dispatch(setSearchFilterProductIds([]));
                 if (onSearchResults) {
                     onSearchResults(null, query);
                 }
@@ -62,6 +65,17 @@ const SearchBox = ({
             // Perform actual search (only for queries >= 2 chars)
             const results = await searchService.fuzzySearch(query);
             setSearchResults(results);
+
+            // Issue #2 Fix: Extract product IDs and dispatch to Redux for products page filtering
+            if (results && results.suggested_products && Array.isArray(results.suggested_products)) {
+                const productIds = results.suggested_products
+                    .map(product => product.id)
+                    .filter(id => id !== undefined && id !== null);
+                dispatch(setSearchFilterProductIds(productIds));
+            } else {
+                // No valid results, clear the filter
+                dispatch(setSearchFilterProductIds([]));
+            }
 
             if (onSearchResults) {
                 onSearchResults(results, query);
@@ -78,6 +92,9 @@ const SearchBox = ({
                 total_count: 0
             };
             setSearchResults(fallbackResults);
+
+            // Issue #2 Fix: Clear search filter on error
+            dispatch(setSearchFilterProductIds([]));
 
             if (onSearchResults) {
                 onSearchResults(fallbackResults, query);
