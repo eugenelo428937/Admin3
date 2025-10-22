@@ -13,14 +13,11 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { setSearchFilterProductIds } from '../../store/slices/filtersSlice';
 import SearchBox from '../SearchBox';
 import SearchResults from '../SearchResults';
 
 const SearchModal = ({ open, onClose }) => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
   // Only UI state (search results display)
   const [searchResults, setSearchResults] = useState(null);
@@ -74,10 +71,10 @@ const SearchModal = ({ open, onClose }) => {
     setSearchError(null);
   };
 
-  // Navigate to products page with fuzzy search product IDs (Issue #2 fix)
-  const handleShowMatchingProducts = (productIds = []) => {
-    // Issue #2 Fix: Store fuzzy search product IDs in Redux for filtering
-    dispatch(setSearchFilterProductIds(productIds));
+  // Navigate to products page (product IDs already set by SearchBox.performSearch)
+  const handleShowMatchingProducts = () => {
+    // Product IDs are already in Redux (set by SearchBox.performSearch)
+    // Just close modal and navigate - don't overwrite the IDs
 
     // Close modal and navigate to products page
     handleCloseSearchModal();
