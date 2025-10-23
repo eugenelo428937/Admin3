@@ -82,7 +82,7 @@ const servers = {
          command: "npx",
          args: ["mcp-remote", "https://gitmcp.io/nadirizr/json-logic-py"],
       },
-   },   
+   },
    "spec-kit Docs": {
       windows: {
          command: "cmd",
@@ -106,6 +106,21 @@ const servers = {
       default: {
          command: "npx",
          args: ["mcp-remote", "https://gitmcp.io/bmad-code-org/BMAD-METHOD"],
+      },
+   },
+   "fuzzywuzzy Docs": {
+      windows: {
+         command: "cmd",
+         args: [
+            "/c",
+            "npx",
+            "mcp-remote",
+            "https://gitmcp.io/seatgeek/fuzzywuzzy",
+         ],
+      },
+      default: {
+         command: "npx",
+         args: ["mcp-remote", "https://gitmcp.io/seatgeek/fuzzywuzzy"],
       },
    },
    "chrome-devtools-mcp Docs": {

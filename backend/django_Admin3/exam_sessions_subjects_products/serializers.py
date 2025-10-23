@@ -143,6 +143,11 @@ class ExamSessionSubjectProductVariationSerializer(serializers.ModelSerializer):
 # Unified Search API Serializers
 class ProductSearchRequestSerializer(serializers.Serializer):
     """Serializer for unified product search request"""
+    searchQuery = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text="Search query for fuzzy matching"
+    )
     filters = serializers.DictField(
         child=serializers.ListField(child=serializers.CharField(), allow_empty=True),
         required=False,
@@ -174,10 +179,11 @@ class ProductSearchRequestSerializer(serializers.Serializer):
         """Validate filter parameters"""
         if value:
             valid_filter_types = [
-                'subjects', 'categories', 'product_types', 
-                'products', 'modes_of_delivery'
+                'subjects', 'categories', 'product_types',
+                'products', 'essp_ids', 'product_ids',  # essp_ids for fuzzy search, product_ids for navbar
+                'modes_of_delivery'
             ]
-            
+
             for filter_type in value.keys():
                 if filter_type not in valid_filter_types:
                     raise serializers.ValidationError(
