@@ -17,10 +17,11 @@ const searchService = {
             }
             
             // Use the new fuzzy search endpoint
+            // Note: min_score is not specified here, so it uses the backend default from FUZZY_SEARCH_MIN_SCORE env var
             const response = await httpService.get(`${SEARCH_API_URL}/fuzzy-search/`, {
-                params: { 
+                params: {
                     q: query.trim(),
-                    min_score: 60,
+                    // min_score: Backend will use FUZZY_SEARCH_MIN_SCORE from .env
                     limit: 50
                 }
             });
@@ -55,8 +56,9 @@ const searchService = {
         try {
             
             // Build parameters for the advanced fuzzy search endpoint
+            // Note: min_score is not specified here, so it uses the backend default from FUZZY_SEARCH_MIN_SCORE env var
             const params = {
-                min_score: 60,
+                // min_score: Backend will use FUZZY_SEARCH_MIN_SCORE from .env
                 limit: searchParams.page_size || 50
             };
             

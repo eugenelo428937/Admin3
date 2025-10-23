@@ -2,6 +2,7 @@ import logging
 from django.shortcuts import render, get_object_or_404
 from django.core.cache import cache
 from django.db.models import Q
+from django.conf import settings
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action, permission_classes
@@ -462,10 +463,15 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             }
             transformed_products.append(transformed_product)
 
-        # ===== COMBINE AND PAGINATE =====
+        # ===== COMBINE, SORT, AND PAGINATE =====
         all_items = transformed_bundles + transformed_products
+
+        # Sort by subject code (default for product listing)
+        # Both bundles have 'code' and products have 'subject_code'
+        all_items.sort(key=lambda x: x.get('code') or x.get('subject_code', ''))
+
         total_count = len(all_items)
-        
+
         # Apply pagination to combined results
         start_index = (page - 1) * page_size
         end_index = start_index + page_size
@@ -517,6 +523,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         """
         # Get search parameters
         query = request.query_params.get('q', '').strip()
+        # min_score = int(request.query_params.get('min_score', settings.FUZZY_SEARCH_MIN_SCORE))
         min_score = int(request.query_params.get('min_score', 60))
         limit = int(request.query_params.get('limit', 50))
         
@@ -567,7 +574,8 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         query = request.query_params.get('q', '').strip()
         subject_ids_param = request.query_params.get('subjects', '')
         category_ids_param = request.query_params.get('categories', '')
-        min_score = int(request.query_params.get('min_score', 99))
+        # min_score = int(request.query_params.get('min_score', settings.FUZZY_SEARCH_MIN_SCORE))
+        min_score = int(request.query_params.get('min_score', 65))
         limit = int(request.query_params.get('limit', 50))
         
         # Parse subject and category IDs
@@ -736,8 +744,9 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             validated_data = request_serializer.validated_data
-            
+
             # Extract parameters with defaults
+            search_query = validated_data.get('searchQuery', '').strip()
             filters = validated_data.get('filters', {})
             pagination = validated_data.get('pagination', {'page': 1, 'page_size': 20})
             options = validated_data.get('options', {'include_bundles': True})
@@ -766,6 +775,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             
             # Use the optimized search service
             result = optimized_search_service.search_products(
+                search_query=search_query,
                 filters=filters,
                 navbar_filters=navbar_filters,
                 pagination=pagination,
