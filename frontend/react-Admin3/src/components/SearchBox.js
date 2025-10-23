@@ -5,7 +5,6 @@ import { Search as SearchIcon } from '@mui/icons-material';
 import searchService from '../services/searchService';
 import {
     setSearchQuery as setSearchQueryAction,
-    setSearchFilterProductIds,
     selectSearchQuery
 } from '../store/slices/filtersSlice';
 import '../styles/search_box.css';
@@ -53,8 +52,6 @@ const SearchBox = ({
             // Issue #3 Fix: Don't search for empty or short queries (< 3 characters)
             if (!query || query.length < 3) {
                 setSearchResults(null);
-                // Issue #2 Fix: Clear search filter when query is cleared
-                dispatch(setSearchFilterProductIds([]));
                 if (onSearchResults) {
                     onSearchResults(null, query);
                 }
@@ -63,25 +60,10 @@ const SearchBox = ({
             }
 
             // Perform actual search (only for queries >= 3 chars)
+            // Note: Fuzzy search is ONLY for autocomplete/suggestions display
+            // The unified search endpoint handles actual filtering with searchQuery parameter
             const results = await searchService.fuzzySearch(query);
             setSearchResults(results);
-
-            // Issue #2 Fix: Extract ESSP IDs and dispatch to Redux for products page filtering
-            // Use id/essp_id (ExamSessionSubjectProduct ID) not product_id (Product table ID)
-            // This ensures we only get the specific ESSPs returned by fuzzy search (e.g., CB1 products only)
-            // If we used product_id, we'd get ALL ESSPs with that product (CB1, CB2, etc.)
-            if (results && results.suggested_products && Array.isArray(results.suggested_products)) {
-                const esspIds = results.suggested_products
-                    .map(product => product.id || product.essp_id)
-                    .filter(id => id !== undefined && id !== null);
-                console.log('[SearchBox] DEBUG: Fuzzy search results:', results.suggested_products.slice(0, 2));
-                console.log('[SearchBox] DEBUG: Extracted ESSP IDs:', esspIds);
-                dispatch(setSearchFilterProductIds(esspIds));
-            } else {
-                // No valid results, clear the filter
-                console.log('[SearchBox] DEBUG: No valid results, clearing ESSP IDs');
-                dispatch(setSearchFilterProductIds([]));
-            }
 
             if (onSearchResults) {
                 onSearchResults(results, query);
@@ -98,9 +80,6 @@ const SearchBox = ({
                 total_count: 0
             };
             setSearchResults(fallbackResults);
-
-            // Issue #2 Fix: Clear search filter on error
-            dispatch(setSearchFilterProductIds([]));
 
             if (onSearchResults) {
                 onSearchResults(fallbackResults, query);
@@ -128,9 +107,9 @@ const SearchBox = ({
 
     const handleShowMatchingProducts = () => {
         if (onShowMatchingProducts) {
-            // Issue #2 Fix: Pass product IDs from search results
-            const productIds = searchResults?.suggested_products?.map(p => p.id || p.essp_id) || [];
-            onShowMatchingProducts(productIds);
+            // searchQuery is already stored in Redux
+            // Unified search endpoint will handle the query
+            onShowMatchingProducts();
         }
     };
 
