@@ -24,6 +24,10 @@
          "command": "node",
          "args": ["./scripts/run-mcp.js", "json-logic-py Docs"]
       },
+      "fuzzywuzzy Docs": {
+         "command": "node",
+         "args": ["./scripts/run-mcp.js", "fuzzywuzzy Docs"]
+      },
       "spec-kit Docs": {
          "command": "node",
          "args": ["./scripts/run-mcp.js", "spec-kit Docs"]

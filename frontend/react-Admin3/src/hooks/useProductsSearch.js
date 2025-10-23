@@ -11,7 +11,6 @@ import { useLazyUnifiedSearchQuery } from '../store/api/catalogApi';
 import {
   selectFilters,
   selectSearchQuery,
-  selectSearchFilterProductIds,
   selectCurrentPage,
   selectPageSize,
   setLoading,
@@ -42,7 +41,6 @@ export const useProductsSearch = (options = {}) => {
   // Redux state selectors
   const filters = useSelector(selectFilters);
   const searchQuery = useSelector(selectSearchQuery);
-  const searchFilterProductIds = useSelector(selectSearchFilterProductIds);
   const currentPage = useSelector(selectCurrentPage);
   const pageSize = useSelector(selectPageSize);
   const isLoading = useSelector(state => state.filters.isLoading);
@@ -98,24 +96,16 @@ export const useProductsSearch = (options = {}) => {
       if (distance_learning) navbarFilters.distance_learning = distance_learning ? '1' : undefined;
       if (tutorial) navbarFilters.tutorial = tutorial ? '1' : undefined;
 
-      // Issue #2 Fix: Use searchFilterProductIds if present (from fuzzy search)
-      // searchFilterProductIds contains ESSP IDs (ExamSessionSubjectProduct.id), not Product IDs
-      // This ensures we only show the specific ESSPs returned by fuzzy search (e.g., CB1 only)
-      const effectiveProducts = searchFilterProductIds.length > 0
-        ? searchFilterProductIds
-        : filters.products;
-
-      console.log('[useProductsSearch] DEBUG: searchFilterProductIds (ESSP IDs) from Redux:', searchFilterProductIds);
-      console.log('[useProductsSearch] DEBUG: effectiveProducts (ESSP IDs) for API:', effectiveProducts);
-
-      // Prepare search parameters
+      // Prepare search parameters with searchQuery (single-call pattern)
+      // searchQuery parameter triggers fuzzy search + relevance sorting on backend
       const searchParams = {
+        searchQuery: searchQuery || '', // NEW: Send search query to backend
         filters: {
-          ...filters,
-          products: effectiveProducts, // Use fuzzy search IDs if available
-          // Note: searchQuery is NOT sent to unified_search endpoint
-          // Text search is handled by the fuzzy-search endpoint in SearchBox
-          // The unified_search endpoint only accepts: subjects, categories, product_types, products, modes_of_delivery
+          subjects: filters.subjects || [],
+          categories: filters.categories || [],
+          product_types: filters.product_types || [],
+          modes_of_delivery: filters.modes_of_delivery || [],
+          // products filter removed - handled by searchQuery or navbar links
         },
         navbarFilters,
         pagination: {
@@ -127,12 +117,17 @@ export const useProductsSearch = (options = {}) => {
           include_analytics: false,
         },
       };
+
+      console.log('[useProductsSearch] DEBUG: Search params:', {
+        searchQuery: searchQuery || '(none)',
+        filtersCount: Object.keys(filters).filter(k => filters[k]?.length > 0).length,
+        page: currentPage
+      });
       
       // Check if search parameters have changed (avoid duplicate requests)
       // Use a fast hash instead of JSON.stringify for performance
-      // Note: searchQuery removed since it's not sent to unified_search endpoint
-      // Issue #2 Fix: Include searchFilterProductIds in hash
-      const paramsHash = `${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${effectiveProducts?.join(',')||''}|${currentPage}|${pageSize}|${tutorial_format||''}|${distance_learning}|${tutorial}`;
+      // Include searchQuery to trigger new search when query changes
+      const paramsHash = `${searchQuery||''}|${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.modes_of_delivery?.join(',')||''}|${currentPage}|${pageSize}|${tutorial_format||''}|${distance_learning}|${tutorial}`;
 
       if (!forceSearch && lastSearchParamsRef.current === paramsHash) {
         dispatch(setLoading(false));
@@ -189,7 +184,7 @@ export const useProductsSearch = (options = {}) => {
       dispatch(setError(errorMessage));
       dispatch(setLoading(false));
     }
-  }, [filters, searchQuery, searchFilterProductIds, currentPage, pageSize, tutorial_format, distance_learning, tutorial, triggerSearch, dispatch]);
+  }, [filters, searchQuery, currentPage, pageSize, tutorial_format, distance_learning, tutorial, triggerSearch, dispatch]);
   
   /**
    * Debounced search function
@@ -241,12 +236,10 @@ export const useProductsSearch = (options = {}) => {
   }, [clearDebounce, dispatch]);
   
   // Create stable references for effect dependencies
-  // Note: searchQuery removed since it's not sent to unified_search endpoint
-  // Issue #2 Fix: Include searchFilterProductIds in filter hash
+  // Include searchQuery to trigger search when query changes
   const filterHash = useMemo(() => {
-    const effectiveProducts = searchFilterProductIds.length > 0 ? searchFilterProductIds : filters.products;
-    return `${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${effectiveProducts?.join(',')||''}|${currentPage}|${pageSize}|${tutorial_format||''}|${distance_learning}|${tutorial}`;
-  }, [filters.subjects, filters.categories, filters.product_types, filters.products, searchFilterProductIds, currentPage, pageSize, tutorial_format, distance_learning, tutorial]);
+    return `${searchQuery||''}|${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.modes_of_delivery?.join(',')||''}|${currentPage}|${pageSize}|${tutorial_format||''}|${distance_learning}|${tutorial}`;
+  }, [searchQuery, filters.subjects, filters.categories, filters.product_types, filters.modes_of_delivery, currentPage, pageSize, tutorial_format, distance_learning, tutorial]);
 
   // Auto-search when filters change (if enabled)
   useEffect(() => {

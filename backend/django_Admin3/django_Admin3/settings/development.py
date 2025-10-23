@@ -44,6 +44,9 @@ OPAYO_INTEGRATION_PASSWORD = env('OPAYO_INTEGRATION_PASSWORD', default='test_pas
 # Use dummy payment gateway for local development
 USE_DUMMY_PAYMENT_GATEWAY = True
 
+# Fuzzy Search Configuration
+FUZZY_SEARCH_MIN_SCORE = int(env('FUZZY_SEARCH_MIN_SCORE', default=60))
+
 # Development Email Override Settings
 # Redirect all emails to these addresses in development environment
 DEV_EMAIL_OVERRIDE = True
@@ -78,11 +81,13 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'django_debug.log'),
             'formatter': 'verbose',
+            'encoding': 'utf-8',  # Support emojis in log file
         },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
+            'stream': 'ext://sys.stdout',  # Explicit stdout
         },
     },
     'root': {
