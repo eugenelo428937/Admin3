@@ -24,21 +24,24 @@ class OptimizedSearchService:
         self.cache_timeout = getattr(settings, 'SEARCH_CACHE_TIMEOUT', 300)  # 5 minutes
         self.enable_query_logging = getattr(settings, 'ENABLE_SEARCH_QUERY_LOGGING', True)
     
-    def search_products(self, filters=None, navbar_filters=None, pagination=None, options=None):
+    def search_products(self, search_query=None, filters=None, navbar_filters=None, pagination=None, options=None):
         """
         Optimized product search with proper index usage and caching.
-        
+
         Args:
+            search_query (str): Search query for fuzzy matching
             filters (dict): Filter criteria
+            navbar_filters (dict): Navbar-style filters
             pagination (dict): Pagination parameters
             options (dict): Additional options
-            
+
         Returns:
             dict: Search results with products, counts, and pagination
         """
         start_time = time.time()
-        
+
         # Set defaults
+        search_query = (search_query or '').strip()
         filters = filters or {}
         navbar_filters = navbar_filters or {}
         pagination = pagination or {'page': 1, 'page_size': 20}
@@ -47,22 +50,44 @@ class OptimizedSearchService:
         page = pagination.get('page', 1)
         page_size = pagination.get('page_size', 20)
         
-        # Build cache key
-        cache_key = self._build_cache_key(filters, page, page_size, options)
-        
+        # Build cache key (include search query)
+        cache_key = self._build_cache_key(filters, page, page_size, options, search_query)
+
         # Try cache first
         cached_result = cache.get(cache_key)
         if cached_result and not settings.DEBUG:
             self._log_performance('CACHED', filters, time.time() - start_time, 0)
             return cached_result
-        
+
+        # If search query is present, use fuzzy search for scoring and sorting
+        use_fuzzy_search = bool(search_query and len(search_query) >= 2)
+        fuzzy_essp_ids = []
+
+        if use_fuzzy_search:
+            # Use FuzzySearchService to get relevance-scored results
+            from .fuzzy_search_service import FuzzySearchService
+            fuzzy_service = FuzzySearchService(min_score=60)
+            fuzzy_results = fuzzy_service.search_products(search_query, limit=1000)  # Get all matches
+
+            # Extract ESSP IDs from fuzzy search results (already sorted by relevance)
+            fuzzy_essp_ids = [product.id for product in fuzzy_results['products']]
+
+            logger.info(f'🔍 [FUZZY-SEARCH] Query: "{search_query}" found {len(fuzzy_essp_ids)} matches')
+
         # Build optimized queryset
-        queryset = self._build_optimized_queryset()
-        
+        queryset = self._build_optimized_queryset(use_fuzzy_sorting=use_fuzzy_search)
+
+        # If using fuzzy search, filter to only matched ESSPs (preserves fuzzy search order)
+        if use_fuzzy_search and fuzzy_essp_ids:
+            # Preserve fuzzy search ordering by using Case/When
+            from django.db.models import Case, When, IntegerField
+            preserved_order = Case(*[When(id=pk, then=pos) for pos, pk in enumerate(fuzzy_essp_ids)], output_field=IntegerField())
+            queryset = queryset.filter(id__in=fuzzy_essp_ids).order_by(preserved_order)
+
         # Apply filters
         if filters:
             queryset = self._apply_optimized_filters(queryset, filters)
-        
+
         # Apply navbar filters (for navigation dropdown compatibility)
         if navbar_filters:
             queryset = self._apply_navbar_filters(queryset, navbar_filters)
@@ -108,12 +133,15 @@ class OptimizedSearchService:
         
         return result
     
-    def _build_optimized_queryset(self):
+    def _build_optimized_queryset(self, use_fuzzy_sorting=False):
         """
         Build optimized queryset with proper select_related and prefetch_related.
         Uses database indexes created in Phase 3 migration.
+
+        Args:
+            use_fuzzy_sorting (bool): If True, skip ordering (fuzzy search will handle it)
         """
-        return ExamSessionSubjectProduct.objects.select_related(
+        queryset = ExamSessionSubjectProduct.objects.select_related(
             'exam_session_subject__subject',  # Index: idx_exam_session_subjects_lookup
             'exam_session_subject__exam_session',
             'product'  # Index: idx_essp_product
@@ -126,7 +154,13 @@ class OptimizedSearchService:
                 'variations__prices',
                 # Uses index: idx_prices_variation_type
             )
-        ).order_by('-created_at')  # Index: idx_essp_created
+        )
+
+        # Only apply default sorting if not using fuzzy search (fuzzy search provides its own ordering)
+        if not use_fuzzy_sorting:
+            queryset = queryset.order_by('exam_session_subject__subject__code', 'product__shortname')
+
+        return queryset
     
     def _apply_optimized_filters(self, queryset, filters):
         """
@@ -171,22 +205,31 @@ class OptimizedSearchService:
             if product_type_q:
                 q_filter &= product_type_q
         
-        # Specific product filter
-        # This can receive either ESSP IDs (from fuzzy search) or product names (from other filters)
+        # Product filters - separate ESSP IDs (from fuzzy search) vs Product IDs (from navbar)
+        # ESSP IDs: Filter by ExamSessionSubjectProduct.id (specific instances like CS1 Core Reading)
+        if filters.get('essp_ids'):
+            logger.info(f'🔍 [SEARCH-DEBUG] ESSP IDs filter received: {filters["essp_ids"]}')
+            essp_id_q = Q(id__in=filters['essp_ids'])
+            q_filter &= essp_id_q
+
+        # Product IDs: Filter by Product.id (all instances like CB1 Core Reading, CB2 Core Reading, etc.)
+        if filters.get('product_ids'):
+            logger.info(f'🔍 [SEARCH-DEBUG] Product IDs filter received: {filters["product_ids"]}')
+            product_id_q = Q(product__id__in=filters['product_ids'])
+            q_filter &= product_id_q
+
+        # Legacy 'products' filter - for backward compatibility (product names)
         if filters.get('products'):
-            logger.info(f'🔍 [SEARCH-DEBUG] Products filter received: {filters["products"]}')
+            logger.info(f'🔍 [SEARCH-DEBUG] Products filter (legacy) received: {filters["products"]}')
             product_q = Q()
             for product in filters['products']:
-                # Check if the filter value is an ESSP ID (numeric) or product name (string)
+                # Try numeric first (check both ESSP and Product ID for compatibility)
                 try:
-                    # If it's numeric, treat it as ESSP ID (ExamSessionSubjectProduct.id)
-                    # This ensures we only get the specific ESSPs from fuzzy search (e.g., CB1 only)
-                    # NOT product_id which would return ALL ESSPs with that product (CB1, CB2, etc.)
-                    essp_id = int(product)
-                    logger.info(f'🔍 [SEARCH-DEBUG] Filtering by ESSP ID: {essp_id}')
-                    product_q |= Q(id=essp_id)
+                    numeric_id = int(product)
+                    logger.info(f'🔍 [SEARCH-DEBUG] Legacy numeric ID: {numeric_id} (checking both ESSP and Product)')
+                    product_q |= Q(id=numeric_id) | Q(product__id=numeric_id)
                 except (ValueError, TypeError):
-                    # If it's not numeric, filter by product name using covering index
+                    # String: filter by product name
                     logger.info(f'🔍 [SEARCH-DEBUG] Filtering by product name: {product}')
                     product_q |= Q(product__fullname__icontains=product)
 
@@ -410,19 +453,20 @@ class OptimizedSearchService:
             logger.warning(f"[FILTER-COUNTS] Traceback: {traceback.format_exc()}")
             return 0
     
-    def _build_cache_key(self, filters, page, page_size, options):
+    def _build_cache_key(self, filters, page, page_size, options, search_query=''):
         """Build cache key for search results."""
         import hashlib
         import json
-        
+
         cache_data = {
+            'search_query': search_query,
             'filters': filters,
             'page': page,
             'page_size': page_size,
             'options': options,
-            'version': '3.0'  # Increment when search logic changes
+            'version': '3.1'  # Increment when search logic changes
         }
-        
+
         cache_string = json.dumps(cache_data, sort_keys=True)
         cache_hash = hashlib.md5(cache_string.encode()).hexdigest()
         return f"optimized_search_{cache_hash}"
