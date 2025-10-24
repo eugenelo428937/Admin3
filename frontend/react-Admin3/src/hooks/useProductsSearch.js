@@ -46,11 +46,6 @@ export const useProductsSearch = (options = {}) => {
   const isLoading = useSelector(state => state.filters.isLoading);
   const error = useSelector(state => state.filters.error);
 
-  // Navbar filter selectors (Story 1.4 - from Redux, not URL)
-  const tutorial_format = useSelector(state => state.filters.tutorial_format);
-  const distance_learning = useSelector(state => state.filters.distance_learning);
-  const tutorial = useSelector(state => state.filters.tutorial);
-  
   // RTK Query lazy search hook
   const [triggerSearch, searchResult] = useLazyUnifiedSearchQuery();
   
@@ -90,12 +85,6 @@ export const useProductsSearch = (options = {}) => {
       dispatch(setLoading(true));
       dispatch(clearError());
 
-      // Build navbar filters from Redux state (Story 1.4 - single source of truth)
-      const navbarFilters = {};
-      if (tutorial_format) navbarFilters.tutorial_format = tutorial_format;
-      if (distance_learning) navbarFilters.distance_learning = distance_learning ? '1' : undefined;
-      if (tutorial) navbarFilters.tutorial = tutorial ? '1' : undefined;
-
       // Prepare search parameters with searchQuery (single-call pattern)
       // searchQuery parameter triggers fuzzy search + relevance sorting on backend
       const searchParams = {
@@ -107,7 +96,6 @@ export const useProductsSearch = (options = {}) => {
           modes_of_delivery: filters.modes_of_delivery || [],
           // products filter removed - handled by searchQuery or navbar links
         },
-        navbarFilters,
         pagination: {
           page: currentPage,
           page_size: pageSize,
@@ -127,7 +115,7 @@ export const useProductsSearch = (options = {}) => {
       // Check if search parameters have changed (avoid duplicate requests)
       // Use a fast hash instead of JSON.stringify for performance
       // Include searchQuery to trigger new search when query changes
-      const paramsHash = `${searchQuery||''}|${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.modes_of_delivery?.join(',')||''}|${currentPage}|${pageSize}|${tutorial_format||''}|${distance_learning}|${tutorial}`;
+      const paramsHash = `${searchQuery||''}|${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.modes_of_delivery?.join(',')||''}|${currentPage}|${pageSize}`;
 
       if (!forceSearch && lastSearchParamsRef.current === paramsHash) {
         dispatch(setLoading(false));
@@ -184,7 +172,7 @@ export const useProductsSearch = (options = {}) => {
       dispatch(setError(errorMessage));
       dispatch(setLoading(false));
     }
-  }, [filters, searchQuery, currentPage, pageSize, tutorial_format, distance_learning, tutorial, triggerSearch, dispatch]);
+  }, [filters, searchQuery, currentPage, pageSize, triggerSearch, dispatch]);
   
   /**
    * Debounced search function
@@ -238,8 +226,8 @@ export const useProductsSearch = (options = {}) => {
   // Create stable references for effect dependencies
   // Include searchQuery to trigger search when query changes
   const filterHash = useMemo(() => {
-    return `${searchQuery||''}|${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.modes_of_delivery?.join(',')||''}|${currentPage}|${pageSize}|${tutorial_format||''}|${distance_learning}|${tutorial}`;
-  }, [searchQuery, filters.subjects, filters.categories, filters.product_types, filters.modes_of_delivery, currentPage, pageSize, tutorial_format, distance_learning, tutorial]);
+    return `${searchQuery||''}|${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.modes_of_delivery?.join(',')||''}|${currentPage}|${pageSize}`;
+  }, [searchQuery, filters.subjects, filters.categories, filters.product_types, filters.modes_of_delivery, currentPage, pageSize]);
 
   // Auto-search when filters change (if enabled)
   useEffect(() => {
