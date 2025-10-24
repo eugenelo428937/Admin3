@@ -71,7 +71,7 @@ export const catalogApi = createApi({
     
     // Unified search endpoint - the main filtering API
     unifiedSearch: builder.query({
-      query: ({ filters = {}, pagination = { page: 1, page_size: 20 }, options = {}, navbarFilters = {} }) => {
+      query: ({ searchQuery = '', filters = {}, pagination = { page: 1, page_size: 20 }, options = {}, navbarFilters = {} }) => {
         // Build query string for navbar filters
         const queryParams = new URLSearchParams();
         if (navbarFilters.tutorial_format) queryParams.append('tutorial_format', navbarFilters.tutorial_format);
@@ -80,14 +80,15 @@ export const catalogApi = createApi({
         if (navbarFilters.distance_learning) queryParams.append('distance_learning', navbarFilters.distance_learning);
         if (navbarFilters.tutorial) queryParams.append('tutorial', navbarFilters.tutorial);
         if (navbarFilters.product) queryParams.append('product', navbarFilters.product);
-        
+
         const queryString = queryParams.toString();
         const url = `search/${queryString ? '?' + queryString : ''}`;
-        
+
         return {
           url,
           method: 'POST',
           body: {
+            searchQuery: searchQuery || '',  // Pass searchQuery to backend for fuzzy search
             filters,
             pagination,
             options: {
@@ -100,6 +101,8 @@ export const catalogApi = createApi({
       },
       providesTags: (result, error, arg) => {
         // Create a lightweight hash for cache tags instead of full JSON stringify
+        // IMPORTANT: Include searchQuery in cache key to prevent cache collision
+        const searchQueryHash = arg.searchQuery ? `q:${arg.searchQuery}` : '';
         const filterHash = Object.keys(arg.filters || {})
           .sort()
           .map(key => {
@@ -111,11 +114,14 @@ export const catalogApi = createApi({
           })
           .join('|');
 
+        // Combine search query and filters for unique cache tag
+        const fullHash = [searchQueryHash, filterHash].filter(Boolean).join('|') || 'default';
+
         return [
           'Search',
           { type: 'Products', id: 'SEARCH' },
           // Use lightweight hash instead of JSON.stringify for performance
-          { type: 'Search', id: filterHash || 'default' },
+          { type: 'Search', id: fullHash },
         ];
       },
       // Keep search results cached for 5 minutes

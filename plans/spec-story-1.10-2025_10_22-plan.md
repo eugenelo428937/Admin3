@@ -108,7 +108,6 @@ frontend/react-Admin3/
    - Indexed format: `subject_code=X&subject_1=Y&subject_2=Z`
    - Comma-separated: `group=A,B,C`
    - Single value: `search=query`
-   - Boolean: `distance_learning=true` (omit if false)
    - Parameter aliases: `subject` → `subject_code`, `q` → `search`
 
 3. **Performance requirements**:
@@ -140,7 +139,6 @@ frontend/react-Admin3/
 | subjects | indexed | subject_code=CB1&subject_1=CB2 |
 | product_types | comma-separated | group=Materials,Tutorials |
 | searchQuery | single | search=mock+exam |
-| distance_learning | boolean | distance_learning=true |
 
 ## Decision: Utility API Design
 - Static methods (no instantiation needed)
@@ -207,8 +205,7 @@ export const FilterUrlManagerContract = {
     description: 'URL parameter name constants',
     values: [
       'SUBJECT', 'SUBJECT_ALIAS', 'GROUP', 'PRODUCT', 'CATEGORY',
-      'MODE_OF_DELIVERY', 'TUTORIAL_FORMAT', 'DISTANCE_LEARNING',
-      'TUTORIAL', 'SEARCH', 'SEARCH_ALIAS'
+      'MODE_OF_DELIVERY', 'SEARCH', 'SEARCH_ALIAS'
     ]
   }
 };
@@ -223,9 +220,6 @@ export const FilterObjectType = {
   product_types: 'string[]',
   products: 'string[]',
   modes_of_delivery: 'string[]',
-  tutorial_format: 'string | null',
-  distance_learning: 'boolean',
-  tutorial: 'boolean',
   searchQuery: 'string'
 };
 ```
@@ -236,17 +230,15 @@ export const FilterObjectType = {
 ```javascript
 describe('FilterUrlManager', () => {
   describe('toUrlParams', () => {
-    // Positive cases (18 tests)
+    // Positive cases (16 tests)
     test('converts subjects array to indexed parameters')
     test('converts product_types to comma-separated group parameter')
-    test('converts boolean filters correctly')
     test('converts all filter types simultaneously')
     test('handles single subject')
     test('handles multiple subjects (2-10)')
     // ... more positive tests
 
-    // Negative cases (8 tests)
-    test('omits false boolean filters')
+    // Negative cases (7 tests)
     test('omits null/undefined values')
     test('omits empty arrays')
     test('returns empty params for empty filters')
@@ -261,18 +253,16 @@ describe('FilterUrlManager', () => {
   });
 
   describe('fromUrlParams', () => {
-    // Positive cases (18 tests)
+    // Positive cases (16 tests)
     test('parses subject_code parameter to subjects array')
     test('parses multiple subjects with subject_1, subject_2')
     test('parses comma-separated group to product_types array')
-    test('parses boolean parameters correctly')
     test('parses search query from search or q parameter')
     // ... more positive tests
 
-    // Negative cases (8 tests)
+    // Negative cases (7 tests)
     test('returns default empty filter structure for empty params')
     test('ignores unknown parameters')
-    test('handles malformed boolean values')
     // ... more negative tests
 
     // Edge cases (6 tests)
@@ -310,7 +300,7 @@ describe('FilterUrlManager', () => {
   });
 });
 
-// Total: ~75 tests targeting ≥95% coverage
+// Total: ~65 tests targeting ≥95% coverage
 ```
 
 ### 3. Integration Points
