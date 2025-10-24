@@ -8,25 +8,27 @@
  * Coverage: ≥95% test coverage
  *
  * Story 1.10 - Centralized URL Parameter Utility
+ * Story 1.11 - Migrated to use FilterRegistry (AC7)
  */
 
+import { FilterRegistry } from '../store/filters/filterRegistry';
+
 /**
- * URL parameter name constants
- * Maps filter types to their corresponding URL parameter names
+ * DEPRECATED: URL_PARAM_KEYS - Use FilterRegistry instead
+ * Kept for backward compatibility only
+ * @deprecated Use FilterRegistry.get(filterType).urlParam instead
  */
 export const URL_PARAM_KEYS = {
   SUBJECT: 'subject_code',
-  SUBJECT_INDEXED: 'subject',  // For subject_1, subject_2, etc.
+  SUBJECT_INDEXED: 'subject',
   CATEGORY: 'category_code',
-  CATEGORY_INDEXED: 'category',  // For category_1, category_2, etc.
-  GROUP: 'group',  // Legacy name for product_types
+  CATEGORY_INDEXED: 'category',
+  GROUP: 'group',
   PRODUCT: 'product',
   MODE_OF_DELIVERY: 'mode_of_delivery',
   SEARCH_QUERY: 'search_query',
-
-  // Aliases for backward compatibility
-  SEARCH_ALIAS: 'q',  // Alternative for search_query
-  SUBJECT_ALIAS: 'subject',  // Alternative for subject_code
+  SEARCH_ALIAS: 'q',
+  SUBJECT_ALIAS: 'subject',
 };
 
 /**
@@ -84,25 +86,36 @@ export const toUrlParams = (filters) => {
     params.set(paramName, validValues.join(','));
   };
 
-  // Add subjects (indexed format)
-  addIndexedParams(filters.subjects, URL_PARAM_KEYS.SUBJECT, URL_PARAM_KEYS.SUBJECT_INDEXED);
+  // Dynamically add filters using FilterRegistry (Story 1.11 AC7)
+  const registeredFilters = FilterRegistry.getAll();
 
-  // Add categories (indexed format)
-  addIndexedParams(filters.categories, URL_PARAM_KEYS.CATEGORY, URL_PARAM_KEYS.CATEGORY_INDEXED);
+  registeredFilters.forEach((config) => {
+    const filterType = config.type;
+    const values = filters[filterType];
 
-  // Add product types (comma-separated, legacy name 'group')
-  addCommaSeparatedParam(filters.product_types, URL_PARAM_KEYS.GROUP);
+    // Skip if no values
+    if (!values) return;
 
-  // Add products (comma-separated)
-  addCommaSeparatedParam(filters.products, URL_PARAM_KEYS.PRODUCT);
+    // Handle string filters (searchQuery)
+    if (config.dataType === 'string') {
+      if (typeof values === 'string' && values.trim()) {
+        params.set(config.urlParam, values.trim());
+      }
+      return;
+    }
 
-  // Add modes of delivery (comma-separated)
-  addCommaSeparatedParam(filters.modes_of_delivery, URL_PARAM_KEYS.MODE_OF_DELIVERY);
-
-  // Add search query (only if not empty, trim whitespace)
-  if (filters.searchQuery && filters.searchQuery.trim()) {
-    params.set(URL_PARAM_KEYS.SEARCH_QUERY, filters.searchQuery.trim());
-  }
+    // Handle array filters
+    if (config.dataType === 'array' && Array.isArray(values)) {
+      if (config.urlFormat === 'indexed') {
+        // Indexed format (e.g., subject_code, subject_1, subject_2)
+        const indexedBase = config.urlParamAliases?.[0] || config.urlParam;
+        addIndexedParams(values, config.urlParam, indexedBase);
+      } else if (config.urlFormat === 'comma-separated') {
+        // Comma-separated format (e.g., group=PRINTED,EBOOK)
+        addCommaSeparatedParam(values, config.urlParam);
+      }
+    }
+  });
 
   return params;
 };
@@ -166,26 +179,40 @@ export const fromUrlParams = (searchParams) => {
       .filter(v => v.length > 0);
   };
 
-  // Parse subjects (indexed format: subject_code, subject_1, subject_2)
-  filters.subjects = parseIndexedParams(URL_PARAM_KEYS.SUBJECT, URL_PARAM_KEYS.SUBJECT_INDEXED);
+  // Dynamically parse filters using FilterRegistry (Story 1.11 AC7)
+  const registeredFilters = FilterRegistry.getAll();
 
-  // Parse categories (indexed format: category_code, category_1, category_2)
-  filters.categories = parseIndexedParams(URL_PARAM_KEYS.CATEGORY, URL_PARAM_KEYS.CATEGORY_INDEXED);
+  registeredFilters.forEach((config) => {
+    const filterType = config.type;
 
-  // Parse product types (comma-separated, legacy name 'group')
-  filters.product_types = parseCommaSeparatedParam(URL_PARAM_KEYS.GROUP);
+    // Handle string filters (searchQuery)
+    if (config.dataType === 'string') {
+      // Check primary URL param and aliases
+      let value = params.get(config.urlParam);
+      if (!value && config.urlParamAliases) {
+        for (const alias of config.urlParamAliases) {
+          value = params.get(alias);
+          if (value) break;
+        }
+      }
+      if (value) {
+        filters[filterType] = value;
+      }
+      return;
+    }
 
-  // Parse products (comma-separated)
-  filters.products = parseCommaSeparatedParam(URL_PARAM_KEYS.PRODUCT);
-
-  // Parse modes of delivery (comma-separated)
-  filters.modes_of_delivery = parseCommaSeparatedParam(URL_PARAM_KEYS.MODE_OF_DELIVERY);
-
-  // Parse search query (check both search_query and q alias)
-  const searchQuery = params.get(URL_PARAM_KEYS.SEARCH_QUERY) || params.get(URL_PARAM_KEYS.SEARCH_ALIAS);
-  if (searchQuery) {
-    filters.searchQuery = searchQuery;
-  }
+    // Handle array filters
+    if (config.dataType === 'array') {
+      if (config.urlFormat === 'indexed') {
+        // Indexed format (e.g., subject_code, subject_1, subject_2)
+        const indexedBase = config.urlParamAliases?.[0] || config.urlParam;
+        filters[filterType] = parseIndexedParams(config.urlParam, indexedBase);
+      } else if (config.urlFormat === 'comma-separated') {
+        // Comma-separated format (e.g., group=PRINTED,EBOOK)
+        filters[filterType] = parseCommaSeparatedParam(config.urlParam);
+      }
+    }
+  });
 
   return filters;
 };
@@ -217,19 +244,35 @@ export const hasActiveFilters = (filters) => {
     return false;
   }
 
-  // Check array filters
-  const hasArrayFilters =
-    (filters.subjects && filters.subjects.length > 0) ||
-    (filters.categories && filters.categories.length > 0) ||
-    (filters.product_types && filters.product_types.length > 0) ||
-    (filters.products && filters.products.length > 0) ||
-    (filters.modes_of_delivery && filters.modes_of_delivery.length > 0);
+  // Dynamically check all registered filters (Story 1.11 AC7)
+  const registeredFilters = FilterRegistry.getAll();
 
-  // Check string filters
-  const hasStringFilters =
-    !!(filters.searchQuery && filters.searchQuery.trim() !== '');
+  for (const config of registeredFilters) {
+    const filterType = config.type;
+    const value = filters[filterType];
 
-  return hasArrayFilters || hasStringFilters;
+    // Check array filters
+    if (config.dataType === 'array' && Array.isArray(value) && value.length > 0) {
+      return true;
+    }
+
+    // Check string filters
+    if (config.dataType === 'string' && typeof value === 'string' && value.trim() !== '') {
+      return true;
+    }
+
+    // Check boolean filters
+    if (config.dataType === 'boolean' && value === true) {
+      return true;
+    }
+
+    // Check number filters
+    if (config.dataType === 'number' && typeof value === 'number') {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 /**
@@ -259,15 +302,28 @@ export const areFiltersEqual = (filters1, filters2) => {
     return arr1.every((val, index) => val === arr2[index]);
   };
 
-  // Compare array filters
-  if (!arraysEqual(filters1.subjects, filters2.subjects)) return false;
-  if (!arraysEqual(filters1.categories, filters2.categories)) return false;
-  if (!arraysEqual(filters1.product_types, filters2.product_types)) return false;
-  if (!arraysEqual(filters1.products, filters2.products)) return false;
-  if (!arraysEqual(filters1.modes_of_delivery, filters2.modes_of_delivery)) return false;
+  // Dynamically compare all registered filters (Story 1.11 AC7)
+  const registeredFilters = FilterRegistry.getAll();
 
-  // Compare string filters
-  if (filters1.searchQuery !== filters2.searchQuery) return false;
+  for (const config of registeredFilters) {
+    const filterType = config.type;
+    const value1 = filters1[filterType];
+    const value2 = filters2[filterType];
+
+    // Compare array filters
+    if (config.dataType === 'array') {
+      if (!arraysEqual(value1, value2)) {
+        return false;
+      }
+    }
+
+    // Compare string/boolean/number filters
+    if (config.dataType === 'string' || config.dataType === 'boolean' || config.dataType === 'number') {
+      if (value1 !== value2) {
+        return false;
+      }
+    }
+  }
 
   return true;
 };
