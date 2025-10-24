@@ -8,7 +8,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
     Box,
     Container,
@@ -57,11 +57,18 @@ import RulesEngineInlineAlert from '../Common/RulesEngineInlineAlert';
 import "../../styles/product_list.css";
 
 const ProductList = React.memo(() => {
+    console.log('[ProductList] Component render');
+
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const navigate = useNavigate();
-    const location = useLocation();
     const dispatch = useDispatch();
+
+    // Log mount/unmount
+    React.useEffect(() => {
+        console.log('[ProductList] MOUNTED');
+        return () => console.log('[ProductList] UNMOUNTED');
+    }, []);
 
     // Context hooks
     const { addToCart, cartData } = useCart();
@@ -314,16 +321,16 @@ const ProductList = React.memo(() => {
 						{isMobile && <FilterPanel showMobile />}
 					</Box>
 				</Grid>
-				<Grid container spacing={3}>
+				<Grid container spacing={2}>
 					{/* Filter Panel - Desktop Sidebar */}
 					{!isMobile && (
-						<Grid size={{ xs: 12, lg: 2 }}>
-							<FilterPanel isSearchMode={isSearchMode} />
+						<Grid size={{ xs: 12, lg: 3 }}>
+							<FilterPanel key="desktop-filter-panel" isSearchMode={isSearchMode} />
 						</Grid>
 					)}
 
 					{/* Main Content */}
-					<Grid size={{ xs: 12, lg: 10 }}>
+					<Grid size={{ xs: 12, lg: 9 }}>
 						<Box sx={{ mb: 0 }}>
 							{/* Search Box */}
 							{/* <SearchBox
