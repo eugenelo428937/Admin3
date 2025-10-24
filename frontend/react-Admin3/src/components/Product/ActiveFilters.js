@@ -47,41 +47,18 @@ import {
     setSearchFilterProductIds,
     clearAllFilters
 } from '../../store/slices/filtersSlice';
+import { FilterRegistry } from '../../store/filters/filterRegistry';
 
 /**
- * Filter type configuration for display names and actions
+ * Map filter types to their Redux removal actions
+ * NOTE: FilterRegistry provides metadata (labels, colors), but Redux actions must be hardcoded
  */
-const FILTER_CONFIG = {
-    subjects: {
-        label: 'Subject',
-        pluralLabel: 'Subjects',
-        removeAction: removeSubjectFilter,
-        color: 'primary'
-    },
-    categories: {
-        label: 'Category',
-        pluralLabel: 'Categories',
-        removeAction: removeCategoryFilter,
-        color: 'secondary'
-    },
-    product_types: {
-        label: 'Product Type',
-        pluralLabel: 'Product Types',
-        removeAction: removeProductTypeFilter,
-        color: 'info'
-    },
-    products: {
-        label: 'Product',
-        pluralLabel: 'Products',
-        removeAction: removeProductFilter,
-        color: 'success'
-    },
-    modes_of_delivery: {
-        label: 'Product Type',
-        pluralLabel: 'Product Types',
-        removeAction: removeModeOfDeliveryFilter,
-        color: 'warning'
-    }
+const FILTER_REMOVAL_ACTIONS = {
+    subjects: removeSubjectFilter,
+    categories: removeCategoryFilter,
+    product_types: removeProductTypeFilter,
+    products: removeProductFilter,
+    modes_of_delivery: removeModeOfDeliveryFilter,
 };
 
 const ActiveFilters = ({ 
@@ -104,11 +81,9 @@ const ActiveFilters = ({
      * Handle removing a specific filter value
      */
     const handleRemoveFilter = useCallback((filterType, value) => {
-        const config = FILTER_CONFIG[filterType];
-        if (config) {
-            // Navbar filters use removeValue, array filters use the passed value
-            const valueToRemove = config.removeValue !== undefined ? config.removeValue : value;
-            dispatch(config.removeAction(valueToRemove));
+        const removeAction = FILTER_REMOVAL_ACTIONS[filterType];
+        if (removeAction) {
+            dispatch(removeAction(value));
         }
     }, [dispatch]);
 
@@ -148,48 +123,59 @@ const ActiveFilters = ({
     }, []);
 
     /**
-     * Generate array of active filter chips
+     * Generate array of active filter chips using FilterRegistry
      */
     const activeFilterChips = useMemo(() => {
         const chips = [];
 
         // Add search query chip first if present
         if (searchQuery && searchQuery.length >= 3) {
+            const searchConfig = FilterRegistry.get('searchQuery');
             chips.push({
                 key: 'search-query',
                 filterType: 'searchQuery',
                 value: searchQuery,
                 label: `Search Results for "${searchQuery}"`,
-                typeLabel: 'Search',
-                color: 'info',
-                fullLabel: `Search: ${searchQuery}`,
+                typeLabel: searchConfig?.label || 'Search',
+                color: searchConfig?.color || 'info',
+                fullLabel: `${searchConfig?.label || 'Search'}: ${searchQuery}`,
                 isSearchQuery: true // Special flag for search query
             });
         }
 
-        Object.entries(filters).forEach(([filterType, values]) => {
-            if (Array.isArray(values) && values.length > 0) {
-                const config = FILTER_CONFIG[filterType];
-                if (!config) return;
+        // Iterate through all registered filters (sorted by order)
+        const registeredFilters = FilterRegistry.getAll();
 
-                values.forEach((value, index) => {
-                    // Limit number of chips shown
-                    if (chips.length >= maxChipsToShow) return;
+        registeredFilters.forEach((config) => {
+            const filterType = config.type;
+            const values = filters[filterType];
 
-                    const displayLabel = getDisplayLabel(filterType, value, filterCounts);
-                    const chipKey = `${filterType}-${value}-${index}`;
-
-                    chips.push({
-                        key: chipKey,
-                        filterType,
-                        value,
-                        label: displayLabel,
-                        typeLabel: config.label,
-                        color: config.color,
-                        fullLabel: `${config.label}: ${displayLabel}`
-                    });
-                });
+            // Skip searchQuery (already handled above) and non-array values
+            if (filterType === 'searchQuery' || !Array.isArray(values) || values.length === 0) {
+                return;
             }
+
+            values.forEach((value, index) => {
+                // Limit number of chips shown
+                if (chips.length >= maxChipsToShow) return;
+
+                // Use FilterRegistry's getDisplayValue or fallback to getDisplayLabel
+                const displayLabel = config.getDisplayValue
+                    ? config.getDisplayValue(value, filterCounts[filterType])
+                    : getDisplayLabel(filterType, value, filterCounts);
+
+                const chipKey = `${filterType}-${value}-${index}`;
+
+                chips.push({
+                    key: chipKey,
+                    filterType,
+                    value,
+                    label: `${config.label}: ${displayLabel}`, // Full format for chip display
+                    typeLabel: config.label,
+                    color: config.color,
+                    fullLabel: `${config.label}: ${displayLabel}`
+                });
+            });
         });
 
         return chips;

@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch, shallowEqual } from 'react-redux';
 import {
     Box,
     Paper,
@@ -53,45 +53,105 @@ import {
     clearAllFilters,
     clearFilterType
 } from '../../store/slices/filtersSlice';
+import { FilterRegistry } from '../../store/filters/filterRegistry';
 
-const FilterPanel = ({ 
+// Deep equality check for objects (simple implementation)
+const deepEqual = (obj1, obj2) => {
+    if (obj1 === obj2) return true;
+    if (obj1 == null || obj2 == null) return false;
+    if (typeof obj1 !== 'object' || typeof obj2 !== 'object') return obj1 === obj2;
+
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+
+    if (keys1.length !== keys2.length) return false;
+
+    for (let key of keys1) {
+        if (!keys2.includes(key)) return false;
+        if (!deepEqual(obj1[key], obj2[key])) return false;
+    }
+
+    return true;
+};
+
+const FilterPanel = ({
     isSearchMode = false,
-    showMobile = false 
+    showMobile = false
 }) => {
+    console.log('[FilterPanel] Component render', { isSearchMode, showMobile });
+
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const dispatch = useDispatch();
-    
-    // Redux state
-    const filters = useSelector(selectFilters);
-    const filterCounts = useSelector(selectFilterCounts);
+
+    // Redux state - use deep equality check to prevent unnecessary re-renders
+    // This prevents re-renders when filterCounts object reference changes but values are the same
+    const filters = useSelector(selectFilters, deepEqual);
+    const filterCounts = useSelector(selectFilterCounts, deepEqual);
     const isLoading = useSelector(state => state.filters.isLoading);
     const error = useSelector(state => state.filters.error);
 
-    // Local state
-    const [expandedPanels, setExpandedPanels] = useState({
-        subjects: true,
-        categories: false,
-        productTypes: false,
-        products: false,
-        modesOfDelivery: false
+    console.log('[FilterPanel] Redux state', { subjects: filters.subjects, filterCounts: filterCounts.subjects });
+
+    // Local state - persist expanded panels across remounts (React.StrictMode issue)
+    const [expandedPanels, setExpandedPanels] = useState(() => {
+        // Try to restore from sessionStorage
+        try {
+            const saved = sessionStorage.getItem('filterPanelExpandedState');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+        } catch (e) {
+            console.warn('Failed to restore filter panel state:', e);
+        }
+        // Default state
+        return {
+            subjects: true,
+            categories: false,
+            product_types: false,  // Match Redux state key format
+            products: false,
+            modes_of_delivery: false  // Match Redux state key format
+        };
     });
     const [drawerOpen, setDrawerOpen] = useState(false);
+
+    console.log('[FilterPanel] Expanded panels state', expandedPanels);
+
+    // Persist expanded panels state to sessionStorage
+    React.useEffect(() => {
+        try {
+            sessionStorage.setItem('filterPanelExpandedState', JSON.stringify(expandedPanels));
+        } catch (e) {
+            console.warn('Failed to save filter panel state:', e);
+        }
+    }, [expandedPanels]);
+
+    // Log mount/unmount
+    React.useEffect(() => {
+        console.log('[FilterPanel] MOUNTED');
+        return () => console.log('[FilterPanel] UNMOUNTED');
+    }, []);
 
     /**
      * Handle accordion panel expansion
      */
     const handlePanelChange = useCallback((panel) => (event, isExpanded) => {
-        setExpandedPanels(prev => ({
-            ...prev,
-            [panel]: isExpanded
-        }));
+        console.log('[FilterPanel] handlePanelChange', { panel, isExpanded });
+        setExpandedPanels(prev => {
+            const newState = {
+                ...prev,
+                [panel]: isExpanded
+            };
+            console.log('[FilterPanel] New expanded state', newState);
+            return newState;
+        });
     }, []);
 
     /**
      * Handle filter selection
      */
     const handleFilterChange = useCallback((filterType, value) => {
+        console.log('[FilterPanel] handleFilterChange called', { filterType, value });
         switch (filterType) {
             case 'subjects':
                 dispatch(toggleSubjectFilter(value));
@@ -268,86 +328,70 @@ const FilterPanel = ({
     }, [filters, expandedPanels, isLoading, handlePanelChange, handleFilterChange, handleClearFilterType]);
 
     /**
-     * Filter panel content
+     * Filter panel content - uses FilterRegistry for dynamic rendering
      */
-    const filterPanelContent = useMemo(() => (
-        <Box>
-            {error && (
-                <Alert severity="error" sx={{ mb: 2 }}>
-                    {error}
-                </Alert>
-            )}
-            
-            <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center',
-                mb: 2,
-                px: 1
-            }}>
-                <Typography variant="h6" sx={{ fontSize: '1.1rem', fontWeight: 'medium' }}>
-                    Filters
-                </Typography>
-                {totalActiveFilters > 0 && (
-                    <Button
-                        size="small"
-                        startIcon={<ClearIcon />}
-                        onClick={handleClearAllFilters}
-                        sx={{ minWidth: 'auto' }}
-                    >
-                        Clear All
-                    </Button>
+    const filterPanelContent = useMemo(() => {
+        // Get all registered filters from registry
+        const registeredFilters = FilterRegistry.getAll();
+
+        return (
+            <Box>
+                {error && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                        {error}
+                    </Alert>
                 )}
+
+                <Box sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 2,
+                    px: 1
+                }}>
+                    <Typography variant="h6" sx={{ fontSize: '1.1rem', fontWeight: 'medium' }}>
+                        Filters
+                    </Typography>
+                    {totalActiveFilters > 0 && (
+                        <Button
+                            size="small"
+                            startIcon={<ClearIcon />}
+                            onClick={handleClearAllFilters}
+                            sx={{ minWidth: 'auto' }}
+                        >
+                            Clear All
+                        </Button>
+                    )}
+                </Box>
+
+                <Divider sx={{ mb: 2 }} />
+
+                {/* Render all filters from registry (except searchQuery which is handled separately) */}
+                {registeredFilters.map((filterConfig) => {
+                    // Skip searchQuery filter (not rendered in filter panel)
+                    if (filterConfig.type === 'searchQuery') {
+                        return null;
+                    }
+
+                    return (
+                        <React.Fragment key={filterConfig.type}>
+                            {renderFilterSection(
+                                filterConfig.pluralLabel,
+                                filterConfig.type,
+                                filterCounts[filterConfig.type] || {},
+                                filterCounts[filterConfig.type]
+                            )}
+                        </React.Fragment>
+                    );
+                })}
             </Box>
-
-            <Divider sx={{ mb: 2 }} />
-
-            {/* Subjects Filter */}
-            {renderFilterSection(
-                'Subjects',
-                'subjects',
-                filterCounts.subjects || {},
-                filterCounts.subjects
-            )}
-
-            {/* Categories Filter */}
-            {renderFilterSection(
-                'Categories',
-                'categories',
-                filterCounts.categories || {},
-                filterCounts.categories
-            )}
-
-            {/* Product Types Filter */}
-            {renderFilterSection(
-                'Product Types',
-                'product_types',
-                filterCounts.product_types || {},
-                filterCounts.product_types
-            )}
-
-            {/* Products Filter */}
-            {renderFilterSection(
-                'Products',
-                'products',
-                filterCounts.products || {},
-                filterCounts.products
-            )}
-
-            {/* Modes of Delivery Filter */}
-            {renderFilterSection(
-                'Delivery Mode',
-                'modes_of_delivery',
-                filterCounts.modes_of_delivery || {},
-                filterCounts.modes_of_delivery
-            )}
-        </Box>
-    ), [
+        );
+    }, [
         error,
         totalActiveFilters,
         filterCounts,
         handleClearAllFilters,
-        renderFilterSection,       
+        renderFilterSection,
         dispatch,
         handlePanelChange
     ]);
@@ -418,4 +462,13 @@ const FilterPanel = ({
     );
 };
 
-export default FilterPanel;
+// Custom comparison function for React.memo to prevent unnecessary re-renders
+const arePropsEqual = (prevProps, nextProps) => {
+    // Only re-render if props actually change
+    return (
+        prevProps.isSearchMode === nextProps.isSearchMode &&
+        prevProps.showMobile === nextProps.showMobile
+    );
+};
+
+export default React.memo(FilterPanel, arePropsEqual);
