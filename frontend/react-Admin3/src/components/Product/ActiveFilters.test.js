@@ -522,4 +522,176 @@ describe('ActiveFilters Component', () => {
         });
     });
 
+    describe('FilterRegistry Integration (Story 1.11)', () => {
+        // No beforeEach needed - use default FilterRegistry registration
+        // Tests should work with the globally registered filters
+
+        test('uses FilterRegistry for filter colors instead of hardcoded FILTER_CONFIG', () => {
+            const { FilterRegistry } = require('../../store/filters/filterRegistry');
+
+            const initialState = {
+                subjects: ['CM2'],
+                categories: ['Materials'],
+                product_types: ['Core Study Material'],
+            };
+
+            renderWithProviders(<ActiveFilters />, { initialState });
+
+            // Verify chips have colors from FilterRegistry, not hardcoded values
+            const subjectChip = screen.getByText(/CM2/).closest('.MuiChip-root');
+            const categoryChip = screen.getByText(/Materials/).closest('.MuiChip-root');
+            const productTypeChip = screen.getByText(/Core Study Material/).closest('.MuiChip-root');
+
+            // Check colors match FilterRegistry configuration
+            expect(subjectChip).toHaveClass('MuiChip-colorPrimary'); // From registry: color: 'primary'
+            expect(categoryChip).toHaveClass('MuiChip-colorInfo'); // From registry: color: 'info'
+            expect(productTypeChip).toHaveClass('MuiChip-colorSuccess'); // From registry: color: 'success'
+        });
+
+        test('uses FilterRegistry for filter labels instead of hardcoded FILTER_CONFIG', () => {
+            const initialState = {
+                subjects: ['CM2'],
+                categories: ['Materials'],
+                modes_of_delivery: ['Ebook'],
+            };
+
+            renderWithProviders(<ActiveFilters />, { initialState });
+
+            // Verify labels come from FilterRegistry.label, not hardcoded FILTER_CONFIG
+            expect(screen.getByText('Subject: CM2')).toBeInTheDocument();
+            expect(screen.getByText('Category: Materials')).toBeInTheDocument();
+            expect(screen.getByText('Mode of Delivery: Ebook')).toBeInTheDocument();
+        });
+
+        test('automatically renders chips for new filter types added to registry', () => {
+            const { FilterRegistry } = require('../../store/filters/filterRegistry');
+
+            // Register a new filter type dynamically
+            FilterRegistry.register({
+                type: 'tutorial_location',
+                label: 'Tutorial Location',
+                pluralLabel: 'Tutorial Locations',
+                urlParam: 'tutorial_location',
+                color: 'secondary',
+                multiple: true,
+                dataType: 'array',
+                urlFormat: 'comma-separated',
+                getDisplayValue: (value) => value,
+                order: 6,
+            });
+
+            const initialState = {
+                subjects: ['CM2'],
+                tutorial_location: ['London'], // New filter value
+            };
+
+            renderWithProviders(<ActiveFilters />, { initialState });
+
+            // Verify new filter type renders WITHOUT modifying ActiveFilters.js
+            expect(screen.getByText('Subject: CM2')).toBeInTheDocument();
+            // Now that we've migrated, the new filter should render automatically
+            expect(screen.getByText('Tutorial Location: London')).toBeInTheDocument();
+        });
+
+        test('uses FilterRegistry.getDisplayValue for custom value formatting', () => {
+            const { FilterRegistry } = require('../../store/filters/filterRegistry');
+
+            // Register filter with custom getDisplayValue function
+            FilterRegistry.register({
+                type: 'exam_level',
+                label: 'Exam Level',
+                pluralLabel: 'Exam Levels',
+                urlParam: 'exam_level',
+                color: 'warning',
+                multiple: true,
+                dataType: 'array',
+                urlFormat: 'comma-separated',
+                getDisplayValue: (value) => `Level ${value}`,
+                order: 7,
+            });
+
+            const initialState = {
+                exam_level: ['3'], // Should display as "Level 3"
+            };
+
+            renderWithProviders(<ActiveFilters />, { initialState });
+
+            // Verify getDisplayValue is used from FilterRegistry
+            expect(screen.getByText('Exam Level: Level 3')).toBeInTheDocument();
+        });
+
+        test('renders filter chips in order specified by FilterRegistry.order', () => {
+            const { FilterRegistry } = require('../../store/filters/filterRegistry');
+
+            const initialState = {
+                subjects: ['CM2'],        // order: 1
+                categories: ['Materials'], // order: 2
+                product_types: ['Core Study Material'], // order: 3
+            };
+
+            renderWithProviders(<ActiveFilters />, { initialState });
+
+            // Verify chips appear in order by checking the text content
+            const chips = screen.getAllByRole('button', { name: /delete/i })
+                .map(btn => btn.closest('.MuiChip-root').textContent);
+
+            // Verify chips appear in order specified by FilterRegistry.order
+            expect(chips[0]).toBe('Subject: CM2');
+            expect(chips[1]).toBe('Category: Materials');
+            expect(chips[2]).toBe('Product Type: Core Study Material');
+        });
+
+        test('no hardcoded FILTER_CONFIG remains in component (AC6 - Story 1.11)', () => {
+            // This test verifies the core goal: eliminating hardcoded filter configs
+            const { FilterRegistry } = require('../../store/filters/filterRegistry');
+
+            const initialState = {
+                subjects: ['CM2', 'SA1'],
+                categories: ['Materials'],
+                product_types: ['Core Study Material'],
+                products: ['Product A'],
+                modes_of_delivery: ['Ebook'],
+            };
+
+            renderWithProviders(<ActiveFilters />, { initialState });
+
+            // Verify all 5 filter types render correctly using FilterRegistry
+            expect(screen.getByText('Subject: CM2')).toBeInTheDocument();
+            expect(screen.getByText('Subject: SA1')).toBeInTheDocument();
+            expect(screen.getByText('Category: Materials')).toBeInTheDocument();
+            expect(screen.getByText('Product Type: Core Study Material')).toBeInTheDocument();
+            expect(screen.getByText('Product: Product A')).toBeInTheDocument();
+            expect(screen.getByText('Mode of Delivery: Ebook')).toBeInTheDocument();
+
+            // Verify all chips have correct colors from FilterRegistry
+            expect(screen.getByText(/CM2/).closest('.MuiChip-root')).toHaveClass('MuiChip-colorPrimary');
+            expect(screen.getByText(/Materials/).closest('.MuiChip-root')).toHaveClass('MuiChip-colorInfo');
+            expect(screen.getByText(/Core Study Material/).closest('.MuiChip-root')).toHaveClass('MuiChip-colorSuccess');
+        });
+
+        test('handles registry-based filter removal actions', async () => {
+            const user = userEvent.setup();
+            const { FilterRegistry } = require('../../store/filters/filterRegistry');
+
+            const initialState = {
+                subjects: ['CM2'],
+            };
+
+            renderWithProviders(<ActiveFilters />, { initialState });
+
+            // Click delete button on the chip
+            const deleteButtons = screen.getAllByTestId('ClearIcon');
+            await user.click(deleteButtons[0]); // Click first delete button (CM2)
+
+            // Verify correct removal action dispatched
+            // This verifies FILTER_REMOVAL_ACTIONS map works correctly
+            expect(mockDispatch).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: expect.stringContaining('removeSubjectFilter'),
+                    payload: 'CM2',
+                })
+            );
+        });
+    });
+
 });

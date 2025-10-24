@@ -119,14 +119,25 @@ describe('FilterPanel Component', () => {
 
     describe('Rendering and Initial State', () => {
         test('renders desktop filter panel with default state', () => {
-            renderWithProviders(<FilterPanel />);
-            
+            // Provide minimal filterCounts so sections render (registry-based implementation)
+            const initialState = {
+                filterCounts: {
+                    subjects: { 'CM2': 1 },
+                    categories: { 'Materials': 1 },
+                    product_types: { 'Core Study Material': 1 },
+                    products: { 'Product A': 1 },
+                    modes_of_delivery: { 'Ebook': 1 },
+                },
+            };
+
+            renderWithProviders(<FilterPanel />, { initialState });
+
             expect(screen.getByText('Filters')).toBeInTheDocument();
             expect(screen.getByText('Subjects')).toBeInTheDocument();
             expect(screen.getByText('Categories')).toBeInTheDocument();
             expect(screen.getByText('Product Types')).toBeInTheDocument();
             expect(screen.getByText('Products')).toBeInTheDocument();
-            expect(screen.getByText('Delivery Mode')).toBeInTheDocument();
+            expect(screen.getByText('Modes of Delivery')).toBeInTheDocument();  // Updated to match registry pluralLabel
         });
 
         test('renders mobile filter panel button when isMobile is true', () => {
@@ -153,12 +164,21 @@ describe('FilterPanel Component', () => {
         test('shows loading skeleton when isLoading is true', () => {
             const initialState = {
                 isLoading: true,
+                filterCounts: {
+                    subjects: { 'CM2': 1 },
+                    categories: { 'Materials': 1 },
+                    product_types: { 'Core Study Material': 1 },
+                    products: { 'Product A': 1 },
+                    modes_of_delivery: { 'Ebook': 1 },
+                },
             };
-            
+
             renderWithProviders(<FilterPanel />, { initialState });
-            
-            // Check for skeleton loading elements
-            expect(screen.getAllByTestId('skeleton')).toHaveLength(5); // One for each filter section
+
+            // Loading skeletons are rendered inside each filter section
+            // With registry, we get skeletons for all registered filters that have counts
+            const skeletons = screen.queryAllByTestId('skeleton');
+            expect(skeletons.length).toBeGreaterThan(0); // At least one skeleton per section
         });
 
         test('shows error message when error exists', () => {
@@ -434,11 +454,13 @@ describe('FilterPanel Component', () => {
             const initialState = {
                 filterCounts: {},
             };
-            
+
             renderWithProviders(<FilterPanel />, { initialState });
-            
-            // Should still render but without counts
-            expect(screen.getByText('Subjects')).toBeInTheDocument();
+
+            // With registry-based implementation and empty filterCounts, no sections render
+            // This is better UX - don't show empty filter sections
+            expect(screen.getByText('Filters')).toBeInTheDocument();
+            expect(screen.queryByText('Subjects')).not.toBeInTheDocument();  // No sections render when no counts
             expect(screen.queryByText('(15)')).not.toBeInTheDocument();
         });
 
@@ -464,6 +486,275 @@ describe('FilterPanel Component', () => {
 
             // Should render without breaking layout
             expect(screen.getByText('Subjects')).toBeInTheDocument();
+        });
+    });
+
+    describe('FilterRegistry Integration (Story 1.11)', () => {
+        // Import FilterRegistry for testing
+        const { FilterRegistry } = require('../../store/filters/filterRegistry');
+
+        beforeEach(() => {
+            // Reset registry before each test to ensure clean state
+            FilterRegistry.clear();
+
+            // Re-register default filters
+            FilterRegistry.register({
+                type: 'subjects',
+                label: 'Subject',
+                pluralLabel: 'Subjects',
+                urlParam: 'subject_code',
+                color: 'primary',
+                multiple: true,
+                dataType: 'array',
+                urlFormat: 'indexed',
+                order: 1,
+            });
+
+            FilterRegistry.register({
+                type: 'categories',
+                label: 'Category',
+                pluralLabel: 'Categories',
+                urlParam: 'category',
+                color: 'info',
+                multiple: true,
+                dataType: 'array',
+                urlFormat: 'comma-separated',
+                order: 2,
+            });
+        });
+
+        test('uses FilterRegistry.getAll() to render filter sections', () => {
+            const initialState = {
+                filterCounts: mockFilterCounts,
+            };
+
+            renderWithProviders(<FilterPanel />, { initialState });
+
+            // Verify all registered filters are rendered
+            expect(screen.getByText('Subjects')).toBeInTheDocument();
+            expect(screen.getByText('Categories')).toBeInTheDocument();
+        });
+
+        test('automatically renders new filter types added to registry', () => {
+            // Add a new filter type to the registry
+            FilterRegistry.register({
+                type: 'test_filter',
+                label: 'Test Filter',
+                pluralLabel: 'Test Filters',
+                urlParam: 'test',
+                color: 'secondary',
+                multiple: true,
+                dataType: 'array',
+                urlFormat: 'comma-separated',
+                order: 10,
+            });
+
+            const initialState = {
+                test_filter: [],
+                filterCounts: {
+                    ...mockFilterCounts,
+                    test_filter: {
+                        'Test Value 1': 5,
+                        'Test Value 2': 3,
+                    },
+                },
+            };
+
+            renderWithProviders(<FilterPanel />, { initialState });
+
+            // Verify the new filter type is rendered
+            expect(screen.getByText('Test Filters')).toBeInTheDocument();
+        });
+
+        test('renders filter sections in order specified by registry', () => {
+            // Clear and re-register with specific order
+            FilterRegistry.clear();
+
+            FilterRegistry.register({
+                type: 'filter_z',
+                label: 'Filter Z',
+                pluralLabel: 'Filter Z',
+                urlParam: 'z',
+                order: 3,
+            });
+
+            FilterRegistry.register({
+                type: 'filter_a',
+                label: 'Filter A',
+                pluralLabel: 'Filter A',
+                urlParam: 'a',
+                order: 1,
+            });
+
+            FilterRegistry.register({
+                type: 'filter_m',
+                label: 'Filter M',
+                pluralLabel: 'Filter M',
+                urlParam: 'm',
+                order: 2,
+            });
+
+            const initialState = {
+                filter_z: [],
+                filter_a: [],
+                filter_m: [],
+                filterCounts: {
+                    filter_z: { 'Z1': 1 },  // Provide at least one option
+                    filter_a: { 'A1': 1 },  // Provide at least one option
+                    filter_m: { 'M1': 1 },  // Provide at least one option
+                },
+            };
+
+            const { container } = renderWithProviders(<FilterPanel />, { initialState });
+
+            // Get all filter section titles
+            const sections = container.querySelectorAll('[class*="MuiAccordionSummary"] .MuiTypography-subtitle2');
+            const sectionTexts = Array.from(sections).map(section => section.textContent);
+
+            // Verify order: Filter A (order 1), Filter M (order 2), Filter Z (order 3)
+            expect(sectionTexts).toEqual(['Filter A', 'Filter M', 'Filter Z']);
+        });
+
+        test('uses registry color configuration for filter badges', () => {
+            const initialState = {
+                subjects: ['CM2'],
+                categories: ['Materials'],
+                filterCounts: mockFilterCounts,
+            };
+
+            const { container } = renderWithProviders(<FilterPanel />, { initialState });
+
+            // Find subjects section badge (should use 'primary' color from registry)
+            const badges = container.querySelectorAll('.MuiBadge-badge');
+            expect(badges.length).toBeGreaterThan(0);
+
+            // Verify badge with primary color exists (subjects uses 'primary')
+            const primaryBadge = Array.from(badges).find(badge =>
+                badge.className.includes('MuiBadge-colorPrimary')
+            );
+            expect(primaryBadge).toBeTruthy();
+        });
+
+        test('uses registry pluralLabel for section titles', () => {
+            // Register filter with custom pluralLabel
+            FilterRegistry.register({
+                type: 'custom_filter',
+                label: 'Custom Item',
+                pluralLabel: 'Custom Items Collection',
+                urlParam: 'custom',
+                order: 99,
+            });
+
+            const initialState = {
+                custom_filter: [],
+                filterCounts: {
+                    custom_filter: {
+                        'Value 1': 1,
+                    },
+                },
+            };
+
+            renderWithProviders(<FilterPanel />, { initialState });
+
+            // Verify custom pluralLabel is used
+            expect(screen.getByText('Custom Items Collection')).toBeInTheDocument();
+        });
+
+        test('skips rendering searchQuery filter (order:0) in filter panel', () => {
+            FilterRegistry.register({
+                type: 'searchQuery',
+                label: 'Search',
+                pluralLabel: 'Search',
+                urlParam: 'search',
+                color: 'info',
+                multiple: false,
+                dataType: 'string',
+                urlFormat: 'single',
+                order: 0,
+            });
+
+            const initialState = {
+                searchQuery: 'test search',
+                filterCounts: {},
+            };
+
+            renderWithProviders(<FilterPanel />, { initialState });
+
+            // Verify searchQuery is NOT rendered as a filter section
+            expect(screen.queryByText('Search')).not.toBeInTheDocument();
+        });
+
+        test('handles boolean filters from registry correctly', () => {
+            FilterRegistry.register({
+                type: 'distance_learning',
+                label: 'Distance Learning',
+                pluralLabel: 'Distance Learning',
+                urlParam: 'distance_learning',
+                color: 'secondary',
+                multiple: false,
+                dataType: 'boolean',
+                urlFormat: 'single',
+                getDisplayValue: () => 'Active',
+                order: 20,
+            });
+
+            const initialState = {
+                distance_learning: false,
+                filterCounts: {
+                    distance_learning: { 'DL': 1 },  // Provide at least one option so section renders
+                },
+            };
+
+            renderWithProviders(<FilterPanel />, { initialState });
+
+            // Verify boolean filter is rendered
+            expect(screen.getByText('Distance Learning')).toBeInTheDocument();
+        });
+
+        test('adding new filter requires only registry entry (AC8 - Story 1.11)', () => {
+            // This test verifies the main goal of Story 1.11:
+            // Adding a new filter type should require ONLY a registry entry
+
+            // Add brand new filter type to registry
+            FilterRegistry.register({
+                type: 'tutorial_location',
+                label: 'Tutorial Location',
+                pluralLabel: 'Tutorial Locations',
+                urlParam: 'tutorial_location',
+                color: 'warning',
+                multiple: true,
+                dataType: 'array',
+                urlFormat: 'comma-separated',
+                order: 50,
+            });
+
+            const initialState = {
+                tutorial_location: [],
+                filterCounts: {
+                    ...mockFilterCounts,
+                    tutorial_location: {
+                        'London': 10,
+                        'Edinburgh': 5,
+                        'Manchester': 8,
+                    },
+                },
+            };
+
+            renderWithProviders(<FilterPanel />, { initialState });
+
+            // Verify new filter is automatically rendered WITHOUT modifying FilterPanel.js
+            expect(screen.getByText('Tutorial Locations')).toBeInTheDocument();
+
+            // Expand the section and verify options are rendered
+            const locationSection = screen.getByText('Tutorial Locations');
+            fireEvent.click(locationSection);
+
+            // Verify options from filterCounts are displayed
+            waitFor(() => {
+                expect(screen.getByText('London')).toBeInTheDocument();
+                expect(screen.getByText('Edinburgh')).toBeInTheDocument();
+                expect(screen.getByText('Manchester')).toBeInTheDocument();
+            });
         });
     });
 

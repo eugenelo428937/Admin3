@@ -70,8 +70,6 @@ class FuzzySearchService:
             'product__product_variations'
         )
 
-        logger.debug(f'Total products to scan: {queryset.count()}')
-
         # Build searchable text for each product
         products_with_scores = []
         subject_matches = {}
@@ -223,7 +221,6 @@ class FuzzySearchService:
         if field_score >= threshold:
             bonus = (field_score - threshold) * (max_bonus / 30.0)  # Scale to max_bonus
             new_score = min(100, base_score + bonus)
-            logger.debug(f'[{field_name.upper()}-BONUS] Query: "{query}" | Field: "{field_value}" | Score: {field_score} | Bonus: +{bonus:.1f}')
             return new_score
 
         return base_score
@@ -253,12 +250,8 @@ class FuzzySearchService:
             token_set_score = fuzz.token_set_ratio(query, searchable_text)
             return {'score': token_set_score, 'token_sort': 0, 'partial': 0, 'token_set': token_set_score}
 
-        # Log product being evaluated
-        subject_code = product.exam_session_subject.subject.code
-        product_name = product.product.shortname or product.product.fullname
-        logger.debug(f'📊 [SCORING] Query: "{query}" | Product: [{subject_code}] {product_name}')
-
         # Extract individual fields for matching
+        subject_code = product.exam_session_subject.subject.code
         subject_code_lower = subject_code.lower()
         subject_desc = (product.exam_session_subject.subject.description or '').lower()
         product_shortname = (product.product.shortname or '').lower()
@@ -286,56 +279,45 @@ class FuzzySearchService:
             # Extract remaining query after subject code
             remaining_query = ' '.join(query_tokens[1:])  # e.g., "cor" from "cs1 cor"
 
-            logger.debug(f'   🎯 Multi-token query detected: subject="{query_tokens[0]}" + remainder="{remaining_query}"')
-
             # REDUCE subject code weight since it's just a filter
             field_scores.append(('subject_code', subject_code_score, 0.8))  # Reduced to 0.8x
-            logger.debug(f'   Subject code "{subject_code_lower}": score={subject_code_score} (weight=0.8x - reduced)')
 
             # INCREASE product name matching weight for remaining query
             if product_shortname:
                 remainder_shortname_score = fuzz.partial_ratio(remaining_query, product_shortname)
                 field_scores.append(('product_shortname_remainder', remainder_shortname_score, 3.0))  # 3.0x HIGH weight!
-                logger.debug(f'   Remainder "{remaining_query}" vs shortname "{product_shortname}": score={remainder_shortname_score} (weight=3.0x HIGH)')
 
             if product_fullname:
                 remainder_fullname_score = fuzz.token_set_ratio(remaining_query, product_fullname)
                 field_scores.append(('product_fullname_remainder', remainder_fullname_score, 2.5))  # 2.5x HIGH weight!
-                logger.debug(f'   Remainder "{remaining_query}" vs fullname "{product_fullname[:40]}...": score={remainder_fullname_score} (weight=2.5x HIGH)')
 
             # Also check full product name against full query (lower weight)
             if product_shortname:
                 shortname_score = fuzz.partial_ratio(query, product_shortname)
                 field_scores.append(('product_shortname', shortname_score, 0.5))  # Low weight
-                logger.debug(f'   Product shortname "{product_shortname}": score={shortname_score} (weight=0.5x)')
         else:
             # Single token or doesn't start with subject code - use normal weights
             field_scores.append(('subject_code', subject_code_score, 1.5))
-            logger.debug(f'   Subject code "{subject_code_lower}": score={subject_code_score} (weight=1.5x)')
 
             # 3. PRODUCT SHORTNAME - Use partial ratio (best for short query vs short name)
             if product_shortname:
                 shortname_score = fuzz.partial_ratio(query, product_shortname)
                 field_scores.append(('product_shortname', shortname_score, 1.2))  # 1.2x weight
-                logger.debug(f'   Product shortname "{product_shortname}": score={shortname_score} (weight=1.2x)')
 
         # 2. SUBJECT DESCRIPTION - Use partial ratio (substring matching)
         if subject_desc:
             subject_desc_score = fuzz.partial_ratio(query, subject_desc)
             field_scores.append(('subject_desc', subject_desc_score, 0.8))  # 0.8x weight
-            logger.debug(f'   Subject desc "{subject_desc[:30]}...": score={subject_desc_score} (weight=0.8x)')
 
         # 4. PRODUCT FULLNAME - Use token_set_ratio (handles extra words)
         if product_fullname and not has_subject_prefix:
             fullname_score = fuzz.token_set_ratio(query, product_fullname)
             field_scores.append(('product_fullname', fullname_score, 1.0))  # 1.0x weight
-            logger.debug(f'   Product fullname "{product_fullname[:40]}...": score={fullname_score} (weight=1.0x)')
 
         # 5. COMBINED QUERY vs SUBJECT+PRODUCT (for multi-word queries like "CS1 Core Reading")
         combined_target = f"{subject_code_lower} {product_shortname or product_fullname}"
         combined_score = fuzz.token_set_ratio(query, combined_target)
         field_scores.append(('combined', combined_score, 1.3))  # 1.3x weight
-        logger.debug(f'   Combined "{combined_target[:40]}...": score={combined_score} (weight=1.3x)')
 
         # Calculate weighted scores and find best match
         best_score = 0
@@ -353,8 +335,6 @@ class FuzzySearchService:
         # Cap only the display score for consistency with 0-100 scale
         uncapped_score = best_score
         final_score = min(100, int(best_score))
-
-        logger.debug(f'   🎯 Best match: {best_field} (weighted={best_score:.1f}, final={final_score})')
 
         # Store individual algorithm scores for logging (use representative values)
         token_sort_score = combined_score  # Token sort not used but needed for logging

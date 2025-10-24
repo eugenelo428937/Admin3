@@ -74,38 +74,42 @@ class OptimizedSearchService:
 
             logger.info(f'🔍 [FUZZY-SEARCH] Query: "{search_query}" found {len(fuzzy_essp_ids)} matches')
 
-        # Build optimized queryset
-        queryset = self._build_optimized_queryset(use_fuzzy_sorting=use_fuzzy_search)
+        # Build optimized queryset (base, unfiltered)
+        base_queryset = self._build_optimized_queryset(use_fuzzy_sorting=use_fuzzy_search)
 
-        # If using fuzzy search, filter to only matched ESSPs (preserves fuzzy search order)
+        # If using fuzzy search, filter base queryset to matched ESSPs
         if use_fuzzy_search and fuzzy_essp_ids:
             # Preserve fuzzy search ordering by using Case/When
             from django.db.models import Case, When, IntegerField
             preserved_order = Case(*[When(id=pk, then=pos) for pos, pk in enumerate(fuzzy_essp_ids)], output_field=IntegerField())
-            queryset = queryset.filter(id__in=fuzzy_essp_ids).order_by(preserved_order)
+            base_queryset = base_queryset.filter(id__in=fuzzy_essp_ids).order_by(preserved_order)
 
-        # Apply filters
+        # Create filtered queryset for products (separate from base for disjunctive faceting)
+        filtered_queryset = base_queryset
+
+        # Apply filters to get matching products
         if filters:
-            queryset = self._apply_optimized_filters(queryset, filters)
+            filtered_queryset = self._apply_optimized_filters(filtered_queryset, filters)
 
         # Apply navbar filters (for navigation dropdown compatibility)
         if navbar_filters:
-            queryset = self._apply_navbar_filters(queryset, navbar_filters)
-        
-        # Get counts for pagination
-        total_count = queryset.count()
-        
+            filtered_queryset = self._apply_navbar_filters(filtered_queryset, navbar_filters)
+
+        # Get counts for pagination (from filtered queryset)
+        total_count = filtered_queryset.count()
+
         # Apply pagination
         start_idx = (page - 1) * page_size
         end_idx = start_idx + page_size
-        paginated_queryset = queryset[start_idx:end_idx]
-        
+        paginated_queryset = filtered_queryset[start_idx:end_idx]
+
         # Serialize results
         serializer = ProductListSerializer(paginated_queryset, many=True)
         products_data = serializer.data
-        
-        # Generate filter counts
-        filter_counts = self._generate_optimized_filter_counts(filters, queryset)
+
+        # Generate filter counts using BASE queryset (disjunctive faceting)
+        # This ensures all filter options remain visible even when filters are applied
+        filter_counts = self._generate_optimized_filter_counts(filters, base_queryset)
         
         # Build response
         result = {

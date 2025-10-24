@@ -71,7 +71,7 @@ As a developer maintaining the product filtering system, I need a single, centra
 
 - **FR-001**: System MUST provide a centralized utility class for converting filter objects to URL parameters
 - **FR-002**: System MUST provide a method to convert URL parameters back to filter objects
-- **FR-003**: System MUST support all current filter types: subjects, categories, product_types, products, modes_of_delivery, tutorial_format, distance_learning, tutorial, searchQuery
+- **FR-003**: System MUST support all current filter types: subjects, categories, product_types, products, modes_of_delivery, searchQuery
 - **FR-004**: System MUST handle multiple subject selection using indexed parameter format (subject_code, subject_1, subject_2...)
 - **FR-005**: System MUST handle comma-separated parameter format for product types, categories, and other multi-select filters
 - **FR-006**: System MUST recognize parameter aliases (e.g., 'subject' and 'q' as alternatives to 'subject_code' and 'search')
@@ -94,14 +94,12 @@ As a developer maintaining the product filtering system, I need a single, centra
 
 - **Filter Object**: Redux state representation of active filters
   - Array fields: subjects, categories, product_types, products, modes_of_delivery
-  - String fields: tutorial_format, searchQuery
-  - Boolean fields: distance_learning, tutorial
+  - String fields: searchQuery
 
 - **URL Parameters**: Browser URL query string representation of filters
   - Indexed format: subject_code=X&subject_1=Y (for subjects)
   - Comma-separated format: group=A,B,C (for product types)
   - Single value format: search=query (for strings)
-  - Boolean format: distance_learning=true (only when true)
 
 ---
 
