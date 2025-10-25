@@ -30,11 +30,23 @@ The frontend uses Redux Toolkit for centralized product filter state management 
 
 #### Architecture
 
-**Core Files**:
+**Core Files** (Story 1.14 - Modular Structure):
 - `src/store/index.js` - Redux store configuration
-- `src/store/slices/filtersSlice.js` - Filter state and actions
+- `src/store/slices/filtersSlice.js` - Main facade (combines all filter modules)
+- `src/store/slices/baseFilters.slice.js` - Core filter state and operations (364 lines)
+- `src/store/slices/navigationFilters.slice.js` - Navigation drill-down actions (99 lines)
+- `src/store/slices/filterSelectors.js` - All filter selectors with memoization (171 lines)
 - `src/store/middleware/urlSyncMiddleware.js` - Redux ↔ URL synchronization
 - `src/store/api/catalogApi.js` - RTK Query API endpoints
+
+**Module Architecture** (Story 1.14 Refactoring):
+The filter slice was refactored from a 531-line God Object into focused modules:
+- **baseFilters**: Set, toggle, remove, clear, pagination, UI, loading actions
+- **navigationFilters**: Drill-down navigation patterns (preserves subjects, clears others)
+- **filterSelectors**: Basic, validation, and memoized derived selectors
+- **filtersSlice**: Facade pattern - combines modules + adds validation integration
+
+All existing imports remain unchanged (100% backward compatible).
 
 #### Redux DevTools Configuration
 
