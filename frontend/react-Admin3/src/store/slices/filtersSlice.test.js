@@ -31,7 +31,7 @@ import {
   selectActiveFilterCount,
 } from './filtersSlice';
 
-// Initial state for testing
+// Initial state for testing (Story 1.14 - updated to match baseFiltersInitialState)
 const initialState = {
   subjects: [],
   categories: [],
@@ -39,9 +39,7 @@ const initialState = {
   products: [],
   modes_of_delivery: [],
   searchQuery: '',
-  tutorial_format: null,
-  distance_learning: false,
-  tutorial: false,
+  searchFilterProductIds: [], // Story 1.14: Added from baseFiltersInitialState
   currentPage: 1,
   pageSize: 20,
   isFilterPanelOpen: false,
@@ -57,6 +55,7 @@ const initialState = {
     products: {},
     modes_of_delivery: {}
   },
+  validationErrors: [], // Story 1.14: Added from baseFiltersInitialState
 };
 
 describe('filtersSlice', () => {
@@ -335,6 +334,7 @@ describe('filtersSlice', () => {
         product_types: ['Core Study Material'],
         products: [],
         modes_of_delivery: ['Ebook'],
+        searchQuery: 'test search', // Story 1.14: selectFilters now includes searchQuery
       });
     });
     
