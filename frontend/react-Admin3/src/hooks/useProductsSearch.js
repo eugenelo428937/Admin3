@@ -13,6 +13,7 @@ import {
   selectSearchQuery,
   selectCurrentPage,
   selectPageSize,
+  selectHasValidationErrors,
   setLoading,
   setError,
   clearError,
@@ -43,8 +44,18 @@ export const useProductsSearch = (options = {}) => {
   const searchQuery = useSelector(selectSearchQuery);
   const currentPage = useSelector(selectCurrentPage);
   const pageSize = useSelector(selectPageSize);
+  const hasValidationErrors = useSelector(selectHasValidationErrors);
   const isLoading = useSelector(state => state.filters.isLoading);
   const error = useSelector(state => state.filters.error);
+
+  // Debug: Log Redux state on every render
+  console.log('[useProductsSearch] Redux filters state:', {
+    subjects: filters.subjects,
+    categories: filters.categories,
+    product_types: filters.product_types,
+    products: filters.products,
+    modes_of_delivery: filters.modes_of_delivery,
+  });
 
   // RTK Query lazy search hook
   const [triggerSearch, searchResult] = useLazyUnifiedSearchQuery();
@@ -81,6 +92,13 @@ export const useProductsSearch = (options = {}) => {
    * Execute the search with current parameters
    */
   const executeSearch = useCallback(async (forceSearch = false) => {
+    // Story 1.12: Prevent API calls when validation errors exist
+    if (hasValidationErrors) {
+      console.warn('Skipping API call due to filter validation errors');
+      dispatch(setLoading(false));
+      return;
+    }
+
     try {
       dispatch(setLoading(true));
       dispatch(clearError());
@@ -93,8 +111,8 @@ export const useProductsSearch = (options = {}) => {
           subjects: filters.subjects || [],
           categories: filters.categories || [],
           product_types: filters.product_types || [],
+          products: filters.products || [], // Products filter for navbar product links (e.g., Core Reading)
           modes_of_delivery: filters.modes_of_delivery || [],
-          // products filter removed - handled by searchQuery or navbar links
         },
         pagination: {
           page: currentPage,
@@ -108,14 +126,20 @@ export const useProductsSearch = (options = {}) => {
 
       console.log('[useProductsSearch] DEBUG: Search params:', {
         searchQuery: searchQuery || '(none)',
-        filtersCount: Object.keys(filters).filter(k => filters[k]?.length > 0).length,
+        filters: {
+          subjects: filters.subjects || [],
+          categories: filters.categories || [],
+          product_types: filters.product_types || [],
+          products: filters.products || [],
+          modes_of_delivery: filters.modes_of_delivery || []
+        },
         page: currentPage
       });
-      
+
       // Check if search parameters have changed (avoid duplicate requests)
       // Use a fast hash instead of JSON.stringify for performance
-      // Include searchQuery to trigger new search when query changes
-      const paramsHash = `${searchQuery||''}|${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.modes_of_delivery?.join(',')||''}|${currentPage}|${pageSize}`;
+      // Include searchQuery AND products filter to trigger new search when they change
+      const paramsHash = `${searchQuery||''}|${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.products?.join(',')||''}|${filters.modes_of_delivery?.join(',')||''}|${currentPage}|${pageSize}`;
 
       if (!forceSearch && lastSearchParamsRef.current === paramsHash) {
         dispatch(setLoading(false));
@@ -172,7 +196,7 @@ export const useProductsSearch = (options = {}) => {
       dispatch(setError(errorMessage));
       dispatch(setLoading(false));
     }
-  }, [filters, searchQuery, currentPage, pageSize, triggerSearch, dispatch]);
+  }, [hasValidationErrors, filters, searchQuery, currentPage, pageSize, triggerSearch, dispatch]);
   
   /**
    * Debounced search function
@@ -224,10 +248,10 @@ export const useProductsSearch = (options = {}) => {
   }, [clearDebounce, dispatch]);
   
   // Create stable references for effect dependencies
-  // Include searchQuery to trigger search when query changes
+  // Include searchQuery AND products filter to trigger search when they change
   const filterHash = useMemo(() => {
-    return `${searchQuery||''}|${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.modes_of_delivery?.join(',')||''}|${currentPage}|${pageSize}`;
-  }, [searchQuery, filters.subjects, filters.categories, filters.product_types, filters.modes_of_delivery, currentPage, pageSize]);
+    return `${searchQuery||''}|${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.products?.join(',')||''}|${filters.modes_of_delivery?.join(',')||''}|${currentPage}|${pageSize}`;
+  }, [searchQuery, filters.subjects, filters.categories, filters.product_types, filters.products, filters.modes_of_delivery, currentPage, pageSize]);
 
   // Auto-search when filters change (if enabled)
   useEffect(() => {
