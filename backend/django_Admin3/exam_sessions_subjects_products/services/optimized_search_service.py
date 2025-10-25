@@ -46,6 +46,10 @@ class OptimizedSearchService:
         navbar_filters = navbar_filters or {}
         pagination = pagination or {'page': 1, 'page_size': 20}
         options = options or {}
+
+        # Debug logging for products filter
+        logger.info(f"[SEARCH] Received filters: {filters}")
+        logger.info(f"[SEARCH] Products filter: {filters.get('products', 'NOT SET')}")
         
         page = pagination.get('page', 1)
         page_size = pagination.get('page_size', 20)
@@ -413,20 +417,30 @@ class OptimizedSearchService:
         # Add product metadata for filtered products (e.g., tutorial locations)
         if applied_filters.get('products'):
             from products.models import Product
-            
+
+            logger.info(f"[FILTER-COUNTS] Processing products filter: {applied_filters.get('products')}")
+
             for product_id in applied_filters['products']:
                 try:
+                    logger.info(f"[FILTER-COUNTS] Looking up Product with id={product_id}")
                     product = Product.objects.filter(id=product_id).first()
                     if product:
+                        logger.info(f"[FILTER-COUNTS] Found product: {product.shortname or product.name} (id={product_id})")
                         # Count products that match this specific product ID
                         count = base_queryset.filter(product_id=product_id).count()
+                        logger.info(f"[FILTER-COUNTS] Count for product_id={product_id}: {count}")
                         filter_counts['products'][str(product_id)] = {
                             'count': count,
                             'name': product.shortname or product.name,
                             'id': product_id
                         }
+                        logger.info(f"[FILTER-COUNTS] Added to filter_counts: {filter_counts['products'][str(product_id)]}")
+                    else:
+                        logger.warning(f"[FILTER-COUNTS] Product with id={product_id} not found in database")
                 except Exception as e:
                     logger.error(f"[FILTER-COUNTS] Error adding product metadata for {product_id}: {str(e)}")
+        else:
+            logger.info(f"[FILTER-COUNTS] No products filter in applied_filters: {applied_filters.keys()}")
 
         return filter_counts
     
