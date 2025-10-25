@@ -60,6 +60,16 @@ function App() {
 		}
 	}, []);
 
+	// Clear legacy filter cookies (Story 1.13 - Cookie Middleware Removal)
+	useEffect(() => {
+		// Clear any legacy filter cookies from before cookie middleware was removed
+		document.cookie.split(";").forEach((c) => {
+			if (c.trim().startsWith("filters_") || c.trim().startsWith("productFilters")) {
+				document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+			}
+		});
+	}, []);
+
 	return (
 		<Provider store={store}>
 			<ChakraProvider value={system}>

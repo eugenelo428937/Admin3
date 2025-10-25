@@ -1,11 +1,13 @@
 /**
  * Filters Redux Slice
- * 
+ *
  * Manages all filtering state including subjects, categories, products, etc.
  * Includes special navigation behaviors for menu interactions.
+ * Includes filter validation logic to prevent invalid filter combinations.
  */
 
 import { createSlice, createSelector } from '@reduxjs/toolkit';
+import FilterValidator from '../filters/filterValidator';
 
 const initialState = {
   // Filter values - arrays to support multiple selections
@@ -44,6 +46,9 @@ const initialState = {
     modes_of_delivery: {}
   },
 
+  // Validation errors for filter combinations (Story 1.12)
+  validationErrors: [],
+
   // Last updated timestamp for cache management
   lastUpdated: null,
 };
@@ -57,30 +62,40 @@ const filtersSlice = createSlice({
       state.subjects = action.payload;
       state.currentPage = 1; // Reset to first page when filters change
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
-    
+
     setCategories: (state, action) => {
       state.categories = action.payload;
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
-    
+
     setProductTypes: (state, action) => {
       state.product_types = action.payload;
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
-    
+
     setProducts: (state, action) => {
       state.products = action.payload;
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
-    
+
     setModesOfDelivery: (state, action) => {
       state.modes_of_delivery = action.payload;
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
     
     setSearchQuery: (state, action) => {
@@ -101,15 +116,17 @@ const filtersSlice = createSlice({
     // Multi-filter update action
     setMultipleFilters: (state, action) => {
       const { subjects, categories, product_types, products, modes_of_delivery } = action.payload;
-      
+
       if (subjects !== undefined) state.subjects = subjects;
       if (categories !== undefined) state.categories = categories;
       if (product_types !== undefined) state.product_types = product_types;
       if (products !== undefined) state.products = products;
       if (modes_of_delivery !== undefined) state.modes_of_delivery = modes_of_delivery;
-      
+
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
     
     // Toggle filter actions (for checkboxes)
@@ -123,8 +140,10 @@ const filtersSlice = createSlice({
       }
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
-    
+
     toggleCategoryFilter: (state, action) => {
       const value = action.payload;
       const index = state.categories.indexOf(value);
@@ -135,8 +154,10 @@ const filtersSlice = createSlice({
       }
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
-    
+
     toggleProductTypeFilter: (state, action) => {
       const value = action.payload;
       const index = state.product_types.indexOf(value);
@@ -147,8 +168,10 @@ const filtersSlice = createSlice({
       }
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
-    
+
     toggleProductFilter: (state, action) => {
       const value = action.payload;
       const index = state.products.indexOf(value);
@@ -159,8 +182,10 @@ const filtersSlice = createSlice({
       }
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
-    
+
     toggleModeOfDeliveryFilter: (state, action) => {
       const value = action.payload;
       const index = state.modes_of_delivery.indexOf(value);
@@ -171,6 +196,8 @@ const filtersSlice = createSlice({
       }
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
     
     // Remove filter actions (for individual filter removal)
@@ -179,34 +206,44 @@ const filtersSlice = createSlice({
       state.subjects = state.subjects.filter(item => item !== value);
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
-    
+
     removeCategoryFilter: (state, action) => {
       const value = action.payload;
       state.categories = state.categories.filter(item => item !== value);
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
-    
+
     removeProductTypeFilter: (state, action) => {
       const value = action.payload;
       state.product_types = state.product_types.filter(item => item !== value);
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
-    
+
     removeProductFilter: (state, action) => {
       const value = action.payload;
       state.products = state.products.filter(item => item !== value);
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
-    
+
     removeModeOfDeliveryFilter: (state, action) => {
       const value = action.payload;
       state.modes_of_delivery = state.modes_of_delivery.filter(item => item !== value);
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
     
     // Clear filter type actions
@@ -233,6 +270,8 @@ const filtersSlice = createSlice({
       }
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
     
     // Clear all filters
@@ -244,8 +283,19 @@ const filtersSlice = createSlice({
       state.modes_of_delivery = [];
       state.searchQuery = '';
       state.searchFilterProductIds = [];
+      state.validationErrors = []; // Clear validation errors when clearing all filters
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+    },
+
+    // Validation actions (Story 1.12)
+    validateFilters: (state) => {
+      const errors = FilterValidator.validate(state);
+      state.validationErrors = errors;
+    },
+
+    clearValidationErrors: (state) => {
+      state.validationErrors = [];
     },
     
     // Set filter counts from API response
@@ -259,8 +309,10 @@ const filtersSlice = createSlice({
       state.subjects = [action.payload];
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
-    
+
     navViewAllProducts: (state) => {
       // Clear all filters except subjects
       state.products = [];
@@ -270,8 +322,10 @@ const filtersSlice = createSlice({
       state.searchQuery = '';
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
-    
+
     navSelectProductGroup: (state, action) => {
       // Clear all except subjects, then filter by Product Type
       state.products = [];
@@ -281,8 +335,10 @@ const filtersSlice = createSlice({
       state.searchQuery = '';
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
-    
+
     navSelectProduct: (state, action) => {
       // Clear all except subjects, then filter by Product
       state.categories = [];
@@ -292,8 +348,10 @@ const filtersSlice = createSlice({
       state.searchQuery = '';
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
-    
+
     navSelectModeOfDelivery: (state, action) => {
       // Clear all except subjects, then filter by Mode of Delivery
       state.categories = [];
@@ -303,6 +361,8 @@ const filtersSlice = createSlice({
       state.searchQuery = '';
       state.currentPage = 1;
       state.lastUpdated = Date.now();
+      // Auto-validate after filter change (Story 1.12)
+      state.validationErrors = FilterValidator.validate(state);
     },
     
     
@@ -365,20 +425,6 @@ const filtersSlice = createSlice({
       };
       state.lastUpdated = Date.now();
     },
-    
-    // Load state from cookies (for persistence)
-    loadFromCookies: (state, action) => {
-      const savedState = action.payload;
-      if (savedState) {
-        Object.assign(state, {
-          ...initialState,
-          ...savedState,
-          isLoading: false,
-          error: null,
-          isFilterPanelOpen: false, // Don't persist UI state
-        });
-      }
-    },
   },
 });
 
@@ -419,7 +465,8 @@ export const {
   clearError,
   resetFilters,
   applyFilters,
-  loadFromCookies,
+  validateFilters,
+  clearValidationErrors,
 } = filtersSlice.actions;
 
 // Selectors
@@ -444,6 +491,11 @@ export const selectError = (state) => state.filters.error;
 export const selectAppliedFilters = (state) => state.filters.appliedFilters;
 export const selectLastUpdated = (state) => state.filters.lastUpdated;
 export const selectFilterCounts = (state) => state.filters.filterCounts;
+
+// Validation selectors (Story 1.12)
+export const selectValidationErrors = (state) => state.filters.validationErrors;
+export const selectHasValidationErrors = (state) =>
+  state.filters.validationErrors.some(error => error.severity === 'error');
 
 // Complex selectors
 export const selectHasActiveFilters = createSelector(

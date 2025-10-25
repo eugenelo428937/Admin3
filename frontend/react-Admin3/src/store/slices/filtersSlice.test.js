@@ -26,7 +26,6 @@ import {
   clearError,
   resetFilters,
   applyFilters,
-  loadFromCookies,
   selectFilters,
   selectHasActiveFilters,
   selectActiveFilterCount,
@@ -304,26 +303,7 @@ describe('filtersSlice', () => {
         searchQuery: 'test',
       });
     });
-    
-    it('should handle loadFromCookies', () => {
-      const savedState = {
-        subjects: ['CM2'],
-        categories: ['Bundle'],
-        searchQuery: 'saved search',
-        currentPage: 2,
-      };
-      
-      const newState = filtersReducer(initialState, loadFromCookies(savedState));
-      
-      expect(newState.subjects).toEqual(['CM2']);
-      expect(newState.categories).toEqual(['Bundle']);
-      expect(newState.searchQuery).toBe('saved search');
-      expect(newState.currentPage).toBe(2);
-      expect(newState.isLoading).toBe(false);
-      expect(newState.error).toBeNull();
-      expect(newState.isFilterPanelOpen).toBe(false); // Should not persist UI state
-    });
-    
+
   });
   
   describe('selectors', () => {
