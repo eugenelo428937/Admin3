@@ -34,6 +34,8 @@ import {
     Badge,
     Skeleton,
     Alert,
+    AlertTitle,
+    Stack,
     Divider
 } from '@mui/material';
 import {
@@ -45,13 +47,15 @@ import {
 import {
     selectFilters,
     selectFilterCounts,
+    selectValidationErrors,
     toggleSubjectFilter,
     toggleCategoryFilter,
     toggleProductTypeFilter,
     toggleProductFilter,
     toggleModeOfDeliveryFilter,
     clearAllFilters,
-    clearFilterType
+    clearFilterType,
+    clearValidationErrors
 } from '../../store/slices/filtersSlice';
 import { FilterRegistry } from '../../store/filters/filterRegistry';
 
@@ -88,6 +92,7 @@ const FilterPanel = ({
     // This prevents re-renders when filterCounts object reference changes but values are the same
     const filters = useSelector(selectFilters, deepEqual);
     const filterCounts = useSelector(selectFilterCounts, deepEqual);
+    const validationErrors = useSelector(selectValidationErrors);
     const isLoading = useSelector(state => state.filters.isLoading);
     const error = useSelector(state => state.filters.error);
 
@@ -185,6 +190,13 @@ const FilterPanel = ({
      */
     const handleClearFilterType = useCallback((filterType) => {
         dispatch(clearFilterType(filterType));
+    }, [dispatch]);
+
+    /**
+     * Dismiss validation errors
+     */
+    const handleDismissValidationErrors = useCallback(() => {
+        dispatch(clearValidationErrors());
     }, [dispatch]);
 
     /**
@@ -342,6 +354,27 @@ const FilterPanel = ({
                     </Alert>
                 )}
 
+                {/* Validation Error Display (Story 1.12) */}
+                {validationErrors && validationErrors.length > 0 && (
+                    <Stack spacing={1} sx={{ mb: 2 }}>
+                        {validationErrors.map((validationError, index) => (
+                            <Alert
+                                key={`${validationError.field}-${index}`}
+                                severity={validationError.severity}
+                                onClose={handleDismissValidationErrors}
+                                sx={{
+                                    '& .MuiAlert-message': {
+                                        width: '100%'
+                                    }
+                                }}
+                            >
+                                <AlertTitle>{validationError.message}</AlertTitle>
+                                {validationError.suggestion}
+                            </Alert>
+                        ))}
+                    </Stack>
+                )}
+
                 <Box sx={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -388,9 +421,11 @@ const FilterPanel = ({
         );
     }, [
         error,
+        validationErrors,
         totalActiveFilters,
         filterCounts,
         handleClearAllFilters,
+        handleDismissValidationErrors,
         renderFilterSection,
         dispatch,
         handlePanelChange
