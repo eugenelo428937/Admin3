@@ -106,17 +106,27 @@ const ActiveFilters = ({
      * Get display label for a filter value
      */
     const getDisplayLabel = useCallback((filterType, value, counts) => {
+        // Debug logging for products filter
+        if (filterType === 'products') {
+            console.log('[ActiveFilters] Getting display label for product:', {
+                value,
+                counts,
+                productsCount: counts?.products,
+                fullCounts: counts
+            });
+        }
+
         // Try to get a human-readable label from counts data
         if (counts && counts[filterType] && counts[filterType][value]) {
             const filterData = counts[filterType][value];
-            
+
             // Handle the new backend structure: { count: number, name: string, display_name?: string }
             if (typeof filterData === 'object' && filterData !== null) {
                 // Prioritize display_name over name for better UI presentation
                 return filterData.display_name || filterData.name || filterData.label || value;
             }
         }
-        
+
         // Fallback: just return the value as-is
         // This handles cases where filter was set but counts haven't loaded yet
         return value;
