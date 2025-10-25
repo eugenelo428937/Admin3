@@ -28,11 +28,20 @@
 ```
 
 ## Summary
-Implement client-side validation logic to prevent users from selecting incompatible filter combinations before making product search API calls. Currently, the system allows any filter combination, leading to confusing empty results when combinations are invalid (e.g., selecting tutorial format without tutorial products). This implementation adds a FilterValidator utility that validates filter state in real-time, displays clear error messages with actionable suggestions, and blocks API calls when validation errors exist.
+Implement client-side validation logic framework to prevent users from selecting incompatible filter combinations before making product search API calls. This implementation adds a FilterValidator utility that validates filter state in real-time, displays clear error messages with actionable suggestions, and blocks API calls when validation errors exist.
 
 **Primary Requirement**: Real-time filter validation with < 5ms execution time, blocking invalid API calls while providing clear user guidance
 
 **Technical Approach**: Pure JavaScript validator utility with rule-based validation, Redux state integration for validation errors, Material-UI Alert components for error display
+
+**⚠️ ARCHITECTURAL DECISION (2025-10-24)**: Tutorial-related filters (tutorial_format, distance_learning, tutorial) were removed from the filter state in previous implementation. The validator framework is built and tested but currently returns empty validation errors. This provides the architecture ready for future validation rules on existing filter fields:
+- subjects
+- categories
+- product_types
+- products
+- modes_of_delivery
+
+Example future validation rule: "Products must belong to selected product_types"
 
 ## Technical Context
 **Language/Version**: JavaScript ES6+, React 18, Redux Toolkit, Material-UI 5
@@ -150,35 +159,39 @@ import { Alert, AlertTitle, Stack } from '@mui/material';
 
 ## Validation Performance
 - Pure function validation: < 1ms per rule
-- Target 3 rules: ~3ms total execution time
+- Target: < 5ms total execution time
 - Run validation after each filter change (synchronous)
 - No debouncing needed (fast enough for real-time)
 
 ## Validation Rule Design
-### Rule 1: Tutorial Format Dependency
+
+**NOTE**: Tutorial-related validation rules were removed as those filter fields no longer exist in the current implementation. The examples below are for reference and documentation of the validation framework architecture.
+
+### Example Future Rule: Product/Product Type Dependency
 ```javascript
-validateTutorialFormat(filters) {
-  if (filters.tutorial_format && !filters.tutorial) {
+validateProductTypesDependency(filters) {
+  if (filters.products.length > 0 && filters.product_types.length === 0) {
     return {
-      field: 'tutorial_format',
-      message: 'Tutorial format requires Tutorial Products filter',
-      severity: 'error',
-      suggestion: 'Please check the "Tutorial Products" filter'
+      field: 'products',
+      message: 'Select a product type before selecting specific products',
+      severity: 'warning',
+      suggestion: 'Choose a product type to filter available products'
     };
   }
   return null;
 }
 ```
 
-### Rule 2: Distance Learning Incompatibility
+### Example Future Rule: Category/Subject Compatibility
 ```javascript
-validateDistanceLearning(filters) {
-  if (filters.distance_learning && filters.tutorial_format === 'in_person') {
+validateCategorySubjectCompatibility(filters) {
+  // Example: Validate certain categories only apply to specific subjects
+  if (filters.categories.includes('Bundle') && filters.subjects.length === 0) {
     return {
-      field: 'distance_learning',
-      message: 'Distance learning not available for in-person tutorials',
-      severity: 'error',
-      suggestion: 'Select "Online" or "Hybrid" format instead'
+      field: 'categories',
+      message: 'Bundle category requires subject selection',
+      severity: 'warning',
+      suggestion: 'Please select a subject to view bundles'
     };
   }
   return null;
@@ -190,6 +203,8 @@ validateDistanceLearning(filters) {
 - Store validation results in Redux state
 - Display errors in FilterPanel above filter sections
 - Block API calls in useProductsSearch when errors exist
+- Currently returns empty errors (no validation rules active)
+- Framework ready for future validation rule implementation
 ```
 
 **Output**: research.md with validation patterns and UI component research
