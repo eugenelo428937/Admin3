@@ -1,16 +1,15 @@
 /**
  * Redux Store Configuration with Redux Toolkit
- * 
+ *
  * Centralized store for the product filtering system with:
  * - RTK Query API integration
- * - Cookie persistence middleware
+ * - URL sync middleware (Story 1.1)
  * - DevTools integration for development
  */
 
 import { configureStore } from '@reduxjs/toolkit';
 import { catalogApi } from './api/catalogApi';
 import filtersReducer from './slices/filtersSlice';
-import cookiePersistenceMiddleware from '../utils/cookiePersistenceMiddleware';
 import { urlSyncMiddleware } from './middleware/urlSyncMiddleware';
 
 export const store = configureStore({
@@ -36,8 +35,7 @@ export const store = configureStore({
       },
     })
       .prepend(urlSyncMiddleware.middleware) // Story 1.1: Redux → URL sync
-      .concat(catalogApi.middleware)
-      .concat(cookiePersistenceMiddleware),
+      .concat(catalogApi.middleware),
 
   // Enable Redux DevTools Extension in development (Story 1.2 - AC13)
   // Redux Toolkit's configureStore automatically connects to Redux DevTools Extension
