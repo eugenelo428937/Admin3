@@ -117,6 +117,15 @@ export const toUrlParams = (filters) => {
     }
   });
 
+  // Add pagination parameters (Story 1.16 - URL persistence)
+  // Only add if not default values (currentPage !== 1 or pageSize !== 20)
+  if (filters.currentPage && filters.currentPage !== 1) {
+    params.set('page', filters.currentPage.toString());
+  }
+  if (filters.pageSize && filters.pageSize !== 20) {
+    params.set('page_size', filters.pageSize.toString());
+  }
+
   return params;
 };
 
@@ -213,6 +222,24 @@ export const fromUrlParams = (searchParams) => {
       }
     }
   });
+
+  // Parse pagination parameters (Story 1.16 - URL persistence)
+  // Pagination is not in FilterRegistry but needs URL support
+  const pageParam = params.get('page');
+  if (pageParam) {
+    const pageNum = parseInt(pageParam, 10);
+    if (!isNaN(pageNum) && pageNum > 0) {
+      filters.currentPage = pageNum;
+    }
+  }
+
+  const pageSizeParam = params.get('page_size');
+  if (pageSizeParam) {
+    const size = parseInt(pageSizeParam, 10);
+    if (!isNaN(size) && size > 0) {
+      filters.pageSize = size;
+    }
+  }
 
   return filters;
 };
