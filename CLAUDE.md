@@ -875,6 +875,269 @@ const ComponentName = () => {
 };
 ```
 
+## Mobile Responsive Patterns
+
+### Responsive Breakpoint Strategy (Material-UI v5)
+
+The application uses Material-UI's standardized breakpoint system:
+
+**Breakpoints**:
+- `xs`: 0px - 599px (extra small - mobile portrait)
+- `sm`: 600px - 899px (small - mobile landscape, small tablets)
+- `md`: 900px - 1199px (medium - tablets, small desktops)
+- `lg`: 1200px - 1535px (large - desktops)
+- `xl`: 1536px+ (extra large - large desktops)
+
+**Mobile vs Desktop Detection**:
+```javascript
+import { useMediaQuery, useTheme } from '@mui/material';
+
+const theme = useTheme();
+const isMobile = useMediaQuery(theme.breakpoints.down('md')); // < 900px
+const isDesktop = useMediaQuery(theme.breakpoints.up('md')); // ≥ 900px
+```
+
+**Standard Breakpoint Usage**:
+- **Mobile**: `< 900px` (xs, sm breakpoints)
+- **Desktop**: `≥ 900px` (md, lg, xl breakpoints)
+
+### Responsive Styling with sx Prop
+
+**Mobile-First Approach** (default styles for mobile, override for desktop):
+```javascript
+<Box
+  sx={{
+    // Mobile defaults (xs, sm)
+    width: '100%',
+    padding: 2,
+
+    // Desktop overrides (md+)
+    [theme.breakpoints.up('md')]: {
+      width: 'auto',
+      maxWidth: '24rem',
+      padding: 3,
+    }
+  }}
+>
+```
+
+**Breakpoint Object Syntax** (recommended for clarity):
+```javascript
+<Box
+  sx={{
+    width: { xs: '100%', md: 'auto' },           // Mobile full width, desktop auto
+    padding: { xs: 2, md: 3 },                    // Mobile 16px, desktop 24px
+    bottom: { xs: 0, md: 16 },                    // Mobile flush, desktop 16px gap
+    left: { xs: 0, md: 16 },
+    right: { xs: 0, md: 'auto' },
+    maxWidth: { md: '24rem' },                    // Desktop only (no xs/sm value)
+  }}
+>
+```
+
+### Bottom Sheet Pattern (Mobile Expanded States)
+
+For mobile expanded states (full-screen or modal-like views), use Material-UI Drawer:
+
+```javascript
+import { Drawer } from '@mui/material';
+
+const [isExpanded, setIsExpanded] = useState(false);
+const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+// Mobile: Drawer for expanded state
+{isMobile && isExpanded && (
+  <Drawer
+    anchor="bottom"
+    open={isExpanded}
+    onClose={() => setIsExpanded(false)}
+    sx={{
+      display: { xs: 'block', md: 'none' }, // Mobile only
+      '& .MuiDrawer-paper': {
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
+        maxHeight: '50vh',
+        backgroundColor: 'primary.main',
+      }
+    }}
+  >
+    {/* Expanded content */}
+  </Drawer>
+)}
+
+// Mobile collapsed OR Desktop: Paper component
+{(!isMobile || !isExpanded) && (
+  <Paper sx={{ /* responsive styles */ }}>
+    {/* Collapsed or desktop content */}
+  </Paper>
+)}
+```
+
+**Benefits**:
+- Built-in backdrop and swipe-to-dismiss
+- Accessibility features (focus trap, ARIA labels, keyboard handling)
+- Familiar mobile pattern (iOS/Android bottom sheets)
+- Smooth animations with GPU acceleration
+
+### Touch Accessibility Standards
+
+All interactive elements on mobile must meet **WCAG 2.1 Level AA** touch target minimums:
+
+**Minimum Touch Target**: 44px × 44px (CSS pixels)
+
+**Touch Styles** (centralized in `tutorialStyles.js`):
+```javascript
+// tutorialStyles.js
+export const TOUCH_TARGET_SIZE = '3rem'; // 48px (exceeds 44px minimum)
+
+export const touchButtonStyle = {
+  minHeight: TOUCH_TARGET_SIZE,
+};
+
+export const touchIconButtonStyle = {
+  minWidth: TOUCH_TARGET_SIZE,
+  minHeight: TOUCH_TARGET_SIZE,
+};
+
+// Usage in components
+import { touchIconButtonStyle } from './tutorialStyles';
+
+<IconButton sx={touchIconButtonStyle}>
+  <EditIcon />
+</IconButton>
+```
+
+**Button Spacing**: Minimum 8px gaps between interactive elements to prevent mis-taps
+
+### Animation Performance Best Practices
+
+**Use CSS Transforms** (GPU-accelerated, 60fps performance):
+```javascript
+// ✅ Good: CSS transforms (no layout reflow)
+sx={{
+  transform: isCollapsed ? 'translateY(100%)' : 'translateY(0)',
+  transition: 'transform 0.3s ease-in-out',
+}}
+
+// ❌ Bad: Height animations (causes layout reflow)
+sx={{
+  height: isCollapsed ? 0 : 'auto',
+  transition: 'height 0.3s ease-in-out',
+}}
+```
+
+**Respect Reduced Motion Preference**:
+Material-UI components automatically respect `prefers-reduced-motion` CSS media query. For custom animations:
+
+```javascript
+sx={{
+  transition: 'transform 0.3s ease-in-out',
+  '@media (prefers-reduced-motion: reduce)': {
+    transition: 'none', // Instant transitions for users with motion sensitivity
+  }
+}}
+```
+
+### Responsive Component Branching Pattern
+
+For components with significantly different mobile vs desktop UX:
+
+```javascript
+const ResponsiveComponent = () => {
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Conditional rendering based on viewport
+  if (isMobile) {
+    return <MobileView />; // Drawer, full-width, collapsed by default
+  }
+
+  return <DesktopView />; // Paper, bottom-left, expanded by default
+};
+```
+
+**When to Use**:
+- Mobile and desktop UX differ significantly (e.g., Drawer vs Paper)
+- Clearer than complex conditional logic in JSX
+- Easier to test (mock `useMediaQuery` hook)
+
+### Z-index Hierarchy (Fixed Positioning)
+
+When using fixed positioning (mobile bottom sheets, desktop floating elements):
+
+**Standard Z-index Values**:
+- **Modals/Dialogs**: 1300 (Material-UI default)
+- **Summary Bars/Bottom Sheets**: 1200
+- **SpeedDial/FABs**: 1050
+- **App Bar**: 1100 (Material-UI default)
+- **Content**: 1 (default)
+
+**Always verify** no z-index conflicts when adding fixed-position elements.
+
+### Testing Responsive Components
+
+**Mock useMediaQuery in Tests**:
+```javascript
+import { render, screen } from '@testing-library/react';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+
+jest.mock('@mui/material/useMediaQuery');
+
+test('renders mobile view on small screens', () => {
+  useMediaQuery.mockReturnValue(true); // isMobile = true
+
+  render(
+    <ThemeProvider theme={createTheme()}>
+      <ResponsiveComponent />
+    </ThemeProvider>
+  );
+
+  expect(screen.getByText('Mobile View')).toBeInTheDocument();
+});
+
+test('renders desktop view on large screens', () => {
+  useMediaQuery.mockReturnValue(false); // isMobile = false
+
+  render(
+    <ThemeProvider theme={createTheme()}>
+      <ResponsiveComponent />
+    </ThemeProvider>
+  );
+
+  expect(screen.getByText('Desktop View')).toBeInTheDocument();
+});
+```
+
+**Test Touch Target Sizes Programmatically**:
+```javascript
+test('all buttons meet 44px touch target minimum', () => {
+  render(<MobileComponent />);
+
+  const buttons = screen.getAllByRole('button');
+  buttons.forEach(button => {
+    const { width, height } = button.getBoundingClientRect();
+    expect(width).toBeGreaterThanOrEqual(44);
+    expect(height).toBeGreaterThanOrEqual(44);
+  });
+});
+```
+
+**Cross-Device Testing Checklist**:
+- Chrome DevTools device emulation (iPhone, Android, iPad)
+- Real device testing (iOS Safari, Chrome mobile)
+- Breakpoint edge cases (899px, 900px, 901px)
+- Zoom levels (80%, 100%, 125%, 150%)
+
+### Responsive Design Principles for Admin3
+
+1. **Preserve Desktop Experience**: Desktop layouts (≥ 900px) should remain unchanged when adding mobile responsiveness
+2. **Mobile-First Defaults**: Default styles target mobile, override with `theme.breakpoints.up('md')` for desktop
+3. **Touch Accessibility**: All interactive elements ≥ 44px × 44px, 8px minimum spacing
+4. **Performance**: 60fps animations using CSS transforms, respect reduced motion
+5. **Testing**: Mock `useMediaQuery` in unit tests, manual cross-device validation
+
+---
+
 ## Important Notes
 
 - When creating new Django models, always confirm schema and fields
