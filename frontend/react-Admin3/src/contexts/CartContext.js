@@ -66,16 +66,16 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const removeFromCart = async (productId) => {
-    // Find the cart item by productId
-    const item = cartItems.find((i) => i.product === productId);
-    if (!item) return;
+  const removeFromCart = async (cartItemId) => {
+    // Remove cart item by cart item ID
     try {
-      const res = await cartService.removeItem(item.id);
+      const res = await cartService.removeItem(cartItemId);
       setCartData(res.data); // Store full cart object
       setCartItems(res.data.items || []);
+      return res.data;
     } catch (err) {
-      // Optionally handle error
+      console.error('Error removing cart item:', err);
+      throw err;
     }
   };
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box } from '@mui/material';
+import { Box, Snackbar, Alert } from '@mui/material';
 import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext';
 import { useCart } from '../../../../contexts/CartContext';
 import TutorialSelectionSummaryBar from './TutorialSelectionSummaryBar';
@@ -31,15 +31,23 @@ const TutorialSummaryBarContainer = () => {
     getSubjectChoices,
     getDraftChoices,
     removeTutorialChoice,
+    removeSubjectChoices,
     markChoicesAsAdded,
     openEditDialog,
   } = useTutorialChoice();
 
-  const { addToCart, updateCartItem, cartItems } = useCart();
+  const { addToCart, updateCartItem, removeFromCart, cartItems } = useCart();
 
   // State for unified edit dialog
   const [unifiedDialogOpen, setUnifiedDialogOpen] = useState(false);
   const [unifiedDialogData, setUnifiedDialogData] = useState(null);
+
+  // State for error handling (T016)
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+
+  // State for loading indicator (T017)
+  const [isRemoving, setIsRemoving] = useState(false);
 
   // Get all subject codes that have ANY choices (draft or in cart)
   const subjectCodesWithChoices = Object.keys(tutorialChoices).filter(subjectCode => {
@@ -171,18 +179,51 @@ const TutorialSummaryBarContainer = () => {
   };
 
   /**
-   * T007: Handle Remove button click
-   * Removes all draft choices for the subject
+   * T015-T017: Handle Remove button click
+   * Removes ALL tutorial choices for a subject (draft AND carted)
+   * Integrates with cart API for carted selections
+   * Includes error handling and loading states
    */
-  const handleRemove = (subjectCode) => {
+  const handleRemove = async (subjectCode) => {
     const choices = getSubjectChoices(subjectCode);
 
-    // Remove all draft choices
-    Object.keys(choices).forEach(choiceLevel => {
-      if (choices[choiceLevel].isDraft) {
-        removeTutorialChoice(subjectCode, choiceLevel);
+    // T017: Set loading state
+    setIsRemoving(true);
+
+    try {
+      // T015: Remove from backend cart FIRST
+      // ALWAYS check cart directly - don't rely on tutorialChoices isDraft flag
+      // User may have selected different events, old one may still be in cart
+      const cartItem = cartItems.find(item => {
+        const itemSubjectCode = item.subject_code || item.metadata?.subjectCode;
+        return itemSubjectCode === subjectCode && item.product_type === 'tutorial';
+      });
+
+      if (cartItem) {
+        // T015: Call cart API to remove item
+        await removeFromCart(cartItem.id);
       }
-    });
+
+      // T015: Remove all choices from context (after cart API success)
+      removeSubjectChoices(subjectCode);
+
+    } catch (error) {
+      // T016: Error handling - display user-friendly message
+      console.error('Error removing tutorial choices:', error);
+      setSnackbarMessage('Failed to remove tutorial selections. Please try again.');
+      setSnackbarOpen(true);
+
+      // T016: State rollback - selections remain on error
+      // (No state change made, so implicit rollback)
+    } finally {
+      // T017: Clear loading state
+      setIsRemoving(false);
+    }
+  };
+
+  // T016: Handle Snackbar close
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   return (
@@ -235,6 +276,18 @@ const TutorialSummaryBarContainer = () => {
           />
         );
       })()}
+
+      {/* T016: Error Snackbar for removal failures */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
