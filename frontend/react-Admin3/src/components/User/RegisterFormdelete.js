@@ -110,7 +110,6 @@ const RegisterForm = ({
   };
 
   const validate = () => {
-    console.log('validate called');
     const errors = {};
     if (!form.first_name) errors.first_name = "First name is required.";
     if (!form.last_name) errors.last_name = "Last name is required.";
@@ -147,7 +146,6 @@ const RegisterForm = ({
       if (!form.work_country) errors.work_country = "Work country is required.";
       if (!form.work_phone) errors.work_phone = "Work phone is required.";
     }
-    console.log("Validation errors:", errors);
     return errors;
   };
 
@@ -195,8 +193,6 @@ const RegisterForm = ({
   // useEffect to populate form data in edit mode
   useEffect(() => {
     if (isEditMode && initialData) {
-      console.log("Edit mode: Populating form with initial data", initialData);
-      
       const newForm = {
         first_name: initialData.user?.first_name || "",
         last_name: initialData.user?.last_name || "",

@@ -242,25 +242,16 @@ FilterRegistry.register({
   dataType: 'array',
   urlFormat: 'comma-separated',
   getDisplayValue: (value, counts) => {
-    // Debug logging
-    console.log('[FilterRegistry] products getDisplayValue:', {
-      value,
-      counts,
-      productData: counts?.[value]
-    });
-
     // Try to get product name from filterCounts
     if (counts && counts[value]) {
       const productData = counts[value];
       // Handle the backend structure: { count: number, name: string, display_name?: string }
       if (typeof productData === 'object' && productData !== null) {
         const displayName = productData.display_name || productData.name || productData.label || value;
-        console.log('[FilterRegistry] Returning display name:', displayName);
         return displayName;
       }
     }
     // Fallback to the product ID if no counts data available
-    console.log('[FilterRegistry] No product data found, returning value:', value);
     return value;
   },
   order: 4,

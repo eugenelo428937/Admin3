@@ -145,8 +145,6 @@ urlSyncMiddleware.startListening({
     return FILTER_ACTION_TYPES.includes(action.type);
   },
   effect: (action, listenerApi) => {
-    console.log('[urlSyncMiddleware] Action dispatched:', action.type);
-
     // Start performance tracking (Story 1.15)
     if (PerformanceTracker.isSupported()) {
       PerformanceTracker.startMeasure('urlSync', { actionType: action.type });
@@ -156,24 +154,18 @@ urlSyncMiddleware.startListening({
     const state = listenerApi.getState();
     const filters = state.filters;
 
-    console.log('[urlSyncMiddleware] Current filters:', { subjects: filters.subjects });
-
     // Build URL parameters from current state
     const params = buildUrlFromFilters(filters);
     const urlString = params.toString();
 
-    console.log('[urlSyncMiddleware] Generated URL params:', urlString);
-
     // Loop prevention: Skip if URL hasn't changed
-    if (urlString === lastUrlParams) {
-      console.log('[urlSyncMiddleware] Skipped - URL unchanged');
-
+    if (urlString === lastUrlParams) 
       // End measurement even if skipped
       if (PerformanceTracker.isSupported()) {
         PerformanceTracker.endMeasure('urlSync', { skipped: true });
       }
       return;
-    }
+    
 
     // Update last URL params
     lastUrlParams = urlString;
@@ -182,11 +174,8 @@ urlSyncMiddleware.startListening({
     // Users don't want to click back 20 times through filter changes
     const newUrl = urlString ? `?${urlString}` : window.location.pathname;
 
-    console.log('[urlSyncMiddleware] Updating URL to:', newUrl);
-
     if (typeof window !== 'undefined' && window.history) {
       window.history.replaceState({}, '', newUrl);
-      console.log('[urlSyncMiddleware] URL updated successfully');
     }
 
     // End performance tracking and check budget (Story 1.15)
@@ -218,20 +207,15 @@ export const setupUrlToReduxSync = (dispatch) => {
   if (typeof window === 'undefined') return;
 
   const handlePopState = () => {
-    console.log('[urlSyncMiddleware] popstate event detected');
-
     // Parse current URL parameters
     const params = new URLSearchParams(window.location.search);
     const filters = parseUrlToFilters(params);
-
-    console.log('[urlSyncMiddleware] Parsed filters from URL:', filters);
 
     // Import setMultipleFilters action dynamically to avoid circular dependency
     // This will be imported at runtime when the listener is set up
     import('../slices/filtersSlice').then(({ setMultipleFilters }) => {
       // Dispatch action to update Redux state with URL filters
       dispatch(setMultipleFilters(filters));
-      console.log('[urlSyncMiddleware] Redux state updated from URL');
     }).catch(error => {
       console.error('[urlSyncMiddleware] Failed to import filtersSlice:', error);
     });
@@ -240,14 +224,11 @@ export const setupUrlToReduxSync = (dispatch) => {
   // Parse initial URL on setup (for page loads and direct URL access)
   const initialParams = new URLSearchParams(window.location.search);
   if (initialParams.toString()) {
-    console.log('[urlSyncMiddleware] Parsing initial URL:', initialParams.toString());
-
     // Use require() for synchronous loading (needed for tests that check state immediately)
     try {
       const { setMultipleFilters } = require('../slices/filtersSlice');
       const filters = parseUrlToFilters(initialParams);
       dispatch(setMultipleFilters(filters));
-      console.log('[urlSyncMiddleware] Initial Redux state populated from URL:', filters);
     } catch (error) {
       console.error('[urlSyncMiddleware] Failed to load filtersSlice for initial URL:', error);
     }

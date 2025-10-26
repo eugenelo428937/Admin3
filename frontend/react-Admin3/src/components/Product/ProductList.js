@@ -57,18 +57,10 @@ import RulesEngineInlineAlert from '../Common/RulesEngineInlineAlert';
 import "../../styles/product_list.css";
 
 const ProductList = React.memo(() => {
-    console.log('[ProductList] Component render');
-
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const navigate = useNavigate();
     const dispatch = useDispatch();
-
-    // Log mount/unmount
-    React.useEffect(() => {
-        console.log('[ProductList] MOUNTED');
-        return () => console.log('[ProductList] UNMOUNTED');
-    }, []);
 
     // Context hooks
     const { addToCart, cartData } = useCart();
