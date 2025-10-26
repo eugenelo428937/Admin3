@@ -166,11 +166,9 @@ const TutorialSummaryBarContainer = () => {
       if (existingCartItem) {
         // Update existing cart item with new choices
         await updateCartItem(existingCartItem.id, productData, priceData);
-
       } else {
         // Add new item to cart
         await addToCart(productData, priceData);
-
       }
       markChoicesAsAdded(subjectCode);
     } catch (error) {
