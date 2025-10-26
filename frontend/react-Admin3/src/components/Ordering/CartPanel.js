@@ -55,8 +55,8 @@ const CartPanel = React.memo(({ show, handleClose }) => {
       // Restore tutorial choices to draft state for this subject
       restoreChoicesToDraft(subjectCode);
     }
-    // Remove from cart
-    removeFromCart(item.product);
+    // Remove from cart using cart item ID
+    removeFromCart(item.id);
   };
 
   // T022: Handle clear cart with tutorial choice reset
