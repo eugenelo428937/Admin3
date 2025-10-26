@@ -190,8 +190,12 @@ const TutorialSummaryBarContainer = () => {
       <Box
         sx={{
           position: 'fixed',
-          bottom: 16,
-          left: 16,
+          // T017: Responsive positioning
+          // Mobile: Full width at bottom-0
+          // Desktop: Bottom-left with margins
+          bottom: { xs: 0, md: 16 },
+          left: { xs: 0, md: 16 },
+          right: { xs: 0, md: 'auto' },
           zIndex: 1200,
           display: 'flex',
           flexDirection: 'column',

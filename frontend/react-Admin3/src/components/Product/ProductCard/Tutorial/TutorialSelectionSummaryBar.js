@@ -9,6 +9,8 @@ import {
 	Typography,
 	Box,
 	useTheme,
+	useMediaQuery,
+	Drawer,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
@@ -31,7 +33,12 @@ const TutorialSelectionSummaryBar = React.memo(
 		const theme = useTheme();
 		const { getSubjectChoices, getDraftChoices, hasCartedChoices } =
 			useTutorialChoice();
-		const [isCollapsed, setIsCollapsed] = useState(false);
+
+		// T013: Detect mobile viewport (< 900px)
+		const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+		// T014: Collapsed by default on mobile, expanded on desktop
+		const [isCollapsed, setIsCollapsed] = useState(isMobile);
 
 		// Get all choices for this subject
 		const subjectChoices = getSubjectChoices(subjectCode);
@@ -51,12 +58,12 @@ const TutorialSelectionSummaryBar = React.memo(
 			setIsCollapsed(false);
 		};
 
-		// Auto-expand when new choices are added
+		// Auto-expand when new choices are added (desktop only - mobile stays collapsed)
 		React.useEffect(() => {
-			if (hasAnyChoices) {
+			if (hasAnyChoices && !isMobile) {
 				setIsCollapsed(false);
 			}
-		}, [Object.keys(subjectChoices).length]);
+		}, [Object.keys(subjectChoices).length, isMobile, hasAnyChoices]);
 
 		if (!hasAnyChoices) {
 			return null;
@@ -85,7 +92,103 @@ const TutorialSelectionSummaryBar = React.memo(
 			return null;
 		}
 
-		// Collapsed view: single line with title and close icon
+		// T015: Render expanded content (shared between Drawer and Paper)
+		const renderExpandedContent = () => (
+			<Grid container>
+				{/* Title Row - Full Width */}
+				<Grid
+					size={12}
+					container
+					direction="row"
+					sx={{
+						justifyContent: "space-between",
+						alignItems: "center",
+						width: "100%",
+					}}>
+					{/* Subject Title */}
+					<Typography variant="h6" color="inherit" align="left">
+						{subjectCode} Tutorial Choices
+					</Typography>
+					{/* Collapse Button */}
+					<IconButton
+						aria-label="Collapse"
+						color="inherit"
+						onClick={handleCollapse}
+						sx={touchIconButtonStyle}>
+						<CloseIcon />
+					</IconButton>
+				</Grid>
+
+				{/* Choice Details Row */}
+				<Grid size={12}>
+					<Box sx={{ textAlign: "start" }}>
+						{choiceDetails.map((choice, index) => (
+							<Box key={choice.level} sx={{ textAlign: "start" }}>
+								<Box>
+									<Typography
+										variant="body2"
+										color="inherit">
+										{choice.level} - {choice.eventCode} ({choice.location})
+									</Typography>
+								</Box>
+
+								{!choice.isDraft && (
+									<Box className="d-flex flex-row flex-wrap align-items-center">
+										<CartCheck className="m-right__xs" />
+										<Typography
+											variant="caption"
+											color="inherit"
+											className="p-top__xs">
+											Added in Cart
+										</Typography>
+									</Box>
+								)}
+							</Box>
+						))}
+					</Box>
+				</Grid>
+
+				{/* Action Buttons Row */}
+				<Grid
+					size={12}
+					container
+					direction="row"
+					sx={{
+						mt: 2,
+						justifyContent: "space-between",
+						width: "100%",
+					}}>
+					{/* Edit Button */}
+					<IconButton
+						color="inherit"
+						onClick={onEdit}
+						aria-label="Edit tutorial choices"
+						sx={touchIconButtonStyle}>
+						<EditIcon />
+					</IconButton>
+
+					{/* Add to Cart Button */}
+					<IconButton
+						color="inherit"
+						onClick={onAddToCart}
+						aria-label="Add tutorial choices to cart"
+						sx={touchIconButtonStyle}>
+						<AddShoppingCartIcon />
+					</IconButton>
+
+					{/* Remove Button */}
+					<IconButton
+						color="inherit"
+						onClick={onRemove}
+						aria-label="Remove tutorial choices"
+						sx={touchIconButtonStyle}>
+						<DeleteIcon />
+					</IconButton>
+				</Grid>
+			</Grid>
+		);
+
+		// Collapsed view: single line with title and expand icon
 		if (isCollapsed) {
 			return (
 				<Paper
@@ -126,7 +229,30 @@ const TutorialSelectionSummaryBar = React.memo(
 			);
 		}
 
-		// Expanded view: full details
+		// T015: Mobile expanded view - Bottom Sheet Drawer
+		if (isMobile) {
+			return (
+				<Drawer
+					anchor="bottom"
+					open={!isCollapsed}
+					onClose={handleCollapse}
+					sx={{
+						'& .MuiDrawer-paper': {
+							borderTopLeftRadius: 16,
+							borderTopRightRadius: 16,
+							maxHeight: '50vh',
+							backgroundColor: 'rgba(99, 50, 185, 0.965)',
+							color: '#fff',
+							px: 3,
+							py: 2,
+						}
+					}}>
+					{renderExpandedContent()}
+				</Drawer>
+			);
+		}
+
+		// Desktop expanded view: Paper (existing behavior)
 		return (
 			<Paper
 				elevation={6}
@@ -144,98 +270,7 @@ const TutorialSelectionSummaryBar = React.memo(
 					justifyContent: "space-between",
 					gap: 2,
 				}}>
-				<Grid container>
-					{/* Title Row - Full Width */}
-					<Grid
-						size={12}
-						container
-						direction="row"
-						sx={{
-							justifyContent: "space-between",
-							alignItems: "center",
-							width: "100%",
-						}}>
-						{/* Subject Title */}
-						<Typography variant="h6" color="inherit" align="left">
-							{subjectCode} Tutorial Choices
-						</Typography>
-						{/* Collapse Button */}
-						<IconButton
-							aria-label="Collapse"
-							color="inherit"
-							onClick={handleCollapse}
-							sx={touchIconButtonStyle}>
-							<CloseIcon />
-						</IconButton>
-					</Grid>
-
-					{/* Choice Details Row */}
-					<Grid size={12}>
-						<Box sx={{ textAlign: "start" }}>
-							{choiceDetails.map((choice, index) => (
-								<Box key={choice.level} sx={{ textAlign: "start" }}>
-									<Box>
-										<Typography
-											variant="body2"
-											color="inherit">
-											{choice.level} - {choice.eventCode} ({choice.location})
-										</Typography>
-									</Box>
-
-									{!choice.isDraft && (
-										<Box className="d-flex flex-row flex-wrap align-items-center">
-											<CartCheck className="m-right__xs" />
-											<Typography
-												variant="caption"
-												color="inherit"
-												className="p-top__xs">
-												Added in Cart
-											</Typography>
-										</Box>
-									)}
-								</Box>
-							))}
-						</Box>
-					</Grid>
-
-					{/* Action Buttons Row */}
-					<Grid
-						size={12}
-						container
-						direction="row"
-						sx={{
-							mt: 2,
-							justifyContent: "space-between",
-							width: "100%",
-						}}>
-						{/* Edit Button */}
-						<IconButton
-							color="inherit"
-							onClick={onEdit}
-							aria-label="Edit tutorial choices"
-							sx={touchIconButtonStyle}>
-							<EditIcon />
-						</IconButton>
-
-						{/* Add to Cart Button */}
-						<IconButton
-							color="inherit"
-							onClick={onAddToCart}
-							aria-label="Add tutorial choices to cart"
-							sx={touchIconButtonStyle}>
-							<AddShoppingCartIcon />
-						</IconButton>
-
-						{/* Remove Button */}
-						<IconButton
-							color="inherit"
-							onClick={onRemove}
-							aria-label="Remove tutorial choices"
-							sx={touchIconButtonStyle}>
-							<DeleteIcon />
-						</IconButton>
-					</Grid>
-				</Grid>
+				{renderExpandedContent()}
 			</Paper>
 		);
 	}
