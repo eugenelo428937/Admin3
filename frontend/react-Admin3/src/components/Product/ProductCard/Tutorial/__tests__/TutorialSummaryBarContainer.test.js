@@ -172,25 +172,32 @@ describe('TutorialSummaryBarContainer', () => {
 
   /**
    * T006: RED Phase Test
-   * Verify handleEdit calls openEditDialog with subject code
+   * Verify handleEdit opens unified dialog with all events for the subject
    */
   describe('Handler: Edit', () => {
-    it('should call openEditDialog with subject code when Edit clicked', async () => {
+    it('should open unified dialog with events when Edit clicked', async () => {
       const user = userEvent.setup();
-      const mockOpenEditDialog = jest.fn();
 
       const mockChoices = {
         'CS2': {
           '1st': {
             eventId: 'evt-cs2-bri-001',
+            eventTitle: 'CS2 Tutorial Bristol',
+            eventCode: 'TUT-CS2-BRI-001',
+            location: 'Bristol',
+            venue: 'Bristol Conference Centre',
+            startDate: '2025-03-15',
+            endDate: '2025-03-17',
             isDraft: true,
             productId: 456,
             productName: 'CS2 - Actuarial Modelling',
             subjectName: 'CS2',
             choiceLevel: '1st',
-            location: 'Bristol',
-            eventCode: 'TUT-CS2-BRI-001',
-            variation: { id: 123, prices: [{ price_type: 'standard', amount: 95.00 }] }
+            variation: {
+              variationId: 123,
+              variationName: 'Standard',
+              prices: [{ price_type: 'standard', amount: 95.00 }]
+            }
           }
         }
       };
@@ -206,9 +213,10 @@ describe('TutorialSummaryBarContainer', () => {
           getSubjectChoices: jest.fn((code) => mockChoices[code] || {}),
           getDraftChoices: mockGetDraftChoices,
           hasCartedChoices: jest.fn(() => false),
-          openEditDialog: mockOpenEditDialog,
+          openEditDialog: jest.fn(), // Not used anymore but keep for compatibility
           markChoicesAsAdded: jest.fn(),
-          removeTutorialChoice: jest.fn()
+          removeTutorialChoice: jest.fn(),
+          removeSubjectChoices: jest.fn()
         });
 
       render(<TutorialSummaryBarContainer />);
@@ -216,18 +224,24 @@ describe('TutorialSummaryBarContainer', () => {
       const editButton = screen.getByRole('button', { name: /edit/i });
       await user.click(editButton);
 
-      expect(mockOpenEditDialog).toHaveBeenCalledWith('CS2');
+      // Verify dialog opens (check for dialog or dialog content)
+      await waitFor(() => {
+        // Dialog should be rendered with tutorial events
+        expect(screen.queryByRole('dialog') || screen.queryByText(/current choices/i)).toBeTruthy();
+      });
     });
   });
 
   /**
    * T007: RED Phase Test
-   * Verify handleRemove removes all draft choices for subject
+   * Verify handleRemove calls removeSubjectChoices to remove all choices for subject
+   * Updated to match new implementation (uses removeSubjectChoices instead of per-choice removal)
    */
   describe('Handler: Remove', () => {
-    it('should remove all draft choices when Remove clicked', async () => {
+    it('should remove all choices for subject when Remove clicked', async () => {
       const user = userEvent.setup();
-      const mockRemoveTutorialChoice = jest.fn();
+      const mockRemoveSubjectChoices = jest.fn();
+      const mockRemoveFromCart = jest.fn().mockResolvedValue({ data: { items: [] } });
 
       const mockChoices = {
         'CS2': {
@@ -267,9 +281,19 @@ describe('TutorialSummaryBarContainer', () => {
           getSubjectChoices: jest.fn((code) => mockChoices[code] || {}),
           getDraftChoices: mockGetDraftChoices,
           hasCartedChoices: jest.fn(() => false),
-          removeTutorialChoice: mockRemoveTutorialChoice,
+          removeTutorialChoice: jest.fn(), // Not used anymore
+          removeSubjectChoices: mockRemoveSubjectChoices,
           markChoicesAsAdded: jest.fn(),
           openEditDialog: jest.fn()
+        });
+
+      // Mock CartContext
+      jest.spyOn(require('../../../../../contexts/CartContext'), 'useCart')
+        .mockReturnValue({
+          addToCart: jest.fn(),
+          removeFromCart: mockRemoveFromCart,
+          cartItems: [],
+          loading: false
         });
 
       render(<TutorialSummaryBarContainer />);
@@ -277,10 +301,11 @@ describe('TutorialSummaryBarContainer', () => {
       const removeButton = screen.getByRole('button', { name: /remove/i });
       await user.click(removeButton);
 
-      // Should remove both 1st and 2nd choices
-      expect(mockRemoveTutorialChoice).toHaveBeenCalledTimes(2);
-      expect(mockRemoveTutorialChoice).toHaveBeenCalledWith('CS2', '1st');
-      expect(mockRemoveTutorialChoice).toHaveBeenCalledWith('CS2', '2nd');
+      // Should call removeSubjectChoices once with subject code
+      await waitFor(() => {
+        expect(mockRemoveSubjectChoices).toHaveBeenCalledTimes(1);
+        expect(mockRemoveSubjectChoices).toHaveBeenCalledWith('CS2');
+      });
     });
   });
 });
