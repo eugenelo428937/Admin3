@@ -82,7 +82,6 @@ const FilterPanel = ({
     isSearchMode = false,
     showMobile = false
 }) => {
-    console.log('[FilterPanel] Component render', { isSearchMode, showMobile });
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -95,8 +94,6 @@ const FilterPanel = ({
     const validationErrors = useSelector(selectValidationErrors);
     const isLoading = useSelector(state => state.filters.isLoading);
     const error = useSelector(state => state.filters.error);
-
-    console.log('[FilterPanel] Redux state', { subjects: filters.subjects, filterCounts: filterCounts.subjects });
 
     // Local state - persist expanded panels across remounts (React.StrictMode issue)
     const [expandedPanels, setExpandedPanels] = useState(() => {
@@ -120,8 +117,6 @@ const FilterPanel = ({
     });
     const [drawerOpen, setDrawerOpen] = useState(false);
 
-    console.log('[FilterPanel] Expanded panels state', expandedPanels);
-
     // Persist expanded panels state to sessionStorage
     React.useEffect(() => {
         try {
@@ -131,23 +126,15 @@ const FilterPanel = ({
         }
     }, [expandedPanels]);
 
-    // Log mount/unmount
-    React.useEffect(() => {
-        console.log('[FilterPanel] MOUNTED');
-        return () => console.log('[FilterPanel] UNMOUNTED');
-    }, []);
-
     /**
      * Handle accordion panel expansion
      */
     const handlePanelChange = useCallback((panel) => (event, isExpanded) => {
-        console.log('[FilterPanel] handlePanelChange', { panel, isExpanded });
         setExpandedPanels(prev => {
             const newState = {
                 ...prev,
                 [panel]: isExpanded
             };
-            console.log('[FilterPanel] New expanded state', newState);
             return newState;
         });
     }, []);
@@ -156,7 +143,6 @@ const FilterPanel = ({
      * Handle filter selection
      */
     const handleFilterChange = useCallback((filterType, value) => {
-        console.log('[FilterPanel] handleFilterChange called', { filterType, value });
         switch (filterType) {
             case 'subjects':
                 dispatch(toggleSubjectFilter(value));
