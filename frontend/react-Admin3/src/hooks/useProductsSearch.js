@@ -50,15 +50,6 @@ export const useProductsSearch = (options = {}) => {
   const isLoading = useSelector(state => state.filters.isLoading);
   const error = useSelector(state => state.filters.error);
 
-  // Debug: Log Redux state on every render
-  console.log('[useProductsSearch] Redux filters state:', {
-    subjects: filters.subjects,
-    categories: filters.categories,
-    product_types: filters.product_types,
-    products: filters.products,
-    modes_of_delivery: filters.modes_of_delivery,
-  });
-
   // RTK Query lazy search hook
   const [triggerSearch, searchResult] = useLazyUnifiedSearchQuery();
   
@@ -126,18 +117,6 @@ export const useProductsSearch = (options = {}) => {
         },
       };
 
-      console.log('[useProductsSearch] DEBUG: Search params:', {
-        searchQuery: searchQuery || '(none)',
-        filters: {
-          subjects: filters.subjects || [],
-          categories: filters.categories || [],
-          product_types: filters.product_types || [],
-          products: filters.products || [],
-          modes_of_delivery: filters.modes_of_delivery || []
-        },
-        page: currentPage
-      });
-
       // Check if search parameters have changed (avoid duplicate requests)
       // Use a fast hash instead of JSON.stringify for performance
       // Include searchQuery AND products filter to trigger new search when they change
@@ -176,12 +155,6 @@ export const useProductsSearch = (options = {}) => {
           PerformanceTracker.checkBudget('api.products', metric.duration, API_CALL_BUDGET);
         }
       }
-
-      console.log('[useProductsSearch] DEBUG: API response:', {
-        productsCount: result.products?.length || 0,
-        totalCount: result.pagination?.total_count || 0,
-        firstProduct: result.products?.[0]
-      });
 
       // Update local state with results
       const data = {
