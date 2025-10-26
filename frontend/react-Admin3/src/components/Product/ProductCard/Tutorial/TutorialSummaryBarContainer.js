@@ -195,38 +195,31 @@ const TutorialSummaryBarContainer = () => {
     setIsRemoving(true);
 
     try {
-      // T015: Remove carted choices from backend cart first
-      // Find all cart items for this subject
-      const cartedChoices = Object.values(choices).filter(choice => !choice.isDraft);
-      console.log('🗑️ [handleRemove] Carted choices:', cartedChoices);
-
-      if (cartedChoices.length > 0) {
-        // Find cart item by subject code (same logic as handleAddToCart)
-        const cartItem = cartItems.find(item => {
-          const itemSubjectCode = item.subject_code || item.metadata?.subjectCode;
-          console.log('🗑️ [handleRemove] Checking item:', {
-            id: item.id,
-            subject_code: item.subject_code,
-            metadata_subjectCode: item.metadata?.subjectCode,
-            product_type: item.product_type,
-            itemSubjectCode,
-            matches: itemSubjectCode === subjectCode && item.product_type === 'tutorial'
-          });
-          return itemSubjectCode === subjectCode && item.product_type === 'tutorial';
+      // T015: Remove from backend cart FIRST
+      // ALWAYS check cart directly - don't rely on tutorialChoices isDraft flag
+      // User may have selected different events, old one may still be in cart
+      const cartItem = cartItems.find(item => {
+        const itemSubjectCode = item.subject_code || item.metadata?.subjectCode;
+        console.log('🗑️ [handleRemove] Checking cart item:', {
+          id: item.id,
+          subject_code: item.subject_code,
+          metadata_subjectCode: item.metadata?.subjectCode,
+          product_type: item.product_type,
+          itemSubjectCode,
+          matches: itemSubjectCode === subjectCode && item.product_type === 'tutorial'
         });
+        return itemSubjectCode === subjectCode && item.product_type === 'tutorial';
+      });
 
-        console.log('🗑️ [handleRemove] Found cart item:', cartItem);
+      console.log('🗑️ [handleRemove] Found cart item:', cartItem);
 
-        if (cartItem) {
-          console.log('🗑️ [handleRemove] Calling removeFromCart with ID:', cartItem.id);
-          // T015: Call cart API to remove item
-          await removeFromCart(cartItem.id);
-          console.log('🗑️ [handleRemove] removeFromCart completed');
-        } else {
-          console.warn('🗑️ [handleRemove] No cart item found for subject:', subjectCode);
-        }
+      if (cartItem) {
+        console.log('🗑️ [handleRemove] Calling removeFromCart with ID:', cartItem.id);
+        // T015: Call cart API to remove item
+        await removeFromCart(cartItem.id);
+        console.log('🗑️ [handleRemove] removeFromCart completed');
       } else {
-        console.log('🗑️ [handleRemove] No carted choices, skipping cart API call');
+        console.log('🗑️ [handleRemove] No cart item found for subject:', subjectCode);
       }
 
       // T015: Remove all choices from context (after cart API success)
