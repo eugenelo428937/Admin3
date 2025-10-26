@@ -196,11 +196,11 @@ const TutorialSummaryBarContainer = () => {
       const cartedChoices = Object.values(choices).filter(choice => !choice.isDraft);
 
       if (cartedChoices.length > 0) {
-        // Find cart item by subject code
-        const cartItem = cartItems.find(item =>
-          item.metadata?.subjectCode === subjectCode &&
-          item.product_type === 'tutorial'
-        );
+        // Find cart item by subject code (same logic as handleAddToCart)
+        const cartItem = cartItems.find(item => {
+          const itemSubjectCode = item.subject_code || item.metadata?.subjectCode;
+          return itemSubjectCode === subjectCode && item.product_type === 'tutorial';
+        });
 
         if (cartItem) {
           // T015: Call cart API to remove item
