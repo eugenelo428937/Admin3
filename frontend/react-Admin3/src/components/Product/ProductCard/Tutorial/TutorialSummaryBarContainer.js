@@ -187,10 +187,6 @@ const TutorialSummaryBarContainer = () => {
   const handleRemove = async (subjectCode) => {
     const choices = getSubjectChoices(subjectCode);
 
-    console.log('🗑️ [handleRemove] Starting removal for subject:', subjectCode);
-    console.log('🗑️ [handleRemove] Choices:', choices);
-    console.log('🗑️ [handleRemove] All cartItems:', cartItems);
-
     // T017: Set loading state
     setIsRemoving(true);
 
@@ -200,36 +196,20 @@ const TutorialSummaryBarContainer = () => {
       // User may have selected different events, old one may still be in cart
       const cartItem = cartItems.find(item => {
         const itemSubjectCode = item.subject_code || item.metadata?.subjectCode;
-        console.log('🗑️ [handleRemove] Checking cart item:', {
-          id: item.id,
-          subject_code: item.subject_code,
-          metadata_subjectCode: item.metadata?.subjectCode,
-          product_type: item.product_type,
-          itemSubjectCode,
-          matches: itemSubjectCode === subjectCode && item.product_type === 'tutorial'
-        });
         return itemSubjectCode === subjectCode && item.product_type === 'tutorial';
       });
 
-      console.log('🗑️ [handleRemove] Found cart item:', cartItem);
-
       if (cartItem) {
-        console.log('🗑️ [handleRemove] Calling removeFromCart with ID:', cartItem.id);
         // T015: Call cart API to remove item
         await removeFromCart(cartItem.id);
-        console.log('🗑️ [handleRemove] removeFromCart completed');
-      } else {
-        console.log('🗑️ [handleRemove] No cart item found for subject:', subjectCode);
       }
 
       // T015: Remove all choices from context (after cart API success)
-      console.log('🗑️ [handleRemove] Calling removeSubjectChoices for:', subjectCode);
       removeSubjectChoices(subjectCode);
-      console.log('🗑️ [handleRemove] Removal complete');
 
     } catch (error) {
       // T016: Error handling - display user-friendly message
-      console.error('❌ [handleRemove] Error removing tutorial choices:', error);
+      console.error('Error removing tutorial choices:', error);
       setSnackbarMessage('Failed to remove tutorial selections. Please try again.');
       setSnackbarOpen(true);
 

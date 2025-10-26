@@ -69,14 +69,12 @@ export const CartProvider = ({ children }) => {
   const removeFromCart = async (cartItemId) => {
     // Remove cart item by cart item ID
     try {
-      console.log('🛒 [CartContext] Removing cart item:', cartItemId);
       const res = await cartService.removeItem(cartItemId);
-      console.log('🛒 [CartContext] Remove response:', res.data);
       setCartData(res.data); // Store full cart object
       setCartItems(res.data.items || []);
       return res.data;
     } catch (err) {
-      console.error('🛒 [CartContext] Error removing cart item:', err);
+      console.error('Error removing cart item:', err);
       throw err;
     }
   };
