@@ -266,15 +266,36 @@ export const baseFiltersReducers = {
 
   // Multi-filter update action
   setMultipleFilters: (state, action) => {
-    const { subjects, categories, product_types, products, modes_of_delivery } = action.payload;
+    const {
+      subjects,
+      categories,
+      product_types,
+      products,
+      modes_of_delivery,
+      searchQuery,
+      currentPage,
+      pageSize
+    } = action.payload;
 
+    // Set array filters
     if (subjects !== undefined) state.subjects = subjects;
     if (categories !== undefined) state.categories = categories;
     if (product_types !== undefined) state.product_types = product_types;
     if (products !== undefined) state.products = products;
     if (modes_of_delivery !== undefined) state.modes_of_delivery = modes_of_delivery;
 
-    state.currentPage = 1;
+    // Set string filters (Story 1.16 - URL persistence)
+    if (searchQuery !== undefined) state.searchQuery = searchQuery;
+
+    // Set pagination (Story 1.16 - URL persistence)
+    if (currentPage !== undefined) {
+      state.currentPage = currentPage;
+    } else {
+      // Reset to page 1 if not explicitly provided
+      state.currentPage = 1;
+    }
+    if (pageSize !== undefined) state.pageSize = pageSize;
+
     state.lastUpdated = Date.now();
   },
 

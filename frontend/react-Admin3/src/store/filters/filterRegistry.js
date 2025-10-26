@@ -1,10 +1,12 @@
 /**
- * Filter Registry - Centralized configuration for all filter types
+ * Filter Registry - Centralized configuration for all filter types (Story 1.15)
  *
  * Adding a new filter:
  * 1. Add single entry to FilterRegistry.register()
  * 2. Add corresponding Redux state field and actions to filtersSlice
  * 3. Done! FilterPanel, ActiveFilters, and FilterUrlManager automatically handle it.
+ *
+ * Performance monitoring: Tracks lookup operations against < 1ms budget
  *
  * @example
  * // Register a new filter type
@@ -20,6 +22,9 @@
  *   getDisplayValue: (value) => value,
  * });
  */
+
+import PerformanceTracker from '../../utils/PerformanceTracker';
+import { REGISTRY_LOOKUP_BUDGET } from '../../config/performanceBudgets';
 
 /**
  * Filter configuration schema
@@ -74,7 +79,25 @@ export class FilterRegistry {
    * @returns {FilterConfig|undefined}
    */
   static get(type) {
-    return this.#filters.get(type);
+    // Start performance tracking (Story 1.15)
+    if (PerformanceTracker.isSupported()) {
+      PerformanceTracker.startMeasure('registry.lookup', { type });
+    }
+
+    const result = this.#filters.get(type);
+
+    // End performance tracking and check budget
+    if (PerformanceTracker.isSupported()) {
+      const metric = PerformanceTracker.endMeasure('registry.lookup', {
+        found: result !== undefined
+      });
+
+      if (metric && process.env.NODE_ENV !== 'production') {
+        PerformanceTracker.checkBudget('registry.lookup', metric.duration, REGISTRY_LOOKUP_BUDGET);
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -92,12 +115,31 @@ export class FilterRegistry {
    * @returns {FilterConfig|undefined}
    */
   static getByUrlParam(paramName) {
+    // Start performance tracking (Story 1.15)
+    if (PerformanceTracker.isSupported()) {
+      PerformanceTracker.startMeasure('registry.getByUrlParam', { paramName });
+    }
+
+    let result = undefined;
     for (const config of this.#filters.values()) {
       if (config.urlParam === paramName || config.urlParamAliases?.includes(paramName)) {
-        return config;
+        result = config;
+        break;
       }
     }
-    return undefined;
+
+    // End performance tracking and check budget
+    if (PerformanceTracker.isSupported()) {
+      const metric = PerformanceTracker.endMeasure('registry.getByUrlParam', {
+        found: result !== undefined
+      });
+
+      if (metric && process.env.NODE_ENV !== 'production') {
+        PerformanceTracker.checkBudget('registry.getByUrlParam', metric.duration, REGISTRY_LOOKUP_BUDGET);
+      }
+    }
+
+    return result;
   }
 
   /**

@@ -4,13 +4,15 @@
  * Centralized store for the product filtering system with:
  * - RTK Query API integration
  * - URL sync middleware (Story 1.1)
+ * - Performance monitoring middleware (Story 1.15)
  * - DevTools integration for development
  */
 
 import { configureStore } from '@reduxjs/toolkit';
 import { catalogApi } from './api/catalogApi';
 import filtersReducer from './slices/filtersSlice';
-import { urlSyncMiddleware } from './middleware/urlSyncMiddleware';
+import { urlSyncMiddleware, setupUrlToReduxSync } from './middleware/urlSyncMiddleware';
+import performanceMonitoringMiddleware from './middleware/performanceMonitoring';
 
 export const store = configureStore({
   reducer: {
@@ -35,6 +37,7 @@ export const store = configureStore({
       },
     })
       .prepend(urlSyncMiddleware.middleware) // Story 1.1: Redux → URL sync
+      .prepend(performanceMonitoringMiddleware) // Story 1.15: Performance tracking (development-only)
       .concat(catalogApi.middleware),
 
   // Enable Redux DevTools Extension in development (Story 1.2 - AC13)
@@ -43,6 +46,10 @@ export const store = configureStore({
   // See: https://redux-toolkit.js.org/api/configureStore#devtools
   devTools: process.env.NODE_ENV !== 'production',
 });
+
+// Setup URL → Redux synchronization (Story 1.16)
+// Listen for popstate events and update Redux when URL changes
+setupUrlToReduxSync(store.dispatch);
 
 // Export types for TypeScript (optional - can be used if converting to TS later)
 export const { dispatch, getState } = store;

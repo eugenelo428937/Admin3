@@ -1,9 +1,13 @@
 /**
- * FilterValidator - Client-side validation logic for filter combinations
+ * FilterValidator - Client-side validation logic for filter combinations (Story 1.15)
  *
  * Prevents invalid filter combinations and provides user guidance.
- * Performance target: < 5ms execution time
+ * Performance target: < 10ms execution time
+ * Performance monitoring: Tracks validation timing against budget
  */
+
+import PerformanceTracker from '../../utils/PerformanceTracker';
+import { VALIDATION_BUDGET } from '../../config/performanceBudgets';
 
 class FilterValidator {
   /**
@@ -18,7 +22,18 @@ class FilterValidator {
    * @returns {Array} Array of validation errors (empty if valid)
    */
   static validate(filters) {
+    // Start performance tracking (Story 1.15)
+    if (PerformanceTracker.isSupported()) {
+      PerformanceTracker.startMeasure('validation', {
+        filterCount: Object.keys(filters || {}).length
+      });
+    }
+
     if (!filters) {
+      // End measurement even if no filters
+      if (PerformanceTracker.isSupported()) {
+        PerformanceTracker.endMeasure('validation', { empty: true });
+      }
       return [];
     }
 
@@ -31,10 +46,23 @@ class FilterValidator {
     errors.push(...this.validateProductGroups(filters));
 
     // Sort by severity (errors before warnings)
-    return errors.sort((a, b) => {
+    const sortedErrors = errors.sort((a, b) => {
       const severityOrder = { error: 0, warning: 1 };
       return severityOrder[a.severity] - severityOrder[b.severity];
     });
+
+    // End performance tracking and check budget (Story 1.15)
+    if (PerformanceTracker.isSupported()) {
+      const metric = PerformanceTracker.endMeasure('validation', {
+        errorCount: errors.length
+      });
+
+      if (metric && process.env.NODE_ENV !== 'production') {
+        PerformanceTracker.checkBudget('validation', metric.duration, VALIDATION_BUDGET);
+      }
+    }
+
+    return sortedErrors;
   }
 
   /**

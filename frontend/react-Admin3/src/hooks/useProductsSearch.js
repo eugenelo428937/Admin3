@@ -1,8 +1,8 @@
 /**
- * useProductsSearch Hook
- * 
+ * useProductsSearch Hook (Story 1.15)
+ *
  * Custom hook for debounced product search using RTK Query.
- * Handles debouncing, loading states, and error management.
+ * Handles debouncing, loading states, error management, and performance tracking.
  */
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -19,6 +19,8 @@ import {
   clearError,
   setFilterCounts,
 } from '../store/slices/filtersSlice';
+import PerformanceTracker from '../utils/PerformanceTracker';
+import { API_CALL_BUDGET } from '../config/performanceBudgets';
 
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 250;
@@ -148,9 +150,32 @@ export const useProductsSearch = (options = {}) => {
 
       // Update last search params
       lastSearchParamsRef.current = paramsHash;
-      
+
+      // Start performance tracking for API call (Story 1.15)
+      if (PerformanceTracker.isSupported()) {
+        PerformanceTracker.startMeasure('api.products', {
+          hasSearchQuery: !!searchQuery,
+          filterCount: Object.keys(filters).reduce((count, key) =>
+            count + (Array.isArray(filters[key]) ? filters[key].length : (filters[key] ? 1 : 0)), 0
+          ),
+          page: currentPage
+        });
+      }
+
       // Trigger the search
       const result = await triggerSearch(searchParams).unwrap();
+
+      // End performance tracking (Story 1.15)
+      if (PerformanceTracker.isSupported()) {
+        const metric = PerformanceTracker.endMeasure('api.products', {
+          resultsCount: result.products?.length || 0,
+          totalCount: result.pagination?.total_count || 0
+        });
+
+        if (metric && process.env.NODE_ENV !== 'production') {
+          PerformanceTracker.checkBudget('api.products', metric.duration, API_CALL_BUDGET);
+        }
+      }
 
       console.log('[useProductsSearch] DEBUG: API response:', {
         productsCount: result.products?.length || 0,

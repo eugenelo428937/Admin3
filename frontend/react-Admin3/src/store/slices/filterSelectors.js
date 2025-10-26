@@ -97,17 +97,19 @@ export const selectLastUpdated = (state) => state.filters.lastUpdated;
 
 /**
  * selectValidationErrors
- * Returns the array of validation errors
+ * Returns the array of validation errors (Story 1.16 - safe default)
  */
-export const selectValidationErrors = (state) => state.filters.validationErrors;
+export const selectValidationErrors = (state) => state.filters.validationErrors || [];
 
 /**
  * selectHasValidationErrors
  * Returns true if there are any validation errors with severity='error'
- * Does NOT count warnings
+ * Does NOT count warnings (Story 1.16 - safe default)
  */
-export const selectHasValidationErrors = (state) =>
-  state.filters.validationErrors.some(error => error.severity === 'error');
+export const selectHasValidationErrors = (state) => {
+  const errors = state.filters.validationErrors || [];
+  return errors.some(error => error.severity === 'error');
+};
 
 // ========================================
 // Derived Selectors (3 memoized selectors)
