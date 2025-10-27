@@ -123,6 +123,14 @@ class OptimizedSearchService:
                 # Uses index: idx_esspv_filtering
             ),
             Prefetch(
+                'variations__product_product_variation__recommendation',
+                # Prefetch recommendation relationship for buy-with suggestions
+            ),
+            Prefetch(
+                'variations__product_product_variation__recommendation__recommended_product_product_variation',
+                # Prefetch the recommended ProductProductVariation
+            ),
+            Prefetch(
                 'variations__prices',
                 # Uses index: idx_prices_variation_type
             )
