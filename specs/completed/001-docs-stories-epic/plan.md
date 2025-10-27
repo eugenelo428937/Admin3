@@ -92,7 +92,7 @@
 
 ### Documentation (this feature)
 ```
-specs/001-docs-stories-epic/
+specs/[###-feature]/
 ├── plan.md              # This file (/plan command output)
 ├── research.md          # Phase 0 output (/plan command)
 ├── data-model.md        # Phase 1 output (/plan command)
@@ -124,7 +124,7 @@ backend/django_Admin3/
     ├── integration/
     └── unit/
 
-frontend/react-Admin3/
+frontend/
 ├── src/
 │   ├── components/
 │   │   └── Product/
