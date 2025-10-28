@@ -509,7 +509,10 @@ const MaterialProductCard = React.memo(
 										direction="up"
 										sx={{ position: 'absolute', bottom: 14, right: 14,
 											"& .MuiFab-root":{
-												backgroundColor:theme.palette.bpp.sky["060"]
+												backgroundColor:theme.palette.bpp.sky["060"],
+												"&:hover": {
+													backgroundColor: theme.palette.bpp.sky["070"],
+												}
 											} }}>
 										{/* Add to Cart - Current Selected Variation */}
 										<SpeedDialAction
@@ -526,7 +529,12 @@ const MaterialProductCard = React.memo(
 													maxWidth: "none",
 												},
 												"& .MuiSpeedDialAction-fab":{
-													color:"white"}
+													color:"white",
+													backgroundColor: theme.palette.bpp.sky["060"],
+													"&:hover": {
+														backgroundColor: theme.palette.bpp.sky["070"],
+													}
+												}
 											}}
 											aria-label="Add to cart"
 											onClick={() => {
@@ -561,9 +569,14 @@ const MaterialProductCard = React.memo(
 													whiteSpace: "nowrap",
 													maxWidth: "none",
 												},
-												
+
 												"& .MuiSpeedDialAction-fab":{
-													color:"white"}
+													color:"white",
+													backgroundColor: theme.palette.bpp.sky["060"],
+													"&:hover": {
+														backgroundColor: theme.palette.bpp.sky["070"],
+													}
+												}
 											}}
 											aria-label="Buy Both"
 											onClick={() => {
@@ -620,7 +633,10 @@ const MaterialProductCard = React.memo(
 										direction="up"
 										sx={{ position: 'absolute', bottom: 14, right: 14,
 											"& .MuiFab-root":{
-												backgroundColor:theme.palette.bpp.sky["060"]
+												backgroundColor:theme.palette.bpp.sky["060"],
+												"&:hover": {
+													backgroundColor: theme.palette.bpp.sky["070"],
+												}
 											}
 										 }}>
 										{/* Add to Cart - Current Variation Only */}
@@ -637,9 +653,14 @@ const MaterialProductCard = React.memo(
 													whiteSpace: "nowrap",
 													maxWidth: "none",
 												},
-												
+
 												"& .MuiSpeedDialAction-fab":{
-													color:"white"}
+													color:"white",
+													backgroundColor: theme.palette.bpp.sky["060"],
+													"&:hover": {
+														backgroundColor: theme.palette.bpp.sky["070"],
+													}
+												}
 											}}
 											aria-label="Add to cart"
 											onClick={() => {
@@ -679,7 +700,12 @@ const MaterialProductCard = React.memo(
 													maxWidth: "none",
 												},
 												"& .MuiSpeedDialAction-fab":{
-													color:"white"}
+													color:"white",
+													backgroundColor: theme.palette.bpp.sky["060"],
+													"&:hover": {
+														backgroundColor: theme.palette.bpp.sky["070"],
+													}
+												}
 											}}
 											aria-label="Buy with Recommended"
 											onClick={() => {
