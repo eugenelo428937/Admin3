@@ -25,13 +25,11 @@ import {
    Divider,
    Autocomplete,
 } from "@mui/material";
-import { Person, Home, Business, Phone, Lock, Edit as EditIcon, MarkEmailRead as MarkEmailReadIcon } from "@mui/icons-material";
+import { Person, Home, Business, Phone, Lock } from "@mui/icons-material";
 import authService from "../../services/authService";
-import userService from "../../services/userService";
 import config from "../../config";
 import ValidatedPhoneInput from "./ValidatedPhoneInput";
 import SmartAddressInput from "../Address/SmartAddressInput";
-import DynamicAddressForm from "../Address/DynamicAddressForm";
 import addressMetadataService from "../../services/addressMetadataService";
 import { useTheme } from "@mui/material/styles";
 const initialForm = {
@@ -91,8 +89,7 @@ const STEPS = [
    { id: 5, title: "Security", subtitle: "Password setup", icon: Lock },
 ];
 
-const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, onError, onSwitchToLogin }) => {
-   const isProfileMode = mode === "profile";
+const RegistrationWizard = ({ onSuccess, onError, onSwitchToLogin }) => {
    const [currentStep, setCurrentStep] = useState(1);
    const [form, setForm] = useState(initialForm);
    const [fieldErrors, setFieldErrors] = useState({});
@@ -105,19 +102,6 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
    const [workPhoneCountry, setWorkPhoneCountry] = useState(null);
    const [shakingFields, setShakingFields] = useState(new Set());
    const theme = useTheme();
-
-   // Profile mode states
-   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
-   const [profileLoadError, setProfileLoadError] = useState(null);
-   const [initialFormData, setInitialFormData] = useState(null);
-
-   // Address input mode states (false = manual DynamicAddressForm, true = smart SmartAddressInput)
-   const [useSmartInputHome, setUseSmartInputHome] = useState(false);
-   const [useSmartInputWork, setUseSmartInputWork] = useState(false);
-
-   // Address editing states (controls readonly vs editable mode in profile)
-   const [isEditingHomeAddress, setIsEditingHomeAddress] = useState(!isProfileMode);
-   const [isEditingWorkAddress, setIsEditingWorkAddress] = useState(!isProfileMode);
 
    // Phone validation states
    const [phoneValidation, setPhoneValidation] = useState({
@@ -163,164 +147,6 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
          })
          .catch((err) => console.error("Failed to load countries:", err));
    }, []);
-
-   // Helper to normalize address field names (handles both JSON and legacy formats)
-   const normalizeAddress = (addr) => {
-      if (!addr) return {};
-      return {
-         building: addr.building || "",
-         street: addr.street || addr.address || "",  // JSON uses 'address'
-         district: addr.district || "",
-         town: addr.town || addr.city || "",  // JSON uses 'city'
-         county: addr.county || "",
-         postcode: addr.postcode || addr.postal_code || "",  // JSON uses 'postal_code'
-         state: addr.state || "",
-         country: addr.country || "",
-      };
-   };
-
-   // Fetch profile data in profile mode
-   useEffect(() => {
-      if (isProfileMode && !initialData) {
-         const fetchProfileData = async () => {
-            setIsLoadingProfile(true);
-            setProfileLoadError(null);
-
-            try {
-               const result = await userService.getUserProfile();
-
-               if (result.status === "success" && result.data) {
-                  const profileData = result.data;
-
-                  const homeAddr = normalizeAddress(profileData.home_address);
-                  const workAddr = normalizeAddress(profileData.work_address);
-
-                  const newForm = {
-                     title: profileData.profile?.title || "",
-                     first_name: profileData.user?.first_name || "",
-                     last_name: profileData.user?.last_name || "",
-                     email: profileData.user?.email || "",
-
-                     // Home address (using normalized field names)
-                     home_building: homeAddr.building,
-                     home_street: homeAddr.street,
-                     home_district: homeAddr.district,
-                     home_town: homeAddr.town,
-                     home_county: homeAddr.county,
-                     home_postcode: homeAddr.postcode,
-                     home_state: homeAddr.state,
-                     home_country: homeAddr.country,
-
-                     // Work address (using normalized field names)
-                     work_company: profileData.work_address?.company || "",
-                     work_department: profileData.work_address?.department || "",
-                     work_building: workAddr.building,
-                     work_street: workAddr.street,
-                     work_district: workAddr.district,
-                     work_town: workAddr.town,
-                     work_county: workAddr.county,
-                     work_postcode: workAddr.postcode,
-                     work_state: workAddr.state,
-                     work_country: workAddr.country,
-
-                     // Contact info
-                     home_phone: profileData.contact_numbers?.home_phone || "",
-                     work_phone: profileData.contact_numbers?.work_phone || "",
-                     mobile_phone: profileData.contact_numbers?.mobile_phone || "",
-                     personal_email: "",
-                     work_email: "",
-
-                     // Preferences
-                     send_invoices_to: profileData.profile?.send_invoices_to || "HOME",
-                     send_study_material_to: profileData.profile?.send_study_material_to || "HOME",
-
-                     // Password fields empty in profile mode
-                     password: "",
-                     confirmPassword: "",
-                  };
-
-                  setForm(newForm);
-                  setInitialFormData(newForm);
-
-                  // Set work address visibility based on fetched data
-                  const hasWorkAddress = profileData.work_address && (
-                     profileData.work_address.company ||
-                     profileData.work_address.street ||
-                     profileData.work_address.town
-                  );
-                  setShowWorkSection(!!hasWorkAddress);
-               } else {
-                  setProfileLoadError(result.message || "Failed to load profile data");
-               }
-            } catch (error) {
-               setProfileLoadError(error.message || "Failed to load profile data");
-            } finally {
-               setIsLoadingProfile(false);
-            }
-         };
-
-         fetchProfileData();
-      } else if (isProfileMode && initialData) {
-         // If initialData is provided, use it directly
-         const homeAddr = normalizeAddress(initialData.home_address);
-         const workAddr = normalizeAddress(initialData.work_address);
-
-         const newForm = {
-            title: initialData.profile?.title || "",
-            first_name: initialData.user?.first_name || "",
-            last_name: initialData.user?.last_name || "",
-            email: initialData.user?.email || "",
-
-            // Home address (using normalized field names)
-            home_building: homeAddr.building,
-            home_street: homeAddr.street,
-            home_district: homeAddr.district,
-            home_town: homeAddr.town,
-            home_county: homeAddr.county,
-            home_postcode: homeAddr.postcode,
-            home_state: homeAddr.state,
-            home_country: homeAddr.country,
-
-            // Work address (using normalized field names)
-            work_company: initialData.work_address?.company || "",
-            work_department: initialData.work_address?.department || "",
-            work_building: workAddr.building,
-            work_street: workAddr.street,
-            work_district: workAddr.district,
-            work_town: workAddr.town,
-            work_county: workAddr.county,
-            work_postcode: workAddr.postcode,
-            work_state: workAddr.state,
-            work_country: workAddr.country,
-
-            // Contact info
-            home_phone: initialData.contact_numbers?.home_phone || "",
-            work_phone: initialData.contact_numbers?.work_phone || "",
-            mobile_phone: initialData.contact_numbers?.mobile_phone || "",
-            personal_email: "",
-            work_email: "",
-
-            // Preferences
-            send_invoices_to: initialData.profile?.send_invoices_to || "HOME",
-            send_study_material_to: initialData.profile?.send_study_material_to || "HOME",
-
-            // Password fields empty
-            password: "",
-            confirmPassword: "",
-         };
-
-         setForm(newForm);
-         setInitialFormData(newForm);
-
-         // Set work address visibility
-         const hasWorkAddress = initialData.work_address && (
-            initialData.work_address.company ||
-            initialData.work_address.street ||
-            initialData.work_address.town
-         );
-         setShowWorkSection(!!hasWorkAddress);
-      }
-   }, [isProfileMode, initialData]);
 
    // Update phone countries when home country changes
    useEffect(() => {
@@ -927,92 +753,13 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      <Typography variant="h5">Home Address</Typography>
                   </Box>
                   <Divider sx={{ mb: theme.liftkit.spacing.lg }}></Divider>
-
-                  {/* Three-layer address pattern: readonly -> manual/smart toggle -> cancel */}
-                  {!isEditingHomeAddress ? (
-                     <Box>
-                        <DynamicAddressForm
-                           country={form.home_country}
-                           values={form}
-                           onChange={handleChange}
-                           errors={hasUserInteracted ? fieldErrors : {}}
-                           fieldPrefix="home"
-                           showOptionalFields={true}
-                           readonly={true}
-                        />
-                        <Box sx={{ textAlign: 'center', mt: 3 }}>
-                           <Button
-                              variant="contained"
-                              startIcon={<EditIcon />}
-                              onClick={() => setIsEditingHomeAddress(true)}
-                           >
-                              Edit Address
-                           </Button>
-                        </Box>
-                     </Box>
-                  ) : (
-                     <Box>
-                        {!useSmartInputHome ? (
-                           <Box>
-                              <DynamicAddressForm
-                                 country={form.home_country}
-                                 values={form}
-                                 onChange={handleChange}
-                                 errors={hasUserInteracted ? fieldErrors : {}}
-                                 fieldPrefix="home"
-                                 showOptionalFields={true}
-                                 shakingFields={shakingFields}
-                              />
-                              <Box sx={{ textAlign: 'center', mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
-                                 <Button
-                                    variant="outlined"
-                                    onClick={() => setUseSmartInputHome(true)}
-                                 >
-                                    Use address lookup
-                                 </Button>
-                                 {isProfileMode && (
-                                    <Button
-                                       variant="text"
-                                       onClick={() => setIsEditingHomeAddress(false)}
-                                    >
-                                       Cancel
-                                    </Button>
-                                 )}
-                              </Box>
-                           </Box>
-                        ) : (
-                           <Box>
-                              <Typography variant="body2" color="text.secondary" gutterBottom>
-                                 Using smart address lookup
-                              </Typography>
-                              <SmartAddressInput
-                                 values={form}
-                                 onChange={handleChange}
-                                 errors={hasUserInteracted ? fieldErrors : {}}
-                                 fieldPrefix="home"
-                                 shakingFields={shakingFields}
-                              />
-                              <Box sx={{ textAlign: 'center', mt: 2, display: 'flex', gap: 2, justifyContent: 'center' }}>
-                                 <Button
-                                    variant="text"
-                                    onClick={() => setUseSmartInputHome(false)}
-                                    size="small"
-                                 >
-                                    ← Back to manual entry
-                                 </Button>
-                                 {isProfileMode && (
-                                    <Button
-                                       variant="text"
-                                       onClick={() => setIsEditingHomeAddress(false)}
-                                    >
-                                       Cancel
-                                    </Button>
-                                 )}
-                              </Box>
-                           </Box>
-                        )}
-                     </Box>
-                  )}
+                  <SmartAddressInput
+                     values={form}
+                     onChange={handleChange}
+                     errors={hasUserInteracted ? fieldErrors : {}}
+                     fieldPrefix="home"
+                     shakingFields={shakingFields}
+                  />
                </Box>
             );
 
@@ -1100,91 +847,13 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                            </Grid>
                         </Grid>
 
-                        {/* Three-layer address pattern for work address */}
-                        {!isEditingWorkAddress ? (
-                           <Box>
-                              <DynamicAddressForm
-                                 country={form.work_country}
-                                 values={form}
-                                 onChange={handleChange}
-                                 errors={hasUserInteracted ? fieldErrors : {}}
-                                 fieldPrefix="work"
-                                 showOptionalFields={true}
-                                 readonly={true}
-                              />
-                              <Box sx={{ textAlign: 'center', mt: 3 }}>
-                                 <Button
-                                    variant="contained"
-                                    startIcon={<EditIcon />}
-                                    onClick={() => setIsEditingWorkAddress(true)}
-                                 >
-                                    Edit Address
-                                 </Button>
-                              </Box>
-                           </Box>
-                        ) : (
-                           <Box>
-                              {!useSmartInputWork ? (
-                                 <Box>
-                                    <DynamicAddressForm
-                                       country={form.work_country}
-                                       values={form}
-                                       onChange={handleChange}
-                                       errors={hasUserInteracted ? fieldErrors : {}}
-                                       fieldPrefix="work"
-                                       showOptionalFields={true}
-                                       shakingFields={shakingFields}
-                                    />
-                                    <Box sx={{ textAlign: 'center', mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
-                                       <Button
-                                          variant="outlined"
-                                          onClick={() => setUseSmartInputWork(true)}
-                                       >
-                                          Use address lookup
-                                       </Button>
-                                       {isProfileMode && (
-                                          <Button
-                                             variant="text"
-                                             onClick={() => setIsEditingWorkAddress(false)}
-                                          >
-                                             Cancel
-                                          </Button>
-                                       )}
-                                    </Box>
-                                 </Box>
-                              ) : (
-                                 <Box>
-                                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                                       Using smart address lookup
-                                    </Typography>
-                                    <SmartAddressInput
-                                       values={form}
-                                       onChange={handleChange}
-                                       errors={hasUserInteracted ? fieldErrors : {}}
-                                       fieldPrefix="work"
-                                       shakingFields={shakingFields}
-                                    />
-                                    <Box sx={{ textAlign: 'center', mt: 2, display: 'flex', gap: 2, justifyContent: 'center' }}>
-                                       <Button
-                                          variant="text"
-                                          onClick={() => setUseSmartInputWork(false)}
-                                          size="small"
-                                       >
-                                          ← Back to manual entry
-                                       </Button>
-                                       {isProfileMode && (
-                                          <Button
-                                             variant="text"
-                                             onClick={() => setIsEditingWorkAddress(false)}
-                                          >
-                                             Cancel
-                                          </Button>
-                                       )}
-                                    </Box>
-                                 </Box>
-                              )}
-                           </Box>
-                        )}
+                        <SmartAddressInput
+                           values={form}
+                           onChange={handleChange}
+                           errors={hasUserInteracted ? fieldErrors : {}}
+                           fieldPrefix="work"
+                           shakingFields={shakingFields}
+                        />
 
                         <Grid container spacing={3} sx={{ mt: 2 }}>
                            <Grid size={{ xs: 12, md: 6 }}>
@@ -1591,4 +1260,4 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
    );
 };
 
-export default UserFormWizard;
+export default RegistrationWizard;
