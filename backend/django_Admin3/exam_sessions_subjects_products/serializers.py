@@ -1,9 +1,11 @@
 from rest_framework import serializers
+from django.core.exceptions import ObjectDoesNotExist
 from .models import ExamSessionSubjectProduct, ExamSessionSubjectProductVariation, Price
 from exam_sessions_subjects.serializers import ExamSessionSubjectSerializer
 from products.serializers import ProductSerializer, ProductVariationSerializer
 from subjects.models import Subject
 from products.models.products import Product, ProductVariation
+from products.models import ProductVariationRecommendation
 from tutorials.models import TutorialEvent
 
 
@@ -71,13 +73,56 @@ class ProductListSerializer(serializers.ModelSerializer):
         
         return 'Materials'  # Default for other products
 
+    def get_recommended_product(self, product_product_variation):
+        """Get recommended product if exists for this product-variation combination."""
+        try:
+            # Check if this product-variation combination has a recommendation
+            recommendation = ProductVariationRecommendation.objects.filter(
+                product_product_variation=product_product_variation
+            ).select_related('recommended_product_product_variation').first()
+
+            if not recommendation:
+                return None
+
+            # Find the ExamSessionSubjectProductVariation for the recommended product
+            recommended_esspv = ExamSessionSubjectProductVariation.objects.filter(
+                product_product_variation=recommendation.recommended_product_product_variation
+            ).select_related(
+                'exam_session_subject_product__exam_session_subject__subject',
+                'exam_session_subject_product__product',
+                'product_product_variation__product_variation',
+                'product_product_variation__product'
+            ).prefetch_related('prices').first()
+
+            if recommended_esspv:
+                return {
+                    'essp_id': recommended_esspv.exam_session_subject_product.id,
+                    'esspv_id': recommended_esspv.id,
+                    'product_code': recommended_esspv.exam_session_subject_product.product.code,
+                    'product_name': recommended_esspv.exam_session_subject_product.product.fullname,
+                    'product_short_name': recommended_esspv.exam_session_subject_product.product.shortname,
+                    'variation_type': recommended_esspv.product_product_variation.product_variation.variation_type,
+                    'prices': [
+                        {
+                            'id': price.id,
+                            'price_type': price.price_type,
+                            'amount': price.amount,
+                            'currency': price.currency,
+                        }
+                        for price in recommended_esspv.prices.all()
+                    ]
+                }
+        except ObjectDoesNotExist:
+            pass
+        return None
+
     def get_variations(self, obj):
         # Get all ExamSessionSubjectProductVariation for this product using the correct related name
         esspvs = obj.variations.all()
-        
+
         # Check if this is a tutorial product
         product_type = self.get_type(obj)
-        
+
         variations_data = []
         for esspv in esspvs:
             variation_data = {
@@ -96,13 +141,18 @@ class ProductListSerializer(serializers.ModelSerializer):
                     for price in esspv.prices.all()
                 ]
             }
-            
+
+            # Add recommended product if exists
+            recommended = self.get_recommended_product(esspv.product_product_variation)
+            if recommended:
+                variation_data['recommended_product'] = recommended
+
             # Add tutorial events if this is a tutorial product
             if product_type == 'Tutorial':
                 tutorial_events = TutorialEvent.objects.filter(
                     exam_session_subject_product_variation=esspv
                 ).select_related()
-                
+
                 variation_data['events'] = [
                     {
                         'id': event.id,
@@ -118,9 +168,9 @@ class ProductListSerializer(serializers.ModelSerializer):
                     }
                     for event in tutorial_events
                 ]
-            
+
             variations_data.append(variation_data)
-        
+
         return variations_data
 
 class PriceSerializer(serializers.ModelSerializer):
