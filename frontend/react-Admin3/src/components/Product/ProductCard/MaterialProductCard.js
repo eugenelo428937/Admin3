@@ -25,11 +25,18 @@ import {
 	Stack,
 	Radio,
 	RadioGroup,
+	SpeedDial,
+	SpeedDialAction,
+	SpeedDialIcon,
+	Backdrop,
 } from "@mui/material";
 import {
 	InfoOutline,
 	AddShoppingCart,
 	LibraryBooksSharp,
+	FolderCopyOutlined,
+	TipsAndUpdatesOutlined,
+	Close,
 } from "@mui/icons-material";
 import { ThemeProvider } from "@mui/material/styles";
 import { useTheme } from "@mui/material/styles";
@@ -48,6 +55,7 @@ const MaterialProductCard = React.memo(
 		const [showPriceModal, setShowPriceModal] = useState(false);
 		const [selectedPriceType, setSelectedPriceType] = useState("");
 		const [isHovered, setIsHovered] = useState(false);
+		const [speedDialOpen, setSpeedDialOpen] = useState(false);
 		const theme = useTheme();
 		const cardRef = useRef(null);
 
@@ -370,71 +378,6 @@ const MaterialProductCard = React.memo(
 											</Box>
 										);
 									})}
-
-									{/* Buy Both Option */}
-									{product.buy_both &&
-										product.variations &&
-										product.variations.length > 1 && (
-											<Box
-												className="variation-option buy-both-option"
-												sx={{
-													borderColor: "secondary.main",
-													backgroundColor: "secondary.50",
-												}}>
-												<FormControlLabel
-													value="buy_both"
-													control={
-														<Radio
-															size="small"
-															color="secondary"
-														/>
-													}
-													label={
-														<Typography
-															variant="body2"
-															className="variation-label buy-both-label"
-															color="secondary.main">
-															{product.variations[0]
-																?.description_short ||
-																product.variations[0]
-																	?.name}{" "}
-															+{" "}
-															{product.variations[1]
-																?.description_short ||
-																product.variations[1]?.name}
-														</Typography>
-													}
-													className="variation-control"
-												/>
-												{(() => {
-													const price1 =
-														product.variations[0]?.prices?.find(
-															(p) => p.price_type === "standard"
-														);
-													const price2 =
-														product.variations[1]?.prices?.find(
-															(p) => p.price_type === "standard"
-														);
-													if (price1 && price2) {
-														const totalPrice =
-															parseFloat(price1.amount) +
-															parseFloat(price2.amount);
-														return (
-															<Typography
-																variant="body2"
-																color="secondary.main"
-																className="variation-price buy-both-price"
-																fontWeight={600}>
-																{formatPrice(
-																	totalPrice.toString()
-																)}
-															</Typography>
-														);
-													}
-													return null;
-												})()}
-											</Box>
-										)}
 								</Stack>
 							</RadioGroup>
 						)}
@@ -504,27 +447,6 @@ const MaterialProductCard = React.memo(
 							<Box className="price-info-row">
 								<Typography variant="h3" className="price-display">
 									{(() => {
-										// Handle Buy Both option
-										if (selectedVariation === "buy_both") {
-											const priceType =
-												selectedPriceType || "standard";
-											const price1 =
-												product.variations[0]?.prices?.find(
-													(p) => p.price_type === priceType
-												);
-											const price2 =
-												product.variations[1]?.prices?.find(
-													(p) => p.price_type === priceType
-												);
-											if (price1 && price2) {
-												const totalPrice =
-													parseFloat(price1.amount) +
-													parseFloat(price2.amount);
-												return formatPrice(totalPrice.toString());
-											}
-											return "-";
-										}
-
 										if (!currentVariation) return "-";
 										const priceType = selectedPriceType || "standard";
 										const priceObj = currentVariation.prices?.find(
@@ -551,9 +473,7 @@ const MaterialProductCard = React.memo(
 									variant="fineprint"
 									className="price-level-text"
 									color="text.secondary">
-									{selectedVariation === "buy_both"
-										? "Bundle pricing - both variations"
-										: selectedPriceType === "retaker"
+									{selectedPriceType === "retaker"
 										? "Retaker discount applied"
 										: selectedPriceType === "additional"
 										? "Additional copy discount applied"
@@ -567,114 +487,253 @@ const MaterialProductCard = React.memo(
 								</Typography>
 							</Box>
 
-							{/* Add to Cart Button - Always at bottom */}
-							<Button
-								variant="contained"
-								className="add-to-cart-button"
-								onClick={() => {
-									const priceType = selectedPriceType || "standard";
+							{/* Three-tier conditional: buy_both → recommended_product → standard button */}
+							{product.buy_both && product.variations && product.variations.length > 1 ? (
+								// Tier 1: Buy Both SpeedDial (takes precedence)
+								<>
+									<Backdrop
+										open={speedDialOpen}
+										onClick={() => setSpeedDialOpen(false)}
+										sx={{
+											position: 'fixed',
+											zIndex: (theme) => theme.zIndex.speedDial - 1
+										}}
+									/>
+									<SpeedDial
+										ariaLabel="Speed Dial for add to cart"
+										className="add-to-cart-speed-dial"
+										icon={<SpeedDialIcon icon={<AddShoppingCart />} openIcon={<Close />} />}
+										onClose={() => setSpeedDialOpen(false)}
+										onOpen={() => setSpeedDialOpen(true)}
+										open={speedDialOpen}
+										direction="up"
+										sx={{ position: 'absolute', bottom: 16, right: 16 }}>
+										{/* Add to Cart - Current Selected Variation */}
+										<SpeedDialAction
+											icon={<AddShoppingCart />}
+											slotProps={{
+												tooltip: {
+													open: true,
+													title: "Add to Cart",
+												},
+											}}
+											sx={{
+												"& .MuiSpeedDialAction-staticTooltipLabel": {
+													whiteSpace: "nowrap",
+													maxWidth: "none",
+												},
+											}}
+											aria-label="Add to cart"
+											onClick={() => {
+												const priceType = selectedPriceType || "standard";
+												if (!currentVariation) return;
+												const priceObj = currentVariation.prices?.find(
+													(p) => p.price_type === priceType
+												);
+												if (priceObj) {
+													onAddToCart(product, {
+														variationId: currentVariation.id,
+														variationName: currentVariation.name,
+														priceType: priceType,
+														actualPrice: priceObj.amount,
+													});
+												}
+												setSpeedDialOpen(false);
+											}}
+										/>
 
-									// Handle Buy Both option
-									if (selectedVariation === "buy_both") {
-										// Add both variations to cart
-										const variation1 = product.variations[0];
-										const variation2 = product.variations[1];
-										const price1 = variation1?.prices?.find(
+										{/* Buy Both action */}
+										<SpeedDialAction
+											icon={<FolderCopyOutlined />}
+											slotProps={{
+												tooltip: {
+													open: true,
+													title: "Buy Both",
+												},
+											}}
+											sx={{
+												"& .MuiSpeedDialAction-staticTooltipLabel": {
+													whiteSpace: "nowrap",
+													maxWidth: "none",
+												},
+											}}
+											aria-label="Buy Both"
+											onClick={() => {
+												const priceType = selectedPriceType || "standard";
+												const variation1 = product.variations[0];
+												const variation2 = product.variations[1];
+												const price1 = variation1?.prices?.find(
+													(p) => p.price_type === priceType
+												);
+												const price2 = variation2?.prices?.find(
+													(p) => p.price_type === priceType
+												);
+
+												if (variation1 && variation2 && price1 && price2) {
+													// Add first variation
+													onAddToCart(product, {
+														variationId: variation1.id,
+														variationName: variation1.name,
+														priceType: priceType,
+														actualPrice: price1.amount,
+													});
+
+													// Add second variation
+													onAddToCart(product, {
+														variationId: variation2.id,
+														variationName: variation2.name,
+														priceType: priceType,
+														actualPrice: price2.amount,
+													});
+												}
+												setSpeedDialOpen(false);
+											}}
+										/>
+									</SpeedDial>
+								</>
+							) : currentVariation?.recommended_product ? (
+								// Tier 2: Recommended Product SpeedDial
+								<>
+									<Backdrop
+										open={speedDialOpen}
+										onClick={() => setSpeedDialOpen(false)}
+										sx={{
+											position: 'fixed',
+											zIndex: (theme) => theme.zIndex.speedDial - 1
+										}}
+									/>
+									<SpeedDial
+										ariaLabel="Speed Dial for add to cart"
+										className="add-to-cart-speed-dial"
+										icon={<SpeedDialIcon icon={<AddShoppingCart />} openIcon={<Close />} />}
+										onClose={() => setSpeedDialOpen(false)}
+										onOpen={() => setSpeedDialOpen(true)}
+										open={speedDialOpen}
+										direction="up"
+										sx={{ position: 'absolute', bottom: 16, right: 16 }}>
+										{/* Add to Cart - Current Variation Only */}
+										<SpeedDialAction
+											icon={<AddShoppingCart />}
+											slotProps={{
+												tooltip: {
+													open: true,
+													title: "Add to Cart",
+												},
+											}}
+											sx={{
+												"& .MuiSpeedDialAction-staticTooltipLabel": {
+													whiteSpace: "nowrap",
+													maxWidth: "none",
+												},
+											}}
+											aria-label="Add to cart"
+											onClick={() => {
+												const priceType = selectedPriceType || "standard";
+												if (!currentVariation) return;
+												const priceObj = currentVariation.prices?.find(
+													(p) => p.price_type === priceType
+												);
+												if (priceObj) {
+													onAddToCart(product, {
+														variationId: currentVariation.id,
+														variationName: currentVariation.name,
+														priceType: priceType,
+														actualPrice: priceObj.amount,
+													});
+												}
+												setSpeedDialOpen(false);
+											}}
+										/>
+
+										{/* Buy with Recommended action */}
+										<SpeedDialAction
+											icon={<TipsAndUpdatesOutlined />}
+											slotProps={{
+												tooltip: {
+													open: true,
+													title: (() => {
+														const recommendedProduct = currentVariation.recommended_product;
+														const standardPrice = recommendedProduct.prices?.find(p => p.price_type === 'standard');
+														return `Buy with ${recommendedProduct.product_short_name} (${standardPrice ? formatPrice(standardPrice.amount) : '-'})`;
+													})(),
+												},
+											}}
+											sx={{
+												"& .MuiSpeedDialAction-staticTooltipLabel": {
+													whiteSpace: "nowrap",
+													maxWidth: "none",
+												},
+											}}
+											aria-label="Buy with Recommended"
+											onClick={() => {
+												const priceType = selectedPriceType || "standard";
+												const recommendedProduct = currentVariation.recommended_product;
+
+												// Add current variation
+												const currentPriceObj = currentVariation.prices?.find(
+													(p) => p.price_type === priceType
+												);
+												if (currentPriceObj) {
+													onAddToCart(product, {
+														variationId: currentVariation.id,
+														variationName: currentVariation.name,
+														priceType: priceType,
+														actualPrice: currentPriceObj.amount,
+													});
+												}
+
+												// Add recommended product
+												const recommendedPriceObj = recommendedProduct.prices?.find(
+													(p) => p.price_type === priceType
+												);
+												if (recommendedPriceObj) {
+													onAddToCart(
+														{
+															id: recommendedProduct.essp_id,
+															essp_id: recommendedProduct.essp_id,
+															product_code: recommendedProduct.product_code,
+															product_name: recommendedProduct.product_name,
+															product_short_name: recommendedProduct.product_short_name,
+															type: 'Materials', // Recommended products are typically Materials
+														},
+														{
+															variationId: recommendedProduct.esspv_id,
+															variationName: recommendedProduct.variation_type,
+															priceType: priceType,
+															actualPrice: recommendedPriceObj.amount,
+														}
+													);
+												}
+												setSpeedDialOpen(false);
+											}}
+										/>
+									</SpeedDial>
+								</>
+							) : (
+								// Tier 3: Standard Add to Cart button (fallback)
+								<Button
+									variant="contained"
+									className="add-to-cart-button"
+									aria-label="Add to cart"
+									onClick={() => {
+										const priceType = selectedPriceType || "standard";
+
+										// Handle single variation
+										if (!currentVariation) return;
+										const priceObj = currentVariation.prices?.find(
 											(p) => p.price_type === priceType
 										);
-										const price2 = variation2?.prices?.find(
-											(p) => p.price_type === priceType
-										);
-
-										if (
-											variation1 &&
-											variation2 &&
-											price1 &&
-											price2
-										) {
-											// Add first variation with metadata
-											const metadata1 = {
-												type: "material",
-												productType: product.type,
-												variationId: variation1.id,
-												variationName: variation1.name,
-												variationType: variation1.variation_type,
-												subjectCode: product.subject_code,
-												productName: product.product_name,
-											};
-											// Add is_digital flag for eBook variations
-											if (variation1.variation_type === "eBook") {
-												metadata1.is_digital = true;
-											}
-
-											onAddToCart(product, {
-												variationId: variation1.id,
-												variationName: variation1.name,
-												priceType: priceType,
-												actualPrice: price1.amount,
-												metadata: metadata1,
-											});
-
-											// Add second variation with metadata
-											const metadata2 = {
-												type: "material",
-												productType: product.type,
-												variationId: variation2.id,
-												variationName: variation2.name,
-												variationType: variation2.variation_type,
-												subjectCode: product.subject_code,
-												productName: product.product_name,
-											};
-											// Add is_digital flag for eBook variations
-											if (variation2.variation_type === "eBook") {
-												metadata2.is_digital = true;
-											}
-
-											onAddToCart(product, {
-												variationId: variation2.id,
-												variationName: variation2.name,
-												priceType: priceType,
-												actualPrice: price2.amount,
-												metadata: metadata2,
-											});
-										}
-										return;
-									}
-
-									// Handle single variation
-									if (!currentVariation) return;
-									const priceObj = currentVariation.prices?.find(
-										(p) => p.price_type === priceType
-									);
-
-									// Build metadata
-									const metadata = {
-										type: "material",
-										productType: product.type,
-										variationId: currentVariation.id,
-										variationName: currentVariation.name,
-										variationType: currentVariation.variation_type,
-										subjectCode: product.subject_code,
-										productName: product.product_name,
-									};
-									// Add is_digital flag for eBook variations
-									if (currentVariation.variation_type === "eBook") {
-										metadata.is_digital = true;
-									}
-
-									onAddToCart(product, {
-										variationId: currentVariation.id,
-										variationName: currentVariation.name,
-										priceType: priceType,
-										actualPrice: priceObj?.amount,
-										metadata: metadata,
-									});
-								}}
-								disabled={
-									!currentVariation && selectedVariation !== "buy_both"
-								}>
-								<AddShoppingCart />
-							</Button>
+										onAddToCart(product, {
+											variationId: currentVariation.id,
+											variationName: currentVariation.name,
+											priceType: priceType,
+											actualPrice: priceObj?.amount,
+										});
+									}}
+									disabled={!currentVariation}>
+									<AddShoppingCart />
+								</Button>
+							)}
 						</Box>
 					</Box>
 				</CardActions>
