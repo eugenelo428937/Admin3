@@ -24,6 +24,7 @@ const DynamicAddressForm = ({
 	showOptionalFields = true,
 	className = "",
 	metadata = null, // Allow passing pre-filtered metadata
+	readonly = false, // New: Make fields readonly
 }) => {
 	const [addressMetadata, setAddressMetadata] = useState(null);
 	const [fieldErrors, setFieldErrors] = useState({});
@@ -154,6 +155,7 @@ const DynamicAddressForm = ({
 							name={fullFieldName}
 							value={value}
 							onChange={handleFieldChange}
+						disabled={readonly}
 							label={fieldConfig.label + (isRequired ? " *" : "")}>
 							<MenuItem value="">Select {fieldConfig.label}</MenuItem>
 							{fieldConfig.options?.map((option) => (
@@ -196,6 +198,7 @@ const DynamicAddressForm = ({
 						},
 					}}
 					variant="standard"
+				InputProps={{ readOnly: readonly }}
 				/>
 			</Grid>
 		);
@@ -277,6 +280,7 @@ DynamicAddressForm.propTypes = {
 	showOptionalFields: PropTypes.bool,
 	className: PropTypes.string,
 	metadata: PropTypes.object,
+	readonly: PropTypes.bool,
 };
 
 export default DynamicAddressForm;
