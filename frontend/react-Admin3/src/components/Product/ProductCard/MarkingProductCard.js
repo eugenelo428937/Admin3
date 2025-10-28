@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useTheme } from "@mui/material/styles";
 import { formatPrice } from '../../../utils/priceFormatter';
 import { formatVatLabel } from '../../../utils/vatUtils';
 import { useCart } from "../../../contexts/CartContext";
@@ -27,9 +28,13 @@ import {
 	Avatar,
 	Radio,
 	FormControlLabel,
+	SpeedDial,
+	SpeedDialAction,
+	SpeedDialIcon,
 } from "@mui/material";
 import {
 	AddShoppingCart,
+	Close,
 	InfoOutline,
 	Warning,
 	RuleOutlined,
@@ -48,8 +53,10 @@ const MarkingProductCard = React.memo(
 		const [selectedPriceType, setSelectedPriceType] = React.useState("");
 		const [showExpiredWarning, setShowExpiredWarning] = React.useState(false);
 		const [isHovered, setIsHovered] = useState(false);
+		const [speedDialOpen, setSpeedDialOpen] = useState(false);
 
 		const { cartData } = useCart();
+		const theme = useTheme();
 
 		// Get user's VAT region from cart data
 		const userRegion = cartData?.vat_calculations?.region_info?.region || 'UK';
@@ -160,6 +167,11 @@ const MarkingProductCard = React.memo(
 			.sort((a, b) => b.deadline - a.deadline);
 		const allExpired =
 			deadlines.length > 0 && expired.length === deadlines.length;
+
+		// Helper function to find price by type
+		const getPriceForType = (variation, priceType) => {
+			return variation?.prices?.find((p) => p.price_type === priceType);
+		};
 
 		// Handle hover effects
 		const handleMouseEnter = () => {
@@ -399,6 +411,52 @@ const MarkingProductCard = React.memo(
 			}
 			setShowExpiredWarning(false);
 		};
+
+		// Memoized SpeedDial handlers to prevent unnecessary re-renders
+		const handleBuyMarkingOnly = useCallback(() => {
+			handleAddToCart();
+			setSpeedDialOpen(false);
+		}, [handleAddToCart]);
+
+		const handleBuyWithRecommended = useCallback(() => {
+			const priceType = selectedPriceType || "standard";
+			const recommendedProduct = currentVariation?.recommended_product;
+
+			if (!recommendedProduct) return;
+
+			// Add marking product with user's selected price type
+			const markingPriceObj = getPriceForType(currentVariation, priceType);
+			if (markingPriceObj) {
+				onAddToCart(product, {
+					variationId: currentVariation.id,
+					variationName: currentVariation.name,
+					priceType: priceType,
+					actualPrice: markingPriceObj.amount,
+				});
+			}
+
+			// Add recommended product with STANDARD price (no discounts)
+			const recommendedPriceObj = getPriceForType(recommendedProduct, "standard");
+			if (recommendedPriceObj) {
+				onAddToCart(
+					{
+						id: recommendedProduct.essp_id,
+						essp_id: recommendedProduct.essp_id,
+						product_code: recommendedProduct.product_code,
+						product_name: recommendedProduct.product_name,
+						product_short_name: recommendedProduct.product_short_name,
+						type: "Materials",
+					},
+					{
+						variationId: recommendedProduct.esspv_id,
+						variationName: recommendedProduct.variation_type,
+						priceType: "standard",
+						actualPrice: recommendedPriceObj.amount,
+					}
+				);
+			}
+			setSpeedDialOpen(false);
+		}, [currentVariation, selectedPriceType, product, onAddToCart]);
 
 		const renderPriceModal = () => (
 			<Dialog
@@ -690,19 +748,120 @@ const MarkingProductCard = React.memo(
 										{product.vat_status_display || "Price includes VAT"}
 									</Typography>
 								</Box>
-								<Button
-									variant="contained"
-									className="add-to-cart-button"
-									onClick={handleAddToCart}
-									disabled={
-										allExpired ||
-										(hasVariations &&
-											!singleVariation &&
-											selectedVariations.length === 0)
-									}
-									sx={{ alignSelf: "stretch" }}>
-									<AddShoppingCart />
-								</Button>
+								{/* Three-tier conditional: recommended_product → standard button
+										 * Tier 2: Recommended Product SpeedDial - when currentVariation has recommendation
+										 * Tier 3: Standard Add to Cart - fallback when no recommendation
+										 * Note: MarkingProductCard uses only Tiers 2 and 3 (no buy_both tier)
+										 */}
+								{currentVariation?.recommended_product ? (
+									// Tier 2: SpeedDial with two purchase options
+									<SpeedDial
+										ariaLabel="Buy with Recommended"
+										className="add-to-cart-speed-dial"
+										icon={
+											<SpeedDialIcon
+												icon={<AddShoppingCart />}
+												openIcon={<Close />}
+											/>
+										}
+										onClose={() => setSpeedDialOpen(false)}
+										onOpen={() => setSpeedDialOpen(true)}
+										open={speedDialOpen}
+										direction="up"
+										FabProps={{
+											disabled: allExpired ||
+												(hasVariations &&
+													!singleVariation &&
+													selectedVariations.length === 0)
+										}}
+										sx={{
+											position: "absolute",
+											bottom: 14,
+											right: 14,
+											"& .MuiFab-root": {
+												backgroundColor: theme.palette.bpp.sky["060"],
+												"&:hover": {
+													backgroundColor: theme.palette.bpp.sky["070"],
+												},
+												"&.Mui-disabled": {
+													backgroundColor: "grey.400",
+												},
+											},
+										}}>
+										{/* Buy Marking Only */}
+										<SpeedDialAction
+											icon={<AddShoppingCart />}
+											slotProps={{
+												tooltip: {
+													open: true,
+													title: "Buy Marking Only",
+												},
+											}}
+											sx={{
+												"& .MuiSpeedDialAction-staticTooltipLabel": {
+													whiteSpace: "nowrap",
+													maxWidth: "none",
+												},
+												"& .MuiSpeedDialAction-fab": {
+													color: "white",
+													backgroundColor: theme.palette.bpp.sky["060"],
+													"&:hover": {
+														backgroundColor: theme.palette.bpp.sky["070"],
+													},
+												},
+											}}
+											aria-label="Buy marking product only"
+											onClick={handleBuyMarkingOnly}
+										/>
+
+										{/* Buy with Recommended */}
+										<SpeedDialAction
+											icon={<AddShoppingCart />}
+											slotProps={{
+												tooltip: {
+													open: true,
+													title: (() => {
+														const recommendedProduct = currentVariation.recommended_product;
+														const standardPrice = getPriceForType(recommendedProduct, "standard");
+														return `Buy with ${recommendedProduct.product_short_name} (${
+															standardPrice ? formatPrice(standardPrice.amount) : "-"
+														})`;
+													})(),
+												},
+											}}
+											sx={{
+												"& .MuiSpeedDialAction-staticTooltipLabel": {
+													whiteSpace: "nowrap",
+													maxWidth: "none",
+												},
+												"& .MuiSpeedDialAction-fab": {
+													color: "white",
+													backgroundColor: theme.palette.bpp.sky["060"],
+													"&:hover": {
+														backgroundColor: theme.palette.bpp.sky["070"],
+													},
+												},
+											}}
+											aria-label="Buy with Recommended"
+											onClick={handleBuyWithRecommended}
+										/>
+									</SpeedDial>
+								) : (
+									// Tier 3: Standard Add to Cart Button (existing code)
+									<Button
+										variant="contained"
+										className="add-to-cart-button"
+										onClick={handleAddToCart}
+										disabled={
+											allExpired ||
+											(hasVariations &&
+												!singleVariation &&
+												selectedVariations.length === 0)
+										}
+										sx={{ alignSelf: "stretch" }}>
+										<AddShoppingCart />
+									</Button>
+								)}
 							</Box>
 						</Box>
 					</CardActions>
