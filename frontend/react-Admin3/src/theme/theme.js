@@ -593,9 +593,9 @@ const theme = createTheme({
                               width: "56px",
                               height: "56px",
                               padding: "8px",
-                              marginLeft: liftKitTheme.spacing.md,
-                              marginRight: liftKitTheme.spacing.md,
-                              marginTop: liftKitTheme.spacing.md,
+                              /* marginLeft: liftKitTheme.spacing.md,
+                              marginRight: liftKitTheme.spacing.md,*/
+                              marginTop: liftKitTheme.spacing.xs3, 
                               boxShadow: "var(--Paper-shadow)",
                               transition: "all 0.15s ease-in-out",
                               "&:hover": {
