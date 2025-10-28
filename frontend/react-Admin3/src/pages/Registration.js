@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import RegistrationWizard from "../components/User/RegistrationWizard";
+import UserFormWizard from "../components/User/UserFormWizard";
 import {
 	Alert,
 	Typography,
@@ -115,7 +115,7 @@ const Registration = () => {
 				</Box>
 			)}
 
-			<RegistrationWizard
+			<UserFormWizard
 				onSuccess={handleRegistrationSuccess}
 				onError={handleRegistrationError}
 				onSwitchToLogin={handleSwitchToLogin}

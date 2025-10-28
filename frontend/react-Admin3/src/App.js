@@ -12,6 +12,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Home from "./pages/Home";
 import UserProfile from "./pages/UserProfile";
+import ProfilePage from "./pages/ProfilePage";
 import MainNavBar from "./components/Navigation/MainNavBar";
 import NoMatch from "./components/NoMatch";
 import { CartProvider } from "./contexts/CartContext";
@@ -109,9 +110,10 @@ function App() {
 															path="/home"
 															element={<Home />}
 														/>						
+													{/* New wizard-based profile page (T038) */}
 														<Route
 															path="/profile"
-															element={<UserProfile />}
+															element={<ProfilePage />}
 														/>
 														<Route
 															path="/products"
