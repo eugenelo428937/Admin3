@@ -1091,14 +1091,16 @@ const theme = createTheme({
                               "& .vat-status-text": {},
                            },
                            "& .add-to-cart-button": {
-                              color: colorTheme.bpp.sky["100"],
+                              color: "white",
                               backgroundColor: colorTheme.bpp.sky["060"],
 
                               "&:hover": {
                                  backgroundColor: colorTheme.bpp.sky["070"],
                               },
 
-                              "& .MuiSvgIcon-root": {},
+                              "& .MuiSvgIcon-root": {
+                                 color: "white",
+                              },
                            },
                         },
                      },
