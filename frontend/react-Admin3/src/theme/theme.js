@@ -1092,9 +1092,11 @@ const theme = createTheme({
                            },
                            "& .add-to-cart-button": {
                               color: colorTheme.bpp.sky["100"],
-                              backgroundColor: colorTheme.bpp.sky["020"],
+                              backgroundColor: colorTheme.bpp.sky["060"],
 
-                              "&:hover": {},
+                              "&:hover": {
+                                 backgroundColor: colorTheme.bpp.sky["070"],
+                              },
 
                               "& .MuiSvgIcon-root": {},
                            },
