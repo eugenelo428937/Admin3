@@ -31,6 +31,7 @@ import {
 	SpeedDial,
 	SpeedDialAction,
 	SpeedDialIcon,
+	Backdrop,
 } from "@mui/material";
 import {
 	AddShoppingCart,
@@ -755,7 +756,16 @@ const MarkingProductCard = React.memo(
 										 */}
 								{currentVariation?.recommended_product ? (
 									// Tier 2: SpeedDial with two purchase options
-									<SpeedDial
+									<>
+										<Backdrop
+											open={speedDialOpen}
+											onClick={() => setSpeedDialOpen(false)}
+											sx={{
+												position: "fixed",
+												zIndex: (theme) => theme.zIndex.speedDial - 1,
+											}}
+										/>
+										<SpeedDial
 										ariaLabel="Buy with Recommended"
 										className="add-to-cart-speed-dial"
 										icon={
@@ -846,6 +856,7 @@ const MarkingProductCard = React.memo(
 											onClick={handleBuyWithRecommended}
 										/>
 									</SpeedDial>
+									</>
 								) : (
 									// Tier 3: Standard Add to Cart Button (existing code)
 									<Button

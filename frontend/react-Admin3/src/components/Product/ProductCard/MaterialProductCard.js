@@ -780,14 +780,8 @@ const MaterialProductCard = React.memo(
                                                 (p) =>
                                                    p.price_type === "standard"
                                              );
-                                          return `Buy with ${
-                                             recommendedProduct.product_short_name
-                                          } (${
-                                             standardPrice
-                                                ? formatPrice(
-                                                     standardPrice.amount
-                                                  )
-                                                : "-"
+                                          return `Buy with ${recommendedProduct.product_short_name} (${
+                                             standardPrice ? formatPrice(standardPrice.amount) : "-"
                                           })`;
                                        })(),
                                     },
@@ -795,8 +789,9 @@ const MaterialProductCard = React.memo(
                                  sx={{
                                     "& .MuiSpeedDialAction-staticTooltipLabel":
                                        {
-                                          whiteSpace: "nowrap",
-                                          maxWidth: "none",
+                                          whiteSpace: "normal",
+                                          textWrap: "balance",
+                                          minWidth: "200px",
                                        },
                                     "& .MuiSpeedDialAction-fab": {
                                        color: "white",
