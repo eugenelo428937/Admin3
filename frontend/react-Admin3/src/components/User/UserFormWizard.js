@@ -113,8 +113,10 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
    const [initialFormData, setInitialFormData] = useState(null);
 
    // Address input mode states (false = manual DynamicAddressForm, true = smart SmartAddressInput)
-   const [useSmartInputHome, setUseSmartInputHome] = useState(false);
-   const [useSmartInputWork, setUseSmartInputWork] = useState(false);
+   // In registration mode: start with SmartAddressInput (true)
+   // In profile mode: start with readonly view, then SmartAddressInput after Edit (false initially)
+   const [useSmartInputHome, setUseSmartInputHome] = useState(!isProfileMode);
+   const [useSmartInputWork, setUseSmartInputWork] = useState(!isProfileMode);
 
    // Address editing states (controls readonly vs editable mode in profile)
    const [isEditingHomeAddress, setIsEditingHomeAddress] = useState(!isProfileMode);
@@ -136,6 +138,9 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
       message: "",
       severity: "success", // success, error, warning, info
    });
+
+   // Password change tracking for profile mode
+   const [isChangingPassword, setIsChangingPassword] = useState(!isProfileMode);
 
    // Removed old address search states - now using SmartAddressInput
 
@@ -579,6 +584,13 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
             break;
 
          case 5: // Security
+            // In profile mode, only validate password if user wants to change it
+            if (isProfileMode && !isChangingPassword) {
+               // No password validation needed - user can skip password change
+               break;
+            }
+
+            // Registration mode OR profile mode with password change - validate password
             if (!form.password.trim()) errors.password = "Password is required";
             else if (form.password.length < 8)
                errors.password = "Password must be at least 8 characters";
@@ -622,7 +634,12 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
       if (currentStep < 5) {
          setCurrentStep(currentStep + 1);
       } else {
-         handleSubmit();
+         // In profile mode, use step save instead of submit
+         if (isProfileMode) {
+            handleStepSave();
+         } else {
+            handleSubmit();
+         }
       }
    };
 
@@ -709,10 +726,18 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                updatePayload.contact_numbers.work_email = form.work_email;
          }
 
+         // Password (only if user is changing password)
+         if (isChangingPassword && (changedFields.has("password") || changedFields.has("confirmPassword"))) {
+            updatePayload.password = form.password;
+         }
+
          // Call update API
          const result = await userService.updateUserProfile(updatePayload);
 
          if (result.status === "success") {
+            // Track if password was changed
+            const passwordChanged = isChangingPassword && (changedFields.has("password") || changedFields.has("confirmPassword"));
+
             // Update initialFormData with saved values
             setInitialFormData((prev) => ({
                ...prev,
@@ -722,10 +747,22 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
             // Clear changed fields
             setChangedFields(new Set());
 
+            // If password was changed, reset password change state and clear fields
+            if (passwordChanged) {
+               setIsChangingPassword(false);
+               setForm((prev) => ({
+                  ...prev,
+                  password: "",
+                  confirmPassword: "",
+               }));
+            }
+
             // Show success notification
             setSnackbar({
                open: true,
-               message: "Changes saved successfully",
+               message: passwordChanged
+                  ? "Profile updated successfully. Your password has been changed."
+                  : "Changes saved successfully",
                severity: "success",
             });
 
@@ -1535,70 +1572,124 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                         Account Security
                      </Typography>
                      <Typography variant="body2" color="text.secondary">
-                        Create a secure password for your account
+                        {isProfileMode
+                           ? isChangingPassword
+                              ? "Enter your new password below"
+                              : "Your password is secure. Click below to change it."
+                           : "Create a secure password for your account"}
                      </Typography>
                   </Box>
 
-                  <Grid container spacing={3}>
-                     <Grid size={{ xs: 12, md: 6 }}>
-                        <Box
-                           className={
-                              shakingFields.has("password")
-                                 ? "field-error-shake"
-                                 : ""
-                           }
+                  {/* In profile mode, show Change Password button when not changing */}
+                  {isProfileMode && !isChangingPassword && (
+                     <Box sx={{ textAlign: "center", mb: 4 }}>
+                        <Button
+                           variant="outlined"
+                           onClick={() => setIsChangingPassword(true)}
+                           sx={{
+                              color: theme.palette.primary.main,
+                              borderColor: theme.palette.primary.main,
+                           }}
                         >
-                           <TextField
-                              fullWidth
-                              required
-                              type="password"
-                              label="Password"
-                              name="password"
-                              value={form.password}
-                              onChange={handleChange}
-                              error={
-                                 hasUserInteracted && !!fieldErrors.password
-                              }
-                              helperText={
-                                 (hasUserInteracted && fieldErrors.password) ||
-                                 "Use at least 8 characters with a mix of letters, numbers, and symbols"
-                              }
-                              inputRef={fieldRefs.password}
-                              variant="standard"
-                           />
-                        </Box>
-                     </Grid>
-                     <Grid size={{ xs: 12, md: 6 }}>
-                        <Box
-                           className={
-                              shakingFields.has("confirmPassword")
-                                 ? "field-error-shake"
-                                 : ""
-                           }
-                        >
-                           <TextField
-                              fullWidth
-                              required
-                              type="password"
-                              label="Confirm Password"
-                              name="confirmPassword"
-                              value={form.confirmPassword}
-                              onChange={handleChange}
-                              error={
-                                 hasUserInteracted &&
-                                 !!fieldErrors.confirmPassword
-                              }
-                              helperText={
-                                 hasUserInteracted
-                                    ? fieldErrors.confirmPassword
+                           Change Password
+                        </Button>
+                     </Box>
+                  )}
+
+                  {/* Show password fields in registration mode OR when changing password in profile mode */}
+                  {(!isProfileMode || isChangingPassword) && (
+                     <Grid container spacing={3}>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                           <Box
+                              className={
+                                 shakingFields.has("password")
+                                    ? "field-error-shake"
                                     : ""
                               }
-                              inputRef={fieldRefs.confirmPassword}
-                              variant="standard"
-                           />
-                        </Box>
+                           >
+                              <TextField
+                                 fullWidth
+                                 required
+                                 type="password"
+                                 label="Password"
+                                 name="password"
+                                 value={form.password}
+                                 onChange={handleChange}
+                                 error={
+                                    hasUserInteracted && !!fieldErrors.password
+                                 }
+                                 helperText={
+                                    (hasUserInteracted && fieldErrors.password) ||
+                                    "Use at least 8 characters with a mix of letters, numbers, and symbols"
+                                 }
+                                 inputRef={fieldRefs.password}
+                                 variant="standard"
+                              />
+                           </Box>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                           <Box
+                              className={
+                                 shakingFields.has("confirmPassword")
+                                    ? "field-error-shake"
+                                    : ""
+                              }
+                           >
+                              <TextField
+                                 fullWidth
+                                 required
+                                 type="password"
+                                 label="Confirm Password"
+                                 name="confirmPassword"
+                                 value={form.confirmPassword}
+                                 onChange={handleChange}
+                                 error={
+                                    hasUserInteracted &&
+                                    !!fieldErrors.confirmPassword
+                                 }
+                                 helperText={
+                                    hasUserInteracted
+                                       ? fieldErrors.confirmPassword
+                                       : ""
+                                 }
+                                 inputRef={fieldRefs.confirmPassword}
+                                 variant="standard"
+                              />
+                           </Box>
+                        </Grid>
+
+                        {/* Cancel button for profile mode password change */}
+                        {isProfileMode && isChangingPassword && (
+                           <Grid size={{ xs: 12 }}>
+                              <Box sx={{ textAlign: "center", mt: 2 }}>
+                                 <Button
+                                    variant="text"
+                                    onClick={() => {
+                                       setIsChangingPassword(false);
+                                       // Clear password fields
+                                       setForm((prev) => ({
+                                          ...prev,
+                                          password: "",
+                                          confirmPassword: "",
+                                       }));
+                                       // Clear password errors
+                                       setFieldErrors((prev) => ({
+                                          ...prev,
+                                          password: "",
+                                          confirmPassword: "",
+                                       }));
+                                    }}
+                                    sx={{
+                                       color: theme.palette.text.secondary,
+                                    }}
+                                 >
+                                    Cancel Password Change
+                                 </Button>
+                              </Box>
+                           </Grid>
+                        )}
                      </Grid>
-                  </Grid>
+                  )}
                </Box>
             );
 
