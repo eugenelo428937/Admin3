@@ -205,19 +205,72 @@ backend/django_Admin3/
 *This section describes what the /tasks command will do - DO NOT execute during /plan*
 
 **Task Generation Strategy**:
-- Load `.specify/templates/tasks-template.md` as base
-- Generate tasks from Phase 1 design docs (contracts, data model, quickstart)
-- Each contract → contract test task [P]
-- Each entity → model creation task [P] 
-- Each user story → integration test task
-- Implementation tasks to make tests pass
+
+The `/tasks` command will generate a task list based on the following approach:
+
+1. **Test-First Development (TDD)**:
+   - Create test file: `MarkingProductCard.recommendations.test.js`
+   - Write 14 tests based on contract scenarios (see contracts/component-interface.md)
+   - Reference MaterialProductCard.recommendations.test.js for patterns
+
+2. **Component Implementation**:
+   - Modify `MarkingProductCard.js` to add:
+     - SpeedDial imports
+     - `speedDialOpen` state
+     - Three-tier conditional rendering (recommendation tier)
+     - Purchase handlers for "Buy Marking Only" and "Buy with Recommended"
+   - Preserve all existing functionality (deadlines, discounts, modals)
+
+3. **Integration Testing**:
+   - Manual testing checklist (10 scenarios from quickstart.md)
+   - Backend integration verification (real API data)
+   - Accessibility testing (keyboard, screen reader)
 
 **Ordering Strategy**:
-- TDD order: Tests before implementation 
-- Dependency order: Models before services before UI
-- Mark [P] for parallel execution (independent files)
 
-**Estimated Output**: 25-30 numbered, ordered tasks in tasks.md
+```
+Phase 2a: Test Setup (TDD RED)
+1. Create test file with mock data helpers
+2. Write 14 failing tests (one test at a time)
+3. Verify tests fail (RED phase)
+
+Phase 2b: Implementation (TDD GREEN)
+4. Add SpeedDial imports and state
+5. Implement three-tier conditional rendering
+6. Implement purchase handlers
+7. Run tests → should pass (GREEN phase)
+
+Phase 2c: Refactoring (TDD REFACTOR)
+8. Extract helper functions if needed
+9. Optimize memoization
+10. Clean up code while keeping tests green
+
+Phase 2d: Integration & Validation
+11. Manual testing (10 quickstart scenarios)
+12. Accessibility audit
+13. Performance validation (<200ms render, 60fps animations)
+14. Code review and merge
+```
+
+**Task Dependencies**:
+- Tests must be written BEFORE implementation (TDD enforcement)
+- Implementation tasks depend on test tasks
+- Integration testing depends on implementation completion
+- All tasks are sequential (no parallel execution due to single file modification)
+
+**Estimated Output**: 14-16 numbered, ordered tasks in tasks.md
+
+**Key Files Modified**:
+- New: `frontend/react-Admin3/src/components/Product/ProductCard/__tests__/MarkingProductCard.recommendations.test.js`
+- Modified: `frontend/react-Admin3/src/components/Product/ProductCard/MarkingProductCard.js`
+- Reference: `frontend/react-Admin3/src/components/Product/ProductCard/MaterialProductCard.js` (copy patterns from this file)
+
+**Estimated Effort**:
+- Test creation: 2-3 hours
+- Implementation: 1-2 hours
+- Manual testing: 1 hour
+- Code review: 30 minutes
+- **Total**: ~5-6 hours
 
 **IMPORTANT**: This phase is executed by the /tasks command, NOT by /plan
 
@@ -231,28 +284,53 @@ backend/django_Admin3/
 ## Complexity Tracking
 *Fill ONLY if Constitution Check has violations that must be justified*
 
+**No Complexity Violations**: This feature follows existing patterns and requires no architectural complexity. All constitutional requirements met.
+
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+| None | N/A | N/A |
 
 
 ## Progress Tracking
 *This checklist is updated during execution flow*
 
 **Phase Status**:
-- [ ] Phase 0: Research complete (/plan command)
-- [ ] Phase 1: Design complete (/plan command)
-- [ ] Phase 2: Task planning complete (/plan command - describe approach only)
-- [ ] Phase 3: Tasks generated (/tasks command)
-- [ ] Phase 4: Implementation complete
+- [x] Phase 0: Research complete (/plan command) ✅ research.md created
+- [x] Phase 1: Design complete (/plan command) ✅ data-model.md, contracts/, quickstart.md, CLAUDE.md updated
+- [x] Phase 2: Task planning complete (/plan command - describe approach only) ✅ Approach documented above
+- [x] Phase 3: Tasks generated (/tasks command) ✅ tasks.md created with 32 numbered tasks
+- [ ] Phase 4: Implementation complete → Execute tasks.md
 - [ ] Phase 5: Validation passed
 
 **Gate Status**:
-- [ ] Initial Constitution Check: PASS
-- [ ] Post-Design Constitution Check: PASS
-- [ ] All NEEDS CLARIFICATION resolved
-- [ ] Complexity deviations documented
+- [x] Initial Constitution Check: PASS ✅ TDD enforced, follows existing patterns
+- [x] Post-Design Constitution Check: PASS ✅ No new complexity, frontend-only changes
+- [x] All NEEDS CLARIFICATION resolved ✅ All 4 clarifications answered in research.md
+- [x] Complexity deviations documented ✅ None - no violations
+
+**Generated Artifacts**:
+- ✅ `/specs/001-i-have-added/plan.md` (this file)
+- ✅ `/specs/001-i-have-added/research.md` (6 research questions resolved)
+- ✅ `/specs/001-i-have-added/data-model.md` (component state, API contracts)
+- ✅ `/specs/001-i-have-added/contracts/component-interface.md` (14 test scenarios)
+- ✅ `/specs/001-i-have-added/quickstart.md` (10 manual test cases)
+- ✅ `/specs/001-i-have-added/tasks.md` (32 numbered implementation tasks)
+- ✅ `/CLAUDE.md` (updated with feature context)
+
+**Ready for Implementation**: ✅ YES (execute tasks.md)
 
 ---
-*Based on Constitution v2.1.1 - See `/memory/constitution.md`*
+
+## Summary
+
+**Planning Phase Complete**: ✅
+**All Clarifications Resolved**: ✅ (4/4 from spec)
+**Design Artifacts Generated**: ✅ (6 documents)
+**Constitutional Compliance**: ✅ (TDD enforced, no violations)
+**Estimated Implementation Effort**: 5-6 hours
+**Risk Level**: LOW (proven pattern, isolated changes)
+
+---
+
+*Based on Constitution v2.1.1 - See `.specify/memory/constitution.md`*
+*Next Command*: `/tasks` to generate implementation task list
