@@ -1170,7 +1170,10 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                                  {isProfileMode && (
                                     <Button
                                        variant="text"
-                                       onClick={() => setIsEditingHomeAddress(false)}
+                                       onClick={() => {
+                                          setIsEditingHomeAddress(false);
+                                          setUseSmartInputHome(false);
+                                       }}
                                     >
                                        Cancel
                                     </Button>
@@ -1200,7 +1203,10 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                                  {isProfileMode && (
                                     <Button
                                        variant="text"
-                                       onClick={() => setIsEditingHomeAddress(false)}
+                                       onClick={() => {
+                                          setIsEditingHomeAddress(false);
+                                          setUseSmartInputHome(false);
+                                       }}
                                     >
                                        Cancel
                                     </Button>
@@ -1345,7 +1351,10 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                                        {isProfileMode && (
                                           <Button
                                              variant="text"
-                                             onClick={() => setIsEditingWorkAddress(false)}
+                                             onClick={() => {
+                                                setIsEditingWorkAddress(false);
+                                                setUseSmartInputWork(false);
+                                             }}
                                           >
                                              Cancel
                                           </Button>
@@ -1375,7 +1384,10 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                                        {isProfileMode && (
                                           <Button
                                              variant="text"
-                                             onClick={() => setIsEditingWorkAddress(false)}
+                                             onClick={() => {
+                                                setIsEditingWorkAddress(false);
+                                                setUseSmartInputWork(false);
+                                             }}
                                           >
                                              Cancel
                                           </Button>
