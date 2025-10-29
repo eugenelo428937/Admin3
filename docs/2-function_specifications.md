@@ -4,17 +4,17 @@
 
 ## Existing Functionality
 
-- Users Related
+- Users
   - Login
   - Reset Password
   - Change Email
-  - Update profile
-  - Sign out
-  - Logging
+  - Update Profile
+  - Log out
 - Products
   - List
   - Add on sale
   - Bundle
+  - Marking Voucher
   - Marking products
     - Deadline Check
   - Tutorial products
@@ -23,26 +23,27 @@
     - Course Type
     - Tutorial Dates
   - Online Classroom
-    - India/UK
+    - UK
 - Tutorial Request
 - Cart
-  - Add product to Cart
+  - Add Product
   - Update Cart
   - Empty Cart
-  - Apply discounts
 - Ordering/Checkout
-  - Reduced rate
-  - Invoice delivery preference
-  - Study Materials delivery preference
-  - Confirm delivery preference
+  - Apply Retaker/Additional/Reduced Rates
+  - Invoice and delivery preference
   - Calculate VAT
-  - Calculate Total
-  - Dispaly Communication Details
-  - special education/ Health conditions
-  - Notes
-  - Terms and condition
-  - Product specify preference
-  - How we use your information
+  - Communication Details
+  - Terms and condition (mandatory)
+  - Product specific acknowledgment (mandatory)
+    - Dispatch date
+    - Expired marking deadlines
+  - Product specific preference
+    - Binders
+    - Health and safety for tutorials
+    - special education/ Health conditions
+  - Order preferences
+    - Notes
     - Feedback to employers
     - Marketing perference
   - Payment
@@ -62,36 +63,39 @@
 ## New/Updated functionailty
 
 - Catalog
+  - Exam Sessions
+  - Subjects  
   - Products
     - Variations
   - Bundles
-  - Subjects
-  - Exam Sessions
+  - Product Recommendations
 - Current Products
   - Current Subjects
-    - Products  
-      - Variations
-      - Variation Prices
-      - Bundles
-      - Product Cards
-      - Marking Paper
-        - Deadlines
-          - Deadline warnings
+    - Product Cards
+      - Materials
+      - Marking
+        - Marking Paper
       - Tutorials
         - Events
           - Check Availability
-        - Sessions Dates (**TO BE IMPLEMENTED**)
-        - Tutorial Choices Panel (**IN PROGRESS**)
-- Filtering (**IN PROGRESS**)
-  - Configuration
-  - Filter Group
-  - Product Group
-  - Examples:
-    - Subjects
-    - Delivery Mode
-    - Product Category
-    - Product Type
-- Searching (**IN PROGRESS**)
+          - Select Preference
+          - Sessions Dates (**TO BE IMPLEMENTED**)
+          - Tutorial Choices Panel
+      - Online Classroom
+      - Bundle
+      - Marking Voucher
+    - Variations
+    - Variation Prices
+    - Price info tables
+    - Filtering
+      - Configuration
+      - Filter Group
+      - Product Group
+      - Examples:
+        - Subjects
+        - Delivery Mode
+        - Product Category
+        - Product Type
   - Fuzzy Searching
 - Rules Engine
   - Rules
@@ -109,11 +113,10 @@
       - Holiday Message
     - Requires User Acknowledge
       - Terms and conditions
-      - Session Change Message (**TO BE IMPLEMENTED**)
+      - Session Change Message
     - Automatic Applied
       - VAT Calculation
 - Utilities
-  - Address search
   - Email Module
     - Settings
     - Tempalte
@@ -131,8 +134,10 @@
   - Auth User
   - User Profile
     - Addresses
+      - international Address search and validation
     - Email
     - Contact Number
+      - international phone number validation
   - Students (**TO BE IMPLEMENTED**)
   - Marker (**TO BE IMPLEMENTED**)
   - Apprentice (**TO BE IMPLEMENTED**)
