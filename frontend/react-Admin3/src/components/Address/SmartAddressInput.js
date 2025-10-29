@@ -55,7 +55,14 @@ const SmartAddressInput = ({
     if (existingCountry && existingCountry !== selectedCountry) {
       setSelectedCountry(existingCountry);
     }
-  }, [values, getFieldName, selectedCountry]);
+
+    // Initialize postcode from existing values
+    const postcodeFieldName = getFieldName('postal_code');
+    const existingPostcode = values[postcodeFieldName];
+    if (existingPostcode && existingPostcode !== postcodeValue) {
+      setPostcodeValue(existingPostcode);
+    }
+  }, [values, getFieldName, selectedCountry, postcodeValue]);
 
   // Update metadata when country changes
   useEffect(() => {
@@ -63,17 +70,25 @@ const SmartAddressInput = ({
       const countryCode = addressMetadataService.getCountryCode(selectedCountry);
       const metadata = addressMetadataService.getAddressMetadata(countryCode);
       setAddressMetadata(metadata);
-      
-      // Reset address lookup fields when country changes
-      setPostcodeValue('');
-      setAddressLineValue('');
+
+      // Only reset address lookup fields if we're not preserving existing values
+      // Check if we have existing postal_code in values - if so, don't reset
+      const postcodeFieldName = getFieldName('postal_code');
+      const existingPostcode = values[postcodeFieldName];
+
+      if (!existingPostcode) {
+        // No existing postcode, safe to reset
+        setPostcodeValue('');
+        setAddressLineValue('');
+      }
+
       setAddressSuggestions([]);
       setShowSuggestions(false);
       setShowManualEntry(false);
     } else {
       setAddressMetadata(null);
     }
-  }, [selectedCountry]);
+  }, [selectedCountry, getFieldName, values]);
 
   // Handle country selection
   const handleCountryChange = (e) => {
