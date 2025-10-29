@@ -252,7 +252,10 @@ const Home = () => {
          </Container>
 
          {/* Search Results Section */}
-         <Container disableGutters={true} maxWidth="xl">
+         <Container disableGutters={true} maxWidth="xl" sx={{
+                              justifyContent: "center",
+                              alignItems: "center",
+                           }}>
             <SearchResults
                searchResults={searchResults}
                onShowMatchingProducts={handleShowMatchingProducts}

@@ -18,6 +18,7 @@ import React, { useState } from 'react';
 import {
     Alert,
     Box,
+    Container,
     IconButton,
     Collapse,
     Typography,
@@ -141,7 +142,7 @@ const RulesEngineInlineAlert = ({
                         data-testid="rules-engine-inline-alert"
                         onClose={message.dismissible !== false && onDismiss ? () => onDismiss(index) : undefined}
                     >
-                        <Box sx={{ width: '100%' }}>
+                        <Container maxWidth="md">
                             {/* Title */}
                             <Box sx={{
                                 display: 'flex',
@@ -149,7 +150,7 @@ const RulesEngineInlineAlert = ({
                                 alignItems: 'flex-start',
                                 mb: 1
                             }}>
-                                <Typography variant="subtitle1" component="strong" sx={{ fontWeight: 600 }}>
+                                <Typography variant="h6" component="strong" sx={{ fontWeight: 600 }}>
                                     {normalized.title}
                                 </Typography>
 
@@ -166,8 +167,8 @@ const RulesEngineInlineAlert = ({
 
                             {/* Content Preview (First Line) */}
                             {!isExpanded && (
-                                <Box>
-                                    <Typography variant="body2" component="div">
+                                <Container className="text-start">
+                                    <Typography variant="body1" component="div">
                                         {firstLine}
                                     </Typography>
                                     <Typography
@@ -183,7 +184,7 @@ const RulesEngineInlineAlert = ({
                                     >
                                         see more
                                     </Typography>
-                                </Box>
+                                </Container>
                             )}
 
                             {/* Full Content (Expanded) */}
@@ -209,7 +210,7 @@ const RulesEngineInlineAlert = ({
                                     </Typography>
                                 </Box>
                             </Collapse>
-                        </Box>
+                        </Container>
                     </Alert>
                 );
             })}
