@@ -24,6 +24,7 @@ import {
    Paper,
    Divider,
    Autocomplete,
+   Snackbar,
 } from "@mui/material";
 import { Person, Home, Business, Phone, Lock, Edit as EditIcon, MarkEmailRead as MarkEmailReadIcon } from "@mui/icons-material";
 import authService from "../../services/authService";
@@ -40,25 +41,25 @@ const initialForm = {
    last_name: "",
    email: "",
 
-   // Home address
+   // Home address (using metadata-compatible field names)
    home_building: "",
-   home_street: "",
+   home_address: "",
    home_district: "",
-   home_town: "",
+   home_city: "",
    home_county: "",
-   home_postcode: "",
+   home_postal_code: "",
    home_state: "",
    home_country: "",
 
-   // Work address (optional)
+   // Work address (optional, using metadata-compatible field names)
    work_company: "",
    work_department: "",
    work_building: "",
-   work_street: "",
+   work_address: "",
    work_district: "",
-   work_town: "",
+   work_city: "",
    work_county: "",
-   work_postcode: "",
+   work_postal_code: "",
    work_state: "",
    work_country: "",
 
@@ -126,6 +127,16 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
       work_phone: { isValid: true, error: null },
    });
 
+   // Change tracking for step-by-step saving (profile mode)
+   const [changedFields, setChangedFields] = useState(new Set());
+
+   // Snackbar for save notifications
+   const [snackbar, setSnackbar] = useState({
+      open: false,
+      message: "",
+      severity: "success", // success, error, warning, info
+   });
+
    // Removed old address search states - now using SmartAddressInput
 
    const fieldRefs = {
@@ -164,18 +175,56 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
          .catch((err) => console.error("Failed to load countries:", err));
    }, []);
 
+   // Helper to detect country from postal code format
+   const detectCountryFromPostalCode = (postalCode) => {
+      if (!postalCode) return null;
+
+      const code = postalCode.trim();
+
+      // UK postcode: Letters/numbers with space (e.g., "OX14 1BZ", "SW1A 1AA")
+      if (/^[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}$/i.test(code)) {
+         return "United Kingdom";
+      }
+
+      // Singapore postcode: 6 digits
+      if (/^\d{6}$/.test(code)) {
+         return "Singapore";
+      }
+
+      // US ZIP code: 5 digits or 5+4 format
+      if (/^\d{5}(-\d{4})?$/.test(code)) {
+         return "United States";
+      }
+
+      // South Africa postcode: 4 digits
+      if (/^\d{4}$/.test(code)) {
+         return "South Africa";
+      }
+
+      return null;
+   };
+
    // Helper to normalize address field names (handles both JSON and legacy formats)
+   // IMPORTANT: Output field names must match addressMetadataService field mappings
+   // (address, city, postal_code, state, county) NOT (street, town, postcode)
    const normalizeAddress = (addr) => {
       if (!addr) return {};
+
+      const postalCode = addr.postcode || addr.postal_code || "";
+
+      // Detect correct country from postal code format
+      const detectedCountry = detectCountryFromPostalCode(postalCode);
+      const country = detectedCountry || addr.country || "";
+
       return {
          building: addr.building || "",
-         street: addr.street || addr.address || "",  // JSON uses 'address'
+         address: addr.street || addr.address || "",  // Unified field name for street address
          district: addr.district || "",
-         town: addr.town || addr.city || "",  // JSON uses 'city'
+         city: addr.town || addr.city || "",  // Unified field name for town/city
          county: addr.county || "",
-         postcode: addr.postcode || addr.postal_code || "",  // JSON uses 'postal_code'
+         postal_code: postalCode,  // Unified field name for postcode
          state: addr.state || "",
-         country: addr.country || "",
+         country: country,
       };
    };
 
@@ -201,25 +250,25 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      last_name: profileData.user?.last_name || "",
                      email: profileData.user?.email || "",
 
-                     // Home address (using normalized field names)
+                     // Home address (using metadata-compatible field names)
                      home_building: homeAddr.building,
-                     home_street: homeAddr.street,
+                     home_address: homeAddr.address,
                      home_district: homeAddr.district,
-                     home_town: homeAddr.town,
+                     home_city: homeAddr.city,
                      home_county: homeAddr.county,
-                     home_postcode: homeAddr.postcode,
+                     home_postal_code: homeAddr.postal_code,
                      home_state: homeAddr.state,
                      home_country: homeAddr.country,
 
-                     // Work address (using normalized field names)
+                     // Work address (using metadata-compatible field names)
                      work_company: profileData.work_address?.company || "",
                      work_department: profileData.work_address?.department || "",
                      work_building: workAddr.building,
-                     work_street: workAddr.street,
+                     work_address: workAddr.address,
                      work_district: workAddr.district,
-                     work_town: workAddr.town,
+                     work_city: workAddr.city,
                      work_county: workAddr.county,
-                     work_postcode: workAddr.postcode,
+                     work_postal_code: workAddr.postal_code,
                      work_state: workAddr.state,
                      work_country: workAddr.country,
 
@@ -271,25 +320,25 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
             last_name: initialData.user?.last_name || "",
             email: initialData.user?.email || "",
 
-            // Home address (using normalized field names)
+            // Home address (using metadata-compatible field names)
             home_building: homeAddr.building,
-            home_street: homeAddr.street,
+            home_address: homeAddr.address,
             home_district: homeAddr.district,
-            home_town: homeAddr.town,
+            home_city: homeAddr.city,
             home_county: homeAddr.county,
-            home_postcode: homeAddr.postcode,
+            home_postal_code: homeAddr.postal_code,
             home_state: homeAddr.state,
             home_country: homeAddr.country,
 
-            // Work address (using normalized field names)
+            // Work address (using metadata-compatible field names)
             work_company: initialData.work_address?.company || "",
             work_department: initialData.work_address?.department || "",
             work_building: workAddr.building,
-            work_street: workAddr.street,
+            work_address: workAddr.address,
             work_district: workAddr.district,
-            work_town: workAddr.town,
+            work_city: workAddr.city,
             work_county: workAddr.county,
-            work_postcode: workAddr.postcode,
+            work_postal_code: workAddr.postal_code,
             work_state: workAddr.state,
             work_country: workAddr.country,
 
@@ -419,6 +468,19 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
          ...prev,
          [name]: newValue,
       }));
+
+      // Track changed fields in profile mode (compare to initialFormData)
+      if (isProfileMode && initialFormData) {
+         if (initialFormData[name] !== newValue) {
+            setChangedFields((prev) => new Set([...prev, name]));
+         } else {
+            setChangedFields((prev) => {
+               const updated = new Set(prev);
+               updated.delete(name);
+               return updated;
+            });
+         }
+      }
 
       // Clear field error when user starts typing
       if (fieldErrors[name]) {
@@ -568,6 +630,138 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
       if (currentStep > 1) {
          setCurrentStep(currentStep - 1);
       }
+   };
+
+   // Save current step changes in profile mode
+   const handleStepSave = async () => {
+      if (!isProfileMode) return; // Only available in profile mode
+
+      // Check if there are any changes to save
+      if (changedFields.size === 0) {
+         setSnackbar({
+            open: true,
+            message: "No changes to save",
+            severity: "info",
+         });
+         return;
+      }
+
+      setIsLoading(true);
+
+      try {
+         // Build update payload with only changed fields
+         const updatePayload = {};
+
+         // Helper to check if any field with prefix has changed
+         const hasChangedFieldsWithPrefix = (prefix) => {
+            return Array.from(changedFields).some((field) =>
+               field.startsWith(prefix)
+            );
+         };
+
+         // User fields (first_name, last_name, email)
+         if (changedFields.has("first_name") || changedFields.has("last_name") || changedFields.has("email")) {
+            updatePayload.user = {};
+            if (changedFields.has("first_name")) updatePayload.user.first_name = form.first_name;
+            if (changedFields.has("last_name")) updatePayload.user.last_name = form.last_name;
+            if (changedFields.has("email")) updatePayload.user.email = form.email;
+         }
+
+         // Profile fields (title, preferences)
+         if (
+            changedFields.has("title") ||
+            changedFields.has("send_invoices_to") ||
+            changedFields.has("send_study_material_to")
+         ) {
+            updatePayload.profile = {};
+            if (changedFields.has("title")) updatePayload.profile.title = form.title;
+            if (changedFields.has("send_invoices_to"))
+               updatePayload.profile.send_invoices_to = form.send_invoices_to;
+            if (changedFields.has("send_study_material_to"))
+               updatePayload.profile.send_study_material_to = form.send_study_material_to;
+         }
+
+         // Home address
+         if (hasChangedFieldsWithPrefix("home_")) {
+            updatePayload.home_address = formatAddressData("home");
+         }
+
+         // Work address
+         if (hasChangedFieldsWithPrefix("work_")) {
+            updatePayload.work_address = formatAddressData("work");
+         }
+
+         // Contact numbers
+         if (
+            changedFields.has("home_phone") ||
+            changedFields.has("mobile_phone") ||
+            changedFields.has("work_phone") ||
+            changedFields.has("work_email")
+         ) {
+            updatePayload.contact_numbers = {};
+            if (changedFields.has("home_phone"))
+               updatePayload.contact_numbers.home_phone = form.home_phone;
+            if (changedFields.has("mobile_phone"))
+               updatePayload.contact_numbers.mobile_phone = form.mobile_phone;
+            if (changedFields.has("work_phone"))
+               updatePayload.contact_numbers.work_phone = form.work_phone;
+            if (changedFields.has("work_email"))
+               updatePayload.contact_numbers.work_email = form.work_email;
+         }
+
+         // Call update API
+         const result = await userService.updateUserProfile(updatePayload);
+
+         if (result.status === "success") {
+            // Update initialFormData with saved values
+            setInitialFormData((prev) => ({
+               ...prev,
+               ...form,
+            }));
+
+            // Clear changed fields
+            setChangedFields(new Set());
+
+            // Show success notification
+            setSnackbar({
+               open: true,
+               message: "Changes saved successfully",
+               severity: "success",
+            });
+
+            // Check if email verification was sent
+            if (result.email_verification_sent) {
+               // Show additional notification about email verification
+               setTimeout(() => {
+                  setSnackbar({
+                     open: true,
+                     message: "Please check your email to verify your new email address",
+                     severity: "info",
+                  });
+               }, 3000);
+            }
+         } else {
+            setSnackbar({
+               open: true,
+               message: result.message || "Failed to save changes",
+               severity: "error",
+            });
+         }
+      } catch (error) {
+         console.error("Error saving profile:", error);
+         setSnackbar({
+            open: true,
+            message: "An error occurred while saving changes",
+            severity: "error",
+         });
+      } finally {
+         setIsLoading(false);
+      }
+   };
+
+   // Handler for closing snackbar
+   const handleSnackbarClose = () => {
+      setSnackbar((prev) => ({ ...prev, open: false }));
    };
 
    const handleSubmit = async () => {
@@ -944,7 +1138,10 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                            <Button
                               variant="contained"
                               startIcon={<EditIcon />}
-                              onClick={() => setIsEditingHomeAddress(true)}
+                              onClick={() => {
+                                 setIsEditingHomeAddress(true);
+                                 setUseSmartInputHome(true);
+                              }}
                            >
                               Edit Address
                            </Button>
@@ -1116,7 +1313,10 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                                  <Button
                                     variant="contained"
                                     startIcon={<EditIcon />}
-                                    onClick={() => setIsEditingWorkAddress(true)}
+                                    onClick={() => {
+                                       setIsEditingWorkAddress(true);
+                                       setUseSmartInputWork(true);
+                                    }}
                                  >
                                     Edit Address
                                  </Button>
@@ -1435,14 +1635,16 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                         gutterBottom
                         className="m-top__md"
                      >
-                        Create Your ActEd Account
+                        {isProfileMode ? "Update Your Profile" : "Create Your ActEd Account"}
                      </Typography>
                      <Typography
                         variant="body2"
                         color={theme.palette.text.primary}
                         sx={{ mb: theme.liftkit.spacing.md }}
                      >
-                        Follow these steps below to register your account
+                        {isProfileMode
+                           ? "Update your profile information below. You can save changes at each step."
+                           : "Follow these steps below to register your account"}
                      </Typography>
 
                      <LinearProgress
@@ -1550,7 +1752,24 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                   Step {currentStep} of {STEPS.length}
                </Typography>
 
-               <Box>
+               <Box sx={{ display: "flex", gap: 2 }}>
+                  {/* Save Progress button (profile mode only) */}
+                  {isProfileMode && (
+                     <Button
+                        variant="outlined"
+                        onClick={handleStepSave}
+                        disabled={isLoading || changedFields.size === 0}
+                        sx={{
+                           color: theme.palette.primary.main,
+                           borderColor: theme.palette.primary.main,
+                        }}
+                     >
+                        {changedFields.size > 0
+                           ? `Save Progress (${changedFields.size} changes)`
+                           : "No Changes"}
+                     </Button>
+                  )}
+
                   <Button
                      variant="contained"
                      onClick={handleNextStep}
@@ -1564,9 +1783,9 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      }
                   >
                      {isLoading ? (
-                        "Creating Account..."
+                        isProfileMode ? "Saving..." : "Creating Account..."
                      ) : currentStep === 5 ? (
-                        "Create Account"
+                        isProfileMode ? "Save Changes" : "Create Account"
                      ) : (
                         <Typography
                            variant="button"
@@ -1587,6 +1806,22 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                </Button>
             </Box>
          )}
+
+         {/* Snackbar for notifications */}
+         <Snackbar
+            open={snackbar.open}
+            autoHideDuration={6000}
+            onClose={handleSnackbarClose}
+            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+         >
+            <Alert
+               onClose={handleSnackbarClose}
+               severity={snackbar.severity}
+               sx={{ width: "100%" }}
+            >
+               {snackbar.message}
+            </Alert>
+         </Snackbar>
       </Box>
    );
 };
