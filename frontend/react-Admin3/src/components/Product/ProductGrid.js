@@ -193,7 +193,7 @@ const ProductGrid = React.memo(({
                     return (
                         <Grid
                             key={key}
-                            size={{ xs: 12, sm: 6, md: 4, lg: 4, xl: 3 }}
+                            size={{ xs: 12, sm: 6, md: 6, lg: 4, xl: 3 }}
                             sx={{
                                 display: 'flex',
                                 justifyContent: 'center'

@@ -1,11 +1,12 @@
 {
   "dependencies": {
-    "@fontsource/dm-sans": "^5.2.6",
-    "@fontsource/inter": "^5.2.6",
-    "bmad-method": "^4.44.0"
+    "@fontsource/dm-sans": "^5.2.8",
+    "@fontsource/inter": "^5.2.8",
+    "@mui/material": "^7.3.4",
+    "bmad-method": "^4.44.1"
   },
   "devDependencies": {
-    "eslint": "^9.35.0",
+    "eslint": "^9.38.0",
     "tdd-guard-jest": "^0.1.1"
   }
 }
