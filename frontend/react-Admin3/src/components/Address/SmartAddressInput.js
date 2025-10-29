@@ -111,7 +111,18 @@ const SmartAddressInput = ({
   const handlePostcodeChange = (e) => {
     const value = e.target.value;
     setPostcodeValue(value);
-    
+
+    // Update parent form
+    const postcodeFieldName = getFieldName('postal_code');
+    if (onChange) {
+      onChange({
+        target: {
+          name: postcodeFieldName,
+          value: value
+        }
+      });
+    }
+
     // Clear suggestions when postcode changes
     setAddressSuggestions([]);
     setShowSuggestions(false);
@@ -148,7 +159,18 @@ const SmartAddressInput = ({
   const handleAddressLineChange = (e) => {
     const value = e.target.value;
     setAddressLineValue(value);
-    
+
+    // Update parent form
+    const addressFieldName = getFieldName('address');
+    if (onChange) {
+      onChange({
+        target: {
+          name: addressFieldName,
+          value: value
+        }
+      });
+    }
+
     // Trigger address lookup for UK when we have postcode and at least 3 characters
     if (addressMetadata?.addressLookupSupported && postcodeValue && value.length >= 3) {
       calculateDropdownPosition();
@@ -269,13 +291,17 @@ const SmartAddressInput = ({
         });
       }
     });
-    
+
     // Clear suggestions and update local state
     setAddressSuggestions([]);
     setShowSuggestions(false);
     setAddressLineValue(updatedFormData[getFieldName('address')] || '');
     setPostcodeValue(updatedFormData[getFieldName('postal_code')] || '');
-    setShowManualEntry(true);
+
+    // Delay showing manual entry to ensure parent state has updated
+    setTimeout(() => {
+      setShowManualEntry(true);
+    }, 0);
   };
 
   // Handle click outside to close suggestions and window resize/scroll
