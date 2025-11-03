@@ -77,6 +77,7 @@ const CheckoutSteps = ({ onComplete }) => {
   const [expiryYear, setExpiryYear] = useState('');
   const [cvv, setCvv] = useState('');
   const [isDevelopment, setIsDevelopment] = useState(false);
+  const [isUAT, setIsUAT] = useState(false);
 
   // Acknowledgment state for blocking validation
   const [acknowledgmentStates, setAcknowledgmentStates] = useState({});
@@ -85,6 +86,8 @@ const CheckoutSteps = ({ onComplete }) => {
   useEffect(() => {
     // Check if we're in development environment
     setIsDevelopment(process.env.NODE_ENV === 'development' || config.API_BASE_URL?.includes('localhost'));
+    // Check if we're in UAT environment
+    setIsUAT(config.isUAT || process.env.REACT_APP_ENV === 'uat');
   }, []);
 
   // Fetch user profile function (extracted for reuse)
@@ -543,6 +546,7 @@ const CheckoutSteps = ({ onComplete }) => {
             employerCode={employerCode}
             setEmployerCode={setEmployerCode}
             isDevelopment={isDevelopment}
+            isUAT={isUAT}
             // Pass acknowledgment state for blocking validation
             acknowledgmentStates={acknowledgmentStates}
             setAcknowledgmentStates={setAcknowledgmentStates}
