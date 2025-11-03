@@ -35,6 +35,11 @@ ADMINISTRATE_REST_API_URL = env('ADMINISTRATE_REST_API_URL')
 GETADDRESS_API_KEY     = env('GETADDRESS_API_KEY')
 GETADDRESS_ADMIN_KEY   = env('GETADDRESS_ADMIN_KEY')
 
+# Hong Kong Address Lookup Service Settings
+# NOTE: Using geodata.gov.hk JSON API (als.gov.hk returns XML)
+HK_ALS_API_URL = 'https://geodata.gov.hk/gs/api/v1.0.0/locationSearch'
+HK_ALS_API_KEY = env('HK_ALS_API_KEY', default='')  # Optional: Public API, no key needed
+
 # Opayo Payment Gateway Settings (Development)
 OPAYO_TEST_MODE = True
 OPAYO_VENDOR_NAME = env('OPAYO_VENDOR_NAME', default='testvendor')

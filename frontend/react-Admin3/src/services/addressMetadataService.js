@@ -134,12 +134,12 @@ export const ADDRESS_METADATA = {
     required: ['address', 'city', 'state'],
     optional: [],
     hasPostcode: false,
-    addressLookupSupported: false,
+    addressLookupSupported: true,  // Enabled: uses HK government address lookup API
     fields: {
       address: { label: 'Street Address', placeholder: 'Flat A, 12/F, ABC Building' },
       city: { label: 'District', placeholder: 'Central' },
-      state: { 
-        label: 'Area', 
+      state: {
+        label: 'Area',
         type: 'select',
         options: [
           { value: 'Hong Kong Island', label: 'Hong Kong Island' },

@@ -552,6 +552,75 @@ def address_lookup_proxy(request, is_test=True):
         # return JsonResponse({"addresses": []})  
 
 @csrf_exempt
+@require_GET
+def address_lookup_proxy_hk(request):
+    """
+    Hong Kong Address Lookup Service proxy endpoint
+
+    Contract: specs/003-currently-the-backend/contracts/address-lookup-hk-api.md
+
+    GET /api/utils/address-lookup-hk/?search_text=<query>
+
+    Returns:
+        200: {addresses: [...], total: int, search_text: str}
+        400: {error: str, allow_manual: true} - missing/invalid search_text
+        500: {error: str, allow_manual: true, details: str} - service unavailable
+    """
+    from .hk_als_helper import call_hk_als_api, parse_hk_als_response, validate_search_text
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    # Get and validate search_text parameter
+    search_text = request.GET.get('search_text', '').strip()
+
+    is_valid, error_message = validate_search_text(search_text)
+    if not is_valid:
+        return JsonResponse({
+            'error': error_message,
+            'allow_manual': True
+        }, status=400)
+
+    try:
+        # Call HK ALS API
+        api_response = call_hk_als_api(search_text, timeout=10)
+
+        # Transform response to contract format
+        addresses = parse_hk_als_response(api_response)
+
+        # Return success response
+        return JsonResponse({
+            'addresses': addresses,
+            'total': len(addresses),
+            'search_text': search_text
+        }, status=200)
+
+    except requests.exceptions.Timeout as e:
+        logger.error(f"HK ALS API timeout: {str(e)}")
+        return JsonResponse({
+            'error': 'Address lookup service temporarily unavailable',
+            'allow_manual': True,
+            'details': 'Connection timeout to HK ALS API'
+        }, status=500)
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"HK ALS API request failed: {str(e)}")
+        return JsonResponse({
+            'error': 'Address lookup service temporarily unavailable',
+            'allow_manual': True,
+            'details': str(e)
+        }, status=500)
+
+    except Exception as e:
+        logger.error(f"Unexpected error in HK address lookup: {str(e)}")
+        return JsonResponse({
+            'error': 'Address lookup service temporarily unavailable',
+            'allow_manual': True,
+            'details': 'Internal server error'
+        }, status=500)
+
+
+@csrf_exempt
 @require_http_methods(["GET"])
 def health_check(request):
     """Simple health check for ALB target group"""

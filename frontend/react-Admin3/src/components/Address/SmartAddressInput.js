@@ -17,6 +17,7 @@ import PropTypes from 'prop-types';
 import CountryAutocomplete from '../User/CountryAutocomplete';
 import DynamicAddressForm from './DynamicAddressForm';
 import addressMetadataService from '../../services/addressMetadataService';
+import useHKAddressLookup from '../../hooks/useHKAddressLookup';
 import config from '../../config';
 import { useTheme } from '@mui/material/styles';
 const SmartAddressInput = ({
@@ -41,12 +42,46 @@ const SmartAddressInput = ({
   const addressLineRef = useRef(null);
   const suggestionsRef = useRef(null);
   const theme = useTheme();
-  
-  
+
+  // Hong Kong address lookup hook
+  const {
+    addresses: hkAddresses,
+    isLoading: hkLoading,
+    searchAddresses: searchHK,
+    clearAddresses: clearHK
+  } = useHKAddressLookup();
+
   // Get field name with prefix
   const getFieldName = useCallback((fieldName) => {
     return fieldPrefix ? `${fieldPrefix}_${fieldName}` : fieldName;
   }, [fieldPrefix]);
+
+  // Helper: Map HK region code to area name
+  const mapRegionToArea = useCallback((region) => {
+    const mapping = {
+      'HK': 'Hong Kong Island',
+      'KLN': 'Kowloon',
+      'NT': 'New Territories'
+    };
+    return mapping[region] || '';
+  }, []);
+
+  // Helper: Map HK address to common format
+  const mapHKAddress = useCallback((addr) => ({
+    fullAddress: addr.formatted_address,
+    building: addr.building,
+    line1: addr.street,
+    line2: '',
+    town: addr.district,
+    county: mapRegionToArea(addr.region),
+    state: mapRegionToArea(addr.region),
+    postcode: '',
+    country: selectedCountry,
+    // HK-specific fields
+    district: addr.district,
+    region: addr.region,
+    is_3d: addr.is_3d
+  }), [selectedCountry, mapRegionToArea]);
 
   // Initialize from existing values
   useEffect(() => {
@@ -85,10 +120,22 @@ const SmartAddressInput = ({
       setAddressSuggestions([]);
       setShowSuggestions(false);
       setShowManualEntry(false);
+
+      // Clear HK addresses when changing countries
+      clearHK();
     } else {
       setAddressMetadata(null);
     }
-  }, [selectedCountry, getFieldName, values]);
+  }, [selectedCountry, getFieldName, values, clearHK]);
+
+  // Sync HK addresses to suggestions when they change
+  useEffect(() => {
+    if (addressMetadata && addressMetadataService.getCountryCode(selectedCountry) === 'HK') {
+      const mappedAddresses = hkAddresses.map(mapHKAddress);
+      setAddressSuggestions(mappedAddresses);
+      setIsLoadingSuggestions(hkLoading);
+    }
+  }, [hkAddresses, hkLoading, selectedCountry, addressMetadata, mapHKAddress]);
 
   // Handle country selection
   const handleCountryChange = (e) => {
@@ -142,13 +189,23 @@ const SmartAddressInput = ({
 
   // Handle address line focus
   const handleAddressLineFocus = () => {
-    if (addressMetadata?.addressLookupSupported && postcodeValue) {
+    const countryCode = addressMetadataService.getCountryCode(selectedCountry);
+    const isHK = countryCode === 'HK';
+
+    if (addressMetadata?.addressLookupSupported) {
       calculateDropdownPosition();
-      if (addressLineValue.length >= 3) {
-        // If we have text, perform lookup
+
+      // Hong Kong: Show dropdown if we have 3+ characters
+      if (isHK && addressLineValue.length >= 3) {
+        searchHK(addressLineValue);
+        setShowSuggestions(true);
+      }
+      // UK: Show dropdown if we have postcode and text
+      else if (!isHK && postcodeValue && addressLineValue.length >= 3) {
         performAddressLookup(postcodeValue, addressLineValue);
-      } else {
-        // Show dropdown with just "Enter address manually" option
+      }
+      // Show "Enter manually" option
+      else if (postcodeValue || isHK) {
         setAddressSuggestions([]);
         setShowSuggestions(true);
       }
@@ -158,6 +215,7 @@ const SmartAddressInput = ({
   // Handle address line change with autocomplete
   const handleAddressLineChange = (e) => {
     const value = e.target.value;
+    console.log('SmartAddressInput - Address change:', value, 'Country:', selectedCountry);
     setAddressLineValue(value);
 
     // Update parent form
@@ -171,11 +229,21 @@ const SmartAddressInput = ({
       });
     }
 
-    // Trigger address lookup for UK when we have postcode and at least 3 characters
-    if (addressMetadata?.addressLookupSupported && postcodeValue && value.length >= 3) {
+    const countryCode = addressMetadataService.getCountryCode(selectedCountry);
+    const isHK = countryCode === 'HK';
+    console.log('SmartAddressInput - Country code:', countryCode, 'Is HK:', isHK);
+
+    // Hong Kong: Trigger lookup on 3+ characters (no postcode required)
+    if (isHK && value.length >= 3) {
+      calculateDropdownPosition();
+      searchHK(value);
+      setShowSuggestions(true);
+    }
+    // UK: Trigger address lookup when we have postcode and at least 3 characters
+    else if (addressMetadata?.addressLookupSupported && postcodeValue && value.length >= 3) {
       calculateDropdownPosition();
       performAddressLookup(postcodeValue, value);
-    } else if (addressMetadata?.addressLookupSupported && postcodeValue) {
+    } else if (addressMetadata?.addressLookupSupported && (postcodeValue || isHK)) {
       // Show dropdown with just "Enter address manually" option when focused but no matching addresses
       calculateDropdownPosition();
       setAddressSuggestions([]);
@@ -341,8 +409,13 @@ const SmartAddressInput = ({
 						severity="info"
 						sx={{ textAlign: "left", alignItems: "center" }}>
 						<Typography variant="body2">
-							Select your country, then enter your postcode and first
-							line of address
+							{(() => {
+								const countryCode = addressMetadataService.getCountryCode(selectedCountry);
+								const isHK = countryCode === 'HK';
+								return isHK
+									? 'Select your country, then enter your address to search'
+									: 'Select your country, then enter your postcode and first line of address';
+							})()}
 						</Typography>
 					</Alert>
 				</Grid>
@@ -354,6 +427,20 @@ const SmartAddressInput = ({
 					{/* Address Lookup Section (for supported countries) */}
 					{addressMetadata.addressLookupSupported && !showManualEntry && (
 						<Box sx={{ mb: 4 }}>
+							{(() => {
+								const countryCode = addressMetadataService.getCountryCode(selectedCountry);
+								const isDisabled = countryCode !== 'HK' && addressMetadata.hasPostcode && !postcodeValue;
+								console.log('SmartAddressInput - Render:', {
+									country: selectedCountry,
+									countryCode,
+									hasPostcode: addressMetadata.hasPostcode,
+									postcodeValue,
+									isDisabled,
+									addressLookupSupported: addressMetadata.addressLookupSupported,
+									showManualEntry
+								});
+								return null;
+							})()}
 							<Grid container spacing={3}>
 								{/* Postcode Field */}
 								{addressMetadata.hasPostcode && (
@@ -371,7 +458,7 @@ const SmartAddressInput = ({
 												addressMetadata.fields.postal_code
 													?.placeholder || "Enter postcode"
 											}
-											slotProps={{
+											inputProps={{
 												style: addressMetadata.fields.postal_code
 													?.transform
 													? { textTransform: "uppercase" }
@@ -383,7 +470,7 @@ const SmartAddressInput = ({
 								)}
 
 								{/* Address Line with Autocomplete */}
-								<Grid size={{ xs: 8, md: 9 }}>
+								<Grid size={addressMetadata.hasPostcode ? { xs: 8, md: 9 } : { xs: 12 }}>
 									<Box sx={{ position: "relative" }}>
 										<TextField
 											fullWidth
@@ -393,21 +480,21 @@ const SmartAddressInput = ({
 											value={addressLineValue}
 											onChange={handleAddressLineChange}
 											onFocus={handleAddressLineFocus}
-											placeholder="First line of address..."
+											placeholder={
+												addressMetadataService.getCountryCode(selectedCountry) === 'HK'
+													? 'Enter building, street, or district...'
+													: 'First line of address...'
+											}
 											disabled={
+												// Only disable for countries that require postcode (not HK)
+												addressMetadataService.getCountryCode(selectedCountry) !== 'HK' &&
 												addressMetadata.hasPostcode &&
 												!postcodeValue
 											}
-											slotProps={{
+											InputProps={{
 												endAdornment: isLoadingSuggestions && (
 													<CircularProgress size={20} />
 												),
-											}}
-											sx={{
-												"& .MuiInputBase-root": {
-													width: "16rem",
-													"& .MuiInputBase-input": {},
-												},
 											}}
 											variant="standard"
 										/>
@@ -429,21 +516,30 @@ const SmartAddressInput = ({
 													border: `1px solid ${theme.palette.divider}`,
 												}}>
 												<List disablePadding>
-													{addressSuggestions.map((addr, idx) => (
-														<ListItem
-															key={idx}
-															component="div"
-															onClick={() =>
-																handleSelectSuggestion(addr)
-															}
-															divider={true}
-															sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}>
-															<ListItemText
-																primary={addr.fullAddress}
-																secondary={`${addr.town}, ${addr.postcode}`}
-															/>
-														</ListItem>
-													))}
+													{addressSuggestions.map((addr, idx) => {
+														const countryCode = addressMetadataService.getCountryCode(selectedCountry);
+														const isHK = countryCode === 'HK';
+														// HK: Show district and region, UK: Show town and postcode
+														const secondary = isHK
+															? `${addr.town || addr.district}, ${addr.county || addr.state}`
+															: `${addr.town}, ${addr.postcode}`;
+
+														return (
+															<ListItem
+																key={idx}
+																component="div"
+																onClick={() =>
+																	handleSelectSuggestion(addr)
+																}
+																divider={true}
+																sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}>
+																<ListItemText
+																	primary={addr.fullAddress}
+																	secondary={secondary}
+																/>
+															</ListItem>
+														);
+													})}
 
 													{/* Manual Entry Option */}
 													<Box
