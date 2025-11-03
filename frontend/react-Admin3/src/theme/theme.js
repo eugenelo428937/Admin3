@@ -589,13 +589,13 @@ const theme = createTheme({
                            "& .add-to-cart-button": {
                               alignSelf: "flex-end",
                               borderRadius: "50%",
-                              minWidth: liftKitTheme.spacing.xl,
-                              width: liftKitTheme.spacing.xl,
-                              height: liftKitTheme.spacing.xl,
-                              padding: liftKitTheme.spacing.sm,
-                              marginLeft: liftKitTheme.spacing.md,
-                              marginRight: liftKitTheme.spacing.md,
-                              marginTop: liftKitTheme.spacing.md,
+                              minWidth: "56px",
+                              width: "56px",
+                              height: "56px",
+                              padding: "8px",
+                              /* marginLeft: liftKitTheme.spacing.md,
+                              marginRight: liftKitTheme.spacing.md,*/
+                              marginTop: liftKitTheme.spacing.xs3, 
                               boxShadow: "var(--Paper-shadow)",
                               transition: "all 0.15s ease-in-out",
                               "&:hover": {
@@ -1091,12 +1091,16 @@ const theme = createTheme({
                               "& .vat-status-text": {},
                            },
                            "& .add-to-cart-button": {
-                              color: colorTheme.bpp.sky["100"],
-                              backgroundColor: colorTheme.bpp.sky["020"],
+                              color: "white",
+                              backgroundColor: colorTheme.bpp.sky["060"],
 
-                              "&:hover": {},
+                              "&:hover": {
+                                 backgroundColor: colorTheme.bpp.sky["070"],
+                              },
 
-                              "& .MuiSvgIcon-root": {},
+                              "& .MuiSvgIcon-root": {
+                                 color: "white",
+                              },
                            },
                         },
                      },

@@ -55,7 +55,14 @@ const SmartAddressInput = ({
     if (existingCountry && existingCountry !== selectedCountry) {
       setSelectedCountry(existingCountry);
     }
-  }, [values, getFieldName, selectedCountry]);
+
+    // Initialize postcode from existing values
+    const postcodeFieldName = getFieldName('postal_code');
+    const existingPostcode = values[postcodeFieldName];
+    if (existingPostcode && existingPostcode !== postcodeValue) {
+      setPostcodeValue(existingPostcode);
+    }
+  }, [values, getFieldName, selectedCountry, postcodeValue]);
 
   // Update metadata when country changes
   useEffect(() => {
@@ -63,17 +70,25 @@ const SmartAddressInput = ({
       const countryCode = addressMetadataService.getCountryCode(selectedCountry);
       const metadata = addressMetadataService.getAddressMetadata(countryCode);
       setAddressMetadata(metadata);
-      
-      // Reset address lookup fields when country changes
-      setPostcodeValue('');
-      setAddressLineValue('');
+
+      // Only reset address lookup fields if we're not preserving existing values
+      // Check if we have existing postal_code in values - if so, don't reset
+      const postcodeFieldName = getFieldName('postal_code');
+      const existingPostcode = values[postcodeFieldName];
+
+      if (!existingPostcode) {
+        // No existing postcode, safe to reset
+        setPostcodeValue('');
+        setAddressLineValue('');
+      }
+
       setAddressSuggestions([]);
       setShowSuggestions(false);
       setShowManualEntry(false);
     } else {
       setAddressMetadata(null);
     }
-  }, [selectedCountry]);
+  }, [selectedCountry, getFieldName, values]);
 
   // Handle country selection
   const handleCountryChange = (e) => {
@@ -96,7 +111,18 @@ const SmartAddressInput = ({
   const handlePostcodeChange = (e) => {
     const value = e.target.value;
     setPostcodeValue(value);
-    
+
+    // Update parent form
+    const postcodeFieldName = getFieldName('postal_code');
+    if (onChange) {
+      onChange({
+        target: {
+          name: postcodeFieldName,
+          value: value
+        }
+      });
+    }
+
     // Clear suggestions when postcode changes
     setAddressSuggestions([]);
     setShowSuggestions(false);
@@ -133,7 +159,18 @@ const SmartAddressInput = ({
   const handleAddressLineChange = (e) => {
     const value = e.target.value;
     setAddressLineValue(value);
-    
+
+    // Update parent form
+    const addressFieldName = getFieldName('address');
+    if (onChange) {
+      onChange({
+        target: {
+          name: addressFieldName,
+          value: value
+        }
+      });
+    }
+
     // Trigger address lookup for UK when we have postcode and at least 3 characters
     if (addressMetadata?.addressLookupSupported && postcodeValue && value.length >= 3) {
       calculateDropdownPosition();
@@ -254,13 +291,17 @@ const SmartAddressInput = ({
         });
       }
     });
-    
+
     // Clear suggestions and update local state
     setAddressSuggestions([]);
     setShowSuggestions(false);
     setAddressLineValue(updatedFormData[getFieldName('address')] || '');
     setPostcodeValue(updatedFormData[getFieldName('postal_code')] || '');
-    setShowManualEntry(true);
+
+    // Delay showing manual entry to ensure parent state has updated
+    setTimeout(() => {
+      setShowManualEntry(true);
+    }, 0);
   };
 
   // Handle click outside to close suggestions and window resize/scroll

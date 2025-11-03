@@ -3,6 +3,7 @@ from django.db import models
 
 from .products import Product, ProductVariation, ProductProductGroup
 from .bundle_product import ProductBundle, ProductBundleProduct
+from .product_variation_recommendation import ProductVariationRecommendation
 
 # Import filter system models
 from .filter_system import (
@@ -30,6 +31,7 @@ class ProductProductVariation(models.Model):
 __all__ = [
     'Product', 'ProductVariation', 'ProductProductVariation', 'ProductProductGroup',
     'ProductBundle', 'ProductBundleProduct',
+    'ProductVariationRecommendation',
     # Filter system
     'FilterGroup', 'FilterConfiguration', 'FilterConfigurationGroup', 'FilterPreset', 'FilterUsageAnalytics'
 ]

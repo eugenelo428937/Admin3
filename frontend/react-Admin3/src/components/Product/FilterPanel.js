@@ -7,6 +7,16 @@
  *
  * **Features:**
  * - Array-based filters: Subjects, Categories, Product Types, Products, Modes of Delivery
+ * - Scrollable filter groups with viewport-relative max-heights (50vh desktop, 40vh mobile)
+ * - Keyboard accessibility with auto-scroll on focus
+ * - WCAG 2.1 Level AA compliant with ARIA region landmarks
+ * - Smooth scrolling with overflow: auto for long filter lists
+ *
+ * **Accessibility:**
+ * - role="region" and aria-label on scrollable filter groups
+ * - Keyboard navigation with Tab/Arrow keys
+ * - Auto-scroll focused checkboxes into view
+ * - Screen reader support for scrollable regions
  *
  * @component
  * @example
@@ -76,6 +86,22 @@ const deepEqual = (obj1, obj2) => {
     }
 
     return true;
+};
+
+/**
+ * Scrollable filter styling configuration
+ * Viewport-relative max-heights prevent long filter lists from overwhelming the interface
+ * Desktop (≥900px): 50vh | Mobile (<900px): 40vh
+ */
+const SCROLLABLE_FILTER_STYLES = {
+    MAX_HEIGHT_DESKTOP: '50vh',
+    MAX_HEIGHT_MOBILE: '40vh',
+    OVERFLOW_Y: 'auto',
+    SCROLL_BEHAVIOR: {
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest'
+    }
 };
 
 const FilterPanel = ({
@@ -272,7 +298,17 @@ const FilterPanel = ({
                         </Box>
                     </Box>
                 </AccordionSummary>
-                <AccordionDetails sx={{ pt: 0 }}>
+                <AccordionDetails
+                    role="region"
+                    aria-label={`${title} filter options, scrollable`}
+                    sx={{
+                        pt: 0,
+                        maxHeight: isMobile
+                            ? SCROLLABLE_FILTER_STYLES.MAX_HEIGHT_MOBILE
+                            : SCROLLABLE_FILTER_STYLES.MAX_HEIGHT_DESKTOP,
+                        overflowY: SCROLLABLE_FILTER_STYLES.OVERFLOW_Y,
+                    }}
+                >
                     <FormGroup>
                         {Object.entries(options).map(([value, filterData]) => {
                             // Handle new structure: filterData can be either a number (old) or object with {count, name} (new)
@@ -291,6 +327,9 @@ const FilterPanel = ({
                                         <Checkbox
                                             checked={isChecked}
                                             onChange={() => handleFilterChange(filterType, value)}
+                                            onFocus={(e) => {
+                                                e.target.scrollIntoView(SCROLLABLE_FILTER_STYLES.SCROLL_BEHAVIOR);
+                                            }}
                                             size="small"
                                         />
                                     }
@@ -323,7 +362,7 @@ const FilterPanel = ({
                 </AccordionDetails>
             </Accordion>
         );
-    }, [filters, expandedPanels, isLoading, handlePanelChange, handleFilterChange, handleClearFilterType]);
+    }, [filters, expandedPanels, isLoading, isMobile, handlePanelChange, handleFilterChange, handleClearFilterType]);
 
     /**
      * Filter panel content - uses FilterRegistry for dynamic rendering

@@ -6,7 +6,7 @@ This project is a total revamp of the current online store. It provides signific
 
 - User Interface
   - Layout redesigned, Precise information organisation
-	- Use of visual elements to decluster content
+  - Use of visual elements to decluster content
   - Elegant fonts with refined font weights
   - Responsive for various screen resolution
   - Visual elements are organised in coherent manner
@@ -15,14 +15,14 @@ This project is a total revamp of the current online store. It provides signific
     - User actions will pair with appropriate micro-interactions, subtle animations and transitions
   - Accessibility improvment
 - User Exprience
-  - Behavior aligned with modern applications	
+  - Behavior aligned with modern applications
   - Streamlined workflow
     - Order form
     - User registration
   - Address lookup
   - Fuzzy searching
   - Product Filtering
-	- Single page application for instant feedback
+  - Single page application for instant feedback
 - Ease of Maintanance
   - Admin panel to provide Admin team access to update the online store
   - Rules Engine allow Admin team to set/update/disable rules

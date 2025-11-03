@@ -365,6 +365,49 @@ const authService = {
 			};
 		}
 	},
+
+	sendPasswordResetCompletedEmail: async (email) => {
+		try {
+			logger.debug("Sending password reset completed notification", { email });
+
+			const response = await httpService.post(`${API_AUTH_URL}/password-reset-completed/`, {
+				email: email
+			});
+
+			logger.debug("Password reset completed notification response received", response.data);
+
+			if (response.status === 200 && response.data) {
+				logger.info("Password reset completed notification sent successfully", { email });
+				return {
+					status: "success",
+					message: response.data.message || "Password reset notification sent successfully"
+				};
+			}
+
+			return {
+				status: "error",
+				message: "Invalid response format from server"
+			};
+		} catch (error) {
+			logger.error("Password reset completed notification failed", {
+				error: error.response?.data || error,
+				status: error.response?.status,
+				email: email
+			});
+
+			if (error.response?.data?.error) {
+				return {
+					status: "error",
+					message: error.response.data.error
+				};
+			}
+
+			return {
+				status: "error",
+				message: "Failed to send password reset notification. Please try again later."
+			};
+		}
+	},
 };
 
 export default authService;

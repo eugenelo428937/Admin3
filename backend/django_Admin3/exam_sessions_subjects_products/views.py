@@ -222,6 +222,8 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
             'product'
         ).prefetch_related(
             'variations__product_product_variation__product_variation',
+            'variations__product_product_variation__recommendation',
+            'variations__product_product_variation__recommendation__recommended_product_product_variation',
             'variations__prices'
         )
 
@@ -686,6 +688,11 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
                 popular_products_queryset = ExamSessionSubjectProduct.objects.select_related(
                     'exam_session_subject__subject',
                     'product'
+                ).prefetch_related(
+                    'variations__product_product_variation__product_variation',
+                    'variations__product_product_variation__recommendation',
+                    'variations__product_product_variation__recommendation__recommended_product_product_variation',
+                    'variations__prices'
                 )[:limit]
                 
                 popular_products_serializer = ProductListSerializer(popular_products_queryset, many=True)
