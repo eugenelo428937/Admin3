@@ -36,6 +36,7 @@ const PaymentStep = ({
   employerCode,
   setEmployerCode,
   isDevelopment,
+  isUAT,
   // New props for acknowledgments
   acknowledgmentStates,
   setAcknowledgmentStates,
@@ -271,10 +272,10 @@ const PaymentStep = ({
 
         {paymentMethod === 'card' && (
           <Box>
-            {isDevelopment && (
+            {(isDevelopment || isUAT) && (
               <Alert severity="info" sx={{ mb: 3 }}>
                 <Typography variant="body2" component="strong" sx={{ fontWeight: 'bold' }}>
-                  Development Mode:
+                  {isDevelopment ? 'Development Mode:' : 'UAT Environment:'}
                 </Typography>{' '}
                 Use test cards below
                 <Box sx={{ mt: 2 }}>

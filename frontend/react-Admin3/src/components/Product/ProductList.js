@@ -316,13 +316,13 @@ const ProductList = React.memo(() => {
 				<Grid container spacing={2}>
 					{/* Filter Panel - Desktop Sidebar */}
 					{!isMobile && (
-						<Grid size={{ xs: 12, lg: 3 }}>
+						<Grid size={{ xs: 12, md: 3 }}>
 							<FilterPanel key="desktop-filter-panel" isSearchMode={isSearchMode} />
 						</Grid>
 					)}
 
 					{/* Main Content */}
-					<Grid size={{ xs: 12, lg: 9 }}>
+					<Grid size={{ xs: 12, md: 9 }}>
 						<Box sx={{ mb: 0 }}>
 							{/* Search Box */}
 							{/* <SearchBox
