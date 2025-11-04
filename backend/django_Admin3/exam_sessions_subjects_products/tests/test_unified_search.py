@@ -194,3 +194,184 @@ class UnifiedSearchEndpointTest(APITestCase):
         for category in expected_categories:
             self.assertIn(category, filter_counts)
             self.assertIsInstance(filter_counts[category], dict)
+
+
+class MarkingVoucherIntegrationTest(APITestCase):
+    """Test cases for marking voucher integration in product search"""
+
+    def setUp(self):
+        """Set up test data including marking vouchers"""
+        from marking_vouchers.models import MarkingVoucher
+        from decimal import Decimal
+
+        # Create marking vouchers
+        self.voucher1 = MarkingVoucher.objects.create(
+            code="VOUCHER001",
+            name="Standard Marking Voucher",
+            description="Standard marking service voucher",
+            price=Decimal("50.00"),
+            is_active=True
+        )
+
+        self.voucher2 = MarkingVoucher.objects.create(
+            code="VOUCHER002",
+            name="Premium Marking Voucher",
+            description="Premium marking service with feedback",
+            price=Decimal("75.00"),
+            is_active=True
+        )
+
+        # Create inactive voucher (should not appear in results)
+        self.inactive_voucher = MarkingVoucher.objects.create(
+            code="VOUCHER999",
+            name="Inactive Voucher",
+            description="This should not appear",
+            price=Decimal("100.00"),
+            is_active=False
+        )
+
+    def test_marking_vouchers_with_marking_filter(self):
+        """Test that marking vouchers appear when Marking filter is applied"""
+        url = reverse('unified-product-search')
+        data = {
+            "filters": {
+                "categories": ["Marking"]
+            },
+            "pagination": {
+                "page": 1,
+                "page_size": 20
+            }
+        }
+
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Should include marking vouchers in results
+        products = response.data['products']
+        voucher_products = [p for p in products if p.get('type') == 'MarkingVoucher']
+
+        # Should have 2 active vouchers
+        self.assertEqual(len(voucher_products), 2)
+
+        # Verify voucher data structure
+        voucher_product = voucher_products[0]
+        self.assertIn('code', voucher_product)
+        self.assertIn('name', voucher_product)
+        self.assertIn('price', voucher_product)
+        self.assertIn('is_available', voucher_product)
+        self.assertEqual(voucher_product['type'], 'MarkingVoucher')
+
+    def test_marking_vouchers_with_search_query(self):
+        """Test that marking vouchers appear in search results"""
+        url = reverse('unified-product-search')
+        data = {
+            "searchQuery": "marking voucher",
+            "pagination": {
+                "page": 1,
+                "page_size": 20
+            }
+        }
+
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Should include marking vouchers in search results
+        products = response.data['products']
+        voucher_products = [p for p in products if p.get('type') == 'MarkingVoucher']
+
+        # Should find matching vouchers
+        self.assertGreater(len(voucher_products), 0)
+
+    def test_inactive_vouchers_not_included(self):
+        """Test that inactive marking vouchers are not included in results"""
+        url = reverse('unified-product-search')
+        data = {
+            "filters": {
+                "categories": ["Marking"]
+            },
+            "pagination": {
+                "page": 1,
+                "page_size": 20
+            }
+        }
+
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        products = response.data['products']
+        voucher_codes = [p.get('code') for p in products if p.get('type') == 'MarkingVoucher']
+
+        # Should not include inactive voucher
+        self.assertNotIn('VOUCHER999', voucher_codes)
+
+        # Should include active vouchers
+        self.assertIn('VOUCHER001', voucher_codes)
+        self.assertIn('VOUCHER002', voucher_codes)
+
+    def test_voucher_data_structure(self):
+        """Test that voucher data has all required fields for frontend"""
+        url = reverse('unified-product-search')
+        data = {
+            "filters": {
+                "categories": ["Marking"]
+            },
+            "pagination": {
+                "page": 1,
+                "page_size": 20
+            }
+        }
+
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        products = response.data['products']
+        voucher_products = [p for p in products if p.get('type') == 'MarkingVoucher']
+
+        self.assertGreater(len(voucher_products), 0)
+
+        voucher = voucher_products[0]
+
+        # Required fields for MarkingVoucherProductCard
+        required_fields = ['code', 'name', 'description', 'price', 'is_active', 'is_available', 'type', 'variations']
+        for field in required_fields:
+            self.assertIn(field, voucher, f"Missing required field: {field}")
+
+        # Verify variations structure
+        self.assertIsInstance(voucher['variations'], list)
+        self.assertGreater(len(voucher['variations']), 0)
+
+        variation = voucher['variations'][0]
+        self.assertIn('prices', variation)
+        self.assertIsInstance(variation['prices'], list)
+        self.assertGreater(len(variation['prices']), 0)
+
+        price = variation['prices'][0]
+        self.assertIn('amount', price)
+        self.assertIn('price_type', price)
+
+    def test_no_vouchers_without_marking_filter(self):
+        """Test that marking vouchers don't appear without marking-related filters"""
+        url = reverse('unified-product-search')
+        data = {
+            "filters": {
+                "subjects": ["CM2"]
+            },
+            "pagination": {
+                "page": 1,
+                "page_size": 20
+            }
+        }
+
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        products = response.data['products']
+        voucher_products = [p for p in products if p.get('type') == 'MarkingVoucher']
+
+        # Should not include marking vouchers when no marking filter is applied
+        self.assertEqual(len(voucher_products), 0)
