@@ -73,7 +73,7 @@ class ProductListSerializer(serializers.ModelSerializer):
         
         return 'Materials'  # Default for other products
 
-    def get_recommended_product(self, product_product_variation):
+    def get_recommended_product(self, product_product_variation, exam_session_subject=None):
         """Get recommended product if exists for this product-variation combination."""
         try:
             # Check if this product-variation combination has a recommendation
@@ -85,9 +85,19 @@ class ProductListSerializer(serializers.ModelSerializer):
                 return None
 
             # Find the ExamSessionSubjectProductVariation for the recommended product
-            recommended_esspv = ExamSessionSubjectProductVariation.objects.filter(
+            # IMPORTANT: Filter by the same exam_session_subject to ensure recommendations
+            # are from the same exam session and subject
+            query = ExamSessionSubjectProductVariation.objects.filter(
                 product_product_variation=recommendation.recommended_product_product_variation
-            ).select_related(
+            )
+
+            # If exam_session_subject is provided, filter for the same session
+            if exam_session_subject:
+                query = query.filter(
+                    exam_session_subject_product__exam_session_subject=exam_session_subject
+                )
+
+            recommended_esspv = query.select_related(
                 'exam_session_subject_product__exam_session_subject__subject',
                 'exam_session_subject_product__product',
                 'product_product_variation__product_variation',
@@ -143,7 +153,11 @@ class ProductListSerializer(serializers.ModelSerializer):
             }
 
             # Add recommended product if exists
-            recommended = self.get_recommended_product(esspv.product_product_variation)
+            # Pass exam_session_subject to ensure recommended product is from same session
+            recommended = self.get_recommended_product(
+                esspv.product_product_variation,
+                exam_session_subject=esspv.exam_session_subject_product.exam_session_subject
+            )
             if recommended:
                 variation_data['recommended_product'] = recommended
 
