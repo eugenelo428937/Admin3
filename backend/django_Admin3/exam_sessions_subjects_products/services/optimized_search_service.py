@@ -111,10 +111,19 @@ class OptimizedSearchService:
         serializer = ProductListSerializer(paginated_queryset, many=True)
         products_data = serializer.data
 
+        # Check if marking vouchers should be included
+        marking_vouchers_data = self._fetch_marking_vouchers(search_query, filters)
+
+        # Combine products with marking vouchers
+        if marking_vouchers_data:
+            products_data = list(products_data) + marking_vouchers_data
+            total_count += len(marking_vouchers_data)
+            logger.info(f'🔍 [MARKING-VOUCHERS] Added {len(marking_vouchers_data)} vouchers to results')
+
         # Generate filter counts using BASE queryset (disjunctive faceting)
         # This ensures all filter options remain visible even when filters are applied
         filter_counts = self._generate_optimized_filter_counts(filters, base_queryset)
-        
+
         # Build response
         result = {
             'products': products_data,
@@ -132,13 +141,13 @@ class OptimizedSearchService:
                 'cached': False
             }
         }
-        
+
         # Cache the result
         cache.set(cache_key, result, self.cache_timeout)
-        
+
         # Log performance
         self._log_performance('EXECUTED', filters, result['performance']['duration'], len(products_data))
-        
+
         return result
     
     def _build_optimized_queryset(self, use_fuzzy_sorting=False):
@@ -335,7 +344,115 @@ class OptimizedSearchService:
                 queryset = queryset.none()
         
         return queryset.distinct()
-    
+
+    def _fetch_marking_vouchers(self, search_query, filters):
+        """
+        Fetch marking vouchers when appropriate filters are applied or search query matches.
+
+        Args:
+            search_query (str): Search query string
+            filters (dict): Applied filters
+
+        Returns:
+            list: List of marking voucher data formatted to match ProductListSerializer structure
+        """
+        try:
+            from marking_vouchers.models import MarkingVoucher
+
+            # Determine if marking vouchers should be included
+            should_include = False
+
+            # Check if filters include "Marking" or "Marking Vouchers"
+            if filters.get('categories'):
+                marking_filters = [cat.lower() for cat in filters['categories']]
+                if any('marking' in cat for cat in marking_filters):
+                    should_include = True
+                    logger.info('🔍 [MARKING-VOUCHERS] Including vouchers due to category filter')
+
+            if filters.get('product_types'):
+                marking_types = [pt.lower() for pt in filters['product_types']]
+                if any('marking' in pt for pt in marking_types):
+                    should_include = True
+                    logger.info('🔍 [MARKING-VOUCHERS] Including vouchers due to product_types filter')
+
+            # Check if search query matches vouchers
+            if search_query and len(search_query) >= 2:
+                # Search in voucher names, descriptions, or codes
+                voucher_matches = MarkingVoucher.objects.filter(
+                    Q(name__icontains=search_query) |
+                    Q(description__icontains=search_query) |
+                    Q(code__icontains=search_query),
+                    is_active=True
+                )
+                if voucher_matches.exists():
+                    should_include = True
+                    logger.info(f'🔍 [MARKING-VOUCHERS] Including vouchers due to search query "{search_query}"')
+
+            if not should_include:
+                return []
+
+            # Fetch active marking vouchers
+            vouchers = MarkingVoucher.objects.filter(is_active=True)
+
+            # Apply search filter if present
+            if search_query and len(search_query) >= 2:
+                vouchers = vouchers.filter(
+                    Q(name__icontains=search_query) |
+                    Q(description__icontains=search_query) |
+                    Q(code__icontains=search_query)
+                )
+
+            # Format vouchers to match ProductListSerializer structure
+            vouchers_data = []
+            for voucher in vouchers:
+                voucher_data = {
+                    'id': f'voucher-{voucher.id}',  # Unique ID to avoid conflicts
+                    'essp_id': f'voucher-{voucher.id}',
+                    'type': 'MarkingVoucher',  # Critical: This triggers MarkingVoucherProductCard
+                    'product_id': voucher.id,
+                    'product_code': voucher.code,
+                    'product_name': voucher.name,
+                    'product_short_name': voucher.name,
+                    'product_description': voucher.description or '',
+                    'buy_both': False,
+                    'subject_id': None,
+                    'subject_code': None,
+                    'subject_description': None,
+                    'exam_session_code': None,
+                    'exam_session_id': None,
+                    # Pass voucher-specific fields that MarkingVoucherProductCard expects
+                    'code': voucher.code,
+                    'name': voucher.name,
+                    'description': voucher.description,
+                    'price': str(voucher.price),
+                    'is_active': voucher.is_active,
+                    'expiry_date': voucher.expiry_date.isoformat() if voucher.expiry_date else None,
+                    'is_available': voucher.is_available,
+                    'variations': [{
+                        'id': f'voucher-var-{voucher.id}',
+                        'variation_type': 'Marking Voucher',
+                        'name': 'Marking Voucher',
+                        'description': voucher.description or '',
+                        'description_short': 'Marking Voucher',
+                        'prices': [{
+                            'id': f'voucher-price-{voucher.id}',
+                            'price_type': 'standard',
+                            'amount': str(voucher.price),
+                            'currency': 'GBP'
+                        }]
+                    }]
+                }
+                vouchers_data.append(voucher_data)
+
+            logger.info(f'🔍 [MARKING-VOUCHERS] Fetched {len(vouchers_data)} marking vouchers')
+            return vouchers_data
+
+        except Exception as e:
+            logger.error(f'🔍 [MARKING-VOUCHERS] Error fetching vouchers: {str(e)}')
+            import traceback
+            logger.error(f'🔍 [MARKING-VOUCHERS] Traceback: {traceback.format_exc()}')
+            return []
+
     def _generate_optimized_filter_counts(self, applied_filters, base_queryset):
         """
         Generate disjunctive facet counts using the FilterConfiguration system.
