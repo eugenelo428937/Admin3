@@ -1,253 +1,430 @@
 # Tasks: Postcoder.com Address Lookup Integration
 
-**Input**: Design documents from `/specs/003-number-1-short/`
-**Prerequisites**: spec.md, plan.md, story document
+**Input**: Design documents from `/specs/uk_address_lookup_postcoder/`
+**Prerequisites**: plan.md (required), spec.md (required)
+**Branch**: `feature/uk_address_lookup_postcoder`
 
-## Summary
+## Overview
 
-Replace getaddress.io with Postcoder.com for UK address lookup. Implement caching (7-day retention) and analytics logging. Maintain existing frontend UI (zero changes). Target: < 500ms response time, 40% cache hit rate.
+This feature implements a **new, separate address lookup method** for Postcoder.com API while preserving the existing getaddress.io implementation unchanged. The implementation follows a dual-method architecture enabling side-by-side evaluation.
 
-**User Story**: As a user entering my address, I want fast UK address suggestions as I type my postcode, so I can complete address entry quickly without errors.
+**Key Deliverables**:
+- New Django view: `postcoder_address_lookup` (separate endpoint)
+- Service layer: PostcoderService, AddressCacheService, AddressLookupLogger
+- Database models: CachedAddress (7-day caching), AddressLookupLog (analytics)
+- Zero frontend changes (backward-compatible response format)
 
-## Task Organization
+**Total Estimated Tasks**: 42
+**Parallel Opportunities**: 15 tasks marked [P]
 
-This feature is organized as a **single user story** with the following phases:
-- Phase 1: Setup & Configuration
-- Phase 2: Foundational (Database Models)
-- Phase 3: Core Implementation (Services & Integration)
-- Phase 4: Testing & Validation
+## Task Format
 
-## Phase 1: Setup & Configuration
+All tasks follow this strict format:
+```
+- [ ] [TaskID] [P?] Description with file path
+```
+
+- **TaskID**: Sequential number (T001, T002, etc.)
+- **[P]**: Parallelizable (different files, no dependencies)
+- **Description**: Clear action with exact file path
+
+---
+
+## Phase 1: Setup & Configuration (5 tasks)
+
+**Goal**: Configure environment and project structure for Postcoder integration
 
 - [ ] T001 Add POSTCODER_API_KEY to `.env.development`, `.env.production`, `.env.uat`
-- [ ] T002 Add ADDRESS_CACHE_TTL_DAYS=7 to environment files
-- [ ] T003 Add ADDRESS_LOOKUP_TIMEOUT_MS=500 to environment files
-- [ ] T004 Update `.env.example` with new Postcoder configuration variables
-- [ ] T005 Configure Django cache backend in `backend/django_Admin3/settings/base.py`
+- [ ] T002 Add POSTCODER_API_KEY to Django settings in `backend/django_Admin3/django_Admin3/settings.py`
+- [ ] T003 [P] Verify existing getaddress.io implementation in `backend/django_Admin3/utils/views.py` (confirm no modifications)
+- [ ] T004 [P] Create utils/services directory in `backend/django_Admin3/utils/services/__init__.py`
+- [ ] T005 Document dual-method architecture decision in `specs/uk_address_lookup_postcoder/ARCHITECTURE.md`
 
-## Phase 2: Foundational - Database Models
+---
 
-**Independent Test Criteria**: Models can be created, saved, queried, and expire correctly.
+## Phase 2: Foundational - Database Models (7 tasks)
 
-- [ ] T006 [P] [US1] Create Django app `cache_models` in `backend/django_Admin3/`
-- [ ] T007 [P] [US1] Create CachedAddress model in `backend/django_Admin3/cache_models/models.py`
-  - Fields: postcode (CharField, indexed), search_query (TextField), address_data (JSONField), created_at (DateTimeField), expires_at (DateTimeField, indexed)
-  - Index: (postcode, expires_at)
-- [ ] T008 [P] [US1] Create Django app `analytics` in `backend/django_Admin3/`
-- [ ] T009 [P] [US1] Create AddressLookupLog model in `backend/django_Admin3/analytics/models.py`
-  - Fields: timestamp (DateTimeField, indexed), postcode_searched (CharField), results_count (IntegerField), cache_hit (BooleanField), response_time_ms (IntegerField), success (BooleanField), error_message (TextField, nullable), user_id (ForeignKey User, nullable)
-- [ ] T010 Create database migrations for cache_models app
-- [ ] T011 Create database migrations for analytics app
-- [ ] T012 Apply migrations to development database
+**Goal**: Create Django apps and database models for caching and analytics
 
-## Phase 3: Core Implementation
+**BLOCKING PREREQUISITES**: Must complete before Phase 3
 
-### 3.1: Service Layer - Address Lookup (AC: 1-3, 8-9, 11)
+- [ ] T006 [P] Create Django app `address_cache` in `backend/django_Admin3/`
+  - Command: `cd backend/django_Admin3 && python manage.py startapp address_cache`
 
-**Independent Test Criteria**: Postcoder API integration works, response format matches frontend expectations.
+- [ ] T007 [P] Create CachedAddress model in `backend/django_Admin3/address_cache/models.py`
+  - Fields: id, postcode (CharField, indexed), search_query (CharField), response_data (JSONField), formatted_addresses (JSONField), created_at (DateTimeField, indexed), expires_at (DateTimeField, indexed), hit_count (IntegerField, default=0)
+  - Indexes: (postcode, expires_at) composite, created_at
+  - Meta: ordering = ['-created_at']
 
-- [ ] T013 [P] [US1] Create services directory in `backend/django_Admin3/utils/services/`
-- [ ] T014 [US1] Create AddressLookupService class in `backend/django_Admin3/utils/services/address_lookup_service.py`
+- [ ] T008 [P] Create Django app `address_analytics` in `backend/django_Admin3/`
+  - Command: `cd backend/django_Admin3 && python manage.py startapp address_analytics`
+
+- [ ] T009 [P] Create AddressLookupLog model in `backend/django_Admin3/address_analytics/models.py`
+  - Fields: id, postcode (CharField, indexed), search_query (CharField), lookup_timestamp (DateTimeField, auto_now_add, indexed), cache_hit (BooleanField, indexed), response_time_ms (IntegerField), result_count (IntegerField), api_provider (CharField, default='postcoder', indexed), success (BooleanField, indexed), error_message (TextField, null=True, blank=True)
+  - Indexes: (lookup_timestamp, api_provider) composite, cache_hit, success
+  - Meta: ordering = ['-lookup_timestamp']
+
+- [ ] T010 Add address_cache and address_analytics to INSTALLED_APPS in `backend/django_Admin3/django_Admin3/settings.py`
+
+- [ ] T011 Create migrations for address_cache and address_analytics
+  - Command: `python manage.py makemigrations address_cache && python manage.py makemigrations address_analytics`
+
+- [ ] T012 Run migrations to create database tables
+  - Command: `python manage.py migrate`
+
+---
+
+## Phase 3: Core Implementation - Service Layer (11 tasks)
+
+**Goal**: Implement business logic for Postcoder API integration, caching, and logging
+
+**Prerequisites**: Phase 2 complete (database models exist)
+
+### Postcoder API Integration
+
+- [ ] T013 [P] Create PostcoderService class in `backend/django_Admin3/utils/services/postcoder_service.py`
   - Method: `lookup_address(postcode: str) -> dict`
-  - Implement Postcoder `/autocomplete/find` API call
-  - Implement Postcoder `/autocomplete/retrieve` API call
-  - Transform Postcoder response to getaddress.io format
-  - Handle API timeout (500ms)
-  - Handle API errors gracefully
-- [ ] T015 [P] [US1] Write unit tests for AddressLookupService in `backend/django_Admin3/utils/tests/test_address_lookup_service.py`
-  - Test successful lookup
-  - Test response format transformation
-  - Test API timeout handling
-  - Test API error handling
-  - Mock Postcoder API responses
+  - Call Postcoder.com `/autocomplete/find` API endpoint
+  - Parse API response
+  - Handle API errors (timeout, rate limit, invalid postcode)
 
-### 3.2: Service Layer - Caching (AC: 12-14)
+- [ ] T014 [P] Implement response transformation in PostcoderService
+  - Method: `transform_to_getaddress_format(postcoder_response: dict) -> dict`
+  - Map Postcoder fields to getaddress.io format (line_1, line_2, town_or_city, county, postcode, etc.)
+  - Ensure backward compatibility with existing frontend expectations
+  - Return format: `{"addresses": [...]}`
 
-**Independent Test Criteria**: Cache stores/retrieves addresses, expires after 7 days, tracks hit rates.
+- [ ] T015 [P] Add unit tests for PostcoderService in `backend/django_Admin3/utils/services/tests/test_postcoder_service.py`
+  - Test: Valid postcode returns addresses
+  - Test: Invalid postcode returns empty array
+  - Test: API timeout handled gracefully
+  - Test: Response transformation accuracy
 
-- [ ] T016 [P] [US1] Create services directory in `backend/django_Admin3/cache_models/services/`
-- [ ] T017 [US1] Create AddressCacheService class in `backend/django_Admin3/cache_models/services/address_cache_service.py`
-  - Method: `get_cached_address(postcode: str) -> Optional[dict]`
-  - Method: `cache_address(postcode: str, address_data: dict, ttl_days: int = 7)`
-  - Method: `get_cache_hit_rate() -> float`
-  - Implement cache key normalization (uppercase, no spaces)
-  - Implement 7-day expiration logic
-  - Implement cache hit rate tracking
-- [ ] T018 [P] [US1] Write unit tests for AddressCacheService in `backend/django_Admin3/cache_models/tests/test_address_cache_service.py`
-  - Test cache miss scenario
-  - Test cache hit scenario
-  - Test cache expiration
-  - Test hit rate calculation
+### Caching Layer
 
-### 3.3: Service Layer - Logging (AC: 10, 14)
+- [ ] T016 [P] Create AddressCacheService class in `backend/django_Admin3/utils/services/address_cache_service.py`
+  - Method: `get_cached_address(postcode: str) -> dict | None`
+  - Method: `cache_address(postcode: str, addresses: dict, expires_in_days: int = 7) -> None`
+  - Method: `is_cache_valid(cached_address: CachedAddress) -> bool`
+  - Check expiration timestamps (7-day TTL)
+  - Increment hit_count when serving from cache
 
-**Independent Test Criteria**: Lookup attempts are logged with all required fields, performance metrics collected.
+- [ ] T017 [P] Add unit tests for AddressCacheService in `backend/django_Admin3/utils/services/tests/test_address_cache_service.py`
+  - Test: Cache miss returns None
+  - Test: Cache hit returns cached data
+  - Test: Expired cache treated as miss
+  - Test: hit_count increments on cache hit
+  - Test: 7-day TTL enforcement
 
-- [ ] T019 [P] [US1] Create services directory in `backend/django_Admin3/analytics/services/`
-- [ ] T020 [US1] Create LookupLoggerService class in `backend/django_Admin3/analytics/services/lookup_logger_service.py`
-  - Method: `log_lookup(postcode: str, results_count: int, cache_hit: bool, response_time_ms: int, success: bool, error_message: str = None, user_id: int = None)`
-  - Method: `get_performance_metrics() -> dict`
-  - Implement async logging to avoid blocking
-  - Track average response times
-  - Track cache hit percentages
-- [ ] T021 [P] [US1] Write unit tests for LookupLoggerService in `backend/django_Admin3/analytics/tests/test_lookup_logger_service.py`
-  - Test successful lookup logging
-  - Test error logging
-  - Test performance metrics calculation
+### Analytics Logging
 
-### 3.4: View Integration (AC: 1-11)
+- [ ] T018 [P] Create AddressLookupLogger class in `backend/django_Admin3/utils/services/address_lookup_logger.py`
+  - Method: `log_lookup(postcode: str, cache_hit: bool, response_time_ms: int, result_count: int, success: bool, error_message: str = None) -> None`
+  - Create AddressLookupLog entry with all metadata
+  - Handle logging failures silently (don't break lookup flow)
 
-**Independent Test Criteria**: Endpoint returns addresses in correct format, handles errors, logs attempts, uses cache.
+- [ ] T019 [P] Add unit tests for AddressLookupLogger in `backend/django_Admin3/utils/services/tests/test_address_lookup_logger.py`
+  - Test: Successful lookup logged
+  - Test: Failed lookup logged with error message
+  - Test: Cache hit/miss tracked correctly
+  - Test: Logging failure doesn't raise exception
 
-- [ ] T022 [US1] Modify `address_lookup_proxy` view in `backend/django_Admin3/utils/views.py`
-  - Import AddressLookupService, AddressCacheService, LookupLoggerService
-  - Check cache first (AddressCacheService.get_cached_address)
-  - If cache miss: Call AddressLookupService.lookup_address
-  - Store result in cache (AddressCacheService.cache_address)
-  - Log lookup attempt (LookupLoggerService.log_lookup)
-  - Maintain backward-compatible response format: `{"addresses": [...]}`
-  - Handle all errors gracefully
-  - Return appropriate HTTP status codes
-- [ ] T023 [P] [US1] Write integration tests for address_lookup_proxy in `backend/django_Admin3/utils/tests/integration/test_address_lookup_integration.py`
-  - Test cache miss → API call → success
-  - Test cache hit → fast response
-  - Test API failure → error response
-  - Test invalid postcode → empty results
-  - Test response format matches frontend expectations
-  - Test logging is performed
-  - Test response time < 500ms
+### Service Integration
 
-## Phase 4: Testing & Validation
+- [ ] T020 Integrate services in PostcoderService orchestration method
+  - Method: `execute_lookup(postcode: str) -> tuple[dict, int]` (returns addresses and response_time_ms)
+  - Flow: Check cache → (if miss) Call API → Transform response → Cache result → Log lookup → Return
+  - Measure response time from start to finish
 
-### 4.1: Frontend Verification (AC: 8)
+- [ ] T021 Add integration tests for service orchestration in `backend/django_Admin3/utils/services/tests/test_postcoder_integration.py`
+  - Test: Cache miss triggers API call
+  - Test: Cache hit skips API call
+  - Test: Failed API call logged correctly
+  - Test: Successful lookup caches and logs
 
-**Independent Test Criteria**: Existing frontend components work unchanged with new backend.
+- [ ] T022 Create __init__.py for services module in `backend/django_Admin3/utils/services/__init__.py`
+  - Export: PostcoderService, AddressCacheService, AddressLookupLogger
 
-- [ ] T024 [P] [US1] Write frontend integration test in `frontend/react-Admin3/src/components/Address/__tests__/SmartAddressInput.integration.test.js`
-  - Test postcode input triggers API call
-  - Test suggestions display correctly
-  - Test address selection populates fields
-  - Test manual entry fallback works
-  - Test error scenarios enable manual entry
-  - Mock backend API responses
+- [ ] T023 Add Django admin registration for CachedAddress in `backend/django_Admin3/address_cache/admin.py`
+  - Display: postcode, created_at, expires_at, hit_count
+  - Filters: created_at, expires_at
+  - Search: postcode
 
-### 4.2: End-to-End Validation (AC: All)
+---
 
-**Independent Test Criteria**: All acceptance criteria are met in realistic scenarios.
+## Phase 4: API Endpoint & URL Routing (7 tasks)
 
-- [ ] T025 [US1] Manual test: User types postcode → suggestions appear < 500ms
-- [ ] T026 [US1] Manual test: User selects address → fields auto-populate correctly
-- [ ] T027 [US1] Manual test: User switches to manual entry → can type freely
-- [ ] T028 [US1] Manual test: Simulate API failure → error message + manual entry enabled
-- [ ] T029 [US1] Manual test: Invalid postcode → no results message + manual entry
-- [ ] T030 [US1] Manual test: Second lookup same postcode → cache hit (< 100ms response)
-- [ ] T031 [US1] Verify cache hit rate tracking in database
-- [ ] T032 [US1] Verify lookup logging in database with all required fields
+**Goal**: Create new Django view and URL route for Postcoder lookup
 
-### 4.3: Performance & Metrics (AC: 11, 12, 14)
+**Prerequisites**: Phase 3 complete (services implemented)
 
-**Independent Test Criteria**: Performance targets met, metrics tracked correctly.
+- [ ] T024 Create `postcoder_address_lookup` view function in `backend/django_Admin3/utils/views.py`
+  - Signature: `@csrf_exempt @require_GET def postcoder_address_lookup(request)`
+  - Extract postcode from request.GET
+  - Validate postcode (uppercase, remove spaces)
+  - Call PostcoderService.execute_lookup(postcode)
+  - Return JsonResponse with addresses, cache_hit, response_time_ms
+  - Handle errors: 400 (missing/invalid postcode), 500 (API failure)
 
-- [ ] T033 [US1] Measure API response times (10 different postcodes, record min/max/avg)
-- [ ] T034 [US1] Verify response times < 500ms for cache miss
-- [ ] T035 [US1] Verify response times < 100ms for cache hit
-- [ ] T036 [US1] Test cache expiration after 7 days (use mock time)
-- [ ] T037 [US1] Query cache hit rate from database (should increase over time)
-- [ ] T038 [US1] Verify logging overhead < 10ms (measure with/without logging)
+- [ ] T025 Add unit tests for postcoder_address_lookup view in `backend/django_Admin3/utils/tests/test_views.py`
+  - Test: Valid postcode returns 200 with addresses
+  - Test: Missing postcode returns 400
+  - Test: Invalid postcode format returns 400
+  - Test: API failure returns 500 with error message
+  - Test: Response includes cache_hit metadata
+  - Test: Response format matches getaddress.io format
 
-### 4.4: Documentation (AC: All)
+- [ ] T026 Add URL route for Postcoder endpoint in `backend/django_Admin3/utils/urls.py`
+  - Route: `path('postcoder-address-lookup/', postcoder_address_lookup, name='postcoder_address_lookup')`
+  - Verify existing getaddress.io route unchanged
 
-- [ ] T039 [US1] Document Postcoder API integration in `specs/003-number-1-short/research.md`
-- [ ] T040 [US1] Document data models in `specs/003-number-1-short/data-model.md`
-- [ ] T041 [US1] Create quickstart validation test in `specs/003-number-1-short/quickstart.md`
-- [ ] T042 Update CLAUDE.md with Postcoder integration context
+- [ ] T027 Add integration test for full endpoint flow in `backend/django_Admin3/utils/tests/test_postcoder_endpoint_integration.py`
+  - Test: End-to-end lookup with real Postcoder API (if API key available)
+  - Test: Cache hit on second request
+  - Test: AddressLookupLog entry created
+  - Test: CachedAddress entry created
+
+- [ ] T028 Test endpoint manually using curl or Postman
+  - Command: `curl "http://localhost:8888/api/utils/postcoder-address-lookup/?postcode=SW1A1AA"`
+  - Verify: Response format correct
+  - Verify: Cache_hit=false on first request
+  - Verify: Cache_hit=true on second request
+
+- [ ] T029 Add Django admin registration for AddressLookupLog in `backend/django_Admin3/address_analytics/admin.py`
+  - Display: postcode, lookup_timestamp, cache_hit, response_time_ms, success
+  - Filters: lookup_timestamp, cache_hit, success, api_provider
+  - Search: postcode
+  - Ordering: -lookup_timestamp
+
+- [ ] T030 Verify existing `address_lookup_proxy` view unchanged in `backend/django_Admin3/utils/views.py`
+  - Confirm: No modifications to getaddress.io method
+  - Test: Existing endpoint still functional
+
+---
+
+## Phase 5: Frontend Verification (4 tasks)
+
+**Goal**: Verify zero frontend changes and backward compatibility
+
+**Prerequisites**: Phase 4 complete (endpoint functional)
+
+- [ ] T031 Verify SmartAddressInput component unchanged in `frontend/react-Admin3/src/components/Address/SmartAddressInput.js`
+  - Confirm: No modifications to existing component
+  - Confirm: Still calls `/api/utils/address-lookup/` (getaddress.io endpoint)
+
+- [ ] T032 Test existing address lookup flow in browser
+  - Navigate to registration/checkout form
+  - Enter UK postcode (e.g., "OX44 9EL")
+  - Verify: Address suggestions appear (using getaddress.io)
+  - Verify: No console errors
+
+- [ ] T033 Document frontend integration points in `specs/uk_address_lookup_postcoder/FRONTEND_INTEGRATION.md`
+  - Current state: Uses getaddress.io endpoint
+  - Future option: Switch to Postcoder endpoint by changing URL in SmartAddressInput
+  - Migration strategy: Feature flag or environment variable to toggle between endpoints
+
+- [ ] T034 Create example frontend code for optional Postcoder integration in `specs/uk_address_lookup_postcoder/FRONTEND_EXAMPLE.md`
+  - Example: How to call new Postcoder endpoint from React
+  - Example: How to handle cache_hit metadata
+  - Example: How to switch between getaddress.io and Postcoder via config
+
+---
+
+## Phase 6: Performance & Analytics Validation (8 tasks)
+
+**Goal**: Verify performance targets and analytics tracking
+
+**Prerequisites**: Phase 4 complete (endpoint functional)
+
+- [ ] T035 Create performance test script in `backend/django_Admin3/utils/tests/test_postcoder_performance.py`
+  - Test: Response time < 500ms for cache miss (Postcoder API call)
+  - Test: Response time < 100ms for cache hit
+  - Test: Concurrent requests handled correctly
+  - Test: No memory leaks with repeated requests
+
+- [ ] T036 Run performance tests with sample postcodes
+  - Command: `python manage.py test utils.tests.test_postcoder_performance`
+  - Verify: All tests pass
+  - Verify: Response times meet targets
+
+- [ ] T037 Validate cache hit rate tracking in Django admin
+  - Perform 10 lookups (5 unique postcodes, each requested twice)
+  - Check Django admin: Verify 5 CachedAddress entries
+  - Check Django admin: Verify 10 AddressLookupLog entries (5 cache_hit=false, 5 cache_hit=true)
+  - Calculate: Cache hit rate = 50%
+
+- [ ] T038 Validate analytics data in AddressLookupLog
+  - Check: response_time_ms recorded accurately
+  - Check: result_count matches addresses returned
+  - Check: success=true for successful lookups
+  - Check: error_message populated for failures
+
+- [ ] T039 Create management command for cache cleanup in `backend/django_Admin3/address_cache/management/commands/cleanup_expired_cache.py`
+  - Delete CachedAddress entries where expires_at < now()
+  - Log: Number of entries deleted
+
+- [ ] T040 Test cache expiration behavior
+  - Create CachedAddress entry with expires_at = now() - 1 day
+  - Call postcoder endpoint with same postcode
+  - Verify: Cache miss (expired entry ignored)
+  - Verify: New CachedAddress entry created
+
+- [ ] T041 Document performance metrics in `specs/uk_address_lookup_postcoder/PERFORMANCE.md`
+  - Response time targets: < 500ms (cache miss), < 100ms (cache hit)
+  - Cache hit rate target: 40% within 30 days
+  - Actual measurements from testing
+  - Recommendations for optimization
+
+- [ ] T042 Create analytics dashboard query examples in `specs/uk_address_lookup_postcoder/ANALYTICS_QUERIES.md`
+  - Query: Average response time by cache_hit
+  - Query: Cache hit rate over time
+  - Query: Most searched postcodes
+  - Query: Error rate by date
+  - Query: Comparison with getaddress.io (if tracking both)
+
+---
 
 ## Dependencies
 
-**Phase Dependencies**:
-- Phase 2 (Models) must complete before Phase 3 (Services)
-- Phase 3 (Services) must complete before Phase 4 (Testing)
+### Phase Dependencies
+- **Phase 2** (Database models) must complete before **Phase 3** (Service layer)
+- **Phase 3** (Service layer) must complete before **Phase 4** (API endpoint)
+- **Phase 4** (API endpoint) must complete before **Phase 5** (Frontend verification) and **Phase 6** (Performance validation)
 
-**Task Dependencies**:
-- T010-T012 (migrations) depend on T006-T009 (models)
-- T014 (AddressLookupService) blocks T015 (tests), T022 (view integration)
-- T017 (AddressCacheService) blocks T018 (tests), T022 (view integration)
-- T020 (LookupLoggerService) blocks T021 (tests), T022 (view integration)
-- T022 (view integration) depends on T014, T017, T020 being complete
-- T023 (integration tests) depends on T022 (view integration)
-- Phase 4 (all testing tasks) depends on Phase 3 completion
+### Task Dependencies
+- T010 (Add apps to INSTALLED_APPS) depends on T006, T008 (App creation)
+- T011 (Create migrations) depends on T007, T009 (Model creation), T010 (INSTALLED_APPS)
+- T012 (Run migrations) depends on T011 (Migrations created)
+- T020 (Service orchestration) depends on T013, T014, T016, T018 (Individual services)
+- T024 (View function) depends on T020 (Service orchestration)
+- T026 (URL routing) depends on T024 (View function)
+- T030 (Verify getaddress.io) can run in parallel with Phase 4 tasks
+- T035-T042 (Performance/Analytics) depend on T027 (Integration tests passing)
+
+---
 
 ## Parallel Execution Opportunities
 
-**Phase 2 (Models)** - Can run in parallel:
+### Phase 2: Database Models (Can run in parallel)
 ```
-- T006: Create cache_models app
-- T007: Create CachedAddress model
-- T008: Create analytics app
-- T009: Create AddressLookupLog model
-```
-
-**Phase 3.1-3.3 (Services)** - Can run in parallel:
-```
-- T013: Create utils/services/ directory
-- T016: Create cache_models/services/ directory
-- T019: Create analytics/services/ directory
-- T015: Write AddressLookupService tests
-- T018: Write AddressCacheService tests
-- T021: Write LookupLoggerService tests
+T006 - Create address_cache app
+T007 - Create CachedAddress model
+T008 - Create address_analytics app
+T009 - Create AddressLookupLog model
 ```
 
-**Phase 4.1 (Frontend Tests)** - Can run in parallel with backend validation:
+### Phase 3: Service Layer (Can run in parallel)
 ```
-- T024: Frontend integration tests
-- T031-T032: Database verification tasks
+T013 - Create PostcoderService
+T014 - Implement response transformation
+T015 - PostcoderService unit tests
+T016 - Create AddressCacheService
+T017 - AddressCacheService unit tests
+T018 - Create AddressLookupLogger
+T019 - AddressLookupLogger unit tests
 ```
+
+### Phase 5: Frontend Verification (Can run in parallel)
+```
+T031 - Verify SmartAddressInput unchanged
+T032 - Test existing address lookup
+T033 - Document frontend integration
+T034 - Create frontend example code
+```
+
+---
 
 ## Implementation Strategy
 
-**MVP Scope** (Minimum Viable Product):
-- Phase 1: Setup & Configuration (T001-T005)
-- Phase 2: Database Models (T006-T012)
-- Phase 3.1-3.4: All service layers + view integration (T013-T023)
-- Phase 4.2: Basic end-to-end validation (T025-T030)
+### MVP Scope (Minimum Viable Product)
+**Phase 1-4 only** (Setup → Models → Services → Endpoint)
 
-**Total Tasks**: 42 tasks
-- Setup: 5 tasks
-- Models: 7 tasks
-- Services: 16 tasks
-- Testing: 14 tasks
+This delivers:
+- Functional Postcoder endpoint
+- Caching and logging
+- Backward-compatible response format
+- Side-by-side evaluation capability
 
-**Estimated Timeline**:
-- Setup: 1 hour
-- Models + Migrations: 2 hours
-- Service Layer: 6-8 hours
-- Testing & Validation: 4-6 hours
-**Total: 13-17 hours**
+**Defer to later iteration**:
+- Frontend integration (keep using getaddress.io)
+- Performance optimization
+- Analytics dashboard
 
-## Format Validation
+### Testing Strategy
+**No TDD required** for this feature (per spec - tests not explicitly requested)
 
-✅ All tasks follow checklist format: `- [ ] [TaskID] [P?] [Story?] Description with file path`
-✅ Task IDs sequential (T001-T042)
-✅ [P] markers for parallelizable tasks
-✅ [US1] labels for user story tasks
-✅ File paths included where applicable
-✅ Dependencies documented
-✅ Parallel opportunities identified
+**Test Coverage**:
+- Unit tests for each service class (15% of tasks)
+- Integration tests for endpoint flow (10% of tasks)
+- Manual verification for frontend backward compatibility (5% of tasks)
+
+**Test Execution**:
+```bash
+# Run all tests
+cd backend/django_Admin3
+python manage.py test utils.tests address_cache.tests address_analytics.tests
+
+# Run specific test modules
+python manage.py test utils.tests.test_postcoder_service
+python manage.py test utils.tests.test_postcoder_endpoint_integration
+python manage.py test utils.tests.test_postcoder_performance
+```
+
+### Deployment Checklist
+- [ ] POSTCODER_API_KEY configured in production environment
+- [ ] Database migrations applied (address_cache, address_analytics)
+- [ ] Django admin access for CachedAddress and AddressLookupLog
+- [ ] Monitoring set up for response time and cache hit rate
+- [ ] Documentation updated (API docs, integration guides)
+
+---
+
+## Success Criteria
+
+### Functional Requirements Met
+- ✅ New Postcoder endpoint functional and independent
+- ✅ Existing getaddress.io method unchanged and functional
+- ✅ Response format backward-compatible with frontend
+- ✅ Caching layer operational (7-day retention)
+- ✅ Analytics logging tracking all lookups
+
+### Performance Targets
+- ✅ Response time < 500ms for cache miss (Postcoder API call)
+- ✅ Response time < 100ms for cache hit
+- ✅ Cache hit rate tracking enabled (target: 40% within 30 days)
+
+### Quality Standards
+- ✅ All unit tests pass (services)
+- ✅ All integration tests pass (endpoint)
+- ✅ Manual testing confirms zero frontend breakage
+- ✅ Code follows Django and project conventions
+- ✅ Documentation complete (architecture, integration, analytics)
+
+---
 
 ## Notes
 
-- **No frontend UI changes**: SmartAddressInput.js and DynamicAddressForm.js remain unchanged
-- **Backward compatibility**: Response format must match getaddress.io exactly
-- **TDD approach**: Write tests before implementation (recommended but not strictly enforced)
-- **Incremental delivery**: Can deploy after Phase 3.4 with basic validation
-- **Performance monitoring**: Track metrics from day 1 for optimization insights
+**Dual-Method Architecture**: This implementation creates a NEW Postcoder endpoint alongside the existing getaddress.io endpoint. Both methods coexist without interference, enabling:
+- Side-by-side evaluation
+- Zero risk to existing functionality
+- Flexible migration path
+- Rollback safety
 
-## Success Metrics
+**Frontend Migration (Future)**: To switch frontend from getaddress.io to Postcoder, change the API URL in `SmartAddressInput.js` from `/api/utils/address-lookup/` to `/api/utils/postcoder-address-lookup/`. This can be controlled via feature flag or environment variable.
 
-After implementation, verify:
-- ✅ Response time < 500ms (cache miss)
-- ✅ Response time < 100ms (cache hit)
-- ✅ Cache hit rate > 40% within 30 days
-- ✅ All 14 acceptance criteria met
-- ✅ Zero frontend UI changes required
-- ✅ All logging data captured correctly
+**Performance Monitoring**: Use Django admin to monitor:
+- Cache hit rates (AddressLookupLog aggregations)
+- Response times (AddressLookupLog.response_time_ms)
+- Error rates (AddressLookupLog.success filter)
+- Most searched postcodes (AddressLookupLog grouping)
+
+**Maintenance**:
+- Run `cleanup_expired_cache` management command weekly to remove expired cache entries
+- Monitor AddressLookupLog table growth (consider archiving after 90 days)
+- Review Postcoder API usage and costs monthly
+
+---
+
+**Total Tasks**: 42
+**Parallel Tasks**: 15 (marked with [P])
+**Estimated Timeline**: 2-3 days for MVP (Phase 1-4), 1 day for full implementation (Phase 5-6)
