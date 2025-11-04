@@ -1,198 +1,383 @@
+# Implementation Plan: Postcoder.com Address Lookup Integration
 
-# Implementation Plan: [FEATURE]
-
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Branch**: `feature/uk_address_lookup_postcoder` | **Date**: 2025-11-04 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `/specs/uk_address_lookup_postcoder/spec.md`
 
 ## Execution Flow (/plan command scope)
 ```
-1. Load feature spec from Input path
-   → If not found: ERROR "No feature spec at {path}"
-2. Fill Technical Context (scan for NEEDS CLARIFICATION)
-   → Detect Project Type from context (web=frontend+backend, mobile=app+api)
-   → Set Structure Decision based on project type
-3. Fill the Constitution Check section based on the content of the constitution document.
-4. Evaluate Constitution Check section below
-   → If violations exist: Document in Complexity Tracking
-   → If no justification possible: ERROR "Simplify approach first"
-   → Update Progress Tracking: Initial Constitution Check
-5. Execute Phase 0 → research.md
-   → If NEEDS CLARIFICATION remain: ERROR "Resolve unknowns"
-6. Execute Phase 1 → contracts, data-model.md, quickstart.md, agent-specific template file (e.g., `CLAUDE.md` for Claude Code, `.github/copilot-instructions.md` for GitHub Copilot, `GEMINI.md` for Gemini CLI, `QWEN.md` for Qwen Code or `AGENTS.md` for opencode).
-7. Re-evaluate Constitution Check section
-   → If new violations: Refactor design, return to Phase 1
-   → Update Progress Tracking: Post-Design Constitution Check
-8. Plan Phase 2 → Describe task generation approach (DO NOT create tasks.md)
-9. STOP - Ready for /tasks command
+1. ✅ Load feature spec from Input path
+2. ✅ Fill Technical Context
+3. ✅ Evaluate Constitution Check section
+4. ⏳ Execute Phase 0 → research.md
+5. ⏳ Execute Phase 1 → contracts, data-model.md, quickstart.md, CLAUDE.md update
+6. ⏳ Re-evaluate Constitution Check section
+7. ⏳ Plan Phase 2 → Describe task generation approach
 ```
 
-**IMPORTANT**: The /plan command STOPS at step 7. Phases 2-4 are executed by other commands:
-- Phase 2: /tasks command creates tasks.md
-- Phase 3-4: Implementation execution (manual or via tools)
-
 ## Summary
-[Extract from feature spec: primary requirement + technical approach from research]
+
+This feature creates a **new, separate address lookup method** for Postcoder.com API integration while preserving the existing `address_lookup_proxy` method that uses getaddress.io. The dual-method architecture enables side-by-side evaluation of both API providers without any risk to existing functionality.
+
+**Key Components**:
+- New Django view function: `postcoder_address_lookup` (separate from existing `address_lookup_proxy`)
+- Service layer for Postcoder API integration with response transformation
+- Caching layer (7-day retention) for Postcoder lookups
+- Analytics logging for Postcoder method performance monitoring
+- Zero frontend changes required (existing UI remains unchanged)
 
 ## Technical Context
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+
+**Language/Version**: Python 3.11, React 18
+**Primary Dependencies**: Django 5.1, Django REST Framework, requests library, Django cache framework
+**Storage**: PostgreSQL (Django ORM models for cache and analytics)
+**Testing**: pytest (backend), Jest + React Testing Library (frontend verification)
+**Target Platform**: Web application (Django backend + React frontend)
+**Project Type**: web (frontend + backend structure)
+**Performance Goals**: <500ms response time, 40% cache hit rate within 30 days
+**Constraints**: Zero frontend UI changes, preserve existing getaddress.io implementation unchanged
+**Scale/Scope**: UK address lookups only, dual-method coexistence for evaluation
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+### Architectural Principles
+- ✅ **Separation of Concerns**: New Postcoder method isolated from legacy getaddress.io method
+- ✅ **Service Layer Pattern**: Business logic encapsulated in dedicated service classes
+- ✅ **Single Responsibility**: Each service handles one concern (API, cache, logging)
+- ✅ **Open/Closed Principle**: Adding new method without modifying existing one
+
+### Complexity Gates
+- ✅ **No new projects**: Working within existing Django backend structure
+- ✅ **No abstract patterns**: Direct, straightforward service implementations
+- ✅ **Minimal dependencies**: Using existing Django cache framework and ORM
+
+**Status**: ✅ PASS - Architecture follows constitutional principles
 
 ## Project Structure
 
 ### Documentation (this feature)
 ```
-specs/[###-feature]/
+specs/uk_address_lookup_postcoder/
 ├── plan.md              # This file (/plan command output)
+├── spec.md              # Feature specification
 ├── research.md          # Phase 0 output (/plan command)
 ├── data-model.md        # Phase 1 output (/plan command)
 ├── quickstart.md        # Phase 1 output (/plan command)
 ├── contracts/           # Phase 1 output (/plan command)
-└── tasks.md             # Phase 2 output (/tasks command - NOT created by /plan)
+│   └── postcoder-address-lookup.json
+└── tasks.md             # Phase 2 output (/tasks command)
 ```
 
 ### Source Code (repository root)
 ```
-# Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
+# Web application structure (Option 2)
+backend/django_Admin3/
+├── utils/
+│   ├── views.py                              # ADD new postcoder_address_lookup view
+│   ├── urls.py                               # ADD new URL route
+│   └── services/
+│       ├── __init__.py                       # NEW
+│       ├── postcoder_service.py              # NEW - Postcoder API integration
+│       ├── address_cache_service.py          # NEW - Caching layer
+│       └── address_lookup_logger.py          # NEW - Analytics logging
+├── address_cache/                            # NEW Django app
+│   ├── __init__.py
+│   ├── models.py                             # NEW - CachedAddress model
+│   ├── admin.py                              # NEW - Django admin integration
+│   ├── migrations/
+│   └── tests/
+│       └── test_models.py
+└── address_analytics/                        # NEW Django app
+    ├── __init__.py
+    ├── models.py                             # NEW - AddressLookupLog model
+    ├── admin.py                              # NEW - Django admin integration
+    ├── migrations/
+    └── tests/
+        └── test_models.py
 
 tests/
 ├── contract/
+│   └── test_postcoder_address_lookup_contract.py
 ├── integration/
+│   └── test_postcoder_address_lookup.py
 └── unit/
+    ├── test_postcoder_service.py
+    ├── test_address_cache_service.py
+    └── test_address_lookup_logger.py
 
-# Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure]
+frontend/react-Admin3/
+└── src/
+    └── components/Address/
+        └── SmartAddressInput.js             # NO CHANGES (verification only)
 ```
 
-**Structure Decision**: [DEFAULT to Option 1 unless Technical Context indicates web/mobile app]
+**Structure Decision**: Option 2 (Web application) - Django backend + React frontend
 
 ## Phase 0: Outline & Research
-1. **Extract unknowns from Technical Context** above:
-   - For each NEEDS CLARIFICATION → research task
-   - For each dependency → best practices task
-   - For each integration → patterns task
 
-2. **Generate and dispatch research agents**:
-   ```
-   For each unknown in Technical Context:
-     Task: "Research {unknown} for {feature context}"
-   For each technology choice:
-     Task: "Find best practices for {tech} in {domain}"
-   ```
+### Research Tasks
 
-3. **Consolidate findings** in `research.md` using format:
-   - Decision: [what was chosen]
-   - Rationale: [why chosen]
-   - Alternatives considered: [what else evaluated]
+1. **Postcoder.com API Documentation**
+   - Endpoint URLs and authentication methods
+   - Request/response formats for `/autocomplete/find` and `/autocomplete/retrieve`
+   - Rate limits and pricing tiers
+   - Error codes and handling patterns
+   - **Output**: `research.md` section "Postcoder API Integration"
 
-**Output**: research.md with all NEEDS CLARIFICATION resolved
+2. **Response Format Transformation**
+   - Map Postcoder response fields to getaddress.io format
+   - Ensure backward compatibility with existing frontend expectations
+   - Document field mappings and transformations
+   - **Output**: `research.md` section "Response Format Mapping"
+
+3. **Django Cache Framework Best Practices**
+   - Cache backend options (Redis, Memcached, database)
+   - TTL (time-to-live) configuration for 7-day retention
+   - Cache key strategies for address lookups
+   - Atomic cache operations for thread safety
+   - **Output**: `research.md` section "Caching Strategy"
+
+4. **Performance Monitoring Patterns**
+   - Metrics to track (response time, cache hit rate, API call frequency)
+   - Django middleware for request timing
+   - Logging best practices for analytics
+   - **Output**: `research.md` section "Performance Monitoring"
+
+5. **Django ORM Models for Time-Series Data**
+   - Indexing strategies for timestamp queries
+   - Partitioning considerations for large datasets
+   - Query optimization for analytics aggregations
+   - **Output**: `research.md` section "Data Storage Patterns"
+
+### Unknowns to Resolve
+- ✅ Django cache backend configuration (assumption: Redis or database cache)
+- ✅ Postcoder API key environment variable naming convention
+- ✅ Cache invalidation strategy (assumption: time-based expiration only)
+- ✅ Analytics data retention policy (assumption: indefinite retention for evaluation period)
+
+**Output**: `specs/uk_address_lookup_postcoder/research.md` with all technical decisions documented
 
 ## Phase 1: Design & Contracts
-*Prerequisites: research.md complete*
 
-1. **Extract entities from feature spec** → `data-model.md`:
-   - Entity name, fields, relationships
-   - Validation rules from requirements
-   - State transitions if applicable
+### Data Model Design (`data-model.md`)
 
-2. **Generate API contracts** from functional requirements:
-   - For each user action → endpoint
-   - Use standard REST/GraphQL patterns
-   - Output OpenAPI/GraphQL schema to `/contracts/`
+#### Entity: CachedAddress
+**Purpose**: Store Postcoder API responses for 7-day caching
 
-3. **Generate contract tests** from contracts:
-   - One test file per endpoint
-   - Assert request/response schemas
-   - Tests must fail (no implementation yet)
+**Fields**:
+- `id` (AutoField, primary key)
+- `postcode` (CharField, max_length=10, indexed)
+- `search_query` (CharField, max_length=255) - Original query string
+- `response_data` (JSONField) - Full Postcoder API response
+- `formatted_addresses` (JSONField) - Transformed response in getaddress.io format
+- `created_at` (DateTimeField, auto_now_add, indexed)
+- `expires_at` (DateTimeField, indexed) - created_at + 7 days
+- `hit_count` (IntegerField, default=0) - Number of times served from cache
 
-4. **Extract test scenarios** from user stories:
-   - Each story → integration test scenario
-   - Quickstart test = story validation steps
+**Indexes**:
+- Composite index: (postcode, expires_at) for efficient cache lookups
+- Index: created_at for cleanup queries
 
-5. **Update agent file incrementally** (O(1) operation):
-   - Run `.specify/scripts/bash/update-agent-context.sh claude`
-     **IMPORTANT**: Execute it exactly as specified above. Do not add or remove any arguments.
-   - If exists: Add only NEW tech from current plan
-   - Preserve manual additions between markers
-   - Update recent changes (keep last 3)
-   - Keep under 150 lines for token efficiency
-   - Output to repository root
+**Validation Rules**:
+- postcode must be uppercase alphanumeric
+- expires_at must be exactly 7 days after created_at
+- response_data and formatted_addresses must be valid JSON
 
-**Output**: data-model.md, /contracts/*, failing tests, quickstart.md, agent-specific file
+#### Entity: AddressLookupLog
+**Purpose**: Track Postcoder API usage for analytics
+
+**Fields**:
+- `id` (AutoField, primary key)
+- `postcode` (CharField, max_length=10, indexed)
+- `search_query` (CharField, max_length=255)
+- `lookup_timestamp` (DateTimeField, auto_now_add, indexed)
+- `cache_hit` (BooleanField, indexed) - True if served from cache
+- `response_time_ms` (IntegerField) - Total response time in milliseconds
+- `result_count` (IntegerField) - Number of addresses returned
+- `api_provider` (CharField, max_length=20, default='postcoder', indexed)
+- `success` (BooleanField, indexed) - True if lookup succeeded
+- `error_message` (TextField, null=True, blank=True)
+
+**Indexes**:
+- Composite index: (lookup_timestamp, api_provider) for analytics queries
+- Index: cache_hit for cache performance analysis
+- Index: success for error rate monitoring
+
+**State Transitions**: N/A (append-only log)
+
+### API Contracts (`contracts/postcoder-address-lookup.json`)
+
+#### New Endpoint: POST /api/utils/postcoder-address-lookup/
+
+**Request**:
+```json
+{
+  "postcode": "string (required, UK postcode format)",
+  "search_query": "string (optional, additional address search text)"
+}
+```
+
+**Response (Success - 200 OK)**:
+```json
+{
+  "addresses": [
+    {
+      "postcode": "string",
+      "latitude": "number",
+      "longitude": "number",
+      "formatted_address": ["string"],
+      "line_1": "string",
+      "line_2": "string",
+      "line_3": "string",
+      "line_4": "string",
+      "town_or_city": "string",
+      "county": "string",
+      "country": "string"
+    }
+  ],
+  "cache_hit": "boolean",
+  "response_time_ms": "number"
+}
+```
+
+**Response (Error - 400 Bad Request)**:
+```json
+{
+  "error": "string (error description)",
+  "code": "MISSING_POSTCODE | INVALID_POSTCODE"
+}
+```
+
+**Response (Error - 500 Internal Server Error)**:
+```json
+{
+  "error": "string (error description)",
+  "code": "API_ERROR | CACHE_ERROR"
+}
+```
+
+**Response Format Notes**:
+- Response format matches existing getaddress.io format for backward compatibility
+- Additional metadata (cache_hit, response_time_ms) included for debugging (can be ignored by frontend)
+
+### Contract Tests
+
+**File**: `tests/contract/test_postcoder_address_lookup_contract.py`
+
+**Test Cases** (TDD - tests written first, expected to fail):
+1. `test_postcoder_endpoint_accepts_valid_postcode` - Assert 200 status
+2. `test_postcoder_endpoint_returns_addresses_array` - Assert response schema
+3. `test_postcoder_endpoint_rejects_missing_postcode` - Assert 400 status
+4. `test_postcoder_endpoint_returns_cache_metadata` - Assert cache_hit field present
+5. `test_postcoder_endpoint_handles_api_failure_gracefully` - Assert 500 with error message
+
+### Integration Test Scenarios
+
+**File**: `tests/integration/test_postcoder_address_lookup.py`
+
+**Scenarios from User Stories**:
+1. **Given** a valid UK postcode, **When** user calls Postcoder endpoint, **Then** matching addresses are returned
+2. **Given** a cached postcode, **When** user calls Postcoder endpoint again, **Then** response is served from cache with cache_hit=true
+3. **Given** an invalid postcode, **When** user calls Postcoder endpoint, **Then** 400 error is returned
+4. **Given** Postcoder API is unavailable, **When** user calls Postcoder endpoint, **Then** 500 error is returned with fallback message
+
+### Quickstart Test (`quickstart.md`)
+
+**Purpose**: Validate feature end-to-end from user perspective
+
+**Steps**:
+1. Start Django development server
+2. Ensure Postcoder API key is configured in environment
+3. Call POST /api/utils/postcoder-address-lookup/ with valid postcode (e.g., "SW1A 1AA")
+4. Verify response contains addresses array with expected format
+5. Call same endpoint again with same postcode
+6. Verify cache_hit=true in response
+7. Check Django admin for CachedAddress and AddressLookupLog entries
+8. Verify frontend SmartAddressInput still works with existing getaddress.io endpoint (no changes)
+
+### Update CLAUDE.md
+
+**Action**: Run `.specify/scripts/bash/update-agent-context.sh claude`
+
+**Updates**:
+- Add Postcoder.com integration to "Address Lookup System" section
+- Document dual-method architecture (getaddress.io + Postcoder)
+- Add new service layer components (postcoder_service, address_cache_service, address_lookup_logger)
+- Add new Django apps (address_cache, address_analytics)
+- Update "Common Development Commands" with cache/analytics management commands
+
+**IMPORTANT**: Execute script exactly as specified above with no additional arguments
+
+**Output**: `CLAUDE.md` updated with new technical context (keep under 150 lines)
 
 ## Phase 2: Task Planning Approach
 *This section describes what the /tasks command will do - DO NOT execute during /plan*
 
 **Task Generation Strategy**:
-- Load `.specify/templates/tasks-template.md` as base
-- Generate tasks from Phase 1 design docs (contracts, data model, quickstart)
-- Each contract → contract test task [P]
-- Each entity → model creation task [P] 
-- Each user story → integration test task
-- Implementation tasks to make tests pass
+1. Load `.specify/templates/tasks-template.md` as base
+2. Generate tasks from Phase 1 design docs (contracts, data model, quickstart)
+3. Order tasks in TDD sequence:
+   - Phase 1: Environment setup (API keys, cache configuration)
+   - Phase 2: Database models (CachedAddress, AddressLookupLog) [P]
+   - Phase 3: Contract tests (write tests first) [P]
+   - Phase 4: Service layer implementation (PostcoderService, CacheService, LoggerService) [P]
+   - Phase 5: Django view and URL routing
+   - Phase 6: Integration tests
+   - Phase 7: Frontend verification (ensure no breakage)
+   - Phase 8: Performance validation (response time, cache hit rate)
 
 **Ordering Strategy**:
-- TDD order: Tests before implementation 
-- Dependency order: Models before services before UI
-- Mark [P] for parallel execution (independent files)
+- TDD order: Tests before implementation (contracts → models → services → views)
+- Dependency order: Models before services before views
+- Mark [P] for parallel execution:
+  - Contract tests (independent test files)
+  - Database models (independent Django apps)
+  - Service layer classes (independent business logic)
+- Sequential execution:
+  - Views depend on services
+  - Integration tests depend on full stack
+  - Performance validation depends on deployment
 
-**Estimated Output**: 25-30 numbered, ordered tasks in tasks.md
+**Estimated Output**: 35-40 numbered, ordered tasks in tasks.md
+
+**Task Format**:
+```
+- [ ] T001 Add POSTCODER_API_KEY to environment variables (.env files)
+- [ ] T002 [P] Create CachedAddress Django model in address_cache/models.py
+- [ ] T003 [P] Create AddressLookupLog Django model in address_analytics/models.py
+- [ ] T004 [P] Write contract test for Postcoder endpoint (tests/contract/)
+- [ ] T005 [P] Implement PostcoderService class (utils/services/postcoder_service.py)
+  - Method: lookup_address(postcode: str) -> dict
+  - Integrate with Postcoder.com API
+  - Transform response to getaddress.io format
+- [ ] T006 [P] Implement AddressCacheService class (utils/services/address_cache_service.py)
+  - Method: get_cached_address(postcode: str) -> dict | None
+  - Method: cache_address(postcode: str, response: dict) -> None
+  - 7-day TTL enforcement
+```
 
 **IMPORTANT**: This phase is executed by the /tasks command, NOT by /plan
 
 ## Phase 3+: Future Implementation
 *These phases are beyond the scope of the /plan command*
 
-**Phase 3**: Task execution (/tasks command creates tasks.md)  
-**Phase 4**: Implementation (execute tasks.md following constitutional principles)  
-**Phase 5**: Validation (run tests, execute quickstart.md, performance validation)
+**Phase 3**: Task execution (/tasks command creates tasks.md with 35-40 numbered tasks)
+**Phase 4**: Implementation (execute tasks.md following TDD and constitutional principles)
+**Phase 5**: Validation (run tests, execute quickstart.md, verify performance targets)
+
+**Validation Criteria**:
+- All contract tests pass (5 tests)
+- All integration tests pass (4 scenarios)
+- Quickstart test completes successfully
+- Response time < 500ms (cache miss)
+- Response time < 100ms (cache hit)
+- Zero frontend UI changes verified
+- Existing getaddress.io method still functional (regression test)
 
 ## Complexity Tracking
-*Fill ONLY if Constitution Check has violations that must be justified*
-
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
-
+*No violations - architecture follows constitutional principles*
 
 ## Progress Tracking
-*This checklist is updated during execution flow*
 
 **Phase Status**:
 - [ ] Phase 0: Research complete (/plan command)
@@ -203,10 +388,17 @@ ios/ or android/
 - [ ] Phase 5: Validation passed
 
 **Gate Status**:
-- [ ] Initial Constitution Check: PASS
-- [ ] Post-Design Constitution Check: PASS
-- [ ] All NEEDS CLARIFICATION resolved
-- [ ] Complexity deviations documented
+- [x] Initial Constitution Check: PASS
+- [ ] Post-Design Constitution Check: PASS (after Phase 1)
+- [x] All NEEDS CLARIFICATION resolved (from spec clarifications)
+- [x] Complexity deviations documented (none - no violations)
 
 ---
+
+**Next Steps**:
+1. Execute Phase 0: Research Postcoder API, caching, and performance monitoring patterns
+2. Execute Phase 1: Create data-model.md, contracts/, quickstart.md, update CLAUDE.md
+3. Re-evaluate Constitution Check after Phase 1 design
+4. Ready for `/tasks` command to generate implementation tasks
+
 *Based on Constitution v2.1.1 - See `/memory/constitution.md`*
