@@ -1,37 +1,38 @@
+/**
+ * MarkingVoucherProductCard Component
+ *
+ * Specialized product card for marking vouchers following theme.js marking-voucher-product variant.
+ * Uses standardized orange theme styling with proper class structure for theme integration.
+ */
+
 import React, { useState, useMemo } from "react";
 import { formatPrice } from '../../../utils/priceFormatter';
 import {
-	Button,
 	Card,
 	CardHeader,
 	CardContent,
 	CardActions,
-	Grid,
 	Typography,
 	Box,
-	Divider,
-	Dialog,
-	DialogTitle,
-	DialogContent,
-	DialogActions,
-	Tooltip,
 	Alert,
 	Chip,
+	IconButton,
+	Avatar,
+	Stack
 } from "@mui/material";
 import {
-	AddShoppingCart,
-	InfoOutline,
-	LocalActivityOutlined,
-	CalendarMonthOutlined,
+	ShoppingCart as ShoppingCartIcon,
+	Schedule as ScheduleIcon,
+	LocalOffer as LocalOfferIcon,
+	CheckCircle as CheckCircleIcon
 } from "@mui/icons-material";
-import "../../../styles/product_card.css";
-
 
 const MarkingVoucherProductCard = React.memo(({ voucher, onAddToCart }) => {
-	const [showInfoDialog, setShowInfoDialog] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
-	// Check if voucher is available
+	/**
+	 * Determine if voucher is available for purchase
+	 */
 	const isAvailable = useMemo(() => {
 		if (!voucher.is_active) return false;
 		if (voucher.expiry_date) {
@@ -42,7 +43,9 @@ const MarkingVoucherProductCard = React.memo(({ voucher, onAddToCart }) => {
 		return true;
 	}, [voucher.is_active, voucher.expiry_date]);
 
-	// Format expiry date
+	/**
+	 * Format expiry date for display
+	 */
 	const formattedExpiryDate = useMemo(() => {
 		if (!voucher.expiry_date) return null;
 		const date = new Date(voucher.expiry_date);
@@ -53,333 +56,178 @@ const MarkingVoucherProductCard = React.memo(({ voucher, onAddToCart }) => {
 		});
 	}, [voucher.expiry_date]);
 
-	// Calculate days until expiry
-	const daysUntilExpiry = useMemo(() => {
-		if (!voucher.expiry_date) return null;
-		const expiryDate = new Date(voucher.expiry_date);
-		const now = new Date();
-		const diffTime = expiryDate - now;
-		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-		return diffDays;
-	}, [voucher.expiry_date]);
+	/**
+	 * Get price from voucher variations
+	 */
+	const price = useMemo(() => {
+		if (voucher.price) {
+			return voucher.price;
+		}
+		if (!voucher.variations || voucher.variations.length === 0) {
+			return '0.00';
+		}
+		const firstVariation = voucher.variations[0];
+		if (!firstVariation.prices || firstVariation.prices.length === 0) {
+			return '0.00';
+		}
+		return firstVariation.prices[0].amount;
+	}, [voucher.variations, voucher.price]);
 
-	// Get urgency status
-	const urgencyStatus = useMemo(() => {
-		if (!daysUntilExpiry) return null;
-		if (daysUntilExpiry <= 0) return 'expired';
-		if (daysUntilExpiry <= 7) return 'urgent';
-		if (daysUntilExpiry <= 30) return 'warning';
-		return 'normal';
-	}, [daysUntilExpiry]);
-
+	/**
+	 * Handle add to cart action
+	 */
 	const handleAddToCart = async () => {
-		if (!isAvailable || isLoading) return;
+		if (!isAvailable || isLoading || !onAddToCart) return;
 
 		setIsLoading(true);
 		try {
-			// Build metadata
-			const metadata = {
-				type: "marking_voucher",
-				productType: "MarkingVoucher",
-				voucherCode: voucher.code,
-				voucherName: voucher.name,
-				expiryDate: voucher.expiry_date,
+			// Build voucher metadata for cart
+			const voucherMetadata = {
+				type: 'MarkingVoucher',
+				code: voucher.code,
+				name: voucher.name,
+				price: price,
+				is_active: voucher.is_active,
+				expiry_date: voucher.expiry_date,
 			};
 
-			// Call the onAddToCart with voucher details
-			await onAddToCart(voucher, {
-				variationId: null,
-				variationName: 'Marking Voucher',
-				priceType: 'standard',
-				actualPrice: voucher.price,
-				quantity: 1,
-				metadata: metadata,
-			});
+			// Call parent add to cart handler with metadata
+			await onAddToCart(voucher, voucherMetadata);
 		} catch (error) {
-			console.error('Failed to add voucher to cart:', error);
+			console.error('Error adding voucher to cart:', error);
 		} finally {
 			setIsLoading(false);
 		}
 	};
 
-	const handleInfoClick = () => {
-		setShowInfoDialog(true);
-	};
-
-	const handleInfoClose = () => {
-		setShowInfoDialog(false);
-	};
-
 	return (
-		<>
-			<Card
-				elevation={2}
-				className={`product-card d-flex flex-column ${!isAvailable ? 'disabled' : ''}`}
-				sx={{
-					opacity: isAvailable ? 1 : 0.6,
-					position: 'relative'
-				}}
-			>
-				<CardHeader
-					title={
-						<Box className="d-flex align-items-center">
-							<LocalActivityOutlined
-								className="me-2"
-								sx={{ fontSize: 20 }}
-							/>
-							<Typography
-								variant="h6"
-								className="product-title mb-0"
-								sx={{ fontSize: "1rem", fontWeight: 600 }}
-							>
-								{voucher.name}
-							</Typography>
-						</Box>
-					}
-					className="product-card-header marking-header"
-					sx={{
-						backgroundColor: '#ff9800',
-						color: 'white',
-						'& .MuiCardHeader-title': {
-							color: 'white',
-						},
-					}}
-				/>
+		<Card
+			variant="marking-voucher-product"
+			sx={{
+				opacity: isAvailable ? 1 : 0.6
+			}}
+		>
+			{/* Floating Badges */}
+			<Box className="floating-badges-container">
+				{voucher.subject_code && (
+					<Chip
+						label={voucher.subject_code}
+						size="small"
+						className="subject-badge"
+						role="img"
+						aria-label={`Subject: ${voucher.subject_code}`}
+					/>
+				)}
+				{voucher.exam_session_code && (
+					<Chip
+						label={voucher.exam_session_code}
+						size="small"
+						className="session-badge"
+						role="img"
+						aria-label={`Exam session: ${voucher.exam_session_code}`}
+					/>
+				)}
+			</Box>
 
-				<CardContent className="product-card-content">
-					{/* Voucher Code */}
-					<Box className="mb-2">
-						<Chip
-							label={voucher.code}
-							size="small"
-							color="primary"
-							variant="outlined"
-							sx={{ fontSize: '0.75rem' }}
-						/>
-					</Box>
+			{/* Header with orange theme - follows theme.js structure */}
+			<CardHeader
+				className="product-header"
+				title={
+					<Typography className="product-title" variant="h4">
+						{voucher.name}
+					</Typography>
+				}
+				avatar={
+					<Avatar className="product-avatar">
+						<LocalOfferIcon className="product-avatar-icon" />
+					</Avatar>
+				}
+			/>
 
-					{/* Description */}
-					{voucher.description && (
-						<Box className="mb-2">
-							<Typography
-								variant="body2"
-								color="text.secondary"
-								sx={{ fontSize: '0.875rem' }}
-							>
-								{voucher.description}
-							</Typography>
-						</Box>
-					)}
+			{/* Content - follows theme.js structure */}
+			<CardContent>
+				{/* Voucher Code Chip */}
+				<Box className="product-chips">
+					<Chip
+						label={voucher.code}
+						color="primary"
+						size="small"
+						icon={<LocalOfferIcon />}
+					/>
+				</Box>
 
-					{/* Expiry Information */}
-					{voucher.expiry_date && (
-						<Box className="mb-2">
-							<Box className="d-flex align-items-center">
-								<CalendarMonthOutlined
-									sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }}
-								/>
-								<Typography
-									variant="body2"
-									color="text.secondary"
-									sx={{ fontSize: '0.875rem' }}
-								>
-									Expires: {formattedExpiryDate}
-								</Typography>
-							</Box>
-							
-							{urgencyStatus && urgencyStatus !== 'normal' && (
-								<Alert
-									severity={
-										urgencyStatus === 'expired' ? 'error' :
-										urgencyStatus === 'urgent' ? 'warning' : 'info'
-									}
-									sx={{ mt: 1, py: 0.5 }}
-									size="small"
-								>
-									{urgencyStatus === 'expired' 
-										? 'Voucher has expired'
-										: `Expires in ${daysUntilExpiry} day${daysUntilExpiry === 1 ? '' : 's'}`
-									}
-								</Alert>
-							)}
-						</Box>
-					)}
+				{/* Description */}
+				{voucher.description && (
+					<Typography className="product-description" variant="body2" color="text.secondary">
+						{voucher.description}
+					</Typography>
+				)}
 
-					{!voucher.expiry_date && (
-						<Box className="mb-2">
-							<Chip
-								label="No Expiry"
-								size="small"
-								color="success"
-								variant="outlined"
-								sx={{ fontSize: '0.75rem' }}
-							/>
-						</Box>
-					)}
-				</CardContent>
-
-				<Divider />
-
-				<CardActions className="product-card-actions">
-					<Grid container spacing={1} alignItems="center">
-						{/* Price Display */}
-						<Grid size={{ xs: 6, md: 6 }}>
-							<Box>
-								<Typography
-									variant="h6"
-									className="price-display"
-									sx={{ fontSize: '1.125rem', fontWeight: 600 }}
-								>
-									{formatPrice(voucher.price)}
-								</Typography>
-								<Typography
-									variant="caption"
-									color="text.secondary"
-									sx={{ fontSize: '0.75rem' }}
-								>
-									Inc. VAT
-								</Typography>
-							</Box>
-						</Grid>
-
-						{/* Action Buttons */}
-						<Grid size={{ xs: 6, md: 6 }}>
-							<Box className="d-flex justify-content-end gap-1">
-								<Tooltip title="Voucher Information">
-									<Button
-										size="small"
-										variant="outlined"
-										onClick={handleInfoClick}
-										sx={{ minWidth: 'auto', p: 1 }}
-									>
-										<InfoOutline sx={{ fontSize: 16 }} />
-									</Button>
-								</Tooltip>
-
-								<Tooltip 
-									title={
-										!isAvailable 
-											? 'Voucher not available' 
-											: 'Add voucher to cart'
-									}
-								>
-									<span>
-										<Button
-											size="small"
-											variant="contained"
-											onClick={handleAddToCart}
-											disabled={!isAvailable || isLoading}
-											startIcon={<AddShoppingCart sx={{ fontSize: 16 }} />}
-											sx={{
-												fontSize: '0.75rem',
-												backgroundColor: '#ff9800',
-												'&:hover': {
-													backgroundColor: '#f57c00',
-												},
-											}}
-										>
-											{isLoading ? 'Adding...' : 'Add'}
-										</Button>
-									</span>
-								</Tooltip>
-							</Box>
-						</Grid>
-					</Grid>
-				</CardActions>
-			</Card>
-
-			{/* Information Dialog */}
-			<Dialog
-				open={showInfoDialog}
-				onClose={handleInfoClose}
-				maxWidth="sm"
-				fullWidth
-			>
-				<DialogTitle>
-					<Box className="d-flex align-items-center">
-						<LocalActivityOutlined className="me-2" />
-						Marking Voucher Details
-					</Box>
-				</DialogTitle>
-				<DialogContent>
-					<Box className="mb-3">
-						<Typography variant="h6" gutterBottom>
-							{voucher.name}
-						</Typography>
-						<Typography variant="subtitle2" color="text.secondary" gutterBottom>
-							Code: {voucher.code}
-						</Typography>
-					</Box>
-
-					{voucher.description && (
-						<Box className="mb-3">
-							<Typography variant="subtitle1" gutterBottom>
-								Description
-							</Typography>
-							<Typography variant="body2" color="text.secondary">
-								{voucher.description}
-							</Typography>
-						</Box>
-					)}
-
-					<Box className="mb-3">
-						<Typography variant="subtitle1" gutterBottom>
-							Price
-						</Typography>
-						<Typography variant="h6" color="primary">
-							{formatPrice(voucher.price)} <span style={{ fontSize: '0.875rem', color: '#666' }}>Inc. VAT</span>
-						</Typography>
-					</Box>
-
-					{voucher.expiry_date && (
-						<Box className="mb-3">
-							<Typography variant="subtitle1" gutterBottom>
-								Expiry Date
-							</Typography>
-							<Typography variant="body2" color="text.secondary">
-								{formattedExpiryDate}
-								{daysUntilExpiry > 0 && (
-									<span> ({daysUntilExpiry} days remaining)</span>
-								)}
-							</Typography>
-						</Box>
-					)}
-
-					<Box>
-						<Typography variant="subtitle1" gutterBottom>
-							Status
-						</Typography>
-						<Chip
-							label={isAvailable ? 'Available' : 'Not Available'}
-							color={isAvailable ? 'success' : 'error'}
-							size="small"
-						/>
-					</Box>
-				</DialogContent>
-				<DialogActions>
-					<Button onClick={handleInfoClose}>Close</Button>
-					{isAvailable && (
-						<Button
-							variant="contained"
-							onClick={async () => {
-								handleInfoClose();
-								await handleAddToCart();
-							}}
-							disabled={isLoading}
-							startIcon={<AddShoppingCart />}
-							sx={{
-								backgroundColor: '#ff9800',
-								'&:hover': {
-									backgroundColor: '#f57c00',
-								},
-							}}
+				{/* Availability Status */}
+				<Box className="voucher-info-alert">
+					{isAvailable ? (
+						<Alert
+							severity="success"
+							icon={<CheckCircleIcon />}
+							sx={{ py: 0.5 }}
 						>
-							Add to Cart
-						</Button>
+							Available for purchase
+						</Alert>
+					) : (
+						<Alert
+							severity="warning"
+							icon={<ScheduleIcon />}
+							sx={{ py: 0.5 }}
+						>
+							{voucher.expiry_date ? 'Expired' : 'Not available'}
+						</Alert>
 					)}
-				</DialogActions>
-			</Dialog>
-		</>
+				</Box>
+
+				{/* Expiry Information */}
+				{formattedExpiryDate && (
+					<Box className="voucher-validity-info">
+						<Stack className="validity-info-row" direction="row" spacing={1} alignItems="center">
+							<ScheduleIcon className="validity-info-icon" />
+							<Typography variant="caption" color="text.secondary">
+								Valid until: {formattedExpiryDate}
+							</Typography>
+						</Stack>
+					</Box>
+				)}
+			</CardContent>
+
+			{/* Actions - Price and Add to Cart - follows theme.js structure */}
+			<CardActions>
+				<Box className="price-container">
+					<Box className="price-action-section">
+						{/* Price Display */}
+						<Box className="price-info-row">
+							<Typography className="price-display" variant="h5">
+								{formatPrice(price)}
+							</Typography>
+						</Box>
+
+						{/* VAT Status */}
+						<Box className="price-details-row">
+							<Typography className="vat-status-text" variant="caption" color="text.secondary">
+								Inc. VAT
+							</Typography>
+						</Box>
+
+						{/* Add to Cart Button - circular style per theme.js */}
+						<IconButton
+							className="add-to-cart-button"
+							onClick={handleAddToCart}
+							disabled={!isAvailable || isLoading}
+							aria-label="Add to cart"
+						>
+							<ShoppingCartIcon />
+						</IconButton>
+					</Box>
+				</Box>
+			</CardActions>
+		</Card>
 	);
 });
 
