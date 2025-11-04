@@ -1,9 +1,10 @@
 # Feature Specification: Postcoder.com Address Lookup Integration
 
-**Feature Branch**: `003-number-1-short`
+**Feature Branch**: `feature/uk_address_lookup_postcoder`
 **Created**: 2025-11-04
-**Status**: Draft
-**Input**: User description: "Explore Postcoder.com alternative for UK address lookup to replace getaddress API"
+**Updated**: 2025-11-04
+**Status**: Ready for Planning
+**Input**: User description: "Explore Postcoder.com alternative for UK address lookup. Preserve existing getaddress.io implementation and create a new separate method for Postcoder.com"
 
 ---
 
@@ -17,7 +18,7 @@
 ## User Scenarios & Testing
 
 ### Primary User Story
-When a user needs to enter their UK address during registration or checkout, they should be able to search for their address by postcode or partial address and select from suggested matches. The address lookup service should return accurate UK addresses quickly and populate all address fields automatically. Users must also have the option to enter their address manually if the lookup doesn't find their address.
+When a user needs to enter their UK address during registration or checkout, they should be able to search for their address by postcode or partial address and select from suggested matches. The system should provide the ability to evaluate Postcoder.com as an alternative address lookup service alongside the existing getaddress.io implementation. The address lookup service should return accurate UK addresses quickly and populate all address fields automatically. Users must also have the option to enter their address manually if the lookup doesn't find their address.
 
 ### Acceptance Scenarios
 
@@ -63,6 +64,10 @@ When a user needs to enter their UK address during registration or checkout, the
 
 - **FR-009**: System MUST support address lookup specifically for UK addresses (other countries out of scope)
 
+- **FR-015**: System MUST preserve the existing `address_lookup_proxy` method that uses getaddress.io API without modifications
+
+- **FR-016**: System MUST create a new separate method for Postcoder.com address lookup integration to enable side-by-side evaluation
+
 - **FR-010**: System MUST log all address lookup attempts including timestamps, postcodes searched, and results returned for analytics and monitoring purposes
 
 - **FR-011**: System MUST return address suggestions within 500 milliseconds of user input to provide optimal user experience
@@ -79,15 +84,31 @@ When a user needs to enter their UK address during registration or checkout, the
 - 90% of address lookups successfully return at least one matching address
 - Address lookup service responds within 500 milliseconds for optimal user experience
 - Manual address entry fallback is used by fewer than 10% of users (indicating high lookup success rate)
-- Zero service disruptions to users when switching between address lookup providers
-- Cache hit rate reaches at least 40% within 30 days of deployment (indicating effective caching strategy)
+- Zero service disruptions to existing users who continue using getaddress.io method
+- New Postcoder.com method operates independently without affecting existing functionality
+- Cache hit rate reaches at least 40% within 30 days of deployment for Postcoder method (indicating effective caching strategy)
+- Both address lookup methods can be evaluated side-by-side for performance and data quality comparison
+
+### Architectural Approach
+
+**Dual-Method Architecture**: The implementation will create a new, separate address lookup method for Postcoder.com while preserving the existing getaddress.io implementation. This architectural decision provides several benefits:
+
+1. **Zero Risk to Existing Functionality**: The current `address_lookup_proxy` method remains completely unchanged, ensuring no disruption to existing users and workflows
+2. **Side-by-Side Evaluation**: Both methods can be tested and compared simultaneously for data quality, performance, and cost metrics
+3. **Flexible Migration Path**: Organizations can gradually transition to Postcoder.com or maintain both methods based on evaluation results
+4. **Rollback Safety**: If issues arise with the new Postcoder method, the existing getaddress.io implementation remains fully functional as a fallback
+5. **Feature Isolation**: Advanced features like caching and analytics logging are isolated to the Postcoder method, avoiding any risk to the proven getaddress.io implementation
+
+The new Postcoder method will include enhanced capabilities (caching, logging, analytics) that are not present in the legacy method, enabling a direct comparison of both feature sets and API providers.
 
 ### Assumptions
 
 - The existing frontend UI components for address entry are satisfactory and should not be modified
+- The existing getaddress.io implementation must remain functional and unchanged for backward compatibility
 - Postcoder.com service provides equivalent or better address data quality compared to the current getaddress API
 - API keys and service credentials for Postcoder.com will be obtained before implementation
-- The switch to Postcoder.com is for evaluation purposes, not necessarily permanent replacement
+- The Postcoder.com integration is for evaluation purposes alongside existing getaddress.io, not necessarily permanent replacement
+- Both address lookup methods should coexist to enable A/B testing and comparison
 - Address data for UK postcodes changes infrequently enough that 7-day caching is acceptable
 - Cached address data storage requirements are manageable within existing infrastructure
 - Logging of address lookup attempts complies with privacy regulations and data protection policies
@@ -104,15 +125,19 @@ When a user needs to enter their UK address during registration or checkout, the
 
 **In Scope:**
 - UK address lookup functionality only
+- Creation of a new separate method for Postcoder.com address lookup integration
+- Preservation of existing `address_lookup_proxy` method using getaddress.io API
 - Evaluation and integration of Postcoder.com as alternative address lookup provider
 - Maintaining existing frontend UI without visual changes
 - Manual address entry fallback
 - Error handling and service failure scenarios
-- Caching mechanism for 7-day retention of successful lookups
-- Logging system for tracking lookup attempts and analytics
-- Performance monitoring for cache hit rates and response times
+- Caching mechanism for 7-day retention of successful lookups (Postcoder method only)
+- Logging system for tracking lookup attempts and analytics (Postcoder method only)
+- Performance monitoring for cache hit rates and response times (Postcoder method only)
 
 **Out of Scope:**
+- Modifications to the existing `address_lookup_proxy` method implementation
+- Removal or deprecation of getaddress.io integration
 - Address validation for countries other than UK
 - Modifications to frontend UI design or layout
 - International address format support
@@ -120,6 +145,7 @@ When a user needs to enter their UK address during registration or checkout, the
 - Migration of historical address data
 - Cache invalidation based on external address database updates
 - Real-time address verification or correction suggestions
+- Automatic switching or load balancing between getaddress.io and Postcoder.com methods
 
 ### Key Entities
 
@@ -129,11 +155,15 @@ When a user needs to enter their UK address during registration or checkout, the
 
 - **Address Entry Form**: Form interface where users input or select addresses, must support both lookup-assisted and manual entry modes
 
-- **Service Configuration**: Settings and credentials required to connect to address lookup service (API key, endpoint URLs, rate limits)
+- **Legacy Address Lookup Method**: Existing `address_lookup_proxy` method using getaddress.io API, must remain unchanged and functional
 
-- **Cached Address Data**: Stored address lookup results with expiration timestamps, used to improve performance and reduce API costs
+- **Postcoder Address Lookup Method**: New separate method for Postcoder.com integration with caching and logging capabilities
 
-- **Lookup Activity Log**: Record of address search attempts including timestamp, postcode searched, number of results returned, and cache hit/miss status
+- **Service Configuration**: Settings and credentials required to connect to address lookup services (API keys, endpoint URLs, rate limits) for both getaddress.io and Postcoder.com
+
+- **Cached Address Data**: Stored Postcoder address lookup results with expiration timestamps, used to improve performance and reduce API costs (Postcoder method only)
+
+- **Lookup Activity Log**: Record of Postcoder address search attempts including timestamp, postcode searched, number of results returned, and cache hit/miss status (Postcoder method only)
 
 ---
 
