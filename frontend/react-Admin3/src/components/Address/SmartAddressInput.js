@@ -37,6 +37,16 @@ const SmartAddressInput = ({
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+
+  // Debug: Log state changes
+  useEffect(() => {
+    console.log('🔍 addressLineValue changed:', addressLineValue);
+  }, [addressLineValue]);
+
+  useEffect(() => {
+    console.log('🔍 showSuggestions changed:', showSuggestions);
+    console.log('🔍 addressSuggestions.length:', addressSuggestions.length);
+  }, [showSuggestions, addressSuggestions]);
   
   const addressLineRef = useRef(null);
   const suggestionsRef = useRef(null);
@@ -71,16 +81,10 @@ const SmartAddressInput = ({
       const metadata = addressMetadataService.getAddressMetadata(countryCode);
       setAddressMetadata(metadata);
 
-      // Only reset address lookup fields if we're not preserving existing values
-      // Check if we have existing postal_code in values - if so, don't reset
-      const postcodeFieldName = getFieldName('postal_code');
-      const existingPostcode = values[postcodeFieldName];
-
-      if (!existingPostcode) {
-        // No existing postcode, safe to reset
-        setPostcodeValue('');
-        setAddressLineValue('');
-      }
+      // Reset lookup fields when country changes (but NOT on every value change)
+      setPostcodeValue('');
+      // DON'T reset addressLineValue - it's managed by user input for search
+      // setAddressLineValue('');
 
       setAddressSuggestions([]);
       setShowSuggestions(false);
@@ -88,7 +92,7 @@ const SmartAddressInput = ({
     } else {
       setAddressMetadata(null);
     }
-  }, [selectedCountry, getFieldName, values]);
+  }, [selectedCountry]); // ONLY trigger when country changes, NOT on every value change
 
   // Handle country selection
   const handleCountryChange = (e) => {
@@ -142,22 +146,17 @@ const SmartAddressInput = ({
 
   // Handle address line focus
   const handleAddressLineFocus = () => {
+    // Just calculate dropdown position, don't trigger API call
+    // API call only happens on Enter key press
     if (addressMetadata?.addressLookupSupported) {
-      // Check if postcode is required for lookup
-      const needsPostcode = addressMetadata.requiresPostcodeForLookup !== false; // Default to true
-
-      if (!needsPostcode || postcodeValue) {
-        calculateDropdownPosition();
-        // Perform lookup when postcode is entered (or not required)
-        // User can then filter by typing in the address field
-        performAddressLookup(postcodeValue || '', addressLineValue);
-      }
+      calculateDropdownPosition();
     }
   };
 
-  // Handle address line change with autocomplete
+  // Handle address line change (no automatic API call)
   const handleAddressLineChange = (e) => {
     const value = e.target.value;
+    console.log('🔍 handleAddressLineChange called with value:', value);
     setAddressLineValue(value);
 
     // Update parent form
@@ -171,21 +170,36 @@ const SmartAddressInput = ({
       });
     }
 
-    // Trigger address lookup when we have postcode (or postcode not required)
-    // No minimum character requirement - fetch all addresses and filter locally
-    if (addressMetadata?.addressLookupSupported) {
-      const needsPostcode = addressMetadata.requiresPostcodeForLookup !== false; // Default to true
+    // No automatic API calls - user must press Enter
+  };
 
-      if (!needsPostcode || postcodeValue) {
-        calculateDropdownPosition();
-        performAddressLookup(postcodeValue || '', value);
+  // Handle Enter key press to trigger address lookup
+  const handleAddressLineKeyDown = (e) => {
+    console.log('🔍 handleAddressLineKeyDown called, key:', e.key);
+
+    if (e.key === 'Enter') {
+      console.log('🔍 Enter key pressed!');
+      console.log('🔍 addressLineValue:', addressLineValue);
+      console.log('🔍 postcodeValue:', postcodeValue);
+      console.log('🔍 addressMetadata:', addressMetadata);
+
+      e.preventDefault(); // Prevent form submission
+
+      if (addressMetadata?.addressLookupSupported) {
+        const needsPostcode = addressMetadata.requiresPostcodeForLookup !== false;
+        console.log('🔍 needsPostcode:', needsPostcode);
+
+        if (!needsPostcode || postcodeValue) {
+          console.log('🔍 Calling performAddressLookup...');
+          calculateDropdownPosition();
+          // Trigger API call immediately on Enter
+          performAddressLookup(postcodeValue || '', addressLineValue);
+        } else {
+          console.log('❌ Blocked: needsPostcode but no postcodeValue');
+        }
       } else {
-        setAddressSuggestions([]);
-        setShowSuggestions(false);
+        console.log('❌ addressLookupSupported is false or addressMetadata is null');
       }
-    } else {
-      setAddressSuggestions([]);
-      setShowSuggestions(false);
     }
   };
 
@@ -193,52 +207,72 @@ const SmartAddressInput = ({
   const performAddressLookup = useCallback(async (postcode, addressLine) => {
     if (!addressMetadata?.addressLookupSupported) return;
 
+    // Don't perform lookup if no search query
+    if (!addressLine || !addressLine.trim()) {
+      setIsLoadingSuggestions(false);
+      return;
+    }
+
     setIsLoadingSuggestions(true);
 
     try {
       // Get country code for API call
       const countryCode = addressMetadataService.getCountryCode(selectedCountry) || 'GB';
 
-      // For countries without postcodes, use address line as search term
-      // The Postcoder API accepts street names, building names, or districts as search terms
-      const searchTerm = postcode || addressLine || '';
+      // Check if country uses postcode from metadata
+      const hasPostcode = addressMetadata.hasPostcode;
 
-      // Don't perform lookup if no search term
-      if (!searchTerm.trim()) {
-        setIsLoadingSuggestions(false);
-        return;
+      // Build query parameters
+      let queryParams = `query=${encodeURIComponent(addressLine)}&country=${countryCode}`;
+
+      // For countries with postcodes:
+      // - If postcode is provided: add it as separate parameter
+      // - If no postcode: combine postcode + address line in query
+      if (hasPostcode && postcode && postcode.trim()) {
+        queryParams += `&postcode=${encodeURIComponent(postcode)}`;
+      } else if (hasPostcode && postcode && postcode.trim()) {
+        // Combine postcode and address in query for countries that use postcode
+        queryParams = `query=${encodeURIComponent(postcode + ' ' + addressLine)}&country=${countryCode}`;
       }
 
+      console.log('🔍 API Call:', config.apiBaseUrl + `/api/utils/address-lookup/?${queryParams}`);
+
       const res = await fetch(
-        config.apiBaseUrl + `/api/utils/address-lookup/?postcode=${encodeURIComponent(searchTerm)}&country=${countryCode}`
+        config.apiBaseUrl + `/api/utils/address-lookup/?${queryParams}`
       );
 
       if (res.status === 200) {
         const data = await res.json();
-        const addresses = (data.addresses || []).map(addr => ({
-          line1: addr.line_1 || "",
-          line2: addr.line_2 || "",
-          town: addr.town_or_city || "",
-          county: addr.county || "",
-          postcode: addr.postcode || postcode,
-          country: selectedCountry,
-          state: "",
-          district: "",
-          building: addr.building_name || "",
-          fullAddress: [addr.building_name, addr.line_1, addr.line_2].filter(Boolean).join(', ')
-        }));
-        
-        // Filter addresses that match the typed address line
-        // If addressLine is empty, show all addresses
-        const filteredAddresses = addressLine.trim() === ''
-          ? addresses
-          : addresses.filter(addr =>
-              addr.fullAddress.toLowerCase().includes(addressLine.toLowerCase()) ||
-              addr.line1.toLowerCase().includes(addressLine.toLowerCase())
-            );
+        console.log('🔍 API Response:', data);
 
-        setAddressSuggestions(filteredAddresses);
-        setShowSuggestions(true);
+        const addresses = (data.addresses || []).map(addr => {
+          console.log('🔍 Processing address:', addr);
+
+          const mappedAddr = {
+            line1: addr.line_1 || "",
+            line2: addr.line_2 || "",
+            town: addr.town_or_city || "",
+            county: addr.county || "",
+            postcode: addr.postcode || "",
+            country: selectedCountry,
+            state: "",
+            district: "",
+            building: addr.building_name || "",
+            fullAddress: [addr.building_name, addr.line_1, addr.line_2].filter(Boolean).join(', ')
+          };
+
+          console.log('🔍 Mapped address:', mappedAddr);
+          return mappedAddr;
+        });
+
+        console.log('🔍 All mapped addresses:', addresses);
+
+        // Don't filter on the frontend - show all results from API
+        // The API already filtered based on the query
+        setAddressSuggestions(addresses);
+        setShowSuggestions(addresses.length > 0);
+
+        console.log('🔍 Setting suggestions, count:', addresses.length);
       }
     } catch (error) {
       console.error('Address lookup failed:', error);
@@ -411,14 +445,18 @@ const SmartAddressInput = ({
 											label="Address"
 											value={addressLineValue}
 											onChange={handleAddressLineChange}
+											onKeyDown={handleAddressLineKeyDown}
 											onFocus={handleAddressLineFocus}
-											placeholder="First line of address..."
+											placeholder="Type address and press Enter to search..."
 											disabled={
 												// Only disable if country requires postcode for lookup AND no postcode entered
 												// Hong Kong (requiresPostcodeForLookup: false) will always be enabled
 												addressMetadata.requiresPostcodeForLookup === true && !postcodeValue
 											}
-											slotProps={{
+											inputProps={{
+												maxLength: 999,  // Set high limit instead of undefined
+											}}
+											InputProps={{
 												endAdornment: isLoadingSuggestions && (
 													<CircularProgress size={20} />
 												),
@@ -426,7 +464,10 @@ const SmartAddressInput = ({
 											sx={{
 												"& .MuiInputBase-root": {
 													width: "16rem",
-													"& .MuiInputBase-input": {},
+													"& .MuiInputBase-input": {
+														color: "text.primary",  // Ensure text is visible
+														opacity: 1,  // Ensure opacity is full
+													},
 												},
 											}}
 											variant="standard"
