@@ -1267,30 +1267,25 @@ const theme = createTheme({
                         textAlign: "left",
                         marginBottom: liftKitTheme.spacing.xs3,                        
                      },
-                     "& .bundle-items-list": {
+                     "& .MuiList-root": {
                         paddingTop: 0,
                         paddingBottom: 0,
-                        "& .bundle-list-item": {
+                        "& .MuiListItem-root": {
                            padding: 0,
                            margin: 0,
-                           "& .MuiListItemText-root": {                           
-                           marginBottom: liftKitTheme.spacing.xs3,
-                           marginBottom: 0,
-                              "& .MuiListItemText-primary": {
-                                 color: colorTheme.bpp.green["090"],
-                              },
-                           },
                            "& .MuiListItemIcon-root": {
                               minWidth: liftKitTheme.typography.caption,
                               "& .MuiSvgIcon-root": {
                                  fontSize: liftKitTheme.typography.caption,
                                  color: colorTheme.bpp.green["080"],
                               },
-                           },                           
-                           "& .bundle-item-value": {
-                              fontSize: "0.75rem",
-                              fontWeight: "600",
-                              color: colorTheme.bpp.green["060"],
+                           },           
+                           "& .MuiListItemText-root": {                           
+                           marginBottom: liftKitTheme.spacing.xs3,
+                           marginBottom: 0,
+                              "& .MuiListItemText-primary": {
+                                 color: colorTheme.bpp.green["100"],
+                              },
                            },
                         },
                      },

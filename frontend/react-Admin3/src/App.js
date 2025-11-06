@@ -11,7 +11,6 @@ import { store } from './store';
 import { AuthProvider } from "./hooks/useAuth";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Home from "./pages/Home";
-import UserProfile from "./pages/UserProfile";
 import ProfilePage from "./pages/ProfilePage";
 import MainNavBar from "./components/Navigation/MainNavBar";
 import NoMatch from "./components/NoMatch";
@@ -32,7 +31,6 @@ import AdminProductImport from "./components/admin/products/ProductImport";
 import ProductList from "./components/Product/ProductList";
 import CheckoutPage from "./components/Ordering/CheckoutPage";
 import OrderHistory from "./components/User/OrderHistory";
-import ProfileForm from "./components/User/ProfileForm";
 import TutorialSummaryBarContainer from "./components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer"; // T015
 import ForgotPasswordForm from "./components/User/ForgotPasswordForm";
 import ResetPasswordForm from "./components/User/ResetPasswordForm";
@@ -178,16 +176,7 @@ function App() {
 														<Route
 															path="/orders"
 															element={<OrderHistory />}
-														/>
-														<Route
-															path="/register"
-															element={
-																<ProfileForm
-																	mode="registration"
-																	title="Create Your ActEd Account"
-																/>
-															}
-														/>
+														/>														
 														<Route
 															path="/auth/forgot-password"
 															element={<ForgotPasswordForm />}
@@ -217,7 +206,7 @@ function App() {
 															element={<NoMatch />}
 														/>																
 														<Route
-															path="/register2"
+															path="/register"
 															element={<Registration />}
 														/>
 													</Routes>
