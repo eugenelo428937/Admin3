@@ -559,3 +559,167 @@ def health_check(request):
         'status': 'healthy',
         'message': 'Django server is running'
     })
+
+
+# ============================================================================
+# Postcoder.com Address Lookup (New separate method - see ARCHITECTURE.md)
+# ============================================================================
+
+@csrf_exempt
+@require_GET
+def postcoder_address_lookup(request):
+    """
+    Look up international addresses using Postcoder.com API.
+
+    Supports address lookups for multiple countries with country-specific formatting.
+
+    Features:
+    - International address support (UK, HK, US, CA, AU, etc.)
+    - 7-day caching for improved performance
+    - Analytics logging for monitoring
+    - Response format matches getaddress.io for frontend compatibility
+
+    Query Parameters:
+        postcode (str): Postal code (e.g., "SW1A 1AA" for UK)
+        country (str): ISO 3166-1 alpha-2 country code (e.g., "GB", "HK")
+                       Defaults to "GB" for backward compatibility
+
+    Returns:
+        JsonResponse: {
+            "addresses": [...],
+            "cache_hit": bool,
+            "response_time_ms": int
+        }
+
+    Error Responses:
+        400: Missing or invalid postcode/country
+        500: API failure or internal error
+    """
+    import time
+    from utils.services import PostcoderService, AddressCacheService, AddressLookupLogger
+
+    start_time = time.time()
+
+    # Extract and validate search term (postcode or address search)
+    # Note: For countries without postcodes (e.g., Hong Kong), this is an address search term
+    # (street name, building name, district) rather than a traditional postcode
+    postcode = request.GET.get('postcode', '').strip()
+    country_code = request.GET.get('country', 'GB').strip().upper()  # Default to GB
+
+    if not postcode:
+        return JsonResponse({
+            'error': 'Missing search term (postcode or address)',
+            'code': 'MISSING_SEARCH_TERM'
+        }, status=400)
+
+    # Clean postcode (uppercase, remove spaces)
+    clean_postcode = postcode.replace(' ', '').upper()
+
+    # Note: Postcode validation is country-specific and handled by Postcoder API
+    # No client-side validation to support international formats and address search terms
+
+    # Initialize services
+    cache_service = AddressCacheService()
+    logger_service = AddressLookupLogger()
+    postcoder_service = PostcoderService()
+
+    cache_hit = False
+    addresses = None
+    error_message = None
+    success = False
+
+    try:
+        # Step 1: Check cache (cache key includes country for uniqueness)
+        cache_key = f"{clean_postcode}_{country_code}"
+        cached_addresses = cache_service.get_cached_address(cache_key)
+
+        if cached_addresses:
+            # Cache HIT - serve from cache
+            cache_hit = True
+            addresses = cached_addresses
+            success = True
+
+        else:
+            # Cache MISS - call Postcoder API with country code
+            try:
+                postcoder_response = postcoder_service.lookup_address(clean_postcode, country_code)
+                addresses = postcoder_service.transform_to_getaddress_format(postcoder_response, country_code)
+                success = True
+
+                # Cache the result (use cache_key for country-specific caching)
+                cache_service.cache_address(
+                    postcode=cache_key,  # Include country in cache key
+                    addresses=addresses,
+                    response_data=postcoder_response,
+                    search_query=f"{postcode} ({country_code})"
+                )
+
+            except ValueError as e:
+                error_message = str(e)
+                addresses = {"addresses": []}
+                success = False
+
+            except TimeoutError as e:
+                error_message = f"API timeout: {str(e)}"
+                addresses = {"addresses": []}
+                success = False
+
+            except Exception as e:
+                error_message = f"API error: {str(e)}"
+                addresses = {"addresses": []}
+                success = False
+
+        # Calculate response time
+        response_time_ms = int((time.time() - start_time) * 1000)
+
+        # Step 2: Log analytics (non-blocking)
+        try:
+            result_count = len(addresses.get('addresses', []))
+            logger_service.log_lookup(
+                postcode=clean_postcode,
+                cache_hit=cache_hit,
+                response_time_ms=response_time_ms,
+                result_count=result_count,
+                success=success,
+                api_provider='postcoder',
+                error_message=error_message,
+                search_query=f"{postcode} ({country_code})"  # Include country in logs
+            )
+        except Exception as log_error:
+            # Logging failures should not break the response
+            print(f"Warning: Failed to log address lookup: {log_error}")
+
+        # Step 3: Return response
+        if success:
+            return JsonResponse({
+                **addresses,
+                'cache_hit': cache_hit,
+                'response_time_ms': response_time_ms
+            })
+        else:
+            return JsonResponse({
+                'error': error_message or 'Address lookup failed',
+                'code': 'API_ERROR',
+                'addresses': []
+            }, status=500)
+
+    except Exception as e:
+        # Catch-all for unexpected errors
+        response_time_ms = int((time.time() - start_time) * 1000)
+
+        # Log the failure
+        try:
+            logger_service.log_failed_lookup(
+                postcode=clean_postcode,
+                response_time_ms=response_time_ms,
+                error_message=str(e),
+                api_provider='postcoder',
+                search_query=f"{postcode} ({country_code})"  # Include country in logs
+            )
+        except:
+            pass  # Silent failure - don't compound errors
+
+        return JsonResponse({
+            'error': f'Internal error: {str(e)}',
+            'code': 'INTERNAL_ERROR'
+        }, status=500)
