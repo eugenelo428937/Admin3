@@ -115,6 +115,8 @@ INSTALLED_APPS = [
     'rules_engine.apps.RulesEngineConfig',
     'utils.apps.UtilsConfig',  # Added utils app for email functionality
     'vat',  # Epic 3: VAT calculation and audit trail
+    'address_cache',  # UK address lookup caching (Postcoder.com)
+    'address_analytics',  # UK address lookup analytics and monitoring
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

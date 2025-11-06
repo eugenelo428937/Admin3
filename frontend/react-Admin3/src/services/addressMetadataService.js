@@ -30,6 +30,7 @@ export const ADDRESS_METADATA = {
     optional: [],
     hasPostcode: true,
     addressLookupSupported: false,
+    requiresPostcodeForLookup: true,  // US requires postcode for lookup
     fields: {
       address: { label: 'Street Address', placeholder: '123 Main St' },
       city: { label: 'City', placeholder: 'New York' },
@@ -110,6 +111,7 @@ export const ADDRESS_METADATA = {
     optional: ['county'],
     hasPostcode: true,
     addressLookupSupported: true,
+    requiresPostcodeForLookup: true,  // UK requires postcode for lookup
     fields: {
       address: { label: 'Flat/Building/Street Address', placeholder: '123 High Street' },
       city: { label: 'Town/City', placeholder: 'London' },
@@ -133,13 +135,14 @@ export const ADDRESS_METADATA = {
     format: '%N%n%O%n%A%n%C%n%S',
     required: ['address', 'city', 'state'],
     optional: [],
-    hasPostcode: false,
-    addressLookupSupported: false,
+    hasPostcode: false,  // Hong Kong doesn't use postal codes
+    addressLookupSupported: true,  // Postcoder supports lookup by street/building name
+    requiresPostcodeForLookup: false,  // Can search without postcode
     fields: {
-      address: { label: 'Street Address', placeholder: 'Flat A, 12/F, ABC Building' },
+      address: { label: 'Street Address', placeholder: 'Flat A, 12/F, ABC Building, Street Name' },
       city: { label: 'District', placeholder: 'Central' },
-      state: { 
-        label: 'Area', 
+      state: {
+        label: 'Area',
         type: 'select',
         options: [
           { value: 'Hong Kong Island', label: 'Hong Kong Island' },
@@ -160,6 +163,7 @@ export const ADDRESS_METADATA = {
     optional: [],
     hasPostcode: true,
     addressLookupSupported: false,
+    requiresPostcodeForLookup: true,  // Canada requires postcode for lookup
     fields: {
       address: { label: 'Street Address', placeholder: '123 Main Street' },
       city: { label: 'City', placeholder: 'Toronto' },
@@ -203,6 +207,7 @@ export const ADDRESS_METADATA = {
     optional: ['state', 'postal_code'],
     hasPostcode: true,
     addressLookupSupported: false,
+    requiresPostcodeForLookup: true,  // Default: require postcode for lookup
     fields: {
       address: { label: 'Street Address', placeholder: 'Enter street address' },
       city: { label: 'City', placeholder: 'Enter city' },

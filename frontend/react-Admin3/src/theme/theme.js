@@ -5,33 +5,33 @@ import liftKitTheme from "./liftKitTheme.js";
 
 // Gradient utility function for interactive headers
 const createGradientStyle = (mousePosition, isHovered, colorScheme) => {
-	const { x, y } = mousePosition;
-	const intensity = isHovered ? 0.15 : 0.03;
-	const gradientAngle = Math.atan2(y - 50, x - 50) * (180 / Math.PI);
+   const { x, y } = mousePosition;
+   const intensity = isHovered ? 0.15 : 0.03;
+   const gradientAngle = Math.atan2(y - 50, x - 50) * (180 / Math.PI);
 
-	return {
-		background: `linear-gradient(${gradientAngle}deg,
+   return {
+      background: `linear-gradient(${gradientAngle}deg,
 			rgba(${colorScheme.primary}, ${intensity}) 0%,
 			rgba(${colorScheme.secondary}, ${intensity * 0.7}) 30%,
 			rgba(255, 255, 255, 0) 60%,
 			rgba(${colorScheme.accent}, ${intensity * 0.5}) 100%)`,
-		transition: isHovered
-			? "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-			: "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
-	};
+      transition: isHovered
+         ? "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+         : "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+   };
 };
 
 // base theme with breakpoints
 const baseTheme = createTheme({
-	breakpoints: {
-		values: {
-			xs: 0,
-			sm: 600,
-			md: 960,
-			lg: 1280,
-			xl: 1920,
-		},
-	},
+   breakpoints: {
+      values: {
+         xs: 0,
+         sm: 600,
+         md: 960,
+         lg: 1280,
+         xl: 1920,
+      },
+   },
 });
 
 //  custom theme
@@ -182,6 +182,13 @@ const theme = createTheme({
          fontFamily: "'Inter', 'Poppins', sans-serif",
          fontWeight: 400,
          fontSize: "calc(1em / var(--halfstep)) !important",
+         lineHeight: "var(--halfstep) !important",
+         letterSpacing: "-0.007em !important",
+      },
+      caption2: {
+         fontFamily: "'Inter', 'Poppins', sans-serif",
+         fontWeight: 400,
+         fontSize: "calc(1em / var(--halfstep) / var(--quarterstep) ) !important",
          lineHeight: "var(--halfstep) !important",
          letterSpacing: "-0.007em !important",
       },
@@ -595,7 +602,7 @@ const theme = createTheme({
                               padding: "8px",
                               /* marginLeft: liftKitTheme.spacing.md,
                               marginRight: liftKitTheme.spacing.md,*/
-                              marginTop: liftKitTheme.spacing.xs3, 
+                              marginTop: liftKitTheme.spacing.xs3,
                               boxShadow: "var(--Paper-shadow)",
                               transition: "all 0.15s ease-in-out",
                               "&:hover": {
@@ -1253,45 +1260,33 @@ const theme = createTheme({
                         "& .MuiChip-root": {
                            boxShadow: "var(--Paper-shadow)",
                         },
-                     },
-                     // Variations section
-                     "& .product-variations": {
-                        padding: liftKitTheme.spacing.sm,
-                        paddingLeft: liftKitTheme.spacing.md,
-                        boxShadow: "var(--shadow-sm)",
-                        backgroundColor:
-                           "rgb(from " +
-                           colorTheme.bpp.green["010"] +
-                           " r g b / 0.25);",
-                        transition: "all 0.2s ease",
-                     },
+                     },                     
                      // Bundle-specific styling
                      "& .bundle-details-title": {
                         color: colorTheme.bpp.green["100"],
                         textAlign: "left",
-                        marginBottom: liftKitTheme.spacing.sm,
-                        fontWeight: "600",
+                        marginBottom: liftKitTheme.spacing.xs3,                        
                      },
                      "& .bundle-items-list": {
                         paddingTop: 0,
                         paddingBottom: 0,
                         "& .bundle-list-item": {
-                           paddingLeft: 0,
-                           paddingRight: 0,
                            padding: 0,
-                           "& .bundle-item-icon": {
-                              minWidth: "2rem",
-                              "& .MuiSvgIcon-root": {
-                                 fontSize: "1rem",
-                                 color: colorTheme.bpp.green["080"],
-                              },
-                           },
-                           "& .bundle-item-text": {
+                           margin: 0,
+                           "& .MuiListItemText-root": {                           
+                           marginBottom: liftKitTheme.spacing.xs3,
+                           marginBottom: 0,
                               "& .MuiListItemText-primary": {
-                                 fontSize: "0.875rem",
                                  color: colorTheme.bpp.green["090"],
                               },
                            },
+                           "& .MuiListItemIcon-root": {
+                              minWidth: liftKitTheme.typography.caption,
+                              "& .MuiSvgIcon-root": {
+                                 fontSize: liftKitTheme.typography.caption,
+                                 color: colorTheme.bpp.green["080"],
+                              },
+                           },                           
                            "& .bundle-item-value": {
                               fontSize: "0.75rem",
                               fontWeight: "600",
