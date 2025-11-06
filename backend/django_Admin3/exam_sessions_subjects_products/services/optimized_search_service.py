@@ -8,8 +8,9 @@ import time
 from django.db.models import Q, Count, Prefetch
 from django.core.cache import cache
 from django.conf import settings
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+from exam_sessions_subjects_products.models import ExamSessionSubjectProduct, ExamSessionSubjectBundle
 from exam_sessions_subjects_products.serializers import ProductListSerializer
+from products.serializers import ExamSessionSubjectBundleSerializer
 from products.models.filter_system import FilterConfiguration, FilterGroup
 
 logger = logging.getLogger('optimized_search')
@@ -78,8 +79,9 @@ class OptimizedSearchService:
 
             logger.info(f'🔍 [FUZZY-SEARCH] Query: "{search_query}" found {len(fuzzy_essp_ids)} matches')
 
-        # Build optimized queryset (base, unfiltered)
+        # Build optimized querysets (base, unfiltered) for both products and bundles
         base_queryset = self._build_optimized_queryset(use_fuzzy_sorting=use_fuzzy_search)
+        base_bundles_queryset = self._build_bundle_queryset()
 
         # If using fuzzy search, filter base queryset to matched ESSPs
         if use_fuzzy_search and fuzzy_essp_ids:
@@ -88,28 +90,72 @@ class OptimizedSearchService:
             preserved_order = Case(*[When(id=pk, then=pos) for pos, pk in enumerate(fuzzy_essp_ids)], output_field=IntegerField())
             base_queryset = base_queryset.filter(id__in=fuzzy_essp_ids).order_by(preserved_order)
 
-        # Create filtered queryset for products (separate from base for disjunctive faceting)
+        # Create filtered querysets for products and bundles (separate from base for disjunctive faceting)
         filtered_queryset = base_queryset
+        filtered_bundles_queryset = base_bundles_queryset
 
-        # Apply filters to get matching products
+        # Check if 'Bundle' category filter is active (exclusive filter)
+        bundle_filter_active = 'Bundle' in filters.get('categories', [])
+
+        if bundle_filter_active:
+            # If bundle filter is active, only return bundles (no products)
+            filtered_queryset = filtered_queryset.none()
+            logger.info('🔍 [BUNDLES] Bundle category filter active - excluding products')
+        else:
+            # Apply filters to get matching products
+            if filters:
+                filtered_queryset = self._apply_optimized_filters(filtered_queryset, filters)
+
+            # Apply navbar filters (for navigation dropdown compatibility)
+            if navbar_filters:
+                filtered_queryset = self._apply_navbar_filters(filtered_queryset, navbar_filters)
+
+        # Apply subject filters to bundles
         if filters:
-            filtered_queryset = self._apply_optimized_filters(filtered_queryset, filters)
+            filtered_bundles_queryset = self._apply_bundle_filters(filtered_bundles_queryset, filters)
 
-        # Apply navbar filters (for navigation dropdown compatibility)
-        if navbar_filters:
-            filtered_queryset = self._apply_navbar_filters(filtered_queryset, navbar_filters)
+        # Get counts for pagination (from filtered querysets)
+        products_count = filtered_queryset.count()
+        bundles_count = filtered_bundles_queryset.count()
+        total_count = products_count + bundles_count
 
-        # Get counts for pagination (from filtered queryset)
-        total_count = filtered_queryset.count()
+        # Serialize products
+        serializer = ProductListSerializer(filtered_queryset, many=True)
+        products_data = list(serializer.data)
 
-        # Apply pagination
+        # Serialize bundles and transform to match product structure
+        bundles_serializer = ExamSessionSubjectBundleSerializer(filtered_bundles_queryset, many=True)
+        bundles_data = []
+        for bundle_data in bundles_serializer.data:
+            transformed_bundle = {
+                **bundle_data,
+                'item_type': 'bundle',
+                'is_bundle': True,
+                'type': 'Bundle',
+                'bundle_type': 'exam_session',
+                'product_name': bundle_data.get('bundle_name'),
+                'shortname': bundle_data.get('bundle_name'),
+                'fullname': bundle_data.get('bundle_description', bundle_data.get('bundle_name')),
+                'description': bundle_data.get('bundle_description'),
+                'code': bundle_data.get('subject_code'),
+            }
+            bundles_data.append(transformed_bundle)
+
+        # Combine bundles and products
+        all_items = bundles_data + products_data
+
+        # Sort combined results by subject code (bundles have 'code', products have 'subject_code')
+        all_items.sort(key=lambda x: x.get('code') or x.get('subject_code', ''))
+
+        # Apply pagination to combined results
         start_idx = (page - 1) * page_size
         end_idx = start_idx + page_size
-        paginated_queryset = filtered_queryset[start_idx:end_idx]
+        paginated_items = all_items[start_idx:end_idx]
 
-        # Serialize results
-        serializer = ProductListSerializer(paginated_queryset, many=True)
-        products_data = serializer.data
+        # Use paginated items as products_data
+        products_data = paginated_items
+
+        logger.info(f'🔍 [BUNDLES] Included {len(bundles_data)} bundles, {len(products_data) - len(bundles_data)} products')
 
         # Check if marking vouchers should be included
         marking_vouchers_data = self._fetch_marking_vouchers(search_query, filters)
@@ -120,9 +166,10 @@ class OptimizedSearchService:
             total_count += len(marking_vouchers_data)
             logger.info(f'🔍 [MARKING-VOUCHERS] Added {len(marking_vouchers_data)} vouchers to results')
 
-        # Generate filter counts using BASE queryset (disjunctive faceting)
+        # Generate filter counts using BASE querysets (disjunctive faceting)
         # This ensures all filter options remain visible even when filters are applied
-        filter_counts = self._generate_optimized_filter_counts(filters, base_queryset)
+        # Pass both product and bundle querysets for accurate counts
+        filter_counts = self._generate_optimized_filter_counts(filters, base_queryset, base_bundles_queryset)
 
         # Build response
         result = {
@@ -178,7 +225,23 @@ class OptimizedSearchService:
             queryset = queryset.order_by('exam_session_subject__subject__code', 'product__shortname')
 
         return queryset
-    
+
+    def _build_bundle_queryset(self):
+        """
+        Build optimized queryset for bundles with proper relationships.
+        Matches the pattern used in list_products endpoint.
+        """
+        queryset = ExamSessionSubjectBundle.objects.filter(is_active=True).select_related(
+            'bundle__subject',
+            'exam_session_subject__exam_session',
+            'exam_session_subject__subject'
+        ).prefetch_related(
+            'bundle_products__exam_session_subject_product_variation__product_product_variation__product',
+            'bundle_products__exam_session_subject_product_variation__product_product_variation__product_variation'
+        ).order_by('exam_session_subject__subject__code', 'bundle__bundle_name')
+
+        return queryset
+
     def _apply_optimized_filters(self, queryset, filters):
         """
         Apply filters using optimized queries that leverage database indexes.
@@ -345,6 +408,34 @@ class OptimizedSearchService:
         
         return queryset.distinct()
 
+    def _apply_bundle_filters(self, queryset, filters):
+        """
+        Apply filters to bundle queryset (bundles only support subject filtering).
+        """
+        q_filter = Q()
+
+        # Subject filter for bundles
+        if filters.get('subjects'):
+            subject_q = Q()
+            subject_values = filters['subjects']
+
+            # Separate IDs and codes for optimized lookups
+            subject_ids = [v for v in subject_values if isinstance(v, int) or (isinstance(v, str) and v.isdigit())]
+            subject_codes = [v for v in subject_values if isinstance(v, str) and not v.isdigit()]
+
+            if subject_ids:
+                subject_q |= Q(exam_session_subject__subject__id__in=subject_ids)
+            if subject_codes:
+                subject_q |= Q(exam_session_subject__subject__code__in=subject_codes)
+
+            if subject_q:
+                q_filter &= subject_q
+
+        if q_filter:
+            queryset = queryset.filter(q_filter).distinct()
+
+        return queryset
+
     def _fetch_marking_vouchers(self, search_query, filters):
         """
         Fetch marking vouchers when appropriate filters are applied or search query matches.
@@ -453,10 +544,11 @@ class OptimizedSearchService:
             logger.error(f'🔍 [MARKING-VOUCHERS] Traceback: {traceback.format_exc()}')
             return []
 
-    def _generate_optimized_filter_counts(self, applied_filters, base_queryset):
+    def _generate_optimized_filter_counts(self, applied_filters, base_queryset, base_bundles_queryset=None):
         """
         Generate disjunctive facet counts using the FilterConfiguration system.
         Reads from acted_filter_configuration to get dynamic filter options.
+        Includes bundle counts when base_bundles_queryset is provided.
         """
         filter_counts = {
             'subjects': {},
@@ -471,13 +563,13 @@ class OptimizedSearchService:
             active_configs = FilterConfiguration.objects.filter(is_active=True)
 
             for config in active_configs:
-                
+
                 if config.filter_type == 'subject':
-                    # Subject filter - get subjects from database
+                    # Subject filter - get subjects from products
                     subject_counts = base_queryset.values(
                         'exam_session_subject__subject__code'
                     ).annotate(count=Count('id')).order_by('-count')
-                    
+
                     for item in subject_counts:
                         code = item['exam_session_subject__subject__code']
                         count = item['count']
@@ -486,11 +578,29 @@ class OptimizedSearchService:
                                 'count': count,
                                 'name': code  # Subject codes are already human-readable
                             }
+
+                    # Add bundle counts to subject filter
+                    if base_bundles_queryset is not None:
+                        bundle_subject_counts = base_bundles_queryset.values(
+                            'exam_session_subject__subject__code'
+                        ).annotate(count=Count('id'))
+
+                        for item in bundle_subject_counts:
+                            code = item['exam_session_subject__subject__code']
+                            bundle_count = item['count']
+                            if code and bundle_count > 0:
+                                if code in filter_counts['subjects']:
+                                    filter_counts['subjects'][code]['count'] += bundle_count
+                                else:
+                                    filter_counts['subjects'][code] = {
+                                        'count': bundle_count,
+                                        'name': code
+                                    }
                 
                 elif config.filter_type == 'filter_group':
                     # Get the mapping for this configuration
                     filter_key = self._get_filter_key_for_config(config.name)
-                    
+
                     if filter_key:
                         # Get filter groups associated with this configuration
                         config_groups = config.filterconfigurationgroup_set.filter(
@@ -499,10 +609,16 @@ class OptimizedSearchService:
 
                         for config_group in config_groups:
                             group = config_group.filter_group
-                            
+
                             # Calculate count for this filter group
                             count = self._calculate_filter_group_count(base_queryset, config, group)
-                            
+
+                            # Add bundle count for Bundle category
+                            if group.name == 'Bundle' and base_bundles_queryset is not None:
+                                bundle_count = base_bundles_queryset.count()
+                                count += bundle_count
+                                logger.info(f'🔍 [FILTER-COUNTS] Added {bundle_count} bundles to Bundle category count')
+
                             if count > 0:
                                 filter_counts[filter_key][group.name] = {
                                     'count': count,

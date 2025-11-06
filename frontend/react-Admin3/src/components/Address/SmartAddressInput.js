@@ -142,15 +142,15 @@ const SmartAddressInput = ({
 
   // Handle address line focus
   const handleAddressLineFocus = () => {
-    if (addressMetadata?.addressLookupSupported && postcodeValue) {
-      calculateDropdownPosition();
-      if (addressLineValue.length >= 3) {
-        // If we have text, perform lookup
-        performAddressLookup(postcodeValue, addressLineValue);
-      } else {
-        // Show dropdown with just "Enter address manually" option
-        setAddressSuggestions([]);
-        setShowSuggestions(true);
+    if (addressMetadata?.addressLookupSupported) {
+      // Check if postcode is required for lookup
+      const needsPostcode = addressMetadata.requiresPostcodeForLookup !== false; // Default to true
+
+      if (!needsPostcode || postcodeValue) {
+        calculateDropdownPosition();
+        // Perform lookup when postcode is entered (or not required)
+        // User can then filter by typing in the address field
+        performAddressLookup(postcodeValue || '', addressLineValue);
       }
     }
   };
@@ -171,15 +171,18 @@ const SmartAddressInput = ({
       });
     }
 
-    // Trigger address lookup for UK when we have postcode and at least 3 characters
-    if (addressMetadata?.addressLookupSupported && postcodeValue && value.length >= 3) {
-      calculateDropdownPosition();
-      performAddressLookup(postcodeValue, value);
-    } else if (addressMetadata?.addressLookupSupported && postcodeValue) {
-      // Show dropdown with just "Enter address manually" option when focused but no matching addresses
-      calculateDropdownPosition();
-      setAddressSuggestions([]);
-      setShowSuggestions(true);
+    // Trigger address lookup when we have postcode (or postcode not required)
+    // No minimum character requirement - fetch all addresses and filter locally
+    if (addressMetadata?.addressLookupSupported) {
+      const needsPostcode = addressMetadata.requiresPostcodeForLookup !== false; // Default to true
+
+      if (!needsPostcode || postcodeValue) {
+        calculateDropdownPosition();
+        performAddressLookup(postcodeValue || '', value);
+      } else {
+        setAddressSuggestions([]);
+        setShowSuggestions(false);
+      }
     } else {
       setAddressSuggestions([]);
       setShowSuggestions(false);
@@ -189,14 +192,27 @@ const SmartAddressInput = ({
   // Perform address lookup
   const performAddressLookup = useCallback(async (postcode, addressLine) => {
     if (!addressMetadata?.addressLookupSupported) return;
-    
+
     setIsLoadingSuggestions(true);
-    
+
     try {
+      // Get country code for API call
+      const countryCode = addressMetadataService.getCountryCode(selectedCountry) || 'GB';
+
+      // For countries without postcodes, use address line as search term
+      // The Postcoder API accepts street names, building names, or districts as search terms
+      const searchTerm = postcode || addressLine || '';
+
+      // Don't perform lookup if no search term
+      if (!searchTerm.trim()) {
+        setIsLoadingSuggestions(false);
+        return;
+      }
+
       const res = await fetch(
-        config.apiBaseUrl + `/api/utils/address-lookup/?postcode=${encodeURIComponent(postcode)}`
+        config.apiBaseUrl + `/api/utils/address-lookup/?postcode=${encodeURIComponent(searchTerm)}&country=${countryCode}`
       );
-      
+
       if (res.status === 200) {
         const data = await res.json();
         const addresses = (data.addresses || []).map(addr => ({
@@ -213,11 +229,14 @@ const SmartAddressInput = ({
         }));
         
         // Filter addresses that match the typed address line
-        const filteredAddresses = addresses.filter(addr => 
-          addr.fullAddress.toLowerCase().includes(addressLine.toLowerCase()) ||
-          addr.line1.toLowerCase().includes(addressLine.toLowerCase())
-        );
-        
+        // If addressLine is empty, show all addresses
+        const filteredAddresses = addressLine.trim() === ''
+          ? addresses
+          : addresses.filter(addr =>
+              addr.fullAddress.toLowerCase().includes(addressLine.toLowerCase()) ||
+              addr.line1.toLowerCase().includes(addressLine.toLowerCase())
+            );
+
         setAddressSuggestions(filteredAddresses);
         setShowSuggestions(true);
       }
@@ -383,7 +402,7 @@ const SmartAddressInput = ({
 								)}
 
 								{/* Address Line with Autocomplete */}
-								<Grid size={{ xs: 8, md: 9 }}>
+								<Grid size={{ xs: addressMetadata.hasPostcode ? 8 : 12, md: addressMetadata.hasPostcode ? 9 : 12 }}>
 									<Box sx={{ position: "relative" }}>
 										<TextField
 											fullWidth
@@ -395,8 +414,9 @@ const SmartAddressInput = ({
 											onFocus={handleAddressLineFocus}
 											placeholder="First line of address..."
 											disabled={
-												addressMetadata.hasPostcode &&
-												!postcodeValue
+												// Only disable if country requires postcode for lookup AND no postcode entered
+												// Hong Kong (requiresPostcodeForLookup: false) will always be enabled
+												addressMetadata.requiresPostcodeForLookup === true && !postcodeValue
 											}
 											slotProps={{
 												endAdornment: isLoadingSuggestions && (

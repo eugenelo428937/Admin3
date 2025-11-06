@@ -113,6 +113,7 @@ class ExamSessionSubjectBundleProductSerializer(serializers.ModelSerializer):
             'id': ppv.product_variation.id,
             'name': ppv.product_variation.name,
             'variation_type': ppv.product_variation.variation_type,
+            'description_short': ppv.product_variation.description_short or '',
         }
     
     def get_exam_session_product_code(self, obj):
