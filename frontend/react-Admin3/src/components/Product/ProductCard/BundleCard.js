@@ -20,6 +20,7 @@ import {
 	Radio,
 	FormControlLabel,
 	Avatar,
+	useTheme
 } from "@mui/material";
 import { InfoOutline, AddShoppingCart, CheckRounded, Inventory2 } from "@mui/icons-material";
 import { BoxSeam } from "react-bootstrap-icons";
@@ -29,6 +30,7 @@ import bundleService from "../../../services/bundleService";
 import "../../../styles/product_card.css";
 
 const BundleCard = React.memo(({ bundle, onAddToCart }) => {
+	const theme = useTheme();
 	const [showContentsModal, setShowContentsModal] = useState(false);
 	const [bundleContents, setBundleContents] = useState(null);
 	const [loadingContents, setLoadingContents] = useState(false);
@@ -219,7 +221,7 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 							<Typography
 								variant="body2"
 								color="textSecondary"
-								className="mb-2">
+								className="mb-1">
 								This bundle includes {bundleContents.total_components}{" "}
 								items:
 							</Typography>
@@ -360,8 +362,26 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 					}
 				/>
 
-				<CardContent>
-					<Typography variant="body2" className="bundle-details-title">
+				<CardContent sx={{
+					maxHeight: '280px',
+					overflowY: 'auto',
+					paddingBottom: 1,
+					'&::-webkit-scrollbar': {
+						width: '8px',
+					},
+					'&::-webkit-scrollbar-track': {
+						backgroundColor: 'rgba(0, 0, 0, 0.05)',
+						borderRadius: '4px',
+					},
+					'&::-webkit-scrollbar-thumb': {
+						backgroundColor: 'rgba(0, 0, 0, 0.2)',
+						borderRadius: '4px',
+						'&:hover': {
+							backgroundColor: 'rgba(0, 0, 0, 0.3)',
+						},
+					},
+				}}>
+					<Typography variant="subtitle2" className="bundle-details-title">
 						What's included ({bundle.components_count || bundle.components?.length || 0} items)
 					</Typography>
 
@@ -373,11 +393,15 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 								</ListItemIcon>
 								<ListItemText
 									primary={component.product?.fullname || component.name}
+									secondary={component.product_variation?.description_short || component.product_variation?.name || ''}
 									slotProps={{
 										primary: {
-											variant: "body2",
+											variant: "caption",
 											className: "bundle-item-text",
 										},
+										secondary:{
+											variant: "caption2",
+										}
 									}}								
 								/>
 								<Typography
