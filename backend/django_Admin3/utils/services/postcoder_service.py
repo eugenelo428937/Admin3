@@ -37,31 +37,102 @@ class PostcoderService:
         if not self.api_key:
             logger.warning("POSTCODER_API_KEY not configured")
 
-    def lookup_address(self, postcode: str, country_code: str = 'GB') -> Dict:
+    def autocomplete_address(self, search_query: str, country_code: str = 'GB', postcode: str = None) -> Dict:
         """
-        Look up addresses for a given postcode or address search term using Postcoder.com API.
+        Autocomplete address search using Postcoder.com API.
 
-        Supports international address lookups with country-specific endpoints.
-
-        Note: For countries without postcodes (e.g., Hong Kong), the postcode parameter
-        can be an address search term (street name, building name, district).
+        Uses the /pcw/autocomplete/find endpoint for text-based address search.
 
         Args:
-            postcode: Postal code (e.g., "SW1A 1AA" for UK) OR address search term
-                     (e.g., "Nathan Road" for Hong Kong)
+            search_query: Search term (e.g., "Nathan Road", "Times Square", "Central", or combined with postcode)
             country_code: ISO 3166-1 alpha-2 country code (e.g., "GB", "HK", "US")
+            postcode: Optional postcode to narrow down search (for countries that use postcodes)
+
+        Returns:
+            dict: Postcoder API response containing address suggestions
+
+        Raises:
+            ValueError: If search query is invalid or missing
+            requests.RequestException: If API call fails
+            TimeoutError: If API call times out
+        """
+        if not search_query or not search_query.strip():
+            raise ValueError("Search query is required")
+
+        if not self.api_key:
+            raise ValueError("POSTCODER_API_KEY not configured")
+
+        # Postcoder.com Autocomplete Find API endpoint
+        url = "https://ws.postcoder.com/pcw/autocomplete/find"
+
+        params = {
+            'query': search_query.strip(),
+            'country': country_code.upper(),
+            'apikey': self.api_key
+        }
+
+        # Add postcode parameter if provided (for countries that use postcodes)
+        if postcode and postcode.strip():
+            params['postcode'] = postcode.strip()
+
+        try:
+            # Debug logging - print the actual API call
+            debug_params = {k: v for k, v in params.items() if k != 'apikey'}
+            debug_params['apikey'] = f"{self.api_key[:8]}..." if len(self.api_key) > 8 else "***"
+            logger.info(f"🔍 DEBUG: Calling Postcoder Autocomplete Find API")
+            logger.info(f"🔍 DEBUG: URL: {url}")
+            logger.info(f"🔍 DEBUG: Params: {debug_params}")
+            logger.info(f"🔍 DEBUG: Full URL: {url}?{'&'.join([f'{k}={v}' for k, v in debug_params.items()])}")
+
+            response = requests.get(url, params=params, timeout=10)
+
+            logger.info(f"🔍 DEBUG: Response status: {response.status_code}")
+            logger.info(f"🔍 DEBUG: Response headers: {dict(response.headers)}")
+
+            response.raise_for_status()
+
+            data = response.json()
+
+            logger.info(f"🔍 DEBUG: Response data: {data}")
+
+            # Check if Postcoder returned an error
+            if isinstance(data, dict) and 'error' in data:
+                error_msg = data.get('error', 'Unknown error')
+                logger.error(f"Postcoder Autocomplete API error for {country_code}: {error_msg}")
+                raise requests.RequestException(f"Postcoder API error: {error_msg}")
+
+            logger.info(f"✅ Successfully retrieved {len(data) if isinstance(data, list) else 0} address suggestions for {country_code}")
+            return data
+
+        except requests.Timeout:
+            logger.error(f"❌ Postcoder Autocomplete API timeout for {country_code}")
+            raise TimeoutError("Postcoder API request timed out")
+        except requests.RequestException as e:
+            logger.error(f"❌ Postcoder Autocomplete API error for {country_code}: {str(e)}")
+            raise
+
+    def lookup_address(self, postcode: str, country_code: str = 'GB') -> Dict:
+        """
+        Look up addresses for a given postcode using Postcoder.com API.
+
+        This method is for postcode-based lookups. For text-based address search
+        (street names, buildings), use autocomplete_address() instead.
+
+        Args:
+            postcode: Postal code (e.g., "SW1A 1AA" for UK)
+            country_code: ISO 3166-1 alpha-2 country code (e.g., "GB", "US", "CA")
                          Defaults to "GB" for backward compatibility
 
         Returns:
             dict: Postcoder API response containing address data
 
         Raises:
-            ValueError: If postcode/search term is invalid or missing
+            ValueError: If postcode is invalid or missing
             requests.RequestException: If API call fails
             TimeoutError: If API call times out
         """
         if not postcode:
-            raise ValueError("Search term (postcode or address) is required")
+            raise ValueError("Postcode is required")
 
         if not self.api_key:
             raise ValueError("POSTCODER_API_KEY not configured")
@@ -72,7 +143,7 @@ class PostcoderService:
         # Convert country code to lowercase for API endpoint
         country_lower = country_code.lower()
 
-        # Postcoder.com API endpoint (international support)
+        # Postcoder.com API endpoint (postcode lookup)
         url = f"{self.BASE_URL}/{self.api_key}/address/{country_lower}/{clean_postcode}"
 
         try:

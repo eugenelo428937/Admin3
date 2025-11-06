@@ -1,9 +1,13 @@
 import json
+import logging
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods
 from django.conf import settings
 import requests
+
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 @csrf_exempt
 @require_GET
@@ -565,6 +569,61 @@ def health_check(request):
 # Postcoder.com Address Lookup (New separate method - see ARCHITECTURE.md)
 # ============================================================================
 
+def transform_autocomplete_suggestions(postcoder_response, country_code='GB'):
+    """
+    Transform Postcoder autocomplete suggestions to getaddress.io compatible format.
+
+    Postcoder autocomplete returns: {'id', 'type', 'summaryline', 'locationsummary', 'count'}
+    We transform to simplified format with summaryline as line_1
+
+    Args:
+        postcoder_response: List of autocomplete suggestions from Postcoder API
+        country_code: ISO country code
+
+    Returns:
+        dict: {'addresses': [...]} in getaddress.io format
+    """
+    from utils.models import UtilsCountrys
+
+    # Get country name from database
+    try:
+        country = UtilsCountrys.objects.get(code=country_code.upper())
+        country_name = country.name
+    except UtilsCountrys.DoesNotExist:
+        logger.warning(f"Country code {country_code} not found in UtilsCountrys")
+        country_name = country_code.upper()
+
+    addresses = []
+
+    if isinstance(postcoder_response, list):
+        for suggestion in postcoder_response:
+            # Extract summaryline and locationsummary
+            summaryline = suggestion.get('summaryline', '')
+            locationsummary = suggestion.get('locationsummary', '')
+
+            # Build address
+            address = {
+                'postcode': '',  # Autocomplete doesn't have postcode yet
+                'latitude': 0,
+                'longitude': 0,
+                'formatted_address': [summaryline, locationsummary] if locationsummary else [summaryline],
+                'line_1': summaryline,
+                'line_2': locationsummary if locationsummary else '',
+                'line_3': '',
+                'line_4': '',
+                'building_name': '',
+                'town_or_city': '',
+                'county': '',
+                'country': country_name
+            }
+
+            addresses.append(address)
+
+    logger.info(f"✅ Transformed {len(addresses)} autocomplete suggestions")
+
+    return {'addresses': addresses}
+
+
 @csrf_exempt
 @require_GET
 def postcoder_address_lookup(request):
@@ -600,23 +659,18 @@ def postcoder_address_lookup(request):
 
     start_time = time.time()
 
-    # Extract and validate search term (postcode or address search)
-    # Note: For countries without postcodes (e.g., Hong Kong), this is an address search term
-    # (street name, building name, district) rather than a traditional postcode
-    postcode = request.GET.get('postcode', '').strip()
+    # Extract parameters for autocomplete search
+    query = request.GET.get('query', '').strip()  # Search text (address line)
+    postcode = request.GET.get('postcode', '').strip()  # Postcode (optional, for countries that use it)
     country_code = request.GET.get('country', 'GB').strip().upper()  # Default to GB
 
-    if not postcode:
+    if not query:
         return JsonResponse({
-            'error': 'Missing search term (postcode or address)',
-            'code': 'MISSING_SEARCH_TERM'
+            'error': 'Missing query parameter',
+            'code': 'MISSING_QUERY'
         }, status=400)
 
-    # Clean postcode (uppercase, remove spaces)
-    clean_postcode = postcode.replace(' ', '').upper()
-
-    # Note: Postcode validation is country-specific and handled by Postcoder API
-    # No client-side validation to support international formats and address search terms
+    logger.info(f"🔍 Address lookup request: query='{query}', postcode='{postcode}', country={country_code}")
 
     # Initialize services
     cache_service = AddressCacheService()
@@ -629,97 +683,66 @@ def postcoder_address_lookup(request):
     success = False
 
     try:
-        # Step 1: Check cache (cache key includes country for uniqueness)
-        cache_key = f"{clean_postcode}_{country_code}"
-        cached_addresses = cache_service.get_cached_address(cache_key)
+        # Don't cache autocomplete suggestions - they're temporary search results
+        # Call Postcoder Autocomplete API directly
+        logger.info(f"🔍 Calling Postcoder Autocomplete API (no cache for suggestions)")
 
-        if cached_addresses:
-            # Cache HIT - serve from cache
-            cache_hit = True
-            addresses = cached_addresses
-            success = True
+        # Always use autocomplete API for all searches
+        postcoder_response = postcoder_service.autocomplete_address(
+            search_query=query,
+            country_code=country_code,
+            postcode=postcode if postcode else None
+        )
 
-        else:
-            # Cache MISS - call Postcoder API with country code
-            try:
-                postcoder_response = postcoder_service.lookup_address(clean_postcode, country_code)
-                addresses = postcoder_service.transform_to_getaddress_format(postcoder_response, country_code)
-                success = True
+        # Transform autocomplete suggestions to simple format
+        addresses = transform_autocomplete_suggestions(postcoder_response, country_code)
+        success = True
 
-                # Cache the result (use cache_key for country-specific caching)
-                cache_service.cache_address(
-                    postcode=cache_key,  # Include country in cache key
-                    addresses=addresses,
-                    response_data=postcoder_response,
-                    search_query=f"{postcode} ({country_code})"
-                )
+    except ValueError as e:
+        error_message = str(e)
+        addresses = {"addresses": []}
+        success = False
 
-            except ValueError as e:
-                error_message = str(e)
-                addresses = {"addresses": []}
-                success = False
-
-            except TimeoutError as e:
-                error_message = f"API timeout: {str(e)}"
-                addresses = {"addresses": []}
-                success = False
-
-            except Exception as e:
-                error_message = f"API error: {str(e)}"
-                addresses = {"addresses": []}
-                success = False
-
-        # Calculate response time
-        response_time_ms = int((time.time() - start_time) * 1000)
-
-        # Step 2: Log analytics (non-blocking)
-        try:
-            result_count = len(addresses.get('addresses', []))
-            logger_service.log_lookup(
-                postcode=clean_postcode,
-                cache_hit=cache_hit,
-                response_time_ms=response_time_ms,
-                result_count=result_count,
-                success=success,
-                api_provider='postcoder',
-                error_message=error_message,
-                search_query=f"{postcode} ({country_code})"  # Include country in logs
-            )
-        except Exception as log_error:
-            # Logging failures should not break the response
-            print(f"Warning: Failed to log address lookup: {log_error}")
-
-        # Step 3: Return response
-        if success:
-            return JsonResponse({
-                **addresses,
-                'cache_hit': cache_hit,
-                'response_time_ms': response_time_ms
-            })
-        else:
-            return JsonResponse({
-                'error': error_message or 'Address lookup failed',
-                'code': 'API_ERROR',
-                'addresses': []
-            }, status=500)
+    except TimeoutError as e:
+        error_message = f"API timeout: {str(e)}"
+        addresses = {"addresses": []}
+        success = False
 
     except Exception as e:
-        # Catch-all for unexpected errors
-        response_time_ms = int((time.time() - start_time) * 1000)
+        error_message = f"API error: {str(e)}"
+        addresses = {"addresses": []}
+        success = False
 
-        # Log the failure
-        try:
-            logger_service.log_failed_lookup(
-                postcode=clean_postcode,
-                response_time_ms=response_time_ms,
-                error_message=str(e),
-                api_provider='postcoder',
-                search_query=f"{postcode} ({country_code})"  # Include country in logs
-            )
-        except:
-            pass  # Silent failure - don't compound errors
+    # Calculate response time
+    response_time_ms = int((time.time() - start_time) * 1000)
 
+    # Step 2: Log analytics (non-blocking)
+    try:
+        result_count = len(addresses.get('addresses', []))
+        logger_service.log_lookup(
+            postcode=query[:10],  # Truncate to 10 chars to fit database field
+            cache_hit=False,  # Not caching autocomplete suggestions
+            response_time_ms=response_time_ms,
+            result_count=result_count,
+            success=success,
+            api_provider='postcoder',
+            error_message=error_message,
+            search_query=f"query={query[:100]}, postcode={postcode}, country={country_code}"  # Truncate search_query too
+        )
+    except Exception as log_error:
+        # Logging failures should not break the response - log to console instead
+        logger.warning(f"⚠️ Failed to log address lookup: {log_error}")
+
+    # Step 3: Return response
+    if success:
         return JsonResponse({
-            'error': f'Internal error: {str(e)}',
-            'code': 'INTERNAL_ERROR'
+            **addresses,
+            'cache_hit': False,  # Not caching autocomplete suggestions
+            'response_time_ms': response_time_ms
+        })
+    else:
+        return JsonResponse({
+            'error': error_message or 'Address lookup failed',
+            'code': 'API_ERROR',
+            'addresses': []
         }, status=500)
