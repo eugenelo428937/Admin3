@@ -385,10 +385,10 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 						What's included ({bundle.components_count || bundle.components?.length || 0} items)
 					</Typography>
 
-					<List dense className="bundle-items-list">
+					<List dense>
 						{bundle.components?.map((component, index) => (
 							<ListItem key={component.id || index} className="bundle-list-item">
-								<ListItemIcon className="bundle-item-icon">
+								<ListItemIcon>
 									<CheckRounded />
 								</ListItemIcon>
 								<ListItemText
@@ -396,21 +396,13 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 									secondary={component.product_variation?.description_short || component.product_variation?.name || ''}
 									slotProps={{
 										primary: {
-											variant: "caption",
-											className: "bundle-item-text",
+											variant: "caption",											
 										},
 										secondary:{
 											variant: "caption2",
 										}
 									}}								
-								/>
-								<Typography
-									variant="caption"
-									color="text.secondary"
-									className="bundle-item-value">
-									{/* Component price if available */}
-									{component.price || ''}
-								</Typography>
+								/>								
 							</ListItem>
 						))}
 					</List>
