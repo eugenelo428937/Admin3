@@ -66,9 +66,6 @@ const LoginForm = ({
             <Button variant="text" type="button" onClick={() => { onHide(); navigate('/register'); }}>
               Need an account? Register
             </Button>
-            <Button variant="text" type="button" onClick={() => { onHide(); navigate('/register2'); }}>
-              Need an account? Register2
-            </Button>
           </Box>
           <Box sx={{ textAlign: 'center' }}>
             <Button

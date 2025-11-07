@@ -89,7 +89,7 @@ const LoginFormContent = ({
 						variant="contained"
 						onClick={() => {
 							onHide();
-							navigate("/register2");
+							navigate("/register");
 						}}
 						sx={{
 							px: theme.liftkit.spacing.md,

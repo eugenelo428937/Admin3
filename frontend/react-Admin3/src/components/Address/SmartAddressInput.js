@@ -222,18 +222,21 @@ const SmartAddressInput = ({
       // Check if country uses postcode from metadata
       const hasPostcode = addressMetadata.hasPostcode;
 
-      // Build query parameters
+      // Build query parameters based on country and postcode availability
       let queryParams = `query=${encodeURIComponent(addressLine)}&country=${countryCode}`;
 
-      // For countries with postcodes:
-      // - If postcode is provided: add it as separate parameter
-      // - If no postcode: combine postcode + address line in query
-      if (hasPostcode && postcode && postcode.trim()) {
+      // Postcoder API postcode handling:
+      // 1. UK (GB): Use separate 'postcode' parameter (Postcoder only supports this for UK)
+      // 2. Countries without postcode (HK): Don't include postcode at all
+      // 3. Other countries with postcode (TW, etc.): Combine postcode + address in 'query' parameter
+      if (countryCode === 'GB' && hasPostcode && postcode && postcode.trim()) {
+        // UK: Use separate postcode parameter
         queryParams += `&postcode=${encodeURIComponent(postcode)}`;
       } else if (hasPostcode && postcode && postcode.trim()) {
-        // Combine postcode and address in query for countries that use postcode
+        // Other countries with postcode: Combine postcode + address in query
         queryParams = `query=${encodeURIComponent(postcode + ' ' + addressLine)}&country=${countryCode}`;
       }
+      // If no postcode or hasPostcode is false: query is already set to just addressLine
 
       console.log('🔍 API Call:', config.apiBaseUrl + `/api/utils/address-lookup/?${queryParams}`);
 
@@ -249,6 +252,7 @@ const SmartAddressInput = ({
           console.log('🔍 Processing address:', addr);
 
           const mappedAddr = {
+            id: addr.id || "",  // Preserve ID for retrieve endpoint
             line1: addr.line_1 || "",
             line2: addr.line_2 || "",
             town: addr.town_or_city || "",
@@ -284,47 +288,79 @@ const SmartAddressInput = ({
   }, [addressMetadata, selectedCountry]);
 
   // Handle address suggestion selection
-  const handleSelectSuggestion = (address) => {
+  const handleSelectSuggestion = async (address) => {
+    console.log('🔍 Selected address suggestion:', address);
+    console.log('🔍 Address ID:', address.id);
+
+    // If address has an ID, call retrieve endpoint to get full details
+    if (address.id) {
+      try {
+        console.log('🔍 Calling retrieve endpoint with ID:', address.id);
+        const countryCode = addressMetadataService.getCountryCode(selectedCountry);
+
+        const res = await fetch(
+          config.apiBaseUrl + `/api/utils/address-retrieve/?id=${encodeURIComponent(address.id)}&country=${countryCode}`
+        );
+
+        if (res.status === 200) {
+          const data = await res.json();
+          console.log('🔍 Retrieve endpoint response:', data);
+
+          if (data.addresses && data.addresses.length > 0) {
+            // Use the full address details from retrieve endpoint
+            address = data.addresses[0];
+            console.log('🔍 Using full address from retrieve:', address);
+          }
+        } else {
+          console.error('❌ Retrieve endpoint failed:', res.status);
+          // Fall back to using the autocomplete suggestion (incomplete data)
+        }
+      } catch (error) {
+        console.error('❌ Error calling retrieve endpoint:', error);
+        // Fall back to using the autocomplete suggestion (incomplete data)
+      }
+    }
+
     const countryCode = addressMetadataService.getCountryCode(selectedCountry);
     const baseMetadata = addressMetadataService.getAddressMetadata(countryCode);
-    
-    // Create updated form data with the selected address
+
+    // Create updated form data with the selected address (now with full details!)
     const updatedFormData = {};
-    
+
     // Map fields based on what the country's metadata expects (including optional fields)
     const allFields = addressMetadataService.getAllFields(countryCode);
     allFields.forEach(fieldName => {
       // Only process fields that are defined in the metadata
       if (!baseMetadata.fields[fieldName]) return;
-      
+
       const fullFieldName = getFieldName(fieldName);
-      
+
       switch(fieldName) {
         case 'address':
           const addressParts = [];
-          if (address.building) addressParts.push(address.building);
-          if (address.line1) addressParts.push(address.line1);
-          if (address.line2) addressParts.push(address.line2);
-          updatedFormData[fullFieldName] = addressParts.join(', ') || address.line1 || '';
+          if (address.building_name) addressParts.push(address.building_name);
+          if (address.line_1) addressParts.push(address.line_1);
+          if (address.line_2) addressParts.push(address.line_2);
+          updatedFormData[fullFieldName] = addressParts.join(', ') || address.line_1 || '';
           break;
-          
+
         case 'city':
-          updatedFormData[fullFieldName] = address.town || address.city || '';
+          updatedFormData[fullFieldName] = address.town_or_city || address.town || address.city || '';
           break;
-          
+
         case 'state':
           updatedFormData[fullFieldName] = address.state || address.county || '';
           break;
-          
+
         case 'postal_code':
           updatedFormData[fullFieldName] = address.postcode || '';
           break;
-          
+
         case 'county':
           updatedFormData[fullFieldName] = address.county || '';
           break;
-          
-          
+
+
         default:
           if (address[fieldName]) {
             updatedFormData[fullFieldName] = address[fieldName];
@@ -332,7 +368,7 @@ const SmartAddressInput = ({
           break;
       }
     });
-    
+
     // Update form with all the address data
     Object.keys(updatedFormData).forEach(fieldName => {
       if (onChange) {
