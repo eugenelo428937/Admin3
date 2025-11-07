@@ -167,8 +167,8 @@ export const ADDRESS_METADATA = {
     fields: {
       address: { label: 'Street Address', placeholder: '123 Main Street' },
       city: { label: 'City', placeholder: 'Toronto' },
-      state: { 
-        label: 'Province', 
+      state: {
+        label: 'Province',
         type: 'select',
         options: [
           { value: 'ON', label: 'Ontario' },
@@ -186,8 +186,8 @@ export const ADDRESS_METADATA = {
           { value: 'YT', label: 'Yukon' }
         ]
       },
-      postal_code: { 
-        label: 'Postal Code', 
+      postal_code: {
+        label: 'Postal Code',
         placeholder: 'K1A 0A6',
         pattern: /^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/i,
         error: 'Enter a valid Canadian postal code (e.g., K1A 0A6)',
@@ -197,6 +197,29 @@ export const ADDRESS_METADATA = {
     layout: [
       [{ field: 'address', span: 12 }],
       [{ field: 'city', span: 6 }, { field: 'state', span: 3 }, { field: 'postal_code', span: 3 }]
+    ]
+  },
+
+  'TW': {
+    format: '%N%n%O%n%A%n%C%n%Z',
+    required: ['address', 'city', 'postal_code'],
+    optional: [],
+    hasPostcode: true,
+    addressLookupSupported: true,  // Postcoder supports Taiwan
+    requiresPostcodeForLookup: false,  // Taiwan doesn't require postcode for lookup
+    fields: {
+      address: { label: 'Street Address', placeholder: 'No. 1, Section 1, Road Name' },
+      city: { label: 'City/County', placeholder: 'Taipei' },
+      postal_code: {
+        label: 'Postal Code',
+        placeholder: '100',
+        pattern: /^\d{3,6}$/,
+        error: 'Enter a valid Taiwan postal code (3-6 digits)'
+      }
+    },
+    layout: [
+      [{ field: 'address', span: 12 }],
+      [{ field: 'city', span: 6 }, { field: 'postal_code', span: 6 }]
     ]
   },
 
@@ -354,6 +377,7 @@ export const getCountryCode = (countryName) => {
     'United Kingdom': 'GB',
     'Hong Kong': 'HK',
     'Canada': 'CA',
+    'Taiwan': 'TW',
     'Australia': 'AU',
     'Germany': 'DE',
     'France': 'FR',
@@ -364,7 +388,7 @@ export const getCountryCode = (countryName) => {
     'China': 'CN',
     'South Africa': 'ZA'
   };
-  
+
   return countryMappings[countryName] || null;
 };
 

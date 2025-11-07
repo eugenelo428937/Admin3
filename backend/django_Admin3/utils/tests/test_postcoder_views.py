@@ -531,6 +531,116 @@ class PostcoderAddressLookupViewTestCase(TestCase):
         self.assertEqual(call_kwargs['result_count'], 3)
 
 
+class AddressRetrieveViewTestCase(TestCase):
+    """Test cases for address_retrieve view function"""
+
+    def setUp(self):
+        """Set up test fixtures"""
+        self.factory = RequestFactory()
+        self.test_id = "test_id_123"
+        self.test_full_address = {
+            "id": self.test_id,
+            "postcode": "SW1A1AA",
+            "summaryline": "10 Downing Street, Westminster, London",
+            "number": "10",
+            "street": "Downing Street",
+            "posttown": "LONDON",
+            "county": "Greater London",
+            "latitude": 51.503396,
+            "longitude": -0.127784
+        }
+
+    # ==================== Request Validation Tests ====================
+
+    def test_missing_id_returns_400(self):
+        """Test missing ID parameter returns 400 error"""
+        from utils.views import address_retrieve
+        request = self.factory.get('/api/utils/address-retrieve/')
+
+        response = address_retrieve(request)
+
+        self.assertEqual(response.status_code, 400)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], 'Missing ID parameter')
+        self.assertEqual(data['code'], 'MISSING_ID')
+
+    def test_empty_id_returns_400(self):
+        """Test empty ID string returns 400 error"""
+        from utils.views import address_retrieve
+        request = self.factory.get('/api/utils/address-retrieve/?id=')
+
+        response = address_retrieve(request)
+
+        self.assertEqual(response.status_code, 400)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], 'Missing ID parameter')
+
+    # ==================== Success Flow Tests ====================
+
+    @patch('utils.services.PostcoderService')
+    def test_successful_retrieve_returns_full_address(self, mock_postcoder_service):
+        """Test successful retrieve returns full address details"""
+        from utils.views import address_retrieve
+
+        # Mock successful API response
+        mock_postcoder_instance = mock_postcoder_service.return_value
+        mock_postcoder_instance.retrieve_address.return_value = self.test_full_address
+        mock_postcoder_instance.transform_to_getaddress_format.return_value = {
+            "addresses": [{
+                "postcode": "SW1A 1AA",
+                "line_1": "10 Downing Street",
+                "town_or_city": "London",
+                "county": "Greater London",
+                "country": "England"
+            }]
+        }
+
+        request = self.factory.get(f'/api/utils/address-retrieve/?id={self.test_id}')
+
+        response = address_retrieve(request)
+
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertIn('addresses', data)
+        self.assertEqual(len(data['addresses']), 1)
+        self.assertEqual(data['addresses'][0]['postcode'], 'SW1A 1AA')
+
+    @patch('utils.services.PostcoderService')
+    def test_retrieve_includes_country_parameter(self, mock_postcoder_service):
+        """Test retrieve passes country code to service"""
+        from utils.views import address_retrieve
+
+        mock_postcoder_instance = mock_postcoder_service.return_value
+        mock_postcoder_instance.retrieve_address.return_value = self.test_full_address
+        mock_postcoder_instance.transform_to_getaddress_format.return_value = {"addresses": []}
+
+        request = self.factory.get(f'/api/utils/address-retrieve/?id={self.test_id}&country=US')
+
+        response = address_retrieve(request)
+
+        # Verify retrieve_address was called with country=US
+        mock_postcoder_instance.retrieve_address.assert_called_once_with(self.test_id, country_code='US')
+
+    # ==================== Error Handling Tests ====================
+
+    @patch('utils.services.PostcoderService')
+    def test_api_error_returns_500(self, mock_postcoder_service):
+        """Test API error returns 500 response"""
+        from utils.views import address_retrieve
+
+        # Mock API error
+        mock_postcoder_instance = mock_postcoder_service.return_value
+        mock_postcoder_instance.retrieve_address.side_effect = ValueError("Invalid ID")
+
+        request = self.factory.get(f'/api/utils/address-retrieve/?id=invalid')
+
+        response = address_retrieve(request)
+
+        self.assertEqual(response.status_code, 500)
+        data = json.loads(response.content)
+        self.assertIn('error', data)
+
+
 if __name__ == '__main__':
     import unittest
     unittest.main()
