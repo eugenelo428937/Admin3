@@ -597,12 +597,14 @@ def transform_autocomplete_suggestions(postcoder_response, country_code='GB'):
 
     if isinstance(postcoder_response, list):
         for suggestion in postcoder_response:
-            # Extract summaryline and locationsummary
+            # Extract fields from suggestion
+            address_id = suggestion.get('id', '')  # CRITICAL: Preserve ID for retrieve endpoint
             summaryline = suggestion.get('summaryline', '')
             locationsummary = suggestion.get('locationsummary', '')
 
-            # Build address
+            # Build address with ID preserved
             address = {
+                'id': address_id,  # Required for retrieve endpoint
                 'postcode': '',  # Autocomplete doesn't have postcode yet
                 'latitude': 0,
                 'longitude': 0,
@@ -745,4 +747,90 @@ def postcoder_address_lookup(request):
             'error': error_message or 'Address lookup failed',
             'code': 'API_ERROR',
             'addresses': []
+        }, status=500)
+
+
+@csrf_exempt
+@require_GET
+def address_retrieve(request):
+    """
+    Retrieve full address details by ID using Postcoder.com API.
+
+    This is the second step in the autocomplete workflow:
+    1. User searches with /address-lookup/ → gets suggestions with IDs
+    2. User selects suggestion → call this endpoint with ID → get full details
+
+    Query Parameters:
+        id (str): Address ID from autocomplete suggestion
+        country (str): ISO 3166-1 alpha-2 country code (defaults to "GB")
+
+    Returns:
+        JsonResponse: {
+            "addresses": [...],  // Full address details in getaddress.io format
+        }
+
+    Error Responses:
+        400: Missing or invalid ID
+        500: API failure or internal error
+    """
+    import time
+    from utils.services import PostcoderService
+
+    start_time = time.time()
+
+    # Extract parameters
+    address_id = request.GET.get('id', '').strip()
+    country_code = request.GET.get('country', 'GB').strip().upper()
+
+    if not address_id:
+        return JsonResponse({
+            'error': 'Missing ID parameter',
+            'code': 'MISSING_ID'
+        }, status=400)
+
+    logger.info(f"🔍 Address retrieve request: id='{address_id}', country={country_code}")
+
+    # Initialize service
+    postcoder_service = PostcoderService()
+
+    try:
+        # Retrieve full address details from Postcoder
+        full_address = postcoder_service.retrieve_address(address_id, country_code=country_code)
+
+        # Transform to getaddress.io format
+        # Note: retrieve_address() already returns a list, don't wrap it again!
+        addresses = postcoder_service.transform_to_getaddress_format(full_address, country_code=country_code)
+
+        # Calculate response time
+        response_time_ms = int((time.time() - start_time) * 1000)
+
+        logger.info(f"✅ Successfully retrieved address for ID: {address_id}")
+
+        return JsonResponse({
+            **addresses,
+            'response_time_ms': response_time_ms
+        })
+
+    except ValueError as e:
+        error_message = str(e)
+        logger.error(f"❌ Validation error: {error_message}")
+        return JsonResponse({
+            'error': error_message,
+            'code': 'VALIDATION_ERROR'
+        }, status=500)
+
+    except TimeoutError as e:
+        error_message = f"API timeout: {str(e)}"
+        logger.error(f"❌ {error_message}")
+        return JsonResponse({
+            'error': error_message,
+            'code': 'TIMEOUT'
+        }, status=500)
+
+    except Exception as e:
+        error_message = f"API error: {str(e)}"
+        logger.error(f"❌ {error_message}")
+        return JsonResponse({
+            'error': error_message,
+            'code': 'API_ERROR'
         }, status=500)

@@ -483,6 +483,120 @@ class PostcoderServiceTestCase(TestCase):
         self.assertEqual(addresses["addresses"][0]["postcode"], "OX44 9EL")
         self.assertEqual(addresses["addresses"][0]["town_or_city"], "Oxford")  # Title case
 
+    # ==================== retrieve_address Tests ====================
+
+    @patch('utils.services.postcoder_service.requests.get')
+    def test_retrieve_address_success(self, mock_get):
+        """Test successful address retrieval by ID returns full address details"""
+        # Mock successful API response with full address details
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "id": "test_id_123",
+            "postcode": "SW1A1AA",
+            "summaryline": "10 Downing Street, Westminster, London",
+            "organisation": "",
+            "buildingname": "",
+            "number": "10",
+            "premise": "10",
+            "street": "Downing Street",
+            "dependentlocality": "Westminster",
+            "posttown": "LONDON",
+            "county": "Greater London",
+            "latitude": 51.503396,
+            "longitude": -0.127784
+        }
+        mock_get.return_value = mock_response
+
+        # Execute
+        result = self.service.retrieve_address("test_id_123")
+
+        # Verify result structure (should be dict with full details)
+        self.assertIsInstance(result, dict)
+        self.assertEqual(result['postcode'], 'SW1A1AA')
+        self.assertEqual(result['street'], 'Downing Street')
+        self.assertEqual(result['posttown'], 'LONDON')
+
+        # Verify API call to autocomplete/retrieve endpoint
+        mock_get.assert_called_once()
+        call_url = mock_get.call_args[0][0]
+        call_params = mock_get.call_args[1].get('params', {})
+        self.assertIn('autocomplete/retrieve', call_url)
+        self.assertEqual(call_params.get('id'), 'test_id_123')
+        self.assertEqual(call_params.get('country'), 'GB')
+
+    @patch('utils.services.postcoder_service.requests.get')
+    def test_retrieve_address_empty_id(self, mock_get):
+        """Test empty ID raises ValueError"""
+        with self.assertRaises(ValueError) as context:
+            self.service.retrieve_address("")
+
+        self.assertIn("ID is required", str(context.exception))
+        mock_get.assert_not_called()
+
+    @patch('utils.services.postcoder_service.requests.get')
+    def test_retrieve_address_none_id(self, mock_get):
+        """Test None ID raises ValueError"""
+        with self.assertRaises(ValueError) as context:
+            self.service.retrieve_address(None)
+
+        self.assertIn("ID is required", str(context.exception))
+        mock_get.assert_not_called()
+
+    @patch.object(settings, 'POSTCODER_API_KEY', '')
+    def test_retrieve_address_missing_api_key(self):
+        """Test missing API key raises ValueError"""
+        service_no_key = PostcoderService(api_key="")
+
+        with self.assertRaises(ValueError) as context:
+            service_no_key.retrieve_address("test_id")
+
+        self.assertIn("POSTCODER_API_KEY not configured", str(context.exception))
+
+    @patch('utils.services.postcoder_service.requests.get')
+    def test_retrieve_address_timeout(self, mock_get):
+        """Test API timeout raises TimeoutError"""
+        mock_get.side_effect = requests.Timeout("Request timed out")
+
+        with self.assertRaises(TimeoutError) as context:
+            self.service.retrieve_address("test_id")
+
+        self.assertIn("timed out", str(context.exception))
+
+    @patch('utils.services.postcoder_service.requests.get')
+    def test_retrieve_address_api_error(self, mock_get):
+        """Test API error response raises RequestException"""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"error": "Invalid ID"}
+        mock_get.return_value = mock_response
+
+        with self.assertRaises(requests.RequestException) as context:
+            self.service.retrieve_address("invalid_id")
+
+        self.assertIn("Invalid ID", str(context.exception))
+
+    @patch('utils.services.postcoder_service.requests.get')
+    def test_retrieve_address_includes_country_param(self, mock_get):
+        """Test retrieve_address includes country parameter in API call"""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "id": "test_id",
+            "postcode": "12345",
+            "street": "Main Street",
+            "posttown": "New York",
+        }
+        mock_get.return_value = mock_response
+
+        # Execute with country code
+        self.service.retrieve_address("test_id", country_code="US")
+
+        # Verify country parameter in API call
+        call_args = mock_get.call_args
+        if call_args[1].get('params'):
+            self.assertEqual(call_args[1]['params']['country'], 'US')
+
     # ==================== Edge Cases & Integration ====================
 
     def test_service_initialization_with_settings(self):
