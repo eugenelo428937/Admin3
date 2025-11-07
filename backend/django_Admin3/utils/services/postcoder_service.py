@@ -76,24 +76,12 @@ class PostcoderService:
             params['postcode'] = postcode.strip()
 
         try:
-            # Debug logging - print the actual API call
-            debug_params = {k: v for k, v in params.items() if k != 'apikey'}
-            debug_params['apikey'] = f"{self.api_key[:8]}..." if len(self.api_key) > 8 else "***"
-            logger.info(f"🔍 DEBUG: Calling Postcoder Autocomplete Find API")
-            logger.info(f"🔍 DEBUG: URL: {url}")
-            logger.info(f"🔍 DEBUG: Params: {debug_params}")
-            logger.info(f"🔍 DEBUG: Full URL: {url}?{'&'.join([f'{k}={v}' for k, v in debug_params.items()])}")
+            logger.info(f"Calling Postcoder Autocomplete Find API for {country_code}")
 
             response = requests.get(url, params=params, timeout=10)
-
-            logger.info(f"🔍 DEBUG: Response status: {response.status_code}")
-            logger.info(f"🔍 DEBUG: Response headers: {dict(response.headers)}")
-
             response.raise_for_status()
 
             data = response.json()
-
-            logger.info(f"🔍 DEBUG: Response data: {data}")
 
             # Check if Postcoder returned an error
             if isinstance(data, dict) and 'error' in data:
@@ -109,6 +97,68 @@ class PostcoderService:
             raise TimeoutError("Postcoder API request timed out")
         except requests.RequestException as e:
             logger.error(f"❌ Postcoder Autocomplete API error for {country_code}: {str(e)}")
+            raise
+
+    def retrieve_address(self, address_id: str, country_code: str = 'GB') -> Dict:
+        """
+        Retrieve full address details by ID from Postcoder.com API.
+
+        This method is used as the second step in the autocomplete workflow:
+        1. User searches with autocomplete_address() → gets suggestions with IDs
+        2. User selects suggestion → call retrieve_address() with ID → get full details
+
+        Uses the /pcw/autocomplete/retrieve endpoint (chargeable operation).
+
+        Args:
+            address_id: The ID from autocomplete suggestion (e.g., "JE5NU.1.0.0.1.0")
+            country_code: ISO 3166-1 alpha-2 country code (e.g., "GB", "HK", "US")
+                         Defaults to "GB"
+
+        Returns:
+            dict: Full address details with all fields populated
+
+        Raises:
+            ValueError: If address_id is invalid or missing
+            requests.RequestException: If API call fails
+            TimeoutError: If API call times out
+        """
+        if not address_id or not address_id.strip():
+            raise ValueError("ID is required")
+
+        if not self.api_key:
+            raise ValueError("POSTCODER_API_KEY not configured")
+
+        # Postcoder.com Autocomplete Retrieve API endpoint
+        url = "https://ws.postcoder.com/pcw/autocomplete/retrieve"
+
+        params = {
+            'id': address_id.strip(),
+            'country': country_code.upper(),
+            'apikey': self.api_key
+        }
+
+        try:
+            logger.info(f"Retrieving full address details for ID: {address_id}")
+
+            response = requests.get(url, params=params, timeout=10)
+            response.raise_for_status()
+
+            data = response.json()
+
+            # Check if Postcoder returned an error
+            if isinstance(data, dict) and 'error' in data:
+                error_msg = data.get('error', 'Unknown error')
+                logger.error(f"Postcoder Retrieve API error for {country_code}: {error_msg}")
+                raise requests.RequestException(f"Postcoder API error: {error_msg}")
+
+            logger.info(f"✅ Successfully retrieved full address for ID: {address_id}")
+            return data
+
+        except requests.Timeout:
+            logger.error(f"❌ Postcoder Retrieve API timeout for ID {address_id}")
+            raise TimeoutError("Postcoder API request timed out")
+        except requests.RequestException as e:
+            logger.error(f"❌ Postcoder Retrieve API error for ID {address_id}: {str(e)}")
             raise
 
     def lookup_address(self, postcode: str, country_code: str = 'GB') -> Dict:
@@ -237,7 +287,7 @@ class PostcoderService:
             country_name = country_code.upper()
 
         if not isinstance(postcoder_response, list):
-            logger.warning("Postcoder response is not a list, returning empty addresses")
+            logger.warning(f"Postcoder response is not a list (type={type(postcoder_response)}), returning empty addresses")
             return {"addresses": []}
 
         addresses = []
