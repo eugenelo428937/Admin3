@@ -16,7 +16,7 @@ import { Edit } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 import CountryAutocomplete from '../User/CountryAutocomplete';
 import DynamicAddressForm from './DynamicAddressForm';
-import addressMetadataService from '../../services/addressMetadataService';
+import addressMetadataService, { ADDRESS_METADATA } from '../../services/addressMetadataService';
 import config from '../../config';
 import { useTheme } from '@mui/material/styles';
 const SmartAddressInput = ({
@@ -74,12 +74,20 @@ const SmartAddressInput = ({
     }
   }, [values, getFieldName, selectedCountry, postcodeValue]);
 
-  // Update metadata when country changes
+  // Update metadata when country changes (async - fetches from Google API)
   useEffect(() => {
     if (selectedCountry) {
       const countryCode = addressMetadataService.getCountryCode(selectedCountry);
-      const metadata = addressMetadataService.getAddressMetadata(countryCode);
-      setAddressMetadata(metadata);
+
+      // Fetch metadata asynchronously from Google API
+      addressMetadataService.fetchAddressMetadata(countryCode).then(metadata => {
+        setAddressMetadata(metadata);
+      }).catch(error => {
+        console.error('Failed to fetch address metadata, using fallback:', error);
+        // Fallback to synchronous method
+        const fallbackMetadata = addressMetadataService.getAddressMetadata(countryCode);
+        setAddressMetadata(fallbackMetadata);
+      });
 
       // Reset lookup fields when country changes (but NOT on every value change)
       setPostcodeValue('');
@@ -205,10 +213,15 @@ const SmartAddressInput = ({
 
   // Perform address lookup
   const performAddressLookup = useCallback(async (postcode, addressLine) => {
-    if (!addressMetadata?.addressLookupSupported) return;
-
     // Don't perform lookup if no search query
     if (!addressLine || !addressLine.trim()) {
+      setIsLoadingSuggestions(false);
+      return;
+    }
+
+    // Only perform lookup for countries in ADDRESS_METADATA
+    const countryCode = addressMetadataService.getCountryCode(selectedCountry);
+    if (!countryCode || !ADDRESS_METADATA[countryCode.toUpperCase()]) {
       setIsLoadingSuggestions(false);
       return;
     }
@@ -322,7 +335,15 @@ const SmartAddressInput = ({
     }
 
     const countryCode = addressMetadataService.getCountryCode(selectedCountry);
-    const baseMetadata = addressMetadataService.getAddressMetadata(countryCode);
+
+    // Fetch metadata dynamically from Google API
+    let baseMetadata;
+    try {
+      baseMetadata = await addressMetadataService.fetchAddressMetadata(countryCode);
+    } catch (error) {
+      console.error('Failed to fetch metadata for address population, using fallback:', error);
+      baseMetadata = addressMetadataService.getAddressMetadata(countryCode);
+    }
 
     // Create updated form data with the selected address (now with full details!)
     const updatedFormData = {};
@@ -631,6 +652,7 @@ const SmartAddressInput = ({
 								errors={errors}
 								fieldPrefix={fieldPrefix}
 								showOptionalFields={true}
+								metadata={addressMetadata}
 							/>
 						</Box>
 					)}
