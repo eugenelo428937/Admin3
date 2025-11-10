@@ -151,6 +151,8 @@ class PostcoderService:
                 logger.error(f"Postcoder Retrieve API error for {country_code}: {error_msg}")
                 raise requests.RequestException(f"Postcoder API error: {error_msg}")
 
+            # Log detailed response for debugging
+            logger.info(f"✅ Retrieved address data: {data}")
             logger.info(f"✅ Successfully retrieved full address for ID: {address_id}")
             return data
 

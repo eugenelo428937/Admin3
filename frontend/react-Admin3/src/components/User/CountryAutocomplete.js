@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
-import { TextField, Paper, List, ListItem, ListItemText, Box, Typography } from "@mui/material";
+import { TextField, Paper, List, ListItem, ListItemText, Box, Typography, Portal } from "@mui/material";
 import config from "../../config";
 
 const frequentCountries = [
@@ -16,7 +16,10 @@ const CountryAutocomplete = ({ value, onChange, placeholder, isInvalid, feedback
   const [showDropdown, setShowDropdown] = useState(false);
   const [countryList, setCountryList] = useState([]);
   const [filtered, setFiltered] = useState([]);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   const containerRef = useRef(null);
+  const textFieldRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     setInputValue(value || "");
@@ -56,19 +59,53 @@ const CountryAutocomplete = ({ value, onChange, placeholder, isInvalid, feedback
     }
   }, [inputValue, countryList]);
 
+  // Calculate dropdown position
+  const calculateDropdownPosition = useCallback(() => {
+    if (textFieldRef.current) {
+      const rect = textFieldRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 8, // Position below the input
+        left: rect.left,
+        width: rect.width
+      });
+    }
+  }, []);
+
+  // Handle click outside, scroll, and resize
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
+          containerRef.current && !containerRef.current.contains(event.target)) {
         setShowDropdown(false);
       }
     };
+
+    const handleScrollOrResize = () => {
+      if (showDropdown) {
+        calculateDropdownPosition();
+      }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+    };
+  }, [showDropdown, calculateDropdownPosition]);
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
     onChange && onChange(e);
+    calculateDropdownPosition();
+    setShowDropdown(true);
+  };
+
+  const handleFocus = () => {
+    calculateDropdownPosition();
     setShowDropdown(true);
   };
 
@@ -79,7 +116,7 @@ const CountryAutocomplete = ({ value, onChange, placeholder, isInvalid, feedback
   };
 
   return (
-    <Box ref={containerRef} sx={{ position: "relative" }}>
+    <Box ref={containerRef}>
       <TextField
         fullWidth
         type="text"
@@ -87,50 +124,61 @@ const CountryAutocomplete = ({ value, onChange, placeholder, isInvalid, feedback
         label={label}
         value={inputValue}
         onChange={handleInputChange}
-        onFocus={() => setShowDropdown(true)}
+        onFocus={handleFocus}
         autoComplete="off"
         placeholder={placeholder}
         error={isInvalid}
         helperText={isInvalid ? feedback : ''}
-        inputRef={inputRef}
+        inputRef={(node) => {
+          textFieldRef.current = node;
+          if (typeof inputRef === 'function') {
+            inputRef(node);
+          } else if (inputRef) {
+            inputRef.current = node;
+          }
+        }}
         variant="standard"
       />
       {showDropdown && (
-        <Paper
-          elevation={3}
-          sx={{
-            position: "absolute",
-            zIndex: 1000,
-            width: "100%",
-            maxHeight: 300,
-            overflowY: "auto",
-            mt: 1
-          }}
-        >
-          <List disablePadding>
-            {filtered.length === 0 ? (
-              <ListItem>
-                <ListItemText
-                  primary={<Typography color="text.secondary">No countries found</Typography>}
-                />
-              </ListItem>
-            ) : (
-              filtered.map((country) => (
-                <ListItem
-                  key={country.iso_code}
-                  component="div"
-                  onMouseDown={() => handleSelect(country)}
-                  sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
-                >
+        <Portal>
+          <Paper
+            ref={dropdownRef}
+            elevation={8}
+            sx={{
+              position: "fixed",
+              top: `${dropdownPosition.top}px`,
+              left: `${dropdownPosition.left}px`,
+              width: `${dropdownPosition.width}px`,
+              zIndex: 1300, // Same as address suggestions dropdown
+              maxHeight: 300,
+              overflowY: "auto"
+            }}
+          >
+            <List disablePadding>
+              {filtered.length === 0 ? (
+                <ListItem>
                   <ListItemText
-                    primary={country.name}
-                    secondary={country.phone_code && `${country.phone_code}`}
+                    primary={<Typography color="text.secondary">No countries found</Typography>}
                   />
                 </ListItem>
-              ))
-            )}
-          </List>
-        </Paper>
+              ) : (
+                filtered.map((country) => (
+                  <ListItem
+                    key={country.iso_code}
+                    component="div"
+                    onMouseDown={() => handleSelect(country)}
+                    sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+                  >
+                    <ListItemText
+                      primary={country.name}
+                      secondary={country.phone_code && `${country.phone_code}`}
+                    />
+                  </ListItem>
+                ))
+              )}
+            </List>
+          </Paper>
+        </Portal>
       )}
     </Box>
   );

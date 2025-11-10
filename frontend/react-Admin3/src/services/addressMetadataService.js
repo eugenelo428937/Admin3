@@ -63,15 +63,29 @@ export const fetchAddressMetadata = async (countryCode) => {
       // If we have a custom config, merge it with Google data
       const customConfig = ADDRESS_METADATA[upperCountryCode];
       if (customConfig) {
+        // Merge fields: Google fields + custom overrides
+        const mergedFields = {
+          ...transformed.fields,
+          ...customConfig.fields
+        };
+
+        // Determine which layout to use:
+        // - Use custom layout only if it has comprehensive field definitions (5+ fields)
+        // - Otherwise use Google's layout to ensure all fields are displayed
+        // This ensures minimal configs (UK, India, etc. with 3-4 fields) use Google's comprehensive layout
+        const customFieldCount = customConfig.fields ? Object.keys(customConfig.fields).length : 0;
+        const hasComprehensiveFields = customFieldCount >= 5;
+        const useLayout = hasComprehensiveFields ? (customConfig.layout || transformed.layout) : transformed.layout;
+
         // Merge ALL custom config properties (addressLookupSupported, etc.) with Google data
+        // But exclude 'fields' and 'layout' since we handle those specially above
+        const { fields: _fields, layout: _layout, ...customConfigRest } = customConfig;
+
         return {
           ...transformed,           // Google data as base
-          ...customConfig,          // ALL custom config properties override Google data
-          fields: {
-            ...transformed.fields,  // Google field configs
-            ...customConfig.fields  // Custom field configs override (e.g., US state dropdown)
-          },
-          layout: customConfig.layout || transformed.layout
+          ...customConfigRest,      // Custom config properties (addressLookupSupported, requiresPostcodeForLookup, etc.)
+          fields: mergedFields,     // Merged fields
+          layout: useLayout         // Smart layout selection
         };
       }
 
