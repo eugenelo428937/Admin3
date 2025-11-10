@@ -94,6 +94,17 @@ class OptimizedSearchService:
         filtered_queryset = base_queryset
         filtered_bundles_queryset = base_bundles_queryset
 
+        # When search query exists, only include bundles if query is relevant to bundles
+        # This prevents bundles from appearing in unrelated searches (e.g., "marking voucher")
+        should_include_bundles = True
+        if search_query and len(search_query) >= 2:
+            search_lower = search_query.lower()
+            bundle_keywords = ['bundle', 'package', 'combo', 'set']
+            # Only include bundles if search query contains bundle-related keywords
+            if not any(keyword in search_lower for keyword in bundle_keywords):
+                should_include_bundles = False
+                logger.info(f'🔍 [BUNDLES] Excluding bundles from search query "{search_query}" (no bundle keywords)')
+
         # Check if 'Bundle' category filter is active (exclusive filter)
         bundle_filter_active = 'Bundle' in filters.get('categories', [])
 
@@ -110,8 +121,11 @@ class OptimizedSearchService:
             if navbar_filters:
                 filtered_queryset = self._apply_navbar_filters(filtered_queryset, navbar_filters)
 
-        # Apply subject filters to bundles
-        if filters:
+        # Apply subject filters to bundles (only if bundles should be included)
+        if not should_include_bundles:
+            # Exclude all bundles when search query doesn't match bundle keywords
+            filtered_bundles_queryset = filtered_bundles_queryset.none()
+        elif filters:
             filtered_bundles_queryset = self._apply_bundle_filters(filtered_bundles_queryset, filters)
 
         # Get counts for pagination (from filtered querysets)
@@ -158,7 +172,7 @@ class OptimizedSearchService:
         logger.info(f'🔍 [BUNDLES] Included {len(bundles_data)} bundles, {len(products_data) - len(bundles_data)} products')
 
         # Check if marking vouchers should be included
-        marking_vouchers_data = self._fetch_marking_vouchers(search_query, filters)
+        marking_vouchers_data = self._fetch_marking_vouchers(search_query, filters, navbar_filters)
 
         # Combine products with marking vouchers
         if marking_vouchers_data:
@@ -436,13 +450,14 @@ class OptimizedSearchService:
 
         return queryset
 
-    def _fetch_marking_vouchers(self, search_query, filters):
+    def _fetch_marking_vouchers(self, search_query, filters, navbar_filters=None):
         """
         Fetch marking vouchers when appropriate filters are applied or search query matches.
 
         Args:
             search_query (str): Search query string
             filters (dict): Applied filters
+            navbar_filters (dict): Navbar-style filters (for navigation compatibility)
 
         Returns:
             list: List of marking voucher data formatted to match ProductListSerializer structure
@@ -453,18 +468,31 @@ class OptimizedSearchService:
             # Determine if marking vouchers should be included
             should_include = False
 
+            navbar_filters = navbar_filters or {}
+
+            # Check if navbar filter includes group='8' (Marking Vouchers navigation)
+            if navbar_filters.get('group') == '8':
+                should_include = True
+                logger.info('🔍 [MARKING-VOUCHERS] Including vouchers due to navbar group=8 filter')
+
+            # Check if product_types filter includes '8' (Marking Vouchers from Redux)
+            if filters.get('product_types'):
+                # Check for both string '8' and integer 8
+                if '8' in filters['product_types'] or 8 in filters['product_types']:
+                    should_include = True
+                    logger.info('🔍 [MARKING-VOUCHERS] Including vouchers due to product_types=8 filter')
+                # Also check for 'marking' keyword in product_types
+                marking_types = [str(pt).lower() for pt in filters['product_types']]
+                if any('marking' in pt for pt in marking_types):
+                    should_include = True
+                    logger.info('🔍 [MARKING-VOUCHERS] Including vouchers due to product_types keyword filter')
+
             # Check if filters include "Marking" or "Marking Vouchers"
             if filters.get('categories'):
                 marking_filters = [cat.lower() for cat in filters['categories']]
                 if any('marking' in cat for cat in marking_filters):
                     should_include = True
                     logger.info('🔍 [MARKING-VOUCHERS] Including vouchers due to category filter')
-
-            if filters.get('product_types'):
-                marking_types = [pt.lower() for pt in filters['product_types']]
-                if any('marking' in pt for pt in marking_types):
-                    should_include = True
-                    logger.info('🔍 [MARKING-VOUCHERS] Including vouchers due to product_types filter')
 
             # Check if search query matches vouchers
             if search_query and len(search_query) >= 2:
