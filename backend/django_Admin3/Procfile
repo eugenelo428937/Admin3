@@ -1,1 +1,2 @@
 web: gunicorn django_Admin3.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+worker: python manage.py process_email_queue --continuous --interval 30

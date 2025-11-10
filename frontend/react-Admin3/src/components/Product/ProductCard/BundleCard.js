@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
 	Button,
 	Card,
@@ -20,7 +20,16 @@ import {
 	Radio,
 	FormControlLabel,
 	Avatar,
-	useTheme
+	useTheme,
+	Table,
+	TableBody,
+	TableCell,
+	TableContainer,
+	TableHead,
+	TableRow,
+	Paper,
+	Divider,
+	CircularProgress
 } from "@mui/material";
 import { InfoOutline, AddShoppingCart, CheckRounded, Inventory2 } from "@mui/icons-material";
 import { BoxSeam } from "react-bootstrap-icons";
@@ -36,8 +45,28 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 	const [loadingContents, setLoadingContents] = useState(false);
 	const [selectedPriceType, setSelectedPriceType] = useState("");
 	const [isHovered, setIsHovered] = useState(false);
+	const [loadingPrices, setLoadingPrices] = useState(true);
 
 	const { addToCart } = useCart();
+
+	// Fetch full bundle contents with prices on mount
+	useEffect(() => {
+		const fetchBundleData = async () => {
+			setLoadingPrices(true);
+			try {
+				const response = await bundleService.getBundleContents(bundle.id);
+				if (response.success) {
+					setBundleContents(response.data);
+				}
+			} catch (error) {
+				console.error("Error fetching bundle prices:", error);
+			} finally {
+				setLoadingPrices(false);
+			}
+		};
+
+		fetchBundleData();
+	}, [bundle.id]);
 
 	const handleMouseEnter = () => {
 		setIsHovered(true);
@@ -50,13 +79,16 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 	// Calculate bundle total price by summing component prices with fallback logic
 	const getBundlePrice = useMemo(() => {
 		return (priceType = "standard") => {
-			if (!bundle.components || bundle.components.length === 0) return null;
+			// Use fetched bundleContents if available, otherwise fall back to bundle prop
+			const components = bundleContents?.components || bundle.components;
+
+			if (!components || components.length === 0) return null;
 
 			let totalPrice = 0;
 			let hasValidPrices = false;
 
 			// Calculate sum of all component prices with fallback to standard if discount not available
-			for (const component of bundle.components) {
+			for (const component of components) {
 				// Check if component has pricing information (new API structure)
 				if (component.prices && Array.isArray(component.prices)) {
 					// First try to find the requested price type
@@ -79,36 +111,10 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 				}
 			}
 
-			if (!hasValidPrices) {
-				// If no pricing data available, show placeholder
-				return (
-					<div className="d-flex flex-row align-items-end">
-						<Typography variant="h6" className="fw-lighter w-100">
-							Contact for pricing
-						</Typography>
-					</div>
-				);
-			}
-
-			// Simple price formatter
-			const formatPrice = (amount) => {
-				return new Intl.NumberFormat('en-GB', {
-					style: 'currency',
-					currency: 'GBP',
-					minimumFractionDigits: 2,
-					maximumFractionDigits: 2
-				}).format(amount);
-			};
-
-			return (
-				<div className="d-flex flex-row align-items-end">
-					<Typography variant="h6" className="fw-lighter w-100">
-						{formatPrice(totalPrice)}
-					</Typography>
-				</div>
-			);
+			return hasValidPrices ? totalPrice : null;
 		};
 	}, [
+		bundleContents,
 		bundle.components,
 		bundle.type
 	]);
@@ -117,9 +123,12 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 	// Returns true if ANY component has this price type
 	// Components without this price type will fallback to standard pricing
 	const hasBundlePriceType = (priceType) => {
-		if (!bundle.components || bundle.components.length === 0) return false;
-		
-		return bundle.components.some(component => {
+		// Use fetched bundleContents if available, otherwise fall back to bundle prop
+		const components = bundleContents?.components || bundle.components;
+
+		if (!components || components.length === 0) return false;
+
+		return components.some(component => {
 			// Check if component has pricing information (new API structure)
 			if (component.prices && Array.isArray(component.prices)) {
 				return component.prices.some(p => p.price_type === priceType);
@@ -195,6 +204,32 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 		}
 	};
 
+	// Helper function to format price
+	const formatPrice = (amount) => {
+		if (!amount) return 'N/A';
+		return new Intl.NumberFormat('en-GB', {
+			style: 'currency',
+			currency: 'GBP',
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		}).format(amount);
+	};
+
+	// Helper function to get component price
+	const getComponentPrice = (component, priceType = "standard") => {
+		if (!component.prices || !Array.isArray(component.prices)) return null;
+
+		// Try to find the requested price type
+		let priceObj = component.prices.find(p => p.price_type === priceType);
+
+		// Fallback to standard if requested type not found
+		if (!priceObj || !priceObj.amount) {
+			priceObj = component.prices.find(p => p.price_type === "standard");
+		}
+
+		return priceObj?.amount || null;
+	};
+
 	const renderContentsModal = () => (
 		<Dialog
 			open={showContentsModal}
@@ -217,64 +252,99 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 					<Typography>Loading bundle contents...</Typography>
 				) : bundleContents ? (
 					<Box>
-						<Box>
+						<Box mb={2}>
 							<Typography
 								variant="body2"
-								color="textSecondary"
-								className="mb-1">
+								color="textSecondary">
 								This bundle includes {bundleContents.total_components}{" "}
 								items:
 							</Typography>
 						</Box>
-						<Box className="d-flex flex-column gap-2">
-							<List>
-								{bundleContents.components?.map((component, index) => (
-									<ListItem key={index} divider>
-										<ListItemText
-											primary={
-												component.shortname ||
-												component.product_name
-											}
-											secondary={
-												<>
-													<Typography
-														variant="caption"
-														display="block">
-														{component.type} • Quantity:{" "}
-														{component.bundle_info?.quantity || 1}
+
+						{/* Price Breakdown Table */}
+						<TableContainer component={Paper} variant="outlined" sx={{ mb: 2 }}>
+							<Table size="small">
+								<TableHead>
+									<TableRow>
+										<TableCell><strong>Product</strong></TableCell>
+										<TableCell align="center"><strong>Qty</strong></TableCell>
+										<TableCell align="right"><strong>Unit Price</strong></TableCell>
+										<TableCell align="right"><strong>Total</strong></TableCell>
+									</TableRow>
+								</TableHead>
+								<TableBody>
+									{bundleContents.components?.map((component, index) => {
+										const quantity = component.quantity || 1;
+										const priceType = selectedPriceType || "standard";
+										const unitPrice = getComponentPrice(component, priceType);
+										const totalPrice = unitPrice ? unitPrice * quantity : null;
+
+										return (
+											<TableRow key={index} hover>
+												<TableCell>
+													<Typography variant="body2">
+														{component.product?.fullname || component.shortname || component.product_name}
 													</Typography>
-													{component.bundle_info
-														?.variation_name && (
-														<Typography
-															variant="caption"
-															display="block">
-															Variation:{" "}
-															{
-																component.bundle_info
-																	.variation_name
-															}
+													{component.product_variation?.name && (
+														<Typography variant="caption" color="textSecondary" display="block">
+															{component.product_variation.name}
 														</Typography>
 													)}
-													{bundle.bundle_type === "exam_session" &&
-														component.bundle_info
-															?.exam_session_product_code && (
-															<Typography
-																variant="caption"
-																display="block">
-																Product Code:{" "}
-																{
-																	component.bundle_info
-																		.exam_session_product_code
-																}
-															</Typography>
-														)}
-												</>
-											}
-										/>
-									</ListItem>
-								))}
-							</List>
-						</Box>
+												</TableCell>
+												<TableCell align="center">
+													<Typography variant="body2">
+														{quantity}
+													</Typography>
+												</TableCell>
+												<TableCell align="right">
+													<Typography variant="body2">
+														{formatPrice(unitPrice)}
+													</Typography>
+												</TableCell>
+												<TableCell align="right">
+													<Typography variant="body2" fontWeight="medium">
+														{formatPrice(totalPrice)}
+													</Typography>
+												</TableCell>
+											</TableRow>
+										);
+									})}
+									{/* Total Row */}
+									<TableRow>
+										<TableCell colSpan={3} align="right">
+											<Typography variant="subtitle1" fontWeight="bold">
+												Bundle Total:
+											</Typography>
+										</TableCell>
+										<TableCell align="right">
+											<Typography variant="h6" fontWeight="bold" color="primary">
+												{(() => {
+													const priceType = selectedPriceType || "standard";
+													let total = 0;
+													bundleContents.components?.forEach(component => {
+														const quantity = component.quantity || 1;
+														const price = getComponentPrice(component, priceType);
+														if (price) total += price * quantity;
+													});
+													return formatPrice(total);
+												})()}
+											</Typography>
+										</TableCell>
+									</TableRow>
+								</TableBody>
+							</Table>
+						</TableContainer>
+
+						{/* Price Type Info */}
+						{selectedPriceType && (
+							<Box sx={{ p: 1, bgcolor: 'info.lighter', borderRadius: 1 }}>
+								<Typography variant="caption" color="info.main">
+									{selectedPriceType === "retaker" ? "Retaker discount applied" :
+									 selectedPriceType === "additional" ? "Additional copy discount applied" :
+									 "Standard pricing"}
+								</Typography>
+							</Box>
+						)}
 					</Box>
 				) : (
 					<Typography>No bundle contents available</Typography>
@@ -462,19 +532,22 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 						{/* Right Column - Price & Action Section */}
 						<Box className="price-action-section">
 							<Box className="price-info-row">
-								<Typography variant="h3" className="price-display">
-									{(() => {
-										const priceType = selectedPriceType || "standard";
-										const priceComponent = getBundlePrice(priceType);
-										
-										// Extract formatted price from the component
-										if (priceComponent && priceComponent.props && priceComponent.props.children) {
-											const priceText = priceComponent.props.children[0]?.props?.children;
-											return priceText || '-';
-										}
-										return '-';
-									})()}
-								</Typography>
+								{loadingPrices ? (
+									<CircularProgress size={24} />
+								) : (
+									<Typography variant="h3" className="price-display">
+										{(() => {
+											const priceType = selectedPriceType || "standard";
+											const totalPrice = getBundlePrice(priceType);
+
+											if (totalPrice === null) {
+												return 'Contact for pricing';
+											}
+
+											return formatPrice(totalPrice);
+										})()}
+									</Typography>
+								)}
 								<Tooltip title="Show price details">
 									<Button size="small" className="info-button" onClick={handleShowContents}>
 										<InfoOutline />

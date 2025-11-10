@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import acknowledgmentService from '../services/acknowledgmentService';
-import phoneValidationService from '../services/phoneValidationService';
+import { parsePhoneNumber } from 'libphonenumber-js';
 
 /**
  * Hook for checkout validation
@@ -54,10 +54,11 @@ const useCheckoutValidation = () => {
   }, []);
 
   /**
-   * Validate phone number
+   * Validate phone number (synchronous)
    */
   const validatePhone = useCallback((phoneNumber, countryCode = 'GB', isRequired = false) => {
-    if (!phoneNumber || !phoneNumber.trim()) {
+    // Handle empty/null values
+    if (!phoneNumber || (typeof phoneNumber === 'string' && !phoneNumber.trim())) {
       if (isRequired) {
         return { isValid: false, error: 'Phone number is required' };
       }
@@ -65,13 +66,35 @@ const useCheckoutValidation = () => {
     }
 
     try {
-      const validation = phoneValidationService.validatePhoneNumber(phoneNumber, countryCode);
+      // Use libphonenumber-js directly for synchronous validation
+      const parsedNumber = parsePhoneNumber(phoneNumber, countryCode);
+
+      if (!parsedNumber) {
+        return {
+          isValid: false,
+          error: 'Invalid phone number format'
+        };
+      }
+
+      const isValid = parsedNumber.isValid();
+
+      if (!isValid) {
+        return {
+          isValid: false,
+          error: 'Please enter a valid phone number'
+        };
+      }
+
       return {
-        isValid: validation.isValid,
-        error: validation.error || null
+        isValid: true,
+        error: null,
+        formattedNumber: parsedNumber.formatNational()
       };
     } catch (error) {
-      return { isValid: false, error: 'Invalid phone number format' };
+      return {
+        isValid: false,
+        error: 'Invalid phone number format'
+      };
     }
   }, []);
 
