@@ -117,27 +117,61 @@ EMAIL_QUEUE_INTERVAL=30          # Check queue every 30 seconds
 
 ### Step 2: Create Worker Service on Railway
 
-Railway automatically detects the `Procfile` and creates services. To ensure the worker is running:
+**IMPORTANT:** Since we disabled the Procfile, you need to manually create a Worker service with a custom start command.
 
-1. Go to your Railway project dashboard
-2. Click on your service
-3. Go to "Settings" → "Deploy"
-4. Under "Start Command", you should see both `web` and `worker` processes
-5. Ensure both are enabled
+#### Create the Worker Service
 
-**Alternative: Manual Worker Service**
+1. **In Railway dashboard**, click **"+ New Service"**
+2. Select **"Deploy from GitHub repo"**
+3. Choose the **same repository** as your web service
+4. Select the **same branch** (e.g., `uat`)
 
-If Railway doesn't automatically create the worker, you can add it manually:
+#### Configure the Worker Service
 
-1. In Railway dashboard, click "+ New Service"
-2. Select "Deploy from GitHub repo"
-3. Choose the same repository
-4. Go to "Settings"
-5. Under "Start Command", enter:
+1. Go to the Worker service **"Settings"** tab
+2. Find **"Deploy"** section
+3. Under **"Start Command"**, enter:
    ```bash
    python manage.py process_email_queue --continuous --interval 30
    ```
-6. Ensure all environment variables are shared between web and worker services
+4. Click **"Save"**
+
+#### Share Environment Variables
+
+The Worker service needs access to the same environment variables as the Web service:
+
+1. Go to **"Variables"** tab
+2. Click **"Add Reference"** → **"Shared Variables"**
+3. Select your Web service to share all variables
+4. Or manually add these critical variables:
+   - `DATABASE_URL`
+   - `EMAIL_HOST`
+   - `EMAIL_PORT`
+   - `EMAIL_HOST_USER`
+   - `EMAIL_HOST_PASSWORD`
+   - `EMAIL_USE_TLS`
+   - `EMAIL_BCC_MONITORING`
+   - `EMAIL_BCC_RECIPIENTS`
+   - `EMAIL_QUEUE_BATCH_SIZE`
+   - `EMAIL_QUEUE_INTERVAL`
+
+#### Verify Worker is Running
+
+After deployment, check the Worker service logs. You should see:
+
+```text
+✅ CORRECT (Email Queue Processor):
+Starting email queue processor...
+Continuous mode: True, Interval: 30 seconds
+Processing email queue...
+
+❌ INCORRECT (Gunicorn Web Server):
+[INFO] Listening at: http://0.0.0.0:8080
+[INFO] Using worker: sync
+[INFO] Booting worker with pid: 6
+```
+
+If you see gunicorn logs, the start command is wrong. Go back to "Settings" → "Deploy" and set the correct command.
 
 ### Step 3: Gmail App Password Setup
 
