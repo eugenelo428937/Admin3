@@ -462,7 +462,7 @@ const SmartAddressInput = ({
 
 								{/* Address Line with Autocomplete */}
 								<Grid size={{ xs: addressMetadata.hasPostcode ? 8 : 12, md: addressMetadata.hasPostcode ? 9 : 12 }}>
-									<Box sx={{ position: "relative" }}>
+									<Box sx={{ position: "relative", display: "flex", gap: 2, alignItems: "flex-end" }}>
 										<TextField
 											fullWidth
 											required
@@ -497,6 +497,19 @@ const SmartAddressInput = ({
 											}}
 											variant="standard"
 										/>
+
+										{/* Manual Entry Button */}
+										<Button
+											variant="outlined"
+											onClick={() => {
+												setShowManualEntry(true);
+												setShowSuggestions(false);
+											}}
+											size="small"
+											sx={{ whiteSpace: "nowrap", mb: 0.5 }}
+										>
+											Manual Entry
+										</Button>
 
 										{/* Address Suggestions Dropdown - Rendered in Portal to escape overflow */}
 										{showSuggestions && (
@@ -610,13 +623,13 @@ const SmartAddressInput = ({
 							{addressMetadata.addressLookupSupported && (
 								<Box sx={{ textAlign: "center", mb: 3 }}>
 									<Button
-										variant="text"
+										variant="outlined"
 										onClick={() => {
 											setShowManualEntry(false);
 											setAddressLineValue("");
 											setPostcodeValue("");
 										}}>
-										← Back to address lookup
+										Address Lookup
 									</Button>
 								</Box>
 							)}
