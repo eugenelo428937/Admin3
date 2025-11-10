@@ -1231,13 +1231,6 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                                  shakingFields={shakingFields}
                               />
                               <Box sx={{ textAlign: 'center', mt: 2, display: 'flex', gap: 2, justifyContent: 'center' }}>
-                                 <Button
-                                    variant="text"
-                                    onClick={() => setUseSmartInputHome(false)}
-                                    size="small"
-                                 >
-                                    ← Back to manual entry
-                                 </Button>
                                  {isProfileMode && (
                                     <Button
                                        variant="text"
@@ -1412,13 +1405,6 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                                        shakingFields={shakingFields}
                                     />
                                     <Box sx={{ textAlign: 'center', mt: 2, display: 'flex', gap: 2, justifyContent: 'center' }}>
-                                       <Button
-                                          variant="text"
-                                          onClick={() => setUseSmartInputWork(false)}
-                                          size="small"
-                                       >
-                                          ← Back to manual entry
-                                       </Button>
                                        {isProfileMode && (
                                           <Button
                                              variant="text"
