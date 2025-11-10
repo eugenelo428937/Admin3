@@ -236,18 +236,34 @@ const SmartAddressInput = ({
         const data = await res.json();
 
         const addresses = (data.addresses || []).map(addr => {
+          // Helper to clean address components (trim whitespace and trailing punctuation)
+          const cleanComponent = (str) => {
+            if (!str) return '';
+            return str.trim().replace(/[,\s]+$/, ''); // Remove trailing commas and whitespace
+          };
+
+          // Build comprehensive address display including flat/floor info
+          const addressParts = [
+            cleanComponent(addr.sub_building_name),  // Flat/unit/floor (e.g., "Flat A, 16/F")
+            cleanComponent(addr.building_name),      // Building name (e.g., "Abbey Court")
+            cleanComponent(addr.line_1),             // Street address
+            cleanComponent(addr.line_2)              // Additional address line
+          ].filter(Boolean);
+
           const mappedAddr = {
             id: addr.id || "",  // Preserve ID for retrieve endpoint
-            line1: addr.line_1 || "",
-            line2: addr.line_2 || "",
-            town: addr.town_or_city || "",
-            county: addr.county || "",
-            postcode: addr.postcode || "",
+            line1: cleanComponent(addr.line_1),
+            line2: cleanComponent(addr.line_2),
+            town: cleanComponent(addr.town_or_city),
+            county: cleanComponent(addr.county),
+            postcode: cleanComponent(addr.postcode),
             country: selectedCountry,
             state: "",
             district: "",
-            building: addr.building_name || "",
-            fullAddress: [addr.building_name, addr.line_1, addr.line_2].filter(Boolean).join(', ')
+            sub_building_name: cleanComponent(addr.sub_building_name),  // Flat/unit/floor
+            building_name: cleanComponent(addr.building_name),          // Building name
+            building_number: cleanComponent(addr.building_number),      // Street number
+            fullAddress: addressParts.join(', ')
           };
 
           return mappedAddr;
@@ -303,6 +319,12 @@ const SmartAddressInput = ({
       baseMetadata = addressMetadataService.getAddressMetadata(countryCode);
     }
 
+    // Helper to clean address components (trim whitespace and trailing punctuation)
+    const cleanComponent = (str) => {
+      if (!str) return '';
+      return str.trim().replace(/[,\s]+$/, ''); // Remove trailing commas and whitespace
+    };
+
     // Create updated form data with the selected address (now with full details!)
     const updatedFormData = {};
 
@@ -316,33 +338,47 @@ const SmartAddressInput = ({
 
       switch(fieldName) {
         case 'address':
-          const addressParts = [];
-          if (address.building_name) addressParts.push(address.building_name);
-          if (address.line_1) addressParts.push(address.line_1);
-          if (address.line_2) addressParts.push(address.line_2);
-          updatedFormData[fullFieldName] = addressParts.join(', ') || address.line_1 || '';
+          // Include ALL address components: flat/floor, building, street
+          const addressParts = [
+            cleanComponent(address.sub_building_name),  // Flat/unit/floor (e.g., "Flat A, 16/F")
+            cleanComponent(address.building_name),      // Building name (e.g., "Abbey Court")
+            cleanComponent(address.line_1),             // Street address
+            cleanComponent(address.line_2)              // Additional address line
+          ].filter(Boolean);
+          updatedFormData[fullFieldName] = addressParts.join(', ') || cleanComponent(address.line_1) || '';
           break;
 
         case 'city':
-          updatedFormData[fullFieldName] = address.town_or_city || address.town || address.city || '';
+          updatedFormData[fullFieldName] = cleanComponent(address.town_or_city || address.town || address.city || '');
           break;
 
         case 'state':
-          updatedFormData[fullFieldName] = address.state || address.county || '';
+          updatedFormData[fullFieldName] = cleanComponent(address.state || address.county || '');
           break;
 
         case 'postal_code':
-          updatedFormData[fullFieldName] = address.postcode || '';
+          updatedFormData[fullFieldName] = cleanComponent(address.postcode || '');
           break;
 
         case 'county':
-          updatedFormData[fullFieldName] = address.county || '';
+          updatedFormData[fullFieldName] = cleanComponent(address.county || '');
           break;
 
+        case 'sub_building_name':
+          updatedFormData[fullFieldName] = cleanComponent(address.sub_building_name || '');
+          break;
+
+        case 'building_name':
+          updatedFormData[fullFieldName] = cleanComponent(address.building_name || '');
+          break;
+
+        case 'building_number':
+          updatedFormData[fullFieldName] = cleanComponent(address.building_number || '');
+          break;
 
         default:
           if (address[fieldName]) {
-            updatedFormData[fullFieldName] = address[fieldName];
+            updatedFormData[fullFieldName] = cleanComponent(address[fieldName]);
           }
           break;
       }
@@ -462,7 +498,7 @@ const SmartAddressInput = ({
 
 								{/* Address Line with Autocomplete */}
 								<Grid size={{ xs: addressMetadata.hasPostcode ? 8 : 12, md: addressMetadata.hasPostcode ? 9 : 12 }}>
-									<Box sx={{ position: "relative" }}>
+									<Box sx={{ position: "relative", display: "flex", gap: 2, alignItems: "flex-end" }}>
 										<TextField
 											fullWidth
 											required
@@ -497,6 +533,8 @@ const SmartAddressInput = ({
 											}}
 											variant="standard"
 										/>
+
+										
 
 										{/* Address Suggestions Dropdown - Rendered in Portal to escape overflow */}
 										{showSuggestions && (
@@ -599,6 +637,20 @@ const SmartAddressInput = ({
 											)} */}
 									</Box>
 								</Grid>
+                <Grid size={{xs:12}}>
+                  {/* Manual Entry Button */}
+										<Button
+											variant="outlined"
+											onClick={() => {
+												setShowManualEntry(true);
+												setShowSuggestions(false);
+											}}
+											size="small"
+											sx={{ whiteSpace: "nowrap"}}
+										>
+											Manual Entry
+										</Button>
+                </Grid>
 							</Grid>
 						</Box>
 					)}
@@ -607,20 +659,6 @@ const SmartAddressInput = ({
 					{(showManualEntry ||
 						!addressMetadata.addressLookupSupported) && (
 						<Box>
-							{addressMetadata.addressLookupSupported && (
-								<Box sx={{ textAlign: "center", mb: 3 }}>
-									<Button
-										variant="text"
-										onClick={() => {
-											setShowManualEntry(false);
-											setAddressLineValue("");
-											setPostcodeValue("");
-										}}>
-										← Back to address lookup
-									</Button>
-								</Box>
-							)}
-
 							<DynamicAddressForm
 								country={selectedCountry}
 								values={values}
@@ -630,6 +668,19 @@ const SmartAddressInput = ({
 								showOptionalFields={true}
 								metadata={addressMetadata}
 							/>
+              {addressMetadata.addressLookupSupported && (
+								<Box sx={{ textAlign: "center", mb: 3 }}>
+									<Button
+										variant="outlined"
+										onClick={() => {
+											setShowManualEntry(false);
+											setAddressLineValue("");
+											setPostcodeValue("");
+										}}>
+										Address Lookup
+									</Button>
+								</Box>
+							)}
 						</Box>
 					)}
 				</>
