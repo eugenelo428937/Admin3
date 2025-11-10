@@ -1,13 +1,53 @@
 import { parsePhoneNumber, isValidPhoneNumber, getCountryCallingCode } from 'libphonenumber-js';
+import config from '../config';
 
 class PhoneValidationService {
+  constructor() {
+    // Cache for country data fetched from backend
+    this.countriesCache = null;
+    this.countriesFetchPromise = null;
+  }
+
+  /**
+   * Fetch countries from backend API
+   * @returns {Promise<Array>} List of countries with code and name
+   */
+  async fetchCountries() {
+    // Return cached data if available
+    if (this.countriesCache) {
+      return this.countriesCache;
+    }
+
+    // Return existing promise if fetch is in progress
+    if (this.countriesFetchPromise) {
+      return this.countriesFetchPromise;
+    }
+
+    // Start new fetch
+    this.countriesFetchPromise = fetch(config.apiBaseUrl + '/api/countries/')
+      .then((res) => res.json())
+      .then((data) => {
+        const countries = Array.isArray(data) ? data : data.results || [];
+        this.countriesCache = countries;
+        this.countriesFetchPromise = null;
+        return countries;
+      })
+      .catch((err) => {
+        console.error('Failed to load countries from backend:', err);
+        this.countriesFetchPromise = null;
+        // Return empty array as fallback
+        return [];
+      });
+
+    return this.countriesFetchPromise;
+  }
   /**
    * Validates a phone number for a specific country
    * @param {string} phoneNumber - The phone number to validate
    * @param {string} countryCode - The ISO country code (e.g., 'US', 'GB', 'IN')
-   * @returns {Object} - Validation result with isValid, error, and formatted number
+   * @returns {Promise<Object>} - Validation result with isValid, error, and formatted number
    */
-  validatePhoneNumber(phoneNumber, countryCode) {
+  async validatePhoneNumber(phoneNumber, countryCode) {
     try {
       if (!phoneNumber || !phoneNumber.trim()) {
         return {
@@ -29,7 +69,7 @@ class PhoneValidationService {
 
       // Parse the phone number
       const parsedNumber = parsePhoneNumber(phoneNumber, countryCode);
-      
+
       if (!parsedNumber) {
         return {
           isValid: false,
@@ -41,11 +81,11 @@ class PhoneValidationService {
 
       // Check if the number is valid
       const isValid = parsedNumber.isValid();
-      
+
       if (!isValid) {
         return {
           isValid: false,
-          error: this.getValidationErrorMessage(phoneNumber, countryCode),
+          error: await this.getValidationErrorMessage(phoneNumber, countryCode),
           formattedNumber: null,
           parsedNumber: null
         };
@@ -63,7 +103,7 @@ class PhoneValidationService {
     } catch (error) {
       return {
         isValid: false,
-        error: this.getValidationErrorMessage(phoneNumber, countryCode),
+        error: await this.getValidationErrorMessage(phoneNumber, countryCode),
         formattedNumber: null,
         parsedNumber: null
       };
@@ -163,9 +203,9 @@ class PhoneValidationService {
    * Gets a user-friendly error message for validation failures
    * @param {string} phoneNumber - The phone number that failed validation
    * @param {string} countryCode - The country code used for validation
-   * @returns {string} - User-friendly error message
+   * @returns {Promise<string>} - User-friendly error message
    */
-  getValidationErrorMessage(phoneNumber, countryCode) {
+  async getValidationErrorMessage(phoneNumber, countryCode) {
     if (!phoneNumber || !phoneNumber.trim()) {
       return 'Phone number is required';
     }
@@ -188,98 +228,54 @@ class PhoneValidationService {
     }
 
     // Country-specific messages
-    const countryName = this.getCountryName(countryCode);
+    const countryName = await this.getCountryName(countryCode);
     return `Please enter a valid ${countryName} phone number`;
   }
 
   /**
    * Gets country name from country code
    * @param {string} countryCode - The ISO country code
-   * @returns {string} - Country name
+   * @returns {Promise<string>} - Country name
    */
-  getCountryName(countryCode) {
-    const countryNames = {
-      'US': 'US',
-      'GB': 'UK',
-      'IN': 'Indian',
-      'ZA': 'South African',
-      'AU': 'Australian',
-      'CA': 'Canadian',
-      'DE': 'German',
-      'FR': 'French',
-      'ES': 'Spanish',
-      'IT': 'Italian',
-      'NL': 'Dutch',
-      'BE': 'Belgian',
-      'CH': 'Swiss',
-      'AT': 'Austrian',
-      'SE': 'Swedish',
-      'NO': 'Norwegian',
-      'DK': 'Danish',
-      'FI': 'Finnish',
-      'IE': 'Irish',
-      'PT': 'Portuguese',
-      'GR': 'Greek',
-      'PL': 'Polish',
-      'CZ': 'Czech',
-      'HU': 'Hungarian',
-      'SK': 'Slovak',
-      'SI': 'Slovenian',
-      'HR': 'Croatian',
-      'BG': 'Bulgarian',
-      'RO': 'Romanian',
-      'LT': 'Lithuanian',
-      'LV': 'Latvian',
-      'EE': 'Estonian',
-      'HK': 'Hong Kong',
-    };
+  async getCountryName(countryCode) {
+    try {
+      const countries = await this.fetchCountries();
+      // Backend uses 'iso_code' field
+      const country = countries.find((c) => c.iso_code === countryCode);
 
-    return countryNames[countryCode] || countryCode;
+      if (country) {
+        return country.name;
+      }
+
+      // Fallback to country code if not found
+      return countryCode;
+    } catch (error) {
+      console.error('Error getting country name:', error);
+      return countryCode;
+    }
   }
 
   /**
    * Gets the ISO country code from country name
    * @param {string} countryName - The country name
-   * @returns {string} - ISO country code
+   * @returns {Promise<string|null>} - ISO country code
    */
-  getCountryCodeFromName(countryName) {
-    const countryMapping = {
-      'United States': 'US',
-      'United Kingdom': 'GB',
-      'India': 'IN',
-      'South Africa': 'ZA',
-      'Australia': 'AU',
-      'Canada': 'CA',
-      'Germany': 'DE',
-      'France': 'FR',
-      'Spain': 'ES',
-      'Italy': 'IT',
-      'Netherlands': 'NL',
-      'Belgium': 'BE',
-      'Switzerland': 'CH',
-      'Austria': 'AT',
-      'Sweden': 'SE',
-      'Norway': 'NO',
-      'Denmark': 'DK',
-      'Finland': 'FI',
-      'Ireland': 'IE',
-      'Portugal': 'PT',
-      'Greece': 'GR',
-      'Poland': 'PL',
-      'Czech Republic': 'CZ',
-      'Hungary': 'HU',
-      'Slovakia': 'SK',
-      'Slovenia': 'SI',
-      'Croatia': 'HR',
-      'Bulgaria': 'BG',
-      'Romania': 'RO',
-      'Lithuania': 'LT',
-      'Latvia': 'LV',
-      'Estonia': 'EE',
-      'Hong Kong': 'HK'
-    };
+  async getCountryCodeFromName(countryName) {
+    try {
+      const countries = await this.fetchCountries();
+      const country = countries.find((c) => c.name === countryName);
 
-    return countryMapping[countryName] || null;
+      if (country) {
+        // Backend uses 'iso_code' field
+        return country.iso_code;
+      }
+
+      // Fallback to null if not found
+      return null;
+    } catch (error) {
+      console.error('Error getting country code from name:', error);
+      return null;
+    }
   }
 
   /**
