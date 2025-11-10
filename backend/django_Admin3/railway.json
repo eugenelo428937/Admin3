@@ -5,7 +5,7 @@
     "buildCommand": "pip install -r requirements.txt"
   },
   "deploy": {
-    "startCommand": "python manage.py migrate --noinput && python manage.py createcachetable && gunicorn django_Admin3.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 60 --log-level info",
+    "startCommand": "bash railway-start.sh",
     "healthcheckPath": "/api/health/",
     "healthcheckTimeout": 300,
     "initialDelaySeconds": 30,

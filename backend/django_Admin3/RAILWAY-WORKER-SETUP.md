@@ -55,23 +55,27 @@ Railway Project
    **DO NOT** include `python manage.py collectstatic` - Worker doesn't need static files
 5. Click **"Save"**
 
-### Step 4: Set Custom Start Command
+### Step 4: Set SERVICE_TYPE Environment Variable
 
 **⚠️ THIS IS THE CRITICAL STEP:**
 
-Railway will try to use `railway.json` by default, but Worker needs a different command.
+The `railway.json` now uses a conditional startup script (`railway-start.sh`) that checks the `SERVICE_TYPE` environment variable to decide whether to run as Web or Worker.
 
-1. Still in **"Settings"** tab
-2. Scroll to **"Deploy"** section
-3. Find **"Custom Start Command"** field
-4. Enter this EXACT command:
-   ```bash
-   python manage.py process_email_queue --continuous --interval 30
-   ```
-5. **IMPORTANT:** This overrides `railway.json` startCommand (which runs gunicorn)
-6. Click **"Save"**
+1. Still in **"Settings"** tab (Worker service)
+2. Go to **"Variables"** tab
+3. Click **"New Variable"**
+4. Set:
+   - **Variable Name**: `SERVICE_TYPE`
+   - **Value**: `worker`
+5. Click **"Add"** or **"Save"**
 
-**Why this matters:** Both Web and Worker services share the same repository and `railway.json` file. The Web service NEEDS the `railway.json` (it runs gunicorn), but the Worker MUST override it with this custom command.
+**How it works:**
+
+- `railway-start.sh` checks if `SERVICE_TYPE=worker`
+- If yes → runs email queue processor
+- If no (or not set) → runs web server with gunicorn
+- Web service doesn't set this variable, so it runs as web by default
+- Worker service MUST set `SERVICE_TYPE=worker`
 
 ### Step 5: Share Environment Variables
 
@@ -190,22 +194,27 @@ django.core.exceptions.ImproperlyConfigured: Set the DJANGO_SECRET_KEY environme
 [INFO] Booting worker with pid: 6
 ```
 
-**Root Cause:** Worker is using `railway.json` startCommand instead of custom start command.
+**Root Cause:** The `SERVICE_TYPE` environment variable is not set to `worker`.
 
 **Solution:**
 
-1. Go to Worker service → **"Settings"** tab → **"Deploy"** section
-2. Locate **"Custom Start Command"** field
-3. Ensure it contains:
-
-   ```bash
-   python manage.py process_email_queue --continuous --interval 30
-   ```
-
-4. **CRITICAL:** The field must NOT be empty and must NOT reference gunicorn
+1. Go to Worker service → **"Variables"** tab
+2. Check if `SERVICE_TYPE` variable exists
+3. If missing, click **"New Variable"**:
+   - Variable Name: `SERVICE_TYPE`
+   - Value: `worker`
+4. If exists but wrong value, click on it and change to `worker`
 5. Click **"Save"**
 6. Go to **"Deployments"** tab and click **"Redeploy"**
-7. Check logs - you should now see "Starting email queue processor..." instead of gunicorn
+7. Check logs - you should now see:
+
+   ```text
+   Starting WORKER service...
+   Starting email queue processor...
+   Continuous mode: True, Interval: 30 seconds
+   ```
+
+   Instead of gunicorn logs
 
 ### Worker Can't Connect to Database
 
