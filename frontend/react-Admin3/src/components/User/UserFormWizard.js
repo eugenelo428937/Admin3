@@ -507,11 +507,12 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                errors.last_name = "Last name is required";
             if (!form.email.trim()) errors.email = "Email is required";
 
-            // Phone validation
-            if (!phoneValidation.home_phone.isValid) {
+            // Home phone validation (OPTIONAL - only validate if provided)
+            if (form.home_phone.trim() && !phoneValidation.home_phone.isValid) {
                errors.home_phone = phoneValidation.home_phone.error;
             }
 
+            // Mobile phone validation (REQUIRED)
             if (!form.mobile_phone.trim()) {
                errors.mobile_phone = "Mobile phone is required";
             } else if (!phoneValidation.mobile_phone.isValid) {

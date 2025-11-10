@@ -69,45 +69,59 @@ const ValidatedPhoneInput = ({
 
 	// Validate phone number when input or country changes
 	useEffect(() => {
-		let result;
+		let isCancelled = false;
 
-		// Check if phone input contains only valid characters (digits, spaces, hyphens, parentheses, plus)
-		const validPhoneRegex = /^[0-9\s\-\(\)\+]*$/;
+		const validatePhone = async () => {
+			let result;
 
-		if (phoneInput && !selectedCountry) {
-			result = {
-				isValid: false,
-				error: "Please select a country code first",
-			};
-		} else if (phoneInput && !validPhoneRegex.test(phoneInput)) {
-			result = {
-				isValid: false,
-				error: "Phone number contains invalid characters",
-			};
-		} else if (phoneInput && selectedCountry) {
-			const countryCode = phoneValidationService.getCountryCodeFromName(
-				selectedCountry.name
-			);
-			if (countryCode) {
-				result = phoneValidationService.validatePhoneNumber(
-					phoneInput,
-					countryCode
+			// Check if phone input contains only valid characters (digits, spaces, hyphens, parentheses, plus)
+			const validPhoneRegex = /^[0-9\s\-\(\)\+]*$/;
+
+			if (phoneInput && !selectedCountry) {
+				result = {
+					isValid: false,
+					error: "Please select a country code first",
+				};
+			} else if (phoneInput && !validPhoneRegex.test(phoneInput)) {
+				result = {
+					isValid: false,
+					error: "Phone number contains invalid characters",
+				};
+			} else if (phoneInput && selectedCountry) {
+				const countryCode = await phoneValidationService.getCountryCodeFromName(
+					selectedCountry.name
 				);
+				if (countryCode) {
+					result = await phoneValidationService.validatePhoneNumber(
+						phoneInput,
+						countryCode
+					);
+				} else {
+					result = { isValid: false, error: "Invalid country selected" };
+				}
+			} else if (!phoneInput && required) {
+				result = { isValid: false, error: "Phone number is required" };
 			} else {
-				result = { isValid: false, error: "Invalid country selected" };
+				result = { isValid: true, error: null };
 			}
-		} else if (!phoneInput && required) {
-			result = { isValid: false, error: "Phone number is required" };
-		} else {
-			result = { isValid: true, error: null };
-		}
 
-		setValidationResult(result);
+			// Only update state if the effect hasn't been cancelled
+			if (!isCancelled) {
+				setValidationResult(result);
 
-		// Notify parent component using the ref
-		if (onValidationChangeRef.current) {
-			onValidationChangeRef.current(result);
-		}
+				// Notify parent component using the ref
+				if (onValidationChangeRef.current) {
+					onValidationChangeRef.current(result);
+				}
+			}
+		};
+
+		validatePhone();
+
+		// Cleanup function to prevent state updates on unmounted component
+		return () => {
+			isCancelled = true;
+		};
 	}, [phoneInput, selectedCountry, required]);
 
 	const handlePhoneInputChange = (e) => {
@@ -134,9 +148,9 @@ const ValidatedPhoneInput = ({
 		}
 	};
 
-	const formatPhoneOnBlur = () => {
+	const formatPhoneOnBlur = async () => {
 		if (phoneInput && selectedCountry && validationResult.isValid) {
-			const countryCode = phoneValidationService.getCountryCodeFromName(
+			const countryCode = await phoneValidationService.getCountryCodeFromName(
 				selectedCountry.name
 			);
 			if (countryCode) {
