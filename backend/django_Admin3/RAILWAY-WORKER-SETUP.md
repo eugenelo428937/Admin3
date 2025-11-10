@@ -55,19 +55,31 @@ Railway Project
    **DO NOT** include `python manage.py collectstatic` - Worker doesn't need static files
 5. Click **"Save"**
 
-### Step 4: Set SERVICE_TYPE Environment Variable
+### Step 4: Disable Health Check for Worker
+
+**⚠️ CRITICAL:** Worker service doesn't run a web server, so health checks will fail.
+
+1. Still in **"Settings"** tab (Worker service)
+2. Scroll to **"Deploy"** section
+3. Find **"Health Check Path"** field
+4. **Delete** the path (clear the field completely)
+5. Or find **"Enable Health Check"** toggle and turn it OFF
+6. Click **"Save"**
+
+**Why:** The `railway.json` health check (`/api/health/`) only works for Web service. Worker doesn't have HTTP endpoints, so health checks cause deployment failures.
+
+### Step 5: Set SERVICE_TYPE Environment Variable
 
 **⚠️ THIS IS THE CRITICAL STEP:**
 
 The `railway.json` now uses a conditional startup script (`railway-start.sh`) that checks the `SERVICE_TYPE` environment variable to decide whether to run as Web or Worker.
 
-1. Still in **"Settings"** tab (Worker service)
-2. Go to **"Variables"** tab
-3. Click **"New Variable"**
-4. Set:
+1. Go to **"Variables"** tab (Worker service)
+2. Click **"New Variable"**
+3. Set:
    - **Variable Name**: `SERVICE_TYPE`
    - **Value**: `worker`
-5. Click **"Add"** or **"Save"**
+4. Click **"Add"** or **"Save"**
 
 **How it works:**
 
@@ -77,7 +89,7 @@ The `railway.json` now uses a conditional startup script (`railway-start.sh`) th
 - Web service doesn't set this variable, so it runs as web by default
 - Worker service MUST set `SERVICE_TYPE=worker`
 
-### Step 5: Share Environment Variables
+### Step 6: Share Environment Variables
 
 **⚠️ CRITICAL:** The Worker needs the same environment variables as your Web service.
 
@@ -121,13 +133,13 @@ EMAIL_QUEUE_INTERVAL=30
 
 **⚠️ Common Error:** If you see `KeyError: 'DJANGO_SECRET_KEY'` during build, it means `DJANGO_SETTINGS_MODULE` is not set or is set to `development` instead of `uat`.
 
-### Step 6: Deploy Worker Service
+### Step 7: Deploy Worker Service
 
 1. Click **"Deploy"** button (or it may auto-deploy)
 2. Wait for deployment to complete
 3. Go to **"Deployments"** tab to monitor progress
 
-### Step 7: Verify Worker is Running Correctly
+### Step 8: Verify Worker is Running Correctly
 
 1. Go to **"Deployments"** tab
 2. Click on the latest deployment
@@ -155,6 +167,22 @@ Sleeping for 30 seconds...
 If you see the INCORRECT logs, the Worker service is still using `railway.json` startCommand. Go back to **Step 4** and ensure the custom start command is set.
 
 ## Troubleshooting
+
+### Health Check Failing
+
+**Problem:** Deployment fails with health check errors, service keeps restarting
+
+**Root Cause:** Worker service doesn't run a web server, so HTTP health checks at `/api/health/` fail.
+
+**Solution:**
+
+1. Go to Worker service → **"Settings"** tab → **"Deploy"** section
+2. Find **"Health Check Path"** field
+3. Clear the field completely (remove `/api/health/`)
+4. Or toggle **"Enable Health Check"** to OFF
+5. Click **"Save"** and redeploy
+
+**Why:** Health checks are only for services that respond to HTTP requests (web servers). Worker services run background processes and don't have HTTP endpoints.
 
 ### Build Fails with "KeyError: 'DJANGO_SECRET_KEY'"
 
