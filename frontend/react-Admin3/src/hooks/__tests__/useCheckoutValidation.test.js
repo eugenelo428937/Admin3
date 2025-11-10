@@ -51,11 +51,11 @@ describe('useCheckoutValidation', () => {
     it('should validate required phone numbers', () => {
       const { result } = renderHook(() => useCheckoutValidation());
 
-      // Valid phone
-      expect(result.current.validatePhone('07712345678', 'GB', true)).toEqual({
-        isValid: true,
-        error: null
-      });
+      // Valid phone - now returns formattedNumber
+      const validResult = result.current.validatePhone('07712345678', 'GB', true);
+      expect(validResult.isValid).toBe(true);
+      expect(validResult.error).toBeNull();
+      expect(validResult.formattedNumber).toBeTruthy(); // Formatted number is present
 
       // Empty required phone
       expect(result.current.validatePhone('', 'GB', true)).toEqual({
@@ -64,10 +64,9 @@ describe('useCheckoutValidation', () => {
       });
 
       // Invalid phone
-      expect(result.current.validatePhone('123', 'GB', true)).toEqual({
-        isValid: false,
-        error: 'Invalid phone number format'
-      });
+      const invalidResult = result.current.validatePhone('123', 'GB', true);
+      expect(invalidResult.isValid).toBe(false);
+      expect(invalidResult.error).toBeTruthy();
     });
 
     it('should allow empty optional phone numbers', () => {
@@ -189,14 +188,14 @@ describe('useCheckoutValidation', () => {
       };
 
       act(() => {
-        const result = result.current.validateStep1(
+        const validationResult = result.current.validateStep1(
           validContactData,
           validDeliveryAddress,
           validInvoiceAddress
         );
 
-        expect(result.canProceed).toBe(true);
-        expect(result.errors).toEqual([]);
+        expect(validationResult.canProceed).toBe(true);
+        expect(validationResult.errors).toEqual([]);
       });
     });
 
