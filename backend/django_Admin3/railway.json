@@ -6,7 +6,6 @@
   },
   "deploy": {
     "startCommand": "bash railway-start.sh",
-    "healthcheckPath": "/api/health/",
     "healthcheckTimeout": 300,
     "initialDelaySeconds": 30,
     "restartPolicyType": "ON_FAILURE",
