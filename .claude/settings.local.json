@@ -14,7 +14,10 @@
       "Bash(npm test:*)",
       "Bash(c:/Code/Admin3/.venv/Scripts/python.exe:*)",
       "Bash(set DJANGO_SETTINGS_MODULE=django_Admin3.settings.development:*)",
-      "Skill(superpowers:systematic-debugging)"
+      "Skill(superpowers:systematic-debugging)",
+      "Bash(git mv:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nFix Railway deployment hang by disabling Procfile\n\nRailway was hanging during deployment due to conflict between railway.json\nand Procfile. Railway.json takes precedence when startCommand is specified,\nbut the presence of Procfile with a worker process was causing confusion.\n\nChanges:\n- Renamed Procfile to Procfile.backup to disable it\n- Updated railway-email-queue-setup.md to reflect current configuration\n- Web service now uses railway.json startCommand exclusively\n- Email worker not yet deployed (emails will queue in database)\n\nThis resolves the 30-minute deployment hang issue.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [
       "Read(.claude/tdd-guard/**)",
