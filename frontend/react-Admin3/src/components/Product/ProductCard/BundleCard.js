@@ -111,34 +111,7 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 				}
 			}
 
-			if (!hasValidPrices) {
-				// If no pricing data available, show placeholder
-				return (
-					<div className="d-flex flex-row align-items-end">
-						<Typography variant="h6" className="fw-lighter w-100">
-							Contact for pricing
-						</Typography>
-					</div>
-				);
-			}
-
-			// Simple price formatter
-			const formatPrice = (amount) => {
-				return new Intl.NumberFormat('en-GB', {
-					style: 'currency',
-					currency: 'GBP',
-					minimumFractionDigits: 2,
-					maximumFractionDigits: 2
-				}).format(amount);
-			};
-
-			return (
-				<div className="d-flex flex-row align-items-end">
-					<Typography variant="h6" className="fw-lighter w-100">
-						{formatPrice(totalPrice)}
-					</Typography>
-				</div>
-			);
+			return hasValidPrices ? totalPrice : null;
 		};
 	}, [
 		bundleContents,
@@ -565,14 +538,13 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 									<Typography variant="h3" className="price-display">
 										{(() => {
 											const priceType = selectedPriceType || "standard";
-											const priceComponent = getBundlePrice(priceType);
+											const totalPrice = getBundlePrice(priceType);
 
-											// Extract formatted price from the component
-											if (priceComponent && priceComponent.props && priceComponent.props.children) {
-												const priceText = priceComponent.props.children[0]?.props?.children;
-												return priceText || '-';
+											if (totalPrice === null) {
+												return 'Contact for pricing';
 											}
-											return '-';
+
+											return formatPrice(totalPrice);
 										})()}
 									</Typography>
 								)}
