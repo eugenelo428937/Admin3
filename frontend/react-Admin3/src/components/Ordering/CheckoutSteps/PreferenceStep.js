@@ -374,19 +374,7 @@ const PreferenceStep = ({ preferences, setPreferences, onPreferencesSubmit }) =>
             Please review and update your preferences below. These settings will help us provide you with the best possible experience.
           </Typography>
 
-          {rulesPreferences.map(preference => renderPreferenceInput(preference))}
-
-          <Grid container sx={{ mt: 4 }}>
-            <Grid size={12}>
-              <Alert severity="info" variant="outlined">
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Typography variant="body2" color="text.secondary">
-                    You can change these preferences at any time from your account settings.
-                  </Typography>
-                </Box>
-              </Alert>
-            </Grid>
-          </Grid>
+          {rulesPreferences.map(preference => renderPreferenceInput(preference))}          
         </Box>
       )}
     </Box>
