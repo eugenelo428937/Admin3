@@ -296,9 +296,10 @@ class PostcoderService:
             try:
                 # Extract address components
                 organisation = item.get('organisation', '')  # Company/organisation name
+                sub_building_name = item.get('subbuildingname', '')  # Flat/unit number
+                building_name = item.get('buildingname', '')
                 number = item.get('number', '')
                 premise = item.get('premise', '')
-                building_name = item.get('buildingname', '')
                 street = item.get('street', '')
                 dependent_locality = item.get('dependentlocality', '')
                 post_town = item.get('posttown', '')
@@ -311,18 +312,29 @@ class PostcoderService:
                 else:
                     formatted_postcode = postcode
 
-                # Build line_1 with organisation for better distinction
-                # Priority: organisation > building_name > number/premise + street
+                # Build line_1 with full address details
+                # Priority: sub_building > organisation > building_name > number/premise + street
                 line_1_parts = []
+
+                # Add flat/unit number if present
+                if sub_building_name:
+                    line_1_parts.append(sub_building_name)
+
+                # Add organisation if present
                 if organisation:
-                    # Include organisation name as primary identifier
                     line_1_parts.append(organisation)
-                if building_name:
+
+                # Add building name if present (and no organisation)
+                if building_name and not organisation:
                     line_1_parts.append(building_name)
-                elif number or premise:
+
+                # Add street number and name
+                if number or premise:
                     line_1_parts.append(number or premise)
                 if street:
                     line_1_parts.append(street)
+
+                # Join with comma if organisation, otherwise space
                 line_1 = ', '.join(line_1_parts) if organisation else ' '.join(line_1_parts)
 
                 # Build formatted_address array
@@ -344,7 +356,9 @@ class PostcoderService:
                     "line_2": "",
                     "line_3": dependent_locality,
                     "line_4": "",
-                    "building_name": organisation or building_name,  # Store org/building for frontend
+                    "sub_building_name": sub_building_name,  # Flat/unit number
+                    "building_name": organisation or building_name,  # Building or organisation name
+                    "building_number": number or premise,  # Street number
                     "town_or_city": post_town.title() if post_town else "",
                     "county": county,
                     "country": country_name  # Dynamic country based on country_code parameter
