@@ -22,20 +22,26 @@ Railway Deployment
 
 ## Configuration Files
 
-### 1. Procfile (`backend/django_Admin3/Procfile`)
+### 1. railway.json (`backend/django_Admin3/railway.json`)
 
-The Procfile defines two processes for Railway:
+**IMPORTANT:** Railway uses `railway.json` for deployment configuration. The `Procfile` has been disabled (renamed to `Procfile.backup`) to avoid conflicts.
 
+The `railway.json` defines the startup sequence:
+
+```json
+{
+  "deploy": {
+    "startCommand": "python manage.py migrate --noinput && python manage.py createcachetable && gunicorn django_Admin3.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 60 --log-level info"
+  }
+}
 ```
-web: gunicorn django_Admin3.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 60
-worker: python manage.py process_email_queue --continuous --interval 30
-```
 
-**Explanation:**
-- **web:** Main Django application server
-- **worker:** Background email queue processor
-  - `--continuous`: Runs indefinitely, processing emails at regular intervals
-  - `--interval 30`: Checks for new emails every 30 seconds
+**Current Configuration:**
+
+- **Web service only** - runs migrations, creates cache table, then starts gunicorn
+- **No background worker yet** - emails will queue in database but won't be sent until worker is configured
+
+**Note:** The background email worker (`process_email_queue`) is not yet deployed. Emails will accumulate in the database queue. To enable the worker, you'll need to create a separate Railway service.
 
 ### 2. UAT Settings (`django_Admin3/settings/uat.py`)
 
