@@ -67,42 +67,47 @@ Railway Project
 
 ### Step 5: Share Environment Variables
 
-The Worker needs the same environment variables as your Web service:
+**⚠️ CRITICAL:** The Worker needs the same environment variables as your Web service.
 
 **Option A: Reference Shared Variables (Recommended)**
 
 1. Go to **"Variables"** tab in Worker service
 2. Click **"New Variable"** → **"Add Reference"**
 3. Select your Web service from the dropdown
-4. This shares ALL variables automatically
+4. This shares ALL variables automatically ✅
 
 **Option B: Manually Add Variables**
 
-If Option A doesn't work, manually add these:
+If Option A doesn't work, you MUST manually add these **minimum required variables**:
 
 ```bash
-# Database
+# CRITICAL - Django Settings (Must be set FIRST)
+DJANGO_SETTINGS_MODULE=django_Admin3.settings.uat
+DJANGO_ENV=uat
+
+# CRITICAL - Database
 DATABASE_URL=postgresql://...
 
-# Email SMTP
+# CRITICAL - Django Secret
+SECRET_KEY=your-secret-key
+
+# Email SMTP Configuration
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_HOST_USER=your-email@example.com
 EMAIL_HOST_PASSWORD=your-app-password
 EMAIL_USE_TLS=True
 
-# Email Monitoring
+# Email BCC Monitoring
 EMAIL_BCC_MONITORING=True
 EMAIL_BCC_RECIPIENTS=eugenelo@bpp.com,eugene.lo1030@gmail.com
 
 # Email Queue Settings
 EMAIL_QUEUE_BATCH_SIZE=50
 EMAIL_QUEUE_INTERVAL=30
-
-# Django Settings
-DJANGO_SETTINGS_MODULE=django_Admin3.settings.uat
-SECRET_KEY=your-secret-key
 ```
+
+**⚠️ Common Error:** If you see `KeyError: 'DJANGO_SECRET_KEY'` during build, it means `DJANGO_SETTINGS_MODULE` is not set or is set to `development` instead of `uat`.
 
 ### Step 6: Deploy Worker Service
 
@@ -138,6 +143,34 @@ Sleeping for 30 seconds...
 If you see the INCORRECT logs, the Worker service is still using `railway.json` startCommand. Go back to **Step 4** and ensure the custom start command is set.
 
 ## Troubleshooting
+
+### Build Fails with "KeyError: 'DJANGO_SECRET_KEY'"
+
+**Problem:** Worker build fails during `collectstatic` with error:
+
+```text
+DJANGO_ENV development
+KeyError: 'DJANGO_SECRET_KEY'
+django.core.exceptions.ImproperlyConfigured: Set the DJANGO_SECRET_KEY environment variable
+```
+
+**Root Cause:** Worker is using `development` settings instead of `uat` settings, or environment variables aren't shared.
+
+**Solution:**
+
+1. Go to Worker service → **"Variables"** tab
+2. **Option A (Easiest):** Click "Add Reference" → Select your Web service → Save
+3. **Option B (Manual):** Add these variables:
+
+   ```bash
+   DJANGO_SETTINGS_MODULE=django_Admin3.settings.uat
+   DJANGO_ENV=uat
+   SECRET_KEY=<copy from Web service>
+   DATABASE_URL=<copy from Web service>
+   ```
+
+4. Redeploy the Worker service
+5. Verify logs no longer show "DJANGO_ENV development"
 
 ### Worker Still Running Gunicorn
 
