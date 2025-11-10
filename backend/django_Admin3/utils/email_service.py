@@ -29,18 +29,18 @@ class EmailService:
     def _handle_dev_email_override(self, to_emails: List[str], context: Dict) -> List[str]:
         """
         Handle development environment email override.
-        
+
         Args:
             to_emails: Original recipient email addresses
             context: Email template context
-            
+
         Returns:
             List[str]: Modified recipient list for development, original list for production
         """
         # Check if we're in development mode and override is enabled
         dev_override = getattr(settings, 'DEV_EMAIL_OVERRIDE', False)
         dev_recipients = getattr(settings, 'DEV_EMAIL_RECIPIENTS', [])
-        
+
         if dev_override and dev_recipients and settings.DEBUG:
             # Store original recipients in context for display in email
             original_recipients = to_emails.copy()
@@ -48,10 +48,26 @@ class EmailService:
             context['dev_mode_active'] = True
 
             return dev_recipients
-        
+
         # In production or when override is disabled, return original recipients
         context['dev_mode_active'] = False
         return to_emails
+
+    def _get_bcc_recipients(self) -> List[str]:
+        """
+        Get BCC monitoring recipients if enabled.
+
+        Returns:
+            List[str]: List of BCC recipients, or empty list if monitoring disabled
+        """
+        bcc_monitoring = getattr(settings, 'EMAIL_BCC_MONITORING', False)
+        bcc_recipients = getattr(settings, 'EMAIL_BCC_RECIPIENTS', [])
+
+        if bcc_monitoring and bcc_recipients:
+            logger.info(f"Email BCC monitoring enabled. BCC recipients: {bcc_recipients}")
+            return bcc_recipients
+
+        return []
         
     def send_templated_email(
         self,
@@ -371,15 +387,19 @@ class EmailService:
             
             # Create simple text version
             text_content = self._html_to_text(html_content)
-            
+
+            # Get BCC monitoring recipients if enabled
+            bcc_recipients = self._get_bcc_recipients()
+
             # Create email message
             email = EmailMultiAlternatives(
                 subject=subject,
                 body=text_content,
                 from_email=from_email or self.from_email,
                 to=actual_recipients,
+                bcc=bcc_recipients if bcc_recipients else None
             )
-            
+
             # Attach HTML version
             email.attach_alternative(html_content, "text/html")
             
@@ -609,15 +629,19 @@ class EmailService:
             except:
                 # If no text template, create simple text version
                 text_content = self._html_to_text(html_content)
-            
+
+            # Get BCC monitoring recipients if enabled
+            bcc_recipients = self._get_bcc_recipients()
+
             # Create email message
             email = EmailMultiAlternatives(
                 subject=subject,
                 body=text_content,
                 from_email=from_email or self.from_email,
-                to=actual_recipients
+                to=actual_recipients,
+                bcc=bcc_recipients if bcc_recipients else None
             )
-            
+
             # Attach HTML version
             email.attach_alternative(html_content, "text/html")
             

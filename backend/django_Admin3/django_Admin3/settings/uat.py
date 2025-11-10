@@ -96,8 +96,18 @@ OPAYO_INTEGRATION_PASSWORD = env('OPAYO_INTEGRATION_PASSWORD', default='test_pas
 USE_DUMMY_PAYMENT_GATEWAY = False
 
 # Email Settings for UAT
-# Do NOT override emails in UAT - send to real recipients for testing
-DEV_EMAIL_OVERRIDE = False
+# Email override for testing - set to True to redirect all emails to test recipients
+DEV_EMAIL_OVERRIDE = env.bool('DEV_EMAIL_OVERRIDE', default=False)
+
+# Email recipients for testing (when DEV_EMAIL_OVERRIDE is True)
+# Set via environment variable: DEV_EMAIL_RECIPIENTS=email1@example.com,email2@example.com
+DEV_EMAIL_RECIPIENTS = env.list('DEV_EMAIL_RECIPIENTS', default=[])
+
+# Email monitoring - BCC copy of all emails to designated address(es)
+# Sends email to actual recipient PLUS a blind carbon copy to monitoring addresses
+# Perfect for UAT: verify what users receive without redirecting emails
+EMAIL_BCC_MONITORING = env.bool('EMAIL_BCC_MONITORING', default=False)
+EMAIL_BCC_RECIPIENTS = env.list('EMAIL_BCC_RECIPIENTS', default=[])
 
 # Email Backend Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -107,6 +117,10 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@acted.com')
+
+# Email Queue Processing Settings
+EMAIL_QUEUE_BATCH_SIZE = env.int('EMAIL_QUEUE_BATCH_SIZE', default=50)
+EMAIL_QUEUE_INTERVAL = env.int('EMAIL_QUEUE_INTERVAL', default=30)  # seconds
 
 # Frontend URL for password reset emails, etc.
 FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:3000')
