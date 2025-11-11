@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import authService from '../../services/authService';
 
 const ResetPasswordForm = () => {
   const [passwords, setPasswords] = useState({
@@ -115,24 +115,17 @@ const ResetPasswordForm = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://127.0.0.1:8888/api/auth/password_reset_confirm/', {
-        uid: uid,
-        token: token,
-        new_password: passwords.newPassword
-      });
+      // Use authService which handles CORS and proper configuration
+      const result = await authService.confirmPasswordReset(uid, token, passwords.newPassword);
 
-      if (response.data.success) {
+      if (result.status === 'success') {
         setSuccess(true);
       } else {
-        setError(response.data.error || 'Failed to reset password');
+        setError(result.message || 'Failed to reset password');
       }
     } catch (error) {
       console.error('Password reset confirm error:', error);
-      if (error.response?.data?.error) {
-        setError(error.response.data.error);
-      } else {
-        setError('An error occurred. Please try again later.');
-      }
+      setError('An error occurred. Please try again later.');
     } finally {
       setIsLoading(false);
     }
