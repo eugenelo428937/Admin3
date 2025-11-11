@@ -110,19 +110,17 @@ EMAIL_BCC_MONITORING = env.bool('EMAIL_BCC_MONITORING', default=False)
 EMAIL_BCC_RECIPIENTS = env.list('EMAIL_BCC_RECIPIENTS', default=[])
 
 # Email Backend Configuration
-# Use Mailgun for Railway (HTTP API, no SMTP port blocking)
+# Use SendGrid for Railway (HTTP API, no SMTP port blocking)
 # Use SMTP for local development
-USE_MAILGUN = env.bool('USE_MAILGUN', default=False)
+USE_SENDGRID = env.bool('USE_SENDGRID', default=False)
 
-if USE_MAILGUN:
-    # Mailgun Email Backend (for Railway deployment)
-    EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
+if USE_SENDGRID:
+    # SendGrid Email Backend (for Railway deployment)
+    EMAIL_BACKEND = 'anymail.backends.sendgrid.EmailBackend'
     ANYMAIL = {
-        "MAILGUN_API_KEY": env('MAILGUN_API_KEY'),
-        "MAILGUN_SENDER_DOMAIN": env('MAILGUN_DOMAIN'),
-        "MAILGUN_API_URL": env('MAILGUN_API_URL', default='https://api.mailgun.net/v3'),
+        "SENDGRID_API_KEY": env('SENDGRID_API_KEY'),
     }
-    DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@acted.com')
+    DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@acted.co.uk')
 else:
     # SMTP Email Backend (for local development)
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

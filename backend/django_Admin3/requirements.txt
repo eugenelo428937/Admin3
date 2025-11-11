@@ -67,5 +67,5 @@ tzdata==2025.2
 uritemplate==4.2.0
 urllib3==2.4.0
 dj-database-url==2.3.0
-django-anymail[mailgun]==12.1.0
+django-anymail[sendgrid]==12.1.0
 jsonschema==4.23.0
