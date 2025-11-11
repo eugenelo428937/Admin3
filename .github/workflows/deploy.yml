@@ -129,7 +129,7 @@ jobs:
         echo "ADMINISTRATE_AUTH_USER=eugenelo@bpp.com" >> .env.production
         echo "EMAIL_HOST_USER=eugene.lo1030@gmail.com" >> .env.production
         echo "EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}" >> .env.production
-        echo "DEFAULT_FROM_EMAIL=eugenelo@acted.com" >> .env.production
+        echo "DEFAULT_FROM_EMAIL=eugene.lo1030@gmail.com" >> .env.production
         echo "PASSWORD_RESET_TIMEOUT_MINUTES=14" >> .env.production
         echo "RECAPTCHA_SITE_KEY=6LdeGW0rAAAAAISTQLDxwgYbjbdYtIINQokRTMAi" >> .env.production
         echo "RECAPTCHA_SECRET_KEY=${{ secrets.RECAPTCHA_SECRET_KEY }}" >> .env.production
