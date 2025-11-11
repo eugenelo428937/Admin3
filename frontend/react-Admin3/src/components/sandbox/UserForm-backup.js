@@ -28,7 +28,7 @@ import {
 import { Person, Home, Business, Phone, Lock } from "@mui/icons-material";
 import authService from "../../services/authService";
 import config from "../../config";
-import ValidatedPhoneInput from "./ValidatedPhoneInput";
+import ValidatedPhoneInput from "../User/ValidatedPhoneInput";
 import SmartAddressInput from "../Address/SmartAddressInput";
 import addressMetadataService from "../../services/addressMetadataService";
 import { useTheme } from "@mui/material/styles";

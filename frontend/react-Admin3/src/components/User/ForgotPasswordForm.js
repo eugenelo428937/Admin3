@@ -22,7 +22,7 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
-import axios from "axios";
+import authService from "../../services/authService";
 
 // For reCAPTCHA v2 checkbox alternative, you would import:
 // import ReCAPTCHA from 'react-google-recaptcha';
@@ -109,37 +109,20 @@ const ForgotPasswordForm = () => {
             return;
          }
 
-         const requestData = {
-            email: email.trim(),
-         };
+         // Use authService which handles CORS and proper configuration
+         const result = await authService.requestPasswordReset(email, recaptchaToken);
 
-         // Add reCAPTCHA token if available
-         if (recaptchaToken) {
-            requestData.recaptcha_token = recaptchaToken;
-         }
-
-         const response = await axios.post(
-            "http://127.0.0.1:8888/api/auth/password_reset_request/",
-            requestData
-         );
-
-         if (response.data.success) {
-            setMessage(response.data.message);
-            setExpiryHours(response.data.expiry_hours || 24);
+         if (result.status === "success") {
+            setMessage(result.message);
+            setExpiryHours(result.expiry_hours || 24);
             setIsSubmitted(true);
             setCountdown(10); // Reset countdown when email is successfully sent
          } else {
-            setError(
-               response.data.error || "Failed to send password reset email"
-            );
+            setError(result.message || "Failed to send password reset email");
          }
       } catch (error) {
          console.error("Password reset error:", error);
-         if (error.response?.data?.error) {
-            setError(error.response.data.error);
-         } else {
-            setError("An error occurred. Please try again later.");
-         }
+         setError("An error occurred. Please try again later.");
       } finally {
          setIsLoading(false);
       }
