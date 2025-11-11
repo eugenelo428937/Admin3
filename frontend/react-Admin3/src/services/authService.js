@@ -408,6 +408,109 @@ const authService = {
 			};
 		}
 	},
+
+	requestPasswordReset: async (email, recaptchaToken) => {
+		try {
+			logger.debug("Requesting password reset", { email });
+
+			const requestData = {
+				email: email.trim()
+			};
+
+			// Add reCAPTCHA token if provided
+			if (recaptchaToken) {
+				requestData.recaptcha_token = recaptchaToken;
+			}
+
+			// httpService now automatically skips auth headers for password_reset_request endpoints
+			const response = await httpService.post(`${API_AUTH_URL}/password_reset_request/`, requestData);
+
+			logger.debug("Password reset request response received", response.data);
+
+			if (response.status === 200 && response.data) {
+				logger.info("Password reset email sent successfully", { email });
+				return {
+					status: "success",
+					message: response.data.message || "Password reset email sent successfully",
+					expiry_hours: response.data.expiry_hours || 24
+				};
+			}
+
+			return {
+				status: "error",
+				message: "Invalid response format from server"
+			};
+		} catch (error) {
+			logger.error("Password reset request failed", {
+				error: error.response?.data || error,
+				status: error.response?.status,
+				email: email
+			});
+
+			if (error.response?.data?.error) {
+				return {
+					status: "error",
+					message: error.response.data.error
+				};
+			}
+
+			return {
+				status: "error",
+				message: "An error occurred. Please try again later."
+			};
+		}
+	},
+
+	confirmPasswordReset: async (uid, token, newPassword) => {
+		try {
+			logger.debug("Confirming password reset", { uid });
+
+			// httpService now automatically skips auth headers for password_reset_confirm endpoints
+			const response = await httpService.post(`${API_AUTH_URL}/password_reset_confirm/`, {
+				uid: uid,
+				token: token,
+				new_password: newPassword
+			});
+
+			logger.debug("Password reset confirmation response received", response.data);
+
+			if (response.status === 200 && response.data) {
+				logger.info("Password reset confirmed successfully", { uid });
+				return {
+					status: "success",
+					message: response.data.message || "Password reset successful"
+				};
+			}
+
+			return {
+				status: "error",
+				message: "Invalid response format from server"
+			};
+		} catch (error) {
+			logger.error("Password reset confirmation failed", {
+				error: error.response?.data || error,
+				status: error.response?.status,
+				uid: uid
+			});
+
+			if (error.response?.status === 400) {
+				return {
+					status: "error",
+					message: error.response.data.error || "Invalid or expired reset link"
+				};
+			} else if (error.response?.data?.error) {
+				return {
+					status: "error",
+					message: error.response.data.error
+				};
+			}
+
+			return {
+				status: "error",
+				message: "Password reset failed. Please try again later."
+			};
+		}
+	},
 };
 
 export default authService;
