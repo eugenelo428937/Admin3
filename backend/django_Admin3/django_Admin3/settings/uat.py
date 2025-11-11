@@ -40,7 +40,19 @@ if 'healthcheck.railway.app' not in ALLOWED_HOSTS:
 
 # Railway provides DATABASE_URL - use dj_database_url for parsing
 database_url = os.environ.get('DATABASE_URL')
-if database_url:
+local_machine = env.bool('LOCAL_MACHINE', default=False)
+if local_machine:
+    DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
+        }
+    }
+elif database_url:
     # Runtime: Use actual Railway Postgres database
     DATABASES = {
         'default': dj_database_url.parse(
