@@ -249,9 +249,66 @@ django.core.exceptions.ImproperlyConfigured: Set the DJANGO_SECRET_KEY environme
 **Problem:** Worker logs show database connection errors
 
 **Solution:**
+
 1. Verify `DATABASE_URL` is shared with Worker service
 2. Check that Web service database is accessible
 3. Both services should use the same `DATABASE_URL`
+
+### SMTP Network Unreachable Error
+
+**Problem:** Worker logs show SMTP errors:
+
+```text
+ERROR utils.email_service SMTP error sending email: [Errno 101] Network is unreachable
+ERROR utils.services.queue_service Failed to send email: Email processing failed: [Errno 101] Network is unreachable
+```
+
+**Root Cause:** Railway restricts outbound SMTP connections on some plans, or SMTP port 587 is blocked.
+
+**Solution Options:**
+
+**Option 1: Use Railway's Email Service (Recommended)**
+
+Railway has restrictions on SMTP port 587. Consider using:
+- Railway's built-in email service (if available in your plan)
+- Contact Railway support to enable SMTP access
+
+**Option 2: Alternative Email Service**
+
+Use an email service with HTTP API instead of SMTP:
+- **SendGrid** (HTTP API)
+- **Mailgun** (HTTP API)
+- **Amazon SES** with HTTP API
+- **Postmark** (HTTP API)
+
+These services work over HTTP/HTTPS (port 443) which Railway doesn't block.
+
+**Option 3: Verify Railway Plan**
+
+Check if your current Railway plan supports SMTP:
+1. Go to Railway Dashboard → Settings → Usage
+2. Check your current plan details
+3. Upgrade to a plan that supports SMTP if needed
+4. Contact Railway support to request SMTP port access
+
+**Option 4: Test SMTP from Worker**
+
+Verify if SMTP is actually blocked:
+
+```bash
+# In Railway Shell (Worker service)
+python manage.py shell
+>>> import socket
+>>> socket.create_connection(("smtp.gmail.com", 587), timeout=5)
+```
+
+If this times out or shows "Network unreachable", SMTP is blocked by Railway.
+
+**Temporary Workaround (Testing Only):**
+
+For UAT testing without emails, you can disable email sending temporarily:
+- Set `EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'` in UAT settings
+- Emails will be logged to console instead of sent via SMTP
 
 ### Emails Not Sending
 
