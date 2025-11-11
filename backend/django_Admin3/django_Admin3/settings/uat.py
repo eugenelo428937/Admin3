@@ -110,13 +110,30 @@ EMAIL_BCC_MONITORING = env.bool('EMAIL_BCC_MONITORING', default=False)
 EMAIL_BCC_RECIPIENTS = env.list('EMAIL_BCC_RECIPIENTS', default=[])
 
 # Email Backend Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@acted.com')
+# Use Mailgun for Railway (HTTP API, no SMTP port blocking)
+# Use SMTP for local development
+USE_MAILGUN = env.bool('USE_MAILGUN', default=False)
+
+if USE_MAILGUN:
+    # Mailgun Email Backend (for Railway deployment)
+    EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
+    ANYMAIL = {
+        "MAILGUN_API_KEY": env('MAILGUN_API_KEY'),
+        "MAILGUN_SENDER_DOMAIN": env('MAILGUN_DOMAIN'),
+        "MAILGUN_API_URL": env('MAILGUN_API_URL', default='https://api.mailgun.net/v3'),
+    }
+    DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@acted.com')
+else:
+    # SMTP Email Backend (for local development)
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+    EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+    DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@acted.com')
+
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Email Queue Processing Settings
 EMAIL_QUEUE_BATCH_SIZE = env.int('EMAIL_QUEUE_BATCH_SIZE', default=50)
