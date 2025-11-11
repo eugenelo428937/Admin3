@@ -48,8 +48,17 @@ function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 
 	// reCAPTCHA v3 configuration
-	const RECAPTCHA_SITE_KEY =
-		process.env.REACT_APP_RECAPTCHA_SITE_KEY; // Test key
+	const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
+
+	// Validate reCAPTCHA configuration
+	useEffect(() => {
+		if (!RECAPTCHA_SITE_KEY) {
+			console.error(
+				'CRITICAL: REACT_APP_RECAPTCHA_SITE_KEY is not configured. ' +
+				'reCAPTCHA v3 will not function. Please add it to your .env file.'
+			);
+		}
+	}, [RECAPTCHA_SITE_KEY]);
 
 	useEffect(() => {
 		// Check if the user is authenticated
@@ -69,31 +78,21 @@ function App() {
 		});
 	}, []);
 
-	return (
-		<Provider store={store}>
-			<ChakraProvider value={system}>
-				<ThemeProvider theme={theme}>
-					<CssBaseline />
-					<GoogleReCaptchaProvider
-						reCaptchaKey={RECAPTCHA_SITE_KEY}
-						container={{
-							parameters: {
-								badge: "inline",
-							},
-						}}>
-						<ErrorBoundary>
-							<CartProvider>
-								<AuthProvider>
-									<ProductProvider>
-										<TutorialChoiceProvider>
-											<div className="App">
-												<MainNavBar className="main-navbar" />
-												<Container
-													maxWidth={true}
-													className="body-container"
-													disableGutters={true}
-													style={{ m: 0, p: 0 }}>
-													<Routes>
+	// App content wrapped conditionally with reCAPTCHA provider
+	const AppContent = () => (
+		<ErrorBoundary>
+			<CartProvider>
+				<AuthProvider>
+					<ProductProvider>
+						<TutorialChoiceProvider>
+							<div className="App">
+								<MainNavBar className="main-navbar" />
+								<Container
+									maxWidth={true}
+									className="body-container"
+									disableGutters={true}
+									style={{ m: 0, p: 0 }}>
+									<Routes>
 														<Route
 															path="/"
 															element={
@@ -211,16 +210,35 @@ function App() {
 														/>
 													</Routes>
 
-													{/* T015: Global tutorial summary bars - visible across all routes */}
-													<TutorialSummaryBarContainer />
-												</Container>
-											</div>
-										</TutorialChoiceProvider>
-									</ProductProvider>
-								</AuthProvider>
-							</CartProvider>
-						</ErrorBoundary>
-					</GoogleReCaptchaProvider>
+									{/* T015: Global tutorial summary bars - visible across all routes */}
+									<TutorialSummaryBarContainer />
+								</Container>
+							</div>
+						</TutorialChoiceProvider>
+					</ProductProvider>
+				</AuthProvider>
+			</CartProvider>
+		</ErrorBoundary>
+	);
+
+	return (
+		<Provider store={store}>
+			<ChakraProvider value={system}>
+				<ThemeProvider theme={theme}>
+					<CssBaseline />
+					{RECAPTCHA_SITE_KEY ? (
+						<GoogleReCaptchaProvider
+							reCaptchaKey={RECAPTCHA_SITE_KEY}
+							container={{
+								parameters: {
+									badge: "inline",
+								},
+							}}>
+							<AppContent />
+						</GoogleReCaptchaProvider>
+					) : (
+						<AppContent />
+					)}
 				</ThemeProvider>
 			</ChakraProvider>
 		</Provider>
