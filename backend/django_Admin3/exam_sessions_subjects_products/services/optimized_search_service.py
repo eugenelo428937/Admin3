@@ -155,30 +155,62 @@ class OptimizedSearchService:
             }
             bundles_data.append(transformed_bundle)
 
-        # Combine bundles and products
+        # Check if marking vouchers should be included (BEFORE pagination)
+        marking_vouchers_data = self._fetch_marking_vouchers(search_query, filters, navbar_filters)
+
+        if marking_vouchers_data:
+            total_count += len(marking_vouchers_data)
+            logger.info(f'🔍 [MARKING-VOUCHERS] Fetched {len(marking_vouchers_data)} vouchers')
+
+        # Combine bundles, products, and marking vouchers
         all_items = bundles_data + products_data
 
-        # Sort combined results by subject code (bundles have 'code', products have 'subject_code')
-        all_items.sort(key=lambda x: x.get('code') or x.get('subject_code', ''))
+        # Add marking vouchers to the combined list BEFORE sorting
+        if marking_vouchers_data:
+            all_items = marking_vouchers_data + all_items  # Prepend vouchers for search relevance
+            logger.info(f'🔍 [MARKING-VOUCHERS] Added {len(marking_vouchers_data)} vouchers to combined results (total: {len(all_items)})')
+
+            # DIAGNOSTIC: Log first 10 items after prepending
+            logger.info(f'🔍 [DIAGNOSTIC] First 10 items AFTER prepending marking vouchers:')
+            for idx, item in enumerate(all_items[:10], 1):
+                item_type = item.get('type', 'Unknown')
+                item_name = item.get('product_name', item.get('name', 'Unknown'))
+                logger.info(f'   {idx:2d}. Type: {item_type:15s} | Name: {item_name}')
+
+        # Sort combined results
+        # When search query exists, marking vouchers are prepended (most relevant)
+        # Otherwise, sort by subject code (bundles have 'code', products have 'subject_code')
+        if not search_query:
+            # No search query: sort by subject code
+            all_items.sort(key=lambda x: x.get('code') or x.get('subject_code', ''))
+            logger.info(f'🔍 [DIAGNOSTIC] Sorted by subject code (no search query)')
+        else:
+            logger.info(f'🔍 [DIAGNOSTIC] Preserving relevance order (search query: "{search_query}")')
+
+        # DIAGNOSTIC: Log first 10 items after sorting
+        logger.info(f'🔍 [DIAGNOSTIC] First 10 items AFTER sorting:')
+        for idx, item in enumerate(all_items[:10], 1):
+            item_type = item.get('type', 'Unknown')
+            item_name = item.get('product_name', item.get('name', 'Unknown'))
+            logger.info(f'   {idx:2d}. Type: {item_type:15s} | Name: {item_name}')
 
         # Apply pagination to combined results
         start_idx = (page - 1) * page_size
         end_idx = start_idx + page_size
         paginated_items = all_items[start_idx:end_idx]
 
+        # DIAGNOSTIC: Log paginated items
+        logger.info(f'🔍 [DIAGNOSTIC] Pagination: page={page}, page_size={page_size}, start_idx={start_idx}, end_idx={end_idx}')
+        logger.info(f'🔍 [DIAGNOSTIC] Paginated items ({len(paginated_items)} items):')
+        for idx, item in enumerate(paginated_items, 1):
+            item_type = item.get('type', 'Unknown')
+            item_name = item.get('product_name', item.get('name', 'Unknown'))
+            logger.info(f'   {idx:2d}. Type: {item_type:15s} | Name: {item_name}')
+
         # Use paginated items as products_data
         products_data = paginated_items
 
-        logger.info(f'🔍 [BUNDLES] Included {len(bundles_data)} bundles, {len(products_data) - len(bundles_data)} products')
-
-        # Check if marking vouchers should be included
-        marking_vouchers_data = self._fetch_marking_vouchers(search_query, filters, navbar_filters)
-
-        # Combine products with marking vouchers
-        if marking_vouchers_data:
-            products_data = list(products_data) + marking_vouchers_data
-            total_count += len(marking_vouchers_data)
-            logger.info(f'🔍 [MARKING-VOUCHERS] Added {len(marking_vouchers_data)} vouchers to results')
+        logger.info(f'🔍 [RESULTS] Included {len(bundles_data)} bundles, {len([p for p in products_data if p.get("type") != "MarkingVoucher"])} products, {len([p for p in products_data if p.get("type") == "MarkingVoucher"])} vouchers')
 
         # Generate filter counts using BASE querysets (disjunctive faceting)
         # This ensures all filter options remain visible even when filters are applied
@@ -202,6 +234,13 @@ class OptimizedSearchService:
                 'cached': False
             }
         }
+
+        # Debug: Log what's being returned (first 5 items show sort order)
+        logger.info(f'🔍 [RESPONSE-DEBUG] Returning {len(products_data)} items (page {page}):')
+        for idx, item in enumerate(products_data[:5]):  # Log first 5 items
+            item_type = item.get("type")
+            item_name = item.get("product_name") or item.get("name")
+            logger.info(f'🔍 [RESPONSE-DEBUG]   {idx+1}. type={item_type}, name={item_name}')
 
         # Cache the result
         cache.set(cache_key, result, self.cache_timeout)
@@ -465,6 +504,13 @@ class OptimizedSearchService:
         try:
             from marking_vouchers.models import MarkingVoucher
 
+            # Log diagnostic info
+            logger.info(f'🔍 [MARKING-VOUCHERS-DEBUG] Called with search_query="{search_query}", filters={filters}, navbar_filters={navbar_filters}')
+
+            # Check how many marking vouchers exist in database
+            total_vouchers = MarkingVoucher.objects.filter(is_active=True).count()
+            logger.info(f'🔍 [MARKING-VOUCHERS-DEBUG] Total active marking vouchers in database: {total_vouchers}')
+
             # Determine if marking vouchers should be included
             should_include = False
 
@@ -496,6 +542,7 @@ class OptimizedSearchService:
 
             # Check if search query matches vouchers
             if search_query and len(search_query) >= 2:
+                logger.info(f'🔍 [MARKING-VOUCHERS-DEBUG] Searching vouchers with query: "{search_query}"')
                 # Search in voucher names, descriptions, or codes
                 voucher_matches = MarkingVoucher.objects.filter(
                     Q(name__icontains=search_query) |
@@ -503,13 +550,20 @@ class OptimizedSearchService:
                     Q(code__icontains=search_query),
                     is_active=True
                 )
+                match_count = voucher_matches.count()
+                logger.info(f'🔍 [MARKING-VOUCHERS-DEBUG] Found {match_count} matching vouchers')
+                if match_count > 0:
+                    for v in voucher_matches[:3]:
+                        logger.info(f'🔍 [MARKING-VOUCHERS-DEBUG]   - {v.code}: {v.name}')
                 if voucher_matches.exists():
                     should_include = True
                     logger.info(f'🔍 [MARKING-VOUCHERS] Including vouchers due to search query "{search_query}"')
 
             if not should_include:
+                logger.info('🔍 [MARKING-VOUCHERS-DEBUG] should_include=False, returning empty list')
                 return []
 
+            logger.info(f'🔍 [MARKING-VOUCHERS-DEBUG] should_include=True, fetching vouchers...')
             # Fetch active marking vouchers
             vouchers = MarkingVoucher.objects.filter(is_active=True)
 
