@@ -13,13 +13,15 @@ import {
   Typography,
   FormControl,
   FormLabel,
-  FormHelperText
+  FormHelperText,
+  useTheme
 } from '@mui/material';
 import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import authService from '../../services/authService';
 
 const ResetPasswordForm = () => {
+  const theme = useTheme();
   const [passwords, setPasswords] = useState({
     newPassword: '',
     confirmPassword: ''
@@ -153,9 +155,14 @@ const ResetPasswordForm = () => {
           <Grid size={{ xs: 12, md: 6, lg: 5 }}>
             <Card>
               <CardHeader
-                title="Invalid Reset Link"
-                sx={{ bgcolor: 'error.main', color: 'white', textAlign: 'center' }}
-                titleTypographyProps={{ variant: 'h4' }}
+                title={
+                  <Typography 
+                    variant='h4' 
+                    color={theme.palette.bpp.granite["090"]}>
+                    Invalid Reset Link
+                  </Typography>
+                  }
+                sx={{ bgcolor: 'error.main', color: 'white', textAlign: 'center' }}                
               />
               <CardContent sx={{ textAlign: 'center' }}>
                 <Alert severity="error" sx={{ mb: 3 }}>
@@ -185,9 +192,14 @@ const ResetPasswordForm = () => {
           <Grid size={{ xs: 12, md: 6, lg: 5 }}>
             <Card>
               <CardHeader
-                title="Password Reset Successful"
-                sx={{ bgcolor: 'success.main', color: 'white', textAlign: 'center' }}
-                titleTypographyProps={{ variant: 'h4' }}
+                title={
+                <Typography 
+                  variant='h4' 
+                  color={theme.palette.bpp.granite["090"]}>
+                  Password Reset Successful
+                </Typography>
+                }
+                sx={{ bgcolor: theme.palette.bpp.granite["030"], color: 'white', textAlign: 'center' }}
               />
               <CardContent sx={{ textAlign: 'center' }}>
                 <Box sx={{ mb: 4 }}>
@@ -215,11 +227,14 @@ const ResetPasswordForm = () => {
         <Grid size={{ xs: 12, md: 6, lg: 5 }}>
           <Card>
             <CardHeader
-              title="Set New Password"
-              subheader="Please enter your new password below."
-              sx={{ textAlign: 'center' }}
-              titleTypographyProps={{ variant: 'h4' }}
-              subheaderTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+              title={
+                <Typography 
+                  variant='h4' 
+                  color={theme.palette.bpp.granite["090"]}>
+                  Set New Password
+                </Typography>
+                }              
+              sx={{ bgcolor: theme.palette.bpp.granite["030"], textAlign: 'center' }}              
             />
             <CardContent>
               {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
