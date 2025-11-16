@@ -271,11 +271,13 @@ So I come to a conclusion...
 
 ### Compatability
 
-- **No impact on existing student** : Authentication supports BCrypt
+- **No impact on existing student login** : Authentication supports BCrypt
 - **No impact on Estore download/upload** :
   - It can create dbf files
     - estore_manager
     - efinal_manager
+    - students
+    - estore_cart
   - Upload can be done by uploading dbf files and a scripts to update the estore database.
 
 ### Tech Stack
@@ -293,7 +295,7 @@ So I come to a conclusion...
     - Django CSRF - CSRF protection
   - GraphQL - Integration with external Administrate API
   - MJML - Email template markup language for emails templates
-  - JsonLogic - Evaluation of runtime rules
+  - JsonLogic - Evaluation of runtime rules with rules engine
 - Frontend
   - React 18
     - React Router
@@ -308,142 +310,149 @@ So I come to a conclusion...
 **Legend:**
 
 - ✅ **Completed** - Feature implemented and functional
-- 🔄 **In Progress** - Currently being developed or enhanced  
+- 🛠️ **In Progress** - Currently being developed or enhanced  
 - ⚠️ **To Be Implemented** - Identified need, not yet scheduled
 - 🚫 **Blocked** - Need further input
 
-- 🆕: New Feature
-- 📝: Revised
+- 🆕 : **New Feature**
+- ✨ : **Revised**
 
 #### User Management & Authentication
 
 | Feature | Type | Status | Notes |
-|---------|------|--------|-------|
-| User Login | 📝 | ✅ | JWT authentication with refresh tokens |
-| Password Reset | 📝 | ✅ | Email-based reset workflow |
-| Change Email | 📝 | ✅ | Existing profile management |
-| Update Profile | 📝 | ✅ | Basic profile fields |
-| Sign Out | 📝 | ✅ | Token invalidation |
+|---------|:------:|:--------:|-------|
 | **Registration Form Wizard** | 🆕 | ✅ | UserProfile |
-| **Address Search** | 🆕 | ✅ | Address lookup functionality |
+| **Address Search** | 🆕 | ✅ | International Address lookup functionality |
 | **Dynamic Addres fields** | 🆕 | ✅ | Dynamic international address fields and validation |
 | **International phone validation** | 🆕 | ✅ | Dynamic international address fields and validation |
+| User Login | ✨ | ✅ | Django built-in authentication with JWT |
+| Password Reset | ✨ | ✅ | Reset password with email notifcation |
+| Change Email | ✨ | ✅ | Email-based update email with verification |
+| Update Profile | ✨ | ✅ | Update profile via user form wizard |
+| Sign Out | ✨ | ✅ | Token invalidation |
 | Students (Extended User Type) |   | ⚠️ | User type specialization |
 | Marker (Extended User Type) |   | ⚠️ | Marking-specific user features |
 | Apprentice (Extended User Type) |   | ⚠️ | Apprentice program support |
 | Study Plus (Extended User Type) |   | ⚠️ | Premium user features |
+| Company Contact (Extended User Type) |   | ⚠️ | Premium user features |
 | User Preferences |   | ⚠️ | Subject/location/delivery preferences |
 
 #### Product
 
 | Feature | Type | Status | Notes |
-|---------|------|--------|-------|
-| Product Grid | 📝 | ✅ | Product display |
-| Product Cards | 📝 | ✅ | Product display components |
-| Product Variation | 📝 | ✅ | ebook, printed, marking..etc |
+|---------|:------:|:--------:|-------|
+| Product Grid | ✨ | ✅ | Product display |
+| Material Product Cards | ✨ | ✅ | Material Product components |
+| Marking Product Cards | ✨ | ✅ | Marking Product components |
+| Marking Voucher Product Cards | ✨ | ✅ | Marking Product components |
+| Tutorial Product Cards | ✨ | ✅ | Tutorial Product components |
+| Online Classroom Product Cards | ✨ | ✅ | OC Product components |
+| Bundles Product Cards | ✨ | ✅ | Bundle creation and management |
+| Product Variation | ✨ | ✅ | Variations of product e.g. CMP : ebook, printed |
 | Product Price | 🆕 | ✅ | Listing prices of various fees |
-| **Recommended Products/Buy both** | 🆕 | ✅ | ProductVariationRecommendation model, MaterialProductCard component |
-| Product Bundles | 📝 | ✅ | Bundle creation and management |
-| Deadline Check | 📝 | ✅ | Marking deadline validation |
-| Tutorial Choices | 📝 | ✅ | Tutorial choice |
-| Tutorial Choices Panel | 🆕 | ✅ | TutorialChoiceContext, TutorialSelectionDialog, TutorialSummaryBarContainer |
-| Tutorial Dates | 📝 | ✅ | Display Tutorial Schedule |
-| Online Classroom (India/UK) | 📝 | 🔄 |  |
-| Check Availability | 📝 | ⚠️ | Real-time availability checking |
+| **Recommended Products/Buy both** | 🆕 | ✅ | Buy both of ebook and printed, Mock Exam with marking...etc|
+| Deadline Check | ✨ | ✅ | Marking deadline validation |
+| **Tutorial Choices** | ✨ | ✅ | Tutorial choice |
+| **Tutorial Choices Panel** | 🆕 | ✅ | TutorialChoiceContext, TutorialSelectionDialog, TutorialSummaryBarContainer |
+| Tutorial Dates | ✨ | 🛠️ | Display Tutorial Schedule |
+| Online Classroom (India/UK) | ✨ | 🛠️ | UK/Indian OC as product variations |
+| Check Availability | ✨ | 🛠️ | Real-time availability checking |
 
-## Search & Filtering
+#### Search & Filtering
+
+| Feature | Type | Status | Notes |
+|---------|:------:|:--------:|-------|
+| **Fuzzy Search** | 🆕 | ✅ | FuzzySearchService with FuzzyWuzzy, typo tolerance, SearchModal component |
+| **Advanced Filtering** | 🆕 | ✅ | Redux-based filter state, FilterPanel, URL synchronization middleware |
+| **Filter Configuration** | 🆕 | ✅ | Active filters |
+| **Filter Groups** | 🆕 | ✅ | Tree of filtera options |
+| **Product Groups** | 🆕 | ✅ | Product categorization mapping to each filter |
+| **Subject Filtering** | 🆕 | ✅ | Subject-based filtering via Redux filtersSlice |
+| **Delivery Mode Filtering** | 🆕 | ✅ | Delivery option filtering via modes_of_delivery filter |
+| **Product Category Filtering** | 🆕 | ✅ | Category-based filtering via categories filter |
+| **Product Type Filtering** | 🆕 | ✅ | Type-based filtering via product_types filter |
+
+#### Rules Engine & Business Logic
+
+| Feature | Type | Status | Notes |
+|---------|:------:|:--------:|-------|
+| Rules Engine | 🆕 | ✅ | RuleEngine service with JSONB-based ActedRule model. Performance optimization with caching |
+| Rules Entry Point | 🆕 | ✅ | Entry Point for rules execution |
+| Rules Configuration | 🆕 | ✅ | Rule conditon, action and management via Django admin |
+| Inline Model Message | 🆕 | ✅ | Rules for displaying Message via inline alert or dialog modal that does not require tracking |
+| Message Templates | 🆕 | ✅ | MessageTemplate with JSON/HTML content formats |
+| Holiday Messages | 🆕 | ✅ | Easter/Exam message display |
+| Session Change Messages | 🆕 | ✅ | Exam session change notifications |
+| ASET and Vault Message | 🆕 | ✅ | Tutorial session change notifications |
+| UK Import Tax Warning | 🆕 | ✅ | Message for non-UK student |
+| Expired Marking Deadlines Warning | 🆕 | ✅ | Message for marking with expired deadline |
+| Product List Delivery Information | 🆕 | ✅ | Message for delivery information |
+| User Acknowledgements Rules | 🆕 | ✅ | Rules that requires user acknowledgement when ordering |
+| Terms and Conditions Rules | 🆕 | ✅ | T&C rule enforcement via user_acknowledge actions |
+| Digital Content Acknowledgment | 🆕 | ✅ | digital content enforcement via user_acknowledge actions |
+| Tutorial Credit Card Acknowledgment | 🆕 | ✅ | nominal booking fee for tutorial order with credit card |
+| User Preference Rules | 🆕 | ✅ | Rules that stores user preference when ordering |
+| Marketing Preference Rule | 🆕 | ✅ | User preference for marketing |
+| Special Educational Needs Preference Rule | 🆕 | ✅ | User preference for special education needs |
+| Employer Feedback Preference Rule | 🆕 | ✅ | User preference for sharing feedback to employer |
+| Health and Safety Preference | 🆕 | ✅ | Health and safety preference attending tutorial |
+| Update Rules | 🆕 | ✅ | Rule for applying changes to orders |
+| Tutorial Booking Fee | 🆕 | ✅ | Add or remove tutorial booking fee rules |
+| Dynamic VAT Rules | 🆕 | ✅ | 17 composite VAT rules for UK/IE/EU/SA/ROW with product-specific rates |
+| Employer Validation Rules | 🆕 | 📋 | Employer-specific rules not yet configured |
+
+#### Shopping Cart & Checkout
 
 | Feature | Type | Status | Notes |
 |---------|------|--------|-------|
-| Basic Search | 📝 | ✅ | Product search functionality |
-| Fuzzy Search | 📝 | 🔄 | FuzzySearchService with FuzzyWuzzy, typo tolerance, SearchModal component |
-| Advanced Filtering | 📝 | 🔄 | Redux-based filter state, FilterPanel, URL synchronization middleware |
-| Filter Configuration | 📝 | 🔄 | FilterService, get_filter_service(), FilterGroup model |
-| Filter Groups | 📝 | 🔄 | Grouped filtering options |
-| Product Groups | 📝 | 🔄 | Product categorization |
-| Subject Filtering | 📝 | 🔄 | Subject-based filtering via Redux filtersSlice |
-| Delivery Mode Filtering | 📝 | 🔄 | Delivery option filtering via modes_of_delivery filter |
-| Product Category Filtering | 📝 | 🔄 | Category-based filtering via categories filter |
-| Product Type Filtering | 📝 | 🔄 | Type-based filtering via product_types filter |
+| Add to Cart | ✨ | ✅ | Product cart management |
+| Update Cart | ✨ | ✅ | Quantity and item updates |
+| Empty Cart | ✨ | ✅ | Cart clearing functionality |
+| Cart Panel | 🆕 | ✅ | Cart UI component |
+| Checkout Steps | 🆕 | ✅ | Multi-step checkout process |
+| Invoice Address Preference | ✨ | ✅ | Update invoice address |
+| Study Materials Delivery Preference | ✨ | ✅ | Update material delivery |
+| Display Communication Details | ✨ | ✅ | Contact information display |
+| Calculate VAT | 🆕 | ✅ | Order VAT calculation |
+| Terms and Conditions | 🆕 | ✅ | T&C acceptance |
+| Special Education/Health Conditions | 🆕 | ✅ | Accessibility support |
+| Notes | ✨ | ✅ | Order notes functionality |
+| Product Specify Preference | 🆕 | ✅ | Product-specific preferences |
+| Marketing Preferences | 🆕 | ✅ | Marketing opt-in/out |
+| Feedback to Employers | 🆕 | ✅ | Employer feedback options |
+| Credit Card Payment | ✨ | 🛠️ | Card payment processing |
+| Invoice Payment | ✨ | 🛠️ | Invoice payment options |
 
-## Shopping Cart & Checkout
-
-| Feature | Type | Status | Notes |
-|---------|------|--------|-------|
-| Add to Cart | 📝 | ✅ | Product cart management |
-| Update Cart | 📝 | ✅ | Quantity and item updates |
-| Empty Cart | 📝 | ✅ | Cart clearing functionality |
-| Apply Discounts | 📝 | ✅ | Discount code application |
-| Cart Panel | 📝 | ✅ | Cart UI component |
-| Checkout Steps | 📝 | ✅ | Multi-step checkout process |
-| Reduced Rate | 📝 | ✅ | Discounted pricing |
-| Invoice Delivery Preference | 📝 | ✅ | Invoice delivery options |
-| Study Materials Delivery | 📝 | ✅ | Material delivery preferences |
-| Confirm Delivery Preference | 📝 | ✅ | Delivery confirmation |
-| Calculate VAT | 📝 | ✅ | Basic VAT calculation |
-| Calculate Total | 📝 | ✅ | Order total calculation |
-| Display Communication Details | 📝 | ✅ | Contact information display |
-| Special Education/Health Conditions | 📝 | ✅ | Accessibility support |
-| Notes | 📝 | ✅ | Order notes functionality |
-| Terms and Conditions | 📝 | ✅ | T&C acceptance |
-| Product Specify Preference | 📝 | ✅ | Product-specific preferences |
-| Marketing Preferences | 📝 | ✅ | Marketing opt-in/out |
-| Feedback to Employers | 📝 | ✅ | Employer feedback options |
-| Credit Card Payment | 📝 | ✅ | Card payment processing |
-| Invoice Payment | 📝 | ✅ | Invoice payment options |
-| Purchase Order Details | 📝 | ✅ | PO code, cost code, staff number |
-| Employer Email Confirmation | 📝 | ✅ | Employer notification |
-| Dynamic VAT Calculation | 📝 | 🔄 | 17 composite VAT rules (UK/IE/EU/SA/ROW), VATAudit model, CartVATDisplay component |
+| Dynamic VAT Calculation | ✨ | 🛠️ | 17 composite VAT rules (UK/IE/EU/SA/ROW), VATAudit model, CartVATDisplay component |
 | Dynamic Employer Messaging | 🆕 | 📋 | Rules engine framework ready, employer-specific rules not yet configured |
-| Mobile-Optimized Checkout | 📝 | 🔄 | Responsive components with Material-UI breakpoints, touch-friendly UI |
+| Mobile-Optimized Checkout | ✨ | 🛠️ | Responsive components with Material-UI breakpoints, touch-friendly UI |
 | Enhanced Payment System | 🆕 | ⚠️ | Advanced payment integration |
+| Apply Reduced rates |   | ⚠️ | Update price for reduced rate  |
 
-## Rules Engine & Business Logic
-
-| Feature | Type | Status | Notes |
-|---------|------|--------|-------|
-| Rules Engine | 📝 | ✅ | RuleEngine service with JSONB-based ActedRule model |
-| Rules Configuration | 📝 | ✅ | Rule creation and management via Django admin |
-| Conditions | 📝 | ✅ | JSONLogic condition evaluation |
-| Actions | 📝 | ✅ | display_message, display_modal, user_acknowledge, user_preference, update actions |
-| Executions | 📝 | ✅ | ActedRuleExecution audit trail with context snapshots |
-| Message Templates | 📝 | ✅ | MessageTemplate with JSON/HTML content formats |
-| User Acknowledgements | 📝 | ✅ | ActedOrderTermsAcceptance tracking with audit trail |
-| Custom Functions | 📝 | ✅ | Custom rule functions |
-| Tutorial Booking Fee | 📝 | ✅ | Tutorial-specific rules |
-| Marking Solution | 📝 | ✅ | Marking-specific rules |
-| Holiday Messages | 📝 | ✅ | Conditional messaging |
-| Terms and Conditions Rules | 📝 | ✅ | T&C rule enforcement via user_acknowledge actions |
-| VAT Calculation Rules | 📝 | ✅ | Basic VAT rules |
-| Enhanced Rules Engine | 📝 | ✅ | Entry points (RuleEntryPoint), performance optimization with caching |
-| Dynamic VAT Rules | 📝 | ✅ | 17 composite VAT rules for UK/IE/EU/SA/ROW with product-specific rates |
-| Employer Validation Rules | 🆕 | 📋 | Infrastructure ready, employer-specific rules not yet configured |
-| Session Change Messages | 🆕 | ⚠️ | Tutorial session change notifications |
-
-## Communication & Email
+#### Communication & Email
 
 | Feature | Type | Status | Notes |
 |---------|------|--------|-------|
-| Email Module | 📝 | ✅ | Email system framework |
-| Email Settings | 📝 | ✅ | Email configuration |
-| MJML Templates | 📝 | ✅ | Responsive email templates |
-| Conditional Email Rendering | 📝 | ✅ | Dynamic email content |
-| Email Attachments | 📝 | ✅ | Attachment support |
-| Content Rules | 📝 | ✅ | Email content rules |
-| Placeholders | 📝 | ✅ | Dynamic content placeholders |
-| Order Confirmation Emails | 📝 | ✅ | Printed material confirmations |
-| Digital Material Confirmations | 📝 | ✅ | Digital order confirmations |
-| Marking Material Confirmations | 📝 | ✅ | Marking order confirmations |
-| Tutorial Order Confirmations | 📝 | ✅ | Tutorial confirmations |
-| Tutorial Request Emails | 📝 | ✅ | Tutorial request notifications |
+| Email Module | ✨ | ✅ | Email system framework |
+| Email Settings | ✨ | ✅ | Email configuration |
+| MJML Templates | ✨ | ✅ | Responsive email templates |
+| Conditional Email Rendering | ✨ | ✅ | Dynamic email content |
+| Email Attachments | ✨ | ✅ | Attachment support |
+| Content Rules | ✨ | ✅ | Email content rules |
+| Placeholders | ✨ | ✅ | Dynamic content placeholders |
+| Order Confirmation Emails | ✨ | ✅ | Printed material confirmations |
+| Digital Material Confirmations | ✨ | ✅ | Digital order confirmations |
+| Marking Material Confirmations | ✨ | ✅ | Marking order confirmations |
+| Tutorial Order Confirmations | ✨ | ✅ | Tutorial confirmations |
+| Tutorial Request Emails | ✨ | ⚠️ | Tutorial request notifications |
 
-## Payment Integration
+#### Payment Integration
 
 | Feature | Type | Status | Notes |
 |---------|------|--------|-------|
-| Payment System | 🆕 | ⚠️ | Comprehensive payment integration |
+| Payment System | ✨ | 🚫 | Require test account |
 
-### Rationale
+### Rationale for clean slate rather than conservative
 
 - Foxpro does not support a lot of the functionality of that are fundamental in modern web application
   - partial re-rendering
@@ -471,46 +480,3 @@ So I come to a conclusion...
     - e.g. Studying Subject Course does not have standard, retaker, additional or reduced rate.
   - Efficiency
     As the above example, fetching a non-marking product will takes up same amount of bandwidth as marking product, even when a lot of the fields are empty.
-
-
-
-I agree it is a daunting project to build a new estore from scratch, if there were any other way that we can do it in phases, i would definitely do it.
-
-
-
-### 
-
-After iterations refactorizing to extract the indispensable attributes between elements, below is the distillated elements of a product card and its relationship within each element.
-
-1. Product (CMP, Mock Exam, Tutorial...etc)
-    1. Subject
-    1. Exam session
-    1. Product Type (Material, Marking, Tutorial, Online Classroom, MV)
-    1. Variations (e.g. eBook,printed for Material)
-    1. Prices for each variations
-        1. Normal
-        1. Retaker
-        1. Additional
-    1. Tutorials (F2F & Live Online)
-        1. Venue
-        1. Format (3 full days, 6 half days)
-        1. Dates
-        1. Availability
-    1. Marking
-        1. Deadlines
-        1. Number of scripts
-    1. Marking Voucher
-        1. Expiry date
-    1. Bundle
-        1. Products included
-
-- Show Product Card Design
-
-
-### User
-
-### Cart and Checkout
-
-### Filtering
-
-### Fuzzy search
