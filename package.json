@@ -3,6 +3,7 @@
     "@fontsource/dm-sans": "^5.2.8",
     "@fontsource/inter": "^5.2.8",
     "@mui/material": "^7.3.4",
+    "ai-labs-claude-skills": "^2.0.1",
     "bmad-method": "^4.44.1"
   },
   "devDependencies": {
