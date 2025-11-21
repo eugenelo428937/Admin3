@@ -2,9 +2,25 @@
 
 ## Background
 
-A year ago, the request was to modernize the existing e-store (www.acted.co.uk/estore) by updating HTML and CSS while maintaining the FoxPro backend.
+A year ago, you ask me to modernize the existing e-store layout by updating HTML and CSS. That includes:
 
-After extensive analysis and feasibility studies, I've implemented a new e-store using Django/React. This document explains the technical findings that led to this approach and current implementation status.
+- Horizontal menu
+- Veritcal navigation menu
+- product list page
+- tuition list page
+- Online Classroom page
+
+---
+
+## Objectives
+
+The objectives is to:
+
+- Modernise layout
+- Improve responsiveness and adaptive design, mobile friendly
+- Align with modern UI/UX behavior
+- Intuitive Navigation
+- Accessibility
 
 ---
 
