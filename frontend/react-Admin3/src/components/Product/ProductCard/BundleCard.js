@@ -360,7 +360,8 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 		<>
 			<Card
 				elevation={2}
-				variant="bundle-product"
+				variant="product"
+				productType="bundle"
 				className="d-flex flex-column"
 				onMouseEnter={handleMouseEnter}
 				onMouseLeave={handleMouseLeave}
@@ -535,7 +536,7 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 								{loadingPrices ? (
 									<CircularProgress size={24} />
 								) : (
-									<Typography variant="h3" className="price-display">
+									<Typography variant="price" className="price-display">
 										{(() => {
 											const priceType = selectedPriceType || "standard";
 											const totalPrice = getBundlePrice(priceType);

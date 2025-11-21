@@ -252,7 +252,7 @@ const Home = () => {
          </Container>
 
          {/* Search Results Section */}
-         <Container disableGutters={true} maxWidth="xl" sx={{
+         <Container disableGutters={true} sx={{
                               justifyContent: "center",
                               alignItems: "center",
                            }}>

@@ -119,6 +119,17 @@ const theme = createTheme({
                "calc(1em * var(--wholestep) * var(--eighthstep)) !important",
          },
       },
+      price: {
+         fontFamily: "'Inter', 'Poppins', sans-serif",
+         fontWeight: 400,
+         fontSize: "calc(1em * var(--wholestep) * var(--halfstep)) !important",
+         lineHeight: "1 !important",
+         letterSpacing: "-0.022em !important",
+         [baseTheme.breakpoints.down("sm")]: {
+            fontSize:
+               "calc(1em * var(--wholestep) * var(--eighthstep)) !important",
+         },
+      },
       h4: {
          fontFamily: "'Inter', 'Poppins', sans-serif",
          fontWeight: 400,
@@ -188,7 +199,8 @@ const theme = createTheme({
       caption2: {
          fontFamily: "'Inter', 'Poppins', sans-serif",
          fontWeight: 400,
-         fontSize: "calc(1em / var(--halfstep) / var(--quarterstep) ) !important",
+         fontSize:
+            "calc(1em / var(--halfstep) / var(--quarterstep) ) !important",
          lineHeight: "var(--halfstep) !important",
          letterSpacing: "-0.007em !important",
       },
@@ -305,6 +317,24 @@ const theme = createTheme({
                fontFamily: "'Inter', 'Poppins', sans-serif",
                color: colorTheme.liftkit.light.onSurface,
             },
+         },
+      },
+      MuiSpeedDial: {
+         styleOverrides: {
+            root: {
+               "& .MuiFab-root": {
+                  minWidth: liftKitTheme.spacing.xl15,
+                  minHeight: liftKitTheme.spacing.xl15,
+                  width: liftKitTheme.spacing.xl15,
+                  height: liftKitTheme.spacing.xl15,
+               },
+            },
+            variants: [
+               {
+                  props: { variant: "product-card-speeddial" },
+                  style: {},
+               },
+            ],
          },
       },
       MuiInputBase: {
@@ -504,7 +534,6 @@ const theme = createTheme({
                      "& .price-container": {
                         display: "flex",
                         flexDirection: "row",
-                        alignItems: "center",
                         justifyContent: "end",
 
                         // Discount Options
@@ -563,7 +592,9 @@ const theme = createTheme({
                               display: "flex",
                               alignItems: "baseline",
                               alignSelf: "flex-end",
-                              "& .price-display": {},
+                              "& .price-display": {
+                                 lineHeight: 1,
+                              },
 
                               "& .info-button": {
                                  minWidth: "auto",
@@ -596,13 +627,14 @@ const theme = createTheme({
                            "& .add-to-cart-button": {
                               alignSelf: "flex-end",
                               borderRadius: "50%",
-                              minWidth: "56px",
-                              width: "56px",
-                              height: "56px",
-                              padding: "8px",
+                              minWidth: liftKitTheme.spacing.xl15,
+                              minHeight: liftKitTheme.spacing.xl15,
+                              width: liftKitTheme.spacing.xl15,
+                              height: liftKitTheme.spacing.xl15,
+                              padding: liftKitTheme.spacing.sm,
                               /* marginLeft: liftKitTheme.spacing.md,
                               marginRight: liftKitTheme.spacing.md,*/
-                              marginTop: liftKitTheme.spacing.xs3,
+                              marginTop: liftKitTheme.spacing.sm,
                               boxShadow: "var(--Paper-shadow)",
                               transition: "all 0.15s ease-in-out",
                               "&:hover": {
@@ -622,7 +654,7 @@ const theme = createTheme({
             },
             // Tutorial Product Card Variant
             {
-               props: { variant: "tutorial-product" },
+               props: { variant: "product", productType: "tutorial" },
                style: {
                   minWidth: "20rem",
                   maxWidth: "20rem",
@@ -775,170 +807,61 @@ const theme = createTheme({
                            fontWeight: "500",
                         },
                      },
-
-                     // Tutorial action buttons
-                     "& .tutorial-action-buttons": {
-                        display: "flex",
-                        gap: liftKitTheme.spacing.sm,
-                        "& .select-tutorial-button": {
-                           flex: 1,
-                           backgroundColor: colorTheme.bpp.purple["050"],
-                           color: colorTheme.bpp.purple["100"],
-                           "&:hover": {
-                              backgroundColor: colorTheme.bpp.purple["060"],
-                              transform: "translateY(-1px)",
-                              boxShadow: "var(--Paper-shadow)",
-                           },
-                        },
-                        "& .view-selection-button": {
-                           flex: 1,
-                           backgroundColor: colorTheme.bpp.granite["050"],
-                           color: colorTheme.bpp.granite["100"],
-                           "&:hover": {
-                              backgroundColor: colorTheme.bpp.granite["060"],
-                              transform: "translateY(-1px)",
-                              boxShadow: "var(--Paper-shadow)",
-                           },
-                        },
-                     },
                   },
 
                   //  actions styling
                   "& .MuiCardActions-root": {
-                     height: "10.2rem !important",
                      backgroundColor: colorTheme.bpp.purple["030"],
-                     boxShadow: "var(--shadow-lg)",
-                     paddingTop: liftKitTheme.spacing.md,
-                     paddingLeft: liftKitTheme.spacing.md,
-                     paddingRight: liftKitTheme.spacing.md,
-                     flexDirection: "column",
-                     alignItems: "stretch",
-                     justifyContent: "space-between",
-                     display: "flex",
-                     width: "100%",
                      // Price & Action Section
                      "& .price-container": {
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "end",
-
                         // Discount Options
                         "& .discount-options": {
-                           display: "flex",
-                           flexDirection: "column",
-                           alignItems: "start",
-                           justifyContent: "start",
-                           textAlign: "left",
-                           paddingLeft: liftKitTheme.spacing.sm,
-                           paddingRight: liftKitTheme.spacing.md,
-                           flex: 1,
-                           alignSelf: "flex-start",
                            "& .discount-title": {
-                              textAlign: "left",
                               color: colorTheme.bpp.purple["100"],
                            },
                            "& .discount-radio-group": {
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "flex-start",
-                              justifyContent: "flex-start",
-                              marginLeft: liftKitTheme.spacing.sm,
                               "& .discount-radio-option": {
-                                 padding: liftKitTheme.spacing.xs2,
-                                 paddingBottom: 0,
-                                 width: "100%",
                                  color: colorTheme.bpp.purple["100"],
-                                 transition: "all 0.2s ease-in-out",
 
-                                 "&:hover": {
-                                    boxShadow: "var(--Paper-shadow)",
-                                    backdropFilter: "saturate(2.4)",
-                                 },
+                                 "&:hover": {},
 
                                  "& .MuiRadio-root": {
-                                    width: liftKitTheme.spacing.md,
-                                    height: liftKitTheme.spacing.md,
                                     color: colorTheme.bpp.purple["090"],
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    "& .MuiSvgIcon-root": {
-                                       fontSize: liftKitTheme.spacing.md,
-                                    },
+
+                                    "& .MuiSvgIcon-root": {},
                                  },
 
                                  "& .discount-label": {
-                                    paddingLeft: liftKitTheme.spacing.xs,
                                     color: colorTheme.bpp.purple["100"],
                                  },
                               },
                            },
                         },
                         "& .price-action-section": {
-                           flex: 1,
-                           display: "flex",
-                           flexDirection: "column",
                            "& .price-info-row": {
-                              display: "flex",
-                              alignItems: "baseline",
-                              alignSelf: "flex-end",
-                              justifyContent: "flex-end",
                               "& .price-display": {
                                  color: colorTheme.bpp.purple["100"],
                               },
 
                               "& .info-button": {
-                                 minWidth: "auto",
-                                 borderRadius: "50%",
-                                 paddingBottom: 0,
+                                 "&:hover": {},
 
-                                 "&:hover": {
-                                    backdropFilter: "saturate(2.4)",
-                                    boxShadow: "var(--Paper-shadow)",
-                                    transform: "translateY(-1px)",
-                                 },
-
-                                 "& .MuiSvgIcon-root": {
-                                    fontSize: "1.2rem",
-                                 },
+                                 "& .MuiSvgIcon-root": {},
                               },
                            },
                            "& .price-details-row": {
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "flex-end",
-                              "& .price-level-text": {
-                                 display: "block",
-                                 textAlign: "right",
-                              },
-                              "& .vat-status-text": {
-                                 display: "block",
-                                 textAlign: "right",
-                              },
+                              "& .price-level-text": {},
+                              "& .vat-status-text": {},
                            },
                            "& .add-to-cart-button": {
-                              color: colorTheme.bpp.purple["100"],
-                              alignSelf: "flex-end",
-                              borderRadius: "50%",
-                              minWidth: liftKitTheme.spacing.xl,
-                              width: liftKitTheme.spacing.xl,
-                              height: liftKitTheme.spacing.xl,
-                              padding: liftKitTheme.spacing.sm,
-                              marginLeft: liftKitTheme.spacing.md,
-                              marginRight: liftKitTheme.spacing.md,
-                              marginTop: liftKitTheme.spacing.md,
-                              boxShadow: "var(--Paper-shadow)",
-                              backgroundColor: colorTheme.bpp.purple["020"],
-                              transition: "all 0.15s ease-in-out",
+                              color: "white",
+                              backgroundColor: colorTheme.bpp.purple["050"],
+
                               "&:hover": {
-                                 boxShadow: "var(--Paper-shadow)",
-                                 transform: "scale(1.05)",
-                                 filter: "saturate(2)",
+                                 backgroundColor: colorTheme.bpp.purple["070"],
                               },
 
-                              "& .MuiSvgIcon-root": {
-                                 fontSize: "1.6rem",
-                              },
+                              "& .MuiSvgIcon-root": {},
                            },
                         },
                      },
@@ -1086,6 +1009,7 @@ const theme = createTheme({
                            "& .price-info-row": {
                               "& .price-display": {
                                  color: colorTheme.bpp.sky["100"],
+                                 lineHeight: 1,
                               },
 
                               "& .info-button": {
@@ -1102,7 +1026,7 @@ const theme = createTheme({
                               backgroundColor: colorTheme.bpp.sky["060"],
 
                               "&:hover": {
-                                 backgroundColor: colorTheme.bpp.sky["070"],
+                                 backgroundColor: colorTheme.bpp.sky["080"],
                               },
 
                               "& .MuiSvgIcon-root": {
@@ -1117,7 +1041,7 @@ const theme = createTheme({
 
             // Bundle Product Card Variant
             {
-               props: { variant: "bundle-product" },
+               props: { variant: "product", productType: "bundle" },
                style: {
                   minWidth: "20rem",
                   maxWidth: "20rem",
@@ -1178,7 +1102,7 @@ const theme = createTheme({
                   },
                   // Product Header
                   "& .product-header": {
-                     backgroundColor: colorTheme.bpp.green["020"],
+                     backgroundColor: colorTheme.bpp.green["030"],
                      color: "#ffffff",
 
                      height: "var(--product-card-header-height)",
@@ -1222,10 +1146,9 @@ const theme = createTheme({
                               minWidth: "auto",
                               padding: liftKitTheme.spacing.xs2,
                               borderRadius: "50%",
-                              color: colorTheme.bpp.green["080"],
+                              color: colorTheme.bpp.green["050"],
                               "&:hover": {
                                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                                 transform: "scale(1.05)",
                               },
                               "& .MuiSvgIcon-root": {
                                  fontSize: "1rem",
@@ -1260,12 +1183,12 @@ const theme = createTheme({
                         "& .MuiChip-root": {
                            boxShadow: "var(--Paper-shadow)",
                         },
-                     },                     
+                     },
                      // Bundle-specific styling
                      "& .bundle-details-title": {
                         color: colorTheme.bpp.green["100"],
                         textAlign: "left",
-                        marginBottom: liftKitTheme.spacing.xs3,                        
+                        marginBottom: liftKitTheme.spacing.xs3,
                      },
                      "& .MuiList-root": {
                         paddingTop: 0,
@@ -1279,10 +1202,10 @@ const theme = createTheme({
                                  fontSize: liftKitTheme.typography.caption,
                                  color: colorTheme.bpp.green["080"],
                               },
-                           },           
-                           "& .MuiListItemText-root": {                           
-                           marginBottom: liftKitTheme.spacing.xs3,
-                           marginBottom: 0,
+                           },
+                           "& .MuiListItemText-root": {
+                              marginBottom: liftKitTheme.spacing.xs3,
+                              marginBottom: 0,
                               "& .MuiListItemText-primary": {
                                  color: colorTheme.bpp.green["100"],
                               },
@@ -1293,128 +1216,58 @@ const theme = createTheme({
 
                   //  actions styling
                   "& .MuiCardActions-root": {
-                     height: "10.2rem !important",
-                     backgroundColor: colorTheme.bpp.green["030"],
-                     boxShadow: "var(--shadow-lg)",
-                     paddingTop: liftKitTheme.spacing.md,
-                     paddingLeft: liftKitTheme.spacing.md,
-                     paddingRight: liftKitTheme.spacing.md,
-                     flexDirection: "column",
-                     alignItems: "stretch",
-                     justifyContent: "space-between",
+                     backgroundColor: colorTheme.bpp.green["040"],
                      // Price & Action Section
                      "& .price-container": {
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "start",
-
                         // Discount Options
                         "& .discount-options": {
-                           display: "flex",
-                           flexDirection: "column",
-                           alignItems: "start",
-                           justifyContent: "start",
-                           textAlign: "left",
-                           paddingLeft: liftKitTheme.spacing.sm,
-                           paddingRight: liftKitTheme.spacing.md,
-                           flex: 1,
-                           alignSelf: "flex-start",
                            "& .discount-title": {
-                              color: colorTheme.bpp.green["090"],
-                              fontSize: "0.75rem",
-                              fontWeight: "600",
-                              marginBottom: liftKitTheme.spacing.xs,
+                              color: colorTheme.bpp.green["100"],
                            },
                            "& .discount-radio-group": {
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: liftKitTheme.spacing.xs2,
                               "& .discount-radio-option": {
-                                 margin: 0,
+                                 color: colorTheme.bpp.green["100"],
+                                 "&:hover": {},
+
                                  "& .MuiRadio-root": {
-                                    padding: liftKitTheme.spacing.xs2,
-                                    color: colorTheme.bpp.green["070"],
-                                    "&.Mui-checked": {
-                                       color: colorTheme.bpp.green["080"],
-                                    },
+                                    color: colorTheme.bpp.green["090"],
+                                    "& .MuiSvgIcon-root": {},
                                  },
+
                                  "& .discount-label": {
-                                    fontSize: "0.75rem",
-                                    color: colorTheme.bpp.green["080"],
-                                    fontWeight: "500",
+                                    color: colorTheme.bpp.green["100"],
                                  },
                               },
                            },
                         },
 
                         "& .price-action-section": {
-                           display: "flex",
-                           flexDirection: "column",
-                           alignItems: "flex-end",
-                           justifyContent: "space-between",
                            "& .price-info-row": {
-                              display: "flex",
-                              alignItems: "center",
-                              gap: liftKitTheme.spacing.xs,
                               "& .price-display": {
                                  color: colorTheme.bpp.green["100"],
+                                 lineHeight: 1,
                               },
                               "& .info-button": {
-                                 minWidth: "auto",
-                                 padding: liftKitTheme.spacing.xs2,
-                                 borderRadius: "50%",
                                  color: colorTheme.bpp.green["080"],
-                                 "&:hover": {
-                                    backdropFilter: "saturate(2.4)",
-                                    boxShadow: "var(--Paper-shadow)",
-                                    transform: "translateY(-1px)",
-                                 },
-                                 "& .MuiSvgIcon-root": {
-                                    fontSize: "1.2rem",
-                                 },
+                                 "&:hover": {},
+                                 "& .MuiSvgIcon-root": {},
                               },
                            },
                            "& .price-details-row": {
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "flex-end",
-                              "& .price-level-text": {
-                                 display: "block",
-                                 textAlign: "right",
-                              },
-                              "& .vat-status-text": {
-                                 display: "block",
-                                 textAlign: "right",
-                              },
+                              "& .price-level-text": {},
+                              "& .vat-status-text": {},
                            },
                            "& .add-to-cart-button": {
-                              color: colorTheme.bpp.green["100"],
-                              borderRadius: "50%",
-                              minWidth: liftKitTheme.spacing.xl,
-                              width: liftKitTheme.spacing.xl,
-                              height: liftKitTheme.spacing.xl,
-                              padding: liftKitTheme.spacing.sm,
-                              marginLeft: liftKitTheme.spacing.md,
-                              marginRight: liftKitTheme.spacing.md,
-                              marginTop: liftKitTheme.spacing.md,
-                              boxShadow: "var(--Paper-shadow)",
-                              backgroundColor: colorTheme.bpp.green["020"],
-                              transition: "all 0.15s ease-in-out",
+                              color: "white",
+                              backgroundColor: colorTheme.bpp.green["060"],
+
                               "&:hover": {
-                                 boxShadow: "var(--Paper-shadow)",
-                                 transform: "scale(1.05)",
-                                 filter: "saturate(2)",
+                                 backgroundColor: colorTheme.bpp.green["080"],
                               },
                               "& .MuiSvgIcon-root": {
-                                 fontSize: "1.6rem",
+                                 color: "white",
                               },
                            },
-                        },
-                        // Status Text
-                        "& .status-text": {
-                           color: colorTheme.bpp.green["100"],
-                           marginTop: liftKitTheme.spacing.xs2,
                         },
                      },
                   },
@@ -1423,7 +1276,7 @@ const theme = createTheme({
 
             // Online Classroom Product Card Variant
             {
-               props: { variant: "online-product" },
+               props: { variant: "product", productType: "online-classroom" },
                style: {
                   minWidth: "20rem",
                   maxWidth: "20rem",
@@ -1484,7 +1337,7 @@ const theme = createTheme({
                   },
                   // Product Header
                   "& .product-header": {
-                     backgroundColor: colorTheme.bpp.cobalt["020"],
+                     backgroundColor: colorTheme.bpp.cobalt["030"],
                      color: "#ffffff",
 
                      height: "7.43rem",
@@ -1605,133 +1458,53 @@ const theme = createTheme({
 
                   //  actions styling
                   "& .MuiCardActions-root": {
-                     height: "10.2rem !important",
                      backgroundColor: colorTheme.bpp.cobalt["030"],
-                     boxShadow: "var(--shadow-lg)",
-                     paddingTop: liftKitTheme.spacing.md,
-                     paddingLeft: liftKitTheme.spacing.md,
-                     paddingRight: liftKitTheme.spacing.md,
-                     flexDirection: "column",
-                     alignItems: "stretch",
-                     justifyContent: "space-between",
                      // Price & Action Section
                      "& .price-container": {
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "end",
-
                         // Discount Options
                         "& .discount-options": {
-                           display: "flex",
-                           flexDirection: "column",
-                           alignItems: "start",
-                           justifyContent: "start",
-                           textAlign: "left",
-                           paddingLeft: liftKitTheme.spacing.sm,
-                           paddingRight: liftKitTheme.spacing.md,
-                           flex: 1,
-                           alignSelf: "flex-start",
                            "& .discount-title": {
-                              textAlign: "left",
                               color: colorTheme.bpp.cobalt["100"],
                            },
                            "& .discount-radio-group": {
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "flex-start",
-                              justifyContent: "flex-start",
-                              marginLeft: liftKitTheme.spacing.sm,
                               "& .discount-radio-option": {
-                                 padding: liftKitTheme.spacing.xs2,
-                                 paddingBottom: 0,
-                                 width: "100%",
                                  color: colorTheme.bpp.cobalt["100"],
-                                 transition: "all 0.2s ease-in-out",
 
-                                 "&:hover": {
-                                    boxShadow: "var(--Paper-shadow)",
-                                    backdropFilter: "saturate(2.4)",
-                                 },
+                                 "&:hover": {},
 
                                  "& .MuiRadio-root": {
-                                    width: liftKitTheme.spacing.md,
-                                    height: liftKitTheme.spacing.md,
                                     color: colorTheme.bpp.cobalt["090"],
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    "& .MuiSvgIcon-root": {
-                                       fontSize: liftKitTheme.spacing.md,
-                                    },
+                                    "& .MuiSvgIcon-root": {},
                                  },
 
                                  "& .discount-label": {
-                                    paddingLeft: liftKitTheme.spacing.xs,
                                     color: colorTheme.bpp.cobalt["100"],
                                  },
                               },
                            },
                         },
                         "& .price-action-section": {
-                           flex: 1,
-                           display: "flex",
-                           flexDirection: "column",
                            "& .price-info-row": {
-                              display: "flex",
-                              alignItems: "baseline",
-                              alignSelf: "flex-end",
-                              justifyContent: "flex-end",
                               "& .price-display": {
                                  color: colorTheme.bpp.cobalt["100"],
                               },
                               "& .info-button": {
-                                 minWidth: "auto",
-                                 borderRadius: "50%",
-                                 paddingBottom: 0,
-                                 "&:hover": {
-                                    backdropFilter: "saturate(2.4)",
-                                    boxShadow: "var(--Paper-shadow)",
-                                    transform: "translateY(-1px)",
-                                 },
-                                 "& .MuiSvgIcon-root": {
-                                    fontSize: "1.2rem",
-                                 },
+                                 "&:hover": {},
+                                 "& .MuiSvgIcon-root": {},
                               },
                            },
                            "& .price-details-row": {
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "flex-end",
-                              "& .price-level-text": {
-                                 display: "block",
-                                 textAlign: "right",
-                              },
-                              "& .vat-status-text": {
-                                 display: "block",
-                                 textAlign: "right",
-                              },
+                              "& .price-level-text": {},
+                              "& .vat-status-text": {},
                            },
                            "& .add-to-cart-button": {
-                              color: colorTheme.bpp.orange["100"],
-                              alignSelf: "flex-end",
-                              borderRadius: "50%",
-                              minWidth: liftKitTheme.spacing.xl,
-                              width: liftKitTheme.spacing.xl,
-                              height: liftKitTheme.spacing.xl,
-                              padding: liftKitTheme.spacing.sm,
-                              marginLeft: liftKitTheme.spacing.md,
-                              marginRight: liftKitTheme.spacing.md,
-                              marginTop: liftKitTheme.spacing.md,
-                              boxShadow: "var(--Paper-shadow)",
-                              backgroundColor: colorTheme.bpp.cobalt["020"],
-                              transition: "all 0.15s ease-in-out",
+                              color: "white",
+                              backgroundColor: colorTheme.bpp.cobalt["055"],
                               "&:hover": {
-                                 boxShadow: "var(--Paper-shadow)",
-                                 transform: "scale(1.05)",
-                                 filter: "saturate(2)",
+                                 backgroundColor: colorTheme.bpp.cobalt["070"],
                               },
                               "& .MuiSvgIcon-root": {
-                                 fontSize: "1.6rem",
+                                 color: "white",
                               },
                            },
                         },
@@ -1742,7 +1515,7 @@ const theme = createTheme({
 
             // Marking Product Card Variant (Orange theme)
             {
-               props: { variant: "marking-product" },
+               props: { variant: "product", productType: "marking" },
                style: {
                   minWidth: "20rem",
                   maxWidth: "20rem",
@@ -1946,136 +1719,54 @@ const theme = createTheme({
 
                   //  actions styling
                   "& .MuiCardActions-root": {
-                     height: "10.2rem !important",
                      backgroundColor: colorTheme.bpp.pink["030"],
-                     boxShadow: "var(--shadow-lg)",
-                     paddingTop: liftKitTheme.spacing.md,
-                     paddingLeft: liftKitTheme.spacing.md,
-                     paddingRight: liftKitTheme.spacing.md,
-                     flexDirection: "column",
-                     alignItems: "stretch",
-                     justifyContent: "space-between",
                      // Price & Action Section
                      "& .price-container": {
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "end",
                         // Discount Options
                         "& .discount-options": {
-                           display: "flex",
-                           flexDirection: "column",
-                           alignItems: "start",
-                           justifyContent: "start",
-                           textAlign: "left",
-                           paddingLeft: liftKitTheme.spacing.sm,
-                           paddingRight: liftKitTheme.spacing.md,
-                           flex: 1,
-                           alignSelf: "flex-start",
                            "& .discount-title": {
-                              textAlign: "left",
                               color: colorTheme.bpp.cobalt["100"],
                            },
                            "& .discount-radio-group": {
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "flex-start",
-                              justifyContent: "flex-start",
-                              marginLeft: liftKitTheme.spacing.sm,
                               "& .discount-radio-option": {
-                                 padding: liftKitTheme.spacing.xs2,
-                                 paddingBottom: 0,
-                                 width: "100%",
-                                 color: colorTheme.bpp.cobalt["100"],
-                                 transition: "all 0.2s ease-in-out",
-
-                                 "&:hover": {
-                                    boxShadow: "var(--Paper-shadow)",
-                                    backdropFilter: "saturate(2.4)",
-                                 },
+                                 color: colorTheme.bpp.granite["100"],
+                                 "&:hover": {},
 
                                  "& .MuiRadio-root": {
-                                    width: liftKitTheme.spacing.md,
-                                    height: liftKitTheme.spacing.md,
-                                    color: colorTheme.bpp.cobalt["090"],
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    "& .MuiSvgIcon-root": {
-                                       fontSize: liftKitTheme.spacing.md,
-                                    },
+                                    color: colorTheme.bpp.granite["090"],
+                                    "& .MuiSvgIcon-root": {},
                                  },
 
                                  "& .discount-label": {
-                                    paddingLeft: liftKitTheme.spacing.xs,
-                                    color: colorTheme.bpp.cobalt["100"],
+                                    color: colorTheme.bpp.granite["100"],
                                  },
                               },
                            },
                         },
                         "& .price-action-section": {
-                           flex: 1,
-                           display: "flex",
-                           flexDirection: "column",
                            "& .price-info-row": {
-                              display: "flex",
-                              alignItems: "baseline",
-                              alignSelf: "flex-end",
-                              justifyContent: "flex-end",
                               "& .price-display": {
-                                 color: colorTheme.bpp.purple["100"],
+                                 color: colorTheme.bpp.granite["100"],
+                                 lineHeight: 1,
                               },
 
                               "& .info-button": {
-                                 minWidth: "auto",
-                                 borderRadius: "50%",
-                                 paddingBottom: 0,
-
-                                 "&:hover": {
-                                    backdropFilter: "saturate(2.4)",
-                                    boxShadow: "var(--Paper-shadow)",
-                                    transform: "translateY(-1px)",
-                                 },
-
-                                 "& .MuiSvgIcon-root": {
-                                    fontSize: "1.2rem",
-                                 },
+                                 "&:hover": {},
+                                 "& .MuiSvgIcon-root": {},
                               },
                            },
                            "& .price-details-row": {
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "flex-end",
-                              "& .price-level-text": {
-                                 display: "block",
-                                 textAlign: "right",
-                              },
-                              "& .vat-status-text": {
-                                 display: "block",
-                                 textAlign: "right",
-                              },
+                              "& .price-level-text": {},
+                              "& .vat-status-text": {},
                            },
                            "& .add-to-cart-button": {
-                              color: colorTheme.bpp.pink["100"],
-                              alignSelf: "flex-end",
-                              borderRadius: "50%",
-                              minWidth: liftKitTheme.spacing.xl,
-                              width: liftKitTheme.spacing.xl,
-                              height: liftKitTheme.spacing.xl,
-                              padding: liftKitTheme.spacing.sm,
-                              marginLeft: liftKitTheme.spacing.md,
-                              marginRight: liftKitTheme.spacing.md,
-                              marginTop: liftKitTheme.spacing.md,
-                              boxShadow: "var(--Paper-shadow)",
-                              backgroundColor: colorTheme.bpp.pink["020"],
-                              transition: "all 0.15s ease-in-out",
+                              color: "white",
+                              backgroundColor: colorTheme.bpp.pink["060"],
                               "&:hover": {
-                                 boxShadow: "var(--Paper-shadow)",
-                                 transform: "scale(1.05)",
-                                 filter: "saturate(2)",
+                                 backgroundColor: colorTheme.bpp.pink["080"],
                               },
-
                               "& .MuiSvgIcon-root": {
-                                 fontSize: "1.6rem",
+                                 color: "white",
                               },
                            },
                         },
@@ -2291,9 +1982,10 @@ const theme = createTheme({
                               color: colorTheme.bpp.orange["100"],
                               alignSelf: "flex-end",
                               borderRadius: "50%",
-                              minWidth: liftKitTheme.spacing.xl,
-                              width: liftKitTheme.spacing.xl,
-                              height: liftKitTheme.spacing.xl,
+                              minWidth: liftKitTheme.spacing.xl15,
+                              minHeight: liftKitTheme.spacing.xl15,
+                              width: liftKitTheme.spacing.xl15,
+                              height: liftKitTheme.spacing.xl15,
                               padding: liftKitTheme.spacing.sm,
                               marginLeft: liftKitTheme.spacing.md,
                               marginRight: liftKitTheme.spacing.md,

@@ -36,7 +36,7 @@ import "../../../styles/product_card.css";
 
 
 const OnlineClassroomProductCard = React.memo(
-	({ product, onAddToCart, variant = "online-product", ...props }) => {
+	({ product, onAddToCart, variant = "product", productType = "online-classroom", ...props }) => {
 		// Initialize with the first available variation ID instead of hardcoded string
 		const [selectedVariation, setSelectedVariation] = useState(
 			product.variations?.[0]?.id?.toString() || ""
@@ -129,6 +129,7 @@ const OnlineClassroomProductCard = React.memo(
 			<Card
 				elevation={2}
 				variant={variant}
+				productType={productType}
 				onMouseEnter={handleMouseEnter}
 				onMouseLeave={handleMouseLeave}
 				sx={{                 
@@ -314,7 +315,7 @@ const OnlineClassroomProductCard = React.memo(
 						{/* Price & Action Section - matches theme structure */}
 						<Box className="price-action-section">
 							<Box className="price-info-row">
-								<Typography variant="h3" className="price-display">
+								<Typography variant="price" className="price-display">
 									{(() => {
 										if (!currentVariation) return "£0.00";
 
