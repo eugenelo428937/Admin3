@@ -13,7 +13,8 @@ const liftKitTheme = {
       md: "1rem", // var(--md) - base spacing unit
       lg: "calc(1rem * var(--scaleFactor))", // var(--lg)
       xl: "calc(1rem * var(--scaleFactor) * var(--scaleFactor))", // var(--xl)
-      xl2: "calc(1rem * var(--scaleFactor) * var(--scaleFactor) * var(--scaleFactor))", // var(--2xl)
+      xl15: "calc(1rem * var(--scaleFactor) * var(--scaleFactor) * var(--halfstep))", 
+      xl2: "calc(1rem * var(--scaleFactor) * var(--scaleFactor) * var(--scaleFactor))", // var(--2xl)      
 
       // Scale factor
       scaleFactor: "1.618", // var(--scaleFactor) - golden ratio

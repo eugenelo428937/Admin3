@@ -961,425 +961,55 @@ Skip the repeated work,<br> tackle what will create the most value
 
 **Coverage:**
 - Frontend: 85%
-- Backend: 80%
+- Backend: 49%
 
 ---
 
-## Performance Metrics
-
-**URL Update:**
-- Average: 0.069ms
-- 95th percentile: 0.092ms
-- Maximum: 0.104ms
-- Target: < 5ms
-- **Result: Exceeds target by 50x**
-
-**Page Load:**
-- Product list: 1.8 seconds (target: <3s)
-- Time to interactive: 2.1 seconds
-- Search results: 1.0 seconds (target: <2s)
-
-**Database Query:**
-- FoxPro: 2.4s average
-- PostgreSQL: 0.2s average
-- **Improvement: 12x faster**
-
----
-
-## Technical Implementation: Redux Filters
-
-**Architecture:**
-- Centralized filter state in Redux Toolkit
-- Bidirectional URL synchronization via middleware
-- Memoized selectors for performance
-- Modular slice structure (baseFilters, navigationFilters, filterSelectors)
-
-**State Structure:**
-```javascript
-{
-  subjects: [], categories: [], product_types: [],
-  products: [], modes_of_delivery: [],
-  searchQuery: '', currentPage: 1, pageSize: 20,
-  isFilterPanelOpen: false, isLoading: false,
-  error: null, filterCounts: {}
-}
-```
-
-**URL Sync:** Redux action → Middleware → URL (< 0.1ms)
-
----
-c
-## Technical Implementation: Rules Engine
-
-**Core Components:**
-- RuleEngine (orchestrator)
-- RuleRepository (JSONB storage, caching)
-- Validator (JSON Schema validation)
-- ConditionEvaluator (JsonLogic)
-- ActionDispatcher (command pattern)
-- MessageTemplateService (placeholders)
-- ExecutionStore (audit trail)
-
-**ActedRule JSONB:**
-```json
-{
-  "rule_id": "rule_checkout_terms_v3",
-  "entry_point": "checkout_terms",
-  "condition": {"type": "jsonlogic", "expr": {...}},
-  "actions": [{"type": "user_acknowledge", ...}]
-}
-```
-
----
-
-## Technical Implementation: Mobile Responsive
-
-**Breakpoint Strategy (Material-UI v5):**
-- `xs`: 0-599px (mobile portrait)
-- `sm`: 600-899px (mobile landscape, small tablets)
-- `md`: 900-1199px (tablets, small desktops)
-- `lg`: 1200-1535px (desktops)
-- `xl`: 1536px+ (large desktops)
-
-**Touch Accessibility:**
-- Minimum: 44px × 44px (WCAG 2.1 AA)
-- Implemented: 48px × 48px
-- Button spacing: Minimum 8px gaps
-
-**Animation:** CSS transforms (GPU-accelerated), respect prefers-reduced-motion
-
----
-
-## Database Schema Comparison
+## Next Step
 
 <div class="columns">
 
 <div>
 
-### FoxPro (Old)
-```
-products (
-  code CHAR(50),
-  fullname CHAR(255),
-  deadline1 DATE,
-  deadline2 DATE,
-  ... deadline3-10 NULL,
-  binder CHAR(50),  -- NULL for eBook
-  boxsize CHAR(50)  -- NULL for eBook
-)
-```
+### Planned Features
 
-**Issues:**
-- Fixed-width (wasted storage)
-- No foreign keys
-- Redundant data
-- Arbitrary limits
+- Blocked (1 feature)
+  - Payment integration (test account required)
+- In Progress (4 features)
+  - Tutorial Dates from Administrate
+  - OC India/UK
+  - Check Availability from Administrate
+  - Invoice Payment
+- To Implement (2 features)
+  - Tutorial Request
+  - Extended user types
+  - User preferences
 
 </div>
-
 <div>
 
-### PostgreSQL (New)
-```sql
-products (
-  id SERIAL PRIMARY KEY,
-  code VARCHAR(50) UNIQUE NOT NULL,
-  full_name VARCHAR(255) NOT NULL,
-  product_type VARCHAR(50) NOT NULL
-)
+### Refactor
 
-marking_deadlines (
-  id SERIAL PRIMARY KEY,
-  marking_product_id INT REFERENCES ...,
-  deadline DATE NOT NULL
-  -- No limit on deadlines
-)
-```
+- Reorganise backend app and clean up
+  - Catalogue (Subjects, Exam session, product catalogue)
+  - Utils
+- Optimise API calls
+- Remove redundant fields in database
+- Query optimisation
 
-**Improvements:**
-- Variable-length fields
-- Foreign key constraints
-- Normalized schema
-- Scalable design
-
-</div>
-
-</div>
+</div></div>
 
 ---
 
-## Architecture Comparison
-
-| Aspect | FoxPro | Django/React |
-|--------|--------|--------------|
-| Rendering | Full page reload | Partial (Virtual DOM) |
-| State | No management | Redux + Context API |
-| API | No API concept | RESTful API |
-| Auth | Custom | Django + JWT |
-| Security | Manual | Framework-level |
-| Testing | Manual | Automated (96 tests) |
-| Database | Not ACID | PostgreSQL ACID |
-| Schema | Fixed-width, redundant | Normalized, FK constraints |
-
----
-
-## Development Velocity Comparison
-
-| Task | FoxPro | Django/React |
-|------|--------|--------------|
-| Add product type | Modify 48+ files, SQL | Add model, serializer, component (3 files) |
-| Update message | Code change + deploy | Admin panel edit (no deploy) |
-| Add business rule | Multiple file changes | Admin panel config |
-| Test changes | Manual regression | Run test suite |
-| Security fix | Manual audit + patch | Framework update |
-
----
-
-## Live Demo: Product Discovery
-
-<!--
-DEMO SCRIPT:
-
-1. Desktop View
-   - Product grid with cards
-   - Responsive layout
-
-2. Search (typo tolerance)
-   - Type: "acturail" → finds "actuarial"
-   - FuzzyWuzzy Levenshtein distance
-
-3. Filters
-   - Subject: CM2
-   - Category: Core Study Material
-   - Delivery: eBook
-   - URL updates automatically
-   - Filter counts update in real-time
-
-4. Mobile View
-   - Chrome DevTools → iPhone 12 Pro
-   - Grid adapts to viewport
-   - Touch-friendly interactions
-
-5. Compare Old Store
-   - Open www.acted.co.uk/estore
-   - Show table layout breaking on mobile
--->
-
-*[Live demonstration]*
-
----
-
-## Live Demo: Tutorial Selection
-
-<!--
-DEMO SCRIPT:
-
-1. Tutorial Product Cards
-   - Visual card layout
-
-2. Tutorial Choice Panel
-   - Click "Select Tutorial"
-   - Show available sessions
-   - Color-coded availability (with icons for accessibility)
-   - Select session → immediate feedback
-
-3. Tutorial Summary Bar
-   - Expand summary
-   - Review selections
-   - Edit/remove capability
-
-4. Mobile Tutorial Selection
-   - Drawer pattern
-   - Touch targets 48px × 48px
-
-5. Compare Old Store
-   - Traffic light system
-   - Table navigation
-   - Accessibility issues
--->
-
-*[Live demonstration]*
-
----
-
-## Live Demo: Checkout & Rules Engine
-
-<!--
-DEMO SCRIPT:
-
-1. Cart Panel
-   - Slide-out component
-   - VAT breakdown
-   - No page reload
-
-2. Checkout Steps
-   - Step-by-step wizard
-   - Delivery preferences
-   - Terms & conditions modal (staff-editable JSON content)
-   - VAT calculation (17 composite rules)
-
-3. Mobile Checkout
-   - Drawer pattern for expanded states
-   - Touch-friendly forms
-   - Step progress indicator
-
-4. Payment (blocked)
-   - Show placeholder
-   - Explain test account blocker
--->
-
-*[Live demonstration]*
-
----
-
-## Live Demo: Admin Features
-
-<!--
-DEMO SCRIPT:
-
-1. Django Admin Home
-   - Navigate: http://localhost:8888/admin/
-
-2. Message Templates
-   - Rules Engine → Message Templates
-   - Edit example template
-   - Show JSON content structure
-   - Make edit, save → immediate update
-
-3. Rules Configuration
-   - Rules Engine → Rules
-   - Show rule example (UK Import Tax Warning)
-   - Entry point, condition, action
-   - Priority, template reference
-
-4. Order Management
-   - Orders list with filters
-   - Order detail view
-   - Complete order information
-   - Audit trail (terms acceptances)
--->
-
-*[Live demonstration]*
-
----
-
-## Live Demo: Technical Details
-
-<!--
-DEMO SCRIPT:
-
-1. Redux DevTools
-   - Chrome DevTools → Redux tab
-   - Click filter → show action log
-   - State tree updates
-   - URL synchronization middleware
-
-2. Test Output
-   - Terminal: npm test
-   - 96/96 tests passing
-   - Coverage: 85% frontend, 80% backend
-
-3. Performance
-   - Network tab → page load
-   - <2 seconds load time
-   - Minimal requests (caching)
--->
-
-*[Live demonstration]*
-
----
-
-## Remaining Work
-
-### Blocked (1 feature)
-- Payment integration (test account required)
-- Estimated: 2-3 weeks once unblocked
-
-### In Progress (7 features)
-- Tutorial Dates: 1 week
-- OC India/UK: 1 week
-- Check Availability: 1 week
-- Credit Card Payment: 2-3 weeks (blocked)
-- Invoice Payment: 1 week
-- Mobile Checkout refinement: 1 week
-
-### To Implement (3 features)
-- Extended user types: 2-3 weeks
-- User preferences: 1 week
-
----
-
-## Development Environment
-
-**Backend:**
-```bash
-cd backend/django_Admin3
-.\.venv\Scripts\activate
-python manage.py runserver 8888
-```
-
-**Frontend:**
-```bash
-cd frontend/react-Admin3
-npm install
-npm start
-```
-
-**Database:** PostgreSQL 18 on ACTEDDBDEV01
-
-**Testing:**
-```bash
-python manage.py test  # Backend
-npm test               # Frontend
-```
-
----
-
-## Documentation
-
-**Technical:**
-- docs/EstoreLayoutRedesign.md (original analysis)
-- docs/redux-devtools-verification.md
-- docs/product_card_design.md
-- CLAUDE.md (architecture patterns)
-
-**Specifications:**
-- specs/spec-filter-searching-refinement-20251021.md
-
-**Source Code:**
-- backend/django_Admin3/
-- frontend/react-Admin3/
-
----
-
-## Next Steps
-
-**Immediate:**
-1. Obtain payment gateway test account (blocking)
-2. Complete tutorial features (dates, availability)
-3. Finalize mobile checkout
-4. User acceptance testing (UAT)
-
-**Post-Implementation:**
-1. Data migration strategy
-2. Staff training (Django admin)
-3. Phased rollout (A/B testing at 10% traffic)
-4. Performance monitoring
-5. Customer service documentation
-
----
-
-## Why Not HTML/CSS Update
-
-**Feasibility study revealed:**
-- 48+ files require modification
-- Product relationships controlled by SQL
-- No framework for partial rendering
-- Auth/cart/profile extraction = extensive refactoring
-- FoxPro architectural limitations
-- Maintenance burden increases with workarounds
-
-**Assessment:** Architectural ceiling reached
+### Remaining Work
+
+- Reduced rates
+- eBook with additional rates when "Buy Both"
+- Products Dispatch Dates
+- Error Handling
+- Product overlapping check
+- Apprenticeship, StudyPlus, CAA Product
+- Import/Export DBF utils
 
 ---
 
@@ -1397,38 +1027,3 @@ npm test               # Frontend
 - FoxPro update: Ceiling reached
 - Flask/FastAPI: Less comprehensive
 - Vue/Angular: Smaller ecosystem
-
----
-
-## Implementation Approach
-
-1. ✅ **Research:** Industry patterns analyzed
-2. ✅ **Feasibility:** FoxPro update effort assessed
-3. ✅ **Architecture:** Django/React stack selected
-4. ✅ **Development:** 85% features implemented
-5. ✅ **Integration:** DBF compatibility verified
-6. ⏳ **Payment:** Blocked on test account
-7. ⏳ **UAT:** User acceptance testing
-8. ⏳ **Deployment:** Phased rollout
-
----
-
-## Questions?
-
-**Available for:**
-- Live demonstrations
-- Technical questions
-- Architecture discussion
-- Timeline and resource planning
-- Performance metrics review
-
-**System Access:**
-- Frontend: http://localhost:3000/
-- Backend API: http://localhost:8888/api/
-- Admin Panel: http://localhost:8888/admin/
-
----
-
-*Presentation by: [Your Name]*
-*Date: 2025-01-16*
-*Status: 85% Complete - Payment Integration Blocked*

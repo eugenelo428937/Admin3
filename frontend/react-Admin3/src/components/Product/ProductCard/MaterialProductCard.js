@@ -463,7 +463,7 @@ const MaterialProductCard = React.memo(
                   <Box className="price-action-section">
                      {/* Price and Info Button Row */}
                      <Box className="price-info-row">
-                        <Typography variant="h3" className="price-display">
+                        <Typography variant="price" className="price-display">
                            {(() => {
                               if (!currentVariation) return "-";
                               const priceType = selectedPriceType || "standard";
@@ -523,6 +523,7 @@ const MaterialProductCard = React.memo(
                               }}
                            />
                            <SpeedDial
+                              variant="product-card-speeddial" 
                               ariaLabel="Speed Dial for add to cart"
                               className="add-to-cart-speed-dial"
                               icon={
@@ -537,14 +538,10 @@ const MaterialProductCard = React.memo(
                               direction="up"
                               sx={{
 								position: "absolute",
-								bottom: 14,
-								right: 6,
+								bottom: 18,
+								right: 8,
 
 								"& .MuiFab-root": {
-								   minWidth: "56px",
-								   minHeight: "56px",
-								   width: "56px",
-								   height: "56px",
 								   backgroundColor:
 									  theme.palette.bpp.sky["060"],
 								   "&:hover": {
@@ -577,7 +574,8 @@ const MaterialProductCard = React.memo(
                                     "& .MuiSpeedDialAction-fab": {
                                        color: "white",
                                        backgroundColor:
-                                          theme.palette.bpp.sky["060"],
+                                          theme.palette.bpp.sky["060"],                                       
+                                       boxShadow: "var(--Paper-shadow)",  
                                        "&:hover": {
                                           backgroundColor:
                                              theme.palette.bpp.sky["070"],
@@ -611,7 +609,7 @@ const MaterialProductCard = React.memo(
                                  slotProps={{
                                     tooltip: {
                                        open: true,
-                                       title: "Buy Both",
+                                       title: "Buy Both (Printed + eBook)",
                                     },
                                  }}
                                  sx={{
@@ -631,7 +629,7 @@ const MaterialProductCard = React.memo(
                                        },
                                     },
                                  }}
-                                 aria-label="Buy Both"
+                                 aria-label="Buy Both (Printed + eBook)"
                                  onClick={() => {
                                     const priceType =
                                        selectedPriceType || "standard";
@@ -685,6 +683,7 @@ const MaterialProductCard = React.memo(
                            <SpeedDial
                               ariaLabel="Speed Dial for add to cart"
                               className="add-to-cart-speed-dial"
+                              variant="product-card-speeddial"
                               icon={
                                  <SpeedDialIcon
                                     icon={<AddShoppingCart />}
@@ -697,16 +696,12 @@ const MaterialProductCard = React.memo(
                               direction="up"
                               sx={{
                                  position: "absolute",
-                                 bottom: 14,
-                                 right: 6,
+                                 bottom: 18,
+                                 right: 8,
 
-                                 "& .MuiFab-root": {
-                                    minWidth: "56px",
-                                    minHeight: "56px",
-                                    width: "56px",
-                                    height: "56px",
-                                    backgroundColor:
-                                       theme.palette.bpp.sky["060"],
+                                 "& .MuiFab-root": {                                    
+                                    backgroundColor: theme.palette.bpp.sky["060"],
+                                    boxShadow: "var(--Paper-shadow)",
                                     "&:hover": {
                                        backgroundColor:
                                           theme.palette.bpp.sky["070"],
