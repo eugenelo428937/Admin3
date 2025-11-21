@@ -94,5 +94,5 @@ class AddressLookupLog(models.Model):
 
     def __str__(self):
         status = "✓" if self.success else "✗"
-        cache_status = "(cached)" if self.cache_hit else ""
-        return f"{status} {self.postcode} - {self.api_provider} {cache_status} ({self.response_time_ms}ms)"
+        cache_status = " (cached)" if self.cache_hit else ""
+        return f"{status} {self.postcode} - {self.api_provider}{cache_status} ({self.response_time_ms}ms)"

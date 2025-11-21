@@ -521,7 +521,8 @@ const MarkingProductCard = React.memo(
 			<>
 				<Card
 					elevation={2}
-					variant="marking-product"
+					variant="product"
+					productType="marking"
 					className="d-flex flex-column"
 					onMouseEnter={handleMouseEnter}
 					onMouseLeave={handleMouseLeave}
@@ -698,7 +699,7 @@ const MarkingProductCard = React.memo(
 							{/* Price & Action Section - matches theme structure */}
 							<Box className="price-action-section">
 								<Box className="price-info-row">
-									<Typography variant="h3" className="price-display">
+									<Typography variant="price" className="price-display">
 										{(() => {
 											const finalPriceType = "standard";
 											const priceResult = getPrice(
@@ -786,12 +787,13 @@ const MarkingProductCard = React.memo(
 										}}
 										sx={{
 											position: "absolute",
-											bottom: 14,
-											right: 14,
+											bottom: 18,
+											right: 8,
 											"& .MuiFab-root": {
-												backgroundColor: theme.palette.bpp.sky["060"],
+												backgroundColor: theme.palette.bpp.pink["040"],
+												boxShadow: "var(--Paper-shadow)",
 												"&:hover": {
-													backgroundColor: theme.palette.bpp.sky["070"],
+													backgroundColor: theme.palette.bpp.pink["060"],
 												},
 												"&.Mui-disabled": {
 													backgroundColor: "grey.400",
@@ -814,9 +816,9 @@ const MarkingProductCard = React.memo(
 												},
 												"& .MuiSpeedDialAction-fab": {
 													color: "white",
-													backgroundColor: theme.palette.bpp.sky["060"],
+													backgroundColor: theme.palette.bpp.pink["040"],
 													"&:hover": {
-														backgroundColor: theme.palette.bpp.sky["070"],
+														backgroundColor: theme.palette.bpp.pink["060"],
 													},
 												},
 											}}
@@ -846,9 +848,9 @@ const MarkingProductCard = React.memo(
 												},
 												"& .MuiSpeedDialAction-fab": {
 													color: "white",
-													backgroundColor: theme.palette.bpp.sky["060"],
+													backgroundColor: theme.palette.bpp.pink["040"],
 													"&:hover": {
-														backgroundColor: theme.palette.bpp.sky["070"],
+														backgroundColor: theme.palette.bpp.pink["060"],
 													},
 												},
 											}}

@@ -449,7 +449,8 @@ const TutorialProductCard = React.memo(
 			<>
 				<Card
 					elevation={2}
-					variant="tutorial-product"
+					variant="product"
+					productType="tutorial"
 					onMouseEnter={handleMouseEnter}
 					onMouseLeave={handleMouseLeave}
 					sx={{
@@ -668,7 +669,7 @@ const TutorialProductCard = React.memo(
 							{/* Price & Action Section - matches theme structure */}
 							<Box className="price-action-section">
 								<Box className="price-info-row">
-									<Typography variant="h3" className="price-display">
+									<Typography variant="price" className="price-display">
 										{selectedPriceType === "retaker" && product.retaker_price
 											? formatPrice(product.retaker_price)
 											: selectedPriceType === "additional" && product.additional_copy_price

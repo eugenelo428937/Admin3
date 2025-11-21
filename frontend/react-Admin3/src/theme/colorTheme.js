@@ -173,8 +173,11 @@ const colorTheme = {
 			"010": "#e9f1ff", // rgb(233,241,255) converted to hex
 			"020": "#c7daff", // rgb(199,218,255) converted to hex
 			"030": "#94bcff", // rgb(148,188,255) converted to hex
+			"035": "#669dfd", // rgb(125,172,254) converted to hex
 			"040": "#669dfd", // rgb(102,157,253) converted to hex
+			"045": "#568ded", // rgb(86,141,237) converted to hex
 			"050": "#4481ec", // rgb(68,129,236) converted to hex
+			"055": "#3774dd", // rgb(55,116,221) converted to hex
 			"060": "#2a65ce", // rgb(42,101,206) converted to hex
 			"070": "#0e4cb1", // rgb(14,76,177) converted to hex
 			"080": "#003195", // rgb(0,49,149) converted to hex
