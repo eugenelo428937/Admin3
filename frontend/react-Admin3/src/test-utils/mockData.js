@@ -1,300 +1,120 @@
 /**
- * Mock Data for Integration Tests (Story 1.16)
- *
- * Provides realistic test data for products, subjects, categories, etc.
- * Used by MSW handlers and integration tests.
+ * Mock data factory functions for testing
+ * Provides realistic test data for User, Product, Cart, Order entities
  */
 
-// Mock Subjects
-export const mockSubjects = [
-  { code: 'CM2', name: 'CM2 Financial Engineering and Loss Reserving' },
-  { code: 'SA1', name: 'SA1 Health and Care Principles' },
-  { code: 'CB1', name: 'CB1 Business Finance' },
-  { code: 'CP1', name: 'CP1 Actuarial Practice' },
-  { code: 'FM1', name: 'FM1 Foundations of Actuarial Methods' },
-];
-
-// Mock Categories
-export const mockCategories = [
-  { code: 'BUNDLE', name: 'Bundle', display_name: 'Bundle' },
-  { code: 'MATERIAL', name: 'Study Material', display_name: 'Study Material' },
-  { code: 'EXAM', name: 'Mock Exam', display_name: 'Mock Exam' },
-  { code: 'TUTORIAL', name: 'Tutorial', display_name: 'Tutorial' },
-];
-
-// Mock Product Types
-export const mockProductTypes = [
-  { code: 'CORE_MATERIAL', name: 'Core Study Material', display_name: 'Core Study Material' },
-  { code: 'MOCK_EXAM', name: 'Mock Exam', display_name: 'Mock Exam' },
-  { code: 'TUTORIAL', name: 'Tutorial', display_name: 'Tutorial' },
-  { code: 'EBOOK', name: 'eBook', display_name: 'eBook' },
-  { code: 'PRINTED', name: 'Printed Material', display_name: 'Printed Material' },
-];
-
-// Mock Modes of Delivery
-export const mockModesOfDelivery = [
-  { code: 'EBOOK', name: 'eBook', display_name: 'eBook' },
-  { code: 'PRINTED', name: 'Printed', display_name: 'Printed' },
-  { code: 'ONLINE', name: 'Online', display_name: 'Online' },
-  { code: 'IN_PERSON', name: 'In Person', display_name: 'In Person' },
-];
-
-// Mock Products
-export const mockProducts = [
-  {
-    id: 1,
-    subject_code: 'CM2',
-    name: 'CM2 Core Study Material',
-    category: 'BUNDLE',
-    product_type: 'CORE_MATERIAL',
-    mode_of_delivery: 'EBOOK',
-    price: 45.00,
-    available: true,
-    description: 'Complete core study material for CM2',
-  },
-  {
-    id: 2,
-    subject_code: 'CM2',
-    name: 'CM2 Mock Exam',
-    category: 'EXAM',
-    product_type: 'MOCK_EXAM',
-    mode_of_delivery: 'ONLINE',
-    price: 15.00,
-    available: true,
-    description: 'Practice exam for CM2',
-  },
-  {
-    id: 3,
-    subject_code: 'SA1',
-    name: 'SA1 Core Study Material',
-    category: 'BUNDLE',
-    product_type: 'CORE_MATERIAL',
-    mode_of_delivery: 'EBOOK',
-    price: 45.00,
-    available: true,
-    description: 'Complete core study material for SA1',
-  },
-  {
-    id: 4,
-    subject_code: 'SA1',
-    name: 'SA1 Printed Material',
-    category: 'MATERIAL',
-    product_type: 'PRINTED',
-    mode_of_delivery: 'PRINTED',
-    price: 55.00,
-    available: true,
-    description: 'Printed study material for SA1',
-  },
-  {
-    id: 5,
-    subject_code: 'CB1',
-    name: 'CB1 Core Study Material',
-    category: 'BUNDLE',
-    product_type: 'CORE_MATERIAL',
-    mode_of_delivery: 'EBOOK',
-    price: 45.00,
-    available: true,
-    description: 'Complete core study material for CB1',
-  },
-  {
-    id: 6,
-    subject_code: 'CB1',
-    name: 'CB1 Tutorial',
-    category: 'TUTORIAL',
-    product_type: 'TUTORIAL',
-    mode_of_delivery: 'ONLINE',
-    price: 120.00,
-    available: true,
-    description: 'Online tutorial for CB1',
-  },
-  {
-    id: 7,
-    subject_code: 'CP1',
-    name: 'CP1 Core Study Material',
-    category: 'BUNDLE',
-    product_type: 'CORE_MATERIAL',
-    mode_of_delivery: 'EBOOK',
-    price: 45.00,
-    available: false,
-    description: 'Complete core study material for CP1 (currently unavailable)',
-  },
-  {
-    id: 8,
-    subject_code: 'FM1',
-    name: 'FM1 Core Study Material',
-    category: 'BUNDLE',
-    product_type: 'CORE_MATERIAL',
-    mode_of_delivery: 'EBOOK',
-    price: 45.00,
-    available: true,
-    description: 'Complete core study material for FM1',
-  },
-];
-
-// Mock Filter Counts (returned by API alongside products)
-export const mockFilterCounts = {
-  subjects: {
-    CM2: { count: 2, name: 'CM2', display_name: 'CM2 Financial Engineering and Loss Reserving' },
-    SA1: { count: 2, name: 'SA1', display_name: 'SA1 Health and Care Principles' },
-    CB1: { count: 2, name: 'CB1', display_name: 'CB1 Business Finance' },
-    CP1: { count: 1, name: 'CP1', display_name: 'CP1 Actuarial Practice' },
-    FM1: { count: 1, name: 'FM1', display_name: 'FM1 Foundations of Actuarial Methods' },
-  },
-  categories: {
-    BUNDLE: { count: 5, name: 'Bundle', display_name: 'Bundle' },
-    MATERIAL: { count: 1, name: 'Study Material', display_name: 'Study Material' },
-    EXAM: { count: 1, name: 'Mock Exam', display_name: 'Mock Exam' },
-    TUTORIAL: { count: 1, name: 'Tutorial', display_name: 'Tutorial' },
-  },
-  product_types: {
-    CORE_MATERIAL: { count: 5, name: 'Core Study Material', display_name: 'Core Study Material' },
-    MOCK_EXAM: { count: 1, name: 'Mock Exam', display_name: 'Mock Exam' },
-    TUTORIAL: { count: 1, name: 'Tutorial', display_name: 'Tutorial' },
-    PRINTED: { count: 1, name: 'Printed Material', display_name: 'Printed Material' },
-  },
-  modes_of_delivery: {
-    EBOOK: { count: 5, name: 'eBook', display_name: 'eBook' },
-    PRINTED: { count: 1, name: 'Printed', display_name: 'Printed' },
-    ONLINE: { count: 2, name: 'Online', display_name: 'Online' },
-  },
-  products: {
-    '1': { count: 1, name: 'CM2 Core Study Material', display_name: 'CM2 Core Study Material' },
-    '2': { count: 1, name: 'CM2 Mock Exam', display_name: 'CM2 Mock Exam' },
-    '3': { count: 1, name: 'SA1 Core Study Material', display_name: 'SA1 Core Study Material' },
-    '4': { count: 1, name: 'SA1 Printed Material', display_name: 'SA1 Printed Material' },
-    '5': { count: 1, name: 'CB1 Core Study Material', display_name: 'CB1 Core Study Material' },
-    '6': { count: 1, name: 'CB1 Tutorial', display_name: 'CB1 Tutorial' },
-    '7': { count: 1, name: 'CP1 Core Study Material', display_name: 'CP1 Core Study Material' },
-    '8': { count: 1, name: 'FM1 Core Study Material', display_name: 'FM1 Core Study Material' },
-  },
-};
-
-// Default API response structure
-export const createMockApiResponse = (products, filterCounts, pagination = {}) => ({
-  products: products || mockProducts,
-  filterCounts: filterCounts || mockFilterCounts,
-  pagination: {
-    page: pagination.page || 1,
-    page_size: pagination.page_size || 20,
-    total_count: pagination.total_count || (products || mockProducts).length,
-    has_next: pagination.has_next || false,
-    has_previous: pagination.has_previous || false,
-  },
+export const mockUser = (overrides = {}) => ({
+  id: 1,
+  username: 'testuser',
+  email: 'test@example.com',
+  firstName: 'Test',
+  lastName: 'User',
+  isActive: true,
+  ...overrides,
 });
 
-/**
- * Filter products by search parameters
- * Mimics backend filtering logic for realistic tests
- */
-export const filterProducts = (products, filters = {}) => {
-  let filtered = [...products];
+export const mockProduct = (overrides = {}) => ({
+  id: 1,
+  name: 'Test Product',
+  description: 'A test product description',
+  price: 49.99,
+  category: 'Test Category',
+  subjectCode: 'CM2',
+  productType: 'Core Study Material',
+  modeOfDelivery: 'PRINTED',
+  active: true,
+  ...overrides,
+});
 
-  // Filter by subjects
-  if (filters.subjects && filters.subjects.length > 0) {
-    filtered = filtered.filter(p => filters.subjects.includes(p.subject_code));
-  }
+export const mockProductVariation = (overrides = {}) => ({
+  id: 1,
+  productId: 1,
+  variationType: 'FORMAT',
+  variationValue: 'PRINTED',
+  price: 49.99,
+  active: true,
+  ...overrides,
+});
 
-  // Filter by categories
-  if (filters.categories && filters.categories.length > 0) {
-    filtered = filtered.filter(p => filters.categories.includes(p.category));
-  }
+export const mockCartItem = (overrides = {}) => ({
+  id: 1,
+  productId: 1,
+  productName: 'Test Product',
+  quantity: 1,
+  price: 49.99,
+  subtotal: 49.99,
+  ...overrides,
+});
 
-  // Filter by product types
-  if (filters.product_types && filters.product_types.length > 0) {
-    filtered = filtered.filter(p => filters.product_types.includes(p.product_type));
-  }
+export const mockCart = (overrides = {}) => ({
+  id: 1,
+  items: [mockCartItem()],
+  subtotal: 49.99,
+  tax: 9.00,
+  total: 58.99,
+  itemCount: 1,
+  ...overrides,
+});
 
-  // Filter by products (IDs)
-  if (filters.products && filters.products.length > 0) {
-    filtered = filtered.filter(p => filters.products.includes(String(p.id)));
-  }
+export const mockOrder = (overrides = {}) => ({
+  id: 1,
+  orderNumber: 'ORD-2024-0001',
+  userId: 1,
+  items: [mockCartItem()],
+  subtotal: 49.99,
+  tax: 9.00,
+  total: 58.99,
+  status: 'PENDING',
+  createdAt: '2024-01-01T00:00:00Z',
+  ...overrides,
+});
 
-  // Filter by modes of delivery
-  if (filters.modes_of_delivery && filters.modes_of_delivery.length > 0) {
-    filtered = filtered.filter(p => filters.modes_of_delivery.includes(p.mode_of_delivery));
-  }
+export const mockSubject = (overrides = {}) => ({
+  id: 1,
+  code: 'CM2',
+  name: 'Actuarial Mathematics CM2',
+  description: 'Core subject for actuarial exams',
+  active: true,
+  ...overrides,
+});
 
-  // Filter by search query (name contains query, case-insensitive)
-  if (filters.searchQuery) {
-    const query = filters.searchQuery.toLowerCase();
-    filtered = filtered.filter(p =>
-      p.name.toLowerCase().includes(query) ||
-      p.description?.toLowerCase().includes(query) ||
-      p.subject_code.toLowerCase().includes(query)
-    );
-  }
+export const mockExamSession = (overrides = {}) => ({
+  id: 1,
+  name: 'April 2024',
+  startDate: '2024-04-01',
+  endDate: '2024-04-30',
+  registrationDeadline: '2024-03-15',
+  active: true,
+  ...overrides,
+});
 
-  return filtered;
-};
+export const mockAddress = (overrides = {}) => ({
+  id: 1,
+  addressLine1: '123 Test Street',
+  addressLine2: 'Apt 4',
+  city: 'Test City',
+  state: 'TS',
+  postalCode: '12345',
+  country: 'Test Country',
+  ...overrides,
+});
 
-/**
- * Calculate filter counts from filtered products
- * Mimics backend count calculation
- */
-export const calculateFilterCounts = (products) => {
-  const counts = {
-    subjects: {},
-    categories: {},
-    product_types: {},
-    products: {},
-    modes_of_delivery: {},
-  };
+// Bulk data generators
+export const mockProductList = (count = 5, overrides = {}) =>
+  Array.from({ length: count }, (_, i) =>
+    mockProduct({ id: i + 1, name: , ...overrides })
+  );
 
-  products.forEach(product => {
-    // Count subjects
-    if (!counts.subjects[product.subject_code]) {
-      const subjectData = mockSubjects.find(s => s.code === product.subject_code);
-      counts.subjects[product.subject_code] = {
-        count: 0,
-        name: product.subject_code,
-        display_name: subjectData?.name || product.subject_code,
-      };
-    }
-    counts.subjects[product.subject_code].count++;
+export const mockCartItems = (count = 3, overrides = {}) =>
+  Array.from({ length: count }, (_, i) =>
+    mockCartItem({ id: i + 1, productName: , ...overrides })
+  );
 
-    // Count categories
-    if (!counts.categories[product.category]) {
-      const categoryData = mockCategories.find(c => c.code === product.category);
-      counts.categories[product.category] = {
-        count: 0,
-        name: categoryData?.name || product.category,
-        display_name: categoryData?.display_name || product.category,
-      };
-    }
-    counts.categories[product.category].count++;
-
-    // Count product types
-    if (!counts.product_types[product.product_type]) {
-      const typeData = mockProductTypes.find(t => t.code === product.product_type);
-      counts.product_types[product.product_type] = {
-        count: 0,
-        name: typeData?.name || product.product_type,
-        display_name: typeData?.display_name || product.product_type,
-      };
-    }
-    counts.product_types[product.product_type].count++;
-
-    // Count modes of delivery
-    if (!counts.modes_of_delivery[product.mode_of_delivery]) {
-      const modeData = mockModesOfDelivery.find(m => m.code === product.mode_of_delivery);
-      counts.modes_of_delivery[product.mode_of_delivery] = {
-        count: 0,
-        name: modeData?.name || product.mode_of_delivery,
-        display_name: modeData?.display_name || product.mode_of_delivery,
-      };
-    }
-    counts.modes_of_delivery[product.mode_of_delivery].count++;
-
-    // Count individual products
-    if (!counts.products[String(product.id)]) {
-      counts.products[String(product.id)] = {
-        count: 0,
-        name: product.name,
-        display_name: product.name,
-      };
-    }
-    counts.products[String(product.id)].count++;
-  });
-
-  return counts;
-};
+// Pagination response helper
+export const mockPaginatedResponse = (data, overrides = {}) => ({
+  results: data,
+  count: data.length,
+  next: null,
+  previous: null,
+  ...overrides,
+});
