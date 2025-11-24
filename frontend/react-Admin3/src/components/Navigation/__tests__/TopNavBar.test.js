@@ -1,10 +1,38 @@
 // src/components/Navigation/__tests__/TopNavBar.test.js
+
+// Mock services BEFORE any imports to prevent axios import errors
+jest.mock('../../../services/httpService', () => ({
+  __esModule: true,
+  default: {
+    get: jest.fn(),
+    post: jest.fn(),
+    put: jest.fn(),
+    delete: jest.fn(),
+  },
+}));
+
+jest.mock('../../../services/cartService', () => ({
+  __esModule: true,
+  default: {
+    getCart: jest.fn(() => Promise.resolve({
+      data: {
+        items: [],
+        vat_calculations: {
+          region_info: { region: 'UK' }
+        }
+      }
+    })),
+    addToCart: jest.fn(),
+    updateCartItem: jest.fn(),
+    removeFromCart: jest.fn(),
+  },
+}));
+
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import TopNavBar from '../TopNavBar';
-import { AuthProvider } from '../../../contexts/AuthContext';
-import { CartProvider } from '../../../contexts/CartContext';
+// AuthProvider and CartProvider are mocked above, no need to import
 
 // Mock the useAuth hook
 jest.mock('../../../hooks/useAuth', () => ({
@@ -27,11 +55,7 @@ jest.mock('../../../contexts/CartContext', () => ({
 const renderWithProviders = (component) => {
   return render(
     <BrowserRouter>
-      <AuthProvider>
-        <CartProvider>
-          {component}
-        </CartProvider>
-      </AuthProvider>
+      {component}
     </BrowserRouter>
   );
 };
