@@ -199,3 +199,30 @@ The current ActEd eStore application exhibits significant deficiencies across al
 **Report Prepared By:** UX Analysis Team  
 **Review Date:** May 10, 2025  
 **Next Steps:** Present findings to stakeholders and initiate project planning phase
+
+## Technical Issues: Database Schema
+
+**FoxPro Limitations:**
+- Not fully ACID compliant (corruption possible, no FK constraints)
+- Fixed-width schema
+  - Products table: 10 deadline columns (80 bytes wasted for non-marking products)
+  - Empty fields consume same storage as filled fields
+- Redundant data
+  - First name, last name, contact duplicated across tables
+  - Updates require modification in multiple locations
+
+**Schema Design:**
+- Not normalized (FoxPro is not relational)
+- Entity integrity issues (e.g., "binder" field irrelevant to eBook products)
+- Scalability constraints (adding 11th deadline requires schema change)
+
+Technical Issues: Coupled Architecture
+
+**Code Organization:**
+- Product layout controlled by SQL SELECT statement
+
+**Rendering:**
+- Full DOM re-render per user action
+- No partial page updates
+- No smooth transitions/animations
+- No state management framework
