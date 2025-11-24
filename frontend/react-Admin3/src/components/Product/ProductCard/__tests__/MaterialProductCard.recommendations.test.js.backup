@@ -1,6 +1,5 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 import '@testing-library/jest-dom';
 import MaterialProductCard from '../MaterialProductCard';
 import { useCart } from '../../../../contexts/CartContext';
@@ -45,31 +44,6 @@ describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
       }
     }
   };
-
-  // Create theme with bpp.sky palette
-  const theme = createTheme({
-    palette: {
-      bpp: {
-        sky: {
-          '060': '#1976d2',
-          '070': '#1565c0',
-        },
-        granite: {
-          '030': '#e0e0e0',
-          '090': '#212121',
-        }
-      }
-    }
-  });
-
-  const renderWithTheme = (component) => {
-    return render(
-      <ThemeProvider theme={theme}>
-        {component}
-      </ThemeProvider>
-    );
-  };
-
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -133,7 +107,7 @@ describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
         ],
       });
 
-      renderWithTheme(
+      render(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -160,7 +134,7 @@ describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
         ],
       });
 
-      renderWithTheme(
+      render(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -191,7 +165,7 @@ describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
         ],
       });
 
-      renderWithTheme(
+      render(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -224,7 +198,7 @@ describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
         ],
       });
 
-      renderWithTheme(
+      render(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -254,7 +228,7 @@ describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
         ],
       });
 
-      renderWithTheme(
+      render(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -284,7 +258,7 @@ describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
         ],
       });
 
-      renderWithTheme(
+      render(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -319,7 +293,7 @@ describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
         ],
       });
 
-      renderWithTheme(
+      render(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -348,7 +322,7 @@ describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
         ],
       });
 
-      renderWithTheme(
+      render(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -379,7 +353,7 @@ describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
         ],
       });
 
-      renderWithTheme(
+      render(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -417,7 +391,7 @@ describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
         ],
       });
 
-      renderWithTheme(
+      render(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -448,7 +422,7 @@ describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
         ],
       });
 
-      renderWithTheme(
+      render(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -476,7 +450,7 @@ describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
         ],
       });
 
-      renderWithTheme(
+      render(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -498,7 +472,7 @@ describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
       const product = createMockProduct();
 
       // Should render without errors
-      const { container } = renderWithTheme(
+      const { container } = render(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -536,7 +510,7 @@ describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
         ],
       });
 
-      renderWithTheme(
+      render(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}

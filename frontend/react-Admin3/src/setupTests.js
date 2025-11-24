@@ -4,23 +4,7 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 
-// Polyfill TextEncoder/TextDecoder for MSW v2 (Node.js environment)
-import { TextEncoder, TextDecoder } from 'util';
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
-
-// Polyfill BroadcastChannel for MSW v2
-global.BroadcastChannel = class BroadcastChannel {
-  constructor(name) {
-    this.name = name;
-  }
-  postMessage() {}
-  close() {}
-  addEventListener() {}
-  removeEventListener() {}
-};
-
-// Polyfill Performance API for performance tracking tests (Story 1.16)
+// Polyfill Performance API for performance tracking tests
 if (typeof performance !== 'undefined' && !performance.mark) {
   const performanceEntries = [];
 
@@ -55,24 +39,8 @@ if (typeof performance !== 'undefined' && !performance.mark) {
   };
 }
 
-// MSW (Mock Service Worker) setup for API mocking in tests (Story 1.16)
-// Note: This will be configured once mockHandlers.js is created in T025
-// For now, we conditionally import to avoid errors during T003-T005
-let server;
-try {
-  const { server: mswServer } = require('./test-utils/mockHandlers');
-  server = mswServer;
+// NOTE: MSW (Mock Service Worker) is available in test-utils/mockApi.js
+// Individual tests can import and use it as needed with manual setup
 
-  // Establish API mocking before all tests
-  beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));
-
-  // Reset any request handlers that are declared in individual tests
-  afterEach(() => server.resetHandlers());
-
-  // Clean up after all tests are done
-  afterAll(() => server.close());
-} catch (error) {
-  // mockHandlers.js doesn't exist yet - will be created in T025
-  // Tests can still run without MSW for now
-  console.log('MSW handlers not yet configured - will be added in T025');
-}
+// Mock scrollIntoView (not implemented in JSDOM)
+Element.prototype.scrollIntoView = jest.fn();
