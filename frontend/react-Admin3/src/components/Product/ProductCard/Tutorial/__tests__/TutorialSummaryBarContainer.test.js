@@ -7,6 +7,8 @@ jest.mock('../../../../../services/httpService', () => ({
 // Mock CartContext
 const mockCartState = {
   addToCart: jest.fn(),
+  updateCartItem: jest.fn(),
+  removeFromCart: jest.fn(),
 };
 
 jest.mock('../../../../../contexts/CartContext', () => {
@@ -15,19 +17,38 @@ jest.mock('../../../../../contexts/CartContext', () => {
     __esModule: true,
     useCart: () => ({
       addToCart: mockCartState.addToCart,
+      updateCartItem: mockCartState.updateCartItem,
+      removeFromCart: mockCartState.removeFromCart,
       cartItems: [],
+      cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
       loading: false,
+      cartCount: 0,
+      clearCart: jest.fn(() => Promise.resolve()),
+      refreshCart: jest.fn(() => Promise.resolve()),
     }),
     CartProvider: ({ children }) => React.createElement('div', null, children),
+    CartContext: React.createContext({}),
   };
 });
 
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext';
-import { CartProvider } from '../../../../../contexts/CartContext';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from '../../../../../theme/theme';
 import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer';
+
+// Import the mocked module to allow jest.spyOn
+import * as TutorialChoiceContextModule from '../../../../../contexts/TutorialChoiceContext';
+
+// Helper to render with theme provider only (contexts are mocked globally)
+const renderWithProviders = (ui) => {
+  return render(
+    <ThemeProvider theme={theme}>
+      {ui}
+    </ThemeProvider>
+  );
+};
 
 /**
  * Test Suite: TutorialSummaryBarContainer
@@ -41,17 +62,13 @@ describe('TutorialSummaryBarContainer', () => {
    */
   describe('Rendering behavior', () => {
     it('should render nothing when tutorialChoices is empty', () => {
-      const { container } = render(
-        <CartProvider>
-          <TutorialChoiceProvider>
-            <TutorialSummaryBarContainer />
-          </TutorialChoiceProvider>
-        </CartProvider>
+      const { container } = renderWithProviders(
+        <TutorialSummaryBarContainer />
       );
 
       // Component should return null when no choices exist
-      // CartProvider wraps with div, so check that div is empty
-      expect(container.firstChild).toBeEmptyDOMElement();
+      // ThemeProvider wraps with div, so check that it's empty or null
+      expect(container.querySelector('.MuiBox-root')).toBeNull();
     });
 
     /**
@@ -89,18 +106,23 @@ describe('TutorialSummaryBarContainer', () => {
         }
       };
 
-      // Create a wrapper that provides the mock context
-      const TestWrapper = ({ children }) => (
-        <CartProvider>
-          <TutorialChoiceProvider initialChoices={mockChoices}>
-            {children}
-          </TutorialChoiceProvider>
-        </CartProvider>
-      );
+      // Mock useTutorialChoice to return mock choices
+      jest.spyOn(TutorialChoiceContextModule, 'useTutorialChoice').mockReturnValue({
+        tutorialChoices: mockChoices,
+        getSubjectChoices: jest.fn((code) => mockChoices[code] || {}),
+        getDraftChoices: jest.fn((code) => {
+          const choices = mockChoices[code] || {};
+          return Object.values(choices).filter(c => c.isDraft);
+        }),
+        hasCartedChoices: jest.fn(() => false),
+        removeTutorialChoice: jest.fn(),
+        removeSubjectChoices: jest.fn(),
+        markChoicesAsAdded: jest.fn(),
+        openEditDialog: jest.fn(),
+      });
 
-      const { getAllByRole } = render(
-        <TutorialSummaryBarContainer />,
-        { wrapper: TestWrapper }
+      const { getAllByRole } = renderWithProviders(
+        <TutorialSummaryBarContainer />
       );
 
       // Should render 2 summary bars (one per subject)

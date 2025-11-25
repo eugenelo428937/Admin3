@@ -1,8 +1,25 @@
 import React from 'react';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from '../../../../../theme/theme';
 import TutorialSelectionDialog from '../TutorialSelectionDialog';
 import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext';
+
+// Mock CartContext - TutorialSelectionDialog uses useCart
+jest.mock('../../../../../contexts/CartContext', () => ({
+  useCart: () => ({
+    cartItems: [],
+    cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
+    addToCart: jest.fn(() => Promise.resolve()),
+    updateCartItem: jest.fn(() => Promise.resolve()),
+    removeFromCart: jest.fn(() => Promise.resolve()),
+    clearCart: jest.fn(() => Promise.resolve()),
+    refreshCart: jest.fn(() => Promise.resolve()),
+    cartCount: 0,
+    loading: false,
+  }),
+}));
 
 // Mock TutorialDetailCard to simplify testing
 jest.mock('../TutorialDetailCard', () => {
@@ -68,9 +85,11 @@ describe('TutorialSelectionDialog', () => {
 
   const renderWithContext = (ui) => {
     return render(
-      <TutorialChoiceProvider>
-        {ui}
-      </TutorialChoiceProvider>
+      <ThemeProvider theme={theme}>
+        <TutorialChoiceProvider>
+          {ui}
+        </TutorialChoiceProvider>
+      </ThemeProvider>
     );
   };
 

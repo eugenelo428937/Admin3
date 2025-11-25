@@ -3,7 +3,8 @@ import React from 'react';
 import { render, screen, within } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import MainNavActions from '../MainNavActions';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from '../../../theme/theme';
 
 // Mock the useAuth hook
 jest.mock('../../../hooks/useAuth', () => ({
@@ -17,11 +18,17 @@ jest.mock('../../../hooks/useAuth', () => ({
 // Mock the useCart hook
 jest.mock('../../../contexts/CartContext', () => ({
   useCart: () => ({
+    cartItems: [],
+    cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
+    addToCart: jest.fn(() => Promise.resolve()),
+    updateCartItem: jest.fn(() => Promise.resolve()),
+    removeFromCart: jest.fn(() => Promise.resolve()),
+    clearCart: jest.fn(() => Promise.resolve()),
+    refreshCart: jest.fn(() => Promise.resolve()),
     cartCount: 3,
+    loading: false,
   }),
 }));
-
-const theme = createTheme();
 
 const renderWithProviders = (component) => {
   return render(

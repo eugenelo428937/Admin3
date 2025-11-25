@@ -166,7 +166,7 @@ h1 {
 - Improve responsiveness and adaptive design, mobile friendly
 - Intuitive Navigation
 - Accessibility
-- Align with modern UI/UX behavior
+- Align with modern UI/UX behaviour
 
 </div>
 </div>
@@ -199,7 +199,7 @@ h1 {
 - For a table to be responsive, the height of each row will need to be increased.
 - The smaller the resolution more height for each cell.
 - Even with minimal padding and margin applied but information is not display properly in smaller screen size.
-- If we add more info for a product then a single product may takes up the most of the screen and readabi`  lity suffers.
+- If we add more info for a product then a single product may takes up the most of the screen and readability suffers.
 - Wrapping table cell breaks the relationship of Printed/ebook/Buy both.
 - Wrapping text results in word breaking up, cell with different height, terrible readability.
 
@@ -233,26 +233,7 @@ Wrapping and uneven height makes it quite difficult to read.
 
 ### 1.2 Relationships and Information/Visual Hierarchy
 
-#### 1.2.1 Relationship within each row in the products table
-
-| Primary | Secondary | Relationship within row| Buy Now |
-|:------:|:------:|:------:|:------:|
-| Printed | eBook | Same product | Material + Material <br/>**standard** + **additional** |
-| Mock Exam / Assignments | Marking | Different product | Material + Marking <br/>**standard** + **standard** |
-
-#### ❗Same "Buy Now" trigger different behavior
-
----
-<style scoped>
-  td,th,tr {
-    border: 1px solid rgba(47,47,47,0.66);
-  }
-  td:last-child, th:last-child {
-    background-color:#FFFFDD;
-  }
-</style>
-
-#### 1.2.2 Information Hierarchy vs Visual Hierarchy in the products table
+#### 1.2.1 Information Hierarchy vs Visual Hierarchy in the products table
 
 | Primary | Secondary | Relationship within row| Info Heirarchy | Visual Hierarchy | Remarks|
 |:------:|:------:|:------:|:------:|:------:|:-------|
@@ -269,7 +250,27 @@ Wrapping and uneven height makes it quite difficult to read.
 
 ---
 
-### 1.3 Products Layout controlled by products table
+<style scoped>
+  td,th,tr {
+    border: 1px solid rgba(47,47,47,0.66);
+  }
+  td:last-child, th:last-child {
+    background-color:#FFFFDD;
+  }
+</style>
+
+#### 1.2.2 Relationship within each row in the products table
+
+| Primary | Secondary | Relationship within row| Buy Now |
+|:------:|:------:|:------:|:------:|
+| Printed | eBook | Same product | Material + Material <br/>**standard** + **additional** |
+| Mock Exam / Assignments | Marking | Different product | Material + Marking <br/>**standard** + **standard** |
+
+#### ❗Same "Buy Now" trigger different behaviour
+
+---
+
+### 1.3 Layout controlled by products.dbf table
 
 The layout of the products table is controlled where clause condition:
 
@@ -296,19 +297,20 @@ The layout of the products table is controlled where clause condition:
                         ORDER BY listorder ;
                         INTO CURSOR tmpQuery READWRITE
 ```
+
 ---
 
 #### Imagine 2 scenarios below
 
 1. Adding third product variation (e.g. AI) for products together with ebook and printed
     - Requires "Buy Both" button for either ebook and printed (printed + AI and ebook + AI)
-1. Or retiring all printed material
+1. Or retiring printed material in some subjects
 
-These scneario might be far fetched but it illsutrate the rigid structure is susceptible to change.
+These scenario might be far fetched but it illustrate the rigid structure is susceptible to change.
 
-Layout is controlling the flexibility of data structure will hinder adapting future business needs.
+Layout is restricting the flexibility of data structure will hinder adapting future business needs.
 
-❗**The form (layout) is limiting its function (behavior of products)**
+❗**The form (layout) is limiting its function (behaviour of products)**
 
 ---
 
@@ -318,7 +320,16 @@ Layout is controlling the flexibility of data structure will hinder adapting fut
   
 <div>
 
-### 2.1 Sites studied
+### 2.1 Focus
+
+- Products page layout
+- Mobile Navigation and Menu
+- Common elements and functionalities
+
+</div>
+<div>
+
+### 2.2 Sites studied
 
 - [IFoA](https://my.actuaries.org.uk/eShop#!curr/GBP/cat/0a3e7cab-541a-ee11-8f6d-0022483edc02/page/1/sort/0)
 - [ACTEX](https://www.actexlearning.com/exams/cs1)
@@ -327,44 +338,6 @@ Layout is controlling the flexibility of data structure will hinder adapting fut
 - various e-commerce online store (e.g. Amazon, ebay, apple...etc.)
 
 </div>
-<div>
-
-### 2.2 Focus
-
-- Products page layout
-- Mobile Navigation and Menu
-- Common elements and functionalities
-
-</div>
-</div>
-
----
-
-### 2.3 Findings
-
-<div class="columns">  
-<div>
-
-#### 2.3.1 Product Card with Grid Layout
-
-- Fixed height/width cards for each resolutions
-- Responsive grid slots, i.e.
-  - 1440px+ (Desktop+): 4 cards/row
-  - 1024px (Laptop): 3 cards/row
-  - 768px (Tablet): 2 cards/row
-  - 425px (Mobile): 1 card/row
-
-</div>
-<div>
-
-#### 2.3.2 Navigation
-
-- Mobile: Hamburger menu with drawer
-- layered navigation structure
-    (general category → specific category)
-- breadcrumbs
-
-</div>
 </div>
 
 ---
@@ -372,14 +345,14 @@ Layout is controlling the flexibility of data structure will hinder adapting fut
 <div class="columns">  
 <div>
 
-#### 2.3.3 Summary
+#### 2.3 Summary
 
 Summaries of common elements and functionalities for on the landing page or product page:
 
 1. **Products**
     - Product card in grid
     - pricing and description
-1. **Filtering and Searching**
+    - Filtering and Searching
 1. **User**
     - access to functions thru out
       - Login/Logout
@@ -392,11 +365,11 @@ Summaries of common elements and functionalities for on the landing page or prod
 <div>
 
 3. **Cart Panel**
-    - View cart content in collapisble panel
+    - View cart content in collapsible panel
     - no postback
 1. **Navigatio Menu**
     - Mobile: Hamburger menu with drawer
-    - layered navigation structure (general category → specific category)
+    - Layered navigation structure (general category → specific category)
 
 </div>
 </div>
@@ -414,7 +387,8 @@ Summaries of common elements and functionalities for on the landing page or prod
 
 - fwx
   - estore_product_list
-  - 48 FWX files need revision (Search for any fwx files with products/products_oc/products_special. Some obsolete)
+  - 48 FWX files need revision (Search for any fwx files with products/products_oc/products_special/class/addonsale. Some obsolete)
+- main.prg
 - dbf
   - products
   - products_oc
@@ -453,6 +427,7 @@ Summaries of common elements and functionalities for on the landing page or prod
 
 - fwx
   - estore_product_list
+- main.prg
 - dbf
   - (**NEW**) filter_groups, filter_groups_items, filter_groups_items_product
 
@@ -497,6 +472,7 @@ Summaries of common elements and functionalities for on the landing page or prod
 - estore_checkout_pw_check
 - estore_checkout_details
 - estore_checkout_pw_login_success
+- main.prg
 
 #### 3.3.2 Frontend (HTML/JS/CSS)
 
@@ -524,7 +500,7 @@ Summaries of common elements and functionalities for on the landing page or prod
 
 ---
 
-### 3.4 View Cart Function (No postback)
+### 3.4 Preview Cart Function (No postback)
 
 <div class="columns">  
 <div>
@@ -612,8 +588,9 @@ Summaries of common elements and functionalities for on the landing page or prod
 
 - keep table format
 - minimal backend or database changes
-- User function refactoring and Nav menu possible
-- The layout will only be slightly better (a lot of horizontal scrolling for tables)
+- User function refactoring and Nav menu can be feasible (**requires some code change**)
+- Cart preview panel possible but still requires postback (**requires some code change**)
+- The layout will only be marginally better
 - Will need re-do layout in most pages after backend updated
 
 </div>
@@ -621,15 +598,15 @@ Summaries of common elements and functionalities for on the landing page or prod
 
 #### Time required for a full modern eStore
 
-Consider the time for each frontend and backend is **f** and **b** respectively.
+Consider the time for each **frontend** and **backend** respectively.
 
-**3f+2b**
+**frontend x 3 + backend x 2**
 
-1. Only update css+js : **1f**
-1. Update Forpro backend : **1b**
-1. update css+js again : **1f**
-1. Update to modern backend : **1b**
-1. Update to modern frontend : **1f**
+1. Only update css+js : **frontend**
+1. Update Forpro backend : **backend**
+1. update css+js again : **frontend**
+1. Update to modern backend : **backend**
+1. Update to modern frontend : **frontend**
 
 </div></div>
 
@@ -655,35 +632,35 @@ Consider the time for each frontend and backend is **f** and **b** respectively.
 
 #### Time required for a full modern eStore
 
-Consider the the time for each frontend and backend is **f** and **b** respectively.
+Consider the the time for each **frontend** and **backend** respectively.
 
-**1.5f+2b**
+**frontend x 1.75 + backend x 2**
 
-1. Update Forpro backend and css+js : **1f + 1b**
-1. Update to modern backend : **1b**
-1. update Cart Panel, Filtering, Searching and misc : **0.5f**
+1. Update Forpro backend and css+js : **frontend + backend**
+1. Update to modern backend : **backend**
+1. update Cart Panel, Filtering, Searching and misc : **frontend x 0.75**
 
 </div></div>
 
 ---
+
 <style scoped>
+  /* tr:nth-child(4)>td, tr:nth-child(5)>td,  */
   tr:last-child>td{
     background-color:#FFFFDD;
   }
-  tr:nth-child(4)>td{
-    background-color:#FFFFDD;
-  }
+  
 </style>
 
 #### Timeline
 
-| Approach 1 | Approach 2|
-|:--------:|:--------:|
-| css+js | |
-| VFP | VFP |
-| css+js | css+js |
-| **modern backend** | **modern backend** |
-| **modern frontend** | **modern frontend** |
+| | Approach 1 | Approach 2|
+|:-------:|:--------:|:--------:|
+| | CSS + js (Frontend) | |
+| | VFP (backend) |  |
+| | CSS + js (Frontend) | CSS + js + VFP (frontend + backend) |
+| | modern backend | modern backend | | | modern frontend | 0.75 modern frontend |
+| **Total** | **frontend x 3 + backend x 2** | **frontend x 1.75 + backend x 2** |
 
 ---
 

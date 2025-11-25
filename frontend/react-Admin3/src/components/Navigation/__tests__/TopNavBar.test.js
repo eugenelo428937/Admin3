@@ -46,10 +46,17 @@ jest.mock('../../../hooks/useAuth', () => ({
 // Mock the useCart hook
 jest.mock('../../../contexts/CartContext', () => ({
   useCart: () => ({
+    cartItems: [],
+    cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
+    addToCart: jest.fn(() => Promise.resolve()),
+    updateCartItem: jest.fn(() => Promise.resolve()),
+    removeFromCart: jest.fn(() => Promise.resolve()),
+    clearCart: jest.fn(() => Promise.resolve()),
+    refreshCart: jest.fn(() => Promise.resolve()),
     cartCount: 0,
-    refreshCart: jest.fn(),
+    loading: false,
   }),
-  CartProvider: ({ children }) => <div>{children}</div>,
+  CartProvider: ({ children }) => children,
 }));
 
 const renderWithProviders = (component) => {
