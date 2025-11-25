@@ -12,13 +12,27 @@ This document provides comprehensive guidance for fixing failing frontend tests 
 
 ## Executive Summary
 
-### Current Test Status
-- **1,058 tests passing** (85.4%)
-- **54 test suites failing** (all with the same root cause)
-- **179 individual test failures**
+### Current Test Status (After Global Mock Fix)
+- **1,067 tests passing** (81.4%)
+- **51 test suites failing** (various causes - see below)
+- **226 individual test failures**
+
+**Previous Status** (Before Global Mock Fix):
+- 1,058 tests passing (85.4%)
+- 54 test suites failing (all with axios root cause)
+- 179 individual test failures
 
 ### Root Cause Analysis
-**ALL 54 failing test suites fail due to the same issue**: Jest cannot parse ES6 `import` statements in the `axios` library when imported through the service chain.
+**The axios import issue has been FIXED** by adding global mocks in `setupTests.js`.
+
+The remaining failures are due to multiple different causes:
+1. **CartContext mock issues** - Tests need proper `useCart` mocking
+2. **Theme/Color palette issues** - Material UI theme not fully mocked
+3. **filtersSlice missing actions** - Tests expect features not yet implemented
+4. **Chakra UI module resolution** - Missing ark-ui dependency
+5. **Test assertion mismatches** - Tests don't match current component behavior
+
+### Original Issue (FIXED)
 
 ```
 SyntaxError: Cannot use import statement outside a module
@@ -37,12 +51,81 @@ Component.test.js
                 → axios (ES6 import fails)
 ```
 
-### The Solution
-Mock `httpService` and `cartService` **BEFORE** any imports to break the chain.
+### The Solution (IMPLEMENTED)
+Global mocks for `httpService`, `cartService`, and `authService` have been added to `setupTests.js`.
+
+**This eliminates the need for individual test files to mock these services** - the axios import chain is broken globally.
+
+Additionally, a comprehensive Performance API polyfill was added to fix `performance.clearMeasures is not a function` errors.
 
 ---
 
-## Proven Fix Pattern
+## Global Mock Solution (setupTests.js)
+
+The axios import issue has been fixed globally in `src/setupTests.js`. Individual test files **no longer need** to add service mocks for httpService, cartService, or authService.
+
+### What Was Added to setupTests.js
+
+```javascript
+// Global mocks in setupTests.js
+
+jest.mock('./services/httpService', () => ({
+  __esModule: true,
+  default: {
+    get: jest.fn(() => Promise.resolve({ data: {} })),
+    post: jest.fn(() => Promise.resolve({ data: {} })),
+    put: jest.fn(() => Promise.resolve({ data: {} })),
+    delete: jest.fn(() => Promise.resolve({ data: {} })),
+    patch: jest.fn(() => Promise.resolve({ data: {} })),
+    interceptors: {
+      request: { use: jest.fn(), eject: jest.fn() },
+      response: { use: jest.fn(), eject: jest.fn() },
+    },
+  },
+}));
+
+jest.mock('./services/cartService', () => ({
+  __esModule: true,
+  default: {
+    getCart: jest.fn(() => Promise.resolve({ data: { items: [], vat_calculations: { region_info: { region: 'UK' } } } })),
+    fetchCart: jest.fn(() => Promise.resolve({ data: { items: [], vat_calculations: { region_info: { region: 'UK' } } } })),
+    addToCart: jest.fn(() => Promise.resolve({ data: { success: true } })),
+    updateCartItem: jest.fn(() => Promise.resolve({ data: { success: true } })),
+    removeFromCart: jest.fn(() => Promise.resolve({ data: { success: true } })),
+    removeItem: jest.fn(() => Promise.resolve({ data: { success: true } })),
+    clearCart: jest.fn(() => Promise.resolve({ data: { success: true } })),
+  },
+}));
+
+jest.mock('./services/authService', () => ({
+  __esModule: true,
+  default: {
+    login: jest.fn(() => Promise.resolve({ data: { token: 'mock-token' } })),
+    logout: jest.fn(() => Promise.resolve({ data: {} })),
+    refreshToken: jest.fn(() => Promise.resolve({ data: { token: 'mock-token' } })),
+    register: jest.fn(() => Promise.resolve({ data: {} })),
+    getCurrentUser: jest.fn(() => Promise.resolve({ data: {} })),
+    isAuthenticated: jest.fn(() => false),
+  },
+}));
+```
+
+### Performance API Polyfill
+
+Also added comprehensive Performance API polyfills to fix JSDOM missing methods:
+- `performance.mark()`
+- `performance.measure()`
+- `performance.clearMarks()`
+- `performance.clearMeasures()`
+- `performance.getEntriesByName()`
+- `performance.getEntriesByType()`
+- `performance.getEntries()`
+
+---
+
+## Legacy Pattern (No Longer Needed for Most Tests)
+
+**Note:** The pattern below is only needed if a test file needs to OVERRIDE the global mock with different behavior.
 
 ### Standard Service Mock Template
 
@@ -453,6 +536,42 @@ After applying fixes:
 
 ---
 
+## Remaining Issues to Fix
+
+The following issues are NOT related to axios and require separate fixes:
+
+### 1. CartContext Mock Issues (32 occurrences)
+Tests that render components using `useCart()` need proper CartContext mocking.
+
+**Pattern:**
+```javascript
+jest.mock('../contexts/CartContext', () => ({
+  useCart: () => ({
+    cartItems: [],
+    cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
+    addToCart: jest.fn(),
+    removeFromCart: jest.fn(),
+    cartCount: 0,
+    loading: false,
+  }),
+}));
+```
+
+### 2. Theme/Color Palette Issues (14 occurrences)
+Tests failing with `Cannot read properties of undefined (reading 'sky')` need Material UI theme properly provided.
+
+### 3. filtersSlice Missing Actions (26 occurrences)
+Tests expecting `setTutorialFormat`, `setTutorial`, `setDistanceLearning` actions that don't exist in the current implementation.
+
+**Resolution:** Either implement these actions or skip/update the tests.
+
+### 4. Chakra UI Module Resolution
+`Cannot find module '@ark-ui/react/download-trigger'` - App.js imports Chakra UI which has a missing dependency.
+
+**Resolution:** Either install `@ark-ui/react` or mock Chakra UI imports.
+
+---
+
 ## Change Log
 
 | Date | Author | Changes |
@@ -460,3 +579,6 @@ After applying fixes:
 | 2025-11-24 | Claude | Initial documentation created |
 | 2025-11-24 | Claude | Added successful fix examples |
 | 2025-11-24 | Claude | Added common issues and solutions |
+| 2025-11-24 | Claude | **MAJOR UPDATE**: Added global mocks to setupTests.js - axios error eliminated |
+| 2025-11-24 | Claude | Added Performance API polyfills for JSDOM |
+| 2025-11-24 | Claude | Documented remaining issues (CartContext, Theme, filtersSlice, Chakra) |

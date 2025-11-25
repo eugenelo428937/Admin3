@@ -1,6 +1,8 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from '../../../../theme/theme';
 import MaterialProductCard from '../MaterialProductCard';
 import { useCart } from '../../../../contexts/CartContext';
 
@@ -8,6 +10,15 @@ import { useCart } from '../../../../contexts/CartContext';
 jest.mock('../../../../contexts/CartContext', () => ({
   useCart: jest.fn(),
 }));
+
+// Wrap component with theme provider for tests
+const renderWithTheme = (component) => {
+  return render(
+    <ThemeProvider theme={theme}>
+      {component}
+    </ThemeProvider>
+  );
+};
 
 // Mock child components that aren't being tested
 jest.mock('../Tutorial/TutorialProductCard', () => ({
@@ -91,7 +102,7 @@ describe('MaterialProductCard - Buy Both with SpeedDial', () => {
     test('should render SpeedDial when buy_both is true and product has 2 variations', () => {
       const product = createMockProduct({ buy_both: true });
 
-      render(
+      renderWithTheme(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -106,7 +117,7 @@ describe('MaterialProductCard - Buy Both with SpeedDial', () => {
     test('should render standard "Add to Cart" button when buy_both is false', () => {
       const product = createMockProduct({ buy_both: false });
 
-      render(
+      renderWithTheme(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -137,7 +148,7 @@ describe('MaterialProductCard - Buy Both with SpeedDial', () => {
         ],
       });
 
-      render(
+      renderWithTheme(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -157,7 +168,7 @@ describe('MaterialProductCard - Buy Both with SpeedDial', () => {
       const product = createMockProduct();
       delete product.buy_both; // Explicitly remove the flag
 
-      render(
+      renderWithTheme(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -181,7 +192,7 @@ describe('MaterialProductCard - Buy Both with SpeedDial', () => {
     test('should render SpeedDial with correct structure for buy_both products', () => {
       const product = createMockProduct({ buy_both: true });
 
-      render(
+      renderWithTheme(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -199,7 +210,7 @@ describe('MaterialProductCard - Buy Both with SpeedDial', () => {
     test('should call onAddToCart when SpeedDial action handlers are invoked', () => {
       const product = createMockProduct({ buy_both: true });
 
-      const { container } = render(
+      const { container } = renderWithTheme(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -217,7 +228,7 @@ describe('MaterialProductCard - Buy Both with SpeedDial', () => {
     test('should have individual variation actions with correct aria-labels', () => {
       const product = createMockProduct({ buy_both: true });
 
-      render(
+      renderWithTheme(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -233,7 +244,7 @@ describe('MaterialProductCard - Buy Both with SpeedDial', () => {
     test('should configure Buy Both action to add both variations', () => {
       const product = createMockProduct({ buy_both: true });
 
-      render(
+      renderWithTheme(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -254,7 +265,7 @@ describe('MaterialProductCard - Buy Both with SpeedDial', () => {
       const product = createMockProduct();
 
       // Should render without errors
-      const { container } = render(
+      const { container } = renderWithTheme(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -293,7 +304,7 @@ describe('MaterialProductCard - Buy Both with SpeedDial', () => {
         ],
       });
 
-      render(
+      renderWithTheme(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
@@ -311,7 +322,7 @@ describe('MaterialProductCard - Buy Both with SpeedDial', () => {
     test('should NOT show buy_both radio button option when buy_both is true', () => {
       const product = createMockProduct({ buy_both: true });
 
-      render(
+      renderWithTheme(
         <MaterialProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
