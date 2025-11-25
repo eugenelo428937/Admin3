@@ -62,9 +62,33 @@ jest.mock('../../../hooks/useAuth', () => ({
 // Mock the useCart hook
 jest.mock('../../../contexts/CartContext', () => ({
   useCart: () => ({
+    cartItems: [],
+    cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
+    addToCart: jest.fn(() => Promise.resolve()),
+    updateCartItem: jest.fn(() => Promise.resolve()),
+    removeFromCart: jest.fn(() => Promise.resolve()),
+    clearCart: jest.fn(() => Promise.resolve()),
+    refreshCart: jest.fn(() => Promise.resolve()),
     cartCount: 0,
-    refreshCart: jest.fn(),
+    loading: false,
   }),
+}));
+
+// Mock TutorialChoiceContext
+jest.mock('../../../contexts/TutorialChoiceContext', () => ({
+  useTutorialChoice: () => ({
+    getTutorialChoice: jest.fn(),
+    addTutorialChoice: jest.fn(),
+    removeTutorialChoice: jest.fn(),
+    clearTutorialChoices: jest.fn(),
+    getSubjectChoices: jest.fn(() => ({})),
+    getAllChoices: jest.fn(() => ({})),
+    getDraftChoices: jest.fn(() => ({})),
+    hasDraftChoices: jest.fn(() => false),
+    markChoicesAsAdded: jest.fn(),
+    hasCartedChoices: jest.fn(() => false),
+  }),
+  TutorialChoiceProvider: ({ children }) => children,
 }));
 
 const store = configureStore({
@@ -73,12 +97,18 @@ const store = configureStore({
   },
 });
 
+// Import the actual application theme
+import theme from '../../../theme/theme';
+import { ThemeProvider } from '@mui/material/styles';
+
 const renderWithProviders = (component) => {
   return render(
     <Provider store={store}>
-      <BrowserRouter>
-        {component}
-      </BrowserRouter>
+      <ThemeProvider theme={theme}>
+        <BrowserRouter>
+          {component}
+        </BrowserRouter>
+      </ThemeProvider>
     </Provider>
   );
 };

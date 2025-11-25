@@ -4,7 +4,7 @@ module.exports = {
     '^.+\.(js|jsx|ts|tsx)$': 'babel-jest',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(@standard-schema|@reduxjs/toolkit|axios|react-router|react-router-dom|msw|@mswjs|until-async|strict-event-emitter|@open-draft|is-node-process|outvariant|@bundled-es-modules))',
+    '/node_modules/(?!(@standard-schema|@standard-schema/utils|@reduxjs/toolkit|axios|react-router|react-router-dom|msw|@mswjs|until-async|strict-event-emitter|@open-draft|is-node-process|outvariant|@bundled-es-modules)/)',
   ],
   moduleNameMapper: {
     '\.(css|less|scss|sass)$': 'identity-obj-proxy',

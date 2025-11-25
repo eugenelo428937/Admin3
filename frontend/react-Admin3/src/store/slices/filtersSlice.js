@@ -119,6 +119,11 @@ export const {
   setSearchFilterProductIds,
   setMultipleFilters,
 
+  // Navbar filter actions (Story 1.2)
+  setTutorialFormat,
+  setDistanceLearning,
+  setTutorial,
+
   // Base filter actions - Toggle
   toggleSubjectFilter,
   toggleCategoryFilter,
