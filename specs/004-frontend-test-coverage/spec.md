@@ -1,24 +1,25 @@
-# Feature Specification: Frontend Test Coverage Enhancement
+# Feature Specification: Frontend Test Coverage - Modular Reorganization
 
 **Feature Branch**: `004-frontend-test-coverage`
 **Created**: 2025-11-21
-**Status**: Draft
-**Input**: User description: "Create comprehensive test suite for React frontend to achieve 95% coverage"
+**Updated**: 2025-11-26
+**Status**: Draft (Revised)
+**Input**: User description: "Reorganize frontend test coverage into modular test suites. Prioritize services, hooks, contexts, and utils before components."
 
 ## Execution Flow (main)
 ```
 1. Parse user description from Input
-   → ✅ Completed: Create comprehensive test suite for React frontend to achieve 95% coverage
+   → ✅ Completed: Modular test reorganization with priority on foundational modules
 2. Extract key concepts from description
-   → ✅ Identified: Testing, Coverage metrics, React components, User interactions
+   → ✅ Identified: Modular organization, services, hooks, contexts, utils, phased approach
 3. For each unclear aspect:
-   → Minimal clarifications needed - using industry standards for testing practices
+   → Minimal clarifications - using existing codebase structure
 4. Fill User Scenarios & Testing section
-   → ✅ Completed: Test development and coverage validation scenarios
+   → ✅ Completed: Module-based test development scenarios
 5. Generate Functional Requirements
-   → ✅ Completed: All requirements are testable and measurable
+   → ✅ Completed: All requirements are testable per module
 6. Identify Key Entities
-   → ✅ Completed: Test suites, coverage reports, testing utilities
+   → ✅ Completed: Services (13), Hooks (8), Contexts (3), Utils (7)
 7. Run Review Checklist
    → ✅ Completed: All checks passed
 8. Return: SUCCESS (spec ready for planning)
@@ -33,106 +34,139 @@
 
 ---
 
+## Problem Statement
+
+The current frontend test suite has:
+- **8.07% line coverage** (626/7,748 lines)
+- **6.43% function coverage** (127/1,975 functions)
+- **3.59% branch coverage** (257/7,141 branches)
+- Tests organized in batches causing confusion and maintenance issues
+- Many services, hooks, and utilities completely untested (0% coverage)
+
+### Current Test Gap Analysis
+
+| Module Type | Total Files | Files with Tests | Coverage Gap |
+|-------------|-------------|------------------|--------------|
+| **Services** | 13 | 4 | 9 files untested |
+| **Hooks** | 8 | 6 | 2 files untested |
+| **Contexts** | 3 | 2 | 1 file untested |
+| **Utils** | 7 | 2 | 5 files untested |
+
+---
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### Primary User Story
-As a development team, we need comprehensive automated tests for the React frontend application to ensure code quality, prevent regressions, and maintain confidence when making changes. The test suite should achieve 95% code coverage across all critical user flows and components, enabling rapid iteration while maintaining reliability.
+As a development team, we need a modular test suite where each service, hook, context, and utility has its own dedicated test file. This organization enables developers to quickly find, run, and maintain tests for specific functionality without navigating batch files or complex test hierarchies.
 
 ### Acceptance Scenarios
 
-1. **Given** an existing React application with 89 test files, **When** developers run the test suite, **Then** all tests pass and coverage reports show 95% or higher coverage across statements, branches, functions, and lines
+1. **Given** a service file exists (e.g., `authService.js`), **When** a developer looks for its tests, **Then** they find a corresponding `authService.test.js` in the same module's `__tests__` folder
 
-2. **Given** a developer makes changes to a React component, **When** they run the test suite, **Then** tests catch any breaking changes or regressions within seconds
+2. **Given** a hook file exists (e.g., `useAuth.js`), **When** tests are run for that hook, **Then** the test file `useAuth.test.js` executes independently without dependencies on other test files
 
-3. **Given** a component displays user data, **When** tests are executed, **Then** the component rendering, user interactions, edge cases, and error states are all validated
+3. **Given** a context provider exists (e.g., `CartContext.js`), **When** a developer modifies cart logic, **Then** they can run only `CartContext.test.js` to verify their changes
 
-4. **Given** an asynchronous operation (API call, data loading), **When** tests run, **Then** loading states, success scenarios, error handling, and timeout behaviors are all tested
+4. **Given** a utility function exists (e.g., `vatUtils.js`), **When** tests execute, **Then** all exported functions from that utility are covered
 
-5. **Given** a form with validation rules, **When** tests execute, **Then** valid inputs, invalid inputs, edge cases (empty, special characters), and submission flows are validated
-
-6. **Given** navigation between pages, **When** tests run, **Then** routing behavior, URL parameters, authentication guards, and redirect logic are verified
-
-7. **Given** state management logic (Redux, Context), **When** tests execute, **Then** state updates, action dispatching, selector logic, and side effects are tested
-
-8. **Given** accessibility requirements, **When** tests run, **Then** ARIA labels, keyboard navigation, screen reader compatibility, and focus management are validated
+5. **Given** all Phase 1 module tests are complete, **When** coverage reports run, **Then** services, hooks, contexts, and utils each show minimum 80% coverage
 
 ### Edge Cases
 
-- **What happens when** API calls fail or timeout?
-  → Tests verify error messages display correctly, retry logic functions, and user can recover from errors
+- **What happens when** a service depends on another service?
+  → Tests mock dependencies, each service tested in isolation
 
-- **What happens when** users interact rapidly or in unexpected sequences?
-  → Tests validate debouncing, race condition handling, and state consistency
+- **What happens when** a hook uses multiple contexts?
+  → Hook tests provide mock context values, context tests remain independent
 
-- **What happens when** components receive invalid or missing props?
-  → Tests verify default values, prop validation warnings, and graceful degradation
+- **What happens when** utilities have circular dependencies?
+  → Tests identify and flag circular dependencies for refactoring
 
-- **What happens when** browser storage (localStorage, sessionStorage) is unavailable?
-  → Tests validate fallback mechanisms and feature availability without storage
-
-- **What happens when** network connectivity is lost during operations?
-  → Tests verify offline state detection, retry mechanisms, and data persistence
-
-- **What happens when** users have disabilities or use assistive technologies?
-  → Tests validate keyboard-only navigation, screen reader announcements, and WCAG compliance
+---
 
 ## Requirements *(mandatory)*
 
-### Functional Requirements
+### Functional Requirements - Phase 1: Foundation Modules
 
-- **FR-001**: Test suite MUST achieve minimum 95% code coverage across statements, branches, functions, and lines for all production code
+#### Services Module (13 files → 13 test files)
+- **FR-001**: Each service file MUST have a corresponding test file named `{serviceName}.test.js`
+- **FR-002**: Service tests MUST cover all exported functions
+- **FR-003**: Service tests MUST validate success scenarios, error handling, and edge cases
+- **FR-004**: Service tests MUST achieve minimum 80% coverage per file
 
-- **FR-002**: Test suite MUST complete execution in under 5 minutes to enable rapid development feedback cycles
+**Services requiring tests:**
+| Service | Current Coverage | Test Status |
+|---------|-----------------|-------------|
+| acknowledgmentService.js | 0% | Needs tests |
+| addressMetadataService.js | 0% | Has tests |
+| authService.js | 0% | Needs tests |
+| bundleService.js | 0% | Needs tests |
+| cartService.js | 27.27% | Needs improvement |
+| errorTrackingService.js | 0% | Needs tests |
+| examSessionService.js | 0% | Needs tests |
+| httpService.js | 0% | Needs tests |
+| loggerService.js | 0% | Needs tests |
+| phoneValidationService.js | 0% | Has tests |
+| productService.js | 0% | Needs tests |
+| rulesEngineService.js | 0% | Has tests |
+| searchService.js | 0% | Needs tests |
+| subjectService.js | 0% | Needs tests |
+| tutorialService.js | 0% | Needs tests |
+| userService.js | 0% | Needs tests |
 
-- **FR-003**: Tests MUST validate all critical user flows including authentication, product browsing, cart management, checkout, and order completion
+#### Hooks Module (8 files → 8 test files)
+- **FR-005**: Each hook file MUST have a corresponding test file named `{hookName}.test.js`
+- **FR-006**: Hook tests MUST validate all return values and state changes
+- **FR-007**: Hook tests MUST cover lifecycle behaviors (mount, update, unmount)
+- **FR-008**: Hook tests MUST achieve minimum 80% coverage per file
 
-- **FR-004**: Tests MUST verify component rendering for all major UI components including forms, modals, tables, cards, and navigation elements
+**Hooks requiring tests:**
+| Hook | Current Coverage | Test Status |
+|------|-----------------|-------------|
+| useApi.js | 0% | Needs tests |
+| useAuth.js | 0% | Has tests |
+| useCheckoutRulesEngine.js | 0% | Has tests |
+| useCheckoutValidation.js | 0% | Has tests |
+| useProductCardHelpers.js | 0% | Needs tests |
+| useProductsSearch.js | 0% | Has tests |
+| useResourceData.js | 100% (empty) | No code |
+| useRulesEngineAcknowledgments.js | 0% | Needs tests |
 
-- **FR-005**: Tests MUST validate all user interactions including clicks, form submissions, keyboard navigation, and drag-and-drop operations
+#### Contexts Module (3 files → 3 test files)
+- **FR-009**: Each context file MUST have a corresponding test file named `{ContextName}.test.js`
+- **FR-010**: Context tests MUST validate provider values and state updates
+- **FR-011**: Context tests MUST verify consumer behavior with various state scenarios
+- **FR-012**: Context tests MUST achieve minimum 80% coverage per file
 
-- **FR-006**: Tests MUST verify asynchronous operations including API calls, data loading, debouncing, and timeout handling
+**Contexts requiring tests:**
+| Context | Current Coverage | Test Status |
+|---------|-----------------|-------------|
+| CartContext.js | 42.10% | Needs improvement |
+| ProductContext.js | 0% | Needs tests |
+| TutorialChoiceContext.js | 39.84% | Needs improvement |
 
-- **FR-007**: Tests MUST validate error handling for all failure scenarios including network errors, validation failures, and unexpected responses
+#### Utils Module (7 files → 7 test files)
+- **FR-013**: Each utility file MUST have a corresponding test file named `{utilName}.test.js`
+- **FR-014**: Utility tests MUST cover all exported functions with input/output validation
+- **FR-015**: Utility tests MUST include boundary conditions and edge cases
+- **FR-016**: Utility tests MUST achieve minimum 80% coverage per file
 
-- **FR-008**: Tests MUST verify form validation logic for all input types including text, email, phone numbers, dates, and file uploads
+**Utils requiring tests:**
+| Utility | Current Coverage | Test Status |
+|---------|-----------------|-------------|
+| PerformanceTracker.js | 36.14% | Needs improvement |
+| filterUrlManager.js | 60.86% | Has tests, needs improvement |
+| priceFormatter.js | 0% | Needs tests |
+| productCodeGenerator.js | 0% | Needs tests |
+| rulesEngineUtils.js | 0% | Needs tests |
+| tutorialMetadataBuilder.js | 30% | Needs tests |
+| vatUtils.js | 43.47% | Needs improvement |
 
-- **FR-009**: Tests MUST validate state management logic including Redux store operations, action creators, reducers, and selectors
-
-- **FR-010**: Tests MUST verify routing behavior including navigation, URL parameters, protected routes, and redirects
-
-- **FR-011**: Tests MUST validate accessibility features including ARIA labels, keyboard navigation, focus management, and screen reader compatibility
-
-- **FR-012**: Tests MUST verify responsive behavior for mobile, tablet, and desktop viewports
-
-- **FR-013**: Test suite MUST generate detailed coverage reports showing coverage by file, component, and feature area
-
-- **FR-014**: Tests MUST validate edge cases including empty states, loading states, error states, and boundary conditions
-
-- **FR-015**: Tests MUST verify integration between components including parent-child communication, event bubbling, and data flow
-
-- **FR-016**: Test suite MUST provide clear failure messages indicating what failed and why to enable rapid debugging
-
-- **FR-017**: Tests MUST validate all conditional rendering logic including permission-based displays and feature flags
-
-- **FR-018**: Tests MUST verify data transformation logic including formatters, parsers, and validators
-
-- **FR-019**: Tests MUST validate browser compatibility behaviors including polyfills, feature detection, and fallbacks
-
-- **FR-020**: Test suite MUST be maintainable with clear test organization, reusable test utilities, and minimal test code duplication
-
-### Key Entities *(included as feature involves testing artifacts)*
-
-- **Test Suite**: Collection of automated tests organized by feature area, component type, and testing layer (unit, integration, end-to-end)
-
-- **Coverage Report**: Analysis document showing percentage of code exercised by tests, broken down by statements, branches, functions, and lines
-
-- **Test Utilities**: Reusable helper functions, mock generators, and test data builders that simplify test authoring and reduce duplication
-
-- **Test Configuration**: Settings and parameters controlling test execution including coverage thresholds, timeout values, and environment variables
-
-- **Mock Data**: Realistic test data representing users, products, orders, and other domain entities used across multiple tests
-
-- **Accessibility Tests**: Specialized tests validating WCAG compliance, keyboard navigation, and assistive technology compatibility
+### General Requirements
+- **FR-017**: Test files MUST be co-located in `__tests__` folder within each module
+- **FR-018**: Test file naming MUST follow pattern `{sourceFileName}.test.js`
+- **FR-019**: Tests MUST be runnable independently without batch dependencies
+- **FR-020**: Coverage reports MUST be generated per module for tracking progress
 
 ---
 
@@ -140,107 +174,84 @@ As a development team, we need comprehensive automated tests for the React front
 
 The feature is considered successful when:
 
-1. **Coverage Metrics**: Automated test coverage reaches minimum 95% across all four metrics (statements, branches, functions, lines) for production code
+### Phase 1 Completion (Services, Hooks, Contexts, Utils)
+1. **Test File Coverage**: 100% of source files in Phase 1 modules have corresponding test files
+2. **Code Coverage**: Each module achieves minimum 80% line coverage
+3. **Test Independence**: Each test file runs independently without batch file dependencies
+4. **Test Organization**: All tests located in `__tests__` folders within their respective modules
 
-2. **Test Execution Speed**: Complete test suite executes in under 5 minutes enabling rapid feedback during development
+### Coverage Targets by Module
+| Module | Target Line Coverage | Target Function Coverage |
+|--------|---------------------|-------------------------|
+| Services | 80% | 80% |
+| Hooks | 80% | 80% |
+| Contexts | 80% | 80% |
+| Utils | 80% | 80% |
 
-3. **Test Reliability**: Test suite maintains 100% pass rate with zero flaky tests that intermittently fail
-
-4. **Defect Detection**: Tests catch 95% of regressions before code reaches production as measured over 3-month period
-
-5. **Developer Confidence**: Development team reports high confidence (9/10 or higher) in making changes without breaking existing functionality
-
-6. **Maintenance Overhead**: Time spent maintaining tests remains under 15% of total development time
-
-7. **Documentation Quality**: All tests have clear, descriptive names that serve as living documentation of expected behavior
-
-8. **Accessibility Compliance**: 100% of user-facing components pass automated accessibility tests for WCAG 2.1 Level AA compliance
-
----
-
-## Assumptions *(included for clarity)*
-
-1. **Testing Framework**: Application already has Jest and React Testing Library configured as primary testing tools
-
-2. **Continuous Integration**: CI/CD pipeline is available to run tests automatically on every commit
-
-3. **Browser Testing**: Tests primarily target modern browsers (Chrome, Firefox, Safari, Edge - latest 2 versions)
-
-4. **Performance Baseline**: Current test suite execution time provides baseline for measuring improvements
-
-5. **Code Freeze**: No major architectural changes planned during test development to minimize moving targets
-
-6. **Team Availability**: Development team can dedicate time to writing tests alongside feature development
-
-7. **Existing Tests**: Current 89 test files provide foundation and examples for consistent test patterns
+### Phase 2 (Future - Out of Current Scope)
+- Components
+- Pages
+- Store/Redux
+- Theme
 
 ---
 
 ## Scope *(mandatory)*
 
-### In Scope
-- Unit tests for all React components
-- Integration tests for critical user flows
-- Accessibility tests for user-facing components
-- Form validation tests
-- State management tests (Redux, Context)
-- Routing tests
-- Asynchronous operation tests
-- Error handling tests
-- Responsive behavior tests
-- Coverage reporting and thresholds
+### In Scope (Phase 1)
+- Test files for all 13 service files
+- Test files for all 8 hook files
+- Test files for all 3 context files
+- Test files for all 7 utility files
+- Module-level coverage reporting
+- Test file naming conventions
+- Test organization structure
 
-### Out of Scope
-- End-to-end tests using browser automation (Cypress, Playwright) - separate effort
-- Performance testing and benchmarking - separate effort
-- Visual regression testing - separate effort
-- Load testing and stress testing - separate effort
-- Security penetration testing - separate effort
-- Cross-browser compatibility testing on legacy browsers (IE11, old Safari versions)
-- Mobile app testing (if separate mobile app exists)
+### Out of Scope (Phase 2+)
+- Component tests (Product, Ordering, Navigation, etc.)
+- Page-level tests
+- Redux store tests
+- Theme tests
+- End-to-end tests
+- Visual regression tests
+- Performance tests
 
 ---
 
-## Dependencies *(included for clarity)*
+## Dependencies
 
-1. **Testing Infrastructure**: Jest test runner and React Testing Library must be properly configured
-
-2. **Build System**: Application must build successfully for tests to run
-
-3. **Mock Services**: API mocking capabilities must be available for testing asynchronous operations
-
-4. **Coverage Tools**: Code coverage tooling (Jest coverage, Istanbul) must be configured
-
-5. **CI/CD Pipeline**: Automated test execution environment must be available
+1. **Existing Test Infrastructure**: Jest and React Testing Library configured
+2. **Mock Utilities**: Test helpers and mock data available
+3. **Coverage Tools**: Jest coverage reporting configured
+4. **CI/CD**: Test execution environment available
 
 ---
 
 ## Review & Acceptance Checklist
 
 ### Content Quality
-- [x] No implementation details (languages, frameworks, APIs) - focuses on testing outcomes and coverage metrics
-- [x] Focused on user value and business needs - ensures quality, prevents regressions, enables confidence
-- [x] Written for non-technical stakeholders - uses plain language about test coverage and quality goals
-- [x] All mandatory sections completed - User Scenarios, Requirements, Success Criteria all present
+- [x] No implementation details - focuses on test organization and coverage goals
+- [x] Focused on user value - enables developer productivity and code quality
+- [x] Written for non-technical stakeholders - uses plain language
+- [x] All mandatory sections completed
 
 ### Requirement Completeness
-- [x] No [NEEDS CLARIFICATION] markers remain - all requirements use industry standards
-- [x] Requirements are testable and unambiguous - each requirement has clear pass/fail criteria
-- [x] Success criteria are measurable - all metrics have specific thresholds (95% coverage, <5min execution)
-- [x] Success criteria are technology-agnostic - focuses on coverage percentages and quality outcomes
-- [x] Scope is clearly bounded - in-scope and out-of-scope items explicitly listed
-- [x] Dependencies and assumptions identified - testing tools, CI/CD, and team availability documented
+- [x] No [NEEDS CLARIFICATION] markers remain
+- [x] Requirements are testable and unambiguous
+- [x] Success criteria are measurable (80% coverage per module)
+- [x] Scope is clearly bounded (Phase 1 modules only)
+- [x] Dependencies identified
 
 ---
 
 ## Execution Status
 
-- [x] User description parsed - "Create comprehensive test suite for React frontend to achieve 95% coverage"
-- [x] Key concepts extracted - Testing, Coverage, Components, User flows, Quality assurance
-- [x] Ambiguities marked - None - using industry standard testing practices
-- [x] User scenarios defined - 8 acceptance scenarios covering all major testing areas
-- [x] Requirements generated - 20 functional requirements covering all testing dimensions
-- [x] Entities identified - Test Suite, Coverage Report, Test Utilities, Configuration, Mock Data
+- [x] User description parsed - Modular test reorganization
+- [x] Key concepts extracted - Services, Hooks, Contexts, Utils prioritization
+- [x] Ambiguities marked - None, using existing codebase structure
+- [x] User scenarios defined - 5 scenarios covering modular testing
+- [x] Requirements generated - 20 requirements covering all Phase 1 modules
+- [x] Entities identified - 31 source files across 4 module types
 - [x] Review checklist passed - All quality criteria met
 
 ---
