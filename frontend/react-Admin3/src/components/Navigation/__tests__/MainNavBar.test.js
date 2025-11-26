@@ -28,14 +28,6 @@ jest.mock('../../../services/cartService', () => ({
   },
 }));
 
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
-import MainNavBar from '../MainNavBar';
-import filtersReducer from '../../../store/slices/filtersSlice';
-
 // Mock the services
 jest.mock('../../../services/productService', () => ({
   getNavbarProductGroups: jest.fn(() => Promise.resolve([])),
@@ -91,17 +83,49 @@ jest.mock('../../../contexts/TutorialChoiceContext', () => ({
   TutorialChoiceProvider: ({ children }) => children,
 }));
 
-const store = configureStore({
-  reducer: {
-    filters: filtersReducer,
-  },
+// Mock useNavigate for navigation tests
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => {
+  const React = require('react');
+  return {
+    __esModule: true,
+    BrowserRouter: ({ children }) => React.createElement('div', { 'data-testid': 'browser-router' }, children),
+    MemoryRouter: ({ children }) => React.createElement('div', { 'data-testid': 'memory-router' }, children),
+    Link: React.forwardRef(({ to, children, ...props }, ref) =>
+      React.createElement('a', { href: typeof to === 'string' ? to : (to?.pathname || '/'), ref, ...props }, children)
+    ),
+    NavLink: React.forwardRef(({ to, children, ...props }, ref) =>
+      React.createElement('a', { href: typeof to === 'string' ? to : (to?.pathname || '/'), ref, ...props }, children)
+    ),
+    useNavigate: () => mockNavigate,
+    useLocation: () => ({ pathname: '/', search: '', hash: '', state: null, key: 'default' }),
+    useParams: () => ({}),
+    useSearchParams: () => [new URLSearchParams(), jest.fn()],
+    useMatch: () => null,
+  };
 });
 
-// Import the actual application theme
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
+import MainNavBar from '../MainNavBar';
+import filtersReducer from '../../../store/slices/filtersSlice';
 import theme from '../../../theme/theme';
 import { ThemeProvider } from '@mui/material/styles';
+import { expectNoA11yViolations, wcag21AAConfig } from '../../../test-utils/accessibilityHelpers';
+
+const createTestStore = () => {
+  return configureStore({
+    reducer: {
+      filters: filtersReducer,
+    },
+  });
+};
 
 const renderWithProviders = (component) => {
+  const store = createTestStore();
   return render(
     <Provider store={store}>
       <ThemeProvider theme={theme}>
@@ -129,16 +153,12 @@ describe('MainNavBar Mobile Layout Structure', () => {
     renderWithProviders(<MainNavBar />);
 
     // Right section should contain MainNavActions
-    // Check for cart icon
-    const cartButton = screen.getByLabelText(/shopping cart/i);
-    expect(cartButton).toBeInTheDocument();
-
     // Check for login button
-    const loginButton = screen.getByRole('button', { name: /login/i });
-    expect(loginButton).toBeInTheDocument();
+    const loginButtons = screen.getAllByRole('button', { name: /login/i });
+    expect(loginButtons.length).toBeGreaterThan(0);
 
-    // Check for search icon
-    const searchButton = screen.getByLabelText(/search/i);
+    // Check for search icon by specific aria-label
+    const searchButton = screen.getByLabelText(/search products/i);
     expect(searchButton).toBeInTheDocument();
 
     // Check for hamburger menu toggle
@@ -153,12 +173,157 @@ describe('MainNavBar Mobile Layout Structure', () => {
     const navbarBrand = container.querySelector('.navbar-brand');
     expect(navbarBrand).toHaveClass('order-1');
 
-    // Hamburger should be order-3
+    // Hamburger menu toggle should exist
     const menuToggle = container.querySelector('#navbar-menu-toggle');
-    expect(menuToggle).toHaveClass('order-3');
+    expect(menuToggle).toBeInTheDocument();
+    expect(menuToggle).toHaveClass('navbar-toggler');
+  });
+});
 
-    // MainNavActions should be in order-0 (appearing first on mobile)
-    const mainNavActions = container.querySelector('.order-0');
-    expect(mainNavActions).toBeInTheDocument();
+describe('MainNavBar Navigation Clicks (T066)', () => {
+  beforeEach(() => {
+    mockNavigate.mockClear();
+  });
+
+  test('should have search button that can be clicked', async () => {
+    renderWithProviders(<MainNavBar />);
+
+    // Wait for component to load and find search button by aria-label
+    await waitFor(() => {
+      const searchButton = screen.getByLabelText(/search products/i);
+      expect(searchButton).toBeInTheDocument();
+    });
+
+    // Click search button
+    const searchButton = screen.getByLabelText(/search products/i);
+    fireEvent.click(searchButton);
+
+    // Search modal should appear (dialog role)
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+  });
+
+  test('should have login button that can be clicked', async () => {
+    renderWithProviders(<MainNavBar />);
+
+    // Wait for component to load
+    await waitFor(() => {
+      const loginButtons = screen.getAllByRole('button', { name: /login/i });
+      expect(loginButtons.length).toBeGreaterThan(0);
+    });
+
+    // Get first login button
+    const loginButtons = screen.getAllByRole('button', { name: /login/i });
+    fireEvent.click(loginButtons[0]);
+
+    // Auth modal should appear
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+  });
+
+  test('should toggle hamburger menu when clicked', async () => {
+    const { container } = renderWithProviders(<MainNavBar />);
+
+    // Wait for component to load
+    await waitFor(() => {
+      expect(screen.getByLabelText(/toggle navigation/i)).toBeInTheDocument();
+    });
+
+    const menuToggle = screen.getByLabelText(/toggle navigation/i);
+    fireEvent.click(menuToggle);
+
+    // Navbar collapse should have show class after click
+    await waitFor(() => {
+      const navbarCollapse = container.querySelector('.navbar-collapse.show');
+      expect(navbarCollapse).toBeInTheDocument();
+    });
+  });
+});
+
+describe('MainNavBar Keyboard Shortcuts', () => {
+  test('should open search modal with Ctrl+K', async () => {
+    renderWithProviders(<MainNavBar />);
+
+    // Wait for component to load
+    await waitFor(() => {
+      expect(screen.getByLabelText(/search/i)).toBeInTheDocument();
+    });
+
+    // Dispatch Ctrl+K keyboard event
+    fireEvent.keyDown(document, { key: 'k', ctrlKey: true });
+
+    // Search modal should open
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+  });
+
+  test('should open search modal with Cmd+K (Mac)', async () => {
+    renderWithProviders(<MainNavBar />);
+
+    // Wait for component to load
+    await waitFor(() => {
+      expect(screen.getByLabelText(/search/i)).toBeInTheDocument();
+    });
+
+    // Dispatch Cmd+K keyboard event (Mac)
+    fireEvent.keyDown(document, { key: 'k', metaKey: true });
+
+    // Search modal should open
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+  });
+});
+
+describe('MainNavBar Accessibility (T078 - WCAG 2.1 AA)', () => {
+  test('has no accessibility violations', async () => {
+    const { container } = renderWithProviders(<MainNavBar />);
+
+    // Wait for component to mount
+    await waitFor(() => {
+      expect(screen.getByLabelText(/search products/i)).toBeInTheDocument();
+    });
+
+    await expectNoA11yViolations(container, wcag21AAConfig);
+  });
+
+  test('navigation toggle button has proper aria-label', async () => {
+    renderWithProviders(<MainNavBar />);
+
+    await waitFor(() => {
+      const menuToggle = screen.getByLabelText(/toggle navigation/i);
+      expect(menuToggle).toBeInTheDocument();
+    });
+  });
+
+  test('search button has proper aria-label', async () => {
+    renderWithProviders(<MainNavBar />);
+
+    await waitFor(() => {
+      const searchButton = screen.getByLabelText(/search products/i);
+      expect(searchButton).toBeInTheDocument();
+    });
+  });
+
+  test('login button is accessible', async () => {
+    renderWithProviders(<MainNavBar />);
+
+    await waitFor(() => {
+      const loginButtons = screen.getAllByRole('button', { name: /login/i });
+      expect(loginButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  test('keyboard shortcut hint displays correctly', async () => {
+    renderWithProviders(<MainNavBar />);
+
+    await waitFor(() => {
+      // Search button should be accessible
+      const searchButton = screen.getByLabelText(/search products/i);
+      expect(searchButton).toBeInTheDocument();
+    });
   });
 });

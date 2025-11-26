@@ -204,11 +204,20 @@ describe('Performance Monitoring Middleware', () => {
     });
 
     it('should not track when Performance API unavailable', () => {
-      PerformanceTracker.isSupported.mockReturnValueOnce(false);
+      // Clear any calls from store initialization
+      jest.clearAllMocks();
+
+      // Mock isSupported to always return false for this test
+      PerformanceTracker.isSupported.mockReturnValue(false);
 
       store.dispatch({ type: 'filters/setSubjects', payload: ['CM2'] });
 
-      expect(PerformanceTracker.startMeasure).not.toHaveBeenCalled();
+      // When Performance API is unavailable, startMeasure should not be called for filter actions
+      // Note: validation may still call PerformanceTracker with different action types
+      const filterActionCalls = PerformanceTracker.startMeasure.mock.calls.filter(
+        call => call[0] && call[0].startsWith('redux.')
+      );
+      expect(filterActionCalls.length).toBe(0);
     });
 
     it('should only operate in development mode', () => {
@@ -238,12 +247,23 @@ describe('Performance Monitoring Middleware', () => {
     });
 
     it('should handle multiple sequential actions', () => {
+      // Clear any calls from store initialization or previous tests
+      jest.clearAllMocks();
+
       store.dispatch({ type: 'filters/setSubjects', payload: ['CM2'] });
       store.dispatch({ type: 'filters/setCategories', payload: ['Bundle'] });
       store.dispatch({ type: 'filters/setSearchQuery', payload: 'actuarial' });
 
-      expect(PerformanceTracker.startMeasure).toHaveBeenCalledTimes(3);
-      expect(PerformanceTracker.endMeasure).toHaveBeenCalledTimes(3);
+      // Filter for redux.* action calls (excluding validation calls)
+      const reduxActionCalls = PerformanceTracker.startMeasure.mock.calls.filter(
+        call => call[0] && call[0].startsWith('redux.')
+      );
+      expect(reduxActionCalls.length).toBe(3);
+
+      const reduxEndCalls = PerformanceTracker.endMeasure.mock.calls.filter(
+        call => call[0] && call[0].startsWith('redux.')
+      );
+      expect(reduxEndCalls.length).toBe(3);
     });
 
     it('should handle errors gracefully', () => {

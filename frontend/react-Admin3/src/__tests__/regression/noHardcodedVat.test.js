@@ -224,11 +224,13 @@ describe('Phase 8 Regression - No Hardcoded VAT Logic', () => {
         const content = fs.readFileSync(file, 'utf8');
         const relativePath = path.relative(componentsDir, file);
 
-        // Check if file uses vatCalculations but doesn't import from vatUtils
-        const usesVatCalculations = content.includes('vatCalculations') && content.includes('effective_vat_rate');
+        // Check if file DISPLAYS vatCalculations (in JSX) but doesn't import from vatUtils
+        // Files that SET effective_vat_rate (e.g., CheckoutSteps.js setting data objects) are excluded
+        // We only care about files that DISPLAY the rate (access .totals.effective_vat_rate)
+        const displaysVatRate = content.match(/vatCalculations\.totals\.effective_vat_rate/);
         const importsVatUtils = content.match(/from ['"].*vatUtils['"]/);
 
-        if (usesVatCalculations && !importsVatUtils) {
+        if (displaysVatRate && !importsVatUtils) {
           violations.push({
             file: relativePath,
             reason: 'Uses vatCalculations.totals.effective_vat_rate but does not import formatVatLabel from vatUtils'
