@@ -1,0 +1,76 @@
+
+> admin3@0.1.1 test
+> react-scripts test --coverage --runInBand --testPathPattern=components/Product
+
+
+<--- Last few GCs --->
+
+[4058:0x8d3400000]   306482 ms: Mark-Compact 4023.5 (4113.4) -> 3994.8 (4113.4) MB, pooled: 4 MB, 3396.75 / 0.00 ms  (average mu = 0.206, current mu = 0.215) allocation failure; scavenge might not succeed
+[4058:0x8d3400000]   309281 ms: Mark-Compact 4010.9 (4113.9) -> 3994.9 (4106.7) MB, pooled: 11 MB, 2700.75 / 0.00 ms  (average mu = 0.134, current mu = 0.035) allocation failure; scavenge might not succeed
+
+
+<--- JS stacktrace --->
+
+FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 0x1045939c0 node::OOMErrorHandler(char const*, v8::OOMDetails const&) [/usr/local/bin/node]
+ 2: 0x10476ae90 v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [/usr/local/bin/node]
+ 3: 0x1049944cc v8::internal::Heap::stack() [/usr/local/bin/node]
+ 4: 0x1049aaca0 v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags)::$_1::operator()() const [/usr/local/bin/node]
+ 5: 0x1049aa57c void heap::base::Stack::SetMarkerAndCallbackImpl<v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags)::$_1>(heap::base::Stack*, void*, void const*) [/usr/local/bin/node]
+ 6: 0x10536331c PushAllRegistersAndIterateStack [/usr/local/bin/node]
+ 7: 0x104992534 v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags) [/usr/local/bin/node]
+ 8: 0x1049883c0 v8::internal::HeapAllocator::AllocateRawWithLightRetrySlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [/usr/local/bin/node]
+ 9: 0x104988d8c v8::internal::HeapAllocator::AllocateRawWithRetryOrFailSlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [/usr/local/bin/node]
+10: 0x10496ae24 v8::internal::Factory::NewFillerObject(int, v8::internal::AllocationAlignment, v8::internal::AllocationType, v8::internal::AllocationOrigin) [/usr/local/bin/node]
+11: 0x104d9c5f8 v8::internal::Runtime_AllocateInYoungGeneration(int, unsigned long*, v8::internal::Isolate*) [/usr/local/bin/node]
+12: 0x10544bd9c Builtins_WasmCEntry [/usr/local/bin/node]
+13: 0x10544c204 Builtins_StringAdd_CheckNone [/usr/local/bin/node]
+14: 0x11033263c 
+15: 0x110331b2c 
+16: 0x1101968dc 
+17: 0x110099cc8 
+18: 0x1100b6328 
+19: 0x11018f830 
+20: 0x110199cec 
+21: 0x1101864a8 
+22: 0x1101ab8a0 
+23: 0x1100ff38c 
+24: 0x1103391c4 
+25: 0x11022ea9c 
+26: 0x1053b4838 Builtins_InterpreterEntryTrampoline [/usr/local/bin/node]
+27: 0x1053b4838 Builtins_InterpreterEntryTrampoline [/usr/local/bin/node]
+28: 0x1053b4838 Builtins_InterpreterEntryTrampoline [/usr/local/bin/node]
+29: 0x1053b4838 Builtins_InterpreterEntryTrampoline [/usr/local/bin/node]
+30: 0x1053b4838 Builtins_InterpreterEntryTrampoline [/usr/local/bin/node]
+31: 0x1053b4838 Builtins_InterpreterEntryTrampoline [/usr/local/bin/node]
+32: 0x1053b4838 Builtins_InterpreterEntryTrampoline [/usr/local/bin/node]
+33: 0x1054bcff0 Builtins_PromiseConstructor [/usr/local/bin/node]
+34: 0x1053b5508 construct_stub_invoke_deopt_addr [/usr/local/bin/node]
+35: 0x10552ecb4 Builtins_ConstructHandler [/usr/local/bin/node]
+36: 0x1053b4838 Builtins_InterpreterEntryTrampoline [/usr/local/bin/node]
+37: 0x1053b4838 Builtins_InterpreterEntryTrampoline [/usr/local/bin/node]
+38: 0x1053f1e20 Builtins_AsyncFunctionAwaitResolveClosure [/usr/local/bin/node]
+39: 0x1054bf298 Builtins_PromiseFulfillReactionJob [/usr/local/bin/node]
+40: 0x1053e1214 Builtins_RunMicrotasks [/usr/local/bin/node]
+41: 0x1053b23f0 Builtins_JSRunMicrotasksEntry [/usr/local/bin/node]
+42: 0x1048e7e7c v8::internal::(anonymous namespace)::Invoke(v8::internal::Isolate*, v8::internal::(anonymous namespace)::InvokeParams const&) [/usr/local/bin/node]
+43: 0x1048e871c v8::internal::(anonymous namespace)::InvokeWithTryCatch(v8::internal::Isolate*, v8::internal::(anonymous namespace)::InvokeParams const&) [/usr/local/bin/node]
+44: 0x1048e8854 v8::internal::Execution::TryRunMicrotasks(v8::internal::Isolate*, v8::internal::MicrotaskQueue*) [/usr/local/bin/node]
+45: 0x104917278 v8::internal::MicrotaskQueue::RunMicrotasks(v8::internal::Isolate*) [/usr/local/bin/node]
+46: 0x104917b1c v8::internal::MicrotaskQueue::PerformCheckpoint(v8::Isolate*) [/usr/local/bin/node]
+47: 0x1044959a8 node::InternalCallbackScope::Close() [/usr/local/bin/node]
+48: 0x104495cc4 node::InternalMakeCallback(node::Environment*, v8::Local<v8::Object>, v8::Local<v8::Object>, v8::Local<v8::Function>, int, v8::Local<v8::Value>*, node::async_context, v8::Local<v8::Value>) [/usr/local/bin/node]
+49: 0x1044ab1cc node::AsyncWrap::MakeCallback(v8::Local<v8::Function>, int, v8::Local<v8::Value>*) [/usr/local/bin/node]
+50: 0x1045993e4 node::fs::FSReqCallback::Resolve(v8::Local<v8::Value>) [/usr/local/bin/node]
+51: 0x104599cc4 node::fs::AfterStat(uv_fs_s*) [/usr/local/bin/node]
+52: 0x10458bf0c node::MakeLibuvRequestCallback<uv_fs_s, void (*)(uv_fs_s*)>::Wrapper(uv_fs_s*) [/usr/local/bin/node]
+53: 0x10538d5d0 uv__work_done [/usr/local/bin/node]
+54: 0x1053912e8 uv__async_io [/usr/local/bin/node]
+55: 0x1053a50bc uv__io_poll [/usr/local/bin/node]
+56: 0x105391850 uv_run [/usr/local/bin/node]
+57: 0x104496508 node::SpinEventLoopInternal(node::Environment*) [/usr/local/bin/node]
+58: 0x1045dd250 node::NodeMainInstance::Run() [/usr/local/bin/node]
+59: 0x10454f5f4 node::Start(int, char**) [/usr/local/bin/node]
+60: 0x18fdd1d54 start [/usr/lib/dyld]

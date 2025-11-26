@@ -22,11 +22,6 @@ export const baseFiltersInitialState = {
   products: [],
   modes_of_delivery: [],
 
-  // Navbar filter fields (Story 1.2)
-  tutorial_format: null, // 'online' | 'in_person' | 'hybrid' | null
-  distance_learning: false,
-  tutorial: false,
-
   // Search query
   searchQuery: '',
 
@@ -99,25 +94,6 @@ export const baseFiltersReducers = {
 
   setModesOfDelivery: (state, action) => {
     state.modes_of_delivery = action.payload;
-    state.currentPage = 1;
-    state.lastUpdated = Date.now();
-  },
-
-  // Navbar filter setters (Story 1.2)
-  setTutorialFormat: (state, action) => {
-    state.tutorial_format = action.payload; // 'online' | 'in_person' | 'hybrid' | null
-    state.currentPage = 1;
-    state.lastUpdated = Date.now();
-  },
-
-  setDistanceLearning: (state, action) => {
-    state.distance_learning = action.payload; // boolean
-    state.currentPage = 1;
-    state.lastUpdated = Date.now();
-  },
-
-  setTutorial: (state, action) => {
-    state.tutorial = action.payload; // boolean
     state.currentPage = 1;
     state.lastUpdated = Date.now();
   },
@@ -277,10 +253,6 @@ export const baseFiltersReducers = {
     state.product_types = [];
     state.products = [];
     state.modes_of_delivery = [];
-    // Navbar filter fields (Story 1.2)
-    state.tutorial_format = null;
-    state.distance_learning = false;
-    state.tutorial = false;
     state.searchQuery = '';
     state.searchFilterProductIds = [];
     state.validationErrors = []; // Clear validation errors when clearing all filters
@@ -380,10 +352,6 @@ export const baseFiltersReducers = {
     state.product_types = [];
     state.products = [];
     state.modes_of_delivery = [];
-    // Navbar filter fields (Story 1.2)
-    state.tutorial_format = null;
-    state.distance_learning = false;
-    state.tutorial = false;
     state.searchQuery = '';
     state.searchFilterProductIds = [];
     state.currentPage = 1;

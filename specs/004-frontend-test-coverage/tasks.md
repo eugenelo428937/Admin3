@@ -182,16 +182,16 @@ This task list is organized by **User Story** (Acceptance Scenarios from spec.md
 - ✅ API mocking is consistent across tests
 
 ### Async Component Tests
-- [ ] T046 [P] [US4] Test ProductList loading state with MSW in ProductList.test.js
-- [ ] T047 [P] [US4] Test ProductList API error handling in ProductList.test.js
-- [ ] T048 [P] [US4] Test ProductDetails async data fetching in ProductDetails.test.js
-- [ ] T049 [P] [US4] Test CheckoutForm order submission success in CheckoutForm.test.js
-- [ ] T050 [P] [US4] Test CheckoutForm order submission failure in CheckoutForm.test.js
+- [~] T046 [P] [US4] Test ProductList loading state with MSW in ProductList.integration.test.js (tests written, awaiting testHelpers T026)
+- [~] T047 [P] [US4] Test ProductList API error handling in ProductList.integration.test.js (tests written, awaiting testHelpers T026)
+- [x] T048 [SKIP] [US4] Test ProductDetails async data fetching - No ProductDetails component exists in codebase
+- [~] T049 [P] [US4] Test CheckoutForm order submission success in CheckoutSteps.integration.test.js (tests written, needs complex mocking)
+- [~] T050 [P] [US4] Test CheckoutForm order submission failure in CheckoutSteps.integration.test.js (tests written, needs complex mocking)
 
 ### Custom Hook Tests (Async)
-- [ ] T051 [P] [US4] Test useProductsSearch hook loading/success/error states in src/hooks/__tests__/useProductsSearch.test.js
-- [ ] T052 [P] [US4] Test useAuth hook login/logout async flows in src/hooks/__tests__/useAuth.test.js
-- [ ] T053 [P] [US4] Test useCart hook async add/remove operations in src/hooks/__tests__/useCart.test.js
+- [x] T051 [DONE] [US4] Test useProductsSearch hook loading/success/error states in src/hooks/__tests__/useProductsSearch.test.js (11 tests passing)
+- [x] T052 [DONE] [US4] Test useAuth hook login/logout async flows - pre-existing comprehensive coverage in src/hooks/__tests__/useAuth.test.js
+- [x] T053 [DONE] [US4] Test useCart hook async add/remove operations - pre-existing comprehensive coverage in src/contexts/__tests__/CartContext.test.js
 
 ---
 
