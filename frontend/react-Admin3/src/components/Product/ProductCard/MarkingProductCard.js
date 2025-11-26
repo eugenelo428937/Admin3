@@ -133,7 +133,7 @@ const MarkingProductCard = React.memo(
 
 		React.useEffect(() => {
 			setLoading(true);
-			const esspId = product.id || product.product_id;
+			const esspId = product.essp_id;
 
 			// Only call single API if bulkDeadlines is undefined (not just empty)
 			if (bulkDeadlines && esspId in bulkDeadlines) {

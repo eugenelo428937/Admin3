@@ -220,7 +220,7 @@ const ProductGrid = React.memo(({
                 })}
             </Grid>
         );
-    }, [products, gridSpacing, minCardWidth]); // Reduced dependencies for better performance
+    }, [products, gridSpacing, minCardWidth, bulkDeadlines, allEsspIds, onAddToCart, vatCalculations]); // Include all props passed to cards
 
     /**
      * Render load more section

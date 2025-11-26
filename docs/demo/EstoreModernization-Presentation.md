@@ -605,8 +605,7 @@ Consider the time for each **frontend** and **backend** respectively.
 1. Only update css+js : **frontend**
 1. Update Forpro backend : **backend**
 1. update css+js again : **frontend**
-1. Update to modern backend : **backend**
-1. Update to modern frontend : **frontend**
+1. Update to modern frontend and backend **backend** + **frontend**
 
 </div></div>
 
@@ -624,7 +623,7 @@ Consider the time for each **frontend** and **backend** respectively.
 - Partial
   - Cart Panel, Filtering, Searching
     - VFP does not support partial rendering, any user action will require re-render of DOM
-    - No framework for state management. Require storing states in server (filters select, result returned, pagination).
+    - No framework for state management. Require storing states in server for filters select, result returned, pagination.
 - Layout for the Cart Panel, Filtering, Searching and pages with visual feedback/micro-animations will need revisiting.
 
 </div>
@@ -639,6 +638,7 @@ Consider the the time for each **frontend** and **backend** respectively.
 1. Update Forpro backend and css+js : **frontend + backend**
 1. Update to modern backend : **backend**
 1. update Cart Panel, Filtering, Searching and misc : **frontend x 0.75**
+1. Update to modern frontend and backend **backend** + **frontend**
 
 </div></div>
 
@@ -655,24 +655,51 @@ Consider the the time for each **frontend** and **backend** respectively.
 #### Timeline
 
 | | Approach 1 | Approach 2|
-|:-------:|:--------:|:--------:|
+|:-:|:------------:|:------------:|
 | | CSS + js (Frontend) | |
 | | VFP (backend) |  |
 | | CSS + js (Frontend) | CSS + js + VFP (frontend + backend) |
-| | modern backend | modern backend | | | modern frontend | 0.75 modern frontend |
+| | modern backend + modern frontend | 0.75 modern frontend + modern backend |
 | **Total** | **frontend x 3 + backend x 2** | **frontend x 1.75 + backend x 2** |
 
 ---
 
-Skip the repeated work,<br> tackle what will create the most value
+- Both approach will be significant amount of work
+- Very complex task
+
+### However...
 
 ---
 
-## Approach 3 : A new eStore
+<style scoped>
+  tr:nth-child(4)>td{
+   background-color: #f2a34e
+  }
+</style>
+
+#### Timeline
+
+Note the common step:
+
+| | Approach 1 | Approach 2|
+|:-------:|:--------:|:--------:|
+| | CSS + js (Frontend) | |
+| | VFP (backend) |  |
+| | CSS + js (Frontend) | CSS + js + VFP (frontend + backend) |
+| | modern backend + modern frontend | 0.75 modern frontend + modern backend |
+| **Total** | **frontend x 3 + backend x 2** | **frontend x 1.75 + backend x 2** |
 
 ---
 
-## Part 2
+Introducing the third approach
+
+---
+
+## Approach 3 : The new ActEd Online Store
+
+---
+
+## Part 2 : The new ActEd Online Store
 
 1. Technology Stack
 1. Methodology & Architecture
@@ -730,8 +757,8 @@ Skip the repeated work,<br> tackle what will create the most value
 
 ## 2. Methodology & Architecture
 
-- Object Oriented Programming (**OOP**)
 - Agile Methodology
+- Object Oriented Programming (**OOP**)
 - Test-driven Development (**TDD**): Red-Green-Refactor cycle
 - Model-View-Controller (**MVC**) Architecture
 
@@ -763,7 +790,7 @@ Skip the repeated work,<br> tackle what will create the most value
 
 ---
 
-## Implementation Progress: Feature Matrix
+## 3. Implementation Progress: Feature Matrix
 
 ### Overall Completion: **86%**
 
@@ -781,7 +808,7 @@ Skip the repeated work,<br> tackle what will create the most value
 
 ---
 
-## Implementation: User Management (11 features)
+### 3.1 User Management (11 features)
 
 | Feature | Type | Status | Notes |
 |---------|:----:|:------:|-------|
@@ -799,7 +826,7 @@ Skip the repeated work,<br> tackle what will create the most value
 
 ---
 
-## Implementation: Product Catalog (11 features)
+### 3.2 Products (11 features)
 
 | Feature | Type | Status | Notes |
 |---------|:----:|:------:|-------|
@@ -817,7 +844,7 @@ Skip the repeated work,<br> tackle what will create the most value
 
 ---
 
-## Implementation: Search & Filtering (9 features)
+### 3.3 Search & Filtering (9 features)
 
 | Feature | Type | Status | Technical Implementation |
 |---------|:----:|:------:|--------------------------|
@@ -833,7 +860,7 @@ Skip the repeated work,<br> tackle what will create the most value
 
 ---
 
-## Implementation: Rules Engine (24 features) 1/4
+### 3.4 Rules Engine (24 features) 1/4
 
 | Feature | Type | Status | Notes |
 |---------|:------:|:--------:|-------|
@@ -846,7 +873,7 @@ Skip the repeated work,<br> tackle what will create the most value
 
 ---
 
-## Implementation: Rules Engine (21 features)...cont 2/4
+### 3.4 Rules Engine (21 features)...cont 2/4
 
 | Feature | Type | Status | Notes |
 |---------|:------:|:--------:|-------|
@@ -859,7 +886,7 @@ Skip the repeated work,<br> tackle what will create the most value
 
 ---
 
-## Implementation: Rules Engine (21 features) ...cont 3/4
+### 3.4 Rules Engine (21 features) ...cont 3/4
 
 | Feature | Type | Status | Notes |
 |---------|:------:|:--------:|-------|
@@ -872,7 +899,7 @@ Skip the repeated work,<br> tackle what will create the most value
 
 ---
 
-## Implementation: Rules Engine (21 features) ...cont 4/4
+### 3.4 Rules Engine (21 features) ...cont 4/4
 
 | Feature | Type | Status | Notes |
 |---------|:------:|:--------:|-------|
@@ -885,7 +912,7 @@ Skip the repeated work,<br> tackle what will create the most value
 
 ---
 
-## Implementation: Shopping Cart & Checkout (11 features)
+### 3.5 Shopping Cart & Checkout (11 features)
 
 | Feature | Type | Status | Technical Implementation |
 |---------|:----:|:------:|--------------------------|
@@ -903,7 +930,7 @@ Skip the repeated work,<br> tackle what will create the most value
 
 ---
 
-## Implementation: Email System (16 features)
+### 3.6 Email System (16 features)
 
 | Feature | Type | Status | Notes |
 |---------|------|--------|-------|
@@ -926,7 +953,7 @@ Skip the repeated work,<br> tackle what will create the most value
 
 ---
 
-## Test Coverage
+## 4. Test Coverage
 
 **Overall: 96/96 tests passing (100%)**
 
