@@ -109,5 +109,133 @@ This approach is safer but it is like going the long way around and we will need
 
 ### Aproach 2 : Update both frontend and backend altogether
 
-If we can take more risk and update both frontend and backend in one go, it will provide much more value in a more efficient manner. It can match most of the feature when comparing with our competitors. We will need to update the frontend 1.75 times and the backend twice to achieve our ultimate goal.
+If we can take more risk and update both frontend and backend in one go, it will provide much more value in a more efficient manner. The result will not be a half baked solution that needs reworked in a later statge. It can match most of the feature when comparing with our competitors. Using this approach, we will need to update the frontend 1.75 times and the backend twice to achieve our ultimate goal.
 
+### Approach 3
+
+Both approach will be significant amount of work and it is a hugely complex task.
+
+However, both approach in the previous table share a common step.
+
+And here I would like to introduce the third approach.
+
+## The new ActEd Online Store
+
+## Part 2 : The new ActEd Online Store
+
+A year ago when I was constantly moaning about the disappointing 2% payrise and I thought to myself I will need show I can do more. So when I was stuck with re-designing the estore layout, I thought creating a new estore will allow me to provide much more value to the company. I understand you much prefer a more safer approach but I do believe it comes to the point of dimished return if we stick to updating the eStore with Foxpro.
+
+Since I am really terrible in explaining how things will work, it will be more direct to show you the end product.
+
+### 1. Technology Stack
+
+This application is build with PostgreSQL Database. Python as the backend programming language with Django as the web framework and Object relational mapper to communicate with the database.
+
+In the frontend, it uses ReactJS javascript library and Google's Material Design Component.
+
+### 2. Methodology & Architecture
+
+I used Agile methodology to manage each sprints. The application is developed using object oriented programming concept and Test-driven development to ensure quality of code. The system architecture is a Model-View-Controller Architecture. It also cohere to Design patterns for best practices.
+
+### 3. Implementation Progress: Feature Matrix
+
+Here shows the feature matrix and let me have a quick walk thru of all the features.
+
+#### 3.1 User Management (11 features)
+
+On the navigation bar on the top, you can see the login function and user related functions. You can register a new account by clicking on the "Create account" button. The registration is a step by step process to minimise congnitive load and better accessibility to mobile resolution. When you enter a phone number, it will uss Google libphonenumber javascript library to provide validation and auto formatting. You can try using a UK number and a Vietname phone number.
+
+The Home and Work Address also has a similar mechanism. When you selected a country, it will show the Postcode field if the selected country uses postcode and the address searchbox. When you click enter, it will send an request to postcoder API to do a address lookup. At the moment to save credit, i made this textbox to made the api call when user press enter, but when it is live, the suggested address should be updated as user types. If the Country is not supported by the Postcoder service, it will flow to manual address input.
+
+when you select one of the suggested address, it will autofill the address form. This form can also be accessed by clicking the manual entry button. Similar to the phone numbervalidation, it will call the Google libaddressinput API to dynamically generate fields according to the selected country and also applied related validation for mandatory fields on the fly. For example, if you select India, there will be a pin field instead of textbox. If you selected US, you will see the state dropdown.
+
+These two valdation services will be a way to minimise input error to save time when admin team processig orders.
+
+When user successfully registered, they will receive an email for verification of their email address. User will need to verify before the account is active. This also make sure they have enter their email correctly.
+
+When user updates their profile, if they changed their email address, verification will also be required. Password reset will trigger a email notification.
+
+with the account setup you are now ready to order. You can logout first so you can see the whole workflow.
+
+#### 3.2 Products (11 features)
+There are 6 types of product card, Materials, Marking, tutorials, Bundles, Online classroom and Marking Voucher. Each with its own customise content tailored to the specific product type.
+
+Remember I mentioned the issue with a table layout and the relationship between ebook and printed product. If a product has two variations, it will show in the card content.
+
+For example, material product will have ebook and printed. And Online classroom will have UK and India as their variations.
+
+For the "Buy Both" button, now it is implemented using a speed dial button. When you click on the add to cart button, if available it will show different options. Like Course Notes will have a Buy Both button and Mock Exam will have a Buy with recommended button listed.
+
+Bundle product card will have the content listed, and marking product card will shows the marking deadlines information with warnings if any deadlines are expired.
+
+For tutorial product, each card is seperate by Location. Since most students only attends tutorials convienient for them, we do not need to show every location unless they want to.When you click on the "+" button, it will show available options. If you click on select tutorials, it will open up the selection panel to choose your tutorial preference. When you close the selection panel, on the left, you have the selection summary bar, to edit your selection, add your selection to cart, or remove current selection. The tutorial selection states are managed by a redux Javascript library so user have the flexibility add/edit/remove in any of these panels.
+
+#### 3.3 Search & Filtering (9 features)
+
+On the Landing page as well as the top navigation bar, you can find the searching feature. The idea is if user knew what they will be ordering so it provides a quick and direct way to order straight from the landing page. When you enter some text for seraching, the result panel will populated with the top matching results. When you click on View all results, it will redirect to the products page that contains only the search result.
+
+It uses FuzzyWuzzy, a python library that calculated the lavenshein distance between the search text and the metadata of each product. It provides a flexible searching function that tolerates typos, partial matches and singular or plurals.
+
+On the left is the filter panel, at the moment there are four filters: subjects, categories, product type and mode of delivery. It supports multiple filters and the list of product will refresh automatically.
+
+Same as the tutorial selections, the filters state is also managed by Redux.
+
+#### 3.4 Rules Engine (24 features)
+
+One of the highlights of this application is the Rules Engine. It replaces a big proportion of code containing business logics. The rules engine will begin the execution at predefined entry point like checkout start, landing page loaded, product card loaded...Each entry point contain a set of rules to be executed.
+
+Each rule have a condition and action. A rules will exectue only when the condition is met. If the condition is not met then it will move on to the next rule. The condition and action is evaluated using JSONLogic, an expression for share logic between front-end and backend using json.
+
+After matching the condition, it will perform its action. There 4 type of actions: display message, user acknowledgment, user preferences, and update action.
+
+- display message action
+  - these are rules when showing a message is sufficient. It can be an inline or a modal popup messagebox. It has four level of severity which control the color and themes.
+  - e.g. holiday message, ASET and Vault warning.
+- user acknowledgment action
+  - when we require user to acknowledge an important message and the acknowledgment will need to be stored in the database, we will use user acknowledgment rules. It is mandatory for user confirmation before it can proceed.
+  -e.g. terms and condition, nominal booking fee for tutorial orders with credit card.
+- user preference action
+  - this includes marketing preference, health and safety preference that are optional but require to store the value if reqired by user.
+- update action
+  - When executed, it will perform updates on objects in the carts or orders.
+  - We have use the update action to calculate VAT for different countries and different product variations. Also adding and removing the tutorial booking fee.
+
+Rules can be chained so it replaces the need of giant "if then else" code block. The beauty of using JSONLogic is that all conditions and actions are stored in the database. In other words, it will be made configurable for admin staff.
+
+!!!demo rules engine admin
+
+#### 3.5 Shopping Cart & Checkout (11 features)
+
+When you click on the cart icon in the navigation menu, the cart preview panel will open and it includes all the neccessary functions for cart operations. If you click on the checkout button, it will open up the step by step checkout wizard.
+
+On the right, you can find the order summary panel thru out the checkout process.
+
+Cart review is the first step, the rules for checkout start entry point will run at this point. User can update their invoice or delivery preference. When updating each address, it reuses the address lookup component and have the option to update just for this order or applied to the user profle as well.
+
+Phone number fields also reuses the phone number componenet with the dynamic validator in the user registeration.
+
+Email are deliberately set to read-only to ensure it is verified.
+
+Terms and condition is the second step and rules for checkout terms entry point will run. The terms and condition is dynamically generated by the rules engine and user acknowledging the terms will be recorded. The Next button will be greyed out until user checked the box.
+
+The third step is the order preference and the entry point for checkout preference. Same as the previous step, each preference is dynamically generated with each matching product.
+
+The Final step is the payment, since I do not have access to opayo test account so i uses a dummy detail for now.
+
+With the order completed, you will recveive an email confirmation.
+
+#### 3.6 Email System (16 features)
+
+The email confirmation together with other email are generated from a MJML template (MailJet Markup Language). It is designed to simplify coding for responsive email.
+
+The email module uses the MJML template and includes the functionality for conditional content rendering into placeholder in the template and adding attachments when conditions are met. The module will then transform it into html and place in the email queue. A worker process will send emails from the queue every 30s. The result will be saved in email log. It has setting to configure the number of retries.
+
+### 4. Test Coverage
+
+The both frontend and backend uses Test-driven development so before any code is written, corresopnding test cases will be written first. This ensures the implementation contains only what is neccessary.
+
+Each test case will then be organised in a test suite to ensure any change in the future will not break existing code.
+
+The test suite consist of 999 tests which achieves 95% total coverage and 100% passing test.
+
+<!-- Demo test suite -->
