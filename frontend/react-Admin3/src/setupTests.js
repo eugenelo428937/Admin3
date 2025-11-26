@@ -174,6 +174,8 @@ jest.mock('./services/cartService', () => ({
     removeFromCart: jest.fn(() => Promise.resolve({ data: { success: true } })),
     removeItem: jest.fn(() => Promise.resolve({ data: { success: true } })),
     clearCart: jest.fn(() => Promise.resolve({ data: { success: true } })),
+    checkout: jest.fn(() => Promise.resolve({ data: { success: true, order_id: 12345 } })),
+    fetchOrders: jest.fn(() => Promise.resolve({ data: [] })),
   },
 }));
 
