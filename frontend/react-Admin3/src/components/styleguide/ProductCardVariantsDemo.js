@@ -64,6 +64,7 @@ const ProductCardVariantsDemo = () => {
 					</Box>
 				</Grid>
 			</Grid>
+			<GlassHeaderProductCards />
 		</Box>
 	);
 };
