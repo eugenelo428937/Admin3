@@ -1,3 +1,6 @@
+// Remove global mocks from setupTests.js so we can test with real context
+jest.unmock('../../../../../contexts/TutorialChoiceContext');
+
 import React from 'react';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';

@@ -13,9 +13,9 @@
 
 import React from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
-import { renderWithProviders, createMockStore, mockProductsApi, waitForStateUpdate } from '../../../test-utils/testHelpers';
+import { renderWithProviders, createMockStore, mockProductsApi, waitForStateUpdate } from '../../test-utils/testHelpers';
 import { useProductsSearch } from '../useProductsSearch';
-import { setSubjects, setSearchQuery } from '../../../store/slices/filtersSlice';
+import { setSubjects, setSearchQuery } from '../../store/slices/filtersSlice';
 import { Provider } from 'react-redux';
 
 const wrapper = ({ children, store }) => (

@@ -111,9 +111,6 @@ const FILTER_ACTION_TYPES = [
   'filters/setProducts',
   'filters/setModesOfDelivery',
   'filters/setSearchQuery',
-  'filters/setTutorialFormat',
-  'filters/setDistanceLearning',
-  'filters/setTutorial',
   'filters/setMultipleFilters',
   'filters/toggleSubjectFilter',
   'filters/toggleCategoryFilter',
@@ -159,12 +156,13 @@ urlSyncMiddleware.startListening({
     const urlString = params.toString();
 
     // Loop prevention: Skip if URL hasn't changed
-    if (urlString === lastUrlParams) 
+    if (urlString === lastUrlParams) {
       // End measurement even if skipped
       if (PerformanceTracker.isSupported()) {
         PerformanceTracker.endMeasure('urlSync', { skipped: true });
       }
       return;
+    }
     
 
     // Update last URL params

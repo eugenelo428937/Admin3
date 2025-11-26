@@ -1,4 +1,25 @@
 // =============================================================================
+// POLYFILLS - Must be FIRST to ensure availability for all imports
+// =============================================================================
+// TextEncoder/TextDecoder polyfill for MSW (Mock Service Worker)
+// Required for @mswjs/interceptors which uses Buffer utilities
+import { TextEncoder, TextDecoder } from 'util';
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
+// BroadcastChannel polyfill for MSW WebSocket support
+class BroadcastChannelPolyfill {
+  constructor(name) {
+    this.name = name;
+  }
+  postMessage() {}
+  close() {}
+  addEventListener() {}
+  removeEventListener() {}
+}
+global.BroadcastChannel = BroadcastChannelPolyfill;
+
+// =============================================================================
 // SERVICE MOCKS - Must be BEFORE any imports to prevent axios import errors
 // =============================================================================
 // Jest hoists jest.mock() calls to the top of the file automatically.
@@ -148,6 +169,7 @@ jest.mock('./services/cartService', () => ({
       }
     })),
     addToCart: jest.fn(() => Promise.resolve({ data: { success: true } })),
+    updateItem: jest.fn(() => Promise.resolve({ data: { success: true } })),
     updateCartItem: jest.fn(() => Promise.resolve({ data: { success: true } })),
     removeFromCart: jest.fn(() => Promise.resolve({ data: { success: true } })),
     removeItem: jest.fn(() => Promise.resolve({ data: { success: true } })),

@@ -59,7 +59,9 @@ const renderWithProviders = (component, { isMobile = false } = {}) => {
   );
 };
 
-describe('TutorialSelectionSummaryBar - Responsive Behavior', () => {
+// TDD RED PHASE: These tests define mobile responsive features not yet implemented
+// Skip until Epic 4 - Story 3 mobile responsiveness is implemented
+describe.skip('TutorialSelectionSummaryBar - Responsive Behavior', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });

@@ -7,6 +7,9 @@
  * draft selections but ignores carted ones, leaving orphaned data in the cart.
  */
 
+// Remove global mocks from setupTests.js so we can test with real context
+jest.unmock('../../../../../contexts/TutorialChoiceContext');
+
 // Mock httpService BEFORE importing anything else
 jest.mock('../../../../../services/httpService', () => ({
   get: jest.fn(),

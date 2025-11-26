@@ -11,12 +11,31 @@
  * - Error Response (401): { error: string }
  */
 
-// Mock httpService BEFORE importing anything else
-jest.mock('../../services/httpService', () => ({
-  post: jest.fn(),
+// Remove global mocks from setupTests.js so we can test the real cartService
+jest.unmock('../../services/cartService');
+
+// Mock config before cartService tries to use it
+jest.mock('../../config', () => ({
+  __esModule: true,
+  default: {
+    cartUrl: '/api/cart'
+  }
 }));
 
+// Mock httpService with our test-specific implementation
+jest.mock('../../services/httpService', () => ({
+  __esModule: true,
+  default: {
+    post: jest.fn(),
+    get: jest.fn(),
+    delete: jest.fn(),
+    patch: jest.fn(),
+  }
+}));
+
+// Import the REAL cartService (after unmocking)
 import cartService from '../../services/cartService';
+// Import the mocked httpService
 import httpService from '../../services/httpService';
 
 describe('Contract Test: /api/cart/clear/', () => {

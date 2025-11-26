@@ -32,11 +32,13 @@ jest.mock('../SearchResults', () => {
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { configureStore } from '@reduxjs/toolkit';
 import SearchModal from '../Navigation/SearchModal';
 import filtersReducer from '../../store/slices/filtersSlice';
+import { expectNoA11yViolations, wcag21AAConfig } from '../../test-utils/accessibilityHelpers';
 
 /**
  * Test helper: Create mock Redux store
@@ -318,5 +320,77 @@ describe('SearchModal Redux Integration', () => {
 
     // Navigation would just be: navigate('/products')
     // URL sync middleware handles URL parameters automatically
+  });
+});
+
+describe('SearchModal Accessibility (T081 - WCAG 2.1 AA)', () => {
+  beforeEach(() => {
+    mockNavigate.mockClear();
+  });
+
+  test('has no accessibility violations when open', async () => {
+    const { container } = renderWithProviders(
+      <SearchModal open={true} onClose={jest.fn()} />
+    );
+    await expectNoA11yViolations(container, wcag21AAConfig);
+  });
+
+  test('close button has accessible name', () => {
+    renderWithProviders(
+      <SearchModal open={true} onClose={jest.fn()} />
+    );
+
+    const closeButton = screen.getByLabelText(/close/i);
+    expect(closeButton).toBeInTheDocument();
+  });
+
+  test('modal has proper dialog role when open', () => {
+    renderWithProviders(
+      <SearchModal open={true} onClose={jest.fn()} />
+    );
+
+    // MUI Modal should create a dialog
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toBeInTheDocument();
+  });
+
+  test('close button can be activated with keyboard', async () => {
+    const user = userEvent.setup();
+    const onClose = jest.fn();
+
+    renderWithProviders(
+      <SearchModal open={true} onClose={onClose} />
+    );
+
+    const closeButton = screen.getByLabelText(/close/i);
+    closeButton.focus();
+
+    await user.keyboard('{Enter}');
+
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  test('modal can be closed with Escape key', async () => {
+    const user = userEvent.setup();
+    const onClose = jest.fn();
+
+    renderWithProviders(
+      <SearchModal open={true} onClose={onClose} />
+    );
+
+    await user.keyboard('{Escape}');
+
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  test('contains search functionality components', () => {
+    renderWithProviders(
+      <SearchModal open={true} onClose={jest.fn()} />
+    );
+
+    // SearchBox mock should be present
+    expect(screen.getByTestId('mock-search-box')).toBeInTheDocument();
+    // SearchResults mock should be present
+    expect(screen.getByTestId('mock-search-results')).toBeInTheDocument();
   });
 });
