@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Card Header - Atmospheric Monochrome Style Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            /* BPP Cobalt - Material/Study */
+            --cobalt-010: #e9f1ff;
+            --cobalt-020: #c7daff;
+            --cobalt-030: #94bcff;
+            --cobalt-040: #669dfd;
+            --cobalt-050: #4481ec;
+            --cobalt-060: #2a65ce;
+            --cobalt-070: #0e4cb1;
+            --cobalt-080: #003195;
+            --cobalt-090: #00147b;
+            --cobalt-100: #09004a;
+
+            /* BPP Purple - Tutorial */
+            --purple-010: #f1eefc;
+            --purple-020: #dfd4f7;
+            --purple-030: #beb1ee;
+            --purple-040: #a592e5;
+            --purple-050: #8f72dc;
+            --purple-060: #7950d1;
+            --purple-070: #6332b9;
+            --purple-080: #4e0e9d;
+            --purple-090: #310075;
+            --purple-100: #140043;
+
+            /* BPP Pink - Assessment */
+            --pink-010: #fff0f7;
+            --pink-020: #ffccdd;
+            --pink-030: #ff9bbd;
+            --pink-040: #ff69a2;
+            --pink-050: #f33089;
+            --pink-060: #cf006c;
+            --pink-070: #a4004b;
+            --pink-080: #7b002d;
+            --pink-090: #540014;
+            --pink-100: #2d0002;
+
+            /* BPP Green - Bundle */
+            --green-010: #dbfaed;
+            --green-020: #b4e4cf;
+            --green-030: #7dcaa8;
+            --green-040: #4eb186;
+            --green-050: #2f9569;
+            --green-060: #007a46;
+            --green-070: #005f2d;
+            --green-080: #004514;
+            --green-090: #002e12;
+            --green-100: #001600;
+
+            /* BPP Sky - Online Classroom */
+            --sky-010: #e5f9ff;
+            --sky-020: #8ae6ff;
+            --sky-030: #2bcbf8;
+            --sky-040: #00abd9;
+            --sky-050: #008ebb;
+            --sky-060: #006f99;
+            --sky-070: #005782;
+            --sky-080: #003d67;
+            --sky-090: #00264e;
+            --sky-100: #00141a;
+
+            /* BPP Orange/Yellow - Marking */
+            --orange-010: #fff2eb;
+            --orange-020: #ffcfb8;
+            --orange-030: #ffa27a;
+            --orange-040: #ff7536;
+            --orange-050: #e85100;
+            --orange-060: #c83000;
+            --orange-070: #a90000;
+            --orange-080: #7d0000;
+            --orange-090: #550000;
+            --orange-100: #2d0000;
+
+            /* Muted complementary colors for atmospheric effects */
+            --muted-warm: rgba(180, 120, 100, 0.4);
+            --muted-rose: rgba(160, 100, 130, 0.35);
+            --muted-teal: rgba(80, 140, 140, 0.3);
+            --muted-slate: rgba(100, 110, 130, 0.35);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #2a2a2f;
+            padding: 2rem;
+            color: #e4e1e6;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #a9a8b0;
+            margin-bottom: 3rem;
+            font-size: 0.875rem;
+        }
+
+        .product-section {
+            margin-bottom: 4rem;
+        }
+
+        .product-section h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #fff;
+        }
+
+        .color-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .card-header {
+            padding: 1.75rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            position: relative;
+            min-height: 120px;
+            overflow: hidden;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 3;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .avatar .material-icons {
+            font-size: 26px;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 3;
+            flex: 1;
+        }
+
+        .product-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            line-height: 1.3;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .product-subtitle {
+            font-size: 0.875rem;
+            opacity: 0.85;
+        }
+
+        .variation-label {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            font-size: 0.625rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.25rem 0.625rem;
+            border-radius: 8px;
+            z-index: 4;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card-content {
+            padding: 1rem 1.5rem 1.5rem;
+            font-size: 0.75rem;
+            color: #a9a8b0;
+            background: rgba(0,0,0,0.2);
+        }
+
+        /* Floating badges */
+        .floating-badges {
+            position: absolute;
+            top: -8px;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.625rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            backdrop-filter: blur(8px);
+        }
+
+        .badge-subject {
+            background: rgba(70, 88, 172, 0.8);
+            color: white;
+        }
+
+        .badge-session {
+            background: rgba(90, 93, 114, 0.8);
+            color: white;
+        }
+
+        /* Section divider */
+        .section-divider {
+            margin: 3rem 0;
+            border: none;
+            border-top: 1px dashed rgba(255,255,255,0.1);
+        }
+
+        /* ==========================================
+           VARIATION 1: Organic Curve
+           Large flowing curve with warm-to-cool transition
+           ========================================== */
+
+        .header-organic {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-organic::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            top: -200px;
+            left: -150px;
+            border-radius: 50%;
+            opacity: 0.4;
+            filter: blur(60px);
+        }
+
+        .header-organic::after {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            bottom: -80px;
+            left: 30px;
+            border-radius: 50%;
+            opacity: 0.5;
+            filter: blur(30px);
+        }
+
+        /* Large decorative curve element */
+        .organic-curve {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            top: -300px;
+            right: -200px;
+            opacity: 0.3;
+            filter: blur(40px);
+        }
+
+        /* ==========================================
+           VARIATION 2: Glassmorphism Layers
+           Multiple translucent overlapping shapes
+           ========================================== */
+
+        .header-glass {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-glass::before {
+            content: '';
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            top: -120px;
+            right: -100px;
+            border-radius: 50%;
+            opacity: 0.35;
+            filter: blur(50px);
+        }
+
+        .header-glass::after {
+            content: '';
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            bottom: -100px;
+            left: -80px;
+            border-radius: 50%;
+            opacity: 0.3;
+            filter: blur(45px);
+        }
+
+        .glass-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%, rgba(0,0,0,0.1) 100%);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .glass-shape {
+            position: absolute;
+            border-radius: 50%;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .glass-shape-1 {
+            width: 160px;
+            height: 160px;
+            top: -50px;
+            right: 20px;
+            background: rgba(255,255,255,0.04);
+        }
+
+        .glass-shape-2 {
+            width: 100px;
+            height: 100px;
+            bottom: -30px;
+            left: 45%;
+            background: rgba(255,255,255,0.03);
+        }
+
+        /* ==========================================
+           VARIATION 3: Organic Glass (Combined)
+           Flowing organic curves + glassmorphism effect
+           Larger circles, softer edges, lower contrast
+           ========================================== */
+
+        .header-organic-glass {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-organic-glass::before {
+            content: '';
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            top: -380px;
+            left: 180px;
+            border-radius: 50%;
+            opacity: 0.22;
+            filter: blur(120px);
+        }
+
+        .header-organic-glass::after {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            bottom: -300px;
+            right: -80px;
+            border-radius: 50%;
+            opacity: 0.18;
+            filter: blur(110px);
+        }
+
+        /* Large flowing organic curve - ultra soft */
+        .organic-glass-curve {
+            position: absolute;
+            width: 1100px;
+            height: 1100px;
+            border-radius: 50%;
+            top: -600px;
+            right: -300px;
+            opacity: 0.12;
+            filter: blur(130px);
+        }
+
+        /* Glass overlay for combined effect - very subtle */
+        .organic-glass-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(160deg, rgba(255,255,255,0.03) 0%, transparent 60%, rgba(0,0,0,0.02) 100%);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Glass shapes with organic positioning - more visible like Glass design */
+        .organic-glass-shape {
+            position: absolute;
+            border-radius: 50%;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .organic-glass-shape-1 {
+            width: 400px;
+            height: 400px;
+            top: -160px;
+            right: 40px;
+            background: rgba(255,255,255,0.04);
+            transform: rotate(-15deg);
+        }
+
+        .organic-glass-shape-2 {
+            width: 280px;
+            height: 280px;
+            bottom: -140px;
+            left: 35%;
+            background: rgba(255,255,255,0.035);
+        }
+
+        .organic-glass-shape-3 {
+            width: 240px;
+            height: 240px;
+            top: -40px;
+            left: 200px;
+            background: rgba(255,255,255,0.03);
+        }
+
+        /* ==========================================
+           COLOR THEMES - Organic Curve (V1)
+           ========================================== */
+
+        /* Material - Cobalt Organic */
+        .header-organic-cobalt {
+            background: linear-gradient(160deg,
+                rgba(180, 120, 100, 0.35) 0%,
+                rgba(42, 101, 206, 0.7) 30%,
+                rgba(0, 49, 149, 0.85) 60%,
+                rgba(80, 140, 140, 0.45) 100%);
+            color: white;
+        }
+        .header-organic-cobalt::before { background: var(--muted-warm); }
+        .header-organic-cobalt::after { background: var(--cobalt-040); }
+        .header-organic-cobalt .organic-curve { background: var(--muted-teal); }
+        .header-organic-cobalt .avatar {
+            background: rgba(14, 76, 177, 0.6);
+            color: white;
+        }
+        .header-organic-cobalt .variation-label {
+            background: rgba(0, 49, 149, 0.6);
+            color: white;
+        }
+
+        /* Tutorial - Purple Organic */
+        .header-organic-purple {
+            background: linear-gradient(160deg,
+                rgba(180, 120, 100, 0.35) 0%,
+                rgba(121, 80, 209, 0.7) 30%,
+                rgba(78, 14, 157, 0.85) 60%,
+                rgba(80, 140, 140, 0.45) 100%);
+            color: white;
+        }
+        .header-organic-purple::before { background: var(--muted-warm); }
+        .header-organic-purple::after { background: var(--purple-040); }
+        .header-organic-purple .organic-curve { background: var(--muted-teal); }
+        .header-organic-purple .avatar {
+            background: rgba(99, 50, 185, 0.6);
+            color: white;
+        }
+        .header-organic-purple .variation-label {
+            background: rgba(78, 14, 157, 0.6);
+            color: white;
+        }
+
+        /* Assessment - Pink Organic */
+        .header-organic-pink {
+            background: linear-gradient(160deg,
+                rgba(180, 120, 100, 0.35) 0%,
+                rgba(243, 48, 137, 0.7) 30%,
+                rgba(164, 0, 75, 0.85) 60%,
+                rgba(100, 110, 130, 0.45) 100%);
+            color: white;
+        }
+        .header-organic-pink::before { background: var(--muted-warm); }
+        .header-organic-pink::after { background: var(--pink-040); }
+        .header-organic-pink .organic-curve { background: var(--muted-slate); }
+        .header-organic-pink .avatar {
+            background: rgba(207, 0, 108, 0.6);
+            color: white;
+        }
+        .header-organic-pink .variation-label {
+            background: rgba(164, 0, 75, 0.6);
+            color: white;
+        }
+
+        /* Bundle - Green Organic */
+        .header-organic-green {
+            background: linear-gradient(160deg,
+                rgba(180, 120, 100, 0.35) 0%,
+                rgba(47, 149, 105, 0.7) 30%,
+                rgba(0, 95, 45, 0.85) 60%,
+                rgba(80, 140, 140, 0.45) 100%);
+            color: white;
+        }
+        .header-organic-green::before { background: var(--muted-warm); }
+        .header-organic-green::after { background: var(--green-040); }
+        .header-organic-green .organic-curve { background: var(--muted-slate); }
+        .header-organic-green .avatar {
+            background: rgba(0, 122, 70, 0.6);
+            color: white;
+        }
+        .header-organic-green .variation-label {
+            background: rgba(0, 95, 45, 0.6);
+            color: white;
+        }
+
+        /* Online - Sky Organic */
+        .header-organic-sky {
+            background: linear-gradient(160deg,
+                rgba(180, 120, 100, 0.35) 0%,
+                rgba(0, 142, 187, 0.7) 30%,
+                rgba(0, 87, 130, 0.85) 60%,
+                rgba(100, 110, 130, 0.45) 100%);
+            color: white;
+        }
+        .header-organic-sky::before { background: var(--muted-warm); }
+        .header-organic-sky::after { background: var(--sky-040); }
+        .header-organic-sky .organic-curve { background: var(--muted-rose); }
+        .header-organic-sky .avatar {
+            background: rgba(0, 111, 153, 0.6);
+            color: white;
+        }
+        .header-organic-sky .variation-label {
+            background: rgba(0, 87, 130, 0.6);
+            color: white;
+        }
+
+        /* Marking - Orange Organic */
+        .header-organic-orange {
+            background: linear-gradient(160deg,
+                rgba(160, 100, 130, 0.35) 0%,
+                rgba(232, 81, 0, 0.7) 30%,
+                rgba(169, 0, 0, 0.85) 60%,
+                rgba(80, 140, 140, 0.45) 100%);
+            color: white;
+        }
+        .header-organic-orange::before { background: var(--muted-rose); }
+        .header-organic-orange::after { background: var(--orange-040); }
+        .header-organic-orange .organic-curve { background: var(--muted-teal); }
+        .header-organic-orange .avatar {
+            background: rgba(200, 48, 0, 0.6);
+            color: white;
+        }
+        .header-organic-orange .variation-label {
+            background: rgba(169, 0, 0, 0.6);
+            color: white;
+        }
+
+        /* ==========================================
+           COLOR THEMES - Glassmorphism (V2)
+           ========================================== */
+
+        /* Material - Cobalt Glass */
+        .header-glass-cobalt {
+            background: linear-gradient(145deg,
+                rgba(180, 120, 100, 0.3) 0%,
+                rgba(42, 101, 206, 0.65) 35%,
+                rgba(0, 49, 149, 0.8) 70%,
+                rgba(80, 140, 140, 0.4) 100%);
+            color: white;
+        }
+        .header-glass-cobalt::before { background: var(--muted-warm); }
+        .header-glass-cobalt::after { background: var(--cobalt-050); }
+        .header-glass-cobalt .avatar {
+            background: rgba(42, 101, 206, 0.4);
+            color: white;
+        }
+        .header-glass-cobalt .variation-label {
+            background: rgba(0, 49, 149, 0.4);
+            color: white;
+        }
+
+        /* Tutorial - Purple Glass */
+        .header-glass-purple {
+            background: linear-gradient(145deg,
+                rgba(180, 120, 100, 0.3) 0%,
+                rgba(121, 80, 209, 0.65) 35%,
+                rgba(78, 14, 157, 0.8) 70%,
+                rgba(80, 140, 140, 0.4) 100%);
+            color: white;
+        }
+        .header-glass-purple::before { background: var(--muted-warm); }
+        .header-glass-purple::after { background: var(--purple-050); }
+        .header-glass-purple .avatar {
+            background: rgba(121, 80, 209, 0.4);
+            color: white;
+        }
+        .header-glass-purple .variation-label {
+            background: rgba(78, 14, 157, 0.4);
+            color: white;
+        }
+
+        /* Assessment - Pink Glass */
+        .header-glass-pink {
+            background: linear-gradient(145deg,
+                rgba(180, 120, 100, 0.3) 0%,
+                rgba(243, 48, 137, 0.65) 35%,
+                rgba(164, 0, 75, 0.8) 70%,
+                rgba(100, 110, 130, 0.4) 100%);
+            color: white;
+        }
+        .header-glass-pink::before { background: var(--muted-warm); }
+        .header-glass-pink::after { background: var(--pink-050); }
+        .header-glass-pink .avatar {
+            background: rgba(207, 0, 108, 0.4);
+            color: white;
+        }
+        .header-glass-pink .variation-label {
+            background: rgba(164, 0, 75, 0.4);
+            color: white;
+        }
+
+        /* Bundle - Green Glass */
+        .header-glass-green {
+            background: linear-gradient(145deg,
+                rgba(180, 120, 100, 0.3) 0%,
+                rgba(47, 149, 105, 0.65) 35%,
+                rgba(0, 95, 45, 0.8) 70%,
+                rgba(80, 140, 140, 0.4) 100%);
+            color: white;
+        }
+        .header-glass-green::before { background: var(--muted-warm); }
+        .header-glass-green::after { background: var(--green-050); }
+        .header-glass-green .avatar {
+            background: rgba(0, 122, 70, 0.4);
+            color: white;
+        }
+        .header-glass-green .variation-label {
+            background: rgba(0, 95, 45, 0.4);
+            color: white;
+        }
+
+        /* Online - Sky Glass */
+        .header-glass-sky {
+            background: linear-gradient(145deg,
+                rgba(180, 120, 100, 0.3) 0%,
+                rgba(0, 142, 187, 0.65) 35%,
+                rgba(0, 87, 130, 0.8) 70%,
+                rgba(100, 110, 130, 0.4) 100%);
+            color: white;
+        }
+        .header-glass-sky::before { background: var(--muted-warm); }
+        .header-glass-sky::after { background: var(--sky-050); }
+        .header-glass-sky .avatar {
+            background: rgba(0, 111, 153, 0.4);
+            color: white;
+        }
+        .header-glass-sky .variation-label {
+            background: rgba(0, 87, 130, 0.4);
+            color: white;
+        }
+
+        /* Marking - Orange Glass */
+        .header-glass-orange {
+            background: linear-gradient(145deg,
+                rgba(160, 100, 130, 0.3) 0%,
+                rgba(232, 81, 0, 0.65) 35%,
+                rgba(169, 0, 0, 0.8) 70%,
+                rgba(80, 140, 140, 0.4) 100%);
+            color: white;
+        }
+        .header-glass-orange::before { background: var(--muted-rose); }
+        .header-glass-orange::after { background: var(--orange-050); }
+        .header-glass-orange .avatar {
+            background: rgba(200, 48, 0, 0.4);
+            color: white;
+        }
+        .header-glass-orange .variation-label {
+            background: rgba(169, 0, 0, 0.4);
+            color: white;
+        }
+
+        /* ==========================================
+           COLOR THEMES - Organic Glass Combined (V3)
+           ========================================== */
+
+        /* Material - Cobalt Organic Glass */
+        .header-organic-glass-cobalt {
+            background: linear-gradient(135deg,
+                rgba(0, 49, 149, 0.88) 0%,
+                rgba(42, 101, 206, 0.8) 40%,
+                rgba(14, 76, 177, 0.75) 70%,
+                rgba(180, 120, 100, 0.22) 92%,
+                rgba(80, 140, 140, 0.28) 100%);
+            color: white;
+        }
+        .header-organic-glass-cobalt::before { background: var(--muted-warm); }
+        .header-organic-glass-cobalt::after { background: var(--cobalt-040); }
+        .header-organic-glass-cobalt .organic-glass-curve { background: var(--muted-teal); }
+        .header-organic-glass-cobalt .avatar {
+            background: rgba(14, 76, 177, 0.5);
+            color: white;
+            box-shadow: 0 4px 16px rgba(42, 101, 206, 0.35);
+        }
+        .header-organic-glass-cobalt .variation-label {
+            background: rgba(0, 49, 149, 0.5);
+            color: white;
+        }
+
+        /* Tutorial - Purple Organic Glass */
+        .header-organic-glass-purple {
+            background: linear-gradient(135deg,
+                rgba(78, 14, 157, 0.88) 0%,
+                rgba(121, 80, 209, 0.8) 40%,
+                rgba(99, 50, 185, 0.75) 70%,
+                rgba(180, 120, 100, 0.22) 92%,
+                rgba(80, 140, 140, 0.28) 100%);
+            color: white;
+        }
+        .header-organic-glass-purple::before { background: var(--muted-warm); }
+        .header-organic-glass-purple::after { background: var(--purple-040); }
+        .header-organic-glass-purple .organic-glass-curve { background: var(--muted-teal); }
+        .header-organic-glass-purple .avatar {
+            background: rgba(99, 50, 185, 0.5);
+            color: white;
+            box-shadow: 0 4px 16px rgba(121, 80, 209, 0.35);
+        }
+        .header-organic-glass-purple .variation-label {
+            background: rgba(78, 14, 157, 0.5);
+            color: white;
+        }
+
+        /* Assessment - Pink Organic Glass */
+        .header-organic-glass-pink {
+            background: linear-gradient(135deg,
+                rgba(164, 0, 75, 0.88) 0%,
+                rgba(243, 48, 137, 0.8) 40%,
+                rgba(207, 0, 108, 0.75) 70%,
+                rgba(180, 120, 100, 0.22) 92%,
+                rgba(100, 110, 130, 0.28) 100%);
+            color: white;
+        }
+        .header-organic-glass-pink::before { background: var(--muted-warm); }
+        .header-organic-glass-pink::after { background: var(--pink-040); }
+        .header-organic-glass-pink .organic-glass-curve { background: var(--muted-slate); }
+        .header-organic-glass-pink .avatar {
+            background: rgba(207, 0, 108, 0.5);
+            color: white;
+            box-shadow: 0 4px 16px rgba(243, 48, 137, 0.35);
+        }
+        .header-organic-glass-pink .variation-label {
+            background: rgba(164, 0, 75, 0.5);
+            color: white;
+        }
+
+        /* Bundle - Green Organic Glass */
+        .header-organic-glass-green {
+            background: linear-gradient(135deg,
+                rgba(0, 95, 45, 0.88) 0%,
+                rgba(47, 149, 105, 0.8) 40%,
+                rgba(0, 122, 70, 0.75) 70%,
+                rgba(180, 120, 100, 0.22) 92%,
+                rgba(80, 140, 140, 0.28) 100%);
+            color: white;
+        }
+        .header-organic-glass-green::before { background: var(--muted-warm); }
+        .header-organic-glass-green::after { background: var(--green-040); }
+        .header-organic-glass-green .organic-glass-curve { background: var(--muted-slate); }
+        .header-organic-glass-green .avatar {
+            background: rgba(0, 122, 70, 0.5);
+            color: white;
+            box-shadow: 0 4px 16px rgba(47, 149, 105, 0.35);
+        }
+        .header-organic-glass-green .variation-label {
+            background: rgba(0, 95, 45, 0.5);
+            color: white;
+        }
+
+        /* Online - Sky Organic Glass */
+        .header-organic-glass-sky {
+            background: linear-gradient(135deg,
+                rgba(0, 87, 130, 0.88) 0%,
+                rgba(0, 142, 187, 0.8) 40%,
+                rgba(0, 111, 153, 0.75) 70%,
+                rgba(180, 120, 100, 0.22) 92%,
+                rgba(100, 110, 130, 0.28) 100%);
+            color: white;
+        }
+        .header-organic-glass-sky::before { background: var(--muted-warm); }
+        .header-organic-glass-sky::after { background: var(--sky-040); }
+        .header-organic-glass-sky .organic-glass-curve { background: var(--muted-rose); }
+        .header-organic-glass-sky .avatar {
+            background: rgba(0, 111, 153, 0.5);
+            color: white;
+            box-shadow: 0 4px 16px rgba(0, 142, 187, 0.35);
+        }
+        .header-organic-glass-sky .variation-label {
+            background: rgba(0, 87, 130, 0.5);
+            color: white;
+        }
+
+        /* Marking - Orange Organic Glass */
+        .header-organic-glass-orange {
+            background: linear-gradient(135deg,
+                rgba(169, 0, 0, 0.88) 0%,
+                rgba(232, 81, 0, 0.8) 40%,
+                rgba(200, 48, 0, 0.75) 70%,
+                rgba(160, 100, 130, 0.22) 92%,
+                rgba(80, 140, 140, 0.28) 100%);
+            color: white;
+        }
+        .header-organic-glass-orange::before { background: var(--muted-rose); }
+        .header-organic-glass-orange::after { background: var(--orange-040); }
+        .header-organic-glass-orange .organic-glass-curve { background: var(--muted-teal); }
+        .header-organic-glass-orange .avatar {
+            background: rgba(200, 48, 0, 0.5);
+            color: white;
+            box-shadow: 0 4px 16px rgba(232, 81, 0, 0.35);
+        }
+        .header-organic-glass-orange .variation-label {
+            background: rgba(169, 0, 0, 0.5);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Product Card Header - Atmospheric Monochrome</h1>
+    <p class="subtitle">Three header variations: Organic curves, Glassmorphism, and combined Organic Glass</p>
+
+    <!-- ==========================================
+         MATERIAL / STUDY MATERIALS - COBALT BLUE
+         ========================================== -->
+    <section class="product-section">
+        <h2>
+            <span class="color-indicator" style="background: linear-gradient(135deg, #94bcff, #2a65ce, #003195);"></span>
+            Material / Study Materials
+            <span style="font-size: 0.75rem; font-weight: 400; color: #888; margin-left: auto;">BPP Cobalt</span>
+        </h2>
+        <div class="cards-grid">
+            <!-- Variation 1: Organic Curve -->
+            <div class="card">
+                <div class="card-header header-organic header-organic-cobalt">
+                    <span class="variation-label">Organic</span>
+                    <div class="organic-curve"></div>
+                    <div class="avatar">
+                        <span class="material-icons">menu_book</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">Mini ASET</div>
+                        <div class="product-subtitle">(April 2024 Paper)</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Large flowing curves with warm-to-cool transition. Heavily blurred shapes.
+                </div>
+            </div>
+
+            <!-- Variation 2: Glassmorphism -->
+            <div class="card">
+                <div class="card-header header-glass header-glass-cobalt">
+                    <span class="variation-label">Glass</span>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-shape glass-shape-1"></div>
+                    <div class="glass-shape glass-shape-2"></div>
+                    <div class="avatar">
+                        <span class="material-icons">menu_book</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">Mini ASET</div>
+                        <div class="product-subtitle">(April 2024 Paper)</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Multiple translucent shapes with backdrop blur. Four-stop gradient.
+                </div>
+            </div>
+
+            <!-- Variation 3: Organic Glass Combined -->
+            <div class="card">
+                <div class="card-header header-organic-glass header-organic-glass-cobalt">
+                    <span class="variation-label">Organic Glass</span>
+                    <div class="organic-glass-curve"></div>
+                    <div class="organic-glass-overlay"></div>
+                    <div class="organic-glass-shape organic-glass-shape-1"></div>
+                    <div class="organic-glass-shape organic-glass-shape-2"></div>
+                    <div class="organic-glass-shape organic-glass-shape-3"></div>
+                    <div class="avatar">
+                        <span class="material-icons">menu_book</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">Mini ASET</div>
+                        <div class="product-subtitle">(April 2024 Paper)</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Combined: flowing organic curves with glassmorphism shapes and overlay.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ==========================================
+         TUTORIAL - PURPLE
+         ========================================== -->
+    <section class="product-section">
+        <h2>
+            <span class="color-indicator" style="background: linear-gradient(135deg, #beb1ee, #7950d1, #4e0e9d);"></span>
+            Tutorial
+            <span style="font-size: 0.75rem; font-weight: 400; color: #888; margin-left: auto;">BPP Purple</span>
+        </h2>
+        <div class="cards-grid">
+            <!-- Variation 1: Organic Curve -->
+            <div class="card">
+                <div class="card-header header-organic header-organic-purple">
+                    <span class="variation-label">Organic</span>
+                    <div class="floating-badges">
+                        <span class="badge badge-subject">CS1</span>
+                        <span class="badge badge-session">25S</span>
+                    </div>
+                    <div class="organic-curve"></div>
+                    <div class="avatar">
+                        <span class="material-icons">school</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">Birmingham</div>
+                        <div class="product-subtitle">CS1 Tutorial</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Sweeping organic curve from warm to deep purple to teal.
+                </div>
+            </div>
+
+            <!-- Variation 2: Glassmorphism -->
+            <div class="card">
+                <div class="card-header header-glass header-glass-purple">
+                    <span class="variation-label">Glass</span>
+                    <div class="floating-badges">
+                        <span class="badge badge-subject">CS1</span>
+                        <span class="badge badge-session">25S</span>
+                    </div>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-shape glass-shape-1"></div>
+                    <div class="glass-shape glass-shape-2"></div>
+                    <div class="avatar">
+                        <span class="material-icons">school</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">Birmingham</div>
+                        <div class="product-subtitle">CS1 Tutorial</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Glassmorphism with warm corner accent transitioning through purple.
+                </div>
+            </div>
+
+            <!-- Variation 3: Organic Glass Combined -->
+            <div class="card">
+                <div class="card-header header-organic-glass header-organic-glass-purple">
+                    <span class="variation-label">Organic Glass</span>
+                    <div class="floating-badges">
+                        <span class="badge badge-subject">CS1</span>
+                        <span class="badge badge-session">25S</span>
+                    </div>
+                    <div class="organic-glass-curve"></div>
+                    <div class="organic-glass-overlay"></div>
+                    <div class="organic-glass-shape organic-glass-shape-1"></div>
+                    <div class="organic-glass-shape organic-glass-shape-2"></div>
+                    <div class="organic-glass-shape organic-glass-shape-3"></div>
+                    <div class="avatar">
+                        <span class="material-icons">school</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">Birmingham</div>
+                        <div class="product-subtitle">CS1 Tutorial</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Combined: organic flow meets glass shapes with subtle glow on avatar.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ==========================================
+         ASSESSMENT / MOCK EXAM - PINK
+         ========================================== -->
+    <section class="product-section">
+        <h2>
+            <span class="color-indicator" style="background: linear-gradient(135deg, #ff9bbd, #f33089, #a4004b);"></span>
+            Assessment / Mock Exam
+            <span style="font-size: 0.75rem; font-weight: 400; color: #888; margin-left: auto;">BPP Pink</span>
+        </h2>
+        <div class="cards-grid">
+            <!-- Variation 1: Organic Curve -->
+            <div class="card">
+                <div class="card-header header-organic header-organic-pink">
+                    <span class="variation-label">Organic</span>
+                    <div class="organic-curve"></div>
+                    <div class="avatar">
+                        <span class="material-icons">assignment</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">CS1 Mock Examination</div>
+                        <div class="product-subtitle">Mock Exam - Practice Test</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Dynamic flowing curve with slate cool-down transition.
+                </div>
+            </div>
+
+            <!-- Variation 2: Glassmorphism -->
+            <div class="card">
+                <div class="card-header header-glass header-glass-pink">
+                    <span class="variation-label">Glass</span>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-shape glass-shape-1"></div>
+                    <div class="glass-shape glass-shape-2"></div>
+                    <div class="avatar">
+                        <span class="material-icons">assignment</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">CS1 Mock Examination</div>
+                        <div class="product-subtitle">Mock Exam - Practice Test</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Glass layers with warm-to-pink-to-slate color journey.
+                </div>
+            </div>
+
+            <!-- Variation 3: Organic Glass Combined -->
+            <div class="card">
+                <div class="card-header header-organic-glass header-organic-glass-pink">
+                    <span class="variation-label">Organic Glass</span>
+                    <div class="organic-glass-curve"></div>
+                    <div class="organic-glass-overlay"></div>
+                    <div class="organic-glass-shape organic-glass-shape-1"></div>
+                    <div class="organic-glass-shape organic-glass-shape-2"></div>
+                    <div class="organic-glass-shape organic-glass-shape-3"></div>
+                    <div class="avatar">
+                        <span class="material-icons">assignment</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">CS1 Mock Examination</div>
+                        <div class="product-subtitle">Mock Exam - Practice Test</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Combined: bold pink organic flow with glass elements and avatar glow.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ==========================================
+         BUNDLE - GREEN
+         ========================================== -->
+    <section class="product-section">
+        <h2>
+            <span class="color-indicator" style="background: linear-gradient(135deg, #7dcaa8, #2f9569, #005f2d);"></span>
+            Bundle
+            <span style="font-size: 0.75rem; font-weight: 400; color: #888; margin-left: auto;">BPP Green</span>
+        </h2>
+        <div class="cards-grid">
+            <!-- Variation 1: Organic Curve -->
+            <div class="card">
+                <div class="card-header header-organic header-organic-green">
+                    <span class="variation-label">Organic</span>
+                    <div class="floating-badges">
+                        <span class="badge badge-subject">CS1</span>
+                        <span class="badge badge-session">25S</span>
+                    </div>
+                    <div class="organic-curve"></div>
+                    <div class="avatar">
+                        <span class="material-icons">inventory_2</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">Materials & Marking Bundle</div>
+                        <div class="product-subtitle">Complete Package</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Organic flowing shape with warm accent corner.
+                </div>
+            </div>
+
+            <!-- Variation 2: Glassmorphism -->
+            <div class="card">
+                <div class="card-header header-glass header-glass-green">
+                    <span class="variation-label">Glass</span>
+                    <div class="floating-badges">
+                        <span class="badge badge-subject">CS1</span>
+                        <span class="badge badge-session">25S</span>
+                    </div>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-shape glass-shape-1"></div>
+                    <div class="glass-shape glass-shape-2"></div>
+                    <div class="avatar">
+                        <span class="material-icons">inventory_2</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">Materials & Marking Bundle</div>
+                        <div class="product-subtitle">Complete Package</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Glass effect with warm-green-teal progression.
+                </div>
+            </div>
+
+            <!-- Variation 3: Organic Glass Combined -->
+            <div class="card">
+                <div class="card-header header-organic-glass header-organic-glass-green">
+                    <span class="variation-label">Organic Glass</span>
+                    <div class="floating-badges">
+                        <span class="badge badge-subject">CS1</span>
+                        <span class="badge badge-session">25S</span>
+                    </div>
+                    <div class="organic-glass-curve"></div>
+                    <div class="organic-glass-overlay"></div>
+                    <div class="organic-glass-shape organic-glass-shape-1"></div>
+                    <div class="organic-glass-shape organic-glass-shape-2"></div>
+                    <div class="organic-glass-shape organic-glass-shape-3"></div>
+                    <div class="avatar">
+                        <span class="material-icons">inventory_2</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">Materials & Marking Bundle</div>
+                        <div class="product-subtitle">Complete Package</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Combined: lush green organic curves with glass accents.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ==========================================
+         ONLINE CLASSROOM - SKY/CYAN
+         ========================================== -->
+    <section class="product-section">
+        <h2>
+            <span class="color-indicator" style="background: linear-gradient(135deg, #2bcbf8, #008ebb, #005782);"></span>
+            Online Classroom
+            <span style="font-size: 0.75rem; font-weight: 400; color: #888; margin-left: auto;">BPP Sky</span>
+        </h2>
+        <div class="cards-grid">
+            <!-- Variation 1: Organic Curve -->
+            <div class="card">
+                <div class="card-header header-organic header-organic-sky">
+                    <span class="variation-label">Organic</span>
+                    <div class="floating-badges">
+                        <span class="badge badge-subject">CP1</span>
+                        <span class="badge badge-session">25S</span>
+                    </div>
+                    <div class="organic-curve"></div>
+                    <div class="avatar">
+                        <span class="material-icons">computer</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">Online Classroom</div>
+                        <div class="product-subtitle">CP1 - Actuarial Practice</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Flowing curve with warm accent and rose undertone.
+                </div>
+            </div>
+
+            <!-- Variation 2: Glassmorphism -->
+            <div class="card">
+                <div class="card-header header-glass header-glass-sky">
+                    <span class="variation-label">Glass</span>
+                    <div class="floating-badges">
+                        <span class="badge badge-subject">CP1</span>
+                        <span class="badge badge-session">25S</span>
+                    </div>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-shape glass-shape-1"></div>
+                    <div class="glass-shape glass-shape-2"></div>
+                    <div class="avatar">
+                        <span class="material-icons">computer</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">Online Classroom</div>
+                        <div class="product-subtitle">CP1 - Actuarial Practice</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Glass layers transitioning warm to sky to slate.
+                </div>
+            </div>
+
+            <!-- Variation 3: Organic Glass Combined -->
+            <div class="card">
+                <div class="card-header header-organic-glass header-organic-glass-sky">
+                    <span class="variation-label">Organic Glass</span>
+                    <div class="floating-badges">
+                        <span class="badge badge-subject">CP1</span>
+                        <span class="badge badge-session">25S</span>
+                    </div>
+                    <div class="organic-glass-curve"></div>
+                    <div class="organic-glass-overlay"></div>
+                    <div class="organic-glass-shape organic-glass-shape-1"></div>
+                    <div class="organic-glass-shape organic-glass-shape-2"></div>
+                    <div class="organic-glass-shape organic-glass-shape-3"></div>
+                    <div class="avatar">
+                        <span class="material-icons">computer</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">Online Classroom</div>
+                        <div class="product-subtitle">CP1 - Actuarial Practice</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Combined: tech-forward sky organic with glass elements.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ==========================================
+         MARKING VOUCHER - ORANGE
+         ========================================== -->
+    <section class="product-section">
+        <h2>
+            <span class="color-indicator" style="background: linear-gradient(135deg, #ffa27a, #e85100, #a90000);"></span>
+            Marking Voucher
+            <span style="font-size: 0.75rem; font-weight: 400; color: #888; margin-left: auto;">BPP Orange</span>
+        </h2>
+        <div class="cards-grid">
+            <!-- Variation 1: Organic Curve -->
+            <div class="card">
+                <div class="card-header header-organic header-organic-orange">
+                    <span class="variation-label">Organic</span>
+                    <div class="organic-curve"></div>
+                    <div class="avatar">
+                        <span class="material-icons">rate_review</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">Marking Voucher</div>
+                        <div class="product-subtitle">Professional Feedback Service</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Flowing curve with rose accent transitioning to cool teal.
+                </div>
+            </div>
+
+            <!-- Variation 2: Glassmorphism -->
+            <div class="card">
+                <div class="card-header header-glass header-glass-orange">
+                    <span class="variation-label">Glass</span>
+                    <div class="glass-overlay"></div>
+                    <div class="glass-shape glass-shape-1"></div>
+                    <div class="glass-shape glass-shape-2"></div>
+                    <div class="avatar">
+                        <span class="material-icons">rate_review</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">Marking Voucher</div>
+                        <div class="product-subtitle">Professional Feedback Service</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Glass layers with rose-orange-teal color journey.
+                </div>
+            </div>
+
+            <!-- Variation 3: Organic Glass Combined -->
+            <div class="card">
+                <div class="card-header header-organic-glass header-organic-glass-orange">
+                    <span class="variation-label">Organic Glass</span>
+                    <div class="organic-glass-curve"></div>
+                    <div class="organic-glass-overlay"></div>
+                    <div class="organic-glass-shape organic-glass-shape-1"></div>
+                    <div class="organic-glass-shape organic-glass-shape-2"></div>
+                    <div class="organic-glass-shape organic-glass-shape-3"></div>
+                    <div class="avatar">
+                        <span class="material-icons">rate_review</span>
+                    </div>
+                    <div class="header-content">
+                        <div class="product-title">Marking Voucher</div>
+                        <div class="product-subtitle">Professional Feedback Service</div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    Combined: warm sunset organic with glass shapes and avatar glow.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ==========================================
+         DESIGN PRINCIPLES
+         ========================================== -->
+    <section class="product-section">
+        <h2>
+            <span class="material-icons" style="font-size: 20px;">info</span>
+            Design Principles
+        </h2>
+        <div style="background: rgba(255,255,255,0.03); border-radius: 16px; padding: 1.5rem; font-size: 0.875rem; line-height: 1.6; border: 1px solid rgba(255,255,255,0.05);">
+            <h3 style="font-size: 1rem; margin-bottom: 1rem; color: #fff;">Atmospheric Design System</h3>
+            <ul style="margin-left: 1.5rem; margin-bottom: 1.5rem; color: #a9a8b0;">
+                <li><strong style="color: #fff;">Muted Complementary Colors:</strong> Warm (terracotta), Rose, Teal, Slate accents</li>
+                <li><strong style="color: #fff;">Large Organic Curves:</strong> Soft-edged circular shapes with heavy blur (30-60px)</li>
+                <li><strong style="color: #fff;">Overlapping Translucent Layers:</strong> Multiple elements at varying opacities (0.3-0.5)</li>
+                <li><strong style="color: #fff;">Glassmorphism:</strong> Backdrop-blur on avatars, labels, and decorative shapes</li>
+                <li><strong style="color: #fff;">Rounded Corners:</strong> 16-20px radius on cards and elements</li>
+                <li><strong style="color: #fff;">Low Contrast:</strong> Atmospheric, misty feel with soft edges</li>
+            </ul>
+
+            <h3 style="font-size: 1rem; margin-bottom: 1rem; color: #fff;">Three Variations</h3>
+            <ol style="margin-left: 1.5rem; margin-bottom: 1.5rem; color: #a9a8b0;">
+                <li><strong style="color: #fff;">Organic:</strong> Large flowing curves, warm corner accent, four-stop gradient, heavy blur</li>
+                <li><strong style="color: #fff;">Glass:</strong> Multiple glass shapes with backdrop-blur, decorative overlay, translucent layers</li>
+                <li><strong style="color: #fff;">Organic Glass (Combined):</strong> Best of both - flowing organic curves + glass shapes + overlay + avatar glow</li>
+            </ol>
+
+            <h3 style="font-size: 1rem; margin-bottom: 1rem; color: #fff;">React Implementation</h3>
+            <pre style="background: #1b1b1f; color: #e4e1e6; padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.05);"><code>// Example: Organic Glass combined header
+sx={{
+  background: `linear-gradient(155deg,
+    rgba(180, 120, 100, 0.32) 0%,
+    rgba(121, 80, 209, 0.68) 25%,
+    rgba(78, 14, 157, 0.82) 55%,
+    rgba(99, 50, 185, 0.7) 75%,
+    rgba(80, 140, 140, 0.42) 100%)`,
+  position: 'relative',
+  overflow: 'hidden',
+  borderRadius: '20px 20px 0 0',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    width: 450, height: 450,
+    top: -220, left: -180,
+    borderRadius: '50%',
+    background: 'rgba(180, 120, 100, 0.4)',
+    filter: 'blur(55px)',
+  },
+}}
+
+// Avatar with glow effect
+&lt;Avatar sx={{
+  background: 'rgba(99, 50, 185, 0.5)',
+  boxShadow: '0 4px 16px rgba(121, 80, 209, 0.35)',
+  backdropFilter: 'blur(12px)',
+}} /&gt;</code></pre>
+        </div>
+    </section>
+
+</body>
+</html>
