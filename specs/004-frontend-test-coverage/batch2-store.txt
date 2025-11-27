@@ -1,0 +1,1063 @@
+
+> admin3@0.1.1 test
+> react-scripts test --coverage --runInBand --testPathPattern=store
+
+PASS src/store/middleware/__tests__/integration.test.js
+FAIL src/store/middleware/__tests__/performanceMonitoring.test.js
+  ● Console
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setCategories completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSearchQuery completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.clearAllFilters completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.clearAllFilters completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setCategories completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSearchQuery completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setCategories completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+    console.log
+      [Performance] redux.setSubjects completed in 2.5ms (budget: 16ms) ✓
+
+      at next (src/store/middleware/performanceMonitoring.js:62:19)
+
+  ● Performance Monitoring Middleware › Development-Only Operation › should not track when Performance API unavailable
+
+    expect(jest.fn()).not.toHaveBeenCalled()
+
+    Expected number of calls: 0
+    Received number of calls: 1
+
+    1: "validation", {"filterCount": 16}
+
+    [0m [90m 209 |[39m       store[33m.[39mdispatch({ type[33m:[39m [32m'filters/setSubjects'[39m[33m,[39m payload[33m:[39m [[32m'CM2'[39m] })[33m;[39m
+     [90m 210 |[39m
+    [31m[1m>[22m[39m[90m 211 |[39m       expect([33mPerformanceTracker[39m[33m.[39mstartMeasure)[33m.[39mnot[33m.[39mtoHaveBeenCalled()[33m;[39m
+     [90m     |[39m                                                   [31m[1m^[22m[39m
+     [90m 212 |[39m     })[33m;[39m
+     [90m 213 |[39m
+     [90m 214 |[39m     it([32m'should only operate in development mode'[39m[33m,[39m () [33m=>[39m {[0m
+
+      at Object.<anonymous> (src/store/middleware/__tests__/performanceMonitoring.test.js:211:51)
+
+  ● Performance Monitoring Middleware › Action Passthrough › should handle multiple sequential actions
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 3
+    Received number of calls: 5
+
+    [0m [90m 243 |[39m       store[33m.[39mdispatch({ type[33m:[39m [32m'filters/setSearchQuery'[39m[33m,[39m payload[33m:[39m [32m'actuarial'[39m })[33m;[39m
+     [90m 244 |[39m
+    [31m[1m>[22m[39m[90m 245 |[39m       expect([33mPerformanceTracker[39m[33m.[39mstartMeasure)[33m.[39mtoHaveBeenCalledTimes([35m3[39m)[33m;[39m
+     [90m     |[39m                                               [31m[1m^[22m[39m
+     [90m 246 |[39m       expect([33mPerformanceTracker[39m[33m.[39mendMeasure)[33m.[39mtoHaveBeenCalledTimes([35m3[39m)[33m;[39m
+     [90m 247 |[39m     })[33m;[39m
+     [90m 248 |[39m[0m
+
+      at Object.<anonymous> (src/store/middleware/__tests__/performanceMonitoring.test.js:245:47)
+
+PASS src/store/__tests__/filterPersistence.test.js
+  ● Console
+
+    console.warn
+      ⚠️ Performance budget exceeded: urlSync took 10ms (budget: 5ms, +5.0ms)
+
+    [0m [90m 298 |[39m
+     [90m 299 |[39m     [36mif[39m ([33m![39mwithinBudget) {
+    [31m[1m>[22m[39m[90m 300 |[39m       console[33m.[39mwarn(
+     [90m     |[39m               [31m[1m^[22m[39m
+     [90m 301 |[39m         [32m`⚠️ Performance budget exceeded: ${name} took ${duration}ms (budget: ${budget}ms, +${(duration - budget).toFixed(1)}ms)`[39m
+     [90m 302 |[39m       )[33m;[39m
+     [90m 303 |[39m     }[0m
+
+      at Function.checkBudget (src/utils/PerformanceTracker.js:300:15)
+      at Object.effect (src/store/middleware/urlSyncMiddleware.js:186:28)
+      at notifyListener (node_modules/@reduxjs/toolkit/src/listenerMiddleware/index.ts:254:35)
+      at dispatch (node_modules/@reduxjs/toolkit/src/listenerMiddleware/index.ts:346:11)
+      at setupUrlToReduxSync (src/store/middleware/urlSyncMiddleware.js:229:7)
+      at renderWithProviders (src/test-utils/testHelpers.js:112:7)
+      at Object.<anonymous> (src/store/__tests__/filterPersistence.test.js:363:44)
+
+PASS src/store/filters/__tests__/filterRegistry.integration.test.js
+PASS src/store/filters/__tests__/filterValidator.integration.test.js
+PASS src/store/api/catalogApi.test.js
+PASS src/store/slices/filtersSlice.test.js
+PASS src/store/middleware/__tests__/urlSyncPerformance.test.js
+  ● Console
+
+    console.log
+      Performance Metrics:
+
+      at Object.<anonymous> (src/store/middleware/__tests__/urlSyncPerformance.test.js:135:13)
+
+    console.log
+        Average: 0.091ms
+
+      at Object.<anonymous> (src/store/middleware/__tests__/urlSyncPerformance.test.js:136:13)
+
+    console.log
+        95th Percentile: 0.148ms
+
+      at Object.<anonymous> (src/store/middleware/__tests__/urlSyncPerformance.test.js:137:13)
+
+    console.log
+        Maximum: 0.417ms
+
+      at Object.<anonymous> (src/store/middleware/__tests__/urlSyncPerformance.test.js:138:13)
+
+PASS src/store/filters/__tests__/filterRegistry.test.js
+PASS src/store/slices/__tests__/filtersSlice.validation.test.js
+PASS src/__tests__/store/slices/baseFilters.test.js
+PASS src/store/middleware/__tests__/urlSyncMiddleware.test.js
+PASS src/__tests__/store/slices/navigationFilters.test.js
+PASS src/__tests__/store/slices/filterSelectors.test.js
+PASS src/store/filters/__tests__/filterValidator.test.js
+Failed to collect coverage from /Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/test-utils/mockData.js
+ERROR: /Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/test-utils/mockData.js: Unexpected token (105:35)
+
+[0m [90m 103 |[39m [36mexport[39m [36mconst[39m mockProductList [33m=[39m (count [33m=[39m [35m5[39m[33m,[39m overrides [33m=[39m {}) [33m=>[39m
+ [90m 104 |[39m   [33mArray[39m[33m.[39m[36mfrom[39m({ length[33m:[39m count }[33m,[39m (_[33m,[39m i) [33m=>[39m
+[31m[1m>[22m[39m[90m 105 |[39m     mockProduct({ id[33m:[39m i [33m+[39m [35m1[39m[33m,[39m name[33m:[39m [33m,[39m [33m...[39moverrides })
+ [90m     |[39m                                    [31m[1m^[22m[39m
+ [90m 106 |[39m   )[33m;[39m
+ [90m 107 |[39m
+ [90m 108 |[39m [36mexport[39m [36mconst[39m mockCartItems [33m=[39m (count [33m=[39m [35m3[39m[33m,[39m overrides [33m=[39m {}) [33m=>[39m[0m
+STACK: SyntaxError: /Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/test-utils/mockData.js: Unexpected token (105:35)
+
+[0m [90m 103 |[39m [36mexport[39m [36mconst[39m mockProductList [33m=[39m (count [33m=[39m [35m5[39m[33m,[39m overrides [33m=[39m {}) [33m=>[39m
+ [90m 104 |[39m   [33mArray[39m[33m.[39m[36mfrom[39m({ length[33m:[39m count }[33m,[39m (_[33m,[39m i) [33m=>[39m
+[31m[1m>[22m[39m[90m 105 |[39m     mockProduct({ id[33m:[39m i [33m+[39m [35m1[39m[33m,[39m name[33m:[39m [33m,[39m [33m...[39moverrides })
+ [90m     |[39m                                    [31m[1m^[22m[39m
+ [90m 106 |[39m   )[33m;[39m
+ [90m 107 |[39m
+ [90m 108 |[39m [36mexport[39m [36mconst[39m mockCartItems [33m=[39m (count [33m=[39m [35m3[39m[33m,[39m overrides [33m=[39m {}) [33m=>[39m[0m
+    at toParseError (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parse-error.ts:95:45)
+    at FlowParserMixin.raise (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/tokenizer/index.ts:1507:19)
+    at FlowParserMixin.unexpected (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/tokenizer/index.ts:1547:16)
+    at FlowParserMixin.parseExprAtom (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:1355:22)
+    at FlowParserMixin.parseExprAtom (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/jsx/index.ts:583:22)
+    at FlowParserMixin.parseExprSubscripts (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:742:23)
+    at FlowParserMixin.parseUpdate (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+    at FlowParserMixin.parseExprOps (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:3098:20)
+    at callback (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:257:12)
+    at FlowParserMixin.allowInAnd (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:3202:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:256:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:3316:17)
+    at FlowParserMixin.parseObjectProperty (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2325:16)
+    at FlowParserMixin.parseObjPropValue (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2388:12)
+    at FlowParserMixin.parseObjPropValue (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:2696:28)
+    at FlowParserMixin.parsePropertyDefinition (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2228:17)
+    at FlowParserMixin.parseObjectLike (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2095:21)
+    at FlowParserMixin.parseExprAtom (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:1181:21)
+    at FlowParserMixin.parseExprAtom (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/jsx/index.ts:583:22)
+    at FlowParserMixin.parseExprSubscripts (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:742:23)
+    at FlowParserMixin.parseUpdate (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+    at FlowParserMixin.parseExprOps (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:3098:20)
+    at callback (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:257:12)
+    at FlowParserMixin.allowInAnd (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:3202:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:256:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:3316:17)
+    at FlowParserMixin.parseExprListItem (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2798:18)
+    at FlowParserMixin.parseCallExpressionArguments (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:1042:14)
+    at FlowParserMixin.parseCoverCallAndAsyncArrowHead (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:922:29)
+    at FlowParserMixin.parseSubscript (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:804:19)
+    at FlowParserMixin.parseSubscript (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:3314:20)
+    at FlowParserMixin.parseSubscripts (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:763:19)
+    at FlowParserMixin.parseSubscripts (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:3257:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:748:17)
+    at FlowParserMixin.parseUpdate (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+    at FlowParserMixin.parseExprOps (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+Failed to collect coverage from /Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/components/Common/RulesEngineModal.examples.js
+ERROR: /Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/components/Common/RulesEngineModal.examples.js: Unexpected keyword 'const'. (13:2)
+
+[0m [90m 11 |[39m [36mconst[39m singleMessageExample [33m=[39m {
+ [90m 12 |[39m   [90m// State management[39m
+[31m[1m>[22m[39m[90m 13 |[39m   [36mconst[39m [showModal[33m,[39m setShowModal] [33m=[39m useState([36mfalse[39m)[33m;[39m
+ [90m    |[39m   [31m[1m^[22m[39m
+ [90m 14 |[39m   [36mconst[39m [modalMessage[33m,[39m setModalMessage] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m 15 |[39m
+ [90m 16 |[39m   [90m// Example message from rules engine[39m[0m
+STACK: SyntaxError: /Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/components/Common/RulesEngineModal.examples.js: Unexpected keyword 'const'. (13:2)
+
+[0m [90m 11 |[39m [36mconst[39m singleMessageExample [33m=[39m {
+ [90m 12 |[39m   [90m// State management[39m
+[31m[1m>[22m[39m[90m 13 |[39m   [36mconst[39m [showModal[33m,[39m setShowModal] [33m=[39m useState([36mfalse[39m)[33m;[39m
+ [90m    |[39m   [31m[1m^[22m[39m
+ [90m 14 |[39m   [36mconst[39m [modalMessage[33m,[39m setModalMessage] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m 15 |[39m
+ [90m 16 |[39m   [90m// Example message from rules engine[39m[0m
+    at toParseError (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parse-error.ts:95:45)
+    at FlowParserMixin.raise (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/tokenizer/index.ts:1507:19)
+    at FlowParserMixin.checkReservedWord (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2883:12)
+    at FlowParserMixin.parseObjectProperty (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2338:12)
+    at FlowParserMixin.parseObjPropValue (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2388:12)
+    at FlowParserMixin.parseObjPropValue (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:2696:28)
+    at FlowParserMixin.parsePropertyDefinition (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2228:17)
+    at FlowParserMixin.parseObjectLike (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2095:21)
+    at FlowParserMixin.parseExprAtom (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:1181:21)
+    at FlowParserMixin.parseExprAtom (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/jsx/index.ts:583:22)
+    at FlowParserMixin.parseExprSubscripts (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:742:23)
+    at FlowParserMixin.parseUpdate (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+    at FlowParserMixin.parseExprOps (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:3098:20)
+    at callback (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:257:12)
+    at FlowParserMixin.allowInAnd (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:3197:16)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:256:17)
+    at FlowParserMixin.parseVar (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:1587:18)
+    at FlowParserMixin.parseVarStatement (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:1251:10)
+    at FlowParserMixin.parseStatementContent (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:612:21)
+    at FlowParserMixin.parseStatementLike (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:482:17)
+    at FlowParserMixin.parseStatementLike (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:1991:26)
+    at FlowParserMixin.parseModuleItem (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:419:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:1443:16)
+    at FlowParserMixin.parseBlockBody (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:1417:10)
+    at FlowParserMixin.parseProgram (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:229:10)
+    at FlowParserMixin.parseTopLevel (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:203:25)
+    at FlowParserMixin.parseTopLevel (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:3379:30)
+    at FlowParserMixin.parse (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/index.ts:88:25)
+    at parse (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/index.ts:86:38)
+    at parser (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/core/src/parser/index.ts:28:19)
+    at parser.next (<anonymous>)
+    at normalizeFile (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/core/src/transformation/normalize-file.ts:49:24)
+    at normalizeFile.next (<anonymous>)
+    at run (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/core/src/transformation/index.ts:40:36)
+    at run.next (<anonymous>)
+    at transform (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/core/src/transform.ts:29:20)
+    at transform.next (<anonymous>)
+    at step (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/gensync/index.js:261:32)
+    at /Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/gensync/index.js:223:11)
+-----------------------------------------------------|---------|----------|---------|---------|------------------------------------------------------------------------------------
+File                                                 | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                                  
+-----------------------------------------------------|---------|----------|---------|---------|------------------------------------------------------------------------------------
+All files                                            |    6.85 |     3.46 |    6.49 |    6.74 |                                                                                    
+ src                                                 |    2.85 |        0 |       0 |    2.85 |                                                                                    
+  App.js                                             |       0 |        0 |       0 |       0 | 44-224                                                                             
+  config.js                                          |     100 |      100 |     100 |     100 |                                                                                    
+  index.js                                           |       0 |      100 |     100 |       0 | 12-25                                                                              
+  reportWebVitals.js                                 |       0 |        0 |       0 |       0 | 1-8                                                                                
+  setupPolyfills.js                                  |       0 |      100 |       0 |       0 | 5-12                                                                               
+ src/components                                      |       0 |        0 |       0 |       0 |                                                                                    
+  ErrorBoundary.js                                   |       0 |        0 |       0 |       0 | 7-39                                                                               
+  NoMatch.js                                         |       0 |      100 |       0 |       0 | 1-2                                                                                
+  SearchBox.js                                       |       0 |        0 |       0 |       0 | 12-128                                                                             
+  SearchResults.js                                   |       0 |        0 |       0 |       0 | 24-146                                                                             
+  StyleGuide.js                                      |       0 |      100 |       0 |       0 | 31-173                                                                             
+ src/components/Address                              |       0 |        0 |       0 |       0 |                                                                                    
+  AddressEditModal.js                                |       0 |        0 |       0 |       0 | 21-392                                                                             
+  AddressSelectionPanel.js                           |       0 |        0 |       0 |       0 | 17-246                                                                             
+  DynamicAddressForm.js                              |       0 |        0 |       0 |       0 | 18-274                                                                             
+  SmartAddressInput.js                               |       0 |        0 |       0 |       0 | 23-693                                                                             
+ src/components/Cart                                 |       0 |        0 |       0 |       0 |                                                                                    
+  CartItemWithVAT.js                                 |       0 |        0 |       0 |       0 | 39-201                                                                             
+  CartTotals.js                                      |       0 |        0 |       0 |       0 | 34-184                                                                             
+  CartVATDisplay.js                                  |       0 |        0 |       0 |       0 | 24-131                                                                             
+  CartVATError.js                                    |       0 |        0 |       0 |       0 | 30-127                                                                             
+ src/components/Common                               |       0 |        0 |       0 |       0 |                                                                                    
+  BaseProductCard.js                                 |       0 |        0 |       0 |       0 | 8-47                                                                               
+  CommunicationDetailsPanel.js                       |       0 |        0 |       0 |       0 | 25-481                                                                             
+  JsonContentRenderer.js                             |       0 |        0 |       0 |       0 | 17-237                                                                             
+  RulesEngineAcknowledgmentModal.js                  |       0 |        0 |       0 |       0 | 40-194                                                                             
+  RulesEngineInlineAlert.js                          |       0 |        0 |       0 |       0 | 30-207                                                                             
+  RulesEngineModal.js                                |       0 |        0 |       0 |       0 | 33-203                                                                             
+  VATBreakdown.js                                    |       0 |        0 |       0 |       0 | 17-145                                                                             
+ src/components/Navigation                           |       0 |        0 |       0 |       0 |                                                                                    
+  AuthModal.js                                       |       0 |        0 |       0 |       0 | 16-81                                                                              
+  MainNavActions.js                                  |       0 |        0 |       0 |       0 | 25-56                                                                              
+  MainNavBar.js                                      |       0 |        0 |       0 |       0 | 35-319                                                                             
+  MobileNavigation.js                                |       0 |        0 |       0 |       0 | 10-726                                                                             
+  NavbarBrand.js                                     |       0 |      100 |       0 |       0 | 5-9                                                                                
+  NavigationMenu.js                                  |       0 |        0 |       0 |       0 | 6-508                                                                              
+  SearchModal.js                                     |       0 |        0 |       0 |       0 | 19-84                                                                              
+  TopNavActions.js                                   |       0 |        0 |       0 |       0 | 13-16                                                                              
+  TopNavBar.js                                       |       0 |        0 |       0 |       0 | 18-151                                                                             
+  UserActions.js                                     |       0 |        0 |       0 |       0 | 27-53                                                                              
+  index.js                                           |       0 |        0 |       0 |       0 |                                                                                    
+ src/components/Ordering                             |       0 |        0 |       0 |       0 |                                                                                    
+  CartPanel.js                                       |       0 |        0 |       0 |       0 | 21-444                                                                             
+  CheckoutPage.js                                    |       0 |        0 |       0 |       0 | 9-92                                                                               
+  CheckoutSteps.js                                   |       0 |        0 |       0 |       0 | 20-589                                                                             
+ src/components/Ordering/CheckoutSteps               |       0 |        0 |       0 |       0 |                                                                                    
+  CartReviewStep.js                                  |       0 |        0 |       0 |       0 | 15-28                                                                              
+  CartSummaryPanel.js                                |       0 |        0 |       0 |       0 | 23-84                                                                              
+  PaymentStep.js                                     |       0 |        0 |       0 |       0 | 23-397                                                                             
+  PreferenceStep.js                                  |       0 |        0 |       0 |       0 | 22-377                                                                             
+  TermsConditionsStep.js                             |       0 |        0 |       0 |       0 | 18-285                                                                             
+ src/components/Product                              |       0 |        0 |       0 |       0 |                                                                                    
+  ActiveFilters.js                                   |       0 |        0 |       0 |       0 | 56-295                                                                             
+  FilterDebugger.js                                  |       0 |        0 |       0 |       0 | 4-64                                                                               
+  FilterPanel.js                                     |       0 |        0 |       0 |       0 | 73-528                                                                             
+  ProductGrid.js                                     |       0 |        0 |       0 |       0 | 26-340                                                                             
+  ProductList.js                                     |       0 |        0 |       0 |       0 | 59-404                                                                             
+ src/components/Product/ProductCard                  |       0 |        0 |       0 |       0 |                                                                                    
+  BundleCard.js                                      |       0 |        0 |       0 |       0 | 41-594                                                                             
+  MarkingProductCard.js                              |       0 |        0 |       0 |       0 | 47-1009                                                                            
+  MarkingVoucherProductCard.js                       |       0 |        0 |       0 |       0 | 30-234                                                                             
+  MaterialProductCard.js                             |       0 |        0 |       0 |       0 | 58-983                                                                             
+  OnlineClassroomProductCard.js                      |       0 |        0 |       0 |       0 | 38-392                                                                             
+ src/components/Product/ProductCard/Tutorial         |       0 |        0 |       0 |       0 |                                                                                    
+  TutorialDetailCard.js                              |       0 |        0 |       0 |       0 | 23-201                                                                             
+  TutorialProductCard.js                             |       0 |        0 |       0 |       0 | 61-864                                                                             
+  TutorialSelectionDialog.js                         |       0 |        0 |       0 |       0 | 33-246                                                                             
+  TutorialSelectionSummaryBar.js                     |       0 |        0 |       0 |       0 | 31-281                                                                             
+  TutorialSummaryBarContainer.js                     |       0 |        0 |       0 |       0 | 28-269                                                                             
+  tutorialStyles.js                                  |       0 |      100 |     100 |       0 | 10-33                                                                              
+ src/components/Test                                 |       0 |        0 |       0 |       0 |                                                                                    
+  ContentParsingDemo.js                              |       0 |        0 |       0 |       0 | 12-309                                                                             
+  ContextBuildingDemo.js                             |       0 |        0 |       0 |       0 | 11-372                                                                             
+  MessageClassificationDemo.js                       |       0 |        0 |       0 |       0 | 15-248                                                                             
+  ProcessingPipelineDemo.js                          |       0 |        0 |       0 |       0 | 15-449                                                                             
+  RulesEngineUtilitiesDemo.js                        |       0 |      100 |       0 |       0 | 11-12                                                                              
+ src/components/Testing                              |       0 |        0 |       0 |       0 |                                                                                    
+  PostcoderTestComponent.jsx                         |       0 |        0 |       0 |       0 | 32-205                                                                             
+ src/components/User                                 |       0 |        0 |       0 |       0 |                                                                                    
+  AccountActivation.js                               |       0 |        0 |       0 |       0 | 26-257                                                                             
+  CountryAutocomplete.js                             |       0 |        0 |       0 |       0 | 6-187                                                                              
+  EmailVerification.js                               |       0 |        0 |       0 |       0 | 27-176                                                                             
+  ForgotPasswordForm.js                              |       0 |        0 |       0 |       0 | 30-261                                                                             
+  LoginFormContent.js                                |       0 |        0 |       0 |       0 | 15-92                                                                              
+  Logout.js                                          |       0 |        0 |       0 |       0 | 5-22                                                                               
+  OrderHistory.js                                    |       0 |        0 |       0 |       0 | 21-110                                                                             
+  PhoneCodeAutocomplete.js                           |       0 |        0 |       0 |       0 | 5-46                                                                               
+  PhoneCodeDropdown.js                               |       0 |        0 |       0 |       0 | 5-29                                                                               
+  ProfileForm.js                                     |       0 |        0 |       0 |       0 | 34-965                                                                             
+  ResendActivation.js                                |       0 |        0 |       0 |       0 | 25-125                                                                             
+  ResetPasswordForm.js                               |       0 |        0 |       0 |       0 | 23-224                                                                             
+  UserFormWizard.js                                  |       0 |        0 |       0 |       0 | 38-1764                                                                            
+  ValidatedPhoneInput.js                             |       0 |        0 |       0 |       0 | 15-318                                                                             
+ src/components/admin/exam-sessions                  |       0 |        0 |       0 |       0 |                                                                                    
+  ExamSessionForm.js                                 |       0 |        0 |       0 |       0 | 17-134                                                                             
+  ExamSessionList.js                                 |       0 |        0 |       0 |       0 | 21-98                                                                              
+ src/components/admin/products                       |       0 |        0 |       0 |       0 |                                                                                    
+  ProductDetail.js                                   |       0 |        0 |       0 |       0 | 18-58                                                                              
+  ProductForm.js                                     |       0 |        0 |       0 |       0 | 19-168                                                                             
+  ProductImport.js                                   |       0 |        0 |       0 |       0 | 23-162                                                                             
+  ProductList.js                                     |       0 |        0 |       0 |       0 | 16-54                                                                              
+  ProductTable.js                                    |       0 |        0 |       0 |       0 | 16-58                                                                              
+ src/components/admin/subjects                       |       0 |        0 |       0 |       0 |                                                                                    
+  SubjectDetail.js                                   |       0 |        0 |       0 |       0 | 18-86                                                                              
+  SubjectForm.js                                     |       0 |        0 |       0 |       0 | 19-133                                                                             
+  SubjectImport.js                                   |       0 |        0 |       0 |       0 | 6-59                                                                               
+  SubjectList.js                                     |       0 |        0 |       0 |       0 | 21-132                                                                             
+ src/components/sandbox                              |       0 |        0 |       0 |       0 |                                                                                    
+  ProductCardTestPage.js                             |       0 |      100 |       0 |       0 | 8-9                                                                                
+  ProductCardVariations.js                           |       0 |        0 |       0 |       0 | 34-2496                                                                            
+  UserForm-backup.js                                 |       0 |        0 |       0 |       0 | 35-1141                                                                            
+ src/components/styleguide                           |       0 |        0 |       0 |       0 |                                                                                    
+  ButtonsSection.js                                  |       0 |      100 |       0 |       0 | 16-17                                                                              
+  ColorSystemSection.js                              |       0 |      100 |       0 |       0 | 13-14                                                                              
+  FeedbackSection.js                                 |       0 |      100 |       0 |       0 | 18-19                                                                              
+  FormElementsSection.js                             |       0 |      100 |       0 |       0 | 23-92                                                                              
+  LayoutSection.js                                   |       0 |      100 |       0 |       0 | 21-22                                                                              
+  MaterialDesign3Palette.js                          |       0 |        0 |       0 |       0 | 15-1049                                                                            
+  NavigationSection.js                               |       0 |      100 |       0 |       0 | 31-47                                                                              
+  ProductCardVariantsDemo.js                         |       0 |      100 |       0 |       0 | 6-9                                                                                
+  ProductCardsSection.js                             |       0 |      100 |       0 |       0 | 66-68                                                                              
+  TablesSection.js                                   |       0 |      100 |       0 |       0 | 33-34                                                                              
+  TypographySection.js                               |       0 |      100 |       0 |       0 | 13-14                                                                              
+ src/components/styleguide/ProductCards              |       0 |        0 |       0 |       0 |                                                                                    
+  BalancedProductCard.js                             |       0 |        0 |       0 |       0 | 31-407                                                                             
+  BalancedProductCardTest.js                         |       0 |        0 |       0 |       0 | 25-119                                                                             
+  EnhancedAssessmentProductCard.js                   |       0 |        0 |       0 |       0 | 27-245                                                                             
+  EnhancedBundleProductCard.js                       |       0 |        0 |       0 |       0 | 36-234                                                                             
+  EnhancedCompactCard.js                             |       0 |        0 |       0 |       0 | 21-34                                                                              
+  EnhancedHorizontalCard.js                          |       0 |        0 |       0 |       0 | 16-26                                                                              
+  EnhancedMarkingVoucherProductCard.js               |       0 |        0 |       0 |       0 | 31-57                                                                              
+  EnhancedMinimalCard.js                             |       0 |        0 |       0 |       0 | 10-39                                                                              
+  EnhancedOnlineClassroomProductCard.js              |       0 |        0 |       0 |       0 | 31-200                                                                             
+  EnhancedTutorialProductCard.js                     |       0 |        0 |       0 |       0 | 35-421                                                                             
+  EnhancedTutorialProductCardTest.js                 |       0 |        0 |       0 |       0 | 22-108                                                                             
+  MarkingProductCard.js                              |       0 |        0 |       0 |       0 | 25-204                                                                             
+  ThemeTest.js                                       |       0 |      100 |       0 |       0 | 6-9                                                                                
+  index.js                                           |       0 |        0 |       0 |       0 |                                                                                    
+ src/components/styleguide/ProductCards/MarkingCards |       0 |        0 |       0 |       0 |                                                                                    
+  MarkingCardAllAvailable.js                         |       0 |        0 |       0 |       0 | 23-36                                                                              
+  MarkingCardAllExpired.js                           |       0 |      100 |       0 |       0 | 23-32                                                                              
+  MarkingCardExpiringSoon.js                         |       0 |      100 |       0 |       0 | 22-33                                                                              
+  MarkingCardSomeExpired.js                          |       0 |        0 |       0 |       0 | 26-123                                                                             
+ src/config                                          |   33.33 |        0 |       0 |   33.33 |                                                                                    
+  performanceBudgets.js                              |   33.33 |        0 |       0 |   33.33 | 72-121                                                                             
+ src/contexts                                        |       0 |        0 |       0 |       0 |                                                                                    
+  CartContext.js                                     |       0 |        0 |       0 |       0 | 4-114                                                                              
+  ProductContext.js                                  |       0 |        0 |       0 |       0 | 4-53                                                                               
+  TutorialChoiceContext.js                           |       0 |        0 |       0 |       0 | 4-459                                                                              
+ src/hooks                                           |       0 |        0 |       0 |       0 |                                                                                    
+  useApi.js                                          |       0 |        0 |       0 |       0 | 4-24                                                                               
+  useAuth.js                                         |       0 |        0 |       0 |       0 | 6-214                                                                              
+  useCheckoutRulesEngine.js                          |       0 |        0 |       0 |       0 | 5-43                                                                               
+  useCheckoutValidation.js                           |       0 |        0 |       0 |       0 | 12-437                                                                             
+  useProductCardHelpers.js                           |       0 |        0 |       0 |       0 | 9-46                                                                               
+  useProductsSearch.js                               |       0 |        0 |       0 |       0 | 26-331                                                                             
+  useResourceData.js                                 |       0 |        0 |       0 |       0 |                                                                                    
+  useRulesEngineAcknowledgments.js                   |       0 |        0 |       0 |       0 | 8-188                                                                              
+ src/misc                                            |       0 |        0 |       0 |       0 |                                                                                    
+  AddressFormDemo.js                                 |       0 |        0 |       0 |       0 | 6-73                                                                               
+  LoginForm.js                                       |       0 |        0 |       0 |       0 | 17-74                                                                              
+  PhoneValidationDemo.js                             |       0 |        0 |       0 |       0 | 7-116                                                                              
+  ProductDelete.js                                   |       0 |      100 |       0 |       0 | 3-4                                                                                
+  RegisterFormdelete.js                              |       0 |        0 |       0 |       0 | 9-1200                                                                             
+  RegistrationDelete.js                              |       0 |      100 |       0 |       0 | 5-6                                                                                
+  UserForm.js                                        |       0 |      100 |       0 |       0 | 6-32                                                                               
+  UserProfileDelete.js                               |       0 |        0 |       0 |       0 | 9-137                                                                              
+ src/pages                                           |       0 |        0 |       0 |       0 |                                                                                    
+  Cart.js                                            |       0 |        0 |       0 |       0 | 29-219                                                                             
+  Home.js                                            |       0 |        0 |       0 |       0 | 11-229                                                                             
+  ProfilePage.js                                     |       0 |        0 |       0 |       0 | 21-59                                                                              
+  Registration.js                                    |       0 |        0 |       0 |       0 | 17-107                                                                             
+ src/services                                        |       0 |        0 |       0 |       0 |                                                                                    
+  acknowledgmentService.js                           |       0 |        0 |       0 |       0 | 15-220                                                                             
+  addressMetadataConfig.js                           |       0 |      100 |       0 |       0 | 13-420                                                                             
+  addressMetadataService.js                          |       0 |        0 |       0 |       0 | 36-198                                                                             
+  authService.js                                     |       0 |        0 |       0 |       0 | 6-508                                                                              
+  bundleService.js                                   |       0 |        0 |       0 |       0 | 5-289                                                                              
+  cartService.js                                     |       0 |        0 |       0 |       0 | 4-36                                                                               
+  errorTrackingService.js                            |       0 |        0 |       0 |       0 | 4-6                                                                                
+  examSessionService.js                              |       0 |        0 |       0 |       0 | 3-35                                                                               
+  googleAddressMetadata.js                           |       0 |        0 |       0 |       0 | 11-263                                                                             
+  httpService.js                                     |       0 |        0 |       0 |       0 | 6-136                                                                              
+  loggerService.js                                   |       0 |        0 |       0 |       0 | 2-21                                                                               
+  phoneValidationService.js                          |       0 |        0 |       0 |       0 | 7-291                                                                              
+  productService.js                                  |       0 |        0 |       0 |       0 | 6-426                                                                              
+  rulesEngineService.js                              |       0 |        0 |       0 |       0 | 4-66                                                                               
+  searchService.js                                   |       0 |        0 |       0 |       0 | 5-189                                                                              
+  subjectService.js                                  |       0 |        0 |       0 |       0 | 4-44                                                                               
+  tutorialService.js                                 |       0 |        0 |       0 |       0 | 5-125                                                                              
+  userService.js                                     |       0 |        0 |       0 |       0 | 5-136                                                                              
+ src/store                                           |       0 |      100 |       0 |       0 |                                                                                    
+  index.js                                           |       0 |      100 |       0 |       0 | 17-58                                                                              
+ src/store/api                                       |    62.5 |    62.71 |    90.9 |      70 |                                                                                    
+  catalogApi.js                                      |    62.5 |    62.71 |    90.9 |      70 | 33-58,113,166-168                                                                  
+ src/store/filters                                   |   89.15 |       75 |   72.41 |   91.89 |                                                                                    
+  filterRegistry.js                                  |   92.98 |    73.68 |      80 |   92.15 | 67,230,270,285                                                                     
+  filterValidator.js                                 |   80.76 |    78.57 |   55.55 |    91.3 | 50-51                                                                              
+ src/store/middleware                                |   94.28 |    76.31 |   83.33 |   95.52 |                                                                                    
+  performanceMonitoring.js                           |     100 |    81.25 |     100 |     100 | 50-61                                                                              
+  urlSyncMiddleware.js                               |   91.48 |    72.72 |   77.77 |   93.47 | 218,231,240                                                                        
+ src/store/slices                                    |   95.78 |    78.72 |     100 |   95.28 |                                                                                    
+  baseFilters.slice.js                               |   93.28 |    69.69 |     100 |    92.7 | 150,174,231-243                                                                    
+  filterSelectors.js                                 |     100 |      100 |     100 |     100 |                                                                                    
+  filtersSlice.js                                    |     100 |      100 |     100 |     100 |                                                                                    
+  navigationFilters.slice.js                         |     100 |      100 |     100 |     100 |                                                                                    
+ src/test-utils                                      |   26.85 |    33.02 |   25.37 |   27.39 |                                                                                    
+  accessibilityHelpers.js                            |       0 |        0 |       0 |       0 | 4-64                                                                               
+  index.js                                           |       0 |        0 |       0 |       0 | 37-48                                                                              
+  mediaQueryMock.js                                  |       0 |      100 |       0 |       0 | 20-39                                                                              
+  mockApi.js                                         |       0 |        0 |       0 |       0 | 13-66                                                                              
+  mockHandlers.js                                    |       0 |        0 |       0 |       0 | 23-234                                                                             
+  reduxMockStore.js                                  |       0 |        0 |       0 |       0 | 9-73                                                                               
+  testHelpers.js                                     |    62.5 |    58.06 |   62.96 |   61.76 | 27-28,37-46,74,114,192,207,226,252-255,260-272,289,297-298,318-319,358-361,370-391 
+ src/theme                                           |       0 |        0 |       0 |       0 |                                                                                    
+  colorTheme.js                                      |       0 |      100 |     100 |       0 | 4                                                                                  
+  liftKitTheme.js                                    |       0 |      100 |     100 |       0 | 4                                                                                  
+  testTheme.js                                       |       0 |      100 |     100 |       0 | 8                                                                                  
+  theme.js                                           |       0 |        0 |       0 |       0 | 7-38                                                                               
+  typographyTheme.js                                 |       0 |      100 |     100 |       0 | 4                                                                                  
+ src/utils                                           |   22.01 |    12.37 |   14.41 |   22.58 |                                                                                    
+  PerformanceTracker.js                              |   36.55 |    32.69 |   22.22 |   40.96 | 64,68,79,92,96,106,145-286,312                                                     
+  filterUrlManager.js                                |   66.44 |    52.89 |   70.58 |   66.66 | 56,143,149,153,254-261,270-302,313-355                                             
+  priceFormatter.js                                  |       0 |        0 |       0 |       0 | 5-6                                                                                
+  productCodeGenerator.js                            |       0 |        0 |       0 |       0 | 10-200                                                                             
+  rulesEngineUtils.js                                |       0 |        0 |       0 |       0 | 7-1089                                                                             
+  tutorialMetadataBuilder.js                         |       0 |        0 |       0 |       0 | 17-86                                                                              
+  vatUtils.js                                        |       0 |        0 |       0 |       0 | 24-147                                                                             
+-----------------------------------------------------|---------|----------|---------|---------|------------------------------------------------------------------------------------
+
+Test Suites: 1 failed, 14 passed, 15 total
+Tests:       2 failed, 365 passed, 367 total
+Snapshots:   0 total
+Time:        3.916 s
+Ran all test suites matching /store/i.

@@ -15,23 +15,22 @@ import { useProductsSearch } from '../useProductsSearch';
 import filtersReducer from '../../store/slices/filtersSlice';
 
 // Mock the catalogApi module
-const mockTriggerSearch = jest.fn(() => ({
-  unwrap: jest.fn(() =>
-    Promise.resolve({
-      products: [],
-      filterCounts: {},
-      pagination: {
-        page: 1,
-        page_size: 20,
-        total_count: 0,
-        has_next: false,
-        has_previous: false,
-      },
-    })
-  ),
-}));
+// Note: Variables used in jest.mock factory must be prefixed with `mock` to avoid hoisting issues
+const mockTriggerSearchFn = jest.fn().mockReturnValue({
+  unwrap: jest.fn().mockResolvedValue({
+    products: [],
+    filterCounts: {},
+    pagination: {
+      page: 1,
+      page_size: 20,
+      total_count: 0,
+      has_next: false,
+      has_previous: false,
+    },
+  }),
+});
 
-const mockSearchResult = {
+const mockSearchResultData = {
   data: null,
   isLoading: false,
   isFetching: false,
@@ -40,7 +39,7 @@ const mockSearchResult = {
 };
 
 jest.mock('../../store/api/catalogApi', () => ({
-  useLazyUnifiedSearchQuery: () => [mockTriggerSearch, mockSearchResult],
+  useLazyUnifiedSearchQuery: () => [mockTriggerSearchFn, mockSearchResultData],
 }));
 
 /**

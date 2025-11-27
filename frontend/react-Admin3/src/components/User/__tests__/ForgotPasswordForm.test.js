@@ -31,6 +31,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ForgotPasswordForm from '../ForgotPasswordForm';
+import { expectNoA11yViolations, wcag21AAConfig } from '../../../test-utils/accessibilityHelpers';
 
 describe('ForgotPasswordForm', () => {
   const renderWithTheme = (component) => {
@@ -192,6 +193,43 @@ describe('ForgotPasswordForm', () => {
       await user.click(backButton);
 
       expect(mockNavigate).toHaveBeenCalledWith('/home', { state: { showLogin: true } });
+    });
+  });
+
+  describe('Accessibility (T079 - WCAG 2.1 AA)', () => {
+    test('has no accessibility violations', async () => {
+      const { container } = renderWithTheme(<ForgotPasswordForm />);
+      await expectNoA11yViolations(container, wcag21AAConfig);
+    });
+
+    test('email input has proper label', () => {
+      renderWithTheme(<ForgotPasswordForm />);
+
+      // Email input should have associated label
+      const emailInput = screen.getByPlaceholderText(/enter your email/i);
+      expect(emailInput).toHaveAttribute('type', 'email');
+    });
+
+    test('form buttons have accessible names', () => {
+      renderWithTheme(<ForgotPasswordForm />);
+
+      expect(screen.getByRole('button', { name: /send reset email/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /back to login/i })).toBeInTheDocument();
+    });
+
+    test('has no accessibility violations with validation error', async () => {
+      const user = userEvent.setup({ delay: null });
+      const { container } = renderWithTheme(<ForgotPasswordForm />);
+
+      // Trigger validation error
+      const submitButton = screen.getByRole('button', { name: /send reset email/i });
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+      });
+
+      await expectNoA11yViolations(container, wcag21AAConfig);
     });
   });
 });
