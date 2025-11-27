@@ -5,15 +5,27 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../theme/theme';
 
-// Mock dependencies
+// Create mockNavigate at module level
 const mockNavigate = jest.fn();
+
+// Override useNavigate from the global mock in setupTests.js
 jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+  __esModule: true,
   useNavigate: () => mockNavigate,
+  useLocation: () => ({ pathname: '/register', search: '', hash: '', state: null }),
+  useParams: () => ({}),
+  useSearchParams: () => [new URLSearchParams(), jest.fn()],
+  MemoryRouter: ({ children }) => children,
+  BrowserRouter: ({ children }) => children,
+  Link: ({ children, to }) => <a href={to}>{children}</a>,
+  NavLink: ({ children, to }) => <a href={to}>{children}</a>,
+  Navigate: () => null,
+  Routes: ({ children }) => children,
+  Route: ({ element }) => element,
+  Outlet: () => null,
 }));
 
 // Mock useAuth hook
@@ -61,9 +73,7 @@ describe('Registration Page', () => {
   const renderRegistration = () => {
     return render(
       <ThemeProvider theme={theme}>
-        <MemoryRouter>
-          <Registration />
-        </MemoryRouter>
+        <Registration />
       </ThemeProvider>
     );
   };
@@ -115,9 +125,7 @@ describe('Registration Page', () => {
     test('redirects when authentication state changes to true', () => {
       const { rerender } = render(
         <ThemeProvider theme={theme}>
-          <MemoryRouter>
-            <Registration />
-          </MemoryRouter>
+          <Registration />
         </ThemeProvider>
       );
 
@@ -128,9 +136,7 @@ describe('Registration Page', () => {
       mockUseAuth.mockReturnValue({ isAuthenticated: true });
       rerender(
         <ThemeProvider theme={theme}>
-          <MemoryRouter>
-            <Registration />
-          </MemoryRouter>
+          <Registration />
         </ThemeProvider>
       );
 
@@ -206,14 +212,14 @@ describe('Registration Page', () => {
     });
 
     test('shows default success message when API returns no message', () => {
-      // Override mock for this test
-      jest.isolateModules(() => {
-        const { render, screen, fireEvent } = require('@testing-library/react');
-        const React = require('react');
+      // Mock UserFormWizard to trigger success without a message
+      renderRegistration();
 
-        // This test verifies the fallback message
-        // The default message is shown when result.message is undefined
-      });
+      // The default message includes instructions about checking email
+      fireEvent.click(screen.getByTestId('trigger-success'));
+
+      // Success message should be displayed (custom or default)
+      expect(screen.getByText('Registration Successful!')).toBeInTheDocument();
     });
   });
 

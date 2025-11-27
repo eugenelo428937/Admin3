@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Typography, Grid } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import BalancedProductCard from "./ProductCards/BalancedProductCard";
+import GlassHeaderProductCards from './components/styleguide/GlassHeaderProductCards';
 
 const ProductCardVariantsDemo = () => {
 	const theme = useTheme();
@@ -64,7 +65,7 @@ const ProductCardVariantsDemo = () => {
 					</Box>
 				</Grid>
 			</Grid>
-			<GlassHeaderProductCards />
+			
 		</Box>
 	);
 };
