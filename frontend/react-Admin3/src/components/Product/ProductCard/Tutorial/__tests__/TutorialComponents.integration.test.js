@@ -1,3 +1,7 @@
+// Remove global mocks from setupTests.js so we can test with real contexts
+jest.unmock('../../../../../contexts/TutorialChoiceContext');
+jest.unmock('../../../../../contexts/CartContext');
+
 // Mock httpService before importing anything else
 jest.mock('../../../../../services/httpService', () => ({
   get: jest.fn(),

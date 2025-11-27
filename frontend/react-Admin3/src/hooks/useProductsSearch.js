@@ -50,6 +50,11 @@ export const useProductsSearch = (options = {}) => {
   const isLoading = useSelector(state => state.filters.isLoading);
   const error = useSelector(state => state.filters.error);
 
+  // Story 1.4: Navbar filters from Redux state (not URL)
+  const tutorial = useSelector(state => state.filters.tutorial);
+  const tutorialFormat = useSelector(state => state.filters.tutorial_format);
+  const distanceLearning = useSelector(state => state.filters.distance_learning);
+
   // RTK Query lazy search hook
   const [triggerSearch, searchResult] = useLazyUnifiedSearchQuery();
   
@@ -98,6 +103,13 @@ export const useProductsSearch = (options = {}) => {
 
       // Prepare search parameters with searchQuery (single-call pattern)
       // searchQuery parameter triggers fuzzy search + relevance sorting on backend
+
+      // Story 1.4: Build navbarFilters object (only include non-empty values)
+      const navbarFilters = {};
+      if (tutorial) navbarFilters.tutorial = '1';
+      if (tutorialFormat) navbarFilters.tutorial_format = tutorialFormat;
+      if (distanceLearning) navbarFilters.distance_learning = '1';
+
       const searchParams = {
         searchQuery: searchQuery || '', // NEW: Send search query to backend
         filters: {
@@ -107,6 +119,7 @@ export const useProductsSearch = (options = {}) => {
           products: filters.products || [], // Products filter for navbar product links (e.g., Core Reading)
           modes_of_delivery: filters.modes_of_delivery || [],
         },
+        navbarFilters, // Story 1.4: Include navbar filters
         pagination: {
           page: currentPage,
           page_size: pageSize,
@@ -119,8 +132,8 @@ export const useProductsSearch = (options = {}) => {
 
       // Check if search parameters have changed (avoid duplicate requests)
       // Use a fast hash instead of JSON.stringify for performance
-      // Include searchQuery AND products filter to trigger new search when they change
-      const paramsHash = `${searchQuery||''}|${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.products?.join(',')||''}|${filters.modes_of_delivery?.join(',')||''}|${currentPage}|${pageSize}`;
+      // Include searchQuery, products filter, AND navbar filters to trigger new search when they change
+      const paramsHash = `${searchQuery||''}|${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.products?.join(',')||''}|${filters.modes_of_delivery?.join(',')||''}|${currentPage}|${pageSize}|${tutorial}|${tutorialFormat||''}|${distanceLearning}`;
 
       if (!forceSearch && lastSearchParamsRef.current === paramsHash) {
         dispatch(setLoading(false));
@@ -194,7 +207,7 @@ export const useProductsSearch = (options = {}) => {
       dispatch(setError(errorMessage));
       dispatch(setLoading(false));
     }
-  }, [hasValidationErrors, filters, searchQuery, currentPage, pageSize, triggerSearch, dispatch]);
+  }, [hasValidationErrors, filters, searchQuery, currentPage, pageSize, tutorial, tutorialFormat, distanceLearning, triggerSearch, dispatch]);
   
   /**
    * Debounced search function
@@ -246,10 +259,10 @@ export const useProductsSearch = (options = {}) => {
   }, [clearDebounce, dispatch]);
   
   // Create stable references for effect dependencies
-  // Include searchQuery AND products filter to trigger search when they change
+  // Include searchQuery, products filter, AND navbar filters to trigger search when they change
   const filterHash = useMemo(() => {
-    return `${searchQuery||''}|${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.products?.join(',')||''}|${filters.modes_of_delivery?.join(',')||''}|${currentPage}|${pageSize}`;
-  }, [searchQuery, filters.subjects, filters.categories, filters.product_types, filters.products, filters.modes_of_delivery, currentPage, pageSize]);
+    return `${searchQuery||''}|${filters.subjects?.join(',')||''}|${filters.categories?.join(',')||''}|${filters.product_types?.join(',')||''}|${filters.products?.join(',')||''}|${filters.modes_of_delivery?.join(',')||''}|${currentPage}|${pageSize}|${tutorial}|${tutorialFormat||''}|${distanceLearning}`;
+  }, [searchQuery, filters.subjects, filters.categories, filters.product_types, filters.products, filters.modes_of_delivery, currentPage, pageSize, tutorial, tutorialFormat, distanceLearning]);
 
   // Auto-search when filters change (if enabled)
   useEffect(() => {

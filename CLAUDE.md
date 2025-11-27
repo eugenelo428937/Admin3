@@ -1148,6 +1148,35 @@ test('all buttons meet 44px touch target minimum', () => {
 - Follow conventional commit message format
 - Update documentation for setup changes
 
+## Task Completion Protocol
+
+When completing a task from a spec (tasks.md or similar):
+
+1. **After completing any task**, always present remaining tasks for user selection:
+   - List remaining uncompleted tasks from the current user story
+   - List next user stories with their task counts
+   - Ask user which area to continue with
+
+2. **Task summary format**:
+   ```
+   ✅ Completed: [Task ID] - [Description]
+
+   📋 Remaining in current story (USX):
+   - [ ] T0XX: [Description]
+   - [ ] T0YY: [Description]
+
+   📋 Next stories available:
+   - USY: [Story Name] - X tasks remaining
+   - USZ: [Story Name] - Y tasks remaining
+
+   Which area should we continue with?
+   ```
+
+3. **This ensures**:
+   - User always has visibility into remaining work
+   - No tasks are accidentally skipped
+   - User can prioritize next steps
+
 ## Superdesign Instructions
 
 When asked to design UI & frontend interfaces:

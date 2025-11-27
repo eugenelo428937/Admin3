@@ -1,0 +1,544 @@
+
+> admin3@0.1.1 test
+> react-scripts test --coverage --runInBand --testPathPattern=contexts
+
+PASS src/contexts/__tests__/CartContext.test.js
+  ● Console
+
+    console.error
+      🛒 [CartContext] Error fetching cart: Error: Network error
+          at Object.<anonymous> (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/contexts/__tests__/CartContext.test.js:107:51)
+          at Promise.then.completed (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/utils.js:391:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/utils.js:316:10)
+          at _callCircusTest (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:218:40)
+          at _runTest (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:155:3)
+          at _runTestsForDescribeBlock (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:66:9)
+          at _runTestsForDescribeBlock (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:60:9)
+          at _runTestsForDescribeBlock (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:60:9)
+          at run (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:25:3)
+          at runAndTransformResultsToJestFormat (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+          at jestAdapter (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+          at runTestInternal (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-runner/build/runTest.js:389:16)
+          at runTest (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-runner/build/runTest.js:475:34)
+          at TestRunner.runTests (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-runner/build/index.js:101:12)
+          at TestScheduler.scheduleTests (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/@jest/core/build/TestScheduler.js:333:13)
+          at runJest (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/@jest/core/build/runJest.js:404:19)
+          at _run10000 (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/@jest/core/build/cli/index.js:320:7)
+          at runCLI (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/@jest/core/build/cli/index.js:173:3)
+          at Object.run (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-cli/build/cli/index.js:155:37)
+
+    [0m [90m 18 |[39m         setCartItems(res[33m.[39mdata[33m.[39mitems [33m||[39m [])[33m;[39m
+     [90m 19 |[39m       } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 20 |[39m         console[33m.[39merror([32m'🛒 [CartContext] Error fetching cart:'[39m[33m,[39m err)[33m;[39m
+     [90m    |[39m                 [31m[1m^[22m[39m
+     [90m 21 |[39m         setCartData([36mnull[39m)[33m;[39m
+     [90m 22 |[39m         setCartItems([])[33m;[39m
+     [90m 23 |[39m       } [36mfinally[39m {[0m
+
+      at fetchCart (src/contexts/CartContext.js:20:17)
+
+    console.error
+      🛒 [CartContext] Error adding to cart: Error: Server error
+          at Object.<anonymous> (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/contexts/__tests__/CartContext.test.js:142:51)
+          at Promise.then.completed (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/utils.js:391:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/utils.js:316:10)
+          at _callCircusTest (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:218:40)
+          at _runTest (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:155:3)
+          at _runTestsForDescribeBlock (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:66:9)
+          at _runTestsForDescribeBlock (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:60:9)
+          at _runTestsForDescribeBlock (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:60:9)
+          at run (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:25:3)
+          at runAndTransformResultsToJestFormat (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+          at jestAdapter (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+          at runTestInternal (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-runner/build/runTest.js:389:16)
+          at runTest (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-runner/build/runTest.js:475:34)
+          at TestRunner.runTests (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-runner/build/index.js:101:12)
+          at TestScheduler.scheduleTests (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/@jest/core/build/TestScheduler.js:333:13)
+          at runJest (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/@jest/core/build/runJest.js:404:19)
+          at _run10000 (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/@jest/core/build/cli/index.js:320:7)
+          at runCLI (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/@jest/core/build/cli/index.js:173:3)
+          at Object.run (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-cli/build/cli/index.js:155:37)
+
+    [0m [90m 39 |[39m       }
+     [90m 40 |[39m     } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 41 |[39m       console[33m.[39merror([32m'🛒 [CartContext] Error adding to cart:'[39m[33m,[39m err)[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 42 |[39m     }
+     [90m 43 |[39m   }[33m;[39m
+     [90m 44 |[39m[0m
+
+      at Object.addToCart (src/contexts/CartContext.js:41:15)
+      at src/contexts/__tests__/CartContext.test.js:156:9
+
+    console.error
+      🛒 [CartContext] Invalid response structure: {}
+
+    [0m [90m 36 |[39m         setCartItems(res[33m.[39mdata[33m.[39mitems)[33m;[39m
+     [90m 37 |[39m       } [36melse[39m {
+    [31m[1m>[22m[39m[90m 38 |[39m         console[33m.[39merror([32m'🛒 [CartContext] Invalid response structure:'[39m[33m,[39m res[33m.[39mdata)[33m;[39m
+     [90m    |[39m                 [31m[1m^[22m[39m
+     [90m 39 |[39m       }
+     [90m 40 |[39m     } [36mcatch[39m (err) {
+     [90m 41 |[39m       console[33m.[39merror([32m'🛒 [CartContext] Error adding to cart:'[39m[33m,[39m err)[33m;[39m[0m
+
+      at Object.addToCart (src/contexts/CartContext.js:38:17)
+      at src/contexts/__tests__/CartContext.test.js:177:9
+
+    console.error
+      🛒 [CartContext] Error updating cart item: Error: Update failed
+          at Object.<anonymous> (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/contexts/__tests__/CartContext.test.js:238:52)
+          at Promise.then.completed (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/utils.js:391:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/utils.js:316:10)
+          at _callCircusTest (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:218:40)
+          at _runTest (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:155:3)
+          at _runTestsForDescribeBlock (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:66:9)
+          at _runTestsForDescribeBlock (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:60:9)
+          at _runTestsForDescribeBlock (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:60:9)
+          at run (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:25:3)
+          at runAndTransformResultsToJestFormat (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+          at jestAdapter (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+          at runTestInternal (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-runner/build/runTest.js:389:16)
+          at runTest (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-runner/build/runTest.js:475:34)
+          at TestRunner.runTests (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-runner/build/index.js:101:12)
+          at TestScheduler.scheduleTests (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/@jest/core/build/TestScheduler.js:333:13)
+          at runJest (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/@jest/core/build/runJest.js:404:19)
+          at _run10000 (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/@jest/core/build/cli/index.js:320:7)
+          at runCLI (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/@jest/core/build/cli/index.js:173:3)
+          at Object.run (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-cli/build/cli/index.js:155:37)
+
+    [0m [90m 62 |[39m       }
+     [90m 63 |[39m     } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 64 |[39m       console[33m.[39merror([32m'🛒 [CartContext] Error updating cart item:'[39m[33m,[39m err)[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 65 |[39m       [36mthrow[39m err[33m;[39m
+     [90m 66 |[39m     }
+     [90m 67 |[39m   }[33m;[39m[0m
+
+      at Object.updateCartItem (src/contexts/CartContext.js:64:15)
+      at Object.<anonymous> (src/contexts/__tests__/CartContext.test.js:250:7)
+
+    console.error
+      Error removing cart item: Error: Remove failed
+          at Object.<anonymous> (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/contexts/__tests__/CartContext.test.js:276:52)
+          at Promise.then.completed (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/utils.js:391:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/utils.js:316:10)
+          at _callCircusTest (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:218:40)
+          at _runTest (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:155:3)
+          at _runTestsForDescribeBlock (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:66:9)
+          at _runTestsForDescribeBlock (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:60:9)
+          at _runTestsForDescribeBlock (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:60:9)
+          at run (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/run.js:25:3)
+          at runAndTransformResultsToJestFormat (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+          at jestAdapter (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+          at runTestInternal (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-runner/build/runTest.js:389:16)
+          at runTest (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-runner/build/runTest.js:475:34)
+          at TestRunner.runTests (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-runner/build/index.js:101:12)
+          at TestScheduler.scheduleTests (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/@jest/core/build/TestScheduler.js:333:13)
+          at runJest (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/@jest/core/build/runJest.js:404:19)
+          at _run10000 (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/@jest/core/build/cli/index.js:320:7)
+          at runCLI (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/@jest/core/build/cli/index.js:173:3)
+          at Object.run (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/react-scripts/node_modules/jest-cli/build/cli/index.js:155:37)
+
+    [0m [90m 75 |[39m       [36mreturn[39m res[33m.[39mdata[33m;[39m
+     [90m 76 |[39m     } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 77 |[39m       console[33m.[39merror([32m'Error removing cart item:'[39m[33m,[39m err)[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 78 |[39m       [36mthrow[39m err[33m;[39m
+     [90m 79 |[39m     }
+     [90m 80 |[39m   }[33m;[39m[0m
+
+      at Object.removeFromCart (src/contexts/CartContext.js:77:15)
+      at Object.<anonymous> (src/contexts/__tests__/CartContext.test.js:288:7)
+
+    console.error
+      🛒 [CartContext] Error refreshing cart: Error: Refresh failed
+          at Object.<anonymous> (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/contexts/__tests__/CartContext.test.js:369:51)
+
+    [0m [90m  98 |[39m       [36mreturn[39m res[33m.[39mdata[33m;[39m
+     [90m  99 |[39m     } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 100 |[39m       console[33m.[39merror([32m'🛒 [CartContext] Error refreshing cart:'[39m[33m,[39m err)[33m;[39m
+     [90m     |[39m               [31m[1m^[22m[39m
+     [90m 101 |[39m       [36mthrow[39m err[33m;[39m
+     [90m 102 |[39m     }
+     [90m 103 |[39m   }[33m;[39m[0m
+
+      at Object.refreshCart (src/contexts/CartContext.js:100:15)
+      at Object.<anonymous> (src/contexts/__tests__/CartContext.test.js:371:7)
+
+Failed to collect coverage from /Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/test-utils/mockData.js
+ERROR: /Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/test-utils/mockData.js: Unexpected token (105:35)
+
+[0m [90m 103 |[39m [36mexport[39m [36mconst[39m mockProductList [33m=[39m (count [33m=[39m [35m5[39m[33m,[39m overrides [33m=[39m {}) [33m=>[39m
+ [90m 104 |[39m   [33mArray[39m[33m.[39m[36mfrom[39m({ length[33m:[39m count }[33m,[39m (_[33m,[39m i) [33m=>[39m
+[31m[1m>[22m[39m[90m 105 |[39m     mockProduct({ id[33m:[39m i [33m+[39m [35m1[39m[33m,[39m name[33m:[39m [33m,[39m [33m...[39moverrides })
+ [90m     |[39m                                    [31m[1m^[22m[39m
+ [90m 106 |[39m   )[33m;[39m
+ [90m 107 |[39m
+ [90m 108 |[39m [36mexport[39m [36mconst[39m mockCartItems [33m=[39m (count [33m=[39m [35m3[39m[33m,[39m overrides [33m=[39m {}) [33m=>[39m[0m
+STACK: SyntaxError: /Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/test-utils/mockData.js: Unexpected token (105:35)
+
+[0m [90m 103 |[39m [36mexport[39m [36mconst[39m mockProductList [33m=[39m (count [33m=[39m [35m5[39m[33m,[39m overrides [33m=[39m {}) [33m=>[39m
+ [90m 104 |[39m   [33mArray[39m[33m.[39m[36mfrom[39m({ length[33m:[39m count }[33m,[39m (_[33m,[39m i) [33m=>[39m
+[31m[1m>[22m[39m[90m 105 |[39m     mockProduct({ id[33m:[39m i [33m+[39m [35m1[39m[33m,[39m name[33m:[39m [33m,[39m [33m...[39moverrides })
+ [90m     |[39m                                    [31m[1m^[22m[39m
+ [90m 106 |[39m   )[33m;[39m
+ [90m 107 |[39m
+ [90m 108 |[39m [36mexport[39m [36mconst[39m mockCartItems [33m=[39m (count [33m=[39m [35m3[39m[33m,[39m overrides [33m=[39m {}) [33m=>[39m[0m
+    at toParseError (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parse-error.ts:95:45)
+    at FlowParserMixin.raise (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/tokenizer/index.ts:1507:19)
+    at FlowParserMixin.unexpected (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/tokenizer/index.ts:1547:16)
+    at FlowParserMixin.parseExprAtom (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:1355:22)
+    at FlowParserMixin.parseExprAtom (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/jsx/index.ts:583:22)
+    at FlowParserMixin.parseExprSubscripts (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:742:23)
+    at FlowParserMixin.parseUpdate (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+    at FlowParserMixin.parseExprOps (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:3098:20)
+    at callback (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:257:12)
+    at FlowParserMixin.allowInAnd (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:3202:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:256:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:3316:17)
+    at FlowParserMixin.parseObjectProperty (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2325:16)
+    at FlowParserMixin.parseObjPropValue (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2388:12)
+    at FlowParserMixin.parseObjPropValue (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:2696:28)
+    at FlowParserMixin.parsePropertyDefinition (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2228:17)
+    at FlowParserMixin.parseObjectLike (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2095:21)
+    at FlowParserMixin.parseExprAtom (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:1181:21)
+    at FlowParserMixin.parseExprAtom (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/jsx/index.ts:583:22)
+    at FlowParserMixin.parseExprSubscripts (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:742:23)
+    at FlowParserMixin.parseUpdate (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+    at FlowParserMixin.parseExprOps (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:3098:20)
+    at callback (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:257:12)
+    at FlowParserMixin.allowInAnd (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:3202:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:256:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:3316:17)
+    at FlowParserMixin.parseExprListItem (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2798:18)
+    at FlowParserMixin.parseCallExpressionArguments (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:1042:14)
+    at FlowParserMixin.parseCoverCallAndAsyncArrowHead (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:922:29)
+    at FlowParserMixin.parseSubscript (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:804:19)
+    at FlowParserMixin.parseSubscript (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:3314:20)
+    at FlowParserMixin.parseSubscripts (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:763:19)
+    at FlowParserMixin.parseSubscripts (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:3257:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:748:17)
+    at FlowParserMixin.parseUpdate (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+    at FlowParserMixin.parseExprOps (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+Failed to collect coverage from /Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/components/Common/RulesEngineModal.examples.js
+ERROR: /Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/components/Common/RulesEngineModal.examples.js: Unexpected keyword 'const'. (13:2)
+
+[0m [90m 11 |[39m [36mconst[39m singleMessageExample [33m=[39m {
+ [90m 12 |[39m   [90m// State management[39m
+[31m[1m>[22m[39m[90m 13 |[39m   [36mconst[39m [showModal[33m,[39m setShowModal] [33m=[39m useState([36mfalse[39m)[33m;[39m
+ [90m    |[39m   [31m[1m^[22m[39m
+ [90m 14 |[39m   [36mconst[39m [modalMessage[33m,[39m setModalMessage] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m 15 |[39m
+ [90m 16 |[39m   [90m// Example message from rules engine[39m[0m
+STACK: SyntaxError: /Users/work/Documents/Code/Admin3/frontend/react-Admin3/src/components/Common/RulesEngineModal.examples.js: Unexpected keyword 'const'. (13:2)
+
+[0m [90m 11 |[39m [36mconst[39m singleMessageExample [33m=[39m {
+ [90m 12 |[39m   [90m// State management[39m
+[31m[1m>[22m[39m[90m 13 |[39m   [36mconst[39m [showModal[33m,[39m setShowModal] [33m=[39m useState([36mfalse[39m)[33m;[39m
+ [90m    |[39m   [31m[1m^[22m[39m
+ [90m 14 |[39m   [36mconst[39m [modalMessage[33m,[39m setModalMessage] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m 15 |[39m
+ [90m 16 |[39m   [90m// Example message from rules engine[39m[0m
+    at toParseError (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parse-error.ts:95:45)
+    at FlowParserMixin.raise (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/tokenizer/index.ts:1507:19)
+    at FlowParserMixin.checkReservedWord (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2883:12)
+    at FlowParserMixin.parseObjectProperty (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2338:12)
+    at FlowParserMixin.parseObjPropValue (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2388:12)
+    at FlowParserMixin.parseObjPropValue (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:2696:28)
+    at FlowParserMixin.parsePropertyDefinition (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2228:17)
+    at FlowParserMixin.parseObjectLike (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:2095:21)
+    at FlowParserMixin.parseExprAtom (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:1181:21)
+    at FlowParserMixin.parseExprAtom (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/jsx/index.ts:583:22)
+    at FlowParserMixin.parseExprSubscripts (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:742:23)
+    at FlowParserMixin.parseUpdate (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+    at FlowParserMixin.parseExprOps (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:3098:20)
+    at callback (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:257:12)
+    at FlowParserMixin.allowInAnd (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:3197:16)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/expression.ts:256:17)
+    at FlowParserMixin.parseVar (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:1587:18)
+    at FlowParserMixin.parseVarStatement (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:1251:10)
+    at FlowParserMixin.parseStatementContent (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:612:21)
+    at FlowParserMixin.parseStatementLike (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:482:17)
+    at FlowParserMixin.parseStatementLike (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:1991:26)
+    at FlowParserMixin.parseModuleItem (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:419:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:1443:16)
+    at FlowParserMixin.parseBlockBody (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:1417:10)
+    at FlowParserMixin.parseProgram (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:229:10)
+    at FlowParserMixin.parseTopLevel (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/statement.ts:203:25)
+    at FlowParserMixin.parseTopLevel (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/plugins/flow/index.ts:3379:30)
+    at FlowParserMixin.parse (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/parser/index.ts:88:25)
+    at parse (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/parser/src/index.ts:86:38)
+    at parser (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/core/src/parser/index.ts:28:19)
+    at parser.next (<anonymous>)
+    at normalizeFile (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/core/src/transformation/normalize-file.ts:49:24)
+    at normalizeFile.next (<anonymous>)
+    at run (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/core/src/transformation/index.ts:40:36)
+    at run.next (<anonymous>)
+    at transform (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/@babel/core/src/transform.ts:29:20)
+    at transform.next (<anonymous>)
+    at step (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/gensync/index.js:261:32)
+    at /Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/Users/work/Documents/Code/Admin3/frontend/react-Admin3/node_modules/gensync/index.js:223:11)
+-----------------------------------------------------|---------|----------|---------|---------|-------------------
+File                                                 | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-----------------------------------------------------|---------|----------|---------|---------|-------------------
+All files                                            |    0.66 |     0.15 |    0.47 |    0.67 |                   
+ src                                                 |       0 |        0 |       0 |       0 |                   
+  App.js                                             |       0 |        0 |       0 |       0 | 44-224            
+  config.js                                          |       0 |      100 |     100 |       0 | 3                 
+  index.js                                           |       0 |      100 |     100 |       0 | 12-25             
+  reportWebVitals.js                                 |       0 |        0 |       0 |       0 | 1-8               
+  setupPolyfills.js                                  |       0 |      100 |       0 |       0 | 5-12              
+ src/components                                      |       0 |        0 |       0 |       0 |                   
+  ErrorBoundary.js                                   |       0 |        0 |       0 |       0 | 7-39              
+  NoMatch.js                                         |       0 |      100 |       0 |       0 | 1-2               
+  SearchBox.js                                       |       0 |        0 |       0 |       0 | 12-128            
+  SearchResults.js                                   |       0 |        0 |       0 |       0 | 24-146            
+  StyleGuide.js                                      |       0 |      100 |       0 |       0 | 31-173            
+ src/components/Address                              |       0 |        0 |       0 |       0 |                   
+  AddressEditModal.js                                |       0 |        0 |       0 |       0 | 21-392            
+  AddressSelectionPanel.js                           |       0 |        0 |       0 |       0 | 17-246            
+  DynamicAddressForm.js                              |       0 |        0 |       0 |       0 | 18-274            
+  SmartAddressInput.js                               |       0 |        0 |       0 |       0 | 23-693            
+ src/components/Cart                                 |       0 |        0 |       0 |       0 |                   
+  CartItemWithVAT.js                                 |       0 |        0 |       0 |       0 | 39-201            
+  CartTotals.js                                      |       0 |        0 |       0 |       0 | 34-184            
+  CartVATDisplay.js                                  |       0 |        0 |       0 |       0 | 24-131            
+  CartVATError.js                                    |       0 |        0 |       0 |       0 | 30-127            
+ src/components/Common                               |       0 |        0 |       0 |       0 |                   
+  BaseProductCard.js                                 |       0 |        0 |       0 |       0 | 8-47              
+  CommunicationDetailsPanel.js                       |       0 |        0 |       0 |       0 | 25-481            
+  JsonContentRenderer.js                             |       0 |        0 |       0 |       0 | 17-237            
+  RulesEngineAcknowledgmentModal.js                  |       0 |        0 |       0 |       0 | 40-194            
+  RulesEngineInlineAlert.js                          |       0 |        0 |       0 |       0 | 30-207            
+  RulesEngineModal.js                                |       0 |        0 |       0 |       0 | 33-203            
+  VATBreakdown.js                                    |       0 |        0 |       0 |       0 | 17-145            
+ src/components/Navigation                           |       0 |        0 |       0 |       0 |                   
+  AuthModal.js                                       |       0 |        0 |       0 |       0 | 16-81             
+  MainNavActions.js                                  |       0 |        0 |       0 |       0 | 25-56             
+  MainNavBar.js                                      |       0 |        0 |       0 |       0 | 35-319            
+  MobileNavigation.js                                |       0 |        0 |       0 |       0 | 10-726            
+  NavbarBrand.js                                     |       0 |      100 |       0 |       0 | 5-9               
+  NavigationMenu.js                                  |       0 |        0 |       0 |       0 | 6-508             
+  SearchModal.js                                     |       0 |        0 |       0 |       0 | 19-84             
+  TopNavActions.js                                   |       0 |        0 |       0 |       0 | 13-16             
+  TopNavBar.js                                       |       0 |        0 |       0 |       0 | 18-151            
+  UserActions.js                                     |       0 |        0 |       0 |       0 | 27-53             
+  index.js                                           |       0 |        0 |       0 |       0 |                   
+ src/components/Ordering                             |       0 |        0 |       0 |       0 |                   
+  CartPanel.js                                       |       0 |        0 |       0 |       0 | 21-444            
+  CheckoutPage.js                                    |       0 |        0 |       0 |       0 | 9-92              
+  CheckoutSteps.js                                   |       0 |        0 |       0 |       0 | 20-589            
+ src/components/Ordering/CheckoutSteps               |       0 |        0 |       0 |       0 |                   
+  CartReviewStep.js                                  |       0 |        0 |       0 |       0 | 15-28             
+  CartSummaryPanel.js                                |       0 |        0 |       0 |       0 | 23-84             
+  PaymentStep.js                                     |       0 |        0 |       0 |       0 | 23-397            
+  PreferenceStep.js                                  |       0 |        0 |       0 |       0 | 22-377            
+  TermsConditionsStep.js                             |       0 |        0 |       0 |       0 | 18-285            
+ src/components/Product                              |       0 |        0 |       0 |       0 |                   
+  ActiveFilters.js                                   |       0 |        0 |       0 |       0 | 56-295            
+  FilterDebugger.js                                  |       0 |        0 |       0 |       0 | 4-64              
+  FilterPanel.js                                     |       0 |        0 |       0 |       0 | 73-528            
+  ProductGrid.js                                     |       0 |        0 |       0 |       0 | 26-340            
+  ProductList.js                                     |       0 |        0 |       0 |       0 | 59-404            
+ src/components/Product/ProductCard                  |       0 |        0 |       0 |       0 |                   
+  BundleCard.js                                      |       0 |        0 |       0 |       0 | 41-594            
+  MarkingProductCard.js                              |       0 |        0 |       0 |       0 | 47-1009           
+  MarkingVoucherProductCard.js                       |       0 |        0 |       0 |       0 | 30-234            
+  MaterialProductCard.js                             |       0 |        0 |       0 |       0 | 58-983            
+  OnlineClassroomProductCard.js                      |       0 |        0 |       0 |       0 | 38-392            
+ src/components/Product/ProductCard/Tutorial         |       0 |        0 |       0 |       0 |                   
+  TutorialDetailCard.js                              |       0 |        0 |       0 |       0 | 23-201            
+  TutorialProductCard.js                             |       0 |        0 |       0 |       0 | 61-864            
+  TutorialSelectionDialog.js                         |       0 |        0 |       0 |       0 | 33-246            
+  TutorialSelectionSummaryBar.js                     |       0 |        0 |       0 |       0 | 31-281            
+  TutorialSummaryBarContainer.js                     |       0 |        0 |       0 |       0 | 28-269            
+  tutorialStyles.js                                  |       0 |      100 |     100 |       0 | 10-33             
+ src/components/Test                                 |       0 |        0 |       0 |       0 |                   
+  ContentParsingDemo.js                              |       0 |        0 |       0 |       0 | 12-309            
+  ContextBuildingDemo.js                             |       0 |        0 |       0 |       0 | 11-372            
+  MessageClassificationDemo.js                       |       0 |        0 |       0 |       0 | 15-248            
+  ProcessingPipelineDemo.js                          |       0 |        0 |       0 |       0 | 15-449            
+  RulesEngineUtilitiesDemo.js                        |       0 |      100 |       0 |       0 | 11-12             
+ src/components/Testing                              |       0 |        0 |       0 |       0 |                   
+  PostcoderTestComponent.jsx                         |       0 |        0 |       0 |       0 | 32-205            
+ src/components/User                                 |       0 |        0 |       0 |       0 |                   
+  AccountActivation.js                               |       0 |        0 |       0 |       0 | 26-257            
+  CountryAutocomplete.js                             |       0 |        0 |       0 |       0 | 6-187             
+  EmailVerification.js                               |       0 |        0 |       0 |       0 | 27-176            
+  ForgotPasswordForm.js                              |       0 |        0 |       0 |       0 | 30-261            
+  LoginFormContent.js                                |       0 |        0 |       0 |       0 | 15-92             
+  Logout.js                                          |       0 |        0 |       0 |       0 | 5-22              
+  OrderHistory.js                                    |       0 |        0 |       0 |       0 | 21-110            
+  PhoneCodeAutocomplete.js                           |       0 |        0 |       0 |       0 | 5-46              
+  PhoneCodeDropdown.js                               |       0 |        0 |       0 |       0 | 5-29              
+  ProfileForm.js                                     |       0 |        0 |       0 |       0 | 34-965            
+  ResendActivation.js                                |       0 |        0 |       0 |       0 | 25-125            
+  ResetPasswordForm.js                               |       0 |        0 |       0 |       0 | 23-224            
+  UserFormWizard.js                                  |       0 |        0 |       0 |       0 | 38-1764           
+  ValidatedPhoneInput.js                             |       0 |        0 |       0 |       0 | 15-318            
+ src/components/admin/exam-sessions                  |       0 |        0 |       0 |       0 |                   
+  ExamSessionForm.js                                 |       0 |        0 |       0 |       0 | 17-134            
+  ExamSessionList.js                                 |       0 |        0 |       0 |       0 | 21-98             
+ src/components/admin/products                       |       0 |        0 |       0 |       0 |                   
+  ProductDetail.js                                   |       0 |        0 |       0 |       0 | 18-58             
+  ProductForm.js                                     |       0 |        0 |       0 |       0 | 19-168            
+  ProductImport.js                                   |       0 |        0 |       0 |       0 | 23-162            
+  ProductList.js                                     |       0 |        0 |       0 |       0 | 16-54             
+  ProductTable.js                                    |       0 |        0 |       0 |       0 | 16-58             
+ src/components/admin/subjects                       |       0 |        0 |       0 |       0 |                   
+  SubjectDetail.js                                   |       0 |        0 |       0 |       0 | 18-86             
+  SubjectForm.js                                     |       0 |        0 |       0 |       0 | 19-133            
+  SubjectImport.js                                   |       0 |        0 |       0 |       0 | 6-59              
+  SubjectList.js                                     |       0 |        0 |       0 |       0 | 21-132            
+ src/components/sandbox                              |       0 |        0 |       0 |       0 |                   
+  ProductCardTestPage.js                             |       0 |      100 |       0 |       0 | 8-9               
+  ProductCardVariations.js                           |       0 |        0 |       0 |       0 | 34-2496           
+  UserForm-backup.js                                 |       0 |        0 |       0 |       0 | 35-1141           
+ src/components/styleguide                           |       0 |        0 |       0 |       0 |                   
+  ButtonsSection.js                                  |       0 |      100 |       0 |       0 | 16-17             
+  ColorSystemSection.js                              |       0 |      100 |       0 |       0 | 13-14             
+  FeedbackSection.js                                 |       0 |      100 |       0 |       0 | 18-19             
+  FormElementsSection.js                             |       0 |      100 |       0 |       0 | 23-92             
+  LayoutSection.js                                   |       0 |      100 |       0 |       0 | 21-22             
+  MaterialDesign3Palette.js                          |       0 |        0 |       0 |       0 | 15-1049           
+  NavigationSection.js                               |       0 |      100 |       0 |       0 | 31-47             
+  ProductCardVariantsDemo.js                         |       0 |      100 |       0 |       0 | 6-9               
+  ProductCardsSection.js                             |       0 |      100 |       0 |       0 | 66-68             
+  TablesSection.js                                   |       0 |      100 |       0 |       0 | 33-34             
+  TypographySection.js                               |       0 |      100 |       0 |       0 | 13-14             
+ src/components/styleguide/ProductCards              |       0 |        0 |       0 |       0 |                   
+  BalancedProductCard.js                             |       0 |        0 |       0 |       0 | 31-407            
+  BalancedProductCardTest.js                         |       0 |        0 |       0 |       0 | 25-119            
+  EnhancedAssessmentProductCard.js                   |       0 |        0 |       0 |       0 | 27-245            
+  EnhancedBundleProductCard.js                       |       0 |        0 |       0 |       0 | 36-234            
+  EnhancedCompactCard.js                             |       0 |        0 |       0 |       0 | 21-34             
+  EnhancedHorizontalCard.js                          |       0 |        0 |       0 |       0 | 16-26             
+  EnhancedMarkingVoucherProductCard.js               |       0 |        0 |       0 |       0 | 31-57             
+  EnhancedMinimalCard.js                             |       0 |        0 |       0 |       0 | 10-39             
+  EnhancedOnlineClassroomProductCard.js              |       0 |        0 |       0 |       0 | 31-200            
+  EnhancedTutorialProductCard.js                     |       0 |        0 |       0 |       0 | 35-421            
+  EnhancedTutorialProductCardTest.js                 |       0 |        0 |       0 |       0 | 22-108            
+  MarkingProductCard.js                              |       0 |        0 |       0 |       0 | 25-204            
+  ThemeTest.js                                       |       0 |      100 |       0 |       0 | 6-9               
+  index.js                                           |       0 |        0 |       0 |       0 |                   
+ src/components/styleguide/ProductCards/MarkingCards |       0 |        0 |       0 |       0 |                   
+  MarkingCardAllAvailable.js                         |       0 |        0 |       0 |       0 | 23-36             
+  MarkingCardAllExpired.js                           |       0 |      100 |       0 |       0 | 23-32             
+  MarkingCardExpiringSoon.js                         |       0 |      100 |       0 |       0 | 22-33             
+  MarkingCardSomeExpired.js                          |       0 |        0 |       0 |       0 | 26-123            
+ src/config                                          |       0 |        0 |       0 |       0 |                   
+  performanceBudgets.js                              |       0 |        0 |       0 |       0 | 15-129            
+ src/contexts                                        |   26.22 |    17.39 |   16.66 |   26.63 |                   
+  CartContext.js                                     |   98.33 |       60 |     100 |   98.27 | 61                
+  ProductContext.js                                  |       0 |        0 |       0 |       0 | 4-53              
+  TutorialChoiceContext.js                           |       0 |        0 |       0 |       0 | 4-459             
+ src/hooks                                           |       0 |        0 |       0 |       0 |                   
+  useApi.js                                          |       0 |        0 |       0 |       0 | 4-24              
+  useAuth.js                                         |       0 |        0 |       0 |       0 | 6-214             
+  useCheckoutRulesEngine.js                          |       0 |        0 |       0 |       0 | 5-43              
+  useCheckoutValidation.js                           |       0 |        0 |       0 |       0 | 12-437            
+  useProductCardHelpers.js                           |       0 |        0 |       0 |       0 | 9-46              
+  useProductsSearch.js                               |       0 |        0 |       0 |       0 | 26-331            
+  useResourceData.js                                 |       0 |        0 |       0 |       0 |                   
+  useRulesEngineAcknowledgments.js                   |       0 |        0 |       0 |       0 | 8-188             
+ src/misc                                            |       0 |        0 |       0 |       0 |                   
+  AddressFormDemo.js                                 |       0 |        0 |       0 |       0 | 6-73              
+  LoginForm.js                                       |       0 |        0 |       0 |       0 | 17-74             
+  PhoneValidationDemo.js                             |       0 |        0 |       0 |       0 | 7-116             
+  ProductDelete.js                                   |       0 |      100 |       0 |       0 | 3-4               
+  RegisterFormdelete.js                              |       0 |        0 |       0 |       0 | 9-1200            
+  RegistrationDelete.js                              |       0 |      100 |       0 |       0 | 5-6               
+  UserForm.js                                        |       0 |      100 |       0 |       0 | 6-32              
+  UserProfileDelete.js                               |       0 |        0 |       0 |       0 | 9-137             
+ src/pages                                           |       0 |        0 |       0 |       0 |                   
+  Cart.js                                            |       0 |        0 |       0 |       0 | 29-219            
+  Home.js                                            |       0 |        0 |       0 |       0 | 11-229            
+  ProfilePage.js                                     |       0 |        0 |       0 |       0 | 21-59             
+  Registration.js                                    |       0 |        0 |       0 |       0 | 17-107            
+ src/services                                        |       0 |        0 |       0 |       0 |                   
+  acknowledgmentService.js                           |       0 |        0 |       0 |       0 | 15-220            
+  addressMetadataConfig.js                           |       0 |      100 |       0 |       0 | 13-420            
+  addressMetadataService.js                          |       0 |        0 |       0 |       0 | 36-198            
+  authService.js                                     |       0 |        0 |       0 |       0 | 6-508             
+  bundleService.js                                   |       0 |        0 |       0 |       0 | 5-289             
+  cartService.js                                     |       0 |        0 |       0 |       0 | 4-36              
+  errorTrackingService.js                            |       0 |        0 |       0 |       0 | 4-6               
+  examSessionService.js                              |       0 |        0 |       0 |       0 | 3-35              
+  googleAddressMetadata.js                           |       0 |        0 |       0 |       0 | 11-263            
+  httpService.js                                     |       0 |        0 |       0 |       0 | 6-136             
+  loggerService.js                                   |       0 |        0 |       0 |       0 | 2-21              
+  phoneValidationService.js                          |       0 |        0 |       0 |       0 | 7-291             
+  productService.js                                  |       0 |        0 |       0 |       0 | 6-426             
+  rulesEngineService.js                              |       0 |        0 |       0 |       0 | 4-66              
+  searchService.js                                   |       0 |        0 |       0 |       0 | 5-189             
+  subjectService.js                                  |       0 |        0 |       0 |       0 | 4-44              
+  tutorialService.js                                 |       0 |        0 |       0 |       0 | 5-125             
+  userService.js                                     |       0 |        0 |       0 |       0 | 5-136             
+ src/store                                           |       0 |      100 |       0 |       0 |                   
+  index.js                                           |       0 |      100 |       0 |       0 | 17-58             
+ src/store/api                                       |       0 |        0 |       0 |       0 |                   
+  catalogApi.js                                      |       0 |        0 |       0 |       0 | 12-191            
+ src/store/filters                                   |       0 |        0 |       0 |       0 |                   
+  filterRegistry.js                                  |       0 |        0 |       0 |       0 | 47-285            
+  filterValidator.js                                 |       0 |        0 |       0 |       0 | 26-113            
+ src/store/middleware                                |       0 |        0 |       0 |       0 |                   
+  performanceMonitoring.js                           |       0 |        0 |       0 |       0 | 20-74             
+  urlSyncMiddleware.js                               |       0 |        0 |       0 |       0 | 27-240            
+ src/store/slices                                    |       0 |        0 |       0 |       0 |                   
+  baseFilters.slice.js                               |       0 |        0 |       0 |       0 | 17-383            
+  filterSelectors.js                                 |       0 |        0 |       0 |       0 | 21-163            
+  filtersSlice.js                                    |       0 |        0 |       0 |       0 | 25-168            
+  navigationFilters.slice.js                         |       0 |      100 |       0 |       0 | 18-97             
+ src/test-utils                                      |       0 |        0 |       0 |       0 |                   
+  accessibilityHelpers.js                            |       0 |        0 |       0 |       0 | 4-64              
+  index.js                                           |       0 |        0 |       0 |       0 | 37-48             
+  mediaQueryMock.js                                  |       0 |      100 |       0 |       0 | 20-39             
+  mockApi.js                                         |       0 |        0 |       0 |       0 | 13-66             
+  mockHandlers.js                                    |       0 |        0 |       0 |       0 | 23-234            
+  reduxMockStore.js                                  |       0 |        0 |       0 |       0 | 9-73              
+  testHelpers.js                                     |       0 |        0 |       0 |       0 | 22-391            
+ src/theme                                           |       0 |        0 |       0 |       0 |                   
+  colorTheme.js                                      |       0 |      100 |     100 |       0 | 4                 
+  liftKitTheme.js                                    |       0 |      100 |     100 |       0 | 4                 
+  testTheme.js                                       |       0 |      100 |     100 |       0 | 8                 
+  theme.js                                           |       0 |        0 |       0 |       0 | 7-38              
+  typographyTheme.js                                 |       0 |      100 |     100 |       0 | 4                 
+ src/utils                                           |       0 |        0 |       0 |       0 |                   
+  PerformanceTracker.js                              |       0 |        0 |       0 |       0 | 16-312            
+  filterUrlManager.js                                |       0 |        0 |       0 |       0 | 21-355            
+  priceFormatter.js                                  |       0 |        0 |       0 |       0 | 5-6               
+  productCodeGenerator.js                            |       0 |        0 |       0 |       0 | 10-200            
+  rulesEngineUtils.js                                |       0 |        0 |       0 |       0 | 7-1089            
+  tutorialMetadataBuilder.js                         |       0 |        0 |       0 |       0 | 17-86             
+  vatUtils.js                                        |       0 |        0 |       0 |       0 | 24-147            
+-----------------------------------------------------|---------|----------|---------|---------|-------------------
+
+Test Suites: 1 skipped, 1 passed, 1 of 2 total
+Tests:       43 skipped, 16 passed, 59 total
+Snapshots:   0 total
+Time:        3.327 s
+Ran all test suites matching /contexts/i.
