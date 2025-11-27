@@ -1014,6 +1014,7 @@ Introducing the third approach
 - Product overlapping check
 - Apprenticeship, StudyPlus, CAA Product
 - Import/Export DBF utils
+- Check order history when order in additional/retaker rates.
 
 ---
 
