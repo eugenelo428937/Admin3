@@ -1,0 +1,905 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders collapsed cart summary 1`] = `
+<div
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1swdb20-MuiPaper-root-MuiCard-root"
+  style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+>
+  <div
+    class="MuiCardHeader-root css-b8y68j-MuiCardHeader-root"
+  >
+    <div
+      class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
+    >
+      <span
+        class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-16xl4zq-MuiTypography-root"
+      >
+        <div
+          class="MuiBox-root css-69i1ev"
+        >
+          <h2
+            class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
+          >
+            Order Summary
+          </h2>
+          <button
+            aria-label="expand cart summary"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-155wbr6-MuiButtonBase-root-MuiIconButton-root"
+            tabindex="0"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+              data-testid="ExpandMoreIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
+              />
+            </svg>
+          </button>
+        </div>
+      </span>
+    </div>
+  </div>
+  <div
+    class="MuiCardContent-root css-1lt5qva-MuiCardContent-root"
+  >
+    <p
+      class="MuiTypography-root MuiTypography-body2 css-19b5ozw-MuiTypography-root"
+    >
+      2
+       
+      items
+    </p>
+    <div
+      class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-hidden css-cwrbtg-MuiCollapse-root"
+      style="min-height: 0px;"
+    >
+      <div
+        class="MuiCollapse-wrapper MuiCollapse-vertical css-1x6hinx-MuiCollapse-wrapper"
+      >
+        <div
+          class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
+        >
+          <table
+            class="MuiTable-root css-1xwxv7r-MuiTable-root"
+          >
+            <thead
+              class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
+            >
+              <tr
+                class="MuiTableRow-root MuiTableRow-head css-1xtozoh-MuiTableRow-root"
+              >
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-g6bqb5-MuiTableCell-root"
+                  scope="col"
+                >
+                  Product
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignCenter MuiTableCell-sizeSmall css-m4o53m-MuiTableCell-root"
+                  scope="col"
+                >
+                  Qty
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignRight MuiTableCell-sizeSmall css-1ais0ar-MuiTableCell-root"
+                  scope="col"
+                >
+                  Total
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
+            >
+              <tr
+                class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+              >
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1a40gj6-MuiTypography-root"
+                  >
+                    Test Product 1
+                  </p>
+                  <span
+                    class="MuiTypography-root MuiTypography-caption css-1374baf-MuiTypography-root"
+                  >
+                    TEST1
+                     • 
+                    Standard
+                  </span>
+                  <br />
+                  <code
+                    class="MuiTypography-root MuiTypography-caption css-mpaqru-MuiTypography-root"
+                  >
+                    N/A
+                  </code>
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignCenter MuiTableCell-sizeSmall css-wsxt5g-MuiTableCell-root"
+                >
+                  1
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeSmall css-17j8okc-MuiTableCell-root"
+                >
+                  £
+                  50.00
+                </td>
+              </tr>
+              <tr
+                class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+              >
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1a40gj6-MuiTypography-root"
+                  >
+                    Test Product 2
+                  </p>
+                  <span
+                    class="MuiTypography-root MuiTypography-caption css-1374baf-MuiTypography-root"
+                  >
+                    TEST2
+                     • 
+                    Premium
+                  </span>
+                  <br />
+                  <code
+                    class="MuiTypography-root MuiTypography-caption css-mpaqru-MuiTypography-root"
+                  >
+                    N/A
+                  </code>
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignCenter MuiTableCell-sizeSmall css-wsxt5g-MuiTableCell-root"
+                >
+                  2
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeSmall css-17j8okc-MuiTableCell-root"
+                >
+                  £
+                  150.00
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div
+            class="MuiBox-root css-1yuhvjn"
+          >
+            <hr
+              class="MuiDivider-root MuiDivider-fullWidth css-hv6zls-MuiDivider-root"
+            />
+            <div
+              class="MuiBox-root css-gg4vpm"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              >
+                Subtotal:
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              >
+                £
+                200.00
+              </p>
+            </div>
+            <div
+              class="MuiBox-root css-gg4vpm"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              >
+                VAT
+                :
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              >
+                £
+                40.00
+              </p>
+            </div>
+            <hr
+              class="MuiDivider-root MuiDivider-fullWidth css-hv6zls-MuiDivider-root"
+            />
+            <div
+              class="MuiBox-root css-gg4vpm"
+            >
+              <h6
+                class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+              >
+                Total:
+              </h6>
+              <h6
+                class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+              >
+                £
+                240.00
+              </h6>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="MuiBox-root css-1yuhvjn"
+    >
+      <div
+        class="MuiBox-root css-gg4vpm"
+      >
+        <h6
+          class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+        >
+          Total:
+        </h6>
+        <h6
+          class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+        >
+          £
+          240.00
+        </h6>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders empty cart summary 1`] = `
+<div
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1swdb20-MuiPaper-root-MuiCard-root"
+  style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+>
+  <div
+    class="MuiCardHeader-root css-b8y68j-MuiCardHeader-root"
+  >
+    <div
+      class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
+    >
+      <span
+        class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-16xl4zq-MuiTypography-root"
+      >
+        <div
+          class="MuiBox-root css-69i1ev"
+        >
+          <h2
+            class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
+          >
+            Order Summary
+          </h2>
+          <button
+            aria-label="expand cart summary"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-155wbr6-MuiButtonBase-root-MuiIconButton-root"
+            tabindex="0"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+              data-testid="ExpandMoreIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
+              />
+            </svg>
+          </button>
+        </div>
+      </span>
+    </div>
+  </div>
+  <div
+    class="MuiCardContent-root css-1lt5qva-MuiCardContent-root"
+  >
+    <p
+      class="MuiTypography-root MuiTypography-body2 css-19b5ozw-MuiTypography-root"
+    >
+      0
+       
+      items
+    </p>
+    <div
+      class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-hidden css-cwrbtg-MuiCollapse-root"
+      style="min-height: 0px;"
+    >
+      <div
+        class="MuiCollapse-wrapper MuiCollapse-vertical css-1x6hinx-MuiCollapse-wrapper"
+      >
+        <div
+          class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
+        >
+          <table
+            class="MuiTable-root css-1xwxv7r-MuiTable-root"
+          >
+            <thead
+              class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
+            >
+              <tr
+                class="MuiTableRow-root MuiTableRow-head css-1xtozoh-MuiTableRow-root"
+              >
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-g6bqb5-MuiTableCell-root"
+                  scope="col"
+                >
+                  Product
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignCenter MuiTableCell-sizeSmall css-m4o53m-MuiTableCell-root"
+                  scope="col"
+                >
+                  Qty
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignRight MuiTableCell-sizeSmall css-1ais0ar-MuiTableCell-root"
+                  scope="col"
+                >
+                  Total
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
+            />
+          </table>
+          <div
+            class="MuiBox-root css-1yuhvjn"
+          >
+            <hr
+              class="MuiDivider-root MuiDivider-fullWidth css-hv6zls-MuiDivider-root"
+            />
+            <div
+              class="MuiBox-root css-gg4vpm"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              >
+                Subtotal:
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              >
+                £
+                0.00
+              </p>
+            </div>
+            <div
+              class="MuiBox-root css-gg4vpm"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              >
+                VAT (20%)
+                :
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              >
+                £
+                0.00
+              </p>
+            </div>
+            <hr
+              class="MuiDivider-root MuiDivider-fullWidth css-hv6zls-MuiDivider-root"
+            />
+            <div
+              class="MuiBox-root css-gg4vpm"
+            >
+              <h6
+                class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+              >
+                Total:
+              </h6>
+              <h6
+                class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+              >
+                £
+                0.00
+              </h6>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="MuiBox-root css-1yuhvjn"
+    >
+      <div
+        class="MuiBox-root css-gg4vpm"
+      >
+        <h6
+          class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+        >
+          Total:
+        </h6>
+        <h6
+          class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+        >
+          £
+          0.00
+        </h6>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders multi-item cart summary 1`] = `
+<div
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1swdb20-MuiPaper-root-MuiCard-root"
+  style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+>
+  <div
+    class="MuiCardHeader-root css-b8y68j-MuiCardHeader-root"
+  >
+    <div
+      class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
+    >
+      <span
+        class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-16xl4zq-MuiTypography-root"
+      >
+        <div
+          class="MuiBox-root css-69i1ev"
+        >
+          <h2
+            class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
+          >
+            Order Summary
+          </h2>
+          <button
+            aria-label="expand cart summary"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-155wbr6-MuiButtonBase-root-MuiIconButton-root"
+            tabindex="0"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+              data-testid="ExpandMoreIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
+              />
+            </svg>
+          </button>
+        </div>
+      </span>
+    </div>
+  </div>
+  <div
+    class="MuiCardContent-root css-1lt5qva-MuiCardContent-root"
+  >
+    <p
+      class="MuiTypography-root MuiTypography-body2 css-19b5ozw-MuiTypography-root"
+    >
+      2
+       
+      items
+    </p>
+    <div
+      class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-hidden css-cwrbtg-MuiCollapse-root"
+      style="min-height: 0px;"
+    >
+      <div
+        class="MuiCollapse-wrapper MuiCollapse-vertical css-1x6hinx-MuiCollapse-wrapper"
+      >
+        <div
+          class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
+        >
+          <table
+            class="MuiTable-root css-1xwxv7r-MuiTable-root"
+          >
+            <thead
+              class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
+            >
+              <tr
+                class="MuiTableRow-root MuiTableRow-head css-1xtozoh-MuiTableRow-root"
+              >
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-g6bqb5-MuiTableCell-root"
+                  scope="col"
+                >
+                  Product
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignCenter MuiTableCell-sizeSmall css-m4o53m-MuiTableCell-root"
+                  scope="col"
+                >
+                  Qty
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignRight MuiTableCell-sizeSmall css-1ais0ar-MuiTableCell-root"
+                  scope="col"
+                >
+                  Total
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
+            >
+              <tr
+                class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+              >
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1a40gj6-MuiTypography-root"
+                  >
+                    Test Product 1
+                  </p>
+                  <span
+                    class="MuiTypography-root MuiTypography-caption css-1374baf-MuiTypography-root"
+                  >
+                    TEST1
+                     • 
+                    Standard
+                  </span>
+                  <br />
+                  <code
+                    class="MuiTypography-root MuiTypography-caption css-mpaqru-MuiTypography-root"
+                  >
+                    N/A
+                  </code>
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignCenter MuiTableCell-sizeSmall css-wsxt5g-MuiTableCell-root"
+                >
+                  1
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeSmall css-17j8okc-MuiTableCell-root"
+                >
+                  £
+                  50.00
+                </td>
+              </tr>
+              <tr
+                class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+              >
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1a40gj6-MuiTypography-root"
+                  >
+                    Test Product 2
+                  </p>
+                  <span
+                    class="MuiTypography-root MuiTypography-caption css-1374baf-MuiTypography-root"
+                  >
+                    TEST2
+                     • 
+                    Premium
+                  </span>
+                  <br />
+                  <code
+                    class="MuiTypography-root MuiTypography-caption css-mpaqru-MuiTypography-root"
+                  >
+                    N/A
+                  </code>
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignCenter MuiTableCell-sizeSmall css-wsxt5g-MuiTableCell-root"
+                >
+                  2
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeSmall css-17j8okc-MuiTableCell-root"
+                >
+                  £
+                  150.00
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div
+            class="MuiBox-root css-1yuhvjn"
+          >
+            <hr
+              class="MuiDivider-root MuiDivider-fullWidth css-hv6zls-MuiDivider-root"
+            />
+            <div
+              class="MuiBox-root css-gg4vpm"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              >
+                Subtotal:
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              >
+                £
+                200.00
+              </p>
+            </div>
+            <div
+              class="MuiBox-root css-gg4vpm"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              >
+                VAT
+                :
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              >
+                £
+                40.00
+              </p>
+            </div>
+            <hr
+              class="MuiDivider-root MuiDivider-fullWidth css-hv6zls-MuiDivider-root"
+            />
+            <div
+              class="MuiBox-root css-gg4vpm"
+            >
+              <h6
+                class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+              >
+                Total:
+              </h6>
+              <h6
+                class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+              >
+                £
+                240.00
+              </h6>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="MuiBox-root css-1yuhvjn"
+    >
+      <div
+        class="MuiBox-root css-gg4vpm"
+      >
+        <h6
+          class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+        >
+          Total:
+        </h6>
+        <h6
+          class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+        >
+          £
+          240.00
+        </h6>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders single item cart summary 1`] = `
+<div
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1swdb20-MuiPaper-root-MuiCard-root"
+  style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+>
+  <div
+    class="MuiCardHeader-root css-b8y68j-MuiCardHeader-root"
+  >
+    <div
+      class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
+    >
+      <span
+        class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-16xl4zq-MuiTypography-root"
+      >
+        <div
+          class="MuiBox-root css-69i1ev"
+        >
+          <h2
+            class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
+          >
+            Order Summary
+          </h2>
+          <button
+            aria-label="expand cart summary"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-155wbr6-MuiButtonBase-root-MuiIconButton-root"
+            tabindex="0"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+              data-testid="ExpandMoreIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
+              />
+            </svg>
+          </button>
+        </div>
+      </span>
+    </div>
+  </div>
+  <div
+    class="MuiCardContent-root css-1lt5qva-MuiCardContent-root"
+  >
+    <p
+      class="MuiTypography-root MuiTypography-body2 css-19b5ozw-MuiTypography-root"
+    >
+      1
+       
+      item
+    </p>
+    <div
+      class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-hidden css-cwrbtg-MuiCollapse-root"
+      style="min-height: 0px;"
+    >
+      <div
+        class="MuiCollapse-wrapper MuiCollapse-vertical css-1x6hinx-MuiCollapse-wrapper"
+      >
+        <div
+          class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
+        >
+          <table
+            class="MuiTable-root css-1xwxv7r-MuiTable-root"
+          >
+            <thead
+              class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
+            >
+              <tr
+                class="MuiTableRow-root MuiTableRow-head css-1xtozoh-MuiTableRow-root"
+              >
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-g6bqb5-MuiTableCell-root"
+                  scope="col"
+                >
+                  Product
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignCenter MuiTableCell-sizeSmall css-m4o53m-MuiTableCell-root"
+                  scope="col"
+                >
+                  Qty
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignRight MuiTableCell-sizeSmall css-1ais0ar-MuiTableCell-root"
+                  scope="col"
+                >
+                  Total
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
+            >
+              <tr
+                class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+              >
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1a40gj6-MuiTypography-root"
+                  >
+                    Single Test Product
+                  </p>
+                  <span
+                    class="MuiTypography-root MuiTypography-caption css-1374baf-MuiTypography-root"
+                  >
+                    TEST1
+                     • 
+                    Standard
+                  </span>
+                  <br />
+                  <code
+                    class="MuiTypography-root MuiTypography-caption css-mpaqru-MuiTypography-root"
+                  >
+                    N/A
+                  </code>
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignCenter MuiTableCell-sizeSmall css-wsxt5g-MuiTableCell-root"
+                >
+                  1
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeSmall css-17j8okc-MuiTableCell-root"
+                >
+                  £
+                  50.00
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div
+            class="MuiBox-root css-1yuhvjn"
+          >
+            <hr
+              class="MuiDivider-root MuiDivider-fullWidth css-hv6zls-MuiDivider-root"
+            />
+            <div
+              class="MuiBox-root css-gg4vpm"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              >
+                Subtotal:
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              >
+                £
+                50.00
+              </p>
+            </div>
+            <div
+              class="MuiBox-root css-gg4vpm"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              >
+                VAT (20%)
+                :
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              >
+                £
+                10.00
+              </p>
+            </div>
+            <hr
+              class="MuiDivider-root MuiDivider-fullWidth css-hv6zls-MuiDivider-root"
+            />
+            <div
+              class="MuiBox-root css-gg4vpm"
+            >
+              <h6
+                class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+              >
+                Total:
+              </h6>
+              <h6
+                class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+              >
+                £
+                60.00
+              </h6>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="MuiBox-root css-1yuhvjn"
+    >
+      <div
+        class="MuiBox-root css-gg4vpm"
+      >
+        <h6
+          class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+        >
+          Total:
+        </h6>
+        <h6
+          class="MuiTypography-root MuiTypography-h6 css-h9fkkg-MuiTypography-root"
+        >
+          £
+          60.00
+        </h6>
+      </div>
+    </div>
+  </div>
+</div>
+`;

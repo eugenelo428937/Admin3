@@ -23,7 +23,7 @@ jest.mock('../../../../services/productService', () => ({
   },
 }));
 
-// Create a minimal test theme with the required bpp.sky palette
+// Create a minimal test theme with the required bpp.sky and bpp.pink palettes
 const testTheme = createTheme({
   palette: {
     bpp: {
@@ -39,6 +39,19 @@ const testTheme = createTheme({
         "090": "#00264e",
         100: "#00141a",
         110: "#23cefd",
+      },
+      pink: {
+        "010": "#ffe5f2",
+        "020": "#ffb3d6",
+        "030": "#ff80ba",
+        "040": "#ff4d9e",
+        "050": "#ff1a82",
+        "060": "#e60066",
+        "070": "#b3004d",
+        "080": "#800034",
+        "090": "#4d001f",
+        100: "#1a000a",
+        110: "#ff66a3",
       },
     },
   },

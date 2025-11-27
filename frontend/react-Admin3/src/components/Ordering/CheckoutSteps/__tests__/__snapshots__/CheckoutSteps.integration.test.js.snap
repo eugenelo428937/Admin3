@@ -1,0 +1,1184 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CheckoutSteps Snapshot Tests (T033 - Regression Detection) renders step 1 - cart review 1`] = `
+<div
+  class="MuiBox-root css-8atqhb"
+>
+  <div
+    class="MuiStepper-root MuiStepper-horizontal css-1tkvnt9-MuiStepper-root"
+  >
+    <div
+      class="MuiStep-root MuiStep-horizontal css-mlh15c-MuiStep-root"
+    >
+      <span
+        class="MuiStepLabel-root MuiStepLabel-horizontal css-3yr9gi-MuiStepLabel-root"
+      >
+        <span
+          class="MuiStepLabel-iconContainer Mui-active css-1b2ju2j-MuiStepLabel-iconContainer"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root Mui-active css-nbihlw-MuiSvgIcon-root-MuiStepIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="12"
+            />
+            <text
+              class="MuiStepIcon-text css-1wa1fhu-MuiStepIcon-text"
+              dominant-baseline="central"
+              text-anchor="middle"
+              x="12"
+              y="12"
+            >
+              1
+            </text>
+          </svg>
+        </span>
+        <span
+          class="MuiStepLabel-labelContainer css-1z601w-MuiStepLabel-labelContainer"
+        >
+          <span
+            class="MuiStepLabel-label Mui-active css-1yanlxz-MuiStepLabel-label"
+          >
+            <h6
+              class="MuiTypography-root MuiTypography-subtitle2 css-411cmf-MuiTypography-root"
+            >
+              Cart Review
+            </h6>
+            <span
+              class="MuiTypography-root MuiTypography-caption css-ffi2z8-MuiTypography-root"
+            >
+              Review your items
+            </span>
+          </span>
+        </span>
+      </span>
+    </div>
+    <div
+      class="MuiStepConnector-root MuiStepConnector-horizontal Mui-disabled css-9ydz1a-MuiStepConnector-root"
+    >
+      <span
+        class="MuiStepConnector-line MuiStepConnector-lineHorizontal css-14ncu80-MuiStepConnector-line"
+      />
+    </div>
+    <div
+      class="MuiStep-root MuiStep-horizontal css-mlh15c-MuiStep-root"
+    >
+      <span
+        class="MuiStepLabel-root MuiStepLabel-horizontal Mui-disabled css-3yr9gi-MuiStepLabel-root"
+      >
+        <span
+          class="MuiStepLabel-iconContainer Mui-disabled css-1b2ju2j-MuiStepLabel-iconContainer"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root css-nbihlw-MuiSvgIcon-root-MuiStepIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="12"
+            />
+            <text
+              class="MuiStepIcon-text css-1wa1fhu-MuiStepIcon-text"
+              dominant-baseline="central"
+              text-anchor="middle"
+              x="12"
+              y="12"
+            >
+              2
+            </text>
+          </svg>
+        </span>
+        <span
+          class="MuiStepLabel-labelContainer css-1z601w-MuiStepLabel-labelContainer"
+        >
+          <span
+            class="MuiStepLabel-label Mui-disabled css-1yanlxz-MuiStepLabel-label"
+          >
+            <h6
+              class="MuiTypography-root MuiTypography-subtitle2 css-411cmf-MuiTypography-root"
+            >
+              Terms & Conditions
+            </h6>
+            <span
+              class="MuiTypography-root MuiTypography-caption css-ffi2z8-MuiTypography-root"
+            >
+              Review and accept terms
+            </span>
+          </span>
+        </span>
+      </span>
+    </div>
+    <div
+      class="MuiStepConnector-root MuiStepConnector-horizontal Mui-disabled css-9ydz1a-MuiStepConnector-root"
+    >
+      <span
+        class="MuiStepConnector-line MuiStepConnector-lineHorizontal css-14ncu80-MuiStepConnector-line"
+      />
+    </div>
+    <div
+      class="MuiStep-root MuiStep-horizontal css-mlh15c-MuiStep-root"
+    >
+      <span
+        class="MuiStepLabel-root MuiStepLabel-horizontal Mui-disabled css-3yr9gi-MuiStepLabel-root"
+      >
+        <span
+          class="MuiStepLabel-iconContainer Mui-disabled css-1b2ju2j-MuiStepLabel-iconContainer"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root css-nbihlw-MuiSvgIcon-root-MuiStepIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="12"
+            />
+            <text
+              class="MuiStepIcon-text css-1wa1fhu-MuiStepIcon-text"
+              dominant-baseline="central"
+              text-anchor="middle"
+              x="12"
+              y="12"
+            >
+              3
+            </text>
+          </svg>
+        </span>
+        <span
+          class="MuiStepLabel-labelContainer css-1z601w-MuiStepLabel-labelContainer"
+        >
+          <span
+            class="MuiStepLabel-label Mui-disabled css-1yanlxz-MuiStepLabel-label"
+          >
+            <h6
+              class="MuiTypography-root MuiTypography-subtitle2 css-411cmf-MuiTypography-root"
+            >
+              Preferences
+            </h6>
+            <span
+              class="MuiTypography-root MuiTypography-caption css-ffi2z8-MuiTypography-root"
+            >
+              Set your preferences
+            </span>
+          </span>
+        </span>
+      </span>
+    </div>
+    <div
+      class="MuiStepConnector-root MuiStepConnector-horizontal Mui-disabled css-9ydz1a-MuiStepConnector-root"
+    >
+      <span
+        class="MuiStepConnector-line MuiStepConnector-lineHorizontal css-14ncu80-MuiStepConnector-line"
+      />
+    </div>
+    <div
+      class="MuiStep-root MuiStep-horizontal css-mlh15c-MuiStep-root"
+    >
+      <span
+        class="MuiStepLabel-root MuiStepLabel-horizontal Mui-disabled css-3yr9gi-MuiStepLabel-root"
+      >
+        <span
+          class="MuiStepLabel-iconContainer Mui-disabled css-1b2ju2j-MuiStepLabel-iconContainer"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root css-nbihlw-MuiSvgIcon-root-MuiStepIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="12"
+            />
+            <text
+              class="MuiStepIcon-text css-1wa1fhu-MuiStepIcon-text"
+              dominant-baseline="central"
+              text-anchor="middle"
+              x="12"
+              y="12"
+            >
+              4
+            </text>
+          </svg>
+        </span>
+        <span
+          class="MuiStepLabel-labelContainer css-1z601w-MuiStepLabel-labelContainer"
+        >
+          <span
+            class="MuiStepLabel-label Mui-disabled css-1yanlxz-MuiStepLabel-label"
+          >
+            <h6
+              class="MuiTypography-root MuiTypography-subtitle2 css-411cmf-MuiTypography-root"
+            >
+              Payment
+            </h6>
+            <span
+              class="MuiTypography-root MuiTypography-caption css-ffi2z8-MuiTypography-root"
+            >
+              Complete payment
+            </span>
+          </span>
+        </span>
+      </span>
+    </div>
+    <div
+      class="MuiStepConnector-root MuiStepConnector-horizontal Mui-disabled css-9ydz1a-MuiStepConnector-root"
+    >
+      <span
+        class="MuiStepConnector-line MuiStepConnector-lineHorizontal css-14ncu80-MuiStepConnector-line"
+      />
+    </div>
+    <div
+      class="MuiStep-root MuiStep-horizontal css-mlh15c-MuiStep-root"
+    >
+      <span
+        class="MuiStepLabel-root MuiStepLabel-horizontal Mui-disabled css-3yr9gi-MuiStepLabel-root"
+      >
+        <span
+          class="MuiStepLabel-iconContainer Mui-disabled css-1b2ju2j-MuiStepLabel-iconContainer"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root css-nbihlw-MuiSvgIcon-root-MuiStepIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="12"
+            />
+            <text
+              class="MuiStepIcon-text css-1wa1fhu-MuiStepIcon-text"
+              dominant-baseline="central"
+              text-anchor="middle"
+              x="12"
+              y="12"
+            >
+              5
+            </text>
+          </svg>
+        </span>
+        <span
+          class="MuiStepLabel-labelContainer css-1z601w-MuiStepLabel-labelContainer"
+        >
+          <span
+            class="MuiStepLabel-label Mui-disabled css-1yanlxz-MuiStepLabel-label"
+          >
+            <h6
+              class="MuiTypography-root MuiTypography-subtitle2 css-411cmf-MuiTypography-root"
+            >
+              Confirmation
+            </h6>
+            <span
+              class="MuiTypography-root MuiTypography-caption css-ffi2z8-MuiTypography-root"
+            >
+              Order confirmation
+            </span>
+          </span>
+        </span>
+      </span>
+    </div>
+  </div>
+  <div
+    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1507jq0-MuiPaper-root-MuiCard-root"
+    style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+  >
+    <div
+      class="MuiCardContent-root css-1rgf4l5-MuiCardContent-root"
+    >
+      <div
+        class="MuiBox-root css-qql9bf"
+      >
+        <div
+          class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-row MuiGrid-spacing-xs-3 justify-content-center css-1u8xl8z-MuiGrid-root"
+        >
+          <div
+            class="MuiGrid-root MuiGrid-direction-xs-row MuiGrid-grid-md-12 MuiGrid-grid-lg-8 css-ccjwws-MuiGrid-root"
+          >
+            <div
+              class="MuiBox-root css-0"
+            >
+              <h1
+                class="MuiTypography-root MuiTypography-h4 MuiTypography-gutterBottom css-vysbl2-MuiTypography-root"
+              >
+                Step 1: Review Your Cart
+              </h1>
+              <div
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorInfo MuiAlert-standardInfo MuiAlert-standard css-vcctir-MuiPaper-root-MuiAlert-root"
+                role="alert"
+                style="--Paper-shadow: none;"
+              >
+                <div
+                  class="MuiAlert-icon css-vab54s-MuiAlert-icon"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-1ckov0h-MuiSvgIcon-root"
+                    data-testid="InfoOutlinedIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="MuiAlert-message css-zioonp-MuiAlert-message"
+                >
+                  <div
+                    class="MuiBox-root css-axw7ok"
+                  >
+                    <span
+                      class="MuiCircularProgress-root MuiCircularProgress-indeterminate MuiCircularProgress-colorPrimary css-1bqtga3-MuiCircularProgress-root"
+                      role="progressbar"
+                      style="width: 20px; height: 20px;"
+                    >
+                      <svg
+                        class="MuiCircularProgress-svg css-54pwck-MuiCircularProgress-svg"
+                        viewBox="22 22 44 44"
+                      >
+                        <circle
+                          class="MuiCircularProgress-circle MuiCircularProgress-circleIndeterminate css-19t5dcl-MuiCircularProgress-circle"
+                          cx="44"
+                          cy="44"
+                          fill="none"
+                          r="20.2"
+                          stroke-width="3.6"
+                        />
+                      </svg>
+                    </span>
+                    <span>
+                      Checking for important notices...
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-row MuiGrid-spacing-xs-3 css-1u8xl8z-MuiGrid-root"
+                data-testid="cart-review-layout"
+              >
+                <div
+                  class="MuiGrid-root MuiGrid-direction-xs-row MuiGrid-grid-xs-12 css-yqiqnf-MuiGrid-root"
+                  data-testid="address-sections-container"
+                >
+                  <div
+                    class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-row MuiGrid-spacing-xs-2 css-zjhuaj-MuiGrid-root"
+                  >
+                    <div
+                      class="MuiGrid-root MuiGrid-direction-xs-row MuiGrid-grid-xs-12 MuiGrid-grid-md-6 css-1fb73u2-MuiGrid-root"
+                    >
+                      <div
+                        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-vj4au3-MuiPaper-root-MuiCard-root"
+                        data-testid="delivery-address-card"
+                        style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+                      >
+                        <div
+                          class="MuiCardHeader-root css-149tc0y-MuiCardHeader-root"
+                          data-testid="delivery-address-panel"
+                        >
+                          <div
+                            class="MuiCardHeader-avatar css-1r9wl67-MuiCardHeader-avatar"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              class="MuiSvgIcon-root MuiSvgIcon-colorPrimary MuiSvgIcon-fontSizeMedium css-fe2s03-MuiSvgIcon-root"
+                              data-testid="LocationOnIcon"
+                              focusable="false"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7m0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5"
+                              />
+                            </svg>
+                          </div>
+                          <div
+                            class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
+                          >
+                            <h3
+                              class="MuiTypography-root MuiTypography-h6 css-1eru8n-MuiTypography-root"
+                            >
+                              Delivery Address
+                            </h3>
+                          </div>
+                        </div>
+                        <div
+                          class="MuiCardContent-root css-1lt5qva-MuiCardContent-root"
+                        >
+                          <p
+                            class="MuiTypography-root MuiTypography-body2 css-54pbxm-MuiTypography-root"
+                          >
+                            Select your delivery address from your profile settings.
+                          </p>
+                          <div
+                            class="address-selection-panel MuiBox-root css-0"
+                          >
+                            <div
+                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorInfo MuiAlert-standardInfo MuiAlert-standard css-69qusl-MuiPaper-root-MuiAlert-root"
+                              role="alert"
+                              style="--Paper-shadow: none;"
+                            >
+                              <div
+                                class="MuiAlert-icon css-vab54s-MuiAlert-icon"
+                              >
+                                <svg
+                                  aria-hidden="true"
+                                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-1ckov0h-MuiSvgIcon-root"
+                                  data-testid="InfoOutlinedIcon"
+                                  focusable="false"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"
+                                  />
+                                </svg>
+                              </div>
+                              <div
+                                class="MuiAlert-message css-zioonp-MuiAlert-message"
+                              >
+                                Please log in to select addresses from your profile.
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      class="MuiGrid-root MuiGrid-direction-xs-row MuiGrid-grid-xs-12 MuiGrid-grid-md-6 css-1fb73u2-MuiGrid-root"
+                    >
+                      <div
+                        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-vj4au3-MuiPaper-root-MuiCard-root"
+                        data-testid="invoice-address-card"
+                        style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+                      >
+                        <div
+                          class="MuiCardHeader-root css-149tc0y-MuiCardHeader-root"
+                          data-testid="invoice-address-panel"
+                        >
+                          <div
+                            class="MuiCardHeader-avatar css-1r9wl67-MuiCardHeader-avatar"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              class="MuiSvgIcon-root MuiSvgIcon-colorSecondary MuiSvgIcon-fontSizeMedium css-hvmvwe-MuiSvgIcon-root"
+                              data-testid="ReceiptIcon"
+                              focusable="false"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                d="M18 17H6v-2h12zm0-4H6v-2h12zm0-4H6V7h12zM3 22l1.5-1.5L6 22l1.5-1.5L9 22l1.5-1.5L12 22l1.5-1.5L15 22l1.5-1.5L18 22l1.5-1.5L21 22V2l-1.5 1.5L18 2l-1.5 1.5L15 2l-1.5 1.5L12 2l-1.5 1.5L9 2 7.5 3.5 6 2 4.5 3.5 3 2z"
+                              />
+                            </svg>
+                          </div>
+                          <div
+                            class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
+                          >
+                            <h3
+                              class="MuiTypography-root MuiTypography-h6 css-1eru8n-MuiTypography-root"
+                            >
+                              Invoice Address
+                            </h3>
+                          </div>
+                        </div>
+                        <div
+                          class="MuiCardContent-root css-1lt5qva-MuiCardContent-root"
+                        >
+                          <p
+                            class="MuiTypography-root MuiTypography-body2 css-54pbxm-MuiTypography-root"
+                          >
+                            Select your invoice address from your profile settings.
+                          </p>
+                          <div
+                            class="address-selection-panel MuiBox-root css-0"
+                          >
+                            <div
+                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorInfo MuiAlert-standardInfo MuiAlert-standard css-69qusl-MuiPaper-root-MuiAlert-root"
+                              role="alert"
+                              style="--Paper-shadow: none;"
+                            >
+                              <div
+                                class="MuiAlert-icon css-vab54s-MuiAlert-icon"
+                              >
+                                <svg
+                                  aria-hidden="true"
+                                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-1ckov0h-MuiSvgIcon-root"
+                                  data-testid="InfoOutlinedIcon"
+                                  focusable="false"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"
+                                  />
+                                </svg>
+                              </div>
+                              <div
+                                class="MuiAlert-message css-zioonp-MuiAlert-message"
+                              >
+                                Please log in to select addresses from your profile.
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="MuiGrid-root MuiGrid-direction-xs-row MuiGrid-grid-xs-12 css-v2j61i-MuiGrid-root"
+                  >
+                    <div
+                      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root communication-details-panel css-1507jq0-MuiPaper-root-MuiCard-root"
+                      style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+                    >
+                      <div
+                        class="MuiCardHeader-root css-149tc0y-MuiCardHeader-root"
+                      >
+                        <div
+                          class="MuiCardHeader-avatar css-1r9wl67-MuiCardHeader-avatar"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-colorPrimary MuiSvgIcon-fontSizeMedium css-fe2s03-MuiSvgIcon-root"
+                            data-testid="PhoneIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02z"
+                            />
+                          </svg>
+                        </div>
+                        <div
+                          class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
+                        >
+                          <h3
+                            class="MuiTypography-root MuiTypography-h6 css-1eru8n-MuiTypography-root"
+                          >
+                            Communication Details
+                          </h3>
+                        </div>
+                      </div>
+                      <div
+                        class="MuiCardContent-root css-1lt5qva-MuiCardContent-root"
+                      >
+                        <p
+                          class="MuiTypography-root MuiTypography-body2 css-1zcwrr-MuiTypography-root"
+                        >
+                          Provide your contact information for delivery coordination and order updates.
+                        </p>
+                        <form
+                          class="MuiBox-root css-1ux3bw3"
+                        >
+                          <div
+                            class="MuiBox-root css-0"
+                          >
+                            <div
+                              class="MuiBox-root css-1u5a5a5"
+                            >
+                              <div
+                                class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon css-1tlcqt-MuiAutocomplete-root"
+                              >
+                                <div
+                                  class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-ulp4yu-MuiFormControl-root-MuiTextField-root"
+                                >
+                                  <label
+                                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-standard css-cx27vj-MuiFormLabel-root-MuiInputLabel-root"
+                                    data-shrink="false"
+                                    for="«r1q»"
+                                    id="«r1q»-label"
+                                  >
+                                    Code
+                                  </label>
+                                  <div
+                                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-6o6q85-MuiInputBase-root-MuiInput-root"
+                                  >
+                                    <input
+                                      aria-autocomplete="list"
+                                      aria-expanded="false"
+                                      aria-invalid="false"
+                                      autocapitalize="none"
+                                      autocomplete="off"
+                                      class="MuiInputBase-input MuiInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-60swwn-MuiInputBase-input-MuiInput-input"
+                                      id="«r1q»"
+                                      placeholder="Country code"
+                                      role="combobox"
+                                      spellcheck="false"
+                                      type="text"
+                                      value=""
+                                    />
+                                    <div
+                                      class="MuiAutocomplete-endAdornment css-1uhhrmm-MuiAutocomplete-endAdornment"
+                                    >
+                                      <button
+                                        aria-label="Open"
+                                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium MuiAutocomplete-popupIndicator css-2y136s-MuiButtonBase-root-MuiIconButton-root-MuiAutocomplete-popupIndicator"
+                                        tabindex="-1"
+                                        title="Open"
+                                        type="button"
+                                      >
+                                        <svg
+                                          aria-hidden="true"
+                                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                                          data-testid="ArrowDropDownIcon"
+                                          focusable="false"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            d="M7 10l5 5 5-5z"
+                                          />
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div
+                                class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1roj2h7-MuiFormControl-root-MuiTextField-root"
+                              >
+                                <label
+                                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-standard css-cx27vj-MuiFormLabel-root-MuiInputLabel-root"
+                                  data-shrink="false"
+                                  for="«r1t»"
+                                  id="«r1t»-label"
+                                >
+                                  Home Phone
+                                </label>
+                                <div
+                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-6o6q85-MuiInputBase-root-MuiInput-root"
+                                >
+                                  <input
+                                    aria-invalid="false"
+                                    class="MuiInputBase-input MuiInput-input css-60swwn-MuiInputBase-input-MuiInput-input"
+                                    id="«r1t»"
+                                    name="home-phone"
+                                    placeholder="Enter home phone number"
+                                    type="tel"
+                                    value=""
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            <p
+                              class="MuiFormHelperText-root css-2ilnnu-MuiFormHelperText-root"
+                            />
+                          </div>
+                          <div
+                            class="MuiBox-root css-0"
+                          >
+                            <div
+                              class="MuiBox-root css-1u5a5a5"
+                            >
+                              <div
+                                class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon css-1tlcqt-MuiAutocomplete-root"
+                              >
+                                <div
+                                  class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-ulp4yu-MuiFormControl-root-MuiTextField-root"
+                                >
+                                  <label
+                                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-standard css-cx27vj-MuiFormLabel-root-MuiInputLabel-root"
+                                    data-shrink="false"
+                                    for="«r1u»"
+                                    id="«r1u»-label"
+                                  >
+                                    Code
+                                  </label>
+                                  <div
+                                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-6o6q85-MuiInputBase-root-MuiInput-root"
+                                  >
+                                    <input
+                                      aria-autocomplete="list"
+                                      aria-expanded="false"
+                                      aria-invalid="false"
+                                      autocapitalize="none"
+                                      autocomplete="off"
+                                      class="MuiInputBase-input MuiInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-60swwn-MuiInputBase-input-MuiInput-input"
+                                      id="«r1u»"
+                                      placeholder="Country code"
+                                      role="combobox"
+                                      spellcheck="false"
+                                      type="text"
+                                      value=""
+                                    />
+                                    <div
+                                      class="MuiAutocomplete-endAdornment css-1uhhrmm-MuiAutocomplete-endAdornment"
+                                    >
+                                      <button
+                                        aria-label="Open"
+                                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium MuiAutocomplete-popupIndicator css-2y136s-MuiButtonBase-root-MuiIconButton-root-MuiAutocomplete-popupIndicator"
+                                        tabindex="-1"
+                                        title="Open"
+                                        type="button"
+                                      >
+                                        <svg
+                                          aria-hidden="true"
+                                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                                          data-testid="ArrowDropDownIcon"
+                                          focusable="false"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            d="M7 10l5 5 5-5z"
+                                          />
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div
+                                class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1roj2h7-MuiFormControl-root-MuiTextField-root"
+                              >
+                                <label
+                                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-standard MuiFormLabel-colorPrimary Mui-error MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-standard css-cx27vj-MuiFormLabel-root-MuiInputLabel-root"
+                                  data-shrink="false"
+                                  for="«r21»"
+                                  id="«r21»-label"
+                                >
+                                  Mobile Phone *
+                                </label>
+                                <div
+                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary Mui-error MuiInputBase-fullWidth MuiInputBase-formControl css-6o6q85-MuiInputBase-root-MuiInput-root"
+                                >
+                                  <input
+                                    aria-invalid="true"
+                                    class="MuiInputBase-input MuiInput-input css-60swwn-MuiInputBase-input-MuiInput-input"
+                                    id="«r21»"
+                                    name="mobile-phone"
+                                    placeholder="Enter mobile phone number"
+                                    type="tel"
+                                    value=""
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            <p
+                              class="MuiFormHelperText-root Mui-error css-2ilnnu-MuiFormHelperText-root"
+                            >
+                              Phone number is required
+                            </p>
+                          </div>
+                          <div
+                            class="MuiBox-root css-0"
+                          >
+                            <div
+                              class="MuiBox-root css-1u5a5a5"
+                            >
+                              <div
+                                class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon css-1tlcqt-MuiAutocomplete-root"
+                              >
+                                <div
+                                  class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-ulp4yu-MuiFormControl-root-MuiTextField-root"
+                                >
+                                  <label
+                                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-standard css-cx27vj-MuiFormLabel-root-MuiInputLabel-root"
+                                    data-shrink="false"
+                                    for="«r22»"
+                                    id="«r22»-label"
+                                  >
+                                    Code
+                                  </label>
+                                  <div
+                                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-6o6q85-MuiInputBase-root-MuiInput-root"
+                                  >
+                                    <input
+                                      aria-autocomplete="list"
+                                      aria-expanded="false"
+                                      aria-invalid="false"
+                                      autocapitalize="none"
+                                      autocomplete="off"
+                                      class="MuiInputBase-input MuiInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-60swwn-MuiInputBase-input-MuiInput-input"
+                                      id="«r22»"
+                                      placeholder="Country code"
+                                      role="combobox"
+                                      spellcheck="false"
+                                      type="text"
+                                      value=""
+                                    />
+                                    <div
+                                      class="MuiAutocomplete-endAdornment css-1uhhrmm-MuiAutocomplete-endAdornment"
+                                    >
+                                      <button
+                                        aria-label="Open"
+                                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium MuiAutocomplete-popupIndicator css-2y136s-MuiButtonBase-root-MuiIconButton-root-MuiAutocomplete-popupIndicator"
+                                        tabindex="-1"
+                                        title="Open"
+                                        type="button"
+                                      >
+                                        <svg
+                                          aria-hidden="true"
+                                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                                          data-testid="ArrowDropDownIcon"
+                                          focusable="false"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            d="M7 10l5 5 5-5z"
+                                          />
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div
+                                class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1roj2h7-MuiFormControl-root-MuiTextField-root"
+                              >
+                                <label
+                                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-standard css-cx27vj-MuiFormLabel-root-MuiInputLabel-root"
+                                  data-shrink="false"
+                                  for="«r25»"
+                                  id="«r25»-label"
+                                >
+                                  Work Phone
+                                </label>
+                                <div
+                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-6o6q85-MuiInputBase-root-MuiInput-root"
+                                >
+                                  <input
+                                    aria-invalid="false"
+                                    class="MuiInputBase-input MuiInput-input css-60swwn-MuiInputBase-input-MuiInput-input"
+                                    id="«r25»"
+                                    name="work-phone"
+                                    placeholder="Enter work phone number"
+                                    type="tel"
+                                    value=""
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            <p
+                              class="MuiFormHelperText-root css-2ilnnu-MuiFormHelperText-root"
+                            />
+                          </div>
+                          <div
+                            class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-4gxatb-MuiFormControl-root-MuiTextField-root"
+                          >
+                            <label
+                              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined css-lstft7-MuiFormLabel-root-MuiInputLabel-root"
+                              data-shrink="true"
+                              for="«r26»"
+                              id="«r26»-label"
+                            >
+                              Email Address
+                              <span
+                                aria-hidden="true"
+                                class="MuiFormLabel-asterisk MuiInputLabel-asterisk css-1gfj4e0-MuiFormLabel-asterisk"
+                              >
+                                 
+                                *
+                              </span>
+                            </label>
+                            <div
+                              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedStart css-idulv8-MuiInputBase-root-MuiOutlinedInput-root"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                class="MuiSvgIcon-root MuiSvgIcon-colorAction MuiSvgIcon-fontSizeMedium css-kvujyo-MuiSvgIcon-root"
+                                data-testid="EmailIcon"
+                                focusable="false"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2m0 4-8 5-8-5V6l8 5 8-5z"
+                                />
+                              </svg>
+                              <input
+                                aria-invalid="false"
+                                class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-7qotx-MuiInputBase-input-MuiOutlinedInput-input"
+                                data-testid="email-input"
+                                id="«r26»"
+                                placeholder="Enter email address"
+                                required=""
+                                type="email"
+                                value=""
+                              />
+                              <fieldset
+                                aria-hidden="true"
+                                class="MuiOutlinedInput-notchedOutline css-18p5xg2-MuiNotchedOutlined-root-MuiOutlinedInput-notchedOutline"
+                              >
+                                <legend
+                                  class="css-ex8a5f-MuiNotchedOutlined-root"
+                                >
+                                  <span>
+                                    Email Address
+                                     
+                                    *
+                                  </span>
+                                </legend>
+                              </fieldset>
+                            </div>
+                          </div>
+                        </form>
+                        <div
+                          class="MuiBox-root css-mg4yo"
+                        >
+                          <button
+                            class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeLarge MuiButton-containedSizeLarge MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeLarge MuiButton-containedSizeLarge MuiButton-colorPrimary css-saoxq-MuiButtonBase-root-MuiButton-root"
+                            tabindex="0"
+                            type="button"
+                          >
+                            Update Communication Details
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="MuiGrid-root MuiGrid-direction-xs-row MuiGrid-grid-md-12 MuiGrid-grid-lg-4 css-fwybp0-MuiGrid-root"
+          >
+            <div
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1wbrqze-MuiPaper-root-MuiCard-root"
+              style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+            >
+              <div
+                class="MuiCardHeader-root css-b8y68j-MuiCardHeader-root"
+              >
+                <div
+                  class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
+                >
+                  <span
+                    class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-1yjw8cm-MuiTypography-root"
+                  >
+                    <div
+                      class="MuiBox-root css-69i1ev"
+                    >
+                      <h2
+                        class="MuiTypography-root MuiTypography-h6 css-1eru8n-MuiTypography-root"
+                      >
+                        Order Summary
+                      </h2>
+                      <button
+                        aria-label="expand cart summary"
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-155wbr6-MuiButtonBase-root-MuiIconButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                          data-testid="ExpandMoreIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </span>
+                </div>
+              </div>
+              <div
+                class="MuiCardContent-root css-1lt5qva-MuiCardContent-root"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body2 css-54pbxm-MuiTypography-root"
+                >
+                  1
+                   
+                  item
+                </p>
+                <div
+                  class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-hidden css-cwrbtg-MuiCollapse-root"
+                  style="min-height: 0px;"
+                >
+                  <div
+                    class="MuiCollapse-wrapper MuiCollapse-vertical css-1x6hinx-MuiCollapse-wrapper"
+                  >
+                    <div
+                      class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
+                    >
+                      <table
+                        class="MuiTable-root css-vxljsm-MuiTable-root"
+                      >
+                        <thead
+                          class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
+                        >
+                          <tr
+                            class="MuiTableRow-root MuiTableRow-head css-eqv5f0-MuiTableRow-root"
+                          >
+                            <th
+                              class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-1hfcpwe-MuiTableCell-root"
+                              scope="col"
+                            >
+                              Product
+                            </th>
+                            <th
+                              class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignCenter MuiTableCell-sizeSmall css-1du8ip6-MuiTableCell-root"
+                              scope="col"
+                            >
+                              Qty
+                            </th>
+                            <th
+                              class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignRight MuiTableCell-sizeSmall css-1g9eepu-MuiTableCell-root"
+                              scope="col"
+                            >
+                              Total
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody
+                          class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
+                        >
+                          <tr
+                            class="MuiTableRow-root css-eqv5f0-MuiTableRow-root"
+                          >
+                            <td
+                              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-zd0ndn-MuiTableCell-root"
+                            >
+                              <p
+                                class="MuiTypography-root MuiTypography-body2 css-1dq3amw-MuiTypography-root"
+                              >
+                                Test Product
+                              </p>
+                              <span
+                                class="MuiTypography-root MuiTypography-caption css-ffi2z8-MuiTypography-root"
+                              >
+                                TEST
+                                 • 
+                                Standard
+                              </span>
+                              <br />
+                              <code
+                                class="MuiTypography-root MuiTypography-caption css-411cmf-MuiTypography-root"
+                              >
+                                N/A
+                              </code>
+                            </td>
+                            <td
+                              class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignCenter MuiTableCell-sizeSmall css-10m2g3r-MuiTableCell-root"
+                            >
+                              1
+                            </td>
+                            <td
+                              class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeSmall css-bzck1z-MuiTableCell-root"
+                            >
+                              £
+                              50.00
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <div
+                        class="MuiBox-root css-1yuhvjn"
+                      >
+                        <hr
+                          class="MuiDivider-root MuiDivider-fullWidth css-1lfb4dj-MuiDivider-root"
+                        />
+                        <div
+                          class="MuiBox-root css-gg4vpm"
+                        >
+                          <p
+                            class="MuiTypography-root MuiTypography-body2 css-1uwusi4-MuiTypography-root"
+                          >
+                            Subtotal:
+                          </p>
+                          <p
+                            class="MuiTypography-root MuiTypography-body2 css-1uwusi4-MuiTypography-root"
+                          >
+                            £
+                            50.00
+                          </p>
+                        </div>
+                        <div
+                          class="MuiBox-root css-gg4vpm"
+                        >
+                          <p
+                            class="MuiTypography-root MuiTypography-body2 css-1uwusi4-MuiTypography-root"
+                          >
+                            VAT (0%)
+                            :
+                          </p>
+                          <p
+                            class="MuiTypography-root MuiTypography-body2 css-1uwusi4-MuiTypography-root"
+                          >
+                            £
+                            0.00
+                          </p>
+                        </div>
+                        <hr
+                          class="MuiDivider-root MuiDivider-fullWidth css-1lfb4dj-MuiDivider-root"
+                        />
+                        <div
+                          class="MuiBox-root css-gg4vpm"
+                        >
+                          <h6
+                            class="MuiTypography-root MuiTypography-h6 css-109xs7v-MuiTypography-root"
+                          >
+                            Total:
+                          </h6>
+                          <h6
+                            class="MuiTypography-root MuiTypography-h6 css-109xs7v-MuiTypography-root"
+                          >
+                            £
+                            50.00
+                          </h6>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="MuiBox-root css-1yuhvjn"
+                >
+                  <div
+                    class="MuiBox-root css-gg4vpm"
+                  >
+                    <h6
+                      class="MuiTypography-root MuiTypography-h6 css-109xs7v-MuiTypography-root"
+                    >
+                      Total:
+                    </h6>
+                    <h6
+                      class="MuiTypography-root MuiTypography-h6 css-109xs7v-MuiTypography-root"
+                    >
+                      £
+                      50.00
+                    </h6>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="MuiCardActions-root MuiCardActions-spacing css-fb8c9s-MuiCardActions-root"
+    >
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary Mui-disabled MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary css-1io5r21-MuiButtonBase-root-MuiButton-root"
+        disabled=""
+        tabindex="-1"
+        type="button"
+      >
+        Back
+      </button>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-1d14qyo-MuiButtonBase-root-MuiButton-root"
+        disabled=""
+        tabindex="-1"
+        type="button"
+      >
+        Continue to Terms
+      </button>
+    </div>
+  </div>
+</div>
+`;

@@ -16,9 +16,6 @@ import filtersReducer, {
   setProducts,
   setModesOfDelivery,
   setSearchQuery,
-  setTutorialFormat,
-  setDistanceLearning,
-  setTutorial,
   clearAllFilters,
 } from '../../slices/filtersSlice';
 import { urlSyncMiddleware, parseUrlToFilters } from '../urlSyncMiddleware';

@@ -17,6 +17,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import filtersReducer from '../../store/slices/filtersSlice';
 import FilterPanel from './FilterPanel';
+import { expectNoA11yViolations, wcag21AAConfig } from '../../test-utils/accessibilityHelpers';
 
 // Mock Material-UI's useMediaQuery
 jest.mock('@mui/material/useMediaQuery');
@@ -415,38 +416,87 @@ describe('FilterPanel Component', () => {
         });
     });
 
-    describe('Accessibility', () => {
-        test.skip('has proper ARIA labels and roles', () => {
+    describe('Accessibility (T082 - WCAG 2.1 AA)', () => {
+        test('has no accessibility violations', async () => {
             const initialState = {
                 filterCounts: mockFilterCounts,
             };
-            
-            renderWithProviders(<FilterPanel />, { initialState });
-            
-            // Check for proper checkbox roles
-            expect(screen.getAllByRole('checkbox')).toHaveLength(3); // Only subjects are expanded by default
-            
-            // Check for proper button roles
-            expect(screen.getAllByRole('button')).toBeTruthy();
-            
-            // Check for proper headings
-            expect(screen.getByRole('heading', { level: 6 })).toHaveTextContent('Filters');
+
+            const { container } = renderWithProviders(<FilterPanel />, { initialState });
+            await expectNoA11yViolations(container, wcag21AAConfig);
         });
 
-        test.skip('supports keyboard navigation', async () => {
+        test('has no accessibility violations with active filters', async () => {
+            const initialState = {
+                subjects: ['CM2', 'SA1'],
+                categories: ['Materials'],
+                filterCounts: mockFilterCounts,
+            };
+
+            const { container } = renderWithProviders(<FilterPanel />, { initialState });
+            await expectNoA11yViolations(container, wcag21AAConfig);
+        });
+
+        test('has proper checkbox roles for filter options', () => {
+            const initialState = {
+                filterCounts: mockFilterCounts,
+            };
+
+            renderWithProviders(<FilterPanel />, { initialState });
+
+            // Subjects is expanded by default, should have checkboxes
+            const checkboxes = screen.getAllByRole('checkbox');
+            expect(checkboxes.length).toBeGreaterThan(0);
+        });
+
+        test('has proper button roles for interactive elements', () => {
+            const initialState = {
+                filterCounts: mockFilterCounts,
+            };
+
+            renderWithProviders(<FilterPanel />, { initialState });
+
+            // Should have button elements for accordion expand/collapse
+            const buttons = screen.getAllByRole('button');
+            expect(buttons.length).toBeGreaterThan(0);
+        });
+
+        test('checkboxes have accessible names', () => {
+            const initialState = {
+                filterCounts: mockFilterCounts,
+            };
+
+            renderWithProviders(<FilterPanel />, { initialState });
+
+            // CM2 checkbox should have accessible name
+            const cm2Checkbox = screen.getByRole('checkbox', { name: /CM2/i });
+            expect(cm2Checkbox).toBeInTheDocument();
+        });
+
+        test('supports keyboard interaction on checkboxes', async () => {
             const user = userEvent.setup();
             const initialState = {
                 filterCounts: mockFilterCounts,
             };
-            
+
             renderWithProviders(<FilterPanel />, { initialState });
-            
-            // Tab to first checkbox and activate with space/enter
-            await user.tab();
-            await user.keyboard('{Enter}');
-            
+
+            // Find and focus a checkbox
+            const cm2Checkbox = screen.getByRole('checkbox', { name: /CM2/i });
+            cm2Checkbox.focus();
+
+            // Verify it can receive focus
+            expect(document.activeElement).toBe(cm2Checkbox);
+
+            // Toggle with space key
+            await user.keyboard(' ');
+
             // Verify interaction worked
-            expect(mockDispatch).toHaveBeenCalled();
+            expect(mockDispatch).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: expect.stringContaining('toggleSubjectFilter'),
+                })
+            );
         });
     });
 

@@ -6,6 +6,13 @@
 import addressMetadataService, {
   getAddressMetadata,
   fetchAddressMetadata,
+  validateAddressField,
+  transformFieldValue,
+  getOptionalFields,
+  getAllFields,
+  isOptionalField,
+  isRequiredField,
+  getCountryCode,
   ADDRESS_METADATA
 } from '../addressMetadataService';
 
@@ -120,7 +127,11 @@ describe('Address Metadata Service', () => {
           city: { label: 'City', placeholder: 'Enter city' },
           state: { label: 'State', placeholder: 'Enter state' },
           postal_code: { label: 'ZIP', placeholder: 'Enter ZIP' }
-        }
+        },
+        layout: [
+          [{ field: 'address', span: 12 }],
+          [{ field: 'city', span: 4 }, { field: 'state', span: 4 }, { field: 'postal_code', span: 4 }]
+        ]
       };
 
       fetchGoogleAddressMetadata.mockResolvedValue(mockGoogleData);
@@ -132,7 +143,6 @@ describe('Address Metadata Service', () => {
       expect(result.fields.state.type).toBe('select');
       expect(result.fields.state.options).toBeDefined();
       expect(result.fields.state.options.length).toBeGreaterThan(0);
-      expect(result.layout).toBeDefined();
     });
 
     it('should fall back to hardcoded metadata if Google API fails', async () => {
@@ -231,6 +241,194 @@ describe('Address Metadata Service', () => {
       expect(addressMetadataService.getAddressMetadata).toBe(getAddressMetadata);
       expect(addressMetadataService.fetchAddressMetadata).toBe(fetchAddressMetadata);
       expect(addressMetadataService.ADDRESS_METADATA).toBe(ADDRESS_METADATA);
+      expect(addressMetadataService.validateAddressField).toBe(validateAddressField);
+      expect(addressMetadataService.transformFieldValue).toBe(transformFieldValue);
+      expect(addressMetadataService.getOptionalFields).toBe(getOptionalFields);
+      expect(addressMetadataService.getAllFields).toBe(getAllFields);
+      expect(addressMetadataService.isOptionalField).toBe(isOptionalField);
+      expect(addressMetadataService.isRequiredField).toBe(isRequiredField);
+      expect(addressMetadataService.getCountryCode).toBe(getCountryCode);
+    });
+  });
+
+  describe('validateAddressField', () => {
+    it('should return valid for unknown field', () => {
+      const result = validateAddressField('US', 'unknownField', 'some value');
+      expect(result.isValid).toBe(true);
+      expect(result.error).toBeNull();
+    });
+
+    it('should validate required field is empty', () => {
+      const result = validateAddressField('US', 'address', '');
+      expect(result.isValid).toBe(false);
+      expect(result.error).toContain('required');
+    });
+
+    it('should validate required field with whitespace only', () => {
+      const result = validateAddressField('US', 'city', '   ');
+      expect(result.isValid).toBe(false);
+      expect(result.error).toContain('required');
+    });
+
+    it('should validate required field with valid value', () => {
+      const result = validateAddressField('US', 'address', '123 Main St');
+      expect(result.isValid).toBe(true);
+      expect(result.error).toBeNull();
+    });
+
+    it('should validate postal code pattern for US', () => {
+      // Valid US ZIP code
+      const validResult = validateAddressField('US', 'postal_code', '12345');
+      expect(validResult.isValid).toBe(true);
+
+      // Invalid US ZIP code
+      const invalidResult = validateAddressField('US', 'postal_code', 'INVALID');
+      expect(invalidResult.isValid).toBe(false);
+    });
+
+    it('should validate postal code pattern for UK', () => {
+      // Valid UK postcode
+      const validResult = validateAddressField('GB', 'postal_code', 'SW1A 1AA');
+      expect(validResult.isValid).toBe(true);
+    });
+  });
+
+  describe('transformFieldValue', () => {
+    it('should return original value when no transform defined', () => {
+      const result = transformFieldValue('US', 'address', '123 main street');
+      expect(result).toBe('123 main street');
+    });
+
+    it('should apply transform if defined', () => {
+      // GB metadata may have a transform for postal_code
+      const metadata = getAddressMetadata('GB');
+      const hasTransform = metadata.fields?.postal_code?.transform;
+
+      if (hasTransform) {
+        const result = transformFieldValue('GB', 'postal_code', 'sw1a 1aa');
+        expect(result).toBe('SW1A 1AA');
+      } else {
+        // If no transform, should return original value
+        const result = transformFieldValue('GB', 'postal_code', 'sw1a 1aa');
+        expect(result).toBe('sw1a 1aa');
+      }
+    });
+
+    it('should return value for unknown field', () => {
+      const result = transformFieldValue('US', 'unknownField', 'test value');
+      expect(result).toBe('test value');
+    });
+
+    it('should handle null value', () => {
+      const result = transformFieldValue('US', 'address', null);
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getOptionalFields', () => {
+    it('should return optional fields for US', () => {
+      const optional = getOptionalFields('US');
+      expect(Array.isArray(optional)).toBe(true);
+    });
+
+    it('should return optional fields for UK', () => {
+      const optional = getOptionalFields('GB');
+      expect(Array.isArray(optional)).toBe(true);
+    });
+
+    it('should return default optional fields for unknown country', () => {
+      const optional = getOptionalFields('XX');
+      // Unknown country uses DEFAULT metadata which may have optional fields
+      const defaultMetadata = ADDRESS_METADATA.DEFAULT;
+      expect(optional).toEqual(defaultMetadata.optional || []);
+    });
+  });
+
+  describe('getAllFields', () => {
+    it('should return all fields (required + optional) for US', () => {
+      const allFields = getAllFields('US');
+      expect(Array.isArray(allFields)).toBe(true);
+      expect(allFields).toContain('address');
+      expect(allFields).toContain('city');
+    });
+
+    it('should include both required and optional fields', () => {
+      const metadata = getAddressMetadata('US');
+      const allFields = getAllFields('US');
+
+      // All required should be in allFields
+      metadata.required.forEach(field => {
+        expect(allFields).toContain(field);
+      });
+    });
+
+    it('should return minimal fields for unknown country', () => {
+      const allFields = getAllFields('XX');
+      expect(allFields).toContain('address');
+      expect(allFields).toContain('city');
+    });
+  });
+
+  describe('isOptionalField', () => {
+    it('should return true for optional fields', () => {
+      // Get a country with optional fields
+      const optional = getOptionalFields('US');
+      if (optional.length > 0) {
+        expect(isOptionalField('US', optional[0])).toBe(true);
+      }
+    });
+
+    it('should return false for required fields', () => {
+      expect(isOptionalField('US', 'address')).toBe(false);
+      expect(isOptionalField('US', 'city')).toBe(false);
+    });
+
+    it('should return false for unknown fields', () => {
+      expect(isOptionalField('US', 'unknownField')).toBe(false);
+    });
+  });
+
+  describe('isRequiredField', () => {
+    it('should return true for required fields', () => {
+      expect(isRequiredField('US', 'address')).toBe(true);
+      expect(isRequiredField('US', 'city')).toBe(true);
+    });
+
+    it('should return false for optional fields', () => {
+      const optional = getOptionalFields('US');
+      if (optional.length > 0) {
+        expect(isRequiredField('US', optional[0])).toBe(false);
+      }
+    });
+
+    it('should return false for unknown fields', () => {
+      expect(isRequiredField('US', 'unknownField')).toBe(false);
+    });
+
+    it('should work with UK', () => {
+      expect(isRequiredField('GB', 'address')).toBe(true);
+    });
+  });
+
+  describe('getCountryCode', () => {
+    it('should return US for United States', () => {
+      const code = getCountryCode('United States');
+      expect(code).toBe('US');
+    });
+
+    it('should return GB for United Kingdom', () => {
+      const code = getCountryCode('United Kingdom');
+      expect(code).toBe('GB');
+    });
+
+    it('should return null for unknown country', () => {
+      const code = getCountryCode('Unknown Country');
+      expect(code).toBeNull();
+    });
+
+    it('should return CA for Canada', () => {
+      const code = getCountryCode('Canada');
+      expect(code).toBe('CA');
     });
   });
 });

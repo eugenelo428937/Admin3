@@ -1,212 +1,217 @@
+# Implementation Plan: Frontend Test Coverage - Modular Reorganization
 
-# Implementation Plan: [FEATURE]
-
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Branch**: `004-frontend-test-coverage` | **Date**: 2025-11-26 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `/specs/004-frontend-test-coverage/spec.md`
 
 ## Execution Flow (/plan command scope)
 ```
 1. Load feature spec from Input path
-   → If not found: ERROR "No feature spec at {path}"
+   → ✅ Loaded spec.md - Modular test reorganization with 80% coverage target
 2. Fill Technical Context (scan for NEEDS CLARIFICATION)
-   → Detect Project Type from context (web=frontend+backend, mobile=app+api)
-   → Set Structure Decision based on project type
-3. Fill the Constitution Check section based on the content of the constitution document.
-4. Evaluate Constitution Check section below
-   → If violations exist: Document in Complexity Tracking
-   → If no justification possible: ERROR "Simplify approach first"
-   → Update Progress Tracking: Initial Constitution Check
+   → ✅ All technical details resolved from existing infrastructure
+   → Detect Project Type: web (frontend + backend)
+   → Set Structure Decision: Option 2 (Web application)
+3. Fill the Constitution Check section
+   → ✅ TDD principles align with test coverage goals
+4. Evaluate Constitution Check section
+   → ✅ PASS - No violations, test-first approach maintained
 5. Execute Phase 0 → research.md
-   → If NEEDS CLARIFICATION remain: ERROR "Resolve unknowns"
-6. Execute Phase 1 → contracts, data-model.md, quickstart.md, agent-specific template file (e.g., `CLAUDE.md` for Claude Code, `.github/copilot-instructions.md` for GitHub Copilot, `GEMINI.md` for Gemini CLI, `QWEN.md` for Qwen Code or `AGENTS.md` for opencode).
-7. Re-evaluate Constitution Check section
-   → If new violations: Refactor design, return to Phase 1
-   → Update Progress Tracking: Post-Design Constitution Check
-8. Plan Phase 2 → Describe task generation approach (DO NOT create tasks.md)
+   → ✅ Complete - See research.md
+6. Execute Phase 1 → data-model.md, quickstart.md
+   → ✅ Complete - See generated artifacts
+7. Re-evaluate Constitution Check
+   → ✅ PASS - Design maintains simplicity
+8. Plan Phase 2 → Describe task generation approach
+   → ✅ Complete - See below
 9. STOP - Ready for /tasks command
+   → ✅ Ready
 ```
 
-**IMPORTANT**: The /plan command STOPS at step 7. Phases 2-4 are executed by other commands:
-- Phase 2: /tasks command creates tasks.md
-- Phase 3-4: Implementation execution (manual or via tools)
-
 ## Summary
-[Extract from feature spec: primary requirement + technical approach from research]
+
+This plan establishes a modular test suite reorganization for the React frontend, targeting 80% coverage across four foundational modules: services (16 files), hooks (8 files), contexts (3 files), and utils (7 files). The approach uses existing Jest + React Testing Library infrastructure with established patterns from working test files.
 
 ## Technical Context
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: JavaScript/ES6+ (React 19.1.0)
+**Primary Dependencies**: Jest, @testing-library/react 16.3.0, MSW 2.11.6
+**Storage**: N/A (frontend testing)
+**Testing**: Jest (via react-scripts), React Testing Library
+**Target Platform**: Web browser (Chrome, Firefox, Safari, Edge)
+**Project Type**: web (frontend testing within existing React application)
+**Performance Goals**: Tests complete in <5 minutes total
+**Constraints**: Must work with existing global mocks in setupTests.js
+**Scale/Scope**: 34 source files requiring tests across 4 modules
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+| Principle | Status | Notes |
+|-----------|--------|-------|
+| Test-First Development | ✅ PASS | Project is specifically about writing tests |
+| Simplicity | ✅ PASS | Using existing patterns, no new frameworks |
+| Library-First | N/A | Testing infrastructure, not new libraries |
+| Observability | ✅ PASS | Coverage reports provide visibility |
+
+**Initial Constitution Check**: ✅ PASS
+**Post-Design Constitution Check**: ✅ PASS
 
 ## Project Structure
 
 ### Documentation (this feature)
 ```
-specs/[###-feature]/
+specs/004-frontend-test-coverage/
 ├── plan.md              # This file (/plan command output)
-├── research.md          # Phase 0 output (/plan command)
-├── data-model.md        # Phase 1 output (/plan command)
-├── quickstart.md        # Phase 1 output (/plan command)
-├── contracts/           # Phase 1 output (/plan command)
+├── research.md          # Phase 0 output - test patterns research
+├── data-model.md        # Phase 1 output - test entity definitions
+├── quickstart.md        # Phase 1 output - test commands guide
 └── tasks.md             # Phase 2 output (/tasks command - NOT created by /plan)
 ```
 
-### Source Code (repository root)
+### Source Code (test files to create/improve)
 ```
-# Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure]
+frontend/react-Admin3/src/
+├── services/__tests__/
+│   ├── authService.test.js          # NEW
+│   ├── bundleService.test.js        # NEW
+│   ├── cartService.test.js          # NEW (improve existing mock)
+│   ├── productService.test.js       # NEW
+│   ├── httpService.test.js          # NEW
+│   ├── searchService.test.js        # NEW
+│   ├── tutorialService.test.js      # NEW
+│   ├── userService.test.js          # NEW
+│   ├── acknowledgmentService.test.js # NEW
+│   ├── errorTrackingService.test.js # NEW
+│   ├── examSessionService.test.js   # NEW
+│   ├── loggerService.test.js        # NEW
+│   ├── subjectService.test.js       # NEW
+│   ├── phoneValidationService.test.js # EXISTS
+│   ├── addressMetadataService.test.js # EXISTS
+│   └── rulesEngineService.test.js   # EXISTS
+│
+├── hooks/__tests__/
+│   ├── useApi.test.js               # NEW
+│   ├── useProductCardHelpers.test.js # NEW
+│   ├── useRulesEngineAcknowledgments.test.js # NEW
+│   ├── useAuth.test.js              # EXISTS
+│   ├── useCheckoutRulesEngine.test.js # EXISTS
+│   ├── useCheckoutValidation.test.js # EXISTS
+│   └── useProductsSearch.test.js    # EXISTS
+│
+├── contexts/__tests__/
+│   ├── ProductContext.test.js       # NEW
+│   ├── CartContext.test.js          # IMPROVE
+│   └── TutorialChoiceContext.test.js # IMPROVE
+│
+└── utils/__tests__/
+    ├── priceFormatter.test.js       # NEW
+    ├── productCodeGenerator.test.js # NEW
+    ├── rulesEngineUtils.test.js     # NEW
+    ├── tutorialMetadataBuilder.test.js # NEW
+    ├── vatUtils.test.js             # IMPROVE
+    ├── PerformanceTracker.test.js   # IMPROVE
+    └── filterUrlManager.test.js     # IMPROVE
 ```
 
-**Structure Decision**: [DEFAULT to Option 1 unless Technical Context indicates web/mobile app]
+**Structure Decision**: Option 2 (Web application) - Tests within existing frontend structure
 
 ## Phase 0: Outline & Research
-1. **Extract unknowns from Technical Context** above:
-   - For each NEEDS CLARIFICATION → research task
-   - For each dependency → best practices task
-   - For each integration → patterns task
+**Status**: ✅ Complete
 
-2. **Generate and dispatch research agents**:
-   ```
-   For each unknown in Technical Context:
-     Task: "Research {unknown} for {feature context}"
-   For each technology choice:
-     Task: "Find best practices for {tech} in {domain}"
-   ```
+### Research Tasks Completed:
+1. ✅ Analyzed existing test infrastructure (Jest + RTL)
+2. ✅ Documented global mock patterns in setupTests.js
+3. ✅ Identified `jest.unmock()` pattern for context tests
+4. ✅ Cataloged all modules with coverage gaps
+5. ✅ Established test file templates per module type
+6. ✅ Determined priority order for implementation
 
-3. **Consolidate findings** in `research.md` using format:
-   - Decision: [what was chosen]
-   - Rationale: [why chosen]
-   - Alternatives considered: [what else evaluated]
-
-**Output**: research.md with all NEEDS CLARIFICATION resolved
+**Output**: [research.md](./research.md) with all patterns documented
 
 ## Phase 1: Design & Contracts
-*Prerequisites: research.md complete*
+**Status**: ✅ Complete
 
-1. **Extract entities from feature spec** → `data-model.md`:
-   - Entity name, fields, relationships
-   - Validation rules from requirements
-   - State transitions if applicable
+### Design Tasks Completed:
+1. ✅ Documented test entities in data-model.md
+2. ✅ Created test file templates for each module type
+3. ✅ Established naming conventions and structure
+4. ✅ Defined coverage targets per module (80%)
+5. ✅ Created quickstart.md with test commands
 
-2. **Generate API contracts** from functional requirements:
-   - For each user action → endpoint
-   - Use standard REST/GraphQL patterns
-   - Output OpenAPI/GraphQL schema to `/contracts/`
-
-3. **Generate contract tests** from contracts:
-   - One test file per endpoint
-   - Assert request/response schemas
-   - Tests must fail (no implementation yet)
-
-4. **Extract test scenarios** from user stories:
-   - Each story → integration test scenario
-   - Quickstart test = story validation steps
-
-5. **Update agent file incrementally** (O(1) operation):
-   - Run `.specify/scripts/bash/update-agent-context.sh claude`
-     **IMPORTANT**: Execute it exactly as specified above. Do not add or remove any arguments.
-   - If exists: Add only NEW tech from current plan
-   - Preserve manual additions between markers
-   - Update recent changes (keep last 3)
-   - Keep under 150 lines for token efficiency
-   - Output to repository root
-
-**Output**: data-model.md, /contracts/*, failing tests, quickstart.md, agent-specific file
+**Output**:
+- [data-model.md](./data-model.md) - Test entity definitions
+- [quickstart.md](./quickstart.md) - Test commands and templates
 
 ## Phase 2: Task Planning Approach
 *This section describes what the /tasks command will do - DO NOT execute during /plan*
 
-**Task Generation Strategy**:
-- Load `.specify/templates/tasks-template.md` as base
-- Generate tasks from Phase 1 design docs (contracts, data model, quickstart)
-- Each contract → contract test task [P]
-- Each entity → model creation task [P] 
-- Each user story → integration test task
-- Implementation tasks to make tests pass
+### Task Generation Strategy
 
-**Ordering Strategy**:
-- TDD order: Tests before implementation 
-- Dependency order: Models before services before UI
-- Mark [P] for parallel execution (independent files)
+Tasks will be organized by module priority with TDD approach:
 
-**Estimated Output**: 25-30 numbered, ordered tasks in tasks.md
+**Tier 1: Critical Foundation (Highest Priority)**
+- Services: authService, productService, httpService
+- Contexts: ProductContext
+- Utils: priceFormatter (quick win)
+
+**Tier 2: Business Logic**
+- Services: bundleService, cartService
+- Utils: rulesEngineUtils, productCodeGenerator
+
+**Tier 3: Supporting Functions**
+- Services: searchService, tutorialService, userService
+- Hooks: useApi, useProductCardHelpers, useRulesEngineAcknowledgments
+
+**Tier 4: Coverage Improvement**
+- Contexts: CartContext, TutorialChoiceContext
+- Utils: vatUtils, PerformanceTracker, filterUrlManager
+
+**Tier 5: Low Priority**
+- Services: acknowledgmentService, errorTrackingService, examSessionService, loggerService, subjectService
+- Utils: tutorialMetadataBuilder
+
+### Ordering Strategy
+- TDD order: Create test file → Verify initial failures → Verify coverage
+- Module order: Services → Contexts → Utils → Hooks
+- Priority order: Critical → Business → Supporting → Improvement → Low
+- Mark [P] for parallel execution (independent files within same tier)
+
+### Estimated Output
+- **25-30 tasks** covering all modules
+- Each task creates/improves one test file
+- Verification task after each tier
 
 **IMPORTANT**: This phase is executed by the /tasks command, NOT by /plan
 
 ## Phase 3+: Future Implementation
 *These phases are beyond the scope of the /plan command*
 
-**Phase 3**: Task execution (/tasks command creates tasks.md)  
-**Phase 4**: Implementation (execute tasks.md following constitutional principles)  
-**Phase 5**: Validation (run tests, execute quickstart.md, performance validation)
+**Phase 3**: Task execution (/tasks command creates tasks.md)
+**Phase 4**: Implementation (execute tasks.md following TDD)
+**Phase 5**: Validation (run coverage reports, verify 80% per module)
 
 ## Complexity Tracking
-*Fill ONLY if Constitution Check has violations that must be justified*
+*No violations requiring justification*
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
-
+| None | N/A | N/A |
 
 ## Progress Tracking
 *This checklist is updated during execution flow*
 
 **Phase Status**:
-- [ ] Phase 0: Research complete (/plan command)
-- [ ] Phase 1: Design complete (/plan command)
-- [ ] Phase 2: Task planning complete (/plan command - describe approach only)
-- [ ] Phase 3: Tasks generated (/tasks command)
+- [x] Phase 0: Research complete (/plan command)
+- [x] Phase 1: Design complete (/plan command)
+- [x] Phase 2: Task planning complete (/plan command - describe approach only)
+- [x] Phase 3: Tasks generated (/tasks command) - 30 tasks in tasks.md
 - [ ] Phase 4: Implementation complete
 - [ ] Phase 5: Validation passed
 
 **Gate Status**:
-- [ ] Initial Constitution Check: PASS
-- [ ] Post-Design Constitution Check: PASS
-- [ ] All NEEDS CLARIFICATION resolved
-- [ ] Complexity deviations documented
+- [x] Initial Constitution Check: PASS
+- [x] Post-Design Constitution Check: PASS
+- [x] All NEEDS CLARIFICATION resolved
+- [x] Complexity deviations documented (none needed)
 
 ---
-*Based on Constitution v2.1.1 - See `/memory/constitution.md`*
+*Ready for `/tasks` command to generate tasks.md*

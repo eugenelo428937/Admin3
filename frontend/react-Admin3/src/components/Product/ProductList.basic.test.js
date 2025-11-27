@@ -29,17 +29,21 @@ jest.mock("../../services/cartService", () => ({
    },
 }));
 // Mock CartContext to prevent CartProvider from importing services
-jest.mock("../../contexts/CartContext", () => ({
-   useCart: jest.fn(() => ({
-      cartData: {
-         items: [],
-         vat_calculations: {
-            region_info: { region: "UK" },
+jest.mock("../../contexts/CartContext", () => {
+   return {
+      __esModule: true,
+      useCart: () => ({
+         addToCart: jest.fn(),
+         cartData: {
+            items: [],
+            vat_calculations: {
+               region_info: { region: "UK" },
+            },
          },
-      },
-   })),
-   CartProvider: ({ children }) => children,
-}));
+      }),
+      CartProvider: ({ children }) => children,
+   };
+});
 // Mock child components that ProductList imports
 jest.mock("./FilterPanel", () => ({
    __esModule: true,
@@ -131,11 +135,12 @@ const theme = createTheme();
 const renderWithProviders = (component) => {
    const store = createMockStore();
 
+   // Note: CartProvider not needed since useCart is mocked directly
    return render(
       <Provider store={store}>
          <BrowserRouter>
             <ThemeProvider theme={theme}>
-               <CartProvider>{component}</CartProvider>
+               {component}
             </ThemeProvider>
          </BrowserRouter>
       </Provider>
