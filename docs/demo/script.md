@@ -1,53 +1,131 @@
-# script
+# Intro
 
-## Part 1
+. After several prototypes and research into industry patterns, it became clear that table-based layouts and FoxPro’s structural constraints make it difficult to deliver the modern, mobile-first, configurable store our students expect. This is not a limitation of FoxPro as a tool, but a reflection of how online commerce standards have evolved.
 
-### Intro
+“enhance”
 
-A year ago you asked me to update the estore layout, it includes the horiontal menu on the top, the navigation menu, the product list page, the tutorial page and the Online Classroom page.
+“expand”
 
-### Background and Objectives
+“modernise”
 
-The main 5 objectives is to modernise the layout, adaptive to different screen size, intuitive navigation, improve accessibility and align user interface and user exprience with modern app behavior.
+“support future needs”
 
-First, I seperated the process into 2 part. The first part will include the initial analysis identifying some issues in the products table I came across in the current estore, then I researched how other companies tackle these issue and followed by a feasibility study on how to apply those features to own eStore.
+“build on the strong foundation you created”
+
+The current architecture, which was absolutely the right solution when it was created, wasn’t designed with the assumptions of today’s web standards — responsive design, dynamic component-driven UIs, decoupled frontends, configurable business rules, and multi-country validation.
+
+Maintainability
+
+Decoupling front-end (React) and backend (Django) reduces ripple effects.
+
+Easy onboarding for new devs vs. niche FoxPro knowledge.
+
+Extensibility
+
+JSONLogic + rule engine → change behaviour without code deployments
+
+Django models + migrations → schema evolution without downtime
+
+REST API → flexible for future mobile apps / external integrations
+
+Testability
+
+Modern frameworks support CI/CD pipelines and automated testing by default
+
+Your 999 test suite adds credibility
+
+Separation of Concerns
+
+React handles state, interaction, UI
+
+Django handles business logic and data
+
+PostgreSQL supports more complex queries than DBF files
+
+While attempting a frontend-only redesign on top of the existing FoxPro-layered model, several structural constraints emerged.
+
+“Difficult to expose structured metadata via DBF for dynamic filtering and search algorithms”
+
+“Table-driven layouts make mobile breakpoints inherently cumbersome”
+
+“Coupling between UI and products.dbf’s denormalised relationships limits variation handling (e.g., AI format, bundles, mixed delivery modes)”
+
+“Add-on-sale-based relationships don’t map cleanly to modern product models (variations, attributes, recommendations)”
+
+“FoxPro backend can only expose procedural logic; cannot expose reusable services like address validation, fuzzy search, or a rules engine efficiently”
+
+This prototype demonstrates what ActEd could adopt if we choose this direction. It’s not an expectation — it’s an exploration of what is possible.
+
+The existing FoxPro-based eStore has served ActEd well. However, modern user expectations (mobile-first interfaces, configurable product variations, and admin-editable business rules) require an architecture that separates UI, business logic and data, and supports richer metadata and services. I propose replacing the store with a modern stack (PostgreSQL + Django REST backend and React frontend using Material components). I have a functioning prototype that shows the UX, rules engine and core flows. A phased migration strategy (pilot category → hybrid APIs → full cutover) minimises risk while unlocking faster feature delivery, lower long-term maintenance costs, and improved UX for students and staff.
+
+Why change now (business drivers)
+
+Mobile-first expectations: students increasingly use small screens — table-based product layouts are poor for mobile readability and conversions.
+
+Faster feature velocity: new product types (bundles, online classrooms, AI formats) and configurable rules require metadata and flexibility that are cumbersome to manage in the current schema-driven DBF logic.
+
+Operational efficiency: address validation, phone validation and email flows could be standardised and better automated, reducing order processing time.
+
+Maintainability & hiring: modern stack is easier to hire for and maintain than niche FoxPro expertise.
+
+Strategic flexibility: a decoupled API permits future apps (mobile, third-party integrations) without reworking the whole store.
+
+Options considered (summary)
+
+Frontend-only rewrite on FoxPro backend — safest short-term, but yields only marginal UX gains and will need repeated rework as features grow.
+
+Incremental refactor — split risk but requires multiple front/back changes and can cause integration churn.
+
+Full modern replacement (recommended) — larger short-term effort but delivers most value, requires fewer reworks, and provides long-term agility.
+
+I recommend Option 3 performed incrementally (phased migration) to control risk.
+
+## Background and Objectives
+
+A year ago you asked me to update the estore layout. The original spec includes the horiontal menu on the top, the navigation menu, the product list page, the tutorial page and the Online Classroom page.
+
+The main 5 objectives are to modernise the table layout, responsive and adaptive to different devices, Intuitive navigation, improve accessibility and match user expectation of the behavior in a modern application.
+
+I explored modernising the current UI while retaining the table layout adnd FoxPro backend, after several iterations of prototype, I came across some hurdles that I have difficuties outcome. To make it easier to understand the rationale behind decisions, I have splited the process into 3 parts.
 
 ### 1. Initial Analysis
 
-I have done a initial analysis and access which area we should focus on first.
-The first item on the list is keeping the table layout. I had a few attempts redsigning the layout incorparating the table but I could not come up with a design that looks decent and works well especially in mobile.
+The first part is an initial analysis to
+assess which area we should focus on.
+
+The first item on the list is about the table layout. I had a few attempts redsigning the products table layout, I could not come up with a design that look decent and works well in mobile.
 
 #### 1.1 Table layout vs mobile friendliness
 
-For table to be responsive, the row height will need to be increased. The smaller the screen size, the height of each cell will need to be taller in order to show the content. I tried stripping most styling with minimal padding and margin to make table adapt to mobile, but even with each cell only containing the product name without extra info it still feels crowded. And if we add more info in the future it becomes less readible with a single product takes up most of the screen.
+For table to be responsive, row height need to be increased. I tried stripping minimal styling and content but it still feels crowded. If we add more info in the future it will become even less readible.
 
-Another approach is to use flex grid in Bootstrap CSS. Table cell will wrap to next line when it is over the resolution breakpoint. The wrapping not only breaks the relationship between printed and ebook product but also disassociate which two products the "buy both" button is referring to.
+Another common approach is to use Bootstrap flex grid. Table cell will wrap to next line when it is over the resolution breakpoint. The wrapping not only breaks the relationship between printed and ebook product but also disassociate the "buy both" button is referring to which two products.
 
 ### 1.2 Relationships and Information/Visual Hierarchy
 
-The next item on the analysis is also related to products table and the Information Hierarchy and Visual Hierarchy relationships within products.
+The next item is about the Information Hierarchy and Visual Hierarchy relationships within products and the relationship of products in the table.
 
 #### 1.2.2 Information Hierarchy vs Visual Hierarchy in the products table
 
-Visual hierarchy is the arrangement of elements in a design to guide the viewer's eye through content in order of importance. Whereas Information hierarchy is the strategic organization and arrangement of content to guide users, prioritizing essential information and creating a clear, logical flow. In this table, it shows the four main relationship in a product table. The row containing the bundle product ranked highest in both visual hierarchy and information heirarchy. Visually it has a orange background color, the heavier font weight and more negaive space. For rows that consist of both printed and ebook version or the ebook and its corresponding marking product, they have the lowest visual hierarchy and information hierarchy. However for rows for ASET, Mini-ASET, the Vault and AMP, they should have the same level of information hierarchy, but visually they are more obvious because there are more negative space. Even in this table here, when you first look at it, you will first notice the row with bundles and aset. This mismatch is often an issue of a table layout with some cell are merged.
+Visual hierarchy is the arrangement to guide user through content in order of importance by fonts, weights, color, contract and negative space. Whereas Information hierarchy shows the importance of an infomation within the page. In the product table, the row containing the bundle product ranked highest in both visual hierarchy and information heirarchy with background color, font weight and more negaive space. For rows with printed and ebook version or the ebook and its corresponding marking product, they ranked lowest in both hierarchy. However for rows for ASET, Mini-ASET, the Vault and AMP, they should have the same level of information hierarchy, but visually they are more obvious because more negative space. Even in this table here, you will notice the row with bundles and aset first. This mismatch is often an issue of mergin table cells.
 
 #### 1.2.2 Relationship within each row in the products table
 
-Another thing to note is the behavior of the "Buy both" button. In the rows for printed material and its corresponding ebook, they are the same product with different medium of delivery. The "buy both" button will add both material product to cart, printed in standard price and the ebook in additional price. In essence we can say this button is "Buy both variations".  Whereas in the row for Mock exam and assignments with its corresponding marking product, they are two different products. The "Buy both" button will add the two product with both using standard price. This button means "Buy with recommended product". In the same table, the "Buy Both" button triggers different behavior.
+Another thing to note is the behavior of the "Buy both" button. For printed material and its corresponding ebook, they are the same product with different medium of delivery. The "buy both" button will add both material product to cart with standard and additional price respectively. In essence we can call this button "Buy both variations". Whereas in the row for Mock exam and assignments with its corresponding marking product, they are different products. The "Buy both" button will add the two product with standard price. This button means "Buy with recommended product". In the same table, the "Buy Both" button triggers different behavior.
 
-### 1.3 Layout controlled by products.dbf table
+### 1.3 Layout coupled with products.dbf table
 
-The last item in the analysis is about how the table layout is controled by the products.dbf table. In the estore_product_list file, the layout is set by the inital where clause of the SQL query.  It hardcoded which specific product NOT to include and use the add_on_sale field to fetch which product should be in the same row. Imagine in the future we will need to add, for example AI, as the third variation, and it requires a "Buy Both" button for either ebook and printed material, so AI with ebook and AI with printed. It will be very charllanging to satisfy the requirment and showing concisely different relationships in a table layout.
+The last item is about how the table layout is rendered. In the estore_product_list file, the table is set by the inital where clause of the SQL query. It hardcoded which specific product NOT to include and use the add_on_sale field to fetch which product should be in the same row. Imagine in the future we will need to add, for example Hub, as the third variation, and it requires a "Buy Both" button for either ebook and printed material, so Hub with ebook and Hub with printed. It will be very charllanging to satisfy the requirment and showing concisely different relationships in a table layout.
 
-Another scenario is if we retire all printed product in several subjects, the logic for deciding which product to fetch first and which product to include in the add_on_sale will need some major changes.
+Another scenario is if we phase out all printed product in several subjects, the logic for deciding which product to fetch first and which product to include in the add_on_sale will need some major changes.
 
-It shows the rigid structure is susceptible to change. The layout is restricting the flexibility of the data structure and less adaptable to future business needs.
+The rigid layout is restricting the flexibility of the data structure and less adaptable to future business needs.
 
 Rather than form follows function, the form or the layout is limiting the function which is the behavior of products.
 
 ### 2 Research : Industry Patterns
 
-After identifying the issue of using a table layout, I then looked at how other company overcome this issue.
+After identifying the issue of using a table layout, I researched into how other company overcome this issue.
 
 #### 2.1 Focus
 
@@ -55,11 +133,11 @@ I studies a few companies that provide actuarial education and some other e-comm
 
 #### 2.2 Sites studied
 
-Although it does not look particularly well proportioned in mobile resolution, IFoA uses a horizontal card for products. Each card includes price, availability, and descriptions. It also include login function in the navigation menu on the left. When clicking on the cart button it stays on the same page and opens up the cart preview panel.
+IFoA uses a horizontal card for products. Each card includes price, availability, and descriptions. It also include login function in the navigation menu on the left. When clicking on the cart button it stays on the same page and opens up the cart preview panel.
 
-On ActEx, They use a larger horizontal tiles to display products. Each tile spans the whole width of the screen, and including price, descriptions, and buttons for samples. Clicking on the price button will redirect to the product details page. On the navigation menu on the top, you can find the user related function like login, logout, profiles, order history and update password functions as well as searching function. When clicking on the cart button it opens up the cart preview panel on the same page without reloading.
+On ActEx, They use a larger horizontal tiles to display products with price, descriptions, and buttons for samples. On the navigation menu on the top, you can find the user related functions. When clicking on the cart button it opens up the cart preview panel on the same page without reloading.
 
-I came across ThinkActuary from ASSA, it does not seems to be active at the moment but "Available Subjects" section also contains an example of using cards in a grid layout displaying different subject.
+I came across ThinkActuary from ASSA, it only offer SP1 courses but "Available Subjects" section uses cards in a grid layout displaying different subject.
 
 Other sites like Oxford Univeristy Press, Amazon and apple all shared similar approach and I have summarise in the following.
 
@@ -89,11 +167,11 @@ It also requires some new tables for mapping filters to products and product cat
 
 #### 3.3 Refactoring User functionality from checkout process
 
-Refactoring the User functionality from the checkout process is much simpler in comparison. We will need to refactor the user functions from the checkout pages to make it accessible thru out the store. The most time consuming will be testing any files requires user authentications.
+Refactoring the User functionality from the checkout process is simpler in comparison. We will need to refactor the user functions from the checkout pages to make it accessible thru out the store. The most time consuming will be testing any files requires user authentications.
 
 #### 3.4 Preview Cart Function (No postback)
 
-Preview cart panel requires refactoring estore_cart_view into a common component and work with estore_manager and estore_cart tables. The layout and collapsible behavior can be done by using Offcanvas Components Bootstrap css library for collapsible sidebar.
+Preview cart panel requires refactoring estore_cart_view into a common component and work with estore_manager and estore_cart tables. The layout and collapsible behavior can be done by using Offcanvas Components Bootstrap css library for collapsible sidebar. But no postback is a limiting factor.
 
 #### 3.5 Navigation Refactoring
 
