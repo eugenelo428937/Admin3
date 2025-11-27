@@ -67,25 +67,42 @@ const renderWithProviders = (component) => {
   );
 };
 
-describe('TopNavBar Mobile Visibility', () => {
-  test('should have d-none d-sm-block class to hide on mobile screens', () => {
+describe('TopNavBar', () => {
+  test('should render navbar-top wrapper element', () => {
     const { container } = renderWithProviders(<TopNavBar />);
 
-    // TopNavBar should have a wrapper div with d-none d-sm-block classes
+    // TopNavBar should have a wrapper div with navbar-top class
     const topNavWrapper = container.querySelector('.navbar-top');
-    const parentDiv = topNavWrapper?.parentElement;
-
-    expect(parentDiv).toHaveClass('d-none');
-    expect(parentDiv).toHaveClass('d-sm-block');
+    expect(topNavWrapper).toBeInTheDocument();
   });
 
-  test('should render TopNavBar content when on desktop', () => {
+  test('should render ActEd Home link', () => {
     renderWithProviders(<TopNavBar />);
 
-    // Should render ActEd Home and Help links (desktop behavior)
-    const actedHomeText = screen.queryByText('ActEd Home');
-
-    // These elements exist in the DOM but may be hidden on mobile via CSS
+    // Should render ActEd Home link
+    const actedHomeText = screen.getByText('ActEd Home');
     expect(actedHomeText).toBeInTheDocument();
+  });
+
+  test('should render Help link', () => {
+    renderWithProviders(<TopNavBar />);
+
+    // Should render Help link
+    const helpText = screen.getByText('Help');
+    expect(helpText).toBeInTheDocument();
+  });
+
+  test('should render Brochure button via TopNavActions', () => {
+    renderWithProviders(<TopNavBar />);
+
+    // Brochure button should be rendered
+    expect(screen.getByText('Brochure')).toBeInTheDocument();
+  });
+
+  test('should render Search button via TopNavActions', () => {
+    renderWithProviders(<TopNavBar />);
+
+    // Search button should be rendered
+    expect(screen.getByText('Search')).toBeInTheDocument();
   });
 });

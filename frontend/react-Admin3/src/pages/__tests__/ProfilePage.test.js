@@ -5,15 +5,27 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../theme/theme';
 
-// Mock dependencies
+// Create mockNavigate at module level
 const mockNavigate = jest.fn();
+
+// Override useNavigate from the global mock in setupTests.js
 jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+  __esModule: true,
   useNavigate: () => mockNavigate,
+  useLocation: () => ({ pathname: '/profile', search: '', hash: '', state: null }),
+  useParams: () => ({}),
+  useSearchParams: () => [new URLSearchParams(), jest.fn()],
+  MemoryRouter: ({ children }) => children,
+  BrowserRouter: ({ children }) => children,
+  Link: ({ children, to }) => <a href={to}>{children}</a>,
+  NavLink: ({ children, to }) => <a href={to}>{children}</a>,
+  Navigate: () => null,
+  Routes: ({ children }) => children,
+  Route: ({ element }) => element,
+  Outlet: () => null,
 }));
 
 // Mock useAuth hook
@@ -56,9 +68,7 @@ describe('ProfilePage', () => {
   const renderProfilePage = () => {
     return render(
       <ThemeProvider theme={theme}>
-        <MemoryRouter>
-          <ProfilePage />
-        </MemoryRouter>
+        <ProfilePage />
       </ThemeProvider>
     );
   };
@@ -91,9 +101,7 @@ describe('ProfilePage', () => {
     test('redirects when authentication state changes', () => {
       const { rerender } = render(
         <ThemeProvider theme={theme}>
-          <MemoryRouter>
-            <ProfilePage />
-          </MemoryRouter>
+          <ProfilePage />
         </ThemeProvider>
       );
 
@@ -104,9 +112,7 @@ describe('ProfilePage', () => {
       mockUseAuth.mockReturnValue({ isAuthenticated: false });
       rerender(
         <ThemeProvider theme={theme}>
-          <MemoryRouter>
-            <ProfilePage />
-          </MemoryRouter>
+          <ProfilePage />
         </ThemeProvider>
       );
 

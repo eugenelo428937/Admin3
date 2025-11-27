@@ -62,7 +62,7 @@ import {
 	EnhancedMinimalCard,		
 } from "./ProductCards";
 import MarkingProductCard from "./ProductCards/MarkingProductCard";
-import GlassHeaderProductCards from './components/styleguide/GlassHeaderProductCards';
+import GlassHeaderProductCards from './GlassHeaderProductCards';
 
 const ProductCardsSection = () => {
 	const theme = useTheme();
@@ -308,7 +308,7 @@ const ProductCardsSection = () => {
 					</Paper>
 				</Grid>
 			</Grid>
-			
+			<GlassHeaderProductCards />
 		</Container>
 	);
 };

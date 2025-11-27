@@ -54,13 +54,14 @@ describe('MainNavActions Mobile Display', () => {
       <MainNavActions
         onOpenAuth={mockOnOpenAuth}
         onOpenCart={mockOnOpenCart}
-        onOpenSearch={mockOnOpenSearch}
+        onToggleMobileMenu={jest.fn()}
+        isMobile={false}
       />
     );
 
-    // Cart button should exist
-    const cartButton = screen.getByLabelText(/shopping cart/i);
-    expect(cartButton).toBeInTheDocument();
+    // Cart button should exist - use getAllByLabelText since there may be multiple
+    const cartButtons = screen.getAllByLabelText(/shopping cart/i);
+    expect(cartButtons.length).toBeGreaterThan(0);
 
     // Cart Typography should have display none on xs and sm screens
     const cartText = screen.queryByText('Cart');
@@ -87,31 +88,33 @@ describe('MainNavActions Mobile Display', () => {
     expect(loginText).toBeInTheDocument();
   });
 
-  test('should render search icon button for mobile', () => {
+  test('should render mobile menu button when isMobile is true', () => {
     renderWithProviders(
       <MainNavActions
         onOpenAuth={mockOnOpenAuth}
         onOpenCart={mockOnOpenCart}
-        onOpenSearch={mockOnOpenSearch}
+        onToggleMobileMenu={jest.fn()}
+        isMobile={true}
       />
     );
 
-    // Search button should exist with proper label
-    const searchButton = screen.getByLabelText(/search/i);
-    expect(searchButton).toBeInTheDocument();
+    // Mobile menu button should exist with proper label
+    const menuButton = screen.getByLabelText('open navigation menu');
+    expect(menuButton).toBeInTheDocument();
   });
 
-  test('should show search icon only on mobile (hidden on desktop)', () => {
-    const { container } = renderWithProviders(
+  test('should not render mobile menu button when isMobile is false', () => {
+    renderWithProviders(
       <MainNavActions
         onOpenAuth={mockOnOpenAuth}
         onOpenCart={mockOnOpenCart}
-        onOpenSearch={mockOnOpenSearch}
+        onToggleMobileMenu={jest.fn()}
+        isMobile={false}
       />
     );
 
-    // Search button should have sx={{ display: { xs: 'flex', md: 'none' } }}
-    const searchButton = screen.getByLabelText(/search/i);
-    expect(searchButton).toBeInTheDocument();
+    // Mobile menu button should not exist
+    const menuButton = screen.queryByLabelText('open navigation menu');
+    expect(menuButton).not.toBeInTheDocument();
   });
 });
