@@ -5,27 +5,45 @@
 
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../theme/theme';
 
-// Mock dependencies
+// Create mockNavigate at module level
 const mockNavigate = jest.fn();
+
+// Override useNavigate from the global mock in setupTests.js
 jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+  __esModule: true,
   useNavigate: () => mockNavigate,
+  useLocation: () => ({ pathname: '/cart', search: '', hash: '', state: null }),
+  useParams: () => ({}),
+  useSearchParams: () => [new URLSearchParams(), jest.fn()],
+  MemoryRouter: ({ children }) => children,
+  BrowserRouter: ({ children }) => children,
+  Link: ({ children, to }) => <a href={to}>{children}</a>,
+  NavLink: ({ children, to }) => <a href={to}>{children}</a>,
+  Navigate: () => null,
+  Routes: ({ children }) => children,
+  Route: ({ element }) => element,
+  Outlet: () => null,
 }));
 
-// Mock cartService
-const mockCartService = {
-  fetchCart: jest.fn(),
-  updateItem: jest.fn(),
-  removeItem: jest.fn(),
-};
+// Mock cartService - define mock functions first
+const mockFetchCart = jest.fn();
+const mockUpdateItem = jest.fn();
+const mockRemoveItem = jest.fn();
+
 jest.mock('../../services/cartService', () => ({
   __esModule: true,
-  default: mockCartService,
+  default: {
+    fetchCart: jest.fn(),
+    updateItem: jest.fn(),
+    removeItem: jest.fn(),
+  },
 }));
+
+// Import the mocked service to get references to the mock functions
+import cartService from '../../services/cartService';
 
 // Mock Cart subcomponents
 jest.mock('../../components/Cart/CartItemWithVAT', () => {
@@ -95,24 +113,22 @@ describe('Cart Page', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockCartService.fetchCart.mockResolvedValue({ data: mockCartData });
-    mockCartService.updateItem.mockResolvedValue({ data: { success: true } });
-    mockCartService.removeItem.mockResolvedValue({ data: { success: true } });
+    cartService.fetchCart.mockResolvedValue({ data: mockCartData });
+    cartService.updateItem.mockResolvedValue({ data: { success: true } });
+    cartService.removeItem.mockResolvedValue({ data: { success: true } });
   });
 
   const renderCart = () => {
     return render(
       <ThemeProvider theme={theme}>
-        <MemoryRouter>
-          <Cart />
-        </MemoryRouter>
+        <Cart />
       </ThemeProvider>
     );
   };
 
   describe('loading state', () => {
     test('shows loading spinner while fetching cart', async () => {
-      mockCartService.fetchCart.mockImplementation(
+      cartService.fetchCart.mockImplementation(
         () => new Promise((resolve) => setTimeout(() => resolve({ data: mockCartData }), 100))
       );
 
@@ -133,7 +149,7 @@ describe('Cart Page', () => {
 
   describe('error state', () => {
     test('shows error message when fetch fails', async () => {
-      mockCartService.fetchCart.mockRejectedValue(new Error('Network error'));
+      cartService.fetchCart.mockRejectedValue(new Error('Network error'));
 
       renderCart();
 
@@ -143,7 +159,7 @@ describe('Cart Page', () => {
     });
 
     test('shows retry button on error', async () => {
-      mockCartService.fetchCart.mockRejectedValue(new Error('Failed to load'));
+      cartService.fetchCart.mockRejectedValue(new Error('Failed to load'));
 
       renderCart();
 
@@ -153,7 +169,7 @@ describe('Cart Page', () => {
     });
 
     test('retries fetch when retry button is clicked', async () => {
-      mockCartService.fetchCart
+      cartService.fetchCart
         .mockRejectedValueOnce(new Error('Failed'))
         .mockResolvedValueOnce({ data: mockCartData });
 
@@ -166,14 +182,14 @@ describe('Cart Page', () => {
       fireEvent.click(screen.getByRole('button', { name: /retry/i }));
 
       await waitFor(() => {
-        expect(mockCartService.fetchCart).toHaveBeenCalledTimes(2);
+        expect(cartService.fetchCart).toHaveBeenCalledTimes(2);
       });
     });
   });
 
   describe('empty cart state', () => {
     test('shows empty cart message when no items', async () => {
-      mockCartService.fetchCart.mockResolvedValue({
+      cartService.fetchCart.mockResolvedValue({
         data: { items: [], totals: {} },
       });
 
@@ -186,7 +202,7 @@ describe('Cart Page', () => {
     });
 
     test('shows shopping cart icon for empty cart', async () => {
-      mockCartService.fetchCart.mockResolvedValue({
+      cartService.fetchCart.mockResolvedValue({
         data: { items: [], totals: {} },
       });
 
@@ -198,7 +214,7 @@ describe('Cart Page', () => {
     });
 
     test('shows continue shopping button for empty cart', async () => {
-      mockCartService.fetchCart.mockResolvedValue({
+      cartService.fetchCart.mockResolvedValue({
         data: { items: [], totals: {} },
       });
 
@@ -210,7 +226,7 @@ describe('Cart Page', () => {
     });
 
     test('navigates to home when continue shopping is clicked', async () => {
-      mockCartService.fetchCart.mockResolvedValue({
+      cartService.fetchCart.mockResolvedValue({
         data: { items: [], totals: {} },
       });
 
@@ -242,7 +258,7 @@ describe('Cart Page', () => {
     });
 
     test('shows singular item text for single item', async () => {
-      mockCartService.fetchCart.mockResolvedValue({
+      cartService.fetchCart.mockResolvedValue({
         data: {
           items: [{ id: 1, name: 'Single Item', price: 100, quantity: 1 }],
           totals: { subtotal: 100, vat: 20, total: 120 },
@@ -276,7 +292,7 @@ describe('Cart Page', () => {
 
   describe('VAT calculation error', () => {
     test('shows VAT error component when there is an error', async () => {
-      mockCartService.fetchCart.mockResolvedValue({
+      cartService.fetchCart.mockResolvedValue({
         data: {
           ...mockCartData,
           vatCalculationError: true,
@@ -293,7 +309,7 @@ describe('Cart Page', () => {
     });
 
     test('retries VAT calculation when retry button is clicked', async () => {
-      mockCartService.fetchCart.mockResolvedValue({
+      cartService.fetchCart.mockResolvedValue({
         data: {
           ...mockCartData,
           vatCalculationError: true,
@@ -310,7 +326,7 @@ describe('Cart Page', () => {
       fireEvent.click(screen.getByTestId('retry-vat-btn'));
 
       await waitFor(() => {
-        expect(mockCartService.fetchCart).toHaveBeenCalledTimes(2);
+        expect(cartService.fetchCart).toHaveBeenCalledTimes(2);
       });
     });
   });
@@ -326,7 +342,7 @@ describe('Cart Page', () => {
       fireEvent.click(screen.getByTestId('quantity-btn-1'));
 
       await waitFor(() => {
-        expect(mockCartService.updateItem).toHaveBeenCalledWith(
+        expect(cartService.updateItem).toHaveBeenCalledWith(
           1,
           { quantity: 2 },
           {}
@@ -345,12 +361,12 @@ describe('Cart Page', () => {
 
       await waitFor(() => {
         // Initial fetch + refresh after update
-        expect(mockCartService.fetchCart).toHaveBeenCalledTimes(2);
+        expect(cartService.fetchCart).toHaveBeenCalledTimes(2);
       });
     });
 
     test('shows error when quantity update fails', async () => {
-      mockCartService.updateItem.mockRejectedValue(new Error('Update failed'));
+      cartService.updateItem.mockRejectedValue(new Error('Update failed'));
 
       renderCart();
 
@@ -378,7 +394,7 @@ describe('Cart Page', () => {
       fireEvent.click(screen.getByTestId('remove-btn-1'));
 
       await waitFor(() => {
-        expect(mockCartService.removeItem).toHaveBeenCalledWith(1);
+        expect(cartService.removeItem).toHaveBeenCalledWith(1);
       });
     });
 
@@ -393,7 +409,7 @@ describe('Cart Page', () => {
 
       await waitFor(() => {
         // Initial fetch + refresh after removal
-        expect(mockCartService.fetchCart).toHaveBeenCalledTimes(2);
+        expect(cartService.fetchCart).toHaveBeenCalledTimes(2);
       });
     });
   });

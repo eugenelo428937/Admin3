@@ -5,15 +5,27 @@
 
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../theme/theme';
 
-// Mock dependencies
+// Create mockNavigate at module level
 const mockNavigate = jest.fn();
+
+// Override useNavigate from the global mock in setupTests.js
 jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+  __esModule: true,
   useNavigate: () => mockNavigate,
+  useLocation: () => ({ pathname: '/', search: '', hash: '', state: null }),
+  useParams: () => ({}),
+  useSearchParams: () => [new URLSearchParams(), jest.fn()],
+  MemoryRouter: ({ children }) => children,
+  BrowserRouter: ({ children }) => children,
+  Link: ({ children, to }) => <a href={to}>{children}</a>,
+  NavLink: ({ children, to }) => <a href={to}>{children}</a>,
+  Navigate: () => null,
+  Routes: ({ children }) => children,
+  Route: ({ element }) => element,
+  Outlet: () => null,
 }));
 
 // Mock SearchBox
@@ -93,9 +105,7 @@ describe('Home Page', () => {
   const renderHome = () => {
     return render(
       <ThemeProvider theme={theme}>
-        <MemoryRouter>
-          <Home />
-        </MemoryRouter>
+        <Home />
       </ThemeProvider>
     );
   };
@@ -132,7 +142,8 @@ describe('Home Page', () => {
       expect(video).toBeInTheDocument();
       expect(video).toHaveAttribute('autoplay');
       expect(video).toHaveAttribute('loop');
-      expect(video).toHaveAttribute('muted');
+      // Boolean attributes in React are rendered as properties, not attributes
+      expect(video.muted).toBe(true);
     });
   });
 
