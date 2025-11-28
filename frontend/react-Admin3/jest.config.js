@@ -19,6 +19,7 @@ module.exports = {
     '!src/**/*.test.{js,jsx}',
     '!src/**/__tests__/**',
     '!src/test-utils/**',
+    '!src/misc/**',
     '!src/**/*.examples.{js,jsx}',
     '!src/index.js',
     '!src/reportWebVitals.js',
@@ -39,12 +40,14 @@ module.exports = {
   },
   coverageReporters: ['text', 'text-summary', 'lcov', 'html'],
 
-  // Exclude non-production code from coverage analysis
+  // Exclude non-production code from coverage analysis (regex patterns)
   coveragePathIgnorePatterns: [
     '/node_modules/',
-    '<rootDir>/src/components/sandbox/',
-    '<rootDir>/src/components/styleguide/',
-    '<rootDir>/src/components/Test/',
-    '<rootDir>/src/components/Testing/',
+    '/src/test-utils/',
+    '/src/misc/',
+    '/src/components/sandbox/',
+    '/src/components/styleguide/',
+    '/src/components/Test/',
+    '/src/components/Testing/',
   ],
 };

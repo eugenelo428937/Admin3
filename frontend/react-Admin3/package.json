@@ -81,6 +81,30 @@
   "jest": {
     "transformIgnorePatterns": [
       "node_modules/(?!(@reduxjs/toolkit|@standard-schema|msw|@mswjs)/)"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!src/**/*.test.{js,jsx}",
+      "!src/**/__tests__/**",
+      "!src/test-utils/**",
+      "!src/misc/**",
+      "!src/**/*.examples.{js,jsx}",
+      "!src/index.js",
+      "!src/reportWebVitals.js",
+      "!src/setupTests.js",
+      "!src/components/sandbox/**",
+      "!src/components/styleguide/**",
+      "!src/components/Test/**",
+      "!src/components/Testing/**"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/src/test-utils/",
+      "/src/misc/",
+      "/src/components/sandbox/",
+      "/src/components/styleguide/",
+      "/src/components/Test/",
+      "/src/components/Testing/"
     ]
   },
   "browserslist": {

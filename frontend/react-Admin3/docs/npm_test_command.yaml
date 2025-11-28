@@ -1,0 +1,41 @@
+cd frontend/react-Admin3
+  npm test
+  This starts Jest in watch mode (re-runs on file changes).
+
+  Run Tests Without Watch Mode
+
+  npm test -- --watchAll=false
+
+  Run Specific Test File
+
+  # By filename pattern
+  npm test -- --testPathPattern='authService.test.js' --watchAll=false
+  npm test -- --testPathPattern='httpService.test.js' --watchAll=false
+  npm test -- --testPathPattern='productService.test.js' --watchAll=false
+  npm test -- --testPathPattern='ProductContext.test.js' --watchAll=false
+
+  Run Tests with Coverage Report
+
+  npm test -- --coverage --watchAll=false
+
+  Run Coverage for Specific Module
+
+  # Services only
+  npm test -- --coverage --watchAll=false --collectCoverageFrom='src/services/*.js'
+
+  # Contexts only
+  npm test -- --coverage --watchAll=false --collectCoverageFrom='src/contexts/*.js'
+
+  Run All New Tests Created Today
+
+  npm test --
+  --testPathPattern='(authService|httpService|productService|ProductContext).test.js'
+  --watchAll=false
+
+  Quick Verification Command
+
+  cd /Users/work/Documents/Code/Admin3/frontend/react-Admin3 && npm test --
+  --testPathPattern='(authService|httpService|productService|ProductContext).test.js'
+  --watchAll=false
+
+  This should show 127 tests passing (39 + 31 + 43 + 14).
