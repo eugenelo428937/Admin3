@@ -190,4 +190,213 @@ describe('SearchBox Redux Integration (Search-Only)', () => {
     const state3 = store.getState();
     expect(state3.filters.searchQuery).toBe('mock');
   });
+
+  /**
+   * T005: Contract Test - SearchBox calls onSearchResults callback with results
+   *
+   * This test verifies that SearchBox passes search results to parent via callback.
+   */
+  test('T005: calls onSearchResults callback with results', async () => {
+    // ARRANGE: Mock callback and searchService
+    const mockOnSearchResults = jest.fn();
+
+    renderWithRedux(<SearchBox onSearchResults={mockOnSearchResults} />);
+    const searchInput = screen.getByPlaceholderText(/search/i);
+
+    // ACT: Type query with 3+ characters
+    fireEvent.change(searchInput, { target: { value: 'test' } });
+
+    // ASSERT: Callback called with results after debounce (300ms) + API response
+    // The mock in jest.mock returns default fuzzy results
+    await waitFor(() => {
+      expect(mockOnSearchResults).toHaveBeenCalled();
+    }, { timeout: 600 });
+
+    // The callback was called - verify it was called with proper arguments
+    const callArgs = mockOnSearchResults.mock.calls;
+    expect(callArgs.length).toBeGreaterThan(0);
+    // Second argument should be the query
+    expect(callArgs[callArgs.length - 1][1]).toBe('test');
+  });
+
+  /**
+   * T006: Contract Test - SearchBox does not call API for short queries
+   *
+   * This test verifies that queries under 3 characters don't trigger API calls.
+   */
+  test('T006: does not call API for queries shorter than 3 characters', async () => {
+    // ARRANGE
+    const mockOnSearchResults = jest.fn();
+    const searchService = require('../../services/searchService');
+    searchService.fuzzySearch.mockClear();
+
+    renderWithRedux(<SearchBox onSearchResults={mockOnSearchResults} />);
+    const searchInput = screen.getByPlaceholderText(/search/i);
+
+    // ACT: Type short query
+    fireEvent.change(searchInput, { target: { value: 'ab' } });
+
+    // Wait for debounce
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    // ASSERT: API not called for short queries
+    expect(searchService.fuzzySearch).not.toHaveBeenCalled();
+
+    // But callback should still be called with null results
+    await waitFor(() => {
+      expect(mockOnSearchResults).toHaveBeenCalledWith(null, 'ab');
+    });
+  });
+
+  /**
+   * T007: Contract Test - SearchBox handles API error gracefully
+   *
+   * This test verifies that search errors are handled and displayed.
+   */
+  test('T007: handles search API error gracefully', async () => {
+    // ARRANGE: Mock API error
+    const mockOnSearchResults = jest.fn();
+    const searchService = require('../../services/searchService');
+    searchService.fuzzySearch.mockRejectedValueOnce(new Error('Network error'));
+
+    renderWithRedux(<SearchBox onSearchResults={mockOnSearchResults} />);
+    const searchInput = screen.getByPlaceholderText(/search/i);
+
+    // ACT: Type query that triggers error
+    fireEvent.change(searchInput, { target: { value: 'error test' } });
+
+    // ASSERT: Error message displayed
+    await waitFor(() => {
+      expect(screen.getByText('Search failed. Please try again.')).toBeInTheDocument();
+    }, { timeout: 500 });
+
+    // Callback should still be called with fallback results
+    expect(mockOnSearchResults).toHaveBeenCalledWith(
+      expect.objectContaining({
+        search_info: expect.objectContaining({ type: 'fallback' })
+      }),
+      'error test'
+    );
+  });
+
+  /**
+   * T008: Contract Test - SearchBox calls onShowMatchingProducts on Enter key
+   *
+   * This test verifies that pressing Enter navigates to products page.
+   */
+  test('T008: calls onShowMatchingProducts when Enter pressed with results', async () => {
+    // ARRANGE
+    const mockOnShowMatchingProducts = jest.fn();
+    const mockOnSearchResults = jest.fn();
+    const searchService = require('../../services/searchService');
+    searchService.fuzzySearch.mockResolvedValueOnce({
+      suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
+      suggested_products: [{ id: 1, name: 'Test Product' }],
+      search_info: { query: 'test', type: 'fuzzy' },
+      total_count: 1
+    });
+
+    renderWithRedux(
+      <SearchBox
+        onShowMatchingProducts={mockOnShowMatchingProducts}
+        onSearchResults={mockOnSearchResults}
+      />
+    );
+    const searchInput = screen.getByPlaceholderText(/search/i);
+
+    // ACT: Type query and wait for search to complete
+    fireEvent.change(searchInput, { target: { value: 'test' } });
+
+    // Wait for the search callback to be called (indicates search completed)
+    await waitFor(() => {
+      expect(mockOnSearchResults).toHaveBeenCalled();
+    }, { timeout: 600 });
+
+    // Press Enter after results are available
+    fireEvent.keyDown(searchInput, { key: 'Enter' });
+
+    // ASSERT: onShowMatchingProducts called
+    expect(mockOnShowMatchingProducts).toHaveBeenCalled();
+  });
+
+  /**
+   * T009: Contract Test - SearchBox does not navigate on Enter without results
+   *
+   * This test verifies that Enter key does nothing when no results exist.
+   */
+  test('T009: does not call onShowMatchingProducts when Enter pressed without results', async () => {
+    // ARRANGE
+    const mockOnShowMatchingProducts = jest.fn();
+
+    renderWithRedux(<SearchBox onShowMatchingProducts={mockOnShowMatchingProducts} />);
+    const searchInput = screen.getByPlaceholderText(/search/i);
+
+    // ACT: Press Enter without any search results
+    fireEvent.keyDown(searchInput, { key: 'Enter' });
+
+    // ASSERT: onShowMatchingProducts NOT called
+    expect(mockOnShowMatchingProducts).not.toHaveBeenCalled();
+  });
+
+  /**
+   * T010: Contract Test - SearchBox auto-focuses when autoFocus prop is true
+   */
+  test('T010: auto-focuses input when autoFocus prop is true', () => {
+    // ARRANGE & ACT
+    renderWithRedux(<SearchBox autoFocus={true} />);
+
+    // ASSERT: Input is focused
+    const searchInput = screen.getByPlaceholderText(/search/i);
+    expect(document.activeElement).toBe(searchInput);
+  });
+
+  /**
+   * T011: Contract Test - SearchBox does not auto-focus when autoFocus is false
+   */
+  test('T011: does not auto-focus when autoFocus prop is false', () => {
+    // ARRANGE & ACT
+    renderWithRedux(<SearchBox autoFocus={false} />);
+
+    // ASSERT: Input is NOT focused
+    const searchInput = screen.getByPlaceholderText(/search/i);
+    expect(document.activeElement).not.toBe(searchInput);
+  });
+
+  /**
+   * T012: Contract Test - SearchBox reloads results on mount with existing query
+   */
+  test('T012: reloads search results on mount when query already exists in Redux', async () => {
+    // ARRANGE
+    const mockOnSearchResults = jest.fn();
+    const searchService = require('../../services/searchService');
+    searchService.fuzzySearch.mockClear();
+    searchService.fuzzySearch.mockResolvedValueOnce({
+      suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
+      suggested_products: [{ id: 1, name: 'Existing Result' }],
+      search_info: { query: 'existing', type: 'fuzzy' },
+      total_count: 1
+    });
+
+    // ACT: Mount with existing search query in Redux
+    renderWithRedux(
+      <SearchBox onSearchResults={mockOnSearchResults} />,
+      { searchQuery: 'existing' }
+    );
+
+    // ASSERT: Search is performed on mount
+    await waitFor(() => {
+      expect(searchService.fuzzySearch).toHaveBeenCalledWith('existing');
+    }, { timeout: 500 });
+  });
+
+  /**
+   * T013: Contract Test - SearchBox displays custom placeholder
+   */
+  test('T013: displays custom placeholder when provided', () => {
+    // ARRANGE & ACT
+    renderWithRedux(<SearchBox placeholder="Custom placeholder text" />);
+
+    // ASSERT: Custom placeholder is displayed
+    expect(screen.getByPlaceholderText('Custom placeholder text')).toBeInTheDocument();
+  });
 });
