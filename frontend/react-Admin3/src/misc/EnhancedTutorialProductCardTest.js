@@ -15,8 +15,8 @@ import {
   Radio,
 } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
-import testTheme from "../../../theme/testTheme";
-import ProductCard from "../../Common/BaseProductCard";
+import testTheme from "../theme/testTheme";
+import ProductCard from "../components/Common/BaseProductCard";
 import { School, AddShoppingCart, CalendarMonthOutlined, ViewModule, LocationOn, InfoOutline } from "@mui/icons-material";
 
 const EnhancedTutorialProductCardTest = ({ productType = "tutorial", ...props }) => {

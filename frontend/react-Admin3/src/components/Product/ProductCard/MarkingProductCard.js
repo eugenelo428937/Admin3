@@ -528,16 +528,7 @@ const MarkingProductCard = React.memo(
 					onMouseLeave={handleMouseLeave}
 					sx={{
 						transform: isHovered ? "scale(1.02)" : "scale(1)",
-						transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-						width: "100%",
-						margin: 0,
-						padding: 0,
-						display: "flex",
-						flexDirection: "column",
-						height: "100%",
-						"& .MuiCardHeader-root": {
-							width: "100%",
-						},
+						transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",						
 					}}>
 					{/* Floating Badges */}
 					<Box className="floating-badges-container">
@@ -571,15 +562,7 @@ const MarkingProductCard = React.memo(
 						}
 					/>
 
-					<CardContent
-						sx={{
-							alignSelf: "flex-start",
-							width: "100%",
-							flex: 1,
-							display: "flex",
-							flexDirection: "column",
-							justifyContent: "flex-start",
-						}}>
+					<CardContent>
 						{/* Number of submissions info */}
 						<Stack
 							direction="column"
