@@ -1,149 +1,197 @@
 # Implementation Plan: Frontend Test Coverage Phase 2
 
-**Branch**: `005-frontend-test-coverage-phase2` | **Date**: 2025-11-26 | **Spec**: [spec.md](./spec.md)
+**Branch**: `005-frontend-test-coverage-phase2` | **Date**: 2025-11-27 | **Spec**: [spec.md](spec.md)
 **Input**: Feature specification from `/specs/005-frontend-test-coverage-phase2/spec.md`
 
 ## Execution Flow (/plan command scope)
 ```
 1. Load feature spec from Input path
-   → ✅ Loaded: spec.md with 24 functional requirements (FR-021 to FR-044)
-2. Fill Technical Context
-   → ✅ Completed: All context resolved, no NEEDS CLARIFICATION
-3. Fill Constitution Check section
-   → ✅ Constitution is template-based; using TDD principles from CLAUDE.md
-4. Evaluate Constitution Check
-   → ✅ PASS: Test-first approach, minimal complexity
-5. Execute Phase 0 → research.md
-   → ✅ Completed: Testing patterns documented
-6. Execute Phase 1 → data-model.md, quickstart.md
-   → ✅ Completed: Test matrix and validation guide created
-7. Re-evaluate Constitution Check
-   → ✅ PASS: No violations
-8. Plan Phase 2 → Task generation approach described
-   → ✅ Ready for /tasks command
+   -> Completed: Loaded spec.md with FR-021 through FR-044
+2. Fill Technical Context (scan for NEEDS CLARIFICATION)
+   -> Completed: All technical context resolved
+   -> Detect Project Type: web (frontend + backend)
+   -> Set Structure Decision: Option 2 (Web application)
+3. Fill the Constitution Check section based on constitution document
+   -> Completed: No violations identified
+4. Evaluate Constitution Check section
+   -> PASS: No complexity deviations needed
+   -> Update Progress Tracking: Initial Constitution Check
+5. Execute Phase 0 -> research.md
+   -> Completed: Testing patterns documented
+6. Execute Phase 1 -> contracts, data-model.md, quickstart.md
+   -> Completed: All artifacts generated
+7. Re-evaluate Constitution Check section
+   -> PASS: Design complies with principles
+   -> Update Progress Tracking: Post-Design Constitution Check
+8. Plan Phase 2 -> Describe task generation approach
+   -> Completed: Task strategy defined
 9. STOP - Ready for /tasks command
+   -> Note: tasks.md already exists with integration testing extension
 ```
 
 ## Summary
-Extend frontend test coverage from Phase 1 (services, hooks, contexts, utils at 95%) to Phase 2 modules:
-- **Components**: ~40 high-priority files across Common, Navigation, Product, Ordering, User, Admin categories
-- **Pages**: 4 files (Cart, Home, ProfilePage, Registration)
-- **Store/Redux**: 2 files needing enhancement (store/index.js, filterSelectors.js)
-- **Theme**: 4 files (theme.js, colorTheme.js, typographyTheme.js, liftKitTheme.js)
-- **Root Level**: 2 files (App.js improvement, config.js)
 
-Target: 60% overall frontend coverage (up from ~8%)
+Phase 2 extends frontend test coverage to components, pages, store/Redux, and theme modules. Building on Phase 1's 95% coverage of services/hooks/contexts/utils, this phase targets 60%+ overall frontend coverage through:
+- 40+ component test files across Navigation, Product, Ordering, User, Admin categories
+- 4 page test files (Cart, Home, ProfilePage, Registration)
+- Enhanced Redux store tests (index.js, filterSelectors.js)
+- 4 theme test files
+- **NEW**: Dedicated integration tests for complex components (50-60% coverage targets)
 
 ## Technical Context
-**Language/Version**: JavaScript ES6+ / React 18
-**Primary Dependencies**: Jest 29, React Testing Library, @testing-library/user-event, Material-UI v5
-**Storage**: N/A (frontend tests only)
-**Testing**: Jest with React Testing Library, coverage via `npm test -- --coverage`
-**Target Platform**: Browser (Chrome, Firefox, Safari, Edge)
-**Project Type**: Web application (Option 2 - frontend/backend structure)
-**Performance Goals**: Tests complete in <2 minutes total, individual test files <10s
-**Constraints**: 80% minimum coverage per module, tests must be isolated and parallelizable
-**Scale/Scope**: ~50 new test files covering ~120 source files
+**Language/Version**: JavaScript ES2022, React 18.2
+**Primary Dependencies**: Jest 29, React Testing Library, Material-UI v5, Redux Toolkit
+**Storage**: N/A (frontend only - API mocked in tests)
+**Testing**: Jest + RTL with co-located `__tests__` folders
+**Target Platform**: Modern browsers (Chrome, Firefox, Safari, Edge)
+**Project Type**: web (frontend React + backend Django)
+**Performance Goals**: All tests complete < 60 seconds
+**Constraints**: Maintain Phase 1 patterns, no breaking changes to existing tests
+**Scale/Scope**: 100+ components, 4 pages, 12 store files, 5 theme files
 
 ## Constitution Check
-*GATE: TDD principles from project CLAUDE.md apply*
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| Test-First | ✅ PASS | Writing tests for existing code (coverage extension) |
-| Isolation | ✅ PASS | Each component tested in isolation with mocks |
-| Minimal Complexity | ✅ PASS | Using established patterns from Phase 1 |
-| Co-location | ✅ PASS | Tests in `__tests__` folders within modules |
+Since the constitution file is a placeholder template, the following standard principles apply:
+
+- [x] **Test-First**: TDD patterns documented in research.md
+- [x] **Simplicity**: Using existing Jest/RTL patterns from Phase 1
+- [x] **No Unnecessary Abstraction**: Tests co-located with components
+- [x] **Integration Testing**: Dedicated integration test phase for complex workflows
+
+**Status**: PASS - No violations
 
 ## Project Structure
 
 ### Documentation (this feature)
 ```
 specs/005-frontend-test-coverage-phase2/
-├── plan.md              # This file
-├── research.md          # Phase 0: Testing patterns research
-├── data-model.md        # Phase 1: Test matrix and coverage model
-├── quickstart.md        # Phase 1: Validation and verification guide
-└── tasks.md             # Phase 2: Generated by /tasks command
+├── plan.md              # This file (/plan command output) - COMPLETE
+├── research.md          # Phase 0 output - COMPLETE
+├── data-model.md        # Phase 1 output - COMPLETE
+├── quickstart.md        # Phase 1 output - COMPLETE
+├── contracts/           # Phase 1 output - N/A (no API contracts needed)
+└── tasks.md             # Phase 2 output - COMPLETE (78 tasks)
 ```
 
-### Source Code (existing structure)
+### Source Code (repository root)
 ```
-frontend/react-Admin3/src/
-├── components/
-│   ├── Common/__tests__/        # 4 existing, 4 new needed
-│   ├── Navigation/__tests__/    # 0 existing, 10 new needed
-│   ├── Product/__tests__/       # 5 existing, 8 new needed
-│   ├── Ordering/__tests__/      # 2 existing, 3 new needed
-│   ├── User/__tests__/          # 0 existing, 7 new needed
-│   ├── Admin/__tests__/         # 0 existing, 10 new needed
-│   └── Address/__tests__/       # 1 existing, 1 new needed
-├── pages/__tests__/             # 0 existing, 4 new needed
-├── store/__tests__/             # 10 existing, 2 enhanced
-└── theme/__tests__/             # 0 existing, 4 new needed
+# Option 2: Web application (frontend + backend)
+frontend/react-Admin3/
+├── src/
+│   ├── components/
+│   │   ├── Common/__tests__/
+│   │   ├── Navigation/__tests__/
+│   │   ├── Product/__tests__/
+│   │   ├── Ordering/__tests__/
+│   │   ├── User/__tests__/
+│   │   ├── Address/__tests__/
+│   │   └── admin/__tests__/
+│   ├── pages/__tests__/
+│   ├── store/__tests__/
+│   └── theme/__tests__/
+└── jest.config.js
 ```
 
-**Structure Decision**: Option 2 (Web application) - existing frontend/backend structure
+**Structure Decision**: Option 2 - Web application (frontend + backend detected)
 
 ## Phase 0: Outline & Research
-✅ **Completed** - See [research.md](./research.md)
+**Status**: COMPLETE
 
-**Key Decisions**:
-1. Use React Testing Library patterns established in Phase 1
-2. Mock contexts and Redux store using existing test utilities
-3. Follow component testing pyramid: render → interaction → integration
-4. Prioritize high-impact components (checkout flow, navigation, user auth)
+Research documented in `research.md` covering:
+1. Component testing patterns (React Testing Library)
+2. Context mocking strategy (wrapper pattern)
+3. Redux store testing (mock store for units)
+4. Router mocking (MemoryRouter)
+5. Material-UI testing (role and test ID queries)
+6. Async testing patterns (findBy*, waitFor)
+7. Page testing strategy (integration-style)
+8. Theme testing strategy (snapshot + assertions)
+9. Coverage strategy (progressive by priority)
+10. Test file organization (co-located __tests__)
+
+**Output**: [research.md](research.md) - All patterns documented
 
 ## Phase 1: Design & Contracts
-✅ **Completed** - See [data-model.md](./data-model.md) and [quickstart.md](./quickstart.md)
+**Status**: COMPLETE
 
-**Outputs**:
-- Test matrix defining coverage requirements per module
-- Component dependency map for mock strategy
-- Validation checklist for coverage verification
+Artifacts generated:
+1. **data-model.md**: Test matrix for all 50+ components
+   - Common components: 4 requiring tests
+   - Navigation components: 10 requiring tests
+   - Product components: 6 requiring tests
+   - Ordering components: 4 requiring tests
+   - User components: 7 requiring tests
+   - Admin components: 10 requiring tests
+   - Address components: 1 requiring tests
+   - Pages: 4 requiring tests
+   - Store: 2 files requiring tests
+   - Theme: 4 files requiring tests
+
+2. **quickstart.md**: Validation commands and coverage targets
+   - Commands for each module category
+   - Expected coverage thresholds
+   - Common test patterns
+   - Troubleshooting guide
+
+3. **contracts/**: N/A - No API contracts needed for test coverage feature
+
+**Output**: [data-model.md](data-model.md), [quickstart.md](quickstart.md)
 
 ## Phase 2: Task Planning Approach
-*This section describes what the /tasks command will do*
+**Status**: COMPLETE (tasks.md exists with integration extension)
 
-**Task Generation Strategy**:
-- Group tasks by component category (Common, Navigation, Product, etc.)
-- Order by priority (High → Medium → Low within each category)
-- Mark independent tests with [P] for parallel execution
-- Estimate ~50 tasks total across all modules
+**Task Generation Strategy** (executed):
+- Base tasks T001-T063 cover unit testing for all modules
+- Extension tasks T064-T078 cover dedicated integration testing
+- Each component -> test file task [P]
+- Each page -> page test task [P]
+- Complex components (50-60% coverage) -> integration test task [P]
 
 **Ordering Strategy**:
-1. Pages (4 tasks) - Foundation for component tests
-2. Store enhancements (2 tasks) - Redux testing utilities
-3. Theme (4 tasks) - Quick wins, low complexity
-4. Components by priority:
-   - High-priority: ~15 tasks
-   - Medium-priority: ~15 tasks
-   - Low-priority: ~10 tasks
+- Setup first (T001-T002)
+- Store/Redux foundation (T003-T004)
+- Theme quick wins (T005-T008)
+- Root level (T009-T010)
+- Components by priority (T011-T056)
+- Validation (T057-T063)
+- **NEW**: Integration tests (T064-T072)
+- **NEW**: Integration validation (T073-T078)
 
-**Estimated Output**: 50 numbered tasks in tasks.md
+**Current Output**: [tasks.md](tasks.md) with 78 tasks
+- 63 unit test tasks (T001-T063) - COMPLETE
+- 15 integration test tasks (T064-T078) - PENDING
+
+## Phase 3+: Future Implementation
+*These phases are beyond the scope of the /plan command*
+
+**Phase 3**: Task execution - tasks.md ready for execution
+**Phase 4**: Implementation - Execute integration tests T064-T078
+**Phase 5**: Validation - Run coverage validation T073-T078
 
 ## Complexity Tracking
-*No violations - straightforward test coverage extension*
+*No violations requiring justification*
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| None | N/A | N/A |
+| N/A | - | - |
 
 ## Progress Tracking
+*This checklist is updated during execution flow*
 
 **Phase Status**:
 - [x] Phase 0: Research complete (/plan command)
 - [x] Phase 1: Design complete (/plan command)
-- [x] Phase 2: Task planning complete (/plan command - describe approach only)
-- [ ] Phase 3: Tasks generated (/tasks command)
-- [ ] Phase 4: Implementation complete
+- [x] Phase 2: Task planning complete (/plan command)
+- [x] Phase 3: Tasks generated (/tasks command) - Unit tests complete
+- [ ] Phase 4: Implementation complete - Integration tests pending
 - [ ] Phase 5: Validation passed
 
 **Gate Status**:
 - [x] Initial Constitution Check: PASS
 - [x] Post-Design Constitution Check: PASS
 - [x] All NEEDS CLARIFICATION resolved
-- [x] Complexity deviations documented (none)
+- [x] Complexity deviations documented (none required)
 
 ---
-*Based on CLAUDE.md TDD principles and Phase 1 patterns*
+*Based on Constitution v2.1.1 - See `/memory/constitution.md`*

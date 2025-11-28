@@ -110,7 +110,8 @@ describe('TutorialSelectionDialog', () => {
         />
       );
 
-      expect(screen.getByText('CS2 - Actuarial Modelling Tutorials - Bristol')).toBeInTheDocument();
+      // Title format is "{subjectCode} {location}"
+      expect(screen.getByText('CS2 Bristol')).toBeInTheDocument();
     });
 
     test('renders TutorialDetailCard for each event', () => {
@@ -170,8 +171,8 @@ describe('TutorialSelectionDialog', () => {
         />
       );
 
-      // Dialog title should not be visible when closed
-      expect(screen.queryByText('CS2 - Actuarial Modelling Tutorials - Bristol')).not.toBeInTheDocument();
+      // Dialog title should not be visible when closed (title format: "subjectCode location")
+      expect(screen.queryByText('CS2 Bristol')).not.toBeInTheDocument();
     });
 
     test('renders close button in dialog header', () => {
@@ -273,7 +274,7 @@ describe('TutorialSelectionDialog', () => {
       );
 
       // Verify the dialog opened and rendered
-      expect(screen.getByText('CS2 - Actuarial Modelling Tutorials - Bristol')).toBeInTheDocument();
+      expect(screen.getByText('CS2 Bristol')).toBeInTheDocument();
 
       // The TutorialDetailCard mock should receive selectedChoiceLevel='1st' for event 102
       // This is tested implicitly through the component behavior
@@ -333,7 +334,7 @@ describe('TutorialSelectionDialog', () => {
       expect(mockOnClose).not.toHaveBeenCalled();
 
       // Dialog title should still be visible
-      expect(screen.getByText('CS2 - Actuarial Modelling Tutorials - Bristol')).toBeInTheDocument();
+      expect(screen.getByText('CS2 Bristol')).toBeInTheDocument();
     });
 
     test('multiple selections update context correctly', () => {
@@ -396,10 +397,10 @@ describe('TutorialSelectionDialog', () => {
       if (ariaLabelledBy) {
         const titleElement = document.getElementById(ariaLabelledBy);
         if (titleElement) {
-          expect(titleElement).toHaveTextContent('CS2 - Actuarial Modelling Tutorials - Bristol');
+          expect(titleElement).toHaveTextContent('CS2 Bristol');
         } else {
           // Fallback: verify title text exists somewhere in dialog
-          expect(screen.getByText('CS2 - Actuarial Modelling Tutorials - Bristol')).toBeInTheDocument();
+          expect(screen.getByText('CS2 Bristol')).toBeInTheDocument();
         }
       }
     });

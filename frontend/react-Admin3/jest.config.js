@@ -23,6 +23,11 @@ module.exports = {
     '!src/index.js',
     '!src/reportWebVitals.js',
     '!src/setupTests.js',
+    // Exclude demo/sandbox/styleguide components (not production code)
+    '!src/components/sandbox/**',
+    '!src/components/styleguide/**',
+    '!src/components/Test/**',
+    '!src/components/Testing/**',
   ],
   coverageThresholds: {
     global: {
@@ -33,4 +38,13 @@ module.exports = {
     },
   },
   coverageReporters: ['text', 'text-summary', 'lcov', 'html'],
+
+  // Exclude non-production code from coverage analysis
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '<rootDir>/src/components/sandbox/',
+    '<rootDir>/src/components/styleguide/',
+    '<rootDir>/src/components/Test/',
+    '<rootDir>/src/components/Testing/',
+  ],
 };

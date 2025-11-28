@@ -1,16 +1,153 @@
+/**
+ * CheckoutSteps Integration Tests (Task T064)
+ *
+ * Tests complete checkout flow integration with:
+ * - Cart review step rendering
+ * - Rules engine integration (checkout_start entry point)
+ * - VAT calculations
+ * - Step navigation flow
+ * - Error handling
+ *
+ * Target: Increase CheckoutSteps coverage from 50.5% to 75%+
+ */
+
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ThemeProvider } from '@mui/material/styles';
+import { MemoryRouter } from 'react-router-dom';
 import theme from '../../../theme/theme';
 import CartReviewStep from '../CheckoutSteps/CartReviewStep';
 import CartSummaryPanel from '../CheckoutSteps/CartSummaryPanel';
+import CheckoutSteps from '../CheckoutSteps';
+import rulesEngineService from '../../../services/rulesEngineService';
+
+// Mock useAuth hook - configure in beforeEach
+jest.mock('../../../hooks/useAuth');
+
+// Mock useCart hook - configure in beforeEach (like the passing unit tests)
+jest.mock('../../../contexts/CartContext', () => ({
+  useCart: jest.fn()
+}));
+
+// Mock useCheckoutValidation hook
+jest.mock('../../../hooks/useCheckoutValidation', () => ({
+  __esModule: true,
+  default: () => ({
+    isValid: true,
+    errors: {},
+    validateStep: jest.fn().mockReturnValue(true)
+  })
+}));
 
 // Mock productCodeGenerator
 jest.mock('../../../utils/productCodeGenerator', () => ({
   generateProductCode: jest.fn(() => 'TEST-001'),
 }));
+
+// Mock services for integration tests
+jest.mock('../../../services/rulesEngineService', () => {
+  const mockExecuteRules = jest.fn().mockResolvedValue({
+    messages: [],
+    effects: [],
+    blocked: false
+  });
+  const mockAcknowledgeRule = jest.fn().mockResolvedValue({ success: true });
+  const MOCK_ENTRY_POINTS = {
+    CHECKOUT_START: 'checkout_start',
+    CHECKOUT_TERMS: 'checkout_terms',
+    CHECKOUT_PAYMENT: 'checkout_payment',
+    ORDER_COMPLETE: 'order_complete'
+  };
+
+  return {
+    __esModule: true,
+    default: {
+      executeRules: mockExecuteRules,
+      acknowledgeRule: mockAcknowledgeRule,
+      ENTRY_POINTS: MOCK_ENTRY_POINTS
+    },
+    executeRules: mockExecuteRules,
+    acknowledgeRule: mockAcknowledgeRule,
+    ENTRY_POINTS: MOCK_ENTRY_POINTS
+  };
+});
+
+jest.mock('../../../services/httpService', () => ({
+  __esModule: true,
+  default: {
+    post: jest.fn(),
+    get: jest.fn(),
+    put: jest.fn(),
+  }
+}));
+
+jest.mock('../../../services/userService', () => ({
+  __esModule: true,
+  default: {
+    getUserProfile: jest.fn().mockResolvedValue({ data: {} }),
+    updateProfile: jest.fn().mockResolvedValue({ data: {} })
+  }
+}));
+
+jest.mock('../../../config', () => ({
+  API_BASE_URL: 'http://localhost:8888',
+  isUAT: false
+}));
+
+// Test data factories
+const createMockCartItems = (options = {}) => [
+  {
+    id: 1,
+    product_id: options.productId || 100,
+    product_name: options.productName || 'CS1 Study Guide',
+    subject_code: options.subjectCode || 'CS1',
+    variation_name: options.variationName || 'eBook',
+    actual_price: options.price || '75.00',
+    quantity: options.quantity || 1
+  }
+];
+
+const createMockCartData = (options = {}) => ({
+  id: options.cartId || 1,
+  user: options.userId || null,
+  session_key: options.sessionKey || null,
+  vat_calculations: options.vatCalculations || {
+    region_info: { region: 'UK' },
+    items: [],
+    totals: { subtotal: 75.00, vat: 0, total: 75.00 }
+  }
+});
+
+const createMockUserProfile = () => ({
+  id: 1,
+  email: 'test@example.com',
+  first_name: 'Test',
+  last_name: 'User',
+  profile: {
+    home_phone: '01onal234567',
+    mobile_phone: '07123456789',
+    work_phone: ''
+  },
+  addresses: {
+    home: {
+      address_line_1: '123 Test Street',
+      city: 'London',
+      postcode: 'SW1A 1AA',
+      country: 'UK'
+    }
+  }
+});
+
+// Render helper for CheckoutSteps (uses mocked hooks, no providers needed)
+const renderCheckoutWithProviders = (ui) => {
+  return render(
+    <ThemeProvider theme={theme}>
+      {ui}
+    </ThemeProvider>
+  );
+};
 
 const renderWithTheme = (component) => {
   return render(
@@ -380,6 +517,286 @@ describe('Checkout Flow VAT Display Integration (T004)', () => {
       // Should display zero values without crashing
       expect(screen.getByText(/VAT \(0%\)/)).toBeInTheDocument();
       expect(screen.getByText('£0.00')).toBeInTheDocument();
+    });
+  });
+});
+
+/**
+ * CheckoutSteps Full Component Integration Tests
+ * Tests the complete CheckoutSteps component with all integrations
+ *
+ * Uses the same mocking approach as CheckoutSteps.test.js (mocked hooks)
+ */
+describe('CheckoutSteps Component Integration', () => {
+  const mockCartItems = createMockCartItems();
+  const mockCartData = createMockCartData();
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    // Mock useAuth hook
+    const { useAuth } = require('../../../hooks/useAuth');
+    useAuth.mockReturnValue({
+      isAuthenticated: true,
+      user: { id: 1, email: 'test@example.com' }
+    });
+
+    // Mock useCart hook (same pattern as passing unit tests)
+    const { useCart } = require('../../../contexts/CartContext');
+    useCart.mockReturnValue({
+      cartItems: mockCartItems,
+      cartData: mockCartData
+    });
+
+    // Default mock implementations for rulesEngineService
+    rulesEngineService.executeRules.mockResolvedValue({
+      messages: [],
+      actions: [],
+      blocked: false
+    });
+
+    rulesEngineService.acknowledgeRule.mockResolvedValue({
+      success: true
+    });
+  });
+
+  describe('Initial Rendering', () => {
+    it('should render checkout stepper with Order Summary', async () => {
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Order Summary')).toBeInTheDocument();
+      });
+    });
+
+    it('should display cart items from mocked hook', async () => {
+      const customCartItems = createMockCartItems({ productName: 'CM2 Core Reading' });
+      const { useCart } = require('../../../contexts/CartContext');
+      useCart.mockReturnValue({
+        cartItems: customCartItems,
+        cartData: mockCartData
+      });
+
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('CM2 Core Reading')).toBeInTheDocument();
+      });
+    });
+
+    it('should render correctly with empty cart', async () => {
+      const { useCart } = require('../../../contexts/CartContext');
+      useCart.mockReturnValue({
+        cartItems: [],
+        cartData: mockCartData
+      });
+
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+
+      // Should still render without crashing
+      await waitFor(() => {
+        expect(screen.getByText('Order Summary')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Rules Engine Integration', () => {
+    it('should call rules engine on mount', async () => {
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+
+      await waitFor(() => {
+        expect(rulesEngineService.executeRules).toHaveBeenCalled();
+      });
+    });
+
+    it('should display modal message from rules engine', async () => {
+      rulesEngineService.executeRules.mockResolvedValue({
+        messages: [
+          {
+            id: 'msg_import_tax',
+            message_type: 'warning',
+            display_type: 'modal',
+            content: {
+              title: 'Import Tax Notice',
+              message: 'Students outside UK may incur import tax.'
+            }
+          }
+        ],
+        actions: [],
+        blocked: false
+      });
+
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Import Tax Notice')).toBeInTheDocument();
+      });
+    });
+
+    it('should handle rules engine errors gracefully', async () => {
+      rulesEngineService.executeRules.mockRejectedValue(new Error('API Error'));
+
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+
+      // Component should still render
+      await waitFor(() => {
+        expect(screen.getByText('Order Summary')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Step Navigation', () => {
+    it('should start at step 1 (Cart Review)', async () => {
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Order Summary')).toBeInTheDocument();
+      });
+    });
+
+    it('should have Continue button on step 1', async () => {
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+
+      await waitFor(() => {
+        const continueButton = screen.getByRole('button', { name: /continue|next/i });
+        expect(continueButton).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('VAT Calculations Display', () => {
+    it('should display VAT when present in cart data', async () => {
+      const cartDataWithVat = createMockCartData({
+        vatCalculations: {
+          region_info: { region: 'EU' },
+          items: [{ product_id: 1, vat_rate: 20, vat_amount: 15.00 }],
+          totals: { subtotal: 75.00, vat: 15.00, total: 90.00, effective_vat_rate: 0.20 }
+        }
+      });
+
+      const { useCart } = require('../../../contexts/CartContext');
+      useCart.mockReturnValue({
+        cartItems: mockCartItems,
+        cartData: cartDataWithVat
+      });
+
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/VAT/i)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('should have accessible buttons with proper labels', async () => {
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Order Summary')).toBeInTheDocument();
+      });
+
+      const buttons = screen.getAllByRole('button');
+      buttons.forEach(button => {
+        expect(button).toHaveAccessibleName();
+      });
+    });
+  });
+});
+
+describe('CheckoutSteps Modal Interactions', () => {
+  const mockCartItems = createMockCartItems();
+  const mockCartData = createMockCartData();
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    // Mock useAuth hook
+    const { useAuth } = require('../../../hooks/useAuth');
+    useAuth.mockReturnValue({
+      isAuthenticated: true,
+      user: { id: 1, email: 'test@example.com' }
+    });
+
+    // Mock useCart hook
+    const { useCart } = require('../../../contexts/CartContext');
+    useCart.mockReturnValue({
+      cartItems: mockCartItems,
+      cartData: mockCartData
+    });
+  });
+
+  it('should dismiss modal when I Understand is clicked', async () => {
+    const user = userEvent.setup();
+
+    rulesEngineService.executeRules.mockResolvedValue({
+      messages: [
+        {
+          id: 'msg_import_tax',
+          message_type: 'warning',
+          display_type: 'modal',
+          content: {
+            title: 'Import Tax Notice',
+            message: 'Students outside UK may incur import tax.'
+          }
+        }
+      ],
+      actions: [],
+      blocked: false
+    });
+
+    renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Import Tax Notice')).toBeInTheDocument();
+    });
+
+    // Find and click dismiss button
+    const dismissButton = screen.getByRole('button', { name: /understand|close|dismiss|ok/i });
+    await user.click(dismissButton);
+
+    // Modal should close
+    await waitFor(() => {
+      expect(screen.queryByText('Import Tax Notice')).not.toBeInTheDocument();
+    });
+  });
+
+  it('should handle acknowledgment modal correctly', async () => {
+    const user = userEvent.setup();
+
+    rulesEngineService.executeRules.mockResolvedValue({
+      messages: [
+        {
+          id: 'msg_terms',
+          message_type: 'info',
+          display_type: 'modal',
+          content: {
+            title: 'Terms Acknowledgment',
+            message: 'Please acknowledge our terms.'
+          },
+          requiresAcknowledgment: true,
+          ackKey: 'terms_v1'
+        }
+      ],
+      actions: [],
+      blocked: false
+    });
+
+    rulesEngineService.acknowledgeRule.mockResolvedValue({ success: true });
+
+    renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Terms Acknowledgment')).toBeInTheDocument();
+    });
+
+    // Acknowledge
+    const acknowledgeButton = screen.getByRole('button', { name: /understand|accept|acknowledge|ok/i });
+    await user.click(acknowledgeButton);
+
+    // Modal should close
+    await waitFor(() => {
+      expect(screen.queryByText('Terms Acknowledgment')).not.toBeInTheDocument();
     });
   });
 });

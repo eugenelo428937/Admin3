@@ -298,9 +298,9 @@ describe('TutorialProductCard', () => {
       // Use fireEvent instead of userEvent to bypass pointer-events check in JSDOM
       fireEvent.click(selectAction);
 
-      // Verify dialog opens (which means action was clicked)
+      // Verify dialog opens (which means action was clicked) - title format: "subjectCode location"
       await waitFor(() => {
-        expect(screen.getByText(/tutorials - birmingham/i)).toBeInTheDocument();
+        expect(screen.getByText(/CS1 Birmingham/i)).toBeInTheDocument();
       });
     });
 
@@ -345,9 +345,9 @@ describe('TutorialProductCard', () => {
       const selectAction = getActionButton(/select tutorial/i);
       fireEvent.click(selectAction);
 
-      // Should open tutorial selection dialog
+      // Should open tutorial selection dialog (title format: "subjectCode location")
       await waitFor(() => {
-        expect(screen.getByText(/tutorials - birmingham/i)).toBeInTheDocument();
+        expect(screen.getByText(/CS1 Birmingham/i)).toBeInTheDocument();
       });
     });
 
