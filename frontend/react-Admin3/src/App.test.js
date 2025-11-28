@@ -21,7 +21,7 @@ jest.mock('./components/User/ResetPasswordForm', () => () => <div data-testid="r
 jest.mock('./components/User/AccountActivation', () => () => <div data-testid="account-activation">Activation</div>);
 jest.mock('./components/User/ResendActivation', () => () => <div data-testid="resend-activation">Resend</div>);
 jest.mock('./components/User/EmailVerification', () => () => <div data-testid="email-verification">Email Verify</div>);
-jest.mock('./components/StyleGuide', () => () => <div data-testid="style-guide">Style Guide</div>);
+jest.mock('./components/StyleGuide', () => () => <div data-testid="styleguide">Style Guide</div>);
 jest.mock('./components/NoMatch', () => () => <div data-testid="no-match">404 Not Found</div>);
 jest.mock('./components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer', () => () => null);
 
