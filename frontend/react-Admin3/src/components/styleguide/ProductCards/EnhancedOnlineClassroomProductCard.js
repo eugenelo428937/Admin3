@@ -1,37 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Box,
   Typography,
-  Card,
   CardContent,
   CardHeader,
   CardActions,
   Button,
   Chip,
-  Badge,
-  Divider,
   Stack,
   Avatar,
   Radio,
   RadioGroup,
   FormControlLabel,
-  Tooltip
+  Tooltip,
 } from '@mui/material';
+import { ThemeProvider, useTheme } from '@mui/material/styles';
 import {
   Computer,
   AddShoppingCart,
-  Star,
-  AccessTime,
-  CalendarMonthOutlined,
-  PlayCircleOutline,
-  VideoLibrary,
-  InfoOutline
+  InfoOutline,
 } from '@mui/icons-material';
+import BaseProductCard from "../../Common/BaseProductCard";
 
-const EnhancedOnlineClassroomProductCard = ({ variant = "online-product", ...props }) => {
+const EnhancedOnlineClassroomProductCard = ({ productType = "online-classroom", ...props }) => {
   const [selectedFormat, setSelectedFormat] = useState('live');
   const [selectedPriceType, setSelectedPriceType] = useState(""); // Empty means standard pricing
   const [isHovered, setIsHovered] = useState(false);
+  const cardRef = useRef(null);
+  const theme = useTheme();
 
   const formatOptions = {
 		live: {
@@ -54,17 +50,20 @@ const EnhancedOnlineClassroomProductCard = ({ variant = "online-product", ...pro
   };
 
   return (
-		<Card
-			elevation={2}
-			variant={variant}
-			onMouseEnter={handleMouseEnter}
-			onMouseLeave={handleMouseLeave}
-			sx={{                 
-				transform: isHovered ? 'scale(1.02)' : 'scale(1)',
-				transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-			}}
-			className="d-flex flex-column"
-			{...props}>
+		<ThemeProvider theme={theme}>
+			<BaseProductCard
+				ref={cardRef}
+				elevation={2}
+				variant="product"
+				productType={productType}
+				onMouseEnter={handleMouseEnter}
+				onMouseLeave={handleMouseLeave}
+				sx={{
+					transform: isHovered ? 'scale(1.02)' : 'scale(1)',
+					transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+				}}
+				className="d-flex flex-column"
+				{...props}>
 			{/* Floating Badges */}
 			<Box className="floating-badges-container">
 				<Chip
@@ -254,13 +253,18 @@ const EnhancedOnlineClassroomProductCard = ({ variant = "online-product", ...pro
 								Price includes VAT
 							</Typography>
 						</Box>
-						<Button variant="contained" className="add-to-cart-button">
+						{/* Add to Cart Button */}
+						<Button
+							variant="contained"
+							className="add-to-cart-button"
+							aria-label="Add to cart">
 							<AddShoppingCart />
 						</Button>
 					</Box>
 				</Box>
 			</CardActions>
-		</Card>
+			</BaseProductCard>
+		</ThemeProvider>
   );
 };
 

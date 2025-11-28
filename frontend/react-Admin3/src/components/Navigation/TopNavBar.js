@@ -116,7 +116,7 @@ const TopNavBar = () => {
 						</Link>
 					</div>
 					<div className="ms-lg-2 ms-1 d-flex flex-row align-content-center flex-wrap">
-						<Link to="/style-guide">
+						<Link to="/styleguide">
 							<div className="p-0 mx-1 flex-wrap align-items-center d-flex flex-row">
 								<HelpIcon className="bi d-flex flex-row align-items-center"></HelpIcon>
 								<span className="d-none d-md-block mx-1 body">

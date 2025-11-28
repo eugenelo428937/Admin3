@@ -100,7 +100,7 @@ function App() {
 															}
 														/>
 														<Route
-															path="/style-guide"
+															path="/styleguide"
 															element={<StyleGuide />}
 														/>
 														<Route

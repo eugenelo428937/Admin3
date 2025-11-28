@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
 	Stack,
 	Box,
 	Typography,
-	Card,
 	CardContent,
 	CardHeader,
 	CardActions,
@@ -12,19 +11,33 @@ import {
 	Tooltip,
 	Avatar,
 	IconButton,
+	Backdrop,
+	SpeedDial,
+	SpeedDialAction,
+	SpeedDialIcon,
 } from "@mui/material";
+import { ThemeProvider, useTheme } from "@mui/material/styles";
 import {
 	RuleOutlined,
 	AddShoppingCart,
 	InfoOutline,
 	CalendarMonthOutlined,
 	Circle,
+	Close,
+	TipsAndUpdatesOutlined,
+	FolderCopyOutlined,
+	CheckCircle,
 } from "@mui/icons-material";
+import BaseProductCard from "../../Common/BaseProductCard";
 
 // Enhanced Marking Product Card - Deadline Scenarios with Pagination
-const MarkingProductCard = () => {
+const MarkingProductCard = ({ productType = "marking", buttonPage = 0 }) => {
 	const [currentScenario, setCurrentScenario] = useState(0);
 	const [isHovered, setIsHovered] = useState(false);
+	const [speedDialOpen, setSpeedDialOpen] = useState(false);
+	const [showCheck, setShowCheck] = useState(false);
+	const cardRef = useRef(null);
+	const theme = useTheme();
 
 	// Different deadline scenarios for pagination showcase
 	const deadlineScenarios = [
@@ -107,16 +120,19 @@ const MarkingProductCard = () => {
 	};
 
 	return (
-		<Card 
-			elevation={2}
-			variant="marking-product"
-			className="d-flex flex-column"
-			onMouseEnter={handleMouseEnter}
-			onMouseLeave={handleMouseLeave}
-			sx={{                 
-				transform: isHovered ? 'scale(1.02)' : 'scale(1)',
-				transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-			}}>
+		<ThemeProvider theme={theme}>
+			<BaseProductCard
+				ref={cardRef}
+				elevation={2}
+				variant="product"
+				productType={productType}
+				className="d-flex flex-column"
+				onMouseEnter={handleMouseEnter}
+				onMouseLeave={handleMouseLeave}
+				sx={{
+					transform: isHovered ? 'scale(1.02)' : 'scale(1)',
+					transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+				}}>
 			{/* Floating Badges */}
 			<Box className="floating-badges-container">
 				<Chip
@@ -247,16 +263,192 @@ const MarkingProductCard = () => {
 								Price includes VAT
 							</Typography>
 						</Box>
-						<Button
-							variant="contained"
-							className="add-to-cart-button"
-							sx={{ alignSelf: "stretch" }}>
-							<AddShoppingCart />
-						</Button>
+						{/* Add to Cart Button - 3 behaviors based on buttonPage */}
+						{buttonPage === 0 ? (
+							<Button
+								variant="contained"
+								className="add-to-cart-button"
+								aria-label="Add to cart"
+								sx={{
+									alignSelf: "stretch",
+									...(showCheck ? { backgroundColor: "green" } : {}),
+								}}>
+								{showCheck ? <CheckCircle /> : <AddShoppingCart />}
+							</Button>
+						) : buttonPage === 1 ? (
+							<>
+								<Backdrop
+									open={speedDialOpen}
+									onClick={() => setSpeedDialOpen(false)}
+									sx={{
+										position: "fixed",
+										zIndex: (thm) => thm.zIndex.speedDial - 1,
+									}}
+								/>
+								<SpeedDial
+									ariaLabel="Speed Dial for add to cart"
+									className="add-to-cart-speed-dial"
+									icon={
+										<SpeedDialIcon
+											icon={<AddShoppingCart />}
+											openIcon={<Close />}
+										/>
+									}
+									onClose={() => setSpeedDialOpen(false)}
+									onOpen={() => setSpeedDialOpen(true)}
+									open={speedDialOpen}
+									direction="up"
+									sx={{
+										position: "absolute",
+										bottom: 18,
+										right: 8,
+										"& .MuiFab-root": {
+											backgroundColor: theme.palette.bpp.pink["060"],
+											boxShadow: "var(--Paper-shadow)",
+											"&:hover": {
+												backgroundColor: theme.palette.bpp.pink["080"],
+											},
+											"& .MuiSpeedDialIcon-root": {
+												"& .MuiSvgIcon-root": {
+													fontSize: "1.6rem",
+												},
+											},
+										},
+									}}>
+									<SpeedDialAction
+										icon={<AddShoppingCart />}
+										slotProps={{
+											tooltip: { open: true, title: "Add to Cart" },
+										}}
+										sx={{
+											"& .MuiSpeedDialAction-staticTooltipLabel": {
+												whiteSpace: "nowrap",
+												maxWidth: "none",
+											},
+											"& .MuiSpeedDialAction-fab": {
+												color: "white",
+												backgroundColor: theme.palette.bpp.pink["060"],
+												"&:hover": {
+													backgroundColor: theme.palette.bpp.pink["080"],
+												},
+											},
+										}}
+										aria-label="Add to cart"
+									/>
+									<SpeedDialAction
+										icon={<TipsAndUpdatesOutlined />}
+										slotProps={{
+											tooltip: { open: true, title: "Buy with Marking Voucher £25" },
+										}}
+										sx={{
+											"& .MuiSpeedDialAction-staticTooltipLabel": {
+												whiteSpace: "normal",
+												textWrap: "balance",
+												minWidth: "200px",
+											},
+											"& .MuiSpeedDialAction-fab": {
+												color: "white",
+												backgroundColor: theme.palette.bpp.pink["060"],
+												"&:hover": {
+													backgroundColor: theme.palette.bpp.pink["080"],
+												},
+											},
+										}}
+										aria-label="Buy with Recommended"
+										onClick={() => setSpeedDialOpen(false)}
+									/>
+								</SpeedDial>
+							</>
+						) : (
+							<>
+								<Backdrop
+									open={speedDialOpen}
+									onClick={() => setSpeedDialOpen(false)}
+									sx={{
+										position: "fixed",
+										zIndex: (thm) => thm.zIndex.speedDial - 1,
+									}}
+								/>
+								<SpeedDial
+									ariaLabel="Speed Dial for add to cart"
+									className="add-to-cart-speed-dial"
+									icon={
+										<SpeedDialIcon
+											icon={<AddShoppingCart />}
+											openIcon={<Close />}
+										/>
+									}
+									onClose={() => setSpeedDialOpen(false)}
+									onOpen={() => setSpeedDialOpen(true)}
+									open={speedDialOpen}
+									direction="up"
+									sx={{
+										position: "absolute",
+										bottom: 18,
+										right: 8,
+										"& .MuiFab-root": {
+											backgroundColor: theme.palette.bpp.pink["060"],
+											"&:hover": {
+												backgroundColor: theme.palette.bpp.pink["080"],
+											},
+											"& .MuiSpeedDialIcon-root": {
+												"& .MuiSvgIcon-root": {
+													fontSize: "1.6rem",
+												},
+											},
+										},
+									}}>
+									<SpeedDialAction
+										icon={<AddShoppingCart />}
+										slotProps={{
+											tooltip: { open: true, title: "Add to Cart" },
+										}}
+										sx={{
+											"& .MuiSpeedDialAction-staticTooltipLabel": {
+												whiteSpace: "nowrap",
+												maxWidth: "none",
+											},
+											"& .MuiSpeedDialAction-fab": {
+												color: "white",
+												backgroundColor: theme.palette.bpp.pink["060"],
+												boxShadow: "var(--Paper-shadow)",
+												"&:hover": {
+													backgroundColor: theme.palette.bpp.pink["080"],
+												},
+											},
+										}}
+										aria-label="Add to cart"
+										onClick={() => setSpeedDialOpen(false)}
+									/>
+									<SpeedDialAction
+										icon={<FolderCopyOutlined />}
+										slotProps={{
+											tooltip: { open: true, title: "Buy Both (Marking + Voucher)" },
+										}}
+										sx={{
+											"& .MuiSpeedDialAction-staticTooltipLabel": {
+												whiteSpace: "nowrap",
+												maxWidth: "none",
+											},
+											"& .MuiSpeedDialAction-fab": {
+												color: "white",
+												backgroundColor: theme.palette.bpp.pink["060"],
+												"&:hover": {
+													backgroundColor: theme.palette.bpp.pink["080"],
+												},
+											},
+										}}
+										aria-label="Buy Both (Marking + Voucher)"
+										onClick={() => setSpeedDialOpen(false)}
+									/>
+								</SpeedDial>
+							</>
+						)}
 					</Box>
 				</Box>
 			</CardActions>
-		</Card>
+			</BaseProductCard>
+		</ThemeProvider>
 	);
 };
 

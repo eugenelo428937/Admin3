@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
 	Box,
 	FormControlLabel,
@@ -22,6 +22,8 @@ import {
 	Tooltip,
 	buttonBaseClasses,
 } from "@mui/material";
+import { ThemeProvider } from "@mui/material/styles";
+import { useTheme } from "@mui/material/styles";
 import {
 	Inventory2,
 	AddShoppingCart,
@@ -32,11 +34,12 @@ import {
 	Assessment,
 	InfoOutline,
 } from "@mui/icons-material";
-
-const EnhancedBundleProductCard = ({
-	variant = "bundle-product",
-	...props
-}) => {
+import BaseProductCard from "../../Common/BaseProductCard";
+const BundleProductCard = (
+	{ productType = "bundle", buttonPage = 0, ...props }	
+) => {
+	const theme = useTheme();
+   const cardRef = useRef(null);
 	const [showDetails, setShowDetails] = useState(false);
 	const [selectedPriceType, setSelectedPriceType] = useState("");
 	const [isHovered, setIsHovered] = useState(false);
@@ -88,17 +91,19 @@ const EnhancedBundleProductCard = ({
 	};
 
 	return (
-		<Card
-			elevation={2}
-			variant={variant}
-			className="d-flex flex-column"
-			onMouseEnter={handleMouseEnter}
-			onMouseLeave={handleMouseLeave}
-			sx={{                 
-				transform: isHovered ? 'scale(1.02)' : 'scale(1)',
-				transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-			}}
-			{...props}>
+		<ThemeProvider theme={theme}>
+		<BaseProductCard
+			ref={cardRef}
+            elevation={2}
+            variant="product"
+            productType={productType}
+            className="d-flex flex-column"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            sx={{
+               transform: isHovered ? "scale(1.02)" : "scale(1)",
+               transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}>
 			{/* Floating Badges */}
 			<Box className="floating-badges-container">
 				<Chip
@@ -289,8 +294,10 @@ const EnhancedBundleProductCard = ({
 					</Box>
 				</Box>
 			</CardActions>
-		</Card>
+		</BaseProductCard>
+		</ThemeProvider>
+
 	);
 };
 
-export default EnhancedBundleProductCard;
+export default BundleProductCard;

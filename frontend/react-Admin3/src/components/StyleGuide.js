@@ -40,16 +40,16 @@ const StyleGuide = () => {
 				px: theme.liftkit.spacing["2xl"],
 				py: theme.liftkit.spacing.lg,
 			}}>
-			<Typography variant="h2" textAlign="left">
-				Admin3 Style Guide
+			<Typography variant="h2">
+				Style Guide
 			</Typography>
 
 			<Typography
 				variant="subtitle1"
 				gutterBottom
 				sx={{ mb: theme.liftkit.spacing.md }}
-				textAlign="left">
-				BPP branding with Material UI components and Liftkit CSS
+				>
+				BPP branding palette with Material UI components
 			</Typography>
 
 			{/* Tab Navigation - Styled via theme.js */}
@@ -60,8 +60,7 @@ const StyleGuide = () => {
 				}}>
 				<Tabs
 					defaultActiveKey="typography"
-					id="style-guide-tabs"
-					className="mb-3">
+					id="style-guide-tabs">
 					<Tab
 						eventKey="typography"
 						title={
@@ -71,7 +70,7 @@ const StyleGuide = () => {
 								Typography
 							</Typography>
 						}>
-						<Grid container spacing={2}>
+						<Grid container>
 							<Grid size={{ xs: 12, lg: 12 }}>
 								<TypographySection />
 							</Grid>

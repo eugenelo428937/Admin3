@@ -1,15 +1,12 @@
 // Main product card components
-export { default as BalancedProductCard } from './BalancedProductCard';
-export { default as EnhancedAssessmentProductCard } from './EnhancedAssessmentProductCard';
+export { default as MaterialProductCard } from './MaterialProductCard';
+export { default as MaterialProductCardDemo } from './MaterialProductCardDemo';
 export { default as EnhancedTutorialProductCard } from './EnhancedTutorialProductCard';
 export { default as EnhancedOnlineClassroomProductCard } from './EnhancedOnlineClassroomProductCard';
-export { default as EnhancedBundleProductCard } from './EnhancedBundleProductCard';
+export { default as BundleProductCard } from './BundleProductCard';
 export { default as EnhancedMarkingVoucherProductCard } from './EnhancedMarkingVoucherProductCard';
-
-// Enhanced variations
-export { default as EnhancedCompactCard } from './EnhancedCompactCard';
-export { default as EnhancedHorizontalCard } from './EnhancedHorizontalCard';
-export { default as EnhancedMinimalCard } from './EnhancedMinimalCard';
+export { default as MarkingProductCard } from './MarkingProductCard';
+export { default as MarkingProductCardDemo } from './MarkingProductCardDemo';
 
 // Marking card components
 export { default as MarkingCardAllAvailable } from './MarkingCards/MarkingCardAllAvailable';
@@ -18,5 +15,4 @@ export { default as MarkingCardSomeExpired } from './MarkingCards/MarkingCardSom
 export { default as MarkingCardAllExpired } from './MarkingCards/MarkingCardAllExpired';
 
 // Test components using ProductCard + testTheme
-export { default as BalancedProductCardTest } from './BalancedProductCardTest';
 export { default as EnhancedTutorialProductCardTest } from './EnhancedTutorialProductCardTest';
