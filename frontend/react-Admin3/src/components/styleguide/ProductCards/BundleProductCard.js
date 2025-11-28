@@ -58,23 +58,23 @@ const BundleProductCard = (
 
 		{
 			icon: <School sx={{ fontSize: 16 }} />,
-			name: "ASET (2020-2023 Papers) eBook",
-			value: "£299",
+			name: "ASET (2020-2023 Papers) ",
+			value: "eBook",
 		},
 		{
 			icon: <LibraryBooks sx={{ fontSize: 16 }} />,
 			name: "Mock Exam Marking",
-			value: "£99",
+			value: "Marking",
 		},
 		{
 			icon: <Computer sx={{ fontSize: 16 }} />,
 			name: "Series X Assignments (Marking)",
-			value: "£199",
+			value: "Marking",
 		},
 		{
 			icon: <Assessment sx={{ fontSize: 16 }} />,
 			name: "Combined Materials Pack",
-			value: "£75",
+			value: "Printed",
 		},
 	];
 
@@ -107,7 +107,7 @@ const BundleProductCard = (
 			{/* Floating Badges */}
 			<Box className="floating-badges-container">
 				<Chip
-					label="CS1"
+					label={<Typography variant="chip">CS1</Typography>}
 					size="small"
 					className="subject-badge"
 					role="img"
@@ -115,7 +115,7 @@ const BundleProductCard = (
 					elevation={4}
 				/>
 				<Chip
-					label="25S"
+					label={<Typography variant="chip">26A</Typography>}
 					size="small"
 					className="session-badge"
 					role="img"
@@ -127,7 +127,7 @@ const BundleProductCard = (
 				className="product-header"
 				title={
 					<Typography
-						variant="h4"
+						variant="productTitle"
 						textAlign="left"
 						className="product-title">
 						Materials & Marking Bundle
@@ -173,7 +173,7 @@ const BundleProductCard = (
 					What's included ({bundleItems.length} items)
 				</Typography>
 
-				<List dense className="bundle-items-list">
+				<List dense>
 					{bundleItems.map((item, index) => (
 						<ListItem key={index} className="bundle-list-item">
 							<ListItemIcon className="bundle-item-icon">
@@ -181,19 +181,16 @@ const BundleProductCard = (
 							</ListItemIcon>
 							<ListItemText
 								primary={item.name}
+								secondary={item.value}
 								slotProps={{
 									primary: {
-										variant: "body2",
-										className: "bundle-item-text",
+										variant: "caption",											
 									},
-								}}								
-							/>
-							<Typography
-								variant="caption"
-								color="text.secondary"
-								className="bundle-item-value">
-								{item.value}
-							</Typography>
+									secondary:{
+										variant: "caption2",
+									}
+								}}									
+							/>							
 						</ListItem>
 					))}
 				</List>
@@ -258,7 +255,7 @@ const BundleProductCard = (
 					{/* Price & Action Section - matches theme structure */}
 					<Box className="price-action-section">
 						<Box className="price-info-row">
-							<Typography variant="h3" className="price-display">
+							<Typography variant="price" className="price-display">
 								{selectedPriceType === "retaker"
 									? "£239.20"
 									: selectedPriceType === "additional"

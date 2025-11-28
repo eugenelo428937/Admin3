@@ -54,13 +54,16 @@ const StyleGuide = () => {
 
 			{/* Tab Navigation - Styled via theme.js */}
 			<Box
-				sx={{
-					borderBottom: 1,
-					borderColor: "divider",					
+				sx={{					
+					borderColor: "divider",
+					marginX: theme.liftkit.spacing.xl2
 				}}>
 				<Tabs
 					defaultActiveKey="typography"
-					id="style-guide-tabs">
+					id="style-guide-tabs"
+					sx={{
+						justiftItems:"center"
+					}}>
 					<Tab
 						eventKey="typography"
 						title={

@@ -63,10 +63,7 @@ const MaterialProductCardDemo = () => {
                label={currentBehavior.label}
                color={currentBehavior.chipColor}
                size="small"
-            />            
-            <Typography variant="caption">
-               {currentBehavior.description}
-            </Typography>
+            />                        
          </Box>
 
          {/* Pagination Control */}
@@ -75,7 +72,7 @@ const MaterialProductCardDemo = () => {
                display: "flex",
                justifyContent: "center",
                alignItems: "center",
-               mt: 2,
+               mt: 0.5,
                gap: 2,
             }}
          >

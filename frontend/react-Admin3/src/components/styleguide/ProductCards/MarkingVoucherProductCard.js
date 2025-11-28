@@ -18,6 +18,7 @@ import {
 	RadioGroup,
 	Tooltip,
 } from "@mui/material";
+import { ThemeProvider, useTheme } from "@mui/material/styles";
 import {
 	ConfirmationNumberOutlined,
 	AddShoppingCart,
@@ -28,10 +29,10 @@ import {
 	Timer,
 } from "@mui/icons-material";
 import { NumberInput } from '@chakra-ui/react';
-const EnhancedMarkingVoucherProductCard = ({
-	variant = "marking-voucher-product",
-	...props
-}) => {
+import BaseProductCard from "../../Common/BaseProductCard";
+
+const MarkingVoucherProductCard = ({ productType = "marking-voucher" }) => {
+	const theme = useTheme();
 	const [quantity, setQuantity] = useState(1);
 	const [isHovered, setIsHovered] = useState(false);
 	const basePrice = 35; // Base price per voucher
@@ -55,9 +56,11 @@ const EnhancedMarkingVoucherProductCard = ({
 	};
 
 	return (
-		<Card
+		<ThemeProvider theme={theme}>
+		<BaseProductCard
 			elevation={2}
-			variant={variant}
+			variant="product"
+			productType={productType}
 			className="d-flex flex-column"
 			onMouseEnter={handleMouseEnter}
 			onMouseLeave={handleMouseLeave}
@@ -65,12 +68,28 @@ const EnhancedMarkingVoucherProductCard = ({
 				transform: isHovered ? "scale(1.02)" : "scale(1)",
 				transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
 			}}
-			{...props}>
+			>
+			{/* Floating Badges */}
+            <Box className="floating-badges-container">
+               <Chip
+                  label={
+					<Typography variant="chip">
+						<Timer className="validity-info-icon" />
+						Valid for 4 years
+					</Typography>
+				  }
+                  size="small"
+                  className="subject-badge"
+                  role="img"
+                  aria-label="Subject: CM1"
+                  elevation={4}
+               />               
+            </Box>	
 			<CardHeader
 				className="product-header"
 				title={
 					<Typography
-						variant="h4"
+						variant="productTitle"
 						textAlign="left"
 						className="product-title">
 						Marking Voucher
@@ -132,7 +151,7 @@ const EnhancedMarkingVoucherProductCard = ({
 				<Box className="price-container">
 					<Box className="price-action-section">
 						<Box className="price-info-row">
-							<Typography variant="h3" className="price-display">
+							<Typography variant="price" className="price-display">
 								£{totalPrice.toFixed(2)}
 							</Typography>
 							<Tooltip title="Show price details">
@@ -162,8 +181,9 @@ const EnhancedMarkingVoucherProductCard = ({
 					</Box>
 				</Box>
 			</CardActions>
-		</Card>
+		</BaseProductCard>
+		</ThemeProvider>
 	);
 };
 
-export default EnhancedMarkingVoucherProductCard;
+export default MarkingVoucherProductCard;
