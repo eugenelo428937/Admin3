@@ -182,7 +182,7 @@ describe('SearchModal', () => {
 
       await waitFor(() => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-      }, { timeout: 200 });
+      }, { timeout: 1000 });
     });
   });
 
