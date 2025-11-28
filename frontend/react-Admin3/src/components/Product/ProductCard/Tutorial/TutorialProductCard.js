@@ -40,6 +40,7 @@ import {
 	ViewModule,
 	LocationOn,
 	InfoOutline,
+	ErrorOutline,
 } from "@mui/icons-material";
 import { useTutorialChoice } from "../../../../contexts/TutorialChoiceContext";
 import { useCart } from "../../../../contexts/CartContext";
@@ -465,7 +466,7 @@ const TutorialProductCard = React.memo(
 					}}
 					className="d-flex flex-column">
 					{/* Floating Badges */}
-					<Box className="floating-badges-container">
+					<Box className="floating-badges-container">						
 						<Chip
 							label={product.subject_code || subjectCode}
 							size="small"
@@ -537,16 +538,7 @@ const TutorialProductCard = React.memo(
 						}}>
 						{/* Tutorial Information Section */}
 						<Box className="tutorial-info-section">
-							<Stack direction="column" className="info-row">
-								<Stack
-									direction="row"
-									alignItems="center"
-									className="info-title">
-									<CalendarMonthOutlined className="info-icon" />
-									<Typography variant="caption" className="info-text">
-										Tutorials available:
-									</Typography>
-								</Stack>
+							<Stack direction="column" className="info-row">								
 								<Typography variant="caption" className="info-sub-text">
 									• {summaryInfo.totalEvents} ({variations.length}{" "}
 									variations,{" "}

@@ -38,24 +38,28 @@ const colorTheme = {
 		main: "#ba1a1a", // light__error_lkv #ba1a1a
 		light: "#ffb4ab", // dark__error_lkv #ffb4ab
 		dark: "#93000a", // dark__errorcontainer_lkv #93000a
+		background: "#ffc3bb",
 		contrastText: "#fff",
 	},
 	warning: {
 		main: "#7c5800", // light__warning_lkv #7c5800
 		light: "#f7bd48", // dark__warning_lkv #f7bd48
-		dark: "#5e4200", // dark__warningcontainer_lkv #5e4200
+		dark: "#4b3400", // dark__warningcontainer_lkv #5e4200
+		background: "#fcebc8",
 		contrastText: "#fff",
 	},
 	info: {
 		main: "#1758c7", // light__info_lkv #1758c7
-		light: "#b1c5ff", // dark__info_lkv #b1c5ff
-		dark: "#00419e", // dark__infocontainer_lkv #00419e
+		light: "#b1c5ff", // dark__info_lkv #eaefff 
+		dark: "#002d6e ", // dark__infocontainer_lkv #002d6e 
+		background: "#ecf0ff",
 		contrastText: "#fff",
 	},
 	success: {
 		main: "#006d3d", // light__success_lkv #006d3d
 		light: "#76db9a", // dark__success_lkv #76db9a
 		dark: "#00522c", // dark__successcontainer_lkv #00522c
+		background: "#c8f0d6",
 		contrastText: "#fff",
 	},
 	background: {

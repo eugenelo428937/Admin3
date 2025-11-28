@@ -434,23 +434,7 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 				/>
 
 				<CardContent sx={{
-					maxHeight: '280px',
-					overflowY: 'auto',
-					paddingBottom: 1,
-					'&::-webkit-scrollbar': {
-						width: '8px',
-					},
-					'&::-webkit-scrollbar-track': {
-						backgroundColor: 'rgba(0, 0, 0, 0.05)',
-						borderRadius: '4px',
-					},
-					'&::-webkit-scrollbar-thumb': {
-						backgroundColor: 'rgba(0, 0, 0, 0.2)',
-						borderRadius: '4px',
-						'&:hover': {
-							backgroundColor: 'rgba(0, 0, 0, 0.3)',
-						},
-					},
+					
 				}}>
 					<Typography variant="subtitle2" className="bundle-details-title">
 						What's included ({bundle.components_count || bundle.components?.length || 0} items)

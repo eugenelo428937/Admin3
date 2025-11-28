@@ -75,14 +75,14 @@ const MaterialProductCard = ({ productType = "material", buttonPage = 0, ...prop
             {/* Floating Badges */}
             <Box className="floating-badges-container">
                <Chip
-                  label="CS1"
+                  label={<Typography variant="chip">CS1</Typography>}
                   size="small"
                   className="subject-badge"
                   role="img"
                   aria-label="Subject: CS1"
                />
                <Chip
-                  label="26A"
+                  label={<Typography variant="chip">26A</Typography>}
                   size="small"
                   className="session-badge"
                   role="img"
@@ -95,7 +95,7 @@ const MaterialProductCard = ({ productType = "material", buttonPage = 0, ...prop
                className="product-header"
                title={
                   <Typography
-                     variant="h4"
+                     variant="productTitle"
                      textAlign="left"
                      className="product-title"
                   >
