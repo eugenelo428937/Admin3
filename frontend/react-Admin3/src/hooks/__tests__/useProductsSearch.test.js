@@ -624,4 +624,305 @@ describe('useProductsSearch - Loading/Success/Error States (T051)', () => {
       expect(mockTriggerSearch).not.toHaveBeenCalled();
     });
   });
+
+  describe('Refresh Function', () => {
+    it('should re-execute search when refresh is called', async () => {
+      const store = createTestStore({ subjects: ['CM2'] });
+      const wrapper = createWrapper(store);
+
+      const { result } = renderHook(() => useProductsSearch({ autoSearch: false }), {
+        wrapper,
+      });
+
+      // Call refresh
+      await result.current.refresh();
+
+      // Should trigger search
+      await waitFor(() => {
+        expect(mockTriggerSearch).toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('Reset Function', () => {
+    it('should reset search data when reset is called', async () => {
+      // Set up mock with products
+      mockSearchResult = {
+        ...mockSearchResult,
+        isLoading: false,
+        data: {
+          products: [{ id: 1, name: 'Product' }],
+          filterCounts: { subjects: { CM2: 1 } },
+          pagination: { page: 1, page_size: 20, total_count: 1, has_next: false, has_previous: false },
+        },
+      };
+      useLazyUnifiedSearchQuery.mockReturnValue([mockTriggerSearch, mockSearchResult]);
+
+      const store = createTestStore();
+      const wrapper = createWrapper(store);
+
+      const { result } = renderHook(() => useProductsSearch({ autoSearch: false }), {
+        wrapper,
+      });
+
+      // Call reset
+      result.current.reset();
+
+      // Products should be reset to empty array
+      await waitFor(() => {
+        expect(result.current.products).toEqual([]);
+        expect(result.current.filterCounts).toEqual({});
+      });
+    });
+  });
+
+  describe('Duplicate Request Prevention', () => {
+    it('should skip duplicate requests with same parameters', async () => {
+      const store = createTestStore({ subjects: ['CM2'] });
+      const wrapper = createWrapper(store);
+
+      const { result } = renderHook(() => useProductsSearch({ autoSearch: false }), {
+        wrapper,
+      });
+
+      // First search
+      await result.current.search();
+
+      // Wait for first call
+      await waitFor(() => {
+        expect(mockTriggerSearch).toHaveBeenCalledTimes(1);
+      });
+
+      // Second search with same params (should be skipped)
+      await result.current.search(false);
+
+      // Should still be 1 call (duplicate skipped)
+      expect(mockTriggerSearch).toHaveBeenCalledTimes(1);
+    });
+
+    it('should execute search when forceSearch is true', async () => {
+      const store = createTestStore({ subjects: ['CM2'] });
+      const wrapper = createWrapper(store);
+
+      const { result } = renderHook(() => useProductsSearch({ autoSearch: false }), {
+        wrapper,
+      });
+
+      // First search
+      await result.current.search();
+
+      await waitFor(() => {
+        expect(mockTriggerSearch).toHaveBeenCalledTimes(1);
+      });
+
+      // Force search (should execute even with same params)
+      await result.current.search(true);
+
+      // Should be 2 calls now
+      expect(mockTriggerSearch).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('Error Message Formatting', () => {
+    it('should handle error with message property', async () => {
+      mockTriggerSearch = jest.fn().mockReturnValue({
+        unwrap: jest.fn().mockRejectedValue({ message: 'Custom error message' }),
+      });
+      useLazyUnifiedSearchQuery.mockReturnValue([mockTriggerSearch, mockSearchResult]);
+
+      const store = createTestStore();
+      const wrapper = createWrapper(store);
+
+      const { result } = renderHook(() => useProductsSearch({ autoSearch: false }), {
+        wrapper,
+      });
+
+      await result.current.search();
+
+      await waitFor(() => {
+        expect(result.current.error).toBeTruthy();
+      });
+    });
+
+    it('should handle error with error property', async () => {
+      mockTriggerSearch = jest.fn().mockReturnValue({
+        unwrap: jest.fn().mockRejectedValue({ error: 'Error string' }),
+      });
+      useLazyUnifiedSearchQuery.mockReturnValue([mockTriggerSearch, mockSearchResult]);
+
+      const store = createTestStore();
+      const wrapper = createWrapper(store);
+
+      const { result } = renderHook(() => useProductsSearch({ autoSearch: false }), {
+        wrapper,
+      });
+
+      await result.current.search();
+
+      await waitFor(() => {
+        expect(result.current.error).toBeTruthy();
+      });
+    });
+
+    it('should handle error with data.message property', async () => {
+      mockTriggerSearch = jest.fn().mockReturnValue({
+        unwrap: jest.fn().mockRejectedValue({ data: { message: 'Data message' } }),
+      });
+      useLazyUnifiedSearchQuery.mockReturnValue([mockTriggerSearch, mockSearchResult]);
+
+      const store = createTestStore();
+      const wrapper = createWrapper(store);
+
+      const { result } = renderHook(() => useProductsSearch({ autoSearch: false }), {
+        wrapper,
+      });
+
+      await result.current.search();
+
+      await waitFor(() => {
+        expect(result.current.error).toBeTruthy();
+      });
+    });
+
+    it('should handle string error', async () => {
+      mockTriggerSearch = jest.fn().mockReturnValue({
+        unwrap: jest.fn().mockRejectedValue('Simple string error'),
+      });
+      useLazyUnifiedSearchQuery.mockReturnValue([mockTriggerSearch, mockSearchResult]);
+
+      const store = createTestStore();
+      const wrapper = createWrapper(store);
+
+      const { result } = renderHook(() => useProductsSearch({ autoSearch: false }), {
+        wrapper,
+      });
+
+      await result.current.search();
+
+      await waitFor(() => {
+        expect(result.current.error).toBeTruthy();
+      });
+    });
+  });
+
+  describe('RTK Query Error Handling', () => {
+    it('should handle RTK Query error with message', async () => {
+      mockSearchResult = {
+        ...mockSearchResult,
+        isError: true,
+        error: { message: 'Query error message' },
+        data: null,
+      };
+      useLazyUnifiedSearchQuery.mockReturnValue([mockTriggerSearch, mockSearchResult]);
+
+      const store = createTestStore();
+      const wrapper = createWrapper(store);
+
+      const { result } = renderHook(() => useProductsSearch({ autoSearch: false }), {
+        wrapper,
+      });
+
+      // Error should be exposed
+      expect(result.current.error).toBeTruthy();
+    });
+
+    it('should handle RTK Query error with error property', async () => {
+      mockSearchResult = {
+        ...mockSearchResult,
+        isError: true,
+        error: { error: 'Error string from RTK' },
+        data: null,
+      };
+      useLazyUnifiedSearchQuery.mockReturnValue([mockTriggerSearch, mockSearchResult]);
+
+      const store = createTestStore();
+      const wrapper = createWrapper(store);
+
+      const { result } = renderHook(() => useProductsSearch({ autoSearch: false }), {
+        wrapper,
+      });
+
+      expect(result.current.error).toBeTruthy();
+    });
+
+    it('should handle RTK Query error with data.message', async () => {
+      mockSearchResult = {
+        ...mockSearchResult,
+        isError: true,
+        error: { data: { message: 'Data message from RTK' } },
+        data: null,
+      };
+      useLazyUnifiedSearchQuery.mockReturnValue([mockTriggerSearch, mockSearchResult]);
+
+      const store = createTestStore();
+      const wrapper = createWrapper(store);
+
+      const { result } = renderHook(() => useProductsSearch({ autoSearch: false }), {
+        wrapper,
+      });
+
+      expect(result.current.error).toBeTruthy();
+    });
+
+    it('should handle RTK Query string error', async () => {
+      mockSearchResult = {
+        ...mockSearchResult,
+        isError: true,
+        error: 'Plain string error',
+        data: null,
+      };
+      useLazyUnifiedSearchQuery.mockReturnValue([mockTriggerSearch, mockSearchResult]);
+
+      const store = createTestStore();
+      const wrapper = createWrapper(store);
+
+      const { result } = renderHook(() => useProductsSearch({ autoSearch: false }), {
+        wrapper,
+      });
+
+      expect(result.current.error).toBeTruthy();
+    });
+  });
+
+  describe('Debounce Behavior', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('should clear previous debounce when new search is triggered', async () => {
+      const store = createTestStore({ subjects: ['CM2'] });
+      const wrapper = createWrapper(store);
+
+      const { result } = renderHook(() => useProductsSearch({ autoSearch: false, debounceDelay: 250 }), {
+        wrapper,
+      });
+
+      // Start debounced search
+      result.current.debouncedSearch(false);
+
+      // Advance time partially
+      jest.advanceTimersByTime(100);
+
+      // Start another debounced search (should clear previous)
+      result.current.debouncedSearch(false);
+
+      // Advance time to just before new timeout
+      jest.advanceTimersByTime(200);
+
+      // Should not have been called yet
+      expect(mockTriggerSearch).not.toHaveBeenCalled();
+
+      // Complete the debounce
+      jest.advanceTimersByTime(100);
+
+      // Now should be called once
+      await waitFor(() => {
+        expect(mockTriggerSearch).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
 });
