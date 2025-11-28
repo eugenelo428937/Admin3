@@ -6,11 +6,9 @@ import React, {
    useCallback,
 } from "react";
 import { formatPrice } from "../../../utils/priceFormatter";
-import { formatVatLabel } from "../../../utils/vatUtils";
 import {
    Button,
-   Chip,
-   Card,
+   Chip,   
    CardHeader,
    CardContent,
    CardActions,
@@ -330,7 +328,7 @@ const MaterialProductCard = React.memo(
             <CardContent>
                {/* Enhanced Variations Section - Better hierarchy */}
                <Box className="product-variations">
-                  <Typography variant="subtitle2" className="variations-title">
+                  <Typography variant="subtitle1" className="variations-title">
                      Product Variations
                   </Typography>
 
@@ -360,6 +358,7 @@ const MaterialProductCard = React.memo(
                                           variation.id.toString()
                                              ? "primary.50"
                                              : "transparent",
+                                       transform: selectedVariation === variation.id.toString() ? "scale(1.01)" : "scale(1)",
                                     }}
                                  >
                                     <FormControlLabel
@@ -367,7 +366,7 @@ const MaterialProductCard = React.memo(
                                        control={<Radio size="small" />}
                                        label={
                                           <Typography
-                                             variant="body2"
+                                             variant="body1"
                                              className="variation-label"
                                              fontWeight={
                                                 selectedVariation ===
@@ -383,7 +382,7 @@ const MaterialProductCard = React.memo(
                                     />
                                     {standardPrice && (
                                        <Typography
-                                          variant="body2"
+                                          variant="body1"
                                           color="primary.main"
                                           className="variation-price"
                                           fontWeight={600}
@@ -489,7 +488,7 @@ const MaterialProductCard = React.memo(
                      {/* Status Text */}
                      <Box className="price-details-row">
                         <Typography
-                           variant="fineprint"
+                           variant="subtitle2"
                            className="price-level-text"
                            color="text.secondary"
                         >
@@ -500,7 +499,7 @@ const MaterialProductCard = React.memo(
                               : "Standard pricing"}
                         </Typography>
                         <Typography
-                           variant="fineprint"
+                           variant="subtitle2"
                            className="vat-status-text"
                            color="text.secondary"
                         >

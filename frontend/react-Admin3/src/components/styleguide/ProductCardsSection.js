@@ -1,97 +1,50 @@
 import React, { useState } from "react";
 import {
-	
-	Box,
 	Container,
 	Typography,
-	Card,
-	CardContent,
-	CardHeader,
-	CardActions,
-	Button,
-	Chip,
-	Badge,
-	Divider,
-	Stack,
-	Grid,
-	Paper,
-	Avatar,
-	Checkbox,
-	FormControlLabel,
-	Radio,
-	RadioGroup,
-	Tooltip,
+	Grid,	
+	useTheme
 } from "@mui/material";
-import {
-	School,
-	LibraryBooks,
-	Rule,
-	Computer,
-	LocalActivity,
-	Inventory2,
-	ShoppingCart,
-	Star,
-	AccessTime,
-	LibraryBooksSharp,
-	RuleOutlined,
-	AddShoppingCart,
-	InfoOutline,
-	CalendarMonthOutlined,
-	Warning,
-	SchoolOutlined,
-	ComputerOutlined,
-	Inventory2Outlined,
-	ConfirmationNumberOutlined,
-	Assessment,
-	Timer,
-	Analytics,
-	TrendingUp,
-} from "@mui/icons-material";
 import "../../styles/product_card.css";
-import { useTheme } from "@mui/material/styles";
+
 // Import refactored components
 import {
-	BalancedProductCard,
-	EnhancedAssessmentProductCard,
+	MaterialProductCardDemo,
 	EnhancedTutorialProductCard,
 	EnhancedOnlineClassroomProductCard,
-	EnhancedBundleProductCard,
+	BundleProductCard,
 	EnhancedMarkingVoucherProductCard,
-	EnhancedCompactCard,
-	EnhancedHorizontalCard,
-	EnhancedMinimalCard,		
+	MarkingProductCardDemo,
 } from "./ProductCards";
-import MarkingProductCard from "./ProductCards/MarkingProductCard";
-import GlassHeaderProductCards from './GlassHeaderProductCards';
 
 const ProductCardsSection = () => {
 	const theme = useTheme();
 	return (
-		<Container>
+		<Container sx={{mt:2}} maxWidth="xl">
 			{/* All Product Types Grid */}
 			<Typography variant="h3" sx={{ mb: theme.liftkit.spacing.xs }}>
-				All Product Card Types
+				Product Card Types
 			</Typography>
-			<Typography variant="subtitle1" sx={{ mb: theme.liftkit.spacing.lg }}>
+			<Typography variant="subtitle1" sx={{ mb: theme.liftkit.spacing.sm }}>
 				Enhanced layouts for all product categories with improved hierarchy
 				and functionality
 			</Typography>
 
-			<Grid container spacing={4} sx={{ mb: 6, alignItems: "flex-start" }}>
-				<Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+			<Grid container spacing={0} sx={{ mb: 6, alignItems: "center" }}>
+				<Grid size={{ xs: 12, sm: 6, lg: 4, xl : 3 }}>
 					<Typography variant="h6" gutterBottom>
-						Study Materials
+						Materials
 					</Typography>
 					<Typography
 						variant="body2"
 						color="text.secondary"
-						sx={{ mb: 2 }}>
-						Print & eBook variations with discounts
+						sx={{ mb: 0 }}>
+						Print & eBook variations
 					</Typography>
-					<BalancedProductCard />
+					<MaterialProductCardDemo />
 				</Grid>
 
-				<Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+				<Grid size={{ xs: 12, sm: 6, lg: 4, xl : 3 }}>
 					<Typography variant="h6" gutterBottom>
 						Tutorial
 					</Typography>
@@ -99,12 +52,12 @@ const ProductCardsSection = () => {
 						variant="body2"
 						color="text.secondary"
 						sx={{ mb: 2 }}>
-						In-person weekend courses
+						Face to face and Live Online
 					</Typography>
 					<EnhancedTutorialProductCard />
 				</Grid>
 
-				<Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+				<Grid size={{ xs: 12, sm: 6, lg: 4, xl : 3 }}>
 					<Typography variant="h6" gutterBottom>
 						Online Classroom
 					</Typography>
@@ -112,12 +65,12 @@ const ProductCardsSection = () => {
 						variant="body2"
 						color="text.secondary"
 						sx={{ mb: 2 }}>
-						Digital recordings & live sessions
+						Digital recordings
 					</Typography>
 					<EnhancedOnlineClassroomProductCard />
 				</Grid>
 
-				<Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+				<Grid size={{ xs: 12, sm: 6, lg: 4, xl : 3 }}>
 					<Typography variant="h6" gutterBottom>
 						Bundle
 					</Typography>
@@ -125,12 +78,12 @@ const ProductCardsSection = () => {
 						variant="body2"
 						color="text.secondary"
 						sx={{ mb: 2 }}>
-						Complete study package deals
+						Bundle package
 					</Typography>
-					<EnhancedBundleProductCard />
+					<BundleProductCard />
 				</Grid>
 
-				<Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+				<Grid size={{ xs: 12, sm: 6, lg: 4, xl : 3 }}>
 					<Typography variant="h6" gutterBottom>
 						Marking
 					</Typography>
@@ -140,10 +93,10 @@ const ProductCardsSection = () => {
 						sx={{ mb: 2 }}>
 						Different deadline scenarios for marking products
 					</Typography>
-					<MarkingProductCard />
+					<MarkingProductCardDemo />
 				</Grid>
 
-				<Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+				<Grid size={{ xs: 12, sm: 6, lg: 4, xl : 3 }}>
 					<Typography variant="h6" gutterBottom>
 						Marking Voucher
 					</Typography>
@@ -155,160 +108,7 @@ const ProductCardsSection = () => {
 					</Typography>
 					<EnhancedMarkingVoucherProductCard />
 				</Grid>
-
-				<Grid size={{ xs: 12, sm: 6, lg: 4 }}>
-					<Typography variant="h6" gutterBottom>
-						Assessment/Mock Exam
-					</Typography>
-					<Typography variant="body2" sx={{ mb: 2 }}>
-						Practice exams with analytics & feedback
-					</Typography>
-					<EnhancedAssessmentProductCard />
-				</Grid>
 			</Grid>
-
-			
-			{/* Enhanced Card Variations */}
-			<Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
-				Enhanced Card Variations
-			</Typography>
-
-			<Grid container spacing={3} sx={{ mb: 4 }}>
-				{/* Enhanced Compact Card */}
-				<Grid size={{ xs: 12, sm: 6}}>
-					<Typography variant="h6" gutterBottom>
-						Enhanced Compact Card
-					</Typography>
-					<EnhancedCompactCard />
-				</Grid>
-
-				{/* Enhanced Horizontal Card */}
-				<Grid size={{ xs: 12, sm: 6}}>
-					<Typography variant="h6" gutterBottom>
-						Enhanced Horizontal Layout
-					</Typography>
-					<EnhancedHorizontalCard />
-				</Grid>
-
-				{/* Enhanced Minimal Card */}
-				<Grid size={{ xs: 12, sm: 6}}>
-					<Typography variant="h6" gutterBottom>
-						Enhanced Minimal Style
-					</Typography>
-					<EnhancedMinimalCard />
-				</Grid>
-			</Grid>
-
-			{/* Original Simple Variations */}
-			<Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
-				Simple Card Variations
-			</Typography>
-
-			<Grid container spacing={3}>
-				{/* Compact Card */}
-				<Grid size={{ xs: 12, sm: 6}}>
-					<Typography variant="h6" gutterBottom>
-						Compact Card
-					</Typography>
-					<Card elevation={1}>
-						<CardContent sx={{ p: 2 }}>
-							<Stack direction="row" spacing={2} alignItems="center">
-								<Avatar
-									sx={{
-										bgcolor: "var(--mui-palette-product-tutorial)",
-									}}>
-									<School />
-								</Avatar>
-								<Box sx={{ flexGrow: 1 }}>
-									<Typography variant="subtitle2">
-										CP1 Tutorial
-									</Typography>
-									<Typography variant="caption" color="text.secondary">
-										Core Principles
-									</Typography>
-								</Box>
-								<Typography variant="h6" color="primary.main">
-									£299
-								</Typography>
-							</Stack>
-						</CardContent>
-					</Card>
-				</Grid>
-
-				{/* Horizontal Card */}
-				<Grid size={{ xs: 12, sm: 6}}>
-					<Typography variant="h6" gutterBottom>
-						Horizontal Layout
-					</Typography>
-					<Card elevation={1}>
-						<Stack direction="row">
-							<Box
-								sx={{
-									width: 80,
-									bgcolor: "var(--mui-palette-product-material)",
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "center",
-									color: "white",
-								}}>
-								<LibraryBooks sx={{ fontSize: 32 }} />
-							</Box>
-							<CardContent sx={{ flexGrow: 1, p: 2 }}>
-								<Typography variant="subtitle2" gutterBottom>
-									Study Materials
-								</Typography>
-								<Typography
-									variant="caption"
-									color="text.secondary"
-									display="block"
-									sx={{ mb: 1 }}>
-									Complete resource pack
-								</Typography>
-								<Typography variant="h6" color="primary.main">
-									£99
-								</Typography>
-							</CardContent>
-						</Stack>
-					</Card>
-				</Grid>
-
-				{/* Minimal Card */}
-				<Grid size={{ xs: 12, sm: 6}}>
-					<Typography variant="h6" gutterBottom>
-						Minimal Style
-					</Typography>
-					<Paper
-						variant="outlined"
-						sx={{
-							p: 2,
-							"&:hover": {
-								boxShadow: 2,
-							},
-						}}>
-						<Stack spacing={1}>
-							<Stack direction="row" alignItems="center" spacing={1}>
-								<Box
-									sx={{
-										width: 8,
-										height: 8,
-										borderRadius: "50%",
-										backgroundColor:
-											"var(--mui-palette-product-online)",
-									}}
-								/>
-								<Typography variant="caption" color="text.secondary">
-									ONLINE COURSE
-								</Typography>
-							</Stack>
-							<Typography variant="subtitle1">Mock Exams</Typography>
-							<Typography variant="h6" color="primary.main">
-								£75
-							</Typography>
-						</Stack>
-					</Paper>
-				</Grid>
-			</Grid>
-			<GlassHeaderProductCards />
 		</Container>
 	);
 };

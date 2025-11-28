@@ -214,7 +214,7 @@ const theme = createTheme({
       },
       fineprint: {
          fontFamily: "'Inter', 'Poppins', sans-serif",
-         fontWeight: 200,
+         fontWeight: 300,
          fontSize:
             "calc(1em /  var(--halfstep)/  var(--quarterstep)) !important",
          lineHeight: "var(--halfstep) !important",
@@ -415,9 +415,9 @@ const theme = createTheme({
             {
                props: { variant: "product" },
                style: {
-                  minWidth: "20rem",
-                  maxWidth: "20rem",
-                  height: "31.6rem !important",
+                  minWidth: "18rem",
+                  maxWidth: "18rem",
+                  height: "28.4rem !important",
                   overflow: "visible",
                   aspectRatio: "5/7",
                   boxShadow: "var(--Paper-shadow)",
@@ -545,8 +545,8 @@ const theme = createTheme({
                            alignItems: "start",
                            justifyContent: "start",
                            textAlign: "left",
-                           paddingLeft: liftKitTheme.spacing.sm,
-                           paddingRight: liftKitTheme.spacing.md,
+                           maxWidth: "7.5rem",
+                           paddingRight: liftKitTheme.spacing.xs2,
                            "& .discount-title": {
                               textAlign: "left",
                            },
@@ -556,8 +556,9 @@ const theme = createTheme({
                               alignItems: "flex-start",
                               justifyContent: "flex-start",
                               marginLeft: liftKitTheme.spacing.sm,
+                              maxWidth: "7.5rem",
                               "& .discount-radio-option": {
-                                 padding: liftKitTheme.spacing.xs2,
+                                 padding: liftKitTheme.spacing.xs3,
                                  paddingBottom: 0,
                                  width: "100%",
                                  transition: "all 0.2s ease-in-out",
@@ -656,15 +657,6 @@ const theme = createTheme({
             {
                props: { variant: "product", productType: "tutorial" },
                style: {
-                  minWidth: "20rem",
-                  maxWidth: "20rem",
-                  height: "31.6rem !important",
-                  overflow: "visible",
-                  aspectRatio: "5/7",
-                  boxShadow: "var(--Paper-shadow)",
-                  justifyContent: "space-between",
-                  position: "relative",
-
                   // Floating badges
                   "& .floating-badges-container": {
                      position: "absolute",
@@ -899,19 +891,18 @@ const theme = createTheme({
                   //  content styling
                   "& .MuiCardContent-root": {
                      // Product Variations
+                     padding : liftKitTheme.spacing.md,
                      "& .product-variations": {
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "start",
                         justifyContent: "start",
-                        textAlign: "left",
-                        paddingLeft: liftKitTheme.spacing.sm,
-                        paddingRight: liftKitTheme.spacing.sm,
-
+                        textAlign: "left",                        
                         "& .variations-title": {
-                           marginBottom: liftKitTheme.spacing.xs2,
+                           marginBottom: liftKitTheme.spacing.md,
                            textAlign: "left",
                            color: colorTheme.bpp.sky["100"],
+                           fontWeight: 600,
                         },
 
                         "& .variations-group": {
@@ -920,58 +911,45 @@ const theme = createTheme({
                            alignItems: "flex-start",
                            justifyContent: "flex-start",
                            width: "100%",
-                           "& .variation-option": {
-                              border: "1px solid",
-                              borderColor: "divider",
-                              borderRadius: 1,
-                              padding: liftKitTheme.spacing.sm,
-                              marginBottom: liftKitTheme.spacing.xs2,
-                              marginLeft: liftKitTheme.spacing.xs2,
+                           "& .MuiStack-root": {
                               width: "100%",
-                              color: colorTheme.bpp.sky["100"],
-                              transition: "all 0.2s ease-in-out",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              "& .MuiRadio-root": {
-                                 padding: liftKitTheme.spacing.sm,
-                                 width: liftKitTheme.spacing.md,
-                                 height: liftKitTheme.spacing.md,
-                                 color: colorTheme.bpp.sky["090"],
+
+                              "& .variation-option": {
+                                 border: "1px solid",
+                                 borderColor: "divider",
+                                 borderRadius: 1,
+                                 padding: liftKitTheme.spacing.xs,                                 
+                                 width: "100%",
+                                 color: colorTheme.bpp.sky["100"],
+                                 transition: "all 0.2s ease-in-out",
+                                 display: "flex",
                                  alignItems: "center",
-                                 justifyContent: "center",
-                              },
-                              "& .MuiSvgIcon-root": {
-                                 fontSize: liftKitTheme.spacing.md,
-                              },
-                              "&:hover": {
-                                 boxShadow: "var(--Paper-shadow)",
-                                 backdropFilter: "saturate(2.4)",
-                              },
-                              "& .variation-control": {
-                                 margin: 0,
-                                 flex: 1,
-                              },
-                              "& .variation-label": {
-                                 marginLeft: liftKitTheme.spacing.xs,
-                              },
-                              "& .variation-price": {
-                                 paddingRight: liftKitTheme.spacing.md,
-                              },
-                              // Buy Both specific styling
-                              "&.buy-both-option": {
-                                 borderColor: "secondary.main",
-                                 backgroundColor: "rgba(156, 39, 176, 0.05)", // Light secondary color
+                                 justifyContent: "space-between",
+                                 width: "100%",
                                  "& .MuiRadio-root": {
-                                    color: "secondary.main",
+                                    padding: liftKitTheme.spacing.sm,
+                                    width: liftKitTheme.spacing.md,
+                                    height: liftKitTheme.spacing.md,
+                                    color: colorTheme.bpp.sky["090"],
+                                    alignItems: "center",
+                                    justifyContent: "center",
                                  },
-                                 "& .buy-both-label": {
-                                    fontWeight: 600,
-                                    color: "secondary.main",
+                                 "& .MuiSvgIcon-root": {
+                                    fontSize: liftKitTheme.spacing.md,
                                  },
-                                 "& .buy-both-price": {
-                                    color: "secondary.main",
-                                    fontWeight: 600,
+                                 "&:hover": {
+                                    boxShadow: "var(--Paper-shadow)",
+                                    backdropFilter: "saturate(2.4)",
+                                 },
+                                 "& .variation-control": {
+                                    margin: 0,
+                                    flex: 1,
+                                 },
+                                 "& .variation-label": {
+                                    marginLeft: liftKitTheme.spacing.xs,
+                                 },
+                                 "& .variation-price": {
+                                    paddingRight: liftKitTheme.spacing.md,
                                  },
                               },
                            },
@@ -986,12 +964,15 @@ const theme = createTheme({
                      "& .price-container": {
                         // Discount Options
                         "& .discount-options": {
+                           
                            "& .discount-title": {
                               color: colorTheme.bpp.sky["100"],
                            },
                            "& .discount-radio-group": {
                               "& .discount-radio-option": {
                                  color: colorTheme.bpp.sky["100"],
+                                 paddingRight: 0,
+                                 marginRight: 0,
                                  "&:hover": {},
 
                                  "& .MuiRadio-root": {
@@ -1042,16 +1023,7 @@ const theme = createTheme({
             // Bundle Product Card Variant
             {
                props: { variant: "product", productType: "bundle" },
-               style: {
-                  minWidth: "20rem",
-                  maxWidth: "20rem",
-                  height: "31.6rem !important",
-                  overflow: "visible",
-                  aspectRatio: "5/7",
-                  boxShadow: "var(--Paper-shadow)",
-                  justifyContent: "space-between",
-                  position: "relative",
-
+               style: {                  
                   // Floating badges
                   "& .floating-badges-container": {
                      position: "absolute",
@@ -1277,16 +1249,7 @@ const theme = createTheme({
             // Online Classroom Product Card Variant
             {
                props: { variant: "product", productType: "online-classroom" },
-               style: {
-                  minWidth: "20rem",
-                  maxWidth: "20rem",
-                  height: "31.6rem !important",
-                  overflow: "visible",
-                  aspectRatio: "5/7",
-                  boxShadow: "var(--Paper-shadow)",
-                  justifyContent: "space-between",
-                  position: "relative",
-
+               style: {                  
                   // Floating badges
                   "& .floating-badges-container": {
                      position: "absolute",
@@ -1516,15 +1479,7 @@ const theme = createTheme({
             // Marking Product Card Variant (Orange theme)
             {
                props: { variant: "product", productType: "marking" },
-               style: {
-                  minWidth: "20rem",
-                  maxWidth: "20rem",
-                  height: "31.6rem !important",
-                  overflow: "visible",
-                  aspectRatio: "5/7",
-                  boxShadow: "var(--Paper-shadow)",
-                  justifyContent: "space-between",
-                  position: "relative",
+               style: {                  
                   // Floating badges
                   "& .floating-badges-container": {
                      position: "absolute",
@@ -1777,15 +1732,7 @@ const theme = createTheme({
             // Marking VoucherProduct Card Variant (Orange theme)
             {
                props: { variant: "marking-voucher-product" },
-               style: {
-                  minWidth: "20rem",
-                  maxWidth: "20rem",
-                  height: "31.6rem !important",
-                  overflow: "visible",
-                  aspectRatio: "5/7",
-                  boxShadow: "var(--Paper-shadow)",
-                  justifyContent: "space-between",
-                  position: "relative",
+               style: {                  
                   // Floating badges
                   "& .floating-badges-container": {
                      position: "absolute",

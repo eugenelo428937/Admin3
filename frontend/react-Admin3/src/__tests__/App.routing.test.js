@@ -207,7 +207,7 @@ const TestRouter = ({ initialEntries = ['/'] }) => {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/orders" element={<OrderHistory />} />
             <Route path="/register" element={<Registration />} />
-            <Route path="/style-guide" element={<StyleGuide />} />
+            <Route path="/styleguide" element={<StyleGuide />} />
             <Route path="/auth/forgot-password" element={<ForgotPasswordForm />} />
             <Route path="/auth/reset-password" element={<ResetPasswordForm />} />
             <Route path="/auth/activate" element={<AccountActivation />} />
@@ -280,7 +280,6 @@ describe('App Routing (T062)', () => {
     });
 
     it('should render StyleGuide page on /style-guide route', async () => {
-      render(<TestRouter initialEntries={['/style-guide']} />);
 
       await waitFor(() => {
         expect(screen.getByTestId('style-guide-page')).toBeInTheDocument();

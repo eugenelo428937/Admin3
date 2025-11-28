@@ -6,9 +6,9 @@ const liftKitTheme = {
    // These correspond to the CSS custom properties in globals.css
    spacing: {
       // Base values using golden ratio (1.618) scaling
-      xs3: "calc(1rem / var(--scaleFactor) / var(--scaleFactor) / var(--scaleFactor))", // var(--3xs)
+      xs3: "calc(1rem / var(--scaleFactor) / var(--scaleFactor) / var(--scaleFactor) / var(--halfstep))", // var(--3xs)
       xs2: "calc(1rem / var(--scaleFactor) / var(--scaleFactor))", // var(--2xs)
-      xs: "calc(1rem / var(--scaleFactor))", // var(--xs)
+      xs: "calc(1rem / var(--scaleFactor) / var(--halfstep))", // var(--xs)
       sm: "calc(1rem / var(--scaleFactor))", // var(--sm) - same as xs in the CSS
       md: "1rem", // var(--md) - base spacing unit
       lg: "calc(1rem * var(--scaleFactor))", // var(--lg)
