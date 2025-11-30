@@ -31,13 +31,13 @@ const FormElementsSection = () => {
         <Stack spacing={3}>
           <TextField
             label="Text Field"
-            variant="outlined"
+            variant="standard"
             size="small"
             fullWidth
           />
           <TextField
             label="Error State"
-            variant="outlined"
+            variant="standard"
             size="small"
             error
             helperText="This field has an error"
@@ -80,20 +80,6 @@ const FormElementsSection = () => {
                 label="Option 2"
               />
             </RadioGroup>
-          </Box>
-
-          <Box>
-            <Typography variant="subtitle2" gutterBottom>
-              Slider
-            </Typography>
-            <Slider
-              value={sliderValue}
-              onChange={(e, newValue) =>
-                setSliderValue(newValue)
-              }
-              valueLabelDisplay="auto"
-              size="small"
-            />
           </Box>
         </Stack>
       </CardContent>

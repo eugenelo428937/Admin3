@@ -1,5 +1,6 @@
 // Main product card components
 export { default as MaterialProductCard } from './MaterialProductCard';
+export { default as MaterialProductCard2 } from './MaterialProductCard2';
 export { default as MaterialProductCardDemo } from './MaterialProductCardDemo';
 export { default as TutorialProductCard } from './TutorialProductCard';
 export { default as OnlineClassroomProductCard } from './OnlineClassroomProductCard';
