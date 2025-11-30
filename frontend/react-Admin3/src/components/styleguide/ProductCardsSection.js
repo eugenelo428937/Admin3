@@ -16,6 +16,7 @@ import {
 	BundleProductCard,
 	MarkingVoucherProductCard,
 	MarkingProductCard,
+	MaterialProductCard2,
 } from "./ProductCards";
 
 const ProductCardsSection = () => {

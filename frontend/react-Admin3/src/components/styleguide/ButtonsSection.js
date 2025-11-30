@@ -8,12 +8,13 @@ import {
   Button,
   Divider,
   IconButton,
-  Fab,
   Stack
 } from '@mui/material';
 import { Add, Edit, Delete } from '@mui/icons-material';
+import { useTheme } from "@mui/material/styles";
 
 const ButtonsSection = () => {
+  const theme = useTheme();
   return (
     <Card elevation={2} sx={{ height: "100%" }}>
       <CardHeader title="Buttons" />
@@ -33,7 +34,8 @@ const ButtonsSection = () => {
                 variant="contained"
                 sx={{
                   backgroundColor: 'var(--mui-palette-primary-main)',
-                  color: '#ffffff',
+                  color: theme.palette.primary.main,
+                  //color: '#ffffff',
                   '&:hover': {
                     backgroundColor: 'var(--mui-palette-primary-dark)',
                   }
@@ -93,6 +95,7 @@ const ButtonsSection = () => {
               sx={{ gap: 1 }}>
               <Button>Primary</Button>
               <Button color="secondary">Secondary</Button>
+              <Button color="success">Success</Button>
               <Button color="error">Error</Button>
             </Stack>
           </Box>
@@ -114,9 +117,6 @@ const ButtonsSection = () => {
               <IconButton color="error">
                 <Delete />
               </IconButton>
-              <Fab size="small" color="primary">
-                <Add />
-              </Fab>
             </Stack>
           </Box>
         </Stack>

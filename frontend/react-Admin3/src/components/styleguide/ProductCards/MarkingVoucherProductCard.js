@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
 	Alert,
+	AlertTitle,
 	Box,
 	Typography,
 	Card,
@@ -34,6 +35,7 @@ import BaseProductCard from "../../Common/BaseProductCard";
 const MarkingVoucherProductCard = ({ productType = "marking-voucher" }) => {
 	const theme = useTheme();
 	const [quantity, setQuantity] = useState(1);
+	const [selectedPriceType, setSelectedPriceType] = useState("");
 	const [isHovered, setIsHovered] = useState(false);
 	const basePrice = 35; // Base price per voucher
 
@@ -104,25 +106,13 @@ const MarkingVoucherProductCard = ({ productType = "marking-voucher" }) => {
 
 			<CardContent>
 				<Alert severity="info" className="voucher-info-alert">
-					<Typography variant="caption" className="alert-text">
+					<AlertTitle>Important</AlertTitle>
+					<Typography variant="subtitle1" className="alert-text">
 						To ensure that your script is returned before the date of the
 						exam, please adhere to the explicit Marking Voucher deadline
 						dates in each session.
 					</Typography>
 				</Alert>
-
-				<Box className="voucher-validity-info">
-					<Stack
-						direction="row"
-						spacing={1}
-						alignItems="center"
-						className="validity-info-row">
-						<Timer className="validity-info-icon" />
-						<Typography variant="caption" className="validity-info-text">
-							Valid for 4 years
-						</Typography>
-					</Stack>
-				</Box>
 
 				<Box className="voucher-quantity-section">
 					<Typography
@@ -149,6 +139,61 @@ const MarkingVoucherProductCard = ({ productType = "marking-voucher" }) => {
 
 			<CardActions>
 				<Box className="price-container">
+				<Box className="discount-options">
+                     <Typography variant="subtitle2" className="discount-title">
+                        Discount Options
+                     </Typography>
+                     <Box className="discount-radio-group">
+                        <FormControlLabel
+                           className="discount-radio-option"
+                           control={
+                              <Radio
+                                 checked={selectedPriceType === "retaker"}
+                                 onClick={() =>
+                                    setSelectedPriceType(
+                                       selectedPriceType === "retaker"
+                                          ? ""
+                                          : "retaker"
+                                    )
+                                 }
+                                 size="small"
+                              />
+                           }
+                           label={
+                              <Typography
+                                 variant="subtitle2"
+                                 className="discount-label"
+                              >
+                                 Retaker
+                              </Typography>
+                           }
+                        />
+                        <FormControlLabel
+                           className="discount-radio-option"
+                           control={
+                              <Radio
+                                 checked={selectedPriceType === "additional"}
+                                 onClick={() =>
+                                    setSelectedPriceType(
+                                       selectedPriceType === "additional"
+                                          ? ""
+                                          : "additional"
+                                    )
+                                 }
+                                 size="small"
+                              />
+                           }
+                           label={
+                              <Typography
+                                 variant="subtitle2"
+                                 className="discount-label"
+                              >
+                                 Additional Copy
+                              </Typography>
+                           }
+                        />
+                     </Box>
+                  </Box>
 					<Box className="price-action-section">
 						<Box className="price-info-row">
 							<Typography variant="price" className="price-display">

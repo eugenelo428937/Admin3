@@ -9,7 +9,6 @@ import {
 	DialogContent,
 	DialogActions,
 	Button,
-	Fab,
 	Paper,
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
@@ -168,14 +167,6 @@ const StyleGuide = () => {
 					</Button>
 				</DialogActions>
 			</Dialog>
-
-			{/* Floating Action Button */}
-			<Fab
-				color="primary"
-				onClick={() => setDialogOpen(true)}
-				sx={{ position: "fixed", bottom: 16, right: 16 }}>
-				<Add />
-			</Fab>
 		</Container>
 	);
 };
