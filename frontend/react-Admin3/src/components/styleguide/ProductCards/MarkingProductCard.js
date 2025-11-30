@@ -17,6 +17,9 @@ import {
    SpeedDial,
    SpeedDialAction,
    SpeedDialIcon,
+   FormControlLabel,
+   Radio,
+
 } from "@mui/material";
 import { ThemeProvider, useTheme } from "@mui/material/styles";
 import {
@@ -35,6 +38,7 @@ import BaseProductCard from "../../Common/BaseProductCard";
 // Enhanced Marking Product Card - Deadline Scenarios with Pagination
 const MarkingProductCard = ({ productType = "marking" }) => {
    const [currentScenario, setCurrentScenario] = useState(0);
+   const [selectedPriceType, setSelectedPriceType] = useState("");
    const [isHovered, setIsHovered] = useState(false);
    const [speedDialOpen, setSpeedDialOpen] = useState(false);
    const [showCheck, setShowCheck] = useState(false);
@@ -242,6 +246,61 @@ const MarkingProductCard = ({ productType = "marking" }) => {
             </CardContent>
             <CardActions>
                <Box className="price-container">
+               <Box className="discount-options">
+                     <Typography variant="subtitle2" className="discount-title">
+                        Discount Options
+                     </Typography>
+                     <Box className="discount-radio-group">
+                        <FormControlLabel
+                           className="discount-radio-option"
+                           control={
+                              <Radio
+                                 checked={selectedPriceType === "retaker"}
+                                 onClick={() =>
+                                    setSelectedPriceType(
+                                       selectedPriceType === "retaker"
+                                          ? ""
+                                          : "retaker"
+                                    )
+                                 }
+                                 size="small"
+                              />
+                           }
+                           label={
+                              <Typography
+                                 variant="subtitle2"
+                                 className="discount-label"
+                              >
+                                 Retaker
+                              </Typography>
+                           }
+                        />
+                        <FormControlLabel
+                           className="discount-radio-option"
+                           control={
+                              <Radio
+                                 checked={selectedPriceType === "additional"}
+                                 onClick={() =>
+                                    setSelectedPriceType(
+                                       selectedPriceType === "additional"
+                                          ? ""
+                                          : "additional"
+                                    )
+                                 }
+                                 size="small"
+                              />
+                           }
+                           label={
+                              <Typography
+                                 variant="subtitle2"
+                                 className="discount-label"
+                              >
+                                 Additional Copy
+                              </Typography>
+                           }
+                        />
+                     </Box>
+                  </Box>
                   <Box className="price-action-section">
                      <Box className="price-info-row">
                         <Typography variant="price" className="price-display">

@@ -251,7 +251,7 @@ const theme = createTheme({
       MuiAlert: {
          styleOverrides: {
            standardSuccess: {
-             backgroundColor: 'green',
+             backgroundColor: 'colorTheme.success.background',
              color: colorTheme.success.main,
              marginBottom: liftKitTheme.spacing.xs3,
              "& .MuiAlertTitle-root":{
@@ -795,6 +795,7 @@ const theme = createTheme({
                         },
                      },
                   },
+                  
                   //  content styling
                   "& .MuiCardContent-root": {
                      padding: liftKitTheme.spacing.md,
@@ -948,7 +949,6 @@ const theme = createTheme({
                         },
                      },
                   },
-
                   //  content styling
                   "& .MuiCardContent-root": {
                      // Product Variations

@@ -235,7 +235,7 @@ const TutorialProductCard = ({
                            • BPP Birmingham
                         </Typography>
                         <Typography variant="caption" className="info-sub-text">
-                           • Birmingham Vue Cinema
+                           • BPP Birmingham 2
                         </Typography>
                      </Stack>
                   </Stack>
