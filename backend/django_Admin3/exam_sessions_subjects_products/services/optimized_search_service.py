@@ -94,16 +94,17 @@ class OptimizedSearchService:
         filtered_queryset = base_queryset
         filtered_bundles_queryset = base_bundles_queryset
 
-        # When search query exists, only include bundles if query is relevant to bundles
-        # This prevents bundles from appearing in unrelated searches (e.g., "marking voucher")
-        should_include_bundles = True
+        # Determine bundle filtering strategy
+        # 1. If user explicitly searches for bundle keywords -> show all bundles (subject-filtered)
+        # 2. If filters or search results exist -> filter bundles by matching content
+        # 3. If no filters and no search -> show all bundles (browse all scenario)
+        bundle_keyword_search = False
         if search_query and len(search_query) >= 2:
             search_lower = search_query.lower()
             bundle_keywords = ['bundle', 'package', 'combo', 'set']
-            # Only include bundles if search query contains bundle-related keywords
-            if not any(keyword in search_lower for keyword in bundle_keywords):
-                should_include_bundles = False
-                logger.debug(f'[BUNDLES] Excluding bundles from search query "{search_query}" (no bundle keywords)')
+            bundle_keyword_search = any(keyword in search_lower for keyword in bundle_keywords)
+            if bundle_keyword_search:
+                logger.debug(f'[BUNDLES] Bundle keyword detected in search query "{search_query}" - showing all bundles')
 
         # Check if 'Bundle' category filter is active (exclusive filter)
         bundle_filter_active = 'Bundle' in filters.get('categories', [])
@@ -121,12 +122,48 @@ class OptimizedSearchService:
             if navbar_filters:
                 filtered_queryset = self._apply_navbar_filters(filtered_queryset, navbar_filters)
 
-        # Apply subject filters to bundles (only if bundles should be included)
-        if not should_include_bundles:
-            # Exclude all bundles when search query doesn't match bundle keywords
+        # Content-based bundle filtering
+        # Bundles should only appear when their contents match the current search/filter criteria
+        has_active_filters = bool(filters) or bool(navbar_filters) or use_fuzzy_search
+
+        # Special case: if fuzzy search was used but found no results, exclude all bundles
+        # (unless user explicitly searched for bundle keywords)
+        fuzzy_search_no_results = use_fuzzy_search and not fuzzy_essp_ids
+
+        if bundle_filter_active:
+            # Bundle category filter - show all bundles (subject-filtered only)
+            if filters:
+                filtered_bundles_queryset = self._apply_bundle_filters(filtered_bundles_queryset, filters)
+            logger.debug('[BUNDLES] Bundle category selected - showing all bundles')
+        elif bundle_keyword_search:
+            # User explicitly searching for bundles - show all bundles (subject-filtered)
+            if filters:
+                filtered_bundles_queryset = self._apply_bundle_filters(filtered_bundles_queryset, filters)
+            logger.debug('[BUNDLES] Bundle keyword search - showing all subject-filtered bundles')
+        elif fuzzy_search_no_results:
+            # Search query returned no product matches - exclude all bundles
             filtered_bundles_queryset = filtered_bundles_queryset.none()
-        elif filters:
-            filtered_bundles_queryset = self._apply_bundle_filters(filtered_bundles_queryset, filters)
+            logger.debug('[BUNDLES] Fuzzy search returned no results - excluding all bundles')
+        elif has_active_filters:
+            # Content-based filtering: only bundles containing matching products
+            # Get the ESSP IDs that match current filters/search
+            matching_essp_ids = list(filtered_queryset.values_list('id', flat=True)[:1000])  # Limit for performance
+
+            if matching_essp_ids:
+                # Filter bundles to only those containing matching products
+                filtered_bundles_queryset = self._filter_bundles_by_matching_products(
+                    filtered_bundles_queryset,
+                    matching_essp_ids
+                )
+                # Also apply subject filter for consistency
+                if filters:
+                    filtered_bundles_queryset = self._apply_bundle_filters(filtered_bundles_queryset, filters)
+                logger.debug(f'[BUNDLES] Content-based filtering applied - {len(matching_essp_ids)} matching products')
+            else:
+                # No matching products = no bundles to show
+                filtered_bundles_queryset = filtered_bundles_queryset.none()
+                logger.debug('[BUNDLES] No matching products - excluding all bundles')
+        # else: No filters and no search = show all bundles (browse all scenario) - no action needed
 
         # Get counts for pagination (from filtered querysets) - fast COUNT queries only
         products_count = filtered_queryset.count()
@@ -513,6 +550,38 @@ class OptimizedSearchService:
             queryset = queryset.filter(q_filter).distinct()
 
         return queryset
+
+    def _filter_bundles_by_matching_products(self, bundles_queryset, matching_essp_ids):
+        """
+        Filter bundles to only include those containing products from the matching ESSP IDs.
+
+        This implements content-based bundle filtering: bundles should only appear
+        when their contents match the current search/filter criteria.
+
+        Args:
+            bundles_queryset: Base bundle queryset
+            matching_essp_ids: List of ExamSessionSubjectProduct IDs that match filters/search
+
+        Returns:
+            Filtered bundle queryset containing only bundles with matching products
+        """
+        if not matching_essp_ids:
+            logger.debug('[BUNDLES] No matching products - excluding all bundles')
+            return bundles_queryset.none()
+
+        from exam_sessions_subjects_products.models import ExamSessionSubjectBundleProduct
+
+        # Find bundle IDs that contain any of the matching products
+        # Uses the relationship: ExamSessionSubjectBundleProduct -> ESSPV -> ESSP
+        bundle_ids_with_matching_content = ExamSessionSubjectBundleProduct.objects.filter(
+            exam_session_subject_product_variation__exam_session_subject_product_id__in=matching_essp_ids,
+            is_active=True
+        ).values_list('bundle_id', flat=True).distinct()
+
+        matching_bundle_ids = list(bundle_ids_with_matching_content)
+        logger.debug(f'[BUNDLES] Content-based filtering: {len(matching_essp_ids)} matching products -> {len(matching_bundle_ids)} bundles')
+
+        return bundles_queryset.filter(id__in=matching_bundle_ids)
 
     def _fetch_marking_vouchers(self, search_query, filters, navbar_filters=None):
         """

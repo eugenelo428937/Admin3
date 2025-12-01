@@ -375,3 +375,388 @@ class MarkingVoucherIntegrationTest(APITestCase):
 
         # Should not include marking vouchers when no marking filter is applied
         self.assertEqual(len(voucher_products), 0)
+
+
+class BundleContentFilteringTest(APITestCase):
+    """
+    Test cases for content-based bundle filtering.
+
+    Bundles should only appear in search/filter results when their contents
+    match the search query or filter criteria, NOT just because they exist.
+    """
+
+    def setUp(self):
+        """Set up test data including products, bundles, and their relationships"""
+        from django.utils import timezone
+        from products.models import (
+            Product, ProductVariation, ProductProductVariation,
+            ProductBundle, FilterGroup
+        )
+        from exam_sessions_subjects_products.models import (
+            ExamSessionSubjectProductVariation,
+            ExamSessionSubjectBundle,
+            ExamSessionSubjectBundleProduct
+        )
+
+        # Create exam session and subjects
+        self.exam_session = ExamSession.objects.create(
+            session_code="TEST2025",
+            start_date=timezone.now(),
+            end_date=timezone.now() + timezone.timedelta(days=365)
+        )
+
+        self.subject_cm2 = Subject.objects.create(
+            code="CM2",
+            description="Commercial Management 2"
+        )
+
+        self.subject_sa1 = Subject.objects.create(
+            code="SA1",
+            description="Specialist Applications 1"
+        )
+
+        self.ess_cm2 = ExamSessionSubject.objects.create(
+            exam_session=self.exam_session,
+            subject=self.subject_cm2
+        )
+
+        self.ess_sa1 = ExamSessionSubject.objects.create(
+            exam_session=self.exam_session,
+            subject=self.subject_sa1
+        )
+
+        # Create filter groups (categories)
+        self.category_materials = FilterGroup.objects.create(
+            name="Core Study Materials",
+            is_active=True
+        )
+
+        self.category_tutorial = FilterGroup.objects.create(
+            name="Tutorial",
+            is_active=True
+        )
+
+        # Create product variation
+        self.variation_printed = ProductVariation.objects.create(
+            name="Printed",
+            code="PRINTED",
+            variation_type="Printed"
+        )
+
+        # Create products with categories
+        self.product_core_reading = Product.objects.create(
+            code="CR001",
+            fullname="Core Reading CM2",
+            shortname="Core Reading"
+        )
+        self.product_core_reading.groups.add(self.category_materials)
+
+        self.product_tutorial = Product.objects.create(
+            code="TUT001",
+            fullname="Tutorial CM2",
+            shortname="Tutorial"
+        )
+        self.product_tutorial.groups.add(self.category_tutorial)
+
+        self.product_sa1_materials = Product.objects.create(
+            code="SA1MAT",
+            fullname="SA1 Study Materials",
+            shortname="SA1 Materials"
+        )
+        self.product_sa1_materials.groups.add(self.category_materials)
+
+        # Create ProductProductVariations
+        self.ppv_core_reading = ProductProductVariation.objects.create(
+            product=self.product_core_reading,
+            product_variation=self.variation_printed
+        )
+
+        self.ppv_tutorial = ProductProductVariation.objects.create(
+            product=self.product_tutorial,
+            product_variation=self.variation_printed
+        )
+
+        self.ppv_sa1_materials = ProductProductVariation.objects.create(
+            product=self.product_sa1_materials,
+            product_variation=self.variation_printed
+        )
+
+        # Create ExamSessionSubjectProducts
+        self.essp_core_reading = ExamSessionSubjectProduct.objects.create(
+            exam_session_subject=self.ess_cm2,
+            product=self.product_core_reading
+        )
+
+        self.essp_tutorial = ExamSessionSubjectProduct.objects.create(
+            exam_session_subject=self.ess_cm2,
+            product=self.product_tutorial
+        )
+
+        self.essp_sa1_materials = ExamSessionSubjectProduct.objects.create(
+            exam_session_subject=self.ess_sa1,
+            product=self.product_sa1_materials
+        )
+
+        # Create ExamSessionSubjectProductVariations
+        self.esspv_core_reading = ExamSessionSubjectProductVariation.objects.create(
+            exam_session_subject_product=self.essp_core_reading,
+            product_product_variation=self.ppv_core_reading
+        )
+
+        self.esspv_tutorial = ExamSessionSubjectProductVariation.objects.create(
+            exam_session_subject_product=self.essp_tutorial,
+            product_product_variation=self.ppv_tutorial
+        )
+
+        self.esspv_sa1_materials = ExamSessionSubjectProductVariation.objects.create(
+            exam_session_subject_product=self.essp_sa1_materials,
+            product_product_variation=self.ppv_sa1_materials
+        )
+
+        # Create master bundles
+        self.bundle_cm2_materials = ProductBundle.objects.create(
+            bundle_name="CM2 Materials Bundle",
+            subject=self.subject_cm2,
+            bundle_description="All CM2 study materials",
+            is_active=True
+        )
+
+        self.bundle_cm2_tutorial = ProductBundle.objects.create(
+            bundle_name="CM2 Tutorial Bundle",
+            subject=self.subject_cm2,
+            bundle_description="CM2 tutorial package",
+            is_active=True
+        )
+
+        self.bundle_sa1_materials = ProductBundle.objects.create(
+            bundle_name="SA1 Materials Bundle",
+            subject=self.subject_sa1,
+            bundle_description="All SA1 study materials",
+            is_active=True
+        )
+
+        # Create ExamSessionSubjectBundles
+        self.ess_bundle_cm2_materials = ExamSessionSubjectBundle.objects.create(
+            bundle=self.bundle_cm2_materials,
+            exam_session_subject=self.ess_cm2,
+            is_active=True
+        )
+
+        self.ess_bundle_cm2_tutorial = ExamSessionSubjectBundle.objects.create(
+            bundle=self.bundle_cm2_tutorial,
+            exam_session_subject=self.ess_cm2,
+            is_active=True
+        )
+
+        self.ess_bundle_sa1_materials = ExamSessionSubjectBundle.objects.create(
+            bundle=self.bundle_sa1_materials,
+            exam_session_subject=self.ess_sa1,
+            is_active=True
+        )
+
+        # Link bundles to their products via ExamSessionSubjectBundleProduct
+        # CM2 Materials Bundle contains Core Reading
+        ExamSessionSubjectBundleProduct.objects.create(
+            bundle=self.ess_bundle_cm2_materials,
+            exam_session_subject_product_variation=self.esspv_core_reading,
+            is_active=True
+        )
+
+        # CM2 Tutorial Bundle contains Tutorial
+        ExamSessionSubjectBundleProduct.objects.create(
+            bundle=self.ess_bundle_cm2_tutorial,
+            exam_session_subject_product_variation=self.esspv_tutorial,
+            is_active=True
+        )
+
+        # SA1 Materials Bundle contains SA1 Materials
+        ExamSessionSubjectBundleProduct.objects.create(
+            bundle=self.ess_bundle_sa1_materials,
+            exam_session_subject_product_variation=self.esspv_sa1_materials,
+            is_active=True
+        )
+
+    def test_bundles_excluded_when_search_has_no_matching_content(self):
+        """
+        Bundles should NOT appear when search query doesn't match any bundle contents.
+
+        Searching for 'marking voucher' should return no bundles since no bundle
+        contains marking voucher products.
+        """
+        url = reverse('unified-product-search')
+        data = {
+            "searchQuery": "marking voucher",
+            "pagination": {"page": 1, "page_size": 20}
+        }
+
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        products = response.data['products']
+        bundles = [p for p in products if p.get('is_bundle') or p.get('type') == 'Bundle']
+
+        # Should have NO bundles when search doesn't match bundle content
+        self.assertEqual(len(bundles), 0,
+            f"Expected 0 bundles for 'marking voucher' search, got {len(bundles)}: "
+            f"{[b.get('product_name') for b in bundles]}")
+
+    def test_bundles_included_when_search_matches_content(self):
+        """
+        Bundles should appear when their contents match the search query.
+
+        Searching for 'Core Reading' should show bundles containing Core Reading products.
+        """
+        url = reverse('unified-product-search')
+        data = {
+            "searchQuery": "Core Reading",
+            "pagination": {"page": 1, "page_size": 20}
+        }
+
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        products = response.data['products']
+        bundles = [p for p in products if p.get('is_bundle') or p.get('type') == 'Bundle']
+
+        # Should include CM2 Materials Bundle (contains Core Reading)
+        bundle_names = [b.get('product_name') or b.get('bundle_name') for b in bundles]
+        self.assertIn('CM2 Materials Bundle', bundle_names,
+            f"Expected 'CM2 Materials Bundle' in results, got: {bundle_names}")
+
+    def test_bundles_included_when_category_filter_matches_content(self):
+        """
+        Bundles should appear when their contents match category filters.
+
+        Filtering by 'Core Study Materials' should show bundles containing
+        products in that category.
+        """
+        url = reverse('unified-product-search')
+        data = {
+            "filters": {
+                "categories": ["Core Study Materials"]
+            },
+            "pagination": {"page": 1, "page_size": 20}
+        }
+
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        products = response.data['products']
+        bundles = [p for p in products if p.get('is_bundle') or p.get('type') == 'Bundle']
+
+        # Should include bundles containing Core Study Materials
+        # CM2 Materials Bundle and SA1 Materials Bundle both contain materials
+        self.assertGreater(len(bundles), 0,
+            "Expected bundles containing Core Study Materials products")
+
+        bundle_names = [b.get('product_name') or b.get('bundle_name') for b in bundles]
+        # CM2 Materials Bundle contains Core Reading which is in Core Study Materials
+        self.assertIn('CM2 Materials Bundle', bundle_names,
+            f"Expected 'CM2 Materials Bundle' in filtered results, got: {bundle_names}")
+
+    def test_bundles_excluded_when_category_filter_has_no_matching_content(self):
+        """
+        Bundles should NOT appear when filter criteria exclude all bundle contents.
+
+        Filtering by 'Tutorial' category should only show bundles with tutorial products.
+        """
+        url = reverse('unified-product-search')
+        data = {
+            "filters": {
+                "categories": ["Tutorial"]
+            },
+            "pagination": {"page": 1, "page_size": 20}
+        }
+
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        products = response.data['products']
+        bundles = [p for p in products if p.get('is_bundle') or p.get('type') == 'Bundle']
+
+        bundle_names = [b.get('product_name') or b.get('bundle_name') for b in bundles]
+
+        # Should only include CM2 Tutorial Bundle (the only one with tutorial content)
+        # Should NOT include CM2 Materials Bundle or SA1 Materials Bundle
+        self.assertNotIn('CM2 Materials Bundle', bundle_names,
+            "CM2 Materials Bundle should not appear for Tutorial filter")
+        self.assertNotIn('SA1 Materials Bundle', bundle_names,
+            "SA1 Materials Bundle should not appear for Tutorial filter")
+
+    def test_bundles_all_included_with_bundle_keyword_search(self):
+        """
+        All bundles should appear when user explicitly searches for 'bundle'.
+
+        This is an override - user is explicitly looking for bundles.
+        """
+        url = reverse('unified-product-search')
+        data = {
+            "searchQuery": "bundle",
+            "pagination": {"page": 1, "page_size": 20}
+        }
+
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        products = response.data['products']
+        bundles = [p for p in products if p.get('is_bundle') or p.get('type') == 'Bundle']
+
+        # Should include all active bundles when searching for 'bundle'
+        self.assertGreaterEqual(len(bundles), 3,
+            f"Expected at least 3 bundles for 'bundle' search, got {len(bundles)}")
+
+    def test_bundles_shown_when_no_filters_applied(self):
+        """
+        All bundles should appear when no filters are applied (browse all scenario).
+        """
+        url = reverse('unified-product-search')
+        data = {
+            "filters": {},
+            "pagination": {"page": 1, "page_size": 50}
+        }
+
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        products = response.data['products']
+        bundles = [p for p in products if p.get('is_bundle') or p.get('type') == 'Bundle']
+
+        # Should include all active bundles when browsing without filters
+        self.assertGreaterEqual(len(bundles), 3,
+            f"Expected at least 3 bundles when browsing all, got {len(bundles)}")
+
+    def test_bundles_filtered_by_subject_and_content(self):
+        """
+        Subject filter should limit bundles, and content filter should further refine.
+
+        Filtering by subject CM2 and category 'Core Study Materials' should only
+        show CM2 bundles with materials content.
+        """
+        url = reverse('unified-product-search')
+        data = {
+            "filters": {
+                "subjects": ["CM2"],
+                "categories": ["Core Study Materials"]
+            },
+            "pagination": {"page": 1, "page_size": 20}
+        }
+
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        products = response.data['products']
+        bundles = [p for p in products if p.get('is_bundle') or p.get('type') == 'Bundle']
+
+        bundle_names = [b.get('product_name') or b.get('bundle_name') for b in bundles]
+
+        # Should include CM2 Materials Bundle
+        self.assertIn('CM2 Materials Bundle', bundle_names,
+            f"Expected 'CM2 Materials Bundle', got: {bundle_names}")
+
+        # Should NOT include SA1 bundles (wrong subject)
+        self.assertNotIn('SA1 Materials Bundle', bundle_names,
+            "SA1 bundle should not appear with CM2 subject filter")
+
+        # Should NOT include CM2 Tutorial Bundle (wrong category)
+        self.assertNotIn('CM2 Tutorial Bundle', bundle_names,
+            "CM2 Tutorial Bundle should not appear with Materials filter")
