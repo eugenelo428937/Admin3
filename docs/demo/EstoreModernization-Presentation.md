@@ -150,19 +150,17 @@ h1 {
 1. **Industry Patterns Research**
 1. **Feasibility Study**
 
+## Part 2
+
+1. **Demo**
+
 ---
 
 ## 1. Initial Analysis
 
-### 1.1 Table layout vs mobile friendliness
-
-- For a table to be responsive, the height of each row will need to be increased.
-- With minimal padding and margin but information is not display properly in smaller screen size.
-- If we add more info for a product then a single product may takes up the most of the screen and readability suffers.
-- Wrapping table cell breaks the relationship of Printed/ebook/Buy both.
-- Wrapping text results in word breaking up, cell with different height, terrible readability.
-
 ---
+
+### 1.1 Table layout vs mobile friendliness
 
 <style scoped>
   td:last-child, th:last-child {
@@ -173,12 +171,13 @@ h1 {
   }
 </style>
 
-Layout appears very crowded even with minimal styling.
-Wrapping and uneven height makes it quite difficult to read.
+- Increase row height for **Mobile**
+- Adding more info = worse readability
+- Flex grid breaks the relationship of Printed, ebook and Buy both
 
 | Minimal info | Info Added | Flex Grid |
 |:------:|:------:|:------:|
-|![height:500px](./src/mobile-mock-min.png)|![height:500px](./src/mobile-mock-info.png) | ![height:500px](./src/mobile-mock-grid.png) |
+|![height:600px](./src/mobile-mock-min.png)|![height:600px](./src/mobile-mock-info.png) | ![height:600px](./src/mobile-mock-grid.png) |
 
 ---
 <style scoped>
@@ -197,9 +196,9 @@ Wrapping and uneven height makes it quite difficult to read.
 | Primary | Secondary | Relationship within row| Info Heirarchy | Visual Hierarchy | Remarks|
 |:------:|:------:|:------:|:------:|:------:|:-------|
 | Bundle | - | - | ☀️ Highest | ☀️ Highest | ⬆️ Spacing<br>⬆️ font weight<br>⬆️ colour|
-| Printed | eBook | Same product | 🌑 Low | 🌑 Low |  |
-| Mock Exam / Assignments | Marking | Different product | 🌑 Low | 🌑 Low |  |
-| ASET / Mini-ASET<br>Vault / AMP | - | - | 🌑 Low | 🌤️ Higher | ⬆️Spacing |
+| Printed | eBook | Same product |  Low |  Low |  |
+| Mock Exam / Assignments | Marking | Different product |  Low |  Low |  |
+| ASET / Mini-ASET<br>Vault / AMP | - | - |  Low | 🌤️ Higher | ⬆️Spacing |
 
 #### ❗Rows for ASET / Mini-ASET / Vault / AMP
 
@@ -261,15 +260,15 @@ The layout of the products table is controlled where clause condition:
 
 #### Imagine 2 scenarios below
 
-1. Adding third product variation (e.g. **Hub**) for products together with ebook and printed
-    - Requires "Buy Both" button for either ebook and printed (printed + AI and ebook + AI)
-1. Or retiring printed material in some subjects
+1. Adding third product variation (e.g. **Hub**)
+    - "Buy Both" button for ebook and printed 
+    - Printed + Hub
+    - eBook + Hub
+1. Or retiring all printed material in some subjects
 
-These scenario might be far fetched but it illustrate the rigid structure is susceptible to change.
+Layout restricts flexibility of schema
 
-Layout is restricting the flexibility of data structure will hinder adapting future business needs.
-
-❗**The form (layout) is limiting its function (behaviour of products)**
+❗**Form (layout) not following function**
 
 ---
 
@@ -341,16 +340,20 @@ Summaries of common elements and functionalities for on the landing page or prod
 
 ### Summary
 
-- Marginal improvement if updating layout only.
-
-- Full scale update will provide noticeable improvement.
+- Marginal improvement if updating layout only
+  - Cart panel and login functions possible
+  - Table layout is the main show stopper
+  - Duplicate work, not efficient
+- Full scale update will provide noticeable improvement
+  - Less work in the long run
+  - More value
+  - **Still a long road ahead if goal is a fully modernised online store**
 
 ---
 
 ## Part 2 : Our new ActEd Online Store
 
 1. Technology Stack
-1. Methodology & Architecture
 1. Feature Matrix
     1. User Management
     1. Product
@@ -431,8 +434,8 @@ Summaries of common elements and functionalities for on the landing page or prod
 | Change Email | ✨ Revised | ✅ | Verification required |
 | Update Profile | ✨ Revised | ✅ | Via wizard |
 | Sign Out | ✨ Revised | ✅ | Token invalidation |
-| Extended User Types | ✨ Revised | ⚠️ To be Implemented | Students, Marker, etc. |
-| User Preferences | ✨ Revised | ⚠️ To be Implemented | Subject/location prefs |
+| Extended User Types | ✨ Revised | ⚠️ TBI | Students, Marker, etc. |
+| User Preferences | ✨ Revised | ⚠️ TBI | Subject/location prefs |
 
 ---
 
@@ -449,8 +452,8 @@ Summaries of common elements and functionalities for on the landing page or prod
 | Tutorial Choice Panel | 🆕 New | ✅ | Context, Dialog, Summary |
 | Tutorial Dates | ✨ Revised | 🛠️ In progress | Schedule component |
 | OC (India/UK) | ✨ Revised | 🛠️ In progress | Region variations |
-| Check Availability | ✨ Revised | ⚠️ To be Implemented | Real-time API |
-| Tutorial Request | ✨ Revised | ⚠️ To be Implemented | Tutorial request submission |
+| Check Availability | ✨ Revised | ⚠️ TBI | Real-time API |
+| Tutorial Request | ✨ Revised | ⚠️ TBI | Tutorial request submission |
 
 ---
 
@@ -535,12 +538,12 @@ Summaries of common elements and functionalities for on the landing page or prod
 | Special Ed Support | 🆕 New | ✅ | Accessibility options |
 | Order Notes | ✨ Revised | ✅ | Customer notes |
 | Product Preferences | 🆕 New | ✅ | Item-specific |
-| Credit Card Payment | ✨ Revised | 🛠️ In progress | Gateway integration |
-| Invoice Payment | ✨ Revised | ⛔ Blocked | Invoice processing |
+| Credit Card Payment | ✨ Revised | ⛔ Blocked | Gateway integration |
+| Invoice Payment | ✨ Revised | 🛠️ In progress | Invoice processing |
 
 ---
 
-### 3.6 Email System (16 features)
+### 3.6 Email System (16 features) 1/2
 
 | Feature | Type | Status | Notes |
 |---------|------|--------|-------|
@@ -550,10 +553,18 @@ Summaries of common elements and functionalities for on the landing page or prod
 | Conditional Email Rendering | ✨ Revised | ✅ | Dynamic email content |
 | Email Attachments | ✨ Revised | ✅ | Attachment support |
 | Content Rules | ✨ Revised | ✅ | Email content rules |
-| Placeholders | ✨ Revised | ✅ | Dynamic content placeholders |
-| User Registration Emails | ✨ Revised | ✅ | User Registration Email verification |
-| Change Emails Verification | ✨ Revised | ✅ | User Email change verification |
-| Reset Password Token Verification | ✨ Revised | ✅ | Reset Password Verification with Time-restricted token |
+| Placeholders | ✨ Revised | ✅ | Dynamic content insert |
+| User Registration Emails | ✨ Revised | ✅ | Verify registration Email |
+
+
+---
+
+### 3.6 Email System (16 features) 2/2
+
+| Feature | Type | Status | Notes |
+|---------|------|--------|-------|
+| Change Emails Verification | ✨ Revised | ✅ | Verify Email change |
+| Reset Password | ✨ Revised | ✅ | Reset Password with Time-restricted token |
 | Reset Password Notification | ✨ Revised | ✅ | Reset Password Notification |
 | Order Confirmation Emails | ✨ Revised | ✅ | Printed material confirmations |
 | Digital Material Confirmations | ✨ Revised | ✅ | Digital order confirmations |
@@ -563,51 +574,4 @@ Summaries of common elements and functionalities for on the landing page or prod
 
 ---
 
-## Next Step
-
-<div class="columns">
-
-<div>
-
-### Planned Features
-
-- Blocked (1 feature)
-  - Payment integration (test account required)
-- In Progress (4 features)
-  - Tutorial Dates from Administrate
-  - OC India/UK
-  - Check Availability from Administrate
-  - Invoice Payment
-- To Implement (2 features)
-  - Tutorial Request
-  - Extended user types
-  - User preferences
-
-</div>
-<div>
-
-### Refactor
-
-- Reorganise backend app and clean up
-  - Catalogue (Subjects, Exam session, product catalogue)
-  - Utils
-- Optimise API calls
-- Remove redundant fields in database
-- Query optimisation
-
-</div></div>
-
----
-
-### Remaining Work
-
-- Reduced rates
-- eBook with additional rates when "Buy Both"
-- Products Dispatch Dates
-- Error Handling
-- Product overlapping check
-- Apprenticeship, StudyPlus, CAA Product
-- Import/Export DBF utils
-- Check order history when order in additional/retaker rates.
-
-___
+## Feedback?
