@@ -12,7 +12,7 @@ from .serializers import (
     ProductBundleSerializer, ExamSessionSubjectBundleSerializer, ExamSessionSubjectBundleProductSerializer
 )
 from rest_framework import status
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.contrib.postgres.search import TrigramSimilarity
 from subjects.models import Subject
 from subjects.serializers import SubjectSerializer
@@ -881,3 +881,131 @@ def advanced_product_search(request):
             'products': product_ids
         }
     })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def navigation_data(request):
+    """
+    OPTIMIZED: Combined endpoint returning all navigation menu data in one API call.
+    Replaces 4 separate API calls:
+    - /api/subjects/
+    - /api/products/navbar-product-groups/
+    - /api/products/distance-learning-dropdown/
+    - /api/products/tutorial-dropdown/
+
+    Returns all navigation data with 5-minute cache.
+    """
+    from django.core.cache import cache
+    from subjects.models import Subject
+
+    cache_key = 'navigation_data_v1'
+    cached_data = cache.get(cache_key)
+    if cached_data:
+        return Response(cached_data)
+
+    try:
+        # === SUBJECTS ===
+        subjects = list(Subject.objects.filter(active=True).order_by('code').values(
+            'id', 'code', 'description'
+        ))
+        subjects_data = [
+            {'id': s['id'], 'code': s['code'], 'description': s['description'], 'name': s['description']}
+            for s in subjects
+        ]
+
+        # === PRODUCT GROUPS (batch load all needed groups in ONE query) ===
+        all_group_names = [
+            'Core Study Materials', 'Revision Materials', 'Marking', 'Tutorial', 'Online Classroom Recording'
+        ]
+        groups = FilterGroup.objects.filter(name__in=all_group_names).prefetch_related(
+            Prefetch('products', queryset=Product.objects.filter(is_active=True).order_by('shortname'))
+        )
+        groups_dict = {g.name: g for g in groups}
+
+        # === NAVBAR PRODUCT GROUPS ===
+        navbar_groups = ['Core Study Materials', 'Revision Materials', 'Marking', 'Tutorial']
+        navbar_data = []
+        for group_name in navbar_groups:
+            if group_name in groups_dict:
+                group = groups_dict[group_name]
+                navbar_data.append({
+                    'id': group.id, 'name': group.name,
+                    'products': [
+                        {'id': p.id, 'shortname': p.shortname, 'fullname': p.fullname, 'code': p.code}
+                        for p in group.products.all()
+                    ]
+                })
+            else:
+                navbar_data.append({'id': None, 'name': group_name, 'products': []})
+
+        # === DISTANCE LEARNING DROPDOWN ===
+        dl_groups = ['Core Study Materials', 'Revision Materials', 'Marking']
+        distance_learning_data = []
+        for group_name in dl_groups:
+            if group_name in groups_dict:
+                group = groups_dict[group_name]
+                distance_learning_data.append({
+                    'id': group.id, 'name': group.name,
+                    'products': [
+                        {'id': p.id, 'shortname': p.shortname, 'fullname': p.fullname, 'code': p.code}
+                        for p in group.products.all()
+                    ]
+                })
+            else:
+                distance_learning_data.append({'id': None, 'name': group_name, 'products': []})
+
+        # === TUTORIAL DROPDOWN ===
+        tutorial_group = groups_dict.get('Tutorial')
+        online_classroom_group = groups_dict.get('Online Classroom Recording')
+
+        # Location products
+        if tutorial_group:
+            location_products = list(Product.objects.filter(
+                is_active=True, groups=tutorial_group
+            ).order_by('shortname').values('id', 'shortname', 'fullname', 'code'))
+        else:
+            location_products = []
+        mid_point = (len(location_products) + 1) // 2
+
+        # Format groups (children of Tutorial)
+        if tutorial_group:
+            format_groups = list(FilterGroup.objects.filter(
+                parent=tutorial_group
+            ).order_by('name').values('name', 'code'))
+            format_data = [
+                {'name': g['name'], 'filter_type': g['code'], 'group_name': g['name']}
+                for g in format_groups
+            ]
+        else:
+            format_data = [
+                {'name': 'Face-to-face Tutorial', 'filter_type': 'face_to_face', 'group_name': 'Face-to-face Tutorial'},
+                {'name': 'Live Online Tutorial', 'filter_type': 'live_online', 'group_name': 'Live Online Tutorial'}
+            ]
+
+        # Online Classroom variations
+        if online_classroom_group:
+            online_classroom_data = list(ProductVariation.objects.filter(
+                products__groups=online_classroom_group
+            ).distinct().order_by('description').values('id', 'name', 'variation_type', 'description'))
+        else:
+            online_classroom_data = []
+
+        tutorial_data = {
+            'Location': {'left': location_products[:mid_point], 'right': location_products[mid_point:]},
+            'Format': format_data,
+            'Online Classroom': online_classroom_data
+        }
+
+        result = {
+            'subjects': subjects_data,
+            'navbar_product_groups': {'results': navbar_data},
+            'distance_learning_dropdown': {'results': distance_learning_data},
+            'tutorial_dropdown': {'results': tutorial_data}
+        }
+
+        cache.set(cache_key, result, 300)  # 5 minute cache
+        return Response(result)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
