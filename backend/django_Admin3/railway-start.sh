@@ -9,5 +9,6 @@ if [ "$SERVICE_TYPE" = "worker" ]; then
 else
     echo "Starting WEB service..."
     python manage.py migrate --noinput
-    python manage.py createcachetable    
+    python manage.py createcachetable
+    exec gunicorn django_Admin3.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
 fi
