@@ -78,11 +78,26 @@ class CartViewSet(viewsets.ViewSet):
             return {'has_expired': False, 'expired_count': 0, 'total_papers': 0}
     
     def _is_digital_product(self, cart_item):
-        """Check if cart item contains digital products (eBooks, Online Classroom)"""
+        """Check if cart item contains digital products (eBooks, Online Classroom, Hub)"""
         try:
-            # Check metadata for Vitalsource eBook
             metadata = cart_item.metadata or {}
-            if metadata.get('variationName') == 'Vitalsource eBook':
+
+            # PRIMARY: Check variation_type via variationId (most reliable)
+            if metadata.get('variationId'):
+                from products.models import ProductProductVariation
+                try:
+                    ppv = ProductProductVariation.objects.select_related('product_variation').get(
+                        id=metadata.get('variationId')
+                    )
+                    variation_type = ppv.product_variation.variation_type.lower()
+                    if variation_type in ['ebook', 'hub']:
+                        return True
+                except ProductProductVariation.DoesNotExist:
+                    pass
+
+            # FALLBACK: Check variationName contains 'ebook' or 'hub' (case insensitive)
+            variation_name = (metadata.get('variationName') or '').lower()
+            if 'ebook' in variation_name or 'hub' in variation_name:
                 return True
 
             # Check product code for Online Classroom
@@ -122,12 +137,22 @@ class CartViewSet(viewsets.ViewSet):
         try:
             metadata = cart_item.metadata or {}
 
-            # Check for eBook variations
-            if metadata.get('variationName') in ['Vitalsource eBook', 'PDF eBook']:
-                return True
+            # PRIMARY: Check variation_type via variationId (most reliable)
+            if metadata.get('variationId'):
+                from products.models import ProductProductVariation
+                try:
+                    ppv = ProductProductVariation.objects.select_related('product_variation').get(
+                        id=metadata.get('variationId')
+                    )
+                    variation_type = ppv.product_variation.variation_type.lower()
+                    if variation_type in ['ebook', 'printed', 'hub']:
+                        return True
+                except ProductProductVariation.DoesNotExist:
+                    pass
 
-            # Check for printed materials
-            if metadata.get('variationName') == 'Printed':
+            # FALLBACK: Check variationName contains material-related terms (case insensitive)
+            variation_name = (metadata.get('variationName') or '').lower()
+            if 'ebook' in variation_name or 'printed' in variation_name or 'hub' in variation_name:
                 return True
 
             # Check product code for Materials
