@@ -78,13 +78,9 @@ else:
     }
 
 # CORS Configuration - Must match frontend domain
-# Use os.environ.get() directly to bypass django-environ type casting
-# Also strip quotes in case they were accidentally included in Railway env vars
-_cors_origins_raw = os.environ.get('CORS_ALLOWED_ORIGINS', '').strip('"\'')
-CORS_ALLOWED_ORIGINS = [origin.strip().strip('"\'') for origin in _cors_origins_raw.split(',') if origin.strip()]
-
-_csrf_origins_raw = os.environ.get('CSRF_TRUSTED_ORIGINS', '').strip('"\'')
-CSRF_TRUSTED_ORIGINS = [origin.strip().strip('"\'') for origin in _csrf_origins_raw.split(',') if origin.strip()]
+# Using env.list() from django-environ which correctly handles single and comma-separated values
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
 # Explicitly set CORS credentials and methods
 CORS_ALLOW_CREDENTIALS = True
