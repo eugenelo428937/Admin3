@@ -13,7 +13,6 @@ import {
 } from "@mui/icons-material";
 // import { useAuth } from "../../hooks/useAuth"; // Now used by child components
 import productService from "../../services/productService";
-import subjectService from "../../services/subjectService";
 import SearchModal from "./SearchModal";
 import MobileNavigation from "./MobileNavigation";
 import TopNavBar from "./TopNavBar";
@@ -36,32 +35,23 @@ const MainNavBar = () => {
 	// Auth hook is no longer needed in MainNavBar - used by child components
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
-	
+
 	// State for navbar expansion
 	const [expanded, setExpanded] = useState(false);
-	
 
-	// State for subjects
+	// Combined navigation data state (single API call)
 	const [subjects, setSubjects] = useState([]);
-
-	// State for navbar product groups
 	const [navbarProductGroups, setNavbarProductGroups] = useState([]);
-	const [loadingProductGroups, setLoadingProductGroups] = useState(true);
-
-	// State for distance learning dropdown
 	const [distanceLearningData, setDistanceLearningData] = useState([]);
-	const [loadingDistanceLearning, setLoadingDistanceLearning] = useState(true);
-
-	// State for tutorial dropdown
 	const [tutorialData, setTutorialData] = useState(null);
-	const [loadingTutorial, setLoadingTutorial] = useState(true);
+	const [loadingNavigation, setLoadingNavigation] = useState(true);
 
 	// State for search modal
 	const [showSearchModal, setShowSearchModal] = useState(false);
-	
+
 	// State for auth modal
 	const [showAuthModal, setShowAuthModal] = useState(false);
-	
+
 	// State for cart panel
 	const [showCartPanel, setShowCartPanel] = useState(false);
 
@@ -84,65 +74,26 @@ const MainNavBar = () => {
 		};
 	}, [showSearchModal]);
 
-	// Fetch subjects from the new endpoint (fix: use async/await)
+	// Fetch all navigation data in a single API call
 	useEffect(() => {
-		const fetchSubjects = async () => {
+		const fetchNavigationData = async () => {
 			try {
-				const data = await subjectService.getSubjects();
-				setSubjects(data);
+				const data = await productService.getNavigationData();
+				setSubjects(data.subjects);
+				setNavbarProductGroups(data.navbarProductGroups);
+				setDistanceLearningData(data.distanceLearningData);
+				setTutorialData(data.tutorialData);
 			} catch (err) {
+				console.error("Error fetching navigation data:", err);
 				setSubjects([]);
-			}
-		};
-		fetchSubjects();
-	}, []);
-
-	// Fetch navbar product groups with their products
-	useEffect(() => {
-		const fetchNavbarProductGroups = async () => {
-			try {
-				const data = await productService.getNavbarProductGroups();
-				setNavbarProductGroups(data);
-			} catch (err) {
-				console.error("Error fetching navbar product groups:", err);
 				setNavbarProductGroups([]);
-			} finally {
-				setLoadingProductGroups(false);
-			}
-		};
-		fetchNavbarProductGroups();
-	}, []);
-
-	// Fetch distance learning dropdown data
-	useEffect(() => {
-		const fetchDistanceLearningData = async () => {
-			try {
-				const data = await productService.getDistanceLearningDropdown();
-				setDistanceLearningData(data);
-			} catch (err) {
-				console.error("Error fetching distance learning dropdown:", err);
 				setDistanceLearningData([]);
-			} finally {
-				setLoadingDistanceLearning(false);
-			}
-		};
-		fetchDistanceLearningData();
-	}, []);
-
-	// Fetch tutorial dropdown data
-	useEffect(() => {
-		const fetchTutorialData = async () => {
-			try {
-				const data = await productService.getTutorialDropdown();
-				setTutorialData(data);
-			} catch (err) {
-				console.error("Error fetching tutorial dropdown:", err);
 				setTutorialData(null);
 			} finally {
-				setLoadingTutorial(false);
+				setLoadingNavigation(false);
 			}
 		};
-		fetchTutorialData();
+		fetchNavigationData();
 	}, []);
 
 	// Handle navigating to product list with subject filter
@@ -270,16 +221,16 @@ const MainNavBar = () => {
 							navbarProductGroups={navbarProductGroups}
 							distanceLearningData={distanceLearningData}
 							tutorialData={tutorialData}
-							loadingProductGroups={loadingProductGroups}
-							loadingDistanceLearning={loadingDistanceLearning}
-							loadingTutorial={loadingTutorial}
+							loadingProductGroups={loadingNavigation}
+							loadingDistanceLearning={loadingNavigation}
+							loadingTutorial={loadingNavigation}
 							handleSubjectClick={handleSubjectClick}
 							handleProductClick={handleProductClick}
 							handleProductGroupClick={handleProductGroupClick}
 							handleSpecificProductClick={handleSpecificProductClick}
 							handleProductVariationClick={handleProductVariationClick}
 							handleMarkingVouchersClick={handleMarkingVouchersClick}
-									onCollapseNavbar={() => setExpanded(false)}
+							onCollapseNavbar={() => setExpanded(false)}
 						/>
 
 						{/* Mobile Navigation - Visible only on mobile */}
@@ -291,21 +242,19 @@ const MainNavBar = () => {
 								navbarProductGroups={navbarProductGroups}
 								distanceLearningData={distanceLearningData}
 								tutorialData={tutorialData}
-								loadingProductGroups={loadingProductGroups}
-								loadingDistanceLearning={loadingDistanceLearning}
-								loadingTutorial={loadingTutorial}
+								loadingProductGroups={loadingNavigation}
+								loadingDistanceLearning={loadingNavigation}
+								loadingTutorial={loadingNavigation}
 								handleSubjectClick={handleSubjectClick}
 								handleProductClick={handleProductClick}
 								handleProductGroupClick={handleProductGroupClick}
 								handleSpecificProductClick={handleSpecificProductClick}
-								handleProductVariationClick={
-									handleProductVariationClick
-								}
+								handleProductVariationClick={handleProductVariationClick}
 								handleMarkingVouchersClick={handleMarkingVouchersClick}
 								onOpenSearch={handleOpenSearchModal}
 								onOpenCart={handleOpenCartPanel}
 								onOpenAuth={handleOpenAuthModal}
-										/>
+							/>
 						</div>
 					</Navbar.Collapse>
 

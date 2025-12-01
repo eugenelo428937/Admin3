@@ -49,22 +49,26 @@ const productService = {
 		}
 	},
 
-	// Get navbar product groups with their products
-	getNavbarProductGroups: async () => {
+	// Get all navigation data in a single API call (subjects, navbar groups, distance learning, tutorials)
+	getNavigationData: async () => {
 		try {
 			const response = await httpService.get(
-				`${PRODUCTS_API_URL}/navbar-product-groups/`
+				`${PRODUCTS_API_URL}/navigation-data/`
 			);
-			const data = response.data.results || response.data;
-			// Ensure we always return an array
-			return Array.isArray(data) ? data : [];
+			const data = response.data;
+			return {
+				subjects: data.subjects || [],
+				navbarProductGroups: data.navbar_product_groups?.results || [],
+				distanceLearningData: data.distance_learning_dropdown?.results || [],
+				tutorialData: data.tutorial_dropdown?.results || null,
+			};
 		} catch (error) {
-			console.error("Error fetching navbar product groups:", error);
+			console.error("Error fetching navigation data:", error);
 			throw {
 				message:
 					error.response?.data?.message ||
 					error.message ||
-					"Failed to fetch navbar product groups",
+					"Failed to fetch navigation data",
 				status: error.response?.status || 0,
 				data: error.response?.data || null,
 			};
@@ -214,47 +218,6 @@ const productService = {
 		return response.data;
 	},
 
-	// Get distance learning dropdown data
-	getDistanceLearningDropdown: async () => {
-		try {
-			const response = await httpService.get(
-				`${PRODUCTS_API_URL}/distance-learning-dropdown/`
-			);
-			const data = response.data.results || response.data;
-			// Ensure we always return an array
-			return Array.isArray(data) ? data : [];
-		} catch (error) {
-			console.error("Error fetching distance learning dropdown:", error);
-			throw {
-				message:
-					error.response?.data?.message ||
-					error.message ||
-					"Failed to fetch distance learning dropdown",
-				status: error.response?.status || 0,
-				data: error.response?.data || null,
-			};
-		}
-	},
-
-	// Get tutorial dropdown data
-	getTutorialDropdown: async () => {
-		try {
-			const response = await httpService.get(
-				`${PRODUCTS_API_URL}/tutorial-dropdown/`
-			);
-			return response.data.results || response.data;
-		} catch (error) {
-			console.error("Error fetching tutorial dropdown:", error);
-			throw {
-				message:
-					error.response?.data?.message ||
-					error.message ||
-					"Failed to fetch tutorial dropdown",
-				status: error.response?.status || 0,
-				data: error.response?.data || null,
-			};
-		}
-	},
 
 	// Get exam session bundles only (no master bundles)
 	getBundles: async (params = {}) => {
