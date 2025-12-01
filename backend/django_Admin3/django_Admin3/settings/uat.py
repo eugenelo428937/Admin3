@@ -78,21 +78,15 @@ else:
     }
 
 # CORS Configuration - Must match frontend domain
-# Handle both list and string formats from environment
-_cors_origins_raw = env('CORS_ALLOWED_ORIGINS', default='')
-if isinstance(_cors_origins_raw, list):
-    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in _cors_origins_raw if origin.strip()]
-else:
-    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in str(_cors_origins_raw).split(',') if origin.strip()]
+# Use os.environ.get() directly to bypass django-environ type casting
+# Also strip quotes in case they were accidentally included in Railway env vars
+_cors_origins_raw = os.environ.get('CORS_ALLOWED_ORIGINS', '').strip('"\'')
+CORS_ALLOWED_ORIGINS = [origin.strip().strip('"\'') for origin in _cors_origins_raw.split(',') if origin.strip()]
 
-# Parse CSRF_TRUSTED_ORIGINS similarly
-_csrf_origins_raw = env('CSRF_TRUSTED_ORIGINS', default='')
-if isinstance(_csrf_origins_raw, list):
-    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in _csrf_origins_raw if origin.strip()]
-else:
-    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in str(_csrf_origins_raw).split(',') if origin.strip()]
+_csrf_origins_raw = os.environ.get('CSRF_TRUSTED_ORIGINS', '').strip('"\'')
+CSRF_TRUSTED_ORIGINS = [origin.strip().strip('"\'') for origin in _csrf_origins_raw.split(',') if origin.strip()]
 
-# Explicitly set CORS credentials and methods (don't rely on base.py inheritance)
+# Explicitly set CORS credentials and methods
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     "DELETE",
@@ -114,11 +108,10 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
-# Debug: Log CORS configuration on startup
-import logging
-_logger = logging.getLogger(__name__)
-_logger.info(f"CORS_ALLOWED_ORIGINS: {CORS_ALLOWED_ORIGINS}")
-_logger.info(f"CSRF_TRUSTED_ORIGINS: {CSRF_TRUSTED_ORIGINS}")
+# Debug: Print CORS configuration on startup (visible in Railway logs)
+print(f"[UAT CORS] CORS_ALLOWED_ORIGINS: {CORS_ALLOWED_ORIGINS}")
+print(f"[UAT CORS] CSRF_TRUSTED_ORIGINS: {CSRF_TRUSTED_ORIGINS}")
+print(f"[UAT CORS] CORS_ALLOW_CREDENTIALS: {CORS_ALLOW_CREDENTIALS}")
 
 # Static Files for Railway
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
