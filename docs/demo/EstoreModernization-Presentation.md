@@ -144,50 +144,11 @@ h1 {
 
 ---
 
-<div class="columns">
-  
-<div>
-
-## Background
-
-  Modernize existing [ActEd eStore](https://www.acted.co.uk/estore)
-
-- Horizontal menu  
-- Veritcal navigation menu
-- product list page
-- tuition list page
-- Online Classroom page
-</div>
-<div>
-
-## Objectives
-
-- Modernise layout
-- Improve responsiveness and adaptive design, mobile friendly
-- Intuitive Navigation
-- Accessibility
-- Align with modern UI/UX behaviour
-
-</div>
-</div>
-
----
-
 ## Part 1
 
 1. **Initial Analysis**
-   1. Table layout vs mobile responsiveness
-   1. Relationships and Information/Visual Hierarchy
-   1. Products Table
 1. **Industry Patterns Research**
-    1. Sites Studied
-    1. Focus
-    1. Findings
 1. **Feasibility Study**
-    1. Products
-    1. User
-    1. Navigation
-    1. Cart
 
 ---
 
@@ -195,10 +156,8 @@ h1 {
 
 ### 1.1 Table layout vs mobile friendliness
 
-- Tables are difficult to have a consistent layout in tablet/mobile resolution.
 - For a table to be responsive, the height of each row will need to be increased.
-- The smaller the resolution more height for each cell.
-- Even with minimal padding and margin applied but information is not display properly in smaller screen size.
+- With minimal padding and margin but information is not display properly in smaller screen size.
 - If we add more info for a product then a single product may takes up the most of the screen and readability suffers.
 - Wrapping table cell breaks the relationship of Printed/ebook/Buy both.
 - Wrapping text results in word breaking up, cell with different height, terrible readability.
@@ -302,7 +261,7 @@ The layout of the products table is controlled where clause condition:
 
 #### Imagine 2 scenarios below
 
-1. Adding third product variation (e.g. AI) for products together with ebook and printed
+1. Adding third product variation (e.g. **Hub**) for products together with ebook and printed
     - Requires "Buy Both" button for either ebook and printed (printed + AI and ebook + AI)
 1. Or retiring printed material in some subjects
 
@@ -335,6 +294,8 @@ Layout is restricting the flexibility of data structure will hinder adapting fut
 - [ACTEX](https://www.actexlearning.com/exams/cs1)
 - [ThinkActuary](https://thinkactuary.co.uk/#/landing)
 - [Oxford Unibersity Press](https://global.oup.com/academic/category/science-and-mathematics/biological-sciences/?view=Grid&type=listing&lang=en&cc=gb)
+- [Apple](https://www.apple.com/uk/shop/accessories/all)
+- [Amazon](https://www.amazon.co.uk/blackfriday?ref_=nav_cs_td_bf_dt_cr)
 - various e-commerce online store (e.g. Amazon, ebay, apple...etc.)
 
 </div>
@@ -378,328 +339,15 @@ Summaries of common elements and functionalities for on the landing page or prod
 
 ## 3 Feasibility Study
 
-### 3.1 Products
+### Summary
 
-<div class="columns">  
-<div>
+- Marginal improvement if updating layout only.
 
-#### 3.1.1 Files
-
-- fwx
-  - estore_product_list
-  - 48 FWX files need revision (Search for any fwx files with products/products_oc/products_special/class/addonsale. Some obsolete)
-- main.prg
-- dbf
-  - products
-  - products_oc
-  - products_special
-  - class
-
-</div>
-<div>
-
-#### 3.1.2 Frontend (HTML/JS/CSS)
-
-- Major rework in `estore_product_list.fwx`
-- create product card
-- CSS responsive flex grid
-
-#### 3.1.3 Backend and Database
-
-- Update tmpQuery SELECT (fetch all products)
-  - Remove addonsale logic
-  - Revise "Buy both" logic
-  - Fetch pricing, VAT, descriptions
-
-##### Difficulties : 10/10
-
-</div>
-</div>
+- Full scale update will provide noticeable improvement.
 
 ---
 
-### 3.2 Filtering and searching
-
-<div class="columns">  
-<div>
-
-#### 3.2.1 Files
-
-- fwx
-  - estore_product_list
-- main.prg
-- dbf
-  - (**NEW**) filter_groups, filter_groups_items, filter_groups_items_product
-
-#### 3.2.2 Frontend (HTML/JS/CSS)
-
-- Filtering system
-  - Add filter panel in `estore_product_list.fwx`
-  - Re-render products with filtered result set
-- Search functionality
-  - Search box dialog on Navigation Bar
-  - Result panel
-
-</div>
-<div>
-
-#### 3.2.3 Backend and Database
-
-- Filtering system
-  - build products' properties for filtering
-  - grouping products into properties
-  - extract filtered products
-- Search functionality
-  - build metadata for products
-  - FuzzyWuzzy (Server side) vs lunr.js (Client)
-  - extract
-
-##### Difficulties : 8/10
-
-</div>
-</div>
-
----
-
-### 3.3 Refactoring User functionality from checkout process
-
-<div class="columns">  
-<div>
-
-#### 3.3.1 Files
-
-- estore_checkout_retrieve
-- estore_checkout_pw_check
-- estore_checkout_details
-- estore_checkout_pw_login_success
-- main.prg
-
-#### 3.3.2 Frontend (HTML/JS/CSS)
-
-- New files
-  - Login/Logout
-  - Profile updates
-  - Password reset
-  - Email change
-- Test all path requires authentication and user profile
-
-</div>
-<div>
-
-#### 3.3.3 Backend and Database
-
-- Tables
-  - students
-  - estore_pw
-  - estore_reset_pw
-
-##### Difficulties : 6/10
-
-</div>
-</div>
-
----
-
-### 3.4 Preview Cart Function (No postback)
-
-<div class="columns">  
-<div>
-
-#### 3.4.1 Files
-
-- fwx
-  - **estore_cart_view**  
-  - estore_checkout_pw_login_success
-  - estore_checkout_details
-  - estore_checkout_summary
-  - estore_checkout_notes
-  - estore_checkout_terms_conditions
-  - estore_checkout_payment
-- dbf
-  - estore_cart
-  - estore_manager  
-  - students
-
-</div>
-<div>
-
-#### 3.4.2 Frontend (HTML/JS/CSS)
-
-- Refactor estore_cart_view into an common js component
-- local storage and Cookies setting for cart items
-- bootstrap CSS : Offcanvas Components for drawer sidebar
-
-#### 3.4.3 Backend and Database
-
-- Implement cart API call
-  - add/remove cart items
-  - create/get/refresh cart items
-  - Revise checkout workflow
-
-#### Difficulties : 6/10
-
-</div>
-</div>
-
----
-
-### 3.5 Navigation Refactoring
-
-<div class="columns">  
-<div>
-
-#### 3.5.1 Files
-
-- fwx
-  - all active fwx
-- dbf
-  - products
-  - products_oc
-  - class
-
-#### 3.5.2 Frontend (HTML/CSS/JS)
-
-- boostrap CSS Navbar Component
-- Reference main website's navbar
-
-</div>
-<div>
-
-#### 3.5.3 Backend
-
-- Links using Filtering mechanism to show only relevant products
-- Links grouping (Subjects, Distance Learning, Tutorial...etc)
-
-#### Difficulties : 3/10
-
-</div>
-</div>
-
----
-
-## Crossroads
-
-**Assumption : Let's say we need to update from VFP to be using modern language in 5 years.**
-
-<div class="columns">  
-<div>
-
-### Approach 1: Update layout only (CSS+JS)
-
-- keep table format
-- minimal backend or database changes
-- User function refactoring and Nav menu can be feasible (**requires some code change**)
-- Cart preview panel possible but still requires postback (**requires some code change**)
-- The layout will only be marginally better
-- Will need re-do layout in most pages after backend updated
-
-</div>
-<div>
-
-#### Time required for a full modern eStore
-
-Consider the time for each **frontend** and **backend** respectively.
-
-**frontend x 3 + backend x 2**
-
-1. Only update css+js : **frontend**
-1. Update Forpro backend : **backend**
-1. update css+js again : **frontend**
-1. Update to modern frontend and backend **backend** + **frontend**
-
-</div></div>
-
----
-
-<div class="columns">  
-<div>
-
-### Approach 2: Update both frontend (CSS+JS) and backend (VFP)
-
-- Feasible
-  - Product cards with Grid
-  - User function refactoring
-  - Nav menu
-- Partial
-  - Cart Panel, Filtering, Searching
-    - VFP does not support partial rendering, any user action will require re-render of DOM
-    - No framework for state management. Require storing states in server for filters select, result returned, pagination.
-- Layout for the Cart Panel, Filtering, Searching and pages with visual feedback/micro-animations will need revisiting.
-
-</div>
-<div>
-
-#### Time required for a full modern eStore
-
-Consider the the time for each **frontend** and **backend** respectively.
-
-**frontend x 1.75 + backend x 2**
-
-1. Update Forpro backend and css+js : **frontend + backend**
-1. Update to modern backend : **backend**
-1. update Cart Panel, Filtering, Searching and misc : **frontend x 0.75**
-1. Update to modern frontend and backend **backend** + **frontend**
-
-</div></div>
-
----
-
-<style scoped>
-  /* tr:nth-child(4)>td, tr:nth-child(5)>td,  */
-  tr:last-child>td{
-    background-color:#FFFFDD;
-  }
-  
-</style>
-
-#### Timeline
-
-| | Approach 1 | Approach 2|
-|:-:|:------------:|:------------:|
-| | CSS + js (Frontend) | |
-| | VFP (backend) |  |
-| | CSS + js (Frontend) | CSS + js + VFP (frontend + backend) |
-| | modern backend + modern frontend | 0.75 modern frontend + modern backend |
-| **Total** | **frontend x 3 + backend x 2** | **frontend x 1.75 + backend x 2** |
-
----
-
-- Both approach will be significant amount of work
-- Very complex task
-
-### However...
-
----
-
-<style scoped>
-  tr:nth-child(4)>td{
-   background-color: #f2a34e
-  }
-</style>
-
-#### Timeline
-
-Note the common step:
-
-| | Approach 1 | Approach 2|
-|:-------:|:--------:|:--------:|
-| | CSS + js (Frontend) | |
-| | VFP (backend) |  |
-| | CSS + js (Frontend) | CSS + js + VFP (frontend + backend) |
-| | modern backend + modern frontend | 0.75 modern frontend + modern backend |
-| **Total** | **frontend x 3 + backend x 2** | **frontend x 1.75 + backend x 2** |
-
----
-
-Introducing the third approach
-
----
-
-## Approach 3 : The new ActEd Online Store
-
----
-
-## Part 2 : The new ActEd Online Store
+## Part 2 : Our new ActEd Online Store
 
 1. Technology Stack
 1. Methodology & Architecture
@@ -747,44 +395,6 @@ Introducing the third approach
   - Google Material-UI Component
   - Axios
 
-</div>
-</div>
-
----
-<div class="columns">
-
-<div>
-
-## 2. Methodology & Architecture
-
-- Agile Methodology
-- Object Oriented Programming (**OOP**)
-- Test-driven Development (**TDD**): Red-Green-Refactor cycle
-- Model-View-Controller (**MVC**) Architecture
-
-## 3. Design Pattern
-
-- React/Frontend Patterns
-  - **React Component Composition**: Product Cards
-  - **React Context API**: Cart and Tutorial state management  
-  - **React Hooks Pattern**: useProductsSearch, useAuth, useCart
-  - **Observer Pattern**: Filter state management (Redux)
-
-</div>
-<div>
-
-- Backend/Django Patterns  
-  - **Chain of Responsibility**: Rules Engine execution flow
-  - **Command Pattern**: Rules Engine action dispatchers
-  - **Repository Pattern**: RuleRepository with caching
-  - **Template Method**: Rules Engine template processing
-  - **Django ORM (ActiveRecord)**: Cart, Order, Product models
-
-- System-Wide Patterns
-  - **Singleton**: Redux Store configuration
-  - **Service Layer**: cartService, authService, rulesEngineService
-  - **Module Pattern**: Utility functions (VAT, pricing, formatting)
-  
 </div>
 </div>
 
@@ -953,22 +563,6 @@ Introducing the third approach
 
 ---
 
-## 4. Test Coverage
-
-**Overall: 96/96 tests passing (100%)**
-
-**Test Suites:**
-- Redux filters: 43 tests
-- URL synchronization: 33 tests
-- Product search: 7 tests
-- Performance: 5 tests
-
-**Coverage:**
-- Frontend: 85%
-- Backend: 49%
-
----
-
 ## Next Step
 
 <div class="columns">
@@ -1016,19 +610,4 @@ Introducing the third approach
 - Import/Export DBF utils
 - Check order history when order in additional/retaker rates.
 
----
-
-## Why Django/React
-
-**Selection Criteria:**
-- Industry-proven (Instagram, Spotify, Netflix, Facebook)
-- Large developer community (10M+)
-- Active development (regular releases)
-- Comprehensive security
-- Rich ecosystem (4,000+ Django packages)
-- Long-term support (10+ years)
-
-**Alternatives Considered:**
-- FoxPro update: Ceiling reached
-- Flask/FastAPI: Less comprehensive
-- Vue/Angular: Smaller ecosystem
+___
