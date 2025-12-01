@@ -74,12 +74,20 @@ class ProductListSerializer(serializers.ModelSerializer):
         return 'Materials'  # Default for other products
 
     def get_recommended_product(self, product_product_variation, exam_session_subject=None):
-        """Get recommended product if exists for this product-variation combination."""
+        """Get recommended product if exists for this product-variation combination.
+
+        Uses prefetched recommendation data when available to avoid N+1 queries.
+        """
         try:
-            # Check if this product-variation combination has a recommendation
-            recommendation = ProductVariationRecommendation.objects.filter(
-                product_product_variation=product_product_variation
-            ).select_related('recommended_product_product_variation').first()
+            # Try to use prefetched recommendation first (avoids query)
+            recommendation = getattr(product_product_variation, 'recommendation', None)
+
+            # Fallback to query if not prefetched (shouldn't happen with optimized queryset)
+            if recommendation is None:
+                try:
+                    recommendation = product_product_variation.recommendation
+                except ProductVariationRecommendation.DoesNotExist:
+                    return None
 
             if not recommendation:
                 return None
@@ -122,7 +130,7 @@ class ProductListSerializer(serializers.ModelSerializer):
                         for price in recommended_esspv.prices.all()
                     ]
                 }
-        except ObjectDoesNotExist:
+        except (ObjectDoesNotExist, AttributeError):
             pass
         return None
 
@@ -162,10 +170,10 @@ class ProductListSerializer(serializers.ModelSerializer):
                 variation_data['recommended_product'] = recommended
 
             # Add tutorial events if this is a tutorial product
+            # Uses prefetched tutorial_events to avoid N+1 queries
             if product_type == 'Tutorial':
-                tutorial_events = TutorialEvent.objects.filter(
-                    exam_session_subject_product_variation=esspv
-                ).select_related()
+                # Use prefetched tutorial_events (related_name from TutorialEvent model)
+                tutorial_events = esspv.tutorial_events.all()
 
                 variation_data['events'] = [
                     {

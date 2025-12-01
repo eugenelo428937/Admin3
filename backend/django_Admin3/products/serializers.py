@@ -155,9 +155,11 @@ class ExamSessionSubjectBundleSerializer(serializers.ModelSerializer):
                  'exam_session_code', 'master_bundle_id', 'is_featured', 'is_active', 'display_order',
                  'components', 'components_count', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
-    
+
     def get_components_count(self, obj):
-        return obj.bundle_products.filter(is_active=True).count()
+        # Use prefetched bundle_products to avoid extra query
+        # The prefetch already filters by is_active=True
+        return len(obj.bundle_products.all())
 
 class FilterGroupSerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()
