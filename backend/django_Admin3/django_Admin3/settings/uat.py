@@ -78,13 +78,19 @@ else:
     }
 
 # CORS Configuration - Must match frontend domain
-# Parse CORS_ALLOWED_ORIGINS - handle both comma-separated and single value
+# Handle both list and string formats from environment
 _cors_origins_raw = env('CORS_ALLOWED_ORIGINS', default='')
-CORS_ALLOWED_ORIGINS = [origin.strip() for origin in _cors_origins_raw.split(',') if origin.strip()]
+if isinstance(_cors_origins_raw, list):
+    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in _cors_origins_raw if origin.strip()]
+else:
+    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in str(_cors_origins_raw).split(',') if origin.strip()]
 
 # Parse CSRF_TRUSTED_ORIGINS similarly
 _csrf_origins_raw = env('CSRF_TRUSTED_ORIGINS', default='')
-CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in _csrf_origins_raw.split(',') if origin.strip()]
+if isinstance(_csrf_origins_raw, list):
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in _csrf_origins_raw if origin.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in str(_csrf_origins_raw).split(',') if origin.strip()]
 
 # Explicitly set CORS credentials and methods (don't rely on base.py inheritance)
 CORS_ALLOW_CREDENTIALS = True
