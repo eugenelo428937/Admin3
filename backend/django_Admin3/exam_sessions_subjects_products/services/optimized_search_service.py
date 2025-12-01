@@ -255,6 +255,9 @@ class OptimizedSearchService:
         Args:
             use_fuzzy_sorting (bool): If True, skip ordering (fuzzy search will handle it)
         """
+        from tutorials.models import TutorialEvent
+        from products.models import ProductVariationRecommendation
+
         queryset = ExamSessionSubjectProduct.objects.select_related(
             'exam_session_subject__subject',  # Index: idx_exam_session_subjects_lookup
             'exam_session_subject__exam_session',
@@ -267,6 +270,19 @@ class OptimizedSearchService:
             Prefetch(
                 'variations__prices',
                 # Uses index: idx_prices_variation_type
+            ),
+            # Prefetch recommendations to avoid N+1 queries
+            Prefetch(
+                'variations__product_product_variation__recommendation',
+                queryset=ProductVariationRecommendation.objects.select_related(
+                    'recommended_product_product_variation__product',
+                    'recommended_product_product_variation__product_variation'
+                )
+            ),
+            # Prefetch tutorial events to avoid N+1 queries for tutorial products
+            Prefetch(
+                'variations__tutorial_events',
+                queryset=TutorialEvent.objects.all()
             )
         )
 
@@ -279,15 +295,30 @@ class OptimizedSearchService:
     def _build_bundle_queryset(self):
         """
         Build optimized queryset for bundles with proper relationships.
-        Matches the pattern used in list_products endpoint.
+        Uses Prefetch objects with select_related for efficient nested loading.
         """
+        from exam_sessions_subjects_products.models import ExamSessionSubjectBundleProduct
+
         queryset = ExamSessionSubjectBundle.objects.filter(is_active=True).select_related(
             'bundle__subject',
             'exam_session_subject__exam_session',
             'exam_session_subject__subject'
         ).prefetch_related(
-            'bundle_products__exam_session_subject_product_variation__product_product_variation__product',
-            'bundle_products__exam_session_subject_product_variation__product_product_variation__product_variation'
+            # Optimized prefetch for bundle products with all needed relations
+            Prefetch(
+                'bundle_products',
+                queryset=ExamSessionSubjectBundleProduct.objects.filter(
+                    is_active=True
+                ).select_related(
+                    # Product info path
+                    'exam_session_subject_product_variation__exam_session_subject_product__product',
+                    # Variation info path
+                    'exam_session_subject_product_variation__product_product_variation__product_variation',
+                ).prefetch_related(
+                    # Prices for each bundle product variation
+                    'exam_session_subject_product_variation__prices'
+                ).order_by('sort_order')
+            )
         ).order_by('exam_session_subject__subject__code', 'bundle__bundle_name')
 
         return queryset
@@ -600,7 +631,19 @@ class OptimizedSearchService:
         """
         Generate disjunctive facet counts using optimized GROUP BY queries.
         Uses single aggregation queries instead of multiple COUNT queries per filter.
+        Caches results for 5 minutes to reduce database load.
         """
+        # Try to get cached filter counts (base counts don't change frequently)
+        cache_key = 'filter_counts_base_v2'
+        cached_counts = cache.get(cache_key)
+
+        if cached_counts:
+            filter_counts = cached_counts.copy()
+            # Still need to add product metadata for applied filters
+            if applied_filters.get('products'):
+                self._add_product_metadata(filter_counts, applied_filters, base_queryset)
+            return filter_counts
+
         filter_counts = {
             'subjects': {},
             'categories': {},
@@ -696,25 +739,32 @@ class OptimizedSearchService:
         except Exception as e:
             logger.error(f"[FILTER-COUNTS] Error generating filter counts: {str(e)}")
 
-        # Add product metadata for filtered products (e.g., tutorial locations)
-        if applied_filters.get('products'):
-            from products.models import Product
+        # Cache the base filter counts for 5 minutes (300 seconds)
+        cache.set(cache_key, filter_counts, 300)
 
-            for product_id in applied_filters['products']:
-                try:
-                    product = Product.objects.filter(id=product_id).first()
-                    if product:
-                        # Count products that match this specific product ID
-                        count = base_queryset.filter(product_id=product_id).count()
-                        filter_counts['products'][str(product_id)] = {
-                            'count': count,
-                            'name': product.shortname or product.name,
-                            'id': product_id
-                        }
-                except Exception as e:
-                    logger.error(f"[FILTER-COUNTS] Error adding product metadata for {product_id}: {str(e)}")
+        # Add product metadata for filtered products (not cached, request-specific)
+        if applied_filters.get('products'):
+            self._add_product_metadata(filter_counts, applied_filters, base_queryset)
 
         return filter_counts
+
+    def _add_product_metadata(self, filter_counts, applied_filters, base_queryset):
+        """Add product metadata for filtered products (e.g., tutorial locations)."""
+        from products.models import Product
+
+        for product_id in applied_filters.get('products', []):
+            try:
+                product = Product.objects.filter(id=product_id).first()
+                if product:
+                    # Count products that match this specific product ID
+                    count = base_queryset.filter(product_id=product_id).count()
+                    filter_counts['products'][str(product_id)] = {
+                        'count': count,
+                        'name': product.shortname or product.name,
+                        'id': product_id
+                    }
+            except Exception as e:
+                logger.error(f"[FILTER-COUNTS] Error adding product metadata for {product_id}: {str(e)}")
     
     def _get_filter_key_for_config(self, config_name):
         """Map filter configuration names to frontend filter keys"""
