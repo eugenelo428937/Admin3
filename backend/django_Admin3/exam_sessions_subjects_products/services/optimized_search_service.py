@@ -49,8 +49,8 @@ class OptimizedSearchService:
         options = options or {}
 
         # Debug logging for products filter
-        logger.info(f"[SEARCH] Received filters: {filters}")
-        logger.info(f"[SEARCH] Products filter: {filters.get('products', 'NOT SET')}")
+        logger.debug(f"[SEARCH] Received filters: {filters}")
+        logger.debug(f"[SEARCH] Products filter: {filters.get('products', 'NOT SET')}")
         
         page = pagination.get('page', 1)
         page_size = pagination.get('page_size', 20)
@@ -77,7 +77,7 @@ class OptimizedSearchService:
             # Extract ESSP IDs from fuzzy search results (already sorted by relevance)
             fuzzy_essp_ids = [product.id for product in fuzzy_results['products']]
 
-            logger.info(f'🔍 [FUZZY-SEARCH] Query: "{search_query}" found {len(fuzzy_essp_ids)} matches')
+            logger.debug(f'[FUZZY-SEARCH] Query: "{search_query}" found {len(fuzzy_essp_ids)} matches')
 
         # Build optimized querysets (base, unfiltered) for both products and bundles
         base_queryset = self._build_optimized_queryset(use_fuzzy_sorting=use_fuzzy_search)
@@ -103,7 +103,7 @@ class OptimizedSearchService:
             # Only include bundles if search query contains bundle-related keywords
             if not any(keyword in search_lower for keyword in bundle_keywords):
                 should_include_bundles = False
-                logger.info(f'🔍 [BUNDLES] Excluding bundles from search query "{search_query}" (no bundle keywords)')
+                logger.debug(f'[BUNDLES] Excluding bundles from search query "{search_query}" (no bundle keywords)')
 
         # Check if 'Bundle' category filter is active (exclusive filter)
         bundle_filter_active = 'Bundle' in filters.get('categories', [])
@@ -111,7 +111,7 @@ class OptimizedSearchService:
         if bundle_filter_active:
             # If bundle filter is active, only return bundles (no products)
             filtered_queryset = filtered_queryset.none()
-            logger.info('🔍 [BUNDLES] Bundle category filter active - excluding products')
+            logger.debug('[BUNDLES] Bundle category filter active - excluding products')
         else:
             # Apply filters to get matching products
             if filters:
@@ -128,89 +128,93 @@ class OptimizedSearchService:
         elif filters:
             filtered_bundles_queryset = self._apply_bundle_filters(filtered_bundles_queryset, filters)
 
-        # Get counts for pagination (from filtered querysets)
+        # Get counts for pagination (from filtered querysets) - fast COUNT queries only
         products_count = filtered_queryset.count()
         bundles_count = filtered_bundles_queryset.count()
-        total_count = products_count + bundles_count
 
-        # Serialize products
-        serializer = ProductListSerializer(filtered_queryset, many=True)
-        products_data = list(serializer.data)
-
-        # Serialize bundles and transform to match product structure
-        bundles_serializer = ExamSessionSubjectBundleSerializer(filtered_bundles_queryset, many=True)
-        bundles_data = []
-        for bundle_data in bundles_serializer.data:
-            transformed_bundle = {
-                **bundle_data,
-                'item_type': 'bundle',
-                'is_bundle': True,
-                'type': 'Bundle',
-                'bundle_type': 'exam_session',
-                'product_name': bundle_data.get('bundle_name'),
-                'shortname': bundle_data.get('bundle_name'),
-                'fullname': bundle_data.get('bundle_description', bundle_data.get('bundle_name')),
-                'description': bundle_data.get('bundle_description'),
-                'code': bundle_data.get('subject_code'),
-            }
-            bundles_data.append(transformed_bundle)
-
-        # Check if marking vouchers should be included (BEFORE pagination)
+        # Check if marking vouchers should be included
         marking_vouchers_data = self._fetch_marking_vouchers(search_query, filters, navbar_filters)
+        vouchers_count = len(marking_vouchers_data) if marking_vouchers_data else 0
 
-        if marking_vouchers_data:
-            total_count += len(marking_vouchers_data)
-            logger.info(f'🔍 [MARKING-VOUCHERS] Fetched {len(marking_vouchers_data)} vouchers')
+        total_count = products_count + bundles_count + vouchers_count
 
-        # Combine bundles, products, and marking vouchers
-        all_items = bundles_data + products_data
-
-        # Add marking vouchers to the combined list BEFORE sorting
-        if marking_vouchers_data:
-            all_items = marking_vouchers_data + all_items  # Prepend vouchers for search relevance
-            logger.info(f'🔍 [MARKING-VOUCHERS] Added {len(marking_vouchers_data)} vouchers to combined results (total: {len(all_items)})')
-
-            # DIAGNOSTIC: Log first 10 items after prepending
-            logger.info(f'🔍 [DIAGNOSTIC] First 10 items AFTER prepending marking vouchers:')
-            for idx, item in enumerate(all_items[:10], 1):
-                item_type = item.get('type', 'Unknown')
-                item_name = item.get('product_name', item.get('name', 'Unknown'))
-                logger.info(f'   {idx:2d}. Type: {item_type:15s} | Name: {item_name}')
-
-        # Sort combined results
-        # When search query exists, marking vouchers are prepended (most relevant)
-        # Otherwise, sort by subject code (bundles have 'code', products have 'subject_code')
-        if not search_query:
-            # No search query: sort by subject code
-            all_items.sort(key=lambda x: x.get('code') or x.get('subject_code', ''))
-            logger.info(f'🔍 [DIAGNOSTIC] Sorted by subject code (no search query)')
-        else:
-            logger.info(f'🔍 [DIAGNOSTIC] Preserving relevance order (search query: "{search_query}")')
-
-        # DIAGNOSTIC: Log first 10 items after sorting
-        logger.info(f'🔍 [DIAGNOSTIC] First 10 items AFTER sorting:')
-        for idx, item in enumerate(all_items[:10], 1):
-            item_type = item.get('type', 'Unknown')
-            item_name = item.get('product_name', item.get('name', 'Unknown'))
-            logger.info(f'   {idx:2d}. Type: {item_type:15s} | Name: {item_name}')
-
-        # Apply pagination to combined results
+        # Calculate pagination offsets
         start_idx = (page - 1) * page_size
         end_idx = start_idx + page_size
-        paginated_items = all_items[start_idx:end_idx]
 
-        # DIAGNOSTIC: Log paginated items
-        logger.info(f'🔍 [DIAGNOSTIC] Pagination: page={page}, page_size={page_size}, start_idx={start_idx}, end_idx={end_idx}')
-        logger.info(f'🔍 [DIAGNOSTIC] Paginated items ({len(paginated_items)} items):')
-        for idx, item in enumerate(paginated_items, 1):
-            item_type = item.get('type', 'Unknown')
-            item_name = item.get('product_name', item.get('name', 'Unknown'))
-            logger.info(f'   {idx:2d}. Type: {item_type:15s} | Name: {item_name}')
+        # OPTIMIZATION: Apply pagination BEFORE serialization
+        # Order: vouchers first (if search), then bundles, then products
+        # This avoids serializing items that won't be shown on the current page
 
-        # Use paginated items as products_data
+        paginated_items = []
+        items_needed = page_size
+        current_offset = start_idx
+
+        # 1. Handle marking vouchers (prepended when search query exists)
+        if search_query and marking_vouchers_data:
+            if current_offset < vouchers_count:
+                # Need some vouchers from this page
+                voucher_start = current_offset
+                voucher_end = min(vouchers_count, current_offset + items_needed)
+                paginated_items.extend(marking_vouchers_data[voucher_start:voucher_end])
+                items_needed -= (voucher_end - voucher_start)
+                current_offset = 0  # Reset offset for next source
+            else:
+                # Skip vouchers, adjust offset for bundles
+                current_offset -= vouchers_count
+
+        # 2. Handle bundles (come before products in sorted order)
+        if items_needed > 0 and bundles_count > 0:
+            if current_offset < bundles_count:
+                # Need some bundles from this page
+                bundle_start = current_offset
+                bundle_end = min(bundles_count, current_offset + items_needed)
+                bundle_slice_size = bundle_end - bundle_start
+
+                # Only serialize the bundles we need (apply LIMIT/OFFSET at queryset level)
+                paginated_bundles_qs = filtered_bundles_queryset[bundle_start:bundle_end]
+                bundles_serializer = ExamSessionSubjectBundleSerializer(paginated_bundles_qs, many=True)
+
+                for bundle_data in bundles_serializer.data:
+                    transformed_bundle = {
+                        **bundle_data,
+                        'item_type': 'bundle',
+                        'is_bundle': True,
+                        'type': 'Bundle',
+                        'bundle_type': 'exam_session',
+                        'product_name': bundle_data.get('bundle_name'),
+                        'shortname': bundle_data.get('bundle_name'),
+                        'fullname': bundle_data.get('bundle_description', bundle_data.get('bundle_name')),
+                        'description': bundle_data.get('bundle_description'),
+                        'code': bundle_data.get('subject_code'),
+                    }
+                    paginated_items.append(transformed_bundle)
+
+                items_needed -= bundle_slice_size
+                current_offset = 0  # Reset offset for products
+            else:
+                # Skip bundles, adjust offset for products
+                current_offset -= bundles_count
+
+        # 3. Handle products
+        if items_needed > 0 and products_count > 0:
+            if current_offset < products_count:
+                # Need some products from this page
+                product_start = current_offset
+                product_end = min(products_count, current_offset + items_needed)
+
+                # Only serialize the products we need (apply LIMIT/OFFSET at queryset level)
+                paginated_products_qs = filtered_queryset[product_start:product_end]
+                serializer = ProductListSerializer(paginated_products_qs, many=True)
+                paginated_items.extend(serializer.data)
+
+        # Handle case where vouchers need to be added but search query didn't prepend them
+        if not search_query and marking_vouchers_data and start_idx == 0:
+            # On first page without search, prepend vouchers
+            paginated_items = marking_vouchers_data[:min(items_needed, vouchers_count)] + paginated_items
+            paginated_items = paginated_items[:page_size]  # Trim to page size
+
         products_data = paginated_items
-
-        logger.info(f'🔍 [RESULTS] Included {len(bundles_data)} bundles, {len([p for p in products_data if p.get("type") != "MarkingVoucher"])} products, {len([p for p in products_data if p.get("type") == "MarkingVoucher"])} vouchers')
 
         # Generate filter counts using BASE querysets (disjunctive faceting)
         # This ensures all filter options remain visible even when filters are applied
@@ -234,13 +238,6 @@ class OptimizedSearchService:
                 'cached': False
             }
         }
-
-        # Debug: Log what's being returned (first 5 items show sort order)
-        logger.info(f'🔍 [RESPONSE-DEBUG] Returning {len(products_data)} items (page {page}):')
-        for idx, item in enumerate(products_data[:5]):  # Log first 5 items
-            item_type = item.get("type")
-            item_name = item.get("product_name") or item.get("name")
-            logger.info(f'🔍 [RESPONSE-DEBUG]   {idx+1}. type={item_type}, name={item_name}')
 
         # Cache the result
         cache.set(cache_key, result, self.cache_timeout)
@@ -341,29 +338,27 @@ class OptimizedSearchService:
         # Product filters - separate ESSP IDs (from fuzzy search) vs Product IDs (from navbar)
         # ESSP IDs: Filter by ExamSessionSubjectProduct.id (specific instances like CS1 Core Reading)
         if filters.get('essp_ids'):
-            logger.info(f'🔍 [SEARCH-DEBUG] ESSP IDs filter received: {filters["essp_ids"]}')
+            logger.debug(f'[SEARCH-DEBUG] ESSP IDs filter received: {filters["essp_ids"]}')
             essp_id_q = Q(id__in=filters['essp_ids'])
             q_filter &= essp_id_q
 
         # Product IDs: Filter by Product.id (all instances like CB1 Core Reading, CB2 Core Reading, etc.)
         if filters.get('product_ids'):
-            logger.info(f'🔍 [SEARCH-DEBUG] Product IDs filter received: {filters["product_ids"]}')
+            logger.debug(f'[SEARCH-DEBUG] Product IDs filter received: {filters["product_ids"]}')
             product_id_q = Q(product__id__in=filters['product_ids'])
             q_filter &= product_id_q
 
         # Legacy 'products' filter - for backward compatibility (product names)
         if filters.get('products'):
-            logger.info(f'🔍 [SEARCH-DEBUG] Products filter (legacy) received: {filters["products"]}')
+            logger.debug(f'[SEARCH-DEBUG] Products filter (legacy) received: {filters["products"]}')
             product_q = Q()
             for product in filters['products']:
                 # Try numeric first (check both ESSP and Product ID for compatibility)
                 try:
                     numeric_id = int(product)
-                    logger.info(f'🔍 [SEARCH-DEBUG] Legacy numeric ID: {numeric_id} (checking both ESSP and Product)')
                     product_q |= Q(id=numeric_id) | Q(product__id=numeric_id)
                 except (ValueError, TypeError):
                     # String: filter by product name
-                    logger.info(f'🔍 [SEARCH-DEBUG] Filtering by product name: {product}')
                     product_q |= Q(product__fullname__icontains=product)
 
             if product_q:
@@ -381,7 +376,6 @@ class OptimizedSearchService:
         
         if q_filter:
             queryset = queryset.filter(q_filter).distinct()
-            logger.info(f'🔍 [SEARCH-DEBUG] Filtered queryset count: {queryset.count()}')
 
         return queryset
     
@@ -398,7 +392,7 @@ class OptimizedSearchService:
                 format_group = FilterGroup.objects.get(code=navbar_filters['tutorial_format'])
                 queryset = queryset.filter(product__groups=format_group)
             except FilterGroup.DoesNotExist:
-                logger.warning(f'🔍 [NAVBAR-FILTERS] Tutorial format group with code "{navbar_filters["tutorial_format"]}" not found')
+                logger.debug(f'[NAVBAR-FILTERS] Tutorial format group with code "{navbar_filters["tutorial_format"]}" not found')
                 queryset = queryset.none()
         
         # Apply group filter (expects code for consistency)
@@ -413,7 +407,7 @@ class OptimizedSearchService:
                     group = FilterGroup.objects.get(name=navbar_filters['group'])
                 queryset = queryset.filter(product__groups=group)
             except FilterGroup.DoesNotExist:
-                logger.warning(f'🔍 [NAVBAR-FILTERS] Filter group "{navbar_filters["group"]}" not found by code or name')
+                logger.debug(f'[NAVBAR-FILTERS] Filter group "{navbar_filters["group"]}" not found by code or name')
                 queryset = queryset.none()
         
         # Apply tutorial filter (special logic for Tutorial group excluding Online Classroom)
@@ -428,7 +422,7 @@ class OptimizedSearchService:
                     product__groups=online_classroom_group
                 ).distinct()
             except FilterGroup.DoesNotExist as e:
-                logger.warning(f'🔍 [NAVBAR-FILTERS] Tutorial group not found: {e}')
+                logger.debug(f'[NAVBAR-FILTERS] Tutorial group not found: {e}')
                 queryset = queryset.none()
         
         # Apply variation filter
@@ -437,9 +431,9 @@ class OptimizedSearchService:
                 variation_id = int(navbar_filters['variation'])
                 queryset = queryset.filter(variations__id=variation_id)
             except (ValueError, TypeError):
-                logger.warning(f'🔍 [NAVBAR-FILTERS] Invalid variation ID: {navbar_filters["variation"]}')
+                logger.debug(f'[NAVBAR-FILTERS] Invalid variation ID: {navbar_filters["variation"]}')
                 queryset = queryset.none()
-        
+
         # Apply distance_learning filter
         if 'distance_learning' in navbar_filters:
             try:
@@ -447,16 +441,16 @@ class OptimizedSearchService:
                 distance_learning_group = FilterGroup.objects.get(name='Material')
                 queryset = queryset.filter(product__groups=distance_learning_group)
             except FilterGroup.DoesNotExist:
-                logger.warning(f'🔍 [NAVBAR-FILTERS] Material group not found for distance learning filter')
+                logger.debug('[NAVBAR-FILTERS] Material group not found for distance learning filter')
                 queryset = queryset.none()
-        
+
         # Apply product filter (specific product by ID - for tutorial location navigation)
         if 'product' in navbar_filters:
             try:
                 product_id = int(navbar_filters['product'])
                 queryset = queryset.filter(product__id=product_id)
             except (ValueError, TypeError):
-                logger.warning(f'🔍 [NAVBAR-FILTERS] Invalid product ID: {navbar_filters["product"]}')
+                logger.debug(f'[NAVBAR-FILTERS] Invalid product ID: {navbar_filters["product"]}')
                 queryset = queryset.none()
         
         return queryset.distinct()
@@ -504,45 +498,32 @@ class OptimizedSearchService:
         try:
             from marking_vouchers.models import MarkingVoucher
 
-            # Log diagnostic info
-            logger.info(f'🔍 [MARKING-VOUCHERS-DEBUG] Called with search_query="{search_query}", filters={filters}, navbar_filters={navbar_filters}')
-
-            # Check how many marking vouchers exist in database
-            total_vouchers = MarkingVoucher.objects.filter(is_active=True).count()
-            logger.info(f'🔍 [MARKING-VOUCHERS-DEBUG] Total active marking vouchers in database: {total_vouchers}')
-
             # Determine if marking vouchers should be included
             should_include = False
-
             navbar_filters = navbar_filters or {}
 
             # Check if navbar filter includes group='8' (Marking Vouchers navigation)
             if navbar_filters.get('group') == '8':
                 should_include = True
-                logger.info('🔍 [MARKING-VOUCHERS] Including vouchers due to navbar group=8 filter')
 
             # Check if product_types filter includes '8' (Marking Vouchers from Redux)
             if filters.get('product_types'):
                 # Check for both string '8' and integer 8
                 if '8' in filters['product_types'] or 8 in filters['product_types']:
                     should_include = True
-                    logger.info('🔍 [MARKING-VOUCHERS] Including vouchers due to product_types=8 filter')
                 # Also check for 'marking' keyword in product_types
                 marking_types = [str(pt).lower() for pt in filters['product_types']]
                 if any('marking' in pt for pt in marking_types):
                     should_include = True
-                    logger.info('🔍 [MARKING-VOUCHERS] Including vouchers due to product_types keyword filter')
 
             # Check if filters include "Marking" or "Marking Vouchers"
             if filters.get('categories'):
                 marking_filters = [cat.lower() for cat in filters['categories']]
                 if any('marking' in cat for cat in marking_filters):
                     should_include = True
-                    logger.info('🔍 [MARKING-VOUCHERS] Including vouchers due to category filter')
 
             # Check if search query matches vouchers
             if search_query and len(search_query) >= 2:
-                logger.info(f'🔍 [MARKING-VOUCHERS-DEBUG] Searching vouchers with query: "{search_query}"')
                 # Search in voucher names, descriptions, or codes
                 voucher_matches = MarkingVoucher.objects.filter(
                     Q(name__icontains=search_query) |
@@ -550,20 +531,12 @@ class OptimizedSearchService:
                     Q(code__icontains=search_query),
                     is_active=True
                 )
-                match_count = voucher_matches.count()
-                logger.info(f'🔍 [MARKING-VOUCHERS-DEBUG] Found {match_count} matching vouchers')
-                if match_count > 0:
-                    for v in voucher_matches[:3]:
-                        logger.info(f'🔍 [MARKING-VOUCHERS-DEBUG]   - {v.code}: {v.name}')
                 if voucher_matches.exists():
                     should_include = True
-                    logger.info(f'🔍 [MARKING-VOUCHERS] Including vouchers due to search query "{search_query}"')
 
             if not should_include:
-                logger.info('🔍 [MARKING-VOUCHERS-DEBUG] should_include=False, returning empty list')
                 return []
 
-            logger.info(f'🔍 [MARKING-VOUCHERS-DEBUG] should_include=True, fetching vouchers...')
             # Fetch active marking vouchers
             vouchers = MarkingVoucher.objects.filter(is_active=True)
 
@@ -617,20 +590,16 @@ class OptimizedSearchService:
                 }
                 vouchers_data.append(voucher_data)
 
-            logger.info(f'🔍 [MARKING-VOUCHERS] Fetched {len(vouchers_data)} marking vouchers')
             return vouchers_data
 
         except Exception as e:
-            logger.error(f'🔍 [MARKING-VOUCHERS] Error fetching vouchers: {str(e)}')
-            import traceback
-            logger.error(f'🔍 [MARKING-VOUCHERS] Traceback: {traceback.format_exc()}')
+            logger.error(f'[MARKING-VOUCHERS] Error fetching vouchers: {str(e)}')
             return []
 
     def _generate_optimized_filter_counts(self, applied_filters, base_queryset, base_bundles_queryset=None):
         """
-        Generate disjunctive facet counts using the FilterConfiguration system.
-        Reads from acted_filter_configuration to get dynamic filter options.
-        Includes bundle counts when base_bundles_queryset is provided.
+        Generate disjunctive facet counts using optimized GROUP BY queries.
+        Uses single aggregation queries instead of multiple COUNT queries per filter.
         """
         filter_counts = {
             'subjects': {},
@@ -641,121 +610,109 @@ class OptimizedSearchService:
         }
 
         try:
-            # Get active filter configurations from database
-            active_configs = FilterConfiguration.objects.filter(is_active=True)
+            # 1. Subject counts - single GROUP BY query for products
+            subject_counts = base_queryset.values(
+                'exam_session_subject__subject__code'
+            ).annotate(count=Count('id')).order_by('-count')
 
-            for config in active_configs:
+            for item in subject_counts:
+                code = item['exam_session_subject__subject__code']
+                count = item['count']
+                if code and count > 0:
+                    filter_counts['subjects'][code] = {
+                        'count': count,
+                        'name': code
+                    }
 
-                if config.filter_type == 'subject':
-                    # Subject filter - get subjects from products
-                    subject_counts = base_queryset.values(
-                        'exam_session_subject__subject__code'
-                    ).annotate(count=Count('id')).order_by('-count')
+            # Add bundle counts to subject filter (single GROUP BY query)
+            if base_bundles_queryset is not None:
+                bundle_subject_counts = base_bundles_queryset.values(
+                    'exam_session_subject__subject__code'
+                ).annotate(count=Count('id'))
 
-                    for item in subject_counts:
-                        code = item['exam_session_subject__subject__code']
-                        count = item['count']
-                        if code and count > 0:
+                for item in bundle_subject_counts:
+                    code = item['exam_session_subject__subject__code']
+                    bundle_count = item['count']
+                    if code and bundle_count > 0:
+                        if code in filter_counts['subjects']:
+                            filter_counts['subjects'][code]['count'] += bundle_count
+                        else:
                             filter_counts['subjects'][code] = {
-                                'count': count,
-                                'name': code  # Subject codes are already human-readable
+                                'count': bundle_count,
+                                'name': code
                             }
 
-                    # Add bundle counts to subject filter
-                    if base_bundles_queryset is not None:
-                        bundle_subject_counts = base_bundles_queryset.values(
-                            'exam_session_subject__subject__code'
-                        ).annotate(count=Count('id'))
+            # 2. Filter group counts - single GROUP BY query for ALL groups at once
+            # This replaces multiple individual COUNT queries with one aggregated query
+            group_counts = base_queryset.values(
+                'product__groups__id',
+                'product__groups__name'
+            ).annotate(count=Count('id', distinct=True)).order_by('-count')
 
-                        for item in bundle_subject_counts:
-                            code = item['exam_session_subject__subject__code']
-                            bundle_count = item['count']
-                            if code and bundle_count > 0:
-                                if code in filter_counts['subjects']:
-                                    filter_counts['subjects'][code]['count'] += bundle_count
-                                else:
-                                    filter_counts['subjects'][code] = {
-                                        'count': bundle_count,
-                                        'name': code
-                                    }
-                
-                elif config.filter_type == 'filter_group':
-                    # Get the mapping for this configuration
+            # Build a lookup dict of group_id -> count
+            group_count_lookup = {}
+            for item in group_counts:
+                group_id = item['product__groups__id']
+                group_name = item['product__groups__name']
+                count = item['count']
+                if group_id and count > 0:
+                    group_count_lookup[group_id] = {
+                        'count': count,
+                        'name': group_name
+                    }
+
+            # Cache bundle count (computed once, not per-group)
+            bundle_count = base_bundles_queryset.count() if base_bundles_queryset is not None else 0
+
+            # Get active filter configurations and map groups to filter keys
+            active_configs = FilterConfiguration.objects.filter(is_active=True).prefetch_related(
+                'filterconfigurationgroup_set__filter_group'
+            )
+
+            for config in active_configs:
+                if config.filter_type == 'filter_group':
                     filter_key = self._get_filter_key_for_config(config.name)
+                    if not filter_key:
+                        continue
 
-                    if filter_key:
-                        # Get filter groups associated with this configuration
-                        config_groups = config.filterconfigurationgroup_set.filter(
-                            filter_group__is_active=True
-                        ).select_related('filter_group').order_by('display_order')
+                    # Get filter groups for this configuration
+                    for config_group in config.filterconfigurationgroup_set.filter(filter_group__is_active=True):
+                        group = config_group.filter_group
 
-                        for config_group in config_groups:
-                            group = config_group.filter_group
+                        # Look up count from our pre-computed dict
+                        count = group_count_lookup.get(group.id, {}).get('count', 0)
 
-                            # Calculate count for this filter group
-                            count = self._calculate_filter_group_count(base_queryset, config, group)
+                        # Add bundle count for Bundle category
+                        if group.name == 'Bundle':
+                            count += bundle_count
 
-                            # Add bundle count for Bundle category
-                            if group.name == 'Bundle' and base_bundles_queryset is not None:
-                                bundle_count = base_bundles_queryset.count()
-                                count += bundle_count
-                                logger.info(f'🔍 [FILTER-COUNTS] Added {bundle_count} bundles to Bundle category count')
+                        if count > 0:
+                            filter_counts[filter_key][group.name] = {
+                                'count': count,
+                                'name': group.name,
+                                'display_name': group.name
+                            }
 
-                            if count > 0:
-                                filter_counts[filter_key][group.name] = {
-                                    'count': count,
-                                    'name': group.name,
-                                    'display_name': group.name  # Just use the child name, no parent prefix
-                                }
-            
-            # Fallback: If no configurations found, still provide subjects
-            if not filter_counts['subjects'] and base_queryset.exists():
-                logger.warning("[FILTER-COUNTS] No subject configuration found, using fallback")
-                subject_counts = base_queryset.values(
-                    'exam_session_subject__subject__code'
-                ).annotate(count=Count('id')).order_by('-count')[:20]
-                
-                for item in subject_counts:
-                    code = item['exam_session_subject__subject__code']
-                    count = item['count']
-                    if code:
-                        filter_counts['subjects'][code] = {
-                            'count': count,
-                            'name': code
-                        }
-            
         except Exception as e:
             logger.error(f"[FILTER-COUNTS] Error generating filter counts: {str(e)}")
-            import traceback
-            logger.error(f"[FILTER-COUNTS] Traceback: {traceback.format_exc()}")
 
         # Add product metadata for filtered products (e.g., tutorial locations)
         if applied_filters.get('products'):
             from products.models import Product
 
-            logger.info(f"[FILTER-COUNTS] Processing products filter: {applied_filters.get('products')}")
-
             for product_id in applied_filters['products']:
                 try:
-                    logger.info(f"[FILTER-COUNTS] Looking up Product with id={product_id}")
                     product = Product.objects.filter(id=product_id).first()
                     if product:
-                        logger.info(f"[FILTER-COUNTS] Found product: {product.shortname or product.name} (id={product_id})")
                         # Count products that match this specific product ID
                         count = base_queryset.filter(product_id=product_id).count()
-                        logger.info(f"[FILTER-COUNTS] Count for product_id={product_id}: {count}")
                         filter_counts['products'][str(product_id)] = {
                             'count': count,
                             'name': product.shortname or product.name,
                             'id': product_id
                         }
-                        logger.info(f"[FILTER-COUNTS] Added to filter_counts: {filter_counts['products'][str(product_id)]}")
-                    else:
-                        logger.warning(f"[FILTER-COUNTS] Product with id={product_id} not found in database")
                 except Exception as e:
                     logger.error(f"[FILTER-COUNTS] Error adding product metadata for {product_id}: {str(e)}")
-        else:
-            logger.info(f"[FILTER-COUNTS] No products filter in applied_filters: {applied_filters.keys()}")
 
         return filter_counts
     
@@ -777,13 +734,9 @@ class OptimizedSearchService:
             count = base_queryset.filter(
                 product__groups=group
             ).distinct().count()
-
             return count
-                
         except Exception as e:
-            logger.warning(f"[FILTER-COUNTS] Error calculating count for {group.name}: {str(e)}")
-            import traceback
-            logger.warning(f"[FILTER-COUNTS] Traceback: {traceback.format_exc()}")
+            logger.debug(f"[FILTER-COUNTS] Error calculating count for {group.name}: {str(e)}")
             return 0
     
     def _build_cache_key(self, filters, page, page_size, options, search_query=''):
