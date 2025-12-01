@@ -445,34 +445,70 @@ def filter_configuration(request):
 def navbar_product_groups(request):
     """
     Returns products grouped by specific product groups for the navbar dropdown.
+    Optimized with batch queries and caching.
     """
+    from django.core.cache import cache
+
+    # Check cache first (5 minute cache)
+    cache_key = 'navbar_product_groups_v1'
+    cached_data = cache.get(cache_key)
+    if cached_data:
+        return Response(cached_data)
+
     # Define the product group names for the navbar (matching actual database)
     navbar_groups = [
         'Core Study Materials',
-        'Revision Materials', 
+        'Revision Materials',
         'Marking',
-        'Tutorial' 
+        'Tutorial'
     ]
-    
+
     try:
-        # Get the product groups and their products
+        # OPTIMIZED: Batch load all groups with prefetched products in ONE query
+        groups = FilterGroup.objects.filter(
+            name__in=navbar_groups
+        ).prefetch_related(
+            Prefetch(
+                'products',
+                queryset=Product.objects.filter(is_active=True).order_by('shortname')
+            )
+        )
+
+        # Create lookup dict for found groups
+        groups_dict = {g.name: g for g in groups}
+
+        # Build response maintaining original order
         groups_data = []
         for group_name in navbar_groups:
-            try:
-                group = FilterGroup.objects.get(name=group_name)
-                serializer = FilterGroupWithProductsSerializer(group)
-                groups_data.append(serializer.data)
-            except FilterGroup.DoesNotExist:
+            if group_name in groups_dict:
+                group = groups_dict[group_name]
+                groups_data.append({
+                    'id': group.id,
+                    'name': group.name,
+                    'products': [
+                        {
+                            'id': product.id,
+                            'shortname': product.shortname,
+                            'fullname': product.fullname,
+                            'code': product.code,
+                        }
+                        for product in group.products.all()  # Uses prefetched data
+                    ]
+                })
+            else:
                 # If group doesn't exist, add empty group
                 groups_data.append({
                     'id': None,
                     'name': group_name,
                     'products': []
                 })
-        
-        return Response({
-            'results': groups_data
-        })
+
+        result = {'results': groups_data}
+
+        # Cache for 5 minutes (300 seconds)
+        cache.set(cache_key, result, 300)
+
+        return Response(result)
     except Exception as e:
         return Response({
             'error': str(e)
@@ -484,31 +520,68 @@ def distance_learning_dropdown(request):
     """
     Returns products for Distance Learning dropdown menu.
     Includes products from Core Study Materials, Revision Materials, and Marking groups.
+    Optimized with batch queries and caching.
     """
+    from django.core.cache import cache
+
+    # Check cache first (5 minute cache)
+    cache_key = 'distance_learning_dropdown_v1'
+    cached_data = cache.get(cache_key)
+    if cached_data:
+        return Response(cached_data)
+
     try:
         distance_learning_groups = [
             'Core Study Materials',
-            'Revision Materials', 
+            'Revision Materials',
             'Marking'
         ]
-        
+
+        # OPTIMIZED: Batch load all groups with prefetched products in ONE query
+        groups = FilterGroup.objects.filter(
+            name__in=distance_learning_groups
+        ).prefetch_related(
+            Prefetch(
+                'products',
+                queryset=Product.objects.filter(is_active=True).order_by('shortname')
+            )
+        )
+
+        # Create lookup dict for found groups
+        groups_dict = {g.name: g for g in groups}
+
+        # Build response maintaining original order
         groups_data = []
         for group_name in distance_learning_groups:
-            try:
-                group = FilterGroup.objects.get(name=group_name)
-                serializer = FilterGroupWithProductsSerializer(group)
-                groups_data.append(serializer.data)
-            except FilterGroup.DoesNotExist:
+            if group_name in groups_dict:
+                group = groups_dict[group_name]
+                groups_data.append({
+                    'id': group.id,
+                    'name': group.name,
+                    'products': [
+                        {
+                            'id': product.id,
+                            'shortname': product.shortname,
+                            'fullname': product.fullname,
+                            'code': product.code,
+                        }
+                        for product in group.products.all()  # Uses prefetched data
+                    ]
+                })
+            else:
                 # If group doesn't exist, add empty group
                 groups_data.append({
                     'id': None,
                     'name': group_name,
                     'products': []
                 })
-        
-        return Response({
-            'results': groups_data
-        })
+
+        result = {'results': groups_data}
+
+        # Cache for 5 minutes (300 seconds)
+        cache.set(cache_key, result, 300)
+
+        return Response(result)
     except Exception as e:
         return Response({
             'error': str(e)
@@ -519,71 +592,61 @@ def distance_learning_dropdown(request):
 def tutorial_dropdown(request):
     """
     Returns data for Tutorial dropdown menu with three columns:
-    1. Location: Products where product_group = "Tutorial" and exclude product_group = "Online Classroom" (split into 2 sub-columns)
-    2. Format: Simple filter links for tutorial formats
-       - "Face to Face" (filters products where product_group = "Face-to-face")
-       - "Live Online" (filters products where product_group = "Live Online")
+    1. Location: Products where product_group = "Tutorial" (split into 2 sub-columns)
+    2. Format: Simple filter links for tutorial formats (children of Tutorial group)
     3. Online Classroom: Product variations of products in "Online Classroom" group
+    Optimized with batch queries and caching.
     """
+    from django.core.cache import cache
+
+    # Check cache first (5 minute cache)
+    cache_key = 'tutorial_dropdown_v1'
+    cached_data = cache.get(cache_key)
+    if cached_data:
+        return Response(cached_data)
+
     try:
-        # Get product group IDs
-        try:
-            tutorial_group = FilterGroup.objects.get(name='Tutorial')
-        except FilterGroup.DoesNotExist:
-            tutorial_group = None
-            
-        try:
-            online_classroom_group = FilterGroup.objects.get(name='Online Classroom Recording')
-        except FilterGroup.DoesNotExist:
-            online_classroom_group = None
-        
+        # OPTIMIZED: Batch load all needed filter groups in ONE query
+        needed_groups = ['Tutorial', 'Online Classroom Recording']
+        groups = FilterGroup.objects.filter(name__in=needed_groups)
+        groups_dict = {g.name: g for g in groups}
+
+        tutorial_group = groups_dict.get('Tutorial')
+        online_classroom_group = groups_dict.get('Online Classroom Recording')
+
         # Column 1: Location - Products in Tutorial group (tutorial locations)
+        # OPTIMIZED: Single query with list conversion to avoid multiple DB hits
         if tutorial_group:
-            location_products = Product.objects.filter(
+            location_products = list(Product.objects.filter(
                 is_active=True,
                 groups=tutorial_group
-            ).order_by('shortname')
+            ).order_by('shortname').values('id', 'shortname', 'fullname', 'code'))
         else:
-            location_products = Product.objects.none()
-        
-        # Split into 2 sub-columns
-        location_count = location_products.count()
+            location_products = []
+
+        # Split into 2 sub-columns (in memory, no DB query)
+        location_count = len(location_products)
         mid_point = (location_count + 1) // 2
-        
-        location_data_left = [
-            {
-                'id': product.id,
-                'shortname': product.shortname,
-                'fullname': product.fullname,
-                'code': product.code,
-            }
-            for product in location_products[:mid_point]
-        ]
-        
-        location_data_right = [
-            {
-                'id': product.id,
-                'shortname': product.shortname,
-                'fullname': product.fullname,
-                'code': product.code,
-            }
-            for product in location_products[mid_point:]
-        ]
-        
-        # Column 2: Format - Get children of Tutorial group (parent_id = 3)
-        try:
-            tutorial_parent_group = FilterGroup.objects.get(id=3)  # Tutorial parent group
-            format_groups = FilterGroup.objects.filter(parent=tutorial_parent_group).order_by('name')
-            
+
+        location_data_left = location_products[:mid_point]
+        location_data_right = location_products[mid_point:]
+
+        # Column 2: Format - Get children of Tutorial group
+        # OPTIMIZED: Single query for format groups
+        if tutorial_group:
+            format_groups = FilterGroup.objects.filter(
+                parent=tutorial_group
+            ).order_by('name').values('name', 'code')
+
             format_data = [
                 {
-                    'name': group.name,
-                    'filter_type': group.code,
-                    'group_name': group.name
+                    'name': group['name'],
+                    'filter_type': group['code'],
+                    'group_name': group['name']
                 }
                 for group in format_groups
             ]
-        except FilterGroup.DoesNotExist:
+        else:
             # Fallback to hardcoded values if Tutorial group not found
             format_data = [
                 {
@@ -592,37 +655,24 @@ def tutorial_dropdown(request):
                     'group_name': 'Face-to-face Tutorial'
                 },
                 {
-                    'name': 'Live Online Tutorial', 
+                    'name': 'Live Online Tutorial',
                     'filter_type': 'live_online',
                     'group_name': 'Live Online Tutorial'
                 }
             ]
-        
-        # Column 3: Online Classroom - Product variations of products in Online Classroom group
+
+        # Column 3: Online Classroom - Product variations
+        # OPTIMIZED: Single query using subquery instead of two separate queries
         if online_classroom_group:
-            # Get products that are in Online Classroom group
-            online_classroom_product_ids = Product.objects.filter(
-                groups=online_classroom_group
-            ).values_list('id', flat=True)
-            
-            # Get variations that are linked to Online Classroom products
             online_classroom_variations = ProductVariation.objects.filter(
-                products__id__in=online_classroom_product_ids
-            ).distinct().order_by('description')
-            
-            online_classroom_data = [
-                {
-                    'id': variation.id,
-                    'name': variation.name,
-                    'variation_type': variation.variation_type,
-                    'description': variation.description,
-                }
-                for variation in online_classroom_variations
-            ]
+                products__groups=online_classroom_group
+            ).distinct().order_by('description').values('id', 'name', 'variation_type', 'description')
+
+            online_classroom_data = list(online_classroom_variations)
         else:
             online_classroom_data = []
-        
-        return Response({
+
+        result = {
             'results': {
                 'Location': {
                     'left': location_data_left,
@@ -631,7 +681,12 @@ def tutorial_dropdown(request):
                 'Format': format_data,
                 'Online Classroom': online_classroom_data
             }
-        })
+        }
+
+        # Cache for 5 minutes (300 seconds)
+        cache.set(cache_key, result, 300)
+
+        return Response(result)
     except Exception as e:
         return Response({
             'error': str(e)
