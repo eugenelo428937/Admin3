@@ -30,13 +30,12 @@ jest.mock('../../../services/cartService', () => ({
 
 // Mock the services
 jest.mock('../../../services/productService', () => ({
-  getNavbarProductGroups: jest.fn(() => Promise.resolve([])),
-  getDistanceLearningDropdown: jest.fn(() => Promise.resolve([])),
-  getTutorialDropdown: jest.fn(() => Promise.resolve(null)),
-}));
-
-jest.mock('../../../services/subjectService', () => ({
-  getSubjects: jest.fn(() => Promise.resolve([])),
+  getNavigationData: jest.fn(() => Promise.resolve({
+    subjects: [],
+    navbarProductGroups: [],
+    distanceLearningData: [],
+    tutorialData: null,
+  })),
 }));
 
 // Mock the useAuth hook
