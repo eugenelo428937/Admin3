@@ -2,13 +2,43 @@ from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.core.cache import cache
 from .models import Subject
 from .serializers import SubjectSerializer
-    
+
 class SubjectViewSet(viewsets.ModelViewSet):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
     permission_classes = [AllowAny]
+
+    def list(self, request, *args, **kwargs):
+        """
+        OPTIMIZED: Cache subjects list for 5 minutes.
+        Subjects rarely change and are fetched on every navigation menu load.
+        """
+        cache_key = 'subjects_list_v1'
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data)
+
+        # Only fetch active subjects, use lightweight .values() query
+        subjects = Subject.objects.filter(active=True).order_by('code').values(
+            'id', 'code', 'description'
+        )
+
+        # Format to match serializer output (add 'name' alias for 'description')
+        result = [
+            {
+                'id': s['id'],
+                'code': s['code'],
+                'description': s['description'],
+                'name': s['description'],  # Frontend compatibility alias
+            }
+            for s in subjects
+        ]
+
+        cache.set(cache_key, result, 300)  # Cache for 5 minutes
+        return Response(result)
 
     @action(detail=False, methods=['POST'], url_path='bulk-import')    
     def bulk_import_subjects(self,request):
