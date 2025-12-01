@@ -2,9 +2,9 @@
 
 ## Background and Objectives
 
-A year ago you asked me to update the estore layout, I explored modernising the current UI while retaining the table layout and FoxPro backend. After several iterations of prototype, I came across some hurdles that I have difficulties overcoming.
+A year ago you asked me to update the estore layout, I explored modernising the current UI while retaining the table layout and FoxPro backend. After several iterations of prototype, I came across some hurdles that I have difficulties overcoming. To make it easier to understand the thought process, I make it into 3 parts. The initial analysis the issues I cam across, researching industry patterns and a feasibility study on what changes are need and how to implement.
 
-### 1. Hurdles
+## 1. Hurdles
 
 The first item is about the table layout. I had a few attempts redesigning the products table, I could not come up with a design that look decent and works well in mobile.
 
@@ -72,11 +72,11 @@ Navigation menu is accessible by a hamburger icon in mobile. It opens up a drawe
 
 After identifying how others handles the functionality, I did a feasibility study and explore how the features above can be applied to our e-Store. To keep this demo short, I have created a high level documentation about what needs to be changed for each features.
 
-In short, if we only update the layout while keeping most of foxpro code, we can only make marginal improvement on the products page. We might be able to refactor the cart panel and login functions into the navigation bar.
+In short, if we only update the table layout while keeping most of foxpro code, we can only make marginal improvement on the products page. We might be able to refactor the cart panel and login functions into the navigation bar.
 
-This approach is safer but it is like going the long way around and we will need to trace our footsteps in each iteration. After we updated the backend, we still need to update a huge portion of the layout.
+This approach is safer but it is like going the long way around and we will need to trace our footsteps in each iteration. After we eventually updated the backend, we still need to update a huge portion of the layout again.
 
-If we can update the both the layout and backend code, it can provide a more noticible value. It requires a lot more effort but it will have a more efficient risk to reward ratio.
+If we can update the both the layout and backend code, it can provide a more noticible value. It requires a lot more effort but it will have significant value.
 
 However, it is still a very long road if our ultimate goal is to have a fully modernised online store.
 
