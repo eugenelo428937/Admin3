@@ -52,12 +52,12 @@ const RulesEngineInlineAlert = ({
     const getFirstLine = (htmlContent) => {
         if (!htmlContent) return '';
 
-        // Strip HTML tags and get first sentence or 100 characters
+        // Strip HTML tags and get first sentence or 200 characters
         const textContent = htmlContent.replace(/<[^>]*>/g, ' ').trim();
         const firstSentence = textContent.split(/[.!?]/)[0];
 
-        if (firstSentence.length > 100) {
-            return firstSentence.substring(0, 100) + '...';
+        if (firstSentence.length > 200) {
+            return firstSentence.substring(0, 200) + '...';
         }
 
         return firstSentence + (textContent.length > firstSentence.length ? '...' : '');
@@ -138,19 +138,19 @@ const RulesEngineInlineAlert = ({
                     <Alert
                         key={`message-${normalized.template_id || index}`}
                         severity={severity}
-                        sx={{ mb: 2,alignItems: 'start', justifyContent: 'start', maxWidth: '48rem', width: '100%' }}
+                        sx={{ mb: 2, alignItems: 'start', justifyContent: 'start', width: '100%' }}
                         data-testid="rules-engine-inline-alert"                        
                         onClose={message.dismissible !== false && onDismiss ? () => onDismiss(index) : undefined}
                     >
-                        <Container sx={{ alignItems: 'start',justifyContent: 'start', paddingLeft:0, paddingRight:0 }} disableGutters={true}>
+                        <Container sx={{ alignItems: 'start', justifyContent: 'start', paddingLeft: 0, paddingRight: 0, width: '100%' }} disableGutters={true} maxWidth={false}>
                             {/* Title */}
                             <Box sx={{
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 alignItems: 'flex-start',
                                 textAlign: 'left',
-                                px:0,
-                                maxWidth: '48rem'
+                                px: 0,
+                                width: '100%'
                             }}>
                                 <Typography variant="h6" component="strong" sx={{ fontWeight: 600, px:0 }}>
                                     {normalized.title}
@@ -169,7 +169,7 @@ const RulesEngineInlineAlert = ({
 
                             {/* Content Preview (First Line) */}
                             {!isExpanded && (
-                                <Container className="text-start" sx={{ textAlign: 'left', justifyContent: 'start', px:0, maxWidth: '48rem', width: '100%' }} disableGutters={true}>
+                                <Container className="text-start" sx={{ textAlign: 'left', justifyContent: 'start', px: 0, width: '100%' }} disableGutters={true} maxWidth={false}>
                                     <Typography variant="body1" component="div" sx={{px:0}}>
                                         {firstLine}
                                     </Typography>
@@ -189,7 +189,7 @@ const RulesEngineInlineAlert = ({
                             )}
 
                             {/* Full Content (Expanded) */}
-                            <Collapse in={isExpanded} timeout="auto" unmountOnExit  className="text-start" sx={{ maxWidth: '48rem', width: '100%' }}>
+                            <Collapse in={isExpanded} timeout="auto" unmountOnExit className="text-start" sx={{ width: '100%' }}>
                                 <Box>
                                     <div
                                         dangerouslySetInnerHTML={{
