@@ -41,6 +41,7 @@ class Command(BaseCommand):
         self._export_orders(service, output_dir)
         self._export_order_items(service, output_dir)
         self._export_users(service, output_dir)
+        self._export_user_profiles(service, output_dir)
 
         self.stdout.write(self.style.SUCCESS('Export completed'))
 
@@ -112,3 +113,21 @@ class Command(BaseCommand):
         output_file = os.path.join(output_dir, 'USERS.DBF')
         count = service.export_query_to_dbf(sql=sql, output_file=output_file)
         self.stdout.write(f"Exported {count} users to USERS.DBF")
+
+    def _export_user_profiles(self, service, output_dir):
+        """Export acted_user_profile table to PROFILES.DBF"""
+        sql = """
+        SELECT
+            id as PROF_ID,
+            user_id as USER_ID,
+            title as TITLE,
+            send_invoices_to as INV_TO,
+            send_study_material_to as STUDY_TO,
+            remarks as REMARKS
+        FROM acted_user_profile
+        ORDER BY user_id
+        """
+
+        output_file = os.path.join(output_dir, 'PROFILES.DBF')
+        count = service.export_query_to_dbf(sql=sql, output_file=output_file)
+        self.stdout.write(f"Exported {count} profiles to PROFILES.DBF")
