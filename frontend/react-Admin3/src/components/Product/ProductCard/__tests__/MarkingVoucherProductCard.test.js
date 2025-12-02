@@ -2,6 +2,41 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+// Mock Chakra UI components to avoid ESM module resolution issues
+jest.mock('@chakra-ui/react', () => {
+  const React = require('react');
+  return {
+    __esModule: true,
+    NumberInput: {
+      Root: ({ children, value, onValueChange, ...props }) =>
+        React.createElement('div', { 'data-testid': 'number-input-root', ...props }, children),
+      DecrementTrigger: ({ children, asChild, ...props }) =>
+        React.createElement('button', { 'data-testid': 'decrement-btn', ...props }, children),
+      IncrementTrigger: ({ children, asChild, ...props }) =>
+        React.createElement('button', { 'data-testid': 'increment-btn', ...props }, children),
+      ValueText: ({ children, ...props }) =>
+        React.createElement('span', { 'data-testid': 'value-text', ...props }, '1'),
+    },
+    HStack: ({ children, ...props }) =>
+      React.createElement('div', { 'data-testid': 'hstack', ...props }, children),
+    IconButton: ({ children, ...props }) =>
+      React.createElement('button', { 'data-testid': 'chakra-icon-btn', ...props }, children),
+    ChakraProvider: ({ children }) => children,
+    defaultSystem: {},
+  };
+});
+
+// Mock react-icons
+jest.mock('react-icons/lu', () => {
+  const React = require('react');
+  return {
+    __esModule: true,
+    LuMinus: () => React.createElement('span', null, '-'),
+    LuPlus: () => React.createElement('span', null, '+'),
+  };
+});
+
 import MarkingVoucherProductCard from '../MarkingVoucherProductCard';
 
 const theme = createTheme();
@@ -50,24 +85,26 @@ describe('MarkingVoucherProductCard', () => {
       expect(screen.getByText('CM2 Marking Voucher')).toBeInTheDocument();
     });
 
-    test('renders voucher code chip', async () => {
+    test('renders validity badge', async () => {
       await renderComponent();
-      expect(screen.getByText('CM2-2024-MARK')).toBeInTheDocument();
+      expect(screen.getByText(/Valid for 4 years/i)).toBeInTheDocument();
     });
 
-    test('renders subject code badge', async () => {
+    test('renders important alert', async () => {
       await renderComponent();
-      expect(screen.getByText('CM2')).toBeInTheDocument();
+      expect(screen.getByText('Important')).toBeInTheDocument();
     });
 
-    test('renders exam session badge', async () => {
+    test('renders quantity section', async () => {
       await renderComponent();
-      expect(screen.getByText('2024-04')).toBeInTheDocument();
+      expect(screen.getByText('Quantity')).toBeInTheDocument();
     });
 
-    test('renders description', async () => {
+    test('renders discount options', async () => {
       await renderComponent();
-      expect(screen.getByText('Get your CM2 exam marked by our expert tutors')).toBeInTheDocument();
+      expect(screen.getByText('Discount Options')).toBeInTheDocument();
+      expect(screen.getByText('Retaker')).toBeInTheDocument();
+      expect(screen.getByText('Additional Copy')).toBeInTheDocument();
     });
 
     test('renders price', async () => {
@@ -77,63 +114,146 @@ describe('MarkingVoucherProductCard', () => {
 
     test('renders VAT status', async () => {
       await renderComponent();
-      expect(screen.getByText('Inc. VAT')).toBeInTheDocument();
+      expect(screen.getByText('Price includes VAT')).toBeInTheDocument();
     });
 
     test('renders add to cart button', async () => {
       await renderComponent();
       expect(screen.getByRole('button', { name: /add to cart/i })).toBeInTheDocument();
     });
+
+    test('renders price breakdown text', async () => {
+      await renderComponent();
+      expect(screen.getByText(/1 voucher • £75.00 each/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('quantity functionality', () => {
+    test('displays quantity input', async () => {
+      await renderComponent();
+      expect(screen.getByTestId('number-input-root')).toBeInTheDocument();
+    });
+
+    test('displays increment and decrement buttons', async () => {
+      await renderComponent();
+      expect(screen.getByTestId('increment-btn')).toBeInTheDocument();
+      expect(screen.getByTestId('decrement-btn')).toBeInTheDocument();
+    });
+
+    test('shows correct breakdown text for quantity 1', async () => {
+      await renderComponent();
+      expect(screen.getByText(/1 voucher • £75.00 each/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('discount options', () => {
+    test('renders two discount radio options', async () => {
+      await renderComponent();
+      const radios = screen.getAllByRole('radio');
+      expect(radios.length).toBe(2);
+    });
+
+    test('discount options are deselected by default', async () => {
+      await renderComponent();
+      const radios = screen.getAllByRole('radio');
+      radios.forEach(radio => {
+        expect(radio).not.toBeChecked();
+      });
+    });
+
+    test('can select retaker discount', async () => {
+      await renderComponent();
+      const radios = screen.getAllByRole('radio');
+
+      await act(async () => {
+        fireEvent.click(radios[0]);
+      });
+
+      expect(radios[0]).toBeChecked();
+    });
+
+    test('can toggle retaker discount off', async () => {
+      await renderComponent();
+      const radios = screen.getAllByRole('radio');
+
+      // Click to select
+      await act(async () => {
+        fireEvent.click(radios[0]);
+      });
+      expect(radios[0]).toBeChecked();
+
+      // Click again to deselect
+      await act(async () => {
+        fireEvent.click(radios[0]);
+      });
+      expect(radios[0]).not.toBeChecked();
+    });
+  });
+
+  describe('alert expand/collapse', () => {
+    test('renders show more link', async () => {
+      await renderComponent();
+      expect(screen.getByText(/Show more/i)).toBeInTheDocument();
+    });
+
+    test('can toggle alert expansion', async () => {
+      await renderComponent();
+
+      const showMoreLink = screen.getByText(/Show more/i);
+      await act(async () => {
+        fireEvent.click(showMoreLink);
+      });
+
+      expect(screen.getByText(/Show less/i)).toBeInTheDocument();
+    });
+
+    test('can collapse expanded alert', async () => {
+      await renderComponent();
+
+      // Expand
+      const showMoreLink = screen.getByText(/Show more/i);
+      await act(async () => {
+        fireEvent.click(showMoreLink);
+      });
+
+      // Collapse
+      const showLessLink = screen.getByText(/Show less/i);
+      await act(async () => {
+        fireEvent.click(showLessLink);
+      });
+
+      expect(screen.getByText(/Show more/i)).toBeInTheDocument();
+    });
   });
 
   describe('availability', () => {
-    test('shows available status when voucher is active and not expired', async () => {
+    test('add to cart button is enabled when voucher is available', async () => {
       await renderComponent();
-      expect(screen.getByText('Available for purchase')).toBeInTheDocument();
+      const addButton = screen.getByRole('button', { name: /add to cart/i });
+      expect(addButton).not.toBeDisabled();
     });
 
-    test('shows expired status when voucher has past expiry date', async () => {
+    test('disables add to cart button when voucher is expired', async () => {
       const expiredVoucher = {
         ...mockVoucher,
         expiry_date: '2020-01-01',
       };
       await renderComponent({ voucher: expiredVoucher });
-      expect(screen.getByText('Expired')).toBeInTheDocument();
+
+      const addButton = screen.getByRole('button', { name: /add to cart/i });
+      expect(addButton).toBeDisabled();
     });
 
-    test('shows not available status when voucher is inactive', async () => {
+    test('disables add to cart button when voucher is inactive', async () => {
       const inactiveVoucher = {
         ...mockVoucher,
         is_active: false,
         expiry_date: null,
       };
       await renderComponent({ voucher: inactiveVoucher });
-      expect(screen.getByText('Not available')).toBeInTheDocument();
-    });
 
-    test('applies reduced opacity when not available', async () => {
-      const expiredVoucher = {
-        ...mockVoucher,
-        expiry_date: '2020-01-01',
-      };
-      await renderComponent({ voucher: expiredVoucher });
-
-      const card = screen.getByText('CM2 Marking Voucher').closest('.MuiCard-root');
-      expect(card).toHaveStyle({ opacity: '0.6' });
-    });
-
-    test('displays expiry date when present', async () => {
-      await renderComponent();
-      expect(screen.getByText(/Valid until: 31 Dec 2025/i)).toBeInTheDocument();
-    });
-
-    test('does not display expiry info when no expiry date', async () => {
-      const noExpiryVoucher = {
-        ...mockVoucher,
-        expiry_date: null,
-      };
-      await renderComponent({ voucher: noExpiryVoucher });
-      expect(screen.queryByText(/Valid until/i)).not.toBeInTheDocument();
+      const addButton = screen.getByRole('button', { name: /add to cart/i });
+      expect(addButton).toBeDisabled();
     });
   });
 
@@ -171,7 +291,7 @@ describe('MarkingVoucherProductCard', () => {
   });
 
   describe('add to cart', () => {
-    test('calls onAddToCart when button clicked', async () => {
+    test('calls onAddToCart with quantity when button clicked', async () => {
       const mockOnAddToCart = jest.fn().mockResolvedValue({});
       await renderComponent({ onAddToCart: mockOnAddToCart });
 
@@ -188,20 +308,37 @@ describe('MarkingVoucherProductCard', () => {
             code: 'CM2-2024-MARK',
             name: 'CM2 Marking Voucher',
             price: 75.00,
+            quantity: 1,
+            totalPrice: 75.00,
+            priceType: 'standard',
           })
         );
       });
     });
 
-    test('disables add to cart button when voucher is not available', async () => {
-      const expiredVoucher = {
-        ...mockVoucher,
-        expiry_date: '2020-01-01',
-      };
-      await renderComponent({ voucher: expiredVoucher });
+    test('calls onAddToCart with selected discount type', async () => {
+      const mockOnAddToCart = jest.fn().mockResolvedValue({});
+      await renderComponent({ onAddToCart: mockOnAddToCart });
+
+      // Select retaker discount
+      const radios = screen.getAllByRole('radio');
+      await act(async () => {
+        fireEvent.click(radios[0]); // First radio is Retaker
+      });
 
       const addButton = screen.getByRole('button', { name: /add to cart/i });
-      expect(addButton).toBeDisabled();
+      await act(async () => {
+        fireEvent.click(addButton);
+      });
+
+      await waitFor(() => {
+        expect(mockOnAddToCart).toHaveBeenCalledWith(
+          mockVoucher,
+          expect.objectContaining({
+            priceType: 'retaker',
+          })
+        );
+      });
     });
 
     test('does not call onAddToCart when voucher is not available', async () => {
@@ -239,33 +376,33 @@ describe('MarkingVoucherProductCard', () => {
   });
 
   describe('edge cases', () => {
-    test('handles voucher without subject code', async () => {
-      const noSubjectVoucher = {
+    test('handles voucher without name', async () => {
+      const noNameVoucher = {
         ...mockVoucher,
-        subject_code: null,
+        name: null,
       };
-      await renderComponent({ voucher: noSubjectVoucher });
-      expect(screen.getByText('CM2 Marking Voucher')).toBeInTheDocument();
-      expect(screen.queryByRole('img', { name: /Subject/i })).not.toBeInTheDocument();
+      await renderComponent({ voucher: noNameVoucher });
+      expect(screen.getByText('Marking Voucher')).toBeInTheDocument();
     });
 
-    test('handles voucher without exam session', async () => {
-      const noSessionVoucher = {
+    test('handles voucher with empty variations', async () => {
+      const emptyVariationsVoucher = {
         ...mockVoucher,
-        exam_session_code: null,
+        price: null,
+        variations: [],
       };
-      await renderComponent({ voucher: noSessionVoucher });
-      expect(screen.getByText('CM2 Marking Voucher')).toBeInTheDocument();
-      expect(screen.queryByRole('img', { name: /Exam session/i })).not.toBeInTheDocument();
+      await renderComponent({ voucher: emptyVariationsVoucher });
+      expect(screen.getByText('£0.00')).toBeInTheDocument();
     });
+  });
 
-    test('handles voucher without description', async () => {
-      const noDescVoucher = {
-        ...mockVoucher,
-        description: null,
-      };
-      await renderComponent({ voucher: noDescVoucher });
-      expect(screen.getByText('CM2 Marking Voucher')).toBeInTheDocument();
+  describe('hover effect', () => {
+    test('card has correct class structure', async () => {
+      const { container } = await renderComponent();
+
+      // The BaseProductCard should have the d-flex class
+      const card = container.querySelector('.d-flex');
+      expect(card).toBeInTheDocument();
     });
   });
 });
