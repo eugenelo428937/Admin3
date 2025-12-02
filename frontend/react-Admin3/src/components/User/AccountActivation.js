@@ -91,11 +91,15 @@ const AccountActivation = () => {
         handleVerification();
     }, [searchParams]);
 
-    // Redirect to products page after successful account activation
+    // Redirect to products page after successful account activation (with delay)
     useEffect(() => {
         if (status === 'success' && mode === 'activation' && !isLoading) {
-            // Navigate to products page after successful activation
-            navigate('/products');
+            // Show success message for 10 seconds before redirecting
+            const timer = setTimeout(() => {
+                navigate('/products');
+            }, 10000);
+
+            return () => clearTimeout(timer);
         }
     }, [status, mode, isLoading, navigate]);
 

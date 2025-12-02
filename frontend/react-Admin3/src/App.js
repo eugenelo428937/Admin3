@@ -227,13 +227,7 @@ function App() {
 				<ThemeProvider theme={theme}>
 					<CssBaseline />
 					{RECAPTCHA_SITE_KEY ? (
-						<GoogleReCaptchaProvider
-							reCaptchaKey={RECAPTCHA_SITE_KEY}
-							container={{
-								parameters: {
-									badge: "inline",
-								},
-							}}>
+						<GoogleReCaptchaProvider reCaptchaKey={RECAPTCHA_SITE_KEY}>
 							<AppContent />
 						</GoogleReCaptchaProvider>
 					) : (

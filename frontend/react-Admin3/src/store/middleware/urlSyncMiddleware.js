@@ -135,6 +135,20 @@ const FILTER_ACTION_TYPES = [
   'filters/setPageSize',
 ];
 
+// Pages where URL sync should be active
+const URL_SYNC_PAGES = ['/products', '/home', '/'];
+
+/**
+ * Check if current page should have URL sync enabled
+ * Only sync on product-related pages to avoid stripping query params on other pages
+ * (e.g., /auth/activate?uid=xxx&token=xxx)
+ */
+const shouldSyncUrl = () => {
+  if (typeof window === 'undefined') return false;
+  const pathname = window.location.pathname;
+  return URL_SYNC_PAGES.some(page => pathname === page || pathname.startsWith(page + '/'));
+};
+
 // Start listening to filter actions
 urlSyncMiddleware.startListening({
   predicate: (action) => {
@@ -142,6 +156,10 @@ urlSyncMiddleware.startListening({
     return FILTER_ACTION_TYPES.includes(action.type);
   },
   effect: (action, listenerApi) => {
+    // Only sync URL on product-related pages
+    if (!shouldSyncUrl()) {
+      return;
+    }
     // Start performance tracking (Story 1.15)
     if (PerformanceTracker.isSupported()) {
       PerformanceTracker.startMeasure('urlSync', { actionType: action.type });
@@ -205,6 +223,9 @@ export const setupUrlToReduxSync = (dispatch) => {
   if (typeof window === 'undefined') return;
 
   const handlePopState = () => {
+    // Only sync on product-related pages
+    if (!shouldSyncUrl()) return;
+
     // Parse current URL parameters
     const params = new URLSearchParams(window.location.search);
     const filters = parseUrlToFilters(params);
@@ -220,15 +241,18 @@ export const setupUrlToReduxSync = (dispatch) => {
   };
 
   // Parse initial URL on setup (for page loads and direct URL access)
-  const initialParams = new URLSearchParams(window.location.search);
-  if (initialParams.toString()) {
-    // Use require() for synchronous loading (needed for tests that check state immediately)
-    try {
-      const { setMultipleFilters } = require('../slices/filtersSlice');
-      const filters = parseUrlToFilters(initialParams);
-      dispatch(setMultipleFilters(filters));
-    } catch (error) {
-      console.error('[urlSyncMiddleware] Failed to load filtersSlice for initial URL:', error);
+  // Only do this on product-related pages to avoid stripping query params on other pages
+  if (shouldSyncUrl()) {
+    const initialParams = new URLSearchParams(window.location.search);
+    if (initialParams.toString()) {
+      // Use require() for synchronous loading (needed for tests that check state immediately)
+      try {
+        const { setMultipleFilters } = require('../slices/filtersSlice');
+        const filters = parseUrlToFilters(initialParams);
+        dispatch(setMultipleFilters(filters));
+      } catch (error) {
+        console.error('[urlSyncMiddleware] Failed to load filtersSlice for initial URL:', error);
+      }
     }
   }
 
