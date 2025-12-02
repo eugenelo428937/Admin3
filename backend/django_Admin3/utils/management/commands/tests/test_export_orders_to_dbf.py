@@ -103,3 +103,15 @@ class ExportOrdersToDbfCommandTests(TestCase):
 
         items_file = os.path.join(output_dir, 'ORDRITMS.DBF')
         self.assertTrue(os.path.exists(items_file), f"ORDRITMS.DBF not created")
+
+    def test_exports_users_dbf(self):
+        """Test that command creates USERS.DBF file."""
+        output_dir = os.path.join(self.test_dir, 'output')
+
+        call_command(
+            'export_orders_to_dbf',
+            '--output-dir', output_dir
+        )
+
+        users_file = os.path.join(output_dir, 'USERS.DBF')
+        self.assertTrue(os.path.exists(users_file), f"USERS.DBF not created")

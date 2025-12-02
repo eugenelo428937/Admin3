@@ -40,6 +40,7 @@ class Command(BaseCommand):
         # Export all tables
         self._export_orders(service, output_dir)
         self._export_order_items(service, output_dir)
+        self._export_users(service, output_dir)
 
         self.stdout.write(self.style.SUCCESS('Export completed'))
 
@@ -90,3 +91,24 @@ class Command(BaseCommand):
         output_file = os.path.join(output_dir, 'ORDRITMS.DBF')
         count = service.export_query_to_dbf(sql=sql, output_file=output_file)
         self.stdout.write(f"Exported {count} order items to ORDRITMS.DBF")
+
+    def _export_users(self, service, output_dir):
+        """Export auth_user table to USERS.DBF (excluding password)"""
+        sql = """
+        SELECT
+            id as USER_ID,
+            username as USERNAME,
+            first_name as FIRST_NM,
+            last_name as LAST_NM,
+            email as EMAIL,
+            is_staff as IS_STAFF,
+            is_active as IS_ACTIVE,
+            date_joined::date as JOIN_DT,
+            last_login::date as LOGIN_DT
+        FROM auth_user
+        ORDER BY id
+        """
+
+        output_file = os.path.join(output_dir, 'USERS.DBF')
+        count = service.export_query_to_dbf(sql=sql, output_file=output_file)
+        self.stdout.write(f"Exported {count} users to USERS.DBF")
