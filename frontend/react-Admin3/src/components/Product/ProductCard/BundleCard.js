@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import {
 	Button,
 	Card,
@@ -45,28 +45,11 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 	const [loadingContents, setLoadingContents] = useState(false);
 	const [selectedPriceType, setSelectedPriceType] = useState("");
 	const [isHovered, setIsHovered] = useState(false);
-	const [loadingPrices, setLoadingPrices] = useState(true);
+	// Bundle data with components and prices is already included from unified search API
+	// No need to fetch separately - use bundle.components directly
+	const [loadingPrices] = useState(false);
 
 	const { addToCart } = useCart();
-
-	// Fetch full bundle contents with prices on mount
-	useEffect(() => {
-		const fetchBundleData = async () => {
-			setLoadingPrices(true);
-			try {
-				const response = await bundleService.getBundleContents(bundle.id);
-				if (response.success) {
-					setBundleContents(response.data);
-				}
-			} catch (error) {
-				console.error("Error fetching bundle prices:", error);
-			} finally {
-				setLoadingPrices(false);
-			}
-		};
-
-		fetchBundleData();
-	}, [bundle.id]);
 
 	const handleMouseEnter = () => {
 		setIsHovered(true);
