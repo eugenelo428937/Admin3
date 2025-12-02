@@ -969,12 +969,16 @@ const MaterialProductCard = React.memo(
    // Custom comparison function for better memoization
    (prevProps, nextProps) => {
       // Only re-render if product data actually changes
+      // Note: bulkDeadlines and allEsspIds must be compared to allow
+      // MarkingProductCard to receive updated deadline data after async fetch
       return (
          prevProps.product?.id === nextProps.product?.id &&
          prevProps.product?.essp_id === nextProps.product?.essp_id &&
          prevProps.product?.variations === nextProps.product?.variations &&
          prevProps.product?.prices === nextProps.product?.prices &&
-         prevProps.onAddToCart === nextProps.onAddToCart
+         prevProps.onAddToCart === nextProps.onAddToCart &&
+         prevProps.bulkDeadlines === nextProps.bulkDeadlines &&
+         prevProps.allEsspIds === nextProps.allEsspIds
       );
    }
 );
