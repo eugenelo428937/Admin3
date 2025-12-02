@@ -188,3 +188,37 @@ class ExportOrdersToDbfCommandTests(TestCase):
         profiles_info = service.validate_dbf_file(os.path.join(output_dir, 'PROFILES.DBF'))
         self.assertTrue(profiles_info.get('valid', False), f"PROFILES.DBF invalid: {profiles_info}")
         self.assertEqual(profiles_info['record_count'], 1, "Expected 1 profile record")
+
+    def test_only_with_orders_filters_users_and_profiles(self):
+        """Test --only-with-orders flag limits users/profiles to those with orders."""
+        # Create a user without orders
+        no_order_user = User.objects.create_user(
+            username='noorderuser',
+            email='noorder@example.com',
+            password='pass123'
+        )
+        # Get or create user profile (signal may auto-create)
+        UserProfile.objects.get_or_create(
+            user=no_order_user,
+            defaults={'title': 'Ms'}
+        )
+
+        output_dir = os.path.join(self.test_dir, 'output')
+
+        call_command(
+            'export_orders_to_dbf',
+            '--output-dir', output_dir,
+            '--only-with-orders'
+        )
+
+        service = DbfExportService()
+
+        # Should only export the user with orders (1), not the user without (2 total)
+        users_info = service.validate_dbf_file(os.path.join(output_dir, 'USERS.DBF'))
+        if 'validation' in users_info:
+            # dbfread not available - skip validation
+            self.skipTest(f"Skipping DBF validation: {users_info['validation']}")
+        self.assertEqual(users_info['record_count'], 1, "Should only export users with orders")
+
+        profiles_info = service.validate_dbf_file(os.path.join(output_dir, 'PROFILES.DBF'))
+        self.assertEqual(profiles_info['record_count'], 1, "Should only export profiles with orders")

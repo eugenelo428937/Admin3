@@ -33,6 +33,11 @@ class Command(BaseCommand):
             help='End date for orders (YYYY-MM-DD)'
         )
         parser.add_argument(
+            '--only-with-orders',
+            action='store_true',
+            help='Only export users/profiles that have orders'
+        )
+        parser.add_argument(
             '--debug',
             action='store_true',
             help='Enable debug output'
@@ -43,6 +48,7 @@ class Command(BaseCommand):
         debug = options.get('debug', False)
         from_date = options.get('from_date')
         to_date = options.get('to_date')
+        only_with_orders = options.get('only_with_orders', False)
 
         # Ensure output directory exists
         os.makedirs(output_dir, exist_ok=True)
@@ -55,8 +61,8 @@ class Command(BaseCommand):
         # Export all tables
         self._export_orders(service, output_dir, date_filter)
         self._export_order_items(service, output_dir, date_filter)
-        self._export_users(service, output_dir)
-        self._export_user_profiles(service, output_dir)
+        self._export_users(service, output_dir, only_with_orders, date_filter)
+        self._export_user_profiles(service, output_dir, only_with_orders, date_filter)
 
         self.stdout.write(self.style.SUCCESS('Export completed'))
 
@@ -144,41 +150,82 @@ class Command(BaseCommand):
         )
         self.stdout.write(f"Exported {count} order items to ORDRITMS.DBF")
 
-    def _export_users(self, service, output_dir):
+    def _export_users(self, service, output_dir, only_with_orders=False, date_filter=None):
         """Export auth_user table to USERS.DBF (excluding password)"""
-        sql = """
-        SELECT
-            id as USER_ID,
-            username as USERNAME,
-            first_name as FIRST_NM,
-            last_name as LAST_NM,
-            email as EMAIL,
-            is_staff as IS_STAFF,
-            is_active as IS_ACTIVE,
-            date_joined::date as JOIN_DT,
-            last_login::date as LOGIN_DT
-        FROM auth_user
-        ORDER BY id
-        """
+        date_filter = date_filter or {'clause': '', 'params': []}
+
+        if only_with_orders:
+            sql = f"""
+            SELECT DISTINCT
+                u.id as USER_ID,
+                u.username as USERNAME,
+                u.first_name as FIRST_NM,
+                u.last_name as LAST_NM,
+                u.email as EMAIL,
+                u.is_staff as IS_STAFF,
+                u.is_active as IS_ACTIVE,
+                u.date_joined::date as JOIN_DT,
+                u.last_login::date as LOGIN_DT
+            FROM auth_user u
+            INNER JOIN acted_orders o ON u.id = o.user_id
+            WHERE 1=1 {date_filter['clause'].replace('created_at', 'o.created_at') if date_filter['clause'] else ''}
+            ORDER BY u.id
+            """
+            params = date_filter['params']
+        else:
+            sql = """
+            SELECT
+                id as USER_ID,
+                username as USERNAME,
+                first_name as FIRST_NM,
+                last_name as LAST_NM,
+                email as EMAIL,
+                is_staff as IS_STAFF,
+                is_active as IS_ACTIVE,
+                date_joined::date as JOIN_DT,
+                last_login::date as LOGIN_DT
+            FROM auth_user
+            ORDER BY id
+            """
+            params = []
 
         output_file = os.path.join(output_dir, 'USERS.DBF')
-        count = service.export_query_to_dbf(sql=sql, output_file=output_file)
+        count = service.export_query_to_dbf(sql=sql, output_file=output_file, params=params)
         self.stdout.write(f"Exported {count} users to USERS.DBF")
 
-    def _export_user_profiles(self, service, output_dir):
+    def _export_user_profiles(self, service, output_dir, only_with_orders=False, date_filter=None):
         """Export acted_user_profile table to PROFILES.DBF"""
-        sql = """
-        SELECT
-            id as PROF_ID,
-            user_id as USER_ID,
-            title as TITLE,
-            send_invoices_to as INV_TO,
-            send_study_material_to as STUDY_TO,
-            remarks as REMARKS
-        FROM acted_user_profile
-        ORDER BY user_id
-        """
+        date_filter = date_filter or {'clause': '', 'params': []}
+
+        if only_with_orders:
+            sql = f"""
+            SELECT DISTINCT
+                p.id as PROF_ID,
+                p.user_id as USER_ID,
+                p.title as TITLE,
+                p.send_invoices_to as INV_TO,
+                p.send_study_material_to as STUDY_TO,
+                p.remarks as REMARKS
+            FROM acted_user_profile p
+            INNER JOIN acted_orders o ON p.user_id = o.user_id
+            WHERE 1=1 {date_filter['clause'].replace('created_at', 'o.created_at') if date_filter['clause'] else ''}
+            ORDER BY p.user_id
+            """
+            params = date_filter['params']
+        else:
+            sql = """
+            SELECT
+                id as PROF_ID,
+                user_id as USER_ID,
+                title as TITLE,
+                send_invoices_to as INV_TO,
+                send_study_material_to as STUDY_TO,
+                remarks as REMARKS
+            FROM acted_user_profile
+            ORDER BY user_id
+            """
+            params = []
 
         output_file = os.path.join(output_dir, 'PROFILES.DBF')
-        count = service.export_query_to_dbf(sql=sql, output_file=output_file)
+        count = service.export_query_to_dbf(sql=sql, output_file=output_file, params=params)
         self.stdout.write(f"Exported {count} profiles to PROFILES.DBF")
