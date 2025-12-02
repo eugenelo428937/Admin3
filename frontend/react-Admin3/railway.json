@@ -5,7 +5,7 @@
     "buildCommand": "npm install && CI=false npm run build"
   },
   "deploy": {
-    "startCommand": "npx serve build -l $PORT --no-clipboard --no-port-switching",
+    "startCommand": "npx serve -s build -l $PORT --no-clipboard --no-port-switching",
     "healthcheckPath": "/",
     "healthcheckTimeout": 60,
     "initialDelaySeconds": 10,
