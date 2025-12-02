@@ -31,13 +31,15 @@ class ExportOrdersToDbfCommandTests(TestCase):
             password='testpass123'
         )
 
-        # Create user profile
-        self.profile = UserProfile.objects.create(
+        # Get or create user profile (signal may auto-create)
+        self.profile, _ = UserProfile.objects.get_or_create(
             user=self.user,
-            title='Mr',
-            send_invoices_to='HOME',
-            send_study_material_to='WORK',
-            remarks='Test remarks'
+            defaults={
+                'title': 'Mr',
+                'send_invoices_to': 'HOME',
+                'send_study_material_to': 'WORK',
+                'remarks': 'Test remarks'
+            }
         )
 
         # Create test order
@@ -63,3 +65,15 @@ class ExportOrdersToDbfCommandTests(TestCase):
             'export_orders_to_dbf',
             '--output-dir', output_dir
         )
+
+    def test_exports_orders_dbf(self):
+        """Test that command creates ORDERS.DBF file."""
+        output_dir = os.path.join(self.test_dir, 'output')
+
+        call_command(
+            'export_orders_to_dbf',
+            '--output-dir', output_dir
+        )
+
+        orders_file = os.path.join(output_dir, 'ORDERS.DBF')
+        self.assertTrue(os.path.exists(orders_file), f"ORDERS.DBF not created at {orders_file}")
