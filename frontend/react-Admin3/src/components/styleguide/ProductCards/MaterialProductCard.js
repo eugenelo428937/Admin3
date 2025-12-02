@@ -300,7 +300,7 @@ const MaterialProductCard = ({ productType = "material", buttonPage = 0, ...prop
                               )}
                            </Button>
                         </>
-                     ) : buttonPage === 1 ? (
+                     ) : buttonPage === 2 ? (
                         <>
 							 <Backdrop
                               open={speedDialOpen}
