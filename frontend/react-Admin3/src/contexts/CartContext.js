@@ -28,7 +28,9 @@ export const CartProvider = ({ children }) => {
   }, []);
   const addToCart = async (product, priceInfo = {}) => {
     try {
-      const res = await cartService.addToCart(product, 1, priceInfo);
+      // Extract quantity from priceInfo or metadata, default to 1
+      const quantity = priceInfo.quantity || priceInfo.metadata?.quantity || 1;
+      const res = await cartService.addToCart(product, quantity, priceInfo);
 
       // The backend should return the complete updated cart
       if (res.data && res.data.items) {
