@@ -113,7 +113,7 @@ const RulesEngineInlineAlert = ({
     if (loading) {
         return (
             <Alert severity="info" sx={{ mt: 2, mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'start', gap: 1 }}>
                     <CircularProgress size={20} />
                     <span>{loadingMessage}</span>
                 </Box>
@@ -138,19 +138,21 @@ const RulesEngineInlineAlert = ({
                     <Alert
                         key={`message-${normalized.template_id || index}`}
                         severity={severity}
-                        sx={{ mt: 2, mb: 2 }}
-                        data-testid="rules-engine-inline-alert"
+                        sx={{ mb: 2,alignItems: 'start', justifyContent: 'start', maxWidth: '48rem', width: '100%' }}
+                        data-testid="rules-engine-inline-alert"                        
                         onClose={message.dismissible !== false && onDismiss ? () => onDismiss(index) : undefined}
                     >
-                        <Container maxWidth="md">
+                        <Container sx={{ alignItems: 'start',justifyContent: 'start', paddingLeft:0, paddingRight:0 }} disableGutters={true}>
                             {/* Title */}
                             <Box sx={{
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 alignItems: 'flex-start',
-                                mb: 1
+                                textAlign: 'left',
+                                px:0,
+                                maxWidth: '48rem'
                             }}>
-                                <Typography variant="h6" component="strong" sx={{ fontWeight: 600 }}>
+                                <Typography variant="h6" component="strong" sx={{ fontWeight: 600, px:0 }}>
                                     {normalized.title}
                                 </Typography>
 
@@ -158,7 +160,7 @@ const RulesEngineInlineAlert = ({
                                 <IconButton
                                     size="small"
                                     onClick={() => handleToggleExpand(index)}
-                                    sx={{ ml: 1, mt: -0.5 }}
+                                    sx={{ mt: -0.5 }}
                                     aria-label={isExpanded ? "Show less" : "Show more"}
                                 >
                                     {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
@@ -167,16 +169,15 @@ const RulesEngineInlineAlert = ({
 
                             {/* Content Preview (First Line) */}
                             {!isExpanded && (
-                                <Container className="text-start">
-                                    <Typography variant="body1" component="div">
+                                <Container className="text-start" sx={{ textAlign: 'left', justifyContent: 'start', px:0, maxWidth: '48rem', width: '100%' }} disableGutters={true}>
+                                    <Typography variant="body1" component="div" sx={{px:0}}>
                                         {firstLine}
                                     </Typography>
                                     <Typography
                                         variant="caption"
                                         sx={{
                                             color: 'primary.main',
-                                            cursor: 'pointer',
-                                            mt: 0.5,
+                                            cursor: 'pointer',                                            
                                             display: 'inline-block',
                                             '&:hover': { textDecoration: 'underline' }
                                         }}
@@ -188,8 +189,8 @@ const RulesEngineInlineAlert = ({
                             )}
 
                             {/* Full Content (Expanded) */}
-                            <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                                <Box sx={{ mt: 1 }}>
+                            <Collapse in={isExpanded} timeout="auto" unmountOnExit  className="text-start" sx={{ maxWidth: '48rem', width: '100%' }}>
+                                <Box>
                                     <div
                                         dangerouslySetInnerHTML={{
                                             __html: normalized.message || 'No message content'
