@@ -13,6 +13,7 @@ from django.db import connection
 
 from cart.models import ActedOrder, ActedOrderItem
 from userprofile.models import UserProfile
+from utils.services.dbf_export_service import DbfExportService
 
 
 class ExportOrdersToDbfCommandTests(TestCase):
@@ -152,3 +153,38 @@ class ExportOrdersToDbfCommandTests(TestCase):
         # Verify the command completed without error
         orders_file = os.path.join(output_dir, 'ORDERS.DBF')
         self.assertTrue(os.path.exists(orders_file))
+
+    def test_dbf_files_contain_expected_data(self):
+        """Test that exported DBF files contain the expected data."""
+        output_dir = os.path.join(self.test_dir, 'output')
+
+        call_command(
+            'export_orders_to_dbf',
+            '--output-dir', output_dir
+        )
+
+        # Validate using the service
+        service = DbfExportService()
+
+        # Check orders file
+        orders_info = service.validate_dbf_file(os.path.join(output_dir, 'ORDERS.DBF'))
+        if 'validation' in orders_info:
+            # dbfread not available - skip validation
+            self.skipTest(f"Skipping DBF validation: {orders_info['validation']}")
+        self.assertTrue(orders_info.get('valid', False), f"ORDERS.DBF invalid: {orders_info}")
+        self.assertEqual(orders_info['record_count'], 1, "Expected 1 order record")
+
+        # Check order items file
+        items_info = service.validate_dbf_file(os.path.join(output_dir, 'ORDRITMS.DBF'))
+        self.assertTrue(items_info.get('valid', False), f"ORDRITMS.DBF invalid: {items_info}")
+        self.assertEqual(items_info['record_count'], 1, "Expected 1 order item record")
+
+        # Check users file
+        users_info = service.validate_dbf_file(os.path.join(output_dir, 'USERS.DBF'))
+        self.assertTrue(users_info.get('valid', False), f"USERS.DBF invalid: {users_info}")
+        self.assertGreaterEqual(users_info['record_count'], 1, "Expected at least 1 user record")
+
+        # Check profiles file
+        profiles_info = service.validate_dbf_file(os.path.join(output_dir, 'PROFILES.DBF'))
+        self.assertTrue(profiles_info.get('valid', False), f"PROFILES.DBF invalid: {profiles_info}")
+        self.assertEqual(profiles_info['record_count'], 1, "Expected 1 profile record")
