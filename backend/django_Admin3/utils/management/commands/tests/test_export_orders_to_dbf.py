@@ -52,6 +52,20 @@ class ExportOrdersToDbfCommandTests(TestCase):
             vat_country='GB'
         )
 
+        # Create test order item (fee type - no product/voucher required)
+        self.order_item = ActedOrderItem.objects.create(
+            order=self.order,
+            item_type='fee',
+            quantity=1,
+            price_type='standard',
+            actual_price=Decimal('50.00'),
+            net_amount=Decimal('50.00'),
+            vat_amount=Decimal('10.00'),
+            gross_amount=Decimal('60.00'),
+            vat_rate=Decimal('0.2000'),
+            is_vat_exempt=False
+        )
+
     def tearDown(self):
         """Clean up test directory."""
         shutil.rmtree(self.test_dir, ignore_errors=True)
@@ -77,3 +91,15 @@ class ExportOrdersToDbfCommandTests(TestCase):
 
         orders_file = os.path.join(output_dir, 'ORDERS.DBF')
         self.assertTrue(os.path.exists(orders_file), f"ORDERS.DBF not created at {orders_file}")
+
+    def test_exports_order_items_dbf(self):
+        """Test that command creates ORDRITMS.DBF file."""
+        output_dir = os.path.join(self.test_dir, 'output')
+
+        call_command(
+            'export_orders_to_dbf',
+            '--output-dir', output_dir
+        )
+
+        items_file = os.path.join(output_dir, 'ORDRITMS.DBF')
+        self.assertTrue(os.path.exists(items_file), f"ORDRITMS.DBF not created")
