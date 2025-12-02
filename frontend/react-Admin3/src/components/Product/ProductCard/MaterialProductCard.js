@@ -542,10 +542,10 @@ const MaterialProductCard = React.memo(
 
 								"& .MuiFab-root": {
 								   backgroundColor:
-									  theme.palette.bpp.sky["060"],
+									  theme.palette.bpp.sky["050"],
 								   "&:hover": {
 									  backgroundColor:
-										 theme.palette.bpp.sky["070"],
+										 theme.palette.bpp.sky["040"],
 								   },
 								   "& .MuiSpeedDialIcon-root": {
 									  "& .MuiSvgIcon-root": {
@@ -573,11 +573,11 @@ const MaterialProductCard = React.memo(
                                     "& .MuiSpeedDialAction-fab": {
                                        color: "white",
                                        backgroundColor:
-                                          theme.palette.bpp.sky["060"],                                       
+                                          theme.palette.bpp.sky["050"],                                       
                                        boxShadow: "var(--Paper-shadow)",  
                                        "&:hover": {
                                           backgroundColor:
-                                             theme.palette.bpp.sky["070"],
+                                             theme.palette.bpp.sky["040"],
                                        },
                                     },
                                  }}
@@ -624,7 +624,7 @@ const MaterialProductCard = React.memo(
                                           theme.palette.bpp.sky["060"],
                                        "&:hover": {
                                           backgroundColor:
-                                             theme.palette.bpp.sky["070"],
+                                             theme.palette.bpp.sky["040"],
                                        },
                                     },
                                  }}
@@ -703,7 +703,7 @@ const MaterialProductCard = React.memo(
                                     boxShadow: "var(--Paper-shadow)",
                                     "&:hover": {
                                        backgroundColor:
-                                          theme.palette.bpp.sky["070"],
+                                          theme.palette.bpp.sky["040"],
                                     },
                                     "& .MuiSpeedDialIcon-root": {
                                        "& .MuiSvgIcon-root": {
@@ -735,7 +735,7 @@ const MaterialProductCard = React.memo(
                                           theme.palette.bpp.sky["060"],
                                        "&:hover": {
                                           backgroundColor:
-                                             theme.palette.bpp.sky["070"],
+                                             theme.palette.bpp.sky["040"],
                                        },
                                     },
                                  }}
@@ -793,7 +793,7 @@ const MaterialProductCard = React.memo(
                                           theme.palette.bpp.sky["060"],
                                        "&:hover": {
                                           backgroundColor:
-                                             theme.palette.bpp.sky["070"],
+                                             theme.palette.bpp.sky["040"],
                                        },
                                     },
                                  }}

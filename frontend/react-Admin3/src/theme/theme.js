@@ -451,7 +451,14 @@ const theme = createTheme({
                },
             },
          },
-      },      
+      },
+      MuiBackdrop: {
+         styleOverrides: {
+            root: {
+               backgroundColor: "rgba(0, 0, 0, 0.6)",
+            },
+         },
+      },
       // Product Card Variants
       MuiCard: {
          styleOverrides: {
