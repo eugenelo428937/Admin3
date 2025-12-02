@@ -760,3 +760,295 @@ class BundleContentFilteringTest(APITestCase):
         # Should NOT include CM2 Tutorial Bundle (wrong category)
         self.assertNotIn('CM2 Tutorial Bundle', bundle_names,
             "CM2 Tutorial Bundle should not appear with Materials filter")
+
+
+class SubjectBasedSortingTest(APITestCase):
+    """
+    Test cases for subject-based sorting of products and bundles.
+
+    Products and bundles should be sorted by subject code, with bundles
+    appearing before products within the same subject.
+    """
+
+    def setUp(self):
+        """Set up test data with multiple subjects, products, and bundles"""
+        from django.utils import timezone
+        from products.models import (
+            Product, ProductVariation, ProductProductVariation,
+            ProductBundle
+        )
+        from exam_sessions_subjects_products.models import (
+            ExamSessionSubjectProductVariation,
+            ExamSessionSubjectBundle,
+            ExamSessionSubjectBundleProduct
+        )
+
+        # Create exam session
+        self.exam_session = ExamSession.objects.create(
+            session_code="MAR25",
+            start_date=timezone.now().date(),
+            end_date=timezone.now().date()
+        )
+
+        # Create subjects (note: CB1 < CM2 < SA1 alphabetically)
+        self.subject_cb1 = Subject.objects.create(
+            code="CB1",
+            description="Core Business 1"
+        )
+        self.subject_cm2 = Subject.objects.create(
+            code="CM2",
+            description="Core Mathematics 2"
+        )
+        self.subject_sa1 = Subject.objects.create(
+            code="SA1",
+            description="Specialist Advanced 1"
+        )
+
+        # Create exam session subjects
+        self.ess_cb1 = ExamSessionSubject.objects.create(
+            exam_session=self.exam_session,
+            subject=self.subject_cb1
+        )
+        self.ess_cm2 = ExamSessionSubject.objects.create(
+            exam_session=self.exam_session,
+            subject=self.subject_cm2
+        )
+        self.ess_sa1 = ExamSessionSubject.objects.create(
+            exam_session=self.exam_session,
+            subject=self.subject_sa1
+        )
+
+        # Create products for each subject
+        self.product_cb1 = Product.objects.create(
+            shortname="CB1 Core Reading",
+            fullname="CB1 Core Reading",
+            code="CB1CR",
+            is_active=True
+        )
+
+        self.product_cm2 = Product.objects.create(
+            shortname="CM2 Core Reading",
+            fullname="CM2 Core Reading",
+            code="CM2CR",
+            is_active=True
+        )
+
+        self.product_sa1 = Product.objects.create(
+            shortname="SA1 Core Reading",
+            fullname="SA1 Core Reading",
+            code="SA1CR",
+            is_active=True
+        )
+
+        # Create variation
+        self.variation_printed = ProductVariation.objects.create(
+            variation_type="Printed",
+            name="Printed Book"
+        )
+
+        # Create product-variation links
+        self.ppv_cb1 = ProductProductVariation.objects.create(
+            product=self.product_cb1,
+            product_variation=self.variation_printed
+        )
+        self.ppv_cm2 = ProductProductVariation.objects.create(
+            product=self.product_cm2,
+            product_variation=self.variation_printed
+        )
+        self.ppv_sa1 = ProductProductVariation.objects.create(
+            product=self.product_sa1,
+            product_variation=self.variation_printed
+        )
+
+        # Create exam session subject products
+        self.essp_cb1 = ExamSessionSubjectProduct.objects.create(
+            exam_session_subject=self.ess_cb1,
+            product=self.product_cb1
+        )
+        self.essp_cm2 = ExamSessionSubjectProduct.objects.create(
+            exam_session_subject=self.ess_cm2,
+            product=self.product_cm2
+        )
+        self.essp_sa1 = ExamSessionSubjectProduct.objects.create(
+            exam_session_subject=self.ess_sa1,
+            product=self.product_sa1
+        )
+
+        # Create exam session subject product variations
+        self.esspv_cb1 = ExamSessionSubjectProductVariation.objects.create(
+            exam_session_subject_product=self.essp_cb1,
+            product_product_variation=self.ppv_cb1
+        )
+        self.esspv_cm2 = ExamSessionSubjectProductVariation.objects.create(
+            exam_session_subject_product=self.essp_cm2,
+            product_product_variation=self.ppv_cm2
+        )
+        self.esspv_sa1 = ExamSessionSubjectProductVariation.objects.create(
+            exam_session_subject_product=self.essp_sa1,
+            product_product_variation=self.ppv_sa1
+        )
+
+        # Create bundles for each subject
+        self.bundle_cb1 = ProductBundle.objects.create(
+            bundle_name="CB1 Bundle",
+            subject=self.subject_cb1,
+            is_active=True
+        )
+        self.bundle_cm2 = ProductBundle.objects.create(
+            bundle_name="CM2 Bundle",
+            subject=self.subject_cm2,
+            is_active=True
+        )
+        self.bundle_sa1 = ProductBundle.objects.create(
+            bundle_name="SA1 Bundle",
+            subject=self.subject_sa1,
+            is_active=True
+        )
+
+        # Create exam session bundles
+        self.ess_bundle_cb1 = ExamSessionSubjectBundle.objects.create(
+            bundle=self.bundle_cb1,
+            exam_session_subject=self.ess_cb1,
+            is_active=True
+        )
+        self.ess_bundle_cm2 = ExamSessionSubjectBundle.objects.create(
+            bundle=self.bundle_cm2,
+            exam_session_subject=self.ess_cm2,
+            is_active=True
+        )
+        self.ess_bundle_sa1 = ExamSessionSubjectBundle.objects.create(
+            bundle=self.bundle_sa1,
+            exam_session_subject=self.ess_sa1,
+            is_active=True
+        )
+
+        # Link bundles to products
+        ExamSessionSubjectBundleProduct.objects.create(
+            bundle=self.ess_bundle_cb1,
+            exam_session_subject_product_variation=self.esspv_cb1,
+            is_active=True
+        )
+        ExamSessionSubjectBundleProduct.objects.create(
+            bundle=self.ess_bundle_cm2,
+            exam_session_subject_product_variation=self.esspv_cm2,
+            is_active=True
+        )
+        ExamSessionSubjectBundleProduct.objects.create(
+            bundle=self.ess_bundle_sa1,
+            exam_session_subject_product_variation=self.esspv_sa1,
+            is_active=True
+        )
+
+    def test_products_sorted_by_subject_code(self):
+        """
+        Products should be sorted by subject code alphabetically.
+        CB1 < CM2 < SA1
+        """
+        url = reverse('unified-product-search')
+        data = {
+            "filters": {},
+            "pagination": {"page": 1, "page_size": 100}
+        }
+
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        products = response.data['products']
+
+        # Extract subject codes in order
+        subject_codes = [p.get('subject_code') or p.get('code') for p in products]
+
+        # Verify CB1 items come before CM2 items, which come before SA1 items
+        cb1_indices = [i for i, code in enumerate(subject_codes) if code == 'CB1']
+        cm2_indices = [i for i, code in enumerate(subject_codes) if code == 'CM2']
+        sa1_indices = [i for i, code in enumerate(subject_codes) if code == 'SA1']
+
+        if cb1_indices and cm2_indices:
+            self.assertLess(max(cb1_indices), min(cm2_indices),
+                "CB1 items should appear before CM2 items")
+        if cm2_indices and sa1_indices:
+            self.assertLess(max(cm2_indices), min(sa1_indices),
+                "CM2 items should appear before SA1 items")
+
+    def test_bundles_appear_before_products_within_same_subject(self):
+        """
+        Within the same subject, bundles should appear before products.
+        """
+        url = reverse('unified-product-search')
+        data = {
+            "filters": {},
+            "pagination": {"page": 1, "page_size": 100}
+        }
+
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        products = response.data['products']
+
+        # Group items by subject and check order within each subject
+        for subject_code in ['CB1', 'CM2', 'SA1']:
+            subject_items = [
+                p for p in products
+                if (p.get('subject_code') or p.get('code')) == subject_code
+            ]
+
+            if len(subject_items) < 2:
+                continue
+
+            # Find indices of bundles and products within this subject
+            bundle_indices = [
+                i for i, p in enumerate(subject_items)
+                if p.get('is_bundle') or p.get('type') == 'Bundle'
+            ]
+            product_indices = [
+                i for i, p in enumerate(subject_items)
+                if not (p.get('is_bundle') or p.get('type') == 'Bundle')
+            ]
+
+            if bundle_indices and product_indices:
+                self.assertLess(max(bundle_indices), min(product_indices),
+                    f"Bundles should appear before products for subject {subject_code}")
+
+    def test_interleaved_sorting_not_all_bundles_first(self):
+        """
+        Bundles should NOT all appear first; they should be interleaved by subject.
+
+        Expected order: CB1 bundle, CB1 product, CM2 bundle, CM2 product, SA1 bundle, SA1 product
+        NOT: CB1 bundle, CM2 bundle, SA1 bundle, CB1 product, CM2 product, SA1 product
+        """
+        url = reverse('unified-product-search')
+        data = {
+            "filters": {},
+            "pagination": {"page": 1, "page_size": 100}
+        }
+
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        products = response.data['products']
+
+        # Find positions
+        cb1_bundle_pos = None
+        cb1_product_pos = None
+        cm2_bundle_pos = None
+
+        for i, p in enumerate(products):
+            subject = p.get('subject_code') or p.get('code')
+            is_bundle = p.get('is_bundle') or p.get('type') == 'Bundle'
+
+            if subject == 'CB1' and is_bundle:
+                cb1_bundle_pos = i
+            elif subject == 'CB1' and not is_bundle:
+                cb1_product_pos = i
+            elif subject == 'CM2' and is_bundle:
+                cm2_bundle_pos = i
+
+        # CB1 bundle should come before CB1 product
+        if cb1_bundle_pos is not None and cb1_product_pos is not None:
+            self.assertLess(cb1_bundle_pos, cb1_product_pos,
+                "CB1 bundle should appear before CB1 product")
+
+        # CB1 product should come before CM2 bundle (interleaved by subject)
+        if cb1_product_pos is not None and cm2_bundle_pos is not None:
+            self.assertLess(cb1_product_pos, cm2_bundle_pos,
+                "CB1 product should appear before CM2 bundle (interleaved by subject, not all bundles first)")

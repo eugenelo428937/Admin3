@@ -165,91 +165,59 @@ class OptimizedSearchService:
                 logger.debug('[BUNDLES] No matching products - excluding all bundles')
         # else: No filters and no search = show all bundles (browse all scenario) - no action needed
 
-        # Get counts for pagination (from filtered querysets) - fast COUNT queries only
-        products_count = filtered_queryset.count()
-        bundles_count = filtered_bundles_queryset.count()
-
         # Check if marking vouchers should be included
         marking_vouchers_data = self._fetch_marking_vouchers(search_query, filters, navbar_filters)
         vouchers_count = len(marking_vouchers_data) if marking_vouchers_data else 0
 
-        total_count = products_count + bundles_count + vouchers_count
+        # Serialize bundles
+        bundles_serializer = ExamSessionSubjectBundleSerializer(filtered_bundles_queryset, many=True)
+        transformed_bundles = []
+        for bundle_data in bundles_serializer.data:
+            transformed_bundle = {
+                **bundle_data,
+                'item_type': 'bundle',
+                'is_bundle': True,
+                'type': 'Bundle',
+                'bundle_type': 'exam_session',
+                'product_name': bundle_data.get('bundle_name'),
+                'shortname': bundle_data.get('bundle_name'),
+                'fullname': bundle_data.get('bundle_description', bundle_data.get('bundle_name')),
+                'description': bundle_data.get('bundle_description'),
+                'code': bundle_data.get('subject_code'),
+                'subject_code': bundle_data.get('subject_code'),  # Ensure consistent key for sorting
+            }
+            transformed_bundles.append(transformed_bundle)
 
-        # Calculate pagination offsets
+        # Serialize products
+        products_serializer = ProductListSerializer(filtered_queryset, many=True)
+        transformed_products = list(products_serializer.data)
+
+        # Combine bundles and products, then sort by subject code
+        all_items = transformed_bundles + transformed_products
+
+        # Sort by subject code - bundles use 'subject_code', products use 'subject_code'
+        # Secondary sort: bundles before products within same subject (is_bundle=True first)
+        all_items.sort(key=lambda x: (
+            x.get('subject_code') or x.get('code') or '',
+            0 if x.get('is_bundle') else 1,  # Bundles first within same subject
+            x.get('shortname') or x.get('product_name') or ''
+        ))
+
+        # Prepend vouchers if applicable
+        if marking_vouchers_data:
+            if search_query:
+                # With search query, vouchers go first
+                all_items = marking_vouchers_data + all_items
+            else:
+                # Without search, vouchers still go first on page 1
+                all_items = marking_vouchers_data + all_items
+
+        total_count = len(all_items)
+
+        # Apply pagination to sorted combined results
         start_idx = (page - 1) * page_size
         end_idx = start_idx + page_size
-
-        # OPTIMIZATION: Apply pagination BEFORE serialization
-        # Order: vouchers first (if search), then bundles, then products
-        # This avoids serializing items that won't be shown on the current page
-
-        paginated_items = []
-        items_needed = page_size
-        current_offset = start_idx
-
-        # 1. Handle marking vouchers (prepended when search query exists)
-        if search_query and marking_vouchers_data:
-            if current_offset < vouchers_count:
-                # Need some vouchers from this page
-                voucher_start = current_offset
-                voucher_end = min(vouchers_count, current_offset + items_needed)
-                paginated_items.extend(marking_vouchers_data[voucher_start:voucher_end])
-                items_needed -= (voucher_end - voucher_start)
-                current_offset = 0  # Reset offset for next source
-            else:
-                # Skip vouchers, adjust offset for bundles
-                current_offset -= vouchers_count
-
-        # 2. Handle bundles (come before products in sorted order)
-        if items_needed > 0 and bundles_count > 0:
-            if current_offset < bundles_count:
-                # Need some bundles from this page
-                bundle_start = current_offset
-                bundle_end = min(bundles_count, current_offset + items_needed)
-                bundle_slice_size = bundle_end - bundle_start
-
-                # Only serialize the bundles we need (apply LIMIT/OFFSET at queryset level)
-                paginated_bundles_qs = filtered_bundles_queryset[bundle_start:bundle_end]
-                bundles_serializer = ExamSessionSubjectBundleSerializer(paginated_bundles_qs, many=True)
-
-                for bundle_data in bundles_serializer.data:
-                    transformed_bundle = {
-                        **bundle_data,
-                        'item_type': 'bundle',
-                        'is_bundle': True,
-                        'type': 'Bundle',
-                        'bundle_type': 'exam_session',
-                        'product_name': bundle_data.get('bundle_name'),
-                        'shortname': bundle_data.get('bundle_name'),
-                        'fullname': bundle_data.get('bundle_description', bundle_data.get('bundle_name')),
-                        'description': bundle_data.get('bundle_description'),
-                        'code': bundle_data.get('subject_code'),
-                    }
-                    paginated_items.append(transformed_bundle)
-
-                items_needed -= bundle_slice_size
-                current_offset = 0  # Reset offset for products
-            else:
-                # Skip bundles, adjust offset for products
-                current_offset -= bundles_count
-
-        # 3. Handle products
-        if items_needed > 0 and products_count > 0:
-            if current_offset < products_count:
-                # Need some products from this page
-                product_start = current_offset
-                product_end = min(products_count, current_offset + items_needed)
-
-                # Only serialize the products we need (apply LIMIT/OFFSET at queryset level)
-                paginated_products_qs = filtered_queryset[product_start:product_end]
-                serializer = ProductListSerializer(paginated_products_qs, many=True)
-                paginated_items.extend(serializer.data)
-
-        # Handle case where vouchers need to be added but search query didn't prepend them
-        if not search_query and marking_vouchers_data and start_idx == 0:
-            # On first page without search, prepend vouchers
-            paginated_items = marking_vouchers_data[:min(items_needed, vouchers_count)] + paginated_items
-            paginated_items = paginated_items[:page_size]  # Trim to page size
+        paginated_items = all_items[start_idx:end_idx]
 
         products_data = paginated_items
 
