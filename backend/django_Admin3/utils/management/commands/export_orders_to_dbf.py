@@ -23,6 +23,16 @@ class Command(BaseCommand):
             help='Directory to output DBF files'
         )
         parser.add_argument(
+            '--from-date',
+            type=str,
+            help='Start date for orders (YYYY-MM-DD)'
+        )
+        parser.add_argument(
+            '--to-date',
+            type=str,
+            help='End date for orders (YYYY-MM-DD)'
+        )
+        parser.add_argument(
             '--debug',
             action='store_true',
             help='Enable debug output'
@@ -31,23 +41,50 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         output_dir = options['output_dir']
         debug = options.get('debug', False)
+        from_date = options.get('from_date')
+        to_date = options.get('to_date')
 
         # Ensure output directory exists
         os.makedirs(output_dir, exist_ok=True)
 
         service = DbfExportService(encoding='cp1252', debug=debug)
 
+        # Build date filter clause
+        date_filter = self._build_date_filter(from_date, to_date)
+
         # Export all tables
-        self._export_orders(service, output_dir)
-        self._export_order_items(service, output_dir)
+        self._export_orders(service, output_dir, date_filter)
+        self._export_order_items(service, output_dir, date_filter)
         self._export_users(service, output_dir)
         self._export_user_profiles(service, output_dir)
 
         self.stdout.write(self.style.SUCCESS('Export completed'))
 
-    def _export_orders(self, service, output_dir):
+    def _build_date_filter(self, from_date, to_date):
+        """Build SQL date filter clause for orders."""
+        conditions = []
+        params = []
+
+        if from_date:
+            conditions.append("created_at >= %s")
+            params.append(from_date)
+
+        if to_date:
+            conditions.append("created_at < (%s::date + interval '1 day')")
+            params.append(to_date)
+
+        if conditions:
+            return {
+                'clause': ' AND ' + ' AND '.join(conditions),
+                'params': params
+            }
+        return {'clause': '', 'params': []}
+
+    def _export_orders(self, service, output_dir, date_filter=None):
         """Export acted_orders table to ORDERS.DBF"""
-        sql = """
+        date_filter = date_filter or {'clause': '', 'params': []}
+
+        sql = f"""
         SELECT
             id as ORDER_ID,
             user_id as USER_ID,
@@ -61,36 +98,50 @@ class Command(BaseCommand):
             created_at::time as CREAT_TM,
             updated_at::date as UPDAT_DT
         FROM acted_orders
+        WHERE 1=1 {date_filter['clause']}
         ORDER BY id
         """
 
         output_file = os.path.join(output_dir, 'ORDERS.DBF')
-        count = service.export_query_to_dbf(sql=sql, output_file=output_file)
+        count = service.export_query_to_dbf(
+            sql=sql,
+            output_file=output_file,
+            params=date_filter['params']
+        )
         self.stdout.write(f"Exported {count} orders to ORDERS.DBF")
 
-    def _export_order_items(self, service, output_dir):
+    def _export_order_items(self, service, output_dir, date_filter=None):
         """Export acted_order_items table to ORDRITMS.DBF"""
-        sql = """
+        date_filter = date_filter or {'clause': '', 'params': []}
+
+        # Filter items by order date
+        sql = f"""
         SELECT
-            id as ITEM_ID,
-            order_id as ORDER_ID,
-            product_id as PROD_ID,
-            marking_voucher_id as VOUCHER_ID,
-            item_type as ITEM_TYPE,
-            quantity as QTY,
-            price_type as PRICE_TYP,
-            actual_price as ACT_PRICE,
-            net_amount as NET_AMT,
-            vat_amount as VAT_AMT,
-            gross_amount as GROSS_AMT,
-            vat_rate as VAT_RATE,
-            is_vat_exempt as VAT_EXMPT
-        FROM acted_order_items
-        ORDER BY order_id, id
+            oi.id as ITEM_ID,
+            oi.order_id as ORDER_ID,
+            oi.product_id as PROD_ID,
+            oi.marking_voucher_id as VOUCHER_ID,
+            oi.item_type as ITEM_TYPE,
+            oi.quantity as QTY,
+            oi.price_type as PRICE_TYP,
+            oi.actual_price as ACT_PRICE,
+            oi.net_amount as NET_AMT,
+            oi.vat_amount as VAT_AMT,
+            oi.gross_amount as GROSS_AMT,
+            oi.vat_rate as VAT_RATE,
+            oi.is_vat_exempt as VAT_EXMPT
+        FROM acted_order_items oi
+        JOIN acted_orders o ON oi.order_id = o.id
+        WHERE 1=1 {date_filter['clause'].replace('created_at', 'o.created_at') if date_filter['clause'] else ''}
+        ORDER BY oi.order_id, oi.id
         """
 
         output_file = os.path.join(output_dir, 'ORDRITMS.DBF')
-        count = service.export_query_to_dbf(sql=sql, output_file=output_file)
+        count = service.export_query_to_dbf(
+            sql=sql,
+            output_file=output_file,
+            params=date_filter['params']
+        )
         self.stdout.write(f"Exported {count} order items to ORDRITMS.DBF")
 
     def _export_users(self, service, output_dir):

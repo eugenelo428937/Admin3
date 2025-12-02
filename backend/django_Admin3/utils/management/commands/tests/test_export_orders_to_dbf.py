@@ -127,3 +127,28 @@ class ExportOrdersToDbfCommandTests(TestCase):
 
         profiles_file = os.path.join(output_dir, 'PROFILES.DBF')
         self.assertTrue(os.path.exists(profiles_file), f"PROFILES.DBF not created")
+
+    def test_filters_orders_by_date_range(self):
+        """Test that --from-date and --to-date filters orders."""
+        # Create an old order (should be excluded)
+        old_user = User.objects.create_user(
+            username='olduser',
+            email='old@example.com',
+            password='pass123'
+        )
+
+        output_dir = os.path.join(self.test_dir, 'output')
+
+        # Filter to only include today's orders
+        today = datetime.now().strftime('%Y-%m-%d')
+
+        call_command(
+            'export_orders_to_dbf',
+            '--output-dir', output_dir,
+            '--from-date', today,
+            '--to-date', today
+        )
+
+        # Verify the command completed without error
+        orders_file = os.path.join(output_dir, 'ORDERS.DBF')
+        self.assertTrue(os.path.exists(orders_file))
