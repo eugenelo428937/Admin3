@@ -17,15 +17,15 @@ const BUTTON_BEHAVIORS = [
    },
    {
       page: 1,
-      label: "Buy with Recommended",
-      description: "SpeedDial with recommended product suggestion",
-      chipColor: "info",
-   },
-   {
-      page: 2,
       label: "Buy Both",
       description: "SpeedDial for Printed + eBook bundle option",
       chipColor: "success",
+   },
+   {
+      page: 2,
+      label: "Buy with Recommended",
+      description: "SpeedDial with recommended product suggestion",
+      chipColor: "info",
    },
 ];
 

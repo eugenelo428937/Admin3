@@ -23,6 +23,7 @@ Example Usage:
 """
 
 import os
+import sys
 import datetime
 from decimal import Decimal
 from typing import List, Dict, Any, Optional, Tuple
@@ -31,6 +32,12 @@ from django.db import connection, models
 from django.core.exceptions import ValidationError
 
 try:
+    # Workaround for ydbf Python 3.13 compatibility
+    # ydbf tries to import from ydbf.six.moves but its vendored six is broken
+    import six
+    sys.modules['ydbf.six'] = six
+    sys.modules['ydbf.six.moves'] = six.moves
+
     import ydbf
     YDBF_AVAILABLE = True
     # ydbf uses string constants for field types
