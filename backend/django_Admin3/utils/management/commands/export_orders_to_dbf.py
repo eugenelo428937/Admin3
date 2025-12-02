@@ -1,11 +1,36 @@
 """
 Management command to export orders data to FoxPro DBF files.
 
-Exports:
-- acted_orders -> ORDERS.DBF
-- acted_order_items -> ORDRITMS.DBF
-- auth_user -> USERS.DBF
-- acted_user_profile -> PROFILES.DBF
+This command exports order-related data to Visual FoxPro DBF format for
+legacy system integration.
+
+Output Files:
+- ORDERS.DBF: Order header information (acted_orders table)
+- ORDRITMS.DBF: Order line items (acted_order_items table)
+- USERS.DBF: User accounts (auth_user table, excludes password)
+- PROFILES.DBF: User profile data (acted_user_profile table)
+
+Field Naming Convention:
+- All field names are max 10 characters (FoxPro limit)
+- Field names are uppercase
+- Abbreviations used: AMT=amount, DT=date, TM=time, NM=name
+
+Usage Examples:
+    # Export all data
+    python manage.py export_orders_to_dbf --output-dir /path/to/exports
+
+    # Export orders from specific date range
+    python manage.py export_orders_to_dbf --output-dir /exports --from-date 2024-01-01 --to-date 2024-12-31
+
+    # Export only users/profiles that have placed orders
+    python manage.py export_orders_to_dbf --output-dir /exports --only-with-orders
+
+    # Combine filters with debug output
+    python manage.py export_orders_to_dbf --output-dir /exports --from-date 2024-01-01 --only-with-orders --debug
+
+Dependencies:
+    - ydbf: Required for DBF file creation (pip install ydbf)
+    - dbfread: Optional for file validation (pip install dbfread)
 """
 import os
 from django.core.management.base import BaseCommand
