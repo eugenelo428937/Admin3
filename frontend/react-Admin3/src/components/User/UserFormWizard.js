@@ -896,14 +896,26 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
 
       if (!country) return {};
 
-      // Get country metadata to understand expected format
-      const countryCode = addressMetadataService.getCountryCode(country);
-      const metadata = addressMetadataService.getAddressMetadata(countryCode);
-
       const addressData = { country };
 
-      // Map form fields to address data based on country metadata
-      Object.keys(metadata.fields).forEach((fieldName) => {
+      // Extract all known address field names regardless of country metadata.
+      // This ensures no data is lost regardless of which metadata was used for form rendering.
+      // The form uses Google's libaddressinput API (async) which provides dynamic fields per country,
+      // but we extract all known fields to avoid metadata mismatch issues.
+      const addressFields = [
+         'address',           // Street address
+         'city',              // City/Town
+         'county',            // County (UK)
+         'state',             // State/Province
+         'postal_code',       // Postal/ZIP code
+         'district',          // District
+         'building',          // Building name
+         'sub_building_name', // Flat/Unit
+         'building_name',     // Building
+         'building_number'    // Street number
+      ];
+
+      addressFields.forEach((fieldName) => {
          const formFieldName = `${addressPrefix}_${fieldName}`;
          const value = form[formFieldName];
 
@@ -1178,7 +1190,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                               startIcon={<EditIcon />}
                               onClick={() => {
                                  setIsEditingHomeAddress(true);
-                                 setUseSmartInputHome(true);
+                                 setUseSmartInputHome(false);
                               }}
                            >
                               Edit Address
@@ -1352,7 +1364,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                                     startIcon={<EditIcon />}
                                     onClick={() => {
                                        setIsEditingWorkAddress(true);
-                                       setUseSmartInputWork(true);
+                                       setUseSmartInputWork(false);
                                     }}
                                  >
                                     Edit Address
