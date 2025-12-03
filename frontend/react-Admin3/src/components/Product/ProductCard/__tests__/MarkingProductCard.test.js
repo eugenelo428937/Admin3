@@ -676,7 +676,7 @@ describe('MarkingProductCard', () => {
           actualPrice: 150.00,
           metadata: expect.objectContaining({
             type: 'marking',
-            productType: 'Marking',
+            producttype: 'Marking',
             subjectCode: 'CM2'
           })
         })

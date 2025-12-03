@@ -10,9 +10,9 @@
 export const generateProductCode = (item) => {
   try {
     // Get product type from backend field or metadata or determine from product name
-    const productType = item.product_type || item.metadata?.type || determineProductType(item);
+    const producttype = item.product_type || item.metadata?.type || determineProductType(item);
     
-    if (productType === 'tutorial') {
+    if (producttype === 'tutorial') {
       return generateTutorialProductCode(item);
     } else {
       // Material and marking items

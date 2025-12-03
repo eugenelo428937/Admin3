@@ -49,7 +49,7 @@ const hexToRgb = (hex) => {
 };
 
 // Color configurations for each product type
-// Maps glass header colors to valid theme productType variants
+// Maps glass header colors to valid theme producttype variants
 const productColorConfigs = {
 	material: {
 		name: "Study Material (Cobalt)",
@@ -108,8 +108,8 @@ const productColorConfigs = {
 };
 
 // Glass Header Component with 3 circles
-const GlassHeader = ({ productType, children }) => {
-	const config = productColorConfigs[productType];
+const GlassHeader = ({ producttype, children }) => {
+	const config = productColorConfigs[producttype];
 	const primary020 = hexToRgb(config.primary["020"]);
 	const primary040 = hexToRgb(config.primary["040"]);
 	const complementary040 = hexToRgb(config.complementary["040"]);
@@ -184,12 +184,12 @@ const GlassHeader = ({ productType, children }) => {
 };
 
 // Individual Product Card Component
-const GlassProductCard = ({ productType = "material" }) => {
+const GlassProductCard = ({ producttype = "material" }) => {
 	const theme = useTheme();
-	const config = productColorConfigs[productType];
+	const config = productColorConfigs[producttype];
 	const IconComponent = config.icon;
 	// Use the themeProductType for proper theme variant styling
-	const themeProductType = config.themeProductType || productType;
+	const themeProductType = config.themeProductType || producttype;
 
 	const [selectedVariation, setSelectedVariation] = useState("printed");
 	const [selectedPriceType, setSelectedPriceType] = useState("");
@@ -215,7 +215,7 @@ const GlassProductCard = ({ productType = "material" }) => {
 	return (
 		<Card
 			variant="product"
-			productType={themeProductType}
+			producttype={themeProductType}
 			elevation={2}
 			sx={{
 				minWidth: "20rem",
@@ -249,7 +249,7 @@ const GlassProductCard = ({ productType = "material" }) => {
 			</Box>
 
 			{/* Glass Header - Wraps CardHeader with glass effect background + circles */}
-			<GlassHeader productType={productType}>
+			<GlassHeader producttype={producttype}>
 				<CardHeader
 					className="product-header"
 					sx={{
@@ -453,7 +453,7 @@ const GlassProductCard = ({ productType = "material" }) => {
 const GlassHeaderProductCards = () => {
 	const theme = useTheme();
 
-	const productTypes = [
+	const producttypes = [
 		"material",
 		"tutorial",
 		"assessment",
@@ -483,7 +483,7 @@ const GlassHeaderProductCards = () => {
 						gap: 4,
 						justifyItems: "center",
 					}}>
-					{productTypes.map((type) => (
+					{producttypes.map((type) => (
 						<Box key={type} sx={{ textAlign: "center" }}>
 							<Typography
 								variant="h6"
@@ -506,7 +506,7 @@ const GlassHeaderProductCards = () => {
 								/>
 								{productColorConfigs[type].name}
 							</Typography>
-							<GlassProductCard productType={type} />
+							<GlassProductCard producttype={type} />
 						</Box>
 					))}
 				</Box>

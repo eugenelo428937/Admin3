@@ -86,13 +86,13 @@ describe('BaseProductCard', () => {
     });
   });
 
-  describe('productType prop', () => {
-    test('accepts productType prop', () => {
+  describe('producttype prop', () => {
+    test('accepts producttype prop', () => {
       const theme = createTestTheme();
 
       render(
         <ThemeProvider theme={theme}>
-          <BaseProductCard productType="tutorial" data-testid="card">
+          <BaseProductCard producttype="tutorial" data-testid="card">
             Content
           </BaseProductCard>
         </ThemeProvider>
@@ -101,11 +101,11 @@ describe('BaseProductCard', () => {
       expect(screen.getByTestId('card')).toBeInTheDocument();
     });
 
-    test('applies productType-specific styles from theme', () => {
+    test('applies producttype-specific styles from theme', () => {
       const theme = createTestTheme({
         variants: [
           {
-            props: { productType: 'bundle' },
+            props: { producttype: 'bundle' },
             style: { backgroundColor: 'green' }
           }
         ]
@@ -113,7 +113,7 @@ describe('BaseProductCard', () => {
 
       render(
         <ThemeProvider theme={theme}>
-          <BaseProductCard productType="bundle" data-testid="card">
+          <BaseProductCard producttype="bundle" data-testid="card">
             Content
           </BaseProductCard>
         </ThemeProvider>
@@ -177,20 +177,20 @@ describe('BaseProductCard', () => {
       expect(card).not.toHaveAttribute('variant');
     });
 
-    test('does not forward productType to DOM', () => {
+    test('does not forward producttype to DOM', () => {
       const theme = createTestTheme();
 
       render(
         <ThemeProvider theme={theme}>
-          <BaseProductCard productType="tutorial" data-testid="card">
+          <BaseProductCard producttype="tutorial" data-testid="card">
             Content
           </BaseProductCard>
         </ThemeProvider>
       );
 
       const card = screen.getByTestId('card');
-      // The productType prop should not leak to the DOM
-      expect(card).not.toHaveAttribute('productType');
+      // The producttype prop should not leak to the DOM
+      expect(card).not.toHaveAttribute('producttype');
       expect(card).not.toHaveAttribute('producttype');
     });
 
@@ -223,8 +223,8 @@ describe('BaseProductCard', () => {
     });
   });
 
-  describe('combined variant and productType', () => {
-    test('applies styles for both variant and productType', () => {
+  describe('combined variant and producttype', () => {
+    test('applies styles for both variant and producttype', () => {
       const theme = createTestTheme({
         variants: [
           {
@@ -232,7 +232,7 @@ describe('BaseProductCard', () => {
             style: { border: '1px solid blue' }
           },
           {
-            props: { productType: 'material' },
+            props: { producttype: 'material' },
             style: { backgroundColor: 'lightgray' }
           }
         ]
@@ -240,7 +240,7 @@ describe('BaseProductCard', () => {
 
       render(
         <ThemeProvider theme={theme}>
-          <BaseProductCard variant="product" productType="material" data-testid="card">
+          <BaseProductCard variant="product" producttype="material" data-testid="card">
             Content
           </BaseProductCard>
         </ThemeProvider>

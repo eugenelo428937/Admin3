@@ -31,7 +31,7 @@ import {
 } from "@mui/icons-material";
 import BaseProductCard from "../../Common/BaseProductCard";
 
-const MaterialProductCard2 = ({ productType = "material", buttonPage = 0, ...props }) => {
+const MaterialProductCard2 = ({ producttype = "material", buttonPage = 0, ...props }) => {
    const [selectedVariation, setSelectedVariation] = useState("printed");
    const [selectedPriceType, setSelectedPriceType] = useState(""); // Empty means standard pricing
 
@@ -65,7 +65,7 @@ const MaterialProductCard2 = ({ productType = "material", buttonPage = 0, ...pro
             ref={cardRef}
             elevation={2}
             variant="product"
-            productType={productType}
+            producttype={producttype}
             className="d-flex flex-column"
             sx={{
                transform: isHovered ? "scale(1.02)" : "scale(1)",

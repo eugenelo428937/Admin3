@@ -8,7 +8,7 @@ import { deepmerge } from "@mui/utils";
 const BaseProductCard = styled(Card, {
 	name: "BaseProductCard",
 	slot: "Root",
-	shouldForwardProp: (prop) => prop !== "variant" && prop !== "productType",
+	shouldForwardProp: (prop) => prop !== "variant" && prop !== "productype",
 	overridesResolver: (props, styles) => styles.root,
 })(({ theme, ownerState }) => {
 	// Apply base styleOverrides if present
@@ -37,9 +37,9 @@ const BaseProductCard = styled(Card, {
 
 export default function ProductCard(inProps) {
 	const props = useThemeProps({ props: inProps, name: "BaseProductCard" });
-	const { variant = "product", productType, ...other } = props;
+	const { variant = "product", producttype, ...other } = props;
 
-	const ownerState = { variant, productType };
+	const ownerState = { variant, producttype };
 	return <BaseProductCard ownerState={ownerState} {...other} />;
 }
 

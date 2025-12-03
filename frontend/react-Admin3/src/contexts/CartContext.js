@@ -45,6 +45,26 @@ export const CartProvider = ({ children }) => {
   };
 
   /**
+   * Add a marking voucher to cart
+   * Uses dedicated voucher endpoint that expects voucher_id
+   * @param {number} voucherId - The marking voucher ID
+   * @param {number} quantity - Number of vouchers to add
+   */
+  const addVoucherToCart = async (voucherId, quantity = 1) => {
+    try {
+      const res = await cartService.addVoucherToCart(voucherId, quantity);
+
+      // Refresh cart to get updated state
+      await refreshCart();
+
+      return res.data;
+    } catch (err) {
+      console.error('🛒 [CartContext] Error adding voucher to cart:', err);
+      throw err;
+    }
+  };
+
+  /**
    * Update an existing cart item
    * Used for tutorial cart integration to merge choices into existing item
    * @param {number} itemId - Cart item ID to update
@@ -107,7 +127,7 @@ export const CartProvider = ({ children }) => {
   const cartCount = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
   return (
-    <CartContext.Provider value={{ cartItems, cartData, addToCart, updateCartItem, removeFromCart, clearCart, refreshCart, cartCount, loading }}>
+    <CartContext.Provider value={{ cartItems, cartData, addToCart, addVoucherToCart, updateCartItem, removeFromCart, clearCart, refreshCart, cartCount, loading }}>
       {children}
     </CartContext.Provider>
   );

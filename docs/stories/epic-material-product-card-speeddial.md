@@ -347,7 +347,7 @@ UI regression where existing products without buy_both/recommendations fail to d
 - Django Models: FK relationships through junction tables
 - DRF Serializers: Nested serialization with prefetch optimization
 - React Components: Memoized functional components with Material-UI
-- Cart Metadata: Standard structure with type/productType/variationId/etc.
+- Cart Metadata: Standard structure with type/producttype/variationId/etc.
 
 **Critical Compatibility:**
 - Backward compatible API (optional field only)

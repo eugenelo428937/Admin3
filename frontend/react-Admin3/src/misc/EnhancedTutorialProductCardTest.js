@@ -19,7 +19,7 @@ import testTheme from "../theme/testTheme";
 import ProductCard from "../components/Common/BaseProductCard";
 import { School, AddShoppingCart, CalendarMonthOutlined, ViewModule, LocationOn, InfoOutline } from "@mui/icons-material";
 
-const EnhancedTutorialProductCardTest = ({ productType = "tutorial", ...props }) => {
+const EnhancedTutorialProductCardTest = ({ producttype = "tutorial", ...props }) => {
   const [selectedOptions, setSelectedOptions] = useState({ materials: false, recording: false });
   const [selectedPriceType, setSelectedPriceType] = useState("");
   const [isHovered, setIsHovered] = useState(false);
@@ -44,7 +44,7 @@ const EnhancedTutorialProductCardTest = ({ productType = "tutorial", ...props })
       <ProductCard
         elevation={2}
         variant="product"
-        productType={productType}
+        producttype={producttype}
         className="d-flex flex-column"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}

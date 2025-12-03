@@ -592,7 +592,7 @@ export const handlers = [
   rest.get(`${BASE_URL}/products/`, (req, res, ctx) => {
     const subjectCodes = req.url.searchParams.getAll('subject_code');
     const categoryCodes = req.url.searchParams.getAll('category_code');
-    const productTypeCodes = req.url.searchParams.getAll('product_type_code');
+    const producttypeCodes = req.url.searchParams.getAll('product_type_code');
     const searchQuery = req.url.searchParams.get('search_query');
 
     let products = createMockProducts(20);
@@ -606,8 +606,8 @@ export const handlers = [
       products = products.filter(p => categoryCodes.includes(p.category_code));
     }
 
-    if (productTypeCodes.length > 0) {
-      products = products.filter(p => productTypeCodes.includes(p.product_type_code));
+    if (producttypeCodes.length > 0) {
+      products = products.filter(p => producttypeCodes.includes(p.product_type_code));
     }
 
     if (searchQuery) {

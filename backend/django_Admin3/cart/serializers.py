@@ -5,13 +5,14 @@ from .models import Cart, CartItem, CartFee, ActedOrder, ActedOrderItem
 logger = logging.getLogger(__name__)
 
 class CartItemSerializer(serializers.ModelSerializer):
-    subject_code = serializers.CharField(source='product.exam_session_subject.subject.code', read_only=True)
-    product_name = serializers.CharField(source='product.product.fullname', read_only=True)
-    product_code = serializers.CharField(source='product.product.code', read_only=True)
-    exam_session_code = serializers.CharField(source='product.exam_session_subject.exam_session.session_code', read_only=True)
+    # Use SerializerMethodField for fields that need to handle marking vouchers
+    subject_code = serializers.SerializerMethodField()
+    product_name = serializers.SerializerMethodField()
+    product_code = serializers.SerializerMethodField()
+    exam_session_code = serializers.SerializerMethodField()
     product_type = serializers.SerializerMethodField()
-    current_product = serializers.IntegerField(source='product.id', read_only=True)
-    product_id = serializers.IntegerField(source='product.product.id', read_only=True)
+    current_product = serializers.SerializerMethodField()
+    product_id = serializers.SerializerMethodField()
 
     # Phase 5: VAT fields (stored in CartItem model from orchestrator results)
     net_amount = serializers.SerializerMethodField()
@@ -30,6 +31,54 @@ class CartItemSerializer(serializers.ModelSerializer):
             'net_amount', 'vat_region', 'vat_rate', 'vat_amount', 'gross_amount'
         ]
 
+    def get_subject_code(self, obj):
+        """Get subject code - marking vouchers don't have subjects"""
+        if obj.item_type == 'marking_voucher':
+            return None  # Marking vouchers are not tied to subjects
+        if obj.product:
+            return obj.product.exam_session_subject.subject.code
+        return None
+
+    def get_product_name(self, obj):
+        """Get product name - handles marking vouchers"""
+        if obj.item_type == 'marking_voucher' and obj.marking_voucher:
+            return obj.marking_voucher.name or 'Marking Voucher'
+        if obj.product:
+            return obj.product.product.fullname
+        return None
+
+    def get_product_code(self, obj):
+        """Get product code - handles marking vouchers"""
+        if obj.item_type == 'marking_voucher' and obj.marking_voucher:
+            return obj.marking_voucher.code
+        if obj.product:
+            return obj.product.product.code
+        return None
+
+    def get_exam_session_code(self, obj):
+        """Get exam session code - marking vouchers don't have exam sessions"""
+        if obj.item_type == 'marking_voucher':
+            return None  # Marking vouchers are not tied to exam sessions
+        if obj.product:
+            return obj.product.exam_session_subject.exam_session.session_code
+        return None
+
+    def get_current_product(self, obj):
+        """Get current product ID - returns None for marking vouchers"""
+        if obj.item_type == 'marking_voucher':
+            return None
+        if obj.product:
+            return obj.product.id
+        return None
+
+    def get_product_id(self, obj):
+        """Get product ID - returns voucher ID for marking vouchers"""
+        if obj.item_type == 'marking_voucher' and obj.marking_voucher:
+            return obj.marking_voucher.id
+        if obj.product:
+            return obj.product.product.id
+        return None
+
     def get_net_amount(self, obj):
         """
         Calculate net amount for cart item (price × quantity).
@@ -47,10 +96,14 @@ class CartItemSerializer(serializers.ModelSerializer):
         return (obj.actual_price or Decimal('0.00')) * obj.quantity
 
     def get_product_type(self, obj):
-        """Determine product type based on product name or group"""
+        """Determine product type based on item type, product name, or group"""
         # Handle fee items (no product)
         if obj.item_type == 'fee':
             return 'fee'
+
+        # Handle marking voucher items
+        if obj.item_type == 'marking_voucher':
+            return 'marking_voucher'
 
         if not obj.product:
             return None

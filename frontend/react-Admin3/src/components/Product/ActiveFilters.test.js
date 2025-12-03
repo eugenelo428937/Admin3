@@ -603,14 +603,14 @@ describe("ActiveFilters Component", () => {
          const categoryChip = screen
             .getByText(/Materials/)
             .closest(".MuiChip-root");
-         const productTypeChip = screen
+         const producttypeChip = screen
             .getByText(/Core Study Material/)
             .closest(".MuiChip-root");
 
          // Check colors match FilterRegistry configuration
          expect(subjectChip).toHaveClass("MuiChip-colorPrimary"); // From registry: color: 'primary'
          expect(categoryChip).toHaveClass("MuiChip-colorInfo"); // From registry: color: 'info'
-         expect(productTypeChip).toHaveClass("MuiChip-colorSuccess"); // From registry: color: 'success'
+         expect(producttypeChip).toHaveClass("MuiChip-colorSuccess"); // From registry: color: 'success'
       });
 
       test("uses FilterRegistry for filter labels instead of hardcoded FILTER_CONFIG", () => {

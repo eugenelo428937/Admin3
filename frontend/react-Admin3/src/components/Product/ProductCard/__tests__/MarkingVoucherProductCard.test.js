@@ -3,6 +3,20 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
+// Mock addVoucherToCart function
+const mockAddVoucherToCart = jest.fn().mockResolvedValue({});
+
+// Mock CartContext
+jest.mock('../../../../contexts/CartContext', () => ({
+  __esModule: true,
+  useCart: () => ({
+    addVoucherToCart: mockAddVoucherToCart,
+    cartItems: [],
+    cartData: null,
+    loading: false,
+  }),
+}));
+
 // Mock Chakra UI components to avoid ESM module resolution issues
 jest.mock('@chakra-ui/react', () => {
   const React = require('react');
@@ -42,7 +56,7 @@ import MarkingVoucherProductCard from '../MarkingVoucherProductCard';
 const theme = createTheme();
 
 const mockVoucher = {
-  id: 'voucher-1',
+  id: 'voucher-2', // String ID format from unified search (voucher-{numeric_id})
   code: 'CM2-2024-MARK',
   name: 'CM2 Marking Voucher',
   subject_code: 'CM2',
@@ -63,8 +77,10 @@ const mockVoucher = {
 const renderComponent = async (props = {}) => {
   const defaultProps = {
     voucher: mockVoucher,
-    onAddToCart: jest.fn(),
   };
+
+  // Reset mock before each render
+  mockAddVoucherToCart.mockClear();
 
   let result;
   await act(async () => {
@@ -291,34 +307,22 @@ describe('MarkingVoucherProductCard', () => {
   });
 
   describe('add to cart', () => {
-    test('calls onAddToCart with quantity when button clicked', async () => {
-      const mockOnAddToCart = jest.fn().mockResolvedValue({});
-      await renderComponent({ onAddToCart: mockOnAddToCart });
+    test('calls addVoucherToCart with extracted numeric voucher id and quantity', async () => {
+      await renderComponent();
 
       const addButton = screen.getByRole('button', { name: /add to cart/i });
       await act(async () => {
         fireEvent.click(addButton);
       });
 
+      // mockVoucher.id is "voucher-2", so numeric ID should be 2
       await waitFor(() => {
-        expect(mockOnAddToCart).toHaveBeenCalledWith(
-          mockVoucher,
-          expect.objectContaining({
-            type: 'MarkingVoucher',
-            code: 'CM2-2024-MARK',
-            name: 'CM2 Marking Voucher',
-            price: 75.00,
-            quantity: 1,
-            totalPrice: 75.00,
-            priceType: 'standard',
-          })
-        );
+        expect(mockAddVoucherToCart).toHaveBeenCalledWith(2, 1);
       });
     });
 
-    test('calls onAddToCart with selected discount type', async () => {
-      const mockOnAddToCart = jest.fn().mockResolvedValue({});
-      await renderComponent({ onAddToCart: mockOnAddToCart });
+    test('discount selection does not affect cart call (discount handled separately)', async () => {
+      await renderComponent();
 
       // Select retaker discount
       const radios = screen.getAllByRole('radio');
@@ -331,36 +335,32 @@ describe('MarkingVoucherProductCard', () => {
         fireEvent.click(addButton);
       });
 
+      // Cart call still uses extracted numeric voucher id (2) and quantity only
+      // Discount type is handled separately in backend
       await waitFor(() => {
-        expect(mockOnAddToCart).toHaveBeenCalledWith(
-          mockVoucher,
-          expect.objectContaining({
-            priceType: 'retaker',
-          })
-        );
+        expect(mockAddVoucherToCart).toHaveBeenCalledWith(2, 1);
       });
     });
 
-    test('does not call onAddToCart when voucher is not available', async () => {
-      const mockOnAddToCart = jest.fn();
+    test('does not call addVoucherToCart when voucher is not available', async () => {
       const expiredVoucher = {
         ...mockVoucher,
         expiry_date: '2020-01-01',
       };
-      await renderComponent({ voucher: expiredVoucher, onAddToCart: mockOnAddToCart });
+      await renderComponent({ voucher: expiredVoucher });
 
       const addButton = screen.getByRole('button', { name: /add to cart/i });
       await act(async () => {
         fireEvent.click(addButton);
       });
 
-      expect(mockOnAddToCart).not.toHaveBeenCalled();
+      expect(mockAddVoucherToCart).not.toHaveBeenCalled();
     });
 
     test('handles add to cart error gracefully', async () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      const mockOnAddToCart = jest.fn().mockRejectedValue(new Error('Cart error'));
-      await renderComponent({ onAddToCart: mockOnAddToCart });
+      mockAddVoucherToCart.mockRejectedValueOnce(new Error('Cart error'));
+      await renderComponent();
 
       const addButton = screen.getByRole('button', { name: /add to cart/i });
       await act(async () => {
@@ -393,6 +393,41 @@ describe('MarkingVoucherProductCard', () => {
       };
       await renderComponent({ voucher: emptyVariationsVoucher });
       expect(screen.getByText('£0.00')).toBeInTheDocument();
+    });
+
+    test('handles voucher with numeric id (direct from API)', async () => {
+      const directApiVoucher = {
+        ...mockVoucher,
+        id: 5, // Numeric ID from direct marking vouchers API
+      };
+      await renderComponent({ voucher: directApiVoucher });
+
+      const addButton = screen.getByRole('button', { name: /add to cart/i });
+      await act(async () => {
+        fireEvent.click(addButton);
+      });
+
+      await waitFor(() => {
+        expect(mockAddVoucherToCart).toHaveBeenCalledWith(5, 1);
+      });
+    });
+
+    test('handles voucher with voucher_id property', async () => {
+      const voucherWithVoucherId = {
+        ...mockVoucher,
+        voucher_id: 7, // Explicit voucher_id property
+      };
+      await renderComponent({ voucher: voucherWithVoucherId });
+
+      const addButton = screen.getByRole('button', { name: /add to cart/i });
+      await act(async () => {
+        fireEvent.click(addButton);
+      });
+
+      // voucher_id takes precedence over id
+      await waitFor(() => {
+        expect(mockAddVoucherToCart).toHaveBeenCalledWith(7, 1);
+      });
     });
   });
 

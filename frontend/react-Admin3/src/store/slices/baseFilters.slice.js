@@ -231,7 +231,7 @@ export const baseFiltersReducers = {
         state.categories = [];
         break;
       case 'product_types':
-      case 'productTypes': // Support both property names for compatibility
+      case 'producttypes': // Support both property names for compatibility
         state.product_types = [];
         break;
       case 'products':

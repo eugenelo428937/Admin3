@@ -33,14 +33,34 @@ import { ThemeProvider, useTheme } from "@mui/material/styles";
 import { NumberInput, HStack, IconButton as ChakraIconButton } from "@chakra-ui/react";
 import { LuMinus, LuPlus } from "react-icons/lu";
 import BaseProductCard from "../../Common/BaseProductCard";
+import { useCart } from "../../../contexts/CartContext";
 
-const MarkingVoucherProductCard = React.memo(({ voucher, onAddToCart }) => {
+const MarkingVoucherProductCard = React.memo(({ voucher }) => {
 	const theme = useTheme();
+	const { addVoucherToCart } = useCart();
 	const [quantity, setQuantity] = useState(1);
 	const [selectedPriceType, setSelectedPriceType] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [isHovered, setIsHovered] = useState(false);
 	const [isAlertExpanded, setIsAlertExpanded] = useState(false);
+
+	/**
+	 * Extract numeric voucher ID from string format
+	 * Backend returns id as "voucher-{numeric_id}" to avoid conflicts with ESSP IDs
+	 * This extracts the numeric part for the add-to-cart API call
+	 */
+	const numericVoucherId = useMemo(() => {
+		// If voucher.voucher_id exists (direct from marking vouchers API), use it
+		if (voucher.voucher_id) {
+			return parseInt(voucher.voucher_id);
+		}
+		// Handle string format "voucher-{id}" from unified search
+		if (typeof voucher.id === "string" && voucher.id.startsWith("voucher-")) {
+			return parseInt(voucher.id.replace("voucher-", ""));
+		}
+		// Fallback to numeric id
+		return parseInt(voucher.id);
+	}, [voucher.id, voucher.voucher_id]);
 
 	/**
 	 * Handle quantity change from NumberInput
@@ -116,28 +136,15 @@ const MarkingVoucherProductCard = React.memo(({ voucher, onAddToCart }) => {
 
 	/**
 	 * Handle add to cart action
+	 * Uses dedicated voucher cart endpoint with numeric voucher ID
 	 */
 	const handleAddToCart = async () => {
-		if (!isAvailable || isLoading || !onAddToCart) return;
+		if (!isAvailable || isLoading) return;
 
 		setIsLoading(true);
 		try {
-			// Build voucher metadata for cart including quantity
-			const voucherMetadata = {
-				type: "MarkingVoucher",
-				code: voucher.code,
-				name: voucher.name,
-				price: basePrice,
-				quantity: quantity,
-				totalPrice: totalPrice,
-				priceType: selectedPriceType || "standard",
-				is_active: voucher.is_active,
-				expiry_date: voucher.expiry_date,
-			};
-
-			// Call parent add to cart handler with metadata
-			// Note: The cart service will handle the quantity
-			await onAddToCart(voucher, voucherMetadata);
+			// Use dedicated voucher cart endpoint with numeric ID
+			await addVoucherToCart(numericVoucherId, quantity);
 		} catch (error) {
 			console.error("Error adding voucher to cart:", error);
 		} finally {
@@ -150,7 +157,7 @@ const MarkingVoucherProductCard = React.memo(({ voucher, onAddToCart }) => {
 			<BaseProductCard
 				elevation={2}
 				variant="product"
-				productType="marking-voucher"
+				producttype="marking-voucher"
 				className="d-flex flex-column"
 				onMouseEnter={handleMouseEnter}
 				onMouseLeave={handleMouseLeave}

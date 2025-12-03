@@ -4,7 +4,7 @@ import colorTheme from "./colorTheme";
 import liftKitTheme from "./liftKitTheme";
 
 // Test theme that adds a custom ProductCard component with base + subvariants
-// Usage with <ProductCard variant="product" productType="material" /> etc.
+// Usage with <ProductCard variant="product" producttype="material" /> etc.
 const testTheme = createTheme(theme, {
   components: {
     ProductCard: {
@@ -139,7 +139,7 @@ const testTheme = createTheme(theme, {
 
         // Material product overrides
         {
-          props: { variant: "product", productType: "material" },
+          props: { variant: "product", producttype: "material" },
           style: {
             "& .floating-badges-container .subject-badge": {
               backgroundColor: colorTheme.bpp.cobalt["060"],
@@ -171,7 +171,7 @@ const testTheme = createTheme(theme, {
 
         // Tutorial product overrides
         {
-          props: { variant: "product", productType: "tutorial" },
+          props: { variant: "product", producttype: "tutorial" },
           style: {
             "& .floating-badges-container .subject-badge": {
               backgroundColor: colorTheme.bpp.cobalt["060"],

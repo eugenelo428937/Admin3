@@ -512,11 +512,11 @@ export class ProductsPage {
 
   /**
    * Select a product type filter
-   * @param {string} productTypeCode - Product type code (e.g., 'PRINTED')
+   * @param {string} producttypeCode - Product type code (e.g., 'PRINTED')
    */
-  async selectProductType(productTypeCode) {
+  async selectProductType(producttypeCode) {
     const checkbox = this.page.locator(
-      `[data-testid="filter-product-type-${productTypeCode}"]`
+      `[data-testid="filter-product-type-${producttypeCode}"]`
     );
     await checkbox.check();
     await this.waitForProductsLoaded();

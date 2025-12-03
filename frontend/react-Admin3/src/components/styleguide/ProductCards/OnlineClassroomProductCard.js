@@ -19,7 +19,7 @@ import { Computer, AddShoppingCart, InfoOutline } from "@mui/icons-material";
 import BaseProductCard from "../../Common/BaseProductCard";
 
 const OnlineClassroomProductCard = ({
-   productType = "online-classroom",
+   producttype = "online-classroom",
    ...props
 }) => {
    const [selectedFormat, setSelectedFormat] = useState("UK");
@@ -57,7 +57,7 @@ const OnlineClassroomProductCard = ({
             ref={cardRef}
             elevation={2}
             variant="product"
-            productType={productType}
+            producttype={producttype}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             sx={{

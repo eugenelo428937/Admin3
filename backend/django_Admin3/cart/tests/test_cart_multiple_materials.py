@@ -130,7 +130,7 @@ class TestCartMultipleMaterialsBug(TestCase):
             'actual_price': '45.00',
             'metadata': {
                 'type': 'material',
-                'productType': 'Materials',
+                'producttype': 'Materials',
                 'variationId': self.ppv1.id,
                 'variationName': 'Printed CN',
                 'variationType': 'Printed',
@@ -156,7 +156,7 @@ class TestCartMultipleMaterialsBug(TestCase):
             'actual_price': '65.00',
             'metadata': {
                 'type': 'material',
-                'productType': 'Materials',
+                'producttype': 'Materials',
                 'variationId': self.ppv2.id,
                 'variationName': 'Printed TV',
                 'variationType': 'Printed',

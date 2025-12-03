@@ -143,7 +143,7 @@ clearFilterType: (state, action) => {
       state.categories = [];
       break;
     case 'product_types':
-    case 'productTypes':
+    case 'producttypes':
       state.product_types = [];
       break;
     case 'products':

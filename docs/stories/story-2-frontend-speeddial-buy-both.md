@@ -140,7 +140,7 @@ Replace the existing "Add to Cart" button section (lines 571-677) with:
 
                 const metadata = {
                     type: "material",
-                    productType: product.type,
+                    producttype: product.type,
                     variationId: currentVariation.id,
                     variationName: currentVariation.name,
                     variationType: currentVariation.variation_type,
@@ -180,7 +180,7 @@ Replace the existing "Add to Cart" button section (lines 571-677) with:
                     // Add first variation
                     const metadata1 = {
                         type: "material",
-                        productType: product.type,
+                        producttype: product.type,
                         variationId: variation1.id,
                         variationName: variation1.name,
                         variationType: variation1.variation_type,
@@ -202,7 +202,7 @@ Replace the existing "Add to Cart" button section (lines 571-677) with:
                     // Add second variation
                     const metadata2 = {
                         type: "material",
-                        productType: product.type,
+                        producttype: product.type,
                         variationId: variation2.id,
                         variationName: variation2.name,
                         variationType: variation2.variation_type,
@@ -238,7 +238,7 @@ Replace the existing "Add to Cart" button section (lines 571-677) with:
 
             const metadata = {
                 type: "material",
-                productType: product.type,
+                producttype: product.type,
                 variationId: currentVariation.id,
                 variationName: currentVariation.name,
                 variationType: currentVariation.variation_type,

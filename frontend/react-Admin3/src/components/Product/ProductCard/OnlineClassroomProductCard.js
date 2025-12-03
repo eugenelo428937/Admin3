@@ -36,7 +36,7 @@ import "../../../styles/product_card.css";
 
 
 const OnlineClassroomProductCard = React.memo(
-	({ product, onAddToCart, variant = "product", productType = "online-classroom", ...props }) => {
+	({ product, onAddToCart, variant = "product", producttype = "online-classroom", ...props }) => {
 		// Initialize with the first available variation ID instead of hardcoded string
 		const [selectedVariation, setSelectedVariation] = useState(
 			product.variations?.[0]?.id?.toString() || ""
@@ -129,7 +129,7 @@ const OnlineClassroomProductCard = React.memo(
 			<Card
 				elevation={2}
 				variant={variant}
-				productType={productType}
+				producttype={producttype}
 				onMouseEnter={handleMouseEnter}
 				onMouseLeave={handleMouseLeave}
 				sx={{                 
@@ -370,7 +370,7 @@ const OnlineClassroomProductCard = React.memo(
 									// Build metadata with is_digital flag
 									const metadata = {
 										type: "online_classroom",
-										productType: product.type,
+										producttype: product.type,
 										variationId: currentVariation.id,
 										variationName: currentVariation.name,
 										variationType: currentVariation.variation_type,
