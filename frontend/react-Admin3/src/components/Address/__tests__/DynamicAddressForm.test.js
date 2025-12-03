@@ -44,6 +44,7 @@ jest.mock('../../../services/addressMetadataService', () => ({
   default: {
     getCountryCode: jest.fn(),
     getAddressMetadata: jest.fn(),
+    fetchAddressMetadata: jest.fn(),
     transformFieldValue: jest.fn(),
     validateAddressField: jest.fn(),
   },
@@ -93,6 +94,11 @@ describe('DynamicAddressForm', () => {
 
     addressMetadataService.getAddressMetadata.mockImplementation((countryCode) =>
       countryCode === 'GB' ? ukMetadata : usMetadata
+    );
+
+    // fetchAddressMetadata returns a Promise with the same metadata
+    addressMetadataService.fetchAddressMetadata.mockImplementation((countryCode) =>
+      Promise.resolve(countryCode === 'GB' ? ukMetadata : usMetadata)
     );
 
     addressMetadataService.transformFieldValue.mockImplementation((countryCode, fieldName, value) => {
@@ -146,6 +152,7 @@ describe('DynamicAddressForm', () => {
   describe('no country selected', () => {
     test('shows info alert when no metadata available', async () => {
       addressMetadataService.getAddressMetadata.mockReturnValueOnce(null);
+      addressMetadataService.fetchAddressMetadata.mockResolvedValueOnce(null);
       await renderComponent({ country: 'Unknown' });
       expect(screen.getByText(/Please select a country to configure address fields/i)).toBeInTheDocument();
     });
