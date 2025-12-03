@@ -113,7 +113,11 @@ describe('cartService', () => {
           quantity: 1,
           price_type: 'standard',
           actual_price: undefined,
-          metadata: {},
+          metadata: {
+            variationId: undefined,
+            variationName: undefined,
+            variationType: undefined,
+          },
         }
       );
     });
@@ -149,7 +153,80 @@ describe('cartService', () => {
           quantity: 1,
           price_type: 'retaker',
           actual_price: 40.00,
-          metadata: { source: 'bundle' },
+          metadata: {
+            source: 'bundle',
+            variationId: undefined,
+            variationName: undefined,
+            variationType: undefined,
+          },
+        }
+      );
+    });
+
+    test('should auto-promote top-level variation fields to metadata', async () => {
+      const mockResponse = { data: { success: true } };
+      httpService.post.mockResolvedValue(mockResponse);
+
+      // This is how MaterialProductCard currently passes variation info (at top level)
+      const priceInfo = {
+        variationId: 123,
+        variationName: 'eBook',
+        variationType: 'eBook',
+        priceType: 'standard',
+        actualPrice: 49.99,
+      };
+
+      await cartService.addToCart(mockProduct, 1, priceInfo);
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://test-api/cart/add/',
+        {
+          current_product: 101,
+          quantity: 1,
+          price_type: 'standard',
+          actual_price: 49.99,
+          metadata: {
+            variationId: 123,
+            variationName: 'eBook',
+            variationType: 'eBook',
+          },
+        }
+      );
+    });
+
+    test('should preserve metadata variation fields over top-level fields', async () => {
+      const mockResponse = { data: { success: true } };
+      httpService.post.mockResolvedValue(mockResponse);
+
+      // When variation info is in BOTH places, metadata should take precedence
+      const priceInfo = {
+        variationId: 999, // Top-level (should be ignored)
+        variationName: 'Printed', // Top-level (should be ignored)
+        priceType: 'standard',
+        actualPrice: 79.99,
+        metadata: {
+          variationId: 123, // In metadata (should be used)
+          variationName: 'eBook', // In metadata (should be used)
+          variationType: 'eBook',
+          is_digital: true,
+        },
+      };
+
+      await cartService.addToCart(mockProduct, 1, priceInfo);
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://test-api/cart/add/',
+        {
+          current_product: 101,
+          quantity: 1,
+          price_type: 'standard',
+          actual_price: 79.99,
+          metadata: {
+            variationId: 123, // From metadata, not top-level
+            variationName: 'eBook', // From metadata, not top-level
+            variationType: 'eBook',
+            is_digital: true,
+          },
         }
       );
     });
@@ -190,7 +267,11 @@ describe('cartService', () => {
           quantity: 1,
           price_type: 'standard',
           actual_price: undefined,
-          metadata: {},
+          metadata: {
+            variationId: undefined,
+            variationName: undefined,
+            variationType: undefined,
+          },
         }
       );
     });
@@ -226,7 +307,41 @@ describe('cartService', () => {
           quantity: 1,
           price_type: 'additional',
           actual_price: 25.00,
-          metadata: { updated: true },
+          metadata: {
+            updated: true,
+            variationId: undefined,
+            variationName: undefined,
+            variationType: undefined,
+          },
+        }
+      );
+    });
+
+    test('should auto-promote top-level variation fields to metadata in updateItem', async () => {
+      const mockResponse = { data: { success: true } };
+      httpService.patch.mockResolvedValue(mockResponse);
+
+      const priceInfo = {
+        variationId: 456,
+        variationName: 'Hub',
+        variationType: 'Hub',
+        priceType: 'standard',
+        actualPrice: 99.99,
+      };
+      await cartService.updateItem(101, { quantity: 2 }, priceInfo);
+
+      expect(httpService.patch).toHaveBeenCalledWith(
+        'http://test-api/cart/update_item/',
+        {
+          item_id: 101,
+          quantity: 2,
+          price_type: 'standard',
+          actual_price: 99.99,
+          metadata: {
+            variationId: 456,
+            variationName: 'Hub',
+            variationType: 'Hub',
+          },
         }
       );
     });
