@@ -23,10 +23,12 @@ jest.mock('../../../services/addressValidationService', () => ({
   __esModule: true,
   default: {
     validateAddress: jest.fn(() => Promise.resolve({
-      isValid: true,
-      suggestedAddress: null
+      hasMatch: false,
+      bestMatch: null,
+      needsComparison: false
     })),
-    addressesDiffer: jest.fn(() => false)
+    compareAddresses: jest.fn(() => true),
+    getDifferences: jest.fn(() => ({}))
   }
 }));
 
@@ -35,8 +37,19 @@ jest.mock('../../../services/addressMetadataService', () => ({
   __esModule: true,
   default: {
     supportsAddressLookup: jest.fn(() => true),
-    getCountryCode: jest.fn((country) => country),
-    getAddressMetadata: jest.fn(() => ({}))
+    getCountryCode: jest.fn((country) => {
+      const countryCodeMap = {
+        'United Kingdom': 'GB',
+        'United States': 'US'
+      };
+      return countryCodeMap[country] || country;
+    }),
+    getAddressMetadata: jest.fn(() => ({
+      addressLookupSupported: true
+    })),
+    fetchAddressMetadata: jest.fn(() => Promise.resolve({
+      addressLookupSupported: true
+    }))
   }
 }));
 
@@ -179,6 +192,20 @@ describe('AddressEditModal', () => {
       status: 'success',
       message: 'Profile updated successfully'
     });
+
+    const addressValidationService = require('../../../services/addressValidationService').default;
+    const addressMetadataService = require('../../../services/addressMetadataService').default;
+
+    // Reset to default mocks
+    addressValidationService.validateAddress.mockResolvedValue({
+      hasMatch: false,
+      bestMatch: null,
+      needsComparison: false
+    });
+
+    addressMetadataService.fetchAddressMetadata.mockResolvedValue({
+      addressLookupSupported: true
+    });
   });
 
   describe('Modal Rendering', () => {
@@ -202,12 +229,24 @@ describe('AddressEditModal', () => {
     });
   });
 
-  describe.skip('SmartAddressInput Integration (complex async)', () => {
-    test('should display SmartAddressInput component by default', () => {
-      renderWithTheme(<AddressEditModal {...defaultProps} />);
+  describe('Manual Entry Default Behavior', () => {
+    test('shows DynamicAddressForm by default when modal opens', async () => {
+      renderWithTheme(
+        <AddressEditModal
+          open={true}
+          onClose={jest.fn()}
+          addressType="delivery"
+          selectedAddressType="HOME"
+          userProfile={mockUserProfile}
+          onAddressUpdate={jest.fn()}
+        />
+      );
 
-      expect(screen.getByTestId('smart-address-input')).toBeInTheDocument();
-      expect(screen.getByTestId('country-select')).toBeInTheDocument();
+      // Should show the DynamicAddressForm (manual entry), not SmartAddressInput
+      await waitFor(() => {
+        expect(screen.getByTestId('dynamic-address-form')).toBeInTheDocument();
+        expect(screen.queryByTestId('smart-address-input')).not.toBeInTheDocument();
+      });
     });
 
     test('should pre-fill country selection based on current address', () => {
@@ -217,12 +256,8 @@ describe('AddressEditModal', () => {
       expect(screen.getByTestId('country-select')).toHaveValue('United Kingdom');
     });
 
-    test('should show DynamicAddressForm after country selection', async () => {
-      const user = userEvent.setup();
+    test('should display DynamicAddressForm with pre-filled address data', async () => {
       renderWithTheme(<AddressEditModal {...defaultProps} />);
-
-      const countrySelect = screen.getByTestId('country-select');
-      await user.selectOptions(countrySelect, 'United Kingdom');
 
       await waitFor(() => {
         expect(screen.getByTestId('dynamic-address-form')).toBeInTheDocument();
@@ -528,6 +563,113 @@ describe('AddressEditModal', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/update failed/i)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Address Validation and Comparison Flow', () => {
+    test('should show comparison modal when addresses differ', async () => {
+      const user = userEvent.setup();
+      const addressValidationService = require('../../../services/addressValidationService').default;
+
+      // Mock validation to return a different address
+      addressValidationService.validateAddress.mockResolvedValueOnce({
+        hasMatch: true,
+        bestMatch: {
+          address: '10 Downing Street',
+          city: 'Westminster',
+          postal_code: 'SW1A 2AA',
+          country: 'United Kingdom'
+        },
+        needsComparison: true
+      });
+
+      renderWithTheme(<AddressEditModal {...defaultProps} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('dynamic-address-form')).toBeInTheDocument();
+      });
+
+      // Fill in address fields
+      const addressInput = screen.getByTestId('address-input');
+      await user.clear(addressInput);
+      await user.type(addressInput, '10 Downing St');
+
+      // Click update button
+      const updateButton = screen.getByRole('button', { name: /update address/i });
+      await user.click(updateButton);
+
+      // Should show comparison modal
+      await waitFor(() => {
+        expect(screen.getByTestId('address-comparison-modal')).toBeInTheDocument();
+      });
+    });
+
+    test('should not show comparison modal when addresses match', async () => {
+      const user = userEvent.setup();
+      const addressValidationService = require('../../../services/addressValidationService').default;
+
+      // Mock validation to return matching address
+      addressValidationService.validateAddress.mockResolvedValueOnce({
+        hasMatch: true,
+        bestMatch: {
+          address: '10 Downing Street',
+          city: 'London',
+          postal_code: 'SW1A 2AA',
+          country: 'United Kingdom'
+        },
+        needsComparison: false
+      });
+
+      renderWithTheme(<AddressEditModal {...defaultProps} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('dynamic-address-form')).toBeInTheDocument();
+      });
+
+      // Fill in address fields
+      const addressInput = screen.getByTestId('address-input');
+      await user.clear(addressInput);
+      await user.type(addressInput, '10 Downing Street');
+
+      // Click update button
+      const updateButton = screen.getByRole('button', { name: /update address/i });
+      await user.click(updateButton);
+
+      // Should NOT show comparison modal, should show confirmation dialog instead
+      await waitFor(() => {
+        expect(screen.queryByTestId('address-comparison-modal')).not.toBeInTheDocument();
+      });
+    });
+
+    test('should proceed without validation for countries without lookup support', async () => {
+      const user = userEvent.setup();
+      const addressMetadataService = require('../../../services/addressMetadataService').default;
+
+      // Mock metadata to indicate no lookup support
+      addressMetadataService.fetchAddressMetadata.mockResolvedValueOnce({
+        addressLookupSupported: false
+      });
+
+      renderWithTheme(<AddressEditModal {...defaultProps} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('dynamic-address-form')).toBeInTheDocument();
+      });
+
+      // Fill in address fields
+      const addressInput = screen.getByTestId('address-input');
+      await user.clear(addressInput);
+      await user.type(addressInput, 'Some Address');
+
+      // Click update button
+      const updateButton = screen.getByRole('button', { name: /update address/i });
+      await user.click(updateButton);
+
+      // Should not call validateAddress
+      const addressValidationService = require('../../../services/addressValidationService').default;
+      await waitFor(() => {
+        expect(addressValidationService.validateAddress).not.toHaveBeenCalled();
       });
     });
   });
