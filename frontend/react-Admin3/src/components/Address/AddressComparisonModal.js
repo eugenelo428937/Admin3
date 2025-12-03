@@ -41,13 +41,6 @@ const AddressComparisonModal = ({
     return lines.filter(Boolean);
   };
 
-  // Check if a field differs between addresses
-  const fieldDiffers = (field) => {
-    const userValue = (userAddress[field] || '').toLowerCase().trim();
-    const suggestedValue = (suggestedAddress[field] || '').toLowerCase().trim();
-    return userValue !== suggestedValue && (userValue || suggestedValue);
-  };
-
   const userLines = formatAddressLines(userAddress);
   const suggestedLines = formatAddressLines(suggestedAddress);
 
@@ -84,12 +77,12 @@ const AddressComparisonModal = ({
 
       <DialogContent dividers>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          We found a matching address in our database. Would you like to use the suggested address or keep your original entry?
+          We found a matching address. Would you like to use the suggested address or keep your original entry?
         </Typography>
 
         <Grid container spacing={3}>
           {/* User's Address */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Paper
               elevation={1}
               sx={{
@@ -117,7 +110,7 @@ const AddressComparisonModal = ({
           </Grid>
 
           {/* Suggested Address */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Paper
               elevation={1}
               sx={{
