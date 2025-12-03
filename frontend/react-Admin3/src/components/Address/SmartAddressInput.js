@@ -155,7 +155,6 @@ const SmartAddressInput = ({
   // Handle address line change (no automatic API call)
   const handleAddressLineChange = (e) => {
     const value = e.target.value;
-    console.log('🔍 handleAddressLineChange called with value:', value);
     setAddressLineValue(value);
 
     // Update parent form

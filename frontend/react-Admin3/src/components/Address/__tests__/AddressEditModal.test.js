@@ -18,6 +18,42 @@ jest.mock('../../../services/userService', () => ({
   }
 }));
 
+// Mock addressValidationService
+jest.mock('../../../services/addressValidationService', () => ({
+  __esModule: true,
+  default: {
+    validateAddress: jest.fn(() => Promise.resolve({
+      isValid: true,
+      suggestedAddress: null
+    })),
+    addressesDiffer: jest.fn(() => false)
+  }
+}));
+
+// Mock addressMetadataService
+jest.mock('../../../services/addressMetadataService', () => ({
+  __esModule: true,
+  default: {
+    supportsAddressLookup: jest.fn(() => true),
+    getCountryCode: jest.fn((country) => country),
+    getAddressMetadata: jest.fn(() => ({}))
+  }
+}));
+
+// Mock AddressComparisonModal
+jest.mock('../AddressComparisonModal', () => {
+  return function MockAddressComparisonModal({ open, onAcceptSuggested, onKeepOriginal, onClose }) {
+    if (!open) return null;
+    return (
+      <div data-testid="address-comparison-modal">
+        <button onClick={onAcceptSuggested}>Accept Suggested</button>
+        <button onClick={onKeepOriginal}>Keep Original</button>
+        <button onClick={onClose}>Close</button>
+      </div>
+    );
+  };
+});
+
 // Mock SmartAddressInput and DynamicAddressForm
 jest.mock('../SmartAddressInput', () => {
   return function MockSmartAddressInput({ values, onChange, fieldPrefix = '' }) {
@@ -57,9 +93,27 @@ jest.mock('../DynamicAddressForm', () => {
       });
     };
 
+    const handleCountryChange = (e) => {
+      onChange({
+        target: {
+          name: `${fieldPrefix ? fieldPrefix + '_' : ''}country`,
+          value: e.target.value
+        }
+      });
+    };
+
     return (
       <div data-testid="dynamic-address-form">
         <span>Address form for: {country}</span>
+        <select
+          data-testid="country-select"
+          value={country || ''}
+          onChange={handleCountryChange}
+        >
+          <option value="">Select Country</option>
+          <option value="United Kingdom">United Kingdom</option>
+          <option value="United States">United States</option>
+        </select>
         <input
           data-testid="address-input"
           value={values[`${fieldPrefix ? fieldPrefix + '_' : ''}address`] || ''}
@@ -114,6 +168,7 @@ describe('AddressEditModal', () => {
     open: true,
     onClose: jest.fn(),
     addressType: 'delivery',
+    selectedAddressType: 'WORK', // Default based on profile preference for delivery
     userProfile: mockUserProfile,
     onAddressUpdate: jest.fn()
   };
@@ -492,6 +547,7 @@ describe('AddressEditModal', () => {
           {...defaultProps}
           userProfile={homePreferenceProfile}
           addressType="delivery"
+          selectedAddressType="HOME"
         />
       );
 
@@ -513,11 +569,125 @@ describe('AddressEditModal', () => {
           {...defaultProps}
           userProfile={workPreferenceProfile}
           addressType="invoice"
+          selectedAddressType="WORK"
         />
       );
 
       // Should pre-fill with work address country
       expect(screen.getByTestId('country-select')).toHaveValue('United Kingdom');
+    });
+  });
+
+  describe('selectedAddressType Prop - BUG FIX', () => {
+    // This test suite verifies the fix for the bug where the modal showed
+    // stale address data when the user changed the dropdown selection
+
+    test('should use selectedAddressType prop to determine which address to show', () => {
+      // User's profile preference is HOME, but they selected WORK in dropdown
+      const profileWithHomePreference = {
+        ...mockUserProfile,
+        profile: {
+          ...mockUserProfile.profile,
+          send_study_material_to: 'HOME' // Profile preference is HOME
+        }
+      };
+
+      renderWithTheme(
+        <AddressEditModal
+          {...defaultProps}
+          userProfile={profileWithHomePreference}
+          addressType="delivery"
+          selectedAddressType="WORK" // But user selected WORK in dropdown
+        />
+      );
+
+      // Should use WORK address (from selectedAddressType), not HOME (from preference)
+      // Work address has postcode E14 5AB, Home has SW1A 1AA
+      expect(screen.getByTestId('country-select')).toHaveValue('United Kingdom');
+    });
+
+    test('should show HOME address when selectedAddressType is HOME regardless of preference', () => {
+      // User's profile preference is WORK, but they selected HOME in dropdown
+      const profileWithWorkPreference = {
+        ...mockUserProfile,
+        profile: {
+          ...mockUserProfile.profile,
+          send_study_material_to: 'WORK' // Profile preference is WORK
+        }
+      };
+
+      renderWithTheme(
+        <AddressEditModal
+          {...defaultProps}
+          userProfile={profileWithWorkPreference}
+          addressType="delivery"
+          selectedAddressType="HOME" // But user selected HOME in dropdown
+        />
+      );
+
+      // Should use HOME address (from selectedAddressType), not WORK (from preference)
+      expect(screen.getByTestId('country-select')).toHaveValue('United Kingdom');
+    });
+
+    test('should show WORK address when selectedAddressType is WORK for invoice', () => {
+      // User's profile preference is HOME for invoices, but they selected WORK
+      const profileWithHomeInvoicePreference = {
+        ...mockUserProfile,
+        profile: {
+          ...mockUserProfile.profile,
+          send_invoices_to: 'HOME' // Profile preference is HOME
+        }
+      };
+
+      renderWithTheme(
+        <AddressEditModal
+          {...defaultProps}
+          userProfile={profileWithHomeInvoicePreference}
+          addressType="invoice"
+          selectedAddressType="WORK" // But user selected WORK in dropdown
+        />
+      );
+
+      // Should use WORK address (from selectedAddressType), not HOME (from preference)
+      expect(screen.getByTestId('country-select')).toHaveValue('United Kingdom');
+    });
+
+    test('should initialize form values based on selectedAddressType not preferences', () => {
+      // Create profile with distinctly different addresses
+      const profileWithDistinctAddresses = {
+        ...mockUserProfile,
+        profile: {
+          send_study_material_to: 'HOME', // Preference is HOME
+          send_invoices_to: 'HOME'
+        },
+        home_address: {
+          building: 'Home Building',
+          street: 'Home Street',
+          town: 'Home Town',
+          postcode: 'HOME123',
+          country: 'United Kingdom'
+        },
+        work_address: {
+          company: 'Work Company',
+          building: 'Work Building',
+          street: 'Work Street',
+          town: 'Work Town',
+          postcode: 'WORK456',
+          country: 'United States'
+        }
+      };
+
+      renderWithTheme(
+        <AddressEditModal
+          {...defaultProps}
+          userProfile={profileWithDistinctAddresses}
+          addressType="delivery"
+          selectedAddressType="WORK" // User selected WORK, overriding preference
+        />
+      );
+
+      // Should show United States (from WORK address), not United Kingdom (from HOME)
+      expect(screen.getByTestId('country-select')).toHaveValue('United States');
     });
   });
 });
