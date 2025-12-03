@@ -37,13 +37,13 @@ describe('FilterRegistry Integration', () => {
     it('should provide configuration for all filter types', () => {
       const subjectsConfig = FilterRegistry.get('subjects');
       const categoriesConfig = FilterRegistry.get('categories');
-      const productTypesConfig = FilterRegistry.get('product_types');
+      const producttypesConfig = FilterRegistry.get('product_types');
       const productsConfig = FilterRegistry.get('products');
       const modsConfig = FilterRegistry.get('modes_of_delivery');
 
       expect(subjectsConfig).toBeDefined();
       expect(categoriesConfig).toBeDefined();
-      expect(productTypesConfig).toBeDefined();
+      expect(producttypesConfig).toBeDefined();
       expect(productsConfig).toBeDefined();
       expect(modsConfig).toBeDefined();
     });

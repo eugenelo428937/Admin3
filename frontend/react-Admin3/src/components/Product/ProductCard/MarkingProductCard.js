@@ -333,7 +333,7 @@ const MarkingProductCard = React.memo(
 					// Build metadata
 					const metadata = {
 						type: "marking",
-						productType: product.type,
+						producttype: product.type,
 						variationId: variation.id,
 						variationName: variation.name,
 						variationType: variation.variation_type,
@@ -360,7 +360,7 @@ const MarkingProductCard = React.memo(
 				// Build metadata
 				const metadata = {
 					type: "marking",
-					productType: product.type,
+					producttype: product.type,
 					variationId: singleVariation.id,
 					variationName: singleVariation.name,
 					variationType: singleVariation.variation_type,
@@ -392,7 +392,7 @@ const MarkingProductCard = React.memo(
 				// Build metadata
 				const metadata = {
 					type: "marking",
-					productType: product.type,
+					producttype: product.type,
 					variationId: currentVariation?.id,
 					variationName: currentVariation?.name,
 					variationType: currentVariation?.variation_type,
@@ -522,7 +522,7 @@ const MarkingProductCard = React.memo(
 				<Card
 					elevation={2}
 					variant="product"
-					productType="marking"
+					producttype="marking"
 					className="d-flex flex-column"
 					onMouseEnter={handleMouseEnter}
 					onMouseLeave={handleMouseLeave}

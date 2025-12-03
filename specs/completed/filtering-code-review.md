@@ -618,10 +618,10 @@ class Filter {
 
 **Recommendation:** Remove cookie persistence, rely on URL as persistence mechanism.
 
-#### 9. **Inconsistent Naming** (product_types vs productTypes)
+#### 9. **Inconsistent Naming** (product_types vs producttypes)
 
 Redux uses `product_types` (snake_case), but:
-- ActiveFilters uses `productTypes` (camelCase) in FILTER_CONFIG keys
+- ActiveFilters uses `producttypes` (camelCase) in FILTER_CONFIG keys
 - API might use different naming
 
 **Recommendation:** Standardize on one naming convention throughout.

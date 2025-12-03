@@ -21,13 +21,13 @@
 **Impact**: FilterPanel's `useState` for `expandedPanels` was reset to initial values on remount, collapsing the subjects accordion.
 
 ### 2. State Key Mismatch (Contributing Factor)
-**Problem**: Accordion state used camelCase keys (`productTypes`, `modesOfDelivery`) but filter sections used snake_case (`product_types`, `modes_of_delivery`).
+**Problem**: Accordion state used camelCase keys (`producttypes`, `modesOfDelivery`) but filter sections used snake_case (`product_types`, `modes_of_delivery`).
 
 **Before** (BROKEN):
 ```javascript
 const [expandedPanels, setExpandedPanels] = useState({
     subjects: true,
-    productTypes: false,      // ❌ Wrong!
+    producttypes: false,      // ❌ Wrong!
     modesOfDelivery: false    // ❌ Wrong!
 });
 ```

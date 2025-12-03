@@ -344,7 +344,7 @@ const BundleCard = React.memo(({ bundle, onAddToCart }) => {
 			<Card
 				elevation={2}
 				variant="product"
-				productType="bundle"
+				producttype="bundle"
 				className="d-flex flex-column"
 				onMouseEnter={handleMouseEnter}
 				onMouseLeave={handleMouseLeave}

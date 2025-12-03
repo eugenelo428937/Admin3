@@ -117,7 +117,7 @@ const VATSummary = () => {
 export const cartService = {
     // calculateItemVAT: (item, country) => { ... },     // REMOVE
     // applyRegionalVAT: (cart, region) => { ... },      // REMOVE
-    // getVATRate: (productType, country) => { ... },    // REMOVE
+    // getVATRate: (producttype, country) => { ... },    // REMOVE
 }
 
 // File: frontend/react-Admin3/src/hooks/useVAT.js

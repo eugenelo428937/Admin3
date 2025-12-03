@@ -20,7 +20,7 @@ export const mockProduct = (overrides = {}) => ({
   price: 49.99,
   category: 'Test Category',
   subjectCode: 'CM2',
-  productType: 'Core Study Material',
+  producttype: 'Core Study Material',
   modeOfDelivery: 'PRINTED',
   active: true,
   ...overrides,

@@ -127,7 +127,7 @@ Replace the conditional button/SpeedDial section (from Story 2) with:
 
                 const metadata = {
                     type: "material",
-                    productType: product.type,
+                    producttype: product.type,
                     variationId: currentVariation.id,
                     variationName: currentVariation.name,
                     variationType: currentVariation.variation_type,
@@ -176,7 +176,7 @@ Replace the conditional button/SpeedDial section (from Story 2) with:
                 );
                 const primaryMetadata = {
                     type: "material",
-                    productType: product.type,
+                    producttype: product.type,
                     variationId: currentVariation.id,
                     variationName: currentVariation.name,
                     variationType: currentVariation.variation_type,
@@ -203,7 +203,7 @@ Replace the conditional button/SpeedDial section (from Story 2) with:
                 if (recommendedPriceObj) {
                     const recommendedMetadata = {
                         type: "material",
-                        productType: product.type,
+                        producttype: product.type,
                         variationId: recommendedProduct.esspv_id,
                         variationName: recommendedProduct.product_short_name,
                         variationType: recommendedProduct.variation_type,

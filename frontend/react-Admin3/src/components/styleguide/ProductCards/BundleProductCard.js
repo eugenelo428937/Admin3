@@ -36,7 +36,7 @@ import {
 } from "@mui/icons-material";
 import BaseProductCard from "../../Common/BaseProductCard";
 const BundleProductCard = (
-	{ productType = "bundle", buttonPage = 0, ...props }	
+	{ producttype = "bundle", buttonPage = 0, ...props }	
 ) => {
 	const theme = useTheme();
    const cardRef = useRef(null);
@@ -96,7 +96,7 @@ const BundleProductCard = (
 			ref={cardRef}
             elevation={2}
             variant="product"
-            productType={productType}
+            producttype={producttype}
             className="d-flex flex-column"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}

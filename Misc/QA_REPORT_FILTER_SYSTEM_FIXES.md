@@ -132,7 +132,7 @@ FilterPanel was passing 'modes_of_delivery' to clearFilterType, but the reducer 
 ```javascript
 // filtersSlice.js - Updated clearFilterType for compatibility
 case 'product_types':
-case 'productTypes': // Support both property names for compatibility
+case 'producttypes': // Support both property names for compatibility
   state.product_types = [];
   break;
 case 'modes_of_delivery':

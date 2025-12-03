@@ -35,7 +35,7 @@ const actions = [
    { icon: <AddShoppingCart />, name: "Add to Cart" },
 ];
 const TutorialProductCard = ({
-   productType = "tutorial",
+   producttype = "tutorial",
    hasTutorialSelection = false,
    onOpenTutorialSelection,
    onViewSelection,
@@ -130,7 +130,7 @@ const TutorialProductCard = ({
             ref={cardRef}
             elevation={2}
             variant="product"
-            productType={productType}
+            producttype={producttype}
             className="d-flex flex-column"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}

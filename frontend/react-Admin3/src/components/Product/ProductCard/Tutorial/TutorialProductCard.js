@@ -451,7 +451,7 @@ const TutorialProductCard = React.memo(
 				<Card
 					elevation={2}
 					variant="product"
-					productType="tutorial"
+					producttype="tutorial"
 					onMouseEnter={handleMouseEnter}
 					onMouseLeave={handleMouseLeave}
 					sx={{
