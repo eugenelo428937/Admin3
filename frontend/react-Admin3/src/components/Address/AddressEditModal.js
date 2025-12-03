@@ -151,17 +151,6 @@ const AddressEditModal = ({
     }
 
     setError('');
-
-    // Check if country supports address lookup
-    const countrySupportsLookup = addressMetadataService.supportsAddressLookup(selectedCountry);
-
-    if (!countrySupportsLookup) {
-      // Skip validation for countries that don't support lookup
-      setShowConfirmation(true);
-      return;
-    }
-
-    // Validate address
     setIsValidatingAddress(true);
 
     try {
@@ -170,27 +159,38 @@ const AddressEditModal = ({
         country: selectedCountry
       };
 
+      // Check if country supports address lookup
+      const countryCode = addressMetadataService.getCountryCode(selectedCountry);
+      let metadata;
+      try {
+        metadata = await addressMetadataService.fetchAddressMetadata(countryCode);
+      } catch {
+        metadata = addressMetadataService.getAddressMetadata(countryCode);
+      }
+
+      if (!metadata.addressLookupSupported) {
+        // Skip validation for countries without lookup support
+        setShowConfirmation(true);
+        return;
+      }
+
       const validationResult = await addressValidationService.validateAddress(addressToValidate);
 
-      if (validationResult.isValid) {
-        // Address is valid, check if suggested address differs
-        if (validationResult.suggestedAddress &&
-            addressValidationService.addressesDiffer(addressToValidate, validationResult.suggestedAddress)) {
-          // Show comparison modal
-          setUserEnteredAddress(addressToValidate);
-          setSuggestedAddress(validationResult.suggestedAddress);
-          setShowComparisonModal(true);
-        } else {
-          // Addresses match or no suggestion, proceed to confirmation
-          setShowConfirmation(true);
-        }
-      } else {
-        // Validation failed
-        setError(validationResult.message || 'Address validation failed. Please check your address and try again.');
+      if (!validationResult.hasMatch || !validationResult.needsComparison) {
+        // No match or addresses are the same, proceed to confirmation
+        setShowConfirmation(true);
+        return;
       }
+
+      // Show comparison modal
+      setUserEnteredAddress(addressToValidate);
+      setSuggestedAddress(validationResult.bestMatch);
+      setShowComparisonModal(true);
+
     } catch (err) {
       console.error('Address validation error:', err);
-      setError('Failed to validate address. Please try again.');
+      // On error, allow user to proceed
+      setShowConfirmation(true);
     } finally {
       setIsValidatingAddress(false);
     }
