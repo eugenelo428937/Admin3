@@ -34,6 +34,8 @@ import ValidatedPhoneInput from "./ValidatedPhoneInput";
 import SmartAddressInput from "../Address/SmartAddressInput";
 import DynamicAddressForm from "../Address/DynamicAddressForm";
 import addressMetadataService from "../../services/addressMetadataService";
+import AddressComparisonModal from '../Address/AddressComparisonModal';
+import addressValidationService from '../../services/addressValidationService';
 import { useTheme } from "@mui/material/styles";
 const initialForm = {
    title: "",
@@ -138,6 +140,13 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
       message: "",
       severity: "success", // success, error, warning, info
    });
+
+   // Address comparison modal state
+   const [showComparisonModal, setShowComparisonModal] = useState(false);
+   const [pendingAddressType, setPendingAddressType] = useState(null); // 'home' or 'work'
+   const [userEnteredAddress, setUserEnteredAddress] = useState({});
+   const [suggestedAddress, setSuggestedAddress] = useState({});
+   const [isValidatingAddress, setIsValidatingAddress] = useState(false);
 
    // Password change tracking for profile mode
    const [isChangingPassword, setIsChangingPassword] = useState(!isProfileMode);
@@ -797,6 +806,97 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
       }
    };
 
+   // Validate address against Postcoder API before saving
+   const validateAndSaveAddress = async (addressType) => {
+      setIsValidatingAddress(true);
+
+      try {
+         const addressData = formatAddressData(addressType);
+
+         // Only validate for countries with address lookup support
+         const countryCode = addressMetadataService.getCountryCode(addressData.country);
+         const metadata = await addressMetadataService.fetchAddressMetadata(countryCode);
+
+         if (!metadata.addressLookupSupported) {
+            // No validation needed, proceed with save
+            return { validated: true, proceed: true };
+         }
+
+         const result = await addressValidationService.validateAddress(addressData);
+
+         if (!result.hasMatch) {
+            // No match found, proceed with user's address
+            return { validated: true, proceed: true };
+         }
+
+         if (result.needsComparison) {
+            // Show comparison modal
+            setPendingAddressType(addressType);
+            setUserEnteredAddress(addressData);
+            setSuggestedAddress(result.bestMatch);
+            setShowComparisonModal(true);
+            return { validated: true, proceed: false }; // Wait for user decision
+         }
+
+         // Addresses match, proceed with save
+         return { validated: true, proceed: true };
+      } catch (error) {
+         console.error('Address validation error:', error);
+         // On error, allow save to proceed
+         return { validated: true, proceed: true };
+      } finally {
+         setIsValidatingAddress(false);
+      }
+   };
+
+   // Handle accepting suggested address
+   const handleAcceptSuggestedAddress = (suggestedAddr) => {
+      const prefix = pendingAddressType;
+
+      // Update form with suggested address
+      const updates = {};
+      if (suggestedAddr.building) updates[`${prefix}_building`] = suggestedAddr.building;
+      if (suggestedAddr.address) updates[`${prefix}_address`] = suggestedAddr.address;
+      if (suggestedAddr.district) updates[`${prefix}_district`] = suggestedAddr.district;
+      if (suggestedAddr.city) updates[`${prefix}_city`] = suggestedAddr.city;
+      if (suggestedAddr.county) updates[`${prefix}_county`] = suggestedAddr.county;
+      if (suggestedAddr.state) updates[`${prefix}_state`] = suggestedAddr.state;
+      if (suggestedAddr.postal_code) updates[`${prefix}_postal_code`] = suggestedAddr.postal_code;
+
+      setForm(prev => ({ ...prev, ...updates }));
+
+      // Mark fields as changed
+      Object.keys(updates).forEach(field => {
+         setChangedFields(prev => new Set([...prev, field]));
+      });
+
+      // Close modal and exit edit mode
+      setShowComparisonModal(false);
+      if (prefix === 'home') {
+         setIsEditingHomeAddress(false);
+      } else {
+         setIsEditingWorkAddress(false);
+      }
+
+      // Trigger save
+      handleStepSave();
+   };
+
+   // Handle keeping original address
+   const handleKeepOriginalAddress = () => {
+      setShowComparisonModal(false);
+
+      // Exit edit mode
+      if (pendingAddressType === 'home') {
+         setIsEditingHomeAddress(false);
+      } else {
+         setIsEditingWorkAddress(false);
+      }
+
+      // Trigger save with original address
+      handleStepSave();
+   };
+
    // Handler for closing snackbar
    const handleSnackbarClose = () => {
       setSnackbar((prev) => ({ ...prev, open: false }));
@@ -1212,6 +1312,20 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                               />
                               <Box sx={{ textAlign: 'center', mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
                                  <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={async () => {
+                                       const result = await validateAndSaveAddress('home');
+                                       if (result.proceed) {
+                                          setIsEditingHomeAddress(false);
+                                          handleStepSave();
+                                       }
+                                    }}
+                                    disabled={isValidatingAddress}
+                                 >
+                                    {isValidatingAddress ? 'Validating...' : 'Save Address'}
+                                 </Button>
+                                 <Button
                                     variant="outlined"
                                     onClick={() => setUseSmartInputHome(true)}
                                  >
@@ -1385,6 +1499,20 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                                        shakingFields={shakingFields}
                                     />
                                     <Box sx={{ textAlign: 'center', mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
+                                       <Button
+                                          variant="contained"
+                                          color="primary"
+                                          onClick={async () => {
+                                             const result = await validateAndSaveAddress('work');
+                                             if (result.proceed) {
+                                                setIsEditingWorkAddress(false);
+                                                handleStepSave();
+                                             }
+                                          }}
+                                          disabled={isValidatingAddress}
+                                       >
+                                          {isValidatingAddress ? 'Validating...' : 'Save Address'}
+                                       </Button>
                                        <Button
                                           variant="outlined"
                                           onClick={() => setUseSmartInputWork(true)}
@@ -1924,6 +2052,17 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                {snackbar.message}
             </Alert>
          </Snackbar>
+
+         {/* Address Comparison Modal */}
+         <AddressComparisonModal
+            open={showComparisonModal}
+            userAddress={userEnteredAddress}
+            suggestedAddress={suggestedAddress}
+            onAcceptSuggested={handleAcceptSuggestedAddress}
+            onKeepOriginal={handleKeepOriginalAddress}
+            onClose={() => setShowComparisonModal(false)}
+            loading={isValidatingAddress}
+         />
       </Box>
    );
 };
