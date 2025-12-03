@@ -737,7 +737,7 @@ Tests:       8 failed, 1 passed, 9 total
            actualPrice: priceObj?.amount,
            metadata: {
              type: "marking",
-             productType: product.type,
+             producttype: product.type,
              variationId: variation.id,
              variationName: variation.name,
              variationType: variation.variation_type,
@@ -758,7 +758,7 @@ Tests:       8 failed, 1 passed, 9 total
          actualPrice: priceObj?.amount,
          metadata: {
            type: "marking",
-           productType: product.type,
+           producttype: product.type,
            variationId: currentVariation.id,
            variationName: currentVariation.name,
            variationType: currentVariation.variation_type,
@@ -792,7 +792,7 @@ Tests:       8 failed, 1 passed, 9 total
            actualPrice: recommendedPriceObj.amount,
            metadata: {
              type: "materials",
-             productType: "Materials",
+             producttype: "Materials",
              variationId: recommendedProduct.esspv_id,
              variationName: recommendedProduct.variation_type,
            },

@@ -13374,7 +13374,7 @@ FAIL src/components/Product/ProductCard/__tests__/MarkingProductCard.recommendat
   ● Console
 
     console.error
-      React does not recognize the `productType` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `producttype` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+      React does not recognize the `producttype` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `producttype` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
 
     [0m [90m 62 |[39m   [90m// Helper to render component with ThemeProvider[39m
      [90m 63 |[39m   [36mconst[39m renderWithTheme [33m=[39m (component) [33m=>[39m {
@@ -14339,7 +14339,7 @@ FAIL src/components/Product/ProductCard/Tutorial/__tests__/TutorialProductCard.t
   ● Console
 
     console.error
-      React does not recognize the `productType` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `producttype` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+      React does not recognize the `producttype` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `producttype` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
 
     [0m [90m 69 |[39m [90m// Helper function to render component with context[39m
      [90m 70 |[39m [36mconst[39m renderWithContext [33m=[39m (props [33m=[39m mockProps) [33m=>[39m {
@@ -16842,7 +16842,7 @@ FAIL src/components/Product/ProductCard/Tutorial/__tests__/TutorialComponents.in
   ● Console
 
     console.error
-      React does not recognize the `productType` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `producttype` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+      React does not recognize the `producttype` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `producttype` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
 
     [0m [90m 107 |[39m
      [90m 108 |[39m   [36mconst[39m renderWithProviders [33m=[39m (ui) [33m=>[39m {
@@ -25134,7 +25134,7 @@ FAIL src/components/Product/ProductCard/Tutorial/__tests__/TutorialProductCard.i
   ● Console
 
     console.error
-      React does not recognize the `productType` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `producttype` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+      React does not recognize the `producttype` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `producttype` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
 
     [0m [90m 73 |[39m
      [90m 74 |[39m   [36mconst[39m renderWithProviders [33m=[39m (ui) [33m=>[39m {

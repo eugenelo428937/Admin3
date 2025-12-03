@@ -33,7 +33,7 @@ import { NumberInput, HStack, IconButton } from "@chakra-ui/react";
 import { LuMinus, LuPlus } from "react-icons/lu";
 import BaseProductCard from "../../Common/BaseProductCard";
 
-const MarkingVoucherProductCard = ({ productType = "marking-voucher" }) => {
+const MarkingVoucherProductCard = ({ producttype = "marking-voucher" }) => {
    const theme = useTheme();
    const [quantity, setQuantity] = useState(1);
    const [selectedPriceType, setSelectedPriceType] = useState("");
@@ -64,7 +64,7 @@ const MarkingVoucherProductCard = ({ productType = "marking-voucher" }) => {
          <BaseProductCard
             elevation={2}
             variant="product"
-            productType={productType}
+            producttype={producttype}
             className="d-flex flex-column"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}

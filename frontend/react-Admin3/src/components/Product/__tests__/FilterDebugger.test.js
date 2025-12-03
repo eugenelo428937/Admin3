@@ -119,12 +119,12 @@ describe('FilterDebugger', () => {
       renderComponent({
         navbarFilters: {
           selectedSubject: 'CM2',
-          productType: 'Study Material',
+          producttype: 'Study Material',
         },
       });
 
       expect(screen.getByText('selectedSubject: CM2')).toBeInTheDocument();
-      expect(screen.getByText('productType: Study Material')).toBeInTheDocument();
+      expect(screen.getByText('producttype: Study Material')).toBeInTheDocument();
     });
   });
 

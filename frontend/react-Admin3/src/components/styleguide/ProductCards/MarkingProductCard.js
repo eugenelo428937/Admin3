@@ -36,7 +36,7 @@ import {
 import BaseProductCard from "../../Common/BaseProductCard";
 
 // Enhanced Marking Product Card - Deadline Scenarios with Pagination
-const MarkingProductCard = ({ productType = "marking" }) => {
+const MarkingProductCard = ({ producttype = "marking" }) => {
    const [currentScenario, setCurrentScenario] = useState(0);
    const [selectedPriceType, setSelectedPriceType] = useState("");
    const [isHovered, setIsHovered] = useState(false);
@@ -122,7 +122,7 @@ const MarkingProductCard = ({ productType = "marking" }) => {
             ref={cardRef}
             elevation={2}
             variant="product"
-            productType={productType}
+            producttype={producttype}
             className="d-flex flex-column"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}

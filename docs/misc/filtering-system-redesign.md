@@ -175,7 +175,7 @@ Content-Type: application/json
       "name": "Core Reading",
       "subjectCodes": ["CM2"],
       "category": "Materials",
-      "productType": "Core Study Material",
+      "producttype": "Core Study Material",
       "modeOfDelivery": ["Ebook", "Printed"],
       "price": 89.99
     }

@@ -69,7 +69,7 @@
         "notes": "Round button for adding to cart"
       }
     },
-    "productTypeSpecific": {
+    "producttypeSpecific": {
       "materialProducts": {
         "variations": {
           "required": true,

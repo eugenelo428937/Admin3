@@ -13,28 +13,27 @@
                         "type": "object",
                         "properties": {
                             "id": {"type": "integer"},
-                            "current_product": {"type": "integer"},
-                            "product_id": {"type": "integer"},
-                            "product_name": {"type": "string"},
-                            "product_code": {"type": "string"},
-                            "subject_code": {"type": "string"},
-                            "exam_session_code": {"type": "string"},
+                            "current_product": {"type": ["integer", "null"]},
+                            "product_id": {"type": ["integer", "null"]},
+                            "product_name": {"type": ["string", "null"]},
+                            "product_code": {"type": ["string", "null"]},
+                            "subject_code": {"type": ["string", "null"]},
+                            "exam_session_code": {"type": ["string", "null"]},
                             "product_type": {"type": "string"},
                             "quantity": {"type": "integer", "minimum": 1},
                             "price_type": {"type": "string"},
                             "actual_price": {"type": "string"},
                             "metadata": {
-                                "type": "object",
+                                "type": ["object", "null"],
                                 "properties": {
-                                    "variationId": {"type": "integer"},
-                                    "variationName": {"type": "string"}
-                                },
-                                "required": ["variationId"]
+                                    "variationId": {"type": ["integer", "null"]},
+                                    "variationName": {"type": ["string", "null"]}
+                                }
                             },
                             "is_marking": {"type": "boolean"},
                             "has_expired_deadline": {"type": "boolean"}
                         },
-                        "required": ["id", "current_product", "product_type", "quantity", "price_type", "actual_price", "metadata"]
+                        "required": ["id", "product_type", "quantity", "price_type", "actual_price"]
                     }
                 },
                 "total": {"type": "number", "minimum": 0},

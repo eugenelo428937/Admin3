@@ -78,7 +78,7 @@ const MaterialProductCard = React.memo(
       }, []);
 
       // Memoize expensive calculations
-      const productTypeCheck = useMemo(
+      const producttypeCheck = useMemo(
          () => ({
             isTutorial: product.type === "Tutorial",
             isMarking: product.type === "Markings",
@@ -182,7 +182,7 @@ const MaterialProductCard = React.memo(
          isMarkingVoucher,
          isOnlineClassroom,
          isBundle,
-      } = productTypeCheck;
+      } = producttypeCheck;
       const { hasVariations, currentVariation } = variationInfo;
 
       const hasPriceType = (variation, priceType) => {
@@ -219,7 +219,6 @@ const MaterialProductCard = React.memo(
          return (
             <MarkingVoucherProductCard
                voucher={product}
-               onAddToCart={onAddToCart}
             />
          );
       }
@@ -891,7 +890,7 @@ const MaterialProductCard = React.memo(
                ref={cardRef}
                elevation={2}
                variant="product"
-               productType="material"
+               producttype="material"
                className="d-flex flex-column"
                onMouseEnter={handleMouseEnter}
                onMouseLeave={handleMouseLeave}

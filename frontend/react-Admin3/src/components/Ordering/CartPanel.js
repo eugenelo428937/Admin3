@@ -128,8 +128,10 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 												{item.metadata?.type === "tutorial"
 													? item.metadata.title
 													: item.product_name}
-											</strong> 
-											({item.metadata.variationName})
+											</strong>
+											{item.metadata?.variationName && (
+												<>({item.metadata.variationName})</>
+											)}
 											<br />
 											{/* Tutorial-specific display */}
 											{item.metadata?.type === "tutorial" ? (
@@ -372,6 +374,31 @@ const CartPanel = React.memo(({ show, handleClose }) => {
 															</>
 														)}
 													</div>
+												</>
+											) : item.product_type === 'marking_voucher' ? (
+												/* Marking voucher display */
+												<>
+													<span
+														className="text-muted"
+														style={{ fontSize: "0.9em" }}>
+														Voucher Code: {item.product_code}
+													</span>
+													<br />
+													<span
+														className="badge bg-warning text-dark"
+														style={{ fontSize: "0.75em" }}>
+														🎟️ Marking Voucher
+													</span>
+													{item.subject_code && (
+														<>
+															<br />
+															<span
+																className="text-muted"
+																style={{ fontSize: "0.85em" }}>
+																Subject: {item.subject_code}
+															</span>
+														</>
+													)}
 												</>
 											) : (
 												/* Regular product display */

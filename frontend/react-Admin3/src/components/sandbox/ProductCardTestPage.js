@@ -24,14 +24,14 @@ const ProductCardTestPage = () => {
           <Typography variant="subtitle1" sx={{ mb: 1 }}>
             Material Product (BalancedProductCardTest)
           </Typography>
-          <BalancedProductCardTest productType="material" />
+          <BalancedProductCardTest producttype="material" />
         </Paper>
 
         <Paper elevation={0} sx={{ p: 2 }}>
           <Typography variant="subtitle1" sx={{ mb: 1 }}>
             Tutorial Product (EnhancedTutorialProductCardTest)
           </Typography>
-          <EnhancedTutorialProductCardTest productType="tutorial" />
+          <EnhancedTutorialProductCardTest producttype="tutorial" />
         </Paper>
       </Box>
     </Box>

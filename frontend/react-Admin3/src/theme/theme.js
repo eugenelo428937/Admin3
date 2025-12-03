@@ -721,7 +721,7 @@ const theme = createTheme({
             },
             // Tutorial Product Card Variant
             {
-               props: { variant: "product", productType: "tutorial" },
+               props: { variant: "product", producttype: "tutorial" },
                style: {
                   // Floating badges
                   "& .floating-badges-container": {
@@ -921,7 +921,7 @@ const theme = createTheme({
 
             // Material Product Card Variant Overrides
             {
-               props: { variant: "product", productType: "material" },
+               props: { variant: "product", producttype: "material" },
                style: {
                   // Floating badges
                   "& .floating-badges-container": {                     
@@ -1089,7 +1089,7 @@ const theme = createTheme({
 
             // Bundle Product Card Variant
             {
-               props: { variant: "product", productType: "bundle" },
+               props: { variant: "product", producttype: "bundle" },
                style: {
                   // Floating badges
                   "& .floating-badges-container": {                     
@@ -1235,7 +1235,7 @@ const theme = createTheme({
 
             // Online Classroom Product Card Variant
             {
-               props: { variant: "product", productType: "online-classroom" },
+               props: { variant: "product", producttype: "online-classroom" },
                style: {
                   // Floating badges
                   "& .floating-badges-container": {                    
@@ -1415,7 +1415,7 @@ const theme = createTheme({
 
             // Marking Product Card Variant (Orange theme)
             {
-               props: { variant: "product", productType: "marking" },
+               props: { variant: "product", producttype: "marking" },
                style: {    
                   // Floating badges
                   "& .floating-badges-container": {                    
@@ -1610,7 +1610,7 @@ const theme = createTheme({
             },
             // Marking VoucherProduct Card Variant (Orange theme)
             {
-               props: { variant: "product", productType: "marking-voucher" },
+               props: { variant: "product", producttype: "marking-voucher" },
                style: {
                   
                   // Product Header

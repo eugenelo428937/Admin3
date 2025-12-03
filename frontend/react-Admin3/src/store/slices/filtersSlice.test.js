@@ -88,10 +88,10 @@ describe('filtersSlice', () => {
     });
     
     it('should handle setProductTypes', () => {
-      const productTypes = ['Core Study Material'];
-      const newState = filtersReducer(initialState, setProductTypes(productTypes));
+      const producttypes = ['Core Study Material'];
+      const newState = filtersReducer(initialState, setProductTypes(producttypes));
       
-      expect(newState.product_types).toEqual(productTypes);
+      expect(newState.product_types).toEqual(producttypes);
     });
     
     it('should handle setProducts', () => {

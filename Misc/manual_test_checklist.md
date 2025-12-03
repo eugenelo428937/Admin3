@@ -4,7 +4,7 @@
 
 ### ✅ Issue 1: Tutorial format filter not showing in active filters
 - **Problem**: Tutorial format filters were not appearing in active filter chips
-- **Fix Applied**: Updated ActiveFilters component to use correct Redux state property names (product_types, modes_of_delivery instead of productTypes, modesOfDelivery)
+- **Fix Applied**: Updated ActiveFilters component to use correct Redux state property names (product_types, modes_of_delivery instead of producttypes, modesOfDelivery)
 - **Status**: **VERIFIED** - FILTER_CONFIG mapping contains `modes_of_delivery` with correct label "Mode of Delivery"
 
 ### ✅ Issue 2: Filter reset behavior when selecting from navbar
