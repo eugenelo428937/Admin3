@@ -1275,22 +1275,29 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                   {/* Three-layer address pattern: readonly -> manual/smart toggle -> cancel */}
                   {!isEditingHomeAddress ? (
                      <Box>
-                        <DynamicAddressForm
-                           country={form.home_country}
-                           values={form}
-                           onChange={handleChange}
-                           errors={hasUserInteracted ? fieldErrors : {}}
-                           fieldPrefix="home"
-                           showOptionalFields={true}
-                           readonly={true}
-                        />
+                        {form.home_country ? (
+                           <DynamicAddressForm
+                              country={form.home_country}
+                              values={form}
+                              onChange={handleChange}
+                              errors={hasUserInteracted ? fieldErrors : {}}
+                              fieldPrefix="home"
+                              showOptionalFields={true}
+                              readonly={true}
+                           />
+                        ) : (
+                           <Alert severity="info" sx={{ mb: 2 }}>
+                              No home address on file. Click "Edit Address" to add your address.
+                           </Alert>
+                        )}
                         <Box sx={{ textAlign: 'center', mt: 3 }}>
                            <Button
                               variant="contained"
                               startIcon={<EditIcon />}
                               onClick={() => {
                                  setIsEditingHomeAddress(true);
-                                 setUseSmartInputHome(false);
+                                 // If no country set, use SmartAddressInput which has country selector
+                                 setUseSmartInputHome(!form.home_country);
                               }}
                            >
                               Edit Address
@@ -1463,22 +1470,29 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                         {/* Three-layer address pattern for work address */}
                         {!isEditingWorkAddress ? (
                            <Box>
-                              <DynamicAddressForm
-                                 country={form.work_country}
-                                 values={form}
-                                 onChange={handleChange}
-                                 errors={hasUserInteracted ? fieldErrors : {}}
-                                 fieldPrefix="work"
-                                 showOptionalFields={true}
-                                 readonly={true}
-                              />
+                              {form.work_country ? (
+                                 <DynamicAddressForm
+                                    country={form.work_country}
+                                    values={form}
+                                    onChange={handleChange}
+                                    errors={hasUserInteracted ? fieldErrors : {}}
+                                    fieldPrefix="work"
+                                    showOptionalFields={true}
+                                    readonly={true}
+                                 />
+                              ) : (
+                                 <Alert severity="info" sx={{ mb: 2 }}>
+                                    No work address on file. Click "Edit Address" to add your address.
+                                 </Alert>
+                              )}
                               <Box sx={{ textAlign: 'center', mt: 3 }}>
                                  <Button
                                     variant="contained"
                                     startIcon={<EditIcon />}
                                     onClick={() => {
                                        setIsEditingWorkAddress(true);
-                                       setUseSmartInputWork(false);
+                                       // If no country set, use SmartAddressInput which has country selector
+                                       setUseSmartInputWork(!form.work_country);
                                     }}
                                  >
                                     Edit Address
