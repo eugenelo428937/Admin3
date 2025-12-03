@@ -117,6 +117,10 @@ describe('cartService', () => {
             variationId: undefined,
             variationName: undefined,
             variationType: undefined,
+            is_digital: false,
+            is_marking: false,
+            is_material: false,
+            is_tutorial: false,
           },
         }
       );
@@ -158,12 +162,16 @@ describe('cartService', () => {
             variationId: undefined,
             variationName: undefined,
             variationType: undefined,
+            is_digital: false,
+            is_marking: false,
+            is_material: false,
+            is_tutorial: false,
           },
         }
       );
     });
 
-    test('should auto-promote top-level variation fields to metadata', async () => {
+    test('should auto-promote top-level variation fields to metadata and derive flags', async () => {
       const mockResponse = { data: { success: true } };
       httpService.post.mockResolvedValue(mockResponse);
 
@@ -189,16 +197,20 @@ describe('cartService', () => {
             variationId: 123,
             variationName: 'eBook',
             variationType: 'eBook',
+            is_digital: true,  // Derived from variationType 'eBook'
+            is_marking: false,
+            is_material: true, // Derived from variationType 'eBook'
+            is_tutorial: false,
           },
         }
       );
     });
 
-    test('should preserve metadata variation fields over top-level fields', async () => {
+    test('should preserve metadata flags over derived flags', async () => {
       const mockResponse = { data: { success: true } };
       httpService.post.mockResolvedValue(mockResponse);
 
-      // When variation info is in BOTH places, metadata should take precedence
+      // When flags are in BOTH places, metadata should take precedence
       const priceInfo = {
         variationId: 999, // Top-level (should be ignored)
         variationName: 'Printed', // Top-level (should be ignored)
@@ -208,7 +220,7 @@ describe('cartService', () => {
           variationId: 123, // In metadata (should be used)
           variationName: 'eBook', // In metadata (should be used)
           variationType: 'eBook',
-          is_digital: true,
+          is_digital: true, // Explicit flag takes precedence
         },
       };
 
@@ -225,9 +237,85 @@ describe('cartService', () => {
             variationId: 123, // From metadata, not top-level
             variationName: 'eBook', // From metadata, not top-level
             variationType: 'eBook',
-            is_digital: true,
+            is_digital: true, // From metadata (explicit)
+            is_marking: false, // Derived
+            is_material: true, // Derived from variationType
+            is_tutorial: false, // Derived
           },
         }
+      );
+    });
+
+    test('should derive is_marking flag from product type', async () => {
+      const mockResponse = { data: { success: true } };
+      httpService.post.mockResolvedValue(mockResponse);
+
+      const markingProduct = {
+        id: 200,
+        essp_id: 200,
+        type: 'Markings',
+        name: 'CM2 Marking',
+      };
+
+      await cartService.addToCart(markingProduct, 1, {});
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://test-api/cart/add/',
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            is_marking: true,
+            is_digital: false,
+            is_material: false,
+            is_tutorial: false,
+          }),
+        })
+      );
+    });
+
+    test('should derive is_tutorial flag from product type', async () => {
+      const mockResponse = { data: { success: true } };
+      httpService.post.mockResolvedValue(mockResponse);
+
+      const tutorialProduct = {
+        id: 300,
+        essp_id: 300,
+        type: 'Tutorial',
+        name: 'CM2 Tutorial - London',
+      };
+
+      await cartService.addToCart(tutorialProduct, 1, {});
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://test-api/cart/add/',
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            is_tutorial: true,
+            is_marking: false,
+          }),
+        })
+      );
+    });
+
+    test('should derive is_digital flag from online classroom product name', async () => {
+      const mockResponse = { data: { success: true } };
+      httpService.post.mockResolvedValue(mockResponse);
+
+      const onlineClassroomProduct = {
+        id: 400,
+        essp_id: 400,
+        type: 'Materials',
+        product_name: 'CM2 Online Classroom',
+      };
+
+      await cartService.addToCart(onlineClassroomProduct, 1, {});
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://test-api/cart/add/',
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            is_digital: true,
+          }),
+        })
       );
     });
 
@@ -271,6 +359,10 @@ describe('cartService', () => {
             variationId: undefined,
             variationName: undefined,
             variationType: undefined,
+            is_digital: false,
+            is_marking: false,
+            is_material: false,
+            is_tutorial: false,
           },
         }
       );
@@ -312,12 +404,16 @@ describe('cartService', () => {
             variationId: undefined,
             variationName: undefined,
             variationType: undefined,
+            is_digital: false,
+            is_marking: false,
+            is_material: false,
+            is_tutorial: false,
           },
         }
       );
     });
 
-    test('should auto-promote top-level variation fields to metadata in updateItem', async () => {
+    test('should auto-promote top-level variation fields and derive flags in updateItem', async () => {
       const mockResponse = { data: { success: true } };
       httpService.patch.mockResolvedValue(mockResponse);
 
@@ -341,6 +437,10 @@ describe('cartService', () => {
             variationId: 456,
             variationName: 'Hub',
             variationType: 'Hub',
+            is_digital: true,  // Hub is digital
+            is_marking: false,
+            is_material: false, // Hub is not material (no printed/ebook)
+            is_tutorial: false,
           },
         }
       );
