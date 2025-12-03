@@ -246,6 +246,7 @@ const CheckoutSteps = ({ onComplete }) => {
             user: cartData.user || null,
             session_key: cartData.session_key || null,
             has_marking: cartData.has_marking || false,
+            has_digital: cartData.has_digital || false,
             has_material: cartData.has_material || false,
             has_tutorial: cartData.has_tutorial || false,
             created_at: cartData.created_at,
