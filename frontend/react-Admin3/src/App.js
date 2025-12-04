@@ -39,6 +39,7 @@ import ResendActivation from "./components/User/ResendActivation";
 import EmailVerification from "./components/User/EmailVerification";
 import StyleGuide from "./components/StyleGuide";
 import Registration from './pages/Registration';
+import Footer from "./components/Footer";
 import "./App.css";
 
 const system = createSystem(defaultConfig);
@@ -213,6 +214,9 @@ function App() {
 									{/* T015: Global tutorial summary bars - visible across all routes */}
 									<TutorialSummaryBarContainer />
 								</Container>
+
+								{/* Footer component */}
+								<Footer />
 							</div>
 						</TutorialChoiceProvider>
 					</ProductProvider>
