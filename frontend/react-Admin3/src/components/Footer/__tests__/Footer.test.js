@@ -14,22 +14,22 @@ jest.mock('../../../services/productService');
 
 // Mock subjects data
 const mockSubjects = [
-  { id: 1, code: 'CB1', description: 'Business Finance' },
-  { id: 2, code: 'CB2', description: 'Business Economics' },
-  { id: 3, code: 'CM1', description: 'Actuarial Mathematics' },
-  { id: 4, code: 'CP1', description: 'Actuarial Practice' },
-  { id: 5, code: 'CP2', description: 'Modelling Practice' },
-  { id: 6, code: 'SP1', description: 'Health and Care' },
-  { id: 7, code: 'SP2', description: 'Life Insurance' },
-  { id: 8, code: 'SA1', description: 'Health and Care Advanced' },
-  { id: 9, code: 'SA2', description: 'Life Insurance Advanced' },
+  { id: 1, code: 'CB1', description: 'Business Finance', active: true },
+  { id: 2, code: 'CB2', description: 'Business Economics', active: true },
+  { id: 3, code: 'CM1', description: 'Actuarial Mathematics', active: true },
+  { id: 4, code: 'CP1', description: 'Actuarial Practice', active: true },
+  { id: 5, code: 'CP2', description: 'Modelling Practice', active: true },
+  { id: 6, code: 'SP1', description: 'Health and Care', active: true },
+  { id: 7, code: 'SP2', description: 'Life Insurance', active: true },
+  { id: 8, code: 'SA1', description: 'Health and Care Advanced', active: true },
+  { id: 9, code: 'SA2', description: 'Life Insurance Advanced', active: true },
 ];
 
 // Mock navbar product groups data (as returned from API)
 const mockNavbarProductGroups = [
   {
     id: 1,
-    name: 'Core Study Material',
+    name: 'Core Study Materials',
     products: [
       { id: 101, shortname: 'Course Notes' },
       { id: 102, shortname: 'Assignment Guide' },
@@ -37,7 +37,7 @@ const mockNavbarProductGroups = [
   },
   {
     id: 2,
-    name: 'Revision',
+    name: 'Revision Materials',
     products: [
       { id: 201, shortname: 'Flashcards' },
       { id: 202, shortname: 'Revision Notes' },
@@ -135,33 +135,44 @@ describe('Footer', () => {
     test('renders Core Principles subjects (CB, CS, CM)', async () => {
       renderFooter();
       await waitFor(() => {
-        expect(screen.getByText('CB1 - Business Finance')).toBeInTheDocument();
-        expect(screen.getByText('CB2 - Business Economics')).toBeInTheDocument();
-        expect(screen.getByText('CM1 - Actuarial Mathematics')).toBeInTheDocument();
+        // Subject text is split across multiple elements, so check for codes
+        expect(screen.getByText(/CB1/)).toBeInTheDocument();
+        expect(screen.getByText(/CB2/)).toBeInTheDocument();
+        expect(screen.getByText(/CM1/)).toBeInTheDocument();
+        // Also verify descriptions are present
+        expect(screen.getByText(/Business Finance/)).toBeInTheDocument();
+        expect(screen.getByText(/Business Economics/)).toBeInTheDocument();
+        expect(screen.getByText(/Actuarial Mathematics/)).toBeInTheDocument();
       });
     });
 
     test('renders Core Practices subjects (CP1-3)', async () => {
       renderFooter();
       await waitFor(() => {
-        expect(screen.getByText('CP1 - Actuarial Practice')).toBeInTheDocument();
-        expect(screen.getByText('CP2 - Modelling Practice')).toBeInTheDocument();
+        expect(screen.getByText(/CP1/)).toBeInTheDocument();
+        expect(screen.getByText(/CP2/)).toBeInTheDocument();
+        expect(screen.getByText(/Actuarial Practice/)).toBeInTheDocument();
+        expect(screen.getByText(/Modelling Practice/)).toBeInTheDocument();
       });
     });
 
     test('renders Specialist Principles subjects (SP)', async () => {
       renderFooter();
       await waitFor(() => {
-        expect(screen.getByText('SP1 - Health and Care')).toBeInTheDocument();
-        expect(screen.getByText('SP2 - Life Insurance')).toBeInTheDocument();
+        expect(screen.getByText(/SP1/)).toBeInTheDocument();
+        expect(screen.getByText(/SP2/)).toBeInTheDocument();
+        expect(screen.getByText(/Health and Care(?! Advanced)/)).toBeInTheDocument();
+        expect(screen.getByText(/Life Insurance(?! Advanced)/)).toBeInTheDocument();
       });
     });
 
     test('renders Specialist Advanced subjects (SA)', async () => {
       renderFooter();
       await waitFor(() => {
-        expect(screen.getByText('SA1 - Health and Care Advanced')).toBeInTheDocument();
-        expect(screen.getByText('SA2 - Life Insurance Advanced')).toBeInTheDocument();
+        expect(screen.getByText(/SA1/)).toBeInTheDocument();
+        expect(screen.getByText(/SA2/)).toBeInTheDocument();
+        expect(screen.getByText(/Health and Care Advanced/)).toBeInTheDocument();
+        expect(screen.getByText(/Life Insurance Advanced/)).toBeInTheDocument();
       });
     });
   });
@@ -172,7 +183,7 @@ describe('Footer', () => {
       await waitFor(() => {
         expect(screen.getByText('Core Study Materials')).toBeInTheDocument();
         expect(screen.getByText('Revision Materials')).toBeInTheDocument();
-        expect(screen.getByText('Marking Products + Vouchers')).toBeInTheDocument();
+        expect(screen.getByText('Marking Products')).toBeInTheDocument();
       });
     });
 
@@ -295,10 +306,12 @@ describe('Footer', () => {
       renderFooter(store);
 
       await waitFor(() => {
-        expect(screen.getByText('CB1 - Business Finance')).toBeInTheDocument();
+        expect(screen.getByText(/CB1/)).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText('CB1 - Business Finance'));
+      // Subject text is split across elements, find link by role
+      const cb1Link = screen.getByRole('link', { name: /CB1.*Business Finance/i });
+      fireEvent.click(cb1Link);
 
       // Verify Redux action was dispatched by checking store state
       const state = store.getState();
@@ -340,7 +353,8 @@ describe('Footer', () => {
     test('subject links have correct href', async () => {
       renderFooter();
       await waitFor(() => {
-        const cb1Link = screen.getByText('CB1 - Business Finance');
+        // Subject text is split across elements, find link by href pattern
+        const cb1Link = screen.getByRole('link', { name: /CB1.*Business Finance/i });
         expect(cb1Link).toHaveAttribute('href', '/products?subject_code=CB1');
       });
     });

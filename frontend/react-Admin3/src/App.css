@@ -67,15 +67,47 @@
 }
 
 /* reCAPTCHA v3 Badge Styling */
+/* Hide all badges by default, then show only the visible one */
 .grecaptcha-badge {
 	visibility: visible !important;
 	opacity: 1 !important;
 	position: fixed !important;
 	bottom: 2rem !important;
-    right: 2rem !important;
-	transform: none !important;	
+	right: 2rem !important;
 	display: block !important;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+	transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out !important;
+	z-index: 9999 !important;
+}
+
+/* Hide duplicate badges - Google sometimes creates multiple */
+.grecaptcha-badge ~ .grecaptcha-badge {
+	visibility: hidden !important;
+	opacity: 0 !important;
+	display: none !important;
+}
+
+/* md+ screens (≥900px): reduce badge size by 30% */
+@media (min-width: 900px) {
+	.grecaptcha-badge {
+		transform: scale(0.7) !important;
+		transform-origin: bottom right !important;
+	}
+}
+
+/* sm and smaller (<900px): slide out when scrolling */
+@media (max-width: 899px) {
+	.grecaptcha-badge {
+		transform: translateX(0) !important;
+		bottom: 1rem !important;
+		right: 1rem !important;
+	}
+
+	/* When user scrolls, slide the badge off screen */
+	.grecaptcha-badge.recaptcha-hidden {
+		transform: translateX(calc(100% + 2rem)) !important;
+		opacity: 0 !important;
+	}
 }
 
 /* Alternative: Show reCAPTCHA badge inline in forms */
