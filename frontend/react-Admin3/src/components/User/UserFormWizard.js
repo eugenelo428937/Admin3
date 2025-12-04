@@ -34,6 +34,8 @@ import ValidatedPhoneInput from "./ValidatedPhoneInput";
 import SmartAddressInput from "../Address/SmartAddressInput";
 import DynamicAddressForm from "../Address/DynamicAddressForm";
 import addressMetadataService from "../../services/addressMetadataService";
+import AddressComparisonModal from '../Address/AddressComparisonModal';
+import addressValidationService from '../../services/addressValidationService';
 import { useTheme } from "@mui/material/styles";
 const initialForm = {
    title: "",
@@ -138,6 +140,13 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
       message: "",
       severity: "success", // success, error, warning, info
    });
+
+   // Address comparison modal state
+   const [showComparisonModal, setShowComparisonModal] = useState(false);
+   const [pendingAddressType, setPendingAddressType] = useState(null); // 'home' or 'work'
+   const [userEnteredAddress, setUserEnteredAddress] = useState({});
+   const [suggestedAddress, setSuggestedAddress] = useState({});
+   const [isValidatingAddress, setIsValidatingAddress] = useState(false);
 
    // Password change tracking for profile mode
    const [isChangingPassword, setIsChangingPassword] = useState(!isProfileMode);
@@ -797,6 +806,97 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
       }
    };
 
+   // Validate address against Postcoder API before saving
+   const validateAndSaveAddress = async (addressType) => {
+      setIsValidatingAddress(true);
+
+      try {
+         const addressData = formatAddressData(addressType);
+
+         // Only validate for countries with address lookup support
+         const countryCode = addressMetadataService.getCountryCode(addressData.country);
+         const metadata = await addressMetadataService.fetchAddressMetadata(countryCode);
+
+         if (!metadata.addressLookupSupported) {
+            // No validation needed, proceed with save
+            return { validated: true, proceed: true };
+         }
+
+         const result = await addressValidationService.validateAddress(addressData);
+
+         if (!result.hasMatch) {
+            // No match found, proceed with user's address
+            return { validated: true, proceed: true };
+         }
+
+         if (result.needsComparison) {
+            // Show comparison modal
+            setPendingAddressType(addressType);
+            setUserEnteredAddress(addressData);
+            setSuggestedAddress(result.bestMatch);
+            setShowComparisonModal(true);
+            return { validated: true, proceed: false }; // Wait for user decision
+         }
+
+         // Addresses match, proceed with save
+         return { validated: true, proceed: true };
+      } catch (error) {
+         console.error('Address validation error:', error);
+         // On error, allow save to proceed
+         return { validated: true, proceed: true };
+      } finally {
+         setIsValidatingAddress(false);
+      }
+   };
+
+   // Handle accepting suggested address
+   const handleAcceptSuggestedAddress = (suggestedAddr) => {
+      const prefix = pendingAddressType;
+
+      // Update form with suggested address
+      const updates = {};
+      if (suggestedAddr.building) updates[`${prefix}_building`] = suggestedAddr.building;
+      if (suggestedAddr.address) updates[`${prefix}_address`] = suggestedAddr.address;
+      if (suggestedAddr.district) updates[`${prefix}_district`] = suggestedAddr.district;
+      if (suggestedAddr.city) updates[`${prefix}_city`] = suggestedAddr.city;
+      if (suggestedAddr.county) updates[`${prefix}_county`] = suggestedAddr.county;
+      if (suggestedAddr.state) updates[`${prefix}_state`] = suggestedAddr.state;
+      if (suggestedAddr.postal_code) updates[`${prefix}_postal_code`] = suggestedAddr.postal_code;
+
+      setForm(prev => ({ ...prev, ...updates }));
+
+      // Mark fields as changed
+      Object.keys(updates).forEach(field => {
+         setChangedFields(prev => new Set([...prev, field]));
+      });
+
+      // Close modal and exit edit mode
+      setShowComparisonModal(false);
+      if (prefix === 'home') {
+         setIsEditingHomeAddress(false);
+      } else {
+         setIsEditingWorkAddress(false);
+      }
+
+      // Trigger save
+      handleStepSave();
+   };
+
+   // Handle keeping original address
+   const handleKeepOriginalAddress = () => {
+      setShowComparisonModal(false);
+
+      // Exit edit mode
+      if (pendingAddressType === 'home') {
+         setIsEditingHomeAddress(false);
+      } else {
+         setIsEditingWorkAddress(false);
+      }
+
+      // Trigger save with original address
+      handleStepSave();
+   };
+
    // Handler for closing snackbar
    const handleSnackbarClose = () => {
       setSnackbar((prev) => ({ ...prev, open: false }));
@@ -896,14 +996,26 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
 
       if (!country) return {};
 
-      // Get country metadata to understand expected format
-      const countryCode = addressMetadataService.getCountryCode(country);
-      const metadata = addressMetadataService.getAddressMetadata(countryCode);
-
       const addressData = { country };
 
-      // Map form fields to address data based on country metadata
-      Object.keys(metadata.fields).forEach((fieldName) => {
+      // Extract all known address field names regardless of country metadata.
+      // This ensures no data is lost regardless of which metadata was used for form rendering.
+      // The form uses Google's libaddressinput API (async) which provides dynamic fields per country,
+      // but we extract all known fields to avoid metadata mismatch issues.
+      const addressFields = [
+         'address',           // Street address
+         'city',              // City/Town
+         'county',            // County (UK)
+         'state',             // State/Province
+         'postal_code',       // Postal/ZIP code
+         'district',          // District
+         'building',          // Building name
+         'sub_building_name', // Flat/Unit
+         'building_name',     // Building
+         'building_number'    // Street number
+      ];
+
+      addressFields.forEach((fieldName) => {
          const formFieldName = `${addressPrefix}_${fieldName}`;
          const value = form[formFieldName];
 
@@ -1163,22 +1275,29 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                   {/* Three-layer address pattern: readonly -> manual/smart toggle -> cancel */}
                   {!isEditingHomeAddress ? (
                      <Box>
-                        <DynamicAddressForm
-                           country={form.home_country}
-                           values={form}
-                           onChange={handleChange}
-                           errors={hasUserInteracted ? fieldErrors : {}}
-                           fieldPrefix="home"
-                           showOptionalFields={true}
-                           readonly={true}
-                        />
+                        {form.home_country ? (
+                           <DynamicAddressForm
+                              country={form.home_country}
+                              values={form}
+                              onChange={handleChange}
+                              errors={hasUserInteracted ? fieldErrors : {}}
+                              fieldPrefix="home"
+                              showOptionalFields={true}
+                              readonly={true}
+                           />
+                        ) : (
+                           <Alert severity="info" sx={{ mb: 2 }}>
+                              No home address on file. Click "Edit Address" to add your address.
+                           </Alert>
+                        )}
                         <Box sx={{ textAlign: 'center', mt: 3 }}>
                            <Button
                               variant="contained"
                               startIcon={<EditIcon />}
                               onClick={() => {
                                  setIsEditingHomeAddress(true);
-                                 setUseSmartInputHome(true);
+                                 // If no country set, use SmartAddressInput which has country selector
+                                 setUseSmartInputHome(!form.home_country);
                               }}
                            >
                               Edit Address
@@ -1199,6 +1318,20 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                                  shakingFields={shakingFields}
                               />
                               <Box sx={{ textAlign: 'center', mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
+                                 <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={async () => {
+                                       const result = await validateAndSaveAddress('home');
+                                       if (result.proceed) {
+                                          setIsEditingHomeAddress(false);
+                                          handleStepSave();
+                                       }
+                                    }}
+                                    disabled={isValidatingAddress}
+                                 >
+                                    {isValidatingAddress ? 'Validating...' : 'Save Address'}
+                                 </Button>
                                  <Button
                                     variant="outlined"
                                     onClick={() => setUseSmartInputHome(true)}
@@ -1337,22 +1470,29 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                         {/* Three-layer address pattern for work address */}
                         {!isEditingWorkAddress ? (
                            <Box>
-                              <DynamicAddressForm
-                                 country={form.work_country}
-                                 values={form}
-                                 onChange={handleChange}
-                                 errors={hasUserInteracted ? fieldErrors : {}}
-                                 fieldPrefix="work"
-                                 showOptionalFields={true}
-                                 readonly={true}
-                              />
+                              {form.work_country ? (
+                                 <DynamicAddressForm
+                                    country={form.work_country}
+                                    values={form}
+                                    onChange={handleChange}
+                                    errors={hasUserInteracted ? fieldErrors : {}}
+                                    fieldPrefix="work"
+                                    showOptionalFields={true}
+                                    readonly={true}
+                                 />
+                              ) : (
+                                 <Alert severity="info" sx={{ mb: 2 }}>
+                                    No work address on file. Click "Edit Address" to add your address.
+                                 </Alert>
+                              )}
                               <Box sx={{ textAlign: 'center', mt: 3 }}>
                                  <Button
                                     variant="contained"
                                     startIcon={<EditIcon />}
                                     onClick={() => {
                                        setIsEditingWorkAddress(true);
-                                       setUseSmartInputWork(true);
+                                       // If no country set, use SmartAddressInput which has country selector
+                                       setUseSmartInputWork(!form.work_country);
                                     }}
                                  >
                                     Edit Address
@@ -1373,6 +1513,20 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                                        shakingFields={shakingFields}
                                     />
                                     <Box sx={{ textAlign: 'center', mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
+                                       <Button
+                                          variant="contained"
+                                          color="primary"
+                                          onClick={async () => {
+                                             const result = await validateAndSaveAddress('work');
+                                             if (result.proceed) {
+                                                setIsEditingWorkAddress(false);
+                                                handleStepSave();
+                                             }
+                                          }}
+                                          disabled={isValidatingAddress}
+                                       >
+                                          {isValidatingAddress ? 'Validating...' : 'Save Address'}
+                                       </Button>
                                        <Button
                                           variant="outlined"
                                           onClick={() => setUseSmartInputWork(true)}
@@ -1912,6 +2066,17 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                {snackbar.message}
             </Alert>
          </Snackbar>
+
+         {/* Address Comparison Modal */}
+         <AddressComparisonModal
+            open={showComparisonModal}
+            userAddress={userEnteredAddress}
+            suggestedAddress={suggestedAddress}
+            onAcceptSuggested={handleAcceptSuggestedAddress}
+            onKeepOriginal={handleKeepOriginalAddress}
+            onClose={() => setShowComparisonModal(false)}
+            loading={isValidatingAddress}
+         />
       </Box>
    );
 };
