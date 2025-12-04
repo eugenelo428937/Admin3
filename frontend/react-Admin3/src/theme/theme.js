@@ -84,6 +84,7 @@ const theme = createTheme({
             "calc(1em * var(--wholestep) * var(--wholestep) * var(--wholestep)) !important",
          lineHeight: "var(--quarterstep) !important",
          letterSpacing: "-0.022em !important",
+         textWrap:"balance",
       },
       h2: {
          fontFamily: "'Inter', sans-serif",
@@ -98,6 +99,7 @@ const theme = createTheme({
          fontSize: "calc(1em * var(--wholestep) * var(--halfstep)) !important",
          lineHeight: "var(--halfstep) !important",
          letterSpacing: "-0.022em !important",
+         textWrap:"balance",
          [baseTheme.breakpoints.down("sm")]: {
             fontSize:
                "calc(1em * var(--wholestep) * var(--eighthstep)) !important",
@@ -109,6 +111,7 @@ const theme = createTheme({
          fontSize: "calc(1em * var(--wholestep) * var(--eighthstep)) !important",
          lineHeight: "var(--quarterstep) !important",
          letterSpacing: "-0.022em !important",
+         textWrap:"balance",
          [baseTheme.breakpoints.down("sm")]: {
             fontSize:
                "calc(1em * var(--wholestep) * var(--eighthstep)) !important",
@@ -120,6 +123,7 @@ const theme = createTheme({
          fontSize: "calc(1em * var(--wholestep)) !important",
          lineHeight: "var(--halfstep) !important",
          letterSpacing: "-0.02em !important",
+         textWrap:"balance",
       },
       productTitle :{
          fontFamily: "'Inter', 'Poppins', sans-serif",
@@ -127,6 +131,7 @@ const theme = createTheme({
          fontSize: "calc(1em * var(--halfstep) * var(--quarterstep)) !important",
          lineHeight: "var(--halfstep) !important",
          letterSpacing: "-0.02em !important",
+         textWrap:"balance",
       },
       h5: {
          fontFamily: "'Inter', 'Poppins', sans-serif",
@@ -134,6 +139,7 @@ const theme = createTheme({
          fontSize: "calc(1em * var(--halfstep) * var(--eighthstep)) !important",
          lineHeight: "var(--halfstep) !important",
          letterSpacing: "-0.017em !important",
+         textWrap:"balance",
       },
       h6: {
          fontFamily: "'Inter', 'Poppins', sans-serif",
@@ -141,6 +147,7 @@ const theme = createTheme({
          fontSize: "calc(1em * var(--quarterstep)) !important",
          lineHeight: "var(--halfstep) !important",
          letterSpacing: "-0.014em !important",
+         textWrap:"balance",
       },
       subtitle1: {
          fontFamily: "'Inter', 'Poppins', sans-serif",
@@ -162,6 +169,7 @@ const theme = createTheme({
          fontSize: "1em !important",
          lineHeight: "var(--wholestep) !important",
          letterSpacing: "-0.011em !important",
+         textWrap:"pretty",
       },
       body2: {
          fontFamily: "'Inter', 'Poppins', sans-serif",
@@ -169,6 +177,7 @@ const theme = createTheme({
          fontSize: "calc(1em / var(--quarterstep)) !important",
          lineHeight: "calc(var(--wholestep) / var(--quarterstep)) !important",
          letterSpacing: "-0.011em !important",
+         textWrap:"pretty",
       },
       button: {
          fontFamily: "'Inter', 'Poppins', sans-serif",
