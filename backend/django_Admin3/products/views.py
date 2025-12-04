@@ -648,18 +648,18 @@ def navigation_data(request):
     from django.core.cache import cache
     from subjects.models import Subject
 
-    cache_key = 'navigation_data_v1'
+    cache_key = 'navigation_data_v2'  # v2: includes active field in subjects
     cached_data = cache.get(cache_key)
     if cached_data:
         return Response(cached_data)
 
     try:
-        # === SUBJECTS ===
+        # === SUBJECTS (only active subjects) ===
         subjects = list(Subject.objects.filter(active=True).order_by('code').values(
-            'id', 'code', 'description'
+            'id', 'code', 'description', 'active'
         ))
         subjects_data = [
-            {'id': s['id'], 'code': s['code'], 'description': s['description'], 'name': s['description']}
+            {'id': s['id'], 'code': s['code'], 'description': s['description'], 'name': s['description'], 'active': s['active']}
             for s in subjects
         ]
 
