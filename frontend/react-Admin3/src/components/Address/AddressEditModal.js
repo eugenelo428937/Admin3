@@ -16,12 +16,16 @@ import EditIcon from '@mui/icons-material/Edit';
 import PropTypes from 'prop-types';
 import SmartAddressInput from './SmartAddressInput';
 import DynamicAddressForm from './DynamicAddressForm';
+import AddressComparisonModal from './AddressComparisonModal';
 import userService from '../../services/userService';
+import addressValidationService from '../../services/addressValidationService';
+import addressMetadataService from '../../services/addressMetadataService';
 
 const AddressEditModal = ({
   open = false,
   onClose,
   addressType, // 'delivery' or 'invoice'
+  selectedAddressType, // 'HOME' or 'WORK' - the actual dropdown selection
   userProfile,
   onAddressUpdate,
   className = ''
@@ -34,6 +38,10 @@ const AddressEditModal = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showComparisonModal, setShowComparisonModal] = useState(false);
+  const [userEnteredAddress, setUserEnteredAddress] = useState({});
+  const [suggestedAddress, setSuggestedAddress] = useState({});
+  const [isValidatingAddress, setIsValidatingAddress] = useState(false);
 
   // Get the appropriate address type based on user preferences
   const getAddressTypeFromPreferences = useCallback(() => {
@@ -47,15 +55,16 @@ const AddressEditModal = ({
     return 'HOME';
   }, [userProfile?.profile, addressType]);
 
-  // Get current address data based on preferences
+  // Get current address data based on selectedAddressType prop (not preferences)
   const getCurrentAddressData = useCallback(() => {
     if (!userProfile) return {};
 
-    const addressTypeFromPrefs = getAddressTypeFromPreferences();
-    return addressTypeFromPrefs === 'HOME'
+    // Use the explicitly passed selectedAddressType prop
+    // This ensures we get the address from the dropdown selection, not profile preferences
+    return selectedAddressType === 'HOME'
       ? userProfile.home_address || {}
       : userProfile.work_address || {};
-  }, [userProfile, getAddressTypeFromPreferences]);
+  }, [userProfile, selectedAddressType]);
 
   // Initialize form data when modal opens
   useEffect(() => {
@@ -71,7 +80,7 @@ const AddressEditModal = ({
 
       setFormValues(initialValues);
       setSelectedCountry(addressData.country || '');
-      setShowManualEntry(false);
+      setShowManualEntry(true);  // Start in manual entry mode
       setShowConfirmation(false);
       setError('');
       setSuccess('');
@@ -134,14 +143,87 @@ const AddressEditModal = ({
     setShowConfirmation(true);
   };
 
+  // Handle validate and update with address validation
+  const handleValidateAndUpdate = async () => {
+    if (!isFormValid()) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    setError('');
+    setIsValidatingAddress(true);
+
+    try {
+      const addressToValidate = {
+        ...formValues,
+        country: selectedCountry
+      };
+
+      // Check if country supports address lookup
+      const countryCode = addressMetadataService.getCountryCode(selectedCountry);
+      let metadata;
+      try {
+        metadata = await addressMetadataService.fetchAddressMetadata(countryCode);
+      } catch {
+        metadata = addressMetadataService.getAddressMetadata(countryCode);
+      }
+
+      if (!metadata.addressLookupSupported) {
+        // Skip validation for countries without lookup support
+        setShowConfirmation(true);
+        return;
+      }
+
+      const validationResult = await addressValidationService.validateAddress(addressToValidate);
+
+      if (!validationResult.hasMatch || !validationResult.needsComparison) {
+        // No match or addresses are the same, proceed to confirmation
+        setShowConfirmation(true);
+        return;
+      }
+
+      // Show comparison modal
+      setUserEnteredAddress(addressToValidate);
+      setSuggestedAddress(validationResult.bestMatch);
+      setShowComparisonModal(true);
+
+    } catch (err) {
+      console.error('Address validation error:', err);
+      // On error, allow user to proceed
+      setShowConfirmation(true);
+    } finally {
+      setIsValidatingAddress(false);
+    }
+  };
+
+  // Handle accepting suggested address from comparison modal
+  const handleAcceptSuggested = () => {
+    // Update form values with suggested address
+    setFormValues({
+      ...formValues,
+      ...suggestedAddress
+    });
+
+    // Close comparison modal and show confirmation
+    setShowComparisonModal(false);
+    setShowConfirmation(true);
+  };
+
+  // Handle keeping original address from comparison modal
+  const handleKeepOriginal = () => {
+    // Close comparison modal and show confirmation with original address
+    setShowComparisonModal(false);
+    setShowConfirmation(true);
+  };
+
   // Handle confirmation of address update
   const handleConfirmUpdate = async () => {
     setLoading(true);
     setError('');
 
     try {
-      const addressTypeFromPrefs = getAddressTypeFromPreferences();
-      const addressKey = addressTypeFromPrefs === 'HOME' ? 'home_address' : 'work_address';
+      // Use selectedAddressType prop to determine which address to update
+      const addressKey = selectedAddressType === 'HOME' ? 'home_address' : 'work_address';
 
       const updateData = {
         [addressKey]: {
@@ -319,6 +401,7 @@ const AddressEditModal = ({
             {!showManualEntry ? (
               <Box>
                 <SmartAddressInput
+                  key={`${selectedAddressType}-${open}`}
                   values={formValues}
                   onChange={handleFieldChange}
                   errors={{}}
@@ -376,15 +459,26 @@ const AddressEditModal = ({
 
         {!showConfirmation && !success && (
           <Button
-            onClick={handleUpdateAddress}
-            disabled={!isFormValid() || loading}
+            onClick={handleValidateAndUpdate}
+            disabled={!isFormValid() || loading || isValidatingAddress}
             variant="contained"
             color="primary"
           >
-            Update Address
+            {isValidatingAddress ? 'Validating...' : 'Update Address'}
           </Button>
         )}
       </DialogActions>
+
+      {/* Address Comparison Modal */}
+      <AddressComparisonModal
+        open={showComparisonModal}
+        userAddress={userEnteredAddress}
+        suggestedAddress={suggestedAddress}
+        onAcceptSuggested={handleAcceptSuggested}
+        onKeepOriginal={handleKeepOriginal}
+        onClose={() => setShowComparisonModal(false)}
+        loading={isValidatingAddress}
+      />
     </Dialog>
   );
 };
@@ -393,6 +487,7 @@ AddressEditModal.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   addressType: PropTypes.oneOf(['delivery', 'invoice']).isRequired,
+  selectedAddressType: PropTypes.oneOf(['HOME', 'WORK']).isRequired,
   userProfile: PropTypes.shape({
     profile: PropTypes.shape({
       send_invoices_to: PropTypes.oneOf(['HOME', 'WORK']),

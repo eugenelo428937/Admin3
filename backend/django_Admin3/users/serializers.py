@@ -75,10 +75,16 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
     
     def _has_valid_address_data(self, address_dict):
-        """Check if address dictionary contains meaningful data"""
-        # Check for common address fields that indicate a valid address
-        required_fields = ['street', 'town', 'city', 'address']
-        return any(address_dict.get(field) for field in required_fields)
+        """Check if address dictionary contains any meaningful data.
+
+        Does not hardcode specific field names since different countries have
+        different address formats (per Google libaddressinput). Accepts any
+        non-empty value as valid address data, including country-only addresses.
+        """
+        return any(
+            value and str(value).strip()
+            for value in address_dict.values()
+        )
     
     def _clean_address_data(self, address_dict):
         """Clean and format address data for JSON storage"""

@@ -235,6 +235,7 @@ const AddressSelectionPanel = ({
         open={showEditModal}
         onClose={handleModalClose}
         addressType={addressType}
+        selectedAddressType={selectedAddressType}
         userProfile={userProfile}
         onAddressUpdate={handleAddressUpdateFromModal}
       />
