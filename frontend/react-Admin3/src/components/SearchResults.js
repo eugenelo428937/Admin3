@@ -66,7 +66,7 @@ const SearchResults = ({
       <Container
          className="search-results-container"
          maxWidth="lg"
-         sx={{ mb: 3, justifyContent: "center", alignItems: "center" }}
+         sx={{ mt: 2, mb: 3, justifyContent: "center", alignItems: "center" }}
       >
          {/* Error Display */}
          {error && (

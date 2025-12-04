@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useId } from "react";
 import { Box, useTheme, Grid, Divider } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import SearchBox from "../components/SearchBox";
@@ -9,10 +9,11 @@ import { rulesEngineHelpers } from "../utils/rulesEngineUtils";
 import rulesEngineService from "../services/rulesEngineService";
 
 const Home = () => {
-	const navigate = useNavigate();
-	const theme = useTheme();
-	const [searchResults, setSearchResults] = useState(null);
-	const [error, setError] = useState(null);
+   const navigate = useNavigate();
+   const theme = useTheme();
+   const [searchResults, setSearchResults] = useState(null);
+   const [error, setError] = useState(null);
+   const chevronClipId = useId();
 
    // Rules engine state for holiday messages and other home page rules
    const [rulesMessages, setRulesMessages] = useState([]);
@@ -21,6 +22,7 @@ const Home = () => {
    // Video path from public folder
    const backgroundVideo = `${process.env.PUBLIC_URL}/video/12595751_2560_1440_30fps.mp4`;
    const backgroundVideoPoster = `${process.env.PUBLIC_URL}/bg2.png`;
+   const graphic1 = `${process.env.PUBLIC_URL}/brand020.1a983628.webp`;
 
    // Debug video paths
    useEffect(() => {}, [backgroundVideo, backgroundVideoPoster]);
@@ -82,17 +84,17 @@ const Home = () => {
       executeRules();
    }, []); // Empty dependency array since this should run once on mount
 
-	// Handle search results from SearchBox
-	const handleSearchResults = (results) => {
-		setSearchResults(results);
-		setError(null);
-	};
+   // Handle search results from SearchBox
+   const handleSearchResults = (results) => {
+      setSearchResults(results);
+      setError(null);
+   };
 
-	// Handle "Show Matching Products" button click
-	// Redux state and URL sync middleware handle filters automatically
-	const handleShowMatchingProducts = () => {
-		navigate('/products');
-	};
+   // Handle "Show Matching Products" button click
+   // Redux state and URL sync middleware handle filters automatically
+   const handleShowMatchingProducts = () => {
+      navigate("/products");
+   };
 
    return (
       <Container
@@ -191,7 +193,7 @@ const Home = () => {
                   </Box>
 
                   <Container
-                     style={{ maxWidth: "600px", margin: "0 auto" }}                     
+                     style={{ maxWidth: "600px", margin: "0 auto" }}
                      disableGutters="true"
                   >
                      <SearchBox
@@ -252,10 +254,13 @@ const Home = () => {
          </Container>
 
          {/* Search Results Section */}
-         <Container disableGutters={true} sx={{
-                              justifyContent: "center",
-                              alignItems: "center",
-                           }}>
+         <Container
+            disableGutters={true}
+            sx={{
+               justifyContent: "center",
+               alignItems: "center",
+            }}
+         >
             <SearchResults
                searchResults={searchResults}
                onShowMatchingProducts={handleShowMatchingProducts}
@@ -264,6 +269,164 @@ const Home = () => {
                maxSuggestions={5}
             />
          </Container>
+         {/* SVG Chevron Section with Grid Overlay */}
+         <Box
+            sx={{
+               position: "relative",
+               minHeight: { xs: "300px", md: "400px", lg: "500px" },
+               overflow: "hidden",
+               backgroundColor: theme.palette.background.default,
+            }}
+         >
+            {/* SVG Background Layer */}
+            <Box
+               sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: { xs: "100%", md: "60%", lg: "50%" },
+                  height: "110%",
+                  zIndex: 0,
+                  overflow: "visible",
+               }}
+            >
+               <svg
+                  width="334"
+                  height="100%"
+                  viewBox="0 0 869 983"
+                  preserveAspectRatio="xMinYMin slice"
+               >
+                  <defs>
+                     <clipPath id={chevronClipId}>
+                        {/* <polygon points="0,0 450,0 600,800 0,800" /> */}
+                        <rect
+                           width="30%"
+                           height="136%"
+                           style={{ transform: "skew(29.3deg, 0deg);" }}
+                        ></rect>
+                     </clipPath>
+                  </defs>
+                  <image
+                     href={graphic1}
+                     width="100%"
+                     height="100%"
+                     clipPath={`url(#${chevronClipId})`}
+                     preserveAspectRatio="xMidYMid slice"
+                  />
+                  {/* <line
+                     x1="450"
+                     y1="0"
+                     x2="600"
+                     y2="800"
+                     stroke={theme.palette.divider}
+                     strokeWidth="3"
+                  /> */}
+                  <rect
+                     className="stroke-dark-base-ink-emphasis"
+                     x="75%"
+                     y="22%"
+                     width="25%"
+                     height="78%"
+                     fill="none"
+                     strokeWidth="2"
+                     style={{
+                        transform: "skew(29.3deg, 0deg)",
+                        transformOrigin: "100% 100%",
+                        stroke: "#222222",
+                     }}
+                  ></rect>
+               </svg>
+            </Box>
+
+            {/* Grid Overlay Layer */}
+            <Grid
+               container
+               spacing={3}
+               sx={{
+                  position: "relative",
+                  zIndex: 1,
+                  height: "100%",
+                  minHeight: "inherit",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  px: { xs: 2, md: 4, lg: 6 },
+                  py: { xs: 4, md: 6 },
+               }}
+            >
+               <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+                  <Box
+                     sx={{
+                        p: { xs: 2, md: 3 },
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
+                        backdropFilter: "blur(12px)",
+                        borderRadius: 3,
+                        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+                        border: "1px solid rgba(255, 255, 255, 0.2)",
+                        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                        "&:hover": {
+                           transform: "translateY(-4px)",
+                           boxShadow: "0 12px 48px rgba(0, 0, 0, 0.15)",
+                        },
+                     }}
+                  >
+                     <Typography variant="h5" gutterBottom>
+                        Card 1
+                     </Typography>
+                     <Typography variant="body2" color="text.secondary">
+                        Content for card 1
+                     </Typography>
+                  </Box>
+               </Grid>
+               <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+                  <Box
+                     sx={{
+                        p: { xs: 2, md: 3 },
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
+                        backdropFilter: "blur(12px)",
+                        borderRadius: 3,
+                        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+                        border: "1px solid rgba(255, 255, 255, 0.2)",
+                        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                        "&:hover": {
+                           transform: "translateY(-4px)",
+                           boxShadow: "0 12px 48px rgba(0, 0, 0, 0.15)",
+                        },
+                     }}
+                  >
+                     <Typography variant="h5" gutterBottom>
+                        Card 2
+                     </Typography>
+                     <Typography variant="body2" color="text.secondary">
+                        Content for card 2
+                     </Typography>
+                  </Box>
+               </Grid>
+               <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+                  <Box
+                     sx={{
+                        p: { xs: 2, md: 3 },
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
+                        backdropFilter: "blur(12px)",
+                        borderRadius: 3,
+                        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+                        border: "1px solid rgba(255, 255, 255, 0.2)",
+                        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                        "&:hover": {
+                           transform: "translateY(-4px)",
+                           boxShadow: "0 12px 48px rgba(0, 0, 0, 0.15)",
+                        },
+                     }}
+                  >
+                     <Typography variant="h5" gutterBottom>
+                        Card 3
+                     </Typography>
+                     <Typography variant="body2" color="text.secondary">
+                        Content for card 3
+                     </Typography>
+                  </Box>
+               </Grid>
+            </Grid>
+         </Box>
       </Container>
    );
 };

@@ -148,6 +148,7 @@ const SearchBox = ({
                 color="white"
                 sx={{
                    borderRadius: "50px",
+                   marginTop: theme.liftkit.spacing.lg,
                    "& .MuiOutlinedInput-root": {
                       borderRadius: "50px",
                       backgroundColor: "white",

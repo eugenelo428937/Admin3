@@ -116,9 +116,7 @@
 
 /* Search Modal Styles for Material-UI Dialog */
 .search-modal .MuiDialog-paper {
-    border-radius: 12px;
-    max-width: 70vw;    
-    max-height: 70vh;
+    border-radius: 12px;    
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
@@ -137,11 +135,8 @@
 
 /* Responsive adjustments for search modal */
 @media (max-width: 768px) {
-    .search-modal .MuiDialog-paper {
-        max-width: 95vw;
-        width: 95vw;
-        margin: 0.5rem;
-        max-height: 95vh;
+    .search-modal .MuiDialog-paper {        
+        margin: 0.5rem;        
     }
     
     .search-modal .MuiDialogContent-root {

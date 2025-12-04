@@ -320,8 +320,7 @@ const TutorialProductCard = ({
                      <Box className="price-details-row">
                         <Typography
                            variant="fineprint"
-                           className="price-level-text"
-                           color="text.secondary"
+                           className="price-level-text"                           
                         >
                            {selectedPriceType === "retaker" ||
                            selectedPriceType === "additional"
@@ -330,8 +329,7 @@ const TutorialProductCard = ({
                         </Typography>
                         <Typography
                            variant="fineprint"
-                           className="vat-status-text"
-                           color="text.secondary"
+                           className="vat-status-text"                           
                         >
                            Price includes VAT
                         </Typography>

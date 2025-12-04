@@ -1,0 +1,47 @@
+- footer in 2x2 Grid
+    - Top left grid cell : four columns          
+        - Header **Subject**
+        - Subject 2 x 2 grid            
+            - first row, first column : Header :**Core Principles**
+                - all Core Principles subjects
+            - first row, second column : Header :**Core Practices**
+                - all Core Practices subjects
+            - second row, first column : Header :**Specialist Advanced**
+                - all Specialist Advanced subjects
+            - second row, second column : Header :** Specialist Principles** 
+                - all Specialist Principles subjects
+        - Product
+            - 2 rows
+            - first row : 3 columns
+                - Header :**core study materials**
+                    - All core study materials products
+                - Header :**revision materials**
+                    - All revision materials products
+                - Header :**Marking product + marking Voucher**
+                    - All Marking product + marking Voucher
+            - second row
+                - Header : "Tutorial"
+                - 2 column
+                    - **Location**
+                        - All Tutorial Location
+                    - **Format**
+                        - All Tutorial Format
+        - Support: (4 rows ) Header : **Support**
+            - FAQ
+            - Student Brochure 2026 Exam
+            - Materials Application form
+            - Tutorial Application form
+    - Top right grid cell (Flex direction = row)
+        - social media icons
+            -   facebook
+            -   twitter
+            -   linkedin
+            -   youtube
+            -   font-awesome comments icon https://fontawesome.com/v4/icon/comments         
+    - Bottom left grid cell
+        - "Copyright © 2026 BPP Actuarial Education - Part of the BPP Professional Education Group - acted@bpp.com"
+    - Bottom right grid cell (Flex direction = row, seperated by "|")
+        - General Terms of Use 
+        - Cookie Use 
+        - Complaints
+
