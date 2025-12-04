@@ -10,6 +10,7 @@ import {
 	Alert,
 	Typography,
 	Box,
+	CircularProgress,
 } from "@mui/material";
 import { Info } from "@mui/icons-material";
 import PropTypes from "prop-types";
@@ -28,6 +29,7 @@ const DynamicAddressForm = ({
 }) => {
 	const [addressMetadata, setAddressMetadata] = useState(null);
 	const [fieldErrors, setFieldErrors] = useState({});
+	const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
 	const theme = useTheme();
 	// Get field name with prefix
 	const getFieldName = useCallback(
@@ -37,17 +39,31 @@ const DynamicAddressForm = ({
 		[fieldPrefix]
 	);
 
-	// Update metadata when country changes
+	// Update metadata when country changes (async fetch for full Google metadata)
 	useEffect(() => {
-		if (metadata) {
-			// Use passed metadata (pre-filtered)
-			setAddressMetadata(metadata);
-		} else {
-			// Fall back to service metadata
-			const countryCode = addressMetadataService.getCountryCode(country);
-			const serviceMetadata =
-				addressMetadataService.getAddressMetadata(countryCode);
-			setAddressMetadata(serviceMetadata);
+		const loadMetadata = async () => {
+			if (metadata) {
+				// Use passed metadata (pre-filtered)
+				setAddressMetadata(metadata);
+			} else {
+				// Fetch metadata asynchronously to get full Google API data
+				const countryCode = addressMetadataService.getCountryCode(country);
+				setIsLoadingMetadata(true);
+				try {
+					const fetchedMetadata = await addressMetadataService.fetchAddressMetadata(countryCode);
+					setAddressMetadata(fetchedMetadata);
+				} catch (error) {
+					console.warn('Failed to fetch address metadata, using fallback:', error);
+					const fallbackMetadata = addressMetadataService.getAddressMetadata(countryCode);
+					setAddressMetadata(fallbackMetadata);
+				} finally {
+					setIsLoadingMetadata(false);
+				}
+			}
+		};
+
+		if (country) {
+			loadMetadata();
 		}
 	}, [country, metadata]);
 
@@ -203,6 +219,17 @@ const DynamicAddressForm = ({
 			</Grid>
 		);
 	};
+
+	if (isLoadingMetadata) {
+		return (
+			<Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 2 }}>
+				<CircularProgress size={20} />
+				<Typography variant="body2" color="text.secondary">
+					Loading address format for {country}...
+				</Typography>
+			</Box>
+		);
+	}
 
 	if (!addressMetadata) {
 		return (
