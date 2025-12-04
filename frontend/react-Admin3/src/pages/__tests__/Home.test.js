@@ -6,10 +6,21 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
+import filtersReducer from '../../store/slices/filtersSlice';
 import theme from '../../theme/theme';
 
 // Create mockNavigate at module level
 const mockNavigate = jest.fn();
+const mockDispatch = jest.fn();
+
+// Create a mock store for tests
+const createTestStore = () => configureStore({
+  reducer: {
+    filters: filtersReducer,
+  },
+});
 
 // Override useNavigate from the global mock in setupTests.js
 jest.mock('react-router-dom', () => ({
@@ -103,10 +114,13 @@ describe('Home Page', () => {
   });
 
   const renderHome = () => {
+    const store = createTestStore();
     return render(
-      <ThemeProvider theme={theme}>
-        <Home />
-      </ThemeProvider>
+      <Provider store={store}>
+        <ThemeProvider theme={theme}>
+          <Home />
+        </ThemeProvider>
+      </Provider>
     );
   };
 
@@ -391,6 +405,70 @@ describe('Home Page', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('holiday-message')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('product category cards', () => {
+    test('renders three product category cards', async () => {
+      renderHome();
+
+      await waitFor(() => {
+        expect(screen.getByText('Study Materials')).toBeInTheDocument();
+        expect(screen.getByText('Marking Service')).toBeInTheDocument();
+        expect(screen.getByText('Tuition')).toBeInTheDocument();
+      });
+    });
+
+    test('renders View Products buttons for each card', async () => {
+      renderHome();
+
+      await waitFor(() => {
+        const viewProductsButtons = screen.getAllByText('View Products');
+        expect(viewProductsButtons).toHaveLength(3);
+      });
+    });
+
+    test('navigates to products page when Study Materials card is clicked', async () => {
+      renderHome();
+
+      await waitFor(() => {
+        const viewProductsButtons = screen.getAllByText('View Products');
+        fireEvent.click(viewProductsButtons[0]);
+      });
+
+      expect(mockNavigate).toHaveBeenCalledWith('/products');
+    });
+
+    test('navigates to products page when Marking Service card is clicked', async () => {
+      renderHome();
+
+      await waitFor(() => {
+        const viewProductsButtons = screen.getAllByText('View Products');
+        fireEvent.click(viewProductsButtons[1]);
+      });
+
+      expect(mockNavigate).toHaveBeenCalledWith('/products');
+    });
+
+    test('navigates to products page when Tuition card is clicked', async () => {
+      renderHome();
+
+      await waitFor(() => {
+        const viewProductsButtons = screen.getAllByText('View Products');
+        fireEvent.click(viewProductsButtons[2]);
+      });
+
+      expect(mockNavigate).toHaveBeenCalledWith('/products');
+    });
+
+    test('renders card descriptions', async () => {
+      renderHome();
+
+      await waitFor(() => {
+        expect(screen.getByText(/Comprehensive course notes/)).toBeInTheDocument();
+        expect(screen.getByText(/Expert feedback on your practice papers/)).toBeInTheDocument();
+        expect(screen.getByText(/Live and recorded tutorials/)).toBeInTheDocument();
       });
     });
   });

@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useId } from "react";
-import { Box, useTheme, Grid, Divider } from "@mui/material";
+import {
+   Box,
+   Card,
+   CardActionArea,
+   CardContent,
+   useTheme,
+   Grid,
+   Divider,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import SearchBox from "../components/SearchBox";
 import SearchResults from "../components/SearchResults";
@@ -7,10 +15,19 @@ import { Row, Col, Alert } from "react-bootstrap";
 import { Typography, Container } from "@mui/material";
 import { rulesEngineHelpers } from "../utils/rulesEngineUtils";
 import rulesEngineService from "../services/rulesEngineService";
+import { useDispatch } from "react-redux";
+import { navSelectProductGroup } from "../store/slices/filtersSlice";
+import {
+   MenuBook,
+   RateReview,
+   School,
+   ArrowForward,
+} from "@mui/icons-material";
 
 const Home = () => {
    const navigate = useNavigate();
    const theme = useTheme();
+   const dispatch = useDispatch();
    const [searchResults, setSearchResults] = useState(null);
    const [error, setError] = useState(null);
    const chevronClipId = useId();
@@ -96,6 +113,50 @@ const Home = () => {
       navigate("/products");
    };
 
+   // Handle navigation to products page with specific product type filter
+   const handleProductCategoryClick = (productType) => {
+      dispatch(navSelectProductGroup(productType));
+      navigate("/products");
+   };
+
+   // Product category cards data
+   const productCards = [
+      {
+         id: "study-materials",
+         title: "Study Materials",
+         description:
+            "Comprehensive essential pack and revision materials to help you master actuarial concepts and excel in your exams.",
+         filterValue: "Core Study Materials",
+         icon: "MenuBook",
+         gradient: "linear-gradient(135deg, #4658ac 0%, #2d3f93 100%)",
+      },
+      {
+         id: "marking-service",
+         title: "Marking Service",
+         description:
+            "Feedback on your practice papers with detailed marking and personalized guidance to improve your exam technique.",
+         filterValue: "Marking",
+         icon: "RateReview",
+         gradient: "linear-gradient(135deg, #006874 0%, #004f58 100%)",
+      },
+      {
+         id: "tuition",
+         title: "Tuition",
+         description:
+            "Build and consolidate your knowledge and understanding of the principles. Time spent on an ActEd tutorial will be amongst your most productive study time.",
+         filterValue: "Tutorial",
+         icon: "School",
+         gradient: "linear-gradient(135deg, #76546e 0%, #5c3c55 100%)",
+      },
+   ];
+
+   // Icon mapping for product cards
+   const iconMap = {
+      MenuBook: MenuBook,
+      RateReview: RateReview,
+      School: School,
+   };
+
    return (
       <Container
          maxWidth={true}
@@ -162,52 +223,8 @@ const Home = () => {
                      },
                   }}
                >
-                  <Box
-                     sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "start",
-                     }}
-                  >
-                     <Typography
-                        variant="BPP"
-                        color={theme.palette.md3.surfaceVariant}
-                     >
-                        BPP
-                     </Typography>
-                     <Typography
-                        variant="Acted"
-                        color={theme.palette.md3.surfaceVariant}
-                        className="m-top__xs"
-                     >
-                        Actuarial Education
-                     </Typography>
-                     <Divider flexItem />
-                     <Typography
-                        variant="h3"
-                        align="start"
-                        color={theme.palette.md3.surfaceVariant}
-                     >
-                        Online Store
-                     </Typography>
-                  </Box>
-
-                  <Container
-                     style={{ maxWidth: "600px", margin: "0 auto" }}
-                     disableGutters="true"
-                  >
-                     <SearchBox
-                        onSearchResults={handleSearchResults}
-                        onShowMatchingProducts={handleShowMatchingProducts}
-                        autoFocus={false}
-                     />
-                  </Container>
-               </Container>
-            </Col>
-         </Row>
-
-         {/* Rules Engine Messages Section (Holiday Messages, etc.) */}
-         <Container maxWidth="xl" className="mt-4">
+                  {/* Rules Engine Messages Section (Holiday Messages, etc.) */}
+         <Container maxWidth="xl">
             {rulesLoading && (
                <Alert variant="info" className="text-center">
                   <i className="bi bi-hourglass-split me-2"></i>
@@ -252,6 +269,51 @@ const Home = () => {
                   );
                })}
          </Container>
+                  <Box
+                     sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "start",
+                     }}
+                  >
+                     <Typography
+                        variant="BPP"
+                        color={theme.palette.md3.surfaceVariant}
+                     >
+                        BPP
+                     </Typography>
+                     <Typography
+                        variant="Acted"
+                        color={theme.palette.md3.surfaceVariant}
+                        className="m-top__xs"
+                     >
+                        Actuarial Education
+                     </Typography>
+                     <Divider flexItem />
+                     <Typography
+                        variant="h3"
+                        align="start"
+                        color={theme.palette.md3.surfaceVariant}
+                     >
+                        Online Store
+                     </Typography>
+                  </Box>
+
+                  <Container
+                     style={{ maxWidth: "600px", margin: "0 auto" }}
+                     disableGutters="true"
+                  >
+                     <SearchBox
+                        onSearchResults={handleSearchResults}
+                        onShowMatchingProducts={handleShowMatchingProducts}
+                        autoFocus={false}
+                     />
+                  </Container>
+               </Container>
+            </Col>
+         </Row>
+
+         
 
          {/* Search Results Section */}
          <Container
@@ -273,11 +335,113 @@ const Home = () => {
          <Box
             sx={{
                position: "relative",
-               minHeight: { xs: "300px", md: "400px", lg: "500px" },
+               // minHeight: { xs: "300px", md: "400px", lg: "500px" },
                overflow: "hidden",
                backgroundColor: theme.palette.background.default,
             }}
          >
+            {/* Product Cards Grid */}
+            <Grid
+               container
+               spacing={3}
+               sx={{
+                  justifyContent: "center",
+                  alignItems: "stretch",
+                  maxWidth: "1200px",
+                  mx: "auto",
+                  zIndex: 1,
+                  height: "100%",
+                  minHeight: "inherit",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  position: "relative",
+                  px: { xs: 2, md: 4, lg: 6 },
+                  py: { xs: 4, md: 6 },
+               }}
+            >
+               {productCards.map((card) => (
+                  <Grid
+                     key={card.id}
+                     size={{ xs: 12, sm: 6, md: 4 }}
+                     sx={{
+                        alignSelf: "stretch",
+                     }}
+                  >
+                     <Card
+                        elevation={3}
+                        sx={{
+                           p: { xs: 2, md: 3 },
+                           py: { xs: 2, md: 5 },
+                           backgroundColor: "rgba(255, 255, 255, 0.95)",
+                           borderRadius: theme.liftkit.spacing.sm,
+                           height:"100%",
+                           justifyContent:"space-between",
+                           display:"flex",
+                           flexDirection:"column"
+                        }}
+                     >
+                        <CardContent>
+                           <Typography
+                              variant="h4"
+                              sx={{
+                                 color: theme.palette.bpp.granite["090"],
+                                 fontWeight: 500,
+                                 marginBottom: theme.liftkit.spacing.lg,
+                              }}
+                           >
+                              {card.title}
+                           </Typography>
+                           <Typography
+                              variant="body2"
+                              sx={{
+                                 color: theme.palette.text.secondary,
+                                 lineHeight: 1.7,
+                                 flexGrow: 1,
+                                 mb: 3,
+                              }}
+                           >
+                              {card.description}
+                           </Typography>
+                        </CardContent>
+                        <CardActionArea>
+                           {/* CTA Button */}
+                           <Box
+                              component="button"
+                              onClick={() =>
+                                 handleProductCategoryClick(card.filterValue)
+                              }
+                              sx={{
+                                 display: "flex",
+                                 alignItems: "center",
+                                 justifyContent: "center",                                 
+                                 width: "100%",
+                                 py: 1.5,
+                                 px: 3,
+                                 border: "none",
+                                 borderRadius: 2,
+                                 background: card.gradient,
+                                 color: "#ffffff",
+                                 fontSize: "0.875rem",
+                                 fontWeight: 600,
+                                 cursor: "pointer",
+                                 transition: "all 0.2s ease",
+                                 "&:hover": {
+                                    opacity: 0.9,
+                                    transform: "scale(1.02)",
+                                 },
+                                 "&:active": {
+                                    transform: "scale(0.98)",
+                                 },
+                              }}
+                           >
+                              View Products
+                              <ArrowForward sx={{ fontSize: 18 }} />
+                           </Box>
+                        </CardActionArea>
+                     </Card>
+                  </Grid>
+               ))}
+            </Grid>
             {/* SVG Background Layer */}
             <Box
                sx={{
@@ -337,95 +501,6 @@ const Home = () => {
                   ></rect>
                </svg>
             </Box>
-
-            {/* Grid Overlay Layer */}
-            <Grid
-               container
-               spacing={3}
-               sx={{
-                  position: "relative",
-                  zIndex: 1,
-                  height: "100%",
-                  minHeight: "inherit",
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                  px: { xs: 2, md: 4, lg: 6 },
-                  py: { xs: 4, md: 6 },
-               }}
-            >
-               <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-                  <Box
-                     sx={{
-                        p: { xs: 2, md: 3 },
-                        backgroundColor: "rgba(255, 255, 255, 0.95)",
-                        backdropFilter: "blur(12px)",
-                        borderRadius: 3,
-                        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-                        border: "1px solid rgba(255, 255, 255, 0.2)",
-                        transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                        "&:hover": {
-                           transform: "translateY(-4px)",
-                           boxShadow: "0 12px 48px rgba(0, 0, 0, 0.15)",
-                        },
-                     }}
-                  >
-                     <Typography variant="h5" gutterBottom>
-                        Card 1
-                     </Typography>
-                     <Typography variant="body2" color="text.secondary">
-                        Content for card 1
-                     </Typography>
-                  </Box>
-               </Grid>
-               <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-                  <Box
-                     sx={{
-                        p: { xs: 2, md: 3 },
-                        backgroundColor: "rgba(255, 255, 255, 0.95)",
-                        backdropFilter: "blur(12px)",
-                        borderRadius: 3,
-                        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-                        border: "1px solid rgba(255, 255, 255, 0.2)",
-                        transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                        "&:hover": {
-                           transform: "translateY(-4px)",
-                           boxShadow: "0 12px 48px rgba(0, 0, 0, 0.15)",
-                        },
-                     }}
-                  >
-                     <Typography variant="h5" gutterBottom>
-                        Card 2
-                     </Typography>
-                     <Typography variant="body2" color="text.secondary">
-                        Content for card 2
-                     </Typography>
-                  </Box>
-               </Grid>
-               <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-                  <Box
-                     sx={{
-                        p: { xs: 2, md: 3 },
-                        backgroundColor: "rgba(255, 255, 255, 0.95)",
-                        backdropFilter: "blur(12px)",
-                        borderRadius: 3,
-                        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-                        border: "1px solid rgba(255, 255, 255, 0.2)",
-                        transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                        "&:hover": {
-                           transform: "translateY(-4px)",
-                           boxShadow: "0 12px 48px rgba(0, 0, 0, 0.15)",
-                        },
-                     }}
-                  >
-                     <Typography variant="h5" gutterBottom>
-                        Card 3
-                     </Typography>
-                     <Typography variant="body2" color="text.secondary">
-                        Content for card 3
-                     </Typography>
-                  </Box>
-               </Grid>
-            </Grid>
          </Box>
       </Container>
    );
