@@ -204,6 +204,13 @@ const theme = createTheme({
          lineHeight: "var(--halfstep) !important",
          letterSpacing: "-0.007em !important",
       },
+      captionSemiBold: {
+         fontFamily: "'Inter', 'Poppins', sans-serif",
+         fontWeight: 500,
+         fontSize: "calc(1em / var(--halfstep)) !important",
+         lineHeight: "var(--halfstep) !important",
+         letterSpacing: "-0.007em !important",
+      },
       caption2: {
          fontFamily: "'Inter', 'Poppins', sans-serif",
          fontWeight: 400,

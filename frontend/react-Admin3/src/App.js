@@ -79,6 +79,58 @@ function App() {
 		});
 	}, []);
 
+	// Handle reCAPTCHA badge: hide duplicates and scroll behavior for mobile
+	useEffect(() => {
+		let hasScrolled = false;
+
+		// Function to hide duplicate badges (keep only the first one)
+		const hideDuplicateBadges = () => {
+			const badges = document.querySelectorAll('.grecaptcha-badge');
+			if (badges.length > 1) {
+				// Hide all badges except the first one
+				badges.forEach((badge, index) => {
+					if (index > 0) {
+						badge.style.display = 'none';
+					}
+				});
+			}
+		};
+
+		const handleScroll = () => {
+			// Only apply on mobile (< 900px)
+			if (window.innerWidth >= 900) return;
+
+			// Target the first (visible) grecaptcha badge
+			const badge = document.querySelector('.grecaptcha-badge');
+			if (!badge) return;
+
+			const currentScrollY = window.scrollY;
+
+			// If user has scrolled more than 10px from top, hide the badge
+			if (currentScrollY > 10 && !hasScrolled) {
+				badge.classList.add('recaptcha-hidden');
+				hasScrolled = true;
+			} else if (currentScrollY <= 10 && hasScrolled) {
+				// Show badge again when scrolled back to top
+				badge.classList.remove('recaptcha-hidden');
+				hasScrolled = false;
+			}
+		};
+
+		// Check for duplicate badges periodically (Google may add badges dynamically)
+		const checkInterval = setInterval(hideDuplicateBadges, 1000);
+
+		// Initial check after a short delay for badges to load
+		setTimeout(hideDuplicateBadges, 500);
+
+		window.addEventListener('scroll', handleScroll, { passive: true });
+
+		return () => {
+			window.removeEventListener('scroll', handleScroll);
+			clearInterval(checkInterval);
+		};
+	}, []);
+
 	// App content wrapped conditionally with reCAPTCHA provider
 	const AppContent = () => (
 		<ErrorBoundary>
