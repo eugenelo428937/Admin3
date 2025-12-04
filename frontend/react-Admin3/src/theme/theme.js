@@ -107,7 +107,7 @@ const theme = createTheme({
          fontFamily: "'Inter', 'Poppins', sans-serif",
          fontWeight: 400,
          fontSize: "calc(1em * var(--wholestep) * var(--eighthstep)) !important",
-         lineHeight: "var(--halfstep) !important",
+         lineHeight: "var(--quarterstep) !important",
          letterSpacing: "-0.022em !important",
          [baseTheme.breakpoints.down("sm")]: {
             fontSize:
@@ -193,6 +193,13 @@ const theme = createTheme({
       caption: {
          fontFamily: "'Inter', 'Poppins', sans-serif",
          fontWeight: 400,
+         fontSize: "calc(1em / var(--halfstep)) !important",
+         lineHeight: "var(--halfstep) !important",
+         letterSpacing: "-0.007em !important",
+      },
+      captionBold: {
+         fontFamily: "'Inter', 'Poppins', sans-serif",
+         fontWeight: 600,
          fontSize: "calc(1em / var(--halfstep)) !important",
          lineHeight: "var(--halfstep) !important",
          letterSpacing: "-0.007em !important",
@@ -455,7 +462,7 @@ const theme = createTheme({
       MuiBackdrop: {
          styleOverrides: {
             root: {
-               backgroundColor: "rgba(0, 0, 0, 0.6)",
+               backgroundColor: "rgba(0, 0, 0, 0.75)",
             },
          },
       },
@@ -490,10 +497,7 @@ const theme = createTheme({
                      gap: liftKitTheme.spacing.xs2,
                      pointerEvents: "none",
                      "& .subject-badge": {                                          
-                        paddingLeft: liftKitTheme.spacing.xs,
-                        paddingRight: liftKitTheme.spacing.xs,
-                        paddingTop: liftKitTheme.spacing.sm,
-                        paddingBottom: liftKitTheme.spacing.sm,
+                        padding: liftKitTheme.spacing.sm,                        
                         alignItems: "center",
                         justifyContent: "center",
                         alignContent: "center",
@@ -507,10 +511,7 @@ const theme = createTheme({
                         color: colorTheme.bpp.granite["100"],                        
                      },
                      "& .session-badge": {                        
-                        paddingLeft: liftKitTheme.spacing.xs,
-                        paddingRight: liftKitTheme.spacing.xs,
-                        paddingTop: liftKitTheme.spacing.sm,
-                        paddingBottom: liftKitTheme.spacing.sm,
+                        padding: liftKitTheme.spacing.sm,                        
                         alignItems: "center",
                         justifyContent: "center",
                         alignContent: "center",
@@ -586,7 +587,7 @@ const theme = createTheme({
 
                   //  actions styling
                   "& .MuiCardActions-root": {
-                     height: "10.2rem !important",
+                     height: "9.4em !important",
                      boxShadow: "var(--shadow-lg)",
                      paddingTop: liftKitTheme.spacing.md,
                      paddingLeft: liftKitTheme.spacing.md,
@@ -1074,7 +1075,7 @@ const theme = createTheme({
                               backgroundColor: colorTheme.bpp.sky["060"],
 
                               "&:hover": {
-                                 backgroundColor: colorTheme.bpp.sky["080"],
+                                 backgroundColor: colorTheme.bpp.sky["070"],
                               },
 
                               "& .MuiSvgIcon-root": {
@@ -1111,8 +1112,11 @@ const theme = createTheme({
                            color: colorTheme.bpp.green["100"],
                            "& .title-info-button": {
                               color: colorTheme.bpp.green["080"],
+                              minWidth : "1.2rem",
                               "&:hover": {},
-                              "& .MuiSvgIcon-root": {},
+                              "& .MuiSvgIcon-root": {
+                                 fontSize: "1.2rem",
+                              },
                            },
                         },
                         "& .product-subtitle-container": {                           

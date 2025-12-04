@@ -365,7 +365,7 @@ const MaterialProductCard = React.memo(
                                        control={<Radio size="small" />}
                                        label={
                                           <Typography
-                                             variant="body1"
+                                             variant="body2"
                                              className="variation-label"
                                              fontWeight={
                                                 selectedVariation ===
@@ -381,7 +381,7 @@ const MaterialProductCard = React.memo(
                                     />
                                     {standardPrice && (
                                        <Typography
-                                          variant="body1"
+                                          variant="body2"
                                           color="primary.main"
                                           className="variation-price"
                                           fontWeight={600}
@@ -487,9 +487,8 @@ const MaterialProductCard = React.memo(
                      {/* Status Text */}
                      <Box className="price-details-row">
                         <Typography
-                           variant="subtitle2"
-                           className="price-level-text"
-                           color="text.secondary"
+                           variant="caption"
+                           className="price-level-text"                           
                         >
                            {selectedPriceType === "retaker"
                               ? "Retaker discount applied"
@@ -536,12 +535,12 @@ const MaterialProductCard = React.memo(
                               direction="up"
                               sx={{
 								position: "absolute",
-								bottom: 18,
-								right: 8,
+								bottom: 10,
+								right: 5,
 
 								"& .MuiFab-root": {
 								   backgroundColor:
-									  theme.palette.bpp.sky["050"],
+									  theme.palette.bpp.sky["060"],
 								   "&:hover": {
 									  backgroundColor:
 										 theme.palette.bpp.sky["040"],
@@ -560,7 +559,9 @@ const MaterialProductCard = React.memo(
                                  slotProps={{
                                     tooltip: {
                                        open: true,
-                                       title: "Add to Cart",
+                                       title: {
+                                          ...(<Typography variant="subtitle1">{"Add to Cart"}</Typography>
+                                       )},
                                     },
                                  }}
                                  sx={{
@@ -568,11 +569,13 @@ const MaterialProductCard = React.memo(
                                        {
                                           whiteSpace: "nowrap",
                                           maxWidth: "none",
+                                          minHeight: theme.liftkit.spacing.xl,
+                                          alignContent: "center",
                                        },
                                     "& .MuiSpeedDialAction-fab": {
                                        color: "white",
                                        backgroundColor:
-                                          theme.palette.bpp.sky["050"],                                       
+                                          theme.palette.bpp.sky["060"],                                       
                                        boxShadow: "var(--Paper-shadow)",  
                                        "&:hover": {
                                           backgroundColor:
@@ -607,7 +610,10 @@ const MaterialProductCard = React.memo(
                                  slotProps={{
                                     tooltip: {
                                        open: true,
-                                       title: "Buy Both (Printed + eBook)",
+                                       title: {                                          
+                                             ...(<><Typography variant="subtitle1">{"Buy Both"}</Typography>
+                                             <Typography variant="subtitle1">{"Printed + eBook"}</Typography></>)                                          
+                                       },
                                     },
                                  }}
                                  sx={{
@@ -615,6 +621,8 @@ const MaterialProductCard = React.memo(
                                        {
                                           whiteSpace: "nowrap",
                                           maxWidth: "none",
+                                          minHeight: theme.liftkit.spacing.xl,
+                                          alignContent: "center",
                                        },
 
                                     "& .MuiSpeedDialAction-fab": {
@@ -694,8 +702,8 @@ const MaterialProductCard = React.memo(
                               direction="up"
                               sx={{
                                  position: "absolute",
-                                 bottom: 18,
-                                 right: 8,
+                                 bottom: 10,
+                                 right: 5,
 
                                  "& .MuiFab-root": {                                    
                                     backgroundColor: theme.palette.bpp.sky["060"],
@@ -718,7 +726,9 @@ const MaterialProductCard = React.memo(
                                  slotProps={{
                                     tooltip: {
                                        open: true,
-                                       title: "Add to Cart",
+                                       title: {                                          
+                                          ...(<Typography variant="subtitle1">{"Add to Cart"}</Typography>
+                                       )},
                                     },
                                  }}
                                  sx={{
@@ -726,6 +736,8 @@ const MaterialProductCard = React.memo(
                                        {
                                           whiteSpace: "nowrap",
                                           maxWidth: "none",
+                                          minHeight: theme.liftkit.spacing.xl,
+                                          alignContent: "center",
                                        },
 
                                     "& .MuiSpeedDialAction-fab": {
@@ -785,6 +797,8 @@ const MaterialProductCard = React.memo(
                                           whiteSpace: "normal",
                                           textWrap: "balance",
                                           minWidth: "200px",
+                                          minHeight: theme.liftkit.spacing.xl,
+                                          alignContent: "center",
                                        },
                                     "& .MuiSpeedDialAction-fab": {
                                        color: "white",
@@ -902,7 +916,7 @@ const MaterialProductCard = React.memo(
                {/* Floating Badges */}
                <Box className="floating-badges-container">
                   <Chip
-                     label={product.subject_code}
+                     label={<Typography variant="chip">{product.subject_code}</Typography>}
                      size="small"
                      className="subject-badge"
                      role="img"
@@ -913,11 +927,12 @@ const MaterialProductCard = React.memo(
                      product.exam_session ||
                      product.session) && (
                      <Chip
-                        label={
-                           product.exam_session_code ||
+                        label={<Typography variant="chip">
+                           {product.exam_session_code ||
                            product.session_code ||
                            product.exam_session ||
-                           product.session
+                           product.session}
+                           </Typography>
                         }
                         size="small"
                         className="session-badge"
@@ -936,7 +951,7 @@ const MaterialProductCard = React.memo(
                   className="product-header"
                   title={
                      <Typography
-                        variant="h4"
+                        variant="productTitle"
                         textAlign="left"
                         className="product-title"
                      >
