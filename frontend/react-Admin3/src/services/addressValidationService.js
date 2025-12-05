@@ -54,8 +54,30 @@ const addressValidationService = {
         return { hasMatch: false, bestMatch: null, needsComparison: false };
       }
 
-      // Get the best match (first result)
-      const bestMatch = this.transformApiAddress(addresses[0], address.country);
+      // Get the best match (first result from autocomplete)
+      const bestAutocompleteMatch = addresses[0];
+
+      // Retrieve full address details if we have an ID
+      // Autocomplete returns suggestions without full details (city, county, postcode)
+      let fullAddressDetails = bestAutocompleteMatch;
+      if (bestAutocompleteMatch.id) {
+        try {
+          const retrieveResponse = await fetch(
+            `${config.apiBaseUrl}/api/utils/address-retrieve/?id=${encodeURIComponent(bestAutocompleteMatch.id)}&country=${countryCode}`
+          );
+          if (retrieveResponse.ok) {
+            const retrieveData = await retrieveResponse.json();
+            if (retrieveData.addresses && retrieveData.addresses.length > 0) {
+              fullAddressDetails = retrieveData.addresses[0];
+            }
+          }
+        } catch (retrieveError) {
+          console.warn('Failed to retrieve full address details:', retrieveError);
+          // Continue with autocomplete result if retrieve fails
+        }
+      }
+
+      const bestMatch = this.transformApiAddress(fullAddressDetails, address.country);
 
       // Check if comparison is needed
       const needsComparison = !this.compareAddresses(address, bestMatch);

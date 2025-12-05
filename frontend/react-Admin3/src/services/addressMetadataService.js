@@ -69,13 +69,8 @@ export const fetchAddressMetadata = async (countryCode) => {
           ...customConfig.fields
         };
 
-        // Determine which layout to use:
-        // - Use custom layout only if it has comprehensive field definitions (5+ fields)
-        // - Otherwise use Google's layout to ensure all fields are displayed
-        // This ensures minimal configs (UK, India, etc. with 3-4 fields) use Google's comprehensive layout
-        const customFieldCount = customConfig.fields ? Object.keys(customConfig.fields).length : 0;
-        const hasComprehensiveFields = customFieldCount >= 5;
-        const useLayout = hasComprehensiveFields ? (customConfig.layout || transformed.layout) : transformed.layout;
+        // Use custom layout if defined, otherwise fall back to Google's layout
+        const useLayout = customConfig.layout || transformed.layout;
 
         // Merge ALL custom config properties (addressLookupSupported, etc.) with Google data
         // But exclude 'fields' and 'layout' since we handle those specially above

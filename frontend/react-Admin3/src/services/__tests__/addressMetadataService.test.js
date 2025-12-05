@@ -80,7 +80,7 @@ describe('Address Metadata Service', () => {
   });
 
   describe('fetchAddressMetadata (async with Google API)', () => {
-    it('should fetch from Google API and return transformed data', async () => {
+    it('should fetch from Google API and merge with custom config', async () => {
       const mockGoogleData = {
         fmt: '%N%n%O%n%A%n%C%n%Z',
         require: 'ACZ'
@@ -110,9 +110,13 @@ describe('Address Metadata Service', () => {
       expect(fetchGoogleAddressMetadata).toHaveBeenCalledWith('GB');
       expect(transformGoogleMetadata).toHaveBeenCalledWith(mockGoogleData, 'GB');
 
-      // Check that Google data is returned
-      expect(result.format).toBe('%N%n%O%n%A%n%C%n%Z');
+      // Check that custom config's format takes precedence over Google data
+      // GB has a custom config with district and county fields
+      expect(result.format).toBe('%N%n%O%n%A%n%D%n%C%n%S%n%Z');
       expect(result.required).toEqual(['address', 'city', 'postal_code']);
+      // Custom config adds optional district and county fields
+      expect(result.optional).toContain('district');
+      expect(result.optional).toContain('county');
     });
 
     it('should merge US state dropdown with Google data', async () => {
@@ -171,7 +175,7 @@ describe('Address Metadata Service', () => {
       consoleSpy.mockRestore();
     });
 
-    it('should return Google data for countries without custom config', async () => {
+    it('should merge Google data with custom config for DE', async () => {
       const mockTransformed = {
         format: '%A%n%C%n%Z',
         required: ['address', 'city', 'postal_code'],
@@ -188,8 +192,10 @@ describe('Address Metadata Service', () => {
 
       const result = await fetchAddressMetadata('DE');
 
-      // Should return pure Google data since DE has no custom config
-      expect(result.fields.address.label).toBe('Straße');
+      // DE now has custom config, so custom fields should override Google data
+      // Custom config has 'Street Address' label (English)
+      expect(result.fields.address.label).toBe('Street Address');
+      expect(result.hasPostcode).toBe(true);
     });
 
     it('should handle empty country code', async () => {

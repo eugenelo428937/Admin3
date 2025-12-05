@@ -660,6 +660,166 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
    };
 
    // Save current step changes in profile mode
+   // Internal save function that accepts form and changedFields directly
+   // This avoids async state issues when called immediately after setForm
+   const handleStepSaveWithForm = async (formData, changedFieldsSet) => {
+      if (!isProfileMode) return; // Only available in profile mode
+
+      // Check if there are any changes to save
+      if (changedFieldsSet.size === 0) {
+         setSnackbar({
+            open: true,
+            message: "No changes to save",
+            severity: "info",
+         });
+         return;
+      }
+
+      setIsLoading(true);
+
+      try {
+         // Build update payload with only changed fields
+         const updatePayload = {};
+
+         // Helper to check if any field with prefix has changed
+         const hasChangedFieldsWithPrefix = (prefix) => {
+            return Array.from(changedFieldsSet).some((field) =>
+               field.startsWith(prefix)
+            );
+         };
+
+         // Helper to format address data from the provided form
+         const formatAddressFromForm = (addressPrefix) => {
+            const countryFieldName = `${addressPrefix}_country`;
+            const country = formData[countryFieldName];
+
+            if (!country) return {};
+
+            const addressData = { country };
+
+            const addressFields = [
+               'address', 'city', 'county', 'state', 'postal_code',
+               'district', 'building', 'sub_building_name', 'building_name', 'building_number'
+            ];
+
+            addressFields.forEach((fieldName) => {
+               const formFieldName = `${addressPrefix}_${fieldName}`;
+               const value = formData[formFieldName];
+               if (value && value.trim()) {
+                  addressData[fieldName] = value.trim();
+               }
+            });
+
+            if (addressPrefix === "work") {
+               if (formData.work_company) addressData.company = formData.work_company;
+               if (formData.work_department) addressData.department = formData.work_department;
+            }
+
+            return addressData;
+         };
+
+         // User fields (first_name, last_name, email)
+         if (changedFieldsSet.has("first_name") || changedFieldsSet.has("last_name") || changedFieldsSet.has("email")) {
+            updatePayload.user = {};
+            if (changedFieldsSet.has("first_name")) updatePayload.user.first_name = formData.first_name;
+            if (changedFieldsSet.has("last_name")) updatePayload.user.last_name = formData.last_name;
+            if (changedFieldsSet.has("email")) updatePayload.user.email = formData.email;
+         }
+
+         // Profile fields (title, preferences)
+         if (
+            changedFieldsSet.has("title") ||
+            changedFieldsSet.has("send_invoices_to") ||
+            changedFieldsSet.has("send_study_material_to")
+         ) {
+            updatePayload.profile = {};
+            if (changedFieldsSet.has("title")) updatePayload.profile.title = formData.title;
+            if (changedFieldsSet.has("send_invoices_to"))
+               updatePayload.profile.send_invoices_to = formData.send_invoices_to;
+            if (changedFieldsSet.has("send_study_material_to"))
+               updatePayload.profile.send_study_material_to = formData.send_study_material_to;
+         }
+
+         // Home address
+         if (hasChangedFieldsWithPrefix("home_")) {
+            updatePayload.home_address = formatAddressFromForm("home");
+         }
+
+         // Work address
+         if (hasChangedFieldsWithPrefix("work_")) {
+            updatePayload.work_address = formatAddressFromForm("work");
+         }
+
+         // Contact numbers
+         if (
+            changedFieldsSet.has("home_phone") ||
+            changedFieldsSet.has("mobile_phone") ||
+            changedFieldsSet.has("work_phone") ||
+            changedFieldsSet.has("work_email")
+         ) {
+            updatePayload.contact_numbers = {};
+            if (changedFieldsSet.has("home_phone"))
+               updatePayload.contact_numbers.home_phone = formData.home_phone;
+            if (changedFieldsSet.has("mobile_phone"))
+               updatePayload.contact_numbers.mobile_phone = formData.mobile_phone;
+            if (changedFieldsSet.has("work_phone"))
+               updatePayload.contact_numbers.work_phone = formData.work_phone;
+            if (changedFieldsSet.has("work_email"))
+               updatePayload.contact_numbers.work_email = formData.work_email;
+         }
+
+         // Password (only if user is changing password)
+         if (isChangingPassword && (changedFieldsSet.has("password") || changedFieldsSet.has("confirmPassword"))) {
+            updatePayload.password = formData.password;
+         }
+
+         // Call update API
+         const result = await userService.updateUserProfile(updatePayload);
+
+         if (result.status === "success") {
+            // Track if password was changed
+            const passwordChanged = isChangingPassword && (changedFieldsSet.has("password") || changedFieldsSet.has("confirmPassword"));
+
+            // Update initialFormData with saved values
+            setInitialFormData((prev) => ({
+               ...prev,
+               ...formData,
+            }));
+
+            // Clear changed fields
+            setChangedFields(new Set());
+
+            // If password was changed, reset password change state and clear fields
+            if (passwordChanged) {
+               setIsChangingPassword(false);
+               setForm(prev => ({
+                  ...prev,
+                  password: "",
+                  confirmPassword: ""
+               }));
+            }
+
+            setSnackbar({
+               open: true,
+               message: "Changes saved successfully",
+               severity: "success",
+            });
+         } else {
+            throw new Error(result.message || "Failed to save changes");
+         }
+      } catch (error) {
+         console.error("Error saving profile:", error);
+         setSnackbar({
+            open: true,
+            message: error.message || "Failed to save changes",
+            severity: "error",
+         });
+      } finally {
+         setIsLoading(false);
+      }
+   };
+
+   // Public save function that uses current state
    const handleStepSave = async () => {
       if (!isProfileMode) return; // Only available in profile mode
 
@@ -863,12 +1023,14 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
       if (suggestedAddr.state) updates[`${prefix}_state`] = suggestedAddr.state;
       if (suggestedAddr.postal_code) updates[`${prefix}_postal_code`] = suggestedAddr.postal_code;
 
-      setForm(prev => ({ ...prev, ...updates }));
+      // Create merged form for immediate save (since setForm is async)
+      const mergedForm = { ...form, ...updates };
 
-      // Mark fields as changed
-      Object.keys(updates).forEach(field => {
-         setChangedFields(prev => new Set([...prev, field]));
-      });
+      setForm(mergedForm);
+
+      // Mark fields as changed and collect them for immediate use
+      const newChangedFields = new Set([...changedFields, ...Object.keys(updates)]);
+      setChangedFields(newChangedFields);
 
       // Close modal and exit edit mode
       setShowComparisonModal(false);
@@ -878,8 +1040,8 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
          setIsEditingWorkAddress(false);
       }
 
-      // Trigger save
-      handleStepSave();
+      // Trigger save with the merged form data (pass directly to avoid async state issues)
+      handleStepSaveWithForm(mergedForm, newChangedFields);
    };
 
    // Handle keeping original address
