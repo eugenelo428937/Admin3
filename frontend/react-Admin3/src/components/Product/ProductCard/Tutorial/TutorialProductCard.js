@@ -211,6 +211,58 @@ const TutorialProductCard = React.memo(
          }, 0);
       }, [cartItems, subjectCode]);
 
+      // Compute unique variations (deduplicate by name, preferring ones with standard price)
+      // This fixes the issue where multiple variations with the same name appear in the price table
+      const uniqueVariations = useMemo(() => {
+         if (!variations || variations.length === 0) return [];
+
+         const variationMap = new Map();
+
+         variations.forEach((variation) => {
+            const name = variation.name;
+            const existingVariation = variationMap.get(name);
+
+            // Check if this variation has a standard price
+            const hasStandardPrice = variation.prices?.some(
+               (p) => p.price_type === "standard" && p.amount != null
+            );
+            const existingHasStandardPrice = existingVariation?.prices?.some(
+               (p) => p.price_type === "standard" && p.amount != null
+            );
+
+            // Prefer the variation with a standard price
+            if (!existingVariation || (hasStandardPrice && !existingHasStandardPrice)) {
+               variationMap.set(name, variation);
+            }
+         });
+
+         return Array.from(variationMap.values());
+      }, [variations]);
+
+      // Compute display price from the first variation's standard price
+      // This fixes the £299 fallback issue when product.price is undefined
+      const displayPrice = useMemo(() => {
+         // Find the first variation with a standard price
+         for (const variation of uniqueVariations) {
+            const standardPrice = variation.prices?.find(
+               (p) => p.price_type === "standard"
+            );
+            if (standardPrice?.amount != null) {
+               return {
+                  standard: standardPrice.amount,
+                  retaker: variation.prices?.find((p) => p.price_type === "retaker")?.amount,
+                  additional: variation.prices?.find((p) => p.price_type === "additional")?.amount,
+               };
+            }
+         }
+         // Fallback to product.price if no variation prices found
+         return {
+            standard: product.price || null,
+            retaker: product.retaker_price || null,
+            additional: product.additional_copy_price || null,
+         };
+      }, [uniqueVariations, product.price, product.retaker_price, product.additional_copy_price]);
+
       // Flatten events from variations for TutorialSelectionDialog
       const flattenedEvents = useMemo(() => {
          const events = [];
@@ -731,14 +783,14 @@ const TutorialProductCard = React.memo(
                               className="price-display"
                            >
                               {selectedPriceType === "retaker" &&
-                              product.retaker_price
-                                 ? formatPrice(product.retaker_price)
+                              displayPrice.retaker
+                                 ? formatPrice(displayPrice.retaker)
                                  : selectedPriceType === "additional" &&
-                                   product.additional_copy_price
-                                 ? formatPrice(product.additional_copy_price)
-                                 : product.price
-                                 ? formatPrice(product.price)
-                                 : "£299"}
+                                   displayPrice.additional
+                                 ? formatPrice(displayPrice.additional)
+                                 : displayPrice.standard
+                                 ? formatPrice(displayPrice.standard)
+                                 : "Price on selection"}
                            </Typography>
                            <Tooltip title="Show price details">
                               <Button
@@ -903,7 +955,7 @@ const TutorialProductCard = React.memo(
                            </TableRow>
                         </TableHead>
                         <TableBody>
-                           {variations.map((variation) => {
+                           {uniqueVariations.map((variation) => {
                               const standardPrice = variation.prices?.find(
                                  (p) => p.price_type === "standard"
                               );
@@ -915,7 +967,7 @@ const TutorialProductCard = React.memo(
                               );
 
                               return (
-                                 <React.Fragment key={variation.id}>
+                                 <React.Fragment key={variation.id || variation.name}>
                                     <TableRow>
                                        <TableCell>{variation.name}</TableCell>
                                        <TableCell align="right">

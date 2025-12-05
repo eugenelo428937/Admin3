@@ -151,7 +151,7 @@ const DynamicAddressForm = ({
 		// Special handling for address field - always full width and multiline on mobile
 		const isAddressField = fieldName === 'address';
 		// For non-address fields, default to size 6 unless specified as 12
-		const gridSize = isAddressField ? 12 : (layoutSpan === 12 ? 12 : 6);
+		const gridSize = isAddressField ? 8 : (layoutSpan === 12 ? 12 : 6);
 
 		if (fieldConfig.type === "select") {
 			return (
@@ -205,7 +205,7 @@ const DynamicAddressForm = ({
 					error={hasError}
 					helperText={hasError ? errorMessage : ""}
 					multiline={isAddressField}
-					rows={isAddressField ? 2 : 1}
+					rows={isAddressField ? 3 : 1}
 					sx={{
 						style: {
 							textTransform: fieldConfig.transform
