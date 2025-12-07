@@ -177,7 +177,7 @@ const theme = createTheme({
          fontSize: "calc(1em / var(--quarterstep)) !important",
          lineHeight: "calc(var(--wholestep) / var(--quarterstep)) !important",
          letterSpacing: "-0.011em !important",
-         textWrap:"pretty",
+         textWrap:"balance",
       },
       button: {
          fontFamily: "'Inter', 'Poppins', sans-serif",
