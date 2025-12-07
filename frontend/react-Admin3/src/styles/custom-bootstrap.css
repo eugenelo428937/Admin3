@@ -86,7 +86,7 @@
 /* Responsive spacing for tutorial choice panel */
 @media (max-width: 768px) {
   .App {
-    padding-bottom: 100px; /* More space on mobile */
+    /*padding-bottom: 100px; /* More space on mobile */
   }
   
   .body-container {
