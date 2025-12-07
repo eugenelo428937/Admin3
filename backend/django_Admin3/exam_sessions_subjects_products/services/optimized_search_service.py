@@ -192,16 +192,22 @@ class OptimizedSearchService:
         products_serializer = ProductListSerializer(filtered_queryset, many=True)
         transformed_products = list(products_serializer.data)
 
-        # Combine bundles and products, then sort by subject code
-        all_items = transformed_bundles + transformed_products
-
-        # Sort by subject code - bundles use 'subject_code', products use 'subject_code'
-        # Secondary sort: bundles before products within same subject (is_bundle=True first)
-        all_items.sort(key=lambda x: (
-            x.get('subject_code') or x.get('code') or '',
-            0 if x.get('is_bundle') else 1,  # Bundles first within same subject
-            x.get('shortname') or x.get('product_name') or ''
-        ))
+        # Combine bundles and products
+        # When fuzzy search is active, preserve relevance ordering (products already sorted by score)
+        # When no search, sort alphabetically by subject code
+        if use_fuzzy_search and fuzzy_essp_ids:
+            # Preserve fuzzy search relevance ordering for products
+            # Bundles go after products since they weren't part of the fuzzy ranking
+            all_items = transformed_products + transformed_bundles
+            logger.debug(f'[SEARCH] Preserving fuzzy relevance order for {len(transformed_products)} products')
+        else:
+            # No search query - sort alphabetically by subject code
+            all_items = transformed_bundles + transformed_products
+            all_items.sort(key=lambda x: (
+                x.get('subject_code') or x.get('code') or '',
+                0 if x.get('is_bundle') else 1,  # Bundles first within same subject
+                x.get('shortname') or x.get('product_name') or ''
+            ))
 
         # Prepend vouchers if applicable
         if marking_vouchers_data:
