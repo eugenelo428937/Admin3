@@ -562,9 +562,10 @@ const Footer = () => {
                sx={{
                   justifyItems: "start",
                   display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
+                  flexDirection: { xs: "column", md: "row" },
+                  alignItems: { xs: "flex-start", md: "center" },
                   justifyContent: "space-between",
+                  gap: { xs: 1.5, md: 0 },
                }}
             >
                <SocialMediaSection />
