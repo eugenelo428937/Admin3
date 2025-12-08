@@ -780,6 +780,14 @@ class CartViewSet(viewsets.ViewSet):
             }
             vat_by_item_id = {}
             region = 'UNKNOWN'
+            # Create fallback vat_result to avoid UnboundLocalError
+            vat_result = {
+                'totals': vat_totals,
+                'items': [],
+                'region': region,
+                'error': str(e),
+                'fallback': True
+            }
 
         # Now enter atomic block for order creation with calculated VAT data
         with transaction.atomic():
