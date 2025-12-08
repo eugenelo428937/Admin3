@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button, Alert, Card, CardActions, CardContent, Grid, Box, useTheme, Stepper, Step, StepLabel, Typography } from '@mui/material';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -57,6 +57,24 @@ const CheckoutSteps = ({ onComplete }) => {
     addressData: {},
     orderOnly: false
   });
+
+  // Refs to track latest address values (avoids stale closure issues in callbacks)
+  const deliveryAddressRef = useRef(deliveryAddress);
+  const invoiceAddressRef = useRef(invoiceAddress);
+  const contactDataRef = useRef(contactData);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    deliveryAddressRef.current = deliveryAddress;
+  }, [deliveryAddress]);
+
+  useEffect(() => {
+    invoiceAddressRef.current = invoiceAddress;
+  }, [invoiceAddress]);
+
+  useEffect(() => {
+    contactDataRef.current = contactData;
+  }, [contactData]);
 
   // Rules engine state for step 1 (checkout_start)
   const [rulesMessages, setRulesMessages] = useState([]);
@@ -146,10 +164,14 @@ const CheckoutSteps = ({ onComplete }) => {
 
       setContactData(newContactData);
 
-      // Trigger real-time validation for Step 1
-      if (currentStep === 1) {
+      // Trigger real-time validation for Step 1 only if addresses are loaded
+      // Use refs to get the latest address values (avoids stale closures)
+      const hasDeliveryData = deliveryAddressRef.current?.addressData && Object.keys(deliveryAddressRef.current.addressData).length > 0;
+      const hasInvoiceData = invoiceAddressRef.current?.addressData && Object.keys(invoiceAddressRef.current.addressData).length > 0;
+
+      if (currentStep === 1 && hasDeliveryData && hasInvoiceData) {
         setTimeout(() => {
-          validation.validateStep1(newContactData, deliveryAddress, invoiceAddress);
+          validation.validateStep1(newContactData, deliveryAddressRef.current, invoiceAddressRef.current);
         }, 100); // Small delay to ensure state updates
       }
     }
@@ -171,15 +193,20 @@ const CheckoutSteps = ({ onComplete }) => {
 
       setDeliveryAddress(newDeliveryAddress);
 
-      // Only trigger validation if we have actual address data (not empty object)
+      // Only trigger real-time validation AFTER initial data has loaded AND we have actual address data
       // This prevents validation errors on initial page load before addresses are populated
-      if (currentStep === 1 && newDeliveryAddress.addressData && Object.keys(newDeliveryAddress.addressData).length > 0) {
+      // Use refs to get the latest invoice address (avoids stale closure)
+      const hasDeliveryData = newDeliveryAddress.addressData && Object.keys(newDeliveryAddress.addressData).length > 0;
+      const hasInvoiceData = invoiceAddressRef.current?.addressData && Object.keys(invoiceAddressRef.current.addressData).length > 0;
+
+      if (currentStep === 1 && hasDeliveryData && hasInvoiceData) {
         setTimeout(() => {
-          validation.validateStep1(contactData, newDeliveryAddress, invoiceAddress);
+          // Use refs to get the latest values, avoiding stale closures
+          validation.validateStep1(contactDataRef.current, newDeliveryAddress, invoiceAddressRef.current);
         }, 100); // Small delay to ensure state updates
       }
     }
-  }, [currentStep, validation, contactData, invoiceAddress]);
+  }, [currentStep, validation]);
 
   // Handle invoice address updates from AddressSelectionPanel
   const handleInvoiceAddressUpdate = useCallback((addressInfo) => {
@@ -192,15 +219,20 @@ const CheckoutSteps = ({ onComplete }) => {
 
       setInvoiceAddress(newInvoiceAddress);
 
-      // Only trigger validation if we have actual address data (not empty object)
+      // Only trigger real-time validation AFTER initial data has loaded AND we have actual address data
       // This prevents validation errors on initial page load before addresses are populated
-      if (currentStep === 1 && newInvoiceAddress.addressData && Object.keys(newInvoiceAddress.addressData).length > 0) {
+      // Use refs to get the latest delivery address (avoids stale closure)
+      const hasDeliveryData = deliveryAddressRef.current?.addressData && Object.keys(deliveryAddressRef.current.addressData).length > 0;
+      const hasInvoiceData = newInvoiceAddress.addressData && Object.keys(newInvoiceAddress.addressData).length > 0;
+
+      if (currentStep === 1 && hasDeliveryData && hasInvoiceData) {
         setTimeout(() => {
-          validation.validateStep1(contactData, deliveryAddress, newInvoiceAddress);
+          // Use refs to get the latest values, avoiding stale closures
+          validation.validateStep1(contactDataRef.current, deliveryAddressRef.current, newInvoiceAddress);
         }, 100); // Small delay to ensure state updates
       }
     }
-  }, [currentStep, validation, contactData, deliveryAddress]);
+  }, [currentStep, validation]);
 
   // Fetch user profile if authenticated
   useEffect(() => {

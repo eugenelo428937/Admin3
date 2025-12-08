@@ -19,6 +19,7 @@ import { Phone, Email } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 import ValidatedPhoneInput from '../User/ValidatedPhoneInput';
 import userService from '../../services/userService';
+import phoneValidationService from '../../services/phoneValidationService';
 import config from '../../config';
 
 // Constants
@@ -88,6 +89,24 @@ const CommunicationDetailsPanel = ({
     }
   }, [userProfile]);
 
+  // Helper function to detect country from phone number
+  const detectCountryForPhone = (phoneNumber, countries, defaultCountry) => {
+    if (!phoneNumber || !phoneNumber.trim()) {
+      return defaultCountry;
+    }
+
+    // Try to detect country from the phone number
+    const detectedIsoCode = phoneValidationService.detectCountryFromPhoneNumber(phoneNumber);
+    if (detectedIsoCode) {
+      const detectedCountry = countries.find(c => c.iso_code === detectedIsoCode);
+      if (detectedCountry) {
+        return detectedCountry;
+      }
+    }
+
+    return defaultCountry;
+  };
+
   // Load countries from API
   useEffect(() => {
     fetch(config.apiBaseUrl + "/api/countries/")
@@ -108,8 +127,10 @@ const CommunicationDetailsPanel = ({
         const all = [...frequent, ...rest];
         setCountryList(all);
 
-        // Default to UK for all phone fields
+        // Default to UK, but detect from phone numbers if available
         const ukCountry = countries.find(c => c.name === "United Kingdom");
+
+        // Set default UK country initially (will be updated when formData loads)
         if (ukCountry) {
           setHomePhoneCountry(ukCountry);
           setMobilePhoneCountry(ukCountry);
@@ -118,6 +139,27 @@ const CommunicationDetailsPanel = ({
       })
       .catch((err) => console.error("Failed to load countries:", err));
   }, []);
+
+  // Re-detect countries when phone numbers are populated from userProfile
+  useEffect(() => {
+    if (countryList.length === 0) return;
+
+    const ukCountry = countryList.find(c => c.name === "United Kingdom");
+
+    // Only update if we have phone numbers to detect from
+    if (formData.homePhone) {
+      const detected = detectCountryForPhone(formData.homePhone, countryList, ukCountry);
+      setHomePhoneCountry(detected);
+    }
+    if (formData.mobilePhone) {
+      const detected = detectCountryForPhone(formData.mobilePhone, countryList, ukCountry);
+      setMobilePhoneCountry(detected);
+    }
+    if (formData.workPhone) {
+      const detected = detectCountryForPhone(formData.workPhone, countryList, ukCountry);
+      setWorkPhoneCountry(detected);
+    }
+  }, [formData.homePhone, formData.mobilePhone, formData.workPhone, countryList]);
 
   // Validation functions
   const validators = {
