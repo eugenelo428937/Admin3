@@ -62,13 +62,28 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 company=work_addr.get('company', ''),
                 department=work_addr.get('department', ''),
             )
-        # Contact Numbers
+        # Contact Numbers - with country codes
         if profile_data.get('home_phone'):
-            UserProfileContactNumber.objects.create(user_profile=user_profile, contact_type='HOME', number=profile_data['home_phone'])
+            UserProfileContactNumber.objects.create(
+                user_profile=user_profile,
+                contact_type='HOME',
+                number=profile_data['home_phone'],
+                country_code=profile_data.get('home_phone_country', '')
+            )
         if profile_data.get('work_phone'):
-            UserProfileContactNumber.objects.create(user_profile=user_profile, contact_type='WORK', number=profile_data['work_phone'])
+            UserProfileContactNumber.objects.create(
+                user_profile=user_profile,
+                contact_type='WORK',
+                number=profile_data['work_phone'],
+                country_code=profile_data.get('work_phone_country', '')
+            )
         if profile_data.get('mobile_phone'):
-            UserProfileContactNumber.objects.create(user_profile=user_profile, contact_type='MOBILE', number=profile_data['mobile_phone'])
+            UserProfileContactNumber.objects.create(
+                user_profile=user_profile,
+                contact_type='MOBILE',
+                number=profile_data['mobile_phone'],
+                country_code=profile_data.get('mobile_phone_country', '')
+            )
         # Emails
         if validated_data.get('email'):
             UserProfileEmail.objects.create(user_profile=user_profile, email_type='PERSONAL', email=validated_data['email'])
