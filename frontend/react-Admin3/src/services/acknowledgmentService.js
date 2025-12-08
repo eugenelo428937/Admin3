@@ -13,12 +13,16 @@ class AcknowledgmentService {
    */
   async validateComprehensiveCheckout(context = {}) {
     try {
+      console.log('🔍 [AcknowledgmentService] Validating checkout with context:', context);
 
       const response = await httpService.post('/api/rules/validate-comprehensive-checkout/', {
         context
       });
 
       const result = response.data;
+      console.log('🔍 [AcknowledgmentService] Validation response:', result);
+      console.log('🔍 [AcknowledgmentService] Missing acknowledgments:', result.missing_acknowledgments);
+      console.log('🔍 [AcknowledgmentService] Satisfied acknowledgments:', result.satisfied_acknowledgments);
 
       
 
