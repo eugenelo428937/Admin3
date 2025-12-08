@@ -209,18 +209,10 @@ const Home = () => {
                <Container
                   className="hero-content d-flex flex-column flex-wrap justify-content-evenly align-items-center"
                   sx={{
-                     paddingLeft: {
+                     padding: {
                         xs: theme.liftkit.spacing.lg,
-                     },
-                     paddingRight: {
-                        xs: theme.liftkit.spacing.lg,
-                     },
-                     paddingTop: {
                         lg: theme.liftkit.spacing.lg,
-                     },
-                     paddingBottom: {
-                        lg: theme.liftkit.spacing.lg,
-                     },
+                     },                     
                   }}
                >
                   {/* Rules Engine Messages Section (Holiday Messages, etc.) */}
