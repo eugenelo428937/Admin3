@@ -216,10 +216,10 @@ const Home = () => {
                         xs: theme.liftkit.spacing.lg,
                      },
                      paddingTop: {
-                        lg: theme.liftkit.spacing.xl2,
+                        lg: theme.liftkit.spacing.lg,
                      },
                      paddingBottom: {
-                        lg: theme.liftkit.spacing.xl2,
+                        lg: theme.liftkit.spacing.lg,
                      },
                   }}
                >
