@@ -721,6 +721,11 @@ def rules_acknowledge(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Ensure session exists - create if needed
+        if not request.session.session_key:
+            request.session.create()
+            logger.info(f"✅ [Acknowledge] Created new session: {request.session.session_key}")
+
         # Get or initialize session acknowledgments
         session_acknowledgments = request.session.get(
             'user_acknowledgments', [])
@@ -759,6 +764,7 @@ def rules_acknowledge(request):
         # Save back to session
         request.session['user_acknowledgments'] = session_acknowledgments
         request.session.modified = True
+        request.session.save()  # Explicitly save to ensure persistence
 
         # DEBUG: Log acknowledgment storage
         logger.info(f"✅ [Acknowledge] Session ID: {request.session.session_key}")
