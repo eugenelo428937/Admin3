@@ -243,10 +243,14 @@ CACHES = {
 # Session Configuration
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 86400  # 24 hours
-SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True  # Required when SameSite=None
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'None'  # Required for cross-origin requests (frontend and backend on different Railway subdomains)
 SESSION_SAVE_EVERY_REQUEST = True
+
+# CSRF Cookie Configuration - Must match session cookie settings for cross-origin requests
+CSRF_COOKIE_SAMESITE = 'None'  # Required for cross-origin POST requests
+CSRF_COOKIE_SECURE = True  # Required when SameSite=None
 
 # reCAPTCHA Configuration
 RECAPTCHA_SITE_KEY = env('RECAPTCHA_SITE_KEY', default='6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI')
