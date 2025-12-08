@@ -876,10 +876,13 @@ class OrderUserContact(models.Model):
         help_text="Associated order for this contact information"
     )
 
-    # Contact Information
+    # Contact Information with country codes
     home_phone = models.CharField(max_length=20, null=True, blank=True)
+    home_phone_country = models.CharField(max_length=2, blank=True, default='', help_text="ISO 3166-1 alpha-2 country code")
     mobile_phone = models.CharField(max_length=20, help_text="Required mobile phone number")
+    mobile_phone_country = models.CharField(max_length=2, blank=True, default='', help_text="ISO 3166-1 alpha-2 country code")
     work_phone = models.CharField(max_length=20, null=True, blank=True)
+    work_phone_country = models.CharField(max_length=2, blank=True, default='', help_text="ISO 3166-1 alpha-2 country code")
     email_address = models.EmailField(max_length=254, help_text="Required email address")
 
     # Metadata
