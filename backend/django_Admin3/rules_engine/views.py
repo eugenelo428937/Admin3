@@ -760,6 +760,12 @@ def rules_acknowledge(request):
         request.session['user_acknowledgments'] = session_acknowledgments
         request.session.modified = True
 
+        # DEBUG: Log acknowledgment storage
+        logger.info(f"✅ [Acknowledge] Session ID: {request.session.session_key}")
+        logger.info(f"✅ [Acknowledge] Stored ack_key: {ack_key}")
+        logger.info(f"✅ [Acknowledge] Total acknowledgments: {len(session_acknowledgments)}")
+        logger.info(f"✅ [Acknowledge] All ack_keys in session: {[a.get('ack_key') for a in session_acknowledgments]}")
+
         return Response({
             'success': True,
             'message': f'Acknowledgment {action} successfully',
@@ -767,7 +773,8 @@ def rules_acknowledge(request):
             'acknowledged': acknowledged,
             'entry_point_location': entry_point_location,
             'action': action,
-            'total_acknowledgments': len(session_acknowledgments)
+            'total_acknowledgments': len(session_acknowledgments),
+            'session_id': request.session.session_key  # DEBUG: Include session ID
         })
 
     except Exception as e:
@@ -930,6 +937,11 @@ def validate_comprehensive_checkout(request):
         session_acknowledgments = request.session.get(
             "user_acknowledgments", [])
 
+        # DEBUG: Log session info
+        logger.info(f"🔍 [Comprehensive Validation] Session ID: {request.session.session_key}")
+        logger.info(f"🔍 [Comprehensive Validation] Raw session acknowledgments: {session_acknowledgments}")
+        logger.info(f"🔍 [Comprehensive Validation] Ack keys in session: {[a.get('ack_key') for a in session_acknowledgments]}")
+
         # Convert session acknowledgments to the format expected by rules engine
         acknowledgments_dict = {}
         for ack in session_acknowledgments:
@@ -940,6 +952,9 @@ def validate_comprehensive_checkout(request):
                     "timestamp": ack.get("acknowledged_timestamp"),
                     "entry_point_location": ack.get("entry_point_location")
                 }
+
+        # DEBUG: Log converted acknowledgments
+        logger.info(f"🔍 [Comprehensive Validation] Acknowledgments dict keys: {list(acknowledgments_dict.keys())}")
 
         # Add acknowledgments to context
         context_data["acknowledgments"] = acknowledgments_dict
@@ -994,6 +1009,12 @@ def validate_comprehensive_checkout(request):
                 "total_required": len(all_required_acknowledgments),
                 "total_satisfied": len(satisfied_acknowledgments),
                 "total_missing": len(missing_acknowledgments)
+            },
+            # DEBUG: Include session info for troubleshooting
+            "_debug": {
+                "session_id": request.session.session_key,
+                "session_ack_keys": [a.get('ack_key') for a in session_acknowledgments],
+                "acknowledgments_dict_keys": list(acknowledgments_dict.keys())
             }
         })
 
