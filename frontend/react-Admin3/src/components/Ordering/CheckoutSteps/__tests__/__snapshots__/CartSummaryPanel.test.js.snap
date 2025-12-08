@@ -194,14 +194,24 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders c
               </p>
             </div>
             <div
-              class="MuiBox-root css-gg4vpm"
+              class="MuiBox-root css-69i1ev"
             >
-              <p
-                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              <div
+                class="MuiBox-root css-70qvj9"
               >
-                VAT
-                :
-              </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                >
+                  VAT (20%)
+                  <span
+                    class="MuiTypography-root MuiTypography-caption css-1w4xe1m-MuiTypography-root"
+                  >
+                    (
+                    United Kingdom
+                    )
+                  </span>
+                </p>
+              </div>
               <p
                 class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
               >
@@ -373,14 +383,24 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders e
               </p>
             </div>
             <div
-              class="MuiBox-root css-gg4vpm"
+              class="MuiBox-root css-69i1ev"
             >
-              <p
-                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              <div
+                class="MuiBox-root css-70qvj9"
               >
-                VAT (20%)
-                :
-              </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                >
+                  VAT (20%)
+                  <span
+                    class="MuiTypography-root MuiTypography-caption css-1w4xe1m-MuiTypography-root"
+                  >
+                    (
+                    United Kingdom
+                    )
+                  </span>
+                </p>
+              </div>
               <p
                 class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
               >
@@ -627,14 +647,24 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders m
               </p>
             </div>
             <div
-              class="MuiBox-root css-gg4vpm"
+              class="MuiBox-root css-69i1ev"
             >
-              <p
-                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              <div
+                class="MuiBox-root css-70qvj9"
               >
-                VAT
-                :
-              </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                >
+                  VAT (20%)
+                  <span
+                    class="MuiTypography-root MuiTypography-caption css-1w4xe1m-MuiTypography-root"
+                  >
+                    (
+                    United Kingdom
+                    )
+                  </span>
+                </p>
+              </div>
               <p
                 class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
               >
@@ -844,14 +874,24 @@ exports[`CartSummaryPanel Snapshot Tests (T032 - Regression Detection) renders s
               </p>
             </div>
             <div
-              class="MuiBox-root css-gg4vpm"
+              class="MuiBox-root css-69i1ev"
             >
-              <p
-                class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+              <div
+                class="MuiBox-root css-70qvj9"
               >
-                VAT (20%)
-                :
-              </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
+                >
+                  VAT (20%)
+                  <span
+                    class="MuiTypography-root MuiTypography-caption css-1w4xe1m-MuiTypography-root"
+                  >
+                    (
+                    United Kingdom
+                    )
+                  </span>
+                </p>
+              </div>
               <p
                 class="MuiTypography-root MuiTypography-body2 css-7ctihp-MuiTypography-root"
               >

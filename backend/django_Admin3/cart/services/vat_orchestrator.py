@@ -27,7 +27,7 @@ VARIATION_TYPE_TO_PRODUCT_TYPE = {
     'Hub': 'Digital',
     'Printed': 'Printed',
     'Tutorial': 'Tutorial',
-    'Marking': 'Tutorial'
+    'Marking': 'Marking'
 }
 
 
@@ -270,15 +270,21 @@ class VATOrchestrator:
             vat_amount = Decimal(str(item.get('vat_amount', '0.00')))
             gross_amount = Decimal(str(item.get('gross_amount', '0.00')))
 
-            # Extract vat_rate and vat_region from corresponding Rules Engine result
+            # Extract vat_rate, vat_region, and applied rule from corresponding Rules Engine result
             vat_rate = Decimal('0.0000')
             vat_region = 'UNKNOWN'
+            applied_rule = None
             if idx < len(all_results):
                 result = all_results[idx]
                 vat_context = result.get('vat', {})
                 rate_str = vat_context.get('rate', '0.0000')
                 vat_rate = Decimal(str(rate_str))
                 vat_region = vat_context.get('region', 'UNKNOWN')
+
+                # Find the final rule that calculated VAT for this item
+                # Look for the last rule with condition_result=true and actions_executed > 0
+                rules_executed = result.get('rules_executed', [])
+                applied_rule = self._find_applied_vat_rule(rules_executed)
 
             # Aggregate totals
             total_net += net_amount
@@ -292,7 +298,8 @@ class VATOrchestrator:
                 'vat_region': vat_region,  # Add vat_region
                 'vat_rate': str(vat_rate),  # Add vat_rate
                 'vat_amount': str(vat_amount),
-                'gross_amount': str(gross_amount)
+                'gross_amount': str(gross_amount),
+                'applied_rule': applied_rule  # Add the rule that calculated this item's VAT
             })
 
         # Calculate total gross
@@ -378,6 +385,36 @@ class VATOrchestrator:
             # Don't raise - audit failure shouldn't block VAT calculation
 
     # Helper methods
+
+    def _find_applied_vat_rule(self, rules_executed: list) -> str:
+        """
+        Find the final rule that calculated VAT for an item.
+
+        The applied rule is the last rule that had:
+        - condition_result: true
+        - actions_executed > 0
+
+        Priority is given to product-specific rules (priority 85-86) over
+        region rules (priority 90) and base rules (priority 100).
+
+        Args:
+            rules_executed: List of rule execution records
+
+        Returns:
+            str: The rule_id of the applied VAT rule, or None if not found
+        """
+        if not rules_executed:
+            return None
+
+        # Find the last rule that actually calculated VAT (executed actions)
+        # Rules are executed in priority order, so the last matching rule wins
+        applied_rule = None
+        for rule in rules_executed:
+            if rule.get('condition_result') and rule.get('actions_executed', 0) > 0:
+                # This rule matched and executed actions
+                applied_rule = rule.get('rule_id')
+
+        return applied_rule
 
     def _build_calculation_result(self, aggregated: Dict[str, Any], all_results: list, user_context: Dict[str, Any]) -> Dict[str, Any]:
         """
