@@ -82,6 +82,8 @@ const TermsConditionsStep = ({
 
           // Show acknowledgment modal for messages that need modal display (like digital content)
           const modalAcks = result.messages.classified.acknowledgments.modal;
+          console.log('🔍 [TermsConditionsStep] Modal acknowledgments:', modalAcks);
+          console.log('🔍 [TermsConditionsStep] Modal ack_keys:', modalAcks.map(m => ({ ack_key: m.ack_key, template_id: m.template_id })));
           if (modalAcks.length > 0) {
             setAcknowledgmentMessages(modalAcks);
             setShowAcknowledgmentModal(true);
@@ -113,15 +115,26 @@ const TermsConditionsStep = ({
   }, [cartData, cartItems, user]);
 
   const handleAcknowledgmentComplete = async (acknowledged, messageId, ackKey) => {
+    console.log('🔍 [TermsConditionsStep] handleAcknowledgmentComplete called:', {
+      acknowledged,
+      messageId,
+      ackKey,
+      hasAckKey: !!ackKey
+    });
+
     if (acknowledged) {
       try {
-        // Submit acknowledgment to the server
-        await rulesEngineService.acknowledgeRule({
+        const ackData = {
           ackKey: ackKey || 'terms_conditions_v1', // Use the specific ack key for this rule
           message_id: messageId,
           acknowledged: true,
           entry_point_location: 'checkout_terms'
-        });
+        };
+        console.log('✅ [TermsConditionsStep] Sending acknowledgment to server:', ackData);
+
+        // Submit acknowledgment to the server
+        const response = await rulesEngineService.acknowledgeRule(ackData);
+        console.log('✅ [TermsConditionsStep] Server response:', response);
 
         // Only set general terms accepted if this is specifically a terms & conditions acknowledgment
         if (ackKey === 'terms_conditions_v1') {
