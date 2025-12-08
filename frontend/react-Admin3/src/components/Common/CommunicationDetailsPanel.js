@@ -267,6 +267,38 @@ const CommunicationDetailsPanel = ({
     }
   };
 
+  // Helper function to format phone number with country code for storage
+  const formatPhoneForStorage = async (phoneNumber, selectedCountry) => {
+    if (!phoneNumber || !phoneNumber.trim()) {
+      return '';
+    }
+
+    // If phone already has international prefix, return as-is
+    if (phoneNumber.trim().startsWith('+')) {
+      return phoneNumber.trim();
+    }
+
+    // Get country code and format in E.164
+    if (selectedCountry?.iso_code) {
+      const formatted = phoneValidationService.formatPhoneNumber(
+        phoneNumber,
+        selectedCountry.iso_code,
+        'e164'
+      );
+      // If formatting succeeded (starts with +), use it; otherwise prepend country code
+      if (formatted && formatted.startsWith('+')) {
+        return formatted;
+      }
+      // Manual fallback: prepend the phone_code
+      if (selectedCountry.phone_code) {
+        const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, '');
+        return `${selectedCountry.phone_code}${cleanNumber}`;
+      }
+    }
+
+    return phoneNumber.trim();
+  };
+
   // Handle profile update
   const handleProfileUpdate = async () => {
     setLoading(true);
@@ -274,14 +306,19 @@ const CommunicationDetailsPanel = ({
     setSuccess('');
 
     try {
+      // Format phone numbers with international prefix before saving
+      const formattedHomePhone = await formatPhoneForStorage(formData.homePhone, homePhoneCountry);
+      const formattedMobilePhone = await formatPhoneForStorage(formData.mobilePhone, mobilePhoneCountry);
+      const formattedWorkPhone = await formatPhoneForStorage(formData.workPhone, workPhoneCountry);
+
       const updateData = {
         user: {
           email: formData.email
         },
         contact_numbers: {
-          home_phone: formData.homePhone,
-          mobile_phone: formData.mobilePhone,
-          work_phone: formData.workPhone
+          home_phone: formattedHomePhone,
+          mobile_phone: formattedMobilePhone,
+          work_phone: formattedWorkPhone
         }
       };
 
@@ -289,12 +326,21 @@ const CommunicationDetailsPanel = ({
 
       if (result.status === 'success') {
         setSuccess('Communication details updated successfully');
+
+        // Update local form data with formatted numbers
+        setFormData(prev => ({
+          ...prev,
+          homePhone: formattedHomePhone,
+          mobilePhone: formattedMobilePhone,
+          workPhone: formattedWorkPhone
+        }));
+
         if (onProfileUpdate) {
           onProfileUpdate({
             contact: {
-              home_phone: formData.homePhone,
-              mobile_phone: formData.mobilePhone,
-              work_phone: formData.workPhone,
+              home_phone: formattedHomePhone,
+              mobile_phone: formattedMobilePhone,
+              work_phone: formattedWorkPhone,
               email_address: formData.email
             },
             orderOnly: false // This was a full profile update
@@ -318,27 +364,35 @@ const CommunicationDetailsPanel = ({
   };
 
   // Handle order-only update (don't save to profile)
-  const handleOrderOnlyUpdate = () => {
+  const handleOrderOnlyUpdate = async () => {
     setLoading(true);
 
-    // For now, just simulate the update without actually saving to profile
-    setTimeout(() => {
+    try {
+      // Format phone numbers with international prefix for the order
+      const formattedHomePhone = await formatPhoneForStorage(formData.homePhone, homePhoneCountry);
+      const formattedMobilePhone = await formatPhoneForStorage(formData.mobilePhone, mobilePhoneCountry);
+      const formattedWorkPhone = await formatPhoneForStorage(formData.workPhone, workPhoneCountry);
+
       setLoading(false);
       setShowConfirmation(false);
 
-      // Call the callback with order-only flag
+      // Call the callback with order-only flag and formatted numbers
       if (onProfileUpdate) {
         onProfileUpdate({
           contact: {
-            home_phone: formData.homePhone,
-            mobile_phone: formData.mobilePhone,
-            work_phone: formData.workPhone,
+            home_phone: formattedHomePhone,
+            mobile_phone: formattedMobilePhone,
+            work_phone: formattedWorkPhone,
             email_address: formData.email
           },
           orderOnly: true
         });
       }
-    }, 1000);
+    } catch (err) {
+      console.error('Error formatting phone numbers:', err);
+      setLoading(false);
+      setShowConfirmation(false);
+    }
   };
 
   // Render email section based on profile data
