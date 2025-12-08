@@ -40,8 +40,11 @@ const CheckoutSteps = ({ onComplete }) => {
   // Contact data state from CommunicationDetailsPanel
   const [contactData, setContactData] = useState({
     home_phone: '',
+    home_phone_country: '',
     mobile_phone: '',
+    mobile_phone_country: '',
     work_phone: '',
+    work_phone_country: '',
     email_address: ''
   });
 
@@ -132,10 +135,21 @@ const CheckoutSteps = ({ onComplete }) => {
             return '';
           };
 
+          // Helper to get phone country code
+          const getPhoneCountry = (type) => {
+            if (profile.contact_numbers && profile.contact_numbers[type]) {
+              return profile.contact_numbers[type];
+            }
+            return '';
+          };
+
           const newContactData = {
             home_phone: getPhoneNumber('home_phone'),
+            home_phone_country: getPhoneCountry('home_phone_country'),
             mobile_phone: getPhoneNumber('mobile_phone'),
+            mobile_phone_country: getPhoneCountry('mobile_phone_country'),
             work_phone: getPhoneNumber('work_phone'),
+            work_phone_country: getPhoneCountry('work_phone_country'),
             email_address: profile.email || profile.user?.email || ''
           };
 
@@ -154,11 +168,14 @@ const CheckoutSteps = ({ onComplete }) => {
   // Handle contact data updates from CommunicationDetailsPanel
   const handleContactDataUpdate = (updateData) => {
     if (updateData && updateData.contact) {
-      // Extract contact data from the update
+      // Extract contact data from the update (including phone country codes)
       const newContactData = {
         home_phone: updateData.contact.home_phone || '',
+        home_phone_country: updateData.contact.home_phone_country || '',
         mobile_phone: updateData.contact.mobile_phone || '',
+        mobile_phone_country: updateData.contact.mobile_phone_country || '',
         work_phone: updateData.contact.work_phone || '',
+        work_phone_country: updateData.contact.work_phone_country || '',
         email_address: updateData.contact.email_address || updateData.contact.email || ''
       };
 
@@ -498,10 +515,13 @@ const CheckoutSteps = ({ onComplete }) => {
         general_terms_accepted: generalTermsAccepted,
         user_preferences: {
           ...preferences,
-          // Include contact data from CommunicationDetailsPanel
+          // Include contact data from CommunicationDetailsPanel (with phone country codes)
           home_phone: { value: contactData.home_phone, inputType: 'text' },
+          home_phone_country: { value: contactData.home_phone_country, inputType: 'text' },
           mobile_phone: { value: contactData.mobile_phone, inputType: 'text' },
+          mobile_phone_country: { value: contactData.mobile_phone_country, inputType: 'text' },
           work_phone: { value: contactData.work_phone, inputType: 'text' },
+          work_phone_country: { value: contactData.work_phone_country, inputType: 'text' },
           email_address: { value: contactData.email_address, inputType: 'text' },
 
           // Include address data from AddressSelectionPanels

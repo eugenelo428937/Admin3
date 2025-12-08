@@ -19,7 +19,6 @@ import { Phone, Email } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 import ValidatedPhoneInput from '../User/ValidatedPhoneInput';
 import userService from '../../services/userService';
-import phoneValidationService from '../../services/phoneValidationService';
 import config from '../../config';
 
 // Constants
@@ -89,34 +88,6 @@ const CommunicationDetailsPanel = ({
     }
   }, [userProfile]);
 
-  // Helper function to detect country from phone number or user profile
-  const detectCountryForPhone = (phoneNumber, countries, defaultCountry, userProfileCountry = null) => {
-    // First, try to detect from phone number (works if number has international format like +852...)
-    if (phoneNumber && phoneNumber.trim()) {
-      const detectedIsoCode = phoneValidationService.detectCountryFromPhoneNumber(phoneNumber);
-      if (detectedIsoCode) {
-        const detectedCountry = countries.find(c => c.iso_code === detectedIsoCode);
-        if (detectedCountry) {
-          return detectedCountry;
-        }
-      }
-    }
-
-    // Second, try to use the user's profile country (from home address)
-    if (userProfileCountry) {
-      const profileCountry = countries.find(c =>
-        c.name === userProfileCountry ||
-        c.iso_code === userProfileCountry
-      );
-      if (profileCountry) {
-        return profileCountry;
-      }
-    }
-
-    // Fall back to default (UK)
-    return defaultCountry;
-  };
-
   // Load countries from API
   useEffect(() => {
     fetch(config.apiBaseUrl + "/api/countries/")
@@ -150,43 +121,31 @@ const CommunicationDetailsPanel = ({
       .catch((err) => console.error("Failed to load countries:", err));
   }, []);
 
-  // Re-detect countries when phone numbers are populated from userProfile
+  // Load phone countries from saved country codes in user profile
   useEffect(() => {
-    if (countryList.length === 0) return;
+    if (countryList.length === 0 || !userProfile) return;
 
     const ukCountry = countryList.find(c => c.name === "United Kingdom");
 
-    // Get user's country from their home address as fallback
-    const userCountry = userProfile?.home_address?.country || userProfile?.work_address?.country || null;
+    // Helper to find country by ISO code, with fallback to UK
+    const findCountryByCode = (isoCode) => {
+      if (isoCode) {
+        const country = countryList.find(c => c.iso_code === isoCode);
+        if (country) return country;
+      }
+      return ukCountry;
+    };
 
-    // Update phone countries - use phone number detection first, then user's address country, then UK
-    if (formData.homePhone) {
-      const detected = detectCountryForPhone(formData.homePhone, countryList, ukCountry, userCountry);
-      setHomePhoneCountry(detected);
-    } else if (userCountry) {
-      // No phone number yet, but we have user's country - use it as default
-      const detected = detectCountryForPhone(null, countryList, ukCountry, userCountry);
-      setHomePhoneCountry(detected);
-    }
+    // Get saved country codes from profile (new format)
+    const homeCountryCode = userProfile.contact_numbers?.home_phone_country;
+    const mobileCountryCode = userProfile.contact_numbers?.mobile_phone_country;
+    const workCountryCode = userProfile.contact_numbers?.work_phone_country;
 
-    if (formData.mobilePhone) {
-      const detected = detectCountryForPhone(formData.mobilePhone, countryList, ukCountry, userCountry);
-      setMobilePhoneCountry(detected);
-    } else if (userCountry) {
-      // No phone number yet, but we have user's country - use it as default
-      const detected = detectCountryForPhone(null, countryList, ukCountry, userCountry);
-      setMobilePhoneCountry(detected);
-    }
-
-    if (formData.workPhone) {
-      const detected = detectCountryForPhone(formData.workPhone, countryList, ukCountry, userCountry);
-      setWorkPhoneCountry(detected);
-    } else if (userCountry) {
-      // No phone number yet, but we have user's country - use it as default
-      const detected = detectCountryForPhone(null, countryList, ukCountry, userCountry);
-      setWorkPhoneCountry(detected);
-    }
-  }, [formData.homePhone, formData.mobilePhone, formData.workPhone, countryList, userProfile]);
+    // Set phone countries from saved country codes
+    setHomePhoneCountry(findCountryByCode(homeCountryCode));
+    setMobilePhoneCountry(findCountryByCode(mobileCountryCode));
+    setWorkPhoneCountry(findCountryByCode(workCountryCode));
+  }, [countryList, userProfile]);
 
   // Validation functions
   const validators = {
@@ -267,38 +226,6 @@ const CommunicationDetailsPanel = ({
     }
   };
 
-  // Helper function to format phone number with country code for storage
-  const formatPhoneForStorage = async (phoneNumber, selectedCountry) => {
-    if (!phoneNumber || !phoneNumber.trim()) {
-      return '';
-    }
-
-    // If phone already has international prefix, return as-is
-    if (phoneNumber.trim().startsWith('+')) {
-      return phoneNumber.trim();
-    }
-
-    // Get country code and format in E.164
-    if (selectedCountry?.iso_code) {
-      const formatted = phoneValidationService.formatPhoneNumber(
-        phoneNumber,
-        selectedCountry.iso_code,
-        'e164'
-      );
-      // If formatting succeeded (starts with +), use it; otherwise prepend country code
-      if (formatted && formatted.startsWith('+')) {
-        return formatted;
-      }
-      // Manual fallback: prepend the phone_code
-      if (selectedCountry.phone_code) {
-        const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, '');
-        return `${selectedCountry.phone_code}${cleanNumber}`;
-      }
-    }
-
-    return phoneNumber.trim();
-  };
-
   // Handle profile update
   const handleProfileUpdate = async () => {
     setLoading(true);
@@ -306,19 +233,17 @@ const CommunicationDetailsPanel = ({
     setSuccess('');
 
     try {
-      // Format phone numbers with international prefix before saving
-      const formattedHomePhone = await formatPhoneForStorage(formData.homePhone, homePhoneCountry);
-      const formattedMobilePhone = await formatPhoneForStorage(formData.mobilePhone, mobilePhoneCountry);
-      const formattedWorkPhone = await formatPhoneForStorage(formData.workPhone, workPhoneCountry);
-
       const updateData = {
         user: {
           email: formData.email
         },
         contact_numbers: {
-          home_phone: formattedHomePhone,
-          mobile_phone: formattedMobilePhone,
-          work_phone: formattedWorkPhone
+          home_phone: formData.homePhone,
+          home_phone_country: homePhoneCountry?.iso_code || '',
+          mobile_phone: formData.mobilePhone,
+          mobile_phone_country: mobilePhoneCountry?.iso_code || '',
+          work_phone: formData.workPhone,
+          work_phone_country: workPhoneCountry?.iso_code || ''
         }
       };
 
@@ -327,20 +252,15 @@ const CommunicationDetailsPanel = ({
       if (result.status === 'success') {
         setSuccess('Communication details updated successfully');
 
-        // Update local form data with formatted numbers
-        setFormData(prev => ({
-          ...prev,
-          homePhone: formattedHomePhone,
-          mobilePhone: formattedMobilePhone,
-          workPhone: formattedWorkPhone
-        }));
-
         if (onProfileUpdate) {
           onProfileUpdate({
             contact: {
-              home_phone: formattedHomePhone,
-              mobile_phone: formattedMobilePhone,
-              work_phone: formattedWorkPhone,
+              home_phone: formData.homePhone,
+              home_phone_country: homePhoneCountry?.iso_code || '',
+              mobile_phone: formData.mobilePhone,
+              mobile_phone_country: mobilePhoneCountry?.iso_code || '',
+              work_phone: formData.workPhone,
+              work_phone_country: workPhoneCountry?.iso_code || '',
               email_address: formData.email
             },
             orderOnly: false // This was a full profile update
@@ -364,34 +284,23 @@ const CommunicationDetailsPanel = ({
   };
 
   // Handle order-only update (don't save to profile)
-  const handleOrderOnlyUpdate = async () => {
-    setLoading(true);
+  const handleOrderOnlyUpdate = () => {
+    setShowConfirmation(false);
 
-    try {
-      // Format phone numbers with international prefix for the order
-      const formattedHomePhone = await formatPhoneForStorage(formData.homePhone, homePhoneCountry);
-      const formattedMobilePhone = await formatPhoneForStorage(formData.mobilePhone, mobilePhoneCountry);
-      const formattedWorkPhone = await formatPhoneForStorage(formData.workPhone, workPhoneCountry);
-
-      setLoading(false);
-      setShowConfirmation(false);
-
-      // Call the callback with order-only flag and formatted numbers
-      if (onProfileUpdate) {
-        onProfileUpdate({
-          contact: {
-            home_phone: formattedHomePhone,
-            mobile_phone: formattedMobilePhone,
-            work_phone: formattedWorkPhone,
-            email_address: formData.email
-          },
-          orderOnly: true
-        });
-      }
-    } catch (err) {
-      console.error('Error formatting phone numbers:', err);
-      setLoading(false);
-      setShowConfirmation(false);
+    // Call the callback with order-only flag and country codes
+    if (onProfileUpdate) {
+      onProfileUpdate({
+        contact: {
+          home_phone: formData.homePhone,
+          home_phone_country: homePhoneCountry?.iso_code || '',
+          mobile_phone: formData.mobilePhone,
+          mobile_phone_country: mobilePhoneCountry?.iso_code || '',
+          work_phone: formData.workPhone,
+          work_phone_country: workPhoneCountry?.iso_code || '',
+          email_address: formData.email
+        },
+        orderOnly: true
+      });
     }
   };
 
