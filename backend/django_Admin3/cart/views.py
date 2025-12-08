@@ -1279,6 +1279,11 @@ class CartViewSet(viewsets.ViewSet):
                 except (ValueError, TypeError):
                     template_id_int = None
 
+                # Get IP address - use None for empty/invalid values (GenericIPAddressField)
+                ip_addr = ack.get('ip_address')
+                if not ip_addr or ip_addr == '':
+                    ip_addr = None
+
                 order_acknowledgment = OrderUserAcknowledgment.objects.create(
                     order=order,
                     acknowledgment_type=acknowledgment_type,
@@ -1287,7 +1292,7 @@ class CartViewSet(viewsets.ViewSet):
                     title=title,
                     content_summary=f'User acknowledged {ack_key} at {entry_point}',
                     is_accepted=ack.get('acknowledged', False),
-                    ip_address=ack.get('ip_address', ''),
+                    ip_address=ip_addr,
                     user_agent=ack.get('user_agent', ''),
                     content_version='1.0',
                     acknowledgment_data=acknowledgment_data,
