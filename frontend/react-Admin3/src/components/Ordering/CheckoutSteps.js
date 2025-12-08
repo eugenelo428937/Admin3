@@ -108,7 +108,7 @@ const CheckoutSteps = ({ onComplete }) => {
     // Check if we're in development environment
     setIsDevelopment(process.env.NODE_ENV === 'development' || config.API_BASE_URL?.includes('localhost'));
     // Check if we're in UAT environment
-    setIsUAT(config.isUAT || process.env.REACT_APP_ENV === 'uat');
+    setIsUAT(config.isUAT || process.env.REACT_APP_ENV === 'uat' || process.env.REACT_APP_ENVIRONMENT === 'uat');
   }, []);
 
   // Fetch user profile function (extracted for reuse)

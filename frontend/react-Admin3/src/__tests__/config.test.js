@@ -96,6 +96,16 @@ describe('config', () => {
 
       expect(config.isUAT).toBe(false);
     });
+
+    test('isUAT is true when REACT_APP_ENVIRONMENT is uat (Railway format)', () => {
+      delete process.env.REACT_APP_ENV;
+      process.env.REACT_APP_ENVIRONMENT = 'uat';
+      jest.resetModules();
+
+      const config = require('../config').default;
+
+      expect(config.isUAT).toBe(true);
+    });
   });
 
   describe('API URL configuration', () => {
