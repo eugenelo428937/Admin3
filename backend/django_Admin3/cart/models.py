@@ -598,6 +598,7 @@ class OrderUserAcknowledgment(models.Model):
         ('deadline_expired', 'Expired Deadline Acknowledgment'),
         ('policy_change', 'Policy Change Acknowledgment'),
         ('warning', 'Warning Acknowledgment'),
+        ('digital_consent', 'Digital Content Consent'),
         ('custom', 'Custom Acknowledgment'),
     ]
     
