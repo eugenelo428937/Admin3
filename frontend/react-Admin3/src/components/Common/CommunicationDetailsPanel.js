@@ -89,21 +89,31 @@ const CommunicationDetailsPanel = ({
     }
   }, [userProfile]);
 
-  // Helper function to detect country from phone number
-  const detectCountryForPhone = (phoneNumber, countries, defaultCountry) => {
-    if (!phoneNumber || !phoneNumber.trim()) {
-      return defaultCountry;
-    }
-
-    // Try to detect country from the phone number
-    const detectedIsoCode = phoneValidationService.detectCountryFromPhoneNumber(phoneNumber);
-    if (detectedIsoCode) {
-      const detectedCountry = countries.find(c => c.iso_code === detectedIsoCode);
-      if (detectedCountry) {
-        return detectedCountry;
+  // Helper function to detect country from phone number or user profile
+  const detectCountryForPhone = (phoneNumber, countries, defaultCountry, userProfileCountry = null) => {
+    // First, try to detect from phone number (works if number has international format like +852...)
+    if (phoneNumber && phoneNumber.trim()) {
+      const detectedIsoCode = phoneValidationService.detectCountryFromPhoneNumber(phoneNumber);
+      if (detectedIsoCode) {
+        const detectedCountry = countries.find(c => c.iso_code === detectedIsoCode);
+        if (detectedCountry) {
+          return detectedCountry;
+        }
       }
     }
 
+    // Second, try to use the user's profile country (from home address)
+    if (userProfileCountry) {
+      const profileCountry = countries.find(c =>
+        c.name === userProfileCountry ||
+        c.iso_code === userProfileCountry
+      );
+      if (profileCountry) {
+        return profileCountry;
+      }
+    }
+
+    // Fall back to default (UK)
     return defaultCountry;
   };
 
@@ -146,20 +156,37 @@ const CommunicationDetailsPanel = ({
 
     const ukCountry = countryList.find(c => c.name === "United Kingdom");
 
-    // Only update if we have phone numbers to detect from
+    // Get user's country from their home address as fallback
+    const userCountry = userProfile?.home_address?.country || userProfile?.work_address?.country || null;
+
+    // Update phone countries - use phone number detection first, then user's address country, then UK
     if (formData.homePhone) {
-      const detected = detectCountryForPhone(formData.homePhone, countryList, ukCountry);
+      const detected = detectCountryForPhone(formData.homePhone, countryList, ukCountry, userCountry);
+      setHomePhoneCountry(detected);
+    } else if (userCountry) {
+      // No phone number yet, but we have user's country - use it as default
+      const detected = detectCountryForPhone(null, countryList, ukCountry, userCountry);
       setHomePhoneCountry(detected);
     }
+
     if (formData.mobilePhone) {
-      const detected = detectCountryForPhone(formData.mobilePhone, countryList, ukCountry);
+      const detected = detectCountryForPhone(formData.mobilePhone, countryList, ukCountry, userCountry);
+      setMobilePhoneCountry(detected);
+    } else if (userCountry) {
+      // No phone number yet, but we have user's country - use it as default
+      const detected = detectCountryForPhone(null, countryList, ukCountry, userCountry);
       setMobilePhoneCountry(detected);
     }
+
     if (formData.workPhone) {
-      const detected = detectCountryForPhone(formData.workPhone, countryList, ukCountry);
+      const detected = detectCountryForPhone(formData.workPhone, countryList, ukCountry, userCountry);
+      setWorkPhoneCountry(detected);
+    } else if (userCountry) {
+      // No phone number yet, but we have user's country - use it as default
+      const detected = detectCountryForPhone(null, countryList, ukCountry, userCountry);
       setWorkPhoneCountry(detected);
     }
-  }, [formData.homePhone, formData.mobilePhone, formData.workPhone, countryList]);
+  }, [formData.homePhone, formData.mobilePhone, formData.workPhone, countryList, userProfile]);
 
   // Validation functions
   const validators = {
