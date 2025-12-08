@@ -152,6 +152,70 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
    const [isChangingPassword, setIsChangingPassword] = useState(!isProfileMode);
 
    // Removed old address search states - now using SmartAddressInput
+   // Robust email validation helper
+   const validateEmail = (email, fieldLabel = "Email", isRequired = true) => {
+      const trimmedEmail = email?.trim() || "";
+      if (!trimmedEmail) {
+         return isRequired
+            ? { isValid: false, error: `${fieldLabel} is required` }
+            : { isValid: true, error: null };
+      }
+      if (trimmedEmail.length > 254) {
+         return { isValid: false, error: "Email address is too long (max 254 characters)" };
+      }
+      // RFC 5322 compliant regex
+      const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+      if (!emailRegex.test(trimmedEmail)) {
+         return { isValid: false, error: "Please enter a valid email address" };
+      }
+      const parts = trimmedEmail.split('@');
+      if (parts.length !== 2) {
+         return { isValid: false, error: "Email must contain exactly one @ symbol" };
+      }
+      const [localPart, domain] = parts;
+      if (localPart.length > 64) {
+         return { isValid: false, error: "The part before @ is too long (max 64 characters)" };
+      }
+      if (domain.length > 253) {
+         return { isValid: false, error: "Domain name is too long" };
+      }
+      const domainParts = domain.split('.');
+      const tld = domainParts[domainParts.length - 1];
+      if (domainParts.length < 2 || tld.length < 2) {
+         return { isValid: false, error: "Please enter a valid domain (e.g., example.com)" };
+      }
+      if (trimmedEmail.includes('..')) {
+         return { isValid: false, error: "Email cannot contain consecutive dots" };
+      }
+      if (localPart.startsWith('.') || localPart.endsWith('.')) {
+         return { isValid: false, error: "Email cannot start or end with a dot before @" };
+      }
+      // Common domain typo detection
+      const lowerDomain = domain.toLowerCase();
+      const commonTypos = {
+         'gmial.com': 'gmail.com', 'gmal.com': 'gmail.com', 'gamil.com': 'gmail.com',
+         'gmail.con': 'gmail.com', 'gmail.cmo': 'gmail.com',
+         'hotmal.com': 'hotmail.com', 'hotmai.com': 'hotmail.com', 'hotmail.con': 'hotmail.com',
+         'yahooo.com': 'yahoo.com', 'yaho.com': 'yahoo.com', 'yahoo.con': 'yahoo.com',
+         'outlok.com': 'outlook.com', 'outloo.com': 'outlook.com', 'outlook.con': 'outlook.com',
+         'icloud.con': 'icloud.com', 'icoud.com': 'icloud.com',
+      };
+      if (commonTypos[lowerDomain]) {
+         return { isValid: false, error: `Did you mean ${localPart}@${commonTypos[lowerDomain]}?` };
+      }
+      // Common TLD typo detection
+      const tldTypos = {
+         'con': 'com', 'cmo': 'com', 'ocm': 'com', 'vom': 'com', 'xom': 'com',
+         'ogr': 'org', 'rog': 'org', 'prg': 'org',
+         'nte': 'net', 'nett': 'net', 'ent': 'net',
+         'co.uj': 'co.uk',
+      };
+      if (tldTypos[tld.toLowerCase()]) {
+         const correctedDomain = domainParts.slice(0, -1).join('.') + '.' + tldTypos[tld.toLowerCase()];
+         return { isValid: false, error: `Did you mean ${localPart}@${correctedDomain}?` };
+      }
+      return { isValid: true, error: null };
+   };
 
    const fieldRefs = {
       first_name: useRef(),
@@ -514,7 +578,11 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                errors.first_name = "First name is required";
             if (!form.last_name.trim())
                errors.last_name = "Last name is required";
-            if (!form.email.trim()) errors.email = "Email is required";
+            // Email validation using robust validator
+            const emailValidation = validateEmail(form.email, "Email", true);
+            if (!emailValidation.isValid) {
+               errors.email = emailValidation.error;
+            }
 
             // Home phone validation (OPTIONAL - only validate if provided)
             if (form.home_phone.trim() && !phoneValidation.home_phone.isValid) {
@@ -585,6 +653,14 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                         errors[fullFieldName] = validation.error;
                      }
                   });
+               }
+
+               // Work email validation (optional - only validate format if provided)
+               if (form.work_email.trim()) {
+                  const workEmailValidation = validateEmail(form.work_email, "Work email", false);
+                  if (!workEmailValidation.isValid) {
+                     errors.work_email = workEmailValidation.error;
+                  }
                }
             }
             break;
@@ -1774,15 +1850,29 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                               </Box>
                            </Grid>
                            <Grid size={{ xs: 12, md: 6 }}>
-                              <TextField
-                                 fullWidth
-                                 type="email"
-                                 label="Work Email"
-                                 name="work_email"
-                                 value={form.work_email}
-                                 onChange={handleChange}
-                                 variant="standard"
-                              />
+                              <Box
+                                 className={
+                                    shakingFields.has("work_email")
+                                       ? "field-error-shake"
+                                       : ""
+                                 }
+                              >
+                                 <TextField
+                                    fullWidth
+                                    type="email"
+                                    label="Work Email"
+                                    name="work_email"
+                                    value={form.work_email}
+                                    onChange={handleChange}
+                                    error={
+                                       hasUserInteracted && !!fieldErrors.work_email
+                                    }
+                                    helperText={
+                                       hasUserInteracted ? fieldErrors.work_email : ""
+                                    }
+                                    variant="standard"
+                                 />
+                              </Box>
                            </Grid>
                         </Grid>
                      </Box>
