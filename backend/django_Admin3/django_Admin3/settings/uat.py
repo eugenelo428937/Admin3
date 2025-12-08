@@ -132,8 +132,8 @@ OPAYO_VENDOR_NAME = env('OPAYO_VENDOR_NAME', default='testvendor')
 OPAYO_INTEGRATION_KEY = env('OPAYO_INTEGRATION_KEY', default='test_key')
 OPAYO_INTEGRATION_PASSWORD = env('OPAYO_INTEGRATION_PASSWORD', default='test_password')
 
-# Use real payment gateway in UAT (not dummy)
-USE_DUMMY_PAYMENT_GATEWAY = False
+# Use dummy payment gateway in UAT for testing (always returns success)
+USE_DUMMY_PAYMENT_GATEWAY = True
 
 # Email Settings for UAT
 # Email override for testing - set to True to redirect all emails to test recipients
