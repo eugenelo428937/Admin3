@@ -879,7 +879,7 @@ class CartViewSet(viewsets.ViewSet):
             try:
                 # Get rules engine evaluation data for checkout_terms entry point
                 from rules_engine.services.rule_engine import rule_engine
-                rules_evaluation = rules_engine.evaluate_rules(
+                rules_evaluation = rule_engine.evaluate_rules(
                     entry_point_code='checkout_terms',
                     user=user,
                     order_id=order.id
@@ -938,8 +938,8 @@ class CartViewSet(viewsets.ViewSet):
                     # Get the rule evaluation for checkout_start to find expired deadline rule
                     from rules_engine.services.rule_engine import rule_engine
                     from rules_engine.models import Rule, MessageTemplate
-                    
-                    checkout_evaluation = rules_engine.evaluate_rules(
+
+                    checkout_evaluation = rule_engine.evaluate_rules(
                         entry_point_code='checkout_start',
                         user=user,
                         cart_items=list(cart.items.all())
