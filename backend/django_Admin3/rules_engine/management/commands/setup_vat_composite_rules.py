@@ -1,10 +1,10 @@
 """
 Management command to create Phase 3 composite VAT calculation rules.
 
-Creates 17 VAT rules:
+Creates 18 VAT rules:
 - 1 master rule (calculate_vat) - Priority 100
 - 5 regional rules (UK, IE, EU, SA, ROW) - Priority 90
-- 11 product-specific rules (UK product types, generic regional) - Priority 80-95
+- 12 product-specific rules (UK product types including Marking, generic regional) - Priority 80-95
 
 Rules are stored in ActedRule model as JSONB and execute at cart_calculate_vat entry point.
 """
@@ -16,7 +16,7 @@ from rules_engine.models import ActedRulesFields, ActedRule
 
 
 class Command(BaseCommand):
-    help = 'Create Phase 3 composite VAT calculation rules (17 rules total)'
+    help = 'Create Phase 3 composite VAT calculation rules (18 rules total)'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -37,12 +37,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """
-        Create all 17 composite VAT rules following Phase 3 specification.
+        Create all 18 composite VAT rules following Phase 3 specification.
 
         Execution order:
         1. Master rule (calculate_vat) - Priority 100
         2. Regional rules (UK, IE, EU, SA, ROW) - Priority 90
-        3. Product rules (UK Digital, Printed, etc.) - Priority 80-95
+        3. Product rules (UK Digital, Printed, Marking, etc.) - Priority 80-95
         """
         dry_run = options.get('dry_run', False)
         force_update = options.get('force', False)
@@ -75,7 +75,7 @@ class Command(BaseCommand):
                 for rule in regional_rules:
                     self.stdout.write(f'  - {rule.rule_code}')
 
-            # T027-T028: Create 8 product-specific rules
+            # T027-T028: Create 9 product-specific rules (including Marking)
             product_rules = self.create_product_rules(schema, verbose, dry_run)
 
             if not dry_run and verbose:
@@ -84,10 +84,10 @@ class Command(BaseCommand):
                     self.stdout.write(f'  - {rule.rule_code}')
 
         self.stdout.write('\n' + '='*60)
-        self.stdout.write(self.style.SUCCESS('✅ All 17 VAT composite rules created successfully!'))
+        self.stdout.write(self.style.SUCCESS('✅ All 18 VAT composite rules created successfully!'))
         self.stdout.write(f'  - 1 master rule (priority 100)')
         self.stdout.write(f'  - 5 regional rules (priority 90)')
-        self.stdout.write(f'  - {len(product_rules) if not dry_run else "8"} product rules (priority 80-95)')
+        self.stdout.write(f'  - {len(product_rules) if not dry_run else "9"} product rules (priority 80-95)')
         self.stdout.write('='*60)
 
     def create_context_schema(self, verbose=False, dry_run=False):
@@ -109,7 +109,7 @@ class Command(BaseCommand):
                         "id": {"type": "string"},
                         "product_type": {
                             "type": "string",
-                            "enum": ["Digital", "Printed", "FlashCard", "PBOR", "Tutorial"]
+                            "enum": ["Digital", "Printed", "FlashCard", "PBOR", "Tutorial", "Marking"]
                         },
                         "net_amount": {"type": "number"},
                         "vat_amount": {"type": "number"},
@@ -324,7 +324,7 @@ class Command(BaseCommand):
 
     def create_product_rules(self, schema, verbose=False, dry_run=False):
         """
-        T027-T028: Create 8 product-specific VAT calculation rules.
+        T027-T028: Create 9 product-specific VAT calculation rules.
 
         Returns list of ActedRule objects for product rules.
         """
@@ -360,6 +360,13 @@ class Command(BaseCommand):
                 'region': 'UK',
                 'product_type': 'PBOR',
                 'priority': 80
+            },
+            {
+                'rule_code': 'calculate_vat_uk_marking',
+                'name': 'UK Marking Service VAT',
+                'region': 'UK',
+                'product_type': 'Marking',
+                'priority': 85  # Same priority as Digital products (service)
             },
             # Generic regional product rules (4 rules) - handle all product types
             {
