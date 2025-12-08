@@ -1698,18 +1698,21 @@ class CartViewSet(viewsets.ViewSet):
         # Check if we have contact data in the preferences
         contact_data = {}
 
-        # Map preference keys to contact fields
+        # Map preference keys to contact fields (including country codes)
         contact_mapping = {
             'home_phone': 'home_phone',
+            'home_phone_country': 'home_phone_country',
             'mobile_phone': 'mobile_phone',
+            'mobile_phone_country': 'mobile_phone_country',
             'work_phone': 'work_phone',
+            'work_phone_country': 'work_phone_country',
             'email_address': 'email_address',
             'email': 'email_address'  # Alternative key
         }
 
         for pref_key, pref_data in user_preferences.items():
             if pref_key in contact_mapping:
-                value = pref_data.get('value', '')
+                value = pref_data.get('value', '') if isinstance(pref_data, dict) else pref_data
                 if value:  # Only save non-empty values
                     contact_data[contact_mapping[pref_key]] = value
 
@@ -1717,7 +1720,8 @@ class CartViewSet(viewsets.ViewSet):
         if 'contact' in user_preferences:
             contact_prefs = user_preferences['contact']
             if isinstance(contact_prefs, dict):
-                for field in ['home_phone', 'mobile_phone', 'work_phone', 'email_address']:
+                for field in ['home_phone', 'home_phone_country', 'mobile_phone', 'mobile_phone_country',
+                              'work_phone', 'work_phone_country', 'email_address']:
                     value = contact_prefs.get('value', {}).get(field) or contact_prefs.get(field)
                     if value:
                         contact_data[field] = value
@@ -1833,13 +1837,19 @@ class CartViewSet(viewsets.ViewSet):
             for pref_key, pref_data in user_preferences.items():
                 value = pref_data.get('value', '') if isinstance(pref_data, dict) else pref_data
 
-                # Map preference keys to contact fields with specific mapping
+                # Map preference keys to contact fields with specific mapping (including country codes)
                 if pref_key == 'mobile_phone':
                     contact_data['mobile_phone'] = str(value)
+                elif pref_key == 'mobile_phone_country':
+                    contact_data['mobile_phone_country'] = str(value)
                 elif pref_key == 'home_phone':
                     contact_data['home_phone'] = str(value)
+                elif pref_key == 'home_phone_country':
+                    contact_data['home_phone_country'] = str(value)
                 elif pref_key == 'work_phone':
                     contact_data['work_phone'] = str(value)
+                elif pref_key == 'work_phone_country':
+                    contact_data['work_phone_country'] = str(value)
                 elif pref_key == 'email_address' or pref_key == 'email':
                     contact_data['email_address'] = str(value)
 

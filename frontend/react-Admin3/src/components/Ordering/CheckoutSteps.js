@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button, Alert, Card, CardActions, CardContent, Grid, Box, useTheme, Stepper, Step, StepLabel, Typography } from '@mui/material';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -40,8 +40,11 @@ const CheckoutSteps = ({ onComplete }) => {
   // Contact data state from CommunicationDetailsPanel
   const [contactData, setContactData] = useState({
     home_phone: '',
+    home_phone_country: '',
     mobile_phone: '',
+    mobile_phone_country: '',
     work_phone: '',
+    work_phone_country: '',
     email_address: ''
   });
 
@@ -57,6 +60,24 @@ const CheckoutSteps = ({ onComplete }) => {
     addressData: {},
     orderOnly: false
   });
+
+  // Refs to track latest address values (avoids stale closure issues in callbacks)
+  const deliveryAddressRef = useRef(deliveryAddress);
+  const invoiceAddressRef = useRef(invoiceAddress);
+  const contactDataRef = useRef(contactData);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    deliveryAddressRef.current = deliveryAddress;
+  }, [deliveryAddress]);
+
+  useEffect(() => {
+    invoiceAddressRef.current = invoiceAddress;
+  }, [invoiceAddress]);
+
+  useEffect(() => {
+    contactDataRef.current = contactData;
+  }, [contactData]);
 
   // Rules engine state for step 1 (checkout_start)
   const [rulesMessages, setRulesMessages] = useState([]);
@@ -87,7 +108,7 @@ const CheckoutSteps = ({ onComplete }) => {
     // Check if we're in development environment
     setIsDevelopment(process.env.NODE_ENV === 'development' || config.API_BASE_URL?.includes('localhost'));
     // Check if we're in UAT environment
-    setIsUAT(config.isUAT || process.env.REACT_APP_ENV === 'uat');
+    setIsUAT(config.isUAT || process.env.REACT_APP_ENV === 'uat' || process.env.REACT_APP_ENVIRONMENT === 'uat');
   }, []);
 
   // Fetch user profile function (extracted for reuse)
@@ -114,10 +135,21 @@ const CheckoutSteps = ({ onComplete }) => {
             return '';
           };
 
+          // Helper to get phone country code
+          const getPhoneCountry = (type) => {
+            if (profile.contact_numbers && profile.contact_numbers[type]) {
+              return profile.contact_numbers[type];
+            }
+            return '';
+          };
+
           const newContactData = {
             home_phone: getPhoneNumber('home_phone'),
+            home_phone_country: getPhoneCountry('home_phone_country'),
             mobile_phone: getPhoneNumber('mobile_phone'),
+            mobile_phone_country: getPhoneCountry('mobile_phone_country'),
             work_phone: getPhoneNumber('work_phone'),
+            work_phone_country: getPhoneCountry('work_phone_country'),
             email_address: profile.email || profile.user?.email || ''
           };
 
@@ -136,20 +168,27 @@ const CheckoutSteps = ({ onComplete }) => {
   // Handle contact data updates from CommunicationDetailsPanel
   const handleContactDataUpdate = (updateData) => {
     if (updateData && updateData.contact) {
-      // Extract contact data from the update
+      // Extract contact data from the update (including phone country codes)
       const newContactData = {
         home_phone: updateData.contact.home_phone || '',
+        home_phone_country: updateData.contact.home_phone_country || '',
         mobile_phone: updateData.contact.mobile_phone || '',
+        mobile_phone_country: updateData.contact.mobile_phone_country || '',
         work_phone: updateData.contact.work_phone || '',
+        work_phone_country: updateData.contact.work_phone_country || '',
         email_address: updateData.contact.email_address || updateData.contact.email || ''
       };
 
       setContactData(newContactData);
 
-      // Trigger real-time validation for Step 1
-      if (currentStep === 1) {
+      // Trigger real-time validation for Step 1 only if addresses are loaded
+      // Use refs to get the latest address values (avoids stale closures)
+      const hasDeliveryData = deliveryAddressRef.current?.addressData && Object.keys(deliveryAddressRef.current.addressData).length > 0;
+      const hasInvoiceData = invoiceAddressRef.current?.addressData && Object.keys(invoiceAddressRef.current.addressData).length > 0;
+
+      if (currentStep === 1 && hasDeliveryData && hasInvoiceData) {
         setTimeout(() => {
-          validation.validateStep1(newContactData, deliveryAddress, invoiceAddress);
+          validation.validateStep1(newContactData, deliveryAddressRef.current, invoiceAddressRef.current);
         }, 100); // Small delay to ensure state updates
       }
     }
@@ -171,15 +210,20 @@ const CheckoutSteps = ({ onComplete }) => {
 
       setDeliveryAddress(newDeliveryAddress);
 
-      // Only trigger validation if we have actual address data (not empty object)
+      // Only trigger real-time validation AFTER initial data has loaded AND we have actual address data
       // This prevents validation errors on initial page load before addresses are populated
-      if (currentStep === 1 && newDeliveryAddress.addressData && Object.keys(newDeliveryAddress.addressData).length > 0) {
+      // Use refs to get the latest invoice address (avoids stale closure)
+      const hasDeliveryData = newDeliveryAddress.addressData && Object.keys(newDeliveryAddress.addressData).length > 0;
+      const hasInvoiceData = invoiceAddressRef.current?.addressData && Object.keys(invoiceAddressRef.current.addressData).length > 0;
+
+      if (currentStep === 1 && hasDeliveryData && hasInvoiceData) {
         setTimeout(() => {
-          validation.validateStep1(contactData, newDeliveryAddress, invoiceAddress);
+          // Use refs to get the latest values, avoiding stale closures
+          validation.validateStep1(contactDataRef.current, newDeliveryAddress, invoiceAddressRef.current);
         }, 100); // Small delay to ensure state updates
       }
     }
-  }, [currentStep, validation, contactData, invoiceAddress]);
+  }, [currentStep, validation]);
 
   // Handle invoice address updates from AddressSelectionPanel
   const handleInvoiceAddressUpdate = useCallback((addressInfo) => {
@@ -192,15 +236,20 @@ const CheckoutSteps = ({ onComplete }) => {
 
       setInvoiceAddress(newInvoiceAddress);
 
-      // Only trigger validation if we have actual address data (not empty object)
+      // Only trigger real-time validation AFTER initial data has loaded AND we have actual address data
       // This prevents validation errors on initial page load before addresses are populated
-      if (currentStep === 1 && newInvoiceAddress.addressData && Object.keys(newInvoiceAddress.addressData).length > 0) {
+      // Use refs to get the latest delivery address (avoids stale closure)
+      const hasDeliveryData = deliveryAddressRef.current?.addressData && Object.keys(deliveryAddressRef.current.addressData).length > 0;
+      const hasInvoiceData = newInvoiceAddress.addressData && Object.keys(newInvoiceAddress.addressData).length > 0;
+
+      if (currentStep === 1 && hasDeliveryData && hasInvoiceData) {
         setTimeout(() => {
-          validation.validateStep1(contactData, deliveryAddress, newInvoiceAddress);
+          // Use refs to get the latest values, avoiding stale closures
+          validation.validateStep1(contactDataRef.current, deliveryAddressRef.current, newInvoiceAddress);
         }, 100); // Small delay to ensure state updates
       }
     }
-  }, [currentStep, validation, contactData, deliveryAddress]);
+  }, [currentStep, validation]);
 
   // Fetch user profile if authenticated
   useEffect(() => {
@@ -466,10 +515,13 @@ const CheckoutSteps = ({ onComplete }) => {
         general_terms_accepted: generalTermsAccepted,
         user_preferences: {
           ...preferences,
-          // Include contact data from CommunicationDetailsPanel
+          // Include contact data from CommunicationDetailsPanel (with phone country codes)
           home_phone: { value: contactData.home_phone, inputType: 'text' },
+          home_phone_country: { value: contactData.home_phone_country, inputType: 'text' },
           mobile_phone: { value: contactData.mobile_phone, inputType: 'text' },
+          mobile_phone_country: { value: contactData.mobile_phone_country, inputType: 'text' },
           work_phone: { value: contactData.work_phone, inputType: 'text' },
+          work_phone_country: { value: contactData.work_phone_country, inputType: 'text' },
           email_address: { value: contactData.email_address, inputType: 'text' },
 
           // Include address data from AddressSelectionPanels

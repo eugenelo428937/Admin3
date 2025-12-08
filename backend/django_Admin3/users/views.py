@@ -101,10 +101,12 @@ class UserViewSet(viewsets.ModelViewSet):
             home_address = profile.addresses.filter(address_type='HOME').first()
             work_address = profile.addresses.filter(address_type='WORK').first()
             
-            # Get contact numbers
+            # Get contact numbers with country codes
             contact_numbers = {}
             for contact in profile.contact_numbers.all():
-                contact_numbers[contact.contact_type.lower() + '_phone'] = contact.number
+                key_prefix = contact.contact_type.lower()
+                contact_numbers[f'{key_prefix}_phone'] = contact.number
+                contact_numbers[f'{key_prefix}_phone_country'] = contact.country_code
             
             # Get emails
             emails = {}
@@ -283,19 +285,26 @@ class UserViewSet(viewsets.ModelViewSet):
                     
                     work_address.save()
                 
-                # Update contact numbers
+                # Update contact numbers with country codes
                 contact_numbers = data.get('contact_numbers', {})
                 for contact_type_key, number in contact_numbers.items():
+                    # Skip country code keys - we process them with their phone counterpart
+                    if contact_type_key.endswith('_phone_country'):
+                        continue
                     if contact_type_key.endswith('_phone'):
                         contact_type = contact_type_key.replace('_phone', '').upper()
+                        country_key = f'{contact_type_key}_country'
+                        country_code = contact_numbers.get(country_key, '')
+
                         if contact_type in ['HOME', 'WORK', 'MOBILE'] and number:
                             contact, created = UserProfileContactNumber.objects.get_or_create(
                                 user_profile=profile,
                                 contact_type=contact_type,
-                                defaults={'number': number}
+                                defaults={'number': number, 'country_code': country_code}
                             )
                             if not created:
                                 contact.number = number
+                                contact.country_code = country_code
                                 contact.save()
                 
                 response_data = {

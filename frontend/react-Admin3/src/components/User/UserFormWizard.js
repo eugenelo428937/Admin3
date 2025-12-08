@@ -468,6 +468,30 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
       }
    }, [form.work_country, countryList, showWorkSection]);
 
+   // Load phone countries from profile data (saved country codes)
+   useEffect(() => {
+      if (!isProfileMode || countryList.length === 0) return;
+
+      // Helper to find country by ISO code
+      const findCountryByCode = (isoCode) => {
+         if (!isoCode) return null;
+         return countryList.find(c => c.iso_code === isoCode);
+      };
+
+      // Get profile data (from initialData or fetched profileData)
+      const profileContactNumbers = initialData?.contact_numbers;
+      if (!profileContactNumbers) return;
+
+      // Set phone countries from saved country codes (priority over address country)
+      const savedHomeCountry = findCountryByCode(profileContactNumbers.home_phone_country);
+      const savedMobileCountry = findCountryByCode(profileContactNumbers.mobile_phone_country);
+      const savedWorkCountry = findCountryByCode(profileContactNumbers.work_phone_country);
+
+      if (savedHomeCountry) setHomePhoneCountry(savedHomeCountry);
+      if (savedMobileCountry) setMobilePhoneCountry(savedMobileCountry);
+      if (savedWorkCountry) setWorkPhoneCountry(savedWorkCountry);
+   }, [isProfileMode, countryList, initialData]);
+
    // Trigger validation on form changes to show errors only after user interaction
    useEffect(() => {
       if (hasUserInteracted) {
@@ -826,7 +850,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
             updatePayload.work_address = formatAddressFromForm("work");
          }
 
-         // Contact numbers
+         // Contact numbers with country codes
          if (
             changedFieldsSet.has("home_phone") ||
             changedFieldsSet.has("mobile_phone") ||
@@ -834,12 +858,18 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
             changedFieldsSet.has("work_email")
          ) {
             updatePayload.contact_numbers = {};
-            if (changedFieldsSet.has("home_phone"))
+            if (changedFieldsSet.has("home_phone")) {
                updatePayload.contact_numbers.home_phone = formData.home_phone;
-            if (changedFieldsSet.has("mobile_phone"))
+               updatePayload.contact_numbers.home_phone_country = homePhoneCountry?.iso_code || '';
+            }
+            if (changedFieldsSet.has("mobile_phone")) {
                updatePayload.contact_numbers.mobile_phone = formData.mobile_phone;
-            if (changedFieldsSet.has("work_phone"))
+               updatePayload.contact_numbers.mobile_phone_country = mobilePhoneCountry?.iso_code || '';
+            }
+            if (changedFieldsSet.has("work_phone")) {
                updatePayload.contact_numbers.work_phone = formData.work_phone;
+               updatePayload.contact_numbers.work_phone_country = workPhoneCountry?.iso_code || '';
+            }
             if (changedFieldsSet.has("work_email"))
                updatePayload.contact_numbers.work_email = formData.work_email;
          }
@@ -954,7 +984,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
             updatePayload.work_address = formatAddressData("work");
          }
 
-         // Contact numbers
+         // Contact numbers with country codes
          if (
             changedFields.has("home_phone") ||
             changedFields.has("mobile_phone") ||
@@ -962,12 +992,18 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
             changedFields.has("work_email")
          ) {
             updatePayload.contact_numbers = {};
-            if (changedFields.has("home_phone"))
+            if (changedFields.has("home_phone")) {
                updatePayload.contact_numbers.home_phone = form.home_phone;
-            if (changedFields.has("mobile_phone"))
+               updatePayload.contact_numbers.home_phone_country = homePhoneCountry?.iso_code || '';
+            }
+            if (changedFields.has("mobile_phone")) {
                updatePayload.contact_numbers.mobile_phone = form.mobile_phone;
-            if (changedFields.has("work_phone"))
+               updatePayload.contact_numbers.mobile_phone_country = mobilePhoneCountry?.iso_code || '';
+            }
+            if (changedFields.has("work_phone")) {
                updatePayload.contact_numbers.work_phone = form.work_phone;
+               updatePayload.contact_numbers.work_phone_country = workPhoneCountry?.iso_code || '';
+            }
             if (changedFields.has("work_email"))
                updatePayload.contact_numbers.work_email = form.work_email;
          }
@@ -1192,8 +1228,11 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
             home_address: homeAddressData,
             work_address: workAddressData,
             home_phone: form.home_phone,
+            home_phone_country: homePhoneCountry?.iso_code || '',
             work_phone: showWorkSection ? form.work_phone : "",
+            work_phone_country: showWorkSection ? (workPhoneCountry?.iso_code || '') : '',
             mobile_phone: form.mobile_phone,
+            mobile_phone_country: mobilePhoneCountry?.iso_code || '',
             work_email: showWorkSection ? form.work_email : "",
          };
 

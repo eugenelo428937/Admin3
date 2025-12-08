@@ -108,8 +108,10 @@ const CommunicationDetailsPanel = ({
         const all = [...frequent, ...rest];
         setCountryList(all);
 
-        // Default to UK for all phone fields
+        // Default to UK, but detect from phone numbers if available
         const ukCountry = countries.find(c => c.name === "United Kingdom");
+
+        // Set default UK country initially (will be updated when formData loads)
         if (ukCountry) {
           setHomePhoneCountry(ukCountry);
           setMobilePhoneCountry(ukCountry);
@@ -118,6 +120,32 @@ const CommunicationDetailsPanel = ({
       })
       .catch((err) => console.error("Failed to load countries:", err));
   }, []);
+
+  // Load phone countries from saved country codes in user profile
+  useEffect(() => {
+    if (countryList.length === 0 || !userProfile) return;
+
+    const ukCountry = countryList.find(c => c.name === "United Kingdom");
+
+    // Helper to find country by ISO code, with fallback to UK
+    const findCountryByCode = (isoCode) => {
+      if (isoCode) {
+        const country = countryList.find(c => c.iso_code === isoCode);
+        if (country) return country;
+      }
+      return ukCountry;
+    };
+
+    // Get saved country codes from profile (new format)
+    const homeCountryCode = userProfile.contact_numbers?.home_phone_country;
+    const mobileCountryCode = userProfile.contact_numbers?.mobile_phone_country;
+    const workCountryCode = userProfile.contact_numbers?.work_phone_country;
+
+    // Set phone countries from saved country codes
+    setHomePhoneCountry(findCountryByCode(homeCountryCode));
+    setMobilePhoneCountry(findCountryByCode(mobileCountryCode));
+    setWorkPhoneCountry(findCountryByCode(workCountryCode));
+  }, [countryList, userProfile]);
 
   // Validation functions
   const validators = {
@@ -211,8 +239,11 @@ const CommunicationDetailsPanel = ({
         },
         contact_numbers: {
           home_phone: formData.homePhone,
+          home_phone_country: homePhoneCountry?.iso_code || '',
           mobile_phone: formData.mobilePhone,
-          work_phone: formData.workPhone
+          mobile_phone_country: mobilePhoneCountry?.iso_code || '',
+          work_phone: formData.workPhone,
+          work_phone_country: workPhoneCountry?.iso_code || ''
         }
       };
 
@@ -220,12 +251,16 @@ const CommunicationDetailsPanel = ({
 
       if (result.status === 'success') {
         setSuccess('Communication details updated successfully');
+
         if (onProfileUpdate) {
           onProfileUpdate({
             contact: {
               home_phone: formData.homePhone,
+              home_phone_country: homePhoneCountry?.iso_code || '',
               mobile_phone: formData.mobilePhone,
+              mobile_phone_country: mobilePhoneCountry?.iso_code || '',
               work_phone: formData.workPhone,
+              work_phone_country: workPhoneCountry?.iso_code || '',
               email_address: formData.email
             },
             orderOnly: false // This was a full profile update
@@ -250,26 +285,23 @@ const CommunicationDetailsPanel = ({
 
   // Handle order-only update (don't save to profile)
   const handleOrderOnlyUpdate = () => {
-    setLoading(true);
+    setShowConfirmation(false);
 
-    // For now, just simulate the update without actually saving to profile
-    setTimeout(() => {
-      setLoading(false);
-      setShowConfirmation(false);
-
-      // Call the callback with order-only flag
-      if (onProfileUpdate) {
-        onProfileUpdate({
-          contact: {
-            home_phone: formData.homePhone,
-            mobile_phone: formData.mobilePhone,
-            work_phone: formData.workPhone,
-            email_address: formData.email
-          },
-          orderOnly: true
-        });
-      }
-    }, 1000);
+    // Call the callback with order-only flag and country codes
+    if (onProfileUpdate) {
+      onProfileUpdate({
+        contact: {
+          home_phone: formData.homePhone,
+          home_phone_country: homePhoneCountry?.iso_code || '',
+          mobile_phone: formData.mobilePhone,
+          mobile_phone_country: mobilePhoneCountry?.iso_code || '',
+          work_phone: formData.workPhone,
+          work_phone_country: workPhoneCountry?.iso_code || '',
+          email_address: formData.email
+        },
+        orderOnly: true
+      });
+    }
   };
 
   // Render email section based on profile data
