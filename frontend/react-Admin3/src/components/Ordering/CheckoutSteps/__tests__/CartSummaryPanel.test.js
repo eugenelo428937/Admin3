@@ -28,7 +28,8 @@ describe('CartSummaryPanel', () => {
       subtotal: 200.00,
       total_vat: 40.00,
       total_gross: 240.00
-    }
+    },
+    region_info: { region: 'UK' }
   };
 
   it('should render cart summary when expanded', () => {
@@ -125,120 +126,234 @@ describe('CartSummaryPanel', () => {
     expect(screen.getByText('Test Product 2')).toBeInTheDocument();
   });
 
-  // T001: Dynamic VAT label display tests (TDD RED Phase)
+  // T001: Dynamic VAT label display tests - now based on region, not effective_vat_rate
   describe('Dynamic VAT Label Display (T001)', () => {
-    it('should display "VAT (20%)" when effective_vat_rate is 0.20', () => {
-      const vatWith20Percent = {
+    it('should display "VAT (20%)" for UK region', () => {
+      const vatWithUKRegion = {
         totals: {
           subtotal: 200.00,
           total_vat: 40.00,
           total_gross: 240.00,
           effective_vat_rate: 0.20
-        }
+        },
+        region_info: { region: 'UK' }
       };
 
       render(
         <CartSummaryPanel
           cartItems={mockCartItems}
-          vatCalculations={vatWith20Percent}
+          vatCalculations={vatWithUKRegion}
           isCollapsed={false}
           onToggleCollapse={jest.fn()}
         />
       );
 
       expect(screen.getByText(/VAT \(20%\)/)).toBeInTheDocument();
+      expect(screen.getByText(/United Kingdom/)).toBeInTheDocument();
     });
 
-    it('should display "VAT (15%)" when effective_vat_rate is 0.15', () => {
-      const vatWith15Percent = {
+    it('should display "VAT (15%)" for SA region', () => {
+      const vatWithSARegion = {
         totals: {
           subtotal: 200.00,
           total_vat: 30.00,
           total_gross: 230.00,
           effective_vat_rate: 0.15
-        }
+        },
+        region_info: { region: 'SA' }
       };
 
       render(
         <CartSummaryPanel
           cartItems={mockCartItems}
-          vatCalculations={vatWith15Percent}
+          vatCalculations={vatWithSARegion}
           isCollapsed={false}
           onToggleCollapse={jest.fn()}
         />
       );
 
       expect(screen.getByText(/VAT \(15%\)/)).toBeInTheDocument();
+      expect(screen.getByText(/South Africa/)).toBeInTheDocument();
     });
 
-    it('should display "VAT (0%)" when effective_vat_rate is 0.00', () => {
-      const vatWith0Percent = {
+    it('should display "VAT (23%)" for IE region', () => {
+      const vatWithIERegion = {
         totals: {
           subtotal: 200.00,
-          total_vat: 0.00,
-          total_gross: 200.00,
-          effective_vat_rate: 0.00
-        }
+          total_vat: 46.00,
+          total_gross: 246.00,
+          effective_vat_rate: 0.23
+        },
+        region_info: { region: 'IE' }
       };
 
       render(
         <CartSummaryPanel
           cartItems={mockCartItems}
-          vatCalculations={vatWith0Percent}
+          vatCalculations={vatWithIERegion}
+          isCollapsed={false}
+          onToggleCollapse={jest.fn()}
+        />
+      );
+
+      expect(screen.getByText(/VAT \(23%\)/)).toBeInTheDocument();
+      expect(screen.getByText(/Ireland/)).toBeInTheDocument();
+    });
+
+    it('should display "VAT (0%)" for ROW region', () => {
+      const vatWithROWRegion = {
+        totals: {
+          subtotal: 200.00,
+          total_vat: 0.00,
+          total_gross: 200.00,
+          effective_vat_rate: 0.00
+        },
+        region_info: { region: 'ROW' }
+      };
+
+      render(
+        <CartSummaryPanel
+          cartItems={mockCartItems}
+          vatCalculations={vatWithROWRegion}
           isCollapsed={false}
           onToggleCollapse={jest.fn()}
         />
       );
 
       expect(screen.getByText(/VAT \(0%\)/)).toBeInTheDocument();
+      expect(screen.getByText(/Rest of World/)).toBeInTheDocument();
     });
 
-    it('should display "VAT:" when effective_vat_rate is undefined', () => {
-      const vatWithoutRate = {
+    it('should display "VAT (0%)" when region is undefined', () => {
+      const vatWithoutRegion = {
         totals: {
           subtotal: 200.00,
           total_vat: 40.00,
           total_gross: 240.00
-          // effective_vat_rate is intentionally missing
+          // region_info is intentionally missing
         }
       };
 
       render(
         <CartSummaryPanel
           cartItems={mockCartItems}
-          vatCalculations={vatWithoutRate}
+          vatCalculations={vatWithoutRegion}
           isCollapsed={false}
           onToggleCollapse={jest.fn()}
         />
       );
 
-      // Should display "VAT:" without percentage when rate is undefined
-      const vatElement = screen.getByText(/VAT/);
-      expect(vatElement.textContent).toMatch(/^VAT\s*:/);
+      // Should display "VAT (0%)" when region is unknown (defaults to 0%)
+      expect(screen.getByText(/VAT \(0%\)/)).toBeInTheDocument();
     });
+  });
 
-    it('should display "VAT:" when effective_vat_rate is null', () => {
-      const vatWithNullRate = {
+  describe('VAT Breakdown Section (T002)', () => {
+    it('should show "View VAT breakdown" link when per-item VAT data exists', () => {
+      const vatWithItems = {
         totals: {
           subtotal: 200.00,
           total_vat: 40.00,
-          total_gross: 240.00,
-          effective_vat_rate: null
-        }
+          total_gross: 240.00
+        },
+        region_info: { region: 'UK' },
+        vat_calculations: [
+          { id: '1', product_type: 'Digital', net_amount: '50.00', vat_rate: '0.20', vat_amount: '10.00' },
+          { id: '2', product_type: 'Digital', net_amount: '150.00', vat_rate: '0.20', vat_amount: '30.00' }
+        ]
       };
 
       render(
         <CartSummaryPanel
           cartItems={mockCartItems}
-          vatCalculations={vatWithNullRate}
+          vatCalculations={vatWithItems}
           isCollapsed={false}
           onToggleCollapse={jest.fn()}
         />
       );
 
-      // Should display "VAT:" without percentage when rate is null
-      const vatElement = screen.getByText(/VAT/);
-      expect(vatElement.textContent).toMatch(/^VAT\s*:/);
+      expect(screen.getByText(/View VAT breakdown/)).toBeInTheDocument();
+    });
+
+    it('should expand and show per-item VAT details when clicked', () => {
+      const vatWithItems = {
+        totals: {
+          subtotal: 200.00,
+          total_vat: 40.00,
+          total_gross: 240.00
+        },
+        region_info: { region: 'UK' },
+        vat_calculations: [
+          { id: '1', product_type: 'Digital', net_amount: '50.00', vat_rate: '0.20', vat_amount: '10.00' },
+          { id: '2', product_type: 'Printed', net_amount: '150.00', vat_rate: '0.00', vat_amount: '0.00' }
+        ]
+      };
+
+      render(
+        <CartSummaryPanel
+          cartItems={mockCartItems}
+          vatCalculations={vatWithItems}
+          isCollapsed={false}
+          onToggleCollapse={jest.fn()}
+        />
+      );
+
+      // Click to expand VAT breakdown
+      const breakdownLink = screen.getByText(/View VAT breakdown/);
+      fireEvent.click(breakdownLink);
+
+      // Should show per-item VAT details
+      expect(screen.getByText('VAT per Product:')).toBeInTheDocument();
+    });
+
+    it('should indicate mixed VAT rates when items have different rates', () => {
+      const vatWithMixedRates = {
+        totals: {
+          subtotal: 200.00,
+          total_vat: 10.00,
+          total_gross: 210.00
+        },
+        region_info: { region: 'UK' },
+        vat_calculations: [
+          { id: '1', product_type: 'Digital', net_amount: '50.00', vat_rate: '0.20', vat_amount: '10.00' },
+          { id: '2', product_type: 'Printed', net_amount: '150.00', vat_rate: '0.00', vat_amount: '0.00' }
+        ]
+      };
+
+      render(
+        <CartSummaryPanel
+          cartItems={mockCartItems}
+          vatCalculations={vatWithMixedRates}
+          isCollapsed={false}
+          onToggleCollapse={jest.fn()}
+        />
+      );
+
+      // Should indicate mixed rates
+      expect(screen.getByText(/mixed rates/i)).toBeInTheDocument();
+    });
+
+    it('should not show breakdown link when no per-item VAT data', () => {
+      const vatWithoutItems = {
+        totals: {
+          subtotal: 200.00,
+          total_vat: 40.00,
+          total_gross: 240.00
+        },
+        region_info: { region: 'UK' },
+        vat_calculations: []
+      };
+
+      render(
+        <CartSummaryPanel
+          cartItems={mockCartItems}
+          vatCalculations={vatWithoutItems}
+          isCollapsed={false}
+          onToggleCollapse={jest.fn()}
+        />
+      );
+
+      expect(screen.queryByText(/View VAT breakdown/)).not.toBeInTheDocument();
     });
   });
 
@@ -269,7 +384,8 @@ describe('CartSummaryPanel', () => {
           total_vat: 1599840.00,
           total_gross: 9599040.00,
           effective_vat_rate: 0.20
-        }
+        },
+        region_info: { region: 'UK' }
       };
 
       expect(() => {
@@ -296,7 +412,8 @@ describe('CartSummaryPanel', () => {
           total_vat: 200000.00,
           total_gross: 1200000.00,
           effective_vat_rate: 0.20
-        }
+        },
+        region_info: { region: 'UK' }
       };
 
       render(
@@ -343,7 +460,8 @@ describe('CartSummaryPanel', () => {
                 total_vat: 0,
                 total_gross: 0,
                 effective_vat_rate: 0.20
-              }
+              },
+              region_info: { region: 'UK' }
             }}
             isCollapsed={false}
             onToggleCollapse={jest.fn()}
@@ -360,7 +478,8 @@ describe('CartSummaryPanel', () => {
         total_vat: 0,
         total_gross: 0,
         effective_vat_rate: 0.20
-      }
+      },
+      region_info: { region: 'UK' }
     };
 
     const singleItemCart = [
@@ -380,7 +499,8 @@ describe('CartSummaryPanel', () => {
         total_vat: 10.00,
         total_gross: 60.00,
         effective_vat_rate: 0.20
-      }
+      },
+      region_info: { region: 'UK' }
     };
 
     it('renders empty cart summary', () => {
