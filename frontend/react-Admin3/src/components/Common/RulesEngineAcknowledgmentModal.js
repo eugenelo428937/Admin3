@@ -128,7 +128,20 @@ const RulesEngineAcknowledgmentModal = ({
     try {
       // Submit acknowledgment for each message
       for (const [index, msg] of messagesList.entries()) {
+        // DEBUG: Log message structure to understand what's being passed
+        console.log('🔍 [AcknowledgmentModal] Message structure:', {
+          index,
+          msg,
+          template_id: msg.template_id,
+          ack_key: msg.ack_key,
+          hasAckKey: !!msg.ack_key
+        });
+
         if (acknowledgments[index] && onAcknowledge) {
+          console.log('✅ [AcknowledgmentModal] Submitting acknowledgment:', {
+            template_id: msg.template_id,
+            ack_key: msg.ack_key
+          });
           await onAcknowledge(true, msg.template_id, msg.ack_key);
         }
       }
