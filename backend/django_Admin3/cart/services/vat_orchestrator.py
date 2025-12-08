@@ -224,18 +224,40 @@ class VATOrchestrator:
             cart_item: CartItem instance
 
         Returns:
-            str: Product type (Digital, Printed, Tutorial, etc.)
+            str: Product type (Digital, Printed, Tutorial, Marking, etc.)
         """
-        # PRIORITY 1: Check metadata for variationType (user's selected variation)
-        if cart_item.metadata and 'variationType' in cart_item.metadata:
-            variation_type = cart_item.metadata.get('variationType', '')
+        metadata = cart_item.metadata or {}
+
+        # PRIORITY 1: Check metadata for variationType (for marking, tutorial products)
+        if 'variationType' in metadata:
+            variation_type = metadata.get('variationType', '')
             if variation_type:
                 # Map variation type to product type
                 mapped_type = VARIATION_TYPE_TO_PRODUCT_TYPE.get(variation_type, DEFAULT_PRODUCT_TYPE)
-                logger.debug(f"Using variation type from metadata: {variation_type} → {mapped_type}")
+                logger.debug(f"Using variationType from metadata: {variation_type} → {mapped_type}")
                 return mapped_type
 
-        # PRIORITY 2: Fallback to product's first variation (legacy)
+        # PRIORITY 2: Check is_digital flag in metadata (for material products)
+        # Material products have is_digital: true/false but no variationType
+        if 'is_digital' in metadata:
+            is_digital = metadata.get('is_digital', False)
+            if is_digital:
+                logger.debug(f"Using is_digital flag from metadata: True → Digital")
+                return 'Digital'
+            else:
+                # Not digital - check if it's a tutorial or marking
+                if metadata.get('is_tutorial'):
+                    logger.debug(f"Using is_tutorial flag from metadata: True → Tutorial")
+                    return 'Tutorial'
+                elif metadata.get('is_marking'):
+                    logger.debug(f"Using is_marking flag from metadata: True → Marking")
+                    return 'Marking'
+                else:
+                    # Default to Printed for non-digital materials
+                    logger.debug(f"Using is_digital flag from metadata: False → Printed")
+                    return 'Printed'
+
+        # PRIORITY 3: Fallback to product's first variation (legacy)
         if cart_item.product:
             variation_type = self._extract_variation_type(cart_item.product)
             if variation_type:
@@ -243,7 +265,7 @@ class VATOrchestrator:
                 logger.debug(f"Using variation type from product: {variation_type} → {mapped_type}")
                 return mapped_type
 
-        # PRIORITY 3: Default
+        # PRIORITY 4: Default
         logger.warning(f"No variation type found for cart item {cart_item.id}, using default: {DEFAULT_PRODUCT_TYPE}")
         return DEFAULT_PRODUCT_TYPE
 
