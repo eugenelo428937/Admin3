@@ -154,8 +154,13 @@ const useCheckoutValidation = () => {
       email: { isValid: true, error: null }
     };
 
-    // Validate mobile phone (required)
-    const phoneValidation = validatePhone(contactData.mobile_phone, 'GB', true);
+    // Use saved country codes, default to GB if not set
+    const mobileCountry = contactData.mobile_phone_country || 'GB';
+    const homeCountry = contactData.home_phone_country || 'GB';
+    const workCountry = contactData.work_phone_country || 'GB';
+
+    // Validate mobile phone (required) - use saved country code
+    const phoneValidation = validatePhone(contactData.mobile_phone, mobileCountry, true);
     validations.mobilePhone = phoneValidation;
     if (!phoneValidation.isValid) {
       errors.push(phoneValidation.error);
@@ -168,16 +173,16 @@ const useCheckoutValidation = () => {
       errors.push(emailValidation.error);
     }
 
-    // Validate optional phone numbers
+    // Validate optional phone numbers - use saved country codes
     if (contactData.home_phone) {
-      const homePhoneValidation = validatePhone(contactData.home_phone, 'GB', false);
+      const homePhoneValidation = validatePhone(contactData.home_phone, homeCountry, false);
       if (!homePhoneValidation.isValid) {
         errors.push(`Home phone: ${homePhoneValidation.error}`);
       }
     }
 
     if (contactData.work_phone) {
-      const workPhoneValidation = validatePhone(contactData.work_phone, 'GB', false);
+      const workPhoneValidation = validatePhone(contactData.work_phone, workCountry, false);
       if (!workPhoneValidation.isValid) {
         errors.push(`Work phone: ${workPhoneValidation.error}`);
       }
