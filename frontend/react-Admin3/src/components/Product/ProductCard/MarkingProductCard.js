@@ -533,14 +533,20 @@ const MarkingProductCard = React.memo(
 					{/* Floating Badges */}
 					<Box className="floating-badges-container">
 						<Chip
-							label={product.subject_code}
+							label={<Typography variant="chip">{product.subject_code}</Typography>}
 							size="small"
 							className="subject-badge"
 							role="img"
 							aria-label={`Subject: ${product.subject_code}`}
 						/>
 						<Chip
-							label="25S"
+							label={<Typography variant="chip">
+								{product.exam_session_code ||
+								product.session_code ||
+								product.exam_session ||
+								product.session}
+								</Typography>
+							 }
 							size="small"
 							className="session-badge"
 							role="img"
