@@ -226,10 +226,10 @@ const CheckoutSteps = ({ onComplete }) => {
       setRulesMessages([]);
 
       try {
-        // Sanitize cart items to ensure actual_price is never null (schema requirement)
+        // Sanitize cart items to ensure actual_price is a string (schema requirement)
         const sanitizedItems = cartItems.map(item => ({
           ...item,
-          actual_price: item.actual_price || 0
+          actual_price: String(item.actual_price || 0)
         }));
 
         // Calculate total, treating null/undefined prices as 0
