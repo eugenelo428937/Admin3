@@ -331,42 +331,50 @@ class Command(BaseCommand):
         product_rules = []
 
         # Product rule definitions
+        # vat_rate_override: Set to override the regional VAT rate for specific product types
+        # - None means use the regional rate (set by calculate_vat_uk, etc.)
+        # - 0.00 means zero-rated (printed materials in UK)
         product_configs = [
-            # UK-specific product rules (4 rules)
+            # UK-specific product rules (5 rules)
             {
                 'rule_code': 'calculate_vat_uk_digital_product',
                 'name': 'UK Digital Product VAT',
                 'region': 'UK',
                 'product_type': 'Digital',
-                'priority': 85  # Lower than regional rules (90)
+                'priority': 85,  # Lower than regional rules (90)
+                'vat_rate_override': None  # Use regional rate (20%)
             },
             {
                 'rule_code': 'calculate_vat_uk_printed_product',
-                'name': 'UK Printed Product VAT',
+                'name': 'UK Printed Product VAT (Zero-Rated)',
                 'region': 'UK',
                 'product_type': 'Printed',
-                'priority': 85
+                'priority': 85,
+                'vat_rate_override': 0.00  # Zero-rated for printed materials
             },
             {
                 'rule_code': 'calculate_vat_uk_flash_card',
-                'name': 'UK FlashCard Product VAT',
+                'name': 'UK FlashCard Product VAT (Zero-Rated)',
                 'region': 'UK',
                 'product_type': 'FlashCard',
-                'priority': 80
+                'priority': 80,
+                'vat_rate_override': 0.00  # Zero-rated for printed materials
             },
             {
                 'rule_code': 'calculate_vat_uk_pbor',
-                'name': 'UK PBOR Product VAT',
+                'name': 'UK PBOR Product VAT (Zero-Rated)',
                 'region': 'UK',
                 'product_type': 'PBOR',
-                'priority': 80
+                'priority': 80,
+                'vat_rate_override': 0.00  # Zero-rated for printed materials
             },
             {
                 'rule_code': 'calculate_vat_uk_marking',
                 'name': 'UK Marking Service VAT',
                 'region': 'UK',
                 'product_type': 'Marking',
-                'priority': 85  # Same priority as Digital products (service)
+                'priority': 85,
+                'vat_rate_override': None  # Use regional rate (20% for services)
             },
             # Generic regional product rules (4 rules) - handle all product types
             {
@@ -374,28 +382,32 @@ class Command(BaseCommand):
                 'name': 'Ireland Product VAT',
                 'region': 'IE',
                 'product_type': None,  # All product types
-                'priority': 85
+                'priority': 85,
+                'vat_rate_override': None  # Use regional rate
             },
             {
                 'rule_code': 'calculate_vat_eu_product',
                 'name': 'EU Product VAT',
                 'region': 'EU',
                 'product_type': None,  # All product types
-                'priority': 85
+                'priority': 85,
+                'vat_rate_override': None  # Use regional rate
             },
             {
                 'rule_code': 'calculate_vat_sa_product',
                 'name': 'SA Product VAT',
                 'region': 'SA',
                 'product_type': None,  # All product types
-                'priority': 85
+                'priority': 85,
+                'vat_rate_override': None  # Use regional rate
             },
             {
                 'rule_code': 'calculate_vat_row_product',
                 'name': 'ROW Product VAT',
                 'region': 'ROW',
                 'product_type': None,  # All product types
-                'priority': 85
+                'priority': 85,
+                'vat_rate_override': None  # Use regional rate
             }
         ]
 
@@ -405,6 +417,7 @@ class Command(BaseCommand):
             region = config['region']
             product_type = config['product_type']
             priority = config['priority']
+            vat_rate_override = config.get('vat_rate_override')
 
             # Build condition based on whether product_type is specified
             if product_type:
@@ -420,41 +433,54 @@ class Command(BaseCommand):
                 condition = {"==": [{"var": "vat.region"}, region]}
 
             # Actions: Calculate VAT and update context
-            # Product rules calculate:
-            # 1. VAT amount
-            # 2. Gross amount (net + VAT)
-            actions = [
-                # Step 1: Calculate VAT amount and store in vat.amount
-                {
-                    "type": "call_function",
-                    "function": "calculate_vat_amount",
-                    "args": [
-                        {"var": "cart_item.net_amount"},
-                        {"var": "vat.rate"}
-                    ],
-                    "store_result_in": "vat.amount"
-                },
-                # Step 2: Store VAT amount in cart_item.vat_amount
-                {
-                    "type": "call_function",
-                    "function": "calculate_vat_amount",
-                    "args": [
-                        {"var": "cart_item.net_amount"},
-                        {"var": "vat.rate"}
-                    ],
-                    "store_result_in": "cart_item.vat_amount"
-                },
-                # Step 3: Calculate gross_amount = net_amount + vat_amount
-                {
-                    "type": "call_function",
-                    "function": "add_decimals",
-                    "args": [
-                        {"var": "cart_item.net_amount"},
-                        {"var": "cart_item.vat_amount"}
-                    ],
-                    "store_result_in": "cart_item.gross_amount"
-                }
-            ]
+            # Product rules:
+            # 1. (Optional) Override VAT rate if product has different rate
+            # 2. Calculate VAT amount
+            # 3. Calculate gross amount (net + VAT)
+            actions = []
+
+            # Step 0: Override VAT rate if specified (e.g., 0% for UK printed materials)
+            if vat_rate_override is not None:
+                actions.append({
+                    "type": "update",
+                    "target": "vat.rate",
+                    "operation": "set",
+                    "value": vat_rate_override,
+                    "description": f"Override VAT rate to {vat_rate_override * 100:.0f}% for {product_type or 'all'} products"
+                })
+
+            # Step 1: Calculate VAT amount and store in vat.amount
+            actions.append({
+                "type": "call_function",
+                "function": "calculate_vat_amount",
+                "args": [
+                    {"var": "cart_item.net_amount"},
+                    {"var": "vat.rate"}
+                ],
+                "store_result_in": "vat.amount"
+            })
+
+            # Step 2: Store VAT amount in cart_item.vat_amount
+            actions.append({
+                "type": "call_function",
+                "function": "calculate_vat_amount",
+                "args": [
+                    {"var": "cart_item.net_amount"},
+                    {"var": "vat.rate"}
+                ],
+                "store_result_in": "cart_item.vat_amount"
+            })
+
+            # Step 3: Calculate gross_amount = net_amount + vat_amount
+            actions.append({
+                "type": "call_function",
+                "function": "add_decimals",
+                "args": [
+                    {"var": "cart_item.net_amount"},
+                    {"var": "cart_item.vat_amount"}
+                ],
+                "store_result_in": "cart_item.gross_amount"
+            })
 
             rule_data = {
                 'rule_code': rule_code,
