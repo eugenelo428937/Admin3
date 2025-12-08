@@ -144,14 +144,20 @@ const OnlineClassroomProductCard = React.memo(
 				{/* Floating Badges */}
 				<Box className="floating-badges-container">
 					<Chip
-						label={product.subject_code || "CP1"}
+						label={<Typography variant="chip">{product.subject_code}</Typography>}
 						size="small"
 						className="subject-badge"
 						role="img"
 						aria-label={`Subject: ${product.subject_code || "CP1"}`}
 					/>
 					<Chip
-						label="25S"
+						label={<Typography variant="chip">
+							{product.exam_session_code ||
+							product.session_code ||
+							product.exam_session ||
+							product.session}
+							</Typography>
+						 }
 						size="small"
 						className="session-badge"
 						role="img"
@@ -160,31 +166,15 @@ const OnlineClassroomProductCard = React.memo(
 				</Box>
 
 				<CardHeader
-					className="product-header"
-					sx={{ 
-						width: '100%', 
-						margin: 0, 
-						padding: 0,
-						'& .MuiCardHeader-root': {
-							width: '100%'
-						}
-					}}
+					className="product-header"					
 					title={
 						<Typography
 							variant="h4"
 							textAlign="left"
 							className="product-title">
-							Online Classroom
+							{product.subject_code} Online Classroom
 						</Typography>
-					}
-					subheader={
-						<Typography
-							variant="subtitle1"
-							textAlign="left"
-							className="product-subtitle">
-							{product.subject_code} - {product.product_name || "Actuarial Practice"}
-						</Typography>
-					}
+					}					
 					avatar={
 						<Avatar className="product-avatar">
 							<Computer className="product-avatar-icon" />
@@ -235,15 +225,7 @@ const OnlineClassroomProductCard = React.memo(
 																	£{standardPrice.amount}
 																</Typography>
 															)}
-														</Box>
-														{variation.description && (
-															<Typography
-																variant="caption"
-																color="text.secondary"
-																className="variation-description">
-																{variation.description}
-															</Typography>
-														)}
+														</Box>														
 													</Box>
 												}
 												className="variation-control"

@@ -107,7 +107,7 @@ const CartSummaryPanel = ({
                       {item.product_name}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {item.subject_code} • {item.variation_name}
+                      {item.subject_code} • {item.metadata?.variationName || item.variation_name}
                     </Typography>
                     <br />
                     <Typography variant="caption" component="code">
@@ -162,7 +162,7 @@ const CartSummaryPanel = ({
                     onClick={handleVatBreakdownToggle}
                   >
                     <Typography variant="caption" color="primary" sx={{ flexGrow: 1 }}>
-                      {hasMixedVatRates ? 'View VAT breakdown (mixed rates)' : 'View VAT breakdown'}
+                      View VAT breakdown
                     </Typography>
                     <IconButton size="small" sx={{ p: 0 }}>
                       {isVatBreakdownExpanded ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
@@ -180,7 +180,7 @@ const CartSummaryPanel = ({
                       borderColor: 'divider'
                     }}>
                       <Typography variant="caption" fontWeight="bold" sx={{ mb: 1, display: 'block' }}>
-                        VAT per Product:
+                        VAT calculation per Product:
                       </Typography>
                       <Table size="small" sx={{ '& .MuiTableCell-root': { py: 0.5, px: 1, fontSize: '0.75rem' } }}>
                         <TableHead>
@@ -247,11 +247,6 @@ const CartSummaryPanel = ({
                           })}
                         </TableBody>
                       </Table>
-                      {hasMixedVatRates && (
-                        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', fontStyle: 'italic' }}>
-                          * Some products have different VAT rates (e.g., zero-rated printed materials)
-                        </Typography>
-                      )}
                     </Box>
                   </Collapse>
                 </Box>
