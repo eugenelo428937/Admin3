@@ -456,6 +456,8 @@ const CheckoutSteps = ({ onComplete }) => {
     if (currentStep < steps.length) {
       setCurrentStep(prev => prev + 1);
       setError('');
+      // Scroll to top when moving to next step
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -463,6 +465,8 @@ const CheckoutSteps = ({ onComplete }) => {
     if (currentStep > 1) {
       setCurrentStep(prev => prev - 1);
       setError('');
+      // Scroll to top when going back to previous step
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
