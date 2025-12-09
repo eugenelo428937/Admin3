@@ -54,7 +54,7 @@ const CartReviewStep = ({
                 />
                 <CardContent>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Select your delivery address from your profile settings.
+                    Select your delivery address
                   </Typography>
                   <AddressSelectionPanel
                     addressType="delivery"
@@ -81,7 +81,7 @@ const CartReviewStep = ({
                 />
                 <CardContent>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Select your invoice address from your profile settings.
+                    Select your invoice address
                   </Typography>
                   <AddressSelectionPanel
                     addressType="invoice"
