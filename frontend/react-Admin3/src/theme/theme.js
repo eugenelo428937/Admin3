@@ -141,6 +141,36 @@ const theme = createTheme({
          letterSpacing: "-0.017em !important",
          textWrap:"balance",
       },
+      navlink: {
+         fontFamily: "'Inter', 'Poppins', sans-serif",
+         fontWeight: 500,
+         fontSize: "calc( 1em * var(--quarterstep) )!important",
+         lineHeight: "var(--halfstep) !important",
+         letterSpacing: "-0.004em !important",
+         textTransform: "none",
+         position: "static",
+         top: "6.235em",
+         [baseTheme.breakpoints.down("lg")]: {
+            fontSize: "calc(1em * var(--quarterstep)) !important",
+            fontWeight: 400,
+         },
+         [baseTheme.breakpoints.down("md")]: {
+            fontSize: "1em !important",
+            fontWeight: 400,
+         },
+      },
+      topnavlink: {
+         fontFamily: "'Inter', 'Poppins', sans-serif",
+         fontWeight: 300,
+         fontSize: "calc(1em * var(--quarterstep)) !important",
+         lineHeight: "var(--halfstep) !important",
+         letterSpacing: "-0.017em !important",
+         textWrap:"balance",
+         [baseTheme.breakpoints.down("lg")]: {
+            fontSize: "calc(1em) !important",
+            fontWeight: 400,
+         },
+      },
       h6: {
          fontFamily: "'Inter', 'Poppins', sans-serif",
          fontWeight: 600,
