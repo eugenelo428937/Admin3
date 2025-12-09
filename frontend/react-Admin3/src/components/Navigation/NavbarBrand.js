@@ -8,7 +8,7 @@ const NavbarBrand = () => {
 		<Navbar.Brand
 			onClick={() => navigate("/home")}
 			style={{ cursor: "pointer" }}
-			className="navbar-brand pe-md-2 order-1 order-md-0">
+			className="navbar-brand order-1 order-md-0">
 			<Image
 				fluid
 				src={require("../../assets/ActEdlogo.png")}

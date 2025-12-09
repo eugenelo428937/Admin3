@@ -1,13 +1,5 @@
 import React, { useState, useEffect, useId } from "react";
-import {
-   Box,
-   Card,
-   CardActionArea,
-   CardContent,
-   useTheme,
-   Grid,
-   Divider,
-} from "@mui/material";
+import { Box, Card, CardContent, useTheme, Grid, Divider } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import SearchBox from "../components/SearchBox";
 import SearchResults from "../components/SearchResults";
@@ -38,9 +30,10 @@ const Home = () => {
 
    // Video path from public folder
    const backgroundVideo = `${process.env.PUBLIC_URL}/video/12595751_2560_1440_30fps.mp4`;
-   const backgroundVideoPoster = `${process.env.PUBLIC_URL}/bg2.png`;
+   const backgroundVideoPoster = `${process.env.PUBLIC_URL}/videoframe_0.png`;
    const graphic1 = `${process.env.PUBLIC_URL}/brand020.1a983628.webp`;
-
+   const graphic2 = `${process.env.PUBLIC_URL}/brand070.59c82c5e.webp`;
+   const graphic3 = `${process.env.PUBLIC_URL}/halftone_sq.df9804eb.avif`;
    // Debug video paths
    useEffect(() => {}, [backgroundVideo, backgroundVideoPoster]);
 
@@ -158,244 +151,314 @@ const Home = () => {
    };
 
    return (
-      <Container
-         maxWidth={true}
-         className="hero-container"
-         disableGutters={true}
-      >
-         <Row style={{ height: "100%" }}>
-            <Col
-               className="text-center"
-               style={{
-                  position: "relative",
-                  overflow: "hidden",
-                  height: "100%",
-               }}
-            >
-               {/* Background Video */}
-               <video
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  poster={backgroundVideoPoster}
-                  style={{
-                     position: "absolute",
-                     top: 0,
-                     left: 0,
-                     width: "100%",
-                     height: "100%",
-                     objectFit: "cover",
-                     zIndex: 0,
-                  }}
-               >
-                  <source src={backgroundVideo} type="video/mp4" />
-               </video>
-
-               {/* Grey Overlay */}
-               <div
-                  style={{
-                     position: "absolute",
-                     top: 0,
-                     left: 0,
-                     width: "100%",
-                     height: "100%",
-                     backgroundColor: "rgba(0, 0, 0, 0.75)",
-                     zIndex: 1,
-                  }}
-               />
-
-               {/* Content */}
-               <Container
-                  className="hero-content d-flex flex-column flex-wrap justify-content-evenly align-items-center"
-                  sx={{
-                     padding: {
-                        xs: theme.liftkit.spacing.lg,
-                        lg: theme.liftkit.spacing.lg,
-                     },                     
-                  }}
-               >
-                  {/* Rules Engine Messages Section (Holiday Messages, etc.) */}
-         <Container maxWidth="xl">
-            {rulesLoading && (
-               <Alert variant="info" className="text-center">
-                  <i className="bi bi-hourglass-split me-2"></i>
-                  Checking for important notices...
-               </Alert>
-            )}
-
-            {!rulesLoading &&
-               rulesMessages.map((message, index) => {
-                  // Use the parsed content from the new utilities
-                  const parsed = message.parsed || message;
-                  const variant =
-                     parsed.variant === "warning"
-                        ? "warning"
-                        : parsed.variant === "error"
-                        ? "danger"
-                        : parsed.variant === "info"
-                        ? "info"
-                        : "primary";
-
-                  return (
-                     <Alert
-                        key={`alert-${message.template_id || index}`}
-                        variant={variant}
-                        className="mb-3"
-                        data-testid="holiday-message"
-                        dismissible={parsed.dismissible || false}
-                     >
-                        <Alert.Heading>
-                           {parsed.icon && (
-                              <i className={`bi bi-${parsed.icon} me-2`}></i>
-                           )}
-                           {parsed.title || "Notice"}
-                        </Alert.Heading>
-                        <div
-                           className="mb-0"
-                           dangerouslySetInnerHTML={{
-                              __html: parsed.message || "No message content",
-                           }}
-                        />
-                     </Alert>
-                  );
-               })}
-         </Container>
-                  <Box
-                     sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "start",
-                     }}
-                  >
-                     <Typography
-                        variant="BPP"
-                        color={theme.palette.md3.surfaceVariant}
-                     >
-                        BPP
-                     </Typography>
-                     <Typography
-                        variant="Acted"
-                        color={theme.palette.md3.surfaceVariant}
-                        className="m-top__xs"
-                     >
-                        Actuarial Education
-                     </Typography>
-                     <Divider flexItem />
-                     <Typography
-                        variant="h3"
-                        align="start"
-                        color={theme.palette.md3.surfaceVariant}
-                     >
-                        Online Store
-                     </Typography>
-                  </Box>
-
-                  <Container
-                     style={{ maxWidth: "600px", margin: "0 auto" }}
-                     disableGutters="true"
-                  >
-                     <SearchBox
-                        onSearchResults={handleSearchResults}
-                        onShowMatchingProducts={handleShowMatchingProducts}
-                        autoFocus={false}
-                     />
-                  </Container>
-               </Container>
-            </Col>
-         </Row>
-
-         
-
-         {/* Search Results Section */}
-         <Container
-            disableGutters={true}
-            sx={{
-               justifyContent: "center",
-               alignItems: "center",
-            }}
-         >
-            <SearchResults
-               searchResults={searchResults}
-               onShowMatchingProducts={handleShowMatchingProducts}
-               loading={false}
-               error={error}
-               maxSuggestions={5}
-            />
-         </Container>
-         {/* SVG Chevron Section with Grid Overlay */}
+      <>        
+         {/* SVG Background Layer - above video, below content */}
          <Box
             sx={{
-               position: "relative",
-               // minHeight: { xs: "300px", md: "400px", lg: "500px" },
-               overflow: "hidden",
-               backgroundColor: theme.palette.background.default,
+               position: "absolute",
+               top: {
+                  xs: "25rem",
+                  sm: "26rem",
+                  md: "24rem",
+                  lg: "23rem",
+                  xl: "19rem",
+               },
+               left: {
+                  xs: "12rem",
+                  sm: "1rem",
+                  md: "3rem",
+                  lg: "5rem",
+                  xl: "6rem",
+               },
+               width: { xs: "100%", md: "70%", lg: "64%", xl: "50%" },
+               height: "45rem",
+               zIndex: 2,
+               overflow: "visible",
+               pointerEvents: "none",
             }}
          >
-            {/* Product Cards Grid */}
-            <Grid
-               container
-               spacing={3}
-               sx={{
-                  justifyContent: "center",
-                  alignItems: "stretch",
-                  maxWidth: "1200px",
-                  mx: "auto",
-                  zIndex: 1,
-                  height: "100%",
-                  minHeight: "inherit",
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                  position: "relative",
-                  px: { xs: 2, md: 4, lg: 6 },
-                  py: { xs: 4, md: 6 },
-               }}
+            <svg
+               width="100%"
+               height="100%"
+               viewBox="0 0 869 983"
+               preserveAspectRatio="xMinYMin slice"
             >
-               {productCards.map((card) => (
-                  <Grid
-                     key={card.id}
-                     size={{ xs: 12, sm: 6, md: 4 }}
-                     sx={{
-                        alignSelf: "stretch",
+               <defs>
+                  <clipPath id={chevronClipId}>
+                     <rect
+                        width="25%"
+                        height="136%"
+                        style={{ transform: "skew(29.3deg, 0deg)" }}
+                     ></rect>
+                  </clipPath>
+               </defs>
+               <image
+                  href={graphic1}
+                  width="100%"
+                  height="100%"
+                  clipPath={`url(#${chevronClipId})`}
+                  preserveAspectRatio="xMidYMid slice"
+               />
+               <rect
+                  className="stroke-dark-base-ink-emphasis"
+                  x="59%"
+                  y="8%"
+                  width="25%"
+                  height="78%"
+                  fill="none"
+                  strokeWidth="2"
+                  style={{
+                     transform: "skew(29.3deg, 0deg)",
+                     transformOrigin: "100% 100%",
+                     stroke: "#525252",
+                  }}
+               ></rect>
+            </svg>
+         </Box>
+         <Container
+            maxWidth={true}
+            className="hero-container"
+            disableGutters={true}
+         >
+            <Row style={{ height: "100%" }}>
+               <Col
+                  className="text-center"
+                  style={{
+                     position: "relative",
+                     overflow: "hidden",
+                     height: "100%",
+                  }}
+               >
+                  {/* Background Video */}
+                  <video
+                     autoPlay
+                     loop
+                     muted
+                     playsInline
+                     poster={backgroundVideoPoster}
+                     style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        zIndex: 0,
                      }}
                   >
-                     <Card
-                        elevation={3}
+                     <source src={backgroundVideo} type="video/mp4" />
+                  </video>
+
+                  {/* Grey Overlay */}
+                  <div
+                     style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "rgba(0, 0, 0, 0.75)",
+                        zIndex: 1,
+                     }}
+                  />
+
+                  {/* Content */}
+                  <Container
+                     className="hero-content d-flex flex-column flex-wrap justify-content-evenly align-items-center"
+                     sx={{
+                        padding: {
+                           xs: theme.liftkit.spacing.lg,
+                           lg: theme.liftkit.spacing.lg,
+                        },
+                        position: "relative",
+                        zIndex: 3,
+                     }}
+                  >
+                     {/* Rules Engine Messages Section (Holiday Messages, etc.) */}
+                     <Container maxWidth="xl">
+                        {rulesLoading && (
+                           <Alert variant="info" className="text-center">
+                              <i className="bi bi-hourglass-split me-2"></i>
+                              Checking for important notices...
+                           </Alert>
+                        )}
+
+                        {!rulesLoading &&
+                           rulesMessages.map((message, index) => {
+                              // Use the parsed content from the new utilities
+                              const parsed = message.parsed || message;
+                              const variant =
+                                 parsed.variant === "warning"
+                                    ? "warning"
+                                    : parsed.variant === "error"
+                                    ? "danger"
+                                    : parsed.variant === "info"
+                                    ? "info"
+                                    : "primary";
+
+                              return (
+                                 <Alert
+                                    key={`alert-${
+                                       message.template_id || index
+                                    }`}
+                                    variant={variant}
+                                    className="mb-3"
+                                    data-testid="holiday-message"
+                                    dismissible={parsed.dismissible || false}
+                                 >
+                                    <Alert.Heading>
+                                       {parsed.icon && (
+                                          <i
+                                             className={`bi bi-${parsed.icon} me-2`}
+                                          ></i>
+                                       )}
+                                       {parsed.title || "Notice"}
+                                    </Alert.Heading>
+                                    <div
+                                       className="mb-0"
+                                       dangerouslySetInnerHTML={{
+                                          __html:
+                                             parsed.message ||
+                                             "No message content",
+                                       }}
+                                    />
+                                 </Alert>
+                              );
+                           })}
+                     </Container>
+                     <Box
                         sx={{
-                           p: { xs: 2, md: 3 },
-                           py: { xs: 2, md: 5 },
-                           backgroundColor: "rgba(255, 255, 255, 0.95)",
-                           borderRadius: theme.liftkit.spacing.sm,
-                           height:"100%",
-                           justifyContent:"space-between",
-                           display:"flex",
-                           flexDirection:"column"
+                           display: "flex",
+                           flexDirection: "column",
+                           alignItems: "start",
                         }}
                      >
-                        <CardContent>
-                           <Typography
-                              variant="h4"
-                              sx={{
-                                 color: theme.palette.bpp.granite["090"],
-                                 fontWeight: 500,
-                                 marginBottom: theme.liftkit.spacing.lg,
-                              }}
-                           >
-                              {card.title}
-                           </Typography>
-                           <Typography
-                              variant="body2"
-                              sx={{
-                                 color: theme.palette.text.secondary,
-                                 lineHeight: 1.7,
-                                 flexGrow: 1,
-                                 mb: 3,
-                              }}
-                           >
-                              {card.description}
-                           </Typography>
-                        </CardContent>
-                        <CardActionArea>
+                        <Typography
+                           variant="BPP"
+                           color={theme.palette.md3.surfaceVariant}
+                        >
+                           BPP
+                        </Typography>
+                        <Typography
+                           variant="Acted"
+                           color={theme.palette.md3.surfaceVariant}
+                           className="m-top__xs"
+                        >
+                           Actuarial Education
+                        </Typography>
+                        <Divider flexItem />
+                        <Typography
+                           variant="h3"
+                           align="start"
+                           color={theme.palette.md3.surfaceVariant}
+                        >
+                           Online Store
+                        </Typography>
+                     </Box>
+
+                     <Container
+                        style={{ maxWidth: "600px", margin: "0 auto" }}
+                        disableGutters="true"
+                     >
+                        <SearchBox
+                           onSearchResults={handleSearchResults}
+                           onShowMatchingProducts={handleShowMatchingProducts}
+                           autoFocus={false}
+                        />
+                     </Container>
+                  </Container>
+               </Col>
+            </Row>
+
+            {/* Search Results Section */}
+            <Container
+               disableGutters={true}
+               sx={{
+                  justifyContent: "center",
+                  alignItems: "center",
+               }}
+            >
+               <SearchResults
+                  searchResults={searchResults}
+                  onShowMatchingProducts={handleShowMatchingProducts}
+                  loading={false}
+                  error={error}
+                  maxSuggestions={5}
+               />
+            </Container>
+            {/* SVG Chevron Section with Grid Overlay */}
+            <Box
+               sx={{
+                  position: "relative",
+                  // minHeight: { xs: "300px", md: "400px", lg: "500px" },
+                  overflow: "hidden",
+                  backgroundColor: theme.palette.background.default,
+               }}
+            >
+               {/* Product Cards Grid */}
+               <Grid
+                  container
+                  spacing={3}
+                  sx={{
+                     justifyContent: "center",
+                     alignItems: "stretch",
+                     maxWidth: "1200px",
+                     mx: "auto",
+                     zIndex: 99,
+                     height: "100%",
+                     minHeight: "inherit",
+                     alignItems: "center",
+                     justifyContent: "flex-end",
+                     position: "relative",
+                     px: { xs: 2, md: 4, lg: 6 },
+                     py: { xs: 4, md: 6 },
+                  }}
+               >
+                  {productCards.map((card) => (
+                     <Grid
+                        key={card.id}
+                        size={{ xs: 12, sm: 6, md: 4 }}
+                        sx={{
+                           alignSelf: "stretch",
+                           zIndex: 99,
+                        }}
+                     >
+                        <Card
+                           elevation={3}
+                           sx={{
+                              p: { xs: 2, md: 3 },
+                              py: { xs: 2, md: 5 },
+                              backgroundColor: "rgba(255, 255, 255, 0.95)",
+                              borderRadius: theme.liftkit.spacing.sm,
+                              height: "100%",
+                              justifyContent: "space-between",
+                              display: "flex",
+                              flexDirection: "column",
+                           }}
+                        >
+                           <CardContent>
+                              <Typography
+                                 variant="h4"
+                                 sx={{
+                                    color: theme.palette.bpp.granite["090"],
+                                    fontWeight: 500,
+                                    marginBottom: theme.liftkit.spacing.lg,
+                                 }}
+                              >
+                                 {card.title}
+                              </Typography>
+                              <Typography
+                                 variant="body2"
+                                 sx={{
+                                    color: theme.palette.text.secondary,
+                                    lineHeight: 1.7,
+                                    flexGrow: 1,
+                                    mb: 3,
+                                 }}
+                              >
+                                 {card.description}
+                              </Typography>
+                           </CardContent>
                            {/* CTA Button */}
                            <Box
                               component="button"
@@ -405,7 +468,7 @@ const Home = () => {
                               sx={{
                                  display: "flex",
                                  alignItems: "center",
-                                 justifyContent: "center",                                 
+                                 justifyContent: "center",
                                  width: "100%",
                                  py: 1.5,
                                  px: 3,
@@ -429,72 +492,13 @@ const Home = () => {
                               View Products
                               <ArrowForward sx={{ fontSize: 18 }} />
                            </Box>
-                        </CardActionArea>
-                     </Card>
-                  </Grid>
-               ))}
-            </Grid>
-            {/* SVG Background Layer */}
-            <Box
-               sx={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: { xs: "100%", md: "60%", lg: "50%" },
-                  height: "110%",
-                  zIndex: 0,
-                  overflow: "visible",
-               }}
-            >
-               <svg
-                  width="334"
-                  height="100%"
-                  viewBox="0 0 869 983"
-                  preserveAspectRatio="xMinYMin slice"
-               >
-                  <defs>
-                     <clipPath id={chevronClipId}>
-                        {/* <polygon points="0,0 450,0 600,800 0,800" /> */}
-                        <rect
-                           width="30%"
-                           height="136%"
-                           style={{ transform: "skew(29.3deg, 0deg);" }}
-                        ></rect>
-                     </clipPath>
-                  </defs>
-                  <image
-                     href={graphic1}
-                     width="100%"
-                     height="100%"
-                     clipPath={`url(#${chevronClipId})`}
-                     preserveAspectRatio="xMidYMid slice"
-                  />
-                  {/* <line
-                     x1="450"
-                     y1="0"
-                     x2="600"
-                     y2="800"
-                     stroke={theme.palette.divider}
-                     strokeWidth="3"
-                  /> */}
-                  <rect
-                     className="stroke-dark-base-ink-emphasis"
-                     x="75%"
-                     y="22%"
-                     width="25%"
-                     height="78%"
-                     fill="none"
-                     strokeWidth="2"
-                     style={{
-                        transform: "skew(29.3deg, 0deg)",
-                        transformOrigin: "100% 100%",
-                        stroke: "#222222",
-                     }}
-                  ></rect>
-               </svg>
+                        </Card>
+                     </Grid>
+                  ))}
+               </Grid>
             </Box>
-         </Box>
-      </Container>
+         </Container>
+      </>
    );
 };
 
