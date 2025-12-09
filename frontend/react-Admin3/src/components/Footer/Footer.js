@@ -529,6 +529,8 @@ const Footer = () => {
             backgroundColor: theme.palette.bpp.granite["080"],
             pt: theme.liftkit.spacing.lg,
             px: theme.liftkit.spacing.xl,
+            zIndex: 99,
+            position: "relative",
          }}
       >
          <Grid container spacing={2}>
