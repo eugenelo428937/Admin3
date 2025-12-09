@@ -87,6 +87,7 @@ const TermsConditionsStep = ({
           if (modalAcks.length > 0) {
             setAcknowledgmentMessages(modalAcks);
             setShowAcknowledgmentModal(true);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }
 
           // Set display messages

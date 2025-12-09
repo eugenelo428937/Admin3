@@ -123,10 +123,7 @@ const AddressSelectionPanel = ({
   return (
     <Box className={`address-selection-panel ${className}`}>
       {/* Address Type Selection Dropdown */}
-      <FormControl fullWidth sx={{ mb: 2 }}>
-        <InputLabel id={`${addressType}-address-select-label`}>
-          Select Address
-        </InputLabel>
+      <FormControl fullWidth sx={{ mb: 1 }}>        
         <Select
           labelId={`${addressType}-address-select-label`}
           value={selectedAddressType}
@@ -134,6 +131,7 @@ const AddressSelectionPanel = ({
           onChange={handleAddressTypeChange}
           data-testid={dropdownTestId}
           inputProps={{ 'data-testid': `${dropdownTestId}-input` }}
+          variant="standard"
         >
           <MenuItem value="HOME">Home</MenuItem>
           <MenuItem value="WORK">Work</MenuItem>
