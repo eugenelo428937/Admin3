@@ -627,7 +627,7 @@ const CheckoutSteps = ({ onComplete }) => {
         )}
 
         {/* Step Progress */}
-        <Stepper activeStep={currentStep - 1} sx={{ mb: 4 }}>
+        <Stepper activeStep={currentStep - 1} sx={{ mb: 2 }}>
            {steps.map((step, index) => (
               <Step key={index} completed={index + 1 < currentStep}>
                  <StepLabel>
@@ -651,12 +651,12 @@ const CheckoutSteps = ({ onComplete }) => {
               />
               <Box sx={{ px: { xs: theme.liftkit.spacing.sm, md: theme.liftkit.spacing.md, lg: theme.liftkit.spacing.md } }}>
                  {/* Two-column grid layout for all steps */}
-                 <Grid container spacing={3} className="justify-content-center">
+                 <Grid container spacing={1} className="justify-content-center">
                     {/* Left column: Step content (lg:8, md:12) */}
-                    <Grid size={{ md: 12, lg: 8 }}>{renderStepContent()}</Grid>
+                    <Grid size={{ xs: 12, md: 8 }}>{renderStepContent()}</Grid>
 
                     {/* Right column: Cart Summary Panel (lg:4, md:12) */}
-                    <Grid size={{ md: 12, lg: 4 }}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                        <CartSummaryPanel
                           cartItems={cartItems}
                           vatCalculations={vatCalculations}

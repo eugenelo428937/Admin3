@@ -186,8 +186,7 @@ const MainNavBar = () => {
             sticky="top"
             className="navbar navbar-expand-md navbar-main align-content-center justify-content-between p-left__md p-right__md pt-md-2 py-lg-1 px-xl-5 px-xl-3"
          >
-            <Container
-               fluid
+            <Container               
                className="d-flex flex-row justify-content-between align-items-center"
                sx={{
                   px: { xs: 0, lg: 1 },
