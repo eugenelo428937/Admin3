@@ -36,7 +36,7 @@ const CartReviewStep = ({
         loadingMessage="Checking for important notices..."
       />
       {/* Address Sections Layout */}
-      <Grid container spacing={3} data-testid="cart-review-layout">
+      <Grid container spacing={2} data-testid="cart-review-layout">
         {/* Address Sections Container - Full Width */}
         <Grid size={{ xs: 12 }} data-testid="address-sections-container">
           <Grid container spacing={2}>
@@ -53,7 +53,7 @@ const CartReviewStep = ({
                   data-testid="delivery-address-panel"
                 />
                 <CardContent>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                     Select your delivery address
                   </Typography>
                   <AddressSelectionPanel
@@ -80,7 +80,7 @@ const CartReviewStep = ({
                   data-testid="invoice-address-panel"
                 />
                 <CardContent>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                     Select your invoice address
                   </Typography>
                   <AddressSelectionPanel

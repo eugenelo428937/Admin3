@@ -10,13 +10,13 @@ const NavbarBrand = () => {
 			style={{ cursor: "pointer" }}
 			className="navbar-brand order-1 order-md-0">
 			<Image
-				fluid
+				
 				src={require("../../assets/ActEdlogo.png")}
 				alt="ActEd Logo"
 				className="d-none d-md-block"
 			/>
 			<Image
-				fluid
+				
 				src={require("../../assets/ActEdlogo-S.png")}
 				alt="ActEd Logo"
 				className="d-md-none"

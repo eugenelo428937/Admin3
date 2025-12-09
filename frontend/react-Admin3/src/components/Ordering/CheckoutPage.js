@@ -52,6 +52,7 @@ const CheckoutPage = () => {
   };
 
   if (checkoutComplete) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     return (
       <Container sx={{ mt: 4 }}>
         <Alert severity="success">

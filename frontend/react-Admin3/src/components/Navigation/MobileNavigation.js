@@ -209,8 +209,8 @@ const MobileNavigation = ({
 				<li className="mobile-nav-list-item">
 					<div
 						className="mobile-nav-link"
-						onClick={() => {
-							handleMarkingVouchersClick();
+						onClick={(e) => {
+							handleMarkingVouchersClick(e);
 							handleNavigation("/products", { group: "8" });
 						}}>
 						<span>Marking Vouchers</span>

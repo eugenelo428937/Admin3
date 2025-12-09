@@ -93,11 +93,12 @@ const MainNavActions = ({
                         "& .MuiBadge-badge": {
                            backgroundColor: theme.palette.bpp.sky["050"],
                            color: "white",
+                           pt:"2px"
                         },
                      }}
                      aria-label={`shopping cart with ${cartCount} items`}
                   >
-                     <CartIcon sx={{ color: theme.palette.offwhite["000"] }} />
+                     <CartIcon sx={{ color: theme.palette.offwhite["000"], fontSize: theme.typography.h5  }} />
                   </Badge>
                }
             >

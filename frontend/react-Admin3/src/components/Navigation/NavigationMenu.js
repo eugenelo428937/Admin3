@@ -363,7 +363,10 @@ const NavigationMenu = ({
                      <Nav.Link
                         as={NavLink}
                         to="/products?group=8"
-                        onClick={handleMarkingVouchersClick}
+                        onClick={(e) => {
+                           handleMarkingVouchersClick(e);
+                           onCollapseNavbar && onCollapseNavbar();
+                        }}
                         className="navbar-marking-vouchers mx-xl-2"
                      >
                         <span className="title3">Marking Vouchers</span>
