@@ -1,0 +1,58 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv
+venv
+ENV
+env
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Testing
+.coverage
+htmlcov
+.pytest_cache
+.tox
+
+# Local environment files (secrets - DO NOT include in image)
+.env
+.env.*
+*.local
+
+# Documentation
+docs
+*.md
+!README.md
+
+# Static files (generated during build)
+staticfiles
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Build artifacts
+*.egg-info
+dist
+build
+
+# Local scripts
+scripts
