@@ -115,12 +115,14 @@ STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Administrate API Settings
-ADMINISTRATE_INSTANCE_URL = env('ADMINISTRATE_INSTANCE_URL')
-ADMINISTRATE_API_URL = env('ADMINISTRATE_API_URL')
-ADMINISTRATE_API_KEY = env('ADMINISTRATE_API_KEY')
-ADMINISTRATE_API_SECRET = env('ADMINISTRATE_API_SECRET')
-ADMINISTRATE_REST_API_URL = env('ADMINISTRATE_REST_API_URL')
-GETADDRESS_API_KEY = env('GETADDRESS_API_KEY')
+# Note: Default values are placeholders for build time (collectstatic)
+# Real values MUST be set in Railway environment variables at runtime
+ADMINISTRATE_INSTANCE_URL = env('ADMINISTRATE_INSTANCE_URL', default='build-placeholder.example.com')
+ADMINISTRATE_API_URL = env('ADMINISTRATE_API_URL', default='https://api.example.com/graphql')
+ADMINISTRATE_API_KEY = env('ADMINISTRATE_API_KEY', default='build-placeholder-key')
+ADMINISTRATE_API_SECRET = env('ADMINISTRATE_API_SECRET', default='build-placeholder-secret')
+ADMINISTRATE_REST_API_URL = env('ADMINISTRATE_REST_API_URL', default='https://build-placeholder.example.com')
+GETADDRESS_API_KEY = env('GETADDRESS_API_KEY', default='build-placeholder-key')
 GETADDRESS_ADMIN_KEY = env('GETADDRESS_ADMIN_KEY', default='')
 
 # Postcoder.com API Settings (UK address lookup alternative)
