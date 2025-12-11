@@ -50,13 +50,55 @@ USE_DUMMY_PAYMENT_GATEWAY = True
 # Fuzzy Search Configuration
 FUZZY_SEARCH_MIN_SCORE = int(env('FUZZY_SEARCH_MIN_SCORE', default=60))
 
+# Email Backend Configuration
+# Priority: Internal SMTP > SendGrid > Gmail SMTP (from base.py)
+USE_SENDGRID = env.bool('USE_SENDGRID', default=False)
+USE_INTERNAL_SMTP = env.bool('USE_INTERNAL_SMTP', default=False)
+
+# Email From Name and Reply-To configuration
+EMAIL_FROM_NAME = env('EMAIL_FROM_NAME', default='ActEd Sales')
+DEFAULT_REPLY_TO_EMAIL = env('DEFAULT_REPLY_TO_EMAIL', default='acted@bpp.com')
+
+if USE_INTERNAL_SMTP:
+    # Internal SMTP Server with optional CRAM-MD5 authentication
+    EMAIL_AUTH_METHOD = env('EMAIL_AUTH_METHOD', default='')
+    if EMAIL_AUTH_METHOD == 'CRAM-MD5':
+        EMAIL_BACKEND = 'utils.email_backends.CramMD5EmailBackend'
+    else:
+        EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+    EMAIL_HOST = env('EMAIL_HOST', default='10.20.3.4')
+    EMAIL_PORT = env.int('EMAIL_PORT', default=25)
+    EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=False)
+    EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL', default=False)
+    EMAIL_TIMEOUT = env.int('EMAIL_TIMEOUT', default=30)
+    EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+    EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+    DEFAULT_FROM_EMAIL = f'"{EMAIL_FROM_NAME}" <{env("DEFAULT_FROM_EMAIL", default="no-reply@acted.co.uk")}>'
+
+elif USE_SENDGRID:
+    # SendGrid Email Backend
+    EMAIL_BACKEND = 'anymail.backends.sendgrid.EmailBackend'
+    ANYMAIL = {
+        "SENDGRID_API_KEY": env('SENDGRID_API_KEY', default=''),
+    }
+    DEFAULT_FROM_EMAIL = f'"{EMAIL_FROM_NAME}" <{env("DEFAULT_FROM_EMAIL", default="noreply@acted.co.uk")}>'
+
+# else: use Gmail SMTP settings from base.py
+
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
 # Development Email Override Settings
 # Redirect all emails to these addresses in development environment
-DEV_EMAIL_OVERRIDE = True
-DEV_EMAIL_RECIPIENTS = [
+DEV_EMAIL_OVERRIDE = env.bool('DEV_EMAIL_OVERRIDE', default=True)
+DEV_EMAIL_RECIPIENTS = env.list('DEV_EMAIL_RECIPIENTS', default=[
     'eugenelo@bpp.com',
     'eugene.lo1030@gmail.com',
-]
+])
+
+# Email monitoring - BCC copy of all emails
+EMAIL_BCC_MONITORING = env.bool('EMAIL_BCC_MONITORING', default=False)
+EMAIL_BCC_RECIPIENTS = env.list('EMAIL_BCC_RECIPIENTS', default=[])
 
 # Token Expiry Configuration (in hours)
 # These can be overridden in database via EmailSettings model

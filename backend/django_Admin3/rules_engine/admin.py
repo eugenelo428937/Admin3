@@ -80,7 +80,8 @@ class ActedRuleAdmin(admin.ModelAdmin):
     list_filter = ['entry_point', 'active', 'priority', 'version', 'created_at']
     search_fields = ['rule_code', 'name', 'description', 'entry_point__code']
     readonly_fields = ['created_at', 'updated_at']
-    
+    actions = ['invalidate_cache']
+
     fieldsets = [
         ('Rule Identification', {
             'fields': ['rule_code', 'name', 'description', 'version']
@@ -105,9 +106,34 @@ class ActedRuleAdmin(admin.ModelAdmin):
             'classes': ['collapse']
         })
     ]
-    
+
     def get_queryset(self, request):
         return super().get_queryset(request).order_by('entry_point', 'priority', 'name')
+
+    @admin.action(description="Invalidate cache for selected rules")
+    def invalidate_cache(self, request, queryset):
+        """
+        Admin action to manually invalidate cache for selected rules.
+
+        Invalidates the cache for each unique entry point in the selected rules.
+        """
+        from django.contrib import messages
+        from .signals import invalidate_rule_cache
+
+        # Get unique entry points from selected rules
+        entry_points = set(queryset.values_list('entry_point', flat=True))
+
+        # Invalidate cache for each entry point
+        for entry_point in entry_points:
+            invalidate_rule_cache(entry_point)
+
+        # Show success message
+        count = len(entry_points)
+        self.message_user(
+            request,
+            f"Successfully invalidated cache for {count} entry point(s): {', '.join(entry_points)}",
+            messages.SUCCESS
+        )
 
 
 @admin.register(ActedRuleExecution)
