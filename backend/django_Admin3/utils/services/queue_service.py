@@ -297,6 +297,12 @@ class EmailQueueService:
             }
             
             try:
+                # Set reply-to email from queue item or default
+                from django.conf import settings
+                reply_to = queue_item.reply_to_email or getattr(settings, 'DEFAULT_REPLY_TO_EMAIL', None)
+                if reply_to:
+                    self.email_service.reply_to_email = reply_to
+
                 if queue_item.template and queue_item.template.use_master_template:
                     # Use master template system
                     response_data = self._send_with_master_template(

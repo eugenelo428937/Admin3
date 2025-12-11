@@ -20,9 +20,10 @@ class EmailService:
     Handles confirmation emails, password resets, and order notifications.
     Now integrated with queue system and email models.
     """
-    
+
     def __init__(self):
         self.from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@admin3.com')
+        self.reply_to_email = getattr(settings, 'DEFAULT_REPLY_TO_EMAIL', None)
         self.base_template_dir = 'emails'
         self.mjml_template_dir = 'emails/mjml'
         
@@ -391,18 +392,20 @@ class EmailService:
             # Get BCC monitoring recipients if enabled
             bcc_recipients = self._get_bcc_recipients()
 
-            # Create email message
+            # Create email message with Reply-To header
+            reply_to = [self.reply_to_email] if self.reply_to_email else None
             email = EmailMultiAlternatives(
                 subject=subject,
                 body=text_content,
                 from_email=from_email or self.from_email,
                 to=actual_recipients,
-                bcc=bcc_recipients if bcc_recipients else None
+                bcc=bcc_recipients if bcc_recipients else None,
+                reply_to=reply_to
             )
 
             # Attach HTML version
             email.attach_alternative(html_content, "text/html")
-            
+
             # Add file attachments if provided
             if attachments:
                 self._attach_files_to_email(email, attachments)
@@ -633,23 +636,25 @@ class EmailService:
             # Get BCC monitoring recipients if enabled
             bcc_recipients = self._get_bcc_recipients()
 
-            # Create email message
+            # Create email message with Reply-To header
+            reply_to = [self.reply_to_email] if self.reply_to_email else None
             email = EmailMultiAlternatives(
                 subject=subject,
                 body=text_content,
                 from_email=from_email or self.from_email,
                 to=actual_recipients,
-                bcc=bcc_recipients if bcc_recipients else None
+                bcc=bcc_recipients if bcc_recipients else None,
+                reply_to=reply_to
             )
 
             # Attach HTML version
             email.attach_alternative(html_content, "text/html")
-            
+
             # Send email
             email.send()
 
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to send HTML email to {to_emails}: {str(e)}")
             return False
