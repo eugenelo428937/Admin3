@@ -3,3 +3,20 @@
 
 [phases.setup]
 nixPkgs = ["python311", "postgresql"]
+
+[phases.install]
+cmds = ["pip install -r requirements.txt"]
+
+[phases.build]
+# Use dummy values for collectstatic - real values provided at runtime
+cmds = [
+    "DJANGO_SECRET_KEY=build-time-dummy python manage.py collectstatic --noinput"
+]
+
+[start]
+cmd = "bash railway-start.sh"
+
+# Only include non-sensitive variables needed at build time
+# All sensitive variables are provided by Railway at RUNTIME, not build time
+[variables]
+DJANGO_SETTINGS_MODULE = "django_Admin3.settings.uat"
