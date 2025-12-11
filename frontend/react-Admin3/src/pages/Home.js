@@ -305,17 +305,23 @@ const Home = () => {
                                     className="mb-3"
                                     data-testid="holiday-message"
                                     dismissible={parsed.dismissible || false}
+                                    sx={{
+                                       maxWidth:"30rem"
+                                    }}
                                  >
                                     <Alert.Heading>
+                                       <Typography variant="h6">
                                        {parsed.icon && (
                                           <i
                                              className={`bi bi-${parsed.icon} me-2`}
                                           ></i>
                                        )}
                                        {parsed.title || "Notice"}
+                                       </Typography>
                                     </Alert.Heading>
                                     <div
                                        className="mb-0"
+                                       style={{textalign:"left"}}
                                        dangerouslySetInnerHTML={{
                                           __html:
                                              parsed.message ||
@@ -371,7 +377,7 @@ const Home = () => {
             </Row>
 
             {/* Search Results Section */}
-            <Container
+            {/* <Container
                disableGutters={true}
                sx={{
                   justifyContent: "center",
@@ -385,7 +391,7 @@ const Home = () => {
                   error={error}
                   maxSuggestions={5}
                />
-            </Container>
+            </Container> */}
             {/* SVG Chevron Section with Grid Overlay */}
             <Box
                sx={{

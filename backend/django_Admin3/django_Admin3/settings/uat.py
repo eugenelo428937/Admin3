@@ -150,19 +150,41 @@ EMAIL_BCC_MONITORING = env.bool('EMAIL_BCC_MONITORING', default=False)
 EMAIL_BCC_RECIPIENTS = env.list('EMAIL_BCC_RECIPIENTS', default=[])
 
 # Email Backend Configuration
-# Use SendGrid for Railway (HTTP API, no SMTP port blocking)
-# Use SMTP for local development
+# Priority: Internal SMTP > SendGrid > Gmail SMTP
 USE_SENDGRID = env.bool('USE_SENDGRID', default=False)
+USE_INTERNAL_SMTP = env.bool('USE_INTERNAL_SMTP', default=False)
 
-if USE_SENDGRID:
+# Email From Name and Reply-To configuration
+EMAIL_FROM_NAME = env('EMAIL_FROM_NAME', default='ActEd Sales')
+DEFAULT_REPLY_TO_EMAIL = env('DEFAULT_REPLY_TO_EMAIL', default='acted@bpp.com')
+
+if USE_INTERNAL_SMTP:
+    # Internal SMTP Server with CRAM-MD5 authentication
+    # Check if custom CRAM-MD5 backend should be used
+    EMAIL_AUTH_METHOD = env('EMAIL_AUTH_METHOD', default='')
+    if EMAIL_AUTH_METHOD == 'CRAM-MD5':
+        EMAIL_BACKEND = 'utils.email_backends.CramMD5EmailBackend'
+    else:
+        EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+    EMAIL_HOST = env('EMAIL_HOST', default='10.20.3.4')
+    EMAIL_PORT = env.int('EMAIL_PORT', default=25)
+    EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=False)
+    EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL', default=False)
+    EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+    EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+    DEFAULT_FROM_EMAIL = f'"{EMAIL_FROM_NAME}" <{env("DEFAULT_FROM_EMAIL", default="no-reply@acted.co.uk")}>'
+
+elif USE_SENDGRID:
     # SendGrid Email Backend (for Railway deployment)
     EMAIL_BACKEND = 'anymail.backends.sendgrid.EmailBackend'
     ANYMAIL = {
         "SENDGRID_API_KEY": env('SENDGRID_API_KEY'),
     }
-    DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@acted.co.uk')
+    DEFAULT_FROM_EMAIL = f'"{EMAIL_FROM_NAME}" <{env("DEFAULT_FROM_EMAIL", default="noreply@acted.co.uk")}>'
+
 else:
-    # SMTP Email Backend (for local development)
+    # Gmail SMTP Email Backend (for local development)
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = 'smtp.gmail.com'
     EMAIL_PORT = 587
