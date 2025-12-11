@@ -377,11 +377,13 @@ const Home = () => {
             </Row>
 
             {/* Search Results Section */}
-            {/* <Container
+            <Container
                disableGutters={true}
                sx={{
                   justifyContent: "center",
                   alignItems: "center",
+                  position: "relative",
+                  zIndex: 10,
                }}
             >
                <SearchResults
@@ -391,7 +393,7 @@ const Home = () => {
                   error={error}
                   maxSuggestions={5}
                />
-            </Container> */}
+            </Container>
             {/* SVG Chevron Section with Grid Overlay */}
             <Box
                sx={{
