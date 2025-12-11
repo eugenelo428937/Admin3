@@ -70,14 +70,18 @@ class MessageTemplate(models.Model):
                     raise ValidationError({
                         'json_content': 'JSON content must be a JSON object'
                     })
-                    
-                # Optional: Add more specific validation for expected structure
+
+                # Validate 'content' field if present
+                # Supports two formats:
+                # 1. List format: {"content": [{"element": "p", "text": "..."}, ...]}
+                # 2. Dict format: {"content": {"title": "...", "message": "..."}}
                 if 'content' in self.json_content:
-                    if not isinstance(self.json_content['content'], list):
+                    content = self.json_content['content']
+                    if not isinstance(content, (list, dict)):
                         raise ValidationError({
-                            'json_content': 'Content field must be a list of elements'
+                            'json_content': 'Content field must be a list of elements or a dict with title/message'
                         })
-                        
+
             except (TypeError, ValueError) as e:
                 raise ValidationError({
                     'json_content': f'Invalid JSON structure: {str(e)}'
