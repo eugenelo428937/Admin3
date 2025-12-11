@@ -37,37 +37,44 @@ class CramMD5EmailBackend(EmailBackend):
         if self.timeout is not None:
             connection_params['timeout'] = self.timeout
 
-        if self.use_ssl:
-            connection_params['context'] = ssl.create_default_context()
-            self.connection = smtplib.SMTP_SSL(
-                self.host,
-                self.port,
-                **connection_params
-            )
-        else:
-            self.connection = smtplib.SMTP(
-                self.host,
-                self.port,
-                **connection_params
-            )
+        try:
+            if self.use_ssl:
+                connection_params['context'] = ssl.create_default_context()
+                self.connection = smtplib.SMTP_SSL(
+                    self.host,
+                    self.port,
+                    **connection_params
+                )
+            else:
+                self.connection = smtplib.SMTP(
+                    self.host,
+                    self.port,
+                    **connection_params
+                )
 
-        # Enable debugging if needed
-        # self.connection.set_debuglevel(1)
+            # Enable debugging - uncomment to see SMTP conversation
+            # self.connection.set_debuglevel(2)
 
-        # Send EHLO to get capabilities
-        self.connection.ehlo()
-
-        # Use STARTTLS if configured
-        if self.use_tls:
-            context = ssl.create_default_context()
-            self.connection.starttls(context=context)
+            # Send EHLO to get capabilities
             self.connection.ehlo()
 
-        # Authenticate using CRAM-MD5
-        if self.username and self.password:
-            self._cram_md5_auth(self.username, self.password)
+            # Use STARTTLS if configured
+            if self.use_tls:
+                context = ssl.create_default_context()
+                self.connection.starttls(context=context)
+                self.connection.ehlo()
 
-        return True
+            # Authenticate using CRAM-MD5
+            if self.username and self.password:
+                self._cram_md5_auth(self.username, self.password)
+
+            return True
+
+        except smtplib.SMTPException:
+            if self.connection:
+                self.connection.close()
+            self.connection = None
+            raise
 
     def _cram_md5_auth(self, username, password):
         """

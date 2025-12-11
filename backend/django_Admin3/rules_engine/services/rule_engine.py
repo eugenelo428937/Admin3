@@ -230,37 +230,25 @@ class ConditionEvaluator:
                 # Greater than or equal: {">=": [left, right]}
                 left = self._evaluate_jsonlogic(operands[0], data)
                 right = self._evaluate_jsonlogic(operands[1], data)
-                try:
-                    return float(left) >= float(right)
-                except (ValueError, TypeError):
-                    return False
+                return self._compare_values(left, right, ">=")
             
             elif operator == ">":
                 # Greater than: {">":[left, right]}
                 left = self._evaluate_jsonlogic(operands[0], data)
                 right = self._evaluate_jsonlogic(operands[1], data)
-                try:
-                    return float(left) > float(right)
-                except (ValueError, TypeError):
-                    return False
+                return self._compare_values(left, right, ">")
             
             elif operator == "<":
                 # Less than: {"<": [left, right]}
                 left = self._evaluate_jsonlogic(operands[0], data)
                 right = self._evaluate_jsonlogic(operands[1], data)
-                try:
-                    return float(left) < float(right)
-                except (ValueError, TypeError):
-                    return False
+                return self._compare_values(left, right, "<")
             
             elif operator == "<=":
                 # Less than or equal: {"<=": [left, right]}
                 left = self._evaluate_jsonlogic(operands[0], data)
                 right = self._evaluate_jsonlogic(operands[1], data)
-                try:
-                    return float(left) <= float(right)
-                except (ValueError, TypeError):
-                    return False
+                return self._compare_values(left, right, "<=")
             
             else:
                 logger.warning(f"Unknown JSONLogic operator: {operator}")
@@ -295,6 +283,56 @@ class ConditionEvaluator:
             return value
         except Exception:
             return None
+
+    def _compare_values(self, left: Any, right: Any, operator: str) -> bool:
+        """
+        Compare two values using the specified operator.
+
+        Supports:
+        - Numeric comparison (int, float, numeric strings)
+        - String comparison (including ISO date strings like "2025-12-11")
+
+        Args:
+            left: Left operand
+            right: Right operand
+            operator: One of ">=", ">", "<", "<="
+
+        Returns:
+            Boolean result of the comparison, or False for incompatible types
+        """
+        # Handle None or missing values
+        if left is None or right is None:
+            return False
+
+        # Try numeric comparison first
+        try:
+            left_num = float(left)
+            right_num = float(right)
+            if operator == ">=":
+                return left_num >= right_num
+            elif operator == ">":
+                return left_num > right_num
+            elif operator == "<":
+                return left_num < right_num
+            elif operator == "<=":
+                return left_num <= right_num
+        except (ValueError, TypeError):
+            pass
+
+        # If both are strings, use string comparison (lexicographic)
+        # This works well for ISO date strings: "2025-12-11" > "2025-12-01"
+        if isinstance(left, str) and isinstance(right, str):
+            if operator == ">=":
+                return left >= right
+            elif operator == ">":
+                return left > right
+            elif operator == "<":
+                return left < right
+            elif operator == "<=":
+                return left <= right
+
+        # Incompatible types
+        return False
     
 
 
