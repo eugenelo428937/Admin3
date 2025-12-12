@@ -9,6 +9,7 @@ MIDDLEWARE = [
     'utils.middleware.HealthCheckMiddleware',  # MUST be first - exempts /api/health/ from SSL redirect
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files in production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -109,10 +110,11 @@ print(f"[UAT CORS] CORS_ALLOWED_ORIGINS: {CORS_ALLOWED_ORIGINS}")
 print(f"[UAT CORS] CSRF_TRUSTED_ORIGINS: {CSRF_TRUSTED_ORIGINS}")
 print(f"[UAT CORS] CORS_ALLOW_CREDENTIALS: {CORS_ALLOW_CREDENTIALS}")
 
-# Static Files for Railway
+# Static Files for Railway with WhiteNoise
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+# WhiteNoise compresses static files and sets proper cache headers
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Administrate API Settings
 # Note: Default values are placeholders for build time (collectstatic)
