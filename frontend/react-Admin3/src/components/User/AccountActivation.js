@@ -19,7 +19,8 @@ import {
   Refresh as RefreshIcon,
   Home as HomeIcon,
   Info as InfoIcon,
-  Lightbulb as LightbulbIcon
+  Lightbulb as LightbulbIcon,
+  AddShoppingCart as AddShoppingCartIcon
 } from '@mui/icons-material';
 import authService from '../../services/authService';
 
@@ -104,7 +105,7 @@ const AccountActivation = () => {
     }, [status, mode, isLoading, navigate]);
 
     const handleLoginRedirect = () => {
-        navigate('/auth/login');
+        navigate('/products');
     };
 
     const handleProfileRedirect = () => {
@@ -196,9 +197,9 @@ const AccountActivation = () => {
                                         variant="contained"
                                         size="large"
                                         onClick={handleLoginRedirect}
-                                        startIcon={<LoginIcon />}
+                                        startIcon={<AddShoppingCartIcon />}
                                     >
-                                        Go to Login
+                                        Start Ordering
                                     </Button>
                                 )}
                             </Box>
