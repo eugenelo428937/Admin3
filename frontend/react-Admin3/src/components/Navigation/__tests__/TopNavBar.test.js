@@ -31,8 +31,35 @@ jest.mock('../../../services/cartService', () => ({
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import TopNavBar from '../TopNavBar';
 // AuthProvider and CartProvider are mocked above, no need to import
+
+// Create a theme with liftkit spacing for tests
+const theme = createTheme({
+  liftkit: {
+    spacing: {
+      xs: 4,
+      xs2: 8,
+      xs3: 12,
+      sm: 16,
+      md: 24,
+      lg: 32,
+      xl: 48,
+      xxl: 64,
+    },
+  },
+  palette: {
+    liftkit: {
+      light: {
+        background: '#ffffff',
+      },
+    },
+    offwhite: {
+      '000': '#ffffff',
+    },
+  },
+});
 
 // Mock the useAuth hook
 jest.mock('../../../hooks/useAuth', () => ({
@@ -60,7 +87,11 @@ jest.mock('../../../contexts/CartContext', () => ({
 }));
 
 const renderWithProviders = (component) => {
-  return render(component);
+  return render(
+    <ThemeProvider theme={theme}>
+      {component}
+    </ThemeProvider>
+  );
 };
 
 // Mock react-router-dom for navigation tests
@@ -175,11 +206,11 @@ describe('TopNavBar', () => {
       expect(homeLink).toHaveAttribute('href', '/Home');
     });
 
-    test('should render Help link that navigates to /style-guide', () => {
+    test('should render Help link that navigates to /styleguide', () => {
       renderWithProviders(<TopNavBar />);
 
       const helpLink = screen.getByText('Help').closest('a');
-      expect(helpLink).toHaveAttribute('href', '/style-guide');
+      expect(helpLink).toHaveAttribute('href', '/styleguide');
     });
   });
 

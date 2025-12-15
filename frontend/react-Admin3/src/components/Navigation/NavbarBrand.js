@@ -1,29 +1,46 @@
 import React from 'react';
-import { Navbar, Image } from 'react-bootstrap';
+import { Box } from '@mui/material';
 import { useNavigate } from "react-router-dom";
 
 const NavbarBrand = () => {
 	const navigate = useNavigate();
-  return (
-		<Navbar.Brand
+
+	return (
+		<Box
+			component="button"
 			onClick={() => navigate("/home")}
-			style={{ cursor: "pointer" }}
-			className="navbar-brand order-1 order-md-0">
-			<Image
-				
+			aria-label="Go to home page"
+			sx={{
+				cursor: "pointer",
+				background: 'none',
+				border: 'none',
+				padding: 0,
+				display: 'flex',
+				alignItems: 'center',
+			}}
+			className="navbar-brand order-1 order-md-0"
+		>
+			{/* Desktop logo - hidden on mobile */}
+			<Box
+				component="img"
 				src={require("../../assets/ActEdlogo.png")}
 				alt="ActEd Logo"
-				className="d-none d-md-block"
+				sx={{
+					display: { xs: 'none', md: 'block' },
+				}}
 			/>
-			<Image
-				
+			{/* Mobile logo - hidden on desktop */}
+			<Box
+				component="img"
 				src={require("../../assets/ActEdlogo-S.png")}
 				alt="ActEd Logo"
-				className="d-md-none"
-				style={{ maxWidth: "2.35rem" }}
+				sx={{
+					display: { xs: 'block', md: 'none' },
+					maxWidth: '2.35rem',
+				}}
 			/>
-		</Navbar.Brand>
-  );
+		</Box>
+	);
 };
 
 export default NavbarBrand;

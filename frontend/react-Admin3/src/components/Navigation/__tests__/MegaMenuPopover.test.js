@@ -31,7 +31,10 @@ describe('MegaMenuPopover', () => {
 
   test('menu is closed by default', () => {
     renderWithTheme(<MegaMenuPopover {...defaultProps} />);
-    expect(screen.queryByTestId('menu-content')).not.toBeInTheDocument();
+    // With keepMounted, menu content is in DOM but popover is closed
+    // Check ARIA attributes to verify closed state
+    const button = screen.getByRole('button', { name: /test menu/i });
+    expect(button).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('opens menu on button click', async () => {
@@ -63,15 +66,17 @@ describe('MegaMenuPopover', () => {
   });
 
   test('closes menu on Escape key', async () => {
-    renderWithTheme(<MegaMenuPopover {...defaultProps} />);
+    const { container } = renderWithTheme(<MegaMenuPopover {...defaultProps} />);
 
     await userEvent.click(screen.getByRole('button', { name: /test menu/i }));
     expect(screen.getByTestId('menu-content')).toBeInTheDocument();
 
     await userEvent.keyboard('{Escape}');
 
+    // With keepMounted, menu stays in DOM but is hidden - check ARIA instead
     await waitFor(() => {
-      expect(screen.queryByTestId('menu-content')).not.toBeInTheDocument();
+      const button = container.querySelector('#test-menu-button');
+      expect(button).toHaveAttribute('aria-expanded', 'false');
     });
   });
 
