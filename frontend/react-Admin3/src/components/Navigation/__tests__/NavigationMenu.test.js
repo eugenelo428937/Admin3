@@ -6,7 +6,10 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import NavigationMenu from '../NavigationMenu';
+
+expect.extend(toHaveNoViolations);
 
 // Mock react-router-dom
 jest.mock('react-router-dom', () => ({
@@ -424,6 +427,52 @@ describe('NavigationMenu', () => {
     test('does not render Study Plus for regular users', () => {
       renderMenu();
       expect(screen.queryByText('Study Plus')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('accessibility', () => {
+    test('NavigationMenu has no accessibility violations', async () => {
+      const { container } = renderMenu();
+      
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+    
+    test('has proper ARIA attributes on navigation', () => {
+      renderMenu();
+      
+      // Main navigation has aria-label
+      const nav = screen.getByRole('navigation', { name: /main navigation/i });
+      expect(nav).toBeInTheDocument();
+    });
+    
+    test('MUI Admin dropdown has proper ARIA attributes', () => {
+      mockUseAuth.isSuperuser = true;
+      renderMenu();
+      
+      // Admin button uses MUI Menu with proper ARIA
+      const adminButton = screen.getByRole('button', { name: /admin/i });
+      
+      // Check initial state - MUI Button sets aria-haspopup
+      expect(adminButton).toHaveAttribute('aria-haspopup', 'true');
+      
+      // Open menu
+      fireEvent.click(adminButton);
+      
+      // Check expanded state - MUI Button sets aria-expanded when menu opens
+      expect(adminButton).toHaveAttribute('aria-expanded', 'true');
+      expect(adminButton).toHaveAttribute('aria-controls', 'admin-menu');
+    });
+    
+    test('MegaMenuPopover for tutorials has proper ARIA attributes', () => {
+      renderMenu();
+      
+      // Open Tutorials dropdown
+      const tutorialsButton = screen.getByRole('button', { name: /tutorials/i });
+      fireEvent.click(tutorialsButton);
+      
+      // Check ARIA attributes for expanded state
+      expect(tutorialsButton).toHaveAttribute('aria-expanded', 'true');
     });
   });
 });
