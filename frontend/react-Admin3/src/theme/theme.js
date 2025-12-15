@@ -303,6 +303,13 @@ const theme = createTheme({
    components: {
       MuiAlert: {
          styleOverrides: {
+            root: {
+               maxWidth: "20rem",               
+               "& .MuiAlert-message":{
+                  textAlign:"start",
+                  whiteSpace: "pre-line"
+               }
+            },
            standardSuccess: {
              backgroundColor: 'colorTheme.success.background',
              color: colorTheme.success.main,
