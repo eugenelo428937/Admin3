@@ -3,7 +3,8 @@ import { Box, Card, CardContent, useTheme, Grid, Divider } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import SearchBox from "../components/SearchBox";
 import SearchResults from "../components/SearchResults";
-import { Row, Col, Alert } from "react-bootstrap";
+import RulesEngineInlineAlert from "../components/Common/RulesEngineInlineAlert";
+import { Row, Col } from "react-bootstrap";
 import { Typography, Container } from "@mui/material";
 import { rulesEngineHelpers } from "../utils/rulesEngineUtils";
 import rulesEngineService from "../services/rulesEngineService";
@@ -32,8 +33,8 @@ const Home = () => {
    const backgroundVideo = `${process.env.PUBLIC_URL}/video/12595751_2560_1440_30fps.mp4`;
    const backgroundVideoPoster = `${process.env.PUBLIC_URL}/videoframe_0.png`;
    const graphic1 = `${process.env.PUBLIC_URL}/brand020.1a983628.webp`;
-   const graphic2 = `${process.env.PUBLIC_URL}/brand070.59c82c5e.webp`;
-   const graphic3 = `${process.env.PUBLIC_URL}/halftone_sq.df9804eb.avif`;
+   // const graphic2 = `${process.env.PUBLIC_URL}/brand070.59c82c5e.webp`;
+   // const graphic3 = `${process.env.PUBLIC_URL}/halftone_sq.df9804eb.avif`;
    // Debug video paths
    useEffect(() => {}, [backgroundVideo, backgroundVideoPoster]);
 
@@ -151,7 +152,7 @@ const Home = () => {
    };
 
    return (
-      <>        
+      <>
          {/* SVG Background Layer - above video, below content */}
          <Box
             sx={{
@@ -260,11 +261,10 @@ const Home = () => {
                         backgroundColor: "rgba(0, 0, 0, 0.75)",
                         zIndex: 1,
                      }}
-                  />
-
+                  />                                    
                   {/* Content */}
                   <Container
-                     className="hero-content d-flex flex-column flex-wrap justify-content-evenly align-items-center"
+                     className="hero-content justify-content-evenly align-items-center"
                      sx={{
                         padding: {
                            xs: theme.liftkit.spacing.lg,
@@ -272,66 +272,19 @@ const Home = () => {
                         },
                         position: "relative",
                         zIndex: 3,
+                        display:"flex",
+                        flexDirection:"column",
                      }}
                   >
                      {/* Rules Engine Messages Section (Holiday Messages, etc.) */}
-                     <Container maxWidth="xl">
-                        {rulesLoading && (
-                           <Alert variant="info" className="text-center">
-                              <i className="bi bi-hourglass-split me-2"></i>
-                              Checking for important notices...
-                           </Alert>
-                        )}
-
-                        {!rulesLoading &&
-                           rulesMessages.map((message, index) => {
-                              // Use the parsed content from the new utilities
-                              const parsed = message.parsed || message;
-                              const variant =
-                                 parsed.variant === "warning"
-                                    ? "warning"
-                                    : parsed.variant === "error"
-                                    ? "danger"
-                                    : parsed.variant === "info"
-                                    ? "info"
-                                    : "primary";
-
-                              return (
-                                 <Alert
-                                    key={`alert-${
-                                       message.template_id || index
-                                    }`}
-                                    variant={variant}
-                                    className="mb-3"
-                                    data-testid="holiday-message"
-                                    dismissible={parsed.dismissible || false}
-                                    sx={{
-                                       maxWidth:"30rem"
-                                    }}
-                                 >
-                                    <Alert.Heading>
-                                       <Typography variant="h6">
-                                       {parsed.icon && (
-                                          <i
-                                             className={`bi bi-${parsed.icon} me-2`}
-                                          ></i>
-                                       )}
-                                       {parsed.title || "Notice"}
-                                       </Typography>
-                                    </Alert.Heading>
-                                    <div
-                                       className="mb-0"
-                                       style={{textalign:"left"}}
-                                       dangerouslySetInnerHTML={{
-                                          __html:
-                                             parsed.message ||
-                                             "No message content",
-                                       }}
-                                    />
-                                 </Alert>
-                              );
-                           })}
-                     </Container>
+                     <RulesEngineInlineAlert
+                           messages={rulesMessages}
+                           loading={rulesLoading}
+                           loadingMessage="Checking for important notices..."
+                           fullWidth={true}
+                           float={true}
+                           floatPosition="right"
+                        />   
                      <Box
                         sx={{
                            display: "flex",
