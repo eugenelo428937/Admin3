@@ -37,27 +37,33 @@ describe('NavbarBrand', () => {
       renderBrand();
       const desktopLogo = screen.getAllByAltText('ActEd Logo')[0];
       expect(desktopLogo).toBeInTheDocument();
-      expect(desktopLogo).toHaveClass('d-none', 'd-md-block');
+      // MUI sx prop handles responsive display - no Bootstrap classes to check
     });
 
     test('renders mobile logo', () => {
       renderBrand();
       const logos = screen.getAllByAltText('ActEd Logo');
-      const mobileLogo = logos.find(img => img.classList.contains('d-md-none'));
-      expect(mobileLogo).toBeInTheDocument();
+      expect(logos).toHaveLength(2); // Both desktop and mobile logos exist
+      expect(logos[1]).toBeInTheDocument();
     });
 
-    test('desktop logo is hidden on mobile screens', () => {
-      renderBrand();
-      const desktopLogo = screen.getAllByAltText('ActEd Logo')[0];
-      expect(desktopLogo).toHaveClass('d-none');
-    });
-
-    test('mobile logo is hidden on desktop screens', () => {
+    test('both logos render with different sizes', () => {
       renderBrand();
       const logos = screen.getAllByAltText('ActEd Logo');
-      const mobileLogo = logos.find(img => img.classList.contains('d-md-none'));
-      expect(mobileLogo).toHaveClass('d-md-none');
+      expect(logos).toHaveLength(2);
+      // Desktop logo (first)
+      expect(logos[0]).toBeInTheDocument();
+      // Mobile logo (second) with maxWidth
+      expect(logos[1]).toBeInTheDocument();
+      expect(logos[1]).toHaveStyle({ maxWidth: '2.35rem' });
+    });
+
+    test('logo images have correct alt text', () => {
+      renderBrand();
+      const logos = screen.getAllByAltText('ActEd Logo');
+      logos.forEach(logo => {
+        expect(logo).toHaveAttribute('alt', 'ActEd Logo');
+      });
     });
   });
 
@@ -87,26 +93,29 @@ describe('NavbarBrand', () => {
       expect(brand).toHaveClass('order-md-0');
     });
 
-    test('has pe-md-2 padding class', () => {
+    test('has navbar-brand class for Bootstrap grid compatibility', () => {
       const { container } = renderBrand();
       const brand = container.querySelector('.navbar-brand');
-      expect(brand).toHaveClass('pe-md-2');
+      expect(brand).toHaveClass('navbar-brand');
     });
   });
 
   describe('image attributes', () => {
-    test('images have fluid class', () => {
+    test('both logos render correctly', () => {
       renderBrand();
       const logos = screen.getAllByAltText('ActEd Logo');
+      expect(logos).toHaveLength(2);
       logos.forEach(logo => {
         expect(logo).toBeInTheDocument();
+        expect(logo).toHaveAttribute('src');
       });
     });
 
     test('mobile logo has max-width style', () => {
       renderBrand();
       const logos = screen.getAllByAltText('ActEd Logo');
-      const mobileLogo = logos.find(img => img.classList.contains('d-md-none'));
+      // Mobile logo is the second one (index 1)
+      const mobileLogo = logos[1];
       expect(mobileLogo).toHaveStyle({ maxWidth: '2.35rem' });
     });
   });

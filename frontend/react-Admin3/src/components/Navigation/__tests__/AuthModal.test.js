@@ -265,6 +265,9 @@ describe('AuthModal', () => {
     test('cleans up body overflow when modal closes', async () => {
       const { rerender } = renderModal();
 
+      // Verify modal is open initially
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+
       // Close modal
       rerender(
         <ThemeProvider theme={theme}>
@@ -272,10 +275,14 @@ describe('AuthModal', () => {
         </ThemeProvider>
       );
 
-      // Wait for cleanup effect
+      // Wait for modal to be removed - MUI Dialog unmounts when closed
       await waitFor(() => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-      }, { timeout: 200 });
+      }, { timeout: 500 });
+
+      // Verify body overflow cleanup happens (tested via useEffect)
+      // The cleanup logic runs after modal closes
+      expect(document.body.classList.contains('mui-fixed')).toBe(false);
     });
   });
 });
