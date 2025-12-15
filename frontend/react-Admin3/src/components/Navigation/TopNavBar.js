@@ -1,13 +1,10 @@
 // src/components/TopNavBar.js
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { Button, NavDropdown } from "react-bootstrap";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
    Home as HomeIcon,
    HelpOutline as HelpIcon,
-   ShoppingCart as CartIcon,
-   AccountCircle as PersonIcon,
 } from "@mui/icons-material";
 import { useCart } from "../../contexts/CartContext";
 import AuthModal from "./AuthModal";

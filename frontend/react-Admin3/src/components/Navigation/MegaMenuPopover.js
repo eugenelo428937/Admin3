@@ -70,6 +70,7 @@ const MegaMenuPopover = ({
           horizontal: 'left',
         }}
         disableRestoreFocus={false}
+        keepMounted
         slotProps={{
           paper: {
             sx: {
