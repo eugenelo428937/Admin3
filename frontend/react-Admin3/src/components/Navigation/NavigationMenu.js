@@ -162,158 +162,135 @@ const NavigationMenu = ({
                </Grid>
             </Grid>
          </MegaMenuPopover>
-         <NavDropdown
-            title={
-               <Typography
-                  variant="navlink"
-                  color={theme.palette.offwhite["000"]}
-               >
-                  Products
-               </Typography>
-            }
-            menuVariant="light"
-            renderMenuOnMount={true}
-            align="start"
-            style={{ position: "relative" }}
-            className="mx-xl-2"
+         <MegaMenuPopover
+            id="products"
+            label="Products"
+            width={900}
+            onClose={onCollapseNavbar}
          >
-            <div className="dropdown-submenu">
-               <Row>
-                  <NavDropdown.Item
-                     to="/products"
+            <Grid container spacing={2}>
+               {/* View All Products row */}
+               <Grid item xs={12}>
+                  <Button
+                     variant="outlined"
+                     color="primary"
                      onClick={() => {
                         handleProductClick();
-                        onCollapseNavbar && onCollapseNavbar();
+                        onCollapseNavbar?.();
                      }}
-                     className="fw-normal mb-2 text-primary ms-1 border border-light w-auto fs-5"
+                     sx={{ mb: 2 }}
                   >
-                     <span className="title3">View All Products</span>
-                  </NavDropdown.Item>
-               </Row>
-               <Row>
-                  {loadingProductGroups ? (
-                     <Col>
-                        <div className="text-muted">Loading products...</div>
-                     </Col>
-                  ) : Array.isArray(navbarProductGroups) &&
-                    navbarProductGroups.length > 0 ? (
-                     navbarProductGroups.map((group) => {
-                        // Special handling for Tutorial group - split into two columns
-                        if (
-                           group.name === "Tutorial" &&
-                           group.products &&
-                           group.products.length > 0
-                        ) {
-                           const midPoint = Math.ceil(
-                              group.products.length / 2
-                           );
-                           const leftColumn = group.products.slice(0, midPoint);
-                           const rightColumn = group.products.slice(midPoint);
+                     View All Products
+                  </Button>
+               </Grid>
 
-                           return (
-                              <React.Fragment key={group.id || group.name}>
-                                 <Col lg={3}>
-                                    <Row>
-                                       <Col lg={6}>
-                                          <NavDropdown.Item
-                                             className="fw-bolder mb-2 text-primary"
-                                             style={{
-                                                cursor: "pointer",
-                                             }}
-                                             onClick={() => {
-                                                handleProductGroupClick(
-                                                   group.name
-                                                );
-                                                onCollapseNavbar &&
-                                                   onCollapseNavbar();
-                                             }}
-                                          >
-                                             {group.name}
-                                          </NavDropdown.Item>
-                                          {leftColumn.map((product) => (
-                                             <NavDropdown.Item
-                                                key={product.id}
-                                                onClick={() => {
-                                                   handleSpecificProductClick(
-                                                      product.id
-                                                   );
-                                                   onCollapseNavbar &&
-                                                      onCollapseNavbar();
-                                                }}
-                                             >
-                                                {product.shortname}
-                                             </NavDropdown.Item>
-                                          ))}
-                                       </Col>
-                                       <Col lg={6}>
-                                          <div className="fw-bolder mb-2 text-primary w-50">
-                                             &nbsp;
-                                          </div>
-                                          {rightColumn.map((product) => (
-                                             <NavDropdown.Item
-                                                key={product.id}
-                                                onClick={() => {
-                                                   handleSpecificProductClick(
-                                                      product.id
-                                                   );
-                                                   onCollapseNavbar &&
-                                                      onCollapseNavbar();
-                                                }}
-                                             >
-                                                {product.shortname}
-                                             </NavDropdown.Item>
-                                          ))}
-                                       </Col>
-                                    </Row>
-                                 </Col>
-                              </React.Fragment>
-                           );
-                        }
+               {/* Dynamic product groups */}
+               {loadingProductGroups ? (
+                  <Grid item xs={12}>
+                     <Typography color="text.secondary">Loading products...</Typography>
+                  </Grid>
+               ) : Array.isArray(navbarProductGroups) && navbarProductGroups.length > 0 ? (
+                  navbarProductGroups.map((group) => {
+                     // Special handling for Tutorial group - split into two columns
+                     if (group.name === "Tutorial" && group.products && group.products.length > 0) {
+                        const midPoint = Math.ceil(group.products.length / 2);
+                        const leftColumn = group.products.slice(0, midPoint);
+                        const rightColumn = group.products.slice(midPoint);
 
-                        // Regular single column display for other groups
                         return (
-                           <Col key={group.id || group.name}>
-                              <NavDropdown.Item
-                                 className="fw-bolder mb-2 text-primary"
-                                 style={{ cursor: "pointer" }}
+                           <Grid item xs={12} lg={3} key={group.id || group.name}>
+                              <Typography
+                                 variant="subtitle2"
+                                 color="primary"
+                                 sx={{ mb: 1, fontWeight: 'bold', cursor: 'pointer' }}
                                  onClick={() => {
                                     handleProductGroupClick(group.name);
-                                    onCollapseNavbar && onCollapseNavbar();
+                                    onCollapseNavbar?.();
                                  }}
+                                 id={`product-group-${group.name.toLowerCase().replace(/\s+/g, '-')}-heading`}
                               >
                                  {group.name}
-                              </NavDropdown.Item>
+                              </Typography>
+                              <Grid container>
+                                 <Grid item xs={6}>
+                                    <MenuList dense aria-labelledby={`product-group-${group.name.toLowerCase().replace(/\s+/g, '-')}-heading`}>
+                                       {leftColumn.map((product) => (
+                                          <MenuItem
+                                             key={product.id}
+                                             onClick={() => {
+                                                handleSpecificProductClick(product.id);
+                                                onCollapseNavbar?.();
+                                             }}
+                                          >
+                                             {product.shortname}
+                                          </MenuItem>
+                                       ))}
+                                    </MenuList>
+                                 </Grid>
+                                 <Grid item xs={6}>
+                                    <MenuList dense>
+                                       {rightColumn.map((product) => (
+                                          <MenuItem
+                                             key={product.id}
+                                             onClick={() => {
+                                                handleSpecificProductClick(product.id);
+                                                onCollapseNavbar?.();
+                                             }}
+                                          >
+                                             {product.shortname}
+                                          </MenuItem>
+                                       ))}
+                                    </MenuList>
+                                 </Grid>
+                              </Grid>
+                           </Grid>
+                        );
+                     }
+
+                     // Regular single column display for other groups
+                     return (
+                        <Grid item xs={12} sm={6} lg={3} key={group.id || group.name}>
+                           <Typography
+                              variant="subtitle2"
+                              color="primary"
+                              sx={{ mb: 1, fontWeight: 'bold', cursor: 'pointer' }}
+                              onClick={() => {
+                                 handleProductGroupClick(group.name);
+                                 onCollapseNavbar?.();
+                              }}
+                              id={`product-group-${(group.id || group.name).toString().toLowerCase().replace(/\s+/g, '-')}-heading`}
+                           >
+                              {group.name}
+                           </Typography>
+                           <MenuList dense aria-labelledby={`product-group-${(group.id || group.name).toString().toLowerCase().replace(/\s+/g, '-')}-heading`}>
                               {group.products && group.products.length > 0 ? (
                                  group.products.map((product) => (
-                                    <NavDropdown.Item
+                                    <MenuItem
                                        key={product.id}
                                        onClick={() => {
-                                          handleSpecificProductClick(
-                                             product.id
-                                          );
-                                          onCollapseNavbar &&
-                                             onCollapseNavbar();
+                                          handleSpecificProductClick(product.id);
+                                          onCollapseNavbar?.();
                                        }}
                                     >
                                        {product.shortname}
-                                    </NavDropdown.Item>
+                                    </MenuItem>
                                  ))
                               ) : (
-                                 <div className="text-muted small">
+                                 <Typography color="text.secondary" variant="body2">
                                     No products available
-                                 </div>
+                                 </Typography>
                               )}
-                           </Col>
-                        );
-                     })
-                  ) : (
-                     <Col>
-                        <div className="text-muted">No products available</div>
-                     </Col>
-                  )}
-               </Row>
-            </div>
-         </NavDropdown>
+                           </MenuList>
+                        </Grid>
+                     );
+                  })
+               ) : (
+                  <Grid item xs={12}>
+                     <Typography color="text.secondary">No products available</Typography>
+                  </Grid>
+               )}
+            </Grid>
+         </MegaMenuPopover>
          <NavDropdown
             title={
                <Typography

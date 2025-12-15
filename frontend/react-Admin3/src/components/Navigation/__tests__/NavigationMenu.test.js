@@ -207,13 +207,17 @@ describe('NavigationMenu', () => {
   });
 
   describe('products dropdown', () => {
-    test('renders View All Products link', () => {
+    test('renders View All Products button', () => {
       renderMenu();
+      // Open the Products popover
+      fireEvent.click(screen.getByText('Products'));
       expect(screen.getByText('View All Products')).toBeInTheDocument();
     });
 
     test('calls handleProductClick when View All Products clicked', () => {
       renderMenu();
+      // Open the Products popover
+      fireEvent.click(screen.getByText('Products'));
 
       fireEvent.click(screen.getByText('View All Products'));
 
@@ -223,11 +227,15 @@ describe('NavigationMenu', () => {
 
     test('renders product groups', () => {
       renderMenu();
+      // Open the Products popover
+      fireEvent.click(screen.getByText('Products'));
       expect(screen.getByText('Study Materials')).toBeInTheDocument();
     });
 
     test('calls handleProductGroupClick when group clicked', () => {
       renderMenu();
+      // Open the Products popover
+      fireEvent.click(screen.getByText('Products'));
 
       fireEvent.click(screen.getByText('Study Materials'));
 
@@ -237,11 +245,15 @@ describe('NavigationMenu', () => {
 
     test('renders product items', () => {
       renderMenu();
+      // Open the Products popover
+      fireEvent.click(screen.getByText('Products'));
       expect(screen.getByText('CMP Notes')).toBeInTheDocument();
     });
 
     test('calls handleSpecificProductClick when product clicked', () => {
       renderMenu();
+      // Open the Products popover
+      fireEvent.click(screen.getByText('Products'));
 
       fireEvent.click(screen.getByText('CMP Notes'));
 
@@ -318,6 +330,8 @@ describe('NavigationMenu', () => {
   describe('loading states', () => {
     test('shows loading message for products', () => {
       renderMenu({ loadingProductGroups: true });
+      // Open the Products popover
+      fireEvent.click(screen.getByText('Products'));
       expect(screen.getByText('Loading products...')).toBeInTheDocument();
     });
 
@@ -335,6 +349,8 @@ describe('NavigationMenu', () => {
   describe('empty states', () => {
     test('shows no products message when empty', () => {
       renderMenu({ navbarProductGroups: [] });
+      // Open the Products popover
+      fireEvent.click(screen.getByText('Products'));
       expect(screen.getByText('No products available')).toBeInTheDocument();
     });
 
