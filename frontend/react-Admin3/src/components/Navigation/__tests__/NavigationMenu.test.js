@@ -34,6 +34,19 @@ jest.mock('../../../hooks/useAuth', () => ({
   useAuth: () => mockUseAuth,
 }));
 
+// Mock useTheme hook
+jest.mock('@mui/material', () => ({
+  ...jest.requireActual('@mui/material'),
+  useTheme: () => ({
+    palette: {
+      offwhite: {
+        '000': '#fdfdfd'
+      }
+    }
+  }),
+}));
+
+
 const theme = createTheme();
 
 describe('NavigationMenu', () => {
