@@ -1,6 +1,6 @@
 import React from "react";
 import { Nav, NavDropdown, Row, Col } from "react-bootstrap";
-import { Box } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { Typography, useTheme } from "@mui/material";
@@ -34,11 +34,21 @@ const NavigationMenu = ({
             px: { md: 2, lg: 2 },
          }}
       >
-         <Nav.Link as={NavLink} to="/home" className="mt-0 mt-lg-1">
-            <Typography variant="navlink" color={theme.palette.offwhite["000"]} className="px-2 px-xl-4">
-               Home
-            </Typography>
-         </Nav.Link>
+         <Button
+            component={NavLink}
+            to="/home"
+            sx={{
+               color: theme.palette.offwhite?.['000'] || 'inherit',
+               textTransform: 'none',
+               mt: { xs: 0, lg: 1 },
+               px: { xs: 2, xl: 4 },
+               '&.active': {
+                  fontWeight: 'bold',
+               },
+            }}
+         >
+            <Typography variant="navlink">Home</Typography>
+         </Button>
          <NavDropdown
             title={
                <Typography
