@@ -1,11 +1,10 @@
 // src/components/MobileNavigation.js
 import React, { useState } from "react";
-import { Nav } from "react-bootstrap";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../contexts/CartContext";
 import { NavigateBefore, ExpandMore, Search, ShoppingCartOutlined, Login, AccountCircle } from "@mui/icons-material";
-import { IconButton, Badge } from "@mui/material";
+import { IconButton, Badge, Drawer, List, ListItem, ListItemButton, ListItemText, Box } from "@mui/material";
 
 const MobileNavigation = ({
 	open,
@@ -68,24 +67,24 @@ const MobileNavigation = ({
 		if (onClose) onClose();
 	};
 
-	// Don't render if not open
-	if (!open) return null;
-
 	// Reusable header component
 	const MobileNavHeader = ({ title = "", showBackButton = false }) => (
-		<div className="mobile-nav-header" style={{
-			display: "flex",
-			flexDirection: "column",
-			alignItems:"start",
-			padding: "2rem",
-    		paddingTop: "1.2rem",
-			gap: "0.5rem",
-			borderBottom: "1px solid rgba(255, 255, 255, 0.12)"
-		}}>
+		<Box
+			sx={{
+				display: "flex",
+				flexDirection: "column",
+				alignItems: "start",
+				p: 2,
+				pt: 1.5,
+				gap: 0.5,
+				borderBottom: 1,
+				borderColor: 'rgba(255, 255, 255, 0.12)'
+			}}
+		>
 			{/* Top row - Action icons on left */}
-			<div style={{ display: "flex", alignItems: "center", minHeight: "40px" }}>
+			<Box sx={{ display: "flex", alignItems: "center", minHeight: "40px" }}>
 				{/* Search, Cart, Login icons */}
-				<div style={{ display: "flex", gap: "0.25rem", alignItems: "center" }}>
+				<Box sx={{ display: "flex", gap: 0.25, alignItems: "center" }}>
 					{/* Search Icon */}
 					<IconButton
 						onClick={() => {
@@ -129,12 +128,12 @@ const MobileNavigation = ({
 						aria-label={isAuthenticated ? "profile" : "login"}>
 						{isAuthenticated ? <AccountCircle fontSize="medium" /> : <Login fontSize="medium" />}
 					</IconButton>
-				</div>
-			</div>
+				</Box>
+			</Box>
 
 			{/* Bottom row - Back button and Title (only show when on sub-panel) */}
 			{showBackButton && (
-				<div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+				<Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
 					{/* Back button */}
 					<IconButton onClick={navigateBack} size="medium" sx={{ padding: "6px", color: "white" }} aria-label="go back">
 						<NavigateBefore fontSize="medium" />
@@ -142,127 +141,96 @@ const MobileNavigation = ({
 
 					{/* Title */}
 					{title && (
-						<div className="mobile-nav-title" style={{ flex: 1, fontSize: "1.1rem", fontWeight: "500", color: "white" }}>
+						<Box sx={{ flex: 1, fontSize: "1.1rem", fontWeight: "500", color: "white" }}>
 							{title}
-						</div>
+						</Box>
 					)}
-				</div>
+				</Box>
 			)}
-		</div>
+		</Box>
 	);
 
 	// Main navigation panel
 	const MainPanel = () => (
-		<div className="mobile-nav-content">
+		<Box>
 			<MobileNavHeader title="" showBackButton={false} />
-			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
-				<li className="mobile-nav-list-item">
-					<NavLink
-						to="/home"
-						className="mobile-nav-link"
-						onClick={closeNavigation}>
-						<span>Home</span>
-					</NavLink>
-				</li>
-				<li className="mobile-nav-list-item">
-					<div
-						className="mobile-nav-link"
-						onClick={() => navigateToPanel("subjects", "Subjects")}>
-						<span>Subjects</span>
-						<span className="mobile-nav-arrow">
-							<ExpandMore />
-						</span>
-					</div>
-				</li>
-				<li className="mobile-nav-list-item">
-					<div
-						className="mobile-nav-link"
-						onClick={() => navigateToPanel("products", "Products")}>
-						<span>Products</span>
-						<span className="mobile-nav-arrow">
-							<ExpandMore />
-						</span>
-					</div>
-				</li>
-				<li className="mobile-nav-list-item">
-					<div
-						className="mobile-nav-link"
-						onClick={() =>
-							navigateToPanel("distance-learning", "Distance Learning")
-						}>
-						<span>Distance Learning</span>
-						<span className="mobile-nav-arrow">
-							<ExpandMore />
-						</span>
-					</div>
-				</li>
-				<li className="mobile-nav-list-item">
-					<div
-						className="mobile-nav-link"
-						onClick={() => navigateToPanel("tutorials", "Tutorials")}>
-						<span>Tutorials</span>
-						<span className="mobile-nav-arrow">
-							<ExpandMore />
-						</span>
-					</div>
-				</li>
-				<li className="mobile-nav-list-item">
-					<div
-						className="mobile-nav-link"
+			<List component="nav" sx={{ pl: 2 }}>
+				<ListItem disablePadding>
+					<ListItemButton component={NavLink} to="/home" onClick={closeNavigation}>
+						<ListItemText primary="Home" />
+					</ListItemButton>
+				</ListItem>
+				<ListItem disablePadding>
+					<ListItemButton onClick={() => navigateToPanel("subjects", "Subjects")}>
+						<ListItemText primary="Subjects" />
+						<ExpandMore />
+					</ListItemButton>
+				</ListItem>
+				<ListItem disablePadding>
+					<ListItemButton onClick={() => navigateToPanel("products", "Products")}>
+						<ListItemText primary="Products" />
+						<ExpandMore />
+					</ListItemButton>
+				</ListItem>
+				<ListItem disablePadding>
+					<ListItemButton onClick={() => navigateToPanel("distance-learning", "Distance Learning")}>
+						<ListItemText primary="Distance Learning" />
+						<ExpandMore />
+					</ListItemButton>
+				</ListItem>
+				<ListItem disablePadding>
+					<ListItemButton onClick={() => navigateToPanel("tutorials", "Tutorials")}>
+						<ListItemText primary="Tutorials" />
+						<ExpandMore />
+					</ListItemButton>
+				</ListItem>
+				<ListItem disablePadding>
+					<ListItemButton
 						onClick={(e) => {
 							handleMarkingVouchersClick(e);
 							handleNavigation("/products", { group: "8" });
 						}}>
-						<span>Marking Vouchers</span>
-					</div>
-				</li>
+						<ListItemText primary="Marking Vouchers" />
+					</ListItemButton>
+				</ListItem>
 
 				{/* Conditional sections based on user permissions */}
 				{isApprentice && (
-					<li className="mobile-nav-list-item">
-						<div
-							className="mobile-nav-link"
-							style={{ opacity: 0.6, cursor: "not-allowed" }}>
-							<span>Apprenticeships</span>
-						</div>
-					</li>
+					<ListItem disablePadding>
+						<ListItemButton disabled>
+							<ListItemText primary="Apprenticeships" />
+						</ListItemButton>
+					</ListItem>
 				)}
 
 				{isStudyPlus && (
-					<li className="mobile-nav-list-item">
-						<div
-							className="mobile-nav-link"
-							style={{ opacity: 0.6, cursor: "not-allowed" }}>
-							<span>Study Plus</span>
-						</div>
-					</li>
+					<ListItem disablePadding>
+						<ListItemButton disabled>
+							<ListItemText primary="Study Plus" />
+						</ListItemButton>
+					</ListItem>
 				)}
 
 				{/* Admin section for superusers */}
 				{isSuperuser && (
-					<li className="mobile-nav-list-item">
-						<div
-							className="mobile-nav-link"
-							onClick={() => navigateToPanel("admin", "Admin")}>
-							<span>Admin</span>
-							<span className="mobile-nav-arrow">
-								<ExpandMore />
-							</span>
-						</div>
-					</li>
+					<ListItem disablePadding>
+						<ListItemButton onClick={() => navigateToPanel("admin", "Admin")}>
+							<ListItemText primary="Admin" />
+							<ExpandMore />
+						</ListItemButton>
+					</ListItem>
 				)}
-			</ul>
-		</div>
+			</List>
+		</Box>
 	);
 
 	// Subjects panel
 	const SubjectsPanel = () => (
-		<div className="mobile-nav-content">
+		<Box>
 			<MobileNavHeader title="Subjects" showBackButton={true} />
-			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
-				<li className="mobile-nav-list-item">
-					<div
-						className="mobile-nav-link"
+			<List component="nav" sx={{ pl: 2 }}>
+				<ListItem disablePadding>
+					<ListItemButton
 						onClick={() =>
 							navigateToPanel(
 								"subjects-core-principles",
@@ -270,15 +238,12 @@ const MobileNavigation = ({
 								subjects.filter((s) => /^(CB|CS|CM)/.test(s.code))
 							)
 						}>
-						<span>Core Principles</span>
-						<span className="mobile-nav-arrow">
-							<ExpandMore />
-						</span>
-					</div>
-				</li>
-				<li className="mobile-nav-list-item">
-					<div
-						className="mobile-nav-link"
+						<ListItemText primary="Core Principles" />
+						<ExpandMore />
+					</ListItemButton>
+				</ListItem>
+				<ListItem disablePadding>
+					<ListItemButton
 						onClick={() =>
 							navigateToPanel(
 								"subjects-core-practices",
@@ -286,15 +251,12 @@ const MobileNavigation = ({
 								subjects.filter((s) => /^CP[1-3]$/.test(s.code))
 							)
 						}>
-						<span>Core Practices</span>
-						<span className="mobile-nav-arrow">
-							<ExpandMore />
-						</span>
-					</div>
-				</li>
-				<li className="mobile-nav-list-item">
-					<div
-						className="mobile-nav-link"
+						<ListItemText primary="Core Practices" />
+						<ExpandMore />
+					</ListItemButton>
+				</ListItem>
+				<ListItem disablePadding>
+					<ListItemButton
 						onClick={() =>
 							navigateToPanel(
 								"subjects-specialist-principles",
@@ -302,15 +264,12 @@ const MobileNavigation = ({
 								subjects.filter((s) => /^SP/.test(s.code))
 							)
 						}>
-						<span>Specialist Principles</span>
-						<span className="mobile-nav-arrow">
-							<ExpandMore />
-						</span>
-					</div>
-				</li>
-				<li className="mobile-nav-list-item">
-					<div
-						className="mobile-nav-link"
+						<ListItemText primary="Specialist Principles" />
+						<ExpandMore />
+					</ListItemButton>
+				</ListItem>
+				<ListItem disablePadding>
+					<ListItemButton
 						onClick={() =>
 							navigateToPanel(
 								"subjects-specialist-advanced",
@@ -318,153 +277,136 @@ const MobileNavigation = ({
 								subjects.filter((s) => /^SA/.test(s.code))
 							)
 						}>
-						<span>Specialist Advanced</span>
-						<span className="mobile-nav-arrow">
-							<ExpandMore />
-						</span>
-					</div>
-				</li>
-			</ul>
-		</div>
+						<ListItemText primary="Specialist Advanced" />
+						<ExpandMore />
+					</ListItemButton>
+				</ListItem>
+			</List>
+		</Box>
 	);
 
 	// Subject category panel (Core Principles, etc.)
 	const SubjectCategoryPanel = ({ data }) => (
-		<div className="mobile-nav-content">
+		<Box>
 			<MobileNavHeader title={currentPanel.title} showBackButton={true} />
-			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
+			<List component="nav" sx={{ pl: 2 }}>
 				{data &&
 					data.map((subject) => (
-						<li key={subject.id} className="mobile-nav-list-item">
-							<div
-								className="mobile-nav-link"
+						<ListItem key={subject.id} disablePadding>
+							<ListItemButton
 								onClick={() => {
 									handleSubjectClick(subject.code);
 									closeNavigation();
 								}}>
-								<span>
-									{subject.code} - {subject.description}
-								</span>
-							</div>
-						</li>
+								<ListItemText primary={`${subject.code} - ${subject.description}`} />
+							</ListItemButton>
+						</ListItem>
 					))}
-			</ul>
-		</div>
+			</List>
+		</Box>
 	);
 
 	// Products panel
 	const ProductsPanel = () => (
-		<div className="mobile-nav-content">
+		<Box>
 			<MobileNavHeader title="Products" showBackButton={true} />
-			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
-				<li className="mobile-nav-list-item">
-					<div
-						className="mobile-nav-link"
+			<List component="nav" sx={{ pl: 2 }}>
+				<ListItem disablePadding>
+					<ListItemButton
 						onClick={() => {
 							handleProductClick();
 							handleNavigation("/products");
 						}}>
-						<span>View All Products</span>
-					</div>
-				</li>
+						<ListItemText primary="View All Products" />
+					</ListItemButton>
+				</ListItem>
 				{loadingProductGroups ? (
-					<li className="mobile-nav-list-item">
-						<div className="mobile-nav-link" style={{ opacity: 0.6 }}>
-							<span>Loading products...</span>
-						</div>
-					</li>
+					<ListItem disablePadding>
+						<ListItemButton disabled>
+							<ListItemText primary="Loading products..." />
+						</ListItemButton>
+					</ListItem>
 				) : (
 					navbarProductGroups &&
 					navbarProductGroups.map((group) => (
-						<li
-							key={group.id || group.name}
-							className="mobile-nav-list-item">
-							<div
-								className="mobile-nav-link"
+						<ListItem key={group.id || group.name} disablePadding>
+							<ListItemButton
 								onClick={() =>
 									navigateToPanel("product-group", group.name, group)
 								}>
-								<span>{group.name}</span>
-								<span className="mobile-nav-arrow">
-									<ExpandMore />
-								</span>
-							</div>
-						</li>
+								<ListItemText primary={group.name} />
+								<ExpandMore />
+							</ListItemButton>
+						</ListItem>
 					))
 				)}
-			</ul>
-		</div>
+			</List>
+		</Box>
 	);
 
 	// Product group panel
 	const ProductGroupPanel = ({ data }) => (
-		<div className="mobile-nav-content">
+		<Box>
 			<MobileNavHeader title={currentPanel.title} showBackButton={true} />
-			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
-				<li className="mobile-nav-list-item">
-					<div
-						className="mobile-nav-link"
+			<List component="nav" sx={{ pl: 2 }}>
+				<ListItem disablePadding>
+					<ListItemButton
 						onClick={() => {
 							handleProductGroupClick(data.name);
 							closeNavigation();
 						}}>
-						<span>View All {data.name}</span>
-					</div>
-				</li>
+						<ListItemText primary={`View All ${data.name}`} />
+					</ListItemButton>
+				</ListItem>
 				{data.products && data.products.length > 0 ? (
 					data.products.map((product) => (
-						<li key={product.id} className="mobile-nav-list-item">
-							<div
-								className="mobile-nav-link"
+						<ListItem key={product.id} disablePadding>
+							<ListItemButton
 								onClick={() => {
 									handleSpecificProductClick(product.id);
 									closeNavigation();
 								}}>
-								<span>{product.shortname}</span>
-							</div>
-						</li>
+								<ListItemText primary={product.shortname} />
+							</ListItemButton>
+						</ListItem>
 					))
 				) : (
-					<li className="mobile-nav-list-item">
-						<div className="mobile-nav-link" style={{ opacity: 0.6 }}>
-							<span>No products available</span>
-						</div>
-					</li>
+					<ListItem disablePadding>
+						<ListItemButton disabled>
+							<ListItemText primary="No products available" />
+						</ListItemButton>
+					</ListItem>
 				)}
-			</ul>
-		</div>
+			</List>
+		</Box>
 	);
 
 	// Distance Learning panel
 	const DistanceLearningPanel = () => (
-		<div className="mobile-nav-content">
+		<Box>
 			<MobileNavHeader title="Distance Learning" showBackButton={true} />
-			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
-				<li className="mobile-nav-list-item">
-					<div
-						className="mobile-nav-link"
+			<List component="nav" sx={{ pl: 2 }}>
+				<ListItem disablePadding>
+					<ListItemButton
 						onClick={() => {
 							handleNavigation("/products", {
 								distance_learning: "true",
 							});
 						}}>
-						<span>View All Distance Learning</span>
-					</div>
-				</li>
+						<ListItemText primary="View All Distance Learning" />
+					</ListItemButton>
+				</ListItem>
 				{loadingDistanceLearning ? (
-					<li className="mobile-nav-list-item">
-						<div className="mobile-nav-link" style={{ opacity: 0.6 }}>
-							<span>Loading distance learning...</span>
-						</div>
-					</li>
+					<ListItem disablePadding>
+						<ListItemButton disabled>
+							<ListItemText primary="Loading distance learning..." />
+						</ListItemButton>
+					</ListItem>
 				) : (
 					distanceLearningData &&
 					distanceLearningData.map((group) => (
-						<li
-							key={group.id || group.name}
-							className="mobile-nav-list-item">
-							<div
-								className="mobile-nav-link"
+						<ListItem key={group.id || group.name} disablePadding>
+							<ListItemButton
 								onClick={() =>
 									navigateToPanel(
 										"distance-learning-group",
@@ -472,44 +414,40 @@ const MobileNavigation = ({
 										group
 									)
 								}>
-								<span>{group.name}</span>
-								<span className="mobile-nav-arrow">
-									<ExpandMore />
-								</span>
-							</div>
-						</li>
+								<ListItemText primary={group.name} />
+								<ExpandMore />
+							</ListItemButton>
+						</ListItem>
 					))
 				)}
-			</ul>
-		</div>
+			</List>
+		</Box>
 	);
 
 	// Tutorials panel
 	const TutorialsPanel = () => (
-		<div className="mobile-nav-content">
+		<Box>
 			<MobileNavHeader title="Tutorials" showBackButton={true} />
-			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
-				<li className="mobile-nav-list-item">
-					<div
-						className="mobile-nav-link"
+			<List component="nav" sx={{ pl: 2 }}>
+				<ListItem disablePadding>
+					<ListItemButton
 						onClick={() => {
 							handleNavigation("/products?main_category=Tutorials");
 						}}>
-						<span>View All Tutorials</span>
-					</div>
-				</li>
+						<ListItemText primary="View All Tutorials" />
+					</ListItemButton>
+				</ListItem>
 				{loadingTutorial ? (
-					<li className="mobile-nav-list-item">
-						<div className="mobile-nav-link" style={{ opacity: 0.6 }}>
-							<span>Loading tutorials...</span>
-						</div>
-					</li>
+					<ListItem disablePadding>
+						<ListItemButton disabled>
+							<ListItemText primary="Loading tutorials..." />
+						</ListItemButton>
+					</ListItem>
 				) : tutorialData ? (
 					<>
 						{tutorialData.Location && (
-							<li className="mobile-nav-list-item">
-								<div
-									className="mobile-nav-link"
+							<ListItem disablePadding>
+								<ListItemButton
 									onClick={() =>
 										navigateToPanel(
 											"tutorial-location",
@@ -517,17 +455,14 @@ const MobileNavigation = ({
 											tutorialData.Location
 										)
 									}>
-									<span>Location</span>
-									<span className="mobile-nav-arrow">
-										<ExpandMore />
-									</span>
-								</div>
-							</li>
+									<ListItemText primary="Location" />
+									<ExpandMore />
+								</ListItemButton>
+							</ListItem>
 						)}
 						{tutorialData.Format && tutorialData.Format.length > 0 && (
-							<li className="mobile-nav-list-item">
-								<div
-									className="mobile-nav-link"
+							<ListItem disablePadding>
+								<ListItemButton
 									onClick={() =>
 										navigateToPanel(
 											"tutorial-format",
@@ -535,18 +470,15 @@ const MobileNavigation = ({
 											tutorialData.Format
 										)
 									}>
-									<span>Format</span>
-									<span className="mobile-nav-arrow">
-										<ExpandMore />
-									</span>
-								</div>
-							</li>
+									<ListItemText primary="Format" />
+									<ExpandMore />
+								</ListItemButton>
+							</ListItem>
 						)}
 						{tutorialData["Online Classroom"] &&
 							tutorialData["Online Classroom"].length > 0 && (
-								<li className="mobile-nav-list-item">
-									<div
-										className="mobile-nav-link"
+								<ListItem disablePadding>
+									<ListItemButton
 										onClick={() =>
 											navigateToPanel(
 												"tutorial-online",
@@ -554,119 +486,107 @@ const MobileNavigation = ({
 												tutorialData["Online Classroom"]
 											)
 										}>
-										<span>Online Classroom</span>
-										<span className="mobile-nav-arrow">
-											<ExpandMore />
-										</span>
-									</div>
-								</li>
+										<ListItemText primary="Online Classroom" />
+										<ExpandMore />
+									</ListItemButton>
+								</ListItem>
 							)}
 					</>
 				) : (
-					<li className="mobile-nav-list-item">
-						<div className="mobile-nav-link" style={{ opacity: 0.6 }}>
-							<span>No tutorial data available</span>
-						</div>
-					</li>
+					<ListItem disablePadding>
+						<ListItemButton disabled>
+							<ListItemText primary="No tutorial data available" />
+						</ListItemButton>
+					</ListItem>
 				)}
-			</ul>
-		</div>
+			</List>
+		</Box>
 	);
 
 	// Tutorial category panels
 	const TutorialCategoryPanel = ({ data, type }) => (
-		<div className="mobile-nav-content">
+		<Box>
 			<MobileNavHeader title={currentPanel.title} showBackButton={true} />
-			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
+			<List component="nav" sx={{ pl: 2 }}>
 				{type === "format" ? (
 					data.map((format) => (
-						<li key={format.filter_type} className="mobile-nav-list-item">
-							<div
-								className="mobile-nav-link"
+						<ListItem key={format.filter_type} disablePadding>
+							<ListItemButton
 								onClick={() => {
 									handleProductGroupClick(format.group_name);
 									closeNavigation();
 								}}>
-								<span>{format.name}</span>
-							</div>
-						</li>
+								<ListItemText primary={format.name} />
+							</ListItemButton>
+						</ListItem>
 					))
 				) : type === "online" ? (
 					data.map((variation) => (
-						<li key={variation.id} className="mobile-nav-list-item">
-							<div
-								className="mobile-nav-link"
+						<ListItem key={variation.id} disablePadding>
+							<ListItemButton
 								onClick={() => {
 									handleProductVariationClick(variation.id);
 									closeNavigation();
 								}}>
-								<span>{variation.description || variation.name}</span>
-							</div>
-						</li>
+								<ListItemText primary={variation.description || variation.name} />
+							</ListItemButton>
+						</ListItem>
 					))
 				) : (
 					// Location type - both left and right products
 					<>
 						{data.left &&
 							data.left.map((product) => (
-								<li key={product.id} className="mobile-nav-list-item">
-									<div
-										className="mobile-nav-link"
+								<ListItem key={product.id} disablePadding>
+									<ListItemButton
 										onClick={() => {
 											handleSpecificProductClick(product.id);
 											closeNavigation();
 										}}>
-										<span>{product.shortname}</span>
-									</div>
-								</li>
+										<ListItemText primary={product.shortname} />
+									</ListItemButton>
+								</ListItem>
 							))}
 						{data.right &&
 							data.right.map((product) => (
-								<li key={product.id} className="mobile-nav-list-item">
-									<div
-										className="mobile-nav-link"
+								<ListItem key={product.id} disablePadding>
+									<ListItemButton
 										onClick={() => {
 											handleSpecificProductClick(product.id);
 											closeNavigation();
 										}}>
-										<span>{product.shortname}</span>
-									</div>
-								</li>
+										<ListItemText primary={product.shortname} />
+									</ListItemButton>
+								</ListItem>
 							))}
 					</>
 				)}
-			</ul>
-		</div>
+			</List>
+		</Box>
 	);
 
 	// Admin panel
 	const AdminPanel = () => (
-		<div className="mobile-nav-content">
+		<Box>
 			<MobileNavHeader title="Admin" showBackButton={true} />
-			<ul className="mobile-nav-list" style={{ paddingLeft: "1rem" }}>
-				<li className="mobile-nav-list-item">
-					<div
-						className="mobile-nav-link"
-						onClick={() => handleNavigation("/admin/exam-sessions")}>
-						<span>Exam Sessions</span>
-					</div>
-				</li>
-				<li className="mobile-nav-list-item">
-					<div
-						className="mobile-nav-link"
-						onClick={() => handleNavigation("/admin/subjects")}>
-						<span>Subjects</span>
-					</div>
-				</li>
-				<li className="mobile-nav-list-item">
-					<div
-						className="mobile-nav-link"
-						onClick={() => handleNavigation("/admin/products")}>
-						<span>Products</span>
-					</div>
-				</li>
-			</ul>
-		</div>
+			<List component="nav" sx={{ pl: 2 }}>
+				<ListItem disablePadding>
+					<ListItemButton onClick={() => handleNavigation("/admin/exam-sessions")}>
+						<ListItemText primary="Exam Sessions" />
+					</ListItemButton>
+				</ListItem>
+				<ListItem disablePadding>
+					<ListItemButton onClick={() => handleNavigation("/admin/subjects")}>
+						<ListItemText primary="Subjects" />
+					</ListItemButton>
+				</ListItem>
+				<ListItem disablePadding>
+					<ListItemButton onClick={() => handleNavigation("/admin/products")}>
+						<ListItemText primary="Products" />
+					</ListItemButton>
+				</ListItem>
+			</List>
+		</Box>
 	);
 
 	// Render current panel content
@@ -712,26 +632,25 @@ const MobileNavigation = ({
 		}
 	};
 
-	// Handle clicks on the panel content area
-	const handlePanelClick = (e) => {
-		// Only close if clicking on the panel background, not on links or interactive elements
-		if (
-			e.target.classList.contains("mobile-nav-panel") ||
-			e.target.classList.contains("mobile-nav-list")
-		) {
-			closeNavigation();
-		}
-	};
-
 	return (
-		<div className={`mobile-navigation-container ${open ? "open" : ""}`}>
-			<div className="mobile-nav-backdrop" onClick={closeNavigation}></div>
-			<div
-				className={`mobile-nav-panel slide-right ${open ? "active" : ""}`}
-				onClick={handlePanelClick}>
-				{renderCurrentPanel()}
-			</div>
-		</div>
+		<Drawer
+			anchor="right"
+			open={open}
+			onClose={closeNavigation}
+			aria-label="Mobile navigation menu"
+			ModalProps={{
+				keepMounted: true, // Better mobile performance
+			}}
+			sx={{
+				'& .MuiDrawer-paper': {
+					width: '85%',
+					maxWidth: 360,
+					backgroundColor: 'primary.main',
+				},
+			}}
+		>
+			{renderCurrentPanel()}
+		</Drawer>
 	);
 };
 
