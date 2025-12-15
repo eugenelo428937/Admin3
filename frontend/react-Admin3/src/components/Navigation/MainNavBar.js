@@ -1,9 +1,8 @@
 // src/components/MainNavBar.js
 import React, { useState, useEffect } from "react";
-import { Navbar } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { Container } from "@mui/material";
+import { AppBar, Toolbar, Container, IconButton, Box } from "@mui/material";
 // import { useAuth } from "../../hooks/useAuth"; // Now used by child components
 import productService from "../../services/productService";
 import SearchModal from "./SearchModal";
@@ -179,88 +178,22 @@ const MainNavBar = () => {
          <div className="d-none d-sm-block">
             <TopNavBar />
          </div>
-         <Navbar
-            expand="md"
-            expanded={expanded}
-            onToggle={setExpanded}
-            sticky="top"
+         <AppBar
+            position="sticky"
+            component="nav"
+            aria-label="Main navigation"
+            elevation={0}
             className="navbar navbar-expand-md navbar-main align-content-center justify-content-between p-left__md p-right__md pt-md-2 py-lg-1 px-xl-5 px-xl-3"
          >
-            <Container               
-               className="d-flex flex-row justify-content-between align-items-center"
-               sx={{
-                  px: { xs: 0, lg: 1 },
-               }}
-            >
-               {/* Left Box - Cart/Login icons (mobile only, left-aligned) */}
-               <div className="d-flex justify-content-start align-items-center order-0 order-md-0 d-md-none">
-                  <MainNavActions
-                     onOpenAuth={handleOpenAuthModal}
-                     onOpenCart={handleOpenCartPanel}
-                     onToggleMobileMenu={() => setExpanded(!expanded)}
-                     isMobile={false}
-                  />
-               </div>
-
-               {/* Center Box - Brand/Logo (centered on mobile, left on desktop) */}
-               <div className="d-flex justify-content-center justify-content-md-start align-items-center order-1 order-md-0">
-                  <NavbarBrand />
-               </div>
-
-               {/* Center Section - Navigation Menu (Desktop) */}
-               <Navbar.Collapse
-                  id="navbar-menu"
-                  className="px-md-1 px-0 m-auto justify-content-lg-center justify-content-md-start order-4 order-md-2"
+            <Toolbar disableGutters sx={{ width: '100%' }}>
+               <Container
+                  className="d-flex flex-row justify-content-between align-items-center"
+                  sx={{
+                     px: { xs: 0, lg: 1 },
+                  }}
                >
-                  {/* Desktop Navigation - Hidden on mobile */}
-                  <NavigationMenu
-                     subjects={subjects}
-                     navbarProductGroups={navbarProductGroups}
-                     distanceLearningData={distanceLearningData}
-                     tutorialData={tutorialData}
-                     loadingProductGroups={loadingNavigation}
-                     loadingDistanceLearning={loadingNavigation}
-                     loadingTutorial={loadingNavigation}
-                     handleSubjectClick={handleSubjectClick}
-                     handleProductClick={handleProductClick}
-                     handleProductGroupClick={handleProductGroupClick}
-                     handleSpecificProductClick={handleSpecificProductClick}
-                     handleProductVariationClick={handleProductVariationClick}
-                     handleMarkingVouchersClick={handleMarkingVouchersClick}
-                     onCollapseNavbar={() => setExpanded(false)}
-                  />
-
-                  {/* Mobile Navigation - Visible only on mobile */}
-                  <div className="d-md-none">
-                     <MobileNavigation
-                        open={expanded}
-                        onClose={() => setExpanded(false)}
-                        subjects={subjects}
-                        navbarProductGroups={navbarProductGroups}
-                        distanceLearningData={distanceLearningData}
-                        tutorialData={tutorialData}
-                        loadingProductGroups={loadingNavigation}
-                        loadingDistanceLearning={loadingNavigation}
-                        loadingTutorial={loadingNavigation}
-                        handleSubjectClick={handleSubjectClick}
-                        handleProductClick={handleProductClick}
-                        handleProductGroupClick={handleProductGroupClick}
-                        handleSpecificProductClick={handleSpecificProductClick}
-                        handleProductVariationClick={
-                           handleProductVariationClick
-                        }
-                        handleMarkingVouchersClick={handleMarkingVouchersClick}
-                        onOpenSearch={handleOpenSearchModal}
-                        onOpenCart={handleOpenCartPanel}
-                        onOpenAuth={handleOpenAuthModal}
-                     />
-                  </div>
-               </Navbar.Collapse>
-
-               {/* Right Box - Cart/Login (desktop only) and Hamburger */}
-               <div className="d-flex justify-content-end align-items-center gap-2 order-2 order-md-4">
-                  {/* Desktop actions - hidden on mobile */}
-                  <div className="d-none d-md-flex">
+                  {/* Left Box - Cart/Login icons (mobile only, left-aligned) */}
+                  <div className="d-flex justify-content-start align-items-center order-0 order-md-0 d-md-none">
                      <MainNavActions
                         onOpenAuth={handleOpenAuthModal}
                         onOpenCart={handleOpenCartPanel}
@@ -269,22 +202,100 @@ const MainNavBar = () => {
                      />
                   </div>
 
-                  {/* Hamburger menu toggle - visible on all screens */}
-                  <Navbar.Toggle
-                     className={`navbar-toggler menu-button justify-content-between ${
-                        expanded ? "active" : ""
-                     }`}
-                     aria-controls="navbar-menu"
-                     aria-label="Toggle navigation"
-                     id="navbar-menu-toggle"
+                  {/* Center Box - Brand/Logo (centered on mobile, left on desktop) */}
+                  <div className="d-flex justify-content-center justify-content-md-start align-items-center order-1 order-md-0">
+                     <NavbarBrand />
+                  </div>
+
+                  {/* Center Section - Navigation Menu (Desktop) */}
+                  <Box
+                     id="navbar-menu"
+                     className="px-md-1 px-0 m-auto justify-content-lg-center justify-content-md-start order-4 order-md-2"
+                     sx={{
+                        display: { xs: expanded ? 'flex' : 'none', md: 'flex' },
+                        flexDirection: { xs: 'column', md: 'row' },
+                     }}
                   >
-                     <span className="toggler-icon top-bar"></span>
-                     <span className="toggler-icon middle-bar"></span>
-                     <span className="toggler-icon bottom-bar"></span>
-                  </Navbar.Toggle>
-               </div>
-            </Container>
-         </Navbar>
+                     {/* Desktop Navigation - Hidden on mobile */}
+                     <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+                        <NavigationMenu
+                           subjects={subjects}
+                           navbarProductGroups={navbarProductGroups}
+                           distanceLearningData={distanceLearningData}
+                           tutorialData={tutorialData}
+                           loadingProductGroups={loadingNavigation}
+                           loadingDistanceLearning={loadingNavigation}
+                           loadingTutorial={loadingNavigation}
+                           handleSubjectClick={handleSubjectClick}
+                           handleProductClick={handleProductClick}
+                           handleProductGroupClick={handleProductGroupClick}
+                           handleSpecificProductClick={handleSpecificProductClick}
+                           handleProductVariationClick={handleProductVariationClick}
+                           handleMarkingVouchersClick={handleMarkingVouchersClick}
+                           onCollapseNavbar={() => setExpanded(false)}
+                        />
+                     </Box>
+
+                     {/* Mobile Navigation - Visible only on mobile */}
+                     <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                        <MobileNavigation
+                           open={expanded}
+                           onClose={() => setExpanded(false)}
+                           subjects={subjects}
+                           navbarProductGroups={navbarProductGroups}
+                           distanceLearningData={distanceLearningData}
+                           tutorialData={tutorialData}
+                           loadingProductGroups={loadingNavigation}
+                           loadingDistanceLearning={loadingNavigation}
+                           loadingTutorial={loadingNavigation}
+                           handleSubjectClick={handleSubjectClick}
+                           handleProductClick={handleProductClick}
+                           handleProductGroupClick={handleProductGroupClick}
+                           handleSpecificProductClick={handleSpecificProductClick}
+                           handleProductVariationClick={
+                              handleProductVariationClick
+                           }
+                           handleMarkingVouchersClick={handleMarkingVouchersClick}
+                           onOpenSearch={handleOpenSearchModal}
+                           onOpenCart={handleOpenCartPanel}
+                           onOpenAuth={handleOpenAuthModal}
+                        />
+                     </Box>
+                  </Box>
+
+                  {/* Right Box - Cart/Login (desktop only) and Hamburger */}
+                  <div className="d-flex justify-content-end align-items-center gap-2 order-2 order-md-4">
+                     {/* Desktop actions - hidden on mobile */}
+                     <div className="d-none d-md-flex">
+                        <MainNavActions
+                           onOpenAuth={handleOpenAuthModal}
+                           onOpenCart={handleOpenCartPanel}
+                           onToggleMobileMenu={() => setExpanded(!expanded)}
+                           isMobile={false}
+                        />
+                     </div>
+
+                     {/* Hamburger menu toggle - visible on all screens */}
+                     <IconButton
+                        className={`navbar-toggler menu-button justify-content-between ${
+                           expanded ? "active" : ""
+                        }`}
+                        aria-controls="navbar-menu"
+                        aria-label="Toggle navigation"
+                        aria-expanded={expanded}
+                        id="navbar-menu-toggle"
+                        onClick={() => setExpanded(!expanded)}
+                     >
+                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                           <span className="toggler-icon top-bar"></span>
+                           <span className="toggler-icon middle-bar"></span>
+                           <span className="toggler-icon bottom-bar"></span>
+                        </Box>
+                     </IconButton>
+                  </div>
+               </Container>
+            </Toolbar>
+         </AppBar>
 
          {/* Search Modal */}
          <SearchModal open={showSearchModal} onClose={handleCloseSearchModal} />
