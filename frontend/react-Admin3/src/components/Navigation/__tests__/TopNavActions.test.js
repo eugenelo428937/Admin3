@@ -9,11 +9,26 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import TopNavActions from '../TopNavActions';
 
 const theme = createTheme({
+  liftkit: {
+    spacing: {
+      xs: 4,
+      xs2: 8,
+      xs3: 12,
+      sm: 16,
+      md: 24,
+      lg: 32,
+      xl: 48,
+      xxl: 64,
+    },
+  },
   palette: {
     liftkit: {
       light: {
         background: '#ffffff',
       },
+    },
+    offwhite: {
+      '000': '#ffffff',
     },
   },
 });
@@ -101,12 +116,20 @@ describe('TopNavActions', () => {
   });
 
   describe('responsive behavior', () => {
-    test('brochure button has desktop-only display classes via sx', () => {
+    test('brochure text renders for desktop', () => {
       renderActions();
 
-      // Brochure should have display: { xs: 'none', md: 'flex' }
-      // We can verify the button exists but CSS controls visibility
+      // Brochure Typography has display: { xs: 'none', lg: 'flex' }
+      // We verify the text element exists - MUI sx controls visibility
       expect(screen.getByText('Brochure')).toBeInTheDocument();
+    });
+
+    test('search text renders for desktop', () => {
+      renderActions();
+
+      // Search Typography has display: { xs: 'none', lg: 'flex' }
+      // We verify the text element exists - MUI sx controls visibility
+      expect(screen.getByText('Search')).toBeInTheDocument();
     });
   });
 
