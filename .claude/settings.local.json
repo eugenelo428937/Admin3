@@ -22,7 +22,8 @@
       "Bash(c:/Code/Admin3/.venv/Scripts/coverage.exe run --source=. manage.py test core_auth.tests.test_auth_views --keepdb --no-input)",
       "Bash(c:/Code/Admin3/.venv/Scripts/coverage.exe report:*)",
       "Bash(find:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Skill(brainstorming)"
     ],
     "deny": [
       "Read(.claude/tdd-guard/**)",
