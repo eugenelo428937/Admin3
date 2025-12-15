@@ -160,32 +160,44 @@ describe('NavigationMenu', () => {
   describe('subjects dropdown', () => {
     test('renders Core Principles heading', () => {
       renderMenu();
+      // Open the Subjects popover
+      fireEvent.click(screen.getByText('Subjects'));
       expect(screen.getByText('Core Principles')).toBeInTheDocument();
     });
 
     test('renders Core Practices heading', () => {
       renderMenu();
+      // Open the Subjects popover
+      fireEvent.click(screen.getByText('Subjects'));
       expect(screen.getByText('Core Practices')).toBeInTheDocument();
     });
 
     test('renders Specialist Principles heading', () => {
       renderMenu();
+      // Open the Subjects popover
+      fireEvent.click(screen.getByText('Subjects'));
       expect(screen.getByText('Specialist Principles')).toBeInTheDocument();
     });
 
     test('renders Specialist Advanced heading', () => {
       renderMenu();
+      // Open the Subjects popover
+      fireEvent.click(screen.getByText('Subjects'));
       expect(screen.getByText('Specialist Advanced')).toBeInTheDocument();
     });
 
     test('renders subject items', () => {
       renderMenu();
+      // Open the Subjects popover
+      fireEvent.click(screen.getByText('Subjects'));
       expect(screen.getByText('CB1 - Business Finance')).toBeInTheDocument();
       expect(screen.getByText('CP1 - Core Practice 1')).toBeInTheDocument();
     });
 
     test('calls handleSubjectClick when subject clicked', () => {
       renderMenu();
+      // Open the Subjects popover
+      fireEvent.click(screen.getByText('Subjects'));
 
       fireEvent.click(screen.getByText('CB1 - Business Finance'));
 

@@ -1,9 +1,9 @@
 import React from "react";
 import { Nav, NavDropdown, Row, Col } from "react-bootstrap";
-import { Box, Button } from '@mui/material';
+import { Box, Button, Grid, MenuItem, MenuList, Typography, useTheme } from '@mui/material';
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { Typography, useTheme } from "@mui/material";
+import MegaMenuPopover from './MegaMenuPopover';
 const NavigationMenu = ({
    subjects,
    navbarProductGroups,
@@ -49,110 +49,119 @@ const NavigationMenu = ({
          >
             <Typography variant="navlink">Home</Typography>
          </Button>
-         <NavDropdown
-            title={
-               <Typography
-                  variant="navlink"
-                  color={theme.palette.offwhite["000"]}
-               >
-                  Subjects
-               </Typography>
-            }
-            menuVariant="light"
-            renderMenuOnMount={true}
-            align="start"
-            style={{ position: "relative" }}
-            className="mx-xl-2"
+         <MegaMenuPopover
+            id="subjects"
+            label="Subjects"
+            width={900}
+            onClose={onCollapseNavbar}
          >
-            <div className="dropdown-submenu">
-               <Row>
-                  <Col xl={3}>
-                     <div className="mb-2 text-primary heading">
-                        Core Principles
-                     </div>
+            <Grid container spacing={2}>
+               <Grid item xs={12} xl={3}>
+                  <Typography
+                     variant="subtitle2"
+                     color="primary"
+                     sx={{ mb: 1, fontWeight: 'bold' }}
+                     id="core-principles-heading"
+                  >
+                     Core Principles
+                  </Typography>
+                  <MenuList dense aria-labelledby="core-principles-heading">
                      {subjects &&
                         subjects
                            .filter((s) => /^(CB|CS|CM)/.test(s.code))
                            .map((subject) => (
-                              <NavDropdown.Item
+                              <MenuItem
                                  key={subject.id}
                                  onClick={() => {
                                     handleSubjectClick(subject.code);
-                                    onCollapseNavbar && onCollapseNavbar();
+                                    onCollapseNavbar?.();
                                  }}
                               >
-                                 <span>
-                                    {subject.code} - {subject.description}
-                                 </span>
-                              </NavDropdown.Item>
+                                 {subject.code} - {subject.description}
+                              </MenuItem>
                            ))}
-                  </Col>
-                  <Col xl={3}>
-                     <div className="fw-bolder mb-2 text-primary heading">
-                        Core Practices
-                     </div>
+                  </MenuList>
+               </Grid>
+               <Grid item xs={12} xl={3}>
+                  <Typography
+                     variant="subtitle2"
+                     color="primary"
+                     sx={{ mb: 1, fontWeight: 'bold' }}
+                     id="core-practices-heading"
+                  >
+                     Core Practices
+                  </Typography>
+                  <MenuList dense aria-labelledby="core-practices-heading">
                      {subjects &&
                         subjects
                            .filter((s) => /^CP[1-3]$/.test(s.code))
                            .map((subject) => (
-                              <NavDropdown.Item
+                              <MenuItem
                                  key={subject.id}
                                  onClick={() => {
                                     handleSubjectClick(subject.code);
-                                    onCollapseNavbar && onCollapseNavbar();
+                                    onCollapseNavbar?.();
                                  }}
                               >
-                                 <span>
-                                    {subject.code} - {subject.description}
-                                 </span>
-                              </NavDropdown.Item>
+                                 {subject.code} - {subject.description}
+                              </MenuItem>
                            ))}
-                  </Col>
-                  <Col xl={3}>
-                     <div className="fw-bolder mb-2 text-primary heading">
-                        Specialist Principles
-                     </div>
+                  </MenuList>
+               </Grid>
+               <Grid item xs={12} xl={3}>
+                  <Typography
+                     variant="subtitle2"
+                     color="primary"
+                     sx={{ mb: 1, fontWeight: 'bold' }}
+                     id="specialist-principles-heading"
+                  >
+                     Specialist Principles
+                  </Typography>
+                  <MenuList dense aria-labelledby="specialist-principles-heading">
                      {subjects &&
                         subjects
                            .filter((s) => /^SP/.test(s.code))
                            .map((subject) => (
-                              <NavDropdown.Item
+                              <MenuItem
                                  key={subject.id}
                                  onClick={() => {
                                     handleSubjectClick(subject.code);
-                                    onCollapseNavbar && onCollapseNavbar();
+                                    onCollapseNavbar?.();
                                  }}
                               >
-                                 <span>
-                                    {subject.code} - {subject.description}
-                                 </span>
-                              </NavDropdown.Item>
+                                 {subject.code} - {subject.description}
+                              </MenuItem>
                            ))}
-                  </Col>
-                  <Col xl={3}>
-                     <div className="fw-bolder mb-2 text-primary heading">
-                        Specialist Advanced
-                     </div>
+                  </MenuList>
+               </Grid>
+               <Grid item xs={12} xl={3}>
+                  <Typography
+                     variant="subtitle2"
+                     color="primary"
+                     sx={{ mb: 1, fontWeight: 'bold' }}
+                     id="specialist-advanced-heading"
+                  >
+                     Specialist Advanced
+                  </Typography>
+                  <MenuList dense aria-labelledby="specialist-advanced-heading">
                      {subjects &&
                         subjects
                            .filter((s) => /^SA/.test(s.code))
                            .map((subject) => (
-                              <NavDropdown.Item
+                              <MenuItem
                                  key={subject.id}
                                  onClick={() => {
                                     handleSubjectClick(subject.code);
-                                    onCollapseNavbar && onCollapseNavbar();
+                                    onCollapseNavbar?.();
                                  }}
                               >
-                                 <span>
-                                    {subject.code} - {subject.description}
-                                 </span>
-                              </NavDropdown.Item>
+                                 {subject.code} - {subject.description}
+                              </MenuItem>
                            ))}
-                  </Col>
-               </Row>
-            </div>
-         </NavDropdown>
+                  </MenuList>
+               </Grid>
+            </Grid>
+         </MegaMenuPopover>
          <NavDropdown
             title={
                <Typography
