@@ -14,6 +14,14 @@ const useMenuKeyboardNav = (itemCount, onClose, onSelect) => {
   const [focusedIndex, setFocusedIndex] = useState(0);
 
   const handleKeyDown = useCallback((event) => {
+    // Handle empty menu gracefully
+    if (itemCount <= 0) {
+      if (event.key === 'Escape' || event.key === 'Tab') {
+        onClose?.();
+      }
+      return;
+    }
+
     switch (event.key) {
       case 'ArrowDown':
         event.preventDefault();
@@ -38,15 +46,20 @@ const useMenuKeyboardNav = (itemCount, onClose, onSelect) => {
       case 'Enter':
       case ' ':
         event.preventDefault();
-        onSelect?.(focusedIndex);
+        // Use functional update to avoid stale closure over focusedIndex
+        setFocusedIndex(currentIndex => {
+          onSelect?.(currentIndex);
+          return currentIndex;
+        });
         break;
       case 'Tab':
+        // Intentionally allow default Tab behavior to move focus to next element
         onClose?.();
         break;
       default:
         break;
     }
-  }, [itemCount, onClose, onSelect, focusedIndex]);
+  }, [itemCount, onClose, onSelect]);
 
   const resetFocus = useCallback(() => {
     setFocusedIndex(0);
