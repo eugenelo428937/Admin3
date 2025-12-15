@@ -261,26 +261,50 @@ describe('NavigationMenu', () => {
   describe('tutorials dropdown', () => {
     test('renders View All Tutorials link', () => {
       renderMenu();
+
+      // Click to open the MUI Popover
+      const tutorialsButton = screen.getByRole('button', { name: /tutorials/i });
+      fireEvent.click(tutorialsButton);
+
       expect(screen.getByText('View All Tutorials')).toBeInTheDocument();
     });
 
     test('renders Location section', () => {
       renderMenu();
+
+      // Click to open the MUI Popover
+      const tutorialsButton = screen.getByRole('button', { name: /tutorials/i });
+      fireEvent.click(tutorialsButton);
+
       expect(screen.getByText('Location')).toBeInTheDocument();
     });
 
     test('renders Format section', () => {
       renderMenu();
+
+      // Click to open the MUI Popover
+      const tutorialsButton = screen.getByRole('button', { name: /tutorials/i });
+      fireEvent.click(tutorialsButton);
+
       expect(screen.getByText('Format')).toBeInTheDocument();
     });
 
     test('renders tutorial locations', () => {
       renderMenu();
+
+      // Click to open the MUI Popover
+      const tutorialsButton = screen.getByRole('button', { name: /tutorials/i });
+      fireEvent.click(tutorialsButton);
+
       expect(screen.getByText('London')).toBeInTheDocument();
     });
 
     test('calls handleSpecificProductClick when location clicked', () => {
       renderMenu();
+
+      // Click to open the MUI Popover
+      const tutorialsButton = screen.getByRole('button', { name: /tutorials/i });
+      fireEvent.click(tutorialsButton);
 
       fireEvent.click(screen.getByText('London'));
 
@@ -289,12 +313,21 @@ describe('NavigationMenu', () => {
 
     test('renders format options', () => {
       renderMenu();
+
+      // Click to open the MUI Popover
+      const tutorialsButton = screen.getByRole('button', { name: /tutorials/i });
+      fireEvent.click(tutorialsButton);
+
       expect(screen.getByText('Classroom')).toBeInTheDocument();
       expect(screen.getByText('Online')).toBeInTheDocument();
     });
 
     test('calls handleProductGroupClick when format clicked', () => {
       renderMenu();
+
+      // Click to open the MUI Popover
+      const tutorialsButton = screen.getByRole('button', { name: /tutorials/i });
+      fireEvent.click(tutorialsButton);
 
       fireEvent.click(screen.getByText('Classroom'));
 
@@ -316,6 +349,11 @@ describe('NavigationMenu', () => {
 
     test('shows loading message for tutorials', () => {
       renderMenu({ loadingTutorial: true });
+
+      // Click to open the MUI Popover
+      const tutorialsButton = screen.getByRole('button', { name: /tutorials/i });
+      fireEvent.click(tutorialsButton);
+
       expect(screen.getByText('Loading tutorials...')).toBeInTheDocument();
     });
   });
@@ -333,6 +371,11 @@ describe('NavigationMenu', () => {
 
     test('shows no tutorial data message when null', () => {
       renderMenu({ tutorialData: null });
+
+      // Click to open the MUI Popover
+      const tutorialsButton = screen.getByRole('button', { name: /tutorials/i });
+      fireEvent.click(tutorialsButton);
+
       expect(screen.getByText('No tutorial data available')).toBeInTheDocument();
     });
   });

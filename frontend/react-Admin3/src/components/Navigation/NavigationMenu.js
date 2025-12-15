@@ -1,9 +1,10 @@
 import React from "react";
 import { Nav, NavDropdown, Row, Col } from "react-bootstrap";
-import { Box, Button } from '@mui/material';
+import { Box, Button, Grid, MenuItem, MenuList } from '@mui/material';
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { Typography, useTheme } from "@mui/material";
+import MegaMenuPopover from './MegaMenuPopover';
 const NavigationMenu = ({
    subjects,
    navbarProductGroups,
@@ -396,132 +397,123 @@ const NavigationMenu = ({
                </Row>
             </div>
          </NavDropdown>
-         <NavDropdown
-            title={
-               <Typography
-                  variant="navlink"
-                  color={theme.palette.offwhite["000"]}
-               >
-                  Tutorials
-               </Typography>
-            }
-            menuVariant="light"
-            renderMenuOnMount={true}
-            align="start"
-            style={{ position: "relative" }}
-            className="mx-xl-2"
+         <MegaMenuPopover
+            id="tutorials"
+            label="Tutorials"
+            width={900}
+            onClose={onCollapseNavbar}
          >
-            <div className="dropdown-submenu">
-               <Row>
-                  <NavDropdown.Item
+            <Grid container spacing={2}>
+               {/* View All Tutorials button */}
+               <Grid item xs={12}>
+                  <Button
+                     variant="outlined"
+                     color="primary"
+                     component={NavLink}
                      to="/products?tutorial=true"
-                     onClick={() => {
-                        // Navigation handled by NavLink 'to' prop
-                        onCollapseNavbar && onCollapseNavbar();
-                     }}
-                     className="fw-normal mb-2 text-primary ms-1 border border-light w-auto fs-5"
+                     onClick={() => onCollapseNavbar?.()}
+                     sx={{ mb: 2 }}
                   >
                      View All Tutorials
-                  </NavDropdown.Item>
-               </Row>
-               <Row>
-                  {loadingTutorial ? (
-                     <Col>
-                        <div className="text-muted">Loading tutorials...</div>
-                     </Col>
-                  ) : tutorialData ? (
-                     <>
-                        {/* Location Column - Split into 2 sub-columns */}
-                        <Col>
-                           <div className="fw-bolder mb-2 text-primary">
-                              Location
-                           </div>
-                           <div className="row">
-                              <div className="col-6">
-                                 {tutorialData.Location &&
-                                 tutorialData.Location.left &&
-                                 tutorialData.Location.left.length > 0 ? (
-                                    tutorialData.Location.left.map(
-                                       (product) => (
-                                          <NavDropdown.Item
-                                             key={product.id}
-                                             onClick={() => {
-                                                handleSpecificProductClick(
-                                                   product.id
-                                                );
-                                                onCollapseNavbar &&
-                                                   onCollapseNavbar();
-                                             }}
-                                          >
-                                             {product.shortname}
-                                          </NavDropdown.Item>
-                                       )
-                                    )
+                  </Button>
+               </Grid>
+               
+               {/* Tutorial content */}
+               {loadingTutorial ? (
+                  <Grid item xs={12}>
+                     <Typography color="text.secondary">Loading tutorials...</Typography>
+                  </Grid>
+               ) : tutorialData ? (
+                  <>
+                     {/* Location Column - Split into 2 sub-columns */}
+                     <Grid item xs={12} sm={6}>
+                        <Typography
+                           variant="subtitle2"
+                           color="primary"
+                           sx={{ mb: 1, fontWeight: 'bold' }}
+                           id="tutorial-location-heading"
+                        >
+                           Location
+                        </Typography>
+                        <Grid container>
+                           <Grid item xs={6}>
+                              <MenuList dense aria-labelledby="tutorial-location-heading">
+                                 {tutorialData.Location?.left?.length > 0 ? (
+                                    tutorialData.Location.left.map((product) => (
+                                       <MenuItem
+                                          key={product.id}
+                                          onClick={() => {
+                                             handleSpecificProductClick(product.id);
+                                             onCollapseNavbar?.();
+                                          }}
+                                       >
+                                          {product.shortname}
+                                       </MenuItem>
+                                    ))
                                  ) : (
-                                    <div className="text-muted small">
+                                    <Typography color="text.secondary" variant="body2">
                                        No locations
-                                    </div>
+                                    </Typography>
                                  )}
-                              </div>
-                              <div className="col-6">
-                                 {tutorialData.Location &&
-                                 tutorialData.Location.right &&
-                                 tutorialData.Location.right.length > 0
-                                    ? tutorialData.Location.right.map(
-                                         (product) => (
-                                            <NavDropdown.Item
-                                               key={product.id}
-                                               onClick={() =>
-                                                  handleSpecificProductClick(
-                                                     product.id
-                                                  )
-                                               }
-                                            >
-                                               {product.shortname}
-                                            </NavDropdown.Item>
-                                         )
-                                      )
-                                    : null}
-                              </div>
-                           </div>
-                        </Col>
-                        {/* Format Column - Filter links from acted_filter_group where parent='Tutorial' */}
-                        <Col>
-                           <div className="fw-bolder mb-2 text-primary">
-                              Format
-                           </div>
-                           {tutorialData.Format &&
-                           tutorialData.Format.length > 0 ? (
+                              </MenuList>
+                           </Grid>
+                           <Grid item xs={6}>
+                              <MenuList dense>
+                                 {tutorialData.Location?.right?.length > 0 &&
+                                    tutorialData.Location.right.map((product) => (
+                                       <MenuItem
+                                          key={product.id}
+                                          onClick={() => {
+                                             handleSpecificProductClick(product.id);
+                                             onCollapseNavbar?.();
+                                          }}
+                                       >
+                                          {product.shortname}
+                                       </MenuItem>
+                                    ))}
+                              </MenuList>
+                           </Grid>
+                        </Grid>
+                     </Grid>
+                     
+                     {/* Format Column */}
+                     <Grid item xs={12} sm={6}>
+                        <Typography
+                           variant="subtitle2"
+                           color="primary"
+                           sx={{ mb: 1, fontWeight: 'bold' }}
+                           id="tutorial-format-heading"
+                        >
+                           Format
+                        </Typography>
+                        <MenuList dense aria-labelledby="tutorial-format-heading">
+                           {tutorialData.Format?.length > 0 ? (
                               tutorialData.Format.map((format) => (
-                                 <NavDropdown.Item
+                                 <MenuItem
                                     key={format.filter_type}
                                     onClick={() => {
-                                       handleProductGroupClick(
-                                          format.group_name
-                                       );
-                                       onCollapseNavbar && onCollapseNavbar();
+                                       handleProductGroupClick(format.group_name);
+                                       onCollapseNavbar?.();
                                     }}
                                  >
                                     {format.name}
-                                 </NavDropdown.Item>
+                                 </MenuItem>
                               ))
                            ) : (
-                              <div className="text-muted small">
+                              <Typography color="text.secondary" variant="body2">
                                  No formats available
-                              </div>
+                              </Typography>
                            )}
-                        </Col>
-                     </>
-                  ) : (
-                     <Col>
-                        <div className="text-muted">
-                           No tutorial data available
-                        </div>
-                     </Col>
-                  )}
-               </Row>
-            </div>
-         </NavDropdown>
+                        </MenuList>
+                     </Grid>
+                  </>
+               ) : (
+                  <Grid item xs={12}>
+                     <Typography color="text.secondary">No tutorial data available</Typography>
+                  </Grid>
+               )}
+            </Grid>
+         </MegaMenuPopover>
 
          {isApprentice ? (
             <Nav.Link
