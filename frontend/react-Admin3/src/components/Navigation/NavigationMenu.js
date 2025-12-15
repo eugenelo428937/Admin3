@@ -529,34 +529,30 @@ const NavigationMenu = ({
          </MegaMenuPopover>
 
          {isApprentice ? (
-            <Nav.Link
-               as={NavLink}
-               href="#home"
-               disabled={!isApprentice}
-               // className="text-muted mx-xl-2"
+            <Button
+               component={NavLink}
+               to="/apprenticeships"
+               sx={{
+                  color: theme.palette.offwhite?.['000'] || 'inherit',
+                  textTransform: 'none',
+                  mx: { xl: 2 },
+               }}
             >
-               <Typography
-                  variant="navlink"
-                  color={theme.palette.offwhite["000"]}
-               >
-                  Apprenticeships
-               </Typography>
-            </Nav.Link>
+               <Typography variant="navlink">Apprenticeships</Typography>
+            </Button>
          ) : null}
          {isStudyPlus ? (
-            <Nav.Link
-               as={NavLink}
-               href="#home"
-               disabled={!isStudyPlus}
-               className="text-muted mx-xl-2"
+            <Button
+               component={NavLink}
+               to="/study-plus"
+               sx={{
+                  color: theme.palette.offwhite?.['000'] || 'inherit',
+                  textTransform: 'none',
+                  mx: { xl: 2 },
+               }}
             >
-               <Typography
-                  variant="navlink"
-                  color={theme.palette.offwhite["000"]}
-               >
-                  Study Plus
-               </Typography>
-            </Nav.Link>
+               <Typography variant="navlink">Study Plus</Typography>
+            </Button>
          ) : null}
          {isSuperuser ? (
             <>
