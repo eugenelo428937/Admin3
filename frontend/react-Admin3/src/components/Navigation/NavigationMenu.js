@@ -1,5 +1,6 @@
 import React from "react";
 import { Nav, NavDropdown, Row, Col } from "react-bootstrap";
+import { Box } from '@mui/material';
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { Typography, useTheme } from "@mui/material";
@@ -22,7 +23,17 @@ const NavigationMenu = ({
    const { isSuperuser, isApprentice, isStudyPlus } = useAuth();
    const theme = useTheme();
    return (
-      <Nav className="navbar-nav px-md-2 px-lg-2 flex-wrap d-none d-md-flex align-items-center justify-content-lg-evenly justify-content-xs-start" >
+      <Box
+         component="nav"
+         aria-label="Main navigation"
+         sx={{
+            display: { xs: 'none', md: 'flex' },
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: { xs: 'flex-start', lg: 'space-evenly' },
+            px: { md: 2, lg: 2 },
+         }}
+      >
          <Nav.Link as={NavLink} to="/home" className="mt-0 mt-lg-1">
             <Typography variant="navlink" color={theme.palette.offwhite["000"]} className="px-2 px-xl-4">
                Home
@@ -568,7 +579,7 @@ const NavigationMenu = ({
                </NavDropdown.Item>
             </NavDropdown>
          ) : null}
-      </Nav>
+      </Box>
    );
 };
 
