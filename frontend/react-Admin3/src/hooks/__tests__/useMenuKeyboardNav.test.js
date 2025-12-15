@@ -196,4 +196,29 @@ describe('useMenuKeyboardNav', () => {
 
     expect(result.current.focusedIndex).toBe(0);
   });
+
+  test('handles empty menu gracefully (itemCount = 0)', () => {
+    const { result } = renderHook(() =>
+      useMenuKeyboardNav(0, mockOnClose, mockOnSelect)
+    );
+
+    act(() => {
+      result.current.handleKeyDown({ key: 'ArrowDown', preventDefault: jest.fn() });
+    });
+
+    expect(result.current.focusedIndex).toBe(0);
+    expect(mockOnSelect).not.toHaveBeenCalled();
+  });
+
+  test('Escape still works on empty menu', () => {
+    const { result } = renderHook(() =>
+      useMenuKeyboardNav(0, mockOnClose, mockOnSelect)
+    );
+
+    act(() => {
+      result.current.handleKeyDown({ key: 'Escape', preventDefault: jest.fn() });
+    });
+
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+  });
 });
