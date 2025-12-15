@@ -1,10 +1,10 @@
 import React from "react";
-import { Nav, NavDropdown, Row, Col } from "react-bootstrap";
-import { Box, Button, Grid, MenuItem, MenuList, Menu } from '@mui/material';
+import { Box, Button, Grid, MenuItem, MenuList, Menu, Typography } from '@mui/material';
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { Typography, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import MegaMenuPopover from './MegaMenuPopover';
+
 const NavigationMenu = ({
    subjects,
    navbarProductGroups,
@@ -63,234 +63,245 @@ const NavigationMenu = ({
          >
             <Typography variant="navlink">Home</Typography>
          </Button>
-         <NavDropdown
-            title={
-               <Typography
-                  variant="navlink"
-                  color={theme.palette.offwhite["000"]}
-               >
-                  Subjects
-               </Typography>
-            }
-            menuVariant="light"
-            renderMenuOnMount={true}
-            align="start"
-            style={{ position: "relative" }}
-            className="mx-xl-2"
+
+         {/* Subjects Menu */}
+         <MegaMenuPopover
+            id="subjects"
+            label="Subjects"
+            onClose={onCollapseNavbar}
+            buttonProps={{
+               sx: { mx: { xl: 2 } }
+            }}
          >
-            <div className="dropdown-submenu">
-               <Row>
-                  <Col xl={3}>
-                     <div className="mb-2 text-primary heading">
-                        Core Principles
-                     </div>
+            <Grid container spacing={2}>
+               <Grid item xs={12} md={6} xl={3}>
+                  <Typography
+                     variant="subtitle2"
+                     color="primary"
+                     sx={{ mb: 1, fontWeight: 'bold' }}
+                     id="core-principles-heading"
+                  >
+                     Core Principles
+                  </Typography>
+                  <MenuList dense aria-labelledby="core-principles-heading">
                      {subjects &&
                         subjects
                            .filter((s) => /^(CB|CS|CM)/.test(s.code))
                            .map((subject) => (
-                              <NavDropdown.Item
+                              <MenuItem
                                  key={subject.id}
                                  onClick={() => {
                                     handleSubjectClick(subject.code);
                                     onCollapseNavbar && onCollapseNavbar();
                                  }}
                               >
-                                 <span>
-                                    {subject.code} - {subject.description}
-                                 </span>
-                              </NavDropdown.Item>
+                                 {subject.code} - {subject.description}
+                              </MenuItem>
                            ))}
-                  </Col>
-                  <Col xl={3}>
-                     <div className="fw-bolder mb-2 text-primary heading">
-                        Core Practices
-                     </div>
+                  </MenuList>
+               </Grid>
+               <Grid item xs={12} md={6} xl={3}>
+                  <Typography
+                     variant="subtitle2"
+                     color="primary"
+                     sx={{ mb: 1, fontWeight: 'bold' }}
+                     id="core-practices-heading"
+                  >
+                     Core Practices
+                  </Typography>
+                  <MenuList dense aria-labelledby="core-practices-heading">
                      {subjects &&
                         subjects
                            .filter((s) => /^CP[1-3]$/.test(s.code))
                            .map((subject) => (
-                              <NavDropdown.Item
+                              <MenuItem
                                  key={subject.id}
                                  onClick={() => {
                                     handleSubjectClick(subject.code);
                                     onCollapseNavbar && onCollapseNavbar();
                                  }}
                               >
-                                 <span>
-                                    {subject.code} - {subject.description}
-                                 </span>
-                              </NavDropdown.Item>
+                                 {subject.code} - {subject.description}
+                              </MenuItem>
                            ))}
-                  </Col>
-                  <Col xl={3}>
-                     <div className="fw-bolder mb-2 text-primary heading">
-                        Specialist Principles
-                     </div>
+                  </MenuList>
+               </Grid>
+               <Grid item xs={12} md={6} xl={3}>
+                  <Typography
+                     variant="subtitle2"
+                     color="primary"
+                     sx={{ mb: 1, fontWeight: 'bold' }}
+                     id="specialist-principles-heading"
+                  >
+                     Specialist Principles
+                  </Typography>
+                  <MenuList dense aria-labelledby="specialist-principles-heading">
                      {subjects &&
                         subjects
                            .filter((s) => /^SP/.test(s.code))
                            .map((subject) => (
-                              <NavDropdown.Item
+                              <MenuItem
                                  key={subject.id}
                                  onClick={() => {
                                     handleSubjectClick(subject.code);
                                     onCollapseNavbar && onCollapseNavbar();
                                  }}
                               >
-                                 <span>
-                                    {subject.code} - {subject.description}
-                                 </span>
-                              </NavDropdown.Item>
+                                 {subject.code} - {subject.description}
+                              </MenuItem>
                            ))}
-                  </Col>
-                  <Col xl={3}>
-                     <div className="fw-bolder mb-2 text-primary heading">
-                        Specialist Advanced
-                     </div>
+                  </MenuList>
+               </Grid>
+               <Grid item xs={12} md={6} xl={3}>
+                  <Typography
+                     variant="subtitle2"
+                     color="primary"
+                     sx={{ mb: 1, fontWeight: 'bold' }}
+                     id="specialist-advanced-heading"
+                  >
+                     Specialist Advanced
+                  </Typography>
+                  <MenuList dense aria-labelledby="specialist-advanced-heading">
                      {subjects &&
                         subjects
                            .filter((s) => /^SA/.test(s.code))
                            .map((subject) => (
-                              <NavDropdown.Item
+                              <MenuItem
                                  key={subject.id}
                                  onClick={() => {
                                     handleSubjectClick(subject.code);
                                     onCollapseNavbar && onCollapseNavbar();
                                  }}
                               >
-                                 <span>
-                                    {subject.code} - {subject.description}
-                                 </span>
-                              </NavDropdown.Item>
+                                 {subject.code} - {subject.description}
+                              </MenuItem>
                            ))}
-                  </Col>
-               </Row>
-            </div>
-         </NavDropdown>
-         <NavDropdown
-            title={
-               <Typography
-                  variant="navlink"
-                  color={theme.palette.offwhite["000"]}
-               >
-                  Products
-               </Typography>
-            }
-            menuVariant="light"
-            renderMenuOnMount={true}
-            align="start"
-            style={{ position: "relative" }}
-            className="mx-xl-2"
+                  </MenuList>
+               </Grid>
+            </Grid>
+         </MegaMenuPopover>
+
+         {/* Products Menu */}
+         <MegaMenuPopover
+            id="products"
+            label="Products"
+            onClose={onCollapseNavbar}
+            buttonProps={{
+               sx: { mx: { xl: 2 } }
+            }}
          >
-            <div className="dropdown-submenu">
-               <Row>
-                  <NavDropdown.Item
-                     to="/products"
+            <Grid container spacing={2}>
+               <Grid item xs={12}>
+                  <Button
+                     variant="outlined"
+                     color="primary"
                      onClick={() => {
                         handleProductClick();
                         onCollapseNavbar && onCollapseNavbar();
                      }}
-                     className="fw-normal mb-2 text-primary ms-1 border border-light w-auto fs-5"
+                     sx={{ mb: 2 }}
                   >
-                     <span className="title3">View All Products</span>
-                  </NavDropdown.Item>
-               </Row>
-               <Row>
-                  {loadingProductGroups ? (
-                     <Col>
-                        <div className="text-muted">Loading products...</div>
-                     </Col>
-                  ) : Array.isArray(navbarProductGroups) &&
-                    navbarProductGroups.length > 0 ? (
-                     navbarProductGroups.map((group) => {
-                        // Special handling for Tutorial group - split into two columns
-                        if (
-                           group.name === "Tutorial" &&
-                           group.products &&
-                           group.products.length > 0
-                        ) {
-                           const midPoint = Math.ceil(
-                              group.products.length / 2
-                           );
-                           const leftColumn = group.products.slice(0, midPoint);
-                           const rightColumn = group.products.slice(midPoint);
+                     View All Products
+                  </Button>
+               </Grid>
+               {loadingProductGroups ? (
+                  <Grid item xs={12}>
+                     <Typography color="text.secondary">Loading products...</Typography>
+                  </Grid>
+               ) : Array.isArray(navbarProductGroups) &&
+                 navbarProductGroups.length > 0 ? (
+                  navbarProductGroups.map((group) => {
+                     // Special handling for Tutorial group - split into two columns
+                     if (
+                        group.name === "Tutorial" &&
+                        group.products &&
+                        group.products.length > 0
+                     ) {
+                        const midPoint = Math.ceil(
+                           group.products.length / 2
+                        );
+                        const leftColumn = group.products.slice(0, midPoint);
+                        const rightColumn = group.products.slice(midPoint);
 
-                           return (
-                              <React.Fragment key={group.id || group.name}>
-                                 <Col lg={3}>
-                                    <Row>
-                                       <Col lg={6}>
-                                          <NavDropdown.Item
-                                             className="fw-bolder mb-2 text-primary"
-                                             style={{
-                                                cursor: "pointer",
-                                             }}
+                        return (
+                           <Grid item key={group.id || group.name} xs={12} lg={3}>
+                              <Grid container spacing={1}>
+                                 <Grid item xs={6}>
+                                    <Typography
+                                       variant="subtitle2"
+                                       color="primary"
+                                       sx={{ mb: 1, fontWeight: 'bold', cursor: 'pointer' }}
+                                       onClick={() => {
+                                          handleProductGroupClick(group.name);
+                                          onCollapseNavbar && onCollapseNavbar();
+                                       }}
+                                    >
+                                       {group.name}
+                                    </Typography>
+                                    <MenuList dense>
+                                       {leftColumn.map((product) => (
+                                          <MenuItem
+                                             key={product.id}
                                              onClick={() => {
-                                                handleProductGroupClick(
-                                                   group.name
+                                                handleSpecificProductClick(
+                                                   product.id
                                                 );
                                                 onCollapseNavbar &&
                                                    onCollapseNavbar();
                                              }}
                                           >
-                                             {group.name}
-                                          </NavDropdown.Item>
-                                          {leftColumn.map((product) => (
-                                             <NavDropdown.Item
-                                                key={product.id}
-                                                onClick={() => {
-                                                   handleSpecificProductClick(
-                                                      product.id
-                                                   );
-                                                   onCollapseNavbar &&
-                                                      onCollapseNavbar();
-                                                }}
-                                             >
-                                                {product.shortname}
-                                             </NavDropdown.Item>
-                                          ))}
-                                       </Col>
-                                       <Col lg={6}>
-                                          <div className="fw-bolder mb-2 text-primary w-50">
-                                             &nbsp;
-                                          </div>
-                                          {rightColumn.map((product) => (
-                                             <NavDropdown.Item
-                                                key={product.id}
-                                                onClick={() => {
-                                                   handleSpecificProductClick(
-                                                      product.id
-                                                   );
-                                                   onCollapseNavbar &&
-                                                      onCollapseNavbar();
-                                                }}
-                                             >
-                                                {product.shortname}
-                                             </NavDropdown.Item>
-                                          ))}
-                                       </Col>
-                                    </Row>
-                                 </Col>
-                              </React.Fragment>
-                           );
-                        }
+                                             {product.shortname}
+                                          </MenuItem>
+                                       ))}
+                                    </MenuList>
+                                 </Grid>
+                                 <Grid item xs={6}>
+                                    <Typography
+                                       variant="subtitle2"
+                                       sx={{ mb: 1, visibility: 'hidden' }}
+                                    >
+                                       &nbsp;
+                                    </Typography>
+                                    <MenuList dense>
+                                       {rightColumn.map((product) => (
+                                          <MenuItem
+                                             key={product.id}
+                                             onClick={() => {
+                                                handleSpecificProductClick(
+                                                   product.id
+                                                );
+                                                onCollapseNavbar &&
+                                                   onCollapseNavbar();
+                                             }}
+                                          >
+                                             {product.shortname}
+                                          </MenuItem>
+                                       ))}
+                                    </MenuList>
+                                 </Grid>
+                              </Grid>
+                           </Grid>
+                        );
+                     }
 
-                        // Regular single column display for other groups
-                        return (
-                           <Col key={group.id || group.name}>
-                              <NavDropdown.Item
-                                 className="fw-bolder mb-2 text-primary"
-                                 style={{ cursor: "pointer" }}
-                                 onClick={() => {
-                                    handleProductGroupClick(group.name);
-                                    onCollapseNavbar && onCollapseNavbar();
-                                 }}
-                              >
-                                 {group.name}
-                              </NavDropdown.Item>
-                              {group.products && group.products.length > 0 ? (
-                                 group.products.map((product) => (
-                                    <NavDropdown.Item
+                     // Regular single column display for other groups
+                     return (
+                        <Grid item key={group.id || group.name} xs={12} md={6} lg={3}>
+                           <Typography
+                              variant="subtitle2"
+                              color="primary"
+                              sx={{ mb: 1, fontWeight: 'bold', cursor: 'pointer' }}
+                              onClick={() => {
+                                 handleProductGroupClick(group.name);
+                                 onCollapseNavbar && onCollapseNavbar();
+                              }}
+                           >
+                              {group.name}
+                           </Typography>
+                           {group.products && group.products.length > 0 ? (
+                              <MenuList dense>
+                                 {group.products.map((product) => (
+                                    <MenuItem
                                        key={product.id}
                                        onClick={() => {
                                           handleSpecificProductClick(
@@ -301,76 +312,74 @@ const NavigationMenu = ({
                                        }}
                                     >
                                        {product.shortname}
-                                    </NavDropdown.Item>
-                                 ))
-                              ) : (
-                                 <div className="text-muted small">
-                                    No products available
-                                 </div>
-                              )}
-                           </Col>
-                        );
-                     })
-                  ) : (
-                     <Col>
-                        <div className="text-muted">No products available</div>
-                     </Col>
-                  )}
-               </Row>
-            </div>
-         </NavDropdown>
-         <NavDropdown
-            title={
-               <Typography
-                  variant="navlink"
-                  color={theme.palette.offwhite["000"]}
-               >
-                  Distance Learning
-               </Typography>
-            }
-            menuVariant="light"
-            renderMenuOnMount={true}
-            align="start"
-            style={{ position: "relative" }}
-            className="mx-xl-2"
+                                    </MenuItem>
+                                 ))}
+                              </MenuList>
+                           ) : (
+                              <Typography color="text.secondary" variant="body2">
+                                 No products available
+                              </Typography>
+                           )}
+                        </Grid>
+                     );
+                  })
+               ) : (
+                  <Grid item xs={12}>
+                     <Typography color="text.secondary">No products available</Typography>
+                  </Grid>
+               )}
+            </Grid>
+         </MegaMenuPopover>
+
+         {/* Distance Learning Menu */}
+         <MegaMenuPopover
+            id="distance-learning"
+            label="Distance Learning"
+            onClose={onCollapseNavbar}
+            buttonProps={{
+               sx: { mx: { xl: 2 } }
+            }}
          >
-            <div className="dropdown-submenu">
-               <Row>
-                  <NavDropdown.Item
+            <Grid container spacing={2}>
+               <Grid item xs={12}>
+                  <Button
+                     variant="outlined"
+                     color="primary"
+                     component={NavLink}
                      to="/products?distance_learning=true"
                      onClick={() => {
-                        // Navigation handled by NavLink 'to' prop
                         onCollapseNavbar && onCollapseNavbar();
                      }}
-                     className="fw-normal mb-2 text-primary ms-1 border border-light w-auto fs-5"
+                     sx={{ mb: 2 }}
                   >
                      View All Distance Learning
-                  </NavDropdown.Item>
-               </Row>
-               <Row>
-                  {loadingDistanceLearning ? (
-                     <Col>
-                        <div className="text-muted">
-                           Loading distance learning...
-                        </div>
-                     </Col>
-                  ) : Array.isArray(distanceLearningData) &&
-                    distanceLearningData.length > 0 ? (
-                     distanceLearningData.map((group) => (
-                        <Col key={group.id || group.name}>
-                           <NavDropdown.Item
-                              className="fw-bolder mb-2 text-primary"
-                              style={{ cursor: "pointer" }}
-                              onClick={() => {
-                                 handleProductGroupClick(group.name);
-                                 onCollapseNavbar && onCollapseNavbar();
-                              }}
-                           >
-                              {group.name}
-                           </NavDropdown.Item>
-                           {group.products && group.products.length > 0 ? (
-                              group.products.map((product) => (
-                                 <NavDropdown.Item
+                  </Button>
+               </Grid>
+               {loadingDistanceLearning ? (
+                  <Grid item xs={12}>
+                     <Typography color="text.secondary">
+                        Loading distance learning...
+                     </Typography>
+                  </Grid>
+               ) : Array.isArray(distanceLearningData) &&
+                 distanceLearningData.length > 0 ? (
+                  distanceLearningData.map((group) => (
+                     <Grid item key={group.id || group.name} xs={12} md={6} lg={3}>
+                        <Typography
+                           variant="subtitle2"
+                           color="primary"
+                           sx={{ mb: 1, fontWeight: 'bold', cursor: 'pointer' }}
+                           onClick={() => {
+                              handleProductGroupClick(group.name);
+                              onCollapseNavbar && onCollapseNavbar();
+                           }}
+                        >
+                           {group.name}
+                        </Typography>
+                        {group.products && group.products.length > 0 ? (
+                           <MenuList dense>
+                              {group.products.map((product) => (
+                                 <MenuItem
                                     key={product.id}
                                     onClick={() => {
                                        handleSpecificProductClick(product.id);
@@ -378,38 +387,44 @@ const NavigationMenu = ({
                                     }}
                                  >
                                     {product.shortname}
-                                 </NavDropdown.Item>
-                              ))
-                           ) : (
-                              <div className="text-muted small">
-                                 No products available
-                              </div>
-                           )}
-                        </Col>
-                     ))
-                  ) : (
-                     <Col>
-                        <div className="text-muted">
-                           No distance learning products available
-                        </div>
-                     </Col>
-                  )}
-                  <Col>
-                     <Nav.Link
-                        as={NavLink}
-                        to="/products?group=8"
-                        onClick={(e) => {
-                           handleMarkingVouchersClick(e);
-                           onCollapseNavbar && onCollapseNavbar();
-                        }}
-                        className="navbar-marking-vouchers mx-xl-2"
-                     >
-                        <span className="title3">Marking Vouchers</span>
-                     </Nav.Link>
-                  </Col>
-               </Row>
-            </div>
-         </NavDropdown>
+                                 </MenuItem>
+                              ))}
+                           </MenuList>
+                        ) : (
+                           <Typography color="text.secondary" variant="body2">
+                              No products available
+                           </Typography>
+                        )}
+                     </Grid>
+                  ))
+               ) : (
+                  <Grid item xs={12}>
+                     <Typography color="text.secondary">
+                        No distance learning products available
+                     </Typography>
+                  </Grid>
+               )}
+               <Grid item xs={12}>
+                  <Button
+                     component={NavLink}
+                     to="/products?group=8"
+                     onClick={(e) => {
+                        handleMarkingVouchersClick(e);
+                        onCollapseNavbar && onCollapseNavbar();
+                     }}
+                     className="navbar-marking-vouchers"
+                     sx={{
+                        textTransform: 'none',
+                        mx: { xl: 2 }
+                     }}
+                  >
+                     <Typography variant="body1">Marking Vouchers</Typography>
+                  </Button>
+               </Grid>
+            </Grid>
+         </MegaMenuPopover>
+
+         {/* Tutorials Menu */}
          <MegaMenuPopover
             id="tutorials"
             label="Tutorials"
@@ -528,6 +543,7 @@ const NavigationMenu = ({
             </Grid>
          </MegaMenuPopover>
 
+         {/* Conditional sections */}
          {isApprentice ? (
             <Button
                component={NavLink}
@@ -541,6 +557,7 @@ const NavigationMenu = ({
                <Typography variant="navlink">Apprenticeships</Typography>
             </Button>
          ) : null}
+
          {isStudyPlus ? (
             <Button
                component={NavLink}
@@ -554,6 +571,8 @@ const NavigationMenu = ({
                <Typography variant="navlink">Study Plus</Typography>
             </Button>
          ) : null}
+
+         {/* Admin Menu */}
          {isSuperuser ? (
             <>
                <Button
