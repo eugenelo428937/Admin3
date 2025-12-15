@@ -1,5 +1,22 @@
 // src/components/Navigation/__tests__/MainNavBar.test.js
 
+// Mock Chakra UI to prevent @ark-ui/react import errors
+jest.mock('@chakra-ui/react', () => {
+  const React = require('react');
+  return {
+    __esModule: true,
+    NumberInput: React.forwardRef(({ children, ...props }, ref) =>
+      React.createElement('div', { 'data-testid': 'number-input', ref, ...props }, children)
+    ),
+    HStack: React.forwardRef(({ children, ...props }, ref) =>
+      React.createElement('div', { 'data-testid': 'hstack', ref, ...props }, children)
+    ),
+    IconButton: React.forwardRef((props, ref) =>
+      React.createElement('button', { 'data-testid': 'chakra-icon-button', ref, ...props })
+    ),
+  };
+});
+
 // Mock services BEFORE any imports to prevent axios import errors
 jest.mock('../../../services/httpService', () => ({
   __esModule: true,
@@ -231,12 +248,21 @@ describe('MainNavBar Navigation Clicks (T066)', () => {
     });
 
     const menuToggle = screen.getByLabelText(/toggle navigation/i);
+
+    // Initially, aria-expanded should be false
+    expect(menuToggle).toHaveAttribute('aria-expanded', 'false');
+
+    // Click to toggle
     fireEvent.click(menuToggle);
 
-    // Navbar collapse should have show class after click
+    // After click, aria-expanded should be true
     await waitFor(() => {
-      const navbarCollapse = container.querySelector('.navbar-collapse.show');
-      expect(navbarCollapse).toBeInTheDocument();
+      expect(menuToggle).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    // Menu should have active class when expanded
+    await waitFor(() => {
+      expect(menuToggle).toHaveClass('active');
     });
   });
 });
@@ -247,7 +273,7 @@ describe('MainNavBar Keyboard Shortcuts', () => {
 
     // Wait for component to load
     await waitFor(() => {
-      expect(screen.getByLabelText(/search/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/search products/i)).toBeInTheDocument();
     });
 
     // Dispatch Ctrl+K keyboard event
@@ -264,7 +290,7 @@ describe('MainNavBar Keyboard Shortcuts', () => {
 
     // Wait for component to load
     await waitFor(() => {
-      expect(screen.getByLabelText(/search/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/search products/i)).toBeInTheDocument();
     });
 
     // Dispatch Cmd+K keyboard event (Mac)
