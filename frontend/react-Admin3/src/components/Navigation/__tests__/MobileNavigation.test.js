@@ -106,7 +106,11 @@ describe('MobileNavigation', () => {
 
     test('does not render when open is false', () => {
       renderNavigation({ open: false });
-      expect(screen.queryByText('Home')).not.toBeInTheDocument();
+      // MUI Drawer keeps content in DOM but hidden when closed
+      // Verify the drawer is not visible by checking aria-hidden
+      const drawer = document.querySelector('.MuiDrawer-root');
+      expect(drawer).toBeInTheDocument();
+      expect(drawer).toHaveAttribute('aria-hidden', 'true');
     });
 
     test('renders main menu items', () => {
@@ -328,11 +332,11 @@ describe('MobileNavigation', () => {
     test('closes navigation when backdrop clicked', () => {
       renderNavigation();
 
-      const backdrop = document.querySelector('.mobile-nav-backdrop');
-      if (backdrop) {
-        fireEvent.click(backdrop);
-        expect(mockOnClose).toHaveBeenCalled();
-      }
+      // MUI Drawer uses .MuiBackdrop-root for its backdrop
+      const backdrop = document.querySelector('.MuiBackdrop-root');
+      expect(backdrop).toBeInTheDocument();
+      fireEvent.click(backdrop);
+      expect(mockOnClose).toHaveBeenCalled();
     });
   });
 });
