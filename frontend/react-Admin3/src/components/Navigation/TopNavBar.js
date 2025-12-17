@@ -181,7 +181,7 @@ const TopNavBar = () => {
             </div>
 
             {/* Right Group - TopNavActions (Brochure and Search) */}
-            <div className="d-flex flex-row px-3 px-xl-5 px-lg-4 px-md-3 px-sm-2 px-xs-1">
+            <div className="d-flex flex-row">
                <TopNavActions onOpenSearch={handleOpenSearchModal} />
             </div>
          </Container>
