@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { AppBar, Toolbar, Container, IconButton, Box } from "@mui/material";
+import { AppBar, Toolbar, Container, IconButton, Box, useTheme } from "@mui/material";
 // import { useAuth } from "../../hooks/useAuth"; // Now used by child components
 import productService from "../../services/productService";
 import SearchModal from "./SearchModal";
@@ -27,7 +27,7 @@ const MainNavBar = () => {
    // Auth hook is no longer needed in MainNavBar - used by child components
    const navigate = useNavigate();
    const dispatch = useDispatch();
-
+   const theme = useTheme();
    // State for navbar expansion
    const [expanded, setExpanded] = useState(false);
 
@@ -182,15 +182,25 @@ const MainNavBar = () => {
             position="sticky"
             component="nav"
             aria-label="Main navigation"
-            elevation={0}
-            className="navbar navbar-expand-md navbar-main align-content-center justify-content-between p-left__md p-right__md pt-md-2 py-lg-1 px-xl-5 px-xl-3"
+            elevation={5}
+            sx={{
+               px : { 
+                  lg: theme.liftkit.spacing.xl2,
+                  xl: theme.liftkit.spacing.xl3
+               }
+            }}
+            className="navbar navbar-expand-md navbar-main align-content-center justify-content-between"
          >
             <Toolbar disableGutters sx={{ width: '100%' }}>
                <Container
-                  className="d-flex flex-row justify-content-between align-items-center"
+                  className=""
                   sx={{
+                     display:"flex",
+                     justifyContent: "",
+                     alignItemsCenter:"",
                      px: { xs: 0, lg: 1 },
                   }}
+                  maxWidth="xl"
                >
                   {/* Left Box - Cart/Login icons (mobile only, left-aligned) */}
                   <div className="d-flex justify-content-start align-items-center order-0 order-md-0 d-md-none">

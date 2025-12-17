@@ -150,6 +150,7 @@ const theme = createTheme({
          textTransform: "none",
          position: "static",
          top: "6.235em",
+         color: colorTheme.offwhite["001"],
          [baseTheme.breakpoints.down("lg")]: {
             fontSize: "calc(1em * var(--quarterstep)) !important",
             fontWeight: 400,
@@ -301,6 +302,13 @@ const theme = createTheme({
 
    // Optional: Customize components to better use Inter
    components: {
+      MuiAppBar:{
+         styleOverrides: {
+            root: {
+               backgroundColor: colorTheme.bpp.granite["080"],
+            }
+         }
+      },
       MuiAlert: {
          styleOverrides: {
             root: {
@@ -425,7 +433,7 @@ const theme = createTheme({
          styleOverrides: {
             root: {
                fontFamily: "'Inter', 'Poppins', sans-serif",
-               color: colorTheme.liftkit.light.onSurface,
+               //color: colorTheme.liftkit.light.onSurface,
             },
          },
       },

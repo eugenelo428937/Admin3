@@ -1,9 +1,17 @@
 import React from "react";
-import { Box, Button, Grid, MenuItem, MenuList, Menu, Typography } from '@mui/material';
+import {
+   Box,
+   Button,
+   Grid,
+   MenuItem,
+   MenuList,
+   Menu,
+   Typography,
+} from "@mui/material";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useTheme } from "@mui/material";
-import MegaMenuPopover from './MegaMenuPopover';
+import MegaMenuPopover from "./MegaMenuPopover";
 
 const NavigationMenu = ({
    subjects,
@@ -41,26 +49,14 @@ const NavigationMenu = ({
          component="nav"
          aria-label="Main navigation"
          sx={{
-            display: { xs: 'none', md: 'flex' },
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: { xs: 'flex-start', lg: 'space-evenly' },
+            display: { xs: "none", md: "flex" },
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: { xs: "flex-start", lg: "space-evenly" },
             px: { md: 2, lg: 2 },
          }}
       >
-         <Button
-            component={NavLink}
-            to="/home"
-            sx={{
-               color: theme.palette.offwhite?.['000'] || 'inherit',
-               textTransform: 'none',
-               mt: { xs: 0, lg: 1 },
-               px: { xs: 2, xl: 4 },
-               '&.active': {
-                  fontWeight: 'bold',
-               },
-            }}
-         >
+         <Button component={NavLink} to="/home">
             <Typography variant="navlink">Home</Typography>
          </Button>
 
@@ -70,15 +66,15 @@ const NavigationMenu = ({
             label="Subjects"
             onClose={onCollapseNavbar}
             buttonProps={{
-               sx: { mx: { xl: 2 } }
-            }}
+               sx: { mx: { xl: 2 } },
+            }}            
          >
             <Grid container spacing={2}>
                <Grid item xs={12} md={6} xl={3}>
                   <Typography
                      variant="subtitle2"
                      color="primary"
-                     sx={{ mb: 1, fontWeight: 'bold' }}
+                     sx={{ mb: 1, fontWeight: "bold" }}
                      id="core-principles-heading"
                   >
                      Core Principles
@@ -104,7 +100,7 @@ const NavigationMenu = ({
                   <Typography
                      variant="subtitle2"
                      color="primary"
-                     sx={{ mb: 1, fontWeight: 'bold' }}
+                     sx={{ mb: 1, fontWeight: "bold" }}
                      id="core-practices-heading"
                   >
                      Core Practices
@@ -130,12 +126,15 @@ const NavigationMenu = ({
                   <Typography
                      variant="subtitle2"
                      color="primary"
-                     sx={{ mb: 1, fontWeight: 'bold' }}
+                     sx={{ mb: 1, fontWeight: "bold" }}
                      id="specialist-principles-heading"
                   >
                      Specialist Principles
                   </Typography>
-                  <MenuList dense aria-labelledby="specialist-principles-heading">
+                  <MenuList
+                     dense
+                     aria-labelledby="specialist-principles-heading"
+                  >
                      {subjects &&
                         subjects
                            .filter((s) => /^SP/.test(s.code))
@@ -156,7 +155,7 @@ const NavigationMenu = ({
                   <Typography
                      variant="subtitle2"
                      color="primary"
-                     sx={{ mb: 1, fontWeight: 'bold' }}
+                     sx={{ mb: 1, fontWeight: "bold" }}
                      id="specialist-advanced-heading"
                   >
                      Specialist Advanced
@@ -187,7 +186,7 @@ const NavigationMenu = ({
             label="Products"
             onClose={onCollapseNavbar}
             buttonProps={{
-               sx: { mx: { xl: 2 } }
+               sx: { mx: { xl: 2 } },
             }}
          >
             <Grid container spacing={2}>
@@ -206,7 +205,9 @@ const NavigationMenu = ({
                </Grid>
                {loadingProductGroups ? (
                   <Grid item xs={12}>
-                     <Typography color="text.secondary">Loading products...</Typography>
+                     <Typography color="text.secondary">
+                        Loading products...
+                     </Typography>
                   </Grid>
                ) : Array.isArray(navbarProductGroups) &&
                  navbarProductGroups.length > 0 ? (
@@ -217,23 +218,31 @@ const NavigationMenu = ({
                         group.products &&
                         group.products.length > 0
                      ) {
-                        const midPoint = Math.ceil(
-                           group.products.length / 2
-                        );
+                        const midPoint = Math.ceil(group.products.length / 2);
                         const leftColumn = group.products.slice(0, midPoint);
                         const rightColumn = group.products.slice(midPoint);
 
                         return (
-                           <Grid item key={group.id || group.name} xs={12} lg={3}>
+                           <Grid
+                              item
+                              key={group.id || group.name}
+                              xs={12}
+                              lg={3}
+                           >
                               <Grid container spacing={1}>
                                  <Grid item xs={6}>
                                     <Typography
                                        variant="subtitle2"
                                        color="primary"
-                                       sx={{ mb: 1, fontWeight: 'bold', cursor: 'pointer' }}
+                                       sx={{
+                                          mb: 1,
+                                          fontWeight: "bold",
+                                          cursor: "pointer",
+                                       }}
                                        onClick={() => {
                                           handleProductGroupClick(group.name);
-                                          onCollapseNavbar && onCollapseNavbar();
+                                          onCollapseNavbar &&
+                                             onCollapseNavbar();
                                        }}
                                     >
                                        {group.name}
@@ -258,7 +267,7 @@ const NavigationMenu = ({
                                  <Grid item xs={6}>
                                     <Typography
                                        variant="subtitle2"
-                                       sx={{ mb: 1, visibility: 'hidden' }}
+                                       sx={{ mb: 1, visibility: "hidden" }}
                                     >
                                        &nbsp;
                                     </Typography>
@@ -286,11 +295,21 @@ const NavigationMenu = ({
 
                      // Regular single column display for other groups
                      return (
-                        <Grid item key={group.id || group.name} xs={12} md={6} lg={3}>
+                        <Grid
+                           item
+                           key={group.id || group.name}
+                           xs={12}
+                           md={6}
+                           lg={3}
+                        >
                            <Typography
                               variant="subtitle2"
                               color="primary"
-                              sx={{ mb: 1, fontWeight: 'bold', cursor: 'pointer' }}
+                              sx={{
+                                 mb: 1,
+                                 fontWeight: "bold",
+                                 cursor: "pointer",
+                              }}
                               onClick={() => {
                                  handleProductGroupClick(group.name);
                                  onCollapseNavbar && onCollapseNavbar();
@@ -316,7 +335,10 @@ const NavigationMenu = ({
                                  ))}
                               </MenuList>
                            ) : (
-                              <Typography color="text.secondary" variant="body2">
+                              <Typography
+                                 color="text.secondary"
+                                 variant="body2"
+                              >
                                  No products available
                               </Typography>
                            )}
@@ -325,7 +347,9 @@ const NavigationMenu = ({
                   })
                ) : (
                   <Grid item xs={12}>
-                     <Typography color="text.secondary">No products available</Typography>
+                     <Typography color="text.secondary">
+                        No products available
+                     </Typography>
                   </Grid>
                )}
             </Grid>
@@ -337,7 +361,7 @@ const NavigationMenu = ({
             label="Distance Learning"
             onClose={onCollapseNavbar}
             buttonProps={{
-               sx: { mx: { xl: 2 } }
+               sx: { mx: { xl: 2 } },
             }}
          >
             <Grid container spacing={2}>
@@ -364,11 +388,17 @@ const NavigationMenu = ({
                ) : Array.isArray(distanceLearningData) &&
                  distanceLearningData.length > 0 ? (
                   distanceLearningData.map((group) => (
-                     <Grid item key={group.id || group.name} xs={12} md={6} lg={3}>
+                     <Grid
+                        item
+                        key={group.id || group.name}
+                        xs={12}
+                        md={6}
+                        lg={3}
+                     >
                         <Typography
                            variant="subtitle2"
                            color="primary"
-                           sx={{ mb: 1, fontWeight: 'bold', cursor: 'pointer' }}
+                           sx={{ mb: 1, fontWeight: "bold", cursor: "pointer" }}
                            onClick={() => {
                               handleProductGroupClick(group.name);
                               onCollapseNavbar && onCollapseNavbar();
@@ -414,8 +444,8 @@ const NavigationMenu = ({
                      }}
                      className="navbar-marking-vouchers"
                      sx={{
-                        textTransform: 'none',
-                        mx: { xl: 2 }
+                        textTransform: "none",
+                        mx: { xl: 2 },
                      }}
                   >
                      <Typography variant="body1">Marking Vouchers</Typography>
@@ -445,11 +475,13 @@ const NavigationMenu = ({
                      View All Tutorials
                   </Button>
                </Grid>
-               
+
                {/* Tutorial content */}
                {loadingTutorial ? (
                   <Grid item xs={12}>
-                     <Typography color="text.secondary">Loading tutorials...</Typography>
+                     <Typography color="text.secondary">
+                        Loading tutorials...
+                     </Typography>
                   </Grid>
                ) : tutorialData ? (
                   <>
@@ -458,28 +490,38 @@ const NavigationMenu = ({
                         <Typography
                            variant="subtitle2"
                            color="primary"
-                           sx={{ mb: 1, fontWeight: 'bold' }}
+                           sx={{ mb: 1, fontWeight: "bold" }}
                            id="tutorial-location-heading"
                         >
                            Location
                         </Typography>
                         <Grid container>
                            <Grid item xs={6}>
-                              <MenuList dense aria-labelledby="tutorial-location-heading">
+                              <MenuList
+                                 dense
+                                 aria-labelledby="tutorial-location-heading"
+                              >
                                  {tutorialData.Location?.left?.length > 0 ? (
-                                    tutorialData.Location.left.map((product) => (
-                                       <MenuItem
-                                          key={product.id}
-                                          onClick={() => {
-                                             handleSpecificProductClick(product.id);
-                                             onCollapseNavbar?.();
-                                          }}
-                                       >
-                                          {product.shortname}
-                                       </MenuItem>
-                                    ))
+                                    tutorialData.Location.left.map(
+                                       (product) => (
+                                          <MenuItem
+                                             key={product.id}
+                                             onClick={() => {
+                                                handleSpecificProductClick(
+                                                   product.id
+                                                );
+                                                onCollapseNavbar?.();
+                                             }}
+                                          >
+                                             {product.shortname}
+                                          </MenuItem>
+                                       )
+                                    )
                                  ) : (
-                                    <Typography color="text.secondary" variant="body2">
+                                    <Typography
+                                       color="text.secondary"
+                                       variant="body2"
+                                    >
                                        No locations
                                     </Typography>
                                  )}
@@ -488,39 +530,48 @@ const NavigationMenu = ({
                            <Grid item xs={6}>
                               <MenuList dense>
                                  {tutorialData.Location?.right?.length > 0 &&
-                                    tutorialData.Location.right.map((product) => (
-                                       <MenuItem
-                                          key={product.id}
-                                          onClick={() => {
-                                             handleSpecificProductClick(product.id);
-                                             onCollapseNavbar?.();
-                                          }}
-                                       >
-                                          {product.shortname}
-                                       </MenuItem>
-                                    ))}
+                                    tutorialData.Location.right.map(
+                                       (product) => (
+                                          <MenuItem
+                                             key={product.id}
+                                             onClick={() => {
+                                                handleSpecificProductClick(
+                                                   product.id
+                                                );
+                                                onCollapseNavbar?.();
+                                             }}
+                                          >
+                                             {product.shortname}
+                                          </MenuItem>
+                                       )
+                                    )}
                               </MenuList>
                            </Grid>
                         </Grid>
                      </Grid>
-                     
+
                      {/* Format Column */}
                      <Grid item xs={12} sm={6}>
                         <Typography
                            variant="subtitle2"
                            color="primary"
-                           sx={{ mb: 1, fontWeight: 'bold' }}
+                           sx={{ mb: 1, fontWeight: "bold" }}
                            id="tutorial-format-heading"
                         >
                            Format
                         </Typography>
-                        <MenuList dense aria-labelledby="tutorial-format-heading">
+                        <MenuList
+                           dense
+                           aria-labelledby="tutorial-format-heading"
+                        >
                            {tutorialData.Format?.length > 0 ? (
                               tutorialData.Format.map((format) => (
                                  <MenuItem
                                     key={format.filter_type}
                                     onClick={() => {
-                                       handleProductGroupClick(format.group_name);
+                                       handleProductGroupClick(
+                                          format.group_name
+                                       );
                                        onCollapseNavbar?.();
                                     }}
                                  >
@@ -528,7 +579,10 @@ const NavigationMenu = ({
                                  </MenuItem>
                               ))
                            ) : (
-                              <Typography color="text.secondary" variant="body2">
+                              <Typography
+                                 color="text.secondary"
+                                 variant="body2"
+                              >
                                  No formats available
                               </Typography>
                            )}
@@ -537,7 +591,9 @@ const NavigationMenu = ({
                   </>
                ) : (
                   <Grid item xs={12}>
-                     <Typography color="text.secondary">No tutorial data available</Typography>
+                     <Typography color="text.secondary">
+                        No tutorial data available
+                     </Typography>
                   </Grid>
                )}
             </Grid>
@@ -549,8 +605,8 @@ const NavigationMenu = ({
                component={NavLink}
                to="/apprenticeships"
                sx={{
-                  color: theme.palette.offwhite?.['000'] || 'inherit',
-                  textTransform: 'none',
+                  color: theme.palette.offwhite?.["000"] || "inherit",
+                  textTransform: "none",
                   mx: { xl: 2 },
                }}
             >
@@ -563,8 +619,8 @@ const NavigationMenu = ({
                component={NavLink}
                to="/study-plus"
                sx={{
-                  color: theme.palette.offwhite?.['000'] || 'inherit',
-                  textTransform: 'none',
+                  color: theme.palette.offwhite?.["000"] || "inherit",
+                  textTransform: "none",
                   mx: { xl: 2 },
                }}
             >
@@ -577,13 +633,13 @@ const NavigationMenu = ({
             <>
                <Button
                   id="admin-menu-button"
-                  aria-controls={adminMenuOpen ? 'admin-menu' : undefined}
+                  aria-controls={adminMenuOpen ? "admin-menu" : undefined}
                   aria-haspopup="true"
-                  aria-expanded={adminMenuOpen ? 'true' : undefined}
+                  aria-expanded={adminMenuOpen ? "true" : undefined}
                   onClick={handleAdminClick}
                   sx={{
-                     color: theme.palette.offwhite?.['000'] || 'inherit',
-                     textTransform: 'none',
+                     color: theme.palette.offwhite?.["000"] || "inherit",
+                     textTransform: "none",
                      mx: { xl: 2 },
                   }}
                >
@@ -595,7 +651,7 @@ const NavigationMenu = ({
                   open={adminMenuOpen}
                   onClose={handleAdminClose}
                   MenuListProps={{
-                     'aria-labelledby': 'admin-menu-button',
+                     "aria-labelledby": "admin-menu-button",
                   }}
                >
                   <MenuItem
