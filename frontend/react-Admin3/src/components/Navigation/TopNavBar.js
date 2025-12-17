@@ -2,16 +2,13 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import {
-   Home as HomeIcon,
-   HelpOutline as HelpIcon,
-} from "@mui/icons-material";
+import { Home as HomeIcon, HelpOutline as HelpIcon } from "@mui/icons-material";
 import { useCart } from "../../contexts/CartContext";
 import AuthModal from "./AuthModal";
 import CartPanel from "../Ordering/CartPanel";
 import TopNavActions from "./TopNavActions";
 import SearchModal from "./SearchModal";
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box, Container, Typography, useTheme } from "@mui/material";
 
 const TopNavBar = () => {
    // State for authentication status
@@ -96,9 +93,14 @@ const TopNavBar = () => {
 
    return (
       <>
-         <Box
+         <Container
+            maxWidth="xl"
             className="d-flex flex-row navbar-top justify-content-between align-content-end"
             sx={{
+               px: {
+                  lg: theme.liftkit.spacing.xl2,
+                  xl: theme.liftkit.spacing.xl3,
+               },
                py: {
                   xs: theme.liftkit.spacing.xs3,
                   lg: theme.liftkit.spacing.xs3,
@@ -106,9 +108,9 @@ const TopNavBar = () => {
             }}
          >
             {/* Left Group - ActEd Home and Help */}
-            <div className="d-flex flex-row flex-wrap px-3 px-xl-5 px-lg-4 px-md-3 px-sm-2 px-xs-1">
+            <div className="d-flex flex-row flex-wrap">
                <Box
-                  className="d-flex flex-row align-content-center flex-wrap"
+                  className="d-flex flex-row align-items-center flex-wrap"
                   sx={{
                      minWidth: {
                         xs: theme.liftkit.spacing.xl,
@@ -117,12 +119,21 @@ const TopNavBar = () => {
                   }}
                >
                   <Link to="/Home">
-                     <Box className="p-0 mx-0 mx-xl-1 flex-wrap align-items-center d-flex flex-row">
-                        <HomeIcon className="bi d-flex flex-row align-items-center" />
-                        <span className="d-none d-md-block mx-0 mx-xl-1 body">
+                     <Box
+                        className="flex-wrap align-items-center d-flex flex-row"
+                        sx={{
+                           mr: theme.liftkit.spacing.md,
+                        }}
+                     >
+                        <HomeIcon
+                           className="d-flex flex-row align-items-center"
+                           color={theme.palette.offwhite["001"]}
+                           fontSize={theme.typography.h5.fontSize}
+                        />
+                        <span className="d-none d-md-block body">
                            <Typography
                               varitant="topnavlink"
-                              color={theme.palette.offwhite["000"]}
+                              color={theme.palette.offwhite["001"]}
                               sx={{
                                  display: { xs: "none", lg: "flex" },
                               }}
@@ -144,7 +155,7 @@ const TopNavBar = () => {
                >
                   <Link to="/styleguide">
                      <Box
-                        className="p-0 mx-0 mx-xl-1 flex-wrap align-items-center d-flex flex-row"
+                        className="flex-wrap align-items-center d-flex flex-row"
                         sx={{
                            minWidth: {
                               xs: theme.liftkit.spacing.xl,
@@ -153,7 +164,7 @@ const TopNavBar = () => {
                         }}
                      >
                         <HelpIcon className="bi d-flex flex-row align-items-center"></HelpIcon>
-                        <span className="d-none d-md-block mx-0 mx-xl-1 body">
+                        <span className="d-none d-md-block body">
                            <Typography
                               varitant="topnavlink"
                               color={theme.palette.offwhite["000"]}
@@ -173,7 +184,7 @@ const TopNavBar = () => {
             <div className="d-flex flex-row px-3 px-xl-5 px-lg-4 px-md-3 px-sm-2 px-xs-1">
                <TopNavActions onOpenSearch={handleOpenSearchModal} />
             </div>
-         </Box>
+         </Container>
 
          {/* Search Modal */}
          <SearchModal open={showSearchModal} onClose={handleCloseSearchModal} />
