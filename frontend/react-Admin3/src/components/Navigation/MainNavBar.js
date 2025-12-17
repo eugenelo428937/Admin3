@@ -185,6 +185,7 @@ const MainNavBar = () => {
             elevation={5}
             sx={{
                px : { 
+                  md: theme.liftkit.spacing.xl,
                   lg: theme.liftkit.spacing.xl2,
                   xl: theme.liftkit.spacing.xl3
                }
