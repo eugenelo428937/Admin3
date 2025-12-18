@@ -2,10 +2,6 @@
 // All typography variants extracted from theme.js
 
 import liftKitTheme from '../liftKitTheme';
-import typographyTheme from '../typographyTheme';
-
-// Re-export typographyTheme for backward compatibility
-export { typographyTheme };
 
 /**
  * Typography configuration for MUI theme.

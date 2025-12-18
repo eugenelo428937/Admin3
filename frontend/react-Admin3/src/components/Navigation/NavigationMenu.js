@@ -49,7 +49,7 @@ const NavigationMenu = ({
          component="nav"
          aria-label="Main navigation"
          sx={{
-            display: { xs: "none", sm: "flex" },
+            display: { xs: "none", md: "flex" },
             flexWrap: "wrap",
             alignItems: "center",
             justifyContent: { xs: "flex-start", lg: "space-evenly" },
