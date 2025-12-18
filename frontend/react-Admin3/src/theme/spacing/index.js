@@ -1,5 +1,14 @@
-// Spacing Module - Re-exports from liftKitTheme for now
-import liftKitTheme from '../liftKitTheme';
+// Spacing Module
+// Exports liftkit spacing system and semantic spacing tokens
 
-export default liftKitTheme;
+import liftKitTheme from '../liftKitTheme';
+import semanticSpacing from './semantic';
+
+// Re-export liftkit theme
 export { liftKitTheme };
+
+// Export semantic spacing
+export { semanticSpacing };
+
+// Default export for backward compatibility
+export default liftKitTheme;
