@@ -8,6 +8,7 @@ import liftKitTheme from '../liftKitTheme';
  * Includes standard MUI variants and custom variants (BPP, Acted, navlink, etc.)
  */
 export const typographyConfig = {
+  fontFamily: "'Inter', 'Poppins', sans-serif",
   BPP: {
     fontFamily: "'Inter', sans-serif",
     fontWeight: 600,
