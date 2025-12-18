@@ -1,17 +1,28 @@
 // Card Components Module
 // Aggregates all card variant styles and exports MuiCard overrides
 
-import colorTheme from '../../colorTheme';
-import baseProductCardStyles from './baseProductCard';
-import tutorialCardStyles from './tutorialCard';
-import materialCardStyles from './materialCard';
-import bundleCardStyles from './bundleCard';
-import onlineClassroomCardStyles from './onlineClassroomCard';
-import markingCardStyles from './markingCard';
-import markingVoucherCardStyles from './markingVoucherCard';
+import baseProductCard from './baseProductCard';
+import tutorialCard from './tutorialCard';
+import materialCard from './materialCard';
+import bundleCard from './bundleCard';
+import onlineClassroomCard from './onlineClassroomCard';
+import markingCard from './markingCard';
+import markingVoucherCard from './markingVoucherCard';
+
+// Export individual card styles for direct use if needed
+export {
+  baseProductCard,
+  tutorialCard,
+  materialCard,
+  bundleCard,
+  onlineClassroomCard,
+  markingCard,
+  markingVoucherCard
+};
 
 /**
- * MuiCard component overrides with all product card variants.
+ * Combined card overrides object for Material-UI theme.
+ * Aggregates all card variant styles into a single export.
  *
  * Usage in components:
  *   <Card variant="product" producttype="tutorial">
@@ -22,61 +33,13 @@ import markingVoucherCardStyles from './markingVoucherCard';
  *   <Card variant="product" producttype="marking-voucher">
  */
 export const cardOverrides = {
-  MuiCard: {
-    styleOverrides: {
-      root: {
-        backgroundColor: "var(--md-sys-color-surface-container-lowest_lkv)",
-      },
-    },
-    variants: [
-      // Base product card variant
-      {
-        props: { variant: "product" },
-        style: baseProductCardStyles,
-      },
-      // Tutorial Product Card Variant
-      {
-        props: { variant: "product", producttype: "tutorial" },
-        style: tutorialCardStyles,
-      },
-      // Material Product Card Variant
-      {
-        props: { variant: "product", producttype: "material" },
-        style: materialCardStyles,
-      },
-      // Bundle Product Card Variant
-      {
-        props: { variant: "product", producttype: "bundle" },
-        style: bundleCardStyles,
-      },
-      // Online Classroom Product Card Variant
-      {
-        props: { variant: "product", producttype: "online-classroom" },
-        style: onlineClassroomCardStyles,
-      },
-      // Marking Product Card Variant
-      {
-        props: { variant: "product", producttype: "marking" },
-        style: markingCardStyles,
-      },
-      // Marking Voucher Product Card Variant
-      {
-        props: { variant: "product", producttype: "marking-voucher" },
-        style: markingVoucherCardStyles,
-      },
-    ],
-  },
-};
-
-// Export individual card styles for direct use if needed
-export {
-  baseProductCardStyles,
-  tutorialCardStyles,
-  materialCardStyles,
-  bundleCardStyles,
-  onlineClassroomCardStyles,
-  markingCardStyles,
-  markingVoucherCardStyles,
+  baseProductCard,
+  tutorialCard,
+  materialCard,
+  bundleCard,
+  onlineClassroomCard,
+  markingCard,
+  markingVoucherCard
 };
 
 export default cardOverrides;
