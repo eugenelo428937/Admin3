@@ -184,7 +184,8 @@ const MainNavBar = () => {
             aria-label="Main navigation"
             elevation={5}
             sx={{
-               px : { 
+               px : {
+                  xs: theme.liftkit.spacing.lg, 
                   md: theme.liftkit.spacing.xl,
                   lg: theme.liftkit.spacing.xl2,
                   xl: theme.liftkit.spacing.xl3
@@ -197,9 +198,9 @@ const MainNavBar = () => {
                   className=""
                   sx={{
                      display:"flex",
-                     justifyContent: "",
+                     justifyContent: "space-evenly",
                      alignItemsCenter:"",
-                     px: { xs: 0, lg: 1 },
+                     px: { xs: 1,sm:2, lg: 1 },
                   }}
                   maxWidth="xl"
                >
@@ -221,7 +222,7 @@ const MainNavBar = () => {
                   {/* Center Section - Navigation Menu (Desktop) */}
                   <Box
                      id="navbar-menu"
-                     className="px-md-1 px-0 m-auto justify-content-lg-center justify-content-md-start order-4 order-md-2"
+                     className="justify-content-lg-center justify-content-md-start order-4 order-md-2"
                      sx={{
                         display: { xs: expanded ? 'flex' : 'none', md: 'flex' },
                         flexDirection: { xs: 'column', md: 'row' },
@@ -248,7 +249,7 @@ const MainNavBar = () => {
                      </Box>
 
                      {/* Mobile Navigation - Visible only on mobile */}
-                     <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                     <Box sx={{ display: { xs: 'block', lg: 'none' } }}>
                         <MobileNavigation
                            open={expanded}
                            onClose={() => setExpanded(false)}
