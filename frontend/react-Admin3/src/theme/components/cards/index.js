@@ -9,7 +9,7 @@ import onlineClassroomCard from './onlineClassroomCard';
 import markingCard from './markingCard';
 import markingVoucherCard from './markingVoucherCard';
 
-// Export individual card styles for direct use if needed
+// Re-export individual card styles for selective use
 export {
   baseProductCard,
   tutorialCard,
@@ -21,8 +21,8 @@ export {
 };
 
 /**
- * Combined card overrides object for Material-UI theme.
- * Aggregates all card variant styles into a single export.
+ * MUI component override structure for createTheme.
+ * Aggregates all card variant styles into proper MuiCard override format.
  *
  * Usage in components:
  *   <Card variant="product" producttype="tutorial">
@@ -33,13 +33,43 @@ export {
  *   <Card variant="product" producttype="marking-voucher">
  */
 export const cardOverrides = {
-  baseProductCard,
-  tutorialCard,
-  materialCard,
-  bundleCard,
-  onlineClassroomCard,
-  markingCard,
-  markingVoucherCard
+  MuiCard: {
+    styleOverrides: {
+      root: {
+        backgroundColor: "var(--md-sys-color-surface-container-lowest_lkv)",
+      },
+    },
+    variants: [
+      {
+        props: { variant: "product" },
+        style: baseProductCard,
+      },
+      {
+        props: { variant: "product", producttype: "tutorial" },
+        style: tutorialCard,
+      },
+      {
+        props: { variant: "product", producttype: "material" },
+        style: materialCard,
+      },
+      {
+        props: { variant: "product", producttype: "bundle" },
+        style: bundleCard,
+      },
+      {
+        props: { variant: "product", producttype: "online-classroom" },
+        style: onlineClassroomCard,
+      },
+      {
+        props: { variant: "product", producttype: "marking" },
+        style: markingCard,
+      },
+      {
+        props: { variant: "product", producttype: "marking-voucher" },
+        style: markingVoucherCard,
+      },
+    ],
+  },
 };
 
 export default cardOverrides;
