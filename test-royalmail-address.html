@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Mail AddressNow Test</title>
+
+    <!-- Royal Mail AddressNow Integration -->
+    <link rel="stylesheet" type="text/css"
+        href="http://api.addressnow.co.uk/css/addressnow-2.30.min.css?key=dn78-kg92-xn56-ga74" />
+    <script type="text/javascript"
+        src="http://api.addressnow.co.uk/js/addressnow-2.30.min.js?key=dn78-kg92-xn56-ga74"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+        }
+        h1 {
+            color: #333;
+        }
+        .instructions {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Royal Mail AddressNow Test</h1>
+
+    <div class="instructions">
+        <strong>Instructions:</strong> Start typing a UK postcode or address in the search field below.
+        The AddressNow widget should show autocomplete suggestions.
+    </div>
+
+    <form id="address-form">
+        <div class="form-group">
+            <label for="address-search">Address Search</label>
+            <input type="text" id="address-search" name="address-search"
+                   placeholder="Start typing a postcode or address..."
+                   autocomplete="off" />
+        </div>
+
+        <hr style="margin: 30px 0;" />
+
+        <h3>Address Fields (auto-populated)</h3>
+
+        <div class="form-group">
+            <label for="address-line1">Address Line 1</label>
+            <input type="text" id="address-line1" name="address-line1" />
+        </div>
+
+        <div class="form-group">
+            <label for="address-line2">Address Line 2</label>
+            <input type="text" id="address-line2" name="address-line2" />
+        </div>
+
+        <div class="form-group">
+            <label for="city">City/Town</label>
+            <input type="text" id="city" name="city" />
+        </div>
+
+        <div class="form-group">
+            <label for="county">County</label>
+            <input type="text" id="county" name="county" />
+        </div>
+
+        <div class="form-group">
+            <label for="postcode">Postcode</label>
+            <input type="text" id="postcode" name="postcode" />
+        </div>
+
+        <div class="form-group">
+            <label for="country">Country</label>
+            <input type="text" id="country" name="country" value="United Kingdom" />
+        </div>
+    </form>
+
+    <script>
+        // Initialize AddressNow when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if AddressNow loaded
+            if (typeof AddressNow !== 'undefined') {
+                console.log('AddressNow loaded successfully!');
+
+                // Configure AddressNow to listen on the search field
+                // and populate the address fields
+                var fields = [
+                    { element: "address-search", field: "" },
+                    { element: "address-line1", field: "{Line1}" },
+                    { element: "address-line2", field: "{Line2}" },
+                    { element: "city", field: "{City}" },
+                    { element: "county", field: "{Province}" },
+                    { element: "postcode", field: "{PostalCode}" },
+                    { element: "country", field: "{CountryName}" }
+                ];
+
+                var options = {
+                    key: "dn78-kg92-xn56-ga74",
+                    search: { countries: "GBR" },
+                    bar: { visible: false }
+                };
+
+                var control = new AddressNow.Listen(fields, options);
+                console.log('AddressNow control initialized');
+            } else {
+                console.error('AddressNow failed to load - check your API key');
+                alert('AddressNow failed to load. Check browser console for errors.');
+            }
+        });
+    </script>
+</body>
+</html>
