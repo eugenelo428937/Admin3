@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Popover, Box, Typography, useTheme } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -6,30 +6,51 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 /**
  * Reusable mega-menu popover component with full accessibility support.
  * Handles open/close state, ARIA attributes, and keyboard navigation.
+ * Positions the popover below the entire navigation bar.
  */
 const MegaMenuPopover = ({
   id,
   label,
   children,
-  width = 800,
+  width = 1280,
   onOpen,
   onClose,
   buttonProps = {},
   popoverProps = {},
+  navbarSelector = '.navbar-main',
 }) => {
   const [anchorEl, setAnchorEl] = useState(null);
+  const [anchorPosition, setAnchorPosition] = useState(null);
   const buttonRef = useRef(null);
   const theme = useTheme();
   const open = Boolean(anchorEl);
   const popoverId = `${id}-popover`;
 
+  const calculatePosition = useCallback(() => {
+    const navbar = document.querySelector(navbarSelector);
+    if (navbar) {
+      const navbarRect = navbar.getBoundingClientRect();
+      // Position below the navbar, full width from left edge
+      return {
+        top: navbarRect.bottom,
+        left: 0,
+      };
+    }
+    return null;
+  }, [navbarSelector]);
+
   const handleOpen = (event) => {
     setAnchorEl(event.currentTarget);
+    const position = calculatePosition();
+    if (position) {
+      setAnchorPosition(position);
+    }
     onOpen?.();
   };
 
   const handleClose = () => {
     setAnchorEl(null);
+    setAnchorPosition(null);
     onClose?.();
     // Return focus to button when closing
     setTimeout(() => buttonRef.current?.focus(), 0);
@@ -49,9 +70,9 @@ const MegaMenuPopover = ({
           color: theme.palette.offwhite?.['000']
         }}/>}
         sx={{
-          color: theme.palette.offwhite?.['000'] || 'inherit',
+          color: theme.palette.offwhite?.['000'] || 'inherit',         
           textTransform: 'none',
-          ...buttonProps.sx,          
+          ...buttonProps.sx,
         }}
         {...buttonProps}
       >
@@ -62,7 +83,9 @@ const MegaMenuPopover = ({
       <Popover
         id={popoverId}
         open={open}
-        anchorEl={anchorEl}
+        anchorEl={anchorPosition ? undefined : anchorEl}
+        anchorReference={anchorPosition ? 'anchorPosition' : 'anchorEl'}
+        anchorPosition={anchorPosition}
         onClose={handleClose}
         anchorOrigin={{
           vertical: 'bottom',
@@ -74,17 +97,28 @@ const MegaMenuPopover = ({
         }}
         disableRestoreFocus={false}
         keepMounted
+        marginThreshold={0}
         slotProps={{
           paper: {
             sx: {
-              maxWidth: width,
-              mt: 1,
+              width: '100vw',
+              maxWidth: '100vw',
+              left: '0 !important',
+              marginLeft: 0,
+              marginRight: 0,
+              borderRadius: 0,
+              boxShadow: theme.shadows[8],
+              backgroundColor: theme.palette.bpp.granite["090"],
             },
           },
         }}
         {...popoverProps}
       >
-        <Box sx={{ p: 2 }}>
+        <Box sx={{
+          p: 2,
+          maxWidth: width,
+          mx: 'auto', // Center content within full-width popover
+        }}>
           {children}
         </Box>
       </Popover>
@@ -109,6 +143,8 @@ MegaMenuPopover.propTypes = {
   buttonProps: PropTypes.object,
   /** Additional props for the Popover component */
   popoverProps: PropTypes.object,
+  /** CSS selector for the navbar element to position below (default: '.navbar-main') */
+  navbarSelector: PropTypes.string,
 };
 
 export default MegaMenuPopover;

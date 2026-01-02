@@ -53,7 +53,6 @@ const NavigationMenu = ({
             flexWrap: "wrap",
             alignItems: "center",
             justifyContent: { xs: "flex-start", lg: "space-evenly" },
-            px: { md: 2, lg: 2 },
          }}
       >
          <Button component={NavLink} to="/home">
@@ -67,24 +66,20 @@ const NavigationMenu = ({
             onClose={onCollapseNavbar}
             buttonProps={{
                sx: { mx: { xl: 2 } },
-            }}            
+            }}
          >
-            <Grid container spacing={2}>
-               <Grid item xs={12} md={6} xl={3}>
-                  <Typography
-                     variant="subtitle2"
-                     color="primary"
-                     sx={{ mb: 1, fontWeight: "bold" }}
-                     id="core-principles-heading"
-                  >
+            <Grid container spacing={1}>
+               <Grid size={{ xs: 12, md: 3, xl: 2 }}>
+                  <Typography variant="navlink" id="core-principles-heading">
                      Core Principles
                   </Typography>
-                  <MenuList dense aria-labelledby="core-principles-heading">
+                  <MenuList variant="navmenu" dense aria-labelledby="core-principles-heading">
                      {subjects &&
                         subjects
                            .filter((s) => /^(CB|CS|CM)/.test(s.code))
                            .map((subject) => (
                               <MenuItem
+                                 variant="navmenu"
                                  key={subject.id}
                                  onClick={() => {
                                     handleSubjectClick(subject.code);
@@ -96,21 +91,17 @@ const NavigationMenu = ({
                            ))}
                   </MenuList>
                </Grid>
-               <Grid item xs={12} md={6} xl={3}>
-                  <Typography
-                     variant="subtitle2"
-                     color="primary"
-                     sx={{ mb: 1, fontWeight: "bold" }}
-                     id="core-practices-heading"
-                  >
+               <Grid size={{ xs: 12, md: 3, xl: 2 }}>
+                  <Typography variant="navlink" id="core-practices-heading">
                      Core Practices
                   </Typography>
-                  <MenuList dense aria-labelledby="core-practices-heading">
+                  <MenuList variant="navmenu" dense aria-labelledby="core-practices-heading">
                      {subjects &&
                         subjects
                            .filter((s) => /^CP[1-3]$/.test(s.code))
                            .map((subject) => (
                               <MenuItem
+                                 variant="navmenu"
                                  key={subject.id}
                                  onClick={() => {
                                     handleSubjectClick(subject.code);
@@ -122,16 +113,15 @@ const NavigationMenu = ({
                            ))}
                   </MenuList>
                </Grid>
-               <Grid item xs={12} md={6} xl={3}>
+               <Grid size={{ xs: 12, md: 3, xl: 2 }}>
                   <Typography
-                     variant="subtitle2"
-                     color="primary"
-                     sx={{ mb: 1, fontWeight: "bold" }}
+                     variant="navlink"
                      id="specialist-principles-heading"
                   >
                      Specialist Principles
                   </Typography>
                   <MenuList
+                     variant="navmenu"
                      dense
                      aria-labelledby="specialist-principles-heading"
                   >
@@ -140,6 +130,7 @@ const NavigationMenu = ({
                            .filter((s) => /^SP/.test(s.code))
                            .map((subject) => (
                               <MenuItem
+                                 variant="navmenu"
                                  key={subject.id}
                                  onClick={() => {
                                     handleSubjectClick(subject.code);
@@ -151,21 +142,20 @@ const NavigationMenu = ({
                            ))}
                   </MenuList>
                </Grid>
-               <Grid item xs={12} md={6} xl={3}>
+               <Grid size={{ xs: 12, md: 3, xl: 2 }}>
                   <Typography
-                     variant="subtitle2"
-                     color="primary"
-                     sx={{ mb: 1, fontWeight: "bold" }}
+                     variant="navlink"
                      id="specialist-advanced-heading"
                   >
                      Specialist Advanced
                   </Typography>
-                  <MenuList dense aria-labelledby="specialist-advanced-heading">
+                  <MenuList variant="navmenu" dense aria-labelledby="specialist-advanced-heading">
                      {subjects &&
                         subjects
                            .filter((s) => /^SA/.test(s.code))
                            .map((subject) => (
                               <MenuItem
+                                 variant="navmenu"
                                  key={subject.id}
                                  onClick={() => {
                                     handleSubjectClick(subject.code);
@@ -190,10 +180,9 @@ const NavigationMenu = ({
             }}
          >
             <Grid container spacing={2}>
-               <Grid item xs={12}>
+               <Grid size={12}>
                   <Button
-                     variant="outlined"
-                     color="primary"
+                     variant="outlined"                     
                      onClick={() => {
                         handleProductClick();
                         onCollapseNavbar && onCollapseNavbar();
@@ -204,7 +193,7 @@ const NavigationMenu = ({
                   </Button>
                </Grid>
                {loadingProductGroups ? (
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                      <Typography color="text.secondary">
                         Loading products...
                      </Typography>
@@ -224,16 +213,13 @@ const NavigationMenu = ({
 
                         return (
                            <Grid
-                              item
                               key={group.id || group.name}
-                              xs={12}
-                              lg={3}
+                              size={{xs: 12, md: 3, xl: 2}}
                            >
                               <Grid container spacing={1}>
-                                 <Grid item xs={6}>
+                                 <Grid size={6}>
                                     <Typography
-                                       variant="subtitle2"
-                                       color="primary"
+                                       variant="navlink"
                                        sx={{
                                           mb: 1,
                                           fontWeight: "bold",
@@ -247,9 +233,10 @@ const NavigationMenu = ({
                                     >
                                        {group.name}
                                     </Typography>
-                                    <MenuList dense>
+                                    <MenuList variant="navmenu" dense>
                                        {leftColumn.map((product) => (
                                           <MenuItem
+                                             variant="navmenu"
                                              key={product.id}
                                              onClick={() => {
                                                 handleSpecificProductClick(
@@ -264,16 +251,17 @@ const NavigationMenu = ({
                                        ))}
                                     </MenuList>
                                  </Grid>
-                                 <Grid item xs={6}>
+                                 <Grid size={6}>
                                     <Typography
                                        variant="subtitle2"
                                        sx={{ mb: 1, visibility: "hidden" }}
                                     >
                                        &nbsp;
                                     </Typography>
-                                    <MenuList dense>
+                                    <MenuList variant="navmenu" dense>
                                        {rightColumn.map((product) => (
                                           <MenuItem
+                                             variant="navmenu"
                                              key={product.id}
                                              onClick={() => {
                                                 handleSpecificProductClick(
@@ -296,18 +284,13 @@ const NavigationMenu = ({
                      // Regular single column display for other groups
                      return (
                         <Grid
-                           item
                            key={group.id || group.name}
-                           xs={12}
-                           md={6}
-                           lg={3}
+                           size={{xs: 12, md: 3, xl: 2}}
                         >
                            <Typography
-                              variant="subtitle2"
-                              color="primary"
+                              variant="navlink"                              
                               sx={{
-                                 mb: 1,
-                                 fontWeight: "bold",
+                                 mb: 1,                                 
                                  cursor: "pointer",
                               }}
                               onClick={() => {
@@ -318,9 +301,10 @@ const NavigationMenu = ({
                               {group.name}
                            </Typography>
                            {group.products && group.products.length > 0 ? (
-                              <MenuList dense>
+                              <MenuList variant="navmenu" dense>
                                  {group.products.map((product) => (
                                     <MenuItem
+                                       variant="navmenu"
                                        key={product.id}
                                        onClick={() => {
                                           handleSpecificProductClick(
@@ -346,7 +330,7 @@ const NavigationMenu = ({
                      );
                   })
                ) : (
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                      <Typography color="text.secondary">
                         No products available
                      </Typography>
@@ -365,7 +349,7 @@ const NavigationMenu = ({
             }}
          >
             <Grid container spacing={2}>
-               <Grid item xs={12}>
+               <Grid size={12}>
                   <Button
                      variant="outlined"
                      color="primary"
@@ -380,7 +364,7 @@ const NavigationMenu = ({
                   </Button>
                </Grid>
                {loadingDistanceLearning ? (
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                      <Typography color="text.secondary">
                         Loading distance learning...
                      </Typography>
@@ -389,16 +373,12 @@ const NavigationMenu = ({
                  distanceLearningData.length > 0 ? (
                   distanceLearningData.map((group) => (
                      <Grid
-                        item
                         key={group.id || group.name}
-                        xs={12}
-                        md={6}
-                        lg={3}
+                        size={{ xs: 12, md: 3, xl: 2 }}
                      >
                         <Typography
-                           variant="subtitle2"
-                           color="primary"
-                           sx={{ mb: 1, fontWeight: "bold", cursor: "pointer" }}
+                           variant="navlink"                           
+                           sx={{ mb: 1, cursor: "pointer" }}
                            onClick={() => {
                               handleProductGroupClick(group.name);
                               onCollapseNavbar && onCollapseNavbar();
@@ -407,9 +387,10 @@ const NavigationMenu = ({
                            {group.name}
                         </Typography>
                         {group.products && group.products.length > 0 ? (
-                           <MenuList dense>
+                           <MenuList variant="navmenu" dense>
                               {group.products.map((product) => (
                                  <MenuItem
+                                    variant="navmenu"
                                     key={product.id}
                                     onClick={() => {
                                        handleSpecificProductClick(product.id);
@@ -428,13 +409,13 @@ const NavigationMenu = ({
                      </Grid>
                   ))
                ) : (
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                      <Typography color="text.secondary">
                         No distance learning products available
                      </Typography>
                   </Grid>
                )}
-               <Grid item xs={12}>
+               <Grid size={{xs: 12, md: 3, xl: 2}}>
                   <Button
                      component={NavLink}
                      to="/products?group=8"
@@ -448,7 +429,7 @@ const NavigationMenu = ({
                         mx: { xl: 2 },
                      }}
                   >
-                     <Typography variant="body1">Marking Vouchers</Typography>
+                     <Typography variant="navlink">Marking Vouchers</Typography>
                   </Button>
                </Grid>
             </Grid>
@@ -463,7 +444,7 @@ const NavigationMenu = ({
          >
             <Grid container spacing={2}>
                {/* View All Tutorials button */}
-               <Grid item xs={12}>
+               <Grid size={12}>
                   <Button
                      variant="outlined"
                      color="primary"
@@ -478,7 +459,7 @@ const NavigationMenu = ({
 
                {/* Tutorial content */}
                {loadingTutorial ? (
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                      <Typography color="text.secondary">
                         Loading tutorials...
                      </Typography>
@@ -486,18 +467,18 @@ const NavigationMenu = ({
                ) : tutorialData ? (
                   <>
                      {/* Location Column - Split into 2 sub-columns */}
-                     <Grid item xs={12} sm={6}>
+                     <Grid size={{ xs: 12, sm: 6 }}>
                         <Typography
-                           variant="subtitle2"
-                           color="primary"
+                           variant="navlink"                           
                            sx={{ mb: 1, fontWeight: "bold" }}
                            id="tutorial-location-heading"
                         >
                            Location
                         </Typography>
                         <Grid container>
-                           <Grid item xs={6}>
+                           <Grid size={6}>
                               <MenuList
+                                 variant="navmenu"
                                  dense
                                  aria-labelledby="tutorial-location-heading"
                               >
@@ -505,6 +486,7 @@ const NavigationMenu = ({
                                     tutorialData.Location.left.map(
                                        (product) => (
                                           <MenuItem
+                                             variant="navmenu"
                                              key={product.id}
                                              onClick={() => {
                                                 handleSpecificProductClick(
@@ -527,12 +509,13 @@ const NavigationMenu = ({
                                  )}
                               </MenuList>
                            </Grid>
-                           <Grid item xs={6}>
-                              <MenuList dense>
+                           <Grid size={6}>
+                              <MenuList variant="navmenu" dense>
                                  {tutorialData.Location?.right?.length > 0 &&
                                     tutorialData.Location.right.map(
                                        (product) => (
                                           <MenuItem
+                                             variant="navmenu"
                                              key={product.id}
                                              onClick={() => {
                                                 handleSpecificProductClick(
@@ -551,22 +534,23 @@ const NavigationMenu = ({
                      </Grid>
 
                      {/* Format Column */}
-                     <Grid item xs={12} sm={6}>
+                     <Grid size={{ xs: 12, sm: 6 }}>
                         <Typography
-                           variant="subtitle2"
-                           color="primary"
+                           variant="navlink"                           
                            sx={{ mb: 1, fontWeight: "bold" }}
                            id="tutorial-format-heading"
                         >
                            Format
                         </Typography>
                         <MenuList
+                           variant="navmenu"
                            dense
                            aria-labelledby="tutorial-format-heading"
                         >
                            {tutorialData.Format?.length > 0 ? (
                               tutorialData.Format.map((format) => (
                                  <MenuItem
+                                    variant="navmenu"
                                     key={format.filter_type}
                                     onClick={() => {
                                        handleProductGroupClick(
@@ -590,7 +574,7 @@ const NavigationMenu = ({
                      </Grid>
                   </>
                ) : (
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                      <Typography color="text.secondary">
                         No tutorial data available
                      </Typography>

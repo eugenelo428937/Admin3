@@ -96,8 +96,9 @@ const TopNavBar = () => {
          <Container
             maxWidth="xl"
             className="d-flex flex-row navbar-top justify-content-between align-content-end"
-            sx={{
+            sx={{                              
                px: {
+                  md: theme.liftkit.spacing.xl,
                   lg: theme.liftkit.spacing.xl2,
                   xl: theme.liftkit.spacing.xl3,
                },
@@ -108,7 +109,10 @@ const TopNavBar = () => {
             }}
          >
             {/* Left Group - ActEd Home and Help */}
-            <div className="d-flex flex-row flex-wrap">
+            <Box className="d-flex flex-row flex-wrap"  sx={{
+               paddingX: theme.liftkit.spacing.sm,
+               gap: { xs: 0, xl: 1 },
+            }}>
                <Box
                   className="d-flex flex-row align-items-center flex-wrap"
                   sx={{
@@ -120,10 +124,7 @@ const TopNavBar = () => {
                >
                   <Link to="/Home">
                      <Box
-                        className="flex-wrap align-items-center d-flex flex-row"
-                        sx={{
-                           mr: theme.liftkit.spacing.md,
-                        }}
+                        className="flex-wrap align-items-center d-flex flex-row"                        
                      >
                         <HomeIcon
                            className="d-flex flex-row align-items-center"
@@ -155,13 +156,7 @@ const TopNavBar = () => {
                >
                   <Link to="/styleguide">
                      <Box
-                        className="flex-wrap align-items-center d-flex flex-row"
-                        sx={{
-                           minWidth: {
-                              xs: theme.liftkit.spacing.xl,
-                              lg: 64,
-                           },
-                        }}
+                        className="flex-wrap align-items-center d-flex flex-row"                       
                      >
                         <HelpIcon className="bi d-flex flex-row align-items-center"></HelpIcon>
                         <span className="d-none d-md-block body">
@@ -178,7 +173,7 @@ const TopNavBar = () => {
                      </Box>
                   </Link>
                </Box>
-            </div>
+            </Box>
 
             {/* Right Group - TopNavActions (Brochure and Search) */}
             <div className="d-flex flex-row">

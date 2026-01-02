@@ -24,9 +24,11 @@ const NavbarBrand = () => {
 			<Box
 				component="img"
 				src={require("../../assets/ActEdlogo.png")}
-				alt="ActEd Logo"
+				alt="ActEd Logo"				
 				sx={{
-					display: { xs: 'none', md: 'block' },
+					display: { xs: 'none', lg: 'block' },
+					maxWidth: "114px",
+					minWidth: "114px",
 				}}
 			/>
 			{/* Mobile logo - hidden on desktop */}
@@ -35,8 +37,9 @@ const NavbarBrand = () => {
 				src={require("../../assets/ActEdlogo-S.png")}
 				alt="ActEd Logo"
 				sx={{
-					display: { xs: 'block', md: 'none' },
-					maxWidth: '2.35rem',
+					display: { xs: 'block', lg: 'none' },
+					maxWidth: '2.35rem',					
+					minWidth: '2.35rem',
 				}}
 			/>
 		</Box>

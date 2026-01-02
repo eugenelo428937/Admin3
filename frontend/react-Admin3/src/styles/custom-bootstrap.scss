@@ -1,69 +1,37 @@
-// // Custom Bootstrap SCSS Variables Override
-// // This approach requires installing node-sass or sass
+// Custom Bootstrap SCSS Variables Override
+// Aligns Bootstrap breakpoints with MUI custom breakpoints
+// MUI: xs:0, sm:600, md:960, lg:1280, xl:1920
+// =============================================================================
+// BREAKPOINT OVERRIDES - Must be defined BEFORE importing Bootstrap
+// =============================================================================
 
-// // Define your custom colors BEFORE importing Bootstrap
-// $primary: #2c5530 !default;
-// $secondary: #6c757d !default;
-// $success: #198754 !default;
-// $info: #0dcaf0 !default;
-// $warning: #ffc107 !default;
-// $danger: #dc3545 !default;
-// $light: #f8f9fa !default;
-// $dark: #212529 !default;
+$grid-breakpoints: (
+  xs: 0,
+  sm: 600px,    // MUI sm (Bootstrap default: 576px)
+  md: 960px,    // MUI md (Bootstrap default: 768px)
+  lg: 1280px,   // MUI lg (Bootstrap default: 992px)
+  xl: 1920px    // MUI xl (Bootstrap default: 1200px)
+);
 
-// // Custom color palette
-// $brand-primary: #1e4d72;
-// $brand-accent: #ff6b35;
-// $brand-success: #28a745;
+// Update container max-widths to match new breakpoints
+$container-max-widths: (
+  sm: 540px,
+  md: 900px,
+  lg: 1200px,
+  xl: 1800px
+);
 
-// // Typography
-// $font-family-sans-serif: 'Roboto', 'Helvetica Neue', Arial, sans-serif !default;
-// $font-size-base: 1rem !default;
-// $line-height-base: 1.5 !default;
+// =============================================================================
+// IMPORT BOOTSTRAP SCSS SOURCE
+// =============================================================================
 
-// // Spacing
-// $spacer: 1rem !default;
+@import "~bootstrap/scss/bootstrap";
 
-// // Border radius
-// $border-radius: 0.375rem !default;
-// $border-radius-sm: 0.25rem !default;
-// $border-radius-lg: 0.5rem !default;
-
-// // Import Bootstrap after defining variables
-// @import '~bootstrap/scss/bootstrap';
-
-// // Additional custom styles after Bootstrap
-// .text-brand {
-//   color: $brand-primary !important;
-// }
-
-// .text-accent {
-//   color: $brand-accent !important;
-// }
-
-// .btn-brand {
-//   background-color: $brand-primary;
-//   border-color: $brand-primary;
-//   color: white;
-  
-//   &:hover {
-//     background-color: darken($brand-primary, 10%);
-//     border-color: darken($brand-primary, 10%);
-//   }
-// }
-
-// // Custom component styles
-// .navbar-brand {
-//   font-weight: 600;
-//   color: $brand-primary !important;
-// }
-
-// .card-custom {
-//   border: 1px solid lighten($primary, 30%);
-//   border-radius: $border-radius-lg;
-  
-//   .card-header {
-//     background-color: lighten($primary, 45%);
-//     border-bottom: 1px solid lighten($primary, 30%);
-//   }
-// } 
+// Tutorial Choice Panel Accommodation
+// .App styles reserved for future use
+// Responsive spacing for tutorial choice panel
+@media (max-width: map-get($grid-breakpoints, md)) {
+  .body-container {
+    min-height: calc(100vh - 100px);
+  }
+}
