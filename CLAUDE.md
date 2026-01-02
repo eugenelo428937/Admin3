@@ -1194,3 +1194,33 @@ When asked to design UI & frontend interfaces:
 3. Animation design
 4. Generate HTML file
 5. Confirm with user at each step
+
+## Playwright Testing
+
+### URL Configuration
+**IMPORTANT**: Always use `127.0.0.1` instead of `localhost` when testing with Playwright MCP.
+
+```javascript
+// ✅ Correct - use 127.0.0.1
+await page.goto('http://127.0.0.1:3000');
+
+// ❌ Incorrect - localhost may cause CORS/connection issues
+await page.goto('http://localhost:3000');
+```
+
+**Reason**: The Django backend runs on `127.0.0.1:8888` and the React frontend on `127.0.0.1:3000`. Using `localhost` can cause CORS issues and connection failures when the frontend makes API calls to the backend.
+
+### Common Playwright Commands
+```javascript
+// Navigate to home page
+browser_navigate({ url: 'http://127.0.0.1:3000' })
+
+// Take a screenshot
+browser_take_screenshot({ filename: 'screenshot.png' })
+
+// Get page snapshot (accessibility tree)
+browser_snapshot()
+
+// Close browser
+browser_close()
+```
