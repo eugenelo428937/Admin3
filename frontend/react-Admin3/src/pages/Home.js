@@ -216,10 +216,14 @@ const Home = () => {
                ></rect>
             </svg>
          </Box>
-         <Container
-            maxWidth={true}
+         <Container            
             className="hero-container"
             disableGutters={true}
+            maxWidth={true}
+            sx={{
+               width:"100%",
+               overflow:"hidden",
+            }}
          >
             <Row style={{ height: "100%" }}>
                <Col

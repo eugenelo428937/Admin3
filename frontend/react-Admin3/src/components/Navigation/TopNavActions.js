@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Tooltip, Typography } from "@mui/material";
+import { Box, Button, Tooltip, Typography, useMediaQuery } from "@mui/material";
 import {
    Search as SearchIcon,
    Download as DownloadIcon,
@@ -8,6 +8,7 @@ import { useTheme } from "@mui/material/styles";
 
 const TopNavActions = ({ onOpenSearch }) => {
    const theme = useTheme();
+   const isDesktop = useMediaQuery(theme.breakpoints.up("md")); // ≥960px
 
    return (
       <Box
@@ -16,6 +17,7 @@ const TopNavActions = ({ onOpenSearch }) => {
             alignItems: "center",
             gap: { xs: 0, xl: 1 },
             justifyContent: "space-evenly",
+            paddingX: theme.liftkit.spacing.sm,            
          }}
       >
          {/* Brochure Download - Desktop Only */}
@@ -24,21 +26,22 @@ const TopNavActions = ({ onOpenSearch }) => {
                component="a"
                href="/brochure"
                target="_blank"
-               startIcon={<DownloadIcon sx={{
-                me: {xs:0,xl:2}
-               }} />}
+               startIcon={isDesktop ? <DownloadIcon/> : null}
+               endIcon={!isDesktop ? <DownloadIcon/> : null}
                sx={{
                   textTransform: "none",
                   color:
                      theme.palette.liftkit?.light?.background || "text.primary",
-                  // display: { xs: "none", md: "flex" },
-                  p: 0,
-                  px: { xs: 0, lg: 2 },
+                  // display: { xs: "none", md: "flex" },                                    
                   minWidth: {
                      xs: theme.liftkit.spacing.xl,
                      lg: 64,
                   },
-                  justifyContent:"center"
+                  justifyContent: {
+                     xs: "end",
+                     md: "center",                  
+                  },
+                  p:0,
                }}
             >
                <Typography
@@ -60,23 +63,26 @@ const TopNavActions = ({ onOpenSearch }) => {
                sx={{
                   color:
                      theme.palette.liftkit?.light?.background || "text.primary",
-                  p: 0,
-                  px: { xs: 0, lg: 2 },
                   minWidth: {
                      xs: theme.liftkit.spacing.xl,
                      lg: 64,
+                  },                  
+                  justifyContent: {
+                     xs: "end",
+                     md: "center",                  
                   },
-                  // display: { xs: "none", md: "flex" },
-                  justifyContent:"center"
+                  p:0,                  
                }}
                aria-label="search products"
-               startIcon={<SearchIcon />}
+               startIcon={isDesktop ? <SearchIcon /> : null}
+               endIcon={!isDesktop ? <SearchIcon /> : null}
             >
                <Typography
                   varitant="topnavlink"
                   color={theme.palette.offwhite["000"]}
                   sx={{
                      display: { xs: "none", lg: "flex" },
+                     
                   }}
                >
                   Search
