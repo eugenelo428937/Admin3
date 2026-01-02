@@ -1,5 +1,5 @@
-@import "bootstrap/dist/css/bootstrap.min.css";
-@import "./styles/custom-bootstrap.css";
+/* Bootstrap with MUI-aligned breakpoints (xs:0, sm:600, md:960, lg:1280, xl:1920) */
+@import "./styles/custom-bootstrap.scss";
 @import "./styles/liftkit-css/globals.css";
 @import "./styles/liftkit-css/align-items.css";
 @import "./styles/liftkit-css/align-self.css";

@@ -40,7 +40,7 @@ import EmailVerification from "./components/User/EmailVerification";
 import StyleGuide from "./components/StyleGuide";
 import Registration from './pages/Registration';
 import Footer from "./components/Footer";
-import "./App.css";
+import "./App.scss";
 
 const system = createSystem(defaultConfig);
 

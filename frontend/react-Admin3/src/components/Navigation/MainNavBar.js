@@ -2,7 +2,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { AppBar, Toolbar, Container, IconButton, Box, useTheme } from "@mui/material";
+import {
+   AppBar,
+   Toolbar,
+   Container,
+   IconButton,
+   Box,
+   useTheme,
+} from "@mui/material";
 // import { useAuth } from "../../hooks/useAuth"; // Now used by child components
 import productService from "../../services/productService";
 import SearchModal from "./SearchModal";
@@ -184,28 +191,32 @@ const MainNavBar = () => {
             aria-label="Main navigation"
             elevation={5}
             sx={{
-               px : {
-                  xs: theme.liftkit.spacing.lg, 
+               px: {
+                  xs: theme.liftkit.spacing.lg,
                   md: theme.liftkit.spacing.xl,
                   lg: theme.liftkit.spacing.xl2,
-                  xl: theme.liftkit.spacing.xl3
-               }
+                  xl: theme.liftkit.spacing.xl3,
+               },
+               py: {
+                  xs: 0,
+                  md: theme.liftkit.spacing.xs,
+               },
+               alignContent:"center",
             }}
             className="navbar navbar-expand-md navbar-main align-content-center justify-content-between"
          >
-            <Toolbar disableGutters sx={{ width: '100%' }}>
-               <Container
-                  className=""
-                  sx={{
-                     display:"flex",
-                     justifyContent: "space-evenly",
-                     alignItemsCenter:"",
-                     px: { xs: 1,sm:2, lg: 1 },
-                  }}
+            <Toolbar disableGutters sx={{ width: "100%" }}>
+               <Container                  
                   maxWidth="xl"
+                  disableGutters
+                  sx={{
+                     display: "flex",
+                     justifyContent: "space-between",
+                     px:"0 !Important",
+                  }}
                >
                   {/* Left Box - Cart/Login icons (mobile only, left-aligned) */}
-                  <div className="d-flex justify-content-start align-items-center order-0 order-md-0 d-md-none">
+                  <div className="d-flex justify-content-start align-items-center order-1 order-lg-3 d-md-none">
                      <MainNavActions
                         onOpenAuth={handleOpenAuthModal}
                         onOpenCart={handleOpenCartPanel}
@@ -215,21 +226,22 @@ const MainNavBar = () => {
                   </div>
 
                   {/* Center Box - Brand/Logo (centered on mobile, left on desktop) */}
-                  <div className="d-flex justify-content-center justify-content-md-start align-items-center order-1 order-md-0">
+                  <div className="d-flex justify-content-center justify-content-md-start align-items-center order-2 order-md-1">
                      <NavbarBrand />
                   </div>
 
                   {/* Center Section - Navigation Menu (Desktop) */}
                   <Box
                      id="navbar-menu"
-                     className="justify-content-lg-center justify-content-md-start order-4 order-md-2"
+                     className="justify-content-lg-center justify-content-md-start order-3 order-md-2 d-none d-md-flex"
                      sx={{
-                        display: { xs: expanded ? 'flex' : 'none', md: 'flex' },
-                        flexDirection: { xs: 'column', md: 'row' },
+                        // display: { xs: expanded ? 'flex' : 'none', md: 'flex' },
+                        // display: { xs: 'flex' : 'none', md: 'flex' },
+                        flexDirection: { xs: "column", md: "row" },
                      }}
                   >
                      {/* Desktop Navigation - Hidden on mobile */}
-                     <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+                     <Box sx={{ display: { xs: "none", md: "flex" } }}>
                         <NavigationMenu
                            subjects={subjects}
                            navbarProductGroups={navbarProductGroups}
@@ -241,15 +253,21 @@ const MainNavBar = () => {
                            handleSubjectClick={handleSubjectClick}
                            handleProductClick={handleProductClick}
                            handleProductGroupClick={handleProductGroupClick}
-                           handleSpecificProductClick={handleSpecificProductClick}
-                           handleProductVariationClick={handleProductVariationClick}
-                           handleMarkingVouchersClick={handleMarkingVouchersClick}
+                           handleSpecificProductClick={
+                              handleSpecificProductClick
+                           }
+                           handleProductVariationClick={
+                              handleProductVariationClick
+                           }
+                           handleMarkingVouchersClick={
+                              handleMarkingVouchersClick
+                           }
                            onCollapseNavbar={() => setExpanded(false)}
                         />
                      </Box>
 
-                     {/* Mobile Navigation - Visible only on mobile */}
-                     <Box sx={{ display: { xs: 'block', lg: 'none' } }}>
+                     {/* Mobile Navigation - Visible only on mobile (below md breakpoint) */}
+                     <Box sx={{ display: { xs: "block", md: "none" } }}>
                         <MobileNavigation
                            open={expanded}
                            onClose={() => setExpanded(false)}
@@ -263,11 +281,15 @@ const MainNavBar = () => {
                            handleSubjectClick={handleSubjectClick}
                            handleProductClick={handleProductClick}
                            handleProductGroupClick={handleProductGroupClick}
-                           handleSpecificProductClick={handleSpecificProductClick}
+                           handleSpecificProductClick={
+                              handleSpecificProductClick
+                           }
                            handleProductVariationClick={
                               handleProductVariationClick
                            }
-                           handleMarkingVouchersClick={handleMarkingVouchersClick}
+                           handleMarkingVouchersClick={
+                              handleMarkingVouchersClick
+                           }
                            onOpenSearch={handleOpenSearchModal}
                            onOpenCart={handleOpenCartPanel}
                            onOpenAuth={handleOpenAuthModal}
@@ -276,7 +298,7 @@ const MainNavBar = () => {
                   </Box>
 
                   {/* Right Box - Cart/Login (desktop only) and Hamburger */}
-                  <div className="d-flex justify-content-end align-items-center gap-2 order-2 order-md-4">
+                  <div className="d-flex justify-content-end align-items-center gap-2 order-3 order-md-3">
                      {/* Desktop actions - hidden on mobile */}
                      <div className="d-none d-md-flex">
                         <MainNavActions
@@ -287,9 +309,9 @@ const MainNavBar = () => {
                         />
                      </div>
 
-                     {/* Hamburger menu toggle - visible on all screens */}
+                     {/* Hamburger menu toggle - visible on mobile (below md breakpoint) */}
                      <IconButton
-                        className={`navbar-toggler menu-button justify-content-between ${
+                        className={`menu-button justify-content-between ${
                            expanded ? "active" : ""
                         }`}
                         aria-controls="navbar-menu"
@@ -297,8 +319,21 @@ const MainNavBar = () => {
                         aria-expanded={expanded}
                         id="navbar-menu-toggle"
                         onClick={() => setExpanded(!expanded)}
+                        sx={{
+                           display: { xs: "flex", md: "none" },
+                           borderRadius: theme.liftkit.spacing.sm,
+                           paddingX: theme.liftkit.spacing.xs,
+                           paddingY: theme.liftkit.spacing.sm,
+                           border: 0,
+                           zIndex: 10000,
+                           "&:hover":{
+                              boxShadow:"var(--Paper-shadow)",
+                              backgroundColor: "var(--navbar-menu-toggle-bg-color-hover)",
+                              transition: "all 0.1s ease-in"
+                           },                           
+                        }}                        
                      >
-                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                        <Box sx={{ display: "flex", flexDirection: "column",height: theme.liftkit.spacing.xl, }}>
                            <span className="toggler-icon top-bar"></span>
                            <span className="toggler-icon middle-bar"></span>
                            <span className="toggler-icon bottom-bar"></span>

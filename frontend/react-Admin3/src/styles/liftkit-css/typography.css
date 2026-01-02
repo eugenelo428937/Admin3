@@ -10,7 +10,7 @@
   --2xs: calc(var(--lineHeightInEms) * var(--quarterstep-dec));
 
 
-  --sm: calc(var(--lineHeightInEms) * calc(1 / var(--halfstep)))
+  --sm: calc(var(--lineHeightInEms) * calc(1 / var(--halfstep)));
 
   --lg: calc(var(--lineHeightInEms) * var(--wholestep));
   --xl: calc(var(--lg) * var(--wholestep));

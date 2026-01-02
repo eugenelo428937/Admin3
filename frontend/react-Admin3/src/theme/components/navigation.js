@@ -66,6 +66,31 @@ export const navigationOverrides = {
         fontFamily: "'Inter', 'Poppins', sans-serif",
       },
     },
+    variants: [
+      {
+        props: { variant: 'navmenu' },
+        style: {
+          color: colorTheme.offwhite['001'],
+          '&:hover': {
+            backgroundColor: colorTheme.bpp.granite['070'],
+          },
+        },
+      },
+    ],
+  },
+  MuiMenuList: {
+    styleOverrides: {
+      root: {},
+    },
+    variants: [
+      {
+        props: { variant: 'navmenu' },
+        style: {
+          paddingLeft: 0,
+          paddingRight: 0,
+        },
+      },
+    ],
   },
 };
 
