@@ -12,7 +12,7 @@ const MegaMenuPopover = ({
   id,
   label,
   children,
-  width = 1280,
+  width = 1440,
   onOpen,
   onClose,
   buttonProps = {},
@@ -72,7 +72,7 @@ const MegaMenuPopover = ({
         sx={{
           color: theme.palette.offwhite?.['000'] || 'inherit',         
           textTransform: 'none',
-          ...buttonProps.sx,
+          ...buttonProps.sx,          
         }}
         {...buttonProps}
       >
@@ -114,11 +114,25 @@ const MegaMenuPopover = ({
         }}
         {...popoverProps}
       >
-        <Box sx={{
-          p: 2,
-          maxWidth: width,
-          mx: 'auto', // Center content within full-width popover
-        }}>
+        <Box
+          onClick={(e) => {
+            // Close mega menu when clicking on menu items or buttons (navigation links)
+            if (e.target.closest('.MuiMenuItem-root, .MuiButton-root')) {
+              handleClose();
+            }
+          }}
+          sx={{
+            p: 2,
+            maxWidth: width,
+            pl: {
+              xs: theme.liftkit.spacing.lg,
+              md: theme.liftkit.spacing.xl,
+              lg: theme.liftkit.spacing.xl2,
+              xl: theme.liftkit.spacing.xl3,
+           },
+            justifyContent: 'flex-start',
+          }}
+        >
           {children}
         </Box>
       </Popover>
