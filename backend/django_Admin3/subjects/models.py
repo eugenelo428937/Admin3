@@ -1,17 +1,13 @@
-from django.db import models
+"""Backward compatibility re-export for Subject model.
 
-class Subject(models.Model):
-    code = models.CharField(max_length=10, unique=True)    
-    description = models.TextField(blank=True, null=True)    
-    active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+The Subject model has been moved to catalog.models as part of the
+catalog consolidation (001-catalog-consolidation).
 
-    def __str__(self):
-        return f"{self.code}: {self.description}"
-    
-    class Meta:
-        db_table = 'acted_subjects'
-        verbose_name = 'Subject'
-        verbose_name_plural = 'Subjects'
-        ordering = ['code']
+This module re-exports Subject for backward compatibility with existing code.
+
+DEPRECATED: New code should import from catalog.models instead:
+    from catalog.models import Subject
+"""
+from catalog.models import Subject
+
+__all__ = ['Subject']

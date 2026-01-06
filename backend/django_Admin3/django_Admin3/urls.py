@@ -19,6 +19,7 @@ from django.urls import path, include
 from utils.health_check import health_check
 
 urlpatterns = [
+    path('admin/doc/', include('django.contrib.admindocs.urls')),  # Must be before admin/
     path('admin/', admin.site.urls),
     path('api/health/', health_check, name='health_check'),
     path('api/auth/', include('core_auth.urls')),
