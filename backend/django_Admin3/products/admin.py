@@ -1,7 +1,15 @@
-# products/admin.py
+"""Products app admin configuration.
+
+Note: Product, ProductVariation, ProductProductVariation, ProductProductGroup,
+ProductBundle, and ProductBundleProduct models have been moved to catalog app
+and are now registered in catalog/admin.py.
+
+Models that remain in products app and are registered here:
+- ProductGroupFilter (filter system)
+- ProductVariationRecommendation
+- Filter system models (FilterGroup, FilterConfiguration, etc.) via filter_admin
+"""
 from django.contrib import admin
-from .models import Product, ProductProductVariation
-from .models.products import ProductVariation
 from .models.product_group_filter import ProductGroupFilter
 from .models import ProductVariationRecommendation
 
@@ -15,26 +23,12 @@ class ProductGroupFilterAdmin(admin.ModelAdmin):
     list_filter = ("filter_type",)
     search_fields = ("name",)
 
-@admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
-    list_display = ('shortname', 'is_active')
-    list_filter = ('is_active',)
-    search_fields = ('fullname', 'shortname', 'code')
-    readonly_fields = ('created_at', 'updated_at')
 
-@admin.register(ProductVariation)
-class ProductVariationAdmin(admin.ModelAdmin):
-    list_display = ("variation_type", "name", "description")
-    list_filter = ("variation_type",)
-    search_fields = ("name", "description", "variation_type")
-
-
-@admin.register(ProductProductVariation)
-class ProductProductVariationAdmin(admin.ModelAdmin):
-    list_display = ("product", "product_variation")
-    list_filter = ("product_variation__variation_type",)
-    search_fields = ("product__shortname", "product__code", "product_variation__name")
-    autocomplete_fields = ("product", "product_variation")
+# Product, ProductVariation, ProductProductVariation admin registrations
+# moved to catalog/admin.py. See:
+# - catalog.admin.ProductAdmin
+# - catalog.admin.ProductVariationAdmin
+# - catalog.admin.ProductProductVariationAdmin
 
 
 @admin.register(ProductVariationRecommendation)
