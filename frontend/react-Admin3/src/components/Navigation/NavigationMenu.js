@@ -12,6 +12,7 @@ import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useTheme } from "@mui/material";
 import MegaMenuPopover from "./MegaMenuPopover";
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 const NavigationMenu = ({
    subjects,
@@ -73,7 +74,11 @@ const NavigationMenu = ({
                   <Typography variant="navlink" id="core-principles-heading">
                      Core Principles
                   </Typography>
-                  <MenuList variant="navmenu" dense aria-labelledby="core-principles-heading">
+                  <MenuList
+                     variant="navmenu"
+                     dense
+                     aria-labelledby="core-principles-heading"
+                  >
                      {subjects &&
                         subjects
                            .filter((s) => /^(CB|CS|CM)/.test(s.code))
@@ -95,7 +100,11 @@ const NavigationMenu = ({
                   <Typography variant="navlink" id="core-practices-heading">
                      Core Practices
                   </Typography>
-                  <MenuList variant="navmenu" dense aria-labelledby="core-practices-heading">
+                  <MenuList
+                     variant="navmenu"
+                     dense
+                     aria-labelledby="core-practices-heading"
+                  >
                      {subjects &&
                         subjects
                            .filter((s) => /^CP[1-3]$/.test(s.code))
@@ -149,7 +158,11 @@ const NavigationMenu = ({
                   >
                      Specialist Advanced
                   </Typography>
-                  <MenuList variant="navmenu" dense aria-labelledby="specialist-advanced-heading">
+                  <MenuList
+                     variant="navmenu"
+                     dense
+                     aria-labelledby="specialist-advanced-heading"
+                  >
                      {subjects &&
                         subjects
                            .filter((s) => /^SA/.test(s.code))
@@ -179,19 +192,7 @@ const NavigationMenu = ({
                sx: { mx: { xl: 2 } },
             }}
          >
-            <Grid container spacing={2}>
-               <Grid size={12}>
-                  <Button
-                     variant="outlined"                     
-                     onClick={() => {
-                        handleProductClick();
-                        onCollapseNavbar && onCollapseNavbar();
-                     }}
-                     sx={{ mb: 2 }}
-                  >
-                     View All Products
-                  </Button>
-               </Grid>
+            <Grid container spacing={2} columns={10}>
                {loadingProductGroups ? (
                   <Grid size={12}>
                      <Typography color="text.secondary">
@@ -199,7 +200,7 @@ const NavigationMenu = ({
                      </Typography>
                   </Grid>
                ) : Array.isArray(navbarProductGroups) &&
-                 navbarProductGroups.length > 0 ? (
+                  navbarProductGroups.length > 0 ? (
                   navbarProductGroups.map((group) => {
                      // Special handling for Tutorial group - split into two columns
                      if (
@@ -214,7 +215,7 @@ const NavigationMenu = ({
                         return (
                            <Grid
                               key={group.id || group.name}
-                              size={{xs: 12, md: 3, xl: 2}}
+                              size={{ xs: 12, md: 2, xl: 2 }}
                            >
                               <Grid container spacing={1}>
                                  <Grid size={6}>
@@ -285,12 +286,12 @@ const NavigationMenu = ({
                      return (
                         <Grid
                            key={group.id || group.name}
-                           size={{xs: 12, md: 3, xl: 2}}
+                           size={{ xs: 12, md: 2, xl: 2 }}
                         >
                            <Typography
-                              variant="navlink"                              
+                              variant="navlink"
                               sx={{
-                                 mb: 1,                                 
+                                 mb: 1,
                                  cursor: "pointer",
                               }}
                               onClick={() => {
@@ -336,6 +337,25 @@ const NavigationMenu = ({
                      </Typography>
                   </Grid>
                )}
+               <Grid size={{ xs: 12, md: 2, xl: 2 }}>
+                  <Button
+                     variant="outlined"
+                     onClick={() => {
+                        handleProductClick();
+                        onCollapseNavbar && onCollapseNavbar();
+                     }}
+                     sx={{
+                        mb: 1,
+                        color: theme.palette.offwhite?.["000"] || "inherit",
+                        textTransform: "none",
+                        border: 0,
+                        pt:0,
+                     }}
+                  >
+                     <Typography variant="navlink" sx={{ borderBottom: "1px solid " + theme.palette.bpp.granite["020"] }}>View All Products</Typography>
+                     <NavigateNextIcon />
+                  </Button>
+               </Grid>
             </Grid>
          </MegaMenuPopover>
 
@@ -370,14 +390,14 @@ const NavigationMenu = ({
                      </Typography>
                   </Grid>
                ) : Array.isArray(distanceLearningData) &&
-                 distanceLearningData.length > 0 ? (
+                  distanceLearningData.length > 0 ? (
                   distanceLearningData.map((group) => (
                      <Grid
                         key={group.id || group.name}
                         size={{ xs: 12, md: 3, xl: 2 }}
                      >
                         <Typography
-                           variant="navlink"                           
+                           variant="navlink"
                            sx={{ mb: 1, cursor: "pointer" }}
                            onClick={() => {
                               handleProductGroupClick(group.name);
@@ -415,7 +435,7 @@ const NavigationMenu = ({
                      </Typography>
                   </Grid>
                )}
-               <Grid size={{xs: 12, md: 3, xl: 2}}>
+               <Grid size={{ xs: 12, md: 3, xl: 2 }}>
                   <Button
                      component={NavLink}
                      to="/products?group=8"
@@ -469,7 +489,7 @@ const NavigationMenu = ({
                      {/* Location Column - Split into 2 sub-columns */}
                      <Grid size={{ xs: 12, sm: 6 }}>
                         <Typography
-                           variant="navlink"                           
+                           variant="navlink"
                            sx={{ mb: 1, fontWeight: "bold" }}
                            id="tutorial-location-heading"
                         >
@@ -536,7 +556,7 @@ const NavigationMenu = ({
                      {/* Format Column */}
                      <Grid size={{ xs: 12, sm: 6 }}>
                         <Typography
-                           variant="navlink"                           
+                           variant="navlink"
                            sx={{ mb: 1, fontWeight: "bold" }}
                            id="tutorial-format-heading"
                         >
