@@ -339,7 +339,7 @@ const NavigationMenu = ({
                )}
                <Grid size={{ xs: 12, md: 2, xl: 2 }}>
                   <Button
-                     variant="outlined"
+                     variant="text"
                      onClick={() => {
                         handleProductClick();
                         onCollapseNavbar && onCollapseNavbar();
@@ -348,8 +348,7 @@ const NavigationMenu = ({
                         mb: 1,
                         color: theme.palette.offwhite?.["000"] || "inherit",
                         textTransform: "none",
-                        border: 0,
-                        pt:0,
+                        pt: 0,
                      }}
                   >
                      <Typography variant="navlink" sx={{ borderBottom: "1px solid " + theme.palette.bpp.granite["020"] }}>View All Products</Typography>
@@ -368,21 +367,7 @@ const NavigationMenu = ({
                sx: { mx: { xl: 2 } },
             }}
          >
-            <Grid container spacing={2}>
-               <Grid size={12}>
-                  <Button
-                     variant="outlined"
-                     color="primary"
-                     component={NavLink}
-                     to="/products?distance_learning=true"
-                     onClick={() => {
-                        onCollapseNavbar && onCollapseNavbar();
-                     }}
-                     sx={{ mb: 2 }}
-                  >
-                     View All Distance Learning
-                  </Button>
-               </Grid>
+            <Grid container spacing={2} columns={10}>               
                {loadingDistanceLearning ? (
                   <Grid size={12}>
                      <Typography color="text.secondary">
@@ -394,7 +379,7 @@ const NavigationMenu = ({
                   distanceLearningData.map((group) => (
                      <Grid
                         key={group.id || group.name}
-                        size={{ xs: 12, md: 3, xl: 2 }}
+                        size={{ xs: 12, md: 2, xl: 2 }}
                      >
                         <Typography
                            variant="navlink"
@@ -435,7 +420,7 @@ const NavigationMenu = ({
                      </Typography>
                   </Grid>
                )}
-               <Grid size={{ xs: 12, md: 3, xl: 2 }}>
+               <Grid size={{ xs: 12, md: 2, xl: 2 }}>
                   <Button
                      component={NavLink}
                      to="/products?group=8"
@@ -452,6 +437,21 @@ const NavigationMenu = ({
                      <Typography variant="navlink">Marking Vouchers</Typography>
                   </Button>
                </Grid>
+               <Grid size={{ xs: 12, md: 2, xl: 2 }}>
+                  <Button
+                     variant="text"
+                     color={theme.palette.offwhite?.["000"] || "inherit"}
+                     component={NavLink}
+                     to="/products?distance_learning=true"
+                     onClick={() => {
+                        onCollapseNavbar && onCollapseNavbar();
+                     }}
+                  >
+                     <Typography variant="navlink" sx={{ borderBottom: "1px solid " + theme.palette.bpp.granite["020"] }}>View All Distance Learning</Typography>
+                     <NavigateNextIcon />
+
+                  </Button>
+               </Grid>
             </Grid>
          </MegaMenuPopover>
 
@@ -466,14 +466,15 @@ const NavigationMenu = ({
                {/* View All Tutorials button */}
                <Grid size={12}>
                   <Button
-                     variant="outlined"
-                     color="primary"
+                     variant="text"
+                     color={theme.palette.offwhite?.["000"] || "inherit"}
                      component={NavLink}
                      to="/products?tutorial=true"
                      onClick={() => onCollapseNavbar?.()}
                      sx={{ mb: 2 }}
                   >
-                     View All Tutorials
+                     <Typography variant="navlink" sx={{ borderBottom: "1px solid " + theme.palette.bpp.granite["020"] }}>View All Tutorials</Typography>
+                     <NavigateNextIcon />
                   </Button>
                </Grid>
 
