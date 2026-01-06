@@ -17,14 +17,14 @@ class ProductVariationRecommendation(models.Model):
     """
 
     product_product_variation = models.OneToOneField(
-        'products.ProductProductVariation',
+        'catalog.ProductProductVariation',
         on_delete=models.CASCADE,
         related_name='recommendation',
         help_text="Source product-variation combination that makes the recommendation"
     )
 
     recommended_product_product_variation = models.ForeignKey(
-        'products.ProductProductVariation',
+        'catalog.ProductProductVariation',
         on_delete=models.CASCADE,
         related_name='recommended_by',
         help_text="Recommended complementary product-variation combination"
