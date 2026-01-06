@@ -184,17 +184,7 @@ const MobileNavigation = ({
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
-				<ListItem disablePadding>
-					<ListItemButton
-						onClick={(e) => {
-							handleMarkingVouchersClick(e);
-							handleNavigation("/products", { group: "8" });
-						}}>
-						<ListItemText primary="Marking Vouchers" />
-					</ListItemButton>
-				</ListItem>
-
-				{/* Conditional sections based on user permissions */}
+					{/* Conditional sections based on user permissions */}
 				{isApprentice && (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
@@ -374,6 +364,18 @@ const MobileNavigation = ({
 					<ListItem disablePadding>
 						<ListItemButton disabled>
 							<ListItemText primary="No products available" />
+						</ListItemButton>
+					</ListItem>
+				)}
+				{/* Add Marking Vouchers link under Marking group */}
+				{data.name === "Marking" && (
+					<ListItem disablePadding>
+						<ListItemButton
+							onClick={(e) => {
+								handleMarkingVouchersClick(e);
+								handleNavigation("/products", { group: "8" });
+							}}>
+							<ListItemText primary="Marking Vouchers" />
 						</ListItemButton>
 					</ListItem>
 				)}
