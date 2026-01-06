@@ -318,14 +318,45 @@ const NavigationMenu = ({
                                        {product.shortname}
                                     </MenuItem>
                                  ))}
+                                 {/* Add Marking Vouchers link under Marking group */}
+                                 {group.name === "Marking" && (
+                                    <MenuItem
+                                       variant="navmenu"
+                                       component={NavLink}
+                                       to="/products?group=8"
+                                       onClick={(e) => {
+                                          handleMarkingVouchersClick(e);
+                                          onCollapseNavbar && onCollapseNavbar();
+                                       }}
+                                    >
+                                       Marking Vouchers
+                                    </MenuItem>
+                                 )}
                               </MenuList>
                            ) : (
-                              <Typography
-                                 color="text.secondary"
-                                 variant="body2"
-                              >
-                                 No products available
-                              </Typography>
+                              /* If Marking group has no products, still show Marking Vouchers */
+                              group.name === "Marking" ? (
+                                 <MenuList variant="navmenu" dense>
+                                    <MenuItem
+                                       variant="navmenu"
+                                       component={NavLink}
+                                       to="/products?group=8"
+                                       onClick={(e) => {
+                                          handleMarkingVouchersClick(e);
+                                          onCollapseNavbar && onCollapseNavbar();
+                                       }}
+                                    >
+                                       Marking Vouchers
+                                    </MenuItem>
+                                 </MenuList>
+                              ) : (
+                                 <Typography
+                                    color="text.secondary"
+                                    variant="body2"
+                                 >
+                                    No products available
+                                 </Typography>
+                              )
                            )}
                         </Grid>
                      );
@@ -405,11 +436,42 @@ const NavigationMenu = ({
                                     {product.shortname}
                                  </MenuItem>
                               ))}
+                              {/* Add Marking Vouchers link under Marking group */}
+                              {group.name === "Marking" && (
+                                 <MenuItem
+                                    variant="navmenu"
+                                    component={NavLink}
+                                    to="/products?group=8"
+                                    onClick={(e) => {
+                                       handleMarkingVouchersClick(e);
+                                       onCollapseNavbar && onCollapseNavbar();
+                                    }}
+                                 >
+                                    Marking Vouchers
+                                 </MenuItem>
+                              )}
                            </MenuList>
                         ) : (
-                           <Typography color="text.secondary" variant="body2">
-                              No products available
-                           </Typography>
+                           /* If Marking group has no products, still show Marking Vouchers */
+                           group.name === "Marking" ? (
+                              <MenuList variant="navmenu" dense>
+                                 <MenuItem
+                                    variant="navmenu"
+                                    component={NavLink}
+                                    to="/products?group=8"
+                                    onClick={(e) => {
+                                       handleMarkingVouchersClick(e);
+                                       onCollapseNavbar && onCollapseNavbar();
+                                    }}
+                                 >
+                                    Marking Vouchers
+                                 </MenuItem>
+                              </MenuList>
+                           ) : (
+                              <Typography color="text.secondary" variant="body2">
+                                 No products available
+                              </Typography>
+                           )
                         )}
                      </Grid>
                   ))
@@ -420,23 +482,6 @@ const NavigationMenu = ({
                      </Typography>
                   </Grid>
                )}
-               <Grid size={{ xs: 12, md: 2, xl: 2 }}>
-                  <Button
-                     component={NavLink}
-                     to="/products?group=8"
-                     onClick={(e) => {
-                        handleMarkingVouchersClick(e);
-                        onCollapseNavbar && onCollapseNavbar();
-                     }}
-                     className="navbar-marking-vouchers"
-                     sx={{
-                        textTransform: "none",
-                        mx: { xl: 2 },
-                     }}
-                  >
-                     <Typography variant="navlink">Marking Vouchers</Typography>
-                  </Button>
-               </Grid>
                <Grid size={{ xs: 12, md: 2, xl: 2 }}>
                   <Button
                      variant="text"
@@ -463,20 +508,7 @@ const NavigationMenu = ({
             onClose={onCollapseNavbar}
          >
             <Grid container spacing={2}>
-               {/* View All Tutorials button */}
-               <Grid size={12}>
-                  <Button
-                     variant="text"
-                     color={theme.palette.offwhite?.["000"] || "inherit"}
-                     component={NavLink}
-                     to="/products?tutorial=true"
-                     onClick={() => onCollapseNavbar?.()}
-                     sx={{ mb: 2 }}
-                  >
-                     <Typography variant="navlink" sx={{ borderBottom: "1px solid " + theme.palette.bpp.granite["020"] }}>View All Tutorials</Typography>
-                     <NavigateNextIcon />
-                  </Button>
-               </Grid>
+               
 
                {/* Tutorial content */}
                {loadingTutorial ? (
@@ -488,7 +520,7 @@ const NavigationMenu = ({
                ) : tutorialData ? (
                   <>
                      {/* Location Column - Split into 2 sub-columns */}
-                     <Grid size={{ xs: 12, sm: 6 }}>
+                     <Grid size={{ xs: 12, md: 4}}>
                         <Typography
                            variant="navlink"
                            sx={{ mb: 1, fontWeight: "bold" }}
@@ -555,7 +587,7 @@ const NavigationMenu = ({
                      </Grid>
 
                      {/* Format Column */}
-                     <Grid size={{ xs: 12, sm: 6 }}>
+                     <Grid size={{ xs: 12, md: 4 }}>
                         <Typography
                            variant="navlink"
                            sx={{ mb: 1, fontWeight: "bold" }}
@@ -601,6 +633,20 @@ const NavigationMenu = ({
                      </Typography>
                   </Grid>
                )}
+               {/* View All Tutorials button */}
+               <Grid size={{ xs: 12, md: 4 }}>
+                  <Button
+                     variant="text"
+                     color={theme.palette.offwhite?.["000"] || "inherit"}
+                     component={NavLink}
+                     to="/products?tutorial=true"
+                     onClick={() => onCollapseNavbar?.()}
+                     sx={{ mb: 2 }}
+                  >
+                     <Typography variant="navlink" sx={{ borderBottom: "1px solid " + theme.palette.bpp.granite["020"] }}>View All Tutorials</Typography>
+                     <NavigateNextIcon />
+                  </Button>
+               </Grid>
             </Grid>
          </MegaMenuPopover>
 

@@ -37,16 +37,57 @@ jest.mock('../../../hooks/useAuth', () => ({
   useAuth: () => mockUseAuth,
 }));
 
-// Mock useTheme hook
-jest.mock('@mui/material', () => ({
-  ...jest.requireActual('@mui/material'),
-  useTheme: () => ({
-    palette: {
-      offwhite: {
-        '000': '#fdfdfd'
+// Mock useTheme hook with complete liftkit theme
+const mockTheme = {
+  palette: {
+    offwhite: {
+      '000': '#fdfdfd',
+      '001': '#f0edf1'
+    },
+    bpp: {
+      granite: {
+        '000': '#ffffff',
+        '010': '#f1f1f1',
+        '020': '#d9d9d9',
+        '030': '#bababa',
+        '040': '#9e9e9e',
+        '050': '#848484',
+        '060': '#6a6a6a',
+        '070': '#525252',
+        '080': '#3b3b3a',
+        '090': '#272524',
+        '100': '#111110'
       }
     }
-  }),
+  },
+  shadows: Array(25).fill('none').map((_, i) => i === 8 ? '0px 5px 5px -3px rgba(0,0,0,0.2)' : 'none'),
+  breakpoints: {
+    down: () => '@media (max-width:600px)',
+    up: () => '@media (min-width:600px)',
+    values: { xs: 0, sm: 600, md: 900, lg: 1200, xl: 1536 }
+  },
+  liftkit: {
+    spacing: {
+      xs3: '0.3rem',
+      xs2: '0.38rem',
+      xs: '0.49rem',
+      sm: '0.62rem',
+      md: '1rem',
+      lg: '1.62rem',
+      xl: '2.62rem',
+      xl15: '3.33rem',
+      xl2: '4.24rem',
+      xl3: '6.85rem'  // Extended for MegaMenuPopover
+    },
+    typography: {
+      body: { fontSize: '1em', fontWeight: 400 }
+    }
+  }
+};
+
+jest.mock('@mui/material', () => ({
+  ...jest.requireActual('@mui/material'),
+  useTheme: () => mockTheme,
 }));
 
 
@@ -87,12 +128,24 @@ describe('NavigationMenu', () => {
           { id: 202, shortname: 'Online Tutorial' },
         ]
       },
+      {
+        id: 3,
+        name: 'Marking',
+        products: [
+          { id: 301, shortname: 'Marking Practice' },
+        ]
+      },
     ],
     distanceLearningData: [
       {
         id: 1,
         name: 'Online Courses',
         products: [{ id: 301, shortname: 'Online CM1' }]
+      },
+      {
+        id: 2,
+        name: 'Marking',
+        products: [{ id: 302, shortname: 'Marking Practice' }]
       },
     ],
     tutorialData: {
@@ -247,15 +300,23 @@ describe('NavigationMenu', () => {
       expect(screen.getByText('View All Distance Learning')).toBeInTheDocument();
     });
 
-    test('renders Marking Vouchers link', () => {
+    test('renders Marking Vouchers link in both Products and Distance Learning menus', () => {
       renderMenu();
-      expect(screen.getByText('Marking Vouchers')).toBeInTheDocument();
+      // Marking Vouchers now appears in both Products and Distance Learning Marking groups
+      const markingVouchersLinks = screen.getAllByText('Marking Vouchers');
+      expect(markingVouchersLinks.length).toBeGreaterThanOrEqual(2);
     });
 
     test('calls handleMarkingVouchersClick when Marking Vouchers clicked', () => {
       renderMenu();
 
-      fireEvent.click(screen.getByText('Marking Vouchers'));
+      // Click Distance Learning menu to open it
+      const distanceLearningButton = screen.getByRole('button', { name: /distance learning/i });
+      fireEvent.click(distanceLearningButton);
+
+      // Click the first Marking Vouchers link found
+      const markingVouchersLinks = screen.getAllByText('Marking Vouchers');
+      fireEvent.click(markingVouchersLinks[0]);
 
       expect(mockHandleMarkingVouchersClick).toHaveBeenCalled();
     });
