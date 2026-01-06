@@ -668,7 +668,7 @@ def navigation_data(request):
             'Core Study Materials', 'Revision Materials', 'Marking', 'Tutorial', 'Online Classroom Recording'
         ]
         groups = FilterGroup.objects.filter(name__in=all_group_names).prefetch_related(
-            Prefetch('products', queryset=Product.objects.filter(is_active=True).order_by('shortname'))
+            Prefetch('catalog_products', queryset=Product.objects.filter(is_active=True).order_by('shortname'))
         )
         groups_dict = {g.name: g for g in groups}
 
@@ -682,7 +682,7 @@ def navigation_data(request):
                     'id': group.id, 'name': group.name,
                     'products': [
                         {'id': p.id, 'shortname': p.shortname, 'fullname': p.fullname, 'code': p.code}
-                        for p in group.products.all()
+                        for p in group.catalog_products.all()
                     ]
                 })
             else:
@@ -698,7 +698,7 @@ def navigation_data(request):
                     'id': group.id, 'name': group.name,
                     'products': [
                         {'id': p.id, 'shortname': p.shortname, 'fullname': p.fullname, 'code': p.code}
-                        for p in group.products.all()
+                        for p in group.catalog_products.all()
                     ]
                 })
             else:

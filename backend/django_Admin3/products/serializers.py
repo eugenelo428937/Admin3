@@ -215,8 +215,8 @@ class FilterGroupWithProductsSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'products']
     
     def get_products(self, obj):
-        # Get active products in this group
-        products = obj.products.filter(is_active=True).order_by('shortname')
+        # Get active products in this group (catalog_products is the related_name after catalog consolidation)
+        products = obj.catalog_products.filter(is_active=True).order_by('shortname')
         return [
             {
                 'id': product.id,

@@ -1,11 +1,12 @@
+"""Subjects app admin configuration.
+
+Note: Subject model has been moved to catalog app and is now registered
+in catalog/admin.py. This file is kept for backward compatibility but
+no longer registers any models.
+
+DEPRECATED: Subject admin is now in catalog.admin.SubjectAdmin
+"""
 from django.contrib import admin
-from .models import Subject
 
-@admin.register(Subject)
-class SubjectAdmin(admin.ModelAdmin):
-    list_display = ('code', 'description', 'active', 'created_at', 'updated_at')
-    list_filter = ('active', 'created_at', 'updated_at')
-    search_fields = ('code', 'description')
-    ordering = ('code',)
-
-# Register your models here.
+# Subject model admin registration moved to catalog/admin.py
+# See: catalog.admin.SubjectAdmin
