@@ -1224,3 +1224,10 @@ browser_snapshot()
 // Close browser
 browser_close()
 ```
+
+## Active Technologies
+- Python 3.11, Django 5.1 + Django REST Framework, PostgreSQL psycopg2-binary (001-catalog-consolidation)
+- PostgreSQL with new `acted` schema (001-catalog-consolidation)
+
+## Recent Changes
+- 001-catalog-consolidation: Added Python 3.11, Django 5.1 + Django REST Framework, PostgreSQL psycopg2-binary
