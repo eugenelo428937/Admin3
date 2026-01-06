@@ -1,24 +1,14 @@
-from django.db import models
+"""Backward compatibility re-export for ProductVariation model.
 
-class ProductVariation(models.Model):
-    VARIATION_TYPE_CHOICES = [
-        ("eBook", "eBook"),
-        ("Hub", "Hub"),
-        ("Printed", "Printed"),
-        ("Marking", "Marking"),
-        ("Tutorial", "Tutorial"),
-    ]
-    variation_type = models.CharField(max_length=32, choices=VARIATION_TYPE_CHOICES)
-    name = models.CharField(max_length=64)
-    description = models.TextField(blank=True, null=True)
-    description_short = models.CharField(max_length=255, blank=True, null=True, help_text="Short description for display purposes")
-    code = models.CharField(max_length=50, unique=True, blank=True, null=True)
+This model has been moved to catalog.models as part of the
+catalog consolidation (001-catalog-consolidation).
 
-    def __str__(self):
-        return f"{self.get_variation_type_display()}: {self.name}"
+This module re-exports it for backward compatibility with existing code
+that imports from products.models.product_variation.
 
-    class Meta:
-        db_table = "acted_product_variations"
-        unique_together = ("variation_type", "name")
-        verbose_name = "Product Variation"
-        verbose_name_plural = "Product Variations"
+DEPRECATED: New code should import from catalog.models instead:
+    from catalog.models import ProductVariation
+"""
+from catalog.models import ProductVariation
+
+__all__ = ['ProductVariation']

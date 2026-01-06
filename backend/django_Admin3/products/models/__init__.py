@@ -1,37 +1,53 @@
-# products/models/__init__.py
-from django.db import models
+"""Products app models package.
 
-from .products import Product, ProductVariation, ProductProductGroup
-from .bundle_product import ProductBundle, ProductBundleProduct
-from .product_variation_recommendation import ProductVariationRecommendation
+Product-related models have been moved to catalog.models as part of the
+catalog consolidation (001-catalog-consolidation). They are re-exported
+here for backward compatibility.
 
-# Import filter system models
-from .filter_system import (
-    FilterGroup, 
-    FilterConfiguration, 
-    FilterConfigurationGroup,
-    FilterPreset, 
-    FilterUsageAnalytics
+DEPRECATED: New code should import these from catalog.models instead:
+    from catalog.models import Product, ProductVariation, ProductBundle, ...
+
+Models that remain in products app:
+    - FilterGroup, FilterConfiguration, FilterConfigurationGroup,
+      FilterPreset, FilterUsageAnalytics (filter system)
+    - ProductVariationRecommendation
+"""
+# Re-export catalog models for backward compatibility
+from catalog.models import (
+    Product,
+    ProductVariation,
+    ProductProductVariation,
+    ProductProductGroup,
+    ProductBundle,
+    ProductBundleProduct,
 )
 
+# Filter system models remain in products app
+from .filter_system import (
+    FilterGroup,
+    FilterConfiguration,
+    FilterConfigurationGroup,
+    FilterPreset,
+    FilterUsageAnalytics,
+)
 
-class ProductProductVariation(models.Model):
-    """Junction table for product variations"""
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    product_variation = models.ForeignKey(ProductVariation, on_delete=models.CASCADE)
-    
-    class Meta:
-        unique_together = ("product", "product_variation")
-        db_table = "acted_product_productvariation"
-        verbose_name = "Product Product Variation"
-        verbose_name_plural = "Product Product Variations"
+# ProductVariationRecommendation remains in products app
+from .product_variation_recommendation import ProductVariationRecommendation
 
-
-# Updated __all__ to include filter system models
 __all__ = [
-    'Product', 'ProductVariation', 'ProductProductVariation', 'ProductProductGroup',
-    'ProductBundle', 'ProductBundleProduct',
+    # Catalog re-exports (deprecated - use catalog.models)
+    'Product',
+    'ProductVariation',
+    'ProductProductVariation',
+    'ProductProductGroup',
+    'ProductBundle',
+    'ProductBundleProduct',
+    # Products app native models
     'ProductVariationRecommendation',
     # Filter system
-    'FilterGroup', 'FilterConfiguration', 'FilterConfigurationGroup', 'FilterPreset', 'FilterUsageAnalytics'
+    'FilterGroup',
+    'FilterConfiguration',
+    'FilterConfigurationGroup',
+    'FilterPreset',
+    'FilterUsageAnalytics',
 ]

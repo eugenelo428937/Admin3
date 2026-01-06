@@ -97,6 +97,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 
 # Application definition
 INSTALLED_APPS = [
+    'catalog.apps.CatalogConfig',  # Must be before subjects, exam_sessions, products
     'users',
     'userprofile',
     'country',
@@ -117,6 +118,7 @@ INSTALLED_APPS = [
     'vat',  # Epic 3: VAT calculation and audit trail
     'address_cache',  # UK address lookup caching (Postcoder.com)
     'address_analytics',  # UK address lookup analytics and monitoring
+    'django.contrib.admindocs',  # Admin documentation generator
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -136,6 +138,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.admindocs.middleware.XViewMiddleware',  # For admindocs view documentation
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware'
 ]
