@@ -66,6 +66,7 @@ describe('MobileNavigation', () => {
     ],
     distanceLearningData: [
       { id: 1, name: 'Online Courses', products: [] },
+      { id: 2, name: 'Marking', products: [{ id: 201, shortname: 'Marking Practice' }] },
     ],
     tutorialData: {
       Location: { left: [{ id: 1, shortname: 'London' }], right: [] },
@@ -121,7 +122,7 @@ describe('MobileNavigation', () => {
       expect(screen.getByText('Products')).toBeInTheDocument();
       expect(screen.getByText('Distance Learning')).toBeInTheDocument();
       expect(screen.getByText('Tutorials')).toBeInTheDocument();
-      expect(screen.getByText('Marking Vouchers')).toBeInTheDocument();
+      // Marking Vouchers is now under Distance Learning > Marking group
     });
 
     test('renders header action icons', () => {
@@ -286,9 +287,12 @@ describe('MobileNavigation', () => {
   });
 
   describe('marking vouchers', () => {
-    test('calls handleMarkingVouchersClick when clicked', () => {
+    test('calls handleMarkingVouchersClick when clicked in Marking group', () => {
       renderNavigation();
 
+      // Navigate to Distance Learning > Marking group
+      fireEvent.click(screen.getByText('Distance Learning'));
+      fireEvent.click(screen.getByText('Marking'));
       fireEvent.click(screen.getByText('Marking Vouchers'));
 
       expect(mockHandleMarkingVouchersClick).toHaveBeenCalled();
