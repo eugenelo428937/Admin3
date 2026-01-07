@@ -132,10 +132,10 @@ class ExamSessionTestCase(TestCase):
         )
 
     def test_db_table_name(self):
-        """Test custom database table name."""
+        """Test custom database table name (migrated to catalog app)."""
         self.assertEqual(
             ExamSession._meta.db_table,
-            'acted_exam_sessions'
+            '"acted"."catalog_exam_sessions"'
         )
 
     def test_query_by_session_code(self):
@@ -271,8 +271,10 @@ class ExamSessionTestCase(TestCase):
 
     def test_session_duration_calculation(self):
         """Test calculating session duration from start_date and end_date."""
-        start = timezone.now() + timedelta(days=30)
-        end = timezone.now() + timedelta(days=60)
+        # Use a fixed base time to avoid microsecond differences
+        base_time = timezone.now()
+        start = base_time + timedelta(days=30)
+        end = base_time + timedelta(days=60)
 
         session = ExamSession.objects.create(
             session_code='JUNE2025',

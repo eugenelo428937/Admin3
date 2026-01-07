@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand, CommandError
 from marking.models import MarkingPaper
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
 from django.utils.dateparse import parse_date
-from products.models import Product, ProductGroup
+from catalog.models import Product
 from datetime import datetime
 from subjects.models import Subject
 from exam_sessions_subjects.models import ExamSessionSubject
