@@ -8,7 +8,10 @@ from unittest.mock import patch, MagicMock
 
 from cart.models import Cart, CartItem, ActedOrder, ActedOrderPayment
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
-from products.models import Product, ProductGroup
+from exam_sessions_subjects.models import ExamSessionSubject
+from catalog.models import Product, ExamSession, Subject
+from products.models import FilterGroup
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -21,23 +24,45 @@ class PaymentIntegrationTest(TestCase):
             password='testpass123'
         )
         self.client.force_authenticate(user=self.user)
-        
-        # Create test product group
-        self.product_group = ProductGroup.objects.create(
+
+        # Create test filter group
+        self.filter_group = FilterGroup.objects.create(
             name='Test Product',
             code='TEST',
             description='Test product for payment testing'
         )
-        
+
+        # Create test subject
+        self.subject = Subject.objects.create(
+            code='TEST',
+            description='Test Subject'
+        )
+
+        # Create test exam session
+        self.exam_session = ExamSession.objects.create(
+            session_code='TEST-2025',
+            start_date=timezone.now(),
+            end_date=timezone.now()
+        )
+
+        # Create exam session subject
+        self.exam_session_subject = ExamSessionSubject.objects.create(
+            exam_session=self.exam_session,
+            subject=self.subject
+        )
+
         # Create test product
         self.product = Product.objects.create(
             fullname='Test Product',
-            code='TEST001',
-            group=self.product_group
+            shortname='Test Product',
+            code='TEST001'
         )
-        
+        # Add product to filter group via M2M
+        self.product.groups.add(self.filter_group)
+
         # Create test exam session subject product
         self.exam_product = ExamSessionSubjectProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
             product=self.product
         )
         

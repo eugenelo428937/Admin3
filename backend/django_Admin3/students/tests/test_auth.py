@@ -1,10 +1,16 @@
-# students/tests.py
+# students/tests/test_auth.py
+"""
+Test suite for students authentication endpoints.
+
+Moved from students/tests.py to students/tests/test_auth.py
+to resolve Python module import conflict.
+"""
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 from django.contrib.auth.models import User
-from .models import Student
+from students.models import Student
 import json
 
 class AuthenticationTests(TestCase):

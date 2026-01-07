@@ -396,13 +396,35 @@ python manage.py test_emails preview --template password_reset --save
 ```
 /api/auth/          # Authentication (login, refresh, password reset)
 /api/users/         # User management
-/api/products/      # Product catalog
-/api/subjects/      # Subject management
-/api/exam-sessions/ # Exam session management
+/api/catalog/       # Centralized catalog API (NEW - use this for new code)
+/api/products/      # Product catalog (DEPRECATED - delegates to /api/catalog/)
+/api/subjects/      # Subject management (DEPRECATED - delegates to /api/catalog/)
+/api/exam-sessions/ # Exam session management (DEPRECATED - delegates to /api/catalog/)
 /api/cart/          # Shopping cart
 /api/tutorials/     # Tutorial events
 /api/rules/         # Rules engine
 /api/utils/         # Utility functions (email, etc.)
+```
+
+### Catalog API Endpoints (Primary)
+```
+/api/catalog/subjects/           # Subject CRUD + bulk-import action
+/api/catalog/exam-sessions/      # Exam session CRUD
+/api/catalog/products/           # Product CRUD + bundle-contents, bundles actions
+/api/catalog/bundles/            # Exam session bundle list/retrieve
+/api/catalog/navigation-data/    # Combined navigation menu data (cached)
+/api/catalog/search/             # Fuzzy search with trigram similarity
+/api/catalog/advanced-search/    # Multi-filter search with pagination
+```
+
+### Filter System Endpoints (Stay in products app)
+
+```
+/api/products/product-categories/all/           # Three-level category tree
+/api/products/product-groups/tree/              # Product group tree
+/api/products/product-groups/<id>/products/     # Products by group
+/api/products/product-group-filters/            # Product group filters
+/api/products/filter-configuration/             # Dynamic filter configuration
 ```
 
 ### Rules Engine API Endpoints
@@ -1228,6 +1250,11 @@ browser_close()
 ## Active Technologies
 - Python 3.11, Django 5.1 + Django REST Framework, PostgreSQL psycopg2-binary (001-catalog-consolidation)
 - PostgreSQL with new `acted` schema (001-catalog-consolidation)
+- Centralized catalog API at /api/catalog/ (002-catalog-api-consolidation)
 
 ## Recent Changes
 - 001-catalog-consolidation: Added Python 3.11, Django 5.1 + Django REST Framework, PostgreSQL psycopg2-binary
+- 002-catalog-api-consolidation: Migrated API layer to catalog app using Strangler Fig pattern
+  - New endpoints: /api/catalog/subjects/, /api/catalog/exam-sessions/, /api/catalog/products/, /api/catalog/bundles/
+  - Legacy apps (subjects/, exam_sessions/, products/) are now thin wrappers with deprecation warnings
+  - Filter system endpoints remain in products app (not migrated)

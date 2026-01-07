@@ -9,6 +9,9 @@
 #   - acted_product_productgroup
 #   - acted_product_bundles
 #   - acted_product_bundle_products
+#
+# IMPORTANT: FK updates in exam_sessions_subjects_products MUST complete before
+# this migration runs, because AlterField needs the old models to exist in Django's state.
 
 from django.db import migrations
 
@@ -19,6 +22,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('products', '0003_update_fk_to_catalog'),
         ('catalog', '0002_create_models'),  # Ensure catalog models exist first
+        ('exam_sessions_subjects_products', '0002_update_fk_to_catalog'),  # FK update must happen first
     ]
 
     operations = [
