@@ -26,13 +26,12 @@ urlpatterns = [
     path('api/users/', include('users.urls')),
     path('api/students/', include('students.urls')),
     path('api/exam-sessions/', include('exam_sessions.urls')),
-    # path('api/subjects/', include('subjects.urls')),
+    # Legacy subjects URL - delegates to catalog.views.SubjectViewSet (002-catalog-api-consolidation)
+    path('api/subjects/', include('subjects.urls')),
     # Include products for navigation endpoints (navbar-product-groups, distance-learning-dropdown, etc.)
     path('api/products/', include('products.urls')),
     # Include exam_sessions_subjects_products under /current/ prefix
     path('api/products/current/', include('exam_sessions_subjects_products.urls')),
-    # path('api/', include('products.urls')),
-    path('api/', include('subjects.urls')),
     path('api/exam-sessions-subjects/', include('exam_sessions_subjects.urls')),
     path('api/exam-sessions-subjects-products/', include('exam_sessions_subjects_products.urls')),
     path('api/cart/', include('cart.urls')),
@@ -42,4 +41,6 @@ urlpatterns = [
     path('api/markings/', include('marking.urls')),
     path('api/marking-vouchers/', include('marking_vouchers.urls')),
     path('api/tutorials/', include('tutorials.urls')),
+    # Catalog API - consolidated catalog endpoints (002-catalog-api-consolidation)
+    path('api/catalog/', include('catalog.urls')),
 ]
