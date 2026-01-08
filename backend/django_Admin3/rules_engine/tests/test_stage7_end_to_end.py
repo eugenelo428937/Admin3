@@ -212,7 +212,7 @@ class Stage7EndToEndTests(TestCase):
         
         # Create rule that requires acknowledgment for EU users
         terms_rule = ActedRule.objects.create(
-            rule_id='eu_checkout_terms_required_test1',
+            rule_code='eu_checkout_terms_required_test1',
             name='EU Checkout Terms Required Test1',
             entry_point='checkout_terms',
             rules_fields_id='full_checkout_context',
@@ -323,7 +323,7 @@ class Stage7EndToEndTests(TestCase):
         
         # Create rule for acknowledgment given scenario
         terms_rule = ActedRule.objects.create(
-            rule_id='eu_checkout_terms_given_test2',
+            rule_code='eu_checkout_terms_given_test2',
             name='EU Checkout Terms Given Test2',
             entry_point='checkout_terms',
             rules_fields_id='full_checkout_context',
@@ -436,7 +436,7 @@ class Stage7EndToEndTests(TestCase):
         
         # Create homepage preference rule
         homepage_rule = ActedRule.objects.create(
-            rule_id='homepage_newsletter_preference',
+            rule_code='homepage_newsletter_preference',
             name='Homepage Newsletter Preference',
             entry_point='home_page_mount',
             rules_fields_id='full_checkout_context',
@@ -535,7 +535,7 @@ class Stage7EndToEndTests(TestCase):
         
         # Create chain of rules for checkout_start
         rule1 = ActedRule.objects.create(
-            rule_id='checkout_discount_rule',
+            rule_code='checkout_discount_rule',
             name='Checkout Discount Rule',
             entry_point='checkout_start',
             rules_fields_id='full_checkout_context',
@@ -555,7 +555,7 @@ class Stage7EndToEndTests(TestCase):
         )
         
         rule2 = ActedRule.objects.create(
-            rule_id='checkout_discount_banner',
+            rule_code='checkout_discount_banner',
             name='Checkout Discount Banner',
             entry_point='checkout_start',
             rules_fields_id='full_checkout_context',
@@ -574,7 +574,7 @@ class Stage7EndToEndTests(TestCase):
         )
         
         rule3 = ActedRule.objects.create(
-            rule_id='checkout_terms_validation',
+            rule_code='checkout_terms_validation',
             name='Checkout Terms Validation',
             entry_point='checkout_start',
             rules_fields_id='full_checkout_context',
@@ -730,7 +730,7 @@ class Stage7EndToEndTests(TestCase):
         # Create multiple rules to simulate load
         for i in range(10):
             ActedRule.objects.create(
-                rule_id=f'performance_rule_{i}',
+                rule_code=f'performance_rule_{i}',
                 name=f'Performance Rule {i}',
                 entry_point='checkout_terms',
                 rules_fields_id='full_checkout_context',

@@ -146,7 +146,7 @@ class Stage4RuleIntegrationTests(TestCase):
         Expected to FAIL initially - no integration validation
         """
         rule = ActedRule.objects.create(
-            rule_id='integration_test_rule',
+            rule_code='integration_test_rule',
             **self.base_rule_data
         )
         
@@ -172,7 +172,7 @@ class Stage4RuleIntegrationTests(TestCase):
         # Verify rule can be fetched by entry point
         entry_point_rules = ActedRule.objects.filter(entry_point='checkout_terms')
         self.assertEqual(entry_point_rules.count(), 1)
-        self.assertEqual(entry_point_rules.first().rule_id, 'integration_test_rule')
+        self.assertEqual(entry_point_rules.first().rule_code, 'integration_test_rule')
     
     def test_rule_context_validation_with_schema(self):
         """
@@ -180,7 +180,7 @@ class Stage4RuleIntegrationTests(TestCase):
         Expected to FAIL initially - no context validation integration
         """
         rule = ActedRule.objects.create(
-            rule_id='context_validation_rule',
+            rule_code='context_validation_rule',
             **self.base_rule_data
         )
         
@@ -216,7 +216,7 @@ class Stage4RuleIntegrationTests(TestCase):
         # Create active rule
         active_rule_data = self.base_rule_data.copy()
         active_rule = ActedRule.objects.create(
-            rule_id='active_rule',
+            rule_code='active_rule',
             **active_rule_data
         )
         
@@ -225,7 +225,7 @@ class Stage4RuleIntegrationTests(TestCase):
         inactive_rule_data['name'] = 'Inactive Rule'
         inactive_rule_data['active'] = False
         inactive_rule = ActedRule.objects.create(
-            rule_id='inactive_rule',
+            rule_code='inactive_rule',
             **inactive_rule_data
         )
         
@@ -237,7 +237,7 @@ class Stage4RuleIntegrationTests(TestCase):
         
         # Should return only active rule
         self.assertEqual(active_rules.count(), 1)
-        self.assertEqual(active_rules.first().rule_id, 'active_rule')
+        self.assertEqual(active_rules.first().rule_code, 'active_rule')
         
         # Verify inactive rule exists but is not in active query
         all_rules = ActedRule.objects.filter(entry_point='checkout_terms')
@@ -250,7 +250,7 @@ class Stage4RuleIntegrationTests(TestCase):
         """
         # Create multiple rules with different priorities
         rule1 = ActedRule.objects.create(
-            rule_id='high_priority_rule',
+            rule_code='high_priority_rule',
             name='High Priority Rule',
             priority=1,  # Highest priority
             entry_point='checkout_terms',
@@ -259,7 +259,7 @@ class Stage4RuleIntegrationTests(TestCase):
         )
         
         rule2 = ActedRule.objects.create(
-            rule_id='medium_priority_rule', 
+            rule_code='medium_priority_rule', 
             name='Medium Priority Rule',
             priority=50,  # Medium priority
             entry_point='checkout_terms',
@@ -268,7 +268,7 @@ class Stage4RuleIntegrationTests(TestCase):
         )
         
         rule3 = ActedRule.objects.create(
-            rule_id='low_priority_rule',
+            rule_code='low_priority_rule',
             name='Low Priority Rule',
             priority=100,  # Lowest priority
             entry_point='checkout_terms',
@@ -284,9 +284,9 @@ class Stage4RuleIntegrationTests(TestCase):
         
         # Verify correct ordering
         self.assertEqual(ordered_rules.count(), 3)
-        self.assertEqual(ordered_rules[0].rule_id, 'high_priority_rule')
-        self.assertEqual(ordered_rules[1].rule_id, 'medium_priority_rule')
-        self.assertEqual(ordered_rules[2].rule_id, 'low_priority_rule')
+        self.assertEqual(ordered_rules[0].rule_code, 'high_priority_rule')
+        self.assertEqual(ordered_rules[1].rule_code, 'medium_priority_rule')
+        self.assertEqual(ordered_rules[2].rule_code, 'low_priority_rule')
         
         # Verify priorities
         self.assertEqual(ordered_rules[0].priority, 1)
@@ -300,7 +300,7 @@ class Stage4RuleIntegrationTests(TestCase):
         """
         # Create rule with stop_processing=True
         stop_rule = ActedRule.objects.create(
-            rule_id='stop_processing_rule',
+            rule_code='stop_processing_rule',
             name='Stop Processing Rule',
             priority=10,
             entry_point='checkout_terms',
@@ -311,7 +311,7 @@ class Stage4RuleIntegrationTests(TestCase):
         
         # Create rule that should not be processed if stop_processing works
         later_rule = ActedRule.objects.create(
-            rule_id='later_rule',
+            rule_code='later_rule',
             name='Later Rule',
             priority=20,  # Lower priority (processed after)
             entry_point='checkout_terms',
@@ -327,11 +327,11 @@ class Stage4RuleIntegrationTests(TestCase):
         ).order_by('priority')
         
         # Verify stop_processing rule comes first
-        self.assertEqual(processing_order[0].rule_id, 'stop_processing_rule')
+        self.assertEqual(processing_order[0].rule_code, 'stop_processing_rule')
         self.assertTrue(processing_order[0].stop_processing)
         
         # Verify later rule exists but would be skipped in processing
-        self.assertEqual(processing_order[1].rule_id, 'later_rule')
+        self.assertEqual(processing_order[1].rule_code, 'later_rule')
         self.assertFalse(processing_order[1].stop_processing)
     
     def test_rule_actions_array_validation(self):
@@ -341,7 +341,7 @@ class Stage4RuleIntegrationTests(TestCase):
         """
         # Test valid actions array
         valid_rule = ActedRule(
-            rule_id='valid_actions_rule',
+            rule_code='valid_actions_rule',
             name='Valid Actions Rule',
             entry_point='checkout_terms',
             condition={'==': [True, True]},
@@ -359,7 +359,7 @@ class Stage4RuleIntegrationTests(TestCase):
         
         # Test invalid actions (not an array)
         invalid_rule_not_array = ActedRule(
-            rule_id='invalid_actions_not_array',
+            rule_code='invalid_actions_not_array',
             name='Invalid Actions Not Array',
             entry_point='checkout_terms',
             condition={'==': [True, True]},
@@ -373,7 +373,7 @@ class Stage4RuleIntegrationTests(TestCase):
         
         # Test invalid action (missing type field)
         invalid_rule_missing_type = ActedRule(
-            rule_id='invalid_action_missing_type',
+            rule_code='invalid_action_missing_type',
             name='Invalid Action Missing Type',
             entry_point='checkout_terms',
             condition={'==': [True, True]},
@@ -402,7 +402,7 @@ class Stage4RuleIntegrationTests(TestCase):
         versioned_rule_data['metadata'] = metadata
         
         rule = ActedRule.objects.create(
-            rule_id='versioned_rule',
+            rule_code='versioned_rule',
             **versioned_rule_data
         )
         
@@ -425,7 +425,7 @@ class Stage4RuleIntegrationTests(TestCase):
         updated_rule_data['metadata'] = updated_metadata
         
         updated_rule = ActedRule.objects.create(
-            rule_id='versioned_rule_v2',
+            rule_code='versioned_rule_v2',
             **updated_rule_data
         )
         
@@ -446,7 +446,7 @@ class Stage4RuleIntegrationTests(TestCase):
         
         # Create rule that becomes active tomorrow
         future_rule = ActedRule.objects.create(
-            rule_id='future_rule',
+            rule_code='future_rule',
             name='Future Rule',
             active_from=tomorrow,
             entry_point='checkout_terms',
@@ -456,7 +456,7 @@ class Stage4RuleIntegrationTests(TestCase):
         
         # Create rule that expired yesterday
         expired_rule = ActedRule.objects.create(
-            rule_id='expired_rule',
+            rule_code='expired_rule',
             name='Expired Rule',
             active_from=yesterday - timedelta(days=2),
             active_until=yesterday,
@@ -467,7 +467,7 @@ class Stage4RuleIntegrationTests(TestCase):
         
         # Create currently active rule
         current_rule = ActedRule.objects.create(
-            rule_id='current_rule',
+            rule_code='current_rule',
             name='Current Rule',
             active_from=yesterday,
             active_until=tomorrow,
@@ -486,7 +486,7 @@ class Stage4RuleIntegrationTests(TestCase):
         
         # Should return only the current rule
         self.assertEqual(currently_active.count(), 1)
-        self.assertEqual(currently_active.first().rule_id, 'current_rule')
+        self.assertEqual(currently_active.first().rule_code, 'current_rule')
     
     def test_rule_database_indexes_performance(self):
         """
@@ -498,7 +498,7 @@ class Stage4RuleIntegrationTests(TestCase):
         # Create multiple rules to test index usage
         for i in range(10):
             ActedRule.objects.create(
-                rule_id=f'performance_rule_{i}',
+                rule_code=f'performance_rule_{i}',
                 name=f'Performance Rule {i}',
                 entry_point='checkout_terms',
                 priority=i * 10,

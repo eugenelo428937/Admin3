@@ -207,7 +207,7 @@ class TestRuleSerializers(TestCase):
         
         # Create a comprehensive rule
         rule = ActedRule.objects.create(
-            rule_id='test_full_rule',
+            rule_code='test_full_rule',
             name='Full Test Rule',
             entry_point='checkout_terms',
             rules_fields_id='checkout_context_v1',
@@ -487,7 +487,7 @@ class TestRuleSerializers(TestCase):
         
         # Create rule with relationships
         rule = ActedRule.objects.create(
-            rule_id='nested_test_rule',
+            rule_code='nested_test_rule',
             name='Nested Test Rule',
             entry_point='checkout_terms',
             rules_fields_id='checkout_context_v1',
@@ -531,7 +531,7 @@ class TestRuleSerializers(TestCase):
         rules = []
         for i in range(10):
             rule = ActedRule.objects.create(
-                rule_id=f'bulk_rule_{i}',
+                rule_code=f'bulk_rule_{i}',
                 name=f'Bulk Rule {i}',
                 entry_point='home_page_mount',
                 rules_fields_id='checkout_context_v1',

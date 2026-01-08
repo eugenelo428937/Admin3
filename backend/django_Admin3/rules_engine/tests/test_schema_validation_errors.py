@@ -56,7 +56,7 @@ class SchemaValidationErrorTest(TestCase):
         
         # Create a rule that uses this schema
         self.rule = ActedRule.objects.create(
-            rule_id='test_schema_validation_rule',
+            rule_code='test_schema_validation_rule',
             name='Test Schema Validation Rule',
             entry_point='checkout_start',
             priority=10,
@@ -134,7 +134,7 @@ class SchemaValidationErrorTest(TestCase):
         """Test that rules without schema validation still work normally"""
         # Create rule without schema validation
         rule_no_schema = ActedRule.objects.create(
-            rule_id='test_no_schema_rule',
+            rule_code='test_no_schema_rule',
             name='Test No Schema Rule',
             entry_point='test_no_schema',
             priority=10,

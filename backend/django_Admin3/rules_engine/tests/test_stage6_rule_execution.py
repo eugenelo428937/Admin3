@@ -151,7 +151,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
         
         # Create test rules
         self.test_rule = ActedRule.objects.create(
-            rule_id='execution_test_rule',
+            rule_code='execution_test_rule',
             name='Execution Test Rule',
             entry_point='checkout_terms',
             rules_fields_id='execution_test_schema',
@@ -201,7 +201,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
             
             # Create execution record (when implemented)
             execution = ActedRuleExecution.objects.create(
-                rule_id=rule.rule_id,
+                rule_code=rule.rule_code,
                 entry_point=entry_point,
                 context_snapshot=context,
                 condition_result=True,
@@ -210,7 +210,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
             )
             
             # Verify execution was logged
-            self.assertEqual(execution.rule_id, 'execution_test_rule')
+            self.assertEqual(execution.rule_code, 'execution_test_rule')
             self.assertEqual(execution.entry_point, 'checkout_terms')
             self.assertEqual(execution.context_snapshot, context)
             self.assertTrue(execution.success)
@@ -272,7 +272,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
             
             # Create execution with full context snapshot
             execution = ActedRuleExecution.objects.create(
-                rule_id=rule.rule_id,
+                rule_code=rule.rule_code,
                 entry_point='checkout_terms',
                 context_snapshot=context_with_sensitive_data,
                 condition_result=True,
@@ -304,7 +304,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
         """
         # Create additional rules
         rule2 = ActedRule.objects.create(
-            rule_id='second_execution_rule',
+            rule_code='second_execution_rule',
             name='Second Execution Rule',
             entry_point='checkout_terms',
             rules_fields_id='execution_test_schema',
@@ -322,7 +322,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
         )
         
         rule3 = ActedRule.objects.create(
-            rule_id='third_execution_rule',
+            rule_code='third_execution_rule',
             name='Third Execution Rule',
             entry_point='checkout_terms',
             rules_fields_id='execution_test_schema',
@@ -349,7 +349,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
             executions = []
             for rule in [self.test_rule, rule2, rule3]:
                 execution = ActedRuleExecution.objects.create(
-                    rule_id=rule.rule_id,
+                    rule_code=rule.rule_code,
                     entry_point='checkout_terms',
                     context_snapshot=context,
                     condition_result=True,
@@ -363,7 +363,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
             self.assertEqual(all_executions.count(), 3)
             
             # Verify distinct rule IDs
-            rule_ids = set(exec.rule_id for exec in all_executions)
+            rule_ids = set(exec.rule_code for exec in all_executions)
             expected_rule_ids = {
                 'execution_test_rule',
                 'second_execution_rule', 
@@ -399,7 +399,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
             
             # Create execution with full audit data
             execution = ActedRuleExecution.objects.create(
-                rule_id=rule.rule_id,
+                rule_code=rule.rule_code,
                 entry_point='checkout_terms',
                 context_snapshot=context,
                 condition_result=True,
@@ -426,7 +426,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
             )
             
             # Verify audit trail completeness
-            self.assertEqual(execution.rule_id, 'execution_test_rule')
+            self.assertEqual(execution.rule_code, 'execution_test_rule')
             self.assertTrue(execution.condition_result)
             self.assertEqual(execution.condition_evaluation_time_ms, 15)
             self.assertEqual(execution.total_execution_time_ms, 40)
@@ -451,7 +451,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
         """
         # Create rule with invalid action to trigger error
         error_rule = ActedRule.objects.create(
-            rule_id='error_execution_rule',
+            rule_code='error_execution_rule',
             name='Error Execution Rule',
             entry_point='checkout_terms',
             rules_fields_id='execution_test_schema',
@@ -474,7 +474,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
             
             # Simulate execution that encounters error
             execution = ActedRuleExecution.objects.create(
-                rule_id=error_rule.rule_id,
+                rule_code=error_rule.rule_code,
                 entry_point='checkout_terms',
                 context_snapshot=context,
                 condition_result=True,
@@ -498,7 +498,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
             # Verify failed executions can be queried
             failed_executions = ActedRuleExecution.objects.filter(success=False)
             self.assertEqual(failed_executions.count(), 1)
-            self.assertEqual(failed_executions.first().rule_id, 'error_execution_rule')
+            self.assertEqual(failed_executions.first().rule_code, 'error_execution_rule')
             
         except ImportError:
             self.fail("Error logging in ActedRuleExecution not implemented")
@@ -517,7 +517,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
             
             # Create execution with performance metrics
             execution = ActedRuleExecution.objects.create(
-                rule_id=rule.rule_id,
+                rule_code=rule.rule_code,
                 entry_point='checkout_terms',
                 context_snapshot=context,
                 condition_result=True,
@@ -564,7 +564,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
             executions = []
             for i in range(25):
                 execution = ActedRuleExecution.objects.create(
-                    rule_id=rule.rule_id,
+                    rule_code=rule.rule_code,
                     entry_point='checkout_terms',
                     context_snapshot=context,
                     condition_result=True,

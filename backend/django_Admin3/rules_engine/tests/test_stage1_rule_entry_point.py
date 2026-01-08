@@ -95,7 +95,7 @@ class Stage1RuleEntryPointTests(TestCase):
         
         # Create rules associated with this entry point
         rule1 = ActedRule.objects.create(
-            rule_id='rule_checkout_terms_1',
+            rule_code='rule_checkout_terms_1',
             name='Checkout Terms Rule 1',
             entry_point='checkout_terms',
             priority=10,
@@ -104,7 +104,7 @@ class Stage1RuleEntryPointTests(TestCase):
         )
         
         rule2 = ActedRule.objects.create(
-            rule_id='rule_checkout_terms_2',
+            rule_code='rule_checkout_terms_2',
             name='Checkout Terms Rule 2',
             entry_point='checkout_terms',
             priority=20,
@@ -114,7 +114,7 @@ class Stage1RuleEntryPointTests(TestCase):
         
         # Create rule for different entry point (should not be returned)
         rule3 = ActedRule.objects.create(
-            rule_id='rule_home_page_1',
+            rule_code='rule_home_page_1',
             name='Home Page Rule',
             entry_point='home_page_mount',
             priority=10,
@@ -129,8 +129,8 @@ class Stage1RuleEntryPointTests(TestCase):
         ).order_by('priority')
         
         self.assertEqual(checkout_rules.count(), 2)
-        self.assertEqual(checkout_rules[0].rule_id, 'rule_checkout_terms_1')  # Priority 10
-        self.assertEqual(checkout_rules[1].rule_id, 'rule_checkout_terms_2')  # Priority 20
+        self.assertEqual(checkout_rules[0].rule_code, 'rule_checkout_terms_1')  # Priority 10
+        self.assertEqual(checkout_rules[1].rule_code, 'rule_checkout_terms_2')  # Priority 20
     
     def test_invalid_entry_point_returns_no_rules(self):
         """
@@ -139,7 +139,7 @@ class Stage1RuleEntryPointTests(TestCase):
         """
         # Create some rules
         ActedRule.objects.create(
-            rule_id='rule_checkout_1',
+            rule_code='rule_checkout_1',
             name='Checkout Rule',
             entry_point='checkout_terms',
             condition={'==': [True, True]},
@@ -160,7 +160,7 @@ class Stage1RuleEntryPointTests(TestCase):
         
         # Create rules with different priorities (lower = higher priority)
         rule_high = ActedRule.objects.create(
-            rule_id='rule_high_priority',
+            rule_code='rule_high_priority',
             name='High Priority Rule',
             entry_point='checkout_terms',
             priority=1,  # Highest priority
@@ -169,7 +169,7 @@ class Stage1RuleEntryPointTests(TestCase):
         )
         
         rule_low = ActedRule.objects.create(
-            rule_id='rule_low_priority',
+            rule_code='rule_low_priority',
             name='Low Priority Rule',
             entry_point='checkout_terms',
             priority=100,  # Lower priority
@@ -178,7 +178,7 @@ class Stage1RuleEntryPointTests(TestCase):
         )
         
         rule_medium = ActedRule.objects.create(
-            rule_id='rule_medium_priority',
+            rule_code='rule_medium_priority',
             name='Medium Priority Rule',
             entry_point='checkout_terms',
             priority=50,  # Medium priority
@@ -194,9 +194,9 @@ class Stage1RuleEntryPointTests(TestCase):
         
         # Should be ordered by priority: 1, 50, 100
         self.assertEqual(ordered_rules.count(), 3)
-        self.assertEqual(ordered_rules[0].rule_id, 'rule_high_priority')
-        self.assertEqual(ordered_rules[1].rule_id, 'rule_medium_priority')
-        self.assertEqual(ordered_rules[2].rule_id, 'rule_low_priority')
+        self.assertEqual(ordered_rules[0].rule_code, 'rule_high_priority')
+        self.assertEqual(ordered_rules[1].rule_code, 'rule_medium_priority')
+        self.assertEqual(ordered_rules[2].rule_code, 'rule_low_priority')
     
     def test_entry_point_string_representation(self):
         """

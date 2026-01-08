@@ -152,7 +152,7 @@ class TestRuleViews(TestCase):
         """
         # Create test rules
         rule1 = ActedRule.objects.create(
-            rule_id='checkout_rule_1',
+            rule_code='checkout_rule_1',
             name='Checkout Rule 1',
             entry_point='checkout_terms',
             rules_fields_id='checkout_context_v1',
@@ -168,7 +168,7 @@ class TestRuleViews(TestCase):
         )
         
         rule2 = ActedRule.objects.create(
-            rule_id='checkout_rule_2',
+            rule_code='checkout_rule_2',
             name='Checkout Rule 2',
             entry_point='checkout_terms',
             rules_fields_id='checkout_context_v1',
@@ -180,7 +180,7 @@ class TestRuleViews(TestCase):
         
         # Different entry point rule (should not be returned)
         rule3 = ActedRule.objects.create(
-            rule_id='home_rule_1',
+            rule_code='home_rule_1',
             name='Home Rule 1',
             entry_point='home_page_mount',
             rules_fields_id='checkout_context_v1',
@@ -240,7 +240,7 @@ class TestRuleViews(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         
         # Verify rule was created in database
-        rule = ActedRule.objects.get(rule_id='new_checkout_rule')
+        rule = ActedRule.objects.get(rule_code='new_checkout_rule')
         self.assertEqual(rule.name, 'New Checkout Rule')
         self.assertEqual(rule.entry_point, 'checkout_terms')
         self.assertEqual(rule.priority, 15)
@@ -293,7 +293,7 @@ class TestRuleViews(TestCase):
         """
         # Create rule with marking deadline condition
         rule = ActedRule.objects.create(
-            rule_id='marking_deadline_rule',
+            rule_code='marking_deadline_rule',
             name='Marking Deadline Rule',
             entry_point='checkout_terms',
             rules_fields_id='checkout_context_v1',
@@ -379,7 +379,7 @@ class TestRuleViews(TestCase):
         """
         # Create rule requiring acknowledgment
         rule = ActedRule.objects.create(
-            rule_id='terms_ack_required',
+            rule_code='terms_ack_required',
             name='Terms Acknowledgment Required',
             entry_point='checkout_terms',
             rules_fields_id='checkout_context_v1',
@@ -439,7 +439,7 @@ class TestRuleViews(TestCase):
         """
         # Create rule requiring acknowledgment
         rule = ActedRule.objects.create(
-            rule_id='terms_ack_required',
+            rule_code='terms_ack_required',
             name='Terms Acknowledgment Required',
             entry_point='checkout_terms',
             rules_fields_id='checkout_context_v1',
@@ -514,7 +514,7 @@ class TestRuleViews(TestCase):
         
         # Create rule
         rule = ActedRule.objects.create(
-            rule_id='logged_rule',
+            rule_code='logged_rule',
             name='Logged Rule',
             entry_point='checkout_terms',
             rules_fields_id='checkout_context_v1',
@@ -576,7 +576,7 @@ class TestRuleViews(TestCase):
         # Create many rules
         for i in range(25):
             ActedRule.objects.create(
-                rule_id=f'pagination_rule_{i}',
+                rule_code=f'pagination_rule_{i}',
                 name=f'Pagination Rule {i}',
                 entry_point='checkout_terms',
                 rules_fields_id='checkout_context_v1',
@@ -620,7 +620,7 @@ class TestRuleViews(TestCase):
         
         # Create initial rule
         rule = ActedRule.objects.create(
-            rule_id='update_test_rule',
+            rule_code='update_test_rule',
             name='Original Name',
             entry_point='checkout_terms',
             rules_fields_id='checkout_context_v1',
@@ -659,7 +659,7 @@ class TestRuleViews(TestCase):
         
         # Create rule to delete
         rule = ActedRule.objects.create(
-            rule_id='delete_test_rule',
+            rule_code='delete_test_rule',
             name='Rule to Delete',
             entry_point='checkout_terms',
             rules_fields_id='checkout_context_v1',

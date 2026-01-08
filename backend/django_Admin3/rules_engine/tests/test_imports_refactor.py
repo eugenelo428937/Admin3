@@ -17,7 +17,7 @@ class TestRulesEngineImports(TestCase):
                 ActedRuleExecution,
                 RuleExecution,  # Alias
                 MessageTemplate,
-                UserAcknowledgment,
+                # Note: UserAcknowledgment moved to cart.models.OrderUserAcknowledgment
                 RuleEntryPoint,
                 HolidayCalendar,
                 ContentStyleTheme,
