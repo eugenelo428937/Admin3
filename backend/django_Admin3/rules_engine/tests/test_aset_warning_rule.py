@@ -97,7 +97,7 @@ class ASETWarningRuleTestCase(TestCase):
         
         # Create ASET warning rule
         cls.aset_rule = ActedRule.objects.create(
-            rule_id="test_aset_warning_rule",
+            rule_code="test_aset_warning_rule",
             name="Test ASET Warning Rule",
             description="Display warning when ASET products are in cart",
             entry_point="checkout_start",
