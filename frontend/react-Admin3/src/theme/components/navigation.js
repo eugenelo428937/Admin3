@@ -1,5 +1,7 @@
-// Navigation Component Overrides (AppBar, Tabs, Menu)
+// Navigation Component Overrides (AppBar, Tabs, Menu, Button, Typography)
 import colorTheme from '../colorTheme';
+import { semanticColors } from '../colors/semantic';
+import liftKitTheme from '../liftKitTheme';
 
 export const navigationOverrides = {
   MuiAppBar: {
@@ -88,6 +90,67 @@ export const navigationOverrides = {
         style: {
           paddingLeft: 0,
           paddingRight: 0,
+        },
+      },
+    ],
+  },
+
+  // Navigation Button Variants (20260113-Styling-Clean-up)
+  MuiButton: {
+    variants: [
+      // navPrimary: Main nav buttons, MegaMenu triggers, conditional nav links
+      {
+        props: { variant: 'navPrimary' },
+        style: {
+          color: semanticColors.navigation.button.color,
+          textTransform: 'none',
+          padding: 0,
+          '&:hover': {
+            backgroundColor: 'transparent',
+            color: semanticColors.navigation.button.hoverColor,
+          },
+        },
+      },
+      // navViewAll: "View All X" action buttons with bottom margin
+      {
+        props: { variant: 'navViewAll' },
+        style: {
+          color: semanticColors.navigation.button.color,
+          textTransform: 'none',
+          paddingTop: 0,
+          marginBottom: liftKitTheme.spacing.sm,
+        },
+      },
+      // topNavAction: Top navigation action buttons (search, cart, account)
+      {
+        props: { variant: 'topNavAction' },
+        style: {
+          color: semanticColors.navigation.text.primary,
+          textTransform: 'none',
+          padding: 0,
+          justifyContent: 'center',
+        },
+      },
+    ],
+  },
+
+  // Navigation Typography Variants (20260113-Styling-Clean-up)
+  MuiTypography: {
+    variants: [
+      // navViewAllText: Underlined text for "View All" links
+      {
+        props: { variant: 'navViewAllText' },
+        style: {
+          borderBottom: `1px solid ${semanticColors.navigation.border.subtle}`,
+        },
+      },
+      // navHeading: Menu section headings (e.g., "Core Principles", "Location")
+      {
+        props: { variant: 'navHeading' },
+        style: {
+          marginBottom: liftKitTheme.spacing.xs,
+          fontWeight: 'bold',
+          cursor: 'pointer',
         },
       },
     ],
