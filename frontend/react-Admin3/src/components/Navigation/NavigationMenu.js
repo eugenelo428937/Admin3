@@ -398,7 +398,7 @@ const NavigationMenu = ({
                sx: { mx: { xl: 2 } },
             }}
          >
-            <Grid container spacing={2} columns={10}>               
+            <Grid container spacing={2} columns={10}>
                {loadingDistanceLearning ? (
                   <Grid size={12}>
                      <Typography color="text.secondary">
@@ -482,7 +482,7 @@ const NavigationMenu = ({
                      </Typography>
                   </Grid>
                )}
-               <Grid size={{ xs: 12, md: 2, xl: 2 }}>
+               <Grid size={{ xs: 12, md: 3, xl: 2 }}>
                   <Button
                      variant="text"
                      color={theme.palette.offwhite?.["000"] || "inherit"}
@@ -491,6 +491,7 @@ const NavigationMenu = ({
                      onClick={() => {
                         onCollapseNavbar && onCollapseNavbar();
                      }}
+                     sx={{ pt: 0 }}
                   >
                      <Typography variant="navlink" sx={{ borderBottom: "1px solid " + theme.palette.bpp.granite["020"] }}>View All Distance Learning</Typography>
                      <NavigateNextIcon />
@@ -508,7 +509,7 @@ const NavigationMenu = ({
             onClose={onCollapseNavbar}
          >
             <Grid container spacing={2}>
-               
+
 
                {/* Tutorial content */}
                {loadingTutorial ? (
@@ -520,7 +521,7 @@ const NavigationMenu = ({
                ) : tutorialData ? (
                   <>
                      {/* Location Column - Split into 2 sub-columns */}
-                     <Grid size={{ xs: 12, md: 4}}>
+                     <Grid size={{ xs: 12, md: 4 }}>
                         <Typography
                            variant="navlink"
                            sx={{ mb: 1, fontWeight: "bold" }}
@@ -641,7 +642,7 @@ const NavigationMenu = ({
                      component={NavLink}
                      to="/products?tutorial=true"
                      onClick={() => onCollapseNavbar?.()}
-                     sx={{ mb: 2 }}
+                     sx={{ mb: 2, pt: 0 }}
                   >
                      <Typography variant="navlink" sx={{ borderBottom: "1px solid " + theme.palette.bpp.granite["020"] }}>View All Tutorials</Typography>
                      <NavigateNextIcon />
