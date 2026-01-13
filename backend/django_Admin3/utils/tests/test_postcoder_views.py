@@ -3,7 +3,7 @@ Unit Tests for postcoder_address_lookup View
 
 Tests the Postcoder.com address lookup endpoint including:
 - Request validation (missing/invalid postcode)
-- Cache hit/miss flows
+- API integration with autocomplete
 - API error handling
 - Response format validation
 - Analytics logging
@@ -28,14 +28,22 @@ class PostcoderAddressLookupViewTestCase(TestCase):
         self.test_addresses = {
             "addresses": [
                 {
-                    "postcode": "SW1A 1AA",
-                    "line_1": "10 Downing Street",
-                    "town_or_city": "London",
-                    "county": "Greater London",
-                    "country": "England"
+                    "id": "123",
+                    "summaryline": "10 Downing Street",
+                    "locationsummary": "Westminster, London, SW1A 1AA"
                 }
             ]
         }
+        # Mock autocomplete API response format
+        self.autocomplete_response = [
+            {
+                "id": "123",
+                "type": "ADD",
+                "summaryline": "10 Downing Street",
+                "locationsummary": "Westminster, London, SW1A 1AA",
+                "count": 1
+            }
+        ]
 
     # ==================== Request Validation Tests ====================
 
@@ -93,16 +101,20 @@ class PostcoderAddressLookupViewTestCase(TestCase):
         data = json.loads(response.content)
         self.assertEqual(data['error'], 'Invalid postcode format')
 
-    # ==================== Cache Hit Flow Tests ====================
+    # ==================== Successful API Call Tests ====================
 
+    @patch('utils.views.transform_autocomplete_suggestions')
     @patch('utils.services.AddressLookupLogger')
     @patch('utils.services.PostcoderService')
     @patch('utils.services.AddressCacheService')
-    def test_cache_hit_returns_cached_addresses(self, mock_cache_service, mock_postcoder_service, mock_logger_service):
-        """Test cache hit returns addresses from cache"""
-        # Mock cache hit
-        mock_cache_instance = mock_cache_service.return_value
-        mock_cache_instance.get_cached_address.return_value = self.test_addresses
+    def test_successful_lookup_returns_addresses(self, mock_cache_service, mock_postcoder_service, mock_logger_service, mock_transform):
+        """Test successful lookup returns addresses from API"""
+        # Mock postcoder service
+        mock_postcoder_instance = mock_postcoder_service.return_value
+        mock_postcoder_instance.autocomplete_address.return_value = self.autocomplete_response
+
+        # Mock transform function
+        mock_transform.return_value = self.test_addresses
 
         # Mock logger
         mock_logger_instance = mock_logger_service.return_value
@@ -118,23 +130,24 @@ class PostcoderAddressLookupViewTestCase(TestCase):
         data = json.loads(response.content)
         self.assertIn('addresses', data)
         self.assertEqual(data['addresses'], self.test_addresses['addresses'])
-        self.assertTrue(data['cache_hit'])
+        self.assertFalse(data['cache_hit'])  # Autocomplete doesn't cache
         self.assertIn('response_time_ms', data)
 
-        # Verify cache was checked
-        mock_cache_instance.get_cached_address.assert_called_once_with(self.test_postcode)
+        # Verify API was called
+        mock_postcoder_instance.autocomplete_address.assert_called_once()
 
-        # Verify API was NOT called
-        mock_postcoder_service.return_value.lookup_address.assert_not_called()
-
+    @patch('utils.views.transform_autocomplete_suggestions')
     @patch('utils.services.AddressLookupLogger')
     @patch('utils.services.PostcoderService')
     @patch('utils.services.AddressCacheService')
-    def test_cache_hit_logs_analytics(self, mock_cache_service, mock_postcoder_service, mock_logger_service):
-        """Test cache hit logs analytics with cache_hit=True"""
-        # Mock cache hit
-        mock_cache_instance = mock_cache_service.return_value
-        mock_cache_instance.get_cached_address.return_value = self.test_addresses
+    def test_lookup_logs_analytics(self, mock_cache_service, mock_postcoder_service, mock_logger_service, mock_transform):
+        """Test lookup logs analytics"""
+        # Mock postcoder service
+        mock_postcoder_instance = mock_postcoder_service.return_value
+        mock_postcoder_instance.autocomplete_address.return_value = self.autocomplete_response
+
+        # Mock transform function
+        mock_transform.return_value = self.test_addresses
 
         # Mock logger
         mock_logger_instance = mock_logger_service.return_value
@@ -145,84 +158,44 @@ class PostcoderAddressLookupViewTestCase(TestCase):
 
         response = postcoder_address_lookup(request)
 
-        # Verify logging was called with cache_hit=True
+        # Verify logging was called
         mock_logger_instance.log_lookup.assert_called_once()
         call_kwargs = mock_logger_instance.log_lookup.call_args[1]
-        self.assertTrue(call_kwargs['cache_hit'])
+        self.assertFalse(call_kwargs['cache_hit'])  # Autocomplete doesn't cache
         self.assertTrue(call_kwargs['success'])
         self.assertEqual(call_kwargs['result_count'], 1)
 
-    # ==================== Cache Miss Flow Tests ====================
+    # ==================== Query Parameter Tests ====================
 
+    @patch('utils.views.transform_autocomplete_suggestions')
     @patch('utils.services.AddressLookupLogger')
     @patch('utils.services.PostcoderService')
     @patch('utils.services.AddressCacheService')
-    def test_cache_miss_calls_api(self, mock_cache_service, mock_postcoder_service, mock_logger_service):
-        """Test cache miss calls Postcoder API"""
-        # Mock cache miss
-        mock_cache_instance = mock_cache_service.return_value
-        mock_cache_instance.get_cached_address.return_value = None
-
-        # Mock API call
+    def test_query_parameter_takes_precedence(self, mock_cache_service, mock_postcoder_service, mock_logger_service, mock_transform):
+        """Test query parameter is used for search text"""
+        # Mock postcoder service
         mock_postcoder_instance = mock_postcoder_service.return_value
-        mock_postcoder_instance.lookup_address.return_value = [{"postcode": "SW1A1AA"}]
-        mock_postcoder_instance.transform_to_getaddress_format.return_value = self.test_addresses
+        mock_postcoder_instance.autocomplete_address.return_value = self.autocomplete_response
 
-        # Mock caching
-        mock_cache_instance.cache_address.return_value = True
+        # Mock transform function
+        mock_transform.return_value = self.test_addresses
 
         # Mock logger
         mock_logger_instance = mock_logger_service.return_value
         mock_logger_instance.log_lookup.return_value = True
 
-        # Create request
-        request = self.factory.get(f'/api/utils/postcoder-address-lookup/?postcode={self.test_postcode}')
+        # Create request with query parameter
+        request = self.factory.get('/api/utils/postcoder-address-lookup/?query=10 Downing Street')
 
         response = postcoder_address_lookup(request)
 
         # Verify response
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
-        self.assertFalse(data['cache_hit'])
 
-        # Verify API was called
-        mock_postcoder_instance.lookup_address.assert_called_once_with(self.test_postcode)
-        mock_postcoder_instance.transform_to_getaddress_format.assert_called_once()
-
-    @patch('utils.services.AddressLookupLogger')
-    @patch('utils.services.PostcoderService')
-    @patch('utils.services.AddressCacheService')
-    def test_cache_miss_caches_result(self, mock_cache_service, mock_postcoder_service, mock_logger_service):
-        """Test cache miss caches the API result"""
-        # Mock cache miss
-        mock_cache_instance = mock_cache_service.return_value
-        mock_cache_instance.get_cached_address.return_value = None
-
-        # Mock API call
-        mock_postcoder_instance = mock_postcoder_service.return_value
-        api_response = [{"postcode": "SW1A1AA", "street": "Downing Street"}]
-        mock_postcoder_instance.lookup_address.return_value = api_response
-        mock_postcoder_instance.transform_to_getaddress_format.return_value = self.test_addresses
-
-        # Mock caching
-        mock_cache_instance.cache_address.return_value = True
-
-        # Mock logger
-        mock_logger_instance = mock_logger_service.return_value
-        mock_logger_instance.log_lookup.return_value = True
-
-        # Create request
-        request = self.factory.get(f'/api/utils/postcoder-address-lookup/?postcode=SW1A 1AA')
-
-        response = postcoder_address_lookup(request)
-
-        # Verify caching was called with correct parameters
-        mock_cache_instance.cache_address.assert_called_once()
-        call_kwargs = mock_cache_instance.cache_address.call_args[1]
-        self.assertEqual(call_kwargs['postcode'], 'SW1A1AA')
-        self.assertEqual(call_kwargs['addresses'], self.test_addresses)
-        self.assertEqual(call_kwargs['response_data'], api_response)
-        self.assertEqual(call_kwargs['search_query'], 'SW1A 1AA')
+        # Verify API was called with query
+        mock_postcoder_instance.autocomplete_address.assert_called_once()
+        call_kwargs = mock_postcoder_instance.autocomplete_address.call_args[1]
+        self.assertEqual(call_kwargs['search_query'], '10 Downing Street')
 
     # ==================== API Error Handling Tests ====================
 
@@ -231,13 +204,9 @@ class PostcoderAddressLookupViewTestCase(TestCase):
     @patch('utils.services.AddressCacheService')
     def test_api_value_error_returns_500(self, mock_cache_service, mock_postcoder_service, mock_logger_service):
         """Test ValueError from API returns 500 error"""
-        # Mock cache miss
-        mock_cache_instance = mock_cache_service.return_value
-        mock_cache_instance.get_cached_address.return_value = None
-
         # Mock API error
         mock_postcoder_instance = mock_postcoder_service.return_value
-        mock_postcoder_instance.lookup_address.side_effect = ValueError("Invalid postcode")
+        mock_postcoder_instance.autocomplete_address.side_effect = ValueError("Invalid postcode")
 
         # Mock logger
         mock_logger_instance = mock_logger_service.return_value
@@ -261,13 +230,9 @@ class PostcoderAddressLookupViewTestCase(TestCase):
     @patch('utils.services.AddressCacheService')
     def test_api_timeout_returns_500(self, mock_cache_service, mock_postcoder_service, mock_logger_service):
         """Test TimeoutError from API returns 500 error"""
-        # Mock cache miss
-        mock_cache_instance = mock_cache_service.return_value
-        mock_cache_instance.get_cached_address.return_value = None
-
         # Mock API timeout
         mock_postcoder_instance = mock_postcoder_service.return_value
-        mock_postcoder_instance.lookup_address.side_effect = TimeoutError("Request timed out")
+        mock_postcoder_instance.autocomplete_address.side_effect = TimeoutError("Request timed out")
 
         # Mock logger
         mock_logger_instance = mock_logger_service.return_value
@@ -288,13 +253,9 @@ class PostcoderAddressLookupViewTestCase(TestCase):
     @patch('utils.services.AddressCacheService')
     def test_api_generic_error_returns_500(self, mock_cache_service, mock_postcoder_service, mock_logger_service):
         """Test generic Exception from API returns 500 error"""
-        # Mock cache miss
-        mock_cache_instance = mock_cache_service.return_value
-        mock_cache_instance.get_cached_address.return_value = None
-
         # Mock API error
         mock_postcoder_instance = mock_postcoder_service.return_value
-        mock_postcoder_instance.lookup_address.side_effect = Exception("Unexpected error")
+        mock_postcoder_instance.autocomplete_address.side_effect = Exception("Unexpected error")
 
         # Mock logger
         mock_logger_instance = mock_logger_service.return_value
@@ -315,13 +276,9 @@ class PostcoderAddressLookupViewTestCase(TestCase):
     @patch('utils.services.AddressCacheService')
     def test_api_error_logs_failure(self, mock_cache_service, mock_postcoder_service, mock_logger_service):
         """Test API error logs failure with success=False"""
-        # Mock cache miss
-        mock_cache_instance = mock_cache_service.return_value
-        mock_cache_instance.get_cached_address.return_value = None
-
         # Mock API error
         mock_postcoder_instance = mock_postcoder_service.return_value
-        mock_postcoder_instance.lookup_address.side_effect = ValueError("Invalid postcode")
+        mock_postcoder_instance.autocomplete_address.side_effect = ValueError("Invalid postcode")
 
         # Mock logger
         mock_logger_instance = mock_logger_service.return_value
@@ -340,14 +297,18 @@ class PostcoderAddressLookupViewTestCase(TestCase):
 
     # ==================== Response Format Tests ====================
 
+    @patch('utils.views.transform_autocomplete_suggestions')
     @patch('utils.services.AddressLookupLogger')
     @patch('utils.services.PostcoderService')
     @patch('utils.services.AddressCacheService')
-    def test_response_format_matches_getaddress(self, mock_cache_service, mock_postcoder_service, mock_logger_service):
-        """Test response format matches getaddress.io structure"""
-        # Mock cache hit
-        mock_cache_instance = mock_cache_service.return_value
-        mock_cache_instance.get_cached_address.return_value = self.test_addresses
+    def test_response_format_includes_metadata(self, mock_cache_service, mock_postcoder_service, mock_logger_service, mock_transform):
+        """Test response format includes required metadata"""
+        # Mock postcoder service
+        mock_postcoder_instance = mock_postcoder_service.return_value
+        mock_postcoder_instance.autocomplete_address.return_value = self.autocomplete_response
+
+        # Mock transform function
+        mock_transform.return_value = self.test_addresses
 
         # Mock logger
         mock_logger_instance = mock_logger_service.return_value
@@ -365,14 +326,18 @@ class PostcoderAddressLookupViewTestCase(TestCase):
         self.assertIn('cache_hit', data)
         self.assertIn('response_time_ms', data)
 
+    @patch('utils.views.transform_autocomplete_suggestions')
     @patch('utils.services.AddressLookupLogger')
     @patch('utils.services.PostcoderService')
     @patch('utils.services.AddressCacheService')
-    def test_response_includes_timing_metadata(self, mock_cache_service, mock_postcoder_service, mock_logger_service):
+    def test_response_includes_timing_metadata(self, mock_cache_service, mock_postcoder_service, mock_logger_service, mock_transform):
         """Test response includes response_time_ms metadata"""
-        # Mock cache hit
-        mock_cache_instance = mock_cache_service.return_value
-        mock_cache_instance.get_cached_address.return_value = self.test_addresses
+        # Mock postcoder service
+        mock_postcoder_instance = mock_postcoder_service.return_value
+        mock_postcoder_instance.autocomplete_address.return_value = self.autocomplete_response
+
+        # Mock transform function
+        mock_transform.return_value = self.test_addresses
 
         # Mock logger
         mock_logger_instance = mock_logger_service.return_value
@@ -389,39 +354,20 @@ class PostcoderAddressLookupViewTestCase(TestCase):
         self.assertIsInstance(data['response_time_ms'], int)
         self.assertGreaterEqual(data['response_time_ms'], 0)
 
-    # ==================== Postcode Cleaning Tests ====================
-
-    @patch('utils.services.AddressLookupLogger')
-    @patch('utils.services.PostcoderService')
-    @patch('utils.services.AddressCacheService')
-    def test_postcode_cleaned_before_cache_check(self, mock_cache_service, mock_postcoder_service, mock_logger_service):
-        """Test postcode is cleaned (uppercase, no spaces) before cache check"""
-        # Mock cache hit
-        mock_cache_instance = mock_cache_service.return_value
-        mock_cache_instance.get_cached_address.return_value = self.test_addresses
-
-        # Mock logger
-        mock_logger_instance = mock_logger_service.return_value
-        mock_logger_instance.log_lookup.return_value = True
-
-        # Create request with lowercase and spaces
-        request = self.factory.get('/api/utils/postcoder-address-lookup/?postcode=sw1a 1aa')
-
-        response = postcoder_address_lookup(request)
-
-        # Verify cleaned postcode used for cache lookup
-        mock_cache_instance.get_cached_address.assert_called_once_with('SW1A1AA')
-
     # ==================== Logging Tests ====================
 
+    @patch('utils.views.transform_autocomplete_suggestions')
     @patch('utils.services.AddressLookupLogger')
     @patch('utils.services.PostcoderService')
     @patch('utils.services.AddressCacheService')
-    def test_logging_failure_does_not_break_response(self, mock_cache_service, mock_postcoder_service, mock_logger_service):
+    def test_logging_failure_does_not_break_response(self, mock_cache_service, mock_postcoder_service, mock_logger_service, mock_transform):
         """Test logging failure doesn't break the lookup response"""
-        # Mock cache hit
-        mock_cache_instance = mock_cache_service.return_value
-        mock_cache_instance.get_cached_address.return_value = self.test_addresses
+        # Mock postcoder service
+        mock_postcoder_instance = mock_postcoder_service.return_value
+        mock_postcoder_instance.autocomplete_address.return_value = self.autocomplete_response
+
+        # Mock transform function
+        mock_transform.return_value = self.test_addresses
 
         # Mock logger failure
         mock_logger_instance = mock_logger_service.return_value
@@ -438,45 +384,20 @@ class PostcoderAddressLookupViewTestCase(TestCase):
         data = json.loads(response.content)
         self.assertIn('addresses', data)
 
-    @patch('utils.services.AddressLookupLogger')
-    @patch('utils.services.PostcoderService')
-    @patch('utils.services.AddressCacheService')
-    def test_catch_all_exception_logs_failure(self, mock_cache_service, mock_postcoder_service, mock_logger_service):
-        """Test catch-all exception handler logs failure"""
-        # Mock cache service to raise unexpected exception
-        mock_cache_instance = mock_cache_service.return_value
-        mock_cache_instance.get_cached_address.side_effect = RuntimeError("Unexpected database error")
-
-        # Mock logger
-        mock_logger_instance = mock_logger_service.return_value
-        mock_logger_instance.log_failed_lookup.return_value = True
-
-        # Create request
-        request = self.factory.get(f'/api/utils/postcoder-address-lookup/?postcode={self.test_postcode}')
-
-        response = postcoder_address_lookup(request)
-
-        # Verify failure was logged
-        mock_logger_instance.log_failed_lookup.assert_called_once()
-
-        # Verify 500 response
-        self.assertEqual(response.status_code, 500)
-
     # ==================== Integration & Edge Cases ====================
 
+    @patch('utils.views.transform_autocomplete_suggestions')
     @patch('utils.services.AddressLookupLogger')
     @patch('utils.services.PostcoderService')
     @patch('utils.services.AddressCacheService')
-    def test_empty_addresses_handled_correctly(self, mock_cache_service, mock_postcoder_service, mock_logger_service):
+    def test_empty_addresses_handled_correctly(self, mock_cache_service, mock_postcoder_service, mock_logger_service, mock_transform):
         """Test empty addresses list handled correctly"""
-        # Mock cache miss
-        mock_cache_instance = mock_cache_service.return_value
-        mock_cache_instance.get_cached_address.return_value = None
-
         # Mock API returns empty addresses
         mock_postcoder_instance = mock_postcoder_service.return_value
-        mock_postcoder_instance.lookup_address.return_value = []
-        mock_postcoder_instance.transform_to_getaddress_format.return_value = {"addresses": []}
+        mock_postcoder_instance.autocomplete_address.return_value = []
+
+        # Mock transform function
+        mock_transform.return_value = {"addresses": []}
 
         # Mock logger
         mock_logger_instance = mock_logger_service.return_value
@@ -496,26 +417,25 @@ class PostcoderAddressLookupViewTestCase(TestCase):
         call_kwargs = mock_logger_instance.log_lookup.call_args[1]
         self.assertEqual(call_kwargs['result_count'], 0)
 
+    @patch('utils.views.transform_autocomplete_suggestions')
     @patch('utils.services.AddressLookupLogger')
     @patch('utils.services.PostcoderService')
     @patch('utils.services.AddressCacheService')
-    def test_multiple_addresses_counted_correctly(self, mock_cache_service, mock_postcoder_service, mock_logger_service):
+    def test_multiple_addresses_counted_correctly(self, mock_cache_service, mock_postcoder_service, mock_logger_service, mock_transform):
         """Test multiple addresses counted correctly in logging"""
-        # Mock cache miss
-        mock_cache_instance = mock_cache_service.return_value
-        mock_cache_instance.get_cached_address.return_value = None
-
         # Mock API returns multiple addresses
+        mock_postcoder_instance = mock_postcoder_service.return_value
+        mock_postcoder_instance.autocomplete_address.return_value = []
+
+        # Mock transform function with multiple addresses
         multi_addresses = {
             "addresses": [
-                {"line_1": "Address 1"},
-                {"line_1": "Address 2"},
-                {"line_1": "Address 3"}
+                {"id": "1", "summaryline": "Address 1"},
+                {"id": "2", "summaryline": "Address 2"},
+                {"id": "3", "summaryline": "Address 3"}
             ]
         }
-        mock_postcoder_instance = mock_postcoder_service.return_value
-        mock_postcoder_instance.lookup_address.return_value = []
-        mock_postcoder_instance.transform_to_getaddress_format.return_value = multi_addresses
+        mock_transform.return_value = multi_addresses
 
         # Mock logger
         mock_logger_instance = mock_logger_service.return_value
@@ -529,6 +449,32 @@ class PostcoderAddressLookupViewTestCase(TestCase):
         # Verify logging with result_count=3
         call_kwargs = mock_logger_instance.log_lookup.call_args[1]
         self.assertEqual(call_kwargs['result_count'], 3)
+
+    @patch('utils.views.transform_autocomplete_suggestions')
+    @patch('utils.services.AddressLookupLogger')
+    @patch('utils.services.PostcoderService')
+    @patch('utils.services.AddressCacheService')
+    def test_country_parameter_passed_to_service(self, mock_cache_service, mock_postcoder_service, mock_logger_service, mock_transform):
+        """Test country parameter is passed to postcoder service"""
+        # Mock postcoder service
+        mock_postcoder_instance = mock_postcoder_service.return_value
+        mock_postcoder_instance.autocomplete_address.return_value = self.autocomplete_response
+
+        # Mock transform function
+        mock_transform.return_value = self.test_addresses
+
+        # Mock logger
+        mock_logger_instance = mock_logger_service.return_value
+        mock_logger_instance.log_lookup.return_value = True
+
+        # Create request with country parameter
+        request = self.factory.get(f'/api/utils/postcoder-address-lookup/?postcode={self.test_postcode}&country=US')
+
+        response = postcoder_address_lookup(request)
+
+        # Verify country code was passed to service
+        call_kwargs = mock_postcoder_instance.autocomplete_address.call_args[1]
+        self.assertEqual(call_kwargs['country_code'], 'US')
 
 
 class AddressRetrieveViewTestCase(TestCase):
