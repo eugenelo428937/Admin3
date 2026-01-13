@@ -61,18 +61,17 @@ const MegaMenuPopover = ({
       <Button
         ref={buttonRef}
         id={`${id}-button`}
+        variant="navPrimary"
         aria-controls={open ? popoverId : undefined}
         aria-haspopup="true"
         aria-expanded={open}
         onClick={handleOpen}
         endIcon={<ExpandMoreIcon sx={{
-          ml:0,
-          color: theme.palette.offwhite?.['000']
+          ml: 0,
+          color: theme.palette.semantic.navigation.button.color,
         }}/>}
         sx={{
-          color: theme.palette.offwhite?.['000'] || 'inherit',         
-          textTransform: 'none',
-          ...buttonProps.sx,          
+          ...buttonProps.sx,
         }}
         {...buttonProps}
       >

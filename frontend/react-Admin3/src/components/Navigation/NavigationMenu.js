@@ -10,7 +10,6 @@ import {
 } from "@mui/material";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { useTheme } from "@mui/material";
 import MegaMenuPopover from "./MegaMenuPopover";
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
@@ -31,7 +30,6 @@ const NavigationMenu = ({
    onCollapseNavbar,
 }) => {
    const { isSuperuser, isApprentice, isStudyPlus } = useAuth();
-   const theme = useTheme();
 
    // Admin menu state
    const [adminAnchorEl, setAdminAnchorEl] = React.useState(null);
@@ -221,11 +219,7 @@ const NavigationMenu = ({
                                  <Grid size={6}>
                                     <Typography
                                        variant="navlink"
-                                       sx={{
-                                          mb: 1,
-                                          fontWeight: "bold",
-                                          cursor: "pointer",
-                                       }}
+                                       sx={{ mb: 1 }}
                                        onClick={() => {
                                           handleProductGroupClick(group.name);
                                           onCollapseNavbar &&
@@ -370,19 +364,13 @@ const NavigationMenu = ({
                )}
                <Grid size={{ xs: 12, md: 2, xl: 2 }}>
                   <Button
-                     variant="text"
+                     variant="navViewAll"
                      onClick={() => {
                         handleProductClick();
                         onCollapseNavbar && onCollapseNavbar();
                      }}
-                     sx={{
-                        mb: 1,
-                        color: theme.palette.offwhite?.["000"] || "inherit",
-                        textTransform: "none",
-                        pt: 0,
-                     }}
                   >
-                     <Typography variant="navlink" sx={{ borderBottom: "1px solid " + theme.palette.bpp.granite["020"] }}>View All Products</Typography>
+                     <Typography variant="navViewAllText">View All Products</Typography>
                      <NavigateNextIcon />
                   </Button>
                </Grid>
@@ -484,18 +472,15 @@ const NavigationMenu = ({
                )}
                <Grid size={{ xs: 12, md: 3, xl: 2 }}>
                   <Button
-                     variant="text"
-                     color={theme.palette.offwhite?.["000"] || "inherit"}
+                     variant="navViewAll"
                      component={NavLink}
                      to="/products?distance_learning=true"
                      onClick={() => {
                         onCollapseNavbar && onCollapseNavbar();
                      }}
-                     sx={{ pt: 0 }}
                   >
-                     <Typography variant="navlink" sx={{ borderBottom: "1px solid " + theme.palette.bpp.granite["020"] }}>View All Distance Learning</Typography>
+                     <Typography variant="navViewAllText">View All Distance Learning</Typography>
                      <NavigateNextIcon />
-
                   </Button>
                </Grid>
             </Grid>
@@ -637,14 +622,13 @@ const NavigationMenu = ({
                {/* View All Tutorials button */}
                <Grid size={{ xs: 12, md: 4 }}>
                   <Button
-                     variant="text"
-                     color={theme.palette.offwhite?.["000"] || "inherit"}
+                     variant="navViewAll"
                      component={NavLink}
                      to="/products?tutorial=true"
                      onClick={() => onCollapseNavbar?.()}
-                     sx={{ mb: 2, pt: 0 }}
+                     sx={{ mb: 2 }}
                   >
-                     <Typography variant="navlink" sx={{ borderBottom: "1px solid " + theme.palette.bpp.granite["020"] }}>View All Tutorials</Typography>
+                     <Typography variant="navViewAllText">View All Tutorials</Typography>
                      <NavigateNextIcon />
                   </Button>
                </Grid>
@@ -654,13 +638,10 @@ const NavigationMenu = ({
          {/* Conditional sections */}
          {isApprentice ? (
             <Button
+               variant="navPrimary"
                component={NavLink}
                to="/apprenticeships"
-               sx={{
-                  color: theme.palette.offwhite?.["000"] || "inherit",
-                  textTransform: "none",
-                  mx: { xl: 2 },
-               }}
+               sx={{ mx: { xl: 2 } }}
             >
                <Typography variant="navlink">Apprenticeships</Typography>
             </Button>
@@ -668,13 +649,10 @@ const NavigationMenu = ({
 
          {isStudyPlus ? (
             <Button
+               variant="navPrimary"
                component={NavLink}
                to="/study-plus"
-               sx={{
-                  color: theme.palette.offwhite?.["000"] || "inherit",
-                  textTransform: "none",
-                  mx: { xl: 2 },
-               }}
+               sx={{ mx: { xl: 2 } }}
             >
                <Typography variant="navlink">Study Plus</Typography>
             </Button>
@@ -684,16 +662,13 @@ const NavigationMenu = ({
          {isSuperuser ? (
             <>
                <Button
+                  variant="navPrimary"
                   id="admin-menu-button"
                   aria-controls={adminMenuOpen ? "admin-menu" : undefined}
                   aria-haspopup="true"
                   aria-expanded={adminMenuOpen ? "true" : undefined}
                   onClick={handleAdminClick}
-                  sx={{
-                     color: theme.palette.offwhite?.["000"] || "inherit",
-                     textTransform: "none",
-                     mx: { xl: 2 },
-                  }}
+                  sx={{ mx: { xl: 2 } }}
                >
                   <Typography variant="navlink">Admin</Typography>
                </Button>
