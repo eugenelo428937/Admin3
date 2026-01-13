@@ -1032,13 +1032,23 @@ class CartViewSet(viewsets.ViewSet):
             if payment_method == 'card':
                 payment_result = payment_service.process_card_payment(order, card_data, client_ip, user_agent)
                 if not payment_result['success']:
-                    # Payment failed - rollback order creation
-                    raise Exception(f"Payment failed: {payment_result.get('error_message', 'Unknown error')}")
+                    # Payment failed - delete order and return error response
+                    order.delete()
+                    return Response({
+                        'detail': f"Payment failed: {payment_result.get('error_message', 'Unknown error')}",
+                        'error_code': payment_result.get('error_code', 'PAYMENT_FAILED'),
+                        'success': False
+                    }, status=status.HTTP_400_BAD_REQUEST)
             elif payment_method == 'invoice':
                 payment_result = payment_service.process_invoice_payment(order, client_ip, user_agent)
                 if not payment_result['success']:
-                    # Invoice creation failed - rollback order creation
-                    raise Exception(f"Invoice creation failed: {payment_result.get('error_message', 'Unknown error')}")
+                    # Invoice creation failed - delete order and return error response
+                    order.delete()
+                    return Response({
+                        'detail': f"Invoice creation failed: {payment_result.get('error_message', 'Unknown error')}",
+                        'error_code': payment_result.get('error_code', 'INVOICE_FAILED'),
+                        'success': False
+                    }, status=status.HTTP_400_BAD_REQUEST)
 
             # Clear cart after successful order creation and payment processing
             cart.items.all().delete()

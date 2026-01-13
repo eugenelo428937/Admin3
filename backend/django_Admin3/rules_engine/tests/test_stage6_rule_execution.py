@@ -22,24 +22,28 @@ class Stage6ActedRuleExecutionTests(TestCase):
     
     def setUp(self):
         """Set up test data"""
-        # Create entry points
-        self.checkout_entry = RuleEntryPoint.objects.create(
+        # Get or create entry points (may already exist from migrations)
+        self.checkout_entry, _ = RuleEntryPoint.objects.get_or_create(
             code='checkout_terms',
-            name='Checkout Terms Display',
-            description='Entry point for checkout terms',
-            is_active=True
+            defaults={
+                'name': 'Checkout Terms Display',
+                'description': 'Entry point for checkout terms',
+                'is_active': True
+            }
         )
-        
-        self.home_entry = RuleEntryPoint.objects.create(
+
+        self.home_entry, _ = RuleEntryPoint.objects.get_or_create(
             code='home_page_mount',
-            name='Home Page Mount',
-            description='Entry point for home page load',
-            is_active=True
+            defaults={
+                'name': 'Home Page Mount',
+                'description': 'Entry point for home page load',
+                'is_active': True
+            }
         )
         
         # Create schema (standardized from Stage 2)
         self.schema = ActedRulesFields.objects.create(
-            fields_id='execution_test_schema',
+            fields_code='execution_test_schema',
             name='Execution Test Schema',
             description='Schema for execution test context validation',
             schema={
@@ -154,7 +158,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
             rule_code='execution_test_rule',
             name='Execution Test Rule',
             entry_point='checkout_terms',
-            rules_fields_id='execution_test_schema',
+            rules_fields_code='execution_test_schema',
             condition={'>=': [{'var': 'cart.total'}, 25]},
             actions=[
                 {
@@ -307,7 +311,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
             rule_code='second_execution_rule',
             name='Second Execution Rule',
             entry_point='checkout_terms',
-            rules_fields_id='execution_test_schema',
+            rules_fields_code='execution_test_schema',
             condition={'<=': [{'var': 'cart.total'}, 100]},  # Different condition
             actions=[
                 {
@@ -325,7 +329,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
             rule_code='third_execution_rule',
             name='Third Execution Rule',
             entry_point='checkout_terms',
-            rules_fields_id='execution_test_schema',
+            rules_fields_code='execution_test_schema',
             condition={'==': [{'var': 'user.tier'}, 'standard']},
             actions=[
                 {
@@ -454,7 +458,7 @@ class Stage6ActedRuleExecutionTests(TestCase):
             rule_code='error_execution_rule',
             name='Error Execution Rule',
             entry_point='checkout_terms',
-            rules_fields_id='execution_test_schema',
+            rules_fields_code='execution_test_schema',
             condition={'==': [True, True]},  # Always true
             actions=[
                 {

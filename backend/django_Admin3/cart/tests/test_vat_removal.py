@@ -1,5 +1,11 @@
 """
-Test to verify complete removal of VAT-related functionality
+Test to verify VAT-related functionality follows Phase 4 design.
+
+Phase 4 Implementation:
+- Cart has: vat_result, vat_calculation_error, vat_calculation_error_message, vat_last_calculated_at
+- CartItem has: vat_region, vat_rate, vat_amount, vat_calculated_at, vat_rule_version
+- VAT calculations use Rules Engine via VATOrchestrator
+- VATAudit provides audit trail
 """
 from django.test import TestCase
 from cart.models import Cart, CartItem
@@ -10,48 +16,47 @@ import inspect
 User = get_user_model()
 
 
-class VATRemovalTestCase(TestCase):
-    """Test that all VAT-related code has been removed"""
+class VATPhase4DesignTestCase(TestCase):
+    """Test that VAT-related code follows Phase 4 design"""
 
-    def test_cart_model_has_approved_vat_attributes(self):
-        """Verify Cart model only has approved VAT-related attributes"""
-        cart_methods = [method for method in dir(Cart) if not method.startswith('_')]
-        vat_methods = [m for m in cart_methods if 'vat' in m.lower()]
-
-        # Allowed: vat_result (field), vataudit_set (reverse FK from VATAudit model)
-        approved_vat_attrs = {'vat_result', 'vataudit_set'}
-        unexpected_attrs = set(vat_methods) - approved_vat_attrs
-
-        self.assertEqual(
-            unexpected_attrs,
-            set(),
-            f"Found unexpected VAT-related attributes in Cart model: {unexpected_attrs}"
-        )
-
-    def test_cart_model_has_approved_vat_fields(self):
-        """Verify Cart model has approved VAT-related fields"""
+    def test_cart_model_has_phase4_vat_fields(self):
+        """Verify Cart model has Phase 4 VAT-related fields"""
         cart_fields = [field.name for field in Cart._meta.get_fields()]
         vat_fields = sorted([f for f in cart_fields if 'vat' in f.lower()])
 
-        # Allowed: vat_result (JSONB field), vataudit (reverse relation from VATAudit)
-        approved_fields = ['vat_result', 'vataudit']
+        # Phase 4: Cart has error tracking fields and result field
+        expected_fields = [
+            'vat_calculation_error',
+            'vat_calculation_error_message',
+            'vat_last_calculated_at',
+            'vat_result',
+            'vataudit'  # Reverse relation from VATAudit
+        ]
 
         self.assertEqual(
             vat_fields,
-            approved_fields,
-            f"Cart model should only have approved VAT fields, found: {vat_fields}"
+            expected_fields,
+            f"Cart model should have Phase 4 VAT fields, found: {vat_fields}"
         )
 
-    def test_cartitem_model_has_no_vat_fields(self):
-        """Verify CartItem model has no VAT-related fields"""
+    def test_cartitem_model_has_phase4_vat_fields(self):
+        """Verify CartItem model has Phase 4 VAT-related fields for per-item tracking"""
         cartitem_fields = [field.name for field in CartItem._meta.get_fields()]
-        vat_fields = [f for f in cartitem_fields if 'vat' in f.lower()]
+        vat_fields = sorted([f for f in cartitem_fields if 'vat' in f.lower()])
 
-        # CartItem should have NO VAT fields - VAT is calculated per cart, not per item
+        # Phase 4: CartItem has per-item VAT tracking fields
+        expected_fields = [
+            'vat_amount',
+            'vat_calculated_at',
+            'vat_rate',
+            'vat_region',
+            'vat_rule_version'
+        ]
+
         self.assertEqual(
             vat_fields,
-            [],
-            f"CartItem model should have no VAT fields, found: {vat_fields}"
+            expected_fields,
+            f"CartItem model should have Phase 4 VAT fields, found: {vat_fields}"
         )
 
     def test_cart_views_have_no_vat_endpoints(self):

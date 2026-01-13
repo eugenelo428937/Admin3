@@ -23,24 +23,28 @@ class Stage5RuleActionsTests(TestCase):
     
     def setUp(self):
         """Set up test data"""
-        # Create entry points
-        self.checkout_entry = RuleEntryPoint.objects.create(
+        # Get or create entry points (may already exist from migrations)
+        self.checkout_entry, _ = RuleEntryPoint.objects.get_or_create(
             code='checkout_terms',
-            name='Checkout Terms Display',
-            description='Entry point for checkout terms',
-            is_active=True
+            defaults={
+                'name': 'Checkout Terms Display',
+                'description': 'Entry point for checkout terms',
+                'is_active': True
+            }
         )
-        
-        self.home_entry = RuleEntryPoint.objects.create(
+
+        self.home_entry, _ = RuleEntryPoint.objects.get_or_create(
             code='home_page_mount',
-            name='Home Page Mount',
-            description='Entry point for home page load',
-            is_active=True
+            defaults={
+                'name': 'Home Page Mount',
+                'description': 'Entry point for home page load',
+                'is_active': True
+            }
         )
         
         # Create schema for validation
         self.checkout_schema = ActedRulesFields.objects.create(
-            fields_id='checkout_context_v1',
+            fields_code='checkout_context_v1',
             name='Checkout Context Schema',
             schema={
                 'type': 'object',
@@ -152,7 +156,7 @@ class Stage5RuleActionsTests(TestCase):
             rule_code='display_message_rule',
             name='Display Message Rule',
             entry_point='home_page_mount',
-            rules_fields_id='checkout_context_v1',
+            rules_fields_code='checkout_context_v1',
             condition={'==': [{'var': 'cart.total'}, 100]},
             actions=[
                 {
@@ -194,7 +198,7 @@ class Stage5RuleActionsTests(TestCase):
             rule_code='display_modal_rule',
             name='Display Modal Rule',
             entry_point='checkout_terms',
-            rules_fields_id='checkout_context_v1',
+            rules_fields_code='checkout_context_v1',
             condition={'==': [True, True]},  # Always true
             actions=[
                 {
@@ -241,7 +245,7 @@ class Stage5RuleActionsTests(TestCase):
             rule_code='ack_required_rule',
             name='Acknowledgment Required Rule',
             entry_point='checkout_terms',
-            rules_fields_id='checkout_context_v1',
+            rules_fields_code='checkout_context_v1',
             condition={'>=': [{'var': 'cart.total'}, 50]},  # Cart over $50
             actions=[
                 {
@@ -294,7 +298,7 @@ class Stage5RuleActionsTests(TestCase):
             rule_code='ack_checked_rule',
             name='Acknowledgment Checked Rule',
             entry_point='checkout_terms',
-            rules_fields_id='checkout_context_v1',
+            rules_fields_code='checkout_context_v1',
             condition={'>=': [{'var': 'cart.total'}, 50]},
             actions=[
                 {
@@ -340,7 +344,7 @@ class Stage5RuleActionsTests(TestCase):
             rule_code='preference_optional_rule',
             name='Optional Preference Rule',
             entry_point='checkout_terms',
-            rules_fields_id='checkout_context_v1',
+            rules_fields_code='checkout_context_v1',
             condition={'==': [True, True]},  # Always applies
             actions=[
                 {
@@ -390,7 +394,7 @@ class Stage5RuleActionsTests(TestCase):
             rule_code='update_field_rule',
             name='Update Field Rule',
             entry_point='checkout_terms',
-            rules_fields_id='checkout_context_v1',
+            rules_fields_code='checkout_context_v1',
             condition={'>=': [{'var': 'cart.total'}, 100]},
             actions=[
                 {
@@ -446,7 +450,7 @@ class Stage5RuleActionsTests(TestCase):
             rule_code='custom_function_rule',
             name='Custom Function Rule',
             entry_point='checkout_terms',
-            rules_fields_id='checkout_context_v1',
+            rules_fields_code='checkout_context_v1',
             condition={'and': [
                 {'>=': [{'var': 'cart.total'}, 200]},
                 {'==': [{'var': 'cart.user'}, 456]}  # VIP user
@@ -552,7 +556,7 @@ class Stage5RuleActionsTests(TestCase):
             rule_code='multiple_actions_rule',
             name='Multiple Actions Rule',
             entry_point='checkout_terms',
-            rules_fields_id='checkout_context_v1',
+            rules_fields_code='checkout_context_v1',
             condition={'>=': [{'var': 'cart.total'}, 100]},
             actions=[
                 {

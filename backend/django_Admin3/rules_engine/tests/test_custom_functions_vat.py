@@ -16,15 +16,15 @@ class TestVATFunctionsRegistered(TestCase):
         self.assertIsNotNone(FUNCTION_REGISTRY)
         self.assertIsInstance(FUNCTION_REGISTRY, dict)
 
-    def test_get_vat_rate_registered(self):
-        """Test that get_vat_rate is registered."""
+    def test_lookup_vat_rate_registered(self):
+        """Test that lookup_vat_rate is registered."""
         from rules_engine.custom_functions import FUNCTION_REGISTRY
-        self.assertIn('get_vat_rate', FUNCTION_REGISTRY)
+        self.assertIn('lookup_vat_rate', FUNCTION_REGISTRY)
 
-    def test_map_country_to_region_registered(self):
-        """Test that map_country_to_region is registered."""
+    def test_lookup_region_registered(self):
+        """Test that lookup_region is registered."""
         from rules_engine.custom_functions import FUNCTION_REGISTRY
-        self.assertIn('map_country_to_region', FUNCTION_REGISTRY)
+        self.assertIn('lookup_region', FUNCTION_REGISTRY)
 
     def test_calculate_vat_amount_registered(self):
         """Test that calculate_vat_amount is registered."""
@@ -35,19 +35,21 @@ class TestVATFunctionsRegistered(TestCase):
 class TestVATFunctionsCallable(TestCase):
     """Test that VAT functions are callable via registry."""
 
-    def test_get_vat_rate_callable(self):
-        """Test that get_vat_rate can be called via registry."""
+    def test_lookup_vat_rate_callable(self):
+        """Test that lookup_vat_rate can be called via registry."""
         from rules_engine.custom_functions import FUNCTION_REGISTRY
-        func = FUNCTION_REGISTRY['get_vat_rate']
-        result = func('UK', {'is_ebook': True})
+        func = FUNCTION_REGISTRY['lookup_vat_rate']
+        # lookup_vat_rate looks up from database - returns Decimal('0.00') for unknown countries
+        result = func('UNKNOWN')
         self.assertEqual(result, Decimal('0.00'))
 
-    def test_map_country_to_region_callable(self):
-        """Test that map_country_to_region can be called via registry."""
+    def test_lookup_region_callable(self):
+        """Test that lookup_region can be called via registry."""
         from rules_engine.custom_functions import FUNCTION_REGISTRY
-        func = FUNCTION_REGISTRY['map_country_to_region']
-        result = func('GB')
-        self.assertEqual(result, 'UK')
+        func = FUNCTION_REGISTRY['lookup_region']
+        # lookup_region looks up from database - returns 'ROW' for unknown countries
+        result = func('UNKNOWN')
+        self.assertEqual(result, 'ROW')
 
     def test_calculate_vat_amount_callable(self):
         """Test that calculate_vat_amount can be called via registry."""

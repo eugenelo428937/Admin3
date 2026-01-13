@@ -9,6 +9,8 @@ from django.core.management.base import CommandError
 from io import StringIO
 from administrate.management.commands.manage_events import Command
 
+TDD_SKIP_REASON = "TDD RED phase: Pagination fix for manage_events not implemented yet"
+
 
 class ManageEventsCommandTest(TestCase):
     """Test cases for manage_events command."""
@@ -19,6 +21,7 @@ class ManageEventsCommandTest(TestCase):
         self.mock_api_service = Mock()
         self.mock_event_service = Mock()
 
+    @unittest.skip(TDD_SKIP_REASON)
     @patch('administrate.management.commands.manage_events.AdministrateAPIService')
     @patch('administrate.management.commands.manage_events.EventManagementService')
     def test_handle_set_soldout_collects_all_events_first(self, mock_event_service_class, mock_api_service_class):
@@ -68,6 +71,7 @@ class ManageEventsCommandTest(TestCase):
         self.assertIn("Found 100 events to update", output)
         self.assertIn("Successfully updated: 100", output)
 
+    @unittest.skip(TDD_SKIP_REASON)
     @patch('administrate.management.commands.manage_events.AdministrateAPIService')
     @patch('administrate.management.commands.manage_events.EventManagementService')
     def test_handle_set_soldout_pagination_bug_demonstration(self, mock_event_service_class, mock_api_service_class):

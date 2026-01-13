@@ -104,14 +104,12 @@ class TestCartMultipleMaterialsBug(TestCase):
         # Create exam session subject products
         self.essp1 = ExamSessionSubjectProduct.objects.create(
             exam_session_subject=self.ess1,
-            product=self.product1,
-            is_active=True
+            product=self.product1
         )
 
         self.essp2 = ExamSessionSubjectProduct.objects.create(
             exam_session_subject=self.ess2,
-            product=self.product2,
-            is_active=True
+            product=self.product2
         )
 
     def test_add_two_different_material_products_should_not_overwrite(self):
