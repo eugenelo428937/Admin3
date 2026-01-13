@@ -99,6 +99,28 @@ export const semanticColors = {
     default: colorTheme.bpp.granite['020'],
   },
 
+  // Navigation semantic tokens (20260113-Styling-Clean-up)
+  // Centralized colors for navigation components - enables theme switching by changing token values
+  navigation: {
+    text: {
+      primary: colorTheme.offwhite['000'],      // Main nav text (#fdfdfd)
+      secondary: colorTheme.offwhite['001'],    // Secondary nav text (#f0edf1)
+      muted: colorTheme.bpp.granite['040'],     // Disabled/placeholder text (#9e9e9e)
+    },
+    border: {
+      subtle: colorTheme.bpp.granite['020'],    // "View All" underlines (#d9d9d9)
+      divider: colorTheme.bpp.granite['030'],   // Menu dividers (#bababa)
+    },
+    background: {
+      hover: colorTheme.bpp.granite['070'],     // Menu item hover (#525252)
+      active: colorTheme.bpp.granite['080'],    // Active/selected state (#3b3b3a)
+    },
+    button: {
+      color: colorTheme.offwhite['000'],        // Nav button text (#fdfdfd)
+      hoverColor: colorTheme.bpp.purple[110],   // Button hover accent (#8953fd)
+    },
+  },
+
   // Icon colors by product type
   icon: {
     tutorial: colorTheme.bpp.purple['090'],

@@ -18,15 +18,13 @@ const TopNavActions = ({ onOpenSearch }) => {
          {/* Brochure Download - Desktop Only */}
          <Tooltip title="Download Brochure">
             <Button
+               variant="topNavAction"
                component="a"
                href="/brochure"
                target="_blank"
                startIcon={isDesktop ? <DownloadIcon /> : null}
                endIcon={!isDesktop ? <DownloadIcon /> : null}
                sx={{
-                  textTransform: "none",
-                  color:
-                     theme.palette.liftkit?.light?.background || "text.primary",
                   minWidth: {
                      xs: theme.liftkit.spacing.xl,
                      lg: 64,
@@ -35,14 +33,13 @@ const TopNavActions = ({ onOpenSearch }) => {
                      xs: "end",
                      md: "center",
                   },
-                  p: 0,
                }}
             >
                <Typography
-                  varitant="topnavlink"
-                  color={theme.palette.offwhite["000"]}
+                  variant="topnavlink"
                   sx={{
                      display: { xs: "none", md: "flex" },
+                     color: theme.palette.semantic.navigation.text.primary,
                   }}
                >
                   Brochure
@@ -53,10 +50,9 @@ const TopNavActions = ({ onOpenSearch }) => {
          {/* Search Button */}
          <Tooltip title="Search Products (Ctrl+K)">
             <Button
+               variant="topNavAction"
                onClick={onOpenSearch}
                sx={{
-                  color:
-                     theme.palette.liftkit?.light?.background || "text.primary",
                   minWidth: {
                      xs: theme.liftkit.spacing.xl,
                      lg: 64,
@@ -65,18 +61,16 @@ const TopNavActions = ({ onOpenSearch }) => {
                      xs: "end",
                      md: "center",
                   },
-                  p: 0,
                }}
                aria-label="search products"
                startIcon={isDesktop ? <SearchIcon /> : null}
                endIcon={!isDesktop ? <SearchIcon /> : null}
             >
                <Typography
-                  varitant="topnavlink"
-                  color={theme.palette.offwhite["000"]}
+                  variant="topnavlink"
                   sx={{
                      display: { xs: "none", md: "flex" },
-
+                     color: theme.palette.semantic.navigation.text.primary,
                   }}
                >
                   Search

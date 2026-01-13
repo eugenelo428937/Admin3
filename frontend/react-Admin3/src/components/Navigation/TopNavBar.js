@@ -116,15 +116,13 @@ const TopNavBar = () => {
             }}>
                <Tooltip title="ActEd Homepage">
                   <Button
+                     variant="topNavAction"
                      component={Link}
                      to="/Home"
                      target="_blank"
                      startIcon={isDesktop ? <HomeIcon /> : null}
                      endIcon={!isDesktop ? <HomeIcon /> : null}
                      sx={{
-                        textTransform: "none",
-                        color:
-                           theme.palette.liftkit?.light?.background || "text.primary",
                         minWidth: {
                            xs: theme.liftkit.spacing.xl,
                            lg: 64,
@@ -133,13 +131,12 @@ const TopNavBar = () => {
                            xs: "start",
                            md: "center",
                         },
-                        p: 0,
                      }}>
                      <Typography
-                        varitant="topnavlink"
-                        color={theme.palette.offwhite["001"]}
+                        variant="topnavlink"
                         sx={{
                            display: { xs: "none", md: "flex" },
+                           color: theme.palette.semantic.navigation.text.secondary,
                         }}
                      >
                         ActEd
@@ -148,15 +145,13 @@ const TopNavBar = () => {
                </Tooltip>
                <Tooltip title="Style Guide">
                   <Button
+                     variant="topNavAction"
                      component={Link}
                      to="/styleguide"
                      target="_blank"
                      startIcon={isDesktop ? <HelpIcon /> : null}
                      endIcon={!isDesktop ? <HelpIcon /> : null}
                      sx={{
-                        textTransform: "none",
-                        color:
-                           theme.palette.liftkit?.light?.background || "text.primary",
                         minWidth: {
                            xs: theme.liftkit.spacing.xl,
                            lg: 64,
@@ -165,13 +160,12 @@ const TopNavBar = () => {
                            xs: "start",
                            md: "center",
                         },
-                        p: 0,
                      }}>
                      <Typography
-                        varitant="topnavlink"
-                        color={theme.palette.offwhite["001"]}
+                        variant="topnavlink"
                         sx={{
                            display: { xs: "none", md: "flex" },
+                           color: theme.palette.semantic.navigation.text.secondary,
                         }}
                      >
                         Help

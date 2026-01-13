@@ -186,6 +186,47 @@ If colors look different:
 2. Verify you're using the correct token (text vs button)
 3. Check for CSS specificity conflicts
 
+## Dark Mode Support
+
+The token-based architecture enables future dark mode support by simply swapping token values.
+
+### Current Token Definitions (Light Mode)
+
+```javascript
+navigation: {
+  text: {
+    primary: colorTheme.offwhite['000'],      // #fdfdfd
+    secondary: colorTheme.offwhite['001'],    // #f0edf1
+  },
+  background: {
+    hover: colorTheme.bpp.granite['070'],     // #525252
+    active: colorTheme.bpp.granite['080'],    // #3b3b3a
+  },
+}
+```
+
+### Dark Mode Pattern (Future)
+
+To enable dark mode, create a dark theme variant that swaps token values:
+
+```javascript
+// Dark mode token values (example)
+navigation: {
+  text: {
+    primary: colorTheme.bpp.granite['010'],   // Invert: light text on dark
+    secondary: colorTheme.bpp.granite['020'],
+  },
+  background: {
+    hover: colorTheme.offwhite['002'],        // Invert: light hover on dark
+    active: colorTheme.offwhite['003'],
+  },
+}
+```
+
+### No Component Changes Required
+
+Because components use semantic tokens via variants, no component code changes are needed for dark mode. The theme provider switches the token definitions, and all navigation automatically updates.
+
 ## Files Reference
 
 | File | Purpose |
