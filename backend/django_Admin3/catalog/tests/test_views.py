@@ -12,8 +12,10 @@ Test classes:
 - TestFuzzySearchView: Trigram similarity search
 - TestAdvancedProductSearchView: Multi-filter search with pagination
 """
+import unittest
 from unittest.mock import patch
 from django.core.cache import cache
+from django.db import connection
 from django.urls import reverse
 from rest_framework import status
 
@@ -23,6 +25,16 @@ from catalog.tests.fixtures import (
     create_product,
     create_exam_session,
 )
+
+
+def trigram_extension_available():
+    """Check if pg_trgm extension is available in the database."""
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1 FROM pg_extension WHERE extname = 'pg_trgm'")
+            return cursor.fetchone() is not None
+    except Exception:
+        return False
 
 
 class TestSubjectViewSet(CatalogAPITestCase):
@@ -472,6 +484,7 @@ class TestNavigationDataView(CatalogAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+@unittest.skipUnless(trigram_extension_available(), "Requires PostgreSQL pg_trgm extension")
 class TestFuzzySearchView(CatalogAPITestCase):
     """Test fuzzy_search endpoint with trigram similarity (T032)."""
 
@@ -530,6 +543,7 @@ class TestFuzzySearchView(CatalogAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+@unittest.skipUnless(trigram_extension_available(), "Requires PostgreSQL pg_trgm extension")
 class TestAdvancedProductSearchView(CatalogAPITestCase):
     """Test advanced_product_search with pagination (T033)."""
 

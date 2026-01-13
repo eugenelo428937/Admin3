@@ -1,0 +1,38 @@
+DJANGO_ENV None
+DJANGO_ENV development
+DJANGO_SETTINGS_MODULE django_Admin3.settings.development
+DJANGO_ENV FILE /Users/work/Documents/Code/Admin3/backend/django_Admin3/.env.development
+Loading environment from: /Users/work/Documents/Code/Admin3/backend/django_Admin3/.env.development
+Rows in test table: [(1, 'Test1'), (2, 'Test1'), (3, 'Test1'), (4, 'Test1'), (5, 'Test1'), (6, 'Test1'), (7, 'Test1'), (8, 'Test1'), (9, 'Test1'), (10, 'Test1'), (11, 'Test1'), (12, 'Test1'), (13, 'Test1'), (14, 'Test1'), (15, 'Test1'), (16, 'Test1'), (17, 'Test1'), (18, 'Test1'), (19, 'Test1'), (20, 'Test1'), (21, 'Test1'), (22, 'Test1'), (23, 'Test1'), (24, 'Test1'), (25, 'Test1'), (26, 'Test1'), (27, 'Test1'), (28, 'Test1'), (29, 'Test1'), (30, 'Test1'), (31, 'Test1'), (32, 'Test1'), (33, 'Test1'), (34, 'Test1'), (35, 'Test1'), (36, 'Test1'), (37, 'Test1'), (38, 'Test1'), (39, 'Test1'), (40, 'Test1'), (41, 'Test1'), (42, 'Test1')]
+Database test completed successfully
+DEBUG Read environment variables from: /Users/work/Documents/Code/Admin3/backend/django_Admin3/.env.development
+=== Environment Variables from .env.development ===
+DEBUG get 'DATABASE_URL' casted as 'None' with default 'Not set'
+DATABASE_URL: postgres://actedadmin:Act3d@dm1n0EEoo@127.0.0.1:5432/ACTEDDBDEV01
+DEBUG get 'DB_NAME' casted as 'None' with default 'Not set'
+DB_NAME: ACTEDDBDEV01
+DEBUG get 'DB_USER' casted as 'None' with default 'Not set'
+DB_USER: actedadmin
+DEBUG get 'DB_PASSWORD' casted as 'None' with default 'Not set'
+DB_PASSWORD: Act3d@dm1n0EEoo
+DEBUG get 'DB_HOST' casted as 'None' with default 'Not set'
+DB_HOST: 127.0.0.1
+DEBUG get 'DB_PORT' casted as 'None' with default 'Not set'
+DB_PORT: 5432
+DEBUG get 'SECRET_KEY' casted as 'None' with default 'Not set'
+SECRET_KEY: Not set
+DEBUG get 'DEBUG' casted as 'None' with default 'False'
+DEBUG: False
+DEBUG get 'DJANGO_ENVIRONMENT' casted as 'None' with default 'Not set'
+DJANGO_ENVIRONMENT: Not set
+DEBUG get 'ALLOWED_HOSTS' casted as 'None' with default 'Not set'
+ALLOWED_HOSTS: 127.0.0.1,localhost
+DEBUG get 'ADMINISTRATE_API_URL' casted as 'None' with default 'Not set'
+ADMINISTRATE_API_URL: https://api.getadministrate.com/graphql
+DEBUG get 'ADMINISTRATE_API_KEY' casted as 'None' with default 'Not set'
+ADMINISTRATE_API_KEY: bJC4yEzW7dICQin2JbgwU0gsbN9kuaDC
+DEBUG get 'DB_NAME' casted as 'None' with default '<NoValue>'
+
+✅ SUCCESS: Successfully read DB_NAME: ACTEDDBDEV01 from .env.development
+Creating test database for alias 'default'...
+.........................................ss

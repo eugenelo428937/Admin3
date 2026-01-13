@@ -4,6 +4,7 @@ TASK-503: VAT Orchestrator Service (REFACTOR Phase)
 Service that orchestrates VAT calculation through Rules Engine.
 Provides a clean interface for cart VAT calculation without hardcoded logic.
 """
+import json
 import logging
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, Any
@@ -11,6 +12,28 @@ from django.utils import timezone
 
 from rules_engine.services.rule_engine import rule_engine
 from vat.models import VATAudit
+
+
+class DecimalEncoder(json.JSONEncoder):
+    """JSON encoder that handles Decimal objects."""
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return str(obj)
+        return super().default(obj)
+
+
+def serialize_for_json(data: Any) -> Any:
+    """
+    Convert data structure to JSON-serializable format.
+    Handles Decimal objects by converting to strings.
+    """
+    if isinstance(data, dict):
+        return {k: serialize_for_json(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [serialize_for_json(item) for item in data]
+    elif isinstance(data, Decimal):
+        return str(data)
+    return data
 
 logger = logging.getLogger(__name__)
 
@@ -391,12 +414,36 @@ class VATOrchestrator:
             all_results: List of Rules Engine execution results from all items
         """
         try:
+            # Extract required fields from rules engine results
+            execution_id = f"exec_{int(timezone.now().timestamp())}"
+            rule_id = 'unknown'
+            rule_version = 1
+
+            if all_results and isinstance(all_results, list) and len(all_results) > 0:
+                first_result = all_results[0]
+                if isinstance(first_result, dict):
+                    execution_id = first_result.get('execution_id', execution_id)
+
+                    # Find the primary rule that was applied
+                    rules_executed = first_result.get('rules_executed', [])
+                    applied_rule = self._find_applied_vat_rule(rules_executed)
+                    if applied_rule:
+                        rule_id = applied_rule
+                        # Extract version from the rule execution record
+                        for rule in rules_executed:
+                            if rule.get('rule_id') == applied_rule or rule.get('rule_code') == applied_rule:
+                                rule_version = rule.get('version', rule.get('rule_version', 1))
+                                break
+
             VATAudit.objects.create(
                 cart=cart,
                 order=None,  # No order at cart stage
-                input_context=context,
+                execution_id=execution_id,
+                rule_id=rule_id,
+                rule_version=rule_version,
+                input_context=serialize_for_json(context),
                 output_data={
-                    'results': all_results,  # Store all item results
+                    'results': serialize_for_json(all_results),  # Store all item results
                     'timestamp': timezone.now().isoformat()
                 }
             )

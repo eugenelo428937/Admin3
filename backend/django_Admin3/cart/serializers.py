@@ -231,15 +231,25 @@ class CartSerializer(serializers.ModelSerializer):
         Phase 5: Return VAT totals from cart.vat_result JSONB storage.
 
         Returns VAT breakdown and totals from orchestrator calculation stored in JSONB.
-        Returns None or not_calculated structure if VAT hasn't been calculated yet.
+        Returns a default structure if VAT hasn't been calculated yet.
         """
         # Phase 5: Return vat_result JSONB data directly
         if obj.vat_result and isinstance(obj.vat_result, dict):
             # VAT has been calculated and stored by orchestrator
             return obj.vat_result
 
-        # VAT not yet calculated - return None or minimal structure
-        return None
+        # VAT not yet calculated - return default structure for consistency
+        return {
+            'success': False,
+            'status': 'not_calculated',
+            'total_net_amount': '0.00',
+            'total_vat_amount': '0.00',
+            'total_gross_amount': '0.00',
+            'vat_breakdown': [],
+            'items': [],
+            'region': 'UNKNOWN',
+            'message': 'VAT has not been calculated yet'
+        }
 
     def get_vat_calculations(self, obj):
         """
