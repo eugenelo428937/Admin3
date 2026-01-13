@@ -15,7 +15,7 @@ const liftKitTheme = {
       xl: "calc(1rem * var(--scaleFactor) * var(--scaleFactor))", // var(--xl)
       xl15: "calc(1rem * var(--scaleFactor) * var(--scaleFactor) * var(--halfstep))", 
       xl2: "calc(1rem * var(--scaleFactor) * var(--scaleFactor) * var(--scaleFactor))", // var(--2xl)      
-
+      xl3: "calc(1rem * var(--scaleFactor) * var(--scaleFactor) * var(--scaleFactor)) * var(--scaleFactor))", // var(--2xl)      
       // Scale factor
       scaleFactor: "1.618", // var(--scaleFactor) - golden ratio
 
