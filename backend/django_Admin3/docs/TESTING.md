@@ -74,7 +74,7 @@ backend/django_Admin3/
 1. **Model Tests** - Test database models, relationships, validation
 2. **API Tests** - Test REST API endpoints, serializers, permissions
 3. **Authentication Tests** - Test login, registration, password reset, etc.
-
+2>&1 | tee test_report202601134.txt   
 ## Running Tests
 
 ### Basic Commands
@@ -120,6 +120,10 @@ python manage.py test --parallel --keepdb
 ```bash
 # Run tests with coverage
 coverage run --source='exam_sessions,marking,tutorials,userprofile,users,core_auth' manage.py test exam_sessions.tests marking.tests tutorials.tests userprofile.tests users.tests core_auth.tests --keepdb
+
+coverage run --source='core_auth,catalog,cart,exam_sessions,exam_sessions_subjects,exam_sessions_subjects_products,marking,marking_vouchers,products,rules_engine,subjects,tutorials,userprofile,utils,vat' manage.py test   
+
+overage run --source='core_auth,catalog,cart,exam_sessions,exam_sessions_subjects,exam_sessions_subjects_products,marking,marking_vouchers,products,rules_engine,subjects,tutorials,userprofile,utils,vat' manage.py test 2>&1 | tee coverage_report20260114a.txt
 
 # View coverage in terminal
 coverage report --omit="*/migrations/*,*/tests/*,*/test_*.py"
