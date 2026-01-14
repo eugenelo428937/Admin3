@@ -98,7 +98,7 @@ export const typographyConfig = {
   topnavlink: {
     fontFamily: "'Inter', 'Poppins', sans-serif",
     fontWeight: 300,
-    fontSize: "calc(1em * var(--quarterstep)) !important",
+    fontSize: "calc(1em / var(--quarterstep)) !important",
     lineHeight: "var(--halfstep) !important",
     letterSpacing: "-0.017em !important",
     textWrap: "balance",
@@ -243,12 +243,6 @@ export const responsiveTypography = {
     },
     md: {
       fontSize: "1em !important",
-      fontWeight: 400,
-    },
-  },
-  topnavlink: {
-    lg: {
-      fontSize: "calc(1em) !important",
       fontWeight: 400,
     },
   },
