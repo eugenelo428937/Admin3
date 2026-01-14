@@ -2,15 +2,19 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Home as HomeIcon, HelpOutline as HelpIcon } from "@mui/icons-material";
+import {
+   Home as HomeIcon,
+   HelpOutline as HelpIcon, 
+   Search as SearchIcon,
+   Download as DownloadIcon,
+} from "@mui/icons-material";
 import { useCart } from "../../contexts/CartContext";
 import AuthModal from "./AuthModal";
 import CartPanel from "../Ordering/CartPanel";
-import TopNavActions from "./TopNavActions";
 import SearchModal from "./SearchModal";
 import { Box, Button, Container, Tooltip, Typography, useTheme, useMediaQuery } from "@mui/material";
 
-const TopNavBar = () => {
+const TopNavBar = ({ onOpenSearch }) => {
    // State for authentication status
    const { isAuthenticated, user, logout } = useAuth();
    const theme = useTheme();
@@ -175,8 +179,74 @@ const TopNavBar = () => {
             </Box>
 
             {/* Right Group - TopNavActions (Brochure and Search) */}
+            <Box className="d-flex flex-row flex-wrap" sx={{
+               paddingX: theme.liftkit.spacing.sm,
+               gap: { xs: 0, md: 2 },
+            }}>
+               {/* Brochure Download - Desktop Only */}
+               <Tooltip title="Download Brochure">
+                  <Button
+                     variant="topNavAction"
+                     component="a"
+                     href="/brochure"
+                     target="_blank"
+                     startIcon={isDesktop ? <DownloadIcon /> : null}
+                     endIcon={!isDesktop ? <DownloadIcon /> : null}
+                     sx={{
+                        minWidth: {
+                           xs: theme.liftkit.spacing.xl,
+                           lg: 64,
+                        },
+                        justifyContent: {
+                           xs: "end",
+                           md: "center",
+                        },
+                     }}
+                  >
+                     <Typography
+                        variant="topnavlink"
+                        sx={{
+                           display: { xs: "none", md: "flex" },
+                           color: theme.palette.semantic.navigation.text.primary,
+                        }}
+                     >
+                        Brochure
+                     </Typography>
+                  </Button>
+               </Tooltip>
 
-            <TopNavActions onOpenSearch={handleOpenSearchModal} />
+               {/* Search Button */}
+               <Tooltip title="Search Products (Ctrl+K)">
+                  <Button
+                     variant="topNavAction"
+                     onClick={onOpenSearch}
+                     sx={{
+                        minWidth: {
+                           xs: theme.liftkit.spacing.xl,
+                           lg: 64,
+                        },
+                        justifyContent: {
+                           xs: "end",
+                           md: "center",
+                        },
+                     }}
+                     aria-label="search products"
+                     startIcon={isDesktop ? <SearchIcon /> : null}
+                     endIcon={!isDesktop ? <SearchIcon /> : null}
+                  >
+                     <Typography
+                        variant="topnavlink"
+                        sx={{
+                           display: { xs: "none", md: "flex" },
+                           color: theme.palette.semantic.navigation.text.primary,
+                        }}
+                     >
+                        Search
+                     </Typography>
+                  </Button>
+               </Tooltip>
+            </Box>
+            {/* <TopNavActions onOpenSearch={handleOpenSearchModal} /> */}
 
          </Container>
 
