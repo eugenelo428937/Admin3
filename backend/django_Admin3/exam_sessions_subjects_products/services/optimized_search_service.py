@@ -11,7 +11,7 @@ from django.conf import settings
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct, ExamSessionSubjectBundle
 from exam_sessions_subjects_products.serializers import ProductListSerializer
 from products.serializers import ExamSessionSubjectBundleSerializer
-from products.models.filter_system import FilterConfiguration, FilterGroup
+from products.models.filter_system import FilterConfiguration
 
 logger = logging.getLogger('optimized_search')
 

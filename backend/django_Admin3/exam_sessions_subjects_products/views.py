@@ -1,5 +1,5 @@
 import logging
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.core.cache import cache
 from django.db.models import Q
 from django.conf import settings
@@ -9,20 +9,18 @@ from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import ExamSessionSubjectProduct
 from .serializers import (
-    ExamSessionSubjectProductSerializer, 
+    ExamSessionSubjectProductSerializer,
     ProductListSerializer,
     ProductSearchRequestSerializer,
-    ProductSearchResponseSerializer
 )
 from .services import FuzzySearchService
 from .services.optimized_search_service import optimized_search_service
 from .middleware.query_performance import monitor_query_performance
 from exam_sessions_subjects.models import ExamSessionSubject
 from products.models.products import Product
-from products.models.filter_system import FilterGroup
 from subjects.models import Subject
 from subjects.serializers import SubjectSerializer
-from products.services.filter_service import get_product_filter_service, get_filter_service
+from products.services.filter_service import get_filter_service
 
 # Import exam session bundle models and serializers
 from .models import ExamSessionSubjectBundle
