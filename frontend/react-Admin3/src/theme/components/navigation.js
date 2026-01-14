@@ -129,10 +129,15 @@ export const navigationOverrides = {
       {
         props: { variant: 'topNavAction' },
         style: {
-          color: semanticColors.navigation.text.primary,
+          color: semanticColors.navigation.text.secondary,
           textTransform: 'none',
           padding: 0,
           justifyContent: 'center',
+          "& .MuiButton-startIcon":{
+            margin:0,
+            marginRight: liftKitTheme.spacing.xs3,
+            fontSize: liftKitTheme.spacing.sm,
+          },
         },
       },
     ],
