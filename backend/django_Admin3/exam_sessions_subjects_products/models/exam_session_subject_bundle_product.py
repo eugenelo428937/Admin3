@@ -1,6 +1,5 @@
 from django.db import models
 from .exam_session_subject_bundle import ExamSessionSubjectBundle
-from .exam_session_subject_product import ExamSessionSubjectProduct
 from .exam_session_subject_product_variation import ExamSessionSubjectProductVariation
 
 class ExamSessionSubjectBundleProduct(models.Model):

@@ -5,7 +5,6 @@ This module tests the ExamSessionViewSet API endpoints to ensure proper
 authentication, authorization, and CRUD operations.
 """
 
-from django.test import TestCase
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
