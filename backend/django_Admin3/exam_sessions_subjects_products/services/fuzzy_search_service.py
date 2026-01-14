@@ -11,11 +11,10 @@ This service provides intelligent fuzzy matching that handles:
 
 import logging
 from typing import List, Dict, Any, Tuple
-from fuzzywuzzy import fuzz, process
-from django.db.models import Q, QuerySet
+from fuzzywuzzy import fuzz
+from django.db.models import Q
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
 from subjects.models import Subject
-from products.models.filter_system import FilterGroup
 
 logger = logging.getLogger(__name__)
 

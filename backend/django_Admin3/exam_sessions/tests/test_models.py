@@ -8,7 +8,6 @@ date constraints, and model behavior.
 from django.test import TestCase
 from django.utils import timezone
 from datetime import timedelta
-from django.core.exceptions import ValidationError
 
 from exam_sessions.models import ExamSession
 

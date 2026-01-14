@@ -7,8 +7,7 @@ Analyzes database query performance for filtering operations and provides optimi
 
 import time
 from django.core.management.base import BaseCommand
-from django.db import connection, connections
-from django.conf import settings
+from django.db import connection
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
 from exam_sessions_subjects_products.serializers import ProductListSerializer
 from products.services.filter_service import get_filter_service
