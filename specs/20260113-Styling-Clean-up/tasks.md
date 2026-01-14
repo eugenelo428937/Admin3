@@ -221,6 +221,70 @@ Task: "Add navigation.button.hoverColor token in semantic.js"
 
 ---
 
+## Phase 7: User Story 4 - Mobile Navigation Styling (Priority: P1) 🆕
+
+**Goal**: Extend semantic token architecture to mobile navigation components for consistent theming
+
+**Independent Test**: Change mobile navigation token values and verify mobile menu updates without modifying component files
+
+### New Semantic Tokens Required
+
+- [x] T042 [US4] Add `navigation.mobile.icon.color` token mapping to `colorTheme.offwhite['000']` in frontend/react-Admin3/src/theme/colors/semantic.js
+- [x] T043 [P] [US4] Add `navigation.mobile.border.color` token mapping to `rgba(255, 255, 255, 0.12)` equivalent in frontend/react-Admin3/src/theme/colors/semantic.js
+- [x] T044 [P] [US4] Add `navigation.mobile.title.color` token mapping to `colorTheme.offwhite['000']` in frontend/react-Admin3/src/theme/colors/semantic.js
+- [x] T045 [P] [US4] Add `navigation.hamburger.hover.background` token mapping for hamburger button hover state in frontend/react-Admin3/src/theme/colors/semantic.js
+
+### Add MUI Variants for Mobile Navigation
+
+- [x] T046 [US4] Add `mobileNavIcon` IconButton variant in frontend/react-Admin3/src/theme/components/navigation.js using `semanticColors.navigation.mobile.icon.color`
+- [x] T047 [P] [US4] Add `mobileNavTitle` Typography variant in frontend/react-Admin3/src/theme/components/navigation.js using mobile title styling
+- [x] T048 [P] [US4] Add `hamburgerToggle` IconButton variant in frontend/react-Admin3/src/theme/components/navigation.js for hamburger menu button
+
+### Migrate MobileNavigation.js
+
+- [x] T049 [US4] Replace `color: "white"` with `variant="mobileNavIcon"` for Search IconButton in frontend/react-Admin3/src/components/Navigation/MobileNavigation.js
+- [x] T050 [P] [US4] Replace `color: "white"` with `variant="mobileNavIcon"` for Cart IconButton in frontend/react-Admin3/src/components/Navigation/MobileNavigation.js
+- [x] T051 [P] [US4] Replace `color: "white"` with `variant="mobileNavIcon"` for Login/Profile IconButton in frontend/react-Admin3/src/components/Navigation/MobileNavigation.js
+- [x] T052 [P] [US4] Replace `color: "white"` with `variant="mobileNavIcon"` for Back button IconButton in frontend/react-Admin3/src/components/Navigation/MobileNavigation.js
+- [x] T053 [US4] Replace hardcoded `borderColor: 'rgba(255, 255, 255, 0.12)'` with semantic token reference in MobileNavHeader component
+- [x] T054 [US4] Replace hardcoded title `color: "white"` with `variant="mobileNavTitle"` in MobileNavHeader component
+- [x] T055 [US4] Replace Drawer `backgroundColor: 'primary.main'` with semantic token for mobile menu background in frontend/react-Admin3/src/components/Navigation/MobileNavigation.js
+
+### Migrate MainNavBar.js Hamburger Button
+
+- [x] T056 [US4] Replace CSS variable `var(--navbar-menu-toggle-bg-color-hover)` with semantic token in IconButton hover state in frontend/react-Admin3/src/components/Navigation/MainNavBar.js
+- [x] T057 [US4] Apply `variant="hamburgerToggle"` to hamburger IconButton in frontend/react-Admin3/src/components/Navigation/MainNavBar.js
+
+### Verification
+
+- [x] T058 [US4] Take post-migration screenshots of mobile navigation and compare with baseline
+- [x] T059 [US4] Test: Change `navigation.mobile.icon.color` token value and verify all mobile nav icons update
+- [x] T060 [US4] Verify no hardcoded color values remain in MobileNavigation.js (grep for "white", "rgba", hardcoded hex)
+
+**Checkpoint**: User Story 4 complete - mobile navigation colors centralized via semantic tokens
+
+---
+
+## Updated Dependencies
+
+### Phase 7 Dependencies
+
+- **User Story 4 (Phase 7)**: Depends on Phase 2 (Foundational tokens) - can run in parallel with User Stories 2-3
+- Token tasks (T042-T045) must complete before variant tasks (T046-T048)
+- Variant tasks must complete before component migration tasks (T049-T060)
+
+### Parallel Opportunities in Phase 7
+
+**Token Addition (T042-T045)**: All can run in parallel (different token definitions)
+
+**Variant Addition (T046-T048)**: All can run in parallel (different variant definitions)
+
+**Component Migration**:
+- MobileNavigation.js IconButton migrations (T049-T052) can run in parallel
+- MainNavBar.js migration (T056-T057) can run in parallel with MobileNavigation.js tasks
+
+---
+
 ## Notes
 
 - No automated tests - visual regression via screenshot comparison

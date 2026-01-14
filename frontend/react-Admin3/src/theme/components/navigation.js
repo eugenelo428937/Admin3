@@ -109,6 +109,10 @@ export const navigationOverrides = {
             backgroundColor: 'transparent',
             color: semanticColors.navigation.button.hoverColor,
           },
+          '& .MuiButton-endIcon ': {
+            marginRight: 0,
+            marginLeft: 0,
+          },
         },
       },
       // navViewAll: "View All X" action buttons with bottom margin
@@ -153,8 +157,58 @@ export const navigationOverrides = {
           cursor: 'pointer',
         },
       },
+      // mobileNavTitle: Mobile navigation panel title (Phase 7 - US4)
+      {
+        props: { variant: 'mobileNavTitle' },
+        style: {
+          flex: 1,
+          fontSize: '1.1rem',
+          fontWeight: '500',
+          color: semanticColors.navigation.mobile.title.color,
+        },
+      },
     ],
   },
+
+  // Mobile Navigation IconButton Variants (Phase 7 - US4)
+  MuiIconButton: {
+    variants: [
+      // mobileNavIcon: Mobile nav action icons (search, cart, login, back)
+      {
+        props: { variant: 'mobileNavIcon' },
+        style: {
+          padding: '6px',
+          color: semanticColors.navigation.mobile.icon.color,
+        },
+      },
+      // hamburgerToggle: Hamburger menu toggle button
+      {
+        props: { variant: 'hamburgerToggle' },
+        style: {
+          borderRadius: liftKitTheme.spacing.sm,
+          paddingLeft: liftKitTheme.spacing.xs,
+          paddingRight: liftKitTheme.spacing.xs,
+          paddingTop: liftKitTheme.spacing.sm,
+          paddingBottom: liftKitTheme.spacing.sm,
+          border: 0,
+          zIndex: 10000,
+          '&:hover': {
+            boxShadow: 'var(--Paper-shadow)',
+            backgroundColor: semanticColors.navigation.hamburger.hover.background,
+            transition: 'all 0.1s ease-in',
+          },
+        },
+      },
+    ],
+  },
+  MuiSvgIcon: {
+    styleOverrides: {
+      root: {
+        color: semanticColors.navigation.mobile.icon.color,
+      },
+    },
+  }
+
 };
 
 export default navigationOverrides;

@@ -2,11 +2,13 @@ import React from "react";
 import {
    Box,
    Button,
+   Container,
    Grid,
    MenuItem,
    MenuList,
    Menu,
    Typography,
+   useTheme
 } from "@mui/material";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
@@ -29,6 +31,7 @@ const NavigationMenu = ({
    handleMarkingVouchersClick,
    onCollapseNavbar,
 }) => {
+   const theme = useTheme();
    const { isSuperuser, isApprentice, isStudyPlus } = useAuth();
 
    // Admin menu state
@@ -44,14 +47,17 @@ const NavigationMenu = ({
    };
 
    return (
-      <Box
+      <Container
          component="nav"
          aria-label="Main navigation"
+         disableGutters
          sx={{
             display: { xs: "none", md: "flex" },
             flexWrap: "wrap",
             alignItems: "center",
             justifyContent: { xs: "flex-start", lg: "space-evenly" },
+            width: 'auto',
+            gap: theme.liftkit.spacing.md,
          }}
       >
          <Button component={NavLink} to="/home">
@@ -714,7 +720,7 @@ const NavigationMenu = ({
                </Menu>
             </>
          ) : null}
-      </Box>
+      </Container>
    );
 };
 
