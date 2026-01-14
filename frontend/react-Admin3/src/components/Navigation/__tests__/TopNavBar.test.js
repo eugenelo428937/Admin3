@@ -33,9 +33,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import TopNavBar from '../TopNavBar';
-// AuthProvider and CartProvider are mocked above, no need to import
 
-// Create a theme with liftkit spacing for tests
+// Create a theme with liftkit spacing and semantic navigation colors for tests
 const theme = createTheme({
   liftkit: {
     spacing: {
@@ -57,6 +56,15 @@ const theme = createTheme({
     },
     offwhite: {
       '000': '#ffffff',
+      '001': '#f0edf1',
+    },
+    semantic: {
+      navigation: {
+        text: {
+          primary: '#ffffff',
+          secondary: '#f0edf1',
+        },
+      },
     },
   },
 });
@@ -141,18 +149,6 @@ jest.mock('../../Ordering/CartPanel', () => {
   };
 });
 
-// Mock TopNavActions
-jest.mock('../TopNavActions', () => {
-  return function MockTopNavActions({ onOpenSearch }) {
-    return (
-      <div data-testid="top-nav-actions">
-        <button onClick={onOpenSearch}>Search</button>
-        <span>Brochure</span>
-      </div>
-    );
-  };
-});
-
 describe('TopNavBar', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -169,12 +165,12 @@ describe('TopNavBar', () => {
       expect(topNavWrapper).toBeInTheDocument();
     });
 
-    test('should render ActEd Home link', () => {
+    test('should render ActEd link', () => {
       renderWithProviders(<TopNavBar />);
 
-      // Should render ActEd Home link
-      const actedHomeText = screen.getByText('ActEd Home');
-      expect(actedHomeText).toBeInTheDocument();
+      // Should render ActEd link
+      const actedText = screen.getByText('ActEd');
+      expect(actedText).toBeInTheDocument();
     });
 
     test('should render Help link', () => {
@@ -199,10 +195,10 @@ describe('TopNavBar', () => {
       expect(screen.getByText('Search')).toBeInTheDocument();
     });
 
-    test('should render ActEd Home link that navigates to /Home', () => {
+    test('should render ActEd link that navigates to /Home', () => {
       renderWithProviders(<TopNavBar />);
 
-      const homeLink = screen.getByText('ActEd Home').closest('a');
+      const homeLink = screen.getByText('ActEd').closest('a');
       expect(homeLink).toHaveAttribute('href', '/Home');
     });
 
@@ -222,7 +218,7 @@ describe('TopNavBar', () => {
       window.dispatchEvent(new CustomEvent('show-login-modal'));
 
       // The event listener is set up - we just verify component doesn't crash
-      expect(screen.getByText('ActEd Home')).toBeInTheDocument();
+      expect(screen.getByText('ActEd')).toBeInTheDocument();
     });
 
     test('should clean up event listener on unmount', () => {
@@ -240,36 +236,53 @@ describe('TopNavBar', () => {
     });
   });
 
-  describe('Search Modal', () => {
-    test('should open search modal when search button is clicked', async () => {
+  describe('Search Button', () => {
+    test('should call onOpenSearch callback when search button is clicked', async () => {
       const user = userEvent.setup();
-      renderWithProviders(<TopNavBar />);
+      const mockOnOpenSearch = jest.fn();
+      renderWithProviders(<TopNavBar onOpenSearch={mockOnOpenSearch} />);
 
-      // Search modal should not be visible initially
-      expect(screen.queryByTestId('search-modal')).not.toBeInTheDocument();
-
-      // Click search button from TopNavActions
-      const searchButton = screen.getByText('Search');
+      // Click search button
+      const searchButton = screen.getByLabelText('search products');
       await user.click(searchButton);
 
-      // Search modal should now be visible
-      expect(screen.getByTestId('search-modal')).toBeInTheDocument();
+      // onOpenSearch callback should be called
+      expect(mockOnOpenSearch).toHaveBeenCalledTimes(1);
     });
 
-    test('should close search modal when close is called', async () => {
-      const user = userEvent.setup();
+    test('search button should have correct aria-label for accessibility', () => {
       renderWithProviders(<TopNavBar />);
 
-      // Open search modal
-      const searchButton = screen.getByText('Search');
-      await user.click(searchButton);
+      const searchButton = screen.getByLabelText('search products');
+      expect(searchButton).toBeInTheDocument();
+    });
 
-      // Close it
-      const closeButton = screen.getByTestId('close-search');
-      await user.click(closeButton);
+    test('should render Search text', () => {
+      renderWithProviders(<TopNavBar />);
 
-      // Search modal should be closed
-      expect(screen.queryByTestId('search-modal')).not.toBeInTheDocument();
+      expect(screen.getByText('Search')).toBeInTheDocument();
+    });
+  });
+
+  describe('Brochure Button', () => {
+    test('should render Brochure button', () => {
+      renderWithProviders(<TopNavBar />);
+
+      expect(screen.getByText('Brochure')).toBeInTheDocument();
+    });
+
+    test('brochure link should point to /brochure', () => {
+      renderWithProviders(<TopNavBar />);
+
+      const brochureButton = screen.getByText('Brochure').closest('a');
+      expect(brochureButton).toHaveAttribute('href', '/brochure');
+    });
+
+    test('brochure link should open in new tab', () => {
+      renderWithProviders(<TopNavBar />);
+
+      const brochureButton = screen.getByText('Brochure').closest('a');
+      expect(brochureButton).toHaveAttribute('target', '_blank');
     });
   });
 });

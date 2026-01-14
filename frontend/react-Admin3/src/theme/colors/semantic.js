@@ -119,6 +119,24 @@ export const semanticColors = {
       color: colorTheme.offwhite['000'],        // Nav button text (#fdfdfd)
       hoverColor: colorTheme.bpp.purple[110],   // Button hover accent (#8953fd)
     },
+    // Mobile navigation tokens (Phase 7 - US4)
+    mobile: {
+      icon: {
+        color: colorTheme.offwhite['000'],      // Mobile nav icon color (#fdfdfd)
+      },
+      border: {
+        color: 'rgba(255, 255, 255, 0.12)',     // Mobile header border (semi-transparent white)
+      },
+      title: {
+        color: colorTheme.offwhite['000'],      // Mobile panel title color (#fdfdfd)
+      },
+      background: colorTheme.bpp.granite['080'], // Mobile drawer background (#3b3b3a)
+    },
+    hamburger: {
+      hover: {
+        background: colorTheme.bpp.granite['070'], // Hamburger hover background (#525252)
+      },
+    },
   },
 
   // Icon colors by product type

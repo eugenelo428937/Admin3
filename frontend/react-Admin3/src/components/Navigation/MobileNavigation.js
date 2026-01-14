@@ -4,7 +4,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../contexts/CartContext";
 import { NavigateBefore, ExpandMore, Search, ShoppingCartOutlined, Login, AccountCircle } from "@mui/icons-material";
-import { IconButton, Badge, Drawer, List, ListItem, ListItemButton, ListItemText, Box } from "@mui/material";
+import { IconButton, Badge, Drawer, List, ListItem, ListItemButton, ListItemText, Box, Typography, useTheme } from "@mui/material";
 
 const MobileNavigation = ({
 	open,
@@ -29,6 +29,7 @@ const MobileNavigation = ({
 	const { isSuperuser, isApprentice, isStudyPlus, isAuthenticated } = useAuth();
 	const { cartCount } = useCart();
 	const navigate = useNavigate();
+	const theme = useTheme();
 
 	// Navigation state management
 	const [navigationStack, setNavigationStack] = useState([
@@ -78,7 +79,7 @@ const MobileNavigation = ({
 				pt: 1.5,
 				gap: 0.5,
 				borderBottom: 1,
-				borderColor: 'rgba(255, 255, 255, 0.12)'
+				borderColor: theme.palette.semantic.navigation.mobile.border.color,
 			}}
 		>
 			{/* Top row - Action icons on left */}
@@ -94,7 +95,7 @@ const MobileNavigation = ({
 							}
 						}}
 						size="medium"
-						sx={{ padding: "6px", color: "white" }}
+						variant="mobileNavIcon"
 						aria-label="search">
 						<Search fontSize="medium" />
 					</IconButton>
@@ -108,7 +109,7 @@ const MobileNavigation = ({
 							}
 						}}
 						size="medium"
-						sx={{ padding: "6px", color: "white" }}
+						variant="mobileNavIcon"
 						aria-label="shopping cart">
 						<Badge badgeContent={cartCount} color="primary" max={99}>
 							<ShoppingCartOutlined fontSize="medium" />
@@ -124,7 +125,7 @@ const MobileNavigation = ({
 							}
 						}}
 						size="medium"
-						sx={{ padding: "6px", color: "white" }}
+						variant="mobileNavIcon"
 						aria-label={isAuthenticated ? "profile" : "login"}>
 						{isAuthenticated ? <AccountCircle fontSize="medium" /> : <Login fontSize="medium" />}
 					</IconButton>
@@ -135,15 +136,15 @@ const MobileNavigation = ({
 			{showBackButton && (
 				<Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
 					{/* Back button */}
-					<IconButton onClick={navigateBack} size="medium" sx={{ padding: "6px", color: "white" }} aria-label="go back">
+					<IconButton onClick={navigateBack} size="medium" variant="mobileNavIcon" aria-label="go back">
 						<NavigateBefore fontSize="medium" />
 					</IconButton>
 
 					{/* Title */}
 					{title && (
-						<Box sx={{ flex: 1, fontSize: "1.1rem", fontWeight: "500", color: "white" }}>
+						<Typography variant="navlink">
 							{title}
-						</Box>
+						</Typography>
 					)}
 				</Box>
 			)}
@@ -157,38 +158,38 @@ const MobileNavigation = ({
 			<List component="nav" sx={{ pl: 2 }}>
 				<ListItem disablePadding>
 					<ListItemButton component={NavLink} to="/home" onClick={closeNavigation}>
-						<ListItemText primary="Home" />
+						<ListItemText primary={<Typography variant="navlink">Home</Typography>} />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
 					<ListItemButton onClick={() => navigateToPanel("subjects", "Subjects")}>
-						<ListItemText primary="Subjects" />
+						<ListItemText primary={<Typography variant="navlink">Subjects</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
 					<ListItemButton onClick={() => navigateToPanel("products", "Products")}>
-						<ListItemText primary="Products" />
+						<ListItemText primary={<Typography variant="navlink">Products</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
 					<ListItemButton onClick={() => navigateToPanel("distance-learning", "Distance Learning")}>
-						<ListItemText primary="Distance Learning" />
+						<ListItemText primary={<Typography variant="navlink">Distance Learning</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
 					<ListItemButton onClick={() => navigateToPanel("tutorials", "Tutorials")}>
-						<ListItemText primary="Tutorials" />
+						<ListItemText primary={<Typography variant="navlink">Tutorials</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
-					{/* Conditional sections based on user permissions */}
+				{/* Conditional sections based on user permissions */}
 				{isApprentice && (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary="Apprenticeships" />
+							<ListItemText primary={<Typography variant="navlink">Apprenticeships</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				)}
@@ -196,7 +197,7 @@ const MobileNavigation = ({
 				{isStudyPlus && (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary="Study Plus" />
+							<ListItemText primary={<Typography variant="navlink">Study Plus</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				)}
@@ -205,7 +206,7 @@ const MobileNavigation = ({
 				{isSuperuser && (
 					<ListItem disablePadding>
 						<ListItemButton onClick={() => navigateToPanel("admin", "Admin")}>
-							<ListItemText primary="Admin" />
+							<ListItemText primary={<Typography variant="navlink">Admin</Typography>} />
 							<ExpandMore />
 						</ListItemButton>
 					</ListItem>
@@ -228,8 +229,8 @@ const MobileNavigation = ({
 								subjects.filter((s) => /^(CB|CS|CM)/.test(s.code))
 							)
 						}>
-						<ListItemText primary="Core Principles" />
-						<ExpandMore />
+						<ListItemText primary={<Typography variant="navlink">Core Principles</Typography>} />
+						<ExpandMore variant="mobileNavIcon"/>
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
@@ -241,7 +242,7 @@ const MobileNavigation = ({
 								subjects.filter((s) => /^CP[1-3]$/.test(s.code))
 							)
 						}>
-						<ListItemText primary="Core Practices" />
+						<ListItemText primary={<Typography variant="navlink">Core Practices</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
@@ -254,7 +255,7 @@ const MobileNavigation = ({
 								subjects.filter((s) => /^SP/.test(s.code))
 							)
 						}>
-						<ListItemText primary="Specialist Principles" />
+						<ListItemText primary={<Typography variant="navlink">Specialist Principles</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
@@ -267,7 +268,7 @@ const MobileNavigation = ({
 								subjects.filter((s) => /^SA/.test(s.code))
 							)
 						}>
-						<ListItemText primary="Specialist Advanced" />
+						<ListItemText primary={<Typography variant="navlink">Specialist Advanced</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
@@ -288,7 +289,7 @@ const MobileNavigation = ({
 									handleSubjectClick(subject.code);
 									closeNavigation();
 								}}>
-								<ListItemText primary={`${subject.code} - ${subject.description}`} />
+								<ListItemText primary={<Typography variant="navlink">{`${subject.code} - ${subject.description}`}</Typography>} />
 							</ListItemButton>
 						</ListItem>
 					))}
@@ -307,13 +308,13 @@ const MobileNavigation = ({
 							handleProductClick();
 							handleNavigation("/products");
 						}}>
-						<ListItemText primary="View All Products" />
+						<ListItemText primary={<Typography variant="navlink">View All Products</Typography>} />
 					</ListItemButton>
 				</ListItem>
 				{loadingProductGroups ? (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary="Loading products..." />
+							<ListItemText primary={<Typography variant="navlink">Loading products...</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				) : (
@@ -324,7 +325,7 @@ const MobileNavigation = ({
 								onClick={() =>
 									navigateToPanel("product-group", group.name, group)
 								}>
-								<ListItemText primary={group.name} />
+								<ListItemText primary={<Typography variant="navlink">{group.name}</Typography>} />
 								<ExpandMore />
 							</ListItemButton>
 						</ListItem>
@@ -345,7 +346,7 @@ const MobileNavigation = ({
 							handleProductGroupClick(data.name);
 							closeNavigation();
 						}}>
-						<ListItemText primary={`View All ${data.name}`} />
+						<ListItemText primary={<Typography variant="navlink">{`View All ${data.name}`}</Typography>} />
 					</ListItemButton>
 				</ListItem>
 				{data.products && data.products.length > 0 ? (
@@ -356,14 +357,14 @@ const MobileNavigation = ({
 									handleSpecificProductClick(product.id);
 									closeNavigation();
 								}}>
-								<ListItemText primary={product.shortname} />
+								<ListItemText primary={<Typography variant="navlink">{product.shortname}</Typography>} />
 							</ListItemButton>
 						</ListItem>
 					))
 				) : (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary="No products available" />
+							<ListItemText primary={<Typography variant="navlink">No products available</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				)}
@@ -375,7 +376,7 @@ const MobileNavigation = ({
 								handleMarkingVouchersClick(e);
 								handleNavigation("/products", { group: "8" });
 							}}>
-							<ListItemText primary="Marking Vouchers" />
+							<ListItemText primary={<Typography variant="navlink">Marking Vouchers</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				)}
@@ -395,13 +396,13 @@ const MobileNavigation = ({
 								distance_learning: "true",
 							});
 						}}>
-						<ListItemText primary="View All Distance Learning" />
+						<ListItemText primary={<Typography variant="navlink">View All Distance Learning</Typography>} />
 					</ListItemButton>
 				</ListItem>
 				{loadingDistanceLearning ? (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary="Loading distance learning..." />
+							<ListItemText primary={<Typography variant="navlink">Loading distance learning...</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				) : (
@@ -416,7 +417,7 @@ const MobileNavigation = ({
 										group
 									)
 								}>
-								<ListItemText primary={group.name} />
+								<ListItemText primary={<Typography variant="navlink">group.name</Typography>} />
 								<ExpandMore />
 							</ListItemButton>
 						</ListItem>
@@ -436,13 +437,13 @@ const MobileNavigation = ({
 						onClick={() => {
 							handleNavigation("/products?main_category=Tutorials");
 						}}>
-						<ListItemText primary="View All Tutorials" />
+						<ListItemText primary={<Typography variant="navlink">View All Tutorials</Typography>} />
 					</ListItemButton>
 				</ListItem>
 				{loadingTutorial ? (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary="Loading tutorials..." />
+							<ListItemText primary={<Typography variant="navlink">Loading tutorials...</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				) : tutorialData ? (
@@ -457,7 +458,7 @@ const MobileNavigation = ({
 											tutorialData.Location
 										)
 									}>
-									<ListItemText primary="Location" />
+									<ListItemText primary={<Typography variant="navlink">Location</Typography>} />
 									<ExpandMore />
 								</ListItemButton>
 							</ListItem>
@@ -472,7 +473,7 @@ const MobileNavigation = ({
 											tutorialData.Format
 										)
 									}>
-									<ListItemText primary="Format" />
+									<ListItemText primary={<Typography variant="navlink">Format</Typography>} />
 									<ExpandMore />
 								</ListItemButton>
 							</ListItem>
@@ -488,7 +489,7 @@ const MobileNavigation = ({
 												tutorialData["Online Classroom"]
 											)
 										}>
-										<ListItemText primary="Online Classroom" />
+										<ListItemText primary={<Typography variant="navlink">Online Classroom</Typography>} />
 										<ExpandMore />
 									</ListItemButton>
 								</ListItem>
@@ -497,7 +498,7 @@ const MobileNavigation = ({
 				) : (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary="No tutorial data available" />
+							<ListItemText primary={<Typography variant="navlink">No tutorial data available</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				)}
@@ -518,7 +519,7 @@ const MobileNavigation = ({
 									handleProductGroupClick(format.group_name);
 									closeNavigation();
 								}}>
-								<ListItemText primary={format.name} />
+								<ListItemText primary={<Typography variant="navlink">{format.name}</Typography>} />
 							</ListItemButton>
 						</ListItem>
 					))
@@ -530,7 +531,7 @@ const MobileNavigation = ({
 									handleProductVariationClick(variation.id);
 									closeNavigation();
 								}}>
-								<ListItemText primary={variation.description || variation.name} />
+								<ListItemText primary={<Typography variant="navlink">{variation.description || variation.name}</Typography>} />
 							</ListItemButton>
 						</ListItem>
 					))
@@ -545,7 +546,7 @@ const MobileNavigation = ({
 											handleSpecificProductClick(product.id);
 											closeNavigation();
 										}}>
-										<ListItemText primary={product.shortname} />
+										<ListItemText primary={<Typography variant="navlink">{product.shortname}</Typography>} />
 									</ListItemButton>
 								</ListItem>
 							))}
@@ -557,7 +558,7 @@ const MobileNavigation = ({
 											handleSpecificProductClick(product.id);
 											closeNavigation();
 										}}>
-										<ListItemText primary={product.shortname} />
+										<ListItemText primary={<Typography variant="navlink">{product.shortname}</Typography>} />
 									</ListItemButton>
 								</ListItem>
 							))}
@@ -647,7 +648,7 @@ const MobileNavigation = ({
 				'& .MuiDrawer-paper': {
 					width: '85%',
 					maxWidth: 360,
-					backgroundColor: 'primary.main',
+					backgroundColor: theme.palette.semantic.navigation.mobile.background,
 				},
 			}}
 		>

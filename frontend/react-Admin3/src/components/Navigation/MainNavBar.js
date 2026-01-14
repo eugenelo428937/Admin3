@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import {
-   AppBar,
+   AppBar,   
    Toolbar,
    Container,
    IconButton,
@@ -183,7 +183,7 @@ const MainNavBar = () => {
       <div className="sticky-top">
          {/* TopNavBar hidden on mobile (sm and smaller) */}
          <div className="d-none d-sm-block">
-            <TopNavBar />
+            <TopNavBar onOpenSearch={handleOpenSearchModal}/>
          </div>
          <AppBar
             position="sticky"
@@ -234,14 +234,14 @@ const MainNavBar = () => {
                   <Box
                      id="navbar-menu"
                      className="justify-content-lg-center justify-content-md-start order-3 order-md-2 d-none d-md-flex"
-                     sx={{
-                        // display: { xs: expanded ? 'flex' : 'none', md: 'flex' },
-                        // display: { xs: 'flex' : 'none', md: 'flex' },
+                     sx={{                        
                         flexDirection: { xs: "column", md: "row" },
+                        width:"auto",
                      }}
+                     
                   >
                      {/* Desktop Navigation - Hidden on mobile */}
-                     <Box sx={{ display: { xs: "none", md: "flex" } }}>
+                     <Container disableGutters sx={{ display: { xs: "none", md: "flex" }, width:"auto" }}>
                         <NavigationMenu
                            subjects={subjects}
                            navbarProductGroups={navbarProductGroups}
@@ -264,7 +264,7 @@ const MainNavBar = () => {
                            }
                            onCollapseNavbar={() => setExpanded(false)}
                         />
-                     </Box>
+                     </Container>
 
                      {/* Mobile Navigation - Visible only on mobile (below md breakpoint) */}
                      <Box sx={{ display: { xs: "block", md: "none" } }}>
@@ -319,19 +319,10 @@ const MainNavBar = () => {
                         aria-expanded={expanded}
                         id="navbar-menu-toggle"
                         onClick={() => setExpanded(!expanded)}
+                        variant="hamburgerToggle"
                         sx={{
                            display: { xs: "flex", md: "none" },
-                           borderRadius: theme.liftkit.spacing.sm,
-                           paddingX: theme.liftkit.spacing.xs,
-                           paddingY: theme.liftkit.spacing.sm,
-                           border: 0,
-                           zIndex: 10000,
-                           "&:hover":{
-                              boxShadow:"var(--Paper-shadow)",
-                              backgroundColor: "var(--navbar-menu-toggle-bg-color-hover)",
-                              transition: "all 0.1s ease-in"
-                           },                           
-                        }}                        
+                        }}
                      >
                         <Box sx={{ display: "flex", flexDirection: "column",height: theme.liftkit.spacing.xl, }}>
                            <span className="toggler-icon top-bar"></span>
