@@ -116,7 +116,8 @@ export const semanticColors = {
       active: colorTheme.bpp.granite['080'],    // Active/selected state (#3b3b3a)
     },
     button: {
-      color: colorTheme.offwhite['000'],        // Nav button text (#fdfdfd)
+      color: colorTheme.offwhite['009'],        // Nav button text (#fdfdfd)
+
       hoverColor: colorTheme.bpp.purple[110],   // Button hover accent (#8953fd)
     },
     // Mobile navigation tokens (Phase 7 - US4)

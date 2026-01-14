@@ -5,8 +5,8 @@ const colorTheme = {
 
 	offwhite : {
 		"000": "#fdfdfd", // #fdfdfd
-		"001": "#f0edf1", // #f0edf1
-		"002": "#e8eced", // #e8eced
+		"001": "#E0E0E0", // #f0edf1
+		"002": "#F6F6F6", // #e8eced
 		"003": "#e3e1ec", // #e3e1ec
 		"005": "#e4e1e6", // #e4e1e6
 		"006": "#eae7ec", // #eae7ec
