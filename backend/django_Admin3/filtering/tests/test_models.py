@@ -70,3 +70,19 @@ class FilterUsageAnalyticsModelTest(TestCase):
         """Verify FilterUsageAnalytics uses acted schema."""
         from filtering.models import FilterUsageAnalytics
         self.assertEqual(FilterUsageAnalytics._meta.db_table, '"acted"."filter_usage_analytics"')
+
+
+class FilterAdminTest(TestCase):
+    """Test filter admin registration."""
+
+    def test_filter_group_registered_in_admin(self):
+        """Verify FilterGroup is registered in Django admin."""
+        from django.contrib import admin
+        from filtering.models import FilterGroup
+        self.assertIn(FilterGroup, admin.site._registry)
+
+    def test_filter_configuration_registered_in_admin(self):
+        """Verify FilterConfiguration is registered in Django admin."""
+        from django.contrib import admin
+        from filtering.models import FilterConfiguration
+        self.assertIn(FilterConfiguration, admin.site._registry)
