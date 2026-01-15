@@ -1,3 +1,10 @@
+"""ProductVariationRecommendation model.
+
+Recommendation relationship between product-variation combinations.
+Migrated from products/models/product_variation_recommendation.py.
+
+Table: "acted"."product_productvariation_recommendations"
+"""
 from django.db import models
 from django.core.exceptions import ValidationError
 
@@ -12,8 +19,17 @@ class ProductVariationRecommendation(models.Model):
 
     Example: Mock Exam eBook (ProductProductVariation) → Mock Exam Marking Service (ProductProductVariation)
 
-    Note: References ProductProductVariation (junction table) not ProductVariation (generic types),
-    because we recommend specific product offerings, not generic variation types.
+    **Usage Example**::
+
+        from catalog.models import ProductVariationRecommendation, ProductProductVariation
+
+        ppv_source = ProductProductVariation.objects.get(product__code='MOCK_EXAM')
+        ppv_target = ProductProductVariation.objects.get(product__code='MARKING_SERVICE')
+
+        recommendation = ProductVariationRecommendation.objects.create(
+            product_product_variation=ppv_source,
+            recommended_product_product_variation=ppv_target
+        )
     """
 
     product_product_variation = models.OneToOneField(
@@ -34,10 +50,10 @@ class ProductVariationRecommendation(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'acted_product_productvariation_recommendations'
+        db_table = '"acted"."product_productvariation_recommendations"'
         indexes = [
-            models.Index(fields=['product_product_variation']),
-            models.Index(fields=['recommended_product_product_variation']),
+            models.Index(fields=['product_product_variation'], name='cat_pvr_ppv_idx'),
+            models.Index(fields=['recommended_product_product_variation'], name='cat_pvr_rec_ppv_idx'),
         ]
         verbose_name = 'Product Variation Recommendation'
         verbose_name_plural = 'Product Variation Recommendations'
