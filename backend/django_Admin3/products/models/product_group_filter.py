@@ -1,5 +1,5 @@
 from django.db import models
-from .filter_system import FilterGroup
+from filtering.models import FilterGroup
 
 class ProductGroupFilter(models.Model):
     FILTER_TYPE_CHOICES = [
