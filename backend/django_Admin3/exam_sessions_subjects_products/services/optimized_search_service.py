@@ -267,7 +267,7 @@ class OptimizedSearchService:
             use_fuzzy_sorting (bool): If True, skip ordering (fuzzy search will handle it)
         """
         from tutorials.models import TutorialEvent
-        from products.models import ProductVariationRecommendation
+        from catalog.models import ProductVariationRecommendation
 
         queryset = ExamSessionSubjectProduct.objects.select_related(
             'exam_session_subject__subject',  # Index: idx_exam_session_subjects_lookup
