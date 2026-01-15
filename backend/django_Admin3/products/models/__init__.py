@@ -5,12 +5,11 @@ catalog consolidation (001-catalog-consolidation). They are re-exported
 here for backward compatibility.
 
 DEPRECATED: New code should import these from catalog.models instead:
-    from catalog.models import Product, ProductVariation, ProductBundle, ...
+    from catalog.models import Product, ProductVariation, ProductBundle, ProductVariationRecommendation, ...
 
 Models that remain in products app:
     - FilterGroup, FilterConfiguration, FilterConfigurationGroup,
-      FilterPreset, FilterUsageAnalytics (filter system)
-    - ProductVariationRecommendation
+      FilterPreset, FilterUsageAnalytics (filter system - to be moved to filtering app)
 """
 # Re-export catalog models for backward compatibility
 from catalog.models import (
@@ -20,9 +19,10 @@ from catalog.models import (
     ProductProductGroup,
     ProductBundle,
     ProductBundleProduct,
+    ProductVariationRecommendation,
 )
 
-# Filter system models remain in products app
+# Filter system models remain in products app (until filtering app created)
 from .filter_system import (
     FilterGroup,
     FilterConfiguration,
@@ -30,9 +30,6 @@ from .filter_system import (
     FilterPreset,
     FilterUsageAnalytics,
 )
-
-# ProductVariationRecommendation remains in products app
-from .product_variation_recommendation import ProductVariationRecommendation
 
 __all__ = [
     # Catalog re-exports (deprecated - use catalog.models)
@@ -42,9 +39,8 @@ __all__ = [
     'ProductProductGroup',
     'ProductBundle',
     'ProductBundleProduct',
-    # Products app native models
     'ProductVariationRecommendation',
-    # Filter system
+    # Filter system (to be moved to filtering app)
     'FilterGroup',
     'FilterConfiguration',
     'FilterConfigurationGroup',
