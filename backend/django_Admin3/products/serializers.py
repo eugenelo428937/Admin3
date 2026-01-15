@@ -44,7 +44,6 @@ warnings.warn(
 # NOT DEPRECATED - Filter system serializers (stay in products app)
 # ============================================================
 from rest_framework import serializers
-from .models import Product
 from filtering.models import FilterGroup
 from .models.product_group_filter import ProductGroupFilter
 

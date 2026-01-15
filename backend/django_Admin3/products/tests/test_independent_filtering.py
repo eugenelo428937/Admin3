@@ -7,7 +7,8 @@ Usage: python manage.py test_independent_filtering
 """
 
 from django.core.management.base import BaseCommand
-from products.models import Product, FilterGroup
+from catalog.models import Product
+from filtering.models import FilterGroup
 
 
 class Command(BaseCommand):

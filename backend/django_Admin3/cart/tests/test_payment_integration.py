@@ -7,10 +7,12 @@ from decimal import Decimal
 from unittest.mock import patch, MagicMock
 
 from cart.models import Cart, CartItem, ActedOrder, ActedOrderPayment
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
-from exam_sessions_subjects.models import ExamSessionSubject
-from catalog.models import Product, ExamSession, Subject
-from products.models import FilterGroup
+from store.models import Product as StoreProduct
+from catalog.models import (
+    Product, ProductVariation, ProductProductVariation,
+    ExamSession, Subject, ExamSessionSubject
+)
+from filtering.models import FilterGroup
 from django.utils import timezone
 
 User = get_user_model()
@@ -51,26 +53,40 @@ class PaymentIntegrationTest(TestCase):
             subject=self.subject
         )
 
-        # Create test product
-        self.product = Product.objects.create(
+        # Create test catalog product
+        self.catalog_product = Product.objects.create(
             fullname='Test Product',
             shortname='Test Product',
             code='TEST001'
         )
         # Add product to filter group via M2M
-        self.product.groups.add(self.filter_group)
+        self.catalog_product.groups.add(self.filter_group)
 
-        # Create test exam session subject product
-        self.exam_product = ExamSessionSubjectProduct.objects.create(
-            exam_session_subject=self.exam_session_subject,
-            product=self.product
+        # Create product variation
+        self.product_variation = ProductVariation.objects.create(
+            name='Test Printed',
+            variation_type='Printed',
+            description='Test printed variation'
         )
-        
+
+        # Create product-product-variation link
+        self.ppv = ProductProductVariation.objects.create(
+            product=self.catalog_product,
+            product_variation=self.product_variation
+        )
+
+        # Create store product (purchasable item)
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product_product_variation=self.ppv,
+            product_code='TEST/PTEST01/TEST-2025'
+        )
+
         # Create cart and add item
         self.cart = Cart.objects.create(user=self.user)
         self.cart_item = CartItem.objects.create(
             cart=self.cart,
-            product=self.exam_product,
+            product=self.store_product,
             quantity=1,
             actual_price=Decimal('100.00')
         )

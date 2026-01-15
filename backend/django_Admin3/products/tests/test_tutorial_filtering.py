@@ -8,7 +8,8 @@ Usage: python manage.py test_tutorial_filtering
 
 from django.core.management.base import BaseCommand
 from django.test import Client
-from products.models import Product, FilterGroup
+from catalog.models import Product
+from filtering.models import FilterGroup
 
 
 class Command(BaseCommand):

@@ -9,7 +9,7 @@ Phase 4 Implementation:
 """
 from django.test import TestCase
 from cart.models import Cart, CartItem
-from products.models import Product
+from catalog.models import Product
 from django.contrib.auth import get_user_model
 import inspect
 

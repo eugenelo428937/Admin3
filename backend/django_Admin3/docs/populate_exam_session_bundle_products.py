@@ -28,7 +28,7 @@ from exam_sessions_subjects_products.models import (
     ExamSessionSubjectBundleProduct,
     ExamSessionSubjectProductVariation
 )
-from products.models import ProductBundleProduct
+from catalog.models import ProductBundleProduct
 
 
 def populate_bundle_products(dry_run=True, verbose=True):

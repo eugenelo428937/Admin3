@@ -7,10 +7,9 @@ from rest_framework import status
 from django.urls import reverse
 from unittest.mock import patch, MagicMock
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
-from exam_sessions_subjects.models import ExamSessionSubject
+from catalog.models import ExamSession, ExamSessionSubject
 from subjects.models import Subject
 from products.models.products import Product
-from exam_sessions.models import ExamSession
 
 SKIP_FILTER_SERVICE_REASON = "Filter service mock assertions don't match actual implementation"
 SKIP_MARKING_VOUCHER_REASON = "Marking voucher feature integration not complete"
@@ -393,10 +392,11 @@ class BundleContentFilteringTest(APITestCase):
     def setUp(self):
         """Set up test data including products, bundles, and their relationships"""
         from django.utils import timezone
-        from products.models import (
+        from catalog.models import (
             Product, ProductVariation, ProductProductVariation,
-            ProductBundle, FilterGroup
+            ProductBundle
         )
+        from filtering.models import FilterGroup
         from exam_sessions_subjects_products.models import (
             ExamSessionSubjectProductVariation,
             ExamSessionSubjectBundle,
@@ -778,7 +778,7 @@ class SubjectBasedSortingTest(APITestCase):
     def setUp(self):
         """Set up test data with multiple subjects, products, and bundles"""
         from django.utils import timezone
-        from products.models import (
+        from catalog.models import (
             Product, ProductVariation, ProductProductVariation,
             ProductBundle
         )
