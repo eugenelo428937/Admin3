@@ -46,7 +46,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework import status
 
 from .models import Product
-from .models.filter_system import FilterGroup
+from filtering.models import FilterGroup
 from .models.product_group_filter import ProductGroupFilter
 from .serializers import (
     ProductSerializer,

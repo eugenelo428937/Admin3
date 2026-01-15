@@ -14,9 +14,10 @@ from .serializers import (
     ProductSearchRequestSerializer,
 )
 from .services import FuzzySearchService
+from .deprecation import DeprecatedAPIMixin
 from .services.optimized_search_service import optimized_search_service
 from .middleware.query_performance import monitor_query_performance
-from exam_sessions_subjects.models import ExamSessionSubject
+from catalog.models import ExamSessionSubject
 from products.models.products import Product
 from subjects.models import Subject
 from subjects.serializers import SubjectSerializer
@@ -28,10 +29,24 @@ from products.serializers import ExamSessionSubjectBundleSerializer
 
 logger = logging.getLogger(__name__)
 
-class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
+class ExamSessionSubjectProductViewSet(DeprecatedAPIMixin, viewsets.ModelViewSet):
+    """
+    DEPRECATED: This ViewSet is deprecated as part of the Store App Consolidation.
+
+    Please migrate to the new Store API:
+    - Products: /api/store/products/
+    - Prices: /api/store/prices/
+    - Bundles: /api/store/bundles/
+
+    This endpoint will be removed after 2025-06-01.
+    """
     queryset = ExamSessionSubjectProduct.objects.all()
     serializer_class = ExamSessionSubjectProductSerializer
     permission_classes = [AllowAny]  # Allow public access by default, override with IsAuthenticated where needed
+
+    # Deprecation configuration
+    deprecation_message = "This endpoint is deprecated. Please migrate to /api/store/ endpoints."
+    successor_url = "/api/store/"
 
     def get_permissions(self):
         """
@@ -174,7 +189,7 @@ class ExamSessionSubjectProductViewSet(viewsets.ModelViewSet):
         page_size = int(request.query_params.get('page_size', 50))
         
         # ===== DYNAMIC FILTER CONFIGURATION =====
-        from products.models.filter_system import FilterConfiguration
+        from filtering.models import FilterConfiguration
         
         # Get all active filter configurations
         filter_configs = FilterConfiguration.objects.filter(is_active=True).select_related()

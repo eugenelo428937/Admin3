@@ -4,12 +4,9 @@ Product-related models have been moved to catalog.models as part of the
 catalog consolidation (001-catalog-consolidation). They are re-exported
 here for backward compatibility.
 
-DEPRECATED: New code should import these from catalog.models instead:
-    from catalog.models import Product, ProductVariation, ProductBundle, ProductVariationRecommendation, ...
-
-Models that remain in products app:
-    - FilterGroup, FilterConfiguration, FilterConfigurationGroup,
-      FilterPreset, FilterUsageAnalytics (filter system - to be moved to filtering app)
+DEPRECATED: New code should import from the canonical locations:
+    - catalog.models: Product, ProductVariation, ProductBundle, ProductVariationRecommendation, ...
+    - filtering.models: FilterGroup, FilterConfiguration, FilterPreset, ...
 """
 # Re-export catalog models for backward compatibility
 from catalog.models import (
@@ -22,8 +19,8 @@ from catalog.models import (
     ProductVariationRecommendation,
 )
 
-# Filter system models remain in products app (until filtering app created)
-from .filter_system import (
+# Re-export filtering models for backward compatibility (moved to filtering app)
+from filtering.models import (
     FilterGroup,
     FilterConfiguration,
     FilterConfigurationGroup,
@@ -40,7 +37,7 @@ __all__ = [
     'ProductBundle',
     'ProductBundleProduct',
     'ProductVariationRecommendation',
-    # Filter system (to be moved to filtering app)
+    # Filtering re-exports (deprecated - use filtering.models)
     'FilterGroup',
     'FilterConfiguration',
     'FilterConfigurationGroup',
