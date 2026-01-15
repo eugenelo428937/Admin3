@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from .models import ExamSessionSubjectProduct, ExamSessionSubjectProductVariation, Price
-from exam_sessions_subjects.serializers import ExamSessionSubjectSerializer
+from catalog.serializers import ExamSessionSubjectSerializer
 from products.serializers import ProductSerializer
-from products.models import ProductVariationRecommendation
+from catalog.models import ProductVariationRecommendation
 
 
 class ExamSessionSubjectProductSerializer(serializers.ModelSerializer):
