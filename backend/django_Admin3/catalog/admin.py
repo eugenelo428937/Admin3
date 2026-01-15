@@ -7,12 +7,14 @@ from django.contrib import admin
 from .models import (
     Subject,
     ExamSession,
+    ExamSessionSubject,
     Product,
     ProductVariation,
     ProductProductVariation,
     ProductProductGroup,
     ProductBundle,
     ProductBundleProduct,
+    ProductVariationRecommendation,
 )
 
 
@@ -32,6 +34,29 @@ class ExamSessionAdmin(admin.ModelAdmin):
     list_filter = ('start_date', 'end_date')
     search_fields = ('session_code',)
     ordering = ('-start_date',)
+
+
+@admin.register(ExamSessionSubject)
+class ExamSessionSubjectAdmin(admin.ModelAdmin):
+    """
+    Admin interface for ExamSessionSubject model.
+
+    Manages the association between exam sessions and subjects,
+    defining which subjects are available for each exam period.
+    """
+    list_display = ('id', 'get_session_code', 'get_subject_code', 'is_active', 'created_at')
+    list_filter = ('is_active', 'exam_session', 'subject')
+    search_fields = ('exam_session__session_code', 'subject__code', 'subject__description')
+    ordering = ('-exam_session__session_code', 'subject__code')
+    autocomplete_fields = ('exam_session', 'subject')
+
+    @admin.display(description='Exam Session')
+    def get_session_code(self, obj):
+        return obj.exam_session.session_code
+
+    @admin.display(description='Subject')
+    def get_subject_code(self, obj):
+        return obj.subject.code
 
 
 @admin.register(Product)
@@ -89,3 +114,39 @@ class ProductBundleProductAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'bundle')
     search_fields = ('bundle__bundle_name',)
     ordering = ('bundle', 'sort_order')
+
+
+@admin.register(ProductVariationRecommendation)
+class ProductVariationRecommendationAdmin(admin.ModelAdmin):
+    """
+    Admin interface for ProductVariationRecommendation model.
+
+    Manages recommendation relationships between product-variation combinations,
+    e.g., Mock Exam eBook recommends Marking Service.
+    """
+    list_display = ('id', 'get_source_product', 'get_source_variation', 'get_recommended_product', 'get_recommended_variation', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = (
+        'product_product_variation__product__shortname',
+        'product_product_variation__product__code',
+        'recommended_product_product_variation__product__shortname',
+        'recommended_product_product_variation__product__code',
+    )
+    autocomplete_fields = ('product_product_variation', 'recommended_product_product_variation')
+    ordering = ('-created_at',)
+
+    @admin.display(description='Source Product')
+    def get_source_product(self, obj):
+        return obj.product_product_variation.product.shortname
+
+    @admin.display(description='Source Variation')
+    def get_source_variation(self, obj):
+        return obj.product_product_variation.product_variation.name
+
+    @admin.display(description='Recommended Product')
+    def get_recommended_product(self, obj):
+        return obj.recommended_product_product_variation.product.shortname
+
+    @admin.display(description='Recommended Variation')
+    def get_recommended_variation(self, obj):
+        return obj.recommended_product_product_variation.product_variation.name
