@@ -15,11 +15,9 @@ from exam_sessions_subjects_products.models import (
     ExamSessionSubjectProduct,
     ExamSessionSubjectProductVariation
 )
-from exam_sessions.models import ExamSession
-from exam_sessions_subjects.models import ExamSessionSubject
+from catalog.models import ExamSession, ExamSessionSubject
 from subjects.models import Subject
-from products.models.products import Product
-from products.models import ProductProductVariation, ProductVariation
+from catalog.models import Product, ProductProductVariation, ProductVariation
 
 
 class TutorialEventTestCase(TestCase):

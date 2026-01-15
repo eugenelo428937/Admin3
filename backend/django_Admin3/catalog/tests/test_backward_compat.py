@@ -26,72 +26,6 @@ class TestSubjectsBackwardCompat(TestCase):
         self.assertIs(SubjectsSubject, CatalogSubject)
 
 
-class TestExamSessionsBackwardCompat(TestCase):
-    """Test that ExamSession can be imported from exam_sessions app."""
-
-    def test_import_exam_session_from_exam_sessions_models(self):
-        """Verify ExamSession can be imported from exam_sessions.models."""
-        from exam_sessions.models import ExamSession
-        self.assertIsNotNone(ExamSession)
-        self.assertEqual(ExamSession._meta.db_table, '"acted"."catalog_exam_sessions"')
-
-    def test_exam_session_is_same_class(self):
-        """Verify imported ExamSession is the same class as catalog.ExamSession."""
-        from exam_sessions.models import ExamSession as ESExamSession
-        from catalog.models import ExamSession as CatalogExamSession
-        self.assertIs(ESExamSession, CatalogExamSession)
-
-
-class TestProductsBackwardCompat(TestCase):
-    """Test that product models can be imported from products app."""
-
-    def test_import_product_from_products_models(self):
-        """Verify Product can be imported from products.models."""
-        from products.models import Product
-        self.assertIsNotNone(Product)
-        self.assertEqual(Product._meta.db_table, '"acted"."catalog_products"')
-
-    def test_import_product_variation_from_products_models(self):
-        """Verify ProductVariation can be imported from products.models."""
-        from products.models import ProductVariation
-        self.assertIsNotNone(ProductVariation)
-        self.assertEqual(ProductVariation._meta.db_table, '"acted"."catalog_product_variations"')
-
-    def test_import_product_product_variation_from_products_models(self):
-        """Verify ProductProductVariation can be imported from products.models."""
-        from products.models import ProductProductVariation
-        self.assertIsNotNone(ProductProductVariation)
-        self.assertEqual(ProductProductVariation._meta.db_table, '"acted"."catalog_product_product_variations"')
-
-    def test_import_product_product_group_from_products_models(self):
-        """Verify ProductProductGroup can be imported from products.models."""
-        from products.models import ProductProductGroup
-        self.assertIsNotNone(ProductProductGroup)
-        self.assertEqual(ProductProductGroup._meta.db_table, '"acted"."catalog_product_product_groups"')
-
-    def test_import_product_bundle_from_products_models(self):
-        """Verify ProductBundle can be imported from products.models."""
-        from products.models import ProductBundle
-        self.assertIsNotNone(ProductBundle)
-        self.assertEqual(ProductBundle._meta.db_table, '"acted"."catalog_product_bundles"')
-
-    def test_import_product_bundle_product_from_products_models(self):
-        """Verify ProductBundleProduct can be imported from products.models."""
-        from products.models import ProductBundleProduct
-        self.assertIsNotNone(ProductBundleProduct)
-        self.assertEqual(ProductBundleProduct._meta.db_table, '"acted"."catalog_product_bundle_products"')
-
-    def test_product_is_same_class(self):
-        """Verify imported Product is the same class as catalog.Product."""
-        from products.models import Product as ProductsProduct
-        from catalog.models import Product as CatalogProduct
-        self.assertIs(ProductsProduct, CatalogProduct)
-
-    def test_product_variation_is_same_class(self):
-        """Verify imported ProductVariation is the same class as catalog.ProductVariation."""
-        from products.models import ProductVariation as ProductsProductVariation
-        from catalog.models import ProductVariation as CatalogProductVariation
-        self.assertIs(ProductsProductVariation, CatalogProductVariation)
 
 
 # =============================================================================
@@ -132,34 +66,6 @@ class TestSubjectAPIBackwardCompat(CatalogAPITestCase):
             self.assertEqual(legacy['code'], catalog['code'])
             self.assertEqual(legacy['description'], catalog['description'])
             self.assertEqual(legacy['name'], catalog['name'])
-
-
-class TestExamSessionAPIBackwardCompat(CatalogAPITestCase):
-    """Test legacy /api/exam-sessions/ returns same data as /api/catalog/exam-sessions/ (T051)."""
-
-    def test_legacy_exam_sessions_list_returns_200(self):
-        """Legacy exam sessions endpoint should return 200."""
-        response = self.client.get('/api/exam-sessions/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_legacy_exam_sessions_matches_catalog(self):
-        """Legacy exam sessions should return same data as catalog."""
-        legacy_response = self.client.get('/api/exam-sessions/')
-        catalog_response = self.client.get('/api/catalog/exam-sessions/')
-
-        self.assertEqual(legacy_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(catalog_response.status_code, status.HTTP_200_OK)
-
-        # Handle paginated responses
-        legacy_data = legacy_response.json()
-        catalog_data = catalog_response.json()
-
-        if isinstance(legacy_data, dict) and 'results' in legacy_data:
-            legacy_data = legacy_data['results']
-        if isinstance(catalog_data, dict) and 'results' in catalog_data:
-            catalog_data = catalog_data['results']
-
-        self.assertEqual(len(legacy_data), len(catalog_data))
 
 
 class TestProductAPIBackwardCompat(CatalogAPITestCase):
@@ -253,18 +159,3 @@ class TestLegacyViewReExports(TestCase):
         # They should be the same class
         self.assertIs(LegacySubjectSerializer, CatalogSubjectSerializer)
 
-    def test_exam_sessions_viewset_reexport(self):
-        """exam_sessions.views should re-export ExamSessionViewSet from catalog."""
-        from exam_sessions.views import ExamSessionViewSet as LegacyViewSet
-        from catalog.views import ExamSessionViewSet as CatalogViewSet
-
-        # They should be the same class
-        self.assertIs(LegacyViewSet, CatalogViewSet)
-
-    def test_exam_sessions_serializer_reexport(self):
-        """exam_sessions.serializers should re-export ExamSessionSerializer from catalog."""
-        from exam_sessions.serializers import ExamSessionSerializer as LegacySerializer
-        from catalog.serializers import ExamSessionSerializer as CatalogSerializer
-
-        # They should be the same class
-        self.assertIs(LegacySerializer, CatalogSerializer)
