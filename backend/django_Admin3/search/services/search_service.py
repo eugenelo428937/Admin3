@@ -16,7 +16,7 @@ from fuzzywuzzy import fuzz
 
 from store.models import Product as StoreProduct, Bundle as StoreBundle
 from catalog.models import Subject
-from products.models.filter_system import FilterGroup, FilterConfiguration
+from filtering.models import FilterGroup, FilterConfiguration
 from search.serializers import StoreProductListSerializer
 
 logger = logging.getLogger('search')

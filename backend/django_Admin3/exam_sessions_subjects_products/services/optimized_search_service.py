@@ -11,7 +11,7 @@ from django.conf import settings
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct, ExamSessionSubjectBundle
 from exam_sessions_subjects_products.serializers import ProductListSerializer
 from products.serializers import ExamSessionSubjectBundleSerializer
-from products.models.filter_system import FilterConfiguration
+from filtering.models import FilterConfiguration
 
 logger = logging.getLogger('optimized_search')
 
@@ -429,7 +429,7 @@ class OptimizedSearchService:
         # Apply tutorial_format filter (expects code like 'live_online' not name)
         if 'tutorial_format' in navbar_filters:
             try:
-                from products.models.filter_system import FilterGroup
+                from filtering.models import FilterGroup
                 # Look up by code instead of name
                 format_group = FilterGroup.objects.get(code=navbar_filters['tutorial_format'])
                 queryset = queryset.filter(product__groups=format_group)
@@ -440,7 +440,7 @@ class OptimizedSearchService:
         # Apply group filter (expects code for consistency)
         if 'group' in navbar_filters:
             try:
-                from products.models.filter_system import FilterGroup
+                from filtering.models import FilterGroup
                 # First try by code, then fall back to name for backward compatibility
                 try:
                     group = FilterGroup.objects.get(code=navbar_filters['group'])
@@ -455,7 +455,7 @@ class OptimizedSearchService:
         # Apply tutorial filter (special logic for Tutorial group excluding Online Classroom)
         if 'tutorial' in navbar_filters:
             try:
-                from products.models.filter_system import FilterGroup
+                from filtering.models import FilterGroup
                 tutorial_group = FilterGroup.objects.get(name='Tutorial')
                 online_classroom_group = FilterGroup.objects.get(name='Online Classroom')
                 queryset = queryset.filter(
@@ -479,7 +479,7 @@ class OptimizedSearchService:
         # Apply distance_learning filter
         if 'distance_learning' in navbar_filters:
             try:
-                from products.models.filter_system import FilterGroup
+                from filtering.models import FilterGroup
                 distance_learning_group = FilterGroup.objects.get(name='Material')
                 queryset = queryset.filter(product__groups=distance_learning_group)
             except FilterGroup.DoesNotExist:

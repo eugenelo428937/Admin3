@@ -53,7 +53,7 @@ def navigation_data(request):
         }
     """
     # Import FilterGroup from products (stays in products app)
-    from products.models.filter_system import FilterGroup
+    from filtering.models import FilterGroup
 
     cache_key = 'navigation_data_v2'
     cached_data = cache.get(cache_key)
@@ -218,7 +218,7 @@ def fuzzy_search(request):
     """
     # Import for trigram similarity and FilterGroup
     from django.contrib.postgres.search import TrigramSimilarity
-    from products.models.filter_system import FilterGroup
+    from filtering.models import FilterGroup
     from products.serializers import FilterGroupSerializer
 
     search_query = request.query_params.get('q', '').strip()
