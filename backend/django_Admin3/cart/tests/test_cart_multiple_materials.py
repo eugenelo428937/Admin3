@@ -11,11 +11,11 @@ from datetime import timedelta
 from rest_framework.test import APIClient
 from rest_framework import status
 from cart.models import Cart, CartItem
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
-from products.models import Product, ProductVariation, ProductProductVariation
-from exam_sessions.models import ExamSession
-from subjects.models import Subject
-from exam_sessions_subjects.models import ExamSessionSubject
+from store.models import Product as StoreProduct
+from catalog.models import (
+    Product, ProductVariation, ProductProductVariation,
+    ExamSession, Subject, ExamSessionSubject
+)
 
 User = get_user_model()
 
@@ -101,15 +101,17 @@ class TestCartMultipleMaterialsBug(TestCase):
             product_variation=self.variation2
         )
 
-        # Create exam session subject products
-        self.essp1 = ExamSessionSubjectProduct.objects.create(
+        # Create store products (purchasable items linking ESS to PPV)
+        self.store_product1 = StoreProduct.objects.create(
             exam_session_subject=self.ess1,
-            product=self.product1
+            product_product_variation=self.ppv1,
+            product_code='CB1/PCN01/TEST2024'
         )
 
-        self.essp2 = ExamSessionSubjectProduct.objects.create(
+        self.store_product2 = StoreProduct.objects.create(
             exam_session_subject=self.ess2,
-            product=self.product2
+            product_product_variation=self.ppv2,
+            product_code='CB2/PTV01/TEST2024'
         )
 
     def test_add_two_different_material_products_should_not_overwrite(self):
@@ -122,7 +124,7 @@ class TestCartMultipleMaterialsBug(TestCase):
         """
         # Add first product (Course Notes) to cart
         add_payload_1 = {
-            'current_product': self.essp1.id,
+            'current_product': self.store_product1.id,
             'quantity': 1,
             'price_type': 'standard',
             'actual_price': '45.00',
@@ -148,7 +150,7 @@ class TestCartMultipleMaterialsBug(TestCase):
 
         # Add second product (The Vault) to cart
         add_payload_2 = {
-            'current_product': self.essp2.id,
+            'current_product': self.store_product2.id,
             'quantity': 1,
             'price_type': 'standard',
             'actual_price': '65.00',

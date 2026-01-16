@@ -1,10 +1,9 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth import get_user_model
-from products.models import Product, ProductVariation, ProductVariationRecommendation, ProductProductVariation
-from exam_sessions.models import ExamSession
+from catalog.models import Product, ProductVariation, ProductVariationRecommendation, ProductProductVariation
+from catalog.models import ExamSession, ExamSessionSubject
 from subjects.models import Subject
-from exam_sessions_subjects.models import ExamSessionSubject
 from exam_sessions_subjects_products.models import (
     ExamSessionSubjectProduct,
     ExamSessionSubjectProductVariation,

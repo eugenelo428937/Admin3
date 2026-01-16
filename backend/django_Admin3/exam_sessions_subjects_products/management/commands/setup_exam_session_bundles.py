@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from products.models import ProductBundle
-from exam_sessions_subjects.models import ExamSessionSubject
+from catalog.models import ProductBundle
+from catalog.models import ExamSessionSubject
 from exam_sessions_subjects_products.models import (
     ExamSessionSubjectProduct, 
     ExamSessionSubjectProductVariation
