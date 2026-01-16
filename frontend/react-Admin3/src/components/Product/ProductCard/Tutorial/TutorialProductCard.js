@@ -616,13 +616,13 @@ const TutorialProductCard = React.memo(
                      <Chip
                         label={
                            <Typography variant="chip" sx={{
-								color: theme.palette.granite["100"]
-						   }}>
+                              color: theme.palette.semantic.textPrimary
+                           }}>
                               {`${tutorialsInCartCount} in cart`}
                            </Typography>
                         }
                         size="small"
-                        className="cart-count-badge"						
+                        className="cart-count-badge"
                         color={theme.palette.success.light}
                         role="img"
                         aria-label={`${tutorialsInCartCount} tutorials in cart`}
@@ -845,10 +845,9 @@ const TutorialProductCard = React.memo(
                            right: 5,
 
                            "& .MuiFab-root": {
-                              backgroundColor: theme.palette.purple["070"],
+                              backgroundColor: theme.palette.productCards.tutorial.button,
                               "&:hover": {
-                                 backgroundColor:
-                                    theme.palette.purple["050"],
+                                 backgroundColor: theme.palette.productCards.tutorial.buttonHover,
                               },
                               "& .MuiSpeedDialIcon-root": {
                                  "& .MuiSvgIcon-root": {
@@ -901,12 +900,10 @@ const TutorialProductCard = React.memo(
                                  },
                                  "& .MuiSpeedDialAction-fab": {
                                     color: "white",
-                                    backgroundColor:
-                                       theme.palette.purple["060"],
+                                    backgroundColor: theme.palette.productCards.tutorial.button,
                                     boxShadow: "var(--Paper-shadow)",
                                     "&:hover": {
-                                       backgroundColor:
-                                          theme.palette.purple["040"],
+                                       backgroundColor: theme.palette.productCards.tutorial.header,
                                     },
                                  },
                               }}

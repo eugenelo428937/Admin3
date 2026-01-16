@@ -87,18 +87,18 @@ const MainNavActions = ({
                startIcon={
                   <Badge
                      badgeContent={cartCount}
-                     color={theme.palette.sky["030"]}
+                     color={theme.palette.productCards.material.badge}
                      max={99}
                      sx={{
                         "& .MuiBadge-badge": {
-                           backgroundColor: theme.palette.sky["050"],
+                           backgroundColor: theme.palette.productCards.material.icon,
                            color: "white",
                            pt:"2px"
                         },
                      }}
                      aria-label={`shopping cart with ${cartCount} items`}
                   >
-                     <CartIcon sx={{ color: theme.palette.offwhite["000"], fontSize: theme.typography.h5  }} />
+                     <CartIcon sx={{ color: theme.palette.navigation.text.inverse, fontSize: theme.typography.h5  }} />
                   </Badge>
                }
             >
@@ -107,7 +107,7 @@ const MainNavActions = ({
                   noWrap
                   sx={{
                      display: { xs: "none", lg: "block" },
-                     color: theme.palette.offwhite["000"],
+                     color: theme.palette.navigation.text.inverse,
                   }}
                >
                   Cart
@@ -135,14 +135,14 @@ const MainNavActions = ({
                            sx={{
                               width: theme.typography.h4.fontSize,
                               height: theme.typography.h4.fontSize,
-                              bgcolor: theme.palette.sky["060"],
+                              bgcolor: theme.palette.productCards.material.button,
                            }}
                         >
                            {user?.first_name ? (
                               <Typography
                                  variant="body1"
                                  noWrap
-                                 color={theme.palette.offwhite["000"]}
+                                 color={theme.palette.navigation.text.inverse}
                               >
                                  {user?.email?.charAt(0).toUpperCase() || "U"}
                               </Typography>
@@ -157,7 +157,7 @@ const MainNavActions = ({
                         noWrap
                         sx={{
                            display: { xs: "none", lg: "block" },
-                           color: theme.palette.offwhite["000"],
+                           color: theme.palette.navigation.text.inverse,
                         }}
                      >
                         {user?.first_name ? `${user.first_name}` : user?.email}
@@ -226,7 +226,7 @@ const MainNavActions = ({
                      },                     
                      borderRadius: { xs: theme.liftkit.spacing.xl2, lg: 0 },
 					 "&:hover": {
-                              backgroundColor: theme.palette.granite["070"],
+                              backgroundColor: theme.palette.navigation.background.hover,
 							  boxShadow: "var(--Paper-shadow)",
                            },
                      p: {
@@ -259,7 +259,7 @@ const MainNavActions = ({
                   startIcon={
                      <LoginIcon
                         sx={{
-                           color: theme.palette.offwhite["000"],
+                           color: theme.palette.navigation.text.inverse,
 						   						   
                            fontSize: {
                               xs: theme.typography.h3,
@@ -274,7 +274,7 @@ const MainNavActions = ({
                      noWrap
                      sx={{
                         display: { xs: "none", lg: "block" },
-                        color: theme.palette.offwhite["000"],
+                        color: theme.palette.navigation.text.inverse,
 						ml:1,
                      }}
                   >
