@@ -1,6 +1,5 @@
 from django.db import models
-from products.models import ProductBundle
-from exam_sessions_subjects.models import ExamSessionSubject
+from catalog.models import ProductBundle, ExamSessionSubject
 from .exam_session_subject_product_variation import ExamSessionSubjectProductVariation
 
 class ExamSessionSubjectBundle(models.Model):

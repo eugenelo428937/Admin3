@@ -1251,6 +1251,8 @@ browser_close()
 - Python 3.11, Django 5.1 + Django REST Framework, PostgreSQL psycopg2-binary (001-catalog-consolidation)
 - PostgreSQL with new `acted` schema (001-catalog-consolidation)
 - Centralized catalog API at /api/catalog/ (002-catalog-api-consolidation)
+- Python 3.11, Django 5.1 + Django REST Framework, psycopg2-binary (001-store-app-consolidation)
+- PostgreSQL with `acted` schema namespace (001-store-app-consolidation)
 
 ## Recent Changes
 - 001-catalog-consolidation: Added Python 3.11, Django 5.1 + Django REST Framework, PostgreSQL psycopg2-binary

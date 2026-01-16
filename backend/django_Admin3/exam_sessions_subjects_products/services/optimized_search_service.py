@@ -793,7 +793,7 @@ class OptimizedSearchService:
 
     def _add_product_metadata(self, filter_counts, applied_filters, base_queryset):
         """Add product metadata for filtered products (e.g., tutorial locations)."""
-        from products.models import Product
+        from catalog.models import Product
 
         for product_id in applied_filters.get('products', []):
             try:

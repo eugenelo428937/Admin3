@@ -271,18 +271,29 @@ class SearchService:
                 type_q |= Q(product_product_variation__product__groups__name__iexact=product_type)
             q_filter &= type_q
 
-        # Product ID filter
-        if filters.get('product_ids'):
-            q_filter &= Q(product_product_variation__product__id__in=filters['product_ids'])
+        # Product ID filter (support both 'product_ids' and 'products' parameter names)
+        product_ids = filters.get('product_ids') or filters.get('products')
+        if product_ids:
+            # Convert string IDs to integers if needed
+            int_product_ids = []
+            for pid in product_ids:
+                if isinstance(pid, int):
+                    int_product_ids.append(pid)
+                elif isinstance(pid, str) and pid.isdigit():
+                    int_product_ids.append(int(pid))
+            if int_product_ids:
+                q_filter &= Q(product_product_variation__product__id__in=int_product_ids)
 
         # Store product ID filter (essp_ids for backward compatibility)
         if filters.get('essp_ids'):
             q_filter &= Q(id__in=filters['essp_ids'])
 
         # Mode of delivery filter (variation type)
+        # Matches against both variation_type (eBook, Printed, etc.) and variation name
         if filters.get('modes_of_delivery'):
             mode_q = Q()
             for mode in filters['modes_of_delivery']:
+                mode_q |= Q(product_product_variation__product_variation__variation_type__iexact=mode)
                 mode_q |= Q(product_product_variation__product_variation__name__icontains=mode)
             q_filter &= mode_q
 
@@ -391,7 +402,7 @@ class SearchService:
         return bundles_data
 
     def _generate_filter_counts(self, base_queryset) -> Dict[str, Dict]:
-        """Generate disjunctive facet counts."""
+        """Generate disjunctive facet counts for all filter types."""
         filter_counts = {
             'subjects': {},
             'categories': {},
@@ -411,7 +422,8 @@ class SearchService:
             if code and count > 0:
                 filter_counts['subjects'][code] = {'count': count, 'name': code}
 
-        # Group counts (categories and product types)
+        # Group counts (for categories and product_types)
+        # Groups are used as product types for filtering
         group_counts = base_queryset.values(
             'product_product_variation__product__groups__id',
             'product_product_variation__product__groups__name'
@@ -421,8 +433,12 @@ class SearchService:
             group_name = item['product_product_variation__product__groups__name']
             count = item['count']
             if group_name and count > 0:
-                # Map to appropriate filter key based on configuration
+                # Groups map to both categories and product_types
+                # This ensures FilterPanel can display them under either section
                 filter_counts['categories'][group_name] = {
+                    'count': count, 'name': group_name
+                }
+                filter_counts['product_types'][group_name] = {
                     'count': count, 'name': group_name
                 }
 
@@ -432,6 +448,46 @@ class SearchService:
             filter_counts['categories']['Bundle'] = {
                 'count': bundle_count, 'name': 'Bundle'
             }
+
+        # Product counts (catalog.Product) - for product filter section
+        # Use distinct product IDs with their names for display
+        product_counts = base_queryset.values(
+            'product_product_variation__product__id',
+            'product_product_variation__product__shortname',
+            'product_product_variation__product__fullname'
+        ).annotate(count=Count('id', distinct=True)).order_by('-count')
+
+        for item in product_counts:
+            product_id = item['product_product_variation__product__id']
+            shortname = item['product_product_variation__product__shortname']
+            fullname = item['product_product_variation__product__fullname']
+            count = item['count']
+            if product_id and count > 0:
+                # Use string ID as key (frontend sends string IDs)
+                filter_counts['products'][str(product_id)] = {
+                    'count': count,
+                    'name': shortname or fullname or f'Product {product_id}',
+                    'display_name': shortname or fullname or f'Product {product_id}'
+                }
+
+        # Modes of delivery (product variation types)
+        # These are the variation types like eBook, Printed, Hub, etc.
+        mode_counts = base_queryset.values(
+            'product_product_variation__product_variation__variation_type',
+            'product_product_variation__product_variation__name'
+        ).annotate(count=Count('id', distinct=True)).order_by('-count')
+
+        for item in mode_counts:
+            variation_type = item['product_product_variation__product_variation__variation_type']
+            variation_name = item['product_product_variation__product_variation__name']
+            count = item['count']
+            if variation_type and count > 0:
+                # Use variation_type as the filter key
+                filter_counts['modes_of_delivery'][variation_type] = {
+                    'count': count,
+                    'name': variation_name or variation_type,
+                    'display_name': variation_name or variation_type
+                }
 
         return filter_counts
 
