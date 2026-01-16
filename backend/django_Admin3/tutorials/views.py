@@ -9,7 +9,7 @@ from django.db.models import Prefetch, Q
 from .models import TutorialEvent
 from .serializers import TutorialEventSerializer
 from exam_sessions_subjects_products.models import ExamSessionSubjectProduct, ExamSessionSubjectProductVariation
-from products.models import Product
+# Note: Product is accessed via FK relationships (essp.product), not imported directly
 import logging
 
 logger = logging.getLogger(__name__)

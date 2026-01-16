@@ -1,6 +1,5 @@
 from django.db import models
-from exam_sessions_subjects.models import ExamSessionSubject
-from products.models.products import Product
+from catalog.models import ExamSessionSubject, Product
 
 class ExamSessionSubjectProduct(models.Model):
     exam_session_subject = models.ForeignKey(

@@ -12,7 +12,7 @@ Serializer modules:
 """
 
 from .subject_serializers import SubjectSerializer
-from .exam_session_serializers import ExamSessionSerializer
+from .exam_session_serializers import ExamSessionSerializer, ExamSessionSubjectSerializer
 from .product_serializers import ProductSerializer, ProductVariationSerializer
 from .bundle_serializers import (
     ProductBundleSerializer,
@@ -27,6 +27,7 @@ __all__ = [
 
     # Exam session serializers
     'ExamSessionSerializer',
+    'ExamSessionSubjectSerializer',
 
     # Product serializers
     'ProductSerializer',

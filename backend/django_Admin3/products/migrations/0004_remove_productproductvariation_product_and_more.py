@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('products', '0003_update_fk_to_catalog'),
         ('catalog', '0002_create_models'),  # Ensure catalog models exist first
-        ('exam_sessions_subjects_products', '0002_update_fk_to_catalog'),  # FK update must happen first
+        # Note: essp.0001 now directly references catalog models, so this dependency is unnecessary
     ]
 
     operations = [

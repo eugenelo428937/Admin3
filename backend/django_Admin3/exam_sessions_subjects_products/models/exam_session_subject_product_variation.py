@@ -1,6 +1,6 @@
 from django.db import models
 from .exam_session_subject_product import ExamSessionSubjectProduct
-from products.models import ProductProductVariation
+from catalog.models import ProductProductVariation
 
 class ExamSessionSubjectProductVariation(models.Model):
     exam_session_subject_product = models.ForeignKey(

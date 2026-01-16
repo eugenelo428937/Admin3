@@ -8,8 +8,8 @@ from django.db import transaction
 from decimal import Decimal
 from .models import Cart, CartItem, CartFee, ActedOrder, ActedOrderItem, OrderUserAcknowledgment, OrderUserPreference, OrderUserContact, OrderDeliveryDetail
 from .serializers import CartSerializer, CartItemSerializer, ActedOrderSerializer
-from products.models import Product
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+from store.models import Product as StoreProduct
+from catalog.models import ProductProductVariation
 from marking.models import MarkingPaper
 from utils.email_service import email_service
 from .services.vat_orchestrator import vat_orchestrator
@@ -84,7 +84,7 @@ class CartViewSet(viewsets.ViewSet):
 
             # PRIMARY: Check variation_type via variationId (most reliable)
             if metadata.get('variationId'):
-                from products.models import ProductProductVariation
+                # ProductProductVariation imported at top from catalog.models
                 try:
                     ppv = ProductProductVariation.objects.select_related('product_variation').get(
                         id=metadata.get('variationId')
@@ -102,7 +102,7 @@ class CartViewSet(viewsets.ViewSet):
 
             # Check product code for Online Classroom
             if hasattr(cart_item, 'product') and cart_item.product:
-                product = cart_item.product.product  # ExamSessionSubjectProduct -> Product
+                product = cart_item.product.product  # store.Product -> catalog.Product via .product property
                 if product and hasattr(product, 'code') and product.code == 'OC':
                     return True
 
@@ -121,7 +121,7 @@ class CartViewSet(viewsets.ViewSet):
 
             # Check product code for Tutorial
             if hasattr(cart_item, 'product') and cart_item.product:
-                product = cart_item.product.product  # ExamSessionSubjectProduct -> Product
+                product = cart_item.product.product  # store.Product -> catalog.Product via .product property
                 if product and hasattr(product, 'code'):
                     # Tutorial codes typically start with 'T' or have 'Tutorial' in name
                     if product.code in ['T', 'TUT'] or 'tutorial' in product.fullname.lower():
@@ -139,7 +139,7 @@ class CartViewSet(viewsets.ViewSet):
 
             # PRIMARY: Check variation_type via variationId (most reliable)
             if metadata.get('variationId'):
-                from products.models import ProductProductVariation
+                # ProductProductVariation imported at top from catalog.models
                 try:
                     ppv = ProductProductVariation.objects.select_related('product_variation').get(
                         id=metadata.get('variationId')
@@ -157,7 +157,7 @@ class CartViewSet(viewsets.ViewSet):
 
             # Check product code for Materials
             if hasattr(cart_item, 'product') and cart_item.product:
-                product = cart_item.product.product  # ExamSessionSubjectProduct -> Product
+                product = cart_item.product.product  # store.Product -> catalog.Product via .product property
                 if product and hasattr(product, 'code'):
                     # Material codes typically have 'M' or 'MAT'
                     if product.code in ['M', 'MAT', 'BOOK'] or 'material' in product.fullname.lower():
@@ -301,7 +301,31 @@ class CartViewSet(viewsets.ViewSet):
         actual_price = request.data.get('actual_price')
         metadata = request.data.get('metadata', {})
 
-        product = get_object_or_404(ExamSessionSubjectProduct, id=product_id)
+        # Try to find store.Product by ID first
+        product = StoreProduct.objects.filter(id=product_id).first()
+
+        # If not found, the frontend may be sending an ESSP ID with variationId (PPV ID)
+        # Look up store.Product via the PPV ID from metadata
+        if not product and metadata.get('variationId'):
+            ppv_id = metadata.get('variationId')
+            product = StoreProduct.objects.filter(
+                product_product_variation_id=ppv_id
+            ).first()
+            if product:
+                logger.info(
+                    f"Cart add: Resolved ESSP ID {product_id} to store.Product {product.id} "
+                    f"via PPV ID {ppv_id}"
+                )
+
+        if not product:
+            logger.warning(
+                f"Cart add: Could not find store.Product for ID {product_id} "
+                f"or variationId {metadata.get('variationId')}"
+            )
+            return Response(
+                {"detail": "No Product matches the given query."},
+                status=status.HTTP_404_NOT_FOUND
+            )
         
         # For tutorials, group by subject code across all locations
         if metadata.get('type') == 'tutorial':
@@ -1142,7 +1166,7 @@ class CartViewSet(viewsets.ViewSet):
                     if item.metadata and item.metadata.get('variationId'):
                         try:
                             # Get the ProductProductVariation from the variationId stored in metadata
-                            from products.models import ProductProductVariation
+                            # ProductProductVariation imported at top from catalog.models
                             ppv = ProductProductVariation.objects.select_related('product_variation').get(
                                 id=item.metadata.get('variationId')
                             )

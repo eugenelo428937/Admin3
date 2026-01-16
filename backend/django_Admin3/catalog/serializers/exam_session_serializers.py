@@ -10,7 +10,28 @@ Contract (from contracts/serializers.md):
 """
 from rest_framework import serializers
 
-from catalog.models import ExamSession
+from catalog.models import ExamSession, ExamSessionSubject
+
+
+class ExamSessionSubjectSerializer(serializers.ModelSerializer):
+    """
+    Serializer for ExamSessionSubject model.
+
+    Used to serialize exam session and subject associations.
+
+    Fields:
+        id (int): Primary key
+        exam_session (int): Foreign key to ExamSession
+        subject (int): Foreign key to Subject
+        is_active (bool): Whether this combination is active
+        created_at (datetime): Auto-set on creation (read-only)
+        updated_at (datetime): Auto-updated on save (read-only)
+    """
+
+    class Meta:
+        model = ExamSessionSubject
+        fields = ['id', 'exam_session', 'subject', 'is_active', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
 
 
 class ExamSessionSerializer(serializers.ModelSerializer):
