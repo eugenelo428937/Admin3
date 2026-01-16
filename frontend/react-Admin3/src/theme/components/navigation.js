@@ -7,7 +7,7 @@ export const navigationOverrides = {
   MuiAppBar: {
     styleOverrides: {
       root: {
-        backgroundColor: colorTheme.bpp.granite["080"],
+        backgroundColor: colorTheme.palette.granite["080"],
       },
     },
   },
@@ -72,9 +72,9 @@ export const navigationOverrides = {
       {
         props: { variant: 'navmenu' },
         style: {
-          color: colorTheme.offwhite['001'],
+          color: colorTheme.palette.offwhite['001'],
           '&:hover': {
-            backgroundColor: colorTheme.bpp.granite['070'],
+            backgroundColor: colorTheme.palette.granite['070'],
           },
         },
       },

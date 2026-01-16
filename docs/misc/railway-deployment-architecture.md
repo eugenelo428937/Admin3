@@ -275,7 +275,7 @@ release: python manage.py migrate --noinput
 Create `backend/django_Admin3/runtime.txt`:
 
 ```
-python-3.11
+python-3.14
 ```
 
 ### 4.2 Frontend Configuration

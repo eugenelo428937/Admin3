@@ -27,7 +27,7 @@ This feature creates a **new, separate address lookup method** for Postcoder.com
 
 ## Technical Context
 
-**Language/Version**: Python 3.11, React 18
+**Language/Version**: Python 3.14, React 18
 **Primary Dependencies**: Django 5.1, Django REST Framework, requests library, Django cache framework
 **Storage**: PostgreSQL (Django ORM models for cache and analytics)
 **Testing**: pytest (backend), Jest + React Testing Library (frontend verification)

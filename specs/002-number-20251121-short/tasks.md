@@ -6,7 +6,7 @@
 ## Execution Flow (main)
 ```
 1. Load plan.md from feature directory ✅
-   → Extract: Python 3.11, Django 5.1, Django unittest, PostgreSQL
+   → Extract: Python 3.14, Django 5.1, Django unittest, PostgreSQL
 2. Load optional design documents ✅:
    → data-model.md: 11 models across 11 apps
    → contracts/test-patterns.md: Standard test contracts

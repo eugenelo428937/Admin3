@@ -34,7 +34,7 @@
 Implement three granular custom functions for the Rules Engine to enable dynamic VAT calculations without hardcoded Python logic. These functions (`lookup_region`, `lookup_vat_rate`, `calculate_vat_amount`) will query database models (UtilsCountryRegion, UtilsCountrys) and perform Decimal calculations with proper rounding, enabling finance administrators to update VAT rates through Django admin without code deployments.
 
 ## Technical Context
-**Language/Version**: Python 3.11+ (Django 5.1)
+**Language/Version**: Python 3.14+ (Django 5.1)
 **Primary Dependencies**: Django ORM, Python Decimal library, Rules Engine FUNCTION_REGISTRY
 **Storage**: PostgreSQL (existing UtilsCountrys, UtilsCountryRegion models from Phase 1)
 **Testing**: Django TestCase, 100% code coverage requirement for custom functions

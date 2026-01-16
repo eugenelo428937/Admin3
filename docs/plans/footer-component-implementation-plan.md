@@ -6,7 +6,7 @@ Create a comprehensive Footer component (`Footer.js`) using MUI Grid with the sp
 ## Requirements Summary
 - **Layout**: 2x2 Grid structure
 - **Typography**: `captionBold` for headers, `caption2` for links
-- **Background**: `colorTheme.bpp.granite["080"]` (#3b3b3a)
+- **Background**: `colorTheme.granite["080"]` (#3b3b3a)
 - **Navigation Pattern**: Follow `NavigationMenu.js` for link generation
 - **Content Structure**: As defined in `docs/footer.md`
 
@@ -140,7 +140,7 @@ const SectionHeader = ({ children }) => (
   <Typography
     variant="captionBold"
     sx={{
-      color: colorTheme.bpp.granite["000"], // White text on dark background
+      color: colorTheme.granite["000"], // White text on dark background
       mb: 1,
       display: 'block',
     }}
@@ -155,12 +155,12 @@ const SectionHeader = ({ children }) => (
 // Reusable link component with caption2 typography
 const FooterLink = ({ to, onClick, children, external = false }) => {
   const linkStyles = {
-    color: colorTheme.bpp.granite["030"],
+    color: colorTheme.granite["030"],
     textDecoration: 'none',
     display: 'block',
     py: 0.25,
     '&:hover': {
-      color: colorTheme.bpp.granite["000"],
+      color: colorTheme.granite["000"],
       textDecoration: 'underline',
     },
   };
@@ -416,9 +416,9 @@ const SocialMediaSection = () => (
           rel="noopener noreferrer"
           aria-label={social.label}
           sx={{
-            color: colorTheme.bpp.granite["030"],
+            color: colorTheme.granite["030"],
             '&:hover': {
-              color: colorTheme.bpp.granite["000"],
+              color: colorTheme.granite["000"],
               backgroundColor: 'rgba(255, 255, 255, 0.1)',
             },
           }}
@@ -444,7 +444,7 @@ const SocialMediaSection = () => (
 const CopyrightSection = () => (
   <Typography
     variant="caption2"
-    sx={{ color: colorTheme.bpp.granite["040"] }}
+    sx={{ color: colorTheme.granite["040"] }}
   >
     Copyright &copy; 2026 BPP Actuarial Education - Part of the BPP Professional Education Group -{' '}
     <Typography
@@ -452,10 +452,10 @@ const CopyrightSection = () => (
       component="a"
       href="mailto:acted@bpp.com"
       sx={{
-        color: colorTheme.bpp.granite["030"],
+        color: colorTheme.granite["030"],
         textDecoration: 'none',
         '&:hover': {
-          color: colorTheme.bpp.granite["000"],
+          color: colorTheme.granite["000"],
           textDecoration: 'underline',
         },
       }}
@@ -481,7 +481,7 @@ const BottomLinksSection = () => (
     direction="row"
     spacing={1}
     divider={
-      <Typography variant="caption2" sx={{ color: colorTheme.bpp.granite["040"] }}>
+      <Typography variant="caption2" sx={{ color: colorTheme.granite["040"] }}>
         |
       </Typography>
     }
@@ -519,7 +519,7 @@ const Footer = ({
     <Box
       component="footer"
       sx={{
-        backgroundColor: colorTheme.bpp.granite["080"],
+        backgroundColor: colorTheme.granite["080"],
         py: 4,
         px: 3,
         mt: 'auto', // Push to bottom of page
@@ -759,7 +759,7 @@ const SectionHeader = ({ children }) => (
   <Typography
     variant="captionBold"
     sx={{
-      color: colorTheme.bpp.granite["000"],
+      color: colorTheme.granite["000"],
       mb: 1,
       display: 'block',
     }}
@@ -771,12 +771,12 @@ const SectionHeader = ({ children }) => (
 // Reusable link component with caption2 typography
 const FooterLink = ({ to, onClick, children, external = false }) => {
   const linkStyles = {
-    color: colorTheme.bpp.granite["030"],
+    color: colorTheme.granite["030"],
     textDecoration: 'none',
     display: 'block',
     py: 0.25,
     '&:hover': {
-      color: colorTheme.bpp.granite["000"],
+      color: colorTheme.granite["000"],
       textDecoration: 'underline',
     },
   };
@@ -980,9 +980,9 @@ const SocialMediaSection = () => (
           rel="noopener noreferrer"
           aria-label={social.label}
           sx={{
-            color: colorTheme.bpp.granite["030"],
+            color: colorTheme.granite["030"],
             '&:hover': {
-              color: colorTheme.bpp.granite["000"],
+              color: colorTheme.granite["000"],
               backgroundColor: 'rgba(255, 255, 255, 0.1)',
             },
           }}
@@ -998,7 +998,7 @@ const SocialMediaSection = () => (
 const CopyrightSection = () => (
   <Typography
     variant="caption2"
-    sx={{ color: colorTheme.bpp.granite["040"] }}
+    sx={{ color: colorTheme.granite["040"] }}
   >
     Copyright &copy; 2026 BPP Actuarial Education - Part of the BPP Professional Education Group -{' '}
     <Typography
@@ -1006,10 +1006,10 @@ const CopyrightSection = () => (
       component="a"
       href="mailto:acted@bpp.com"
       sx={{
-        color: colorTheme.bpp.granite["030"],
+        color: colorTheme.granite["030"],
         textDecoration: 'none',
         '&:hover': {
-          color: colorTheme.bpp.granite["000"],
+          color: colorTheme.granite["000"],
           textDecoration: 'underline',
         },
       }}
@@ -1025,7 +1025,7 @@ const BottomLinksSection = () => (
     direction="row"
     spacing={1}
     divider={
-      <Typography variant="caption2" sx={{ color: colorTheme.bpp.granite["040"] }}>
+      <Typography variant="caption2" sx={{ color: colorTheme.granite["040"] }}>
         |
       </Typography>
     }
@@ -1051,7 +1051,7 @@ const Footer = ({
     <Box
       component="footer"
       sx={{
-        backgroundColor: colorTheme.bpp.granite["080"],
+        backgroundColor: colorTheme.granite["080"],
         py: 4,
         px: 3,
         mt: 'auto',
@@ -1130,7 +1130,7 @@ export default Footer;
 - react-router-dom (already installed)
 
 ## Notes
-- Uses existing `colorTheme.bpp.granite["080"]` (#3b3b3a) for background
+- Uses existing `colorTheme.granite["080"]` (#3b3b3a) for background
 - Uses `captionBold` variant for headers (fontWeight: 600, fontSize: calc(1em / var(--halfstep)))
 - Uses `caption2` variant for links (fontWeight: 400, fontSize: calc(1em / var(--halfstep) / var(--quarterstep)))
 - Follows NavigationMenu.js patterns for subject filtering

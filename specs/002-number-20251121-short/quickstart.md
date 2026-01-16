@@ -15,7 +15,7 @@ cd backend/django_Admin3
 .\.venv\Scripts\activate
 
 # Verify Python version
-python --version  # Should be Python 3.11+
+python --version  # Should be Python 3.14+
 
 # Verify Django installation
 python manage.py --version  # Should be Django 5.1+

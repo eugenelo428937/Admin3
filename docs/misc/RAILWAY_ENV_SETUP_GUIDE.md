@@ -146,7 +146,7 @@ Expected response:
   },
   "environment": "uat",
   "debug": false,
-  "python_version": "3.11.x"
+  "python_version": "3.14.x"
 }
 ```
 

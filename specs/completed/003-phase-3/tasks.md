@@ -6,7 +6,7 @@
 ## Execution Flow (main)
 ```
 1. Load plan.md from feature directory ✅
-   → Tech stack: Python 3.11+ (Django 5.1), Rules Engine, Phase 2 custom functions
+   → Tech stack: Python 3.14+ (Django 5.1), Rules Engine, Phase 2 custom functions
    → Structure: backend/django_Admin3/rules_engine/
 2. Load optional design documents ✅
    → data-model.md: 17 rule entities (1 master + 5 regional + 11 product)

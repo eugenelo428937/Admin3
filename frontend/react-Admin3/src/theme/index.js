@@ -5,7 +5,7 @@ import { createTheme } from "@mui/material/styles";
 import "../styles/liftkit-css/globals.css";
 
 // Import modules
-import colorTheme from './colorTheme';
+import {colorTheme, palettesTheme} from './colors';
 import liftKitTheme from './liftKitTheme';
 import { typographyConfig, responsiveTypography } from './typography';
 import componentOverrides from './components';
@@ -27,13 +27,17 @@ const baseTheme = createTheme({
 });
 
 // Apply responsive typography overrides
-const applyResponsiveTypography = (typography) => {
+const applyResponsiveTypography = (typography) =>
+{
   const result = { ...typography };
 
   // Apply breakpoint-specific overrides
-  Object.entries(responsiveTypography).forEach(([variant, breakpoints]) => {
-    if (result[variant]) {
-      Object.entries(breakpoints).forEach(([breakpoint, styles]) => {
+  Object.entries(responsiveTypography).forEach(([variant, breakpoints]) =>
+  {
+    if (result[variant])
+    {
+      Object.entries(breakpoints).forEach(([breakpoint, styles]) =>
+      {
         result[variant] = {
           ...result[variant],
           [baseTheme.breakpoints.down(breakpoint)]: styles,
@@ -43,8 +47,9 @@ const applyResponsiveTypography = (typography) => {
   });
 
   // Add navlink color from colorTheme
-  if (result.navlink) {
-    result.navlink.color = colorTheme.offwhite["001"];
+  if (result.navlink)
+  {
+    result.navlink.color = colorTheme.palette.offwhite["001"];
   }
 
   return result;
@@ -68,20 +73,32 @@ const theme = createTheme({
 
   // Enhanced palette with all color systems
   palette: {
-    primary: colorTheme.primary,
-    secondary: colorTheme.secondary,
-    tertiary: colorTheme.tertiary,
-    error: colorTheme.error,
-    warning: colorTheme.warning,
-    info: colorTheme.info,
-    success: colorTheme.success,
-    background: colorTheme.background,
-    surface: colorTheme.surface,
-    text: colorTheme.text,
-    offwhite: colorTheme.offwhite,
-    bpp: colorTheme.bpp,
-    md3: colorTheme.md3,
-    liftkit: colorTheme.liftkit,
+    primary: { main: palettesTheme.primary, },
+    secondary: { main: palettesTheme.secondary, },
+    tertiary: { main: palettesTheme.tertiary, },
+    error: { main: palettesTheme.error, },
+    warning: colorTheme.palette.warning, 
+    info: colorTheme.palette.info,
+    success: colorTheme.palette.success,
+    background: { main: palettesTheme.background, },
+    surface: { main: palettesTheme.surface, },
+    text: colorTheme.palette.text,
+    // BPP Color Scales
+    offwhite: colorTheme.palette.offwhite,
+    granite: colorTheme.palette.granite,
+    purple: colorTheme.palette.purple,
+    sky: colorTheme.palette.sky,
+    mint: colorTheme.palette.mint,
+    orange: colorTheme.palette.orange,
+    pink: colorTheme.palette.pink,
+    yellow: colorTheme.palette.yellow,
+    cobalt: colorTheme.palette.cobalt,
+    green: colorTheme.palette.green,
+    red: colorTheme.palette.red,
+    // Design System Colors
+    bpp: colorTheme.palette.bpp,
+    md3: colorTheme.palette.md3,
+    liftkit: colorTheme.palette.liftkit,
     // Semantic colors for easy access
     semantic: semanticColors,
   },

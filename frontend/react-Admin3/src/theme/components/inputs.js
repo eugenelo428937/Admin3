@@ -8,7 +8,7 @@ export const inputOverrides = {
       root: {
         marginBottom: liftKitTheme.spacing.sm,
         "& .MuiInputBase-input": {
-          color: colorTheme.liftkit.light.onSurface,
+          color: colorTheme.palette.liftkit.light.onSurface,
         },
       },
     },

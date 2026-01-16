@@ -405,7 +405,7 @@ const Home = () => {
                               <Typography
                                  variant="h4"
                                  sx={{
-                                    color: theme.palette.bpp.granite["090"],
+                                    color: theme.palette.granite["090"],
                                     fontWeight: 500,
                                     marginBottom: theme.liftkit.spacing.lg,
                                  }}

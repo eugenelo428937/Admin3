@@ -103,7 +103,7 @@ Open browser console and inspect network requests to `/api/products/`:
 **Expected Result**:
 - ✅ SpeedDial FAB button visible in bottom-right corner of card
 - ✅ NO standard "Add to Cart" button (replaced by SpeedDial)
-- ✅ Button has blue background (`theme.palette.bpp.sky["060"]`)
+- ✅ Button has blue background (`theme.palette.sky["060"]`)
 
 **Screenshot Checkpoint**: SpeedDial FAB button visible on marking product card
 

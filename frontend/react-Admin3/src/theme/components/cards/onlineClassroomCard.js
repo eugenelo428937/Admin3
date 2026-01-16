@@ -8,16 +8,16 @@ import liftKitTheme from '../../liftKitTheme';
 export const onlineClassroomCardStyles = {
   "& .floating-badges-container": {
     "& .subject-badge": {
-      backgroundColor: colorTheme.bpp.cobalt["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.palette.cobalt["010"],
+      color: colorTheme.palette.granite["100"],
     },
     "& .session-badge": {
-      backgroundColor: colorTheme.bpp.cobalt["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.palette.cobalt["010"],
+      color: colorTheme.palette.granite["100"],
     },
   },
   "& .product-header": {
-    backgroundColor: colorTheme.bpp.cobalt["020"],
+    backgroundColor: colorTheme.palette.cobalt["020"],
     color: "#ffffff",
     height: "7.43rem",
     padding: "1rem",
@@ -33,10 +33,10 @@ export const onlineClassroomCardStyles = {
       "& .product-title": {
         width: "90%",
         textAlign: "left",
-        color: colorTheme.bpp.cobalt["100"],
+        color: colorTheme.palette.cobalt["100"],
       },
       "& .product-subtitle": {
-        color: colorTheme.bpp.cobalt["090"],
+        color: colorTheme.palette.cobalt["090"],
       },
     },
     "& .MuiCardHeader-avatar": {
@@ -44,11 +44,11 @@ export const onlineClassroomCardStyles = {
       marginLeft: "auto",
       marginRight: "0",
       "& .product-avatar": {
-        backgroundColor: colorTheme.bpp.granite["020"],
+        backgroundColor: colorTheme.palette.granite["020"],
         boxShadow: "var(--Paper-shadow)",
         "& .product-avatar-icon": {
           fontSize: "1.5rem",
-          color: colorTheme.bpp.cobalt["090"],
+          color: colorTheme.palette.cobalt["090"],
         },
       },
     },
@@ -64,7 +64,7 @@ export const onlineClassroomCardStyles = {
       "& .variations-title": {
         marginBottom: liftKitTheme.spacing.md,
         textAlign: "left",
-        color: colorTheme.bpp.cobalt["100"],
+        color: colorTheme.palette.cobalt["100"],
         fontWeight: 600,
       },
       "& .variations-group": {
@@ -81,7 +81,7 @@ export const onlineClassroomCardStyles = {
             borderRadius: liftKitTheme.spacing.xs,
             padding: liftKitTheme.spacing.xs,
             width: "100%",
-            color: colorTheme.bpp.cobalt["100"],
+            color: colorTheme.palette.cobalt["100"],
             transition: "all 0.2s ease-in-out",
             display: "flex",
             alignItems: "center",
@@ -90,7 +90,7 @@ export const onlineClassroomCardStyles = {
               padding: liftKitTheme.spacing.sm,
               width: liftKitTheme.spacing.md,
               height: liftKitTheme.spacing.md,
-              color: colorTheme.bpp.cobalt["090"],
+              color: colorTheme.palette.cobalt["090"],
               alignItems: "center",
               justifyContent: "center",
             },
@@ -117,20 +117,20 @@ export const onlineClassroomCardStyles = {
     },
   },
   "& .MuiCardActions-root": {
-    backgroundColor: colorTheme.bpp.cobalt["030"],
+    backgroundColor: colorTheme.palette.cobalt["030"],
     "& .price-container": {
       "& .discount-options": {
         "& .discount-title": {
-          color: colorTheme.bpp.cobalt["100"],
+          color: colorTheme.palette.cobalt["100"],
         },
         "& .discount-radio-group": {
           "& .discount-radio-option": {
-            color: colorTheme.bpp.cobalt["100"],
+            color: colorTheme.palette.cobalt["100"],
             "& .MuiRadio-root": {
-              color: colorTheme.bpp.cobalt["090"],
+              color: colorTheme.palette.cobalt["090"],
             },
             "& .discount-label": {
-              color: colorTheme.bpp.cobalt["100"],
+              color: colorTheme.palette.cobalt["100"],
             },
           },
         },
@@ -138,14 +138,14 @@ export const onlineClassroomCardStyles = {
       "& .price-action-section": {
         "& .price-info-row": {
           "& .price-display": {
-            color: colorTheme.bpp.cobalt["100"],
+            color: colorTheme.palette.cobalt["100"],
           },
         },
         "& .add-to-cart-button": {
           color: "white",
-          backgroundColor: colorTheme.bpp.cobalt["055"],
+          backgroundColor: colorTheme.palette.cobalt["055"],
           "&:hover": {
-            backgroundColor: colorTheme.bpp.cobalt["070"],
+            backgroundColor: colorTheme.palette.cobalt["070"],
           },
           "& .MuiSvgIcon-root": {
             color: "white",
