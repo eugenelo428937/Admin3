@@ -20,7 +20,7 @@ from unittest.mock import patch, Mock
 from django.utils import timezone
 
 from cart.models import Cart, CartItem
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+# Note: Cart now uses store.Product (T087 legacy app cleanup)
 
 User = get_user_model()
 
