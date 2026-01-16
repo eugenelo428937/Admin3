@@ -1,6 +1,7 @@
 // Online Classroom Product Card Variant Styles
-import colorTheme from '../../colorTheme';
 import liftKitTheme from '../../liftKitTheme';
+import { onlineClassroom } from '../../semantic/productCards';
+import { semantic } from '../../semantic/common';
 
 /**
  * Online Classroom card variant - Cobalt/Blue theme
@@ -8,16 +9,16 @@ import liftKitTheme from '../../liftKitTheme';
 export const onlineClassroomCardStyles = {
   "& .floating-badges-container": {
     "& .subject-badge": {
-      backgroundColor: colorTheme.palette.cobalt["010"],
-      color: colorTheme.palette.granite["100"],
+      backgroundColor: onlineClassroom.actions,
+      color: semantic.textPrimary,
     },
     "& .session-badge": {
-      backgroundColor: colorTheme.palette.cobalt["010"],
-      color: colorTheme.palette.granite["100"],
+      backgroundColor: onlineClassroom.actions,
+      color: semantic.textPrimary,
     },
   },
   "& .product-header": {
-    backgroundColor: colorTheme.palette.cobalt["020"],
+    backgroundColor: onlineClassroom.header,
     color: "#ffffff",
     height: "7.43rem",
     padding: "1rem",
@@ -33,10 +34,10 @@ export const onlineClassroomCardStyles = {
       "& .product-title": {
         width: "90%",
         textAlign: "left",
-        color: colorTheme.palette.cobalt["100"],
+        color: onlineClassroom.title,
       },
       "& .product-subtitle": {
-        color: colorTheme.palette.cobalt["090"],
+        color: onlineClassroom.subtitle,
       },
     },
     "& .MuiCardHeader-avatar": {
@@ -44,11 +45,11 @@ export const onlineClassroomCardStyles = {
       marginLeft: "auto",
       marginRight: "0",
       "& .product-avatar": {
-        backgroundColor: colorTheme.palette.granite["020"],
+        backgroundColor: semantic.bgElevated,
         boxShadow: "var(--Paper-shadow)",
         "& .product-avatar-icon": {
           fontSize: "1.5rem",
-          color: colorTheme.palette.cobalt["090"],
+          color: onlineClassroom.subtitle,
         },
       },
     },
@@ -64,7 +65,7 @@ export const onlineClassroomCardStyles = {
       "& .variations-title": {
         marginBottom: liftKitTheme.spacing.md,
         textAlign: "left",
-        color: colorTheme.palette.cobalt["100"],
+        color: onlineClassroom.title,
         fontWeight: 600,
       },
       "& .variations-group": {
@@ -81,7 +82,7 @@ export const onlineClassroomCardStyles = {
             borderRadius: liftKitTheme.spacing.xs,
             padding: liftKitTheme.spacing.xs,
             width: "100%",
-            color: colorTheme.palette.cobalt["100"],
+            color: onlineClassroom.title,
             transition: "all 0.2s ease-in-out",
             display: "flex",
             alignItems: "center",
@@ -90,7 +91,7 @@ export const onlineClassroomCardStyles = {
               padding: liftKitTheme.spacing.sm,
               width: liftKitTheme.spacing.md,
               height: liftKitTheme.spacing.md,
-              color: colorTheme.palette.cobalt["090"],
+              color: onlineClassroom.subtitle,
               alignItems: "center",
               justifyContent: "center",
             },
@@ -117,20 +118,20 @@ export const onlineClassroomCardStyles = {
     },
   },
   "& .MuiCardActions-root": {
-    backgroundColor: colorTheme.palette.cobalt["030"],
+    backgroundColor: onlineClassroom.badge,
     "& .price-container": {
       "& .discount-options": {
         "& .discount-title": {
-          color: colorTheme.palette.cobalt["100"],
+          color: onlineClassroom.title,
         },
         "& .discount-radio-group": {
           "& .discount-radio-option": {
-            color: colorTheme.palette.cobalt["100"],
+            color: onlineClassroom.title,
             "& .MuiRadio-root": {
-              color: colorTheme.palette.cobalt["090"],
+              color: onlineClassroom.subtitle,
             },
             "& .discount-label": {
-              color: colorTheme.palette.cobalt["100"],
+              color: onlineClassroom.title,
             },
           },
         },
@@ -138,14 +139,14 @@ export const onlineClassroomCardStyles = {
       "& .price-action-section": {
         "& .price-info-row": {
           "& .price-display": {
-            color: colorTheme.palette.cobalt["100"],
+            color: onlineClassroom.title,
           },
         },
         "& .add-to-cart-button": {
           color: "white",
-          backgroundColor: colorTheme.palette.cobalt["055"],
+          backgroundColor: onlineClassroom.button,
           "&:hover": {
-            backgroundColor: colorTheme.palette.cobalt["070"],
+            backgroundColor: onlineClassroom.buttonHover,
           },
           "& .MuiSvgIcon-root": {
             color: "white",

@@ -1,7 +1,7 @@
 // Base Product Card Styles
 // Common styles shared by all product card variants
-import colorTheme from '../../colorTheme';
 import liftKitTheme from '../../liftKitTheme';
+import { semantic } from '../../semantic/common';
 
 /**
  * Base product card variant styles.
@@ -38,7 +38,7 @@ export const baseProductCardStyles = {
       boxShadow: "0 1px 12px rgba(0,0,0,0.25)",
       border: "1px solid rgba(255, 255, 255, 0.3)",
       backdropFilter: "blur(20px)",
-      color: colorTheme.palette.granite["100"],
+      color: semantic.textPrimary,
     },
     "& .session-badge": {
       padding: liftKitTheme.spacing.sm,
@@ -52,7 +52,7 @@ export const baseProductCardStyles = {
       boxShadow: "0 1px 12px rgba(0,0,0,0.25)",
       border: "1px solid rgba(255, 255, 255, 0.3)",
       backdropFilter: "blur(20px)",
-      color: colorTheme.palette.granite["100"],
+      color: semantic.textPrimary,
     },
   },
 

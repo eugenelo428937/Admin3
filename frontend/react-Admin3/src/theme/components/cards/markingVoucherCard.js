@@ -1,35 +1,36 @@
 // Marking Voucher Product Card Variant Styles
-import colorTheme from '../../colorTheme';
 import liftKitTheme from '../../liftKitTheme';
+import { markingVoucher } from '../../semantic/productCards';
+import { semantic } from '../../semantic/common';
 
 /**
  * Marking Voucher card variant - Orange theme
  */
 export const markingVoucherCardStyles = {
   "& .product-header": {
-    backgroundColor: colorTheme.palette.orange["020"],
+    backgroundColor: markingVoucher.header,
     color: "#ffffff",
     "& .MuiCardHeader-content": {
       "& .product-title": {
-        color: colorTheme.palette.orange["100"],
+        color: markingVoucher.title,
       },
       "& .product-subtitle": {
-        color: colorTheme.palette.orange["090"],
+        color: markingVoucher.subtitle,
       },
     },
     "& .MuiCardHeader-avatar": {
       "& .product-avatar": {
-        backgroundColor: colorTheme.palette.granite["020"],
+        backgroundColor: semantic.bgElevated,
         "& .product-avatar-icon": {
-          color: colorTheme.palette.orange["090"],
+          color: markingVoucher.subtitle,
         },
       },
     },
   },
   "& .floating-badges-container": {
     "& .expiry-badge": {
-      backgroundColor: colorTheme.palette.orange["060"],
-      color: colorTheme.palette.granite["100"],
+      backgroundColor: markingVoucher.button,
+      color: semantic.textPrimary,
       fontSize: liftKitTheme.typography.bodyBold.fontSize,
       paddingLeft: liftKitTheme.spacing.sm,
       paddingRight: liftKitTheme.spacing.sm,
@@ -83,7 +84,7 @@ export const markingVoucherCardStyles = {
   },
   "& .MuiCardActions-root": {
     height: "10.2rem !important",
-    backgroundColor: colorTheme.palette.orange["030"],
+    backgroundColor: markingVoucher.badge,
     boxShadow: "var(--shadow-lg)",
     paddingTop: liftKitTheme.spacing.md,
     paddingLeft: liftKitTheme.spacing.md,
@@ -106,7 +107,7 @@ export const markingVoucherCardStyles = {
           alignSelf: "flex-end",
           justifyContent: "flex-end",
           "& .price-display": {
-            color: colorTheme.palette.orange["100"],
+            color: markingVoucher.title,
           },
           "& .info-button": {
             minWidth: "auto",
@@ -136,7 +137,7 @@ export const markingVoucherCardStyles = {
           },
         },
         "& .add-to-cart-button": {
-          color: colorTheme.palette.orange["100"],
+          color: markingVoucher.title,
           alignSelf: "flex-end",
           borderRadius: "50%",
           minWidth: liftKitTheme.spacing.xl15,
@@ -148,7 +149,7 @@ export const markingVoucherCardStyles = {
           marginRight: liftKitTheme.spacing.md,
           marginTop: liftKitTheme.spacing.md,
           boxShadow: "var(--Paper-shadow)",
-          backgroundColor: colorTheme.palette.orange["020"],
+          backgroundColor: markingVoucher.header,
           transition: "all 0.15s ease-in-out",
           "&:hover": {
             boxShadow: "var(--Paper-shadow)",
