@@ -12,7 +12,7 @@ from decimal import Decimal
 from unittest.mock import patch
 
 from cart.models import Cart, CartItem
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+# Note: Cart now uses store.Product (T087 legacy app cleanup)
 
 User = get_user_model()
 

@@ -342,7 +342,7 @@ def advanced_product_search(request):
         }
     """
     from django.contrib.postgres.search import TrigramSimilarity
-    from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+    from store.models import Product as StoreProduct
 
     # Get search parameters
     search_query = request.query_params.get('q', '').strip()
@@ -367,12 +367,13 @@ def advanced_product_search(request):
                       TrigramSimilarity('description', search_query)
         ).order_by('-similarity')
 
-    # Apply subject filter
+    # Apply subject filter (use store.Product to find catalog.Product IDs for subjects)
     if subject_codes:
         subjects = Subject.objects.filter(code__in=subject_codes)
-        filtered_product_ids = ExamSessionSubjectProduct.objects.filter(
+        # Get catalog.Product IDs through store.Product's product_product_variation FK
+        filtered_product_ids = StoreProduct.objects.filter(
             exam_session_subject__subject__in=subjects
-        ).values_list('product_id', flat=True).distinct()
+        ).values_list('product_product_variation__product_id', flat=True).distinct()
 
         queryset = queryset.filter(id__in=filtered_product_ids)
 

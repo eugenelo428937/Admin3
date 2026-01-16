@@ -106,7 +106,7 @@ INSTALLED_APPS = [
     'students',
     'subjects',
     'tutorials',
-    'exam_sessions_subjects_products',
+    # 'exam_sessions_subjects_products' removed (T087 - migrated to catalog/store apps)
     'products.apps.ProductsConfig',
     'marking',
     'marking_vouchers',

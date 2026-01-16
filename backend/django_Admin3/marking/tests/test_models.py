@@ -10,8 +10,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 from marking.models import MarkingPaper
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
-from catalog.models import ExamSession, ExamSessionSubject
+from catalog.models import ExamSession, ExamSessionSubject, ExamSessionSubjectProduct
 from subjects.models import Subject
 from products.models.products import Product
 

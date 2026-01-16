@@ -9,7 +9,7 @@ from datetime import datetime, date
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from cart.models import Cart, CartItem
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+from store.models import Product as StoreProduct
 from vat.models import VATAudit
 from unittest.mock import Mock, patch, MagicMock
 
@@ -32,9 +32,9 @@ class VATOrchestratorTests(TestCase):
         self.cart = Cart.objects.create(user=self.user)
 
         # Create a real product for testing
-        # Note: ExamSessionSubjectProduct requires exam_session and subject
+        # Note: StoreProduct requires exam_session_subject and product_product_variation
         # For simplicity, we'll mock it or create a minimal one
-        self.mock_product = Mock(spec=ExamSessionSubjectProduct)
+        self.mock_product = Mock(spec=StoreProduct)
         self.mock_product.id = 1
         self.mock_product.fullname = "Test Product"
         self.mock_product.pk = 1

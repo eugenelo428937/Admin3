@@ -1,3 +1,9 @@
+"""
+Tutorial views for the tutorials API.
+
+Updated 2026-01-16: Migrated from exam_sessions_subjects_products models
+to store.Product as part of T087 legacy app cleanup.
+"""
 from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets, generics, status
 from rest_framework.views import APIView
@@ -8,21 +14,21 @@ from django.core.cache import cache
 from django.db.models import Prefetch, Q
 from .models import TutorialEvent
 from .serializers import TutorialEventSerializer
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct, ExamSessionSubjectProductVariation
-# Note: Product is accessed via FK relationships (essp.product), not imported directly
+from store.models import Product as StoreProduct
+from catalog.models import Product as CatalogProduct
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Create your views here.
 
 class TutorialEventViewSet(viewsets.ModelViewSet):
     queryset = TutorialEvent.objects.select_related(
-        'exam_session_subject_product_variation__exam_session_subject_product__exam_session_subject__subject',
-        'exam_session_subject_product_variation__exam_session_subject_product__product'
+        'store_product__exam_session_subject__subject',
+        'store_product__product_product_variation__product'
     ).all()
     serializer_class = TutorialEventSerializer
     permission_classes = [AllowAny]
+
 
 class TutorialViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
@@ -33,24 +39,26 @@ class TutorialViewSet(viewsets.ViewSet):
         serializer = TutorialEventSerializer(events, many=True)
         return Response(serializer.data)
 
+
 class TutorialEventListView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
         """Get tutorial events with basic filtering"""
         queryset = TutorialEvent.objects.select_related(
-            'exam_session_subject_product_variation__exam_session_subject_product__exam_session_subject__subject'
+            'store_product__exam_session_subject__subject'
         ).all()
-        
+
         # Filter by subject code if provided
         subject_code = request.GET.get('subject_code')
         if subject_code:
             queryset = queryset.filter(
-                exam_session_subject_product_variation__exam_session_subject_product__exam_session_subject__subject__code=subject_code
+                store_product__exam_session_subject__subject__code=subject_code
             )
-        
+
         serializer = TutorialEventSerializer(queryset, many=True)
         return Response(serializer.data)
+
 
 class TutorialProductListView(APIView):
     permission_classes = [AllowAny]
@@ -59,33 +67,35 @@ class TutorialProductListView(APIView):
         """Get tutorial products with filtering"""
         exam_session = request.GET.get('exam_session')
         subject_code = request.GET.get('subject_code')
-        
+
         if not exam_session or not subject_code:
             return Response({
                 'error': 'exam_session and subject_code parameters are required'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Filter tutorial products
-        products = ExamSessionSubjectProduct.objects.filter(
+
+        # Filter tutorial products using store.Product
+        products = StoreProduct.objects.filter(
             exam_session_subject__exam_session_id=exam_session,
             exam_session_subject__subject__code=subject_code,
-            product__fullname__icontains='tutorial'
+            product_product_variation__product__fullname__icontains='tutorial'
         ).select_related(
             'exam_session_subject__subject',
-            'product'
+            'product_product_variation__product'
         )
-        
+
         # Transform to expected format
         results = []
         for product in products:
+            catalog_product = product.product_product_variation.product
             results.append({
                 'subject_code': product.exam_session_subject.subject.code,
                 'subject_name': product.exam_session_subject.subject.description,
-                'location': product.product.fullname,
-                'product_id': product.product.id,
+                'location': catalog_product.fullname,
+                'product_id': catalog_product.id,
             })
-        
+
         return Response(results)
+
 
 class TutorialProductListAllView(APIView):
     permission_classes = [AllowAny]
@@ -94,30 +104,32 @@ class TutorialProductListAllView(APIView):
         """Get all tutorial products"""
         cache_key = 'tutorial_products_all'
         cached_data = cache.get(cache_key)
-        
+
         if cached_data:
             return Response(cached_data)
-        
-        # Get all tutorial products using proper field lookups
-        products = ExamSessionSubjectProduct.objects.filter(
-            product__fullname__icontains='tutorial'
+
+        # Get all tutorial products using store.Product
+        products = StoreProduct.objects.filter(
+            product_product_variation__product__fullname__icontains='tutorial'
         ).select_related(
             'exam_session_subject__subject',
-            'product'
+            'product_product_variation__product'
         )
-        
+
         results = []
         for product in products:
+            catalog_product = product.product_product_variation.product
             results.append({
                 'subject_code': product.exam_session_subject.subject.code,
-                'subject_name': product.exam_session_subject.subject.description,  # Changed from 'name' to 'description'
-                'location': product.product.fullname,
-                'product_id': product.product.id,
+                'subject_name': product.exam_session_subject.subject.description,
+                'location': catalog_product.fullname,
+                'product_id': catalog_product.id,
             })
-        
+
         # Cache for 10 minutes
         cache.set(cache_key, results, 600)
         return Response(results)
+
 
 class TutorialProductVariationListView(APIView):
     permission_classes = [AllowAny]
@@ -125,31 +137,34 @@ class TutorialProductVariationListView(APIView):
     def get(self, request, product_id):
         """Get variations for a tutorial product"""
         subject_code = request.GET.get('subject_code')
-        
-        variations = ExamSessionSubjectProductVariation.objects.filter(
-            exam_session_subject_product__product_id=product_id
+
+        # Use store.Product to find variations
+        variations = StoreProduct.objects.filter(
+            product_product_variation__product_id=product_id
         ).select_related(
             'product_product_variation__product_variation',
-            'exam_session_subject_product__exam_session_subject__subject'
+            'exam_session_subject__subject'
         )
-        
+
         if subject_code:
             variations = variations.filter(
-                exam_session_subject_product__exam_session_subject__subject__code=subject_code
+                exam_session_subject__subject__code=subject_code
             )
-        
+
         results = []
-        for variation in variations:
+        for store_product in variations:
+            ppv = store_product.product_product_variation
             results.append({
-                'id': variation.id,
-                'variation_type': variation.product_product_variation.product_variation.variation_type,
-                'name': variation.product_product_variation.product_variation.name,
-                'description': variation.product_product_variation.product_variation.description,
-                'description_short': variation.product_product_variation.product_variation.description_short,
-                'product_code': variation.product_code,
+                'id': store_product.id,
+                'variation_type': ppv.product_variation.variation_type,
+                'name': ppv.product_variation.name,
+                'description': ppv.product_variation.description,
+                'description_short': ppv.product_variation.description_short,
+                'product_code': store_product.product_code,
             })
-        
+
         return Response(results)
+
 
 class TutorialComprehensiveDataView(APIView):
     permission_classes = [AllowAny]
@@ -158,39 +173,39 @@ class TutorialComprehensiveDataView(APIView):
         """Get all tutorial data including events, variations, and product details in one call"""
         cache_key = 'tutorial_comprehensive_data'
         cached_data = cache.get(cache_key)
-        
+
         if cached_data:
             return Response(cached_data)
-        
-        # Get all tutorial events with related data
+
+        # Get all tutorial events with related data via store.Product
         tutorial_events = TutorialEvent.objects.select_related(
-            'exam_session_subject_product_variation__exam_session_subject_product__exam_session_subject__subject',
-            'exam_session_subject_product_variation__exam_session_subject_product__product',
-            'exam_session_subject_product_variation__product_product_variation__product_variation'
+            'store_product__exam_session_subject__subject',
+            'store_product__product_product_variation__product',
+            'store_product__product_product_variation__product_variation'
         ).all()
-        
+
         # Group data by subject and product
         results = {}
-        
+
         for event in tutorial_events:
-            essp = event.exam_session_subject_product_variation.exam_session_subject_product
-            subject = essp.exam_session_subject.subject
-            product = essp.product
-            variation = event.exam_session_subject_product_variation.product_product_variation.product_variation
-            
+            store_product = event.store_product
+            subject = store_product.exam_session_subject.subject
+            catalog_product = store_product.product_product_variation.product
+            variation = store_product.product_product_variation.product_variation
+
             # Create unique key for subject-product combination
-            key = f"{subject.code}_{product.id}"
-            
+            key = f"{subject.code}_{catalog_product.id}"
+
             if key not in results:
                 results[key] = {
                     'subject_id': subject.id,
                     'subject_code': subject.code,
                     'subject_name': subject.description,
-                    'product_id': product.id,
-                    'location': product.fullname,
+                    'product_id': catalog_product.id,
+                    'location': catalog_product.fullname,
                     'variations': {}
                 }
-            
+
             # Group events by variation
             variation_key = variation.id
             if variation_key not in results[key]['variations']:
@@ -201,7 +216,7 @@ class TutorialComprehensiveDataView(APIView):
                     'description_short': variation.description_short,
                     'events': []
                 }
-            
+
             # Add event data
             results[key]['variations'][variation_key]['events'].append({
                 'id': event.id,
@@ -215,17 +230,18 @@ class TutorialComprehensiveDataView(APIView):
                 'title': f"{event.code}",
                 'price': None  # Add price logic if available
             })
-        
+
         # Convert to list format
         final_results = []
         for data in results.values():
             # Convert variations dict to list
             data['variations'] = list(data['variations'].values())
             final_results.append(data)
-        
+
         # Cache for 10 minutes
         cache.set(cache_key, final_results, 600)
         return Response(final_results)
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -233,11 +249,13 @@ def get_all_tutorial_products(request):
     """Function-based view for tutorial products"""
     return TutorialProductListAllView().get(request)
 
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_tutorial_product_variations(request, product_id):
     """Function-based view for tutorial product variations"""
     return TutorialProductVariationListView().get(request, product_id)
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])

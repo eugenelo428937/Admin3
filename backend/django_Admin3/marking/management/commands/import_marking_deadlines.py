@@ -1,7 +1,7 @@
 import csv
 from django.core.management.base import BaseCommand, CommandError
 from marking.models import MarkingPaper
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+from catalog.models import ExamSessionSubjectProduct
 from django.utils.dateparse import parse_date
 from catalog.models import Product, ExamSessionSubject
 from datetime import datetime
