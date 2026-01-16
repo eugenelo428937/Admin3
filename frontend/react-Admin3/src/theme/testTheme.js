@@ -31,7 +31,7 @@ const testTheme = createTheme(theme, {
               gap: liftKitTheme.spacing.xs2,
               pointerEvents: "none",
               "& .subject-badge, & .session-badge": {
-                color: colorTheme.bpp.granite["100"],
+                color: colorTheme.palette.granite["100"],
                 fontSize: liftKitTheme.typography.bodyBold.fontSize,
                 paddingLeft: liftKitTheme.spacing.sm,
                 paddingRight: liftKitTheme.spacing.sm,
@@ -75,7 +75,7 @@ const testTheme = createTheme(theme, {
                 marginLeft: "auto",
                 marginRight: "0",
                 "& .product-avatar": {
-                  backgroundColor: colorTheme.bpp.granite["020"],
+                  backgroundColor: colorTheme.palette.granite["020"],
                   boxShadow: "var(--Paper-shadow)",
                 },
               },
@@ -142,28 +142,28 @@ const testTheme = createTheme(theme, {
           props: { variant: "product", producttype: "material" },
           style: {
             "& .floating-badges-container .subject-badge": {
-              backgroundColor: colorTheme.bpp.cobalt["060"],
+              backgroundColor: colorTheme.palette.cobalt["060"],
             },
             "& .floating-badges-container .session-badge": {
-              backgroundColor: colorTheme.bpp.mint["030"],
+              backgroundColor: colorTheme.palette.mint["030"],
             },
             "& .product-header": {
-              backgroundColor: colorTheme.bpp.sky["020"],
+              backgroundColor: colorTheme.palette.sky["020"],
               "& .MuiCardHeader-content .product-title": {
-                color: colorTheme.bpp.sky["100"],
+                color: colorTheme.palette.sky["100"],
               },
               "& .MuiCardHeader-content .product-subtitle": {
-                color: colorTheme.bpp.sky["090"],
+                color: colorTheme.palette.sky["090"],
               },
               "& .MuiCardHeader-avatar .product-avatar .product-avatar-icon": {
-                color: colorTheme.bpp.sky["090"],
+                color: colorTheme.palette.sky["090"],
               },
             },
             "& .MuiCardActions-root": {
-              backgroundColor: colorTheme.bpp.sky["030"],
+              backgroundColor: colorTheme.palette.sky["030"],
               "& .add-to-cart-button": {
-                color: colorTheme.bpp.sky["100"],
-                backgroundColor: colorTheme.bpp.sky["020"],
+                color: colorTheme.palette.sky["100"],
+                backgroundColor: colorTheme.palette.sky["020"],
               },
             },
           },
@@ -174,28 +174,28 @@ const testTheme = createTheme(theme, {
           props: { variant: "product", producttype: "tutorial" },
           style: {
             "& .floating-badges-container .subject-badge": {
-              backgroundColor: colorTheme.bpp.cobalt["060"],
+              backgroundColor: colorTheme.palette.cobalt["060"],
             },
             "& .floating-badges-container .session-badge": {
-              backgroundColor: colorTheme.bpp.mint["030"],
+              backgroundColor: colorTheme.palette.mint["030"],
             },
             "& .product-header": {
-              backgroundColor: colorTheme.bpp.purple["020"],
+              backgroundColor: colorTheme.palette.purple["020"],
               "& .MuiCardHeader-content .product-title": {
-                color: colorTheme.bpp.sky["100"],
+                color: colorTheme.palette.sky["100"],
               },
               "& .MuiCardHeader-content .product-subtitle": {
-                color: colorTheme.bpp.sky["090"],
+                color: colorTheme.palette.sky["090"],
               },
               "& .MuiCardHeader-avatar .product-avatar .product-avatar-icon": {
-                color: colorTheme.bpp.purple["090"],
+                color: colorTheme.palette.purple["090"],
               },
             },
             "& .MuiCardActions-root": {
-              backgroundColor: colorTheme.bpp.purple["030"],
+              backgroundColor: colorTheme.palette.purple["030"],
               "& .add-to-cart-button": {
-                color: colorTheme.bpp.purple["100"],
-                backgroundColor: colorTheme.bpp.purple["020"],
+                color: colorTheme.palette.purple["100"],
+                backgroundColor: colorTheme.palette.purple["020"],
               },
             },
           },

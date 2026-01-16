@@ -547,9 +547,9 @@ Tests:       8 failed, 1 passed, 9 total
          bottom: 14,
          right: 14,
          "& .MuiFab-root": {
-           backgroundColor: theme.palette.bpp.sky["060"],
+           backgroundColor: theme.palette.sky["060"],
            "&:hover": {
-             backgroundColor: theme.palette.bpp.sky["070"],
+             backgroundColor: theme.palette.sky["070"],
            }
          }
        }}
@@ -613,9 +613,9 @@ Tests:       8 failed, 1 passed, 9 total
        },
        "& .MuiSpeedDialAction-fab": {
          color: "white",
-         backgroundColor: theme.palette.bpp.sky["060"],
+         backgroundColor: theme.palette.sky["060"],
          "&:hover": {
-           backgroundColor: theme.palette.bpp.sky["070"],
+           backgroundColor: theme.palette.sky["070"],
          }
        }
      }}
@@ -661,9 +661,9 @@ Tests:       8 failed, 1 passed, 9 total
        },
        "& .MuiSpeedDialAction-fab": {
          color: "white",
-         backgroundColor: theme.palette.bpp.sky["060"],
+         backgroundColor: theme.palette.sky["060"],
          "&:hover": {
-           backgroundColor: theme.palette.bpp.sky["070"],
+           backgroundColor: theme.palette.sky["070"],
          }
        }
      }}
@@ -999,7 +999,7 @@ Time:        2.5s
 **Expected Results**:
 - ✅ SpeedDial FAB button visible in bottom-right corner
 - ✅ NO standard "Add to Cart" button
-- ✅ Button has blue background (`theme.palette.bpp.sky["060"]`)
+- ✅ Button has blue background (`theme.palette.sky["060"]`)
 
 **Definition of Done**:
 - ✅ Manual test completed

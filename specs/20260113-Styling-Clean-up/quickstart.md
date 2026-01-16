@@ -87,7 +87,7 @@ Replace inline button styles with variant props:
 // ❌ Before
 <Typography
   variant="navlink"
-  sx={{ borderBottom: "1px solid " + theme.palette.bpp.granite["020"] }}
+  sx={{ borderBottom: "1px solid " + theme.palette.granite["020"] }}
 >
   View All Products
 </Typography>
@@ -199,8 +199,8 @@ navigation: {
     secondary: colorTheme.offwhite['001'],    // #f0edf1
   },
   background: {
-    hover: colorTheme.bpp.granite['070'],     // #525252
-    active: colorTheme.bpp.granite['080'],    // #3b3b3a
+    hover: colorTheme.granite['070'],     // #525252
+    active: colorTheme.granite['080'],    // #3b3b3a
   },
 }
 ```
@@ -213,8 +213,8 @@ To enable dark mode, create a dark theme variant that swaps token values:
 // Dark mode token values (example)
 navigation: {
   text: {
-    primary: colorTheme.bpp.granite['010'],   // Invert: light text on dark
-    secondary: colorTheme.bpp.granite['020'],
+    primary: colorTheme.granite['010'],   // Invert: light text on dark
+    secondary: colorTheme.granite['020'],
   },
   background: {
     hover: colorTheme.offwhite['002'],        // Invert: light hover on dark

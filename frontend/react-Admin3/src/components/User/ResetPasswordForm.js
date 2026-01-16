@@ -158,7 +158,7 @@ const ResetPasswordForm = () => {
                 title={
                   <Typography 
                     variant='h4' 
-                    color={theme.palette.bpp.granite["090"]}>
+                    color={theme.palette.granite["090"]}>
                     Invalid Reset Link
                   </Typography>
                   }
@@ -195,11 +195,11 @@ const ResetPasswordForm = () => {
                 title={
                 <Typography 
                   variant='h4' 
-                  color={theme.palette.bpp.granite["090"]}>
+                  color={theme.palette.granite["090"]}>
                   Password Reset Successful
                 </Typography>
                 }
-                sx={{ bgcolor: theme.palette.bpp.granite["030"], color: 'white', textAlign: 'center' }}
+                sx={{ bgcolor: theme.palette.granite["030"], color: 'white', textAlign: 'center' }}
               />
               <CardContent sx={{ textAlign: 'center' }}>
                 <Box sx={{ mb: 4 }}>
@@ -230,11 +230,11 @@ const ResetPasswordForm = () => {
               title={
                 <Typography 
                   variant='h4' 
-                  color={theme.palette.bpp.granite["090"]}>
+                  color={theme.palette.granite["090"]}>
                   Set New Password
                 </Typography>
                 }              
-              sx={{ bgcolor: theme.palette.bpp.granite["030"], textAlign: 'center' }}              
+              sx={{ bgcolor: theme.palette.granite["030"], textAlign: 'center' }}              
             />
             <CardContent>
               {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}

@@ -29,7 +29,7 @@ The Postcoder.com address lookup integration has been **successfully implemented
 - **Endpoint**: `http://localhost:8888/api/utils/postcoder-address-lookup/`
 - **Database**: PostgreSQL (ACTEDDBDEV01)
 - **Django Version**: 5.1
-- **Python Version**: 3.11
+- **Python Version**: 3.14
 
 ### Test Date/Time
 - **Testing Period**: 2025-11-04, 17:39 - 17:41 UTC

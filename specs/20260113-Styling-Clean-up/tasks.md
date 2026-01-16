@@ -41,13 +41,13 @@
 
 - [x] T004 Add `navigation.text.primary` token mapping to `colorTheme.offwhite['000']` in frontend/react-Admin3/src/theme/colors/semantic.js
 - [x] T005 [P] Add `navigation.text.secondary` token mapping to `colorTheme.offwhite['001']` in frontend/react-Admin3/src/theme/colors/semantic.js
-- [x] T006 [P] Add `navigation.text.muted` token mapping to `colorTheme.bpp.granite['040']` in frontend/react-Admin3/src/theme/colors/semantic.js
-- [x] T007 [P] Add `navigation.border.subtle` token mapping to `colorTheme.bpp.granite['020']` in frontend/react-Admin3/src/theme/colors/semantic.js
-- [x] T008 [P] Add `navigation.border.divider` token mapping to `colorTheme.bpp.granite['030']` in frontend/react-Admin3/src/theme/colors/semantic.js
-- [x] T009 [P] Add `navigation.background.hover` token mapping to `colorTheme.bpp.granite['070']` in frontend/react-Admin3/src/theme/colors/semantic.js
-- [x] T010 [P] Add `navigation.background.active` token mapping to `colorTheme.bpp.granite['080']` in frontend/react-Admin3/src/theme/colors/semantic.js
+- [x] T006 [P] Add `navigation.text.muted` token mapping to `colorTheme.granite['040']` in frontend/react-Admin3/src/theme/colors/semantic.js
+- [x] T007 [P] Add `navigation.border.subtle` token mapping to `colorTheme.granite['020']` in frontend/react-Admin3/src/theme/colors/semantic.js
+- [x] T008 [P] Add `navigation.border.divider` token mapping to `colorTheme.granite['030']` in frontend/react-Admin3/src/theme/colors/semantic.js
+- [x] T009 [P] Add `navigation.background.hover` token mapping to `colorTheme.granite['070']` in frontend/react-Admin3/src/theme/colors/semantic.js
+- [x] T010 [P] Add `navigation.background.active` token mapping to `colorTheme.granite['080']` in frontend/react-Admin3/src/theme/colors/semantic.js
 - [x] T011 [P] Add `navigation.button.color` token mapping to `colorTheme.offwhite['000']` in frontend/react-Admin3/src/theme/colors/semantic.js
-- [x] T012 [P] Add `navigation.button.hoverColor` token mapping to `colorTheme.bpp.purple['110']` in frontend/react-Admin3/src/theme/colors/semantic.js
+- [x] T012 [P] Add `navigation.button.hoverColor` token mapping to `colorTheme.purple['110']` in frontend/react-Admin3/src/theme/colors/semantic.js
 - [x] T013 Verify all 9 navigation tokens are accessible via `theme.palette.semantic.navigation.*`
 
 **Checkpoint**: All semantic tokens defined and accessible - variant definition can begin

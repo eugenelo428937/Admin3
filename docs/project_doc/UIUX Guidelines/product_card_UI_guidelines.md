@@ -404,13 +404,13 @@ To add a new product card variant in theme.js:
         
         // Header styling with chosen BPP color
         "& .product-header": {
-            backgroundColor: colorTheme.bpp.{colorScheme}["020"],
+            backgroundColor: colorTheme.{colorScheme}["020"],
             // ... other header styles
         },
         
         // Actions styling with chosen BPP color
         "& .MuiCardActions-root": {
-            backgroundColor: colorTheme.bpp.{colorScheme}["030"],
+            backgroundColor: colorTheme.{colorScheme}["030"],
             // ... other actions styles
         }
     }

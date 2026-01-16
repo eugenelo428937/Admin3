@@ -107,7 +107,7 @@ const MegaMenuPopover = ({
               marginRight: 0,
               borderRadius: 0,
               boxShadow: theme.shadows[8],
-              backgroundColor: theme.palette.bpp.granite["090"],
+              backgroundColor: theme.palette.granite["090"],
             },
           },
         }}

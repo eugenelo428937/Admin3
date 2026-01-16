@@ -6,7 +6,7 @@ export const miscOverrides = {
   MuiDivider: {
     styleOverrides: {
       root: {
-        borderColor: colorTheme.bpp.granite["050"],
+        borderColor: colorTheme.palette.granite["050"],
         opacity: 0.5,
       },
     },

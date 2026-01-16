@@ -88,7 +88,7 @@ When the product list has only a single row of tutorial product cards, the summa
 
 ### Expected Behavior
 1. Summary bar should be positioned at **bottom-left** on large screens (≥lg breakpoint)
-2. Summary bar background color should use theme color: `colorTheme.bpp.cobalt["060"]`
+2. Summary bar background color should use theme color: `colorTheme.cobalt["060"]`
 
 ### Fix Applied
 

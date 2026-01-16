@@ -11,6 +11,7 @@ import {
    Paper,
 } from "@mui/material";
 import "../../styles/liftkit-css/new-globals.css";
+import palettes from "../../theme/colors/palettesTheme.js";
 
 const MaterialDesign3Palette = () => {
    // BPP Color System data matching the unified-color-palette.html
@@ -127,23 +128,23 @@ const MaterialDesign3Palette = () => {
          colors: [
             {
                name: "Primary",
-               bg: "var(--md-sys-color-primary_lkv)",
-               color: "var(--md-sys-color-on-primary_lkv)",
+               bg: palettes.light.primary,
+               color: palettes.light.onPrimary,
             },
             {
                name: "On Primary",
-               bg: "var(--md-sys-color-on-primary_lkv)",
-               color: "var(--md-sys-color-primary_lkv)",
+               bg: palettes.light.onPrimary,
+               color: palettes.light.primary,
             },
             {
                name: "Primary Container",
-               bg: "var(--md-sys-color-primary-container_lkv)",
-               color: "var(--md-sys-color-on-primary-container_lkv)",
+               bg: palettes.light.primaryContainer,
+               color: palettes.light.onPrimaryContainer,
             },
             {
                name: "On Primary Container",
-               bg: "var(--md-sys-color-on-primary-container_lkv)",
-               color: "var(--md-sys-color-primary-container_lkv)",
+               bg: palettes.light.onPrimaryContainer,
+               color: palettes.light.primaryContainer,
             },
          ],
       },
@@ -152,23 +153,23 @@ const MaterialDesign3Palette = () => {
          colors: [
             {
                name: "Secondary",
-               bg: "var(--md-sys-color-secondary_lkv)",
-               color: "var(--md-sys-color-on-secondary_lkv)",
+               bg: palettes.light.secondary,
+               color: palettes.light.onSecondary,
             },
             {
                name: "On Secondary",
-               bg: "var(--md-sys-color-on-secondary_lkv)",
-               color: "var(--md-sys-color-secondary_lkv)",
+               bg: palettes.light.onSecondary,
+               color: palettes.light.secondary,
             },
             {
                name: "Secondary Container",
-               bg: "var(--md-sys-color-secondary-container_lkv)",
-               color: "var(--md-sys-color-on-secondary-container_lkv)",
+               bg: palettes.light.secondaryContainer,
+               color: palettes.light.onSecondaryContainer,
             },
             {
                name: "On Secondary Container",
-               bg: "var(--md-sys-color-on-secondary-container_lkv)",
-               color: "var(--md-sys-color-secondary-container_lkv)",
+               bg: palettes.light.onSecondaryContainer,
+               color: palettes.light.secondaryContainer,
             },
          ],
       },
@@ -177,23 +178,23 @@ const MaterialDesign3Palette = () => {
          colors: [
             {
                name: "Tertiary",
-               bg: "var(--md-sys-color-tertiary_lkv)",
-               color: "var(--md-sys-color-on-tertiary_lkv)",
+               bg: palettes.light.tertiary,
+               color: palettes.light.onTertiary,
             },
             {
                name: "On Tertiary",
-               bg: "var(--md-sys-color-on-tertiary_lkv)",
-               color: "var(--md-sys-color-tertiary_lkv)",
+               bg: palettes.light.onTertiary,
+               color: palettes.light.tertiary,
             },
             {
                name: "Tertiary Container",
-               bg: "var(--md-sys-color-tertiary-container_lkv)",
-               color: "var(--md-sys-color-on-tertiary-container_lkv)",
+               bg: palettes.light.tertiaryContainer,
+               color: palettes.light.onTertiaryContainer,
             },
             {
                name: "On Tertiary Container",
-               bg: "var(--md-sys-color-on-tertiary-container_lkv)",
-               color: "var(--md-sys-color-tertiary-container_lkv)",
+               bg: palettes.light.onTertiaryContainer,
+               color: palettes.light.tertiaryContainer,
             },
          ],
       },
@@ -202,23 +203,23 @@ const MaterialDesign3Palette = () => {
          colors: [
             {
                name: "Error",
-               bg: "var(--md-sys-color-error_lkv)",
-               color: "var(--md-sys-color-on-error_lkv)",
+               bg: palettes.light.error,
+               color: palettes.light.onError,
             },
             {
                name: "On Error",
-               bg: "var(--md-sys-color-on-error_lkv)",
-               color: "var(--md-sys-color-error_lkv)",
+               bg: palettes.light.onError,
+               color: palettes.light.error,
             },
             {
                name: "Error Container",
-               bg: "var(--md-sys-color-error-container_lkv)",
-               color: "var(--md-sys-color-on-error-container_lkv)",
+               bg: palettes.light.errorContainer,
+               color: palettes.light.onErrorContainer,
             },
             {
                name: "On Error Container",
-               bg: "var(--md-sys-color-on-error-container_lkv)",
-               color: "var(--md-sys-color-error-container_lkv)",
+               bg: palettes.light.onErrorContainer,
+               color: palettes.light.errorContainer,
             },
          ],
       },
@@ -231,26 +232,26 @@ const MaterialDesign3Palette = () => {
          colors: [
             {
                name: "Primary Fixed",
-               bg: "var(--md-sys-color-primary-fixed_lkv)",
-               color: "var(--md-sys-color-on-primary-fixed_lkv)",
+               bg: palettes.light.primaryFixed,
+               color: palettes.light.onPrimaryFixed,
                position: "left",
             },
             {
                name: "Primary Fixed Dim",
-               bg: "var(--md-sys-color-primary-fixed-dim_lkv)",
-               color: "var(--md-sys-color-on-primary-fixed-variant_lkv)",
+               bg: palettes.light.primaryFixedDim,
+               color: palettes.light.onPrimaryFixedVariant,
                position: "right",
             },
             {
                name: "On Primary Fixed",
-               bg: "var(--md-sys-color-on-primary-fixed_lkv)",
-               color: "var(--md-sys-color-primary-fixed_lkv)",
+               bg: palettes.light.onPrimaryFixed,
+               color: palettes.light.primaryFixed,
                position: "full",
             },
             {
                name: "On Primary Fixed Variant",
-               bg: "var(--md-sys-color-on-primary-fixed-variant_lkv)",
-               color: "var(--md-sys-color-primary-fixed_lkv)",
+               bg: palettes.light.onPrimaryFixedVariant,
+               color: palettes.light.primaryFixed,
                position: "full",
             },
          ],
@@ -260,26 +261,26 @@ const MaterialDesign3Palette = () => {
          colors: [
             {
                name: "Secondary Fixed",
-               bg: "var(--md-sys-color-secondary-fixed_lkv)",
-               color: "var(--md-sys-color-on-secondary-fixed_lkv)",
+               bg: palettes.light.onSecondaryFixed,
+               color: palettes.light.onSecondary,
                position: "left",
             },
             {
                name: "Secondary Fixed Dim",
-               bg: "var(--md-sys-color-secondary-fixed-dim_lkv)",
-               color: "var(--md-sys-color-on-secondary-fixed-variant_lkv)",
+               bg: palettes.light.secondaryFixedDim,
+               color: palettes.light.onSecondaryFixedVariant,
                position: "right",
             },
             {
                name: "On Secondary Fixed",
-               bg: "var(--md-sys-color-on-secondary-fixed_lkv)",
-               color: "var(--md-sys-color-secondary-fixed_lkv)",
+               bg: palettes.light.onSecondaryFixed,
+               color: palettes.light.secondaryFixed,
                position: "full",
             },
             {
                name: "On Secondary Fixed Variant",
-               bg: "var(--md-sys-color-on-secondary-fixed-variant_lkv)",
-               color: "var(--md-sys-color-secondary-fixed_lkv)",
+               bg: palettes.light.onSecondaryFixedVariant,
+               color: palettes.light.secondaryFixed,
                position: "full",
             },
          ],
@@ -289,26 +290,26 @@ const MaterialDesign3Palette = () => {
          colors: [
             {
                name: "Tertiary Fixed",
-               bg: "var(--md-sys-color-tertiary-fixed_lkv)",
-               color: "var(--md-sys-color-on-tertiary-fixed_lkv)",
+               bg: palettes.light.tertiaryFixed,
+               color: palettes.light.onTertiaryFixed,
                position: "left",
             },
             {
                name: "Tertiary Fixed Dim",
-               bg: "var(--md-sys-color-tertiary-fixed-dim_lkv)",
-               color: "var(--md-sys-color-on-tertiary-fixed-variant_lkv)",
+               bg: palettes.light.tertiaryFixedDim,
+               color: palettes.light.onTertiaryFixedVariant,
                position: "right",
             },
             {
                name: "On Tertiary Fixed",
-               bg: "var(--md-sys-color-on-tertiary-fixed_lkv)",
-               color: "var(--md-sys-color-tertiary-fixed_lkv)",
+               bg: palettes.light.onTertiaryFixed,
+               color: palettes.light.tertiaryFixed,
                position: "full",
             },
             {
                name: "On Tertiary Fixed Variant",
-               bg: "var(--md-sys-color-on-tertiary-fixed-variant_lkv)",
-               color: "var(--md-sys-color-tertiary-fixed_lkv)",
+               bg: palettes.light.onTertiaryFixedVariant,
+               color: palettes.light.tertiaryFixed,
                position: "full",
             },
          ],
@@ -322,54 +323,54 @@ const MaterialDesign3Palette = () => {
          [
             {
                name: "Surface Dim",
-               bg: "var(--md-sys-color-surface-dim_lkv)",
-               color: "var(--md-sys-color-on-surface_lkv)",
+               bg: palettes.light.surfaceDim,
+               color: palettes.light.onSurface,
             },
             {
                name: "Surface",
-               bg: "var(--md-sys-color-surface_lkv)",
-               color: "var(--md-sys-color-on-surface_lkv)",
+               bg: palettes.light.surface,
+               color: palettes.light.onSurface,
             },
             {
                name: "Surface Bright",
-               bg: "var(--md-sys-color-surface-bright_lkv)",
-               color: "var(--md-sys-color-on-surface_lkv)",
+               bg: palettes.light.surfaceBright,
+               color: palettes.light.onSurface,
             },
          ],
          // Row 2: Surface containers
          [
             {
                name: "Surface Container Lowest",
-               bg: "var(--md-sys-color-surface-container-lowest_lkv)",
-               color: "var(--md-sys-color-on-surface_lkv)",
+               bg: palettes.light.surfaceContainerLowest,
+               color: palettes.light.onSurface,
             },
             {
                name: "Surface Container Low",
-               bg: "var(--md-sys-color-surface-container-low_lkv)",
-               color: "var(--md-sys-color-on-surface_lkv)",
+               bg: palettes.light.surfaceContainerLow,
+               color: palettes.light.onSurface,
             },
             {
                name: "Surface Container",
-               bg: "var(--md-sys-color-surface-container_lkv)",
-               color: "var(--md-sys-color-on-surface_lkv)",
+               bg: palettes.light.surfaceContainer,
+               color: palettes.light.onSurface,
             },
             {
                name: "Surface Container High",
-               bg: "var(--md-sys-color-surface-container-high_lkv)",
-               color: "var(--md-sys-color-on-surface_lkv)",
+               bg: palettes.light.surfaceContainerHigh,
+               color: palettes.light.onSurface,
             },
             {
                name: "Surface Container Highest",
-               bg: "var(--md-sys-color-surface-container-highest_lkv)",
-               color: "var(--md-sys-color-on-surface_lkv)",
+               bg: palettes.light.surfaceContainerHighest,
+               color: palettes.light.onSurface,
             },
          ],
          // Row 3: On surface
          [
             {
                name: "On Surface",
-               bg: "var(--md-sys-color-on-surface_lkv)",
-               color: "var(--md-sys-color-surface_lkv)",
+               bg: palettes.light.onSurface,
+               color: palettes.light.surface,
             },
             {
                name: "On Surface Variant",
@@ -379,7 +380,7 @@ const MaterialDesign3Palette = () => {
             {
                name: "Outline",
                bg: "var(--md-sys-color-outline_lkv)",
-               color: "var(--md-sys-color-surface_lkv)",
+               color: palettes.light.surface,
             },
             {
                name: "Outline Variant",

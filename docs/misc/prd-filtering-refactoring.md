@@ -275,7 +275,7 @@ The UI enhancements will integrate seamlessly with the existing Material-UI desi
 ### 4.1 Existing Technology Stack
 
 **Languages**:
-- Backend: Python 3.11+
+- Backend: Python 3.14+
 - Frontend: JavaScript (ES6+), JSX
 
 **Frameworks**:
