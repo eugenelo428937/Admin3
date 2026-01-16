@@ -11,7 +11,7 @@ from filtering.models import (
     FilterConfigurationGroup,
     FilterUsageAnalytics
 )
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+# Note: ExamSessionSubjectProduct import removed as part of T087 cleanup (unused)
 
 logger = logging.getLogger(__name__)
 

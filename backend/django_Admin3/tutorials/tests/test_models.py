@@ -3,6 +3,10 @@ Test suite for tutorials models.
 
 This module tests the TutorialEvent model to ensure proper field validations,
 relationships, and model behavior.
+
+Updated 2026-01-16: Changed imports from exam_sessions_subjects_products to store/catalog
+as part of T087 legacy app cleanup. Tests now use store.Product instead of
+ExamSessionSubjectProductVariation.
 """
 
 from django.test import TestCase
@@ -11,10 +15,7 @@ from datetime import timedelta, date
 from decimal import Decimal
 
 from tutorials.models import TutorialEvent
-from exam_sessions_subjects_products.models import (
-    ExamSessionSubjectProduct,
-    ExamSessionSubjectProductVariation
-)
+from store.models import Product as StoreProduct
 from catalog.models import ExamSession, ExamSessionSubject
 from subjects.models import Subject
 from catalog.models import Product, ProductProductVariation, ProductVariation
@@ -45,17 +46,11 @@ class TutorialEventTestCase(TestCase):
             subject=self.subject
         )
 
-        # Create product (tutorial location product)
+        # Create product (tutorial location product template)
         self.product = Product.objects.create(
             code='TUT001',
             fullname='Tutorial - London',
             shortname='Tutorial London'
-        )
-
-        # Create ESSP
-        self.essp = ExamSessionSubjectProduct.objects.create(
-            exam_session_subject=self.exam_session_subject,
-            product=self.product
         )
 
         # Create product variation (tutorial type - e.g., Weekend, Weekday)
@@ -73,10 +68,12 @@ class TutorialEventTestCase(TestCase):
             product_variation=self.product_variation
         )
 
-        # Create ESSP Variation
-        self.essp_variation = ExamSessionSubjectProductVariation.objects.create(
-            exam_session_subject_product=self.essp,
-            product_product_variation=self.product_product_variation
+        # Create store.Product (replaces old ESSP + ESSPV chain)
+        # Links exam_session_subject directly to product_product_variation
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product_product_variation=self.product_product_variation,
+            product_code='CM2/TWKDTUT001/JUNE2025'
         )
 
     def test_tutorial_event_creation_with_required_fields(self):
@@ -86,7 +83,7 @@ class TutorialEventTestCase(TestCase):
             venue='London Convention Center',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         self.assertEqual(event.code, 'TUT-CM2-LON-001')
@@ -109,7 +106,7 @@ class TutorialEventTestCase(TestCase):
             remain_space=15,
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         self.assertEqual(event.code, 'TUT-CM2-LON-002')
@@ -125,7 +122,7 @@ class TutorialEventTestCase(TestCase):
             venue='Venue 1',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         # Attempt to create duplicate code should fail
@@ -136,7 +133,7 @@ class TutorialEventTestCase(TestCase):
                 venue='Venue 2',
                 start_date=date.today() + timedelta(days=40),
                 end_date=date.today() + timedelta(days=42),
-                exam_session_subject_product_variation=self.essp_variation
+                store_product=self.store_product
             )
 
     def test_code_max_length_validation(self):
@@ -147,7 +144,7 @@ class TutorialEventTestCase(TestCase):
             venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
         self.assertEqual(len(event.code), 100)
 
@@ -159,7 +156,7 @@ class TutorialEventTestCase(TestCase):
             venue=venue,
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
         self.assertEqual(len(event.venue), 255)
 
@@ -170,7 +167,7 @@ class TutorialEventTestCase(TestCase):
             venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
         self.assertFalse(event.is_soldout)
 
@@ -181,7 +178,7 @@ class TutorialEventTestCase(TestCase):
             venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
         self.assertEqual(event.remain_space, 0)
 
@@ -192,7 +189,7 @@ class TutorialEventTestCase(TestCase):
             venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
         self.assertIsNone(event.finalisation_date)
 
@@ -203,14 +200,14 @@ class TutorialEventTestCase(TestCase):
             venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         # Test forward relationship
-        self.assertEqual(event.exam_session_subject_product_variation.id, self.essp_variation.id)
+        self.assertEqual(event.store_product.id, self.store_product.id)
 
         # Test reverse relationship
-        self.assertIn(event, self.essp_variation.tutorial_events.all())
+        self.assertIn(event, self.store_product.tutorial_events.all())
 
     def test_cascade_delete_essp_variation(self):
         """Test cascading delete - deleting ESSP variation deletes tutorial events."""
@@ -219,12 +216,12 @@ class TutorialEventTestCase(TestCase):
             venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
         event_id = event.id
 
         # Delete ESSP variation
-        self.essp_variation.delete()
+        self.store_product.delete()
 
         # Event should be deleted
         self.assertFalse(TutorialEvent.objects.filter(id=event_id).exists())
@@ -236,7 +233,7 @@ class TutorialEventTestCase(TestCase):
             venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         self.assertEqual(event.subject_code, 'CM2')
@@ -248,7 +245,7 @@ class TutorialEventTestCase(TestCase):
             venue='London Training Center',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         expected = "TUT-STR-001 - London Training Center"
@@ -261,7 +258,7 @@ class TutorialEventTestCase(TestCase):
             venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         self.assertIsInstance(event.start_date, date)
@@ -274,7 +271,7 @@ class TutorialEventTestCase(TestCase):
                 code='TUT-NO-START-001',
                 venue='Test Venue',
                 end_date=date.today() + timedelta(days=32),
-                exam_session_subject_product_variation=self.essp_variation
+                store_product=self.store_product
             )
 
     def test_end_date_required(self):
@@ -284,7 +281,7 @@ class TutorialEventTestCase(TestCase):
                 code='TUT-NO-END-001',
                 venue='Test Venue',
                 start_date=date.today() + timedelta(days=30),
-                exam_session_subject_product_variation=self.essp_variation
+                store_product=self.store_product
             )
 
     def test_ordering_by_start_date_and_code(self):
@@ -295,7 +292,7 @@ class TutorialEventTestCase(TestCase):
             venue='Venue 1',
             start_date=date.today() + timedelta(days=40),
             end_date=date.today() + timedelta(days=42),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         event2 = TutorialEvent.objects.create(
@@ -303,7 +300,7 @@ class TutorialEventTestCase(TestCase):
             venue='Venue 2',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         event3 = TutorialEvent.objects.create(
@@ -311,7 +308,7 @@ class TutorialEventTestCase(TestCase):
             venue='Venue 3',
             start_date=date.today() + timedelta(days=30),  # Same date as event2
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         # Query all - should be ordered by start_date, then code
@@ -348,7 +345,7 @@ class TutorialEventTestCase(TestCase):
             venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         self.assertIsNotNone(event.created_at)
@@ -367,7 +364,7 @@ class TutorialEventTestCase(TestCase):
             venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
         original_updated = event.updated_at
 
@@ -387,7 +384,7 @@ class TutorialEventTestCase(TestCase):
             venue='Venue 1',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         event2 = TutorialEvent.objects.create(
@@ -395,12 +392,12 @@ class TutorialEventTestCase(TestCase):
             venue='Venue 2',
             start_date=date.today() + timedelta(days=35),
             end_date=date.today() + timedelta(days=37),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         # Query by ESSP variation
         events = TutorialEvent.objects.filter(
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         self.assertEqual(events.count(), 2)
@@ -414,7 +411,7 @@ class TutorialEventTestCase(TestCase):
             venue='Venue 1',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         event2 = TutorialEvent.objects.create(
@@ -422,7 +419,7 @@ class TutorialEventTestCase(TestCase):
             venue='Venue 2',
             start_date=date.today() + timedelta(days=60),
             end_date=date.today() + timedelta(days=62),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         # Query events starting within 45 days
@@ -440,7 +437,7 @@ class TutorialEventTestCase(TestCase):
             is_soldout=False,
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         soldout_event = TutorialEvent.objects.create(
@@ -449,7 +446,7 @@ class TutorialEventTestCase(TestCase):
             is_soldout=True,
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         # Query available events

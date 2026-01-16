@@ -2,12 +2,15 @@
 Product views for the catalog API.
 
 Location: catalog/views/product_views.py
-Model: catalog.models.Product, ProductBundle, ExamSessionSubjectBundle
+Model: catalog.models.Product, ProductBundle, store.models.Bundle
 
 Features:
 - ProductViewSet with custom get_queryset for filtering
 - Custom actions: bulk_import_products, get_bundle_contents, get_bundles
 - Permission: AllowAny for reads, IsSuperUser for writes (FR-013)
+
+Updated 2026-01-16: Migrated from exam_sessions_subjects_products.ExamSessionSubjectBundle
+to store.Bundle as part of T087 legacy app cleanup.
 """
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -23,9 +26,10 @@ from catalog.models import (
 from catalog.serializers import (
     ProductSerializer,
     ProductBundleSerializer,
-    ExamSessionSubjectBundleSerializer,
 )
 from catalog.permissions import IsSuperUser
+from store.models import Bundle as StoreBundle
+from store.serializers import BundleSerializer as StoreBundleSerializer
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -245,8 +249,6 @@ class ProductViewSet(viewsets.ModelViewSet):
             - filters_applied: Applied filter parameters
         """
         try:
-            from exam_sessions_subjects_products.models import ExamSessionSubjectBundle
-
             # Get query parameters
             subject_code = request.query_params.get('subject')
             exam_session = request.query_params.get('exam_session')
@@ -277,34 +279,34 @@ class ProductViewSet(viewsets.ModelViewSet):
                     bundle_data['exam_session_code'] = None
                     bundles_data.append(bundle_data)
 
-            # Fetch exam session bundles if requested
+            # Fetch exam session bundles if requested (now using store.Bundle)
             if bundle_type in ['exam_session', 'all']:
-                exam_session_bundles = ExamSessionSubjectBundle.objects.filter(is_active=True)
+                store_bundles = StoreBundle.objects.filter(is_active=True)
 
                 if subject_code:
-                    exam_session_bundles = exam_session_bundles.filter(
+                    store_bundles = store_bundles.filter(
                         exam_session_subject__subject__code=subject_code
                     )
 
                 if exam_session:
-                    exam_session_bundles = exam_session_bundles.filter(
+                    store_bundles = store_bundles.filter(
                         exam_session_subject__exam_session__session_code=exam_session
                     )
 
                 if featured_only:
-                    exam_session_bundles = exam_session_bundles.filter(bundle__is_featured=True)
+                    store_bundles = store_bundles.filter(bundle_template__is_featured=True)
 
-                exam_session_bundles = exam_session_bundles.select_related(
-                    'bundle__subject',
+                store_bundles = store_bundles.select_related(
+                    'bundle_template__subject',
                     'exam_session_subject__exam_session',
                     'exam_session_subject__subject'
                 ).prefetch_related(
-                    'bundle_products__exam_session_subject_product_variation__product_product_variation__product',
-                    'bundle_products__exam_session_subject_product_variation__product_product_variation__product_variation'
-                ).order_by('display_order', 'bundle__bundle_name')
+                    'bundle_products__product__product_product_variation__product',
+                    'bundle_products__product__product_product_variation__product_variation'
+                ).order_by('display_order', 'bundle_template__bundle_name')
 
-                for bundle in exam_session_bundles:
-                    serializer = ExamSessionSubjectBundleSerializer(bundle, context={'request': request})
+                for bundle in store_bundles:
+                    serializer = StoreBundleSerializer(bundle, context={'request': request})
                     bundle_data = serializer.data
                     bundle_data['bundle_type'] = 'exam_session'
                     bundles_data.append(bundle_data)
