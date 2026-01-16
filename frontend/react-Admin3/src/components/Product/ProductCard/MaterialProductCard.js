@@ -540,10 +540,10 @@ const MaterialProductCard = React.memo(
 
 								"& .MuiFab-root": {
 								   backgroundColor:
-									  theme.palette.sky["060"],
+									  theme.palette.productCards.material.button,
 								   "&:hover": {
 									  backgroundColor:
-										 theme.palette.sky["040"],
+										 theme.palette.productCards.material.buttonHover,
 								   },
 								   "& .MuiSpeedDialIcon-root": {
 									  "& .MuiSvgIcon-root": {
@@ -575,11 +575,11 @@ const MaterialProductCard = React.memo(
                                     "& .MuiSpeedDialAction-fab": {
                                        color: "white",
                                        backgroundColor:
-                                          theme.palette.sky["060"],                                       
+                                          theme.palette.productCards.material.button,                                       
                                        boxShadow: "var(--Paper-shadow)",  
                                        "&:hover": {
                                           backgroundColor:
-                                             theme.palette.sky["040"],
+                                             theme.palette.productCards.material.buttonHover,
                                        },
                                     },
                                  }}
@@ -628,10 +628,10 @@ const MaterialProductCard = React.memo(
                                     "& .MuiSpeedDialAction-fab": {
                                        color: "white",
                                        backgroundColor:
-                                          theme.palette.sky["060"],
+                                          theme.palette.productCards.material.button,
                                        "&:hover": {
                                           backgroundColor:
-                                             theme.palette.sky["040"],
+                                             theme.palette.productCards.material.buttonHover,
                                        },
                                     },
                                  }}
@@ -706,11 +706,11 @@ const MaterialProductCard = React.memo(
                                  right: 5,
 
                                  "& .MuiFab-root": {                                    
-                                    backgroundColor: theme.palette.sky["060"],
+                                    backgroundColor: theme.palette.productCards.material.button,
                                     boxShadow: "var(--Paper-shadow)",
                                     "&:hover": {
                                        backgroundColor:
-                                          theme.palette.sky["040"],
+                                          theme.palette.productCards.material.buttonHover,
                                     },
                                     "& .MuiSpeedDialIcon-root": {
                                        "& .MuiSvgIcon-root": {
@@ -743,10 +743,10 @@ const MaterialProductCard = React.memo(
                                     "& .MuiSpeedDialAction-fab": {
                                        color: "white",
                                        backgroundColor:
-                                          theme.palette.sky["060"],
+                                          theme.palette.productCards.material.button,
                                        "&:hover": {
                                           backgroundColor:
-                                             theme.palette.sky["040"],
+                                             theme.palette.productCards.material.buttonHover,
                                        },
                                     },
                                  }}
@@ -803,10 +803,10 @@ const MaterialProductCard = React.memo(
                                     "& .MuiSpeedDialAction-fab": {
                                        color: "white",
                                        backgroundColor:
-                                          theme.palette.sky["060"],
+                                          theme.palette.productCards.material.button,
                                        "&:hover": {
                                           backgroundColor:
-                                             theme.palette.sky["040"],
+                                             theme.palette.productCards.material.buttonHover,
                                        },
                                     },
                                  }}

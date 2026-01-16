@@ -4,7 +4,7 @@
 import { createTheme } from "@mui/material/styles";
 import "../styles/liftkit-css/globals.css";
 
-// Import modules
+// Import modules (legacy - for backward compatibility)
 import {colorTheme, palettesTheme} from './colors';
 import liftKitTheme from './liftKitTheme';
 import { typographyConfig, responsiveTypography } from './typography';
@@ -12,6 +12,14 @@ import componentOverrides from './components';
 import { createGradientStyle, gradientColorSchemes } from './utils';
 import { semanticColors } from './colors/semantic';
 import { semanticSpacing } from './spacing/semantic';
+
+// NEW: Import consolidated token layer
+import { scales } from './tokens/colors';
+
+// NEW: Import semantic layer
+import { semantic } from './semantic/common';
+import productCards from './semantic/productCards';
+import navigation from './semantic/navigation';
 
 // Base theme with breakpoints
 const baseTheme = createTheme({
@@ -77,13 +85,14 @@ const theme = createTheme({
     secondary: { main: palettesTheme.secondary, },
     tertiary: { main: palettesTheme.tertiary, },
     error: { main: palettesTheme.error, },
-    warning: colorTheme.palette.warning, 
+    warning: colorTheme.palette.warning,
     info: colorTheme.palette.info,
     success: colorTheme.palette.success,
     background: { main: palettesTheme.background, },
     surface: { main: palettesTheme.surface, },
     text: colorTheme.palette.text,
-    // BPP Color Scales
+
+    // BPP Color Scales (legacy - for backward compatibility)
     offwhite: colorTheme.palette.offwhite,
     granite: colorTheme.palette.granite,
     purple: colorTheme.palette.purple,
@@ -95,12 +104,29 @@ const theme = createTheme({
     cobalt: colorTheme.palette.cobalt,
     green: colorTheme.palette.green,
     red: colorTheme.palette.red,
-    // Design System Colors
+
+    // Design System Colors (legacy)
     bpp: colorTheme.palette.bpp,
     md3: colorTheme.palette.md3,
     liftkit: colorTheme.palette.liftkit,
-    // Semantic colors for easy access
-    semantic: semanticColors,
+
+    // NEW: Consolidated token layer - raw scales access
+    scales: scales,
+
+    // NEW: Flat semantic tokens for common styling
+    // Usage: sx={{ color: 'semantic.textPrimary', bgcolor: 'semantic.bgPaper' }}
+    semantic: {
+      ...semanticColors, // Keep existing for backward compatibility
+      ...semantic, // Add new flat semantic tokens
+    },
+
+    // NEW: Product card semantic tokens
+    // Usage: sx={{ bgcolor: 'productCards.tutorial.header' }}
+    productCards: productCards,
+
+    // NEW: Navigation semantic tokens
+    // Usage: sx={{ color: 'navigation.text.primary' }}
+    navigation: navigation,
   },
 
   // Component overrides from modules
@@ -126,3 +152,6 @@ export { liftKitTheme, colorTheme };
 export { typographyConfig as typographyTheme };
 export { semanticColors, semanticSpacing };
 export { createGradientStyle, gradientColorSchemes };
+
+// NEW: Export consolidated tokens and semantic layer
+export { scales, semantic, productCards, navigation };

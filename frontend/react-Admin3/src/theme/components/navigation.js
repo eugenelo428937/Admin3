@@ -1,13 +1,13 @@
 // Navigation Component Overrides (AppBar, Tabs, Menu, Button, Typography)
-import colorTheme from '../colorTheme';
 import { semanticColors } from '../colors/semantic';
 import liftKitTheme from '../liftKitTheme';
+import { navigation } from '../semantic/navigation';
 
 export const navigationOverrides = {
   MuiAppBar: {
     styleOverrides: {
       root: {
-        backgroundColor: colorTheme.palette.granite["080"],
+        backgroundColor: navigation.background.active,
       },
     },
   },
@@ -72,9 +72,9 @@ export const navigationOverrides = {
       {
         props: { variant: 'navmenu' },
         style: {
-          color: colorTheme.palette.offwhite['001'],
+          color: navigation.text.secondary,
           '&:hover': {
-            backgroundColor: colorTheme.palette.granite['070'],
+            backgroundColor: navigation.background.hover,
           },
         },
       },

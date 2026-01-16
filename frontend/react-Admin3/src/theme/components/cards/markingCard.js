@@ -1,6 +1,7 @@
 // Marking Product Card Variant Styles
-import colorTheme from '../../colorTheme';
 import liftKitTheme from '../../liftKitTheme';
+import { marking } from '../../semantic/productCards';
+import { semantic } from '../../semantic/common';
 
 /**
  * Marking card variant - Pink theme
@@ -8,30 +9,30 @@ import liftKitTheme from '../../liftKitTheme';
 export const markingCardStyles = {
   "& .floating-badges-container": {
     "& .subject-badge": {
-      backgroundColor: colorTheme.palette.pink["010"],
-      color: colorTheme.palette.granite["100"],
+      backgroundColor: marking.actions,
+      color: semantic.textPrimary,
     },
     "& .session-badge": {
-      backgroundColor: colorTheme.palette.pink["010"],
-      color: colorTheme.palette.granite["100"],
+      backgroundColor: marking.actions,
+      color: semantic.textPrimary,
     },
   },
   "& .product-header": {
-    backgroundColor: colorTheme.palette.pink["020"],
+    backgroundColor: marking.header,
     color: "#ffffff",
     "& .MuiCardHeader-content": {
       "& .product-title": {
-        color: colorTheme.palette.pink["100"],
+        color: marking.title,
       },
       "& .product-subtitle": {
-        color: colorTheme.palette.pink["090"],
+        color: marking.subtitle,
       },
     },
     "& .MuiCardHeader-avatar": {
       "& .product-avatar": {
-        backgroundColor: colorTheme.palette.granite["020"],
+        backgroundColor: semantic.bgElevated,
         "& .product-avatar-icon": {
-          color: colorTheme.palette.pink["090"],
+          color: marking.subtitle,
         },
       },
     },
@@ -43,7 +44,7 @@ export const markingCardStyles = {
     },
     "& .submissions-info-icon": {
       fontSize: "1rem",
-      color: colorTheme.palette.pink["090"],
+      color: marking.subtitle,
     },
     "& .submissions-info-count": {
       marginLeft: liftKitTheme.spacing.lg,
@@ -81,32 +82,32 @@ export const markingCardStyles = {
         textTransform: "none",
         border: "none",
         fontSize: liftKitTheme.typography.body.fontSize,
-        color: colorTheme.palette.pink["090"],
-        backgroundColor: colorTheme.palette.pink["020"],
+        color: marking.subtitle,
+        backgroundColor: marking.header,
         padding: liftKitTheme.spacing.sm,
         "&:hover": {
-          backgroundColor: colorTheme.palette.pink["030"],
-          borderColor: colorTheme.palette.pink["060"],
-          color: colorTheme.palette.pink["100"],
+          backgroundColor: marking.badge,
+          borderColor: marking.button,
+          color: marking.title,
         },
       },
     },
   },
   "& .MuiCardActions-root": {
-    backgroundColor: colorTheme.palette.pink["030"],
+    backgroundColor: marking.badge,
     "& .price-container": {
       "& .discount-options": {
         "& .discount-title": {
-          color: colorTheme.palette.cobalt["100"],
+          color: semantic.textPrimary,
         },
         "& .discount-radio-group": {
           "& .discount-radio-option": {
-            color: colorTheme.palette.granite["100"],
+            color: semantic.textPrimary,
             "& .MuiRadio-root": {
-              color: colorTheme.palette.granite["090"],
+              color: semantic.textSecondary,
             },
             "& .discount-label": {
-              color: colorTheme.palette.granite["100"],
+              color: semantic.textPrimary,
             },
           },
         },
@@ -114,15 +115,15 @@ export const markingCardStyles = {
       "& .price-action-section": {
         "& .price-info-row": {
           "& .price-display": {
-            color: colorTheme.palette.granite["100"],
+            color: semantic.textPrimary,
             lineHeight: 1,
           },
         },
         "& .add-to-cart-button": {
           color: "white",
-          backgroundColor: colorTheme.palette.pink["060"],
+          backgroundColor: marking.button,
           "&:hover": {
-            backgroundColor: colorTheme.palette.pink["080"],
+            backgroundColor: marking.buttonHover,
           },
           "& .MuiSvgIcon-root": {
             color: "white",
