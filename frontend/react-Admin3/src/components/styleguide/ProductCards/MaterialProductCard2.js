@@ -429,11 +429,11 @@ const MaterialProductCard2 = ({ producttype = "material", buttonPage = 0, ...pro
                                  right: 8,
 
                                  "& .MuiFab-root": {                                    
-                                    backgroundColor: theme.palette.bpp.sky["060"],
+                                    backgroundColor: theme.palette.sky["060"],
                                     boxShadow: "var(--Paper-shadow)",
                                     "&:hover": {
                                        backgroundColor:
-                                          theme.palette.bpp.sky["070"],
+                                          theme.palette.sky["070"],
                                     },
                                     "& .MuiSpeedDialIcon-root": {
                                        "& .MuiSvgIcon-root": {
@@ -462,10 +462,10 @@ const MaterialProductCard2 = ({ producttype = "material", buttonPage = 0, ...pro
                                     "& .MuiSpeedDialAction-fab": {
                                        color: "white",
                                        backgroundColor:
-                                          theme.palette.bpp.sky["060"],
+                                          theme.palette.sky["060"],
                                        "&:hover": {
                                           backgroundColor:
-                                             theme.palette.bpp.sky["070"],
+                                             theme.palette.sky["070"],
                                        },
                                     },
                                  }}
@@ -491,10 +491,10 @@ const MaterialProductCard2 = ({ producttype = "material", buttonPage = 0, ...pro
                                     "& .MuiSpeedDialAction-fab": {
                                        color: "white",
                                        backgroundColor:
-                                          theme.palette.bpp.sky["060"],
+                                          theme.palette.sky["060"],
                                        "&:hover": {
                                           backgroundColor:
-                                             theme.palette.bpp.sky["070"],
+                                             theme.palette.sky["070"],
                                        },
                                     },
                                  }}
@@ -537,10 +537,10 @@ const MaterialProductCard2 = ({ producttype = "material", buttonPage = 0, ...pro
 
 								"& .MuiFab-root": {
 								   backgroundColor:
-									  theme.palette.bpp.sky["060"],
+									  theme.palette.sky["060"],
 								   "&:hover": {
 									  backgroundColor:
-										 theme.palette.bpp.sky["070"],
+										 theme.palette.sky["070"],
 								   },
 								   "& .MuiSpeedDialIcon-root": {
 									  "& .MuiSvgIcon-root": {
@@ -568,11 +568,11 @@ const MaterialProductCard2 = ({ producttype = "material", buttonPage = 0, ...pro
                                     "& .MuiSpeedDialAction-fab": {
                                        color: "white",
                                        backgroundColor:
-                                          theme.palette.bpp.sky["060"],                                       
+                                          theme.palette.sky["060"],                                       
                                        boxShadow: "var(--Paper-shadow)",  
                                        "&:hover": {
                                           backgroundColor:
-                                             theme.palette.bpp.sky["070"],
+                                             theme.palette.sky["070"],
                                        },
                                     },
                                  }}
@@ -601,10 +601,10 @@ const MaterialProductCard2 = ({ producttype = "material", buttonPage = 0, ...pro
                                     "& .MuiSpeedDialAction-fab": {
                                        color: "white",
                                        backgroundColor:
-                                          theme.palette.bpp.sky["060"],
+                                          theme.palette.sky["060"],
                                        "&:hover": {
                                           backgroundColor:
-                                             theme.palette.bpp.sky["070"],
+                                             theme.palette.sky["070"],
                                        },
                                     },
                                  }}

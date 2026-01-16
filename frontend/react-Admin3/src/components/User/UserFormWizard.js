@@ -1333,7 +1333,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      <Person
                         sx={{
                            fontSize: "3rem",
-                           color: theme.palette.bpp.granite["030"],
+                           color: theme.palette.granite["030"],
                         }}
                      />
                      <Typography variant="h5">
@@ -1542,7 +1542,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      <Home
                         sx={{
                            fontSize: "3rem",
-                           color: theme.palette.bpp.granite["030"],
+                           color: theme.palette.granite["030"],
                         }}
                      />
                      <Typography variant="h5">Home Address</Typography>
@@ -1676,7 +1676,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      <Business
                         sx={{
                            fontSize: "3rem",
-                           color: theme.palette.bpp.granite["030"],
+                           color: theme.palette.granite["030"],
                         }}
                      />
                      <Typography variant="h5">Work Address</Typography>
@@ -2191,7 +2191,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                            borderRadius: 4,
                            backgroundColor: "rgba(255,255,255,0.2)",
                            "& .MuiLinearProgress-bar": {
-                              backgroundColor: theme.palette.bpp.pink["050"],
+                              backgroundColor: theme.palette.pink["050"],
                               opacity: 0.65,
                            },
                         }}

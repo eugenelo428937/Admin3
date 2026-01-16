@@ -616,7 +616,7 @@ const TutorialProductCard = React.memo(
                      <Chip
                         label={
                            <Typography variant="chip" sx={{
-								color: theme.palette.bpp.granite["100"]
+								color: theme.palette.granite["100"]
 						   }}>
                               {`${tutorialsInCartCount} in cart`}
                            </Typography>
@@ -845,10 +845,10 @@ const TutorialProductCard = React.memo(
                            right: 5,
 
                            "& .MuiFab-root": {
-                              backgroundColor: theme.palette.bpp.purple["070"],
+                              backgroundColor: theme.palette.purple["070"],
                               "&:hover": {
                                  backgroundColor:
-                                    theme.palette.bpp.purple["050"],
+                                    theme.palette.purple["050"],
                               },
                               "& .MuiSpeedDialIcon-root": {
                                  "& .MuiSvgIcon-root": {
@@ -902,11 +902,11 @@ const TutorialProductCard = React.memo(
                                  "& .MuiSpeedDialAction-fab": {
                                     color: "white",
                                     backgroundColor:
-                                       theme.palette.bpp.purple["060"],
+                                       theme.palette.purple["060"],
                                     boxShadow: "var(--Paper-shadow)",
                                     "&:hover": {
                                        backgroundColor:
-                                          theme.palette.bpp.purple["040"],
+                                          theme.palette.purple["040"],
                                     },
                                  },
                               }}

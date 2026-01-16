@@ -10,32 +10,32 @@ export const materialCardStyles = {
   // Floating badges
   "& .floating-badges-container": {
     "& .subject-badge": {
-      backgroundColor: colorTheme.bpp.sky["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.palette.sky["010"],
+      color: colorTheme.palette.granite["100"],
     },
     "& .session-badge": {
-      backgroundColor: colorTheme.bpp.sky["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.palette.sky["010"],
+      color: colorTheme.palette.granite["100"],
     },
   },
 
   // Product Header
   "& .product-header": {
-    backgroundColor: colorTheme.bpp.sky["020"],
+    backgroundColor: colorTheme.palette.sky["020"],
     color: "#ffffff",
     "& .MuiCardHeader-content": {
       "& .product-title": {
-        color: colorTheme.bpp.sky["100"],
+        color: colorTheme.palette.sky["100"],
       },
       "& .product-subtitle": {
-        color: colorTheme.bpp.sky["090"],
+        color: colorTheme.palette.sky["090"],
       },
     },
     "& .MuiCardHeader-avatar": {
       "& .product-avatar": {
-        backgroundColor: colorTheme.bpp.granite["020"],
+        backgroundColor: colorTheme.palette.granite["020"],
         "& .product-avatar-icon": {
-          color: colorTheme.bpp.sky["090"],
+          color: colorTheme.palette.sky["090"],
         },
       },
     },
@@ -53,7 +53,7 @@ export const materialCardStyles = {
       "& .variations-title": {
         marginBottom: liftKitTheme.spacing.md,
         textAlign: "left",
-        color: colorTheme.bpp.sky["100"],
+        color: colorTheme.palette.sky["100"],
         fontWeight: 600,
       },
       "& .variations-group": {
@@ -70,7 +70,7 @@ export const materialCardStyles = {
             borderRadius: liftKitTheme.spacing.xs,
             padding: liftKitTheme.spacing.xs,
             width: "100%",
-            color: colorTheme.bpp.sky["100"],
+            color: colorTheme.palette.sky["100"],
             transition: "all 0.2s ease-in-out",
             display: "flex",
             alignItems: "center",
@@ -79,7 +79,7 @@ export const materialCardStyles = {
               padding: liftKitTheme.spacing.sm,
               width: liftKitTheme.spacing.md,
               height: liftKitTheme.spacing.md,
-              color: colorTheme.bpp.sky["090"],
+              color: colorTheme.palette.sky["090"],
               alignItems: "center",
               justifyContent: "center",
             },
@@ -108,22 +108,22 @@ export const materialCardStyles = {
 
   // Actions styling
   "& .MuiCardActions-root": {
-    backgroundColor: colorTheme.bpp.sky["030"],
+    backgroundColor: colorTheme.palette.sky["030"],
     "& .price-container": {
       "& .discount-options": {
         "& .discount-title": {
-          color: colorTheme.bpp.sky["100"],
+          color: colorTheme.palette.sky["100"],
         },
         "& .discount-radio-group": {
           "& .discount-radio-option": {
-            color: colorTheme.bpp.sky["100"],
+            color: colorTheme.palette.sky["100"],
             paddingRight: 0,
             marginRight: 0,
             "& .MuiRadio-root": {
-              color: colorTheme.bpp.sky["090"],
+              color: colorTheme.palette.sky["090"],
             },
             "& .discount-label": {
-              color: colorTheme.bpp.sky["100"],
+              color: colorTheme.palette.sky["100"],
             },
           },
         },
@@ -131,15 +131,15 @@ export const materialCardStyles = {
       "& .price-action-section": {
         "& .price-info-row": {
           "& .price-display": {
-            color: colorTheme.bpp.sky["100"],
+            color: colorTheme.palette.sky["100"],
             lineHeight: 1,
           },
         },
         "& .add-to-cart-button": {
           color: "white",
-          backgroundColor: colorTheme.bpp.sky["060"],
+          backgroundColor: colorTheme.palette.sky["060"],
           "&:hover": {
-            backgroundColor: colorTheme.bpp.sky["070"],
+            backgroundColor: colorTheme.palette.sky["070"],
           },
           "& .MuiSvgIcon-root": {
             color: "white",

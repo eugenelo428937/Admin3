@@ -356,10 +356,10 @@ const MarkingProductCard = ({ producttype = "marking" }) => {
                            bottom: 18,
                            right: 8,
                            "& .MuiFab-root": {
-                              backgroundColor: theme.palette.bpp.pink["060"],
+                              backgroundColor: theme.palette.pink["060"],
                               boxShadow: "var(--Paper-shadow)",
                               "&:hover": {
-                                 backgroundColor: theme.palette.bpp.pink["080"],
+                                 backgroundColor: theme.palette.pink["080"],
                               },
                               "& .MuiSpeedDialIcon-root": {
                                  "& .MuiSvgIcon-root": {
@@ -381,10 +381,10 @@ const MarkingProductCard = ({ producttype = "marking" }) => {
                               },
                               "& .MuiSpeedDialAction-fab": {
                                  color: "white",
-                                 backgroundColor: theme.palette.bpp.pink["060"],
+                                 backgroundColor: theme.palette.pink["060"],
                                  "&:hover": {
                                     backgroundColor:
-                                       theme.palette.bpp.pink["080"],
+                                       theme.palette.pink["080"],
                                  },
                               },
                            }}
@@ -406,10 +406,10 @@ const MarkingProductCard = ({ producttype = "marking" }) => {
                               },
                               "& .MuiSpeedDialAction-fab": {
                                  color: "white",
-                                 backgroundColor: theme.palette.bpp.pink["060"],
+                                 backgroundColor: theme.palette.pink["060"],
                                  "&:hover": {
                                     backgroundColor:
-                                       theme.palette.bpp.pink["080"],
+                                       theme.palette.pink["080"],
                                  },
                               },
                            }}

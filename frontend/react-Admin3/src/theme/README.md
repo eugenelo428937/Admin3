@@ -132,7 +132,7 @@ Cards automatically apply styles based on variant and producttype props:
 
 **Before (inline sx):**
 ```javascript
-<Typography sx={{ color: theme.palette.bpp.purple['100'], fontWeight: 600 }}>
+<Typography sx={{ color: theme.palette.purple['100'], fontWeight: 600 }}>
 ```
 
 **After (semantic + variant):**

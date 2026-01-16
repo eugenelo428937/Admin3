@@ -9,7 +9,7 @@
 1. Load feature spec from Input path ✅
    → Loaded: 78 functional requirements for composite rule hierarchy
 2. Fill Technical Context ✅
-   → Language: Python 3.11 (Django 5.1)
+   → Language: Python 3.14 (Django 5.1)
    → Dependencies: Rules Engine, Phase 2 custom functions
    → Storage: PostgreSQL (ActedRule, ActedRulesFields models)
 3. Fill Constitution Check section ✅
@@ -36,7 +36,7 @@ Implement composite rule hierarchy for dynamic VAT calculations using Rules Engi
 
 ## Technical Context
 
-**Language/Version**: Python 3.11+ (Django 5.1)
+**Language/Version**: Python 3.14+ (Django 5.1)
 **Primary Dependencies**: Django ORM, Rules Engine (ActedRule model), Phase 2 custom functions, JSONLogic for condition evaluation
 **Storage**: PostgreSQL with JSONB fields for rule definitions (ActedRule table), audit trail in RuleExecution table
 **Testing**: Django TestCase, 80% minimum code coverage (target 100%), integration tests with full rule execution flow

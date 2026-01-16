@@ -6,7 +6,7 @@
 ## Execution Flow (main)
 ```
 1. Load plan.md from feature directory ✅
-   → Tech stack: Python 3.11, Django 5.1, React 18
+   → Tech stack: Python 3.14, Django 5.1, React 18
    → Libraries: Django REST Framework, PostgreSQL, Phase 3 Rules Engine, Material-UI
    → Structure: Web app (backend/frontend)
 2. Load design documents ✅:

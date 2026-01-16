@@ -40,7 +40,7 @@
 
 ## Technical Context
 
-**Language/Version**: JavaScript ES6+ (React 18), Python 3.11 (Django 5.1)
+**Language/Version**: JavaScript ES6+ (React 18), Python 3.14 (Django 5.1)
 **Primary Dependencies**:
 - Frontend: React 18, Material-UI v5, Context API
 - Backend: Django 5.1, Django REST Framework, PostgreSQL

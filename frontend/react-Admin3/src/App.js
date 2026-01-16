@@ -38,6 +38,7 @@ import AccountActivation from "./components/User/AccountActivation";
 import ResendActivation from "./components/User/ResendActivation";
 import EmailVerification from "./components/User/EmailVerification";
 import StyleGuide from "./components/StyleGuide";
+import MaterialThemeVisualizer from "./components/styleguide/MaterialThemeVisualizer";
 import Registration from './pages/Registration';
 import Footer from "./components/Footer";
 import "./App.scss";
@@ -155,6 +156,10 @@ function App() {
 														<Route
 															path="/styleguide"
 															element={<StyleGuide />}
+														/>
+														<Route
+															path="/theme-visualizer"
+															element={<MaterialThemeVisualizer />}
 														/>
 														<Route
 															path="/home"

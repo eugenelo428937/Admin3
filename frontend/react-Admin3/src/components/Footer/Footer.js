@@ -82,7 +82,7 @@ const SectionSubHeader = ({ children }) => (
   <Typography
      variant="captionSemiBold"
      sx={{
-        color: colorTheme.bpp.granite["030"],
+        color: colorTheme.palette.granite["030"],
         mb: 0.36,
         display: "block",        
      }}
@@ -96,10 +96,10 @@ const SectionHeader = ({ children }) => (
    <Typography
       variant="captionSemiBold"
       sx={{
-         color: colorTheme.bpp.granite["020"],
+         color: colorTheme.palette.granite["020"],
          mb: 0.6,
          display: "block",
-         borderBottom: `1px solid ${colorTheme.bpp.granite["070"]}`,
+         borderBottom: `1px solid ${colorTheme.palette.granite["070"]}`,
       }}
    >
       {children}
@@ -111,10 +111,10 @@ const MainSectionHeader = ({ children }) => (
    <Typography
       variant="captionBold"
       sx={{
-         color: colorTheme.bpp.granite["010"],
+         color: colorTheme.palette.granite["010"],
          mb: 1.2,
          display: "block",
-         borderBottom: `1px solid ${colorTheme.bpp.granite["050"]}`,
+         borderBottom: `1px solid ${colorTheme.palette.granite["050"]}`,
       }}
    >
       {children}
@@ -123,12 +123,12 @@ const MainSectionHeader = ({ children }) => (
 // Reusable link component with caption2 typography
 const FooterLink = ({ to, onClick, children, external = false }) => {
    const linkStyles = {
-      color: colorTheme.bpp.granite["030"],
+      color: colorTheme.palette.granite["030"],
       textDecoration: "none",
       display: "block",
       py: 0.25,
       "&:hover": {
-         color: colorTheme.bpp.granite["000"],
+         color: colorTheme.palette.granite["000"],
          textDecoration: "underline",
       },
    };
@@ -382,9 +382,9 @@ const SocialMediaSection = () => (
                rel="noopener noreferrer"
                aria-label={social.label}
                sx={{
-                  color: colorTheme.bpp.granite["030"],
+                  color: colorTheme.palette.granite["030"],
                   "&:hover": {
-                     color: colorTheme.bpp.granite["000"],
+                     color: colorTheme.palette.granite["000"],
                      backgroundColor: "rgba(255, 255, 255, 0.1)",
                   },
                }}
@@ -401,7 +401,7 @@ const CopyrightSection = () => (
    <Box>
       <Typography
          variant="caption2"
-         sx={{ color: colorTheme.bpp.granite["030"] }}
+         sx={{ color: colorTheme.palette.granite["030"] }}
       >
          Copyright &copy; 2026 BPP Actuarial Education - Part of the BPP
          Professional Education Group -{" "}
@@ -411,10 +411,10 @@ const CopyrightSection = () => (
          component="a"
          href="mailto:acted@bpp.com"
          sx={{
-            color: colorTheme.bpp.granite["030"],
+            color: colorTheme.palette.granite["030"],
             textDecoration: "none",
             "&:hover": {
-               color: colorTheme.bpp.granite["000"],
+               color: colorTheme.palette.granite["000"],
                textDecoration: "underline",
             },
          }}
@@ -432,7 +432,7 @@ const BottomLinksSection = () => (
       divider={
          <Typography
             variant="caption2"
-            sx={{ color: colorTheme.bpp.granite["040"] }}
+            sx={{ color: colorTheme.palette.granite["040"] }}
          >
             |
          </Typography>
@@ -526,7 +526,7 @@ const Footer = () => {
       <Box
          component="footer"
          sx={{
-            backgroundColor: theme.palette.bpp.granite["080"],
+            backgroundColor: theme.palette.granite["080"],
             pt: theme.liftkit.spacing.lg,
             px: theme.liftkit.spacing.xl,
             zIndex: 99,

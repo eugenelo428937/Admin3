@@ -9,7 +9,7 @@ This guide provides step-by-step instructions for implementing the catalog app c
 
 ## Prerequisites
 
-- Python 3.11+
+- Python 3.14+
 - Django 5.1+
 - PostgreSQL 12+ with schema support
 - Access to `backend/django_Admin3/` directory

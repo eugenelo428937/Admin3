@@ -8,22 +8,22 @@ import liftKitTheme from '../../liftKitTheme';
 export const bundleCardStyles = {
   "& .floating-badges-container": {
     "& .subject-badge": {
-      backgroundColor: colorTheme.bpp.green["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.palette.green["010"],
+      color: colorTheme.palette.granite["100"],
     },
     "& .session-badge": {
-      backgroundColor: colorTheme.bpp.green["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.palette.green["010"],
+      color: colorTheme.palette.granite["100"],
     },
   },
   "& .product-header": {
-    backgroundColor: colorTheme.bpp.green["030"],
+    backgroundColor: colorTheme.palette.green["030"],
     color: "#ffffff",
     "& .MuiCardHeader-content": {
       "& .product-title": {
-        color: colorTheme.bpp.green["100"],
+        color: colorTheme.palette.green["100"],
         "& .title-info-button": {
-          color: colorTheme.bpp.green["080"],
+          color: colorTheme.palette.green["080"],
           minWidth: "1.2rem",
           "& .MuiSvgIcon-root": {
             fontSize: "1.2rem",
@@ -32,10 +32,10 @@ export const bundleCardStyles = {
       },
       "& .product-subtitle-container": {
         "& .product-subtitle": {
-          color: colorTheme.bpp.green["090"],
+          color: colorTheme.palette.green["090"],
         },
         "& .subtitle-info-button": {
-          color: colorTheme.bpp.green["050"],
+          color: colorTheme.palette.green["050"],
           "&:hover": {
             backgroundColor: "rgba(255, 255, 255, 0.1)",
           },
@@ -47,16 +47,16 @@ export const bundleCardStyles = {
     },
     "& .MuiCardHeader-avatar": {
       "& .product-avatar": {
-        backgroundColor: colorTheme.bpp.granite["020"],
+        backgroundColor: colorTheme.palette.granite["020"],
         "& .product-avatar-icon": {
-          color: colorTheme.bpp.green["090"],
+          color: colorTheme.palette.green["090"],
         },
       },
     },
   },
   "& .MuiCardContent-root": {
     "& .bundle-details-title": {
-      color: colorTheme.bpp.green["100"],
+      color: colorTheme.palette.green["100"],
       textAlign: "left",
       marginBottom: liftKitTheme.spacing.xs3,
     },
@@ -70,34 +70,34 @@ export const bundleCardStyles = {
           minWidth: "1.2rem",
           "& .MuiSvgIcon-root": {
             fontSize: "1.2rem",
-            color: colorTheme.bpp.green["080"],
+            color: colorTheme.palette.green["080"],
           },
           marginRight: liftKitTheme.spacing.sm,
         },
         "& .MuiListItemText-root": {
           marginBottom: 0,
           "& .MuiListItemText-primary": {
-            color: colorTheme.bpp.green["100"],
+            color: colorTheme.palette.green["100"],
           },
         },
       },
     },
   },
   "& .MuiCardActions-root": {
-    backgroundColor: colorTheme.bpp.green["040"],
+    backgroundColor: colorTheme.palette.green["040"],
     "& .price-container": {
       "& .discount-options": {
         "& .discount-title": {
-          color: colorTheme.bpp.green["100"],
+          color: colorTheme.palette.green["100"],
         },
         "& .discount-radio-group": {
           "& .discount-radio-option": {
-            color: colorTheme.bpp.green["100"],
+            color: colorTheme.palette.green["100"],
             "& .MuiRadio-root": {
-              color: colorTheme.bpp.green["090"],
+              color: colorTheme.palette.green["090"],
             },
             "& .discount-label": {
-              color: colorTheme.bpp.green["100"],
+              color: colorTheme.palette.green["100"],
             },
           },
         },
@@ -105,18 +105,18 @@ export const bundleCardStyles = {
       "& .price-action-section": {
         "& .price-info-row": {
           "& .price-display": {
-            color: colorTheme.bpp.green["100"],
+            color: colorTheme.palette.green["100"],
             lineHeight: 1,
           },
           "& .info-button": {
-            color: colorTheme.bpp.green["080"],
+            color: colorTheme.palette.green["080"],
           },
         },
         "& .add-to-cart-button": {
           color: "white",
-          backgroundColor: colorTheme.bpp.green["060"],
+          backgroundColor: colorTheme.palette.green["060"],
           "&:hover": {
-            backgroundColor: colorTheme.bpp.green["080"],
+            backgroundColor: colorTheme.palette.green["080"],
           },
           "& .MuiSvgIcon-root": {
             color: "white",

@@ -151,13 +151,13 @@ const ForgotPasswordForm = () => {
                         title={
                            <Typography
                               variant="h4"
-                              color={theme.palette.bpp.granite["090"]}
+                              color={theme.palette.granite["090"]}
                            >
                               Check Your Email
                            </Typography>
                         }
                         sx={{
-                           bgcolor: theme.palette.bpp.granite["010"],
+                           bgcolor: theme.palette.granite["010"],
                            textAlign: "center",
                         }}
                      />
@@ -222,7 +222,7 @@ const ForgotPasswordForm = () => {
                      title={
                         <Typography
                            variant="h4"
-                           color={theme.palette.bpp.granite["090"]}
+                           color={theme.palette.granite["090"]}
                            sx={{ mb: theme.liftkit.spacing.md }}
                         >
                            Reset Your Password
@@ -231,7 +231,7 @@ const ForgotPasswordForm = () => {
                      subheader={
                         <Typography
                            variant="body2"
-                           color={theme.palette.bpp.granite["080"]}
+                           color={theme.palette.granite["080"]}
                         >
                            Enter your email address and we'll send you a link to
                            reset your password if there is an account associated
@@ -240,7 +240,7 @@ const ForgotPasswordForm = () => {
                      }
                      sx={{
                         textAlign: "center",
-                        bgcolor: theme.palette.bpp.granite["010"],
+                        bgcolor: theme.palette.granite["010"],
                         padding: theme.liftkit.spacing.lg,
                      }}
                   />

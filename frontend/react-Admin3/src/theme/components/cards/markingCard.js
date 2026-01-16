@@ -8,30 +8,30 @@ import liftKitTheme from '../../liftKitTheme';
 export const markingCardStyles = {
   "& .floating-badges-container": {
     "& .subject-badge": {
-      backgroundColor: colorTheme.bpp.pink["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.palette.pink["010"],
+      color: colorTheme.palette.granite["100"],
     },
     "& .session-badge": {
-      backgroundColor: colorTheme.bpp.pink["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.palette.pink["010"],
+      color: colorTheme.palette.granite["100"],
     },
   },
   "& .product-header": {
-    backgroundColor: colorTheme.bpp.pink["020"],
+    backgroundColor: colorTheme.palette.pink["020"],
     color: "#ffffff",
     "& .MuiCardHeader-content": {
       "& .product-title": {
-        color: colorTheme.bpp.pink["100"],
+        color: colorTheme.palette.pink["100"],
       },
       "& .product-subtitle": {
-        color: colorTheme.bpp.pink["090"],
+        color: colorTheme.palette.pink["090"],
       },
     },
     "& .MuiCardHeader-avatar": {
       "& .product-avatar": {
-        backgroundColor: colorTheme.bpp.granite["020"],
+        backgroundColor: colorTheme.palette.granite["020"],
         "& .product-avatar-icon": {
-          color: colorTheme.bpp.pink["090"],
+          color: colorTheme.palette.pink["090"],
         },
       },
     },
@@ -43,7 +43,7 @@ export const markingCardStyles = {
     },
     "& .submissions-info-icon": {
       fontSize: "1rem",
-      color: colorTheme.bpp.pink["090"],
+      color: colorTheme.palette.pink["090"],
     },
     "& .submissions-info-count": {
       marginLeft: liftKitTheme.spacing.lg,
@@ -81,32 +81,32 @@ export const markingCardStyles = {
         textTransform: "none",
         border: "none",
         fontSize: liftKitTheme.typography.body.fontSize,
-        color: colorTheme.bpp.pink["090"],
-        backgroundColor: colorTheme.bpp.pink["020"],
+        color: colorTheme.palette.pink["090"],
+        backgroundColor: colorTheme.palette.pink["020"],
         padding: liftKitTheme.spacing.sm,
         "&:hover": {
-          backgroundColor: colorTheme.bpp.pink["030"],
-          borderColor: colorTheme.bpp.pink["060"],
-          color: colorTheme.bpp.pink["100"],
+          backgroundColor: colorTheme.palette.pink["030"],
+          borderColor: colorTheme.palette.pink["060"],
+          color: colorTheme.palette.pink["100"],
         },
       },
     },
   },
   "& .MuiCardActions-root": {
-    backgroundColor: colorTheme.bpp.pink["030"],
+    backgroundColor: colorTheme.palette.pink["030"],
     "& .price-container": {
       "& .discount-options": {
         "& .discount-title": {
-          color: colorTheme.bpp.cobalt["100"],
+          color: colorTheme.palette.cobalt["100"],
         },
         "& .discount-radio-group": {
           "& .discount-radio-option": {
-            color: colorTheme.bpp.granite["100"],
+            color: colorTheme.palette.granite["100"],
             "& .MuiRadio-root": {
-              color: colorTheme.bpp.granite["090"],
+              color: colorTheme.palette.granite["090"],
             },
             "& .discount-label": {
-              color: colorTheme.bpp.granite["100"],
+              color: colorTheme.palette.granite["100"],
             },
           },
         },
@@ -114,15 +114,15 @@ export const markingCardStyles = {
       "& .price-action-section": {
         "& .price-info-row": {
           "& .price-display": {
-            color: colorTheme.bpp.granite["100"],
+            color: colorTheme.palette.granite["100"],
             lineHeight: 1,
           },
         },
         "& .add-to-cart-button": {
           color: "white",
-          backgroundColor: colorTheme.bpp.pink["060"],
+          backgroundColor: colorTheme.palette.pink["060"],
           "&:hover": {
-            backgroundColor: colorTheme.bpp.pink["080"],
+            backgroundColor: colorTheme.palette.pink["080"],
           },
           "& .MuiSvgIcon-root": {
             color: "white",

@@ -779,10 +779,10 @@ const MarkingProductCard = React.memo(
 											bottom: 18,
 											right: 8,
 											"& .MuiFab-root": {
-												backgroundColor: theme.palette.bpp.pink["040"],
+												backgroundColor: theme.palette.pink["040"],
 												boxShadow: "var(--Paper-shadow)",
 												"&:hover": {
-													backgroundColor: theme.palette.bpp.pink["060"],
+													backgroundColor: theme.palette.pink["060"],
 												},
 												"&.Mui-disabled": {
 													backgroundColor: "grey.400",
@@ -805,9 +805,9 @@ const MarkingProductCard = React.memo(
 												},
 												"& .MuiSpeedDialAction-fab": {
 													color: "white",
-													backgroundColor: theme.palette.bpp.pink["040"],
+													backgroundColor: theme.palette.pink["040"],
 													"&:hover": {
-														backgroundColor: theme.palette.bpp.pink["060"],
+														backgroundColor: theme.palette.pink["060"],
 													},
 												},
 											}}
@@ -837,9 +837,9 @@ const MarkingProductCard = React.memo(
 												},
 												"& .MuiSpeedDialAction-fab": {
 													color: "white",
-													backgroundColor: theme.palette.bpp.pink["040"],
+													backgroundColor: theme.palette.pink["040"],
 													"&:hover": {
-														backgroundColor: theme.palette.bpp.pink["060"],
+														backgroundColor: theme.palette.pink["060"],
 													},
 												},
 											}}

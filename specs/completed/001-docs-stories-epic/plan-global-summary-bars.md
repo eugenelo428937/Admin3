@@ -41,7 +41,7 @@
 
 **Language/Version**:
 - **Frontend**: JavaScript (ES6+), React 18.2
-- **Backend**: Python 3.11, Django 5.1
+- **Backend**: Python 3.14, Django 5.1
 
 **Primary Dependencies**:
 - **Frontend**: Material-UI v5 (@mui/material), React Router v6, Axios

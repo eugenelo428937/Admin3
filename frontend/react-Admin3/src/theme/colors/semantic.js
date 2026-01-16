@@ -13,140 +13,140 @@ import colorTheme from '../colorTheme';
 export const semanticColors = {
   // Card header backgrounds by product type
   cardHeader: {
-    tutorial: colorTheme.bpp.purple['020'],
-    material: colorTheme.bpp.sky['020'],
-    bundle: colorTheme.bpp.green['030'],
-    onlineClassroom: colorTheme.bpp.cobalt['020'],
-    marking: colorTheme.bpp.pink['020'],
-    markingVoucher: colorTheme.bpp.orange['020'],
+    tutorial: colorTheme.palette.purple['020'],
+    material: colorTheme.palette.sky['020'],
+    bundle: colorTheme.palette.green['030'],
+    onlineClassroom: colorTheme.palette.cobalt['020'],
+    marking: colorTheme.palette.pink['020'],
+    markingVoucher: colorTheme.palette.orange['020'],
   },
 
   // Card action area backgrounds
   cardActions: {
-    tutorial: colorTheme.bpp.purple['030'],
-    material: colorTheme.bpp.sky['030'],
-    bundle: colorTheme.bpp.green['040'],
-    onlineClassroom: colorTheme.bpp.cobalt['030'],
-    marking: colorTheme.bpp.pink['030'],
-    markingVoucher: colorTheme.bpp.orange['030'],
+    tutorial: colorTheme.palette.purple['030'],
+    material: colorTheme.palette.sky['030'],
+    bundle: colorTheme.palette.green['040'],
+    onlineClassroom: colorTheme.palette.cobalt['030'],
+    marking: colorTheme.palette.pink['030'],
+    markingVoucher: colorTheme.palette.orange['030'],
   },
 
   // Badge backgrounds
   badge: {
-    tutorial: colorTheme.bpp.purple['010'],
-    material: colorTheme.bpp.sky['010'],
-    bundle: colorTheme.bpp.green['010'],
-    onlineClassroom: colorTheme.bpp.cobalt['010'],
-    marking: colorTheme.bpp.pink['010'],
+    tutorial: colorTheme.palette.purple['010'],
+    material: colorTheme.palette.sky['010'],
+    bundle: colorTheme.palette.green['010'],
+    onlineClassroom: colorTheme.palette.cobalt['010'],
+    marking: colorTheme.palette.pink['010'],
     default: 'rgba(255, 255, 255, 0.5)',
   },
 
   // Text colors by product type (dark variants for headers)
   cardText: {
     tutorial: {
-      title: colorTheme.bpp.sky['100'],
-      subtitle: colorTheme.bpp.sky['090'],
-      price: colorTheme.bpp.purple['100'],
+      title: colorTheme.palette.sky['100'],
+      subtitle: colorTheme.palette.sky['090'],
+      price: colorTheme.palette.purple['100'],
     },
     material: {
-      title: colorTheme.bpp.sky['100'],
-      subtitle: colorTheme.bpp.sky['090'],
-      price: colorTheme.bpp.sky['100'],
+      title: colorTheme.palette.sky['100'],
+      subtitle: colorTheme.palette.sky['090'],
+      price: colorTheme.palette.sky['100'],
     },
     bundle: {
-      title: colorTheme.bpp.green['100'],
-      subtitle: colorTheme.bpp.green['090'],
-      price: colorTheme.bpp.green['100'],
+      title: colorTheme.palette.green['100'],
+      subtitle: colorTheme.palette.green['090'],
+      price: colorTheme.palette.green['100'],
     },
     onlineClassroom: {
-      title: colorTheme.bpp.cobalt['100'],
-      subtitle: colorTheme.bpp.cobalt['090'],
-      price: colorTheme.bpp.cobalt['100'],
+      title: colorTheme.palette.cobalt['100'],
+      subtitle: colorTheme.palette.cobalt['090'],
+      price: colorTheme.palette.cobalt['100'],
     },
     marking: {
-      title: colorTheme.bpp.pink['100'],
-      subtitle: colorTheme.bpp.pink['090'],
-      price: colorTheme.bpp.granite['100'],
+      title: colorTheme.palette.pink['100'],
+      subtitle: colorTheme.palette.pink['090'],
+      price: colorTheme.palette.granite['100'],
     },
   },
 
   // Button colors by product type
   addToCartButton: {
     tutorial: {
-      background: colorTheme.bpp.purple['050'],
-      hover: colorTheme.bpp.purple['070'],
+      background: colorTheme.palette.purple['050'],
+      hover: colorTheme.palette.purple['070'],
     },
     material: {
-      background: colorTheme.bpp.sky['060'],
-      hover: colorTheme.bpp.sky['070'],
+      background: colorTheme.palette.sky['060'],
+      hover: colorTheme.palette.sky['070'],
     },
     bundle: {
-      background: colorTheme.bpp.green['060'],
-      hover: colorTheme.bpp.green['080'],
+      background: colorTheme.palette.green['060'],
+      hover: colorTheme.palette.green['080'],
     },
     onlineClassroom: {
-      background: colorTheme.bpp.cobalt['055'],
-      hover: colorTheme.bpp.cobalt['070'],
+      background: colorTheme.palette.cobalt['055'],
+      hover: colorTheme.palette.cobalt['070'],
     },
     marking: {
-      background: colorTheme.bpp.pink['060'],
-      hover: colorTheme.bpp.pink['080'],
+      background: colorTheme.palette.pink['060'],
+      hover: colorTheme.palette.pink['080'],
     },
   },
 
   // Avatar backgrounds
   avatar: {
-    default: colorTheme.bpp.granite['020'],
+    default: colorTheme.palette.granite['020'],
   },
 
   // Navigation semantic tokens (20260113-Styling-Clean-up)
   // Centralized colors for navigation components - enables theme switching by changing token values
   navigation: {
     text: {
-      primary: colorTheme.offwhite['000'],      // Main nav text (#fdfdfd)
-      secondary: colorTheme.offwhite['001'],    // Secondary nav text (#f0edf1)
-      muted: colorTheme.bpp.granite['040'],     // Disabled/placeholder text (#9e9e9e)
+      primary: colorTheme.palette.offwhite['000'],      // Main nav text (#fdfdfd)
+      secondary: colorTheme.palette.offwhite['001'],    // Secondary nav text (#f0edf1)
+      muted: colorTheme.palette.granite['040'],     // Disabled/placeholder text (#9e9e9e)
     },
     border: {
-      subtle: colorTheme.bpp.granite['020'],    // "View All" underlines (#d9d9d9)
-      divider: colorTheme.bpp.granite['030'],   // Menu dividers (#bababa)
+      subtle: colorTheme.palette.granite['020'],    // "View All" underlines (#d9d9d9)
+      divider: colorTheme.palette.granite['030'],   // Menu dividers (#bababa)
     },
     background: {
-      hover: colorTheme.bpp.granite['070'],     // Menu item hover (#525252)
-      active: colorTheme.bpp.granite['080'],    // Active/selected state (#3b3b3a)
+      hover: colorTheme.palette.granite['070'],     // Menu item hover (#525252)
+      active: colorTheme.palette.granite['080'],    // Active/selected state (#3b3b3a)
     },
     button: {
-      color: colorTheme.offwhite['009'],        // Nav button text (#fdfdfd)
+      color: colorTheme.palette.offwhite['009'],        // Nav button text (#fdfdfd)
 
-      hoverColor: colorTheme.bpp.purple[110],   // Button hover accent (#8953fd)
+      hoverColor: colorTheme.palette.purple[110],   // Button hover accent (#8953fd)
     },
     // Mobile navigation tokens (Phase 7 - US4)
     mobile: {
       icon: {
-        color: colorTheme.offwhite['000'],      // Mobile nav icon color (#fdfdfd)
+        color: colorTheme.palette.offwhite['000'],      // Mobile nav icon color (#fdfdfd)
       },
       border: {
         color: 'rgba(255, 255, 255, 0.12)',     // Mobile header border (semi-transparent white)
       },
       title: {
-        color: colorTheme.offwhite['000'],      // Mobile panel title color (#fdfdfd)
+        color: colorTheme.palette.offwhite['000'],      // Mobile panel title color (#fdfdfd)
       },
-      background: colorTheme.bpp.granite['080'], // Mobile drawer background (#3b3b3a)
+      background: colorTheme.palette.granite['080'], // Mobile drawer background (#3b3b3a)
     },
     hamburger: {
       hover: {
-        background: colorTheme.bpp.granite['070'], // Hamburger hover background (#525252)
+        background: colorTheme.palette.granite['070'], // Hamburger hover background (#525252)
       },
     },
   },
 
   // Icon colors by product type
   icon: {
-    tutorial: colorTheme.bpp.purple['090'],
-    material: colorTheme.bpp.sky['090'],
-    bundle: colorTheme.bpp.green['090'],
-    onlineClassroom: colorTheme.bpp.cobalt['090'],
-    marking: colorTheme.bpp.pink['090'],
+    tutorial: colorTheme.palette.purple['090'],
+    material: colorTheme.palette.sky['090'],
+    bundle: colorTheme.palette.green['090'],
+    onlineClassroom: colorTheme.palette.cobalt['090'],
+    marking: colorTheme.palette.pink['090'],
   },
 };
 

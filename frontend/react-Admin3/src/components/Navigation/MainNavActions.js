@@ -87,11 +87,11 @@ const MainNavActions = ({
                startIcon={
                   <Badge
                      badgeContent={cartCount}
-                     color={theme.palette.bpp.sky["030"]}
+                     color={theme.palette.sky["030"]}
                      max={99}
                      sx={{
                         "& .MuiBadge-badge": {
-                           backgroundColor: theme.palette.bpp.sky["050"],
+                           backgroundColor: theme.palette.sky["050"],
                            color: "white",
                            pt:"2px"
                         },
@@ -135,7 +135,7 @@ const MainNavActions = ({
                            sx={{
                               width: theme.typography.h4.fontSize,
                               height: theme.typography.h4.fontSize,
-                              bgcolor: theme.palette.bpp.sky["060"],
+                              bgcolor: theme.palette.sky["060"],
                            }}
                         >
                            {user?.first_name ? (
@@ -226,7 +226,7 @@ const MainNavActions = ({
                      },                     
                      borderRadius: { xs: theme.liftkit.spacing.xl2, lg: 0 },
 					 "&:hover": {
-                              backgroundColor: theme.palette.bpp.granite["070"],
+                              backgroundColor: theme.palette.granite["070"],
 							  boxShadow: "var(--Paper-shadow)",
                            },
                      p: {

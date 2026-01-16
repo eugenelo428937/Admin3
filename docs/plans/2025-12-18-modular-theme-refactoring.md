@@ -184,99 +184,99 @@ import colorTheme from '../colorTheme';
 export const semanticColors = {
   // Card header backgrounds by product type
   cardHeader: {
-    tutorial: colorTheme.bpp.purple['020'],
-    material: colorTheme.bpp.sky['020'],
-    bundle: colorTheme.bpp.green['030'],
-    onlineClassroom: colorTheme.bpp.cobalt['020'],
-    marking: colorTheme.bpp.pink['020'],
-    markingVoucher: colorTheme.bpp.orange['020'],
+    tutorial: colorTheme.purple['020'],
+    material: colorTheme.sky['020'],
+    bundle: colorTheme.green['030'],
+    onlineClassroom: colorTheme.cobalt['020'],
+    marking: colorTheme.pink['020'],
+    markingVoucher: colorTheme.orange['020'],
   },
 
   // Card action area backgrounds
   cardActions: {
-    tutorial: colorTheme.bpp.purple['030'],
-    material: colorTheme.bpp.sky['030'],
-    bundle: colorTheme.bpp.green['040'],
-    onlineClassroom: colorTheme.bpp.cobalt['030'],
-    marking: colorTheme.bpp.pink['030'],
-    markingVoucher: colorTheme.bpp.orange['030'],
+    tutorial: colorTheme.purple['030'],
+    material: colorTheme.sky['030'],
+    bundle: colorTheme.green['040'],
+    onlineClassroom: colorTheme.cobalt['030'],
+    marking: colorTheme.pink['030'],
+    markingVoucher: colorTheme.orange['030'],
   },
 
   // Badge backgrounds
   badge: {
-    tutorial: colorTheme.bpp.purple['010'],
-    material: colorTheme.bpp.sky['010'],
-    bundle: colorTheme.bpp.green['010'],
-    onlineClassroom: colorTheme.bpp.cobalt['010'],
-    marking: colorTheme.bpp.pink['010'],
+    tutorial: colorTheme.purple['010'],
+    material: colorTheme.sky['010'],
+    bundle: colorTheme.green['010'],
+    onlineClassroom: colorTheme.cobalt['010'],
+    marking: colorTheme.pink['010'],
     default: 'rgba(255, 255, 255, 0.5)',
   },
 
   // Text colors by product type (dark variants for headers)
   cardText: {
     tutorial: {
-      title: colorTheme.bpp.sky['100'],
-      subtitle: colorTheme.bpp.sky['090'],
-      price: colorTheme.bpp.purple['100'],
+      title: colorTheme.sky['100'],
+      subtitle: colorTheme.sky['090'],
+      price: colorTheme.purple['100'],
     },
     material: {
-      title: colorTheme.bpp.sky['100'],
-      subtitle: colorTheme.bpp.sky['090'],
-      price: colorTheme.bpp.sky['100'],
+      title: colorTheme.sky['100'],
+      subtitle: colorTheme.sky['090'],
+      price: colorTheme.sky['100'],
     },
     bundle: {
-      title: colorTheme.bpp.green['100'],
-      subtitle: colorTheme.bpp.green['090'],
-      price: colorTheme.bpp.green['100'],
+      title: colorTheme.green['100'],
+      subtitle: colorTheme.green['090'],
+      price: colorTheme.green['100'],
     },
     onlineClassroom: {
-      title: colorTheme.bpp.cobalt['100'],
-      subtitle: colorTheme.bpp.cobalt['090'],
-      price: colorTheme.bpp.cobalt['100'],
+      title: colorTheme.cobalt['100'],
+      subtitle: colorTheme.cobalt['090'],
+      price: colorTheme.cobalt['100'],
     },
     marking: {
-      title: colorTheme.bpp.pink['100'],
-      subtitle: colorTheme.bpp.pink['090'],
-      price: colorTheme.bpp.granite['100'],
+      title: colorTheme.pink['100'],
+      subtitle: colorTheme.pink['090'],
+      price: colorTheme.granite['100'],
     },
   },
 
   // Button colors by product type
   addToCartButton: {
     tutorial: {
-      background: colorTheme.bpp.purple['050'],
-      hover: colorTheme.bpp.purple['070'],
+      background: colorTheme.purple['050'],
+      hover: colorTheme.purple['070'],
     },
     material: {
-      background: colorTheme.bpp.sky['060'],
-      hover: colorTheme.bpp.sky['070'],
+      background: colorTheme.sky['060'],
+      hover: colorTheme.sky['070'],
     },
     bundle: {
-      background: colorTheme.bpp.green['060'],
-      hover: colorTheme.bpp.green['080'],
+      background: colorTheme.green['060'],
+      hover: colorTheme.green['080'],
     },
     onlineClassroom: {
-      background: colorTheme.bpp.cobalt['055'],
-      hover: colorTheme.bpp.cobalt['070'],
+      background: colorTheme.cobalt['055'],
+      hover: colorTheme.cobalt['070'],
     },
     marking: {
-      background: colorTheme.bpp.pink['060'],
-      hover: colorTheme.bpp.pink['080'],
+      background: colorTheme.pink['060'],
+      hover: colorTheme.pink['080'],
     },
   },
 
   // Avatar backgrounds
   avatar: {
-    default: colorTheme.bpp.granite['020'],
+    default: colorTheme.granite['020'],
   },
 
   // Icon colors by product type
   icon: {
-    tutorial: colorTheme.bpp.purple['090'],
-    material: colorTheme.bpp.sky['090'],
-    bundle: colorTheme.bpp.green['090'],
-    onlineClassroom: colorTheme.bpp.cobalt['090'],
-    marking: colorTheme.bpp.pink['090'],
+    tutorial: colorTheme.purple['090'],
+    material: colorTheme.sky['090'],
+    bundle: colorTheme.green['090'],
+    onlineClassroom: colorTheme.cobalt['090'],
+    marking: colorTheme.pink['090'],
   },
 };
 
@@ -920,7 +920,7 @@ export const navigationOverrides = {
   MuiAppBar: {
     styleOverrides: {
       root: {
-        backgroundColor: colorTheme.bpp.granite["080"],
+        backgroundColor: colorTheme.granite["080"],
       },
     },
   },
@@ -1013,7 +1013,7 @@ export const miscOverrides = {
   MuiDivider: {
     styleOverrides: {
       root: {
-        borderColor: colorTheme.bpp.granite["050"],
+        borderColor: colorTheme.granite["050"],
         opacity: 0.5,
       },
     },
@@ -1115,7 +1115,7 @@ export const baseProductCardStyles = {
       boxShadow: "0 1px 12px rgba(0,0,0,0.25)",
       border: "1px solid rgba(255, 255, 255, 0.3)",
       backdropFilter: "blur(20px)",
-      color: colorTheme.bpp.granite["100"],
+      color: colorTheme.granite["100"],
     },
     "& .session-badge": {
       padding: liftKitTheme.spacing.sm,
@@ -1129,7 +1129,7 @@ export const baseProductCardStyles = {
       boxShadow: "0 1px 12px rgba(0,0,0,0.25)",
       border: "1px solid rgba(255, 255, 255, 0.3)",
       backdropFilter: "blur(20px)",
-      color: colorTheme.bpp.granite["100"],
+      color: colorTheme.granite["100"],
     },
   },
 
@@ -1376,18 +1376,18 @@ export const tutorialCardStyles = {
       },
     },
     "& .subject-badge": {
-      backgroundColor: colorTheme.bpp.purple["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.purple["010"],
+      color: colorTheme.granite["100"],
     },
     "& .session-badge": {
-      backgroundColor: colorTheme.bpp.purple["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.purple["010"],
+      color: colorTheme.granite["100"],
     },
   },
 
   // Product Header
   "& .product-header": {
-    backgroundColor: colorTheme.bpp.purple["020"],
+    backgroundColor: colorTheme.purple["020"],
     color: "#ffffff",
     height: "7.43rem",
     padding: "1rem",
@@ -1403,10 +1403,10 @@ export const tutorialCardStyles = {
       "& .product-title": {
         width: "90%",
         textAlign: "left",
-        color: colorTheme.bpp.sky["100"],
+        color: colorTheme.sky["100"],
       },
       "& .product-subtitle": {
-        color: colorTheme.bpp.sky["090"],
+        color: colorTheme.sky["090"],
       },
     },
     "& .MuiCardHeader-avatar": {
@@ -1414,11 +1414,11 @@ export const tutorialCardStyles = {
       marginLeft: "auto",
       marginRight: "0",
       "& .product-avatar": {
-        backgroundColor: colorTheme.bpp.granite["020"],
+        backgroundColor: colorTheme.granite["020"],
         boxShadow: "var(--Paper-shadow)",
         "& .product-avatar-icon": {
           fontSize: "1.5rem",
-          color: colorTheme.bpp.purple["090"],
+          color: colorTheme.purple["090"],
         },
       },
     },
@@ -1457,16 +1457,16 @@ export const tutorialCardStyles = {
         },
         "& .info-icon": {
           fontSize: "16px",
-          color: colorTheme.bpp.purple["090"],
+          color: colorTheme.purple["090"],
           marginRight: liftKitTheme.spacing.xs2,
         },
         "& .info-text": {
-          color: colorTheme.bpp.purple["100"],
+          color: colorTheme.purple["100"],
           fontWeight: "600",
         },
       },
       "& .info-sub-text": {
-        color: colorTheme.bpp.purple["090"],
+        color: colorTheme.purple["090"],
         marginLeft: liftKitTheme.spacing.md,
         fontWeight: "500",
       },
@@ -1475,20 +1475,20 @@ export const tutorialCardStyles = {
 
   // Actions styling
   "& .MuiCardActions-root": {
-    backgroundColor: colorTheme.bpp.purple["030"],
+    backgroundColor: colorTheme.purple["030"],
     "& .price-container": {
       "& .discount-options": {
         "& .discount-title": {
-          color: colorTheme.bpp.purple["100"],
+          color: colorTheme.purple["100"],
         },
         "& .discount-radio-group": {
           "& .discount-radio-option": {
-            color: colorTheme.bpp.purple["100"],
+            color: colorTheme.purple["100"],
             "& .MuiRadio-root": {
-              color: colorTheme.bpp.purple["090"],
+              color: colorTheme.purple["090"],
             },
             "& .discount-label": {
-              color: colorTheme.bpp.purple["100"],
+              color: colorTheme.purple["100"],
             },
           },
         },
@@ -1496,14 +1496,14 @@ export const tutorialCardStyles = {
       "& .price-action-section": {
         "& .price-info-row": {
           "& .price-display": {
-            color: colorTheme.bpp.purple["100"],
+            color: colorTheme.purple["100"],
           },
         },
         "& .add-to-cart-button": {
           color: "white",
-          backgroundColor: colorTheme.bpp.purple["050"],
+          backgroundColor: colorTheme.purple["050"],
           "&:hover": {
-            backgroundColor: colorTheme.bpp.purple["070"],
+            backgroundColor: colorTheme.purple["070"],
           },
         },
       },
@@ -1544,32 +1544,32 @@ export const materialCardStyles = {
   // Floating badges
   "& .floating-badges-container": {
     "& .subject-badge": {
-      backgroundColor: colorTheme.bpp.sky["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.sky["010"],
+      color: colorTheme.granite["100"],
     },
     "& .session-badge": {
-      backgroundColor: colorTheme.bpp.sky["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.sky["010"],
+      color: colorTheme.granite["100"],
     },
   },
 
   // Product Header
   "& .product-header": {
-    backgroundColor: colorTheme.bpp.sky["020"],
+    backgroundColor: colorTheme.sky["020"],
     color: "#ffffff",
     "& .MuiCardHeader-content": {
       "& .product-title": {
-        color: colorTheme.bpp.sky["100"],
+        color: colorTheme.sky["100"],
       },
       "& .product-subtitle": {
-        color: colorTheme.bpp.sky["090"],
+        color: colorTheme.sky["090"],
       },
     },
     "& .MuiCardHeader-avatar": {
       "& .product-avatar": {
-        backgroundColor: colorTheme.bpp.granite["020"],
+        backgroundColor: colorTheme.granite["020"],
         "& .product-avatar-icon": {
-          color: colorTheme.bpp.sky["090"],
+          color: colorTheme.sky["090"],
         },
       },
     },
@@ -1587,7 +1587,7 @@ export const materialCardStyles = {
       "& .variations-title": {
         marginBottom: liftKitTheme.spacing.md,
         textAlign: "left",
-        color: colorTheme.bpp.sky["100"],
+        color: colorTheme.sky["100"],
         fontWeight: 600,
       },
       "& .variations-group": {
@@ -1604,7 +1604,7 @@ export const materialCardStyles = {
             borderRadius: liftKitTheme.spacing.xs,
             padding: liftKitTheme.spacing.xs,
             width: "100%",
-            color: colorTheme.bpp.sky["100"],
+            color: colorTheme.sky["100"],
             transition: "all 0.2s ease-in-out",
             display: "flex",
             alignItems: "center",
@@ -1613,7 +1613,7 @@ export const materialCardStyles = {
               padding: liftKitTheme.spacing.sm,
               width: liftKitTheme.spacing.md,
               height: liftKitTheme.spacing.md,
-              color: colorTheme.bpp.sky["090"],
+              color: colorTheme.sky["090"],
               alignItems: "center",
               justifyContent: "center",
             },
@@ -1642,22 +1642,22 @@ export const materialCardStyles = {
 
   // Actions styling
   "& .MuiCardActions-root": {
-    backgroundColor: colorTheme.bpp.sky["030"],
+    backgroundColor: colorTheme.sky["030"],
     "& .price-container": {
       "& .discount-options": {
         "& .discount-title": {
-          color: colorTheme.bpp.sky["100"],
+          color: colorTheme.sky["100"],
         },
         "& .discount-radio-group": {
           "& .discount-radio-option": {
-            color: colorTheme.bpp.sky["100"],
+            color: colorTheme.sky["100"],
             paddingRight: 0,
             marginRight: 0,
             "& .MuiRadio-root": {
-              color: colorTheme.bpp.sky["090"],
+              color: colorTheme.sky["090"],
             },
             "& .discount-label": {
-              color: colorTheme.bpp.sky["100"],
+              color: colorTheme.sky["100"],
             },
           },
         },
@@ -1665,15 +1665,15 @@ export const materialCardStyles = {
       "& .price-action-section": {
         "& .price-info-row": {
           "& .price-display": {
-            color: colorTheme.bpp.sky["100"],
+            color: colorTheme.sky["100"],
             lineHeight: 1,
           },
         },
         "& .add-to-cart-button": {
           color: "white",
-          backgroundColor: colorTheme.bpp.sky["060"],
+          backgroundColor: colorTheme.sky["060"],
           "&:hover": {
-            backgroundColor: colorTheme.bpp.sky["070"],
+            backgroundColor: colorTheme.sky["070"],
           },
           "& .MuiSvgIcon-root": {
             color: "white",
@@ -1718,22 +1718,22 @@ import liftKitTheme from '../../liftKitTheme';
 export const bundleCardStyles = {
   "& .floating-badges-container": {
     "& .subject-badge": {
-      backgroundColor: colorTheme.bpp.green["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.green["010"],
+      color: colorTheme.granite["100"],
     },
     "& .session-badge": {
-      backgroundColor: colorTheme.bpp.green["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.green["010"],
+      color: colorTheme.granite["100"],
     },
   },
   "& .product-header": {
-    backgroundColor: colorTheme.bpp.green["030"],
+    backgroundColor: colorTheme.green["030"],
     color: "#ffffff",
     "& .MuiCardHeader-content": {
       "& .product-title": {
-        color: colorTheme.bpp.green["100"],
+        color: colorTheme.green["100"],
         "& .title-info-button": {
-          color: colorTheme.bpp.green["080"],
+          color: colorTheme.green["080"],
           minWidth: "1.2rem",
           "& .MuiSvgIcon-root": {
             fontSize: "1.2rem",
@@ -1742,10 +1742,10 @@ export const bundleCardStyles = {
       },
       "& .product-subtitle-container": {
         "& .product-subtitle": {
-          color: colorTheme.bpp.green["090"],
+          color: colorTheme.green["090"],
         },
         "& .subtitle-info-button": {
-          color: colorTheme.bpp.green["050"],
+          color: colorTheme.green["050"],
           "&:hover": {
             backgroundColor: "rgba(255, 255, 255, 0.1)",
           },
@@ -1757,16 +1757,16 @@ export const bundleCardStyles = {
     },
     "& .MuiCardHeader-avatar": {
       "& .product-avatar": {
-        backgroundColor: colorTheme.bpp.granite["020"],
+        backgroundColor: colorTheme.granite["020"],
         "& .product-avatar-icon": {
-          color: colorTheme.bpp.green["090"],
+          color: colorTheme.green["090"],
         },
       },
     },
   },
   "& .MuiCardContent-root": {
     "& .bundle-details-title": {
-      color: colorTheme.bpp.green["100"],
+      color: colorTheme.green["100"],
       textAlign: "left",
       marginBottom: liftKitTheme.spacing.xs3,
     },
@@ -1780,34 +1780,34 @@ export const bundleCardStyles = {
           minWidth: "1.2rem",
           "& .MuiSvgIcon-root": {
             fontSize: "1.2rem",
-            color: colorTheme.bpp.green["080"],
+            color: colorTheme.green["080"],
           },
           marginRight: liftKitTheme.spacing.sm,
         },
         "& .MuiListItemText-root": {
           marginBottom: 0,
           "& .MuiListItemText-primary": {
-            color: colorTheme.bpp.green["100"],
+            color: colorTheme.green["100"],
           },
         },
       },
     },
   },
   "& .MuiCardActions-root": {
-    backgroundColor: colorTheme.bpp.green["040"],
+    backgroundColor: colorTheme.green["040"],
     "& .price-container": {
       "& .discount-options": {
         "& .discount-title": {
-          color: colorTheme.bpp.green["100"],
+          color: colorTheme.green["100"],
         },
         "& .discount-radio-group": {
           "& .discount-radio-option": {
-            color: colorTheme.bpp.green["100"],
+            color: colorTheme.green["100"],
             "& .MuiRadio-root": {
-              color: colorTheme.bpp.green["090"],
+              color: colorTheme.green["090"],
             },
             "& .discount-label": {
-              color: colorTheme.bpp.green["100"],
+              color: colorTheme.green["100"],
             },
           },
         },
@@ -1815,18 +1815,18 @@ export const bundleCardStyles = {
       "& .price-action-section": {
         "& .price-info-row": {
           "& .price-display": {
-            color: colorTheme.bpp.green["100"],
+            color: colorTheme.green["100"],
             lineHeight: 1,
           },
           "& .info-button": {
-            color: colorTheme.bpp.green["080"],
+            color: colorTheme.green["080"],
           },
         },
         "& .add-to-cart-button": {
           color: "white",
-          backgroundColor: colorTheme.bpp.green["060"],
+          backgroundColor: colorTheme.green["060"],
           "&:hover": {
-            backgroundColor: colorTheme.bpp.green["080"],
+            backgroundColor: colorTheme.green["080"],
           },
           "& .MuiSvgIcon-root": {
             color: "white",
@@ -1854,16 +1854,16 @@ import liftKitTheme from '../../liftKitTheme';
 export const onlineClassroomCardStyles = {
   "& .floating-badges-container": {
     "& .subject-badge": {
-      backgroundColor: colorTheme.bpp.cobalt["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.cobalt["010"],
+      color: colorTheme.granite["100"],
     },
     "& .session-badge": {
-      backgroundColor: colorTheme.bpp.cobalt["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.cobalt["010"],
+      color: colorTheme.granite["100"],
     },
   },
   "& .product-header": {
-    backgroundColor: colorTheme.bpp.cobalt["020"],
+    backgroundColor: colorTheme.cobalt["020"],
     color: "#ffffff",
     height: "7.43rem",
     padding: "1rem",
@@ -1879,10 +1879,10 @@ export const onlineClassroomCardStyles = {
       "& .product-title": {
         width: "90%",
         textAlign: "left",
-        color: colorTheme.bpp.cobalt["100"],
+        color: colorTheme.cobalt["100"],
       },
       "& .product-subtitle": {
-        color: colorTheme.bpp.cobalt["090"],
+        color: colorTheme.cobalt["090"],
       },
     },
     "& .MuiCardHeader-avatar": {
@@ -1890,11 +1890,11 @@ export const onlineClassroomCardStyles = {
       marginLeft: "auto",
       marginRight: "0",
       "& .product-avatar": {
-        backgroundColor: colorTheme.bpp.granite["020"],
+        backgroundColor: colorTheme.granite["020"],
         boxShadow: "var(--Paper-shadow)",
         "& .product-avatar-icon": {
           fontSize: "1.5rem",
-          color: colorTheme.bpp.cobalt["090"],
+          color: colorTheme.cobalt["090"],
         },
       },
     },
@@ -1910,7 +1910,7 @@ export const onlineClassroomCardStyles = {
       "& .variations-title": {
         marginBottom: liftKitTheme.spacing.md,
         textAlign: "left",
-        color: colorTheme.bpp.cobalt["100"],
+        color: colorTheme.cobalt["100"],
         fontWeight: 600,
       },
       "& .variations-group": {
@@ -1927,7 +1927,7 @@ export const onlineClassroomCardStyles = {
             borderRadius: liftKitTheme.spacing.xs,
             padding: liftKitTheme.spacing.xs,
             width: "100%",
-            color: colorTheme.bpp.cobalt["100"],
+            color: colorTheme.cobalt["100"],
             transition: "all 0.2s ease-in-out",
             display: "flex",
             alignItems: "center",
@@ -1936,7 +1936,7 @@ export const onlineClassroomCardStyles = {
               padding: liftKitTheme.spacing.sm,
               width: liftKitTheme.spacing.md,
               height: liftKitTheme.spacing.md,
-              color: colorTheme.bpp.cobalt["090"],
+              color: colorTheme.cobalt["090"],
               alignItems: "center",
               justifyContent: "center",
             },
@@ -1963,20 +1963,20 @@ export const onlineClassroomCardStyles = {
     },
   },
   "& .MuiCardActions-root": {
-    backgroundColor: colorTheme.bpp.cobalt["030"],
+    backgroundColor: colorTheme.cobalt["030"],
     "& .price-container": {
       "& .discount-options": {
         "& .discount-title": {
-          color: colorTheme.bpp.cobalt["100"],
+          color: colorTheme.cobalt["100"],
         },
         "& .discount-radio-group": {
           "& .discount-radio-option": {
-            color: colorTheme.bpp.cobalt["100"],
+            color: colorTheme.cobalt["100"],
             "& .MuiRadio-root": {
-              color: colorTheme.bpp.cobalt["090"],
+              color: colorTheme.cobalt["090"],
             },
             "& .discount-label": {
-              color: colorTheme.bpp.cobalt["100"],
+              color: colorTheme.cobalt["100"],
             },
           },
         },
@@ -1984,14 +1984,14 @@ export const onlineClassroomCardStyles = {
       "& .price-action-section": {
         "& .price-info-row": {
           "& .price-display": {
-            color: colorTheme.bpp.cobalt["100"],
+            color: colorTheme.cobalt["100"],
           },
         },
         "& .add-to-cart-button": {
           color: "white",
-          backgroundColor: colorTheme.bpp.cobalt["055"],
+          backgroundColor: colorTheme.cobalt["055"],
           "&:hover": {
-            backgroundColor: colorTheme.bpp.cobalt["070"],
+            backgroundColor: colorTheme.cobalt["070"],
           },
           "& .MuiSvgIcon-root": {
             color: "white",
@@ -2019,30 +2019,30 @@ import liftKitTheme from '../../liftKitTheme';
 export const markingCardStyles = {
   "& .floating-badges-container": {
     "& .subject-badge": {
-      backgroundColor: colorTheme.bpp.pink["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.pink["010"],
+      color: colorTheme.granite["100"],
     },
     "& .session-badge": {
-      backgroundColor: colorTheme.bpp.pink["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.pink["010"],
+      color: colorTheme.granite["100"],
     },
   },
   "& .product-header": {
-    backgroundColor: colorTheme.bpp.pink["020"],
+    backgroundColor: colorTheme.pink["020"],
     color: "#ffffff",
     "& .MuiCardHeader-content": {
       "& .product-title": {
-        color: colorTheme.bpp.pink["100"],
+        color: colorTheme.pink["100"],
       },
       "& .product-subtitle": {
-        color: colorTheme.bpp.pink["090"],
+        color: colorTheme.pink["090"],
       },
     },
     "& .MuiCardHeader-avatar": {
       "& .product-avatar": {
-        backgroundColor: colorTheme.bpp.granite["020"],
+        backgroundColor: colorTheme.granite["020"],
         "& .product-avatar-icon": {
-          color: colorTheme.bpp.pink["090"],
+          color: colorTheme.pink["090"],
         },
       },
     },
@@ -2054,7 +2054,7 @@ export const markingCardStyles = {
     },
     "& .submissions-info-icon": {
       fontSize: "1rem",
-      color: colorTheme.bpp.pink["090"],
+      color: colorTheme.pink["090"],
     },
     "& .submissions-info-count": {
       marginLeft: liftKitTheme.spacing.lg,
@@ -2092,32 +2092,32 @@ export const markingCardStyles = {
         textTransform: "none",
         border: "none",
         fontSize: liftKitTheme.typography.body.fontSize,
-        color: colorTheme.bpp.pink["090"],
-        backgroundColor: colorTheme.bpp.pink["020"],
+        color: colorTheme.pink["090"],
+        backgroundColor: colorTheme.pink["020"],
         padding: liftKitTheme.spacing.sm,
         "&:hover": {
-          backgroundColor: colorTheme.bpp.pink["030"],
-          borderColor: colorTheme.bpp.pink["060"],
-          color: colorTheme.bpp.pink["100"],
+          backgroundColor: colorTheme.pink["030"],
+          borderColor: colorTheme.pink["060"],
+          color: colorTheme.pink["100"],
         },
       },
     },
   },
   "& .MuiCardActions-root": {
-    backgroundColor: colorTheme.bpp.pink["030"],
+    backgroundColor: colorTheme.pink["030"],
     "& .price-container": {
       "& .discount-options": {
         "& .discount-title": {
-          color: colorTheme.bpp.cobalt["100"],
+          color: colorTheme.cobalt["100"],
         },
         "& .discount-radio-group": {
           "& .discount-radio-option": {
-            color: colorTheme.bpp.granite["100"],
+            color: colorTheme.granite["100"],
             "& .MuiRadio-root": {
-              color: colorTheme.bpp.granite["090"],
+              color: colorTheme.granite["090"],
             },
             "& .discount-label": {
-              color: colorTheme.bpp.granite["100"],
+              color: colorTheme.granite["100"],
             },
           },
         },
@@ -2125,15 +2125,15 @@ export const markingCardStyles = {
       "& .price-action-section": {
         "& .price-info-row": {
           "& .price-display": {
-            color: colorTheme.bpp.granite["100"],
+            color: colorTheme.granite["100"],
             lineHeight: 1,
           },
         },
         "& .add-to-cart-button": {
           color: "white",
-          backgroundColor: colorTheme.bpp.pink["060"],
+          backgroundColor: colorTheme.pink["060"],
           "&:hover": {
-            backgroundColor: colorTheme.bpp.pink["080"],
+            backgroundColor: colorTheme.pink["080"],
           },
           "& .MuiSvgIcon-root": {
             color: "white",
@@ -2160,29 +2160,29 @@ import liftKitTheme from '../../liftKitTheme';
  */
 export const markingVoucherCardStyles = {
   "& .product-header": {
-    backgroundColor: colorTheme.bpp.orange["020"],
+    backgroundColor: colorTheme.orange["020"],
     color: "#ffffff",
     "& .MuiCardHeader-content": {
       "& .product-title": {
-        color: colorTheme.bpp.orange["100"],
+        color: colorTheme.orange["100"],
       },
       "& .product-subtitle": {
-        color: colorTheme.bpp.orange["090"],
+        color: colorTheme.orange["090"],
       },
     },
     "& .MuiCardHeader-avatar": {
       "& .product-avatar": {
-        backgroundColor: colorTheme.bpp.granite["020"],
+        backgroundColor: colorTheme.granite["020"],
         "& .product-avatar-icon": {
-          color: colorTheme.bpp.orange["090"],
+          color: colorTheme.orange["090"],
         },
       },
     },
   },
   "& .floating-badges-container": {
     "& .expiry-badge": {
-      backgroundColor: colorTheme.bpp.orange["060"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.orange["060"],
+      color: colorTheme.granite["100"],
       fontSize: liftKitTheme.typography.bodyBold.fontSize,
       paddingLeft: liftKitTheme.spacing.sm,
       paddingRight: liftKitTheme.spacing.sm,
@@ -2236,7 +2236,7 @@ export const markingVoucherCardStyles = {
   },
   "& .MuiCardActions-root": {
     height: "10.2rem !important",
-    backgroundColor: colorTheme.bpp.orange["030"],
+    backgroundColor: colorTheme.orange["030"],
     boxShadow: "var(--shadow-lg)",
     paddingTop: liftKitTheme.spacing.md,
     paddingLeft: liftKitTheme.spacing.md,
@@ -2259,7 +2259,7 @@ export const markingVoucherCardStyles = {
           alignSelf: "flex-end",
           justifyContent: "flex-end",
           "& .price-display": {
-            color: colorTheme.bpp.orange["100"],
+            color: colorTheme.orange["100"],
           },
           "& .info-button": {
             minWidth: "auto",
@@ -2289,7 +2289,7 @@ export const markingVoucherCardStyles = {
           },
         },
         "& .add-to-cart-button": {
-          color: colorTheme.bpp.orange["100"],
+          color: colorTheme.orange["100"],
           alignSelf: "flex-end",
           borderRadius: "50%",
           minWidth: liftKitTheme.spacing.xl15,
@@ -2301,7 +2301,7 @@ export const markingVoucherCardStyles = {
           marginRight: liftKitTheme.spacing.md,
           marginTop: liftKitTheme.spacing.md,
           boxShadow: "var(--Paper-shadow)",
-          backgroundColor: colorTheme.bpp.orange["020"],
+          backgroundColor: colorTheme.orange["020"],
           transition: "all 0.15s ease-in-out",
           "&:hover": {
             boxShadow: "var(--Paper-shadow)",
@@ -2955,7 +2955,7 @@ Cards automatically apply styles based on variant and producttype props:
 
 **Before (inline sx):**
 ```javascript
-<Typography sx={{ color: theme.palette.bpp.purple['100'], fontWeight: 600 }}>
+<Typography sx={{ color: theme.palette.purple['100'], fontWeight: 600 }}>
 ```
 
 **After (semantic + variant):**

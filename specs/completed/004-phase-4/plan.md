@@ -51,7 +51,7 @@ Phase 4 integrates the Phase 3 composite VAT rules engine with the shopping cart
 - Implement error handling with retry functionality in frontend
 
 ## Technical Context
-**Language/Version**: Python 3.11, Django 5.1, React 18
+**Language/Version**: Python 3.14, Django 5.1, React 18
 **Primary Dependencies**: Django REST Framework, PostgreSQL, Phase 3 Rules Engine, Material-UI
 **Storage**: PostgreSQL (existing `acted_carts`, `acted_cart_items`, `vat_audit` tables)
 **Testing**: pytest (backend), Jest + React Testing Library (frontend), TDD methodology (RED-GREEN-REFACTOR)

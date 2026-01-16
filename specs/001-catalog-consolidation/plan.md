@@ -9,7 +9,7 @@ Consolidate Subject, ExamSession, Product, ProductVariation, ProductBundle model
 
 ## Technical Context
 
-**Language/Version**: Python 3.11, Django 5.1
+**Language/Version**: Python 3.14, Django 5.1
 **Primary Dependencies**: Django REST Framework, PostgreSQL psycopg2-binary
 **Storage**: PostgreSQL with new `acted` schema
 **Testing**: Django TestCase/APITestCase, pytest patterns

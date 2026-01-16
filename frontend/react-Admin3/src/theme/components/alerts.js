@@ -13,48 +13,48 @@ export const alertOverrides = {
         },
       },
       standardSuccess: {
-        backgroundColor: colorTheme.success.background,
-        color: colorTheme.success.main,
+        backgroundColor: colorTheme.palette.success.background,
+        color: colorTheme.palette.success.main,
         marginBottom: liftKitTheme.spacing.xs3,
         "& .MuiAlertTitle-root": {
-          color: colorTheme.success.dark,
+          color: colorTheme.palette.success.dark,
           marginBottom: liftKitTheme.spacing.xs3,
         },
         "& .MuiTypography-root": {
-          color: colorTheme.success.dark,
+          color: colorTheme.palette.success.dark,
         },
       },
       standardError: {
-        backgroundColor: colorTheme.error.background,
-        color: colorTheme.error.dark,
+        backgroundColor: colorTheme.palette.error.background,
+        color: colorTheme.palette.error.dark,
         "& .MuiAlertTitle-root": {
-          color: colorTheme.error.dark,
+          color: colorTheme.palette.error.dark,
           marginBottom: liftKitTheme.spacing.xs3,
         },
         "& .MuiTypography-root": {
-          color: colorTheme.error.dark,
+          color: colorTheme.palette.error.dark,
         },
       },
       standardWarning: {
-        backgroundColor: colorTheme.warning.background,
-        color: colorTheme.warning.dark,
+        backgroundColor: colorTheme.palette.warning.background,
+        color: colorTheme.palette.warning.dark,
         "& .MuiAlertTitle-root": {
-          color: colorTheme.warning.dark,
+          color: colorTheme.palette.warning.dark,
           marginBottom: liftKitTheme.spacing.xs3,
         },
         "& .MuiTypography-root": {
-          color: colorTheme.warning.dark,
+          color: colorTheme.palette.warning.dark,
         },
       },
       standardInfo: {
-        backgroundColor: colorTheme.info.background,
-        color: colorTheme.info.dark,
+        backgroundColor: colorTheme.palette.info.background,
+        color: colorTheme.palette.info.dark,
         "& .MuiAlertTitle-root": {
-          color: colorTheme.info.dark,
+          color: colorTheme.palette.info.dark,
           marginBottom: liftKitTheme.spacing.xs3,
         },
         "& .MuiTypography-root": {
-          color: colorTheme.info.dark,
+          color: colorTheme.palette.info.dark,
         },
       },
     },

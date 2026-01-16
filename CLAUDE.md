@@ -16,7 +16,7 @@ Admin3 is a Django REST API backend with React frontend for the Online Store for
 - **GraphQL integration** for external Administrate API calls
 
 ### Frontend Structure
-- **React 18** with functional components and hooks
+- **React 19** with functional components and hooks
 - **Material-UI** for consistent UI components
 - **Axios** for API communication
 - **React Router** for navigation
@@ -1226,10 +1226,10 @@ browser_close()
 ```
 
 ## Active Technologies
-- Python 3.11, Django 5.1 + Django REST Framework, PostgreSQL psycopg2-binary (001-catalog-consolidation)
+- Python 3.14, Django 5.1 + Django REST Framework, PostgreSQL psycopg2-binary (001-catalog-consolidation)
 - PostgreSQL with new `acted` schema (001-catalog-consolidation)
 - JavaScript (ES6+), React 18 + Material-UI v5 (MUI), React Router (20260113-Styling-Clean-up)
 - N/A (styling refactoring - no data changes) (20260113-Styling-Clean-up)
 
 ## Recent Changes
-- 001-catalog-consolidation: Added Python 3.11, Django 5.1 + Django REST Framework, PostgreSQL psycopg2-binary
+- 001-catalog-consolidation: Added Python 3.14, Django 5.1 + Django REST Framework, PostgreSQL psycopg2-binary

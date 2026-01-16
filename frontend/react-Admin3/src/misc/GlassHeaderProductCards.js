@@ -54,8 +54,8 @@ const productColorConfigs = {
 	material: {
 		name: "Study Material (Cobalt)",
 		themeProductType: "material", // Uses sky in theme but we override with cobalt glass header
-		primary: colorTheme.bpp.cobalt,
-		complementary: colorTheme.bpp.orange,
+		primary: colorTheme.palette.cobalt,
+		complementary: colorTheme.palette.orange,
 		icon: LibraryBooksSharp,
 		productTitle: "Mini ASET",
 		productSubtitle: "(April 2024 Paper)",
@@ -63,8 +63,8 @@ const productColorConfigs = {
 	tutorial: {
 		name: "Tutorial (Purple)",
 		themeProductType: "tutorial",
-		primary: colorTheme.bpp.purple,
-		complementary: colorTheme.bpp.mint,
+		primary: colorTheme.palette.purple,
+		complementary: colorTheme.palette.mint,
 		icon: SchoolOutlined,
 		productTitle: "CS1 Tutorial",
 		productSubtitle: "London - April 2025",
@@ -72,8 +72,8 @@ const productColorConfigs = {
 	assessment: {
 		name: "Assessment (Pink)",
 		themeProductType: "marking", // Maps to marking variant (pink header in theme)
-		primary: colorTheme.bpp.pink,
-		complementary: colorTheme.bpp.green,
+		primary: colorTheme.palette.pink,
+		complementary: colorTheme.palette.green,
 		icon: QuizOutlined,
 		productTitle: "Mock Exam Pack",
 		productSubtitle: "CM2 - 2025 Session",
@@ -81,8 +81,8 @@ const productColorConfigs = {
 	bundle: {
 		name: "Bundle (Green)",
 		themeProductType: "bundle",
-		primary: colorTheme.bpp.green,
-		complementary: colorTheme.bpp.purple,
+		primary: colorTheme.palette.green,
+		complementary: colorTheme.palette.purple,
 		icon: Inventory2Outlined,
 		productTitle: "Complete Study Pack",
 		productSubtitle: "CB1 Bundle",
@@ -90,8 +90,8 @@ const productColorConfigs = {
 	"online-classroom": {
 		name: "Online Classroom (Sky)",
 		themeProductType: "online-classroom",
-		primary: colorTheme.bpp.sky,
-		complementary: colorTheme.bpp.orange,
+		primary: colorTheme.palette.sky,
+		complementary: colorTheme.palette.orange,
 		icon: ComputerOutlined,
 		productTitle: "Online Course",
 		productSubtitle: "SA2 - Live Sessions",
@@ -99,8 +99,8 @@ const productColorConfigs = {
 	marking: {
 		name: "Marking Voucher (Orange)",
 		themeProductType: "marking",
-		primary: colorTheme.bpp.orange,
-		complementary: colorTheme.bpp.sky,
+		primary: colorTheme.palette.orange,
+		complementary: colorTheme.palette.sky,
 		icon: GradingOutlined,
 		productTitle: "Marking Voucher",
 		productSubtitle: "CS2 - 3 Submissions",

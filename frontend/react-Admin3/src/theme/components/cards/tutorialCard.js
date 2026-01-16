@@ -10,7 +10,7 @@ export const tutorialCardStyles = {
   // Floating badges
   "& .floating-badges-container": {
     "& .availability-badge": {
-      color: colorTheme.md3.error,
+      color: colorTheme.palette.md3.error,
       paddingLeft: liftKitTheme.spacing.sm,
       paddingRight: liftKitTheme.spacing.sm,
       alignItems: "center",
@@ -22,33 +22,33 @@ export const tutorialCardStyles = {
       boxShadow: "0 1px 12px rgba(0,0,0,0.25)",
       border: "1px solid rgba(255, 255, 255, 0.3)",
       backdropFilter: "blur(20px)",
-      backgroundColor: colorTheme.md3.errorContainer,
+      backgroundColor: colorTheme.palette.md3.errorContainer,
       "& .MuiBox-root": {
         alignItems: "center",
         justifyContent: "center",
         alignContent: "center",
         "& .MuiTypography-root": {
-          color: colorTheme.md3.error,
+          color: colorTheme.palette.md3.error,
         },
         "& .MuiSvgIcon-root": {
-          color: colorTheme.md3.error,
+          color: colorTheme.palette.md3.error,
           fontSize: "1.2rem",
         },
       },
     },
     "& .subject-badge": {
-      backgroundColor: colorTheme.bpp.purple["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.palette.purple["010"],
+      color: colorTheme.palette.granite["100"],
     },
     "& .session-badge": {
-      backgroundColor: colorTheme.bpp.purple["010"],
-      color: colorTheme.bpp.granite["100"],
+      backgroundColor: colorTheme.palette.purple["010"],
+      color: colorTheme.palette.granite["100"],
     },
   },
 
   // Product Header
   "& .product-header": {
-    backgroundColor: colorTheme.bpp.purple["020"],
+    backgroundColor: colorTheme.palette.purple["020"],
     color: "#ffffff",
     height: "7.43rem",
     padding: "1rem",
@@ -64,10 +64,10 @@ export const tutorialCardStyles = {
       "& .product-title": {
         width: "90%",
         textAlign: "left",
-        color: colorTheme.bpp.sky["100"],
+        color: colorTheme.palette.sky["100"],
       },
       "& .product-subtitle": {
-        color: colorTheme.bpp.sky["090"],
+        color: colorTheme.palette.sky["090"],
       },
     },
     "& .MuiCardHeader-avatar": {
@@ -75,11 +75,11 @@ export const tutorialCardStyles = {
       marginLeft: "auto",
       marginRight: "0",
       "& .product-avatar": {
-        backgroundColor: colorTheme.bpp.granite["020"],
+        backgroundColor: colorTheme.palette.granite["020"],
         boxShadow: "var(--Paper-shadow)",
         "& .product-avatar-icon": {
           fontSize: "1.5rem",
-          color: colorTheme.bpp.purple["090"],
+          color: colorTheme.palette.purple["090"],
         },
       },
     },
@@ -118,16 +118,16 @@ export const tutorialCardStyles = {
         },
         "& .info-icon": {
           fontSize: "16px",
-          color: colorTheme.bpp.purple["090"],
+          color: colorTheme.palette.purple["090"],
           marginRight: liftKitTheme.spacing.xs2,
         },
         "& .info-text": {
-          color: colorTheme.bpp.purple["100"],
+          color: colorTheme.palette.purple["100"],
           fontWeight: "600",
         },
       },
       "& .info-sub-text": {
-        color: colorTheme.bpp.purple["090"],
+        color: colorTheme.palette.purple["090"],
         marginLeft: liftKitTheme.spacing.md,
         fontWeight: "500",
       },
@@ -136,20 +136,20 @@ export const tutorialCardStyles = {
 
   // Actions styling
   "& .MuiCardActions-root": {
-    backgroundColor: colorTheme.bpp.purple["030"],
+    backgroundColor: colorTheme.palette.purple["030"],
     "& .price-container": {
       "& .discount-options": {
         "& .discount-title": {
-          color: colorTheme.bpp.purple["100"],
+          color: colorTheme.palette.purple["100"],
         },
         "& .discount-radio-group": {
           "& .discount-radio-option": {
-            color: colorTheme.bpp.purple["100"],
+            color: colorTheme.palette.purple["100"],
             "& .MuiRadio-root": {
-              color: colorTheme.bpp.purple["090"],
+              color: colorTheme.palette.purple["090"],
             },
             "& .discount-label": {
-              color: colorTheme.bpp.purple["100"],
+              color: colorTheme.palette.purple["100"],
             },
           },
         },
@@ -157,14 +157,14 @@ export const tutorialCardStyles = {
       "& .price-action-section": {
         "& .price-info-row": {
           "& .price-display": {
-            color: colorTheme.bpp.purple["100"],
+            color: colorTheme.palette.purple["100"],
           },
         },
         "& .add-to-cart-button": {
           color: "white",
-          backgroundColor: colorTheme.bpp.purple["050"],
+          backgroundColor: colorTheme.palette.purple["050"],
           "&:hover": {
-            backgroundColor: colorTheme.bpp.purple["070"],
+            backgroundColor: colorTheme.palette.purple["070"],
           },
         },
       },

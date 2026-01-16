@@ -14,7 +14,7 @@
 |---------|-------------|-------|
 | `theme.palette.offwhite?.["000"] \|\| "inherit"` | 8+ times | NavigationMenu.js |
 | `theme.palette.liftkit?.light?.background \|\| "text.primary"` | 4+ times | TopNavBar.js, TopNavActions.js |
-| `borderBottom: "1px solid " + theme.palette.bpp.granite["020"]` | 3 times | NavigationMenu.js |
+| `borderBottom: "1px solid " + theme.palette.granite["020"]` | 3 times | NavigationMenu.js |
 | `mx: { xl: 2 }` button margins | 5 times | NavigationMenu.js |
 | `textTransform: "none", color: ..., p: 0` button reset | 6+ times | All navigation files |
 
@@ -86,19 +86,19 @@ navigation: {
   text: {
     primary: colorTheme.offwhite['000'],      // Main nav text
     secondary: colorTheme.offwhite['001'],    // Secondary nav text
-    muted: colorTheme.bpp.granite['040'],     // Disabled/placeholder
+    muted: colorTheme.granite['040'],     // Disabled/placeholder
   },
   border: {
-    subtle: colorTheme.bpp.granite['020'],    // "View All" underlines
-    divider: colorTheme.bpp.granite['030'],   // Menu dividers
+    subtle: colorTheme.granite['020'],    // "View All" underlines
+    divider: colorTheme.granite['030'],   // Menu dividers
   },
   background: {
-    hover: colorTheme.bpp.granite['070'],     // Menu item hover
-    active: colorTheme.bpp.granite['080'],    // Active/selected state
+    hover: colorTheme.granite['070'],     // Menu item hover
+    active: colorTheme.granite['080'],    // Active/selected state
   },
   button: {
     color: colorTheme.offwhite['000'],        // Nav button text
-    hoverColor: colorTheme.bpp.purple['110'], // Button hover accent
+    hoverColor: colorTheme.purple['110'], // Button hover accent
   },
 }
 ```
@@ -181,7 +181,7 @@ Add MUI Typography variants:
 >
   <Typography
     variant="navlink"
-    sx={{ borderBottom: "1px solid " + theme.palette.bpp.granite["020"] }}
+    sx={{ borderBottom: "1px solid " + theme.palette.granite["020"] }}
   >
     View All Products
   </Typography>
@@ -299,7 +299,7 @@ navigation: {
     primary: isDark ? colorTheme.granite['010'] : colorTheme.offwhite['000'],
   },
   background: {
-    hover: isDark ? colorTheme.bpp.granite['020'] : colorTheme.bpp.granite['070'],
+    hover: isDark ? colorTheme.granite['020'] : colorTheme.granite['070'],
   },
   // ...
 }

@@ -67,8 +67,8 @@ Research phase is minimal for this feature. The design was completed collaborati
 ```javascript
 // Existing pattern - confirmed compatible
 cardHeader: {
-  tutorial: colorTheme.bpp.purple['020'],
-  material: colorTheme.bpp.sky['020'],
+  tutorial: colorTheme.purple['020'],
+  material: colorTheme.sky['020'],
   // ...
 }
 ```
@@ -93,7 +93,7 @@ MuiMenuItem: {
 |---------|-------|-------|
 | `theme.palette.offwhite?.["000"]` | 8+ | NavigationMenu.js |
 | `theme.palette.liftkit?.light?.background` | 4+ | TopNavBar.js, TopNavActions.js |
-| `borderBottom: "1px solid " + theme.palette.bpp.granite["020"]` | 3 | NavigationMenu.js |
+| `borderBottom: "1px solid " + theme.palette.granite["020"]` | 3 | NavigationMenu.js |
 | `textTransform: "none", color: ...` | 6+ | All navigation files |
 
 ## Conclusion
