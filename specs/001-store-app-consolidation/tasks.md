@@ -220,7 +220,7 @@
 - [ ] T084 Create management command to clear carts pre-migration (FR-013) - deferred to production deployment
 - [X] T085 [P] Update backend/django_Admin3/catalog/models/product.py docstrings (rename context)
 - [X] T086 Run quickstart.md validation steps
-- [X] T087 Cleanup: Remove dead code from legacy apps after deprecation period - completed 2026-01-16
+- [X] T087 Cleanup: Legacy apps converted to minimal migration stubs (ESSP app provides state-only migrations for dependency resolution)
 
 ---
 

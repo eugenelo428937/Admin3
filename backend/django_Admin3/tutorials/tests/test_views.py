@@ -488,17 +488,34 @@ class TutorialProductListAllViewTestCase(APITestCase):
             subject=self.subject
         )
 
-        # Create tutorial product
+        # Create tutorial catalog product
         self.product = Product.objects.create(
             code='TUT001',
             fullname='Tutorial - London',
             shortname='Tutorial London'
         )
 
-        # Create ESSP
-        self.essp = ExamSessionSubjectProduct.objects.create(
+        # Create product variation
+        from catalog.models import ProductVariation, ProductProductVariation
+        self.variation = ProductVariation.objects.create(
+            code='LDN',
+            name='London',
+            variation_type='Tutorial'
+        )
+
+        # Create product-product-variation link
+        self.ppv = ProductProductVariation.objects.create(
+            product=self.product,
+            product_variation=self.variation
+        )
+
+        # Create store.Product (the actual purchasable item)
+        from store.models import Product as StoreProduct
+        self.store_product = StoreProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product=self.product
+            product_product_variation=self.ppv,
+            product_code='CM2/TUT001LDN/JUNE2025',
+            is_active=True
         )
 
         self.client = APIClient()
