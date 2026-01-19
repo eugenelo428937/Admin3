@@ -57,16 +57,28 @@
     "@babel/plugin-transform-runtime": "^7.28.5",
     "@babel/preset-env": "^7.28.5",
     "@babel/preset-react": "^7.28.5",
+    "@storybook/addon-a11y": "^10.1.11",
+    "@storybook/addon-docs": "^10.1.11",
+    "@storybook/addon-onboarding": "^10.1.11",
+    "@storybook/preset-create-react-app": "^10.1.11",
+    "@storybook/react-webpack5": "^10.1.11",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
+    "@vitest/mocker": "^4.0.17",
+    "eslint-plugin-storybook": "^10.1.11",
     "jest-axe": "^10.0.0",
     "msw": "^2.12.4",
+    "prop-types": "^15.8.1",
     "react-scripts": "^5.0.1",
     "shadcn": "^3.5.1",
+    "storybook": "^10.1.11",
+    "storybook-design-token": "^5.0.0",
     "tdd-guard-jest": "^0.1.4",
-    "tdd-guard-vitest": "^0.1.6"
+    "tdd-guard-vitest": "^0.1.6",
+    "vite": "^7.3.1",
+    "webpack": "^5.104.1"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -78,7 +90,9 @@
     "lint": "eslint --no-cache src",
     "lint:fix": "eslint --no-cache --fix src",
     "test:coverage": "react-scripts test --coverage --watchAll=false",
-    "test:watch": "react-scripts test"
+    "test:watch": "react-scripts test",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "eslintConfig": {
     "extends": [
