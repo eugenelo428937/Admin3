@@ -1,0 +1,45 @@
+{/* Introduction.mdx */}
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Design System/Introduction" />
+
+# Admin3 Design System
+
+Welcome to the Admin3 design system documentation. This system provides a unified approach to styling across the application.
+
+## Architecture Overview
+
+```
+Token Layer (Raw Values)
+    └── theme/tokens/colors.js
+        ├── md3 (Material Design 3)
+        ├── scales (BPP Brand Colors)
+        └── static (white, black, transparent)
+            │
+            ▼
+Semantic Layer (Purpose-Mapped)
+    └── theme/semantic/
+        ├── common.js (textPrimary, bgElevated, etc.)
+        ├── navigation.js (nav-specific tokens)
+        └── productCards.js (6 card type themes)
+            │
+            ▼
+Component Layer (MUI Variants)
+    └── theme/components/
+        ├── navigation.js (navPrimary, navViewAll, etc.)
+        └── cards/*.js (card-specific overrides)
+```
+
+## Key Principles
+
+1. **Single Source of Truth** - All colors defined in `tokens/colors.js`
+2. **Semantic Mapping** - Components reference purpose, not raw values
+3. **Dark Mode Ready** - Swap semantic layer for theme switching
+4. **Golden Ratio** - Typography and spacing use 1.618 scale
+
+## Quick Links
+
+- **[Color Palette](/docs/design-system-colors-bpp-brand-scales--docs)** - BPP brand color scales
+- **[Semantic Tokens](/docs/design-system-tokens-semantic--docs)** - Purpose-mapped tokens
+- **[Navigation](/docs/design-system-tokens-navigation--docs)** - Navigation-specific tokens
+- **[Product Cards](/docs/design-system-tokens-product-cards--docs)** - Card theme tokens
