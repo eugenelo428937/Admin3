@@ -354,11 +354,16 @@ If issues arise:
 
 ---
 
-## 11. Open Questions
+## 11. Decisions Made
 
-1. **Email templates location:** Should MJML templates move to `email_system/templates/` or stay in current location?
-2. **URL routing:** Does email system need any API endpoints? If so, add to `email_system/urls.py`
-3. **Celery tasks:** If using Celery for email queue processing, update task imports
+1. **Email templates location:** Move MJML templates to `email_system/templates/emails/`
+2. **Deprecation shim:** Not needed - direct cutover since only `core_auth/views.py` needs updating
+3. **Migration strategy:** Clean migrations with same table names, fake-apply initial migration
+
+### Open Questions
+
+1. **URL routing:** Does email system need any API endpoints? If so, add to `email_system/urls.py`
+2. **Celery tasks:** If using Celery for email queue processing, update task imports
 
 ---
 

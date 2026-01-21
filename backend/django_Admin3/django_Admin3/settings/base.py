@@ -101,21 +101,17 @@ INSTALLED_APPS = [
     'store.apps.StoreConfig',  # Purchasable items (depends on catalog)
     'users',
     'userprofile',
-    'country',
     'cart',
     'students',
-    'subjects',
     'tutorials',
-    'products.apps.ProductsConfig',
     'marking',
     'marking_vouchers',
     'core_auth',
-    'administrate.apps.AdministrateConfig',
     'rules_engine.apps.RulesEngineConfig',
     'utils.apps.UtilsConfig',  # Added utils app for email functionality
     'search.apps.SearchConfig',  # Product search API (002-catalog-api-consolidation)
     'filtering.apps.FilteringConfig',  # Product filtering (model consolidation)
-    'vat',  # Epic 3: VAT calculation and audit trail
+    # 'vat',  # REMOVED: Legacy VAT app - functionality moved to rules_engine and utils
     'address_cache',  # UK address lookup caching (Postcoder.com)
     'address_analytics',  # UK address lookup analytics and monitoring
     'django.contrib.admindocs',  # Admin documentation generator
