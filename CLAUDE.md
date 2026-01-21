@@ -24,6 +24,69 @@ Admin3 is a Django REST API backend with React frontend for the Online Store for
 - **Context API** for cart and authentication state
 - **RTK Query** for API data fetching and caching
 
+### Store App Architecture
+
+The **store** app manages purchasable items (products available for sale), while the **catalog** app manages master data (templates and definitions).
+
+#### Two-App Architecture
+
+| App | Purpose | Tables (acted schema) |
+|-----|---------|----------------------|
+| **catalog** | Master data: subjects, exam sessions, product templates, variations | `catalog_*` |
+| **store** | Purchasable items: products for sale, prices, bundles | `products`, `prices`, `bundles`, `bundle_products` |
+
+This separation follows the **Strangler Fig pattern** - legacy apps (exam_sessions_subjects_products) delegate to store with deprecation warnings.
+
+#### Store Models
+
+**store.Product** - A purchasable item linking exam session subject to product variation:
+```python
+# Direct 2-join structure (replaces old 4-join ESSPV chain)
+product = Product.objects.get(product_code='CM2/PCSM01P/2025-04')
+ess = product.exam_session_subject      # catalog.ExamSessionSubject
+ppv = product.product_product_variation  # catalog.ProductProductVariation
+prices = product.prices.all()            # store.Price queryset
+```
+
+**store.Price** - Pricing tiers per product:
+- `standard`: Regular price
+- `retaker`: Returning exam candidates
+- `reduced`: Student/discounted rate
+- `additional`: Additional copies
+
+**store.Bundle** - Collection of products sold together:
+```python
+bundle = Bundle.objects.get(exam_session_subject=ess)
+products = bundle.bundle_products.filter(is_active=True)
+```
+
+**store.BundleProduct** - Individual products within a bundle with sort ordering.
+
+#### Product Code Generation
+
+Product codes are auto-generated on save based on variation type:
+
+| Variation Type | Format | Example |
+|---------------|--------|---------|
+| Material (eBook, Printed) | `{subject}/{variation_code}{product_code}/{exam_session}` | `CB1/PC/2025-04` |
+| Marking | `{subject}/{variation_code}{product_code}/{exam_session}` | `CM2/M01/2025-04` |
+| Tutorial/Other | `{subject}/{prefix}{product_code}{variation_code}/{exam_session}-{id}` | `CB1/TLONCB1_f2f_3/2025-04-472` |
+
+#### Backward Compatibility
+
+The store.Product model provides backward-compatible properties for cart/order code:
+```python
+# Old code (ESSP-based) still works:
+cart_item.product.product           # Returns catalog.Product
+cart_item.product.product_variation # Returns catalog.ProductVariation
+```
+
+#### Important Constraints
+
+- **Unique Together**: (exam_session_subject, product_product_variation) - one product per ESS+PPV combination
+- **FK ID Preservation**: Migration preserved all FK IDs for cart/order integrity
+- **Inactive Filtering**: Products with inactive catalog templates are hidden from browsing (FR-012)
+
 ### Redux Filter State Management
 
 The frontend uses Redux Toolkit for centralized product filter state management with bidirectional URL synchronization.
@@ -400,6 +463,7 @@ python manage.py test_emails preview --template password_reset --save
 /api/products/      # Product catalog (DEPRECATED - delegates to /api/catalog/)
 /api/subjects/      # Subject management (DEPRECATED - delegates to /api/catalog/)
 /api/exam-sessions/ # Exam session management (DEPRECATED - delegates to /api/catalog/)
+/api/store/         # Store products, prices, bundles (NEW - purchasable items)
 /api/cart/          # Shopping cart
 /api/tutorials/     # Tutorial events
 /api/rules/         # Rules engine
@@ -425,6 +489,16 @@ python manage.py test_emails preview --template password_reset --save
 /api/products/product-groups/<id>/products/     # Products by group
 /api/products/product-group-filters/            # Product group filters
 /api/products/filter-configuration/             # Dynamic filter configuration
+```
+
+### Store API Endpoints (Purchasable Items)
+
+```
+/api/store/products/                  # Store products (list, retrieve)
+/api/store/products/{id}/prices/      # Prices for a product
+/api/store/prices/                    # All prices (list, retrieve)
+/api/store/bundles/                   # Store bundles (list, retrieve)
+/api/store/bundles/{id}/products/     # Products in a bundle
 ```
 
 ### Rules Engine API Endpoints
@@ -1251,8 +1325,8 @@ browser_close()
 - Python 3.11, Django 5.1 + Django REST Framework, PostgreSQL psycopg2-binary (001-catalog-consolidation)
 - PostgreSQL with new `acted` schema (001-catalog-consolidation)
 - Centralized catalog API at /api/catalog/ (002-catalog-api-consolidation)
-- Python 3.11, Django 5.1 + Django REST Framework, psycopg2-binary (001-store-app-consolidation)
-- PostgreSQL with `acted` schema namespace (001-store-app-consolidation)
+- Python 3.11, Django 5.1 + Django REST Framework, psycopg2-binary (20250115-store-app-consolidation)
+- PostgreSQL with `acted` schema namespace (20250115-store-app-consolidation)
 
 ## Recent Changes
 - 001-catalog-consolidation: Added Python 3.11, Django 5.1 + Django REST Framework, PostgreSQL psycopg2-binary
