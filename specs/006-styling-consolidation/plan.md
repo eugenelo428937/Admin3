@@ -1,7 +1,7 @@
 # Implementation Plan: Frontend Styling System Consolidation
 
-**Branch**: `006-styling-consolidation` | **Date**: 2025-01-16 | **Spec**: [spec.md](spec.md)
-**Input**: Feature specification from `/specs/006-styling-consolidation/spec.md`
+**Branch**: `20260116-styling-consolidation` | **Date**: 2025-01-16 | **Spec**: [spec.md](spec.md)
+**Input**: Feature specification from `/specs/20260116-styling-consolidation/spec.md`
 **Design**: [2025-01-16-styling-system-consolidation-design.md](../../docs/plans/2025-01-16-styling-system-consolidation-design.md)
 
 ## Summary
@@ -42,7 +42,7 @@ Consolidate the frontend styling system from 4 disconnected layers (CSS variable
 ### Documentation (this feature)
 
 ```text
-specs/006-styling-consolidation/
+specs/20260116-styling-consolidation/
 ├── spec.md              # Feature specification
 ├── plan.md              # This file
 ├── research.md          # Phase 0: Research findings
