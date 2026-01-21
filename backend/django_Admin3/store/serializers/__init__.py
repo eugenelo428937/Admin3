@@ -5,6 +5,11 @@ from store.serializers.bundle import (
     BundleSerializer,
     BundleListSerializer,
     BundleProductSerializer,
+    BundleComponentSerializer,
+)
+from store.serializers.unified import (
+    UnifiedProductSerializer,
+    UnifiedBundleSerializer,
 )
 
 __all__ = [
@@ -15,4 +20,7 @@ __all__ = [
     'BundleSerializer',
     'BundleListSerializer',
     'BundleProductSerializer',
+    'BundleComponentSerializer',
+    'UnifiedProductSerializer',
+    'UnifiedBundleSerializer',
 ]

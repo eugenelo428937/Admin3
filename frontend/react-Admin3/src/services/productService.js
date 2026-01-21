@@ -4,6 +4,9 @@ import httpService from "./httpService";
 
 // Use fallback if productsUrl is not defined
 const PRODUCTS_API_URL = config.productsUrl || `${config.apiBaseUrl || config.apiUrl}/products`;
+// Store API for purchasable products (001-store-app-consolidation)
+// Derive from productsUrl pattern: /api/products -> /api/store
+const STORE_API_URL = config.productsUrl ? config.productsUrl.replace('/products', '/store') : `${config.apiBaseUrl || config.apiUrl}/store`;
 const MARKING_API_URL = config.markingUrl;
 const MARKING_VOUCHERS_API_URL = `${config.apiBaseUrl || config.apiUrl}/api/marking-vouchers`;
 
@@ -75,7 +78,7 @@ const productService = {
 		}
 	},
 
-	// Get available products from exam_sessions_subjects_products
+	// Get available products from store API (purchasable items)
 	getAvailableProducts: async (params = {}, page = 1, pageSize = 50) => {
 		try {
 			// Add pagination parameters
@@ -84,7 +87,7 @@ const productService = {
 			paginationParams.append('page_size', pageSize);
 
 			const response = await httpService.get(
-				`${PRODUCTS_API_URL}/current/list/`,
+				`${STORE_API_URL}/products/`,
 				{ params: paginationParams }
 			);
 			return response.data;

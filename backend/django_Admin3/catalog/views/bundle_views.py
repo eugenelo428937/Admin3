@@ -63,5 +63,6 @@ class BundleViewSet(viewsets.ReadOnlyModelViewSet):
             'exam_session_subject__subject'
         ).prefetch_related(
             'bundle_products__product__product_product_variation__product',
-            'bundle_products__product__product_product_variation__product_variation'
+            'bundle_products__product__product_product_variation__product_variation',
+            'bundle_products__product__prices',
         ).order_by('display_order', 'bundle_template__bundle_name')

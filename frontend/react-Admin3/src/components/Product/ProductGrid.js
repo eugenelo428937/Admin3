@@ -84,13 +84,18 @@ const ProductGrid = React.memo(({
 
     /**
      * Generate unique key for product items - Stable reference
+     * Bundles and products may have the same numeric ID, so we prefix bundles
      */
     const generateProductKey = React.useCallback((item) => {
-        // Use stable ID generation without random values
+        // Check if this is a bundle first to avoid key collisions
+        if (item.is_bundle || item.item_type === 'bundle') {
+            return `bundle-${item.id}`;
+        }
+
+        // For regular products, use essp_id or id
         return item.essp_id ||
                item.id ||
                item.product_id ||
-               `bundle-${item.id}` ||
                `item-${item.product_name}-${item.subject_code}`;
     }, []);
 

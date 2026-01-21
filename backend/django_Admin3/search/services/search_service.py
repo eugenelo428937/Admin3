@@ -356,7 +356,9 @@ class SearchService:
             'exam_session_subject__exam_session',
             'exam_session_subject__subject'
         ).prefetch_related(
-            'bundle_products__product__prices'
+            'bundle_products__product__prices',
+            'bundle_products__product__product_product_variation__product',
+            'bundle_products__product__product_product_variation__product_variation',
         )
 
         # Apply subject filter
@@ -369,17 +371,69 @@ class SearchService:
                     subject_q |= Q(exam_session_subject__subject__code=subject)
             bundles_queryset = bundles_queryset.filter(subject_q)
 
-        # Serialize bundles
+        # Serialize bundles with format expected by BundleCard.js
         bundles_data = []
         for bundle in bundles_queryset:
+            # Build components array with nested product, product_variation, and prices
+            components = []
+            active_bundle_products = bundle.bundle_products.filter(is_active=True).order_by('sort_order')
+
+            for bp in active_bundle_products:
+                store_product = bp.product
+                ppv = store_product.product_product_variation
+
+                # Get product fullname
+                product_fullname = store_product.product_code
+                product_id = store_product.id
+                if ppv and ppv.product:
+                    product_fullname = ppv.product.fullname or store_product.product_code
+                    product_id = ppv.product.id
+
+                # Get product variation info
+                product_variation = None
+                if ppv and ppv.product_variation:
+                    pv = ppv.product_variation
+                    product_variation = {
+                        'id': pv.id,
+                        'name': pv.name,
+                        'variation_type': pv.variation_type,
+                        'description_short': pv.description_short,
+                    }
+
+                # Get prices
+                prices = [
+                    {
+                        'price_type': price.price_type,
+                        'amount': str(price.amount),
+                        'currency': price.currency,
+                    }
+                    for price in store_product.prices.all()
+                ]
+
+                component = {
+                    'id': store_product.id,
+                    'product_code': store_product.product_code,
+                    'product': {
+                        'id': product_id,
+                        'fullname': product_fullname,
+                    },
+                    'product_variation': product_variation,
+                    'prices': prices,
+                    'default_price_type': bp.default_price_type,
+                    'quantity': bp.quantity,
+                    'sort_order': bp.sort_order,
+                }
+                components.append(component)
+
             bundle_data = {
-                'id': f'bundle-{bundle.id}',
-                'essp_id': f'bundle-{bundle.id}',
+                'id': bundle.id,  # Numeric ID for API calls
+                'essp_id': bundle.id,
                 'item_type': 'bundle',
                 'is_bundle': True,
                 'type': 'Bundle',
                 'bundle_type': 'store',
-                'product_name': bundle.name,
+                'name': bundle.name,
+                'bundle_name': bundle.name,  # BundleCard.js expects this
                 'shortname': bundle.name,
                 'fullname': bundle.description or bundle.name,
                 'description': bundle.description,
@@ -388,14 +442,8 @@ class SearchService:
                 'subject_id': bundle.exam_session_subject.subject.id,
                 'exam_session_code': bundle.exam_session_subject.exam_session.session_code,
                 'exam_session_id': bundle.exam_session_subject.exam_session.id,
-                'bundle_products': [
-                    {
-                        'id': bp.product.id,
-                        'product_code': bp.product.product_code,
-                        'sort_order': bp.sort_order,
-                    }
-                    for bp in bundle.bundle_products.filter(is_active=True)
-                ]
+                'components': components,  # BundleCard.js expects 'components'
+                'components_count': len(components),  # BundleCard.js expects this
             }
             bundles_data.append(bundle_data)
 
