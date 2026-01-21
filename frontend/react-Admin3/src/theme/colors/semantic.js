@@ -9,7 +9,7 @@ import colorTheme from '../colorTheme';
  *
  * Example usage:
  *   sx={{ backgroundColor: theme.palette.semantic.cardHeader.tutorial }}
- */
+*/
 export const semanticColors = {
   // Card header backgrounds by product type
   cardHeader: {
@@ -112,6 +112,7 @@ export const semanticColors = {
       divider: colorTheme.palette.granite['030'],   // Menu dividers (#bababa)
     },
     background: {
+      color: colorTheme.palette.granite['080'],
       hover: colorTheme.palette.granite['070'],     // Menu item hover (#525252)
       active: colorTheme.palette.granite['080'],    // Active/selected state (#3b3b3a)
     },
