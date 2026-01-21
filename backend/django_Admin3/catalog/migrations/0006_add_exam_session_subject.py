@@ -1,5 +1,5 @@
 # Migration to add ExamSessionSubject model to catalog app
-# Part of 001-store-app-consolidation feature
+# Part of 20250115-store-app-consolidation feature
 
 from django.db import migrations, models
 import django.db.models.deletion

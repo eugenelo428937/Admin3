@@ -1,6 +1,6 @@
 # Feature Specification: Store App Consolidation
 
-**Feature Branch**: `001-store-app-consolidation`
+**Feature Branch**: `20250115-store-app-consolidation`
 **Created**: 2025-01-14
 **Status**: Draft
 **Input**: User description: "Database Schema Consolidation: Store App Creation - Consolidate exam session product models into a clean two-app architecture with catalog for master data and store for purchasable items"

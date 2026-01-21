@@ -42,6 +42,6 @@ urlpatterns = [
     path('api/catalog/', include('catalog.urls')),
     # Search API - product search endpoints (002-catalog-api-consolidation)
     path('api/search/', include('search.urls')),
-    # Store API - purchasable items (001-store-app-consolidation)
+    # Store API - purchasable items (20250115-store-app-consolidation)
     path('api/store/', include('store.urls')),
 ]

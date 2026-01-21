@@ -4,7 +4,7 @@ import httpService from "./httpService";
 
 // Use fallback if productsUrl is not defined
 const PRODUCTS_API_URL = config.productsUrl || `${config.apiBaseUrl || config.apiUrl}/products`;
-// Store API for purchasable products (001-store-app-consolidation)
+// Store API for purchasable products (20250115-store-app-consolidation)
 // Derive from productsUrl pattern: /api/products -> /api/store
 const STORE_API_URL = config.productsUrl ? config.productsUrl.replace('/products', '/store') : `${config.apiBaseUrl || config.apiUrl}/store`;
 const MARKING_API_URL = config.markingUrl;
