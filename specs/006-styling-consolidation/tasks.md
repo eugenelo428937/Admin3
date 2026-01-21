@@ -1,6 +1,6 @@
 # Tasks: Frontend Styling System Consolidation
 
-**Input**: Design documents from `/specs/006-styling-consolidation/`
+**Input**: Design documents from `/specs/20260116-styling-consolidation/`
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, quickstart.md
 
 **Tests**: No explicit test tasks - existing visual regression tests will validate migration.
@@ -145,7 +145,7 @@
 
 - [ ] T045 [US5] Verify darkColors export exists in `frontend/react-Admin3/src/theme/tokens/colors.js`
 - [ ] T046 [US5] Document dark mode implementation pattern in `frontend/react-Admin3/src/theme/README.md`
-- [ ] T047 [US5] Add dark mode section to quickstart guide at `specs/006-styling-consolidation/quickstart.md`
+- [ ] T047 [US5] Add dark mode section to quickstart guide at `specs/20260116-styling-consolidation/quickstart.md`
 
 **Checkpoint**: User Story 5 complete - dark mode architecture documented and ready
 
