@@ -63,7 +63,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("catalog", "0006_add_exam_session_subject"),
-        ("products", "0003_update_fk_to_catalog"),
+        # Note: products app dependency removed - app has been decommissioned
     ]
 
     operations = [

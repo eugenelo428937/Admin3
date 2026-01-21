@@ -25,16 +25,13 @@ urlpatterns = [
     path('api/auth/', include('core_auth.urls')),
     path('api/users/', include('users.urls')),
     path('api/students/', include('students.urls')),
-    # Legacy subjects URL - delegates to catalog.views.SubjectViewSet (002-catalog-api-consolidation)
-    path('api/subjects/', include('subjects.urls')),
     # Include products for navigation endpoints (navbar-product-groups, distance-learning-dropdown, etc.)
-    path('api/products/', include('products.urls')),
-    # Legacy exam_sessions_subjects_products URLs removed (T087 - migrated to catalog/store apps)
+    # path('api/products/', include('products.urls')),
     # Current products now served via /api/catalog/ and /api/store/ endpoints
     path('api/cart/', include('cart.urls')),
     path('api/rules/', include('rules_engine.urls')),
     path('api/utils/', include('utils.urls')),
-    path('api/countries/', include('country.urls')),
+    # path('api/countries/', include('country.urls')),
     path('api/markings/', include('marking.urls')),
     path('api/marking-vouchers/', include('marking_vouchers.urls')),
     path('api/tutorials/', include('tutorials.urls')),
