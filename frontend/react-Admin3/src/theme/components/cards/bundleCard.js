@@ -5,8 +5,15 @@ import { semantic } from '../../semantic/common';
 
 /**
  * Bundle card variant - Green theme
+ * Includes hover effects migrated from product_card.css
  */
 export const bundleCardStyles = {
+  // Bundle hover effects (migrated from product_card.css)
+  transition: "all 0.3s ease",
+  "&:hover": {
+    transform: "translateY(-2px)",
+    boxShadow: "0 4px 12px rgba(34, 197, 94, 0.15) !important",
+  },
   "& .floating-badges-container": {
     "& .subject-badge": {
       backgroundColor: bundle.actions,

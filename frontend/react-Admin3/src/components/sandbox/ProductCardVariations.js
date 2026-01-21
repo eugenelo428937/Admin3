@@ -27,7 +27,6 @@ import {
 	Inventory2Outlined,
 	ConfirmationNumberOutlined,
 } from '@mui/icons-material';
-import '../../styles/product_card.css';
 
 
 // Variation B: Enhanced Balanced & Traditional

@@ -16,7 +16,6 @@ import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { generateProductCode } from "../../utils/productCodeGenerator";
 // TODO Phase 8: import VATBreakdown from "../Common/VATBreakdown";
-import "../../styles/cart_panel.css";
 
 const CartPanel = React.memo(({ show, handleClose }) => {
   const { cartItems, cartData, clearCart, removeFromCart } = useCart();

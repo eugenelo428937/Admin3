@@ -7,6 +7,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
 import theme from "./theme/theme";
+import { bodyContainerStyles } from "./theme/styles";
 import { store } from './store';
 import { AuthProvider } from "./hooks/useAuth";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -143,9 +144,8 @@ function App() {
 								<MainNavBar className="main-navbar" />
 								<Container
 									maxWidth={true}
-									className="body-container"
 									disableGutters={true}
-									style={{ m: 0, p: 0 }}>
+									sx={bodyContainerStyles}>
 									<Routes>
 														<Route
 															path="/"

@@ -8,13 +8,29 @@ This directory contains the modular MUI theme for the Admin3 frontend.
 theme/
 ├── index.js              # Main theme entry point
 ├── theme.js              # Backward compatibility (re-exports index.js)
-├── colorTheme.js         # Raw color palette definitions
-├── liftKitTheme.js       # Spacing and typography tokens
+├── colorTheme.js         # DEPRECATED: Use tokens/colors.js
+├── liftKitTheme.js       # DEPRECATED: Use tokens/spacing.js, tokens/typography.js
 ├── typographyTheme.js    # Legacy (use typography/index.js)
 ├── breakpointsTheme.js   # MUI breakpoints configuration
 │
+├── tokens/               # NEW: Single source of truth for primitive values
+│   ├── index.js          # Tokens module entry
+│   ├── colors.js         # md3, scales, staticColors, darkMd3
+│   ├── typography.js     # fonts, sizes, weights, lineHeights
+│   └── spacing.js        # scale, multipliers, gaps, padding, borderRadius
+│
+├── semantic/             # NEW: Purpose-driven token mappings
+│   ├── index.js          # Semantic module entry
+│   ├── common.js         # text, background, action, border, status
+│   ├── productCards.js   # tutorial, material, bundle, marking, etc.
+│   └── navigation.js     # text, border, background, button, mobile
+│
+├── variants/             # NEW: Component variant definitions
+│   └── (future variants)
+│
 ├── colors/
-│   ├── index.js          # Color module entry
+│   ├── index.js          # Color module entry (exports tokens + deprecated)
+│   ├── palettesTheme.js  # DEPRECATED: Use tokens/colors.js md3
 │   └── semantic.js       # Semantic color mappings by purpose
 │
 ├── spacing/
@@ -157,3 +173,157 @@ Cards automatically apply styles based on variant and producttype props:
 3. **Create style objects** for repeated patterns
 4. **Keep inline sx** for layout-only props (display, align, justify)
 5. **Move colors/padding/margins** to theme or style objects
+
+## New Token Layer Architecture
+
+The theme now uses a layered architecture:
+
+```
+tokens/           → Raw primitive values (colors, typography, spacing)
+  └── colors.js      (md3, scales, staticColors, darkMd3)
+  └── typography.js  (fonts, sizes, weights)
+  └── spacing.js     (scale, gaps, padding, borderRadius)
+
+semantic/         → Purpose-driven mappings
+  └── common.js      (text, background, action, border, status)
+  └── productCards.js (tutorial, material, bundle, etc.)
+  └── navigation.js  (text, border, background, button, mobile, megaMenu)
+```
+
+### Import from Semantic Layer
+
+```javascript
+// In components - use theme string paths
+sx={{ color: 'semantic.textPrimary' }}
+sx={{ bgcolor: 'productCards.tutorial.header' }}
+sx={{ color: 'navigation.text.primary' }}
+
+// In component overrides - import semantic modules
+import { navigation } from '../semantic/navigation';
+import { semantic } from '../semantic/common';
+```
+
+## Dark Mode Support
+
+### Architecture Ready
+
+Dark mode colors are exported from `tokens/colors.js`:
+
+```javascript
+import { darkMd3 } from './theme/tokens/colors';
+// or
+import { darkMd3 } from './theme/tokens';
+```
+
+### Implementation Pattern
+
+To implement dark mode in the future:
+
+1. **Create a dark theme variant**:
+```javascript
+import { createTheme } from '@mui/material/styles';
+import { darkMd3 } from './tokens/colors';
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: darkMd3.primary },
+    background: {
+      default: darkMd3.background,
+      paper: darkMd3.surface,
+    },
+    text: {
+      primary: darkMd3.onSurface,
+      secondary: darkMd3.onSurfaceVariant,
+    },
+  },
+});
+```
+
+2. **Use ThemeProvider with mode switching**:
+```javascript
+const [mode, setMode] = useState('light');
+const theme = mode === 'light' ? lightTheme : darkTheme;
+
+<ThemeProvider theme={theme}>
+  <App />
+</ThemeProvider>
+```
+
+3. **Store preference** in localStorage or user settings
+
+### Available Dark Colors
+
+The `darkMd3` object provides MD3 dark theme colors:
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `primary` | #755085 | #E3B7F3 |
+| `onPrimary` | #FFFFFF | #432353 |
+| `background` | #FFF7FB | #151218 |
+| `surface` | #FDF8FF | #151218 |
+| `onSurface` | #1C1B20 | #E8E0E6 |
+| `error` | #904A43 | #FFB4AB |
+
+### Current Status
+
+- ✅ Dark color tokens defined (`darkMd3`)
+- ✅ Exported from tokens layer
+- ⏳ UI toggle not implemented (future work)
+- ⏳ Preference persistence not implemented (future work)
+
+## Deprecated Files
+
+The following files are deprecated and will be removed in a future release:
+
+### colorTheme.js
+
+**Status**: Deprecated
+**Replacement**: `tokens/colors.js`
+
+```javascript
+// OLD (deprecated)
+import colorTheme from './theme/colorTheme';
+const color = colorTheme.palette.purple["020"];
+
+// NEW (preferred)
+import { scales } from './theme/tokens/colors';
+const color = scales.purple[20]; // Note: numeric keys, not string
+```
+
+### palettesTheme.js
+
+**Status**: Deprecated
+**Replacement**: `tokens/colors.js` (md3 export)
+
+```javascript
+// OLD (deprecated)
+import palettes from './theme/colors/palettesTheme';
+const primary = palettes.light.primary;
+
+// NEW (preferred)
+import { md3 } from './theme/tokens/colors';
+const primary = md3.primary;
+```
+
+### liftKitTheme.js
+
+**Status**: Deprecated
+**Replacement**: `tokens/spacing.js`, `tokens/typography.js`
+
+```javascript
+// OLD (deprecated)
+import liftKitTheme from './theme/liftKitTheme';
+const spacing = liftKitTheme.spacing.lg;
+
+// NEW (preferred)
+import { spacing } from './theme/tokens/spacing';
+const lg = spacing.lg;
+```
+
+### Migration Timeline
+
+1. **Phase 1** (Complete): Token and semantic layers created
+2. **Phase 2** (Complete): External components migrated to use sx callback pattern
+3. **Phase 3** (Pending): Internal theme files refactored to use tokens
+4. **Phase 4** (Pending): Legacy files deleted after all references removed
