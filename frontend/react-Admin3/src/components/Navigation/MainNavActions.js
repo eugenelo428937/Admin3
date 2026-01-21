@@ -74,6 +74,7 @@ const MainNavActions = ({
                onClick={onOpenCart}
                variant="transparent-background"
                size="medium"
+               disableRipple
                sx={{
                   display: {
                      xs: cartCount > 0 ? "flex" : "none",
@@ -122,6 +123,7 @@ const MainNavActions = ({
                   <Button
                      variant="transparent-background"
                      onClick={handleProfileOpen}
+                     disableRipple
                      sx={{
                         color: "text.primary",
                         display: {
@@ -155,6 +157,7 @@ const MainNavActions = ({
                      <Typography
                         variant="button"
                         noWrap
+                        disableRipple
                         sx={{
                            display: { xs: "none", lg: "block" },
                            color: theme.palette.navigation.text.inverse,
