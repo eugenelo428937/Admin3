@@ -34,7 +34,7 @@ import {
 	LocationOn,
 	AccessTime,
 } from "@mui/icons-material";
-import colorTheme from "../theme/colorTheme";
+import { scales } from "../theme/tokens/colors";
 
 // Helper function to convert hex to RGB values
 const hexToRgb = (hex) => {
@@ -50,12 +50,13 @@ const hexToRgb = (hex) => {
 
 // Color configurations for each product type
 // Maps glass header colors to valid theme producttype variants
+// Uses numeric keys from scales (e.g., scales.purple[20] instead of palette.purple["020"])
 const productColorConfigs = {
 	material: {
 		name: "Study Material (Cobalt)",
 		themeProductType: "material", // Uses sky in theme but we override with cobalt glass header
-		primary: colorTheme.palette.cobalt,
-		complementary: colorTheme.palette.orange,
+		primary: scales.cobalt,
+		complementary: scales.orange,
 		icon: LibraryBooksSharp,
 		productTitle: "Mini ASET",
 		productSubtitle: "(April 2024 Paper)",
@@ -63,8 +64,8 @@ const productColorConfigs = {
 	tutorial: {
 		name: "Tutorial (Purple)",
 		themeProductType: "tutorial",
-		primary: colorTheme.palette.purple,
-		complementary: colorTheme.palette.mint,
+		primary: scales.purple,
+		complementary: scales.mint,
 		icon: SchoolOutlined,
 		productTitle: "CS1 Tutorial",
 		productSubtitle: "London - April 2025",
@@ -72,8 +73,8 @@ const productColorConfigs = {
 	assessment: {
 		name: "Assessment (Pink)",
 		themeProductType: "marking", // Maps to marking variant (pink header in theme)
-		primary: colorTheme.palette.pink,
-		complementary: colorTheme.palette.green,
+		primary: scales.pink,
+		complementary: scales.green,
 		icon: QuizOutlined,
 		productTitle: "Mock Exam Pack",
 		productSubtitle: "CM2 - 2025 Session",
@@ -81,8 +82,8 @@ const productColorConfigs = {
 	bundle: {
 		name: "Bundle (Green)",
 		themeProductType: "bundle",
-		primary: colorTheme.palette.green,
-		complementary: colorTheme.palette.purple,
+		primary: scales.green,
+		complementary: scales.purple,
 		icon: Inventory2Outlined,
 		productTitle: "Complete Study Pack",
 		productSubtitle: "CB1 Bundle",
@@ -90,8 +91,8 @@ const productColorConfigs = {
 	"online-classroom": {
 		name: "Online Classroom (Sky)",
 		themeProductType: "online-classroom",
-		primary: colorTheme.palette.sky,
-		complementary: colorTheme.palette.orange,
+		primary: scales.sky,
+		complementary: scales.orange,
 		icon: ComputerOutlined,
 		productTitle: "Online Course",
 		productSubtitle: "SA2 - Live Sessions",
@@ -99,8 +100,8 @@ const productColorConfigs = {
 	marking: {
 		name: "Marking Voucher (Orange)",
 		themeProductType: "marking",
-		primary: colorTheme.palette.orange,
-		complementary: colorTheme.palette.sky,
+		primary: scales.orange,
+		complementary: scales.sky,
 		icon: GradingOutlined,
 		productTitle: "Marking Voucher",
 		productSubtitle: "CS2 - 3 Submissions",
@@ -110,9 +111,9 @@ const productColorConfigs = {
 // Glass Header Component with 3 circles
 const GlassHeader = ({ producttype, children }) => {
 	const config = productColorConfigs[producttype];
-	const primary020 = hexToRgb(config.primary["020"]);
-	const primary040 = hexToRgb(config.primary["040"]);
-	const complementary040 = hexToRgb(config.complementary["040"]);
+	const primary020 = hexToRgb(config.primary[20]);
+	const primary040 = hexToRgb(config.primary[40]);
+	const complementary040 = hexToRgb(config.complementary[40]);
 
 	const glassHeaderStyle = {
 		position: "relative",
@@ -501,7 +502,7 @@ const GlassHeaderProductCards = () => {
 										height: 16,
 										borderRadius: 1,
 										backgroundColor:
-											productColorConfigs[type].primary["040"],
+											productColorConfigs[type].primary[40],
 									}}
 								/>
 								{productColorConfigs[type].name}

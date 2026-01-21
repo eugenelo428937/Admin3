@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { readString } from 'react-papaparse';
 import subjectService from "../../../services/subjectService";
-import "../../../styles/navbar.css";
 
 const AdminSubjectImport = () => {
 	const [file, setFile] = useState(null);
