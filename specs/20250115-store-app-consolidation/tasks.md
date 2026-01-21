@@ -1,6 +1,6 @@
 # Tasks: Store App Consolidation
 
-**Input**: Design documents from `/specs/001-store-app-consolidation/`
+**Input**: Design documents from `/specs/20250115-store-app-consolidation/`
 **Prerequisites**: plan.md, spec.md, data-model.md, contracts/, research.md, quickstart.md
 
 **Tests**: Included per Constitution requirement (TDD Non-Negotiable, 80% coverage for new code)
