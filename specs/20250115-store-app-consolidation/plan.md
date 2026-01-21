@@ -1,7 +1,7 @@
 # Implementation Plan: Store App Consolidation
 
-**Branch**: `001-store-app-consolidation` | **Date**: 2025-01-14 | **Spec**: [spec.md](spec.md)
-**Input**: Feature specification from `/specs/001-store-app-consolidation/spec.md`
+**Branch**: `20250115-store-app-consolidation` | **Date**: 2025-01-14 | **Spec**: [spec.md](spec.md)
+**Input**: Feature specification from `/specs/20250115-store-app-consolidation/spec.md`
 
 ## Summary
 
@@ -42,7 +42,7 @@ The key architectural change is eliminating the redundant `ExamSessionSubjectPro
 ### Documentation (this feature)
 
 ```text
-specs/001-store-app-consolidation/
+specs/20250115-store-app-consolidation/
 ├── spec.md              # Feature specification
 ├── plan.md              # This file
 ├── research.md          # Phase 0 output
