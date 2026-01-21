@@ -1,8 +1,10 @@
 import config from "../config";
 import httpService from "./httpService";
 
-// Use the new fuzzy search endpoints
-const SEARCH_API_URL = `${config.productsUrl}/current`;
+// Search endpoints are now on the products API (not /current/ which was ESSP)
+const SEARCH_API_URL = config.productsUrl;
+// Default search data endpoint is on the search API
+const SEARCH_DEFAULT_API_URL = `${config.apiBaseUrl || config.apiUrl}/api/search`;
 
 const searchService = {
     // Fuzzy search for suggestions using our new FuzzyWuzzy backend
@@ -16,9 +18,9 @@ const searchService = {
                 };
             }
             
-            // Use the new fuzzy search endpoint
+            // Use the products search endpoint
             // Note: min_score is not specified here, so it uses the backend default from FUZZY_SEARCH_MIN_SCORE env var
-            const response = await httpService.get(`${SEARCH_API_URL}/fuzzy-search/`, {
+            const response = await httpService.get(`${SEARCH_API_URL}/search/`, {
                 params: {
                     q: query.trim(),
                     // min_score: Backend will use FUZZY_SEARCH_MIN_SCORE from .env
@@ -92,9 +94,9 @@ const searchService = {
 
             }
             
-            const requestUrl = `${SEARCH_API_URL}/advanced-fuzzy-search/`;
-            
-            // Use the new advanced fuzzy search endpoint
+            const requestUrl = `${SEARCH_API_URL}/advanced-search/`;
+
+            // Use the products advanced search endpoint
             const response = await httpService.get(requestUrl, {
                 params: params
             });
@@ -129,8 +131,8 @@ const searchService = {
     getDefaultSearchData: async () => {
         try {
             
-            // Use the same endpoint but without query to get popular/default data
-            const response = await httpService.get(`${SEARCH_API_URL}/default-search-data/`, {
+            // Use the search API default-data endpoint
+            const response = await httpService.get(`${SEARCH_DEFAULT_API_URL}/default-data/`, {
                 params: { 
                     limit: 5 // Get top 5 for each category
                 }

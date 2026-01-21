@@ -666,11 +666,29 @@ def postcoder_address_lookup(request):
     postcode = request.GET.get('postcode', '').strip()  # Postcode (optional, for countries that use it)
     country_code = request.GET.get('country', 'GB').strip().upper()  # Default to GB
 
+    # Backward compatibility: use postcode as query if query not provided
+    if not query and postcode:
+        query = postcode
+
     if not query:
         return JsonResponse({
-            'error': 'Missing query parameter',
-            'code': 'MISSING_QUERY'
+            'error': 'Missing postcode',
+            'code': 'MISSING_POSTCODE'
         }, status=400)
+
+    # Validate postcode format (if using postcode as the query)
+    if not request.GET.get('query') and postcode:
+        clean_postcode = postcode.replace(' ', '').upper()
+        if len(clean_postcode) < 5:
+            return JsonResponse({
+                'error': 'Invalid postcode format',
+                'code': 'INVALID_POSTCODE'
+            }, status=400)
+        if len(clean_postcode) > 8:
+            return JsonResponse({
+                'error': 'Invalid postcode format',
+                'code': 'INVALID_POSTCODE'
+            }, status=400)
 
     logger.info(f"🔍 Address lookup request: query='{query}', postcode='{postcode}', country={country_code}")
 

@@ -1,13 +1,17 @@
+"""
+Marking views.
+
+Updated 2026-01-16: Changed imports from exam_sessions_subjects_products to catalog
+as part of T087 legacy app cleanup.
+"""
 from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from marking.models import MarkingPaper
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+from catalog.models import ExamSessionSubjectProduct
 from marking.serializers import MarkingPaperSerializer
-
-# Create your views here.
 
 class MarkingPaperViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = MarkingPaper.objects.all()

@@ -30,7 +30,7 @@ class OrderUserPreferenceModelTest(TestCase):
 
         # Create a test rule
         self.rule = ActedRule.objects.create(
-            rule_id='test_order_pref_rule',
+            rule_code='test_order_pref_rule',
             name='Test Order Preference Rule',
             entry_point='checkout_preference',
             priority=10,
@@ -53,10 +53,12 @@ class OrderUserPreferenceModelTest(TestCase):
 
         # Create a test message template
         self.template = MessageTemplate.objects.create(
-            template_id='tmpl_order_marketing_pref',
-            name='Order Marketing Preference Template',
+            name='tmpl_order_marketing_pref',
+            title='Marketing Preferences',
+            content='Choose your marketing preferences for this order',
             content_format='json',
-            content={
+            message_type='info',
+            json_content={
                 'title': 'Marketing Preferences',
                 'content': 'Choose your marketing preferences for this order'
             }
@@ -101,11 +103,13 @@ class OrderUserPreferenceModelTest(TestCase):
         pref_comm = OrderUserPreference.objects.create(
             order=self.order,
             rule=ActedRule.objects.create(
-                rule_id='test_comm_rule',
+                rule_code='test_comm_rule',
                 name='Communication Rule',
                 entry_point='checkout_preference',
                 priority=20,
-                active=True
+                active=True,
+                condition={'==': [True, True]},
+                actions=[{'type': 'user_preference'}]
             ),
             preference_type='communication',
             preference_key='pref_comm',
@@ -119,11 +123,13 @@ class OrderUserPreferenceModelTest(TestCase):
         pref_delivery = OrderUserPreference.objects.create(
             order=self.order,
             rule=ActedRule.objects.create(
-                rule_id='test_delivery_rule',
+                rule_code='test_delivery_rule',
                 name='Delivery Rule',
                 entry_point='checkout_preference',
                 priority=30,
-                active=True
+                active=True,
+                condition={'==': [True, True]},
+                actions=[{'type': 'user_preference'}]
             ),
             preference_type='delivery',
             preference_key='pref_delivery',
@@ -137,11 +143,13 @@ class OrderUserPreferenceModelTest(TestCase):
         pref_custom = OrderUserPreference.objects.create(
             order=self.order,
             rule=ActedRule.objects.create(
-                rule_id='test_custom_rule',
+                rule_code='test_custom_rule',
                 name='Custom Rule',
                 entry_point='checkout_preference',
                 priority=40,
-                active=True
+                active=True,
+                condition={'==': [True, True]},
+                actions=[{'type': 'user_preference'}]
             ),
             preference_type='custom',
             preference_key='pref_custom',
@@ -169,11 +177,13 @@ class OrderUserPreferenceModelTest(TestCase):
         pref_modal = OrderUserPreference.objects.create(
             order=self.order,
             rule=ActedRule.objects.create(
-                rule_id='test_modal_order_rule',
+                rule_code='test_modal_order_rule',
                 name='Modal Order Rule',
                 entry_point='checkout_preference',
                 priority=50,
-                active=True
+                active=True,
+                condition={'==': [True, True]},
+                actions=[{'type': 'user_preference'}]
             ),
             preference_key='modal_order_pref',
             preference_value={'choice': 'no'},
@@ -201,11 +211,13 @@ class OrderUserPreferenceModelTest(TestCase):
         pref_not_submitted = OrderUserPreference.objects.create(
             order=self.order,
             rule=ActedRule.objects.create(
-                rule_id='test_not_submitted_rule',
+                rule_code='test_not_submitted_rule',
                 name='Not Submitted Rule',
                 entry_point='checkout_preference',
                 priority=60,
-                active=True
+                active=True,
+                condition={'==': [True, True]},
+                actions=[{'type': 'user_preference'}]
             ),
             preference_key='not_submitted_pref',
             preference_value={},
@@ -291,11 +303,13 @@ class OrderUserPreferenceModelTest(TestCase):
         pref_checkbox = OrderUserPreference.objects.create(
             order=self.order,
             rule=ActedRule.objects.create(
-                rule_id='test_checkbox_order_rule',
+                rule_code='test_checkbox_order_rule',
                 name='Checkbox Order Rule',
                 entry_point='checkout_preference',
                 priority=70,
-                active=True
+                active=True,
+                condition={'==': [True, True]},
+                actions=[{'type': 'user_preference'}]
             ),
             preference_key='checkbox_pref',
             preference_value={'selections': ['opt1', 'opt2', 'opt3']},
@@ -308,11 +322,13 @@ class OrderUserPreferenceModelTest(TestCase):
         pref_text = OrderUserPreference.objects.create(
             order=self.order,
             rule=ActedRule.objects.create(
-                rule_id='test_text_order_rule',
+                rule_code='test_text_order_rule',
                 name='Text Order Rule',
                 entry_point='checkout_preference',
                 priority=80,
-                active=True
+                active=True,
+                condition={'==': [True, True]},
+                actions=[{'type': 'user_preference'}]
             ),
             preference_key='text_pref',
             preference_value={'text': 'User entered text'},

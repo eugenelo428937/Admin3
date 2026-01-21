@@ -158,7 +158,7 @@ class Stage3RulesConditionTests(TestCase):
         condition = {'>': [{'var': 'cart.total'}, 50]}
         
         rule = ActedRule(
-            rule_id='test_cart_total',
+            rule_code='test_cart_total',
             name='Cart Total Rule',
             entry_point='checkout_start',
             condition=condition,
@@ -183,7 +183,7 @@ class Stage3RulesConditionTests(TestCase):
         condition = {'==': [{'var': 'cart.has_marking'}, True]}
         
         rule = ActedRule(
-            rule_id='test_cart_marking',
+            rule_code='test_cart_marking',
             name='Marking Cart Rule',
             entry_point='checkout_terms',
             condition=condition,
@@ -213,7 +213,7 @@ class Stage3RulesConditionTests(TestCase):
         }
         
         rule = ActedRule(
-            rule_id='test_and_condition',
+            rule_code='test_and_condition',
             name='High Value Marking Cart Rule',
             entry_point='checkout_start',
             condition=condition,
@@ -249,7 +249,7 @@ class Stage3RulesConditionTests(TestCase):
         }
         
         rule = ActedRule(
-            rule_id='test_or_condition',
+            rule_code='test_or_condition',
             name='High Value or Material Cart Rule',
             entry_point='checkout_start',
             condition=condition,
@@ -304,7 +304,7 @@ class Stage3RulesConditionTests(TestCase):
         }
         
         rule = ActedRule(
-            rule_id='test_nested_condition',
+            rule_code='test_nested_condition',
             name='Complex Nested Rule',
             entry_point='checkout_terms',
             condition=condition,
@@ -346,7 +346,7 @@ class Stage3RulesConditionTests(TestCase):
         }
         
         rule = ActedRule(
-            rule_id='test_in_condition',
+            rule_code='test_in_condition',
             name='Product Type Membership Rule',
             entry_point='product_display',
             condition=condition,
@@ -376,7 +376,7 @@ class Stage3RulesConditionTests(TestCase):
         """
         # Test condition that is not a dict
         invalid_rule_string = ActedRule(
-            rule_id='invalid_string_condition',
+            rule_code='invalid_string_condition',
             name='Invalid String Condition',
             entry_point='test',
             condition='not_a_dict',  # Should be dict
@@ -390,7 +390,7 @@ class Stage3RulesConditionTests(TestCase):
         
         # Test condition that is a list instead of dict
         invalid_rule_list = ActedRule(
-            rule_id='invalid_list_condition',
+            rule_code='invalid_list_condition',
             name='Invalid List Condition',
             entry_point='test',
             condition=['not', 'a', 'dict'],  # Should be dict
@@ -413,7 +413,7 @@ class Stage3RulesConditionTests(TestCase):
         }
         
         rule = ActedRule(
-            rule_id='test_unsupported_op',
+            rule_code='test_unsupported_op',
             name='Unsupported Operator Rule',
             entry_point='test',
             condition=unsupported_condition,
@@ -432,7 +432,7 @@ class Stage3RulesConditionTests(TestCase):
         condition = {'==': [{'var': 'nonexistent.path'}, 'value']}
         
         rule = ActedRule(
-            rule_id='test_missing_path',
+            rule_code='test_missing_path',
             name='Missing Path Rule',
             entry_point='test',
             condition=condition,
@@ -456,7 +456,7 @@ class Stage3RulesConditionTests(TestCase):
         }
         
         rule = ActedRule.objects.create(
-            rule_id='test_json_serialization',
+            rule_code='test_json_serialization',
             name='JSON Serialization Test',
             entry_point='test',
             condition=condition,
@@ -464,7 +464,7 @@ class Stage3RulesConditionTests(TestCase):
         )
         
         # Fetch from database and verify condition is properly deserialized
-        fetched_rule = ActedRule.objects.get(rule_id='test_json_serialization')
+        fetched_rule = ActedRule.objects.get(rule_code='test_json_serialization')
         self.assertEqual(fetched_rule.condition, condition)
         self.assertIsInstance(fetched_rule.condition, dict)
         self.assertIn('and', fetched_rule.condition)

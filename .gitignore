@@ -99,3 +99,4 @@ node_modules/
 node_modules/*.mcp.json
 .env.*
 # null - Removed due to Windows compatibility issues (nul is a reserved device name)
+backend/django_Admin3/misc/

@@ -13,7 +13,7 @@ class TestActedRuleCreation(TestCase):
         """Test creating ActedRule with condition and actions fields"""
         # This test documents the correct fields for ActedRule creation
         rule = ActedRule.objects.create(
-            rule_id='test_pref_newsletter',
+            rule_code='test_pref_newsletter',
             name='Preference: newsletter',
             entry_point='user_preferences',
             active=True,
@@ -23,7 +23,7 @@ class TestActedRuleCreation(TestCase):
         )
         
         self.assertIsNotNone(rule)
-        self.assertEqual(rule.rule_id, 'test_pref_newsletter')
+        self.assertEqual(rule.rule_code, 'test_pref_newsletter')
         self.assertEqual(rule.name, 'Preference: newsletter')
         self.assertEqual(rule.entry_point, 'user_preferences')
         self.assertTrue(rule.active)
