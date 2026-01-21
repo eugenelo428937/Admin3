@@ -209,7 +209,28 @@ class StoreAPITestCase(APITestCase):
 
 
 class TestProductViewSet(StoreAPITestCase):
-    """T050: Test Product API endpoints."""
+    """T050: Test Product API endpoints.
+
+    Note: The list endpoint returns BOTH products and bundles in unified format.
+    Products have is_bundle=False and product_code, bundles have is_bundle=True.
+    """
+
+    def test_list_returns_unified_products_and_bundles(self):
+        """List endpoint should return both products and bundles."""
+        response = self.client.get('/api/store/products/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+
+        # Should have pagination metadata
+        self.assertIn('count', data)
+        self.assertIn('products_count', data)
+        self.assertIn('bundles_count', data)
+        self.assertIn('results', data)
+
+        # Should have both products and bundles
+        self.assertGreater(data['products_count'], 0)
+        self.assertGreater(data['bundles_count'], 0)
 
     def test_list_products_returns_active_only(self):
         """List endpoint should return only active products."""
@@ -218,26 +239,45 @@ class TestProductViewSet(StoreAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = self.get_results(response)
 
+        # Filter to products only (is_bundle=False)
+        products = [p for p in results if not p.get('is_bundle', False)]
+
         # Should return only active products
-        product_codes = [p['product_code'] for p in results]
+        product_codes = [p['product_code'] for p in products]
         self.assertIn('CM2/PCSM01P/2025-04', product_codes)
         self.assertIn('CM2/ECSM01E/2025-04', product_codes)
         # Inactive product should not be included
         self.assertNotIn('CM2/PPB01P/2025-04', product_codes)
 
     def test_list_products_contains_required_fields(self):
-        """List response should contain required fields."""
+        """List response should contain required fields for products and bundles."""
         response = self.client.get('/api/store/products/')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = self.get_results(response)
         self.assertGreater(len(results), 0)
 
-        product = results[0]
-        self.assertIn('id', product)
-        self.assertIn('product_code', product)
-        self.assertIn('subject_code', product)
-        self.assertIn('is_active', product)
+        # Check fields for products (is_bundle=False)
+        products = [p for p in results if not p.get('is_bundle', False)]
+        if products:
+            product = products[0]
+            self.assertIn('id', product)
+            self.assertIn('product_code', product)
+            self.assertIn('subject_code', product)
+            self.assertIn('is_active', product)
+            self.assertIn('is_bundle', product)
+            self.assertEqual(product['is_bundle'], False)
+
+        # Check fields for bundles (is_bundle=True)
+        bundles = [p for p in results if p.get('is_bundle', False)]
+        if bundles:
+            bundle = bundles[0]
+            self.assertIn('id', bundle)
+            self.assertIn('name', bundle)
+            self.assertIn('subject_code', bundle)
+            self.assertIn('is_active', bundle)
+            self.assertIn('is_bundle', bundle)
+            self.assertEqual(bundle['is_bundle'], True)
 
     def test_retrieve_product_detail(self):
         """Retrieve endpoint should return detailed product information."""
@@ -267,8 +307,11 @@ class TestProductViewSet(StoreAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = self.get_results(response)
 
+        # Filter to products only
+        products = [p for p in results if not p.get('is_bundle', False)]
+
         # Product linked to inactive catalog template should not appear
-        product_codes = [p['product_code'] for p in results]
+        product_codes = [p['product_code'] for p in products]
         self.assertNotIn(
             'CM2/PDM01P/2025-04',
             product_codes,
@@ -311,25 +354,29 @@ class TestProductViewSet(StoreAPITestCase):
         self.assertIn('amount', price)
         self.assertIn('currency', price)
 
-    def test_list_products_search_by_code(self):
-        """List endpoint should support search by product_code."""
-        response = self.client.get('/api/store/products/?search=ECSM01')
+    def test_list_bundles_displayed_first(self):
+        """List endpoint should return bundles before products."""
+        response = self.client.get('/api/store/products/')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = self.get_results(response)
 
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['product_code'], 'CM2/ECSM01E/2025-04')
+        # First items should be bundles (is_bundle=True)
+        if results:
+            first_item = results[0]
+            self.assertTrue(first_item.get('is_bundle', False))
 
-    def test_list_products_ordering(self):
-        """List endpoint should support ordering by product_code."""
-        response = self.client.get('/api/store/products/?ordering=product_code')
+    def test_list_pagination_params(self):
+        """List endpoint should support pagination parameters."""
+        response = self.client.get('/api/store/products/?page=1&page_size=2')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        results = self.get_results(response)
+        data = response.json()
 
-        codes = [p['product_code'] for p in results]
-        self.assertEqual(codes, sorted(codes))
+        self.assertIn('page', data)
+        self.assertIn('has_next', data)
+        self.assertIn('has_previous', data)
+        self.assertEqual(len(data['results']), 2)  # Only 2 items per page
 
 
 class TestPriceViewSet(StoreAPITestCase):

@@ -150,22 +150,22 @@ export const catalogApi = createApi({
       },
     }),
     
-    // Legacy list products endpoint (for backward compatibility)
+    // List store products (purchasable items)
     listProducts: builder.query({
       query: (params = {}) => {
         const queryString = new URLSearchParams(params).toString();
-        return `exam-sessions-subjects-products/current/list/${queryString ? `?${queryString}` : ''}`;
+        return `store/products/${queryString ? `?${queryString}` : ''}`;
       },
       providesTags: ['Products'],
       keepUnusedDataFor: 300,
     }),
-    
-    // Get filter configuration
+
+    // Get filter configuration (stays in products app)
     getFilterConfiguration: builder.query({
       query: (filterTypes = []) => {
         const params = filterTypes.length > 0 ? { types: filterTypes } : {};
         const queryString = new URLSearchParams(params).toString();
-        return `exam-sessions-subjects-products/filter-configuration/${queryString ? `?${queryString}` : ''}`;
+        return `products/filter-configuration/${queryString ? `?${queryString}` : ''}`;
       },
       providesTags: ['Filters'],
       keepUnusedDataFor: 600, // 10 minutes - filter config changes less frequently
