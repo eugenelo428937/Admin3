@@ -1324,6 +1324,8 @@ browser_close()
 ## Active Technologies
 - Python 3.14, Django 5.1 + Django REST Framework, PostgreSQL psycopg2-binary (001-catalog-consolidation)
 - PostgreSQL with new `acted` schema (001-catalog-consolidation)
+- Python 3.14, Django 5.1 + Django REST Framework + Rules Engine (`rules_engine` app), Cart Services (`cart` app), Utils (`utils` app) (20260121-remove-legacy-vat)
+- PostgreSQL (existing `acted` schema, `vat_audit` table to be dropped) (20260121-remove-legacy-vat)
 
 ## Recent Changes
 - 001-catalog-consolidation: Added Python 3.14, Django 5.1 + Django REST Framework, PostgreSQL psycopg2-binary

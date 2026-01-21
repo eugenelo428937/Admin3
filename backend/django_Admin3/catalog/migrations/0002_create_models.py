@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('catalog', '0001_initial'),
-        ('products', '0002_add_product_variation_recommendations'),
+        ('filtering', '0001_initial'),  # FilterGroup model moved from products to filtering
     ]
 
     operations = [
@@ -91,7 +91,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='product_groups', to='catalog.product')),
-                ('product_group', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='catalog_product_product_groups', to='products.filtergroup')),
+                ('product_group', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='catalog_product_product_groups', to='filtering.filtergroup')),
             ],
             options={
                 'verbose_name': 'Product Product Group',
@@ -103,7 +103,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='product',
             name='groups',
-            field=models.ManyToManyField(related_name='catalog_products', through='catalog.ProductProductGroup', to='products.filtergroup'),
+            field=models.ManyToManyField(related_name='catalog_products', through='catalog.ProductProductGroup', to='filtering.filtergroup'),
         ),
         migrations.CreateModel(
             name='ProductProductVariation',

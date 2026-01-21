@@ -25,12 +25,12 @@ class VATPhase4DesignTestCase(TestCase):
         vat_fields = sorted([f for f in cart_fields if 'vat' in f.lower()])
 
         # Phase 4: Cart has error tracking fields and result field
+        # Note: vataudit reverse relation removed after VATAudit model deletion
         expected_fields = [
             'vat_calculation_error',
             'vat_calculation_error_message',
             'vat_last_calculated_at',
             'vat_result',
-            'vataudit'  # Reverse relation from VATAudit
         ]
 
         self.assertEqual(
@@ -182,17 +182,17 @@ class VATPhase4DesignTestCase(TestCase):
             # If custom_functions doesn't exist, that's fine
             pass
 
-    def test_vat_audit_model_exists(self):
-        """Verify VATAudit model exists for audit trail"""
-        from vat.models import VATAudit
+    def test_audit_trail_via_acted_rule_execution(self):
+        """Verify audit trail is captured via ActedRuleExecution model"""
+        from rules_engine.models import ActedRuleExecution
 
-        # VATAudit should exist
-        self.assertIsNotNone(VATAudit)
+        # ActedRuleExecution should exist (replaces VATAudit)
+        self.assertIsNotNone(ActedRuleExecution)
 
-        # Should have required fields
-        field_names = [field.name for field in VATAudit._meta.get_fields()]
-        required_fields = ['cart', 'rule_id', 'input_context', 'output_data']
+        # Should have required fields for audit trail
+        field_names = [field.name for field in ActedRuleExecution._meta.get_fields()]
+        required_fields = ['rule_code', 'context_snapshot', 'actions_result']
 
         for field in required_fields:
             self.assertIn(field, field_names,
-                         f"VATAudit should have {field} field")
+                         f"ActedRuleExecution should have {field} field")

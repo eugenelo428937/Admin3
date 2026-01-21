@@ -9,8 +9,13 @@ from .postcoder_service import PostcoderService
 from .address_cache_service import AddressCacheService
 from .address_lookup_logger import AddressLookupLogger
 
+# IP Geolocation services (relocated from vat app)
+from .ip_geolocation import get_region_from_ip, get_country_from_ip
+
 __all__ = [
     'PostcoderService',
     'AddressCacheService',
     'AddressLookupLogger',
+    'get_region_from_ip',
+    'get_country_from_ip',
 ]
