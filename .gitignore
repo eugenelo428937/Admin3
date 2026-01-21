@@ -103,4 +103,3 @@ node_modules/*.mcp.json
 # null - Removed due to Windows compatibility issues (nul is a reserved device name)
 backend/django_Admin3/misc/***
 .playwrite-mcp/*
-.playwright-mcp/nav-current-state.png
