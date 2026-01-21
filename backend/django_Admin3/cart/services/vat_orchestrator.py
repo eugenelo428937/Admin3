@@ -11,7 +11,7 @@ from typing import Dict, Any
 from django.utils import timezone
 
 from rules_engine.services.rule_engine import rule_engine
-from vat.models import VATAudit
+# VATAudit import removed - audit is captured via ActedRuleExecution
 
 
 class DecimalEncoder(json.JSONEncoder):
@@ -144,7 +144,7 @@ class VATOrchestrator:
 
     def _build_user_context(self, cart) -> Dict[str, Any]:
         """
-        Build user context for Rules Engine using context builder.
+        Build user context for Rules Engine using direct profile lookup.
 
         Args:
             cart: Cart instance
@@ -152,24 +152,34 @@ class VATOrchestrator:
         Returns:
             dict: User context with id and country_code (matching schema)
         """
-        from vat.context_builder import build_vat_context
+        user_id = 'anonymous'
+        country = DEFAULT_COUNTRY
 
-        # TODO Phase 5: Pass client_ip from request for IP geolocation
-        client_ip = None
+        if cart.user and cart.user.is_authenticated:
+            user_id = str(cart.user.id)
 
-        # Build comprehensive context to get user data
-        context = build_vat_context(cart.user, cart, client_ip)
-        user_data = context.get('user', {})
-
-        # Transform to match Rules Engine schema (country_code not country)
-        country = user_data.get('address', {}).get('country', DEFAULT_COUNTRY)
-
-        # Schema requires user.id to be a string (not None)
-        user_id = user_data.get('id')
-        if user_id:
-            user_id = str(user_id)
-        else:
-            user_id = 'anonymous'  # Default for anonymous users
+            # Get country from user's HOME address
+            if hasattr(cart.user, 'userprofile') and cart.user.userprofile:
+                profile = cart.user.userprofile
+                if hasattr(profile, 'addresses'):
+                    home_address = profile.addresses.filter(address_type='HOME').first()
+                    if home_address:
+                        country_str = home_address.country
+                        if country_str:
+                            # Try to find matching Country object by name or iso_code
+                            from country.models import Country
+                            from django.db.models import Q
+                            try:
+                                country_obj = Country.objects.filter(
+                                    Q(name=country_str) | Q(iso_code=country_str)
+                                ).first()
+                                if country_obj:
+                                    country = country_obj.iso_code
+                                else:
+                                    # Assume country_str is already an iso_code
+                                    country = country_str
+                            except Exception:
+                                country = country_str
 
         return {
             'id': user_id,
@@ -406,52 +416,19 @@ class VATOrchestrator:
 
     def _create_audit_record(self, cart, context: Dict[str, Any], all_results: list) -> None:
         """
-        Create VATAudit record for compliance tracking.
+        Audit record creation - now a no-op.
+
+        ActedRuleExecution automatically captures rule execution audit data.
+        Cart.vat_result stores the calculation result.
+        ActedOrder.calculations_applied stores order-level result.
 
         Args:
             cart: Cart instance
             context: Input context sent to Rules Engine
             all_results: List of Rules Engine execution results from all items
         """
-        try:
-            # Extract required fields from rules engine results
-            execution_id = f"exec_{int(timezone.now().timestamp())}"
-            rule_id = 'unknown'
-            rule_version = 1
-
-            if all_results and isinstance(all_results, list) and len(all_results) > 0:
-                first_result = all_results[0]
-                if isinstance(first_result, dict):
-                    execution_id = first_result.get('execution_id', execution_id)
-
-                    # Find the primary rule that was applied
-                    rules_executed = first_result.get('rules_executed', [])
-                    applied_rule = self._find_applied_vat_rule(rules_executed)
-                    if applied_rule:
-                        rule_id = applied_rule
-                        # Extract version from the rule execution record
-                        for rule in rules_executed:
-                            if rule.get('rule_id') == applied_rule or rule.get('rule_code') == applied_rule:
-                                rule_version = rule.get('version', rule.get('rule_version', 1))
-                                break
-
-            VATAudit.objects.create(
-                cart=cart,
-                order=None,  # No order at cart stage
-                execution_id=execution_id,
-                rule_id=rule_id,
-                rule_version=rule_version,
-                input_context=serialize_for_json(context),
-                output_data={
-                    'results': serialize_for_json(all_results),  # Store all item results
-                    'timestamp': timezone.now().isoformat()
-                }
-            )
-            logger.info(f"Created VAT audit record for cart {cart.id}")
-
-        except Exception as e:
-            logger.error(f"Failed to create VAT audit record: {str(e)}")
-            # Don't raise - audit failure shouldn't block VAT calculation
+        # No-op: ActedRuleExecution already captures audit trail during rule execution
+        logger.debug(f"Audit for cart {cart.id} captured via ActedRuleExecution")
 
     # Helper methods
 

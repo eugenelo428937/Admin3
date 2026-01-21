@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("catalog", "0003_copy_data"),
-        ("products", "0004_remove_productproductvariation_product_and_more"),
+        ("filtering", "0001_initial"),  # FilterGroup model moved from products to filtering
     ]
 
     operations = [
@@ -66,7 +66,7 @@ class Migration(migrations.Migration):
                 help_text="Filter groups this product belongs to",
                 related_name="catalog_products",
                 through="catalog.ProductProductGroup",
-                to="products.filtergroup",
+                to="filtering.filtergroup",
             ),
         ),
         migrations.AlterField(
@@ -111,7 +111,7 @@ class Migration(migrations.Migration):
                 help_text="The filter group this product belongs to",
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="catalog_product_product_groups",
-                to="products.filtergroup",
+                to="filtering.filtergroup",
             ),
         ),
         migrations.AlterField(

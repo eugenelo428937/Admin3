@@ -25,9 +25,9 @@
 
 **Purpose**: Establish baseline and verify current functionality before any changes
 
-- [ ] T001 Run existing VAT tests to establish baseline in `backend/django_Admin3/`
-- [ ] T002 [P] Document current vat app imports via grep analysis
-- [ ] T003 [P] Create git checkpoint for rollback capability
+- [X] T001 Run existing VAT tests to establish baseline in `backend/django_Admin3/`
+- [X] T002 [P] Document current vat app imports via grep analysis
+- [X] T003 [P] Create git checkpoint for rollback capability
 
 **Test Command**:
 ```bash
@@ -44,11 +44,11 @@ python manage.py test rules_engine.tests.test_vat_integration
 
 **⚠️ CRITICAL**: IP geolocation must be relocated before removing vat app dependencies
 
-- [ ] T004 Create utils services directory at `backend/django_Admin3/utils/services/`
-- [ ] T005 [P] Create `__init__.py` in `backend/django_Admin3/utils/services/__init__.py`
-- [ ] T006 Copy ip_geolocation.py from `backend/django_Admin3/vat/ip_geolocation.py` to `backend/django_Admin3/utils/services/ip_geolocation.py`
-- [ ] T007 Update imports in `backend/django_Admin3/utils/services/__init__.py` to export geolocation functions
-- [ ] T008 Verify ip_geolocation works independently by running utility tests
+- [X] T004 Create utils services directory at `backend/django_Admin3/utils/services/`
+- [X] T005 [P] Create `__init__.py` in `backend/django_Admin3/utils/services/__init__.py`
+- [X] T006 Copy ip_geolocation.py from `backend/django_Admin3/vat/ip_geolocation.py` to `backend/django_Admin3/utils/services/ip_geolocation.py`
+- [X] T007 Update imports in `backend/django_Admin3/utils/services/__init__.py` to export geolocation functions
+- [X] T008 Verify ip_geolocation works independently by running utility tests
 
 **Checkpoint**: IP geolocation relocated - user story implementation can now begin
 
@@ -62,10 +62,10 @@ python manage.py test rules_engine.tests.test_vat_integration
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] Read current `_build_user_context()` method in `backend/django_Admin3/cart/services/vat_orchestrator.py` (lines 145-177)
-- [ ] T010 [US1] Remove `from vat.context_builder import build_vat_context` import from `backend/django_Admin3/cart/services/vat_orchestrator.py` (line 155)
-- [ ] T011 [US1] Replace `_build_user_context()` method with direct UserProfile address lookup in `backend/django_Admin3/cart/services/vat_orchestrator.py`
-- [ ] T012 [US1] Update ip_geolocation import to use `utils.services.ip_geolocation` in `backend/django_Admin3/cart/services/vat_orchestrator.py`
+- [X] T009 [US1] Read current `_build_user_context()` method in `backend/django_Admin3/cart/services/vat_orchestrator.py` (lines 145-177)
+- [X] T010 [US1] Remove `from vat.context_builder import build_vat_context` import from `backend/django_Admin3/cart/services/vat_orchestrator.py` (line 155)
+- [X] T011 [US1] Replace `_build_user_context()` method with direct UserProfile address lookup in `backend/django_Admin3/cart/services/vat_orchestrator.py`
+- [X] T012 [US1] Update ip_geolocation import to use `utils.services.ip_geolocation` in `backend/django_Admin3/cart/services/vat_orchestrator.py`
 - [ ] T013 [US1] Run VAT orchestrator tests to verify no regression: `python manage.py test cart.tests.test_vat_orchestrator -v 2`
 - [ ] T014 [US1] Run VAT integration tests: `python manage.py test rules_engine.tests.test_vat_integration -v 2`
 - [ ] T015 [US1] Verify VAT calculation for all regions (UK 20%, IE rate, EU rates, SA 15%, ROW 0%)
@@ -82,15 +82,15 @@ python manage.py test rules_engine.tests.test_vat_integration
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Remove `from vat.models import VATAudit` import from `backend/django_Admin3/cart/services/vat_orchestrator.py` (line 14)
-- [ ] T017 [US2] Update `_create_audit_record()` method to be a no-op in `backend/django_Admin3/cart/services/vat_orchestrator.py` (lines 407-454)
+- [X] T016 [US2] Remove `from vat.models import VATAudit` import from `backend/django_Admin3/cart/services/vat_orchestrator.py` (line 14)
+- [X] T017 [US2] Update `_create_audit_record()` method to be a no-op in `backend/django_Admin3/cart/services/vat_orchestrator.py` (lines 407-454)
 - [ ] T018 [US2] Run cart tests to verify no regression: `python manage.py test cart -v 2`
-- [ ] T019 [US2] Create migration to drop VATAudit table: `python manage.py makemigrations vat --empty --name drop_vat_audit`
-- [ ] T020 [US2] Edit migration in `backend/django_Admin3/vat/migrations/` to add DeleteModel operation for VATAudit
-- [ ] T021 [US2] Run migration on development database: `python manage.py migrate vat`
-- [ ] T022 [US2] Remove `vat` from INSTALLED_APPS in `backend/django_Admin3/Admin3/settings/base.py`
-- [ ] T023 [US2] Verify no `from vat.` imports remain via grep: `grep -r "from vat\." --include="*.py" . | grep -v "__pycache__"`
-- [ ] T024 [US2] Delete vat app directory `backend/django_Admin3/vat/`
+- [X] T019 [US2] Create migration to drop VATAudit table: `python manage.py makemigrations vat --empty --name drop_vat_audit`
+- [X] T020 [US2] Edit migration in `backend/django_Admin3/vat/migrations/` to add DeleteModel operation for VATAudit
+- [ ] T021 [US2] Drop vat_audit table via SQL: `DROP TABLE IF EXISTS vat_audit CASCADE;`
+- [X] T022 [US2] Remove `vat` from INSTALLED_APPS in `backend/django_Admin3/Admin3/settings/base.py`
+- [X] T023 [US2] Verify no `from vat.` imports remain via grep: `grep -r "from vat\." --include="*.py" . | grep -v "__pycache__"`
+- [X] T024 [US2] Delete vat app directory `backend/django_Admin3/vat/`
 - [ ] T025 [US2] Run full test suite: `python manage.py test`
 
 **Checkpoint**: vat app completely removed, all tests passing
