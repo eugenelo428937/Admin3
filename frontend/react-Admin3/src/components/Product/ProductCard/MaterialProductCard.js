@@ -51,7 +51,6 @@ import MarkingVoucherProductCard from "./MarkingVoucherProductCard";
 import TutorialProductCard from "./Tutorial/TutorialProductCard";
 import OnlineClassroomProductCard from "./OnlineClassroomProductCard";
 import BundleCard from "./BundleCard";
-import "../../../styles/product_card.css";
 
 const MaterialProductCard = React.memo(
    ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {

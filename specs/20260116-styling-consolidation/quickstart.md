@@ -215,11 +215,67 @@ If you see "Cannot find module" errors:
 2. Check import paths are updated
 3. Run `npm install` to clear cache
 
+## Dark Mode (Architecture Ready)
+
+Dark mode colors are already defined in the token layer. Here's how to use them when implementing dark mode:
+
+### Accessing Dark Colors
+
+```javascript
+import { darkMd3 } from './theme/tokens/colors';
+// or
+import { darkMd3 } from './theme/tokens';
+```
+
+### Future Implementation
+
+When ready to implement dark mode:
+
+```jsx
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { darkMd3 } from './theme/tokens/colors';
+
+// Create dark theme
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: darkMd3.primary },
+    background: {
+      default: darkMd3.background,
+      paper: darkMd3.surface,
+    },
+  },
+});
+
+// Toggle between themes
+function App() {
+  const [mode, setMode] = useState('light');
+  const theme = mode === 'light' ? lightTheme : darkTheme;
+
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <YourApp />
+    </ThemeProvider>
+  );
+}
+```
+
+### Current Status
+
+| Feature | Status |
+| ------- | ------ |
+| Dark color tokens (`darkMd3`) | ✅ Ready |
+| Exported from tokens layer | ✅ Ready |
+| UI toggle component | ⏳ Not implemented |
+| User preference persistence | ⏳ Not implemented |
+
 ## File Locations
 
 | What | Where |
 | ---- | ----- |
 | Raw colors | `src/theme/tokens/colors.js` |
+| Dark colors | `src/theme/tokens/colors.js` (darkMd3 export) |
 | Flat semantics | `src/theme/semantic/common.js` |
 | Product cards | `src/theme/semantic/productCards.js` |
 | Navigation | `src/theme/semantic/navigation.js` |

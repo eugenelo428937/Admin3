@@ -29,7 +29,6 @@ import {
    resetFilters,
 } from "../../store/slices/filtersSlice";
 
-import "../../styles/navbar.css";
 const MainNavBar = () => {
    // Auth hook is no longer needed in MainNavBar - used by child components
    const navigate = useNavigate();

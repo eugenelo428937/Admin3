@@ -6,6 +6,7 @@ import SearchResults from "../components/SearchResults";
 import RulesEngineInlineAlert from "../components/Common/RulesEngineInlineAlert";
 import { Row, Col } from "react-bootstrap";
 import { Typography, Container } from "@mui/material";
+import { heroContainerStyles, heroContentStyles } from "../theme/styles";
 import { rulesEngineHelpers } from "../utils/rulesEngineUtils";
 import rulesEngineService from "../services/rulesEngineService";
 import { useDispatch } from "react-redux";
@@ -216,13 +217,13 @@ const Home = () => {
                ></rect>
             </svg>
          </Box>
-         <Container            
-            className="hero-container"
+         <Container
+            data-testid="hero-container"
             disableGutters={true}
             maxWidth={true}
             sx={{
+               ...heroContainerStyles,
                width:"100%",
-               overflow:"hidden",
             }}
          >
             <Row style={{ height: "100%" }}>
@@ -268,16 +269,17 @@ const Home = () => {
                   />                                    
                   {/* Content */}
                   <Container
-                     className="hero-content justify-content-evenly align-items-center"
                      sx={{
+                        ...heroContentStyles,
                         padding: {
                            xs: theme.liftkit.spacing.lg,
                            lg: theme.liftkit.spacing.lg,
                         },
-                        position: "relative",
                         zIndex: 3,
-                        display:"flex",
-                        flexDirection:"column",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-evenly",
+                        alignItems: "center",
                      }}
                   >
                      {/* Rules Engine Messages Section (Holiday Messages, etc.) */}

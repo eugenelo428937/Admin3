@@ -322,6 +322,182 @@ export const variants = {
 };
 
 // =============================================================================
+// LiftKit-compatible typography variants
+// For backward compatibility with liftKitTheme.typography usage
+// =============================================================================
+export const liftkitTypography = {
+  // Display styles
+  display1: {
+    fontSize: fontSizes.display1,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.tight,
+    letterSpacing: letterSpacing.tighter,
+  },
+  display1Bold: {
+    fontSize: fontSizes.display1,
+    fontWeight: fontWeights.bold,
+    lineHeight: lineHeights.tight,
+    letterSpacing: letterSpacing.tighter,
+  },
+  display2: {
+    fontSize: fontSizes.display2,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.tighter,
+  },
+  display2Bold: {
+    fontSize: fontSizes.display2,
+    fontWeight: fontWeights.bold,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.tighter,
+  },
+
+  // Title styles
+  title1: {
+    fontSize: fontSizes.title1,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.tighter,
+  },
+  title1Bold: {
+    fontSize: fontSizes.title1,
+    fontWeight: fontWeights.semibold,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.tighter,
+  },
+  title2: {
+    fontSize: fontSizes.title2,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.tight,
+  },
+  title2Bold: {
+    fontSize: fontSizes.title2,
+    fontWeight: fontWeights.semibold,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.tight,
+  },
+  title3: {
+    fontSize: fontSizes.title3,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.normal,
+  },
+  title3Bold: {
+    fontSize: fontSizes.title3,
+    fontWeight: fontWeights.semibold,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.normal,
+  },
+
+  // Heading styles
+  heading: {
+    fontSize: fontSizes.heading,
+    fontWeight: fontWeights.semibold,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.slight,
+  },
+  headingBold: {
+    fontSize: fontSizes.heading,
+    fontWeight: fontWeights.bold,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.slight,
+  },
+
+  // Subheading styles
+  subheading: {
+    fontSize: fontSizes.subheading,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.fine,
+  },
+  subheadingBold: {
+    fontSize: fontSizes.subheading,
+    fontWeight: fontWeights.semibold,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.fine,
+  },
+
+  // Body styles
+  body: {
+    fontSize: fontSizes.body1,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.relaxed,
+    letterSpacing: letterSpacing.subtle,
+    cursor: 'default',
+  },
+  bodyBold: {
+    fontSize: fontSizes.body1,
+    fontWeight: fontWeights.semibold,
+    lineHeight: lineHeights.relaxed,
+    letterSpacing: letterSpacing.subtle,
+    padding: '0',
+    position: 'relative',
+  },
+
+  // Callout styles
+  callout: {
+    fontSize: 'calc(1em / var(--eighthstep))',
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.normal,
+    letterSpacing: '-0.009em',
+  },
+  calloutBold: {
+    fontSize: 'calc(1em / var(--eighthstep))',
+    fontWeight: fontWeights.semibold,
+    lineHeight: lineHeights.normal,
+    letterSpacing: '-0.009em',
+    textDecoration: 'none',
+  },
+
+  // Label styles
+  label: {
+    fontSize: fontSizes.label,
+    fontWeight: fontWeights.semibold,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.minimal,
+    position: 'static',
+    top: '6.235em',
+  },
+  labelBold: {
+    fontSize: fontSizes.label,
+    fontWeight: fontWeights.bold,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.minimal,
+  },
+
+  // Caption styles
+  caption: {
+    fontSize: fontSizes.caption,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.fine,
+  },
+  captionBold: {
+    fontSize: fontSizes.caption,
+    fontWeight: fontWeights.semibold,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.fine,
+  },
+
+  // Overline styles
+  overline: {
+    fontSize: fontSizes.overline,
+    fontWeight: fontWeights.regular,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.wide,
+    textTransform: 'uppercase',
+  },
+  overlineBold: {
+    fontSize: fontSizes.overline,
+    fontWeight: fontWeights.semibold,
+    lineHeight: lineHeights.normal,
+    letterSpacing: letterSpacing.wide,
+    textTransform: 'uppercase',
+  },
+};
+
+// =============================================================================
 // Default Export
 // =============================================================================
 const typography = {
@@ -331,6 +507,7 @@ const typography = {
   lineHeights,
   letterSpacing,
   variants,
+  liftkitTypography,
   scaleMultipliers,
 };
 

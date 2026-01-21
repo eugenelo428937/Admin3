@@ -3,6 +3,8 @@
 
 export * from './containers';
 export * from './cards';
+export * from './search';
+export * from './chips';
 
 // Example usage in components:
 //

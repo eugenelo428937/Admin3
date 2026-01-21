@@ -1,9 +1,12 @@
 /**
  * Tests for Color Theme Configuration
  * T006: Test color values, palette structure
+ *
+ * NOTE: This now tests the backward-compatible colorTheme wrapper
+ * which is generated from the tokens layer.
  */
 
-import colorTheme from '../colorTheme';
+import { colorTheme } from '../colors';
 
 describe('colorTheme', () => {
   describe('exports', () => {

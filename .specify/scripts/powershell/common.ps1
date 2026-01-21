@@ -40,7 +40,7 @@ function Get-CurrentBranch {
         $highest = 0
         
         Get-ChildItem -Path $specsDir -Directory | ForEach-Object {
-            if ($_.Name -match '^(\d{3})-') {
+            if ($_.Name -match '^(\d{8})-') {
                 $num = [int]$matches[1]
                 if ($num -gt $highest) {
                     $highest = $num

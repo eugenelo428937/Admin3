@@ -2,10 +2,17 @@
 // Composes all theme modules into final MUI theme
 
 import { createTheme } from "@mui/material/styles";
-import "../styles/liftkit-css/globals.css";
 
-// Import modules (legacy - for backward compatibility)
-import {colorTheme, palettesTheme} from './colors';
+// Import from consolidated token layer (NEW - single source of truth)
+import {
+  md3,
+  scales,
+  legacyScales,
+  statusColors,
+  liftkitColors
+} from './tokens/colors';
+
+// Import liftKitTheme for spacing and typography (still needed)
 import liftKitTheme from './liftKitTheme';
 import { typographyConfig, responsiveTypography } from './typography';
 import componentOverrides from './components';
@@ -13,13 +20,37 @@ import { createGradientStyle, gradientColorSchemes } from './utils';
 import { semanticColors } from './colors/semantic';
 import { semanticSpacing } from './spacing/semantic';
 
-// NEW: Import consolidated token layer
-import { scales } from './tokens/colors';
-
 // NEW: Import semantic layer
 import { semantic } from './semantic/common';
 import productCards from './semantic/productCards';
 import navigation from './semantic/navigation';
+
+// Backward compatibility: create colorTheme-like object from tokens
+const colorTheme = {
+  palette: {
+    ...legacyScales,
+    ...statusColors,
+    md3: md3,
+    liftkit: liftkitColors,
+    bpp: {
+      // Map BPP scales for backward compatibility
+      purple: legacyScales.purple,
+      sky: legacyScales.sky,
+      mint: legacyScales.mint,
+      green: legacyScales.green,
+      orange: legacyScales.orange,
+      pink: legacyScales.pink,
+      cobalt: legacyScales.cobalt,
+      granite: legacyScales.granite,
+      yellow: legacyScales.yellow,
+      red: legacyScales.red,
+      offwhite: legacyScales.offwhite,
+    },
+  },
+};
+
+// Backward compatibility: palettesTheme is just md3
+const palettesTheme = md3;
 
 // Base theme with breakpoints
 const baseTheme = createTheme({

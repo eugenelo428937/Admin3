@@ -107,12 +107,37 @@ export const borderRadius = {
 };
 
 // =============================================================================
+// LiftKit-compatible spacing structure
+// For backward compatibility with liftKitTheme.spacing usage
+// =============================================================================
+export const liftkitSpacing = {
+  // Base spacing values
+  ...spacing,
+
+  // Scale factor
+  scaleFactor: '1.618',
+
+  // Incremental multipliers
+  wholestep: '1.618',
+  halfstep: '1.272',
+  quarterstep: '1.128',
+  eighthstep: '1.061',
+
+  // Decimal increments
+  'wholestep-dec': '0.618',
+  'halfstep-dec': '0.272',
+  'quarterstep-dec': '0.128',
+  'eighthstep-dec': '0.061',
+};
+
+// =============================================================================
 // Default Export
 // =============================================================================
 const spacingTokens = {
   scaleFactor,
   multipliers,
   spacing,
+  liftkitSpacing,
   numericSpacing,
   gaps,
   padding,

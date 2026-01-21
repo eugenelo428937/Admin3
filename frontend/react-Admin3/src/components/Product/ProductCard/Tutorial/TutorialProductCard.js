@@ -53,7 +53,6 @@ import {
    buildTutorialPriceData,
 } from "../../../../utils/tutorialMetadataBuilder";
 import TutorialSelectionDialog from "./TutorialSelectionDialog";
-import "../../../../styles/product_card.css";
 
 /**
  * TutorialProductCard

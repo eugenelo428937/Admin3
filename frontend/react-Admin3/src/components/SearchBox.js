@@ -7,7 +7,7 @@ import {
     setSearchQuery as setSearchQueryAction,
     selectSearchQuery
 } from '../store/slices/filtersSlice';
-import '../styles/search_box.css';
+import { searchBoxContainerStyles, searchInputStyles } from '../theme/styles';
 
 const SearchBox = ({
     onSearchResults,
@@ -127,8 +127,8 @@ const SearchBox = ({
 
     return (
        <Box
-          className="search-box-container"
           sx={{
+             ...searchBoxContainerStyles,
              paddingLeft: theme.liftkit?.spacing?.lg || 3,
              paddingRight: theme.liftkit?.spacing?.lg || 3,
           }}
@@ -147,12 +147,8 @@ const SearchBox = ({
                 size="small"
                 color="white"
                 sx={{
-                   borderRadius: "50px",
-                   marginTop: theme.liftkit.spacing.lg,
-                   "& .MuiOutlinedInput-root": {
-                      borderRadius: "50px",
-                      backgroundColor: "white",
-                   },
+                   ...searchInputStyles,
+                   marginTop: theme.liftkit?.spacing?.lg || 3,
                 }}
                 slotProps={{
                    startAdornment: (
@@ -166,7 +162,6 @@ const SearchBox = ({
                       </InputAdornment>
                    ),
                 }}
-                className="search-input"
              />
           </Box>
           {/* Error Display */}

@@ -2,11 +2,10 @@ import React, { useState } from "react";
 import {
 	Container,
 	Typography,
-	Grid,	
+	Grid,
 	useTheme,
 	Divider
 } from "@mui/material";
-import "../../styles/product_card.css";
 
 // Import refactored components
 import {

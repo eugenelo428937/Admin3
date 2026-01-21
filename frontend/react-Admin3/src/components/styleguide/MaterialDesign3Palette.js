@@ -10,8 +10,10 @@ import {
    Grid,
    Paper,
 } from "@mui/material";
-import "../../styles/liftkit-css/new-globals.css";
-import palettes from "../../theme/colors/palettesTheme.js";
+import { md3 } from "../../theme/tokens/colors";
+
+// Wrapper for backward compatibility - palettesTheme had palettes.light.X structure
+const palettes = { light: md3 };
 
 const MaterialDesign3Palette = () => {
    // BPP Color System data matching the unified-color-palette.html

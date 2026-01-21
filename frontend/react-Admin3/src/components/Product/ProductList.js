@@ -53,9 +53,6 @@ import SearchBox from '../SearchBox';
 import FilterDebugger from './FilterDebugger';
 import RulesEngineInlineAlert from '../Common/RulesEngineInlineAlert';
 
-// Styles
-import "../../styles/product_list.css";
-
 const ProductList = React.memo(() => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));

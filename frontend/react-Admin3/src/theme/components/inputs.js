@@ -1,5 +1,5 @@
 // Input Component Overrides (TextField, InputBase, etc.)
-import colorTheme from '../colorTheme';
+import { liftkitColors } from '../tokens/colors';
 import liftKitTheme from '../liftKitTheme';
 
 export const inputOverrides = {
@@ -8,7 +8,7 @@ export const inputOverrides = {
       root: {
         marginBottom: liftKitTheme.spacing.sm,
         "& .MuiInputBase-input": {
-          color: colorTheme.palette.liftkit.light.onSurface,
+          color: liftkitColors.light.onSurface,
         },
       },
     },
