@@ -1,6 +1,6 @@
 import { createTheme } from "@mui/material/styles";
 import theme from "./theme";
-import colorTheme from "./colorTheme";
+import { legacyScales } from "./tokens/colors";
 import liftKitTheme from "./liftKitTheme";
 
 // Test theme that adds a custom ProductCard component with base + subvariants
@@ -31,7 +31,7 @@ const testTheme = createTheme(theme, {
               gap: liftKitTheme.spacing.xs2,
               pointerEvents: "none",
               "& .subject-badge, & .session-badge": {
-                color: colorTheme.palette.granite["100"],
+                color: legacyScales.granite["100"],
                 fontSize: liftKitTheme.typography.bodyBold.fontSize,
                 paddingLeft: liftKitTheme.spacing.sm,
                 paddingRight: liftKitTheme.spacing.sm,
@@ -75,7 +75,7 @@ const testTheme = createTheme(theme, {
                 marginLeft: "auto",
                 marginRight: "0",
                 "& .product-avatar": {
-                  backgroundColor: colorTheme.palette.granite["020"],
+                  backgroundColor: legacyScales.granite["020"],
                   boxShadow: "var(--Paper-shadow)",
                 },
               },
@@ -142,28 +142,28 @@ const testTheme = createTheme(theme, {
           props: { variant: "product", producttype: "material" },
           style: {
             "& .floating-badges-container .subject-badge": {
-              backgroundColor: colorTheme.palette.cobalt["060"],
+              backgroundColor: legacyScales.cobalt["060"],
             },
             "& .floating-badges-container .session-badge": {
-              backgroundColor: colorTheme.palette.mint["030"],
+              backgroundColor: legacyScales.mint["030"],
             },
             "& .product-header": {
-              backgroundColor: colorTheme.palette.sky["020"],
+              backgroundColor: legacyScales.sky["020"],
               "& .MuiCardHeader-content .product-title": {
-                color: colorTheme.palette.sky["100"],
+                color: legacyScales.sky["100"],
               },
               "& .MuiCardHeader-content .product-subtitle": {
-                color: colorTheme.palette.sky["090"],
+                color: legacyScales.sky["090"],
               },
               "& .MuiCardHeader-avatar .product-avatar .product-avatar-icon": {
-                color: colorTheme.palette.sky["090"],
+                color: legacyScales.sky["090"],
               },
             },
             "& .MuiCardActions-root": {
-              backgroundColor: colorTheme.palette.sky["030"],
+              backgroundColor: legacyScales.sky["030"],
               "& .add-to-cart-button": {
-                color: colorTheme.palette.sky["100"],
-                backgroundColor: colorTheme.palette.sky["020"],
+                color: legacyScales.sky["100"],
+                backgroundColor: legacyScales.sky["020"],
               },
             },
           },
@@ -174,28 +174,28 @@ const testTheme = createTheme(theme, {
           props: { variant: "product", producttype: "tutorial" },
           style: {
             "& .floating-badges-container .subject-badge": {
-              backgroundColor: colorTheme.palette.cobalt["060"],
+              backgroundColor: legacyScales.cobalt["060"],
             },
             "& .floating-badges-container .session-badge": {
-              backgroundColor: colorTheme.palette.mint["030"],
+              backgroundColor: legacyScales.mint["030"],
             },
             "& .product-header": {
-              backgroundColor: colorTheme.palette.purple["020"],
+              backgroundColor: legacyScales.purple["020"],
               "& .MuiCardHeader-content .product-title": {
-                color: colorTheme.palette.sky["100"],
+                color: legacyScales.sky["100"],
               },
               "& .MuiCardHeader-content .product-subtitle": {
-                color: colorTheme.palette.sky["090"],
+                color: legacyScales.sky["090"],
               },
               "& .MuiCardHeader-avatar .product-avatar .product-avatar-icon": {
-                color: colorTheme.palette.purple["090"],
+                color: legacyScales.purple["090"],
               },
             },
             "& .MuiCardActions-root": {
-              backgroundColor: colorTheme.palette.purple["030"],
+              backgroundColor: legacyScales.purple["030"],
               "& .add-to-cart-button": {
-                color: colorTheme.palette.purple["100"],
-                backgroundColor: colorTheme.palette.purple["020"],
+                color: legacyScales.purple["100"],
+                backgroundColor: legacyScales.purple["020"],
               },
             },
           },

@@ -32,7 +32,6 @@ import {
 	AddShoppingCart,
 	Computer,
 } from "@mui/icons-material";
-import "../../../styles/product_card.css";
 
 
 const OnlineClassroomProductCard = React.memo(

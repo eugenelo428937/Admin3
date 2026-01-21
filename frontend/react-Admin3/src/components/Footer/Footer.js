@@ -16,7 +16,6 @@ import {
    FaYoutube,
    FaComments,
 } from "react-icons/fa";
-import colorTheme from "../../theme/colorTheme";
 import productService from "../../services/productService";
 import {
    navSelectSubject,
@@ -81,11 +80,11 @@ const BOTTOM_LINKS = [
 const SectionSubHeader = ({ children }) => (
   <Typography
      variant="captionSemiBold"
-     sx={{
-        color: colorTheme.palette.granite["030"],
+     sx={(theme) => ({
+        color: theme.palette.granite["030"],
         mb: 0.36,
-        display: "block",        
-     }}
+        display: "block",
+     })}
   >
      {children}
   </Typography>
@@ -95,12 +94,12 @@ const SectionSubHeader = ({ children }) => (
 const SectionHeader = ({ children }) => (
    <Typography
       variant="captionSemiBold"
-      sx={{
-         color: colorTheme.palette.granite["020"],
+      sx={(theme) => ({
+         color: theme.palette.granite["020"],
          mb: 0.6,
          display: "block",
-         borderBottom: `1px solid ${colorTheme.palette.granite["070"]}`,
-      }}
+         borderBottom: `1px solid ${theme.palette.granite["070"]}`,
+      })}
    >
       {children}
    </Typography>
@@ -110,28 +109,29 @@ const SectionHeader = ({ children }) => (
 const MainSectionHeader = ({ children }) => (
    <Typography
       variant="captionBold"
-      sx={{
-         color: colorTheme.palette.granite["010"],
+      sx={(theme) => ({
+         color: theme.palette.granite["010"],
          mb: 1.2,
          display: "block",
-         borderBottom: `1px solid ${colorTheme.palette.granite["050"]}`,
-      }}
+         borderBottom: `1px solid ${theme.palette.granite["050"]}`,
+      })}
    >
       {children}
    </Typography>
 );
+
 // Reusable link component with caption2 typography
 const FooterLink = ({ to, onClick, children, external = false }) => {
-   const linkStyles = {
-      color: colorTheme.palette.granite["030"],
+   const linkStyles = (theme) => ({
+      color: theme.palette.granite["030"],
       textDecoration: "none",
       display: "block",
       py: 0.25,
       "&:hover": {
-         color: colorTheme.palette.granite["000"],
+         color: theme.palette.granite["000"],
          textDecoration: "underline",
       },
-   };
+   });
 
    if (external) {
       return (
@@ -381,13 +381,13 @@ const SocialMediaSection = () => (
                target="_blank"
                rel="noopener noreferrer"
                aria-label={social.label}
-               sx={{
-                  color: colorTheme.palette.granite["030"],
+               sx={(theme) => ({
+                  color: theme.palette.granite["030"],
                   "&:hover": {
-                     color: colorTheme.palette.granite["000"],
+                     color: theme.palette.granite["000"],
                      backgroundColor: "rgba(255, 255, 255, 0.1)",
                   },
-               }}
+               })}
             >
                <IconComponent size={18} />
             </IconButton>
@@ -401,7 +401,7 @@ const CopyrightSection = () => (
    <Box>
       <Typography
          variant="caption2"
-         sx={{ color: colorTheme.palette.granite["030"] }}
+         sx={(theme) => ({ color: theme.palette.granite["030"] })}
       >
          Copyright &copy; 2026 BPP Actuarial Education - Part of the BPP
          Professional Education Group -{" "}
@@ -410,14 +410,14 @@ const CopyrightSection = () => (
          variant="caption2"
          component="a"
          href="mailto:acted@bpp.com"
-         sx={{
-            color: colorTheme.palette.granite["030"],
+         sx={(theme) => ({
+            color: theme.palette.granite["030"],
             textDecoration: "none",
             "&:hover": {
-               color: colorTheme.palette.granite["000"],
+               color: theme.palette.granite["000"],
                textDecoration: "underline",
             },
-         }}
+         })}
       >
          acted@bpp.com
       </Typography>
@@ -432,7 +432,7 @@ const BottomLinksSection = () => (
       divider={
          <Typography
             variant="caption2"
-            sx={{ color: colorTheme.palette.granite["040"] }}
+            sx={(theme) => ({ color: theme.palette.granite["040"] })}
          >
             |
          </Typography>

@@ -41,7 +41,6 @@ import { BoxSeam } from "react-bootstrap-icons";
 import { ThemeProvider } from "@mui/material/styles";
 import { useCart } from "../../../contexts/CartContext";
 import bundleService from "../../../services/bundleService";
-import "../../../styles/product_card.css";
 
 const BundleCard = React.memo(({ bundle, onAddToCart }) => {
    const theme = useTheme();
