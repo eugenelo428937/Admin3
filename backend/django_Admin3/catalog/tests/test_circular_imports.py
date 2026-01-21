@@ -1,7 +1,7 @@
 """Tests for circular import prevention.
 
 Verifies that the catalog consolidation doesn't introduce circular imports
-between catalog, subjects, exam_sessions, and products apps.
+between catalog, subjects, filtering, and products apps.
 
 SC-005: Circular Import Testing
 """
@@ -35,58 +35,42 @@ class TestCircularImportPrevention(TestCase):
         # Both should reference the same Subject class
         self.assertIs(subjects_models.Subject, catalog_models.Subject)
 
-    def test_exam_sessions_import_after_catalog(self):
-        """Test exam_sessions.models can be imported after catalog.models."""
+    def test_filtering_import_after_catalog(self):
+        """Test filtering.models can be imported after catalog.models."""
         from catalog import models as catalog_models
-        from exam_sessions import models as exam_sessions_models
+        from filtering import models as filtering_models
 
-        # Both should reference the same ExamSession class
-        self.assertIs(exam_sessions_models.ExamSession, catalog_models.ExamSession)
-
-    def test_products_import_after_catalog(self):
-        """Test products.models can be imported after catalog.models."""
-        from catalog import models as catalog_models
-        from products import models as products_models
-
-        # Both should reference the same Product class
-        self.assertIs(products_models.Product, catalog_models.Product)
-        self.assertIs(products_models.ProductVariation, catalog_models.ProductVariation)
+        # FilterGroup should be in filtering app
+        self.assertIsNotNone(filtering_models.FilterGroup)
+        self.assertEqual(filtering_models.FilterGroup._meta.app_label, 'filtering')
 
     def test_cross_app_import_chain(self):
         """Test importing all apps in sequence doesn't cause errors."""
         # This simulates a Django app loading sequence
         from catalog import models as catalog_models
         from subjects import models as subjects_models
-        from exam_sessions import models as exam_sessions_models
-        from products import models as products_models
+        from filtering import models as filtering_models
 
         # Verify all imports succeeded
         self.assertIsNotNone(catalog_models.Subject)
         self.assertIsNotNone(subjects_models.Subject)
-        self.assertIsNotNone(exam_sessions_models.ExamSession)
-        self.assertIsNotNone(products_models.Product)
-
-    def test_products_to_subjects_dependency(self):
-        """Test products.models can import Subject from subjects.models."""
-        # ProductBundle has FK to Subject
-        from products import models as products_models
-
-        # Verify ProductBundle can access Subject relationship
-        bundle_subject_field = products_models.ProductBundle._meta.get_field('subject')
-        self.assertIsNotNone(bundle_subject_field)
-
-    def test_filter_group_still_in_products(self):
-        """Test FilterGroup remains importable from products.models."""
-        from products.models import FilterGroup
-
-        # FilterGroup should NOT be in catalog (not migrated)
-        self.assertIsNotNone(FilterGroup)
-        self.assertEqual(FilterGroup._meta.app_label, 'products')
+        self.assertIsNotNone(catalog_models.ExamSession)
+        self.assertIsNotNone(catalog_models.Product)
+        self.assertIsNotNone(filtering_models.FilterGroup)
 
     def test_catalog_product_references_filter_group(self):
-        """Test catalog.Product can reference products.FilterGroup."""
+        """Test catalog.Product can reference filtering.FilterGroup."""
         from catalog.models import ProductProductGroup
 
-        # ProductProductGroup should reference FilterGroup in products app
+        # ProductProductGroup should reference FilterGroup in filtering app
         fk_field = ProductProductGroup._meta.get_field('product_group')
-        self.assertEqual(fk_field.related_model._meta.app_label, 'products')
+        self.assertEqual(fk_field.related_model._meta.app_label, 'filtering')
+
+    def test_catalog_product_bundle_references_subject(self):
+        """Test catalog.ProductBundle can reference catalog.Subject."""
+        from catalog.models import ProductBundle
+
+        # ProductBundle has FK to Subject
+        bundle_subject_field = ProductBundle._meta.get_field('subject')
+        self.assertIsNotNone(bundle_subject_field)
+        self.assertEqual(bundle_subject_field.related_model._meta.app_label, 'catalog')
