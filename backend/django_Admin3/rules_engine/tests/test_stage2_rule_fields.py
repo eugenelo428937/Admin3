@@ -14,11 +14,14 @@ from jsonschema import ValidationError as JsonSchemaValidationError
 
 class Stage2RuleFieldsTests(TestCase):
     """TDD Stage 2: RuleFields Schema Validation Tests"""
-    
+
     def setUp(self):
         """Set up test data"""
+        # Clean up any data from previous test runs (important for --keepdb)
+        ActedRulesFields.objects.all().delete()
+
         self.valid_schema_data = {
-            'fields_id': 'checkout_context_v1',
+            'fields_code': 'checkout_context_v1',
             'name': 'Checkout Context Schema',
             'description': 'Schema for checkout process context validation',
             'schema': {
@@ -118,20 +121,20 @@ class Stage2RuleFieldsTests(TestCase):
         
         # Verify it was saved
         self.assertIsNotNone(schema_obj.id)
-        self.assertEqual(schema_obj.fields_id, 'checkout_context_v1')
+        self.assertEqual(schema_obj.fields_code, 'checkout_context_v1')
         self.assertIsInstance(schema_obj.schema, dict)
-        
+
         # Verify JSON schema structure
-        self.assertEqual(schema_obj.schema['type'], 'object')        
-        self.assertIn('cart', schema_obj.schema['properties'])        
-        
+        self.assertEqual(schema_obj.schema['type'], 'object')
+        self.assertIn('cart', schema_obj.schema['properties'])
+
         # Verify it can be fetched from DB
-        fetched = ActedRulesFields.objects.get(fields_id='checkout_context_v1')
+        fetched = ActedRulesFields.objects.get(fields_code='checkout_context_v1')
         self.assertEqual(fetched.schema['type'], 'object')
     
-    def test_unique_fields_id_constraint(self):
+    def test_unique_fields_code_constraint(self):
         """
-        TDD RED: Test that duplicate fields_id are not allowed
+        TDD RED: Test that duplicate fields_code are not allowed
         Expected to FAIL initially - no unique constraint
         """
         # Create first schema
@@ -274,7 +277,7 @@ class Stage2RuleFieldsTests(TestCase):
         """
         # Create schema with additionalProperties: false
         strict_schema_data = self.valid_schema_data.copy()
-        strict_schema_data['fields_id'] = 'strict_checkout_v1'
+        strict_schema_data['fields_code'] = 'strict_checkout_v1'
         strict_schema_data['schema']['additionalProperties'] = False        
         strict_schema_data['schema']['properties']['cart']['additionalProperties'] = False
         
@@ -344,9 +347,9 @@ class Stage2RuleFieldsTests(TestCase):
         schema_v1 = ActedRulesFields.objects.create(**self.valid_schema_data)
         self.assertEqual(schema_v1.version, 1)
         
-        # Create version 2 with different fields_id
+        # Create version 2 with different fields_code
         schema_data_v2 = self.valid_schema_data.copy()
-        schema_data_v2['fields_id'] = 'checkout_context_v2'
+        schema_data_v2['fields_code'] = 'checkout_context_v2'
         schema_data_v2['version'] = 2
         schema_data_v2['schema']['properties']['cart']['properties']['id'] = {'type': 'integer'}
         
@@ -369,14 +372,14 @@ class Stage2RuleFieldsTests(TestCase):
         
         # Create inactive schema
         inactive_schema_data = self.valid_schema_data.copy()
-        inactive_schema_data['fields_id'] = 'inactive_schema'
+        inactive_schema_data['fields_code'] = 'inactive_schema'
         inactive_schema_data['is_active'] = False
         ActedRulesFields.objects.create(**inactive_schema_data)
         
         # Filter only active schemas
         active_schemas = ActedRulesFields.objects.filter(is_active=True)
         self.assertEqual(active_schemas.count(), 1)
-        self.assertEqual(active_schemas.first().fields_id, 'checkout_context_v1')
+        self.assertEqual(active_schemas.first().fields_code, 'checkout_context_v1')
         
         # Verify inactive schema exists but is filtered out
         all_schemas = ActedRulesFields.objects.all()

@@ -21,7 +21,7 @@ class SubjectModelTests(TestCase):
         
     def test_subject_creation(self):
         """Test that a subject can be created."""
-        self.assertEqual(self.subject.code, 'MATH101')
+        self.assertEqual(self.subject.code, 'TEST101')  # Fixed: match setUp data
         self.assertEqual(self.subject.description, 'Basic mathematics concepts')
         self.assertTrue(self.subject.active)
         
@@ -37,8 +37,9 @@ class SubjectModelTests(TestCase):
             description='Physics fundamentals'
         )
         subjects = Subject.objects.all()
-        self.assertEqual(subjects[0].code, 'MATH101')  # Alphabetical order
-        self.assertEqual(subjects[1].code, 'PHYS101')
+        # PHYS101 < TEST101 alphabetically
+        self.assertEqual(subjects[0].code, 'PHYS101')
+        self.assertEqual(subjects[1].code, 'TEST101')
 
 
 class SubjectSerializerTests(TestCase):
@@ -56,8 +57,8 @@ class SubjectSerializerTests(TestCase):
     def test_serializer_contains_expected_fields(self):
         """Test that the serializer contains the expected fields."""
         data = self.serializer.data
-        expected_fields = ['id', 'code', 'description', 'active', 
-                          'created_at', 'updated_at']
+        # Catalog SubjectSerializer fields: id, code, description, name
+        expected_fields = ['id', 'code', 'description', 'name']
         self.assertEqual(set(data.keys()), set(expected_fields))
     
     def test_code_field_content(self):
@@ -86,18 +87,18 @@ class SubjectSerializerTests(TestCase):
 
 class SubjectAPITests(APITestCase):
     """Test the Subject API endpoints."""
-    
+
     def setUp(self):
         """Set up test data and authenticate."""
         self.client = APIClient()
-        
-        # Create a user and get token for authentication
-        self.user = User.objects.create_user(
+
+        # Create a superuser for write operations (catalog requires IsSuperUser)
+        self.user = User.objects.create_superuser(
             username='testuser',
             email='test@example.com',
             password='testpassword123'
         )
-        
+
         # Authenticate the client
         self.client.force_authenticate(user=self.user)
         
@@ -153,25 +154,24 @@ class SubjectAPITests(APITestCase):
         updated_data = {
             'code': 'MATH101',
             'description': 'Complex mathematics concepts',
-            'active': False
         }
         response = self.client.put(url, updated_data, format='json')
-        
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.subject1.refresh_from_db()
         self.assertEqual(self.subject1.description, updated_data['description'])
-        self.assertEqual(self.subject1.active, updated_data['active'])
+        # Note: 'active' field not in serializer, so not tested via API
     
     def test_partial_update_subject(self):
         """Test partially updating a subject."""
         url = reverse('subject-detail', args=[self.subject1.id])
-        data = {'active': False}  # Only update active status
-        
+        data = {'description': 'Updated description'}  # Update description
+
         response = self.client.patch(url, data, format='json')
-        
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.subject1.refresh_from_db()
-        self.assertFalse(self.subject1.active)
+        self.assertEqual(self.subject1.description, 'Updated description')
     
     def test_delete_subject(self):
         """Test deleting a subject."""
@@ -192,10 +192,21 @@ class SubjectAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('code', response.data)
 
-    def test_unauthorized_access(self):
-        """Test that unauthorized users cannot access the API."""
+    def test_unauthorized_read_access(self):
+        """Test that unauthorized users CAN read (AllowAny for reads)."""
         # Create a new unauthenticated client
         client = APIClient()
         response = client.get(self.subjects_url)
-        
+
+        # Catalog API allows unauthenticated reads
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_unauthorized_write_access(self):
+        """Test that unauthorized users cannot write (IsSuperUser required)."""
+        # Create a new unauthenticated client
+        client = APIClient()
+        data = {'code': 'UNAUTH01', 'description': 'Unauthorized test'}
+        response = client.post(self.subjects_url, data, format='json')
+
+        # Catalog API requires IsSuperUser for writes
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

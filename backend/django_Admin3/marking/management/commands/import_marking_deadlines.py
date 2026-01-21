@@ -1,12 +1,11 @@
 import csv
 from django.core.management.base import BaseCommand, CommandError
 from marking.models import MarkingPaper
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+from catalog.models import ExamSessionSubjectProduct
 from django.utils.dateparse import parse_date
-from products.models import Product, ProductGroup
+from catalog.models import Product, ExamSessionSubject
 from datetime import datetime
 from subjects.models import Subject
-from exam_sessions_subjects.models import ExamSessionSubject
 
 class Command(BaseCommand):
     help = 'Bulk import marking deadlines from a TSV file.'

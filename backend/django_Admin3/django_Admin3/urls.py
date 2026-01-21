@@ -25,16 +25,12 @@ urlpatterns = [
     path('api/auth/', include('core_auth.urls')),
     path('api/users/', include('users.urls')),
     path('api/students/', include('students.urls')),
-    path('api/exam-sessions/', include('exam_sessions.urls')),
-    # path('api/subjects/', include('subjects.urls')),
+    # Legacy subjects URL - delegates to catalog.views.SubjectViewSet (002-catalog-api-consolidation)
+    path('api/subjects/', include('subjects.urls')),
     # Include products for navigation endpoints (navbar-product-groups, distance-learning-dropdown, etc.)
     path('api/products/', include('products.urls')),
-    # Include exam_sessions_subjects_products under /current/ prefix
-    path('api/products/current/', include('exam_sessions_subjects_products.urls')),
-    # path('api/', include('products.urls')),
-    path('api/', include('subjects.urls')),
-    path('api/exam-sessions-subjects/', include('exam_sessions_subjects.urls')),
-    path('api/exam-sessions-subjects-products/', include('exam_sessions_subjects_products.urls')),
+    # Legacy exam_sessions_subjects_products URLs removed (T087 - migrated to catalog/store apps)
+    # Current products now served via /api/catalog/ and /api/store/ endpoints
     path('api/cart/', include('cart.urls')),
     path('api/rules/', include('rules_engine.urls')),
     path('api/utils/', include('utils.urls')),
@@ -42,4 +38,10 @@ urlpatterns = [
     path('api/markings/', include('marking.urls')),
     path('api/marking-vouchers/', include('marking_vouchers.urls')),
     path('api/tutorials/', include('tutorials.urls')),
+    # Catalog API - consolidated catalog endpoints (002-catalog-api-consolidation)
+    path('api/catalog/', include('catalog.urls')),
+    # Search API - product search endpoints (002-catalog-api-consolidation)
+    path('api/search/', include('search.urls')),
+    # Store API - purchasable items (20250115-store-app-consolidation)
+    path('api/store/', include('store.urls')),
 ]

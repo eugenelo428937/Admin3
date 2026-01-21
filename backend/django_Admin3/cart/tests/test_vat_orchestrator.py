@@ -9,7 +9,7 @@ from datetime import datetime, date
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from cart.models import Cart, CartItem
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+from store.models import Product as StoreProduct
 from vat.models import VATAudit
 from unittest.mock import Mock, patch, MagicMock
 
@@ -32,9 +32,9 @@ class VATOrchestratorTests(TestCase):
         self.cart = Cart.objects.create(user=self.user)
 
         # Create a real product for testing
-        # Note: ExamSessionSubjectProduct requires exam_session and subject
+        # Note: StoreProduct requires exam_session_subject and product_product_variation
         # For simplicity, we'll mock it or create a minimal one
-        self.mock_product = Mock(spec=ExamSessionSubjectProduct)
+        self.mock_product = Mock(spec=StoreProduct)
         self.mock_product.id = 1
         self.mock_product.fullname = "Test Product"
         self.mock_product.pk = 1
@@ -49,8 +49,8 @@ class VATOrchestratorTests(TestCase):
 
         self.mock_product.variations.first = Mock(return_value=mock_variation)
 
-    def test_build_context_from_cart_single_item(self):
-        """Test context building with 1 cart item."""
+    def test_build_item_context_single_item(self):
+        """Test item context building with 1 cart item."""
         # Arrange
         cart_item = CartItem.objects.create(
             cart=self.cart,
@@ -60,45 +60,39 @@ class VATOrchestratorTests(TestCase):
             item_type='fee'
         )
 
-        # Import orchestrator (will fail until implemented)
+        # Import orchestrator
         from cart.services.vat_orchestrator import vat_orchestrator
 
-        # Act
-        context = vat_orchestrator._build_context(self.cart)
+        # Act - build user context first, then item context
+        user_context = vat_orchestrator._build_user_context(self.cart)
+        item_context = vat_orchestrator._build_item_context(cart_item, user_context)
 
         # Assert
-        self.assertIsNotNone(context)
-        self.assertIn('user', context)
-        self.assertIn('cart', context)
-        self.assertIn('settings', context)
+        self.assertIsNotNone(item_context)
+        self.assertIn('user', item_context)
+        self.assertIn('cart_item', item_context)  # Per-item context uses cart_item key
 
         # Verify user context
-        self.assertEqual(context['user']['id'], str(self.user.id))
-        self.assertIn('country', context['user'])
+        self.assertEqual(item_context['user']['id'], str(self.user.id))
+        self.assertIn('country_code', item_context['user'])
 
-        # Verify cart context
-        self.assertEqual(context['cart']['id'], str(self.cart.id))
-        self.assertIn('items', context['cart'])
-        self.assertEqual(len(context['cart']['items']), 1)
+        # Verify cart_item structure
+        item = item_context['cart_item']
+        self.assertEqual(item['id'], str(cart_item.id))
+        self.assertIn('product_type', item)
+        self.assertEqual(item['net_amount'], 50.0)
 
-        # Verify item structure
-        item_context = context['cart']['items'][0]
-        self.assertEqual(item_context['id'], str(cart_item.id))
-        self.assertIn('product_type', item_context)
-        self.assertEqual(item_context['actual_price'], '50.00')
-        self.assertEqual(item_context['quantity'], 1)
-
-    def test_build_context_from_cart_multiple_items(self):
-        """Test context building with multiple items."""
+    def test_build_item_context_multiple_items(self):
+        """Test item context building with multiple items."""
         # Arrange
-        CartItem.objects.create(
+        item1 = CartItem.objects.create(
             cart=self.cart,
             product=None,
             quantity=1,
             actual_price=Decimal('50.00'),
             item_type='fee'
         )
-        CartItem.objects.create(
+        item2 = CartItem.objects.create(
             cart=self.cart,
             product=None,
             quantity=2,
@@ -108,13 +102,14 @@ class VATOrchestratorTests(TestCase):
 
         from cart.services.vat_orchestrator import vat_orchestrator
 
-        # Act
-        context = vat_orchestrator._build_context(self.cart)
+        # Act - build context for each item individually
+        user_context = vat_orchestrator._build_user_context(self.cart)
+        context1 = vat_orchestrator._build_item_context(item1, user_context)
+        context2 = vat_orchestrator._build_item_context(item2, user_context)
 
-        # Assert
-        self.assertEqual(len(context['cart']['items']), 2)
-        self.assertEqual(context['cart']['items'][0]['actual_price'], '50.00')
-        self.assertEqual(context['cart']['items'][1]['actual_price'], '100.00')
+        # Assert - each context has cart_item for single item
+        self.assertEqual(context1['cart_item']['net_amount'], 50.0)
+        self.assertEqual(context2['cart_item']['net_amount'], 200.0)  # 100 * 2 qty
 
     @patch('cart.services.vat_orchestrator.rule_engine')
     def test_execute_vat_calculation_uk_customer(self, mock_rule_engine):
@@ -128,18 +123,17 @@ class VATOrchestratorTests(TestCase):
             item_type='fee'
         )
 
-        # Mock rules engine response
+        # Mock rules engine response - cart_item at top level
         mock_rule_engine.execute.return_value = {
             'success': True,
-            'cart': {
-                'items': [{
-                    'id': '1',
-                    'vat_amount': '10.00',
-                    'vat_rate': '0.2000'
-                }]
+            'cart_item': {
+                'id': 1,
+                'net_amount': '50.00',
+                'vat_amount': '10.00',
+                'gross_amount': '60.00'
             },
-            'context': {'region': 'UK'},
-            'rules_executed': ['calculate_vat_uk'],
+            'vat': {'region': 'UK', 'rate': '0.2000'},
+            'rules_executed': [{'rule_code': 'calculate_vat_uk', 'condition_result': True, 'actions_executed': 1}],
             'execution_id': 'exec_123'
         }
 
@@ -167,18 +161,17 @@ class VATOrchestratorTests(TestCase):
             item_type='fee'
         )
 
-        # Mock rules engine response for EU (0% reverse charge)
+        # Mock rules engine response for EU (0% reverse charge) - cart_item at top level
         mock_rule_engine.execute.return_value = {
             'success': True,
-            'cart': {
-                'items': [{
-                    'id': '1',
-                    'vat_amount': '0.00',
-                    'vat_rate': '0.0000'
-                }]
+            'cart_item': {
+                'id': 1,
+                'net_amount': '100.00',
+                'vat_amount': '0.00',
+                'gross_amount': '100.00'
             },
-            'context': {'region': 'EU'},
-            'rules_executed': ['calculate_vat_eu'],
+            'vat': {'region': 'EU', 'rate': '0.0000'},
+            'rules_executed': [{'rule_code': 'calculate_vat_eu', 'condition_result': True, 'actions_executed': 1}],
             'execution_id': 'exec_456'
         }
 
@@ -203,18 +196,17 @@ class VATOrchestratorTests(TestCase):
             item_type='fee'
         )
 
-        # Mock rules engine response for SA (15%)
+        # Mock rules engine response for SA (15%) - cart_item at top level
         mock_rule_engine.execute.return_value = {
             'success': True,
-            'cart': {
-                'items': [{
-                    'id': '1',
-                    'vat_amount': '15.00',
-                    'vat_rate': '0.1500'
-                }]
+            'cart_item': {
+                'id': 1,
+                'net_amount': '100.00',
+                'vat_amount': '15.00',
+                'gross_amount': '115.00'
             },
-            'context': {'region': 'SA'},
-            'rules_executed': ['calculate_vat_sa'],
+            'vat': {'region': 'SA', 'rate': '0.1500'},
+            'rules_executed': [{'rule_code': 'calculate_vat_sa', 'condition_result': True, 'actions_executed': 1}],
             'execution_id': 'exec_789'
         }
 
@@ -239,18 +231,17 @@ class VATOrchestratorTests(TestCase):
             item_type='fee'
         )
 
-        # Mock rules engine response for ROW (0%)
+        # Mock rules engine response for ROW (0%) - cart_item at top level
         mock_rule_engine.execute.return_value = {
             'success': True,
-            'cart': {
-                'items': [{
-                    'id': '1',
-                    'vat_amount': '0.00',
-                    'vat_rate': '0.0000'
-                }]
+            'cart_item': {
+                'id': 1,
+                'net_amount': '100.00',
+                'vat_amount': '0.00',
+                'gross_amount': '100.00'
             },
-            'context': {'region': 'ROW'},
-            'rules_executed': ['calculate_vat_row'],
+            'vat': {'region': 'ROW', 'rate': '0.0000'},
+            'rules_executed': [{'rule_code': 'calculate_vat_row', 'condition_result': True, 'actions_executed': 1}],
             'execution_id': 'exec_101'
         }
 
@@ -275,19 +266,17 @@ class VATOrchestratorTests(TestCase):
             item_type='fee'
         )
 
+        # cart_item at top level
         mock_rule_engine.execute.return_value = {
             'success': True,
-            'cart': {
-                'items': [{
-                    'id': '1',
-                    'actual_price': '50.00',
-                    'quantity': 1,
-                    'vat_amount': '10.00',
-                    'vat_rate': '0.2000'
-                }]
+            'cart_item': {
+                'id': 1,
+                'net_amount': '50.00',
+                'vat_amount': '10.00',
+                'gross_amount': '60.00'
             },
-            'context': {'region': 'UK'},
-            'rules_executed': ['calculate_vat_uk'],
+            'vat': {'region': 'UK', 'rate': '0.2000'},
+            'rules_executed': [{'rule_code': 'calculate_vat_uk', 'condition_result': True, 'actions_executed': 1}],
             'execution_id': 'exec_123'
         }
 
@@ -320,31 +309,33 @@ class VATOrchestratorTests(TestCase):
             item_type='fee'
         )
 
-        # Mock mixed VAT: item1 @ 20%, item2 @ 0%
-        mock_rule_engine.execute.return_value = {
-            'success': True,
-            'cart': {
-                'items': [
-                    {
-                        'id': '1',
-                        'actual_price': '50.00',
-                        'quantity': 1,
-                        'vat_amount': '10.00',  # 20% VAT
-                        'vat_rate': '0.2000'
-                    },
-                    {
-                        'id': '2',
-                        'actual_price': '100.00',
-                        'quantity': 1,
-                        'vat_amount': '0.00',  # 0% VAT
-                        'vat_rate': '0.0000'
-                    }
-                ]
+        # Mock mixed VAT: item1 @ 20%, item2 @ 0% - use side_effect for multiple items
+        mock_rule_engine.execute.side_effect = [
+            {
+                'success': True,
+                'cart_item': {
+                    'id': 1,
+                    'net_amount': '50.00',
+                    'vat_amount': '10.00',  # 20% VAT
+                    'gross_amount': '60.00'
+                },
+                'vat': {'region': 'UK', 'rate': '0.2000'},
+                'rules_executed': [{'rule_code': 'calculate_vat_uk', 'condition_result': True, 'actions_executed': 1}],
+                'execution_id': 'exec_456'
             },
-            'context': {'region': 'UK'},
-            'rules_executed': ['calculate_vat_uk'],
-            'execution_id': 'exec_456'
-        }
+            {
+                'success': True,
+                'cart_item': {
+                    'id': 2,
+                    'net_amount': '100.00',
+                    'vat_amount': '0.00',  # 0% VAT
+                    'gross_amount': '100.00'
+                },
+                'vat': {'region': 'UK', 'rate': '0.0000'},
+                'rules_executed': [{'rule_code': 'calculate_vat_uk', 'condition_result': True, 'actions_executed': 1}],
+                'execution_id': 'exec_456'
+            }
+        ]
 
         from cart.services.vat_orchestrator import vat_orchestrator
 
@@ -369,19 +360,17 @@ class VATOrchestratorTests(TestCase):
             item_type='fee'
         )
 
+        # cart_item at top level
         mock_rule_engine.execute.return_value = {
             'success': True,
-            'cart': {
-                'items': [{
-                    'id': '1',
-                    'actual_price': '50.00',
-                    'quantity': 1,
-                    'vat_amount': '10.00',
-                    'vat_rate': '0.2000'
-                }]
+            'cart_item': {
+                'id': 1,
+                'net_amount': '50.00',
+                'vat_amount': '10.00',
+                'gross_amount': '60.00'
             },
-            'context': {'region': 'UK'},
-            'rules_executed': ['calculate_vat_uk'],
+            'vat': {'region': 'UK', 'rate': '0.2000'},
+            'rules_executed': [{'rule_code': 'calculate_vat_uk', 'condition_result': True, 'actions_executed': 1}],
             'execution_id': 'exec_789'
         }
 
@@ -413,17 +402,17 @@ class VATOrchestratorTests(TestCase):
             item_type='fee'
         )
 
+        # cart_item at top level
         mock_rule_engine.execute.return_value = {
             'success': True,
-            'cart': {
-                'items': [{
-                    'id': '1',
-                    'vat_amount': '10.00',
-                    'vat_rate': '0.2000'
-                }]
+            'cart_item': {
+                'id': 1,
+                'net_amount': '50.00',
+                'vat_amount': '10.00',
+                'gross_amount': '60.00'
             },
-            'context': {'region': 'UK'},
-            'rules_executed': ['calculate_vat_uk'],
+            'vat': {'region': 'UK', 'rate': '0.2000'},
+            'rules_executed': [{'rule_code': 'calculate_vat_uk', 'condition_result': True, 'actions_executed': 1}],
             'execution_id': 'exec_999'
         }
 

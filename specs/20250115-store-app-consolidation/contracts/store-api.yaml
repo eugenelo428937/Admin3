@@ -1,0 +1,926 @@
+openapi: 3.0.3
+info:
+  title: Store API
+  description: |
+    API for purchasable items in the Admin3 store.
+    Replaces the legacy `/api/exam-sessions-subjects-products/` endpoints.
+  version: 1.0.0
+  contact:
+    name: Admin3 Development Team
+
+servers:
+  - url: /api/store
+    description: Store API base path
+
+tags:
+  - name: Products
+    description: Purchasable product operations
+  - name: Prices
+    description: Product pricing operations
+  - name: Bundles
+    description: Bundle operations
+
+paths:
+  /products/:
+    get:
+      summary: List products
+      description: |
+        Returns a paginated list of purchasable products.
+        Products with inactive catalog templates are excluded (FR-012).
+      tags:
+        - Products
+      parameters:
+        - name: exam_session_subject
+          in: query
+          description: Filter by exam session subject ID
+          schema:
+            type: integer
+        - name: subject
+          in: query
+          description: Filter by subject code
+          schema:
+            type: string
+        - name: exam_session
+          in: query
+          description: Filter by exam session ID
+          schema:
+            type: integer
+        - name: is_active
+          in: query
+          description: Filter by active status
+          schema:
+            type: boolean
+        - name: search
+          in: query
+          description: Search by product code or name
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          description: Items per page
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        '200':
+          description: Paginated list of products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Create a product
+      description: Create a new purchasable product
+      tags:
+        - Products
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /products/{id}/:
+    get:
+      summary: Get product details
+      description: Retrieve a single product by ID
+      tags:
+        - Products
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Product ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      summary: Update a product
+      description: Partially update a product
+      tags:
+        - Products
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpdate'
+      responses:
+        '200':
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete a product
+      description: Soft-delete a product (sets is_active=False)
+      tags:
+        - Products
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Product deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /products/{id}/prices/:
+    get:
+      summary: List product prices
+      description: Get all prices for a specific product
+      tags:
+        - Prices
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of prices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Price'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /prices/:
+    get:
+      summary: List all prices
+      description: Returns a list of all prices with optional filters
+      tags:
+        - Prices
+      parameters:
+        - name: product
+          in: query
+          description: Filter by product ID
+          schema:
+            type: integer
+        - name: price_type
+          in: query
+          description: Filter by price type
+          schema:
+            type: string
+            enum: [standard, retaker, reduced, additional]
+      responses:
+        '200':
+          description: List of prices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Price'
+
+    post:
+      summary: Create a price
+      description: Create a new price for a product
+      tags:
+        - Prices
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PriceCreate'
+      responses:
+        '201':
+          description: Price created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Price'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /prices/{id}/:
+    get:
+      summary: Get price details
+      tags:
+        - Prices
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Price details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Price'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      summary: Update a price
+      tags:
+        - Prices
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PriceUpdate'
+      responses:
+        '200':
+          description: Price updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Price'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete a price
+      tags:
+        - Prices
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Price deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /bundles/:
+    get:
+      summary: List bundles
+      description: Returns a paginated list of bundles
+      tags:
+        - Bundles
+      parameters:
+        - name: exam_session_subject
+          in: query
+          description: Filter by exam session subject ID
+          schema:
+            type: integer
+        - name: is_active
+          in: query
+          description: Filter by active status
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Paginated list of bundles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BundleListResponse'
+
+    post:
+      summary: Create a bundle
+      tags:
+        - Bundles
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BundleCreate'
+      responses:
+        '201':
+          description: Bundle created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bundle'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /bundles/{id}/:
+    get:
+      summary: Get bundle details
+      description: Retrieve a single bundle with its products
+      tags:
+        - Bundles
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bundle details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BundleDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      summary: Update a bundle
+      tags:
+        - Bundles
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BundleUpdate'
+      responses:
+        '200':
+          description: Bundle updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bundle'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete a bundle
+      tags:
+        - Bundles
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Bundle deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /bundles/{id}/products/:
+    get:
+      summary: List bundle products
+      description: Get all products in a bundle
+      tags:
+        - Bundles
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of bundle products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BundleProduct'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      summary: Add product to bundle
+      tags:
+        - Bundles
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BundleProductCreate'
+      responses:
+        '201':
+          description: Product added to bundle
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BundleProduct'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Permission denied
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Error message
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        exam_session_subject:
+          type: integer
+        product_product_variation:
+          type: integer
+        product_code:
+          type: string
+          maxLength: 64
+        is_active:
+          type: boolean
+          default: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - exam_session_subject
+        - product_product_variation
+
+    ProductCreate:
+      type: object
+      properties:
+        exam_session_subject:
+          type: integer
+        product_product_variation:
+          type: integer
+        product_code:
+          type: string
+          maxLength: 64
+          description: Auto-generated if not provided
+        is_active:
+          type: boolean
+          default: true
+      required:
+        - exam_session_subject
+        - product_product_variation
+
+    ProductUpdate:
+      type: object
+      properties:
+        is_active:
+          type: boolean
+
+    ProductDetail:
+      allOf:
+        - $ref: '#/components/schemas/Product'
+        - type: object
+          properties:
+            exam_session_subject_detail:
+              type: object
+              properties:
+                id:
+                  type: integer
+                exam_session:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    session_code:
+                      type: string
+                subject:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    code:
+                      type: string
+                    fullname:
+                      type: string
+            product_product_variation_detail:
+              type: object
+              properties:
+                id:
+                  type: integer
+                product_template:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    fullname:
+                      type: string
+                    shortname:
+                      type: string
+                    code:
+                      type: string
+                product_variation:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    variation_type:
+                      type: string
+            prices:
+              type: array
+              items:
+                $ref: '#/components/schemas/Price'
+
+    ProductListResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductDetail'
+
+    Price:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+        price_type:
+          type: string
+          enum: [standard, retaker, reduced, additional]
+        amount:
+          type: string
+          format: decimal
+        currency:
+          type: string
+          default: GBP
+          maxLength: 8
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - product
+        - price_type
+        - amount
+
+    PriceCreate:
+      type: object
+      properties:
+        product:
+          type: integer
+        price_type:
+          type: string
+          enum: [standard, retaker, reduced, additional]
+        amount:
+          type: string
+          format: decimal
+        currency:
+          type: string
+          default: GBP
+      required:
+        - product
+        - price_type
+        - amount
+
+    PriceUpdate:
+      type: object
+      properties:
+        amount:
+          type: string
+          format: decimal
+        currency:
+          type: string
+
+    Bundle:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        bundle_template:
+          type: integer
+        exam_session_subject:
+          type: integer
+        is_active:
+          type: boolean
+          default: true
+        override_name:
+          type: string
+          maxLength: 255
+          nullable: true
+        override_description:
+          type: string
+          nullable: true
+        display_order:
+          type: integer
+          default: 0
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - bundle_template
+        - exam_session_subject
+
+    BundleCreate:
+      type: object
+      properties:
+        bundle_template:
+          type: integer
+        exam_session_subject:
+          type: integer
+        is_active:
+          type: boolean
+          default: true
+        override_name:
+          type: string
+          nullable: true
+        override_description:
+          type: string
+          nullable: true
+        display_order:
+          type: integer
+          default: 0
+      required:
+        - bundle_template
+        - exam_session_subject
+
+    BundleUpdate:
+      type: object
+      properties:
+        is_active:
+          type: boolean
+        override_name:
+          type: string
+          nullable: true
+        override_description:
+          type: string
+          nullable: true
+        display_order:
+          type: integer
+
+    BundleDetail:
+      allOf:
+        - $ref: '#/components/schemas/Bundle'
+        - type: object
+          properties:
+            bundle_template_detail:
+              type: object
+              properties:
+                id:
+                  type: integer
+                name:
+                  type: string
+                description:
+                  type: string
+            bundle_products:
+              type: array
+              items:
+                $ref: '#/components/schemas/BundleProduct'
+
+    BundleListResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BundleDetail'
+
+    BundleProduct:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        bundle:
+          type: integer
+        product:
+          type: integer
+        default_price_type:
+          type: string
+          enum: [standard, retaker, reduced, additional]
+          default: standard
+        quantity:
+          type: integer
+          minimum: 1
+          default: 1
+        sort_order:
+          type: integer
+          default: 0
+        is_active:
+          type: boolean
+          default: true
+        product_detail:
+          $ref: '#/components/schemas/ProductDetail'
+          readOnly: true
+      required:
+        - bundle
+        - product
+
+    BundleProductCreate:
+      type: object
+      properties:
+        product:
+          type: integer
+        default_price_type:
+          type: string
+          enum: [standard, retaker, reduced, additional]
+          default: standard
+        quantity:
+          type: integer
+          minimum: 1
+          default: 1
+        sort_order:
+          type: integer
+          default: 0
+        is_active:
+          type: boolean
+          default: true
+      required:
+        - product

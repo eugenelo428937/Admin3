@@ -160,8 +160,14 @@ class PostcoderServiceTestCase(TestCase):
 
     # ==================== transform_to_getaddress_format Tests ====================
 
-    def test_transform_valid_response(self):
+    @patch('utils.models.UtilsCountrys')
+    def test_transform_valid_response(self, mock_country_model):
         """Test transformation of valid Postcoder response"""
+        # Mock country lookup to return England
+        mock_country = MagicMock()
+        mock_country.name = 'England'
+        mock_country_model.objects.get.return_value = mock_country
+
         postcoder_response = [
             {
                 "postcode": "SW1A1AA",
@@ -258,7 +264,7 @@ class PostcoderServiceTestCase(TestCase):
         self.assertEqual(address["postcode"], "AB")
 
     def test_transform_building_name_priority(self):
-        """Test building name takes priority over number"""
+        """Test building name is included with number and street"""
         # With building name
         postcoder_response = [
             {
@@ -276,8 +282,8 @@ class PostcoderServiceTestCase(TestCase):
         result = self.service.transform_to_getaddress_format(postcoder_response)
         address = result["addresses"][0]
 
-        # Building name should be in line_1, not number
-        self.assertEqual(address["line_1"], "Big Ben House Parliament Square")
+        # Building name AND number should both be in line_1
+        self.assertEqual(address["line_1"], "Big Ben House 10 Parliament Square")
 
     def test_transform_number_when_no_building_name(self):
         """Test number used when no building name"""

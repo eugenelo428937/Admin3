@@ -5,13 +5,13 @@ from django.core.cache import cache
 from django.utils import timezone
 from abc import ABC, abstractmethod
 
-from products.models.filter_system import (
-    FilterConfiguration, 
-    FilterGroup, 
+from filtering.models import (
+    FilterConfiguration,
+    FilterGroup,
     FilterConfigurationGroup,
     FilterUsageAnalytics
 )
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+# Note: ExamSessionSubjectProduct import removed as part of T087 cleanup (unused)
 
 logger = logging.getLogger(__name__)
 
@@ -457,13 +457,11 @@ def apply_filters(queryset: QuerySet, filters: Dict[str, List[Any]], user=None, 
 
 def setup_main_category_filter():
     """
-    Set up the MAIN_CATEGORY filter using the filter system
+    Set up the MAIN_CATEGORY filter using the filter system.
+
+    NOTE: This function was used for initial data migration during model consolidation.
+    The migration helpers (migrate_old_product_groups, setup_main_category_filter) have
+    been removed as part of moving filter models to the filtering app.
     """
-    # First migrate old data if needed
-    from products.models.filter_system import migrate_old_product_groups, setup_main_category_filter
-    
-    # This will be called after migration
-    migrate_old_product_groups()
-    filter_config = setup_main_category_filter()
-    
-    return filter_config
+    logger.info("setup_main_category_filter called - migration complete, no action needed")
+    return None
