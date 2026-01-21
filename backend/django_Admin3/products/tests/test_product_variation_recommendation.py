@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
-from products.models import Product, ProductVariation, ProductProductVariation, ProductVariationRecommendation
+from catalog.models import Product, ProductVariation, ProductProductVariation, ProductVariationRecommendation
 
 
 class ProductVariationRecommendationTestCase(TestCase):

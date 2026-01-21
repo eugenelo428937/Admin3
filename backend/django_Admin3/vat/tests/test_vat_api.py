@@ -395,13 +395,13 @@ class TestAPIPerformance:
     def test_large_cart_calculates_within_timeout(self, authenticated_api_client, uk_user):
         """Large cart calculates VAT within reasonable time."""
         from cart.models import Cart, CartItem
-        from products.models import Products
+        from store.models import Product
 
         # Create large cart with 50 items
         cart = Cart.objects.create(user_id=uk_user.id)
 
         for i in range(50):
-            product = Products.objects.create(
+            product = Product.objects.create(
                 product_name=f'Product {i}',
                 product_code=f'PROD-{i:03d}',
                 price=Decimal('100.00')

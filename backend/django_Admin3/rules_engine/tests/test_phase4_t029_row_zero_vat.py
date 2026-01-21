@@ -18,7 +18,7 @@ django.setup()
 from decimal import Decimal
 from django.contrib.auth import get_user_model
 from cart.models import Cart, CartItem
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+# Note: Cart now uses store.Product (T087 legacy app cleanup)
 
 User = get_user_model()
 

@@ -102,7 +102,7 @@ describe('searchService', () => {
       const result = await searchService.fuzzySearch('CM1');
 
       expect(httpService.get).toHaveBeenCalledWith(
-        'http://test-api/products/current/fuzzy-search/',
+        'http://test-api/products/search/',
         {
           params: {
             q: 'CM1',
@@ -244,7 +244,7 @@ describe('searchService', () => {
       const result = await searchService.advancedSearch({ q: 'test' });
 
       expect(httpService.get).toHaveBeenCalledWith(
-        'http://test-api/products/current/advanced-fuzzy-search/',
+        'http://test-api/products/advanced-search/',
         {
           params: {
             q: 'test',
@@ -493,7 +493,7 @@ describe('searchService', () => {
       const result = await searchService.getDefaultSearchData();
 
       expect(httpService.get).toHaveBeenCalledWith(
-        'http://test-api/products/current/default-search-data/',
+        'http://test-api/api/search/default-data/',
         {
           params: { limit: 5 },
         }

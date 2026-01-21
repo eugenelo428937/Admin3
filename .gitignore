@@ -99,4 +99,6 @@ node_modules/
 node_modules/*.mcp.json
 .env.*
 *tmpclaude*
-# null - Removed due to Windows compatibility issues (nul is a reserved device name)***
+*tmpclaude*
+# null - Removed due to Windows compatibility issues (nul is a reserved device name)
+backend/django_Admin3/misc/***

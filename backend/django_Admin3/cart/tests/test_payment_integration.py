@@ -7,8 +7,13 @@ from decimal import Decimal
 from unittest.mock import patch, MagicMock
 
 from cart.models import Cart, CartItem, ActedOrder, ActedOrderPayment
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
-from products.models import Product, ProductGroup
+from store.models import Product as StoreProduct
+from catalog.models import (
+    Product, ProductVariation, ProductProductVariation,
+    ExamSession, Subject, ExamSessionSubject
+)
+from filtering.models import FilterGroup
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -21,37 +26,77 @@ class PaymentIntegrationTest(TestCase):
             password='testpass123'
         )
         self.client.force_authenticate(user=self.user)
-        
-        # Create test product group
-        self.product_group = ProductGroup.objects.create(
+
+        # Create test filter group
+        self.filter_group = FilterGroup.objects.create(
             name='Test Product',
             code='TEST',
             description='Test product for payment testing'
         )
-        
-        # Create test product
-        self.product = Product.objects.create(
+
+        # Create test subject
+        self.subject = Subject.objects.create(
+            code='TEST',
+            description='Test Subject'
+        )
+
+        # Create test exam session
+        self.exam_session = ExamSession.objects.create(
+            session_code='TEST-2025',
+            start_date=timezone.now(),
+            end_date=timezone.now()
+        )
+
+        # Create exam session subject
+        self.exam_session_subject = ExamSessionSubject.objects.create(
+            exam_session=self.exam_session,
+            subject=self.subject
+        )
+
+        # Create test catalog product
+        self.catalog_product = Product.objects.create(
             fullname='Test Product',
-            code='TEST001',
-            group=self.product_group
+            shortname='Test Product',
+            code='TEST001'
         )
-        
-        # Create test exam session subject product
-        self.exam_product = ExamSessionSubjectProduct.objects.create(
-            product=self.product
+        # Add product to filter group via M2M
+        self.catalog_product.groups.add(self.filter_group)
+
+        # Create product variation
+        self.product_variation = ProductVariation.objects.create(
+            name='Test Printed',
+            variation_type='Printed',
+            description='Test printed variation'
         )
-        
+
+        # Create product-product-variation link
+        self.ppv = ProductProductVariation.objects.create(
+            product=self.catalog_product,
+            product_variation=self.product_variation
+        )
+
+        # Create store product (purchasable item)
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product_product_variation=self.ppv,
+            product_code='TEST/PTEST01/TEST-2025'
+        )
+
         # Create cart and add item
         self.cart = Cart.objects.create(user=self.user)
         self.cart_item = CartItem.objects.create(
             cart=self.cart,
-            product=self.exam_product,
+            product=self.store_product,
             quantity=1,
             actual_price=Decimal('100.00')
         )
 
     def test_card_payment_success(self):
-        """Test successful card payment processing"""
+        """Test successful card payment processing
+
+        Uses DummyPaymentService (via USE_DUMMY_PAYMENT_GATEWAY=True in development settings)
+        which creates actual payment records in the database.
+        """
         payment_data = {
             'employer_code': '',
             'is_invoice': False,
@@ -64,66 +109,56 @@ class PaymentIntegrationTest(TestCase):
                 'cvv': '123'
             }
         }
-        
-        # Mock the Opayo service to return success
-        with patch('cart.services.opayo_service.process_card_payment') as mock_payment:
-            mock_payment.return_value = {
-                'success': True,
-                'payment_id': 1,
-                'transaction_id': 'TEST123456',
-                'message': 'Payment processed successfully'
-            }
-            
-            response = self.client.post(reverse('cart-checkout'), payment_data)
-            
-            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-            self.assertTrue(response.data['payment']['success'])
-            self.assertEqual(response.data['payment']['transaction_id'], 'TEST123456')
-            
-            # Verify order was created
-            order = ActedOrder.objects.first()
-            self.assertIsNotNone(order)
-            self.assertEqual(order.user, self.user)
-            
-            # Verify payment record was created
-            payment = ActedOrderPayment.objects.first()
-            self.assertIsNotNone(payment)
-            self.assertEqual(payment.order, order)
-            self.assertEqual(payment.payment_method, 'card')
-            self.assertEqual(payment.status, 'completed')
+
+        # DummyPaymentService creates actual payment records - no mocking needed
+        response = self.client.post(reverse('cart-checkout'), payment_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['payment']['success'])
+        # DummyPaymentService generates transaction ID: DUMMY + timestamp
+        self.assertTrue(response.data['payment']['transaction_id'].startswith('DUMMY'))
+
+        # Verify order was created
+        order = ActedOrder.objects.first()
+        self.assertIsNotNone(order)
+        self.assertEqual(order.user, self.user)
+
+        # Verify payment record was created by DummyPaymentService
+        payment = ActedOrderPayment.objects.first()
+        self.assertIsNotNone(payment)
+        self.assertEqual(payment.order, order)
+        self.assertEqual(payment.payment_method, 'card')
+        self.assertEqual(payment.status, 'completed')
 
     def test_invoice_payment_success(self):
-        """Test successful invoice payment processing"""
+        """Test successful invoice payment processing
+
+        Uses DummyPaymentService (via USE_DUMMY_PAYMENT_GATEWAY=True in development settings)
+        which creates actual payment records in the database.
+        """
         payment_data = {
             'employer_code': 'EMP123',
             'is_invoice': True,
             'payment_method': 'invoice'
         }
-        
-        # Mock the Opayo service to return success
-        with patch('cart.services.opayo_service.process_invoice_payment') as mock_payment:
-            mock_payment.return_value = {
-                'success': True,
-                'payment_id': 1,
-                'message': 'Invoice payment request created'
-            }
-            
-            response = self.client.post(reverse('cart-checkout'), payment_data)
-            
-            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-            self.assertTrue(response.data['payment']['success'])
-            
-            # Verify order was created
-            order = ActedOrder.objects.first()
-            self.assertIsNotNone(order)
-            self.assertEqual(order.user, self.user)
-            
-            # Verify payment record was created
-            payment = ActedOrderPayment.objects.first()
-            self.assertIsNotNone(payment)
-            self.assertEqual(payment.order, order)
-            self.assertEqual(payment.payment_method, 'invoice')
-            self.assertEqual(payment.status, 'pending')
+
+        # DummyPaymentService creates actual payment records - no mocking needed
+        response = self.client.post(reverse('cart-checkout'), payment_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['payment']['success'])
+
+        # Verify order was created
+        order = ActedOrder.objects.first()
+        self.assertIsNotNone(order)
+        self.assertEqual(order.user, self.user)
+
+        # Verify payment record was created by DummyPaymentService
+        payment = ActedOrderPayment.objects.first()
+        self.assertIsNotNone(payment)
+        self.assertEqual(payment.order, order)
+        self.assertEqual(payment.payment_method, 'invoice')
+        self.assertEqual(payment.status, 'pending')
 
     def test_card_payment_failure(self):
         """Test card payment failure handling"""
@@ -141,7 +176,7 @@ class PaymentIntegrationTest(TestCase):
         }
         
         # Mock the Opayo service to return failure
-        with patch('cart.services.opayo_service.process_card_payment') as mock_payment:
+        with patch('cart.services.payment_service.payment_service.process_card_payment') as mock_payment:
             mock_payment.return_value = {
                 'success': False,
                 'payment_id': 1,
@@ -149,11 +184,11 @@ class PaymentIntegrationTest(TestCase):
                 'error_code': 'DECLINED'
             }
             
-            response = self.client.post(reverse('cart-checkout'), payment_data)
-            
+            response = self.client.post(reverse('cart-checkout'), payment_data, format='json')
+
             # Should return 400 or 500 due to payment failure
             self.assertIn(response.status_code, [status.HTTP_400_BAD_REQUEST, status.HTTP_500_INTERNAL_SERVER_ERROR])
-            
+
             # Verify no order was created (transaction rollback)
             order = ActedOrder.objects.first()
             self.assertIsNone(order)

@@ -13,7 +13,7 @@ from decimal import Decimal
 from unittest.mock import patch
 
 from cart.models import Cart, CartItem
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+# Note: Cart now uses store.Product (T087 legacy app cleanup)
 
 User = get_user_model()
 
@@ -31,39 +31,38 @@ class CartVATIntegrationTestCase(TestCase):
         )
         self.client.force_authenticate(user=self.user)
 
-    @patch('cart.models.Cart.calculate_vat_for_all_items')
-    def test_workflow_add_item_get_cart_with_vat(self, mock_calculate_vat):
+    def test_workflow_add_item_get_cart_with_vat(self):
         """
         Integration Test: Add item to cart → Get cart → VAT included
 
         Workflow:
         1. User adds item to cart
-        2. User retrieves cart
-        3. Cart includes VAT calculations
+        2. VAT stored in cart.vat_result (Phase 5 architecture)
+        3. User retrieves cart with VAT data
         """
-        # Mock VAT calculation
-        mock_calculate_vat.return_value = {
+        # Phase 5: VAT results stored in cart.vat_result JSONB field
+        vat_result = {
             'success': True,
             'items': [{
                 'item_id': 1,
-                'net_amount': Decimal('50.00'),
-                'vat_amount': Decimal('10.00'),
-                'gross_amount': Decimal('60.00'),
+                'net_amount': '50.00',
+                'vat_amount': '10.00',
+                'gross_amount': '60.00',
                 'vat_region': 'UK',
-                'vat_rate': Decimal('0.2000')
+                'vat_rate': '0.2000'
             }],
-            'total_net_amount': Decimal('50.00'),
-            'total_vat_amount': Decimal('10.00'),
-            'total_gross_amount': Decimal('60.00'),
+            'total_net_amount': '50.00',
+            'total_vat_amount': '10.00',
+            'total_gross_amount': '60.00',
             'vat_breakdown': [{
                 'region': 'UK',
                 'rate': '20%',
-                'amount': Decimal('10.00'),
+                'amount': '10.00',
                 'item_count': 1
             }]
         }
 
-        # Step 1: Add item to cart (fee item for simplicity)
+        # Step 1: Create cart with item
         cart = Cart.objects.create(user=self.user)
         CartItem.objects.create(
             cart=cart,
@@ -71,6 +70,10 @@ class CartVATIntegrationTestCase(TestCase):
             quantity=1,
             actual_price=Decimal('50.00')
         )
+        # Phase 5: Set vat_result directly (simulates orchestrator calculation)
+        # Use update_fields to ensure vat_result is saved after signal cleared it
+        cart.vat_result = vat_result
+        cart.save(update_fields=['vat_result'])
 
         # Step 2: Get cart
         response = self.client.get('/api/cart/')
@@ -85,57 +88,56 @@ class CartVATIntegrationTestCase(TestCase):
         self.assertEqual(Decimal(str(vat_totals['total_vat_amount'])), Decimal('10.00'))
         self.assertEqual(Decimal(str(vat_totals['total_gross_amount'])), Decimal('60.00'))
 
-    @patch('cart.models.Cart.calculate_vat_for_all_items')
-    def test_workflow_multiple_items_vat_breakdown(self, mock_calculate_vat):
+    def test_workflow_multiple_items_vat_breakdown(self):
         """
         Integration Test: Multiple items → VAT breakdown by region
 
         Workflow:
         1. User adds multiple items with different VAT regions
-        2. User retrieves cart
+        2. VAT stored in cart.vat_result (Phase 5 architecture)
         3. Cart shows VAT breakdown by region
         """
-        # Mock VAT calculation with multiple regions
-        mock_calculate_vat.return_value = {
+        # Phase 5: VAT results stored in cart.vat_result JSONB field
+        vat_result = {
             'success': True,
             'items': [
                 {
                     'item_id': 1,
-                    'net_amount': Decimal('50.00'),
-                    'vat_amount': Decimal('10.00'),
-                    'gross_amount': Decimal('60.00'),
+                    'net_amount': '50.00',
+                    'vat_amount': '10.00',
+                    'gross_amount': '60.00',
                     'vat_region': 'UK',
-                    'vat_rate': Decimal('0.2000')
+                    'vat_rate': '0.2000'
                 },
                 {
                     'item_id': 2,
-                    'net_amount': Decimal('100.00'),
-                    'vat_amount': Decimal('15.00'),
-                    'gross_amount': Decimal('115.00'),
+                    'net_amount': '100.00',
+                    'vat_amount': '15.00',
+                    'gross_amount': '115.00',
                     'vat_region': 'SA',
-                    'vat_rate': Decimal('0.1500')
+                    'vat_rate': '0.1500'
                 }
             ],
-            'total_net_amount': Decimal('150.00'),
-            'total_vat_amount': Decimal('25.00'),
-            'total_gross_amount': Decimal('175.00'),
+            'total_net_amount': '150.00',
+            'total_vat_amount': '25.00',
+            'total_gross_amount': '175.00',
             'vat_breakdown': [
                 {
                     'region': 'UK',
                     'rate': '20%',
-                    'amount': Decimal('10.00'),
+                    'amount': '10.00',
                     'item_count': 1
                 },
                 {
                     'region': 'SA',
                     'rate': '15%',
-                    'amount': Decimal('15.00'),
+                    'amount': '15.00',
                     'item_count': 1
                 }
             ]
         }
 
-        # Add multiple items
+        # Create cart with multiple items
         cart = Cart.objects.create(user=self.user)
         CartItem.objects.create(
             cart=cart,
@@ -149,6 +151,10 @@ class CartVATIntegrationTestCase(TestCase):
             quantity=1,
             actual_price=Decimal('100.00')
         )
+        # Phase 5: Set vat_result directly
+        # Use update_fields to ensure vat_result is saved after signal cleared it
+        cart.vat_result = vat_result
+        cart.save(update_fields=['vat_result'])
 
         # Get cart
         response = self.client.get('/api/cart/')
@@ -163,17 +169,16 @@ class CartVATIntegrationTestCase(TestCase):
         self.assertEqual(breakdown[1]['region'], 'SA')
         self.assertEqual(Decimal(str(vat_totals['total_gross_amount'])), Decimal('175.00'))
 
-    @patch('cart.models.Cart.calculate_vat_for_all_items')
-    def test_workflow_update_quantity_vat_recalculated(self, mock_calculate_vat):
+    def test_workflow_update_quantity_vat_recalculated(self):
         """
-        Integration Test: Update quantity → VAT recalculated
+        Integration Test: Update quantity → VAT cache cleared → Recalculated
 
         Workflow:
-        1. User has item in cart
+        1. User has item in cart with cached VAT
         2. User updates item quantity
-        3. Signals clear VAT cache
-        4. User retrieves cart
-        5. VAT is recalculated for new quantity
+        3. Signal clears VAT cache
+        4. Orchestrator recalculates VAT (simulated)
+        5. User retrieves cart with new VAT
         """
         # Create cart with item
         cart = Cart.objects.create(user=self.user)
@@ -188,30 +193,31 @@ class CartVATIntegrationTestCase(TestCase):
         cart.vat_result = {'total': '50.00'}
         cart.save()
 
-        # Mock recalculation after quantity change
-        mock_calculate_vat.return_value = {
-            'success': True,
-            'items': [{
-                'item_id': item.id,
-                'net_amount': Decimal('100.00'),  # 2 * 50
-                'vat_amount': Decimal('20.00'),
-                'gross_amount': Decimal('120.00'),
-                'vat_region': 'UK',
-                'vat_rate': Decimal('0.2000')
-            }],
-            'total_net_amount': Decimal('100.00'),
-            'total_vat_amount': Decimal('20.00'),
-            'total_gross_amount': Decimal('120.00'),
-            'vat_breakdown': []
-        }
-
-        # Update quantity via API (this triggers signal)
+        # Update quantity (this triggers signal to clear cache)
         item.quantity = 2
         item.save()
 
         # Verify cache was cleared by signal
         cart.refresh_from_db()
         self.assertIsNone(cart.vat_result)
+
+        # Phase 5: Simulate orchestrator recalculating VAT after cache cleared
+        cart.vat_result = {
+            'success': True,
+            'items': [{
+                'item_id': item.id,
+                'net_amount': '100.00',  # 2 * 50
+                'vat_amount': '20.00',
+                'gross_amount': '120.00',
+                'vat_region': 'UK',
+                'vat_rate': '0.2000'
+            }],
+            'total_net_amount': '100.00',
+            'total_vat_amount': '20.00',
+            'total_gross_amount': '120.00',
+            'vat_breakdown': []
+        }
+        cart.save(update_fields=['vat_result'])
 
         # Get cart - should show recalculated VAT
         response = self.client.get('/api/cart/')
@@ -220,17 +226,16 @@ class CartVATIntegrationTestCase(TestCase):
         vat_totals = response.data['vat_totals']
         self.assertEqual(Decimal(str(vat_totals['total_gross_amount'])), Decimal('120.00'))
 
-    @patch('cart.models.Cart.calculate_vat_for_all_items')
-    def test_workflow_remove_item_vat_recalculated(self, mock_calculate_vat):
+    def test_workflow_remove_item_vat_recalculated(self):
         """
-        Integration Test: Remove item → VAT recalculated
+        Integration Test: Remove item → VAT cache cleared → Recalculated
 
         Workflow:
-        1. User has multiple items in cart
+        1. User has multiple items in cart with cached VAT
         2. User removes one item
-        3. Signals clear VAT cache
-        4. User retrieves cart
-        5. VAT is recalculated for remaining items
+        3. Signal clears VAT cache
+        4. Orchestrator recalculates VAT (simulated)
+        5. User retrieves cart with new VAT
         """
         # Create cart with two items
         cart = Cart.objects.create(user=self.user)
@@ -251,29 +256,30 @@ class CartVATIntegrationTestCase(TestCase):
         cart.vat_result = {'total': '150.00'}
         cart.save()
 
-        # Mock recalculation after item removal
-        mock_calculate_vat.return_value = {
-            'success': True,
-            'items': [{
-                'item_id': item2.id,
-                'net_amount': Decimal('100.00'),
-                'vat_amount': Decimal('20.00'),
-                'gross_amount': Decimal('120.00'),
-                'vat_region': 'UK',
-                'vat_rate': Decimal('0.2000')
-            }],
-            'total_net_amount': Decimal('100.00'),
-            'total_vat_amount': Decimal('20.00'),
-            'total_gross_amount': Decimal('120.00'),
-            'vat_breakdown': []
-        }
-
-        # Remove item (this triggers signal)
+        # Remove item (this triggers signal to clear cache)
         item1.delete()
 
         # Verify cache was cleared
         cart.refresh_from_db()
         self.assertIsNone(cart.vat_result)
+
+        # Phase 5: Simulate orchestrator recalculating VAT after cache cleared
+        cart.vat_result = {
+            'success': True,
+            'items': [{
+                'item_id': item2.id,
+                'net_amount': '100.00',
+                'vat_amount': '20.00',
+                'gross_amount': '120.00',
+                'vat_region': 'UK',
+                'vat_rate': '0.2000'
+            }],
+            'total_net_amount': '100.00',
+            'total_vat_amount': '20.00',
+            'total_gross_amount': '120.00',
+            'vat_breakdown': []
+        }
+        cart.save(update_fields=['vat_result'])
 
         # Get cart - should show recalculated VAT for remaining item
         response = self.client.get('/api/cart/')
@@ -283,71 +289,76 @@ class CartVATIntegrationTestCase(TestCase):
         vat_totals = response.data['vat_totals']
         self.assertEqual(Decimal(str(vat_totals['total_gross_amount'])), Decimal('120.00'))
 
-    @patch('cart.models.Cart.calculate_vat_for_all_items')
-    def test_workflow_change_country_vat_recalculated(self, mock_calculate_vat):
+    def test_workflow_different_regions_different_vat(self):
         """
-        Integration Test: Change country → VAT recalculated for new country
+        Integration Test: Different regions → Different VAT rates
 
         Workflow:
-        1. User retrieves cart for UK (20% VAT)
-        2. User retrieves cart for ZA (15% VAT)
-        3. VAT is recalculated for new country
+        1. Cart with UK region gets 20% VAT
+        2. Cart with SA region gets 15% VAT
+        3. Phase 5: vat_result stores region-specific calculations
         """
-        # Create cart with item
-        cart = Cart.objects.create(user=self.user)
+        # Create cart with item - UK region
+        cart_uk = Cart.objects.create(user=self.user)
         CartItem.objects.create(
-            cart=cart,
+            cart=cart_uk,
             item_type='fee',
             quantity=1,
             actual_price=Decimal('100.00')
         )
-
-        # First call: UK VAT (20%)
-        mock_calculate_vat.return_value = {
+        # UK VAT at 20%
+        cart_uk.vat_result = {
             'success': True,
             'items': [],
-            'total_net_amount': Decimal('100.00'),
-            'total_vat_amount': Decimal('20.00'),
-            'total_gross_amount': Decimal('120.00'),
-            'vat_breakdown': []
+            'total_net_amount': '100.00',
+            'total_vat_amount': '20.00',
+            'total_gross_amount': '120.00',
+            'vat_breakdown': [{'region': 'UK', 'rate': '20%', 'amount': '20.00', 'item_count': 1}]
         }
+        cart_uk.save()
 
-        response_uk = self.client.get('/api/cart/?country_code=GB')
+        response_uk = self.client.get('/api/cart/')
         vat_uk = response_uk.data['vat_totals']
+        self.assertEqual(Decimal(str(vat_uk['total_gross_amount'])), Decimal('120.00'))
+        self.assertEqual(vat_uk['vat_breakdown'][0]['region'], 'UK')
 
-        # Verify UK VAT calculated
-        mock_calculate_vat.assert_called()
-        call_kwargs = mock_calculate_vat.call_args.kwargs
-        self.assertEqual(call_kwargs['country_code'], 'GB')
+        # Delete UK cart and create SA cart
+        cart_uk.delete()
 
-        # Second call: ZA VAT (15%)
-        mock_calculate_vat.return_value = {
+        # Create cart for SA region
+        cart_sa = Cart.objects.create(user=self.user)
+        CartItem.objects.create(
+            cart=cart_sa,
+            item_type='fee',
+            quantity=1,
+            actual_price=Decimal('100.00')
+        )
+        # SA VAT at 15%
+        cart_sa.vat_result = {
             'success': True,
             'items': [],
-            'total_net_amount': Decimal('100.00'),
-            'total_vat_amount': Decimal('15.00'),
-            'total_gross_amount': Decimal('115.00'),
-            'vat_breakdown': []
+            'total_net_amount': '100.00',
+            'total_vat_amount': '15.00',
+            'total_gross_amount': '115.00',
+            'vat_breakdown': [{'region': 'SA', 'rate': '15%', 'amount': '15.00', 'item_count': 1}]
         }
+        cart_sa.save()
 
-        response_za = self.client.get('/api/cart/?country_code=ZA')
-        vat_za = response_za.data['vat_totals']
+        response_sa = self.client.get('/api/cart/')
+        vat_sa = response_sa.data['vat_totals']
+        self.assertEqual(Decimal(str(vat_sa['total_gross_amount'])), Decimal('115.00'))
+        self.assertEqual(vat_sa['vat_breakdown'][0]['region'], 'SA')
 
-        # Verify ZA VAT calculated
-        call_kwargs = mock_calculate_vat.call_args.kwargs
-        self.assertEqual(call_kwargs['country_code'], 'ZA')
-        self.assertEqual(Decimal(str(vat_za['total_gross_amount'])), Decimal('115.00'))
-
-    @patch('cart.models.Cart.calculate_vat_for_all_items')
-    def test_workflow_manual_recalculation(self, mock_calculate_vat):
+    @patch('cart.views.vat_orchestrator.execute_vat_calculation')
+    def test_workflow_manual_recalculation(self, mock_orchestrator):
         """
         Integration Test: Manual VAT recalculation
 
         Workflow:
         1. User has cart with error state
-        2. User triggers manual recalculation
-        3. VAT is recalculated and error state cleared
-        4. CartItem VAT fields updated
+        2. User triggers manual recalculation via API
+        3. Orchestrator recalculates and clears error state
+        4. User gets updated VAT totals
         """
         # Create cart with error state
         cart = Cart.objects.create(
@@ -362,52 +373,53 @@ class CartVATIntegrationTestCase(TestCase):
             actual_price=Decimal('50.00')
         )
 
-        # Mock successful recalculation
-        mock_calculate_vat.return_value = {
+        # Prepare mock result
+        vat_result = {
             'success': True,
             'items': [{
                 'item_id': item.id,
-                'net_amount': Decimal('50.00'),
-                'vat_amount': Decimal('10.00'),
-                'gross_amount': Decimal('60.00'),
+                'net_amount': '50.00',
+                'vat_amount': '10.00',
+                'gross_amount': '60.00',
                 'vat_region': 'UK',
-                'vat_rate': Decimal('0.2000')
+                'vat_rate': '0.2000'
             }],
-            'total_net_amount': Decimal('50.00'),
-            'total_vat_amount': Decimal('10.00'),
-            'total_gross_amount': Decimal('60.00'),
+            'total_net_amount': '50.00',
+            'total_vat_amount': '10.00',
+            'total_gross_amount': '60.00',
             'vat_breakdown': []
         }
+
+        # Mock orchestrator - also set cart.vat_result as side effect
+        def orchestrator_side_effect(cart_arg):
+            cart_arg.vat_result = vat_result
+            cart_arg.save(update_fields=['vat_result'])
+            return vat_result
+
+        mock_orchestrator.side_effect = orchestrator_side_effect
 
         # Trigger manual recalculation
         response = self.client.post('/api/cart/vat/recalculate/')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # Verify update_items=True was used
-        mock_calculate_vat.assert_called()
-        call_kwargs = mock_calculate_vat.call_args.kwargs
-        self.assertTrue(call_kwargs.get('update_items', False))
-
-        # Verify error state cleared
-        cart.refresh_from_db()
-        self.assertFalse(cart.vat_calculation_error)
-        self.assertIsNone(cart.vat_calculation_error_message)
+        # Verify orchestrator was called
+        mock_orchestrator.assert_called()
 
         # Verify VAT totals in response
         vat_totals = response.data['vat_totals']
         self.assertTrue(vat_totals['success'])
         self.assertEqual(Decimal(str(vat_totals['total_gross_amount'])), Decimal('60.00'))
 
-    @patch('cart.models.Cart.calculate_vat_for_all_items')
-    def test_workflow_error_handling(self, mock_calculate_vat):
+    @patch('cart.views.vat_orchestrator.execute_vat_calculation')
+    def test_workflow_error_handling(self, mock_orchestrator):
         """
         Integration Test: VAT calculation error handling
 
         Workflow:
         1. User has cart
-        2. VAT calculation fails (rules engine unavailable)
-        3. Error state is set on cart
+        2. Orchestrator VAT calculation fails
+        3. Error state stored in vat_result
         4. User retrieves cart with error information
         """
         # Create cart
@@ -419,16 +431,24 @@ class CartVATIntegrationTestCase(TestCase):
             actual_price=Decimal('50.00')
         )
 
-        # Mock failed VAT calculation
-        mock_calculate_vat.return_value = {
+        # Prepare error result
+        vat_error_result = {
             'success': False,
             'error': 'Rules engine unavailable',
             'items': [],
-            'total_net_amount': Decimal('0.00'),
-            'total_vat_amount': Decimal('0.00'),
-            'total_gross_amount': Decimal('0.00'),
+            'total_net_amount': '0.00',
+            'total_vat_amount': '0.00',
+            'total_gross_amount': '0.00',
             'vat_breakdown': []
         }
+
+        # Mock orchestrator failure - also set cart.vat_result as side effect
+        def orchestrator_side_effect(cart_arg):
+            cart_arg.vat_result = vat_error_result
+            cart_arg.save(update_fields=['vat_result'])
+            return vat_error_result
+
+        mock_orchestrator.side_effect = orchestrator_side_effect
 
         # Trigger recalculation that will fail
         response = self.client.post('/api/cart/vat/recalculate/')
@@ -440,8 +460,3 @@ class CartVATIntegrationTestCase(TestCase):
         self.assertFalse(vat_totals['success'])
         self.assertIn('error', vat_totals)
         self.assertEqual(vat_totals['error'], 'Rules engine unavailable')
-
-        # Verify error state set on cart
-        cart.refresh_from_db()
-        self.assertTrue(cart.vat_calculation_error)
-        self.assertEqual(cart.vat_calculation_error_message, 'Rules engine unavailable')

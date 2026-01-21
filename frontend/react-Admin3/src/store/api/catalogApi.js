@@ -10,7 +10,7 @@ import config from '../../config';
 
 // Base query with authentication and error handling
 const baseQuery = fetchBaseQuery({
-  baseUrl: `${config.apiBaseUrl || config.apiUrl}/api/exam-sessions-subjects-products/`,
+  baseUrl: `${config.apiBaseUrl || config.apiUrl}/api/`,
   prepareHeaders: (headers, { getState }) => {
     // Add authentication token if available
     const token = localStorage.getItem('access_token');
@@ -82,7 +82,7 @@ export const catalogApi = createApi({
         if (navbarFilters.product) queryParams.append('product', navbarFilters.product);
 
         const queryString = queryParams.toString();
-        const url = `search/${queryString ? '?' + queryString : ''}`;
+        const url = `search/unified/${queryString ? '?' + queryString : ''}`;
 
         return {
           url,
@@ -150,22 +150,22 @@ export const catalogApi = createApi({
       },
     }),
     
-    // Legacy list products endpoint (for backward compatibility)
+    // List store products (purchasable items)
     listProducts: builder.query({
       query: (params = {}) => {
         const queryString = new URLSearchParams(params).toString();
-        return `current/list/${queryString ? `?${queryString}` : ''}`;
+        return `store/products/${queryString ? `?${queryString}` : ''}`;
       },
       providesTags: ['Products'],
       keepUnusedDataFor: 300,
     }),
-    
-    // Get filter configuration
+
+    // Get filter configuration (stays in products app)
     getFilterConfiguration: builder.query({
       query: (filterTypes = []) => {
         const params = filterTypes.length > 0 ? { types: filterTypes } : {};
         const queryString = new URLSearchParams(params).toString();
-        return `filter-configuration/${queryString ? `?${queryString}` : ''}`;
+        return `products/filter-configuration/${queryString ? `?${queryString}` : ''}`;
       },
       providesTags: ['Filters'],
       keepUnusedDataFor: 600, // 10 minutes - filter config changes less frequently
@@ -173,7 +173,7 @@ export const catalogApi = createApi({
     
     // Get default search data (subjects, categories, etc.)
     getDefaultSearchData: builder.query({
-      query: () => 'current/default-search-data/',
+      query: () => 'search/default-data/',
       providesTags: ['Filters'],
       keepUnusedDataFor: 600, // 10 minutes
     }),

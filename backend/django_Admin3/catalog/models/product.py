@@ -1,5 +1,8 @@
 """Product model for the catalog app.
 
+Master product template definitions. This is NOT the purchasable product -
+see store.Product for the actual purchasable items.
+
 Migrated from products/models/products.py to catalog/models/product.py.
 Table: acted.catalog_products
 """
@@ -8,27 +11,35 @@ from django.db import models
 
 class Product(models.Model):
     """
-    Stores master product definitions for study materials, tutorials, and markings.
+    Master product template for study materials, tutorials, and markings.
 
-    Products are the core catalog items that can be purchased. Each product can have
-    multiple variations (eBook, Printed, etc.) via :model:`catalog.ProductVariation`
-    and belongs to filter groups via :model:`products.FilterGroup` for categorization.
-    Products are made available for purchase through
-    :model:`exam_sessions_subjects_products.ExamSessionSubjectProduct`.
+    This model defines the product catalog (templates). Products are combined with
+    :model:`catalog.ProductVariation` via :model:`catalog.ProductProductVariation`
+    to create purchasable items in :model:`store.Product`.
+
+    **IMPORTANT**: This is NOT the model for cart/checkout operations.
+    For purchasable products, use :model:`store.Product` which links to this
+    template via ProductProductVariation.
 
     **Related Models**:
 
     - :model:`catalog.ProductVariation` - Available variations (eBook, Printed, etc.)
-    - :model:`catalog.ProductProductVariation` - Product-variation assignments
+    - :model:`catalog.ProductProductVariation` - Product-variation combinations
+    - :model:`store.Product` - Purchasable products (links ESS + PPV)
     - :model:`catalog.ProductProductGroup` - Product-group assignments
     - :model:`products.FilterGroup` - Filter/category groups
     - :model:`catalog.ProductBundleProduct` - Bundle inclusions
 
     **Usage Example**::
 
-        product = Product.objects.get(code='CM2-CSM')
-        variations = product.product_variations.all()
-        groups = product.groups.all()
+        # Get catalog template
+        template = Product.objects.get(code='CSM01')
+
+        # Get purchasable store products using this template
+        from store.models import Product as StoreProduct
+        store_products = StoreProduct.objects.filter(
+            product_product_variation__product=template
+        )
     """
 
     fullname = models.CharField(
@@ -51,7 +62,7 @@ class Product(models.Model):
 
     # M2M relationships - use string references to avoid circular imports
     groups = models.ManyToManyField(
-        'products.FilterGroup',
+        'filtering.FilterGroup',
         related_name='catalog_products',
         through='catalog.ProductProductGroup',
         help_text="Filter groups this product belongs to"
