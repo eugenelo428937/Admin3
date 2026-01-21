@@ -10,11 +10,22 @@ This is intentional and follows TDD RED → GREEN → REFACTOR workflow.
 """
 from django.test import TestCase
 from django.db import models
+from django.contrib.auth import get_user_model
 from cart.models import Cart
+
+User = get_user_model()
 
 
 class TestCartVATResultFieldExists(TestCase):
     """Test that Cart model has vat_result field."""
+
+    def setUp(self):
+        """Set up test user."""
+        self.user = User.objects.create_user(
+            username='test_user',
+            email='test@example.com',
+            password='testpass123'
+        )
 
     def test_cart_has_vat_result_field(self):
         """Test Cart model has vat_result field."""
@@ -23,7 +34,7 @@ class TestCartVATResultFieldExists(TestCase):
 
     def test_vat_result_field_exists_on_cart_instance(self):
         """Test vat_result field is accessible on Cart instance."""
-        cart = Cart.objects.create(user_id=1)
+        cart = Cart.objects.create(user=self.user)
         self.assertTrue(hasattr(cart, 'vat_result'))
 
 
@@ -45,9 +56,17 @@ class TestCartVATResultFieldType(TestCase):
 class TestCartVATResultFieldData(TestCase):
     """Test storing and retrieving VAT result data."""
 
+    def setUp(self):
+        """Set up test user."""
+        self.user = User.objects.create_user(
+            username='test_user',
+            email='test@example.com',
+            password='testpass123'
+        )
+
     def test_vat_result_stores_simple_dict(self):
         """Test vat_result can store simple dictionary."""
-        cart = Cart.objects.create(user_id=1)
+        cart = Cart.objects.create(user=self.user)
         cart.vat_result = {
             'total_vat': '20.00',
             'total_net': '100.00',
@@ -61,7 +80,7 @@ class TestCartVATResultFieldData(TestCase):
 
     def test_vat_result_stores_complex_multi_item_data(self):
         """Test vat_result can store complex multi-item VAT results."""
-        cart = Cart.objects.create(user_id=1)
+        cart = Cart.objects.create(user=self.user)
         cart.vat_result = {
             'execution_id': 'exec_123',
             'items': [
@@ -104,7 +123,7 @@ class TestCartVATResultFieldData(TestCase):
 
     def test_vat_result_stores_nested_structures(self):
         """Test vat_result can store deeply nested structures."""
-        cart = Cart.objects.create(user_id=1)
+        cart = Cart.objects.create(user=self.user)
         cart.vat_result = {
             'calculation': {
                 'user': {
@@ -137,12 +156,12 @@ class TestCartVATResultFieldData(TestCase):
 
     def test_vat_result_defaults_to_none(self):
         """Test vat_result defaults to None for new carts."""
-        cart = Cart.objects.create(user_id=1)
+        cart = Cart.objects.create(user=self.user)
         self.assertIsNone(cart.vat_result)
 
     def test_vat_result_can_be_updated(self):
         """Test vat_result can be updated after initial creation."""
-        cart = Cart.objects.create(user_id=1)
+        cart = Cart.objects.create(user=self.user)
 
         # Initial VAT result
         cart.vat_result = {
@@ -164,7 +183,7 @@ class TestCartVATResultFieldData(TestCase):
 
     def test_vat_result_can_be_cleared(self):
         """Test vat_result can be set back to None."""
-        cart = Cart.objects.create(user_id=1)
+        cart = Cart.objects.create(user=self.user)
         cart.vat_result = {'total_vat': '20.00'}
         cart.save()
 

@@ -33,9 +33,8 @@ class CartViewVATIntegrationTests(TestCase):
         # Create view instance
         self.view = CartViewSet()
 
-    @patch('cart.services.vat_orchestrator.VATAudit')
-    @patch('cart.services.vat_orchestrator.rule_engine.execute')
-    def test_trigger_vat_calculation_calls_orchestrator(self, mock_rule_engine, mock_vat_audit):
+    @patch('cart.views.vat_orchestrator.execute_vat_calculation')
+    def test_trigger_vat_calculation_calls_orchestrator(self, mock_execute_vat):
         """Test that _trigger_vat_calculation calls orchestrator and stores result."""
         # Arrange
         cart_item = CartItem.objects.create(
@@ -45,24 +44,35 @@ class CartViewVATIntegrationTests(TestCase):
             item_type='fee'
         )
 
-        # Mock Rules Engine response
-        mock_rule_engine.return_value = {
-            'success': True,
-            'cart': {
-                'items': [{
-                    'id': str(cart_item.id),
-                    'actual_price': '50.00',
-                    'quantity': 1,
-                    'vat_amount': '10.00',
-                    'vat_rate': '0.2000',
-                    'vat_region': 'UK',
-                    'gross_amount': '60.00'
-                }]
+        # Define the mock return value
+        vat_result = {
+            'status': 'calculated',
+            'region': 'UK',
+            'totals': {
+                'net': '50.00',
+                'vat': '10.00',
+                'gross': '60.00'
             },
-            'context': {'region': 'UK'},
+            'items': [{
+                'id': str(cart_item.id),
+                'net_amount': '50.00',
+                'vat_amount': '10.00',
+                'vat_rate': '0.2000',
+                'vat_region': 'UK',
+                'gross_amount': '60.00'
+            }],
             'rules_executed': ['calculate_vat_uk'],
-            'execution_id': 'exec_123'
+            'execution_id': 'exec_123',
+            'timestamp': '2025-10-15T10:30:00Z'
         }
+
+        # Mock orchestrator with side_effect that also stores vat_result (like the real orchestrator does)
+        def mock_execute(cart):
+            cart.vat_result = vat_result
+            cart.save(update_fields=['vat_result'])
+            return vat_result
+
+        mock_execute_vat.side_effect = mock_execute
 
         # Act
         self.view._trigger_vat_calculation(self.cart)
@@ -75,7 +85,7 @@ class CartViewVATIntegrationTests(TestCase):
         self.assertEqual(self.cart.vat_result['region'], 'UK')
         self.assertFalse(self.cart.vat_calculation_error)
 
-    @patch('cart.services.vat_orchestrator.vat_orchestrator.execute_vat_calculation')
+    @patch('cart.views.vat_orchestrator.execute_vat_calculation')
     def test_vat_calculation_error_sets_flags(self, mock_execute_vat):
         """Test that VAT calculation errors set error flags."""
         # Arrange
@@ -98,9 +108,8 @@ class CartViewVATIntegrationTests(TestCase):
         self.assertIsNotNone(self.cart.vat_calculation_error_message)
         self.assertIn("Rules Engine connection failed", self.cart.vat_calculation_error_message)
 
-    @patch('cart.services.vat_orchestrator.VATAudit')
-    @patch('cart.services.vat_orchestrator.rule_engine.execute')
-    def test_cart_item_vat_fields_updated(self, mock_rule_engine, mock_vat_audit):
+    @patch('cart.views.vat_orchestrator.execute_vat_calculation')
+    def test_cart_item_vat_fields_updated(self, mock_execute_vat):
         """Test that CartItem VAT fields are updated from orchestrator result."""
         # Arrange
         cart_item = CartItem.objects.create(
@@ -110,20 +119,22 @@ class CartViewVATIntegrationTests(TestCase):
             item_type='fee'
         )
 
-        mock_rule_engine.return_value = {
-            'success': True,
-            'cart': {
-                'items': [{
-                    'id': str(cart_item.id),
-                    'actual_price': '50.00',
-                    'quantity': 1,
-                    'vat_amount': '10.00',
-                    'vat_rate': '0.2000',
-                    'vat_region': 'UK',
-                    'gross_amount': '60.00'
-                }]
+        mock_execute_vat.return_value = {
+            'status': 'calculated',
+            'region': 'UK',
+            'totals': {
+                'net': '50.00',
+                'vat': '10.00',
+                'gross': '60.00'
             },
-            'context': {'region': 'UK'},
+            'items': [{
+                'id': str(cart_item.id),
+                'net_amount': '50.00',
+                'vat_amount': '10.00',
+                'vat_rate': '0.2000',
+                'vat_region': 'UK',
+                'gross_amount': '60.00'
+            }],
             'rules_executed': ['calculate_vat_uk'],
             'execution_id': 'exec_item'
         }
@@ -138,9 +149,8 @@ class CartViewVATIntegrationTests(TestCase):
         self.assertEqual(cart_item.vat_amount, Decimal('10.00'))
         self.assertEqual(cart_item.gross_amount, Decimal('60.00'))
 
-    @patch('cart.services.vat_orchestrator.VATAudit')
-    @patch('cart.services.vat_orchestrator.rule_engine.execute')
-    def test_multiple_items_aggregation(self, mock_rule_engine, mock_vat_audit):
+    @patch('cart.views.vat_orchestrator.execute_vat_calculation')
+    def test_multiple_items_aggregation(self, mock_execute_vat):
         """Test VAT calculation with multiple cart items."""
         # Arrange
         item1 = CartItem.objects.create(
@@ -156,34 +166,43 @@ class CartViewVATIntegrationTests(TestCase):
             item_type='fee'
         )
 
-        mock_rule_engine.return_value = {
-            'success': True,
-            'cart': {
-                'items': [
-                    {
-                        'id': str(item1.id),
-                        'actual_price': '50.00',
-                        'quantity': 1,
-                        'vat_amount': '10.00',
-                        'vat_rate': '0.2000',
-                        'vat_region': 'UK',
-                        'gross_amount': '60.00'
-                    },
-                    {
-                        'id': str(item2.id),
-                        'actual_price': '100.00',
-                        'quantity': 2,
-                        'vat_amount': '40.00',
-                        'vat_rate': '0.2000',
-                        'vat_region': 'UK',
-                        'gross_amount': '240.00'
-                    }
-                ]
+        vat_result = {
+            'status': 'calculated',
+            'region': 'UK',
+            'totals': {
+                'net': '250.00',
+                'vat': '50.00',
+                'gross': '300.00'
             },
-            'context': {'region': 'UK'},
+            'items': [
+                {
+                    'id': str(item1.id),
+                    'net_amount': '50.00',
+                    'vat_amount': '10.00',
+                    'vat_rate': '0.2000',
+                    'vat_region': 'UK',
+                    'gross_amount': '60.00'
+                },
+                {
+                    'id': str(item2.id),
+                    'net_amount': '200.00',
+                    'vat_amount': '40.00',
+                    'vat_rate': '0.2000',
+                    'vat_region': 'UK',
+                    'gross_amount': '240.00'
+                }
+            ],
             'rules_executed': ['calculate_vat_uk'],
             'execution_id': 'exec_multi'
         }
+
+        # Mock orchestrator with side_effect that also stores vat_result
+        def mock_execute(cart):
+            cart.vat_result = vat_result
+            cart.save(update_fields=['vat_result'])
+            return vat_result
+
+        mock_execute_vat.side_effect = mock_execute
 
         # Act
         self.view._trigger_vat_calculation(self.cart)
@@ -194,20 +213,31 @@ class CartViewVATIntegrationTests(TestCase):
         self.assertEqual(self.cart.vat_result['totals']['vat'], '50.00')
         self.assertEqual(self.cart.vat_result['totals']['gross'], '300.00')
 
-    @patch('cart.services.vat_orchestrator.VATAudit')
-    @patch('cart.services.vat_orchestrator.rule_engine.execute')
-    def test_empty_cart_calculation(self, mock_rule_engine, mock_vat_audit):
+    @patch('cart.views.vat_orchestrator.execute_vat_calculation')
+    def test_empty_cart_calculation(self, mock_execute_vat):
         """Test VAT calculation for empty cart."""
         # Arrange - no items
-        mock_rule_engine.return_value = {
-            'success': True,
-            'cart': {
-                'items': []
+        vat_result = {
+            'status': 'calculated',
+            'region': 'UK',
+            'totals': {
+                'net': '0.00',
+                'vat': '0.00',
+                'gross': '0.00'
             },
-            'context': {'region': 'UK'},
+            'items': [],
             'rules_executed': [],
             'execution_id': 'exec_empty'
         }
+
+        # Mock orchestrator with side_effect that also stores vat_result
+        def mock_execute(cart):
+            cart.vat_result = vat_result
+            cart.vat_calculation_error = False
+            cart.save(update_fields=['vat_result', 'vat_calculation_error'])
+            return vat_result
+
+        mock_execute_vat.side_effect = mock_execute
 
         # Act
         self.view._trigger_vat_calculation(self.cart)

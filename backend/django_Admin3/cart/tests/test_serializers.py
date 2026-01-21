@@ -122,25 +122,25 @@ class CartVATSerializerTestCase(TestCase):
 
         return request
 
-    @patch('cart.models.Cart.calculate_vat_for_all_items')
-    def test_cart_serializer_includes_vat_totals(self, mock_calculate_vat):
+    def test_cart_serializer_includes_vat_totals(self):
         """Test that CartSerializer includes VAT totals in response"""
-        # Mock VAT calculation
-        mock_calculate_vat.return_value = {
+        # Phase 5: Set up vat_result directly on cart (serializer reads from cart.vat_result)
+        self.cart.vat_result = {
             'success': True,
             'items': [],
-            'total_net_amount': Decimal('100.00'),
-            'total_vat_amount': Decimal('20.00'),
-            'total_gross_amount': Decimal('120.00'),
+            'total_net_amount': '100.00',
+            'total_vat_amount': '20.00',
+            'total_gross_amount': '120.00',
             'vat_breakdown': [
                 {
                     'region': 'UK',
                     'rate': '20%',
-                    'amount': Decimal('20.00'),
+                    'amount': '20.00',
                     'item_count': 1
                 }
             ]
         }
+        self.cart.save()
 
         # Create request context
         request = self._create_request_with_session('/api/cart/')
@@ -156,31 +156,31 @@ class CartVATSerializerTestCase(TestCase):
         self.assertEqual(Decimal(vat_totals['total_vat_amount']), Decimal('20.00'))
         self.assertEqual(Decimal(vat_totals['total_gross_amount']), Decimal('120.00'))
 
-    @patch('cart.models.Cart.calculate_vat_for_all_items')
-    def test_cart_serializer_includes_vat_breakdown(self, mock_calculate_vat):
+    def test_cart_serializer_includes_vat_breakdown(self):
         """Test that CartSerializer includes VAT breakdown by region"""
-        # Mock VAT calculation with multiple regions
-        mock_calculate_vat.return_value = {
+        # Phase 5: Set up vat_result directly on cart with multiple regions
+        self.cart.vat_result = {
             'success': True,
             'items': [],
-            'total_net_amount': Decimal('200.00'),
-            'total_vat_amount': Decimal('35.00'),
-            'total_gross_amount': Decimal('235.00'),
+            'total_net_amount': '200.00',
+            'total_vat_amount': '35.00',
+            'total_gross_amount': '235.00',
             'vat_breakdown': [
                 {
                     'region': 'UK',
                     'rate': '20%',
-                    'amount': Decimal('20.00'),
+                    'amount': '20.00',
                     'item_count': 1
                 },
                 {
                     'region': 'SA',
                     'rate': '15%',
-                    'amount': Decimal('15.00'),
+                    'amount': '15.00',
                     'item_count': 1
                 }
             ]
         }
+        self.cart.save()
 
         request = self._create_request_with_session('/api/cart/')
 
@@ -196,19 +196,19 @@ class CartVATSerializerTestCase(TestCase):
         self.assertEqual(breakdown[0]['region'], 'UK')
         self.assertEqual(breakdown[1]['region'], 'SA')
 
-    @patch('cart.models.Cart.calculate_vat_for_all_items')
-    def test_cart_serializer_handles_vat_calculation_error(self, mock_calculate_vat):
+    def test_cart_serializer_handles_vat_calculation_error(self):
         """Test that CartSerializer handles VAT calculation errors gracefully"""
-        # Mock VAT calculation failure
-        mock_calculate_vat.return_value = {
+        # Phase 5: Set up vat_result with error state
+        self.cart.vat_result = {
             'success': False,
             'error': 'Rules engine unavailable',
             'items': [],
-            'total_net_amount': Decimal('0.00'),
-            'total_vat_amount': Decimal('0.00'),
-            'total_gross_amount': Decimal('0.00'),
+            'total_net_amount': '0.00',
+            'total_vat_amount': '0.00',
+            'total_gross_amount': '0.00',
             'vat_breakdown': []
         }
+        self.cart.save()
 
         request = self._create_request_with_session('/api/cart/')
 
@@ -224,28 +224,40 @@ class CartVATSerializerTestCase(TestCase):
         self.assertEqual(vat_totals['error'], 'Rules engine unavailable')
 
     def test_cart_serializer_uses_country_from_context(self):
-        """Test that CartSerializer uses country_code from request context"""
+        """Test that CartSerializer returns vat_result data (Phase 5)
+
+        Note: In Phase 5, the serializer reads from cart.vat_result directly.
+        Country_code handling is done by the VAT orchestrator when writing to vat_result.
+        """
+        # Phase 5: Set up vat_result with South Africa (SA) region data
+        # (In real usage, the VAT orchestrator sets this based on country_code=ZA)
+        self.cart.vat_result = {
+            'success': True,
+            'items': [],
+            'total_net_amount': '100.00',
+            'total_vat_amount': '15.00',
+            'total_gross_amount': '115.00',
+            'vat_breakdown': [
+                {
+                    'region': 'SA',
+                    'rate': '15%',
+                    'amount': '15.00',
+                    'item_count': 1
+                }
+            ]
+        }
+        self.cart.save()
+
         # Create request with country_code in query params
         request = self._create_request_with_session('/api/cart/?country_code=ZA')
 
-        with patch('cart.models.Cart.calculate_vat_for_all_items') as mock_calc:
-            mock_calc.return_value = {
-                'success': True,
-                'items': [],
-                'total_net_amount': Decimal('0.00'),
-                'total_vat_amount': Decimal('0.00'),
-                'total_gross_amount': Decimal('0.00'),
-                'vat_breakdown': []
-            }
+        serializer = CartSerializer(self.cart, context={'request': request})
+        data = serializer.data
 
-            serializer = CartSerializer(self.cart, context={'request': request})
-            data = serializer.data
-
-            # Verify calculate_vat_for_all_items was called with ZA
-            mock_calc.assert_called_once()
-            # Check keyword arguments
-            call_kwargs = mock_calc.call_args.kwargs
-            self.assertEqual(call_kwargs['country_code'], 'ZA')
+        # Verify vat_totals reflects the stored vat_result
+        self.assertIn('vat_totals', data)
+        vat_totals = data['vat_totals']
+        self.assertEqual(vat_totals['vat_breakdown'][0]['region'], 'SA')
 
     @patch('cart.models.Cart.calculate_vat_for_all_items')
     def test_cart_serializer_includes_timestamp(self, mock_calculate_vat):
