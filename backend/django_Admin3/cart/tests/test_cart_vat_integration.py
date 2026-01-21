@@ -15,11 +15,6 @@ from decimal import Decimal
 from datetime import date
 from cart.models import Cart, CartItem
 from utils.models import UtilsRegion, UtilsCountrys, UtilsCountryRegion
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
-from exam_sessions_subjects.models import ExamSessionSubject
-from exam_sessions.models import ExamSession
-from subjects.models import Subject
-from products.models import Product
 
 User = get_user_model()
 
@@ -96,10 +91,10 @@ class CartVATIntegrationTestCase(TestCase):
 
     def test_calculate_vat_for_cart_with_items(self):
         """Test VAT calculation for cart with items."""
-        # Add items to cart
+        # Add items to cart using fee type (no product FK required)
         CartItem.objects.create(
             cart=self.cart,
-            product=self.essp,
+            item_type='fee',
             quantity=2,
             actual_price=Decimal('50.00')
         )
@@ -107,7 +102,8 @@ class CartVATIntegrationTestCase(TestCase):
         result = self.cart.calculate_vat(country_code='GB')
 
         self.assertEqual(result['country_code'], 'GB')
-        self.assertEqual(Decimal(str(result['vat_rate'])), Decimal('20.00'))
+        # VAT rate is stored as decimal (0.20), not percentage (20.00)
+        self.assertEqual(Decimal(str(result['vat_rate'])), Decimal('0.20'))
         self.assertEqual(Decimal(str(result['total_net_amount'])), Decimal('100.00'))
         self.assertEqual(Decimal(str(result['total_vat_amount'])), Decimal('20.00'))
         self.assertEqual(Decimal(str(result['total_gross_amount'])), Decimal('120.00'))
@@ -116,7 +112,7 @@ class CartVATIntegrationTestCase(TestCase):
         """Test that calculate_and_save_vat stores result in vat_result field."""
         CartItem.objects.create(
             cart=self.cart,
-            product=self.essp,
+            item_type='fee',
             quantity=1,
             actual_price=Decimal('50.00')
         )
@@ -133,7 +129,7 @@ class CartVATIntegrationTestCase(TestCase):
         """Test that VAT updates when cart items change."""
         item = CartItem.objects.create(
             cart=self.cart,
-            product=self.essp,
+            item_type='fee',
             quantity=1,
             actual_price=Decimal('50.00')
         )
@@ -158,7 +154,7 @@ class CartVATIntegrationTestCase(TestCase):
         """Test VAT calculation for different countries."""
         CartItem.objects.create(
             cart=self.cart,
-            product=self.essp,
+            item_type='fee',
             quantity=1,
             actual_price=Decimal('100.00')
         )
@@ -179,7 +175,7 @@ class CartVATIntegrationTestCase(TestCase):
         """Test get_vat_calculation returns stored result."""
         CartItem.objects.create(
             cart=self.cart,
-            product=self.essp,
+            item_type='fee',
             quantity=1,
             actual_price=Decimal('50.00')
         )
@@ -197,29 +193,16 @@ class CartVATIntegrationTestCase(TestCase):
 
     def test_calculate_vat_with_multiple_items(self):
         """Test VAT calculation with multiple different items."""
-        # Create another product
-        product2 = Product.objects.create(
-            code='CM1-EBOOK',
-            fullname='CM1 eBook',
-            group_name='Materials'
-        )
-        essp2 = ExamSessionSubjectProduct.objects.create(
-            exam_session_subject=self.exam_session_subject,
-            product=product2,
-            price=Decimal('30.00'),
-            is_available=True
-        )
-
-        # Add multiple items
+        # Add multiple fee items (no product hierarchy required)
         CartItem.objects.create(
             cart=self.cart,
-            product=self.essp,
+            item_type='fee',
             quantity=2,
             actual_price=Decimal('50.00')
         )
         CartItem.objects.create(
             cart=self.cart,
-            product=essp2,
+            item_type='fee',
             quantity=1,
             actual_price=Decimal('30.00')
         )
@@ -233,17 +216,22 @@ class CartVATIntegrationTestCase(TestCase):
         self.assertEqual(Decimal(str(result['total_gross_amount'])), Decimal('156.00'))
 
     def test_vat_calculation_error_handling(self):
-        """Test VAT calculation with invalid country code."""
+        """Test VAT calculation with invalid country code falls back gracefully."""
         CartItem.objects.create(
             cart=self.cart,
-            product=self.essp,
+            item_type='fee',
             quantity=1,
             actual_price=Decimal('50.00')
         )
 
-        # Should handle error gracefully
+        # Invalid country code falls back to 0% VAT (ROW) gracefully
         result = self.cart.calculate_vat(country_code='XX')
-        self.assertIn('error', result.keys())
+        # Should return valid result structure (not error)
+        self.assertIn('country_code', result.keys())
+        self.assertEqual(result['country_code'], 'XX')
+        # Falls back to 0% VAT rate
+        self.assertEqual(Decimal(str(result['vat_rate'])), Decimal('0.00'))
+        self.assertEqual(Decimal(str(result['total_vat_amount'])), Decimal('0.00'))
 
 
 class CartVATPhase4IntegrationTestCase(TestCase):

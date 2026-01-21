@@ -621,7 +621,7 @@ class ActedRuleViewSet(viewsets.ModelViewSet):
     # For testing, in production should be [IsAuthenticated]
     permission_classes = [AllowAny]
     pagination_class = RulesPagination
-    lookup_field = 'rule_id'
+    lookup_field = 'rule_code'
 
     def get_queryset(self):
         """Filter rules based on entry point and active status"""

@@ -1,48 +1,28 @@
-from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
-import pandas as pd
-import os
-from subjects.models import Subject
+"""
+Subjects management command: import_subjects - DEPRECATED.
 
-class Command(BaseCommand):
-    help = 'Import subjects from CSV or Excel file'
+This command is a thin wrapper that re-exports from catalog.management.commands.
+All business logic has been migrated to the catalog app as part of API consolidation.
 
-    def add_arguments(self, parser):
-        parser.add_argument('file_path', type=str, help='Path to the input file')
-        parser.add_argument(
-            '--update-existing',
-            action='store_true',
-            help='Update existing records'
-        )
-        parser.add_argument(
-            '--batch-size',
-            type=int,
-            default=1000,
-            help='Batch size for processing'
-        )
+DEPRECATION NOTICE:
+- New code should use 'python manage.py import_subjects' from catalog app
+- This wrapper is preserved for backward compatibility only
+- This module will be removed in a future release
 
-    def handle(self, *args, **options):
-        file_path = options['file_path']
-        
-        try:
-            # Basic implementation for testing
-            df = pd.read_csv(file_path) if file_path.endswith('.csv') else pd.read_excel(file_path)
-            
-            created_count = 0
-            for _, row in df.iterrows():
-                Subject.objects.create(
-                    code=row['code'],
-                    description=row['description'],
-                    active=row.get('active', True)
-                )
-                created_count += 1
-            
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"Import completed successfully:\n"
-                    f"Created: {created_count}"
-                )
-            )
-            
-        except Exception as e:
-            raise CommandError(f"Import failed: {str(e)}")
+See: specs/002-catalog-api-consolidation/
+"""
+import warnings
+
+# Emit deprecation warning on import
+warnings.warn(
+    "The import_subjects command from subjects app is deprecated. "
+    "The command has been migrated to the catalog app. "
+    "Both 'python manage.py import_subjects' invocations will work identically.",
+    DeprecationWarning,
+    stacklevel=2
+)
+
+# Re-export Command from catalog
+from catalog.management.commands.import_subjects import Command
+
+__all__ = ['Command']
