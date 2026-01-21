@@ -1,6 +1,6 @@
 # Research: Frontend Styling System Consolidation
 
-**Feature**: 006-styling-consolidation
+**Feature**: 20260116-styling-consolidation
 **Date**: 2025-01-16
 
 ## Research Questions
