@@ -1,6 +1,6 @@
 # Feature Specification: Frontend Styling System Consolidation
 
-**Feature Branch**: `006-styling-consolidation`
+**Feature Branch**: `20260116-styling-consolidation`
 **Created**: 2025-01-16
 **Status**: Draft
 **Input**: Design document: `docs/plans/2025-01-16-styling-system-consolidation-design.md`
