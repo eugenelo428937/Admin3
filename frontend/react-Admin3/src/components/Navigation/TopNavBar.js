@@ -8,12 +8,13 @@ import AuthModal from "./AuthModal";
 import CartPanel from "../Ordering/CartPanel";
 import TopNavActions from "./TopNavActions";
 import SearchModal from "./SearchModal";
-import { Box, Container, Typography, useTheme } from "@mui/material";
+import { Box, Button, Container, Tooltip, Typography, useTheme, useMediaQuery } from "@mui/material";
 
 const TopNavBar = () => {
    // State for authentication status
    const { isAuthenticated, user, logout } = useAuth();
    const theme = useTheme();
+   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
    const [showAuthModal, setShowAuthModal] = useState(false);
    const navigate = useNavigate();
    const location = useLocation();
@@ -96,7 +97,7 @@ const TopNavBar = () => {
          <Container
             maxWidth="xl"
             className="d-flex flex-row navbar-top justify-content-between align-content-end"
-            sx={{                              
+            sx={{
                px: {
                   md: theme.liftkit.spacing.xl,
                   lg: theme.liftkit.spacing.xl2,
@@ -109,76 +110,80 @@ const TopNavBar = () => {
             }}
          >
             {/* Left Group - ActEd Home and Help */}
-            <Box className="d-flex flex-row flex-wrap"  sx={{
+            <Box className="d-flex flex-row flex-wrap" sx={{
                paddingX: theme.liftkit.spacing.sm,
-               gap: { xs: 0, xl: 1 },
+               gap: { xs: 0, md: 2 },
             }}>
-               <Box
-                  className="d-flex flex-row align-items-center flex-wrap"
-                  sx={{
-                     minWidth: {
-                        xs: theme.liftkit.spacing.xl,
-                        lg: 64,
-                     },
-                  }}
-               >
-                  <Link to="/Home">
-                     <Box
-                        className="flex-wrap align-items-center d-flex flex-row"                        
+               <Tooltip title="ActEd Homepage">
+                  <Button
+                     component={Link}
+                     to="/Home"
+                     target="_blank"
+                     startIcon={isDesktop ? <HomeIcon /> : null}
+                     endIcon={!isDesktop ? <HomeIcon /> : null}
+                     sx={{
+                        textTransform: "none",
+                        color:
+                           theme.palette.liftkit?.light?.background || "text.primary",
+                        minWidth: {
+                           xs: theme.liftkit.spacing.xl,
+                           lg: 64,
+                        },
+                        justifyContent: {
+                           xs: "start",
+                           md: "center",
+                        },
+                        p: 0,
+                     }}>
+                     <Typography
+                        varitant="topnavlink"
+                        color={theme.palette.offwhite["001"]}
+                        sx={{
+                           display: { xs: "none", md: "flex" },
+                        }}
                      >
-                        <HomeIcon
-                           className="d-flex flex-row align-items-center"
-                           color={theme.palette.offwhite["001"]}
-                           fontSize={theme.typography.h5.fontSize}
-                        />
-                        <span className="d-none d-md-block body">
-                           <Typography
-                              varitant="topnavlink"
-                              color={theme.palette.offwhite["001"]}
-                              sx={{
-                                 display: { xs: "none", lg: "flex" },
-                              }}
-                           >
-                              ActEd Home
-                           </Typography>
-                        </span>
-                     </Box>
-                  </Link>
-               </Box>
-               <Box
-                  className="d-flex flex-row align-content-center flex-wrap"
-                  sx={{
-                     minWidth: {
-                        xs: theme.liftkit.spacing.xl,
-                        lg: 64,
-                     },
-                  }}
-               >
-                  <Link to="/styleguide">
-                     <Box
-                        className="flex-wrap align-items-center d-flex flex-row"                       
+                        ActEd
+                     </Typography>
+                  </Button>
+               </Tooltip>
+               <Tooltip title="Style Guide">
+                  <Button
+                     component={Link}
+                     to="/styleguide"
+                     target="_blank"
+                     startIcon={isDesktop ? <HelpIcon /> : null}
+                     endIcon={!isDesktop ? <HelpIcon /> : null}
+                     sx={{
+                        textTransform: "none",
+                        color:
+                           theme.palette.liftkit?.light?.background || "text.primary",
+                        minWidth: {
+                           xs: theme.liftkit.spacing.xl,
+                           lg: 64,
+                        },
+                        justifyContent: {
+                           xs: "start",
+                           md: "center",
+                        },
+                        p: 0,
+                     }}>
+                     <Typography
+                        varitant="topnavlink"
+                        color={theme.palette.offwhite["001"]}
+                        sx={{
+                           display: { xs: "none", md: "flex" },
+                        }}
                      >
-                        <HelpIcon className="bi d-flex flex-row align-items-center"></HelpIcon>
-                        <span className="d-none d-md-block body">
-                           <Typography
-                              varitant="topnavlink"
-                              color={theme.palette.offwhite["000"]}
-                              sx={{
-                                 display: { xs: "none", lg: "flex" },
-                              }}
-                           >
-                              Help
-                           </Typography>
-                        </span>
-                     </Box>
-                  </Link>
-               </Box>
+                        Help
+                     </Typography>
+                  </Button>
+               </Tooltip>
             </Box>
 
             {/* Right Group - TopNavActions (Brochure and Search) */}
-            <div className="d-flex flex-row">
-               <TopNavActions onOpenSearch={handleOpenSearchModal} />
-            </div>
+
+            <TopNavActions onOpenSearch={handleOpenSearchModal} />
+
          </Container>
 
          {/* Search Modal */}
