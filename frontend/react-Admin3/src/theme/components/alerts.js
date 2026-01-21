@@ -1,5 +1,5 @@
 // Alert Component Overrides
-import colorTheme from '../colorTheme';
+import { statusColors } from '../tokens/colors';
 import liftKitTheme from '../liftKitTheme';
 
 export const alertOverrides = {
@@ -13,48 +13,48 @@ export const alertOverrides = {
         },
       },
       standardSuccess: {
-        backgroundColor: colorTheme.palette.success.background,
-        color: colorTheme.palette.success.main,
+        backgroundColor: statusColors.success.background,
+        color: statusColors.success.main,
         marginBottom: liftKitTheme.spacing.xs3,
         "& .MuiAlertTitle-root": {
-          color: colorTheme.palette.success.dark,
+          color: statusColors.success.dark,
           marginBottom: liftKitTheme.spacing.xs3,
         },
         "& .MuiTypography-root": {
-          color: colorTheme.palette.success.dark,
+          color: statusColors.success.dark,
         },
       },
       standardError: {
-        backgroundColor: colorTheme.palette.error.background,
-        color: colorTheme.palette.error.dark,
+        backgroundColor: statusColors.error.background,
+        color: statusColors.error.dark,
         "& .MuiAlertTitle-root": {
-          color: colorTheme.palette.error.dark,
+          color: statusColors.error.dark,
           marginBottom: liftKitTheme.spacing.xs3,
         },
         "& .MuiTypography-root": {
-          color: colorTheme.palette.error.dark,
+          color: statusColors.error.dark,
         },
       },
       standardWarning: {
-        backgroundColor: colorTheme.palette.warning.background,
-        color: colorTheme.palette.warning.dark,
+        backgroundColor: statusColors.warning.background,
+        color: statusColors.warning.dark,
         "& .MuiAlertTitle-root": {
-          color: colorTheme.palette.warning.dark,
+          color: statusColors.warning.dark,
           marginBottom: liftKitTheme.spacing.xs3,
         },
         "& .MuiTypography-root": {
-          color: colorTheme.palette.warning.dark,
+          color: statusColors.warning.dark,
         },
       },
       standardInfo: {
-        backgroundColor: colorTheme.palette.info.background,
-        color: colorTheme.palette.info.dark,
+        backgroundColor: statusColors.info.background,
+        color: statusColors.info.dark,
         "& .MuiAlertTitle-root": {
-          color: colorTheme.palette.info.dark,
+          color: statusColors.info.dark,
           marginBottom: liftKitTheme.spacing.xs3,
         },
         "& .MuiTypography-root": {
-          color: colorTheme.palette.info.dark,
+          color: statusColors.info.dark,
         },
       },
     },

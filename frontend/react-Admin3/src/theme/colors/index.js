@@ -1,17 +1,55 @@
 // Colors Module
-// Exports raw color palette and semantic color mappings
+// Exports color tokens and semantic color mappings
 
-import colorTheme from '../colorTheme';
-import palettesTheme from './palettesTheme';
+// Import from consolidated token layer (single source of truth)
+import colors, {
+  md3,
+  scales,
+  staticColors,
+  darkMd3,
+  legacyScales,
+  statusColors,
+  liftkitColors,
+} from '../tokens/colors';
 import semanticColors from './semantic';
 
-// Re-export everything from colorTheme
-export * from '../colorTheme';
+// =============================================================================
+// Token Layer Exports (Use these in new code)
+// =============================================================================
+export { colors, md3, scales, staticColors, darkMd3, legacyScales, statusColors, liftkitColors };
+
+// =============================================================================
+// DEPRECATED: Legacy Exports (Backward compatibility wrappers)
+// =============================================================================
+
+// @deprecated Use `legacyScales` or `scales` from tokens/colors.js instead
+// Creates colorTheme-like structure from tokens for backward compatibility
+const colorTheme = {
+  palette: {
+    ...legacyScales,
+    ...statusColors,
+    md3: md3,
+    liftkit: liftkitColors,
+    bpp: legacyScales,
+  },
+};
 export { colorTheme };
+
+// @deprecated Use `md3` from tokens/colors.js instead
+const palettesTheme = md3;
+export { palettesTheme };
 
 // Export semantic mappings
 export { semanticColors };
-export{ palettesTheme };
 
-// Default export is the raw colorTheme for backward compatibility
-export default {colorTheme,palettesTheme};
+// Default export includes both new and legacy for transition period
+export default {
+  // New token layer
+  colors,
+  md3,
+  scales,
+  legacyScales,
+  // Legacy (deprecated - wrappers only)
+  colorTheme,
+  palettesTheme,
+};

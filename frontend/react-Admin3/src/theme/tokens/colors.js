@@ -208,6 +208,49 @@ export const scales = {
     90: '#272524',
     100: '#111110',
   },
+
+  // Offwhite scale (light grays for subtle backgrounds)
+  offwhite: {
+    0: '#fdfdfd',
+    1: '#f4f4f4',
+    2: '#ececec',
+    3: '#e3e3e3',
+    5: '#dadada',
+    6: '#d2d2d2',
+    7: '#c9c9c9',
+    8: '#c1c1c1',
+    9: '#b8b8b8',
+  },
+
+  // Yellow scale (warnings, highlights)
+  yellow: {
+    10: '#fff8db',
+    20: '#f3d972',
+    30: '#d9b600',
+    40: '#be9a00',
+    50: '#a27f00',
+    60: '#856300',
+    70: '#6f4901',
+    80: '#563300',
+    90: '#3f1d00',
+    100: '#280500',
+    110: '#ffdb46',
+  },
+
+  // Red scale (errors, alerts)
+  red: {
+    10: '#ffedf3',
+    20: '#ffccd0',
+    30: '#fba2aa',
+    40: '#f37887',
+    50: '#e84a67',
+    60: '#d30047',
+    70: '#a70026',
+    80: '#7d0006',
+    90: '#550000',
+    100: '#2d0000',
+    110: '#df1156',
+  },
 };
 
 // =============================================================================
@@ -217,6 +260,168 @@ export const staticColors = {
   white: '#FFFFFF',
   black: '#000000',
   transparent: 'transparent',
+};
+
+// =============================================================================
+// Status Colors (with main/light/dark/background/contrastText)
+// =============================================================================
+export const statusColors = {
+  primary: {
+    main: '#4658ac',
+    light: '#b9c3ff',
+    dark: '#2d3f93',
+    contrastText: '#fefbff',
+  },
+  secondary: {
+    main: '#5a5d72',
+    light: '#c3c5dd',
+    dark: '#434659',
+    contrastText: '#fff',
+  },
+  tertiary: {
+    main: '#76546e',
+    light: '#e5bad8',
+    dark: '#5c3c55',
+    contrastText: '#fff',
+  },
+  error: {
+    main: '#ba1a1a',
+    light: '#ffb4ab',
+    dark: '#93000a',
+    background: '#ffc3bb',
+    contrastText: '#fff',
+  },
+  warning: {
+    main: '#7c5800',
+    light: '#f7bd48',
+    dark: '#4b3400',
+    background: '#fcebc8',
+    contrastText: '#fff',
+  },
+  info: {
+    main: '#1758c7',
+    light: '#b1c5ff',
+    dark: '#002d6e',
+    background: '#ecf0ff',
+    contrastText: '#fff',
+  },
+  success: {
+    main: '#006d3d',
+    light: '#76db9a',
+    dark: '#00522c',
+    background: '#c8f0d6',
+    contrastText: '#fff',
+  },
+  background: {
+    default: '#fefbff',
+    paper: '#fdfdfd',
+  },
+  surface: {
+    main: '#e8eced',
+    variant: '#e3e1ec',
+    containerLowest: '#fff',
+    containerLow: '#cbdadd',
+    container: '#f0edf1',
+    containerHigh: '#eae7ec',
+    containerHighest: '#e4e1e6',
+  },
+  text: {
+    primary: '#1b1b1f',
+    secondary: '#45464f',
+  },
+};
+
+// =============================================================================
+// Liftkit Theme Colors (Light and Dark modes)
+// =============================================================================
+export const liftkitColors = {
+  light: {
+    background: '#fefbff',
+    onSurface: '#1b1b1f',
+    primary: '#4658ac',
+    surfaceContainerLowest: '#fff',
+    onSurfaceVariant: '#45464f',
+    onPrimary: '#fefbff',
+    outlineVariant: '#c6c5d0',
+    shadow: '#000',
+    info: '#1758c7',
+    secondary: '#5a5d72',
+    outline: '#767680',
+    inversePrimary: '#b9c3ff',
+    surfaceContainerLow: '#cbdadd',
+    successContainer: '#92f8b4',
+    onSuccessContainer: '#00210f',
+    infoContainer: '#dae2ff',
+    onInfoContainer: '#001946',
+    warningContainer: '#ffdea7',
+    onWarningContainer: '#271900',
+    errorContainer: '#ffdad6',
+    onErrorContainer: '#410002',
+    onSecondaryContainer: '#171b2c',
+    primaryContainer: '#dee1ff',
+    onPrimaryContainer: '#001258',
+    onSecondary: '#fff',
+    secondaryContainer: '#dfe1f9',
+    tertiary: '#76546e',
+    onTertiary: '#fff',
+    tertiaryContainer: '#ffd7f2',
+    onTertiaryContainer: '#2d1228',
+    error: '#ba1a1a',
+    onError: '#fff',
+    onBackground: '#1b1b1f',
+    surface: '#e8eced',
+    surfaceVariant: '#e3e1ec',
+    scrim: '#000',
+    inverseSurface: '#303034',
+    inverseOnSurface: '#f3f0f4',
+    success: '#006d3d',
+    onSuccess: '#fff',
+    warning: '#7c5800',
+    onWarning: '#fff',
+    onInfo: '#fff',
+  },
+  dark: {
+    outline: '#90909a',
+    error: '#ffb4ab',
+    primary: '#b9c3ff',
+    onPrimary: '#11277c',
+    primaryContainer: '#2d3f93',
+    onPrimaryContainer: '#dee1ff',
+    secondary: '#c3c5dd',
+    onSecondary: '#2c2f42',
+    secondaryContainer: '#434659',
+    onSecondaryContainer: '#dfe1f9',
+    tertiary: '#e5bad8',
+    onTertiary: '#44263e',
+    tertiaryContainer: '#5c3c55',
+    onTertiaryContainer: '#ffd7f2',
+    onError: '#690005',
+    errorContainer: '#93000a',
+    onErrorContainer: '#ffb4ab',
+    background: '#1b1b1f',
+    onBackground: '#e4e1e6',
+    surface: '#131316',
+    onSurface: '#e4e1e6',
+    onSurfaceVariant: '#c6c5d0',
+    surfaceVariant: '#45464f',
+    shadow: '#000',
+    inverseSurface: '#e4e1e6',
+    scrim: '#000',
+    inverseOnSurface: '#303034',
+    inversePrimary: '#4658ac',
+    success: '#76db9a',
+    onSuccess: '#00391d',
+    successContainer: '#00522c',
+    onSuccessContainer: '#92f8b4',
+    warning: '#f7bd48',
+    onWarning: '#412d00',
+    warningContainer: '#5e4200',
+    onWarningContainer: '#ffdea7',
+    info: '#b1c5ff',
+    onInfo: '#002c71',
+    infoContainer: '#00419e',
+    onInfoContainer: '#dae2ff',
+  },
 };
 
 // =============================================================================
@@ -276,12 +481,56 @@ export const darkMd3 = {
 };
 
 // =============================================================================
+// Utility: Create string-keyed scale from numeric-keyed scale
+// For backward compatibility with legacy code using "010", "020" etc.
+// =============================================================================
+const createStringKeyScale = (numericScale, padLength = 3) => {
+  const result = {};
+  for (const [key, value] of Object.entries(numericScale)) {
+    // Pad numeric keys: 10 -> "010", 100 -> "100"
+    const stringKey = String(key).padStart(padLength, '0');
+    result[stringKey] = value;
+    // Also keep numeric key for direct access
+    result[key] = value;
+  }
+  return result;
+};
+
+// String-keyed scales for backward compatibility (legacy components use "010", "020" etc.)
+export const legacyScales = {
+  purple: createStringKeyScale(scales.purple),
+  sky: createStringKeyScale(scales.sky),
+  mint: createStringKeyScale(scales.mint),
+  green: createStringKeyScale(scales.green),
+  orange: createStringKeyScale(scales.orange),
+  pink: createStringKeyScale(scales.pink),
+  cobalt: createStringKeyScale(scales.cobalt),
+  granite: createStringKeyScale(scales.granite),
+  yellow: createStringKeyScale(scales.yellow),
+  red: createStringKeyScale(scales.red),
+  // Offwhite uses different numbering (0-9 not 10-100)
+  offwhite: (() => {
+    const result = {};
+    for (const [key, value] of Object.entries(scales.offwhite)) {
+      // Pad single digits: 0 -> "000", 1 -> "001", etc.
+      const stringKey = String(key).padStart(3, '0');
+      result[stringKey] = value;
+      result[key] = value;
+    }
+    return result;
+  })(),
+};
+
+// =============================================================================
 // Consolidated Colors Export
 // =============================================================================
 const colors = {
   md3,
   scales,
+  legacyScales,
   static: staticColors,
+  status: statusColors,
+  liftkit: liftkitColors,
 };
 
 export default colors;
