@@ -1,6 +1,6 @@
 # Tasks: Remove Legacy VAT App
 
-**Input**: Design documents from `/specs/20260114-20260121-remove-legacy-vat/`
+**Input**: Design documents from `/specs/20260121-remove-legacy-vat/`
 **Prerequisites**: plan.md (required), spec.md (required), research.md, data-model.md, quickstart.md
 
 **Tests**: Integration with existing VAT test suite. No new tests needed - existing tests must continue passing.
@@ -107,7 +107,7 @@ python manage.py test rules_engine.tests.test_vat_integration
 
 - [ ] T026 [US3] Verify ActedRuleExecution captures VAT rule executions by querying database
 - [ ] T027 [US3] Verify ActedOrder.calculations_applied stores VAT result at order level
-- [ ] T028 [US3] Document audit trail access patterns in `specs/20260114-20260121-remove-legacy-vat/` for admin reference
+- [ ] T028 [US3] Document audit trail access patterns in `specs/20260121-remove-legacy-vat/` for admin reference
 - [ ] T029 [US3] Verify cart.vat_result JSONB stores cart-level VAT calculation
 
 **Checkpoint**: Audit capability confirmed via existing models

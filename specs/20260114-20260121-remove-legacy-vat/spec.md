@@ -1,6 +1,6 @@
 # Feature Specification: Remove Legacy VAT App
 
-**Feature Branch**: `20260114-20260121-remove-legacy-vat`
+**Feature Branch**: `20260121-remove-legacy-vat`
 **Created**: 2026-01-21
 **Status**: Draft
 **Input**: User description: "Remove legacy vat app - refactor VAT calculation dependencies to use Rules Engine database-driven functions"

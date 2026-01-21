@@ -1,7 +1,7 @@
 # Implementation Plan: Remove Legacy VAT App
 
-**Branch**: `20260114-20260121-remove-legacy-vat` | **Date**: 2026-01-21 | **Spec**: [spec.md](./spec.md)
-**Input**: Feature specification from `/specs/20260114-20260121-remove-legacy-vat/spec.md`
+**Branch**: `20260121-remove-legacy-vat` | **Date**: 2026-01-21 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `/specs/20260121-remove-legacy-vat/spec.md`
 
 ## Summary
 
@@ -45,7 +45,7 @@ Remove the legacy `vat` Django app which contains redundant code superseded by t
 ### Documentation (this feature)
 
 ```text
-specs/20260114-20260121-remove-legacy-vat/
+specs/20260121-remove-legacy-vat/
 ├── spec.md              # Feature specification
 ├── plan.md              # This file
 ├── research.md          # Investigation findings

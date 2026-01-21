@@ -9,7 +9,7 @@
 - [ ] Backend development environment set up
 - [ ] PostgreSQL database accessible
 - [ ] All existing tests passing
-- [ ] Git branch: `20260114-20260121-remove-legacy-vat`
+- [ ] Git branch: `20260121-remove-legacy-vat`
 
 ## Quick Verification Commands
 
