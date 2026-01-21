@@ -3,6 +3,10 @@ Test suite for tutorials API endpoints.
 
 This module tests the TutorialEventViewSet and related API endpoints to ensure proper
 functionality, authentication, and data retrieval.
+
+Updated 2026-01-16: Changed imports from exam_sessions_subjects_products to store/catalog
+as part of T087 legacy app cleanup. Tests now use store.Product instead of
+ExamSessionSubjectProductVariation.
 """
 
 from django.test import TestCase
@@ -12,15 +16,12 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 
 from tutorials.models import TutorialEvent
-from exam_sessions_subjects_products.models import (
-    ExamSessionSubjectProduct,
-    ExamSessionSubjectProductVariation
+from store.models import Product as StoreProduct
+from catalog.models import (
+    ExamSession, ExamSessionSubject, ExamSessionSubjectProduct,
+    Product, ProductProductVariation, ProductVariation
 )
-from exam_sessions.models import ExamSession
-from exam_sessions_subjects.models import ExamSessionSubject
 from subjects.models import Subject
-from products.models.products import Product
-from products.models import ProductProductVariation, ProductVariation
 
 
 class TutorialEventAPITestCase(APITestCase):
@@ -48,17 +49,11 @@ class TutorialEventAPITestCase(APITestCase):
             subject=self.subject
         )
 
-        # Create product (tutorial location product)
+        # Create product (tutorial location product template)
         self.product = Product.objects.create(
             code='TUT001',
             fullname='Tutorial - London',
             shortname='Tutorial London'
-        )
-
-        # Create ESSP
-        self.essp = ExamSessionSubjectProduct.objects.create(
-            exam_session_subject=self.exam_session_subject,
-            product=self.product
         )
 
         # Create product variation (tutorial type)
@@ -76,10 +71,11 @@ class TutorialEventAPITestCase(APITestCase):
             product_variation=self.product_variation
         )
 
-        # Create ESSP Variation
-        self.essp_variation = ExamSessionSubjectProductVariation.objects.create(
-            exam_session_subject_product=self.essp,
-            product_product_variation=self.product_product_variation
+        # Create store.Product (replaces old ESSP + ESSPV chain)
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product_product_variation=self.product_product_variation,
+            product_code='CM2/TWKDTUT001/JUNE2025'
         )
 
         # Create tutorial events
@@ -89,7 +85,7 @@ class TutorialEventAPITestCase(APITestCase):
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             remain_space=20,
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         self.event2 = TutorialEvent.objects.create(
@@ -99,7 +95,7 @@ class TutorialEventAPITestCase(APITestCase):
             end_date=date.today() + timedelta(days=42),
             is_soldout=True,
             remain_space=0,
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         # API client
@@ -136,7 +132,7 @@ class TutorialEventAPITestCase(APITestCase):
             'start_date': (date.today() + timedelta(days=50)).isoformat(),
             'end_date': (date.today() + timedelta(days=52)).isoformat(),
             'remain_space': 25,
-            'exam_session_subject_product_variation': self.essp_variation.id
+            'store_product': self.store_product.id
         }
 
         response = self.client.post('/api/tutorials/events/', data, format='json')
@@ -153,7 +149,7 @@ class TutorialEventAPITestCase(APITestCase):
             'code': 'TUT-INVALID-001',
             'venue': 'Test Venue',
             'end_date': (date.today() + timedelta(days=52)).isoformat(),
-            'exam_session_subject_product_variation': self.essp_variation.id
+            'store_product': self.store_product.id
         }
 
         response = self.client.post('/api/tutorials/events/', data, format='json')
@@ -167,7 +163,7 @@ class TutorialEventAPITestCase(APITestCase):
             'venue': 'Test Venue',
             'start_date': (date.today() + timedelta(days=50)).isoformat(),
             'end_date': (date.today() + timedelta(days=52)).isoformat(),
-            'exam_session_subject_product_variation': self.essp_variation.id
+            'store_product': self.store_product.id
         }
 
         response = self.client.post('/api/tutorials/events/', data, format='json')
@@ -181,7 +177,7 @@ class TutorialEventAPITestCase(APITestCase):
             'venue': 'Updated Venue',
             'start_date': self.event1.start_date.isoformat(),
             'end_date': self.event1.end_date.isoformat(),
-            'exam_session_subject_product_variation': self.essp_variation.id
+            'store_product': self.store_product.id
         }
 
         response = self.client.put(f'/api/tutorials/events/{self.event1.id}/', data, format='json')
@@ -313,7 +309,7 @@ class TutorialEventListViewTestCase(APITestCase):
             subject=self.subject2
         )
 
-        # Create products
+        # Create products (templates)
         self.product1 = Product.objects.create(
             code='TUT001',
             fullname='Tutorial - London',
@@ -324,17 +320,6 @@ class TutorialEventListViewTestCase(APITestCase):
             code='TUT002',
             fullname='Tutorial - Manchester',
             shortname='Tutorial Manchester'
-        )
-
-        # Create ESSPs
-        self.essp1 = ExamSessionSubjectProduct.objects.create(
-            exam_session_subject=self.exam_session_subject1,
-            product=self.product1
-        )
-
-        self.essp2 = ExamSessionSubjectProduct.objects.create(
-            exam_session_subject=self.exam_session_subject2,
-            product=self.product2
         )
 
         # Create product variation
@@ -357,15 +342,17 @@ class TutorialEventListViewTestCase(APITestCase):
             product_variation=self.product_variation
         )
 
-        # Create ESSP Variations
-        self.essp_variation1 = ExamSessionSubjectProductVariation.objects.create(
-            exam_session_subject_product=self.essp1,
-            product_product_variation=self.ppv1
+        # Create store.Product instances (replaces old ESSP + ESSPV chain)
+        self.store_product1 = StoreProduct.objects.create(
+            exam_session_subject=self.exam_session_subject1,
+            product_product_variation=self.ppv1,
+            product_code='CM2/TWKDTUT001/JUNE2025'
         )
 
-        self.essp_variation2 = ExamSessionSubjectProductVariation.objects.create(
-            exam_session_subject_product=self.essp2,
-            product_product_variation=self.ppv2
+        self.store_product2 = StoreProduct.objects.create(
+            exam_session_subject=self.exam_session_subject2,
+            product_product_variation=self.ppv2,
+            product_code='SA1/TWKDTUT002/JUNE2025'
         )
 
         # Create tutorial events
@@ -374,7 +361,7 @@ class TutorialEventListViewTestCase(APITestCase):
             venue='London',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation1
+            store_product=self.store_product1
         )
 
         self.event2 = TutorialEvent.objects.create(
@@ -382,7 +369,7 @@ class TutorialEventListViewTestCase(APITestCase):
             venue='Manchester',
             start_date=date.today() + timedelta(days=40),
             end_date=date.today() + timedelta(days=42),
-            exam_session_subject_product_variation=self.essp_variation2
+            store_product=self.store_product2
         )
 
         self.client = APIClient()
@@ -501,17 +488,34 @@ class TutorialProductListAllViewTestCase(APITestCase):
             subject=self.subject
         )
 
-        # Create tutorial product
+        # Create tutorial catalog product
         self.product = Product.objects.create(
             code='TUT001',
             fullname='Tutorial - London',
             shortname='Tutorial London'
         )
 
-        # Create ESSP
-        self.essp = ExamSessionSubjectProduct.objects.create(
+        # Create product variation
+        from catalog.models import ProductVariation, ProductProductVariation
+        self.variation = ProductVariation.objects.create(
+            code='LDN',
+            name='London',
+            variation_type='Tutorial'
+        )
+
+        # Create product-product-variation link
+        self.ppv = ProductProductVariation.objects.create(
+            product=self.product,
+            product_variation=self.variation
+        )
+
+        # Create store.Product (the actual purchasable item)
+        from store.models import Product as StoreProduct
+        self.store_product = StoreProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product=self.product
+            product_product_variation=self.ppv,
+            product_code='CM2/TUT001LDN/JUNE2025',
+            is_active=True
         )
 
         self.client = APIClient()
@@ -590,17 +594,11 @@ class TutorialProductVariationListViewTestCase(APITestCase):
             subject=self.subject
         )
 
-        # Create product
+        # Create product (template)
         self.product = Product.objects.create(
             code='TUT001',
             fullname='Tutorial - London',
             shortname='Tutorial London'
-        )
-
-        # Create ESSP
-        self.essp = ExamSessionSubjectProduct.objects.create(
-            exam_session_subject=self.exam_session_subject,
-            product=self.product
         )
 
         # Create product variation
@@ -618,9 +616,9 @@ class TutorialProductVariationListViewTestCase(APITestCase):
             product_variation=self.product_variation
         )
 
-        # Create ESSP Variation
-        self.essp_variation = ExamSessionSubjectProductVariation.objects.create(
-            exam_session_subject_product=self.essp,
+        # Create store.Product (replaces old ESSP + ESSPV chain)
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
             product_product_variation=self.ppv,
             product_code='TUT-CM2-WKD'
         )
@@ -700,17 +698,11 @@ class TutorialComprehensiveDataViewTestCase(APITestCase):
             subject=self.subject
         )
 
-        # Create product
+        # Create product (template)
         self.product = Product.objects.create(
             code='TUT001',
             fullname='Tutorial - London',
             shortname='Tutorial London'
-        )
-
-        # Create ESSP
-        self.essp = ExamSessionSubjectProduct.objects.create(
-            exam_session_subject=self.exam_session_subject,
-            product=self.product
         )
 
         # Create product variation
@@ -728,10 +720,11 @@ class TutorialComprehensiveDataViewTestCase(APITestCase):
             product_variation=self.product_variation
         )
 
-        # Create ESSP Variation
-        self.essp_variation = ExamSessionSubjectProductVariation.objects.create(
-            exam_session_subject_product=self.essp,
-            product_product_variation=self.ppv
+        # Create store.Product (replaces old ESSP + ESSPV chain)
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product_product_variation=self.ppv,
+            product_code='CM2/TWKDTUT001/JUNE2025-comp'
         )
 
         # Create tutorial event
@@ -740,7 +733,7 @@ class TutorialComprehensiveDataViewTestCase(APITestCase):
             venue='London',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
-            exam_session_subject_product_variation=self.essp_variation
+            store_product=self.store_product
         )
 
         self.client = APIClient()

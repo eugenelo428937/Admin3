@@ -330,9 +330,9 @@ class TestEdgeCasesAndErrors:
     def test_zero_price_item_has_zero_vat(self, uk_user, build_vat_context):
         """Zero price item has zero VAT amount."""
         from cart.models import Cart, CartItem
-        from products.models import Products
+        from store.models import Product
 
-        free_product = Products.objects.create(
+        free_product = Product.objects.create(
             product_name='Free Item',
             product_code='FREE-001',
             price=Decimal('0.00')
@@ -357,9 +357,9 @@ class TestEdgeCasesAndErrors:
     def test_very_small_amounts_round_correctly(self, uk_user, build_vat_context):
         """Very small amounts round to 2 decimal places."""
         from cart.models import Cart, CartItem
-        from products.models import Products
+        from store.models import Product
 
-        small_product = Products.objects.create(
+        small_product = Product.objects.create(
             product_name='Small Item',
             product_code='SMALL-001',
             price=Decimal('0.01')
@@ -388,9 +388,9 @@ class TestEdgeCasesAndErrors:
     def test_large_amounts_calculate_correctly(self, uk_user, build_vat_context):
         """Large amounts calculate VAT correctly."""
         from cart.models import Cart, CartItem
-        from products.models import Products
+        from store.models import Product
 
-        expensive_product = Products.objects.create(
+        expensive_product = Product.objects.create(
             product_name='Expensive Item',
             product_code='EXP-001',
             price=Decimal('10000.00')

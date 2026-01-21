@@ -15,7 +15,7 @@ class TestMinimalFix(TestCase):
         
         # This is what should work instead:
         rule = ActedRule.objects.create(
-            rule_id='minimal_test',
+            rule_code='minimal_test',
             name='Test',
             entry_point='test',
             active=True,

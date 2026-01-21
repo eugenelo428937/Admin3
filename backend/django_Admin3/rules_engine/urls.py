@@ -22,5 +22,5 @@ urlpatterns = [
     path('acknowledge/', rules_acknowledge, name='rules-acknowledge'),
     path('preferences/', rules_preferences, name='rules-preferences'),  # Stage 10 requirement
     path('validate-comprehensive-checkout/', validate_comprehensive_checkout, name='validate-comprehensive-checkout'),
-    path('<str:rule_id>/', ActedRuleViewSet.as_view({'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'}), name='rules-detail'),
+    path('<str:rule_code>/', ActedRuleViewSet.as_view({'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'}), name='rules-detail'),
 ]

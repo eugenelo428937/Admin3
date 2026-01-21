@@ -14,7 +14,6 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from decimal import Decimal
 from rest_framework.test import APIRequestFactory
-from unittest.mock import patch, MagicMock
 
 from cart.models import Cart, CartItem
 from cart.serializers import CartSerializer
@@ -48,30 +47,24 @@ class CartVATSerializersTestCase(TestCase):
         middleware.process_request(self.request)
         self.request.session.save()
 
-    @patch('rules_engine.services.rule_engine.rule_engine')
-    def test_cart_item_vat_serializer_structure(self, mock_rule_engine):
+    def test_cart_item_vat_serializer_structure(self):
         """Test CartItem with VAT fields serializes correctly"""
-        # Mock rules engine to return UK VAT
-        mock_rule_engine.execute.return_value = {
-            'cart_item': {'vat_amount': Decimal('20.00'), 'gross_amount': Decimal('120.00')},
-            'vat': {'region': 'UK', 'rate': Decimal('0.2000')}
-        }
-
-        # Create cart item
+        # Phase 5: Create cart item with VAT fields directly set
+        # (In real usage, VAT orchestrator sets these values)
         CartItem.objects.create(
             cart=self.cart,
             item_type='fee',
             quantity=1,
-            actual_price=Decimal('100.00')
+            actual_price=Decimal('100.00'),
+            vat_region='UK',
+            vat_rate=Decimal('0.2000'),
+            vat_amount=Decimal('20.00'),
+            gross_amount=Decimal('120.00')
         )
 
-        # First serialization: Pass update_items=True to persist VAT data to CartItem fields
-        serializer1 = CartSerializer(self.cart, context={'request': self.request, 'update_items': True})
-        _ = serializer1.data  # Trigger serialization which calls get_vat_totals and updates items
-
-        # Second serialization: Now read the updated fields
-        serializer2 = CartSerializer(self.cart, context={'request': self.request})
-        data = serializer2.data
+        # Serialize cart
+        serializer = CartSerializer(self.cart, context={'request': self.request})
+        data = serializer.data
 
         # Verify cart items exist
         self.assertIn('items', data)
@@ -83,34 +76,47 @@ class CartVATSerializersTestCase(TestCase):
         self.assertEqual(Decimal(item_data['vat_rate']), Decimal('0.2000'))
         self.assertEqual(Decimal(item_data['vat_amount']), Decimal('20.00'))
 
-    @patch('rules_engine.services.rule_engine.rule_engine')
-    def test_cart_totals_serializer_structure(self, mock_rule_engine):
+    def test_cart_totals_serializer_structure(self):
         """Test Cart totals include vat_breakdown"""
-        # Mock rules engine to return different VAT for each call
-        mock_rule_engine.execute.side_effect = [
-            {
-                'cart_item': {'vat_amount': Decimal('20.00'), 'gross_amount': Decimal('120.00')},
-                'vat': {'region': 'UK', 'rate': Decimal('0.2000')}
-            },
-            {
-                'cart_item': {'vat_amount': Decimal('7.50'), 'gross_amount': Decimal('57.50')},
-                'vat': {'region': 'SA', 'rate': Decimal('0.1500')}
-            }
-        ]
+        # Create multiple items with different VAT regions FIRST
+        # (creating items triggers signal that clears vat_result)
+        CartItem.objects.create(
+            cart=self.cart,
+            item_type='fee',
+            quantity=1,
+            actual_price=Decimal('100.00'),
+            vat_region='UK',
+            vat_rate=Decimal('0.2000'),
+            vat_amount=Decimal('20.00'),
+            gross_amount=Decimal('120.00')
+        )
+        CartItem.objects.create(
+            cart=self.cart,
+            item_type='fee',
+            quantity=1,
+            actual_price=Decimal('50.00'),
+            vat_region='SA',
+            vat_rate=Decimal('0.1500'),
+            vat_amount=Decimal('7.50'),
+            gross_amount=Decimal('57.50')
+        )
 
-        # Create multiple items with different VAT regions
-        CartItem.objects.create(
-            cart=self.cart,
-            item_type='fee',
-            quantity=1,
-            actual_price=Decimal('100.00')
-        )
-        CartItem.objects.create(
-            cart=self.cart,
-            item_type='fee',
-            quantity=1,
-            actual_price=Decimal('50.00')
-        )
+        # Phase 5: Set vat_result AFTER creating items (signal clears it)
+        # The serializer reads from cart.vat_result JSONB storage
+        self.cart.vat_result = {
+            'success': True,
+            'total_net_amount': '150.00',
+            'total_vat_amount': '27.50',
+            'total_gross_amount': '177.50',
+            'vat_breakdown': [
+                {'region': 'UK', 'rate': '20%', 'amount': '20.00', 'item_count': 1},
+                {'region': 'SA', 'rate': '15%', 'amount': '7.50', 'item_count': 1}
+            ]
+        }
+        self.cart.save(update_fields=['vat_result'])
+
+        # Refresh to ensure we have the saved data
+        self.cart.refresh_from_db()
 
         # Serialize cart
         serializer = CartSerializer(self.cart, context={'request': self.request})
@@ -160,30 +166,23 @@ class CartVATSerializersTestCase(TestCase):
         self.assertIn('vat_calculation_error_message', data)
         self.assertIn('vat_last_calculated_at', data)
 
-    @patch('rules_engine.services.rule_engine.rule_engine')
-    def test_vat_details_decimal_precision(self, mock_rule_engine):
+    def test_vat_details_decimal_precision(self):
         """Test VAT rate has 4 decimals, amounts have 2 decimals"""
-        # Mock rules engine to return UK VAT with precise decimals
-        mock_rule_engine.execute.return_value = {
-            'cart_item': {'vat_amount': Decimal('20.00'), 'gross_amount': Decimal('120.00')},
-            'vat': {'region': 'UK', 'rate': Decimal('0.2000')}
-        }
-
-        # Create cart item
+        # Phase 5: Create cart item with VAT fields directly set
         CartItem.objects.create(
             cart=self.cart,
             item_type='fee',
             quantity=1,
-            actual_price=Decimal('100.00')
+            actual_price=Decimal('100.00'),
+            vat_region='UK',
+            vat_rate=Decimal('0.2000'),
+            vat_amount=Decimal('20.00'),
+            gross_amount=Decimal('120.00')
         )
 
-        # First serialization: update_items=True to persist VAT data
-        serializer1 = CartSerializer(self.cart, context={'request': self.request, 'update_items': True})
-        _ = serializer1.data  # Trigger update
-
-        # Second serialization: read updated data
-        serializer2 = CartSerializer(self.cart, context={'request': self.request})
-        data = serializer2.data
+        # Serialize cart
+        serializer = CartSerializer(self.cart, context={'request': self.request})
+        data = serializer.data
 
         # Get item data
         item_data = data['items'][0]
@@ -200,33 +199,26 @@ class CartVATSerializersTestCase(TestCase):
             decimals = len(amount_str.split('.')[1])
             self.assertLessEqual(decimals, 2, "VAT amount should have max 2 decimal places")
 
-    @patch('rules_engine.services.rule_engine.rule_engine')
-    def test_vat_region_enum_serialization(self, mock_rule_engine):
+    def test_vat_region_enum_serialization(self):
         """Test vat_region only accepts valid enum values (UK/IE/EU/SA/ROW)"""
         valid_regions = ['UK', 'IE', 'EU', 'SA', 'ROW']
 
         for region in valid_regions:
-            # Mock rules engine to return the specific region
-            mock_rule_engine.execute.return_value = {
-                'cart_item': {'vat_amount': Decimal('20.00'), 'gross_amount': Decimal('120.00')},
-                'vat': {'region': region, 'rate': Decimal('0.2000')}
-            }
-
-            # Create cart item
+            # Phase 5: Create cart item with specific region set directly
             cart_item = CartItem.objects.create(
                 cart=self.cart,
                 item_type='fee',
                 quantity=1,
-                actual_price=Decimal('100.00')
+                actual_price=Decimal('100.00'),
+                vat_region=region,
+                vat_rate=Decimal('0.2000'),
+                vat_amount=Decimal('20.00'),
+                gross_amount=Decimal('120.00')
             )
 
-            # First serialization: update_items=True to persist VAT data
-            serializer1 = CartSerializer(self.cart, context={'request': self.request, 'update_items': True})
-            _ = serializer1.data  # Trigger update
-
-            # Second serialization: read updated data
-            serializer2 = CartSerializer(self.cart, context={'request': self.request})
-            data = serializer2.data
+            # Serialize cart
+            serializer = CartSerializer(self.cart, context={'request': self.request})
+            data = serializer.data
 
             # Verify region serialized correctly
             item_data = data['items'][0]
@@ -262,34 +254,46 @@ class CartVATSerializersTestCase(TestCase):
         self.assertTrue(data['vat_calculation_error'])
         self.assertEqual(data['vat_calculation_error_message'], "Rules engine connection failed")
 
-    @patch('rules_engine.services.rule_engine.rule_engine')
-    def test_vat_breakdown_aggregation(self, mock_rule_engine):
+    def test_vat_breakdown_aggregation(self):
         """Test VAT breakdown correctly aggregates items by region"""
-        # Mock rules engine to return UK VAT for both items
-        mock_rule_engine.execute.side_effect = [
-            {
-                'cart_item': {'vat_amount': Decimal('20.00'), 'gross_amount': Decimal('120.00')},
-                'vat': {'region': 'UK', 'rate': Decimal('0.2000')}
-            },
-            {
-                'cart_item': {'vat_amount': Decimal('10.00'), 'gross_amount': Decimal('60.00')},
-                'vat': {'region': 'UK', 'rate': Decimal('0.2000')}
-            }
-        ]
+        # Create multiple items in same region FIRST
+        # (creating items triggers signal that clears vat_result)
+        CartItem.objects.create(
+            cart=self.cart,
+            item_type='fee',
+            quantity=1,
+            actual_price=Decimal('100.00'),
+            vat_region='UK',
+            vat_rate=Decimal('0.2000'),
+            vat_amount=Decimal('20.00'),
+            gross_amount=Decimal('120.00')
+        )
+        CartItem.objects.create(
+            cart=self.cart,
+            item_type='fee',
+            quantity=1,
+            actual_price=Decimal('50.00'),
+            vat_region='UK',
+            vat_rate=Decimal('0.2000'),
+            vat_amount=Decimal('10.00'),
+            gross_amount=Decimal('60.00')
+        )
 
-        # Create multiple items in same region
-        CartItem.objects.create(
-            cart=self.cart,
-            item_type='fee',
-            quantity=1,
-            actual_price=Decimal('100.00')
-        )
-        CartItem.objects.create(
-            cart=self.cart,
-            item_type='fee',
-            quantity=1,
-            actual_price=Decimal('50.00')
-        )
+        # Phase 5: Set vat_result AFTER creating items (signal clears it)
+        # VAT orchestrator aggregates items by region before storing
+        self.cart.vat_result = {
+            'success': True,
+            'total_net_amount': '150.00',
+            'total_vat_amount': '30.00',
+            'total_gross_amount': '180.00',
+            'vat_breakdown': [
+                {'region': 'UK', 'rate': '20%', 'amount': '30.00', 'item_count': 2}
+            ]
+        }
+        self.cart.save(update_fields=['vat_result'])
+
+        # Refresh to ensure we have the saved data
+        self.cart.refresh_from_db()
 
         # Serialize cart
         serializer = CartSerializer(self.cart, context={'request': self.request})
@@ -310,22 +314,34 @@ class CartVATSerializersTestCase(TestCase):
         # Verify item count
         self.assertEqual(uk_breakdown['item_count'], 2)
 
-    @patch('rules_engine.services.rule_engine.rule_engine')
-    def test_vat_rate_percentage_formatting(self, mock_rule_engine):
+    def test_vat_rate_percentage_formatting(self):
         """Test VAT rate is formatted as percentage in breakdown"""
-        # Mock rules engine to return UK VAT
-        mock_rule_engine.execute.return_value = {
-            'cart_item': {'vat_amount': Decimal('20.00'), 'gross_amount': Decimal('120.00')},
-            'vat': {'region': 'UK', 'rate': Decimal('0.2000')}
-        }
-
-        # Create cart item
+        # Create cart item FIRST (triggers signal that clears vat_result)
         CartItem.objects.create(
             cart=self.cart,
             item_type='fee',
             quantity=1,
-            actual_price=Decimal('100.00')
+            actual_price=Decimal('100.00'),
+            vat_region='UK',
+            vat_rate=Decimal('0.2000'),
+            vat_amount=Decimal('20.00'),
+            gross_amount=Decimal('120.00')
         )
+
+        # Phase 5: Set vat_result AFTER creating items (signal clears it)
+        self.cart.vat_result = {
+            'success': True,
+            'total_net_amount': '100.00',
+            'total_vat_amount': '20.00',
+            'total_gross_amount': '120.00',
+            'vat_breakdown': [
+                {'region': 'UK', 'rate': '20%', 'amount': '20.00', 'item_count': 1}
+            ]
+        }
+        self.cart.save(update_fields=['vat_result'])
+
+        # Refresh to ensure we have the saved data
+        self.cart.refresh_from_db()
 
         # Serialize cart
         serializer = CartSerializer(self.cart, context={'request': self.request})

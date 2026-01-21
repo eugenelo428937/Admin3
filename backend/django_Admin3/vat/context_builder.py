@@ -8,8 +8,56 @@ Follows TDD methodology - tests in vat/tests/test_context_builder.py
 from decimal import Decimal
 from datetime import date
 from django.db import models
-# PHASE 1 CLEANUP: Removed import from deleted product_classifier.py
-# TODO Phase 2: Product classification will be handled by Rules Engine
+
+
+# EU member country codes (ISO 3166-1 alpha-2)
+EU_COUNTRY_CODES = {
+    'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR',
+    'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL',
+    'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'
+}
+
+
+def map_country_to_region(country_code: str) -> str:
+    """
+    Map ISO 3166-1 alpha-2 country code to VAT region.
+
+    VAT Regions:
+    - UK: United Kingdom (GB)
+    - IE: Ireland (special case - EU but separate VAT rules)
+    - SA: South Africa (ZA)
+    - EU: European Union member states (excluding IE which is handled separately)
+    - ROW: Rest of World (all other countries)
+
+    Args:
+        country_code: ISO 3166-1 alpha-2 country code (e.g., 'GB', 'DE', 'US')
+
+    Returns:
+        VAT region code: 'UK', 'IE', 'SA', 'EU', or 'ROW'
+    """
+    if not country_code:
+        return None
+
+    country_code = country_code.upper()
+
+    # UK/GB
+    if country_code in ('GB', 'UK'):
+        return 'UK'
+
+    # Ireland - separate from EU for VAT purposes
+    if country_code == 'IE':
+        return 'IE'
+
+    # South Africa
+    if country_code == 'ZA':
+        return 'SA'
+
+    # EU member states (excluding Ireland which is handled above)
+    if country_code in EU_COUNTRY_CODES:
+        return 'EU'
+
+    # All other countries
+    return 'ROW'
 
 
 def build_vat_context(user, cart, client_ip=None):
@@ -86,11 +134,9 @@ def build_vat_context(user, cart, client_ip=None):
                     if postcode:
                         address['postcode'] = postcode
 
-            # PHASE 1 CLEANUP: Removed legacy map_country_to_region() call
-            # TODO Phase 2: Region will be determined by Rules Engine lookup_region() custom function
-            # For now, region remains None and will be set by Rules Engine at entry points
+            # Map country code to VAT region
             if country_code:
-                region = None  # Will be set by Rules Engine
+                region = map_country_to_region(country_code)
 
         user_context = {
             'id': user.id,

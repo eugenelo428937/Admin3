@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-from exam_sessions_subjects_products.models import ExamSessionSubjectProduct
+from store.models import Product as StoreProduct
 
 class Cart(models.Model):
     user = models.ForeignKey(
@@ -318,9 +318,16 @@ class Cart(models.Model):
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, related_name="items", on_delete=models.CASCADE)
-    
-    # Product references - either regular product or marking voucher
-    product = models.ForeignKey(ExamSessionSubjectProduct, on_delete=models.CASCADE, null=True, blank=True)
+
+    # Product reference - store.Product (consolidated model)
+    product = models.ForeignKey(
+        StoreProduct,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='cart_items',
+        help_text="Reference to store.Product"
+    )
     marking_voucher = models.ForeignKey('marking_vouchers.MarkingVoucher', on_delete=models.CASCADE, null=True, blank=True)
     
     # Item type to distinguish between products, vouchers, and fees
@@ -449,6 +456,7 @@ class CartItem(models.Model):
             return self.marking_voucher.price
         return None
 
+
 class CartFee(models.Model):
     """
     Model for cart fees (booking fees, service charges, etc.)
@@ -522,9 +530,16 @@ class ActedOrder(models.Model):
 
 class ActedOrderItem(models.Model):
     order = models.ForeignKey(ActedOrder, related_name="items", on_delete=models.CASCADE)
-    
-    # Product references - either regular product or marking voucher
-    product = models.ForeignKey(ExamSessionSubjectProduct, on_delete=models.CASCADE, null=True, blank=True)
+
+    # Product reference - store.Product (consolidated model)
+    product = models.ForeignKey(
+        StoreProduct,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='order_items',
+        help_text="Reference to store.Product"
+    )
     marking_voucher = models.ForeignKey('marking_vouchers.MarkingVoucher', on_delete=models.CASCADE, null=True, blank=True)
     
     # Item type to distinguish between products, vouchers, and fees
@@ -587,6 +602,7 @@ class ActedOrderItem(models.Model):
         if self.item_type == 'marking_voucher':
             return self.marking_voucher.price
         return None
+
 
 class OrderUserAcknowledgment(models.Model):
     """Generic model to store all types of user acknowledgments for orders"""

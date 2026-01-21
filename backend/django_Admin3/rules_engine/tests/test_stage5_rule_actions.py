@@ -23,24 +23,28 @@ class Stage5RuleActionsTests(TestCase):
     
     def setUp(self):
         """Set up test data"""
-        # Create entry points
-        self.checkout_entry = RuleEntryPoint.objects.create(
+        # Get or create entry points (may already exist from migrations)
+        self.checkout_entry, _ = RuleEntryPoint.objects.get_or_create(
             code='checkout_terms',
-            name='Checkout Terms Display',
-            description='Entry point for checkout terms',
-            is_active=True
+            defaults={
+                'name': 'Checkout Terms Display',
+                'description': 'Entry point for checkout terms',
+                'is_active': True
+            }
         )
-        
-        self.home_entry = RuleEntryPoint.objects.create(
+
+        self.home_entry, _ = RuleEntryPoint.objects.get_or_create(
             code='home_page_mount',
-            name='Home Page Mount',
-            description='Entry point for home page load',
-            is_active=True
+            defaults={
+                'name': 'Home Page Mount',
+                'description': 'Entry point for home page load',
+                'is_active': True
+            }
         )
         
         # Create schema for validation
         self.checkout_schema = ActedRulesFields.objects.create(
-            fields_id='checkout_context_v1',
+            fields_code='checkout_context_v1',
             name='Checkout Context Schema',
             schema={
                 'type': 'object',
@@ -149,10 +153,10 @@ class Stage5RuleActionsTests(TestCase):
         Expected to FAIL initially - no action processing implementation
         """
         rule = ActedRule.objects.create(
-            rule_id='display_message_rule',
+            rule_code='display_message_rule',
             name='Display Message Rule',
             entry_point='home_page_mount',
-            rules_fields_id='checkout_context_v1',
+            rules_fields_code='checkout_context_v1',
             condition={'==': [{'var': 'cart.total'}, 100]},
             actions=[
                 {
@@ -191,10 +195,10 @@ class Stage5RuleActionsTests(TestCase):
         Expected to FAIL initially - no modal action processing
         """
         rule = ActedRule.objects.create(
-            rule_id='display_modal_rule',
+            rule_code='display_modal_rule',
             name='Display Modal Rule',
             entry_point='checkout_terms',
-            rules_fields_id='checkout_context_v1',
+            rules_fields_code='checkout_context_v1',
             condition={'==': [True, True]},  # Always true
             actions=[
                 {
@@ -238,10 +242,10 @@ class Stage5RuleActionsTests(TestCase):
         Expected to FAIL initially - no acknowledgment blocking logic
         """
         rule = ActedRule.objects.create(
-            rule_id='ack_required_rule',
+            rule_code='ack_required_rule',
             name='Acknowledgment Required Rule',
             entry_point='checkout_terms',
-            rules_fields_id='checkout_context_v1',
+            rules_fields_code='checkout_context_v1',
             condition={'>=': [{'var': 'cart.total'}, 50]},  # Cart over $50
             actions=[
                 {
@@ -291,10 +295,10 @@ class Stage5RuleActionsTests(TestCase):
         Expected to FAIL initially - no acknowledgment checking logic
         """
         rule = ActedRule.objects.create(
-            rule_id='ack_checked_rule',
+            rule_code='ack_checked_rule',
             name='Acknowledgment Checked Rule',
             entry_point='checkout_terms',
-            rules_fields_id='checkout_context_v1',
+            rules_fields_code='checkout_context_v1',
             condition={'>=': [{'var': 'cart.total'}, 50]},
             actions=[
                 {
@@ -337,10 +341,10 @@ class Stage5RuleActionsTests(TestCase):
         Expected to FAIL initially - no preference handling logic
         """
         rule = ActedRule.objects.create(
-            rule_id='preference_optional_rule',
+            rule_code='preference_optional_rule',
             name='Optional Preference Rule',
             entry_point='checkout_terms',
-            rules_fields_id='checkout_context_v1',
+            rules_fields_code='checkout_context_v1',
             condition={'==': [True, True]},  # Always applies
             actions=[
                 {
@@ -387,10 +391,10 @@ class Stage5RuleActionsTests(TestCase):
         Expected to FAIL initially - no field update logic
         """
         rule = ActedRule.objects.create(
-            rule_id='update_field_rule',
+            rule_code='update_field_rule',
             name='Update Field Rule',
             entry_point='checkout_terms',
-            rules_fields_id='checkout_context_v1',
+            rules_fields_code='checkout_context_v1',
             condition={'>=': [{'var': 'cart.total'}, 100]},
             actions=[
                 {
@@ -443,10 +447,10 @@ class Stage5RuleActionsTests(TestCase):
         Expected to FAIL initially - no custom function processing
         """
         rule = ActedRule.objects.create(
-            rule_id='custom_function_rule',
+            rule_code='custom_function_rule',
             name='Custom Function Rule',
             entry_point='checkout_terms',
-            rules_fields_id='checkout_context_v1',
+            rules_fields_code='checkout_context_v1',
             condition={'and': [
                 {'>=': [{'var': 'cart.total'}, 200]},
                 {'==': [{'var': 'cart.user'}, 456]}  # VIP user
@@ -509,7 +513,7 @@ class Stage5RuleActionsTests(TestCase):
         """
         with self.assertRaises(ValidationError) as cm:
             rule = ActedRule(
-                rule_id='invalid_action_rule',
+                rule_code='invalid_action_rule',
                 name='Invalid Action Rule',
                 entry_point='checkout_terms',
                 condition={'==': [True, True]},
@@ -531,7 +535,7 @@ class Stage5RuleActionsTests(TestCase):
         """
         with self.assertRaises(ValidationError) as cm:
             rule = ActedRule(
-                rule_id='invalid_structure_rule',
+                rule_code='invalid_structure_rule',
                 name='Invalid Structure Rule',
                 entry_point='checkout_terms',
                 condition={'==': [True, True]},
@@ -549,10 +553,10 @@ class Stage5RuleActionsTests(TestCase):
         Expected to FAIL initially - no multiple action processing
         """
         rule = ActedRule.objects.create(
-            rule_id='multiple_actions_rule',
+            rule_code='multiple_actions_rule',
             name='Multiple Actions Rule',
             entry_point='checkout_terms',
-            rules_fields_id='checkout_context_v1',
+            rules_fields_code='checkout_context_v1',
             condition={'>=': [{'var': 'cart.total'}, 100]},
             actions=[
                 {

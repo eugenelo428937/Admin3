@@ -1,9 +1,13 @@
+import unittest
 from django.test import SimpleTestCase
 from administrate.services.api_service import AdministrateAPIService
 from administrate.services.auth_service import AdministrateAuthService
 from administrate.exceptions import AdministrateAPIError
 
+SKIP_EXTERNAL_API_REASON = "Skipping external Administrate API tests - requires live API connection"
 
+
+@unittest.skip(SKIP_EXTERNAL_API_REASON)
 class AdministrateConnectionTest(SimpleTestCase):
     def setUp(self):
         self.auth_service = AdministrateAuthService()

@@ -37,7 +37,7 @@ class ProductProductGroup(models.Model):
         help_text="The product being categorized"
     )
     product_group = models.ForeignKey(
-        'products.FilterGroup',
+        'filtering.FilterGroup',
         on_delete=models.CASCADE,
         related_name='catalog_product_product_groups',
         help_text="The filter group this product belongs to"

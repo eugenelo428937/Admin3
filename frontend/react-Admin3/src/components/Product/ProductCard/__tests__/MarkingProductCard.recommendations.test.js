@@ -3,27 +3,30 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import MarkingProductCard from '../MarkingProductCard';
-import { useCart } from '../../../../contexts/CartContext';
+import productService from '../../../../services/productService';
 
-// Mock the CartContext
-jest.mock('../../../../contexts/CartContext', () => ({
-  useCart: jest.fn(),
+// Mock productService
+jest.mock('../../../../services/productService', () => ({
+  __esModule: true,
+  default: {
+    getMarkingDeadlines: jest.fn()
+  }
 }));
 
-// Mock productService - correct path relative to test file location
-// Component imports from ../../../services/productService (from ProductCard/MarkingProductCard.js)
-// This test is at __tests__/MarkingProductCard.recommendations.test.js
-jest.mock('../../../../services/productService', () => {
-  const mockService = {
-    getDeadlines: jest.fn().mockResolvedValue({ data: [] }),
-    getMarkingDeadlines: jest.fn().mockResolvedValue([]),
-  };
-  return {
-    __esModule: true,
-    default: mockService,
-    ...mockService
-  };
-});
+// Mock useCart
+const mockCartData = {
+  vat_calculations: {
+    region_info: {
+      region: 'UK'
+    }
+  }
+};
+
+jest.mock('../../../../contexts/CartContext', () => ({
+  useCart: () => ({
+    cartData: mockCartData
+  })
+}));
 
 // Create a minimal test theme with the required bpp.sky and bpp.pink palettes
 const testTheme = createTheme({
@@ -59,22 +62,13 @@ const testTheme = createTheme({
   },
 });
 
-// NOTE: These tests are temporarily skipped due to productService mock hoisting issues
-// The mock is not being applied correctly due to jest.mock hoisting behavior
-// TODO: Fix by moving productService mock into __mocks__ directory
-describe.skip('MarkingProductCard - Recommended Products with SpeedDial', () => {
+// NOTE: productService mock is defined at the top of the file for proper hoisting
+describe('MarkingProductCard - Recommended Products with SpeedDial', () => {
   const mockOnAddToCart = jest.fn();
-  const mockCartData = {
-    vat_calculations: {
-      region_info: {
-        region: 'UK'
-      }
-    }
-  };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    useCart.mockReturnValue({ cartData: mockCartData });
+    productService.getMarkingDeadlines.mockResolvedValue([]);
   });
 
   // Helper to render component with ThemeProvider
@@ -386,7 +380,7 @@ describe.skip('MarkingProductCard - Recommended Products with SpeedDial', () => 
         <MarkingProductCard
           product={product}
           onAddToCart={mockOnAddToCart}
-          bulkDeadlines={{ [product.id]: expiredDeadlines }}
+          bulkDeadlines={{ [product.essp_id]: expiredDeadlines }}
         />
       );
 

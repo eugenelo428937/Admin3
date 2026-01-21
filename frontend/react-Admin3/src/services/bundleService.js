@@ -146,7 +146,7 @@ class BundleService {
 							bundleSubject:
 								bundleProduct.code || bundleProduct.subject_code,
 							examSessionCode:
-								bundleResult.data.bundle_product?.exam_session_code,
+								bundleResult.data.exam_session_code,
 						},
 					},
 				};
@@ -170,7 +170,7 @@ class BundleService {
 					bundleProduct: bundleProduct,
 					totalItems: cartItems.length,
 					uniqueProducts: components.length,
-					bundleMetadata: bundleResult.data.bundle_product.metadata,
+					bundleMetadata: null,  // Metadata not available in current API response
 				},
 			};
 		} catch (error) {
@@ -197,8 +197,8 @@ class BundleService {
 
 			return {
 				success: true,
-				metadata: bundleResult.data.bundle_product.metadata,
-				componentCount: bundleResult.data.total_components,
+				metadata: null,  // Metadata not available in current API response
+				componentCount: bundleResult.data.components_count,
 			};
 		} catch (error) {
 			console.error("Error fetching bundle metadata:", error);
