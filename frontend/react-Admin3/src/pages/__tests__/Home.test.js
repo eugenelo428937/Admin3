@@ -128,7 +128,7 @@ describe('Home Page', () => {
     test('renders hero container', () => {
       renderHome();
 
-      expect(document.querySelector('.hero-container')).toBeInTheDocument();
+      expect(screen.getByTestId('hero-container')).toBeInTheDocument();
     });
 
     test('renders BPP branding text', () => {

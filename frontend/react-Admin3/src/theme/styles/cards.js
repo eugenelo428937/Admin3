@@ -2,13 +2,6 @@
 // Reusable styles for card-related patterns
 
 /**
- * Top products card wrapper.
- */
-export const topProductsCardStyles = {
-  // Card styles handled by theme variant
-};
-
-/**
  * No results card styles.
  */
 export const noResultsCardStyles = {
@@ -26,7 +19,6 @@ export const emptyStateIconStyles = {
 };
 
 export default {
-  topProductsCardStyles,
   noResultsCardStyles,
   emptyStateIconStyles,
 };

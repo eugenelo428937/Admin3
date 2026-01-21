@@ -17,6 +17,48 @@ export const baseProductCardStyles = {
   justifyContent: "space-between",
   position: "relative",
 
+  // Accessibility: Focus styles (migrated from product_card.css)
+  "& .product-header button:focus, & .choice-selector:focus, & .form-check-input:focus": {
+    boxShadow: "0 0 0 2px rgba(0, 123, 255, 0.25)",
+    outline: "none",
+  },
+
+  // Reduced motion support (migrated from product_card.css)
+  "@media (prefers-reduced-motion: reduce)": {
+    "& .expanded-width": {
+      transition: "none",
+    },
+  },
+
+  // High contrast support (migrated from product_card.css)
+  "@media (prefers-contrast: high)": {
+    "&[producttype='tutorial'] .product-header, & .product-header.tutorial-header": {
+      backgroundColor: "#e6fffa !important",
+      color: "#064e3b !important",
+      border: "2px solid #059669 !important",
+    },
+    "&[producttype='marking'] .product-header, & .product-header.marking-header": {
+      backgroundColor: "#fef3c7 !important",
+      color: "#78350f !important",
+      border: "2px solid #d97706 !important",
+    },
+    "&[producttype='material'] .product-header, & .product-header.material-header": {
+      backgroundColor: "#dbeafe !important",
+      color: "#1e3a8a !important",
+      border: "2px solid #3b82f6 !important",
+    },
+    "&[producttype='bundle'] .product-header, & .product-header.bundle-header": {
+      backgroundColor: "#fef3c7 !important",
+      color: "#78350f !important",
+      border: "2px solid #f59e0b !important",
+    },
+    "&[producttype='assessment'] .product-header, & .product-header.assessment-header": {
+      backgroundColor: "#fce4ec !important",
+      color: "#4a148c !important",
+      border: "2px solid #9c27b0 !important",
+    },
+  },
+
   // Floating badges container
   "& .floating-badges-container": {
     position: "absolute",

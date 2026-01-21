@@ -18,7 +18,7 @@ import { useSelector } from "react-redux";
 import { selectSearchQuery } from "../store/slices/filtersSlice";
 import ProductCard from "./Product/ProductCard/MaterialProductCard";
 import useProductCardHelpers from "../hooks/useProductCardHelpers";
-import "../styles/search_results.css";
+import { searchResultsContainerStyles, suggestionFiltersCardStyles, topProductsCardStyles, noResultsContainerStyles } from "../theme/styles";
 
 // Simplified SearchResults - no filter selection, search results only
 const SearchResults = ({
