@@ -131,8 +131,18 @@ export const navigationOverrides = {
         style: {
           color: semanticColors.navigation.text.secondary,
           textTransform: 'none',
-          padding: 0,
+          padding: `${liftKitTheme.spacing.xs3} ${liftKitTheme.spacing.xs2}`,
           justifyContent: 'center',
+          borderRadius: liftKitTheme.spacing.xs2,
+          overflow: 'hidden', // Contain ripple effect within button boundary
+          transition: 'background-color 0.2s ease-in-out',
+          '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          },
+          '&:focus-visible': {
+            outline: `2px solid ${semanticColors.navigation.text.secondary}`,
+            outlineOffset: '2px',
+          },
           "& .MuiButton-startIcon":{
             margin:0,
             marginRight: liftKitTheme.spacing.xs3,
