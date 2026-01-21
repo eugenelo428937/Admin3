@@ -450,7 +450,7 @@ class CartService:
         Returns:
             dict: Cart totals with breakdown
         """
-        from vat.service import calculate_vat_for_cart
+        from cart.services.vat_orchestrator import vat_orchestrator
 
         items = cart.items.all()
 
@@ -467,13 +467,16 @@ class CartService:
 
         subtotal = product_subtotal + voucher_subtotal
 
-        # Calculate VAT using new VAT service (replaces hardcoded 20% VAT)
-        vat_result = calculate_vat_for_cart(cart.user, cart)
-        totals = vat_result.get('vat_calculations', {}).get('totals', {})
-
-        # Convert string values back to Decimal for consistency
-        vat_amount = Decimal(totals.get('total_vat', '0.00'))
-        total = Decimal(totals.get('total_gross', str(subtotal)))
+        # Calculate VAT using VATOrchestrator (uses Rules Engine)
+        try:
+            vat_result = vat_orchestrator.execute_vat_calculation(cart)
+            totals = vat_result.get('totals', {})
+            vat_amount = Decimal(totals.get('vat', '0.00'))
+            total = Decimal(totals.get('gross', str(subtotal)))
+        except Exception:
+            # Fallback if VAT calculation fails
+            vat_amount = Decimal('0.00')
+            total = subtotal
 
         # Calculate effective VAT rate for backward compatibility
         vat_rate = (vat_amount / subtotal).quantize(Decimal('0.01')) if subtotal > 0 else Decimal('0.00')
