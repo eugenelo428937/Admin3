@@ -11,44 +11,38 @@ const TopNavActions = ({ onOpenSearch }) => {
    const isDesktop = useMediaQuery(theme.breakpoints.up("md")); // ≥960px
 
    return (
-      <Box
-         sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: { xs: 0, xl: 1 },
-            justifyContent: "space-evenly",
-            paddingX: theme.liftkit.spacing.sm,            
-         }}
-      >
+      <Box className="d-flex flex-row flex-wrap" sx={{
+         paddingX: theme.liftkit.spacing.sm,
+         gap: { xs: 0, md: 2 },
+      }}>
          {/* Brochure Download - Desktop Only */}
          <Tooltip title="Download Brochure">
             <Button
                component="a"
                href="/brochure"
                target="_blank"
-               startIcon={isDesktop ? <DownloadIcon/> : null}
-               endIcon={!isDesktop ? <DownloadIcon/> : null}
+               startIcon={isDesktop ? <DownloadIcon /> : null}
+               endIcon={!isDesktop ? <DownloadIcon /> : null}
                sx={{
                   textTransform: "none",
                   color:
                      theme.palette.liftkit?.light?.background || "text.primary",
-                  // display: { xs: "none", md: "flex" },                                    
                   minWidth: {
                      xs: theme.liftkit.spacing.xl,
                      lg: 64,
                   },
                   justifyContent: {
                      xs: "end",
-                     md: "center",                  
+                     md: "center",
                   },
-                  p:0,
+                  p: 0,
                }}
             >
                <Typography
                   varitant="topnavlink"
                   color={theme.palette.offwhite["000"]}
                   sx={{
-                     display: { xs: "none", lg: "flex" },
+                     display: { xs: "none", md: "flex" },
                   }}
                >
                   Brochure
@@ -66,12 +60,12 @@ const TopNavActions = ({ onOpenSearch }) => {
                   minWidth: {
                      xs: theme.liftkit.spacing.xl,
                      lg: 64,
-                  },                  
+                  },
                   justifyContent: {
                      xs: "end",
-                     md: "center",                  
+                     md: "center",
                   },
-                  p:0,                  
+                  p: 0,
                }}
                aria-label="search products"
                startIcon={isDesktop ? <SearchIcon /> : null}
@@ -81,8 +75,8 @@ const TopNavActions = ({ onOpenSearch }) => {
                   varitant="topnavlink"
                   color={theme.palette.offwhite["000"]}
                   sx={{
-                     display: { xs: "none", lg: "flex" },
-                     
+                     display: { xs: "none", md: "flex" },
+
                   }}
                >
                   Search
