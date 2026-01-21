@@ -102,34 +102,6 @@ describe('productService', () => {
     });
   });
 
-  describe('getNavbarProductGroups', () => {
-    test('should return array of product groups', async () => {
-      const mockGroups = [{ id: 1, name: 'Group 1' }];
-      httpService.get.mockResolvedValue({ data: { results: mockGroups } });
-
-      const result = await productService.getNavbarProductGroups();
-
-      expect(result).toEqual(mockGroups);
-      expect(Array.isArray(result)).toBe(true);
-    });
-
-    test('should return empty array if data is not an array', async () => {
-      httpService.get.mockResolvedValue({ data: { results: 'not an array' } });
-
-      const result = await productService.getNavbarProductGroups();
-
-      expect(result).toEqual([]);
-    });
-
-    test('should throw error on failure', async () => {
-      httpService.get.mockRejectedValue({ response: { status: 404 } });
-
-      await expect(productService.getNavbarProductGroups()).rejects.toMatchObject({
-        status: 404,
-      });
-    });
-  });
-
   describe('getAvailableProducts', () => {
     test('should return available products with pagination', async () => {
       const mockResponse = { results: [], count: 0, page: 1 };
@@ -139,7 +111,7 @@ describe('productService', () => {
 
       expect(result).toEqual(mockResponse);
       expect(httpService.get).toHaveBeenCalledWith(
-        '/api/products/current/list/',
+        '/api/store/products/',
         expect.objectContaining({ params: expect.any(URLSearchParams) })
       );
     });
@@ -306,55 +278,6 @@ describe('productService', () => {
         '/api/marking/papers/bulk-deadlines/',
         { essp_ids: [1, 2, 3] }
       );
-    });
-  });
-
-  describe('getDistanceLearningDropdown', () => {
-    test('should return distance learning options', async () => {
-      const mockOptions = [{ id: 1, name: 'Option 1' }];
-      httpService.get.mockResolvedValue({ data: { results: mockOptions } });
-
-      const result = await productService.getDistanceLearningDropdown();
-
-      expect(result).toEqual(mockOptions);
-    });
-
-    test('should return empty array if data is not an array', async () => {
-      httpService.get.mockResolvedValue({ data: 'invalid' });
-
-      const result = await productService.getDistanceLearningDropdown();
-
-      expect(result).toEqual([]);
-    });
-
-    test('should throw error on failure', async () => {
-      httpService.get.mockRejectedValue({
-        response: { status: 500, data: { message: 'Server error' } },
-      });
-
-      await expect(productService.getDistanceLearningDropdown()).rejects.toMatchObject({
-        message: 'Server error',
-        status: 500,
-      });
-    });
-  });
-
-  describe('getTutorialDropdown', () => {
-    test('should return tutorial dropdown options', async () => {
-      const mockOptions = [{ id: 1, subject: 'CM2' }];
-      httpService.get.mockResolvedValue({ data: { results: mockOptions } });
-
-      const result = await productService.getTutorialDropdown();
-
-      expect(result).toEqual(mockOptions);
-    });
-
-    test('should throw error on failure', async () => {
-      httpService.get.mockRejectedValue({ message: 'Error' });
-
-      await expect(productService.getTutorialDropdown()).rejects.toMatchObject({
-        message: 'Error',
-      });
     });
   });
 

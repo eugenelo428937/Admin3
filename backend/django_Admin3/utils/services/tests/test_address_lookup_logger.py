@@ -24,6 +24,8 @@ class AddressLookupLoggerTestCase(TestCase):
 
     def setUp(self):
         """Set up test fixtures"""
+        # Clean up any data from previous test runs (important for --keepdb)
+        AddressLookupLog.objects.all().delete()
         self.logger = AddressLookupLogger()
         self.test_postcode = "SW1A1AA"
 

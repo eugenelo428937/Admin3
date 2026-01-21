@@ -82,19 +82,23 @@ class OrderUserContactModelTest(TestCase):
 
     def test_order_user_contact_required_fields_validation(self):
         """Test that required fields are validated"""
-        # Test missing mobile_phone
-        with self.assertRaises(IntegrityError):
-            OrderUserContact.objects.create(
-                order=self.order,
-                email_address='contact@example.com'
-            )
+        # Test missing mobile_phone - uses ValidationError via full_clean
+        contact = OrderUserContact(
+            order=self.order,
+            email_address='contact@example.com',
+            mobile_phone=''  # Empty is invalid for required field
+        )
+        with self.assertRaises(ValidationError):
+            contact.full_clean()
 
-        # Test missing email_address
-        with self.assertRaises(IntegrityError):
-            OrderUserContact.objects.create(
-                order=self.order,
-                mobile_phone='+44 7700 900123'
-            )
+        # Test missing email_address - uses ValidationError via full_clean
+        contact2 = OrderUserContact(
+            order=self.order,
+            mobile_phone='+44 7700 900123',
+            email_address=''  # Empty is invalid for required field
+        )
+        with self.assertRaises(ValidationError):
+            contact2.full_clean()
 
 
 class OrderDeliveryDetailModelTest(TestCase):
@@ -119,22 +123,26 @@ class OrderDeliveryDetailModelTest(TestCase):
         preference = OrderDeliveryDetail.objects.create(
             order=self.order,
             delivery_address_type='home',
-            delivery_address_line1='123 Test Street',
-            delivery_city='London',
-            delivery_postal_code='SW1A 1AA',
-            delivery_country='United Kingdom',
+            delivery_address_data={
+                'line1': '123 Test Street',
+                'city': 'London',
+                'postal_code': 'SW1A 1AA',
+                'country': 'United Kingdom'
+            },
             invoice_address_type='work',
-            invoice_address_line1='456 Business Ave',
-            invoice_city='London',
-            invoice_postal_code='EC1A 1BB',
-            invoice_country='United Kingdom'
+            invoice_address_data={
+                'line1': '456 Business Ave',
+                'city': 'London',
+                'postal_code': 'EC1A 1BB',
+                'country': 'United Kingdom'
+            }
         )
 
         self.assertEqual(preference.order, self.order)
         self.assertEqual(preference.delivery_address_type, 'home')
-        self.assertEqual(preference.delivery_address_line1, '123 Test Street')
+        self.assertEqual(preference.delivery_address_data['line1'], '123 Test Street')
         self.assertEqual(preference.invoice_address_type, 'work')
-        self.assertEqual(preference.invoice_address_line1, '456 Business Ave')
+        self.assertEqual(preference.invoice_address_data['line1'], '456 Business Ave')
         self.assertIsNotNone(preference.created_at)
         self.assertIsNotNone(preference.updated_at)
 
@@ -145,10 +153,12 @@ class OrderDeliveryDetailModelTest(TestCase):
             preference = OrderDeliveryDetail(
                 order=self.order,
                 delivery_address_type='invalid_type',
-                delivery_address_line1='123 Test Street',
-                delivery_city='London',
-                delivery_postal_code='SW1A 1AA',
-                delivery_country='United Kingdom'
+                delivery_address_data={
+                    'line1': '123 Test Street',
+                    'city': 'London',
+                    'postal_code': 'SW1A 1AA',
+                    'country': 'United Kingdom'
+                }
             )
             preference.full_clean()
 
@@ -157,13 +167,15 @@ class OrderDeliveryDetailModelTest(TestCase):
         preference = OrderDeliveryDetail.objects.create(
             order=self.order,
             delivery_address_type='home',
-            delivery_address_line1='123 Test Street',
-            delivery_city='London',
-            delivery_postal_code='SW1A 1AA',
-            delivery_country='United Kingdom'
+            delivery_address_data={
+                'line1': '123 Test Street',
+                'city': 'London',
+                'postal_code': 'SW1A 1AA',
+                'country': 'United Kingdom'
+            }
         )
 
-        expected = f"Delivery Preference for Order #{self.order.id}: home delivery"
+        expected = f"Delivery Detail for Order #{self.order.id}: home delivery"
         self.assertEqual(str(preference), expected)
 
     def test_order_delivery_preference_cascade_delete(self):
@@ -171,10 +183,12 @@ class OrderDeliveryDetailModelTest(TestCase):
         preference = OrderDeliveryDetail.objects.create(
             order=self.order,
             delivery_address_type='home',
-            delivery_address_line1='123 Test Street',
-            delivery_city='London',
-            delivery_postal_code='SW1A 1AA',
-            delivery_country='United Kingdom'
+            delivery_address_data={
+                'line1': '123 Test Street',
+                'city': 'London',
+                'postal_code': 'SW1A 1AA',
+                'country': 'United Kingdom'
+            }
         )
 
         # Delete the order
