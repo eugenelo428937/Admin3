@@ -10,9 +10,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 from marking.models import MarkingPaper
-from catalog.models import ExamSession, ExamSessionSubject, ExamSessionSubjectProduct
-from subjects.models import Subject
-from products.models.products import Product
+from catalog.models import ExamSession, ExamSessionSubject, ExamSessionSubjectProduct, Subject, Product
 
 
 class MarkingPaperTestCase(TestCase):

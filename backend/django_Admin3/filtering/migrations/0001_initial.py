@@ -1,15 +1,16 @@
 """Initial migration for filtering app.
 
-Creates tables in the acted schema by renaming existing tables from products app.
-If tables already exist in acted schema, only registers model state.
+Creates tables in the acted schema. Handles both:
+1. Existing databases: Renames tables from products app public schema to acted schema
+2. Fresh databases (e.g., test DBs): Creates tables directly in acted schema
 """
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
 
 
-def rename_tables_to_acted_schema(apps, schema_editor):
-    """Rename existing tables to acted schema with new names."""
+def migrate_or_create_tables(apps, schema_editor):
+    """Migrate existing tables to acted schema OR create them if fresh database."""
     with schema_editor.connection.cursor() as cursor:
         # List of (old_table_name, new_table_name) pairs
         table_mappings = [
@@ -46,16 +47,101 @@ def rename_tables_to_acted_schema(apps, schema_editor):
                 cursor.execute(f'ALTER TABLE "{old_name}" RENAME TO "{new_name}"')
                 cursor.execute(f'ALTER TABLE "{new_name}" SET SCHEMA acted')
 
+        # For fresh databases: create tables if they don't exist
+        # Check if filter_groups exists (if not, this is a fresh DB)
+        cursor.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables
+                WHERE table_schema = 'acted'
+                AND table_name = 'filter_groups'
+            )
+        """)
+        if not cursor.fetchone()[0]:
+            # Create all tables for fresh database
+            cursor.execute("""
+                CREATE TABLE acted.filter_groups (
+                    id BIGSERIAL PRIMARY KEY,
+                    name VARCHAR(100) NOT NULL,
+                    code VARCHAR(100) UNIQUE,
+                    description TEXT DEFAULT '',
+                    is_active BOOLEAN DEFAULT TRUE,
+                    display_order INTEGER DEFAULT 0,
+                    parent_id BIGINT REFERENCES acted.filter_groups(id) ON DELETE CASCADE
+                )
+            """)
 
-def reverse_rename(apps, schema_editor):
+            cursor.execute("""
+                CREATE TABLE acted.filter_configurations (
+                    id BIGSERIAL PRIMARY KEY,
+                    name VARCHAR(100) UNIQUE NOT NULL,
+                    display_label VARCHAR(100) NOT NULL,
+                    description TEXT DEFAULT '',
+                    filter_type VARCHAR(32) NOT NULL,
+                    filter_key VARCHAR(50) NOT NULL,
+                    ui_component VARCHAR(32) DEFAULT 'multi_select',
+                    display_order INTEGER DEFAULT 0,
+                    is_active BOOLEAN DEFAULT TRUE,
+                    is_collapsible BOOLEAN DEFAULT TRUE,
+                    is_expanded_by_default BOOLEAN DEFAULT FALSE,
+                    is_required BOOLEAN DEFAULT FALSE,
+                    allow_multiple BOOLEAN DEFAULT TRUE,
+                    ui_config JSONB DEFAULT '{}',
+                    validation_rules JSONB DEFAULT '{}',
+                    dependency_rules JSONB DEFAULT '{}',
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    created_by_id INTEGER REFERENCES auth_user(id) ON DELETE SET NULL
+                )
+            """)
+
+            cursor.execute("""
+                CREATE TABLE acted.filter_configuration_groups (
+                    id BIGSERIAL PRIMARY KEY,
+                    is_default BOOLEAN DEFAULT FALSE,
+                    display_order INTEGER DEFAULT 0,
+                    filter_configuration_id BIGINT NOT NULL REFERENCES acted.filter_configurations(id) ON DELETE CASCADE,
+                    filter_group_id BIGINT NOT NULL REFERENCES acted.filter_groups(id) ON DELETE CASCADE,
+                    UNIQUE (filter_configuration_id, filter_group_id)
+                )
+            """)
+
+            cursor.execute("""
+                CREATE TABLE acted.filter_presets (
+                    id BIGSERIAL PRIMARY KEY,
+                    name VARCHAR(100) NOT NULL,
+                    description TEXT DEFAULT '',
+                    filter_values JSONB DEFAULT '{}',
+                    is_public BOOLEAN DEFAULT FALSE,
+                    usage_count INTEGER DEFAULT 0,
+                    last_used TIMESTAMP WITH TIME ZONE,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    created_by_id INTEGER NOT NULL REFERENCES auth_user(id) ON DELETE CASCADE
+                )
+            """)
+
+            cursor.execute("""
+                CREATE TABLE acted.filter_usage_analytics (
+                    id BIGSERIAL PRIMARY KEY,
+                    filter_value VARCHAR(100) NOT NULL,
+                    usage_count INTEGER DEFAULT 0,
+                    last_used TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    session_id VARCHAR(100) DEFAULT '',
+                    filter_configuration_id BIGINT NOT NULL REFERENCES acted.filter_configurations(id) ON DELETE CASCADE,
+                    user_id INTEGER REFERENCES auth_user(id) ON DELETE SET NULL,
+                    UNIQUE (filter_configuration_id, filter_value)
+                )
+            """)
+
+
+def reverse_migrate(apps, schema_editor):
     """Reverse: move tables back to public schema with old names."""
     with schema_editor.connection.cursor() as cursor:
         table_mappings = [
-            ('filter_groups', 'acted_filter_group'),
-            ('filter_configurations', 'acted_filter_configuration'),
-            ('filter_configuration_groups', 'acted_filter_configuration_group'),
-            ('filter_presets', 'acted_filter_preset'),
             ('filter_usage_analytics', 'acted_filter_usage_analytics'),
+            ('filter_presets', 'acted_filter_preset'),
+            ('filter_configuration_groups', 'acted_filter_configuration_group'),
+            ('filter_configurations', 'acted_filter_configuration'),
+            ('filter_groups', 'acted_filter_group'),
         ]
 
         for acted_name, public_name in table_mappings:
@@ -78,14 +164,14 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('catalog', '0001_initial'),  # Ensures 'acted' schema exists
     ]
 
     operations = [
-        # Step 1: Rename existing tables to acted schema (if they exist in public)
-        migrations.RunPython(rename_tables_to_acted_schema, reverse_rename),
+        # Step 1: Migrate existing tables OR create new ones for fresh DB
+        migrations.RunPython(migrate_or_create_tables, reverse_migrate),
 
-        # Step 2: Create model states without database operations
-        # (tables already exist or will be created by Django if they don't)
+        # Step 2: Register model state (tables created by RunPython above)
         migrations.SeparateDatabaseAndState(
             state_operations=[
                 migrations.CreateModel(
