@@ -1,17 +1,27 @@
 """Migration to move ProductVariationRecommendation to catalog app.
 
-This migration:
-1. Renames table from acted_product_productvariation_recommendations to product_productvariation_recommendations
-2. Moves table to acted schema
-3. Registers model state in catalog app
+This migration handles both:
+1. Existing databases: Renames table from acted_product_productvariation_recommendations to product_productvariation_recommendations
+2. Fresh databases (e.g., test DBs): Creates table directly in acted schema
 """
 from django.db import migrations, models
 import django.db.models.deletion
 
 
-def rename_and_move_table(apps, schema_editor):
-    """Rename and move the recommendations table to acted schema."""
+def migrate_or_create_table(apps, schema_editor):
+    """Migrate existing table OR create new one for fresh database."""
     with schema_editor.connection.cursor() as cursor:
+        # Check if table already exists in acted schema
+        cursor.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables
+                WHERE table_schema = 'acted'
+                AND table_name = 'product_productvariation_recommendations'
+            )
+        """)
+        if cursor.fetchone()[0]:
+            return  # Table already exists, nothing to do
+
         # Check if table exists in public schema with old name
         cursor.execute("""
             SELECT EXISTS (
@@ -33,10 +43,23 @@ def rename_and_move_table(apps, schema_editor):
                 ALTER TABLE public.product_productvariation_recommendations
                 SET SCHEMA acted
             """)
+        else:
+            # Fresh database - create the table
+            cursor.execute("""
+                CREATE TABLE acted.product_productvariation_recommendations (
+                    id BIGSERIAL PRIMARY KEY,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    product_product_variation_id BIGINT NOT NULL UNIQUE
+                        REFERENCES acted.catalog_product_product_variations(id) ON DELETE CASCADE,
+                    recommended_product_product_variation_id BIGINT NOT NULL
+                        REFERENCES acted.catalog_product_product_variations(id) ON DELETE CASCADE
+                )
+            """)
 
 
-def reverse_rename(apps, schema_editor):
-    """Reverse: move table back to public schema with old name."""
+def reverse_migrate(apps, schema_editor):
+    """Reverse: drop or move table back to public schema."""
     with schema_editor.connection.cursor() as cursor:
         cursor.execute("""
             SELECT EXISTS (
@@ -67,8 +90,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Step 1: Rename and move the database table
-        migrations.RunPython(rename_and_move_table, reverse_rename),
+        # Step 1: Migrate existing table or create new for fresh DB
+        migrations.RunPython(migrate_or_create_table, reverse_migrate),
 
         # Step 2: Create model state in catalog (table already exists)
         migrations.SeparateDatabaseAndState(

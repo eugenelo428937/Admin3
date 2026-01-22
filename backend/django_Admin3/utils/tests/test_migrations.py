@@ -9,7 +9,6 @@ The migration will work correctly in development/production where country data e
 from django.test import TestCase
 from decimal import Decimal
 from utils.models import UtilsRegion, UtilsCountrys, UtilsCountryRegion
-from country.models import Country
 
 
 class DataMigrationTestCase(TestCase):
