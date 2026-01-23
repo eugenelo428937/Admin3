@@ -476,7 +476,7 @@ class TestBundleViewSet(StoreAPITestCase):
         self.assertEqual(data['name'], 'Complete CM2 Bundle')
         self.assertEqual(data['description'], 'All CM2 study materials')
         self.assertEqual(data['subject_code'], 'CM2')
-        self.assertEqual(data['session_code'], '2025-04')
+        self.assertEqual(data['exam_session_code'], '2025-04')
         self.assertTrue(data['is_active'])
 
     def test_retrieve_bundle_includes_products(self):
@@ -486,10 +486,10 @@ class TestBundleViewSet(StoreAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
 
-        self.assertIn('bundle_products', data)
-        self.assertEqual(len(data['bundle_products']), 2)
+        self.assertIn('components', data)
+        self.assertEqual(len(data['components']), 2)
 
-        product_codes = [bp['product_code'] for bp in data['bundle_products']]
+        product_codes = [bp['product_code'] for bp in data['components']]
         self.assertIn('CM2/PCSM01P/2025-04', product_codes)
         self.assertIn('CM2/ECSM01E/2025-04', product_codes)
 

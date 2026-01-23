@@ -11,11 +11,17 @@ def populate_vat_data(apps, schema_editor):
     - Regions: UK, IE, EU, SA, ROW
     - Countries: Copy from country_country with VAT rates
     - Country-Region mappings
+
+    Note: This migration originally depended on the country app which has been removed.
+    The data has already been migrated, so this is now a no-op if data exists.
     """
     UtilsRegion = apps.get_model('utils', 'UtilsRegion')
     UtilsCountrys = apps.get_model('utils', 'UtilsCountrys')
     UtilsCountryRegion = apps.get_model('utils', 'UtilsCountryRegion')
-    Country = apps.get_model('country', 'Country')
+
+    # If data already exists, skip (migration already ran when country app existed)
+    if UtilsRegion.objects.exists():
+        return
 
     # 1. Populate utils_regions
     regions_data = [
@@ -63,19 +69,9 @@ def populate_vat_data(apps, schema_editor):
         'GG': 'ROW',  # Guernsey
     }
 
-    # Copy countries from country_country (only ISO 3166-1 alpha-2 codes - 2 characters)
-    for country in Country.objects.filter(iso_code__regex=r'^[A-Z]{2}$'):
-        # Determine region and VAT rate
-        region_code = country_region_mapping.get(country.iso_code, 'ROW')
-        vat_percent = vat_rates.get(region_code, Decimal('0.00'))
-
-        # Create UtilsCountrys entry
-        UtilsCountrys.objects.create(
-            code=country.iso_code,
-            name=country.name,
-            vat_percent=vat_percent,
-            active=True
-        )
+    # Note: Originally copied from country_country table which has been removed.
+    # The data was already migrated when this migration first ran.
+    # This section is now a no-op since we return early if data exists above.
 
     # 3. Populate utils_country_region mappings
     effective_date = date(2020, 1, 1)  # Historical effective date
@@ -108,7 +104,8 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('utils', '0004_utilscountrys_utilsregion_utilscountryregion'),
-        ('country', '__latest__'),  # Depend on country app for Country model
+        # Note: country app dependency removed - app has been decommissioned
+        # Data was already migrated when this migration first ran
     ]
 
     operations = [

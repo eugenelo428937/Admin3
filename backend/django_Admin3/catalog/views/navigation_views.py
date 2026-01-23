@@ -219,7 +219,7 @@ def fuzzy_search(request):
     # Import for trigram similarity and FilterGroup
     from django.contrib.postgres.search import TrigramSimilarity
     from filtering.models import FilterGroup
-    from products.serializers import FilterGroupSerializer
+    from filtering.serializers import FilterGroupSerializer
 
     search_query = request.query_params.get('q', '').strip()
 

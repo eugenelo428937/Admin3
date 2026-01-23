@@ -3,12 +3,47 @@ Migration to add ExamSessionSubjectProduct model to catalog app.
 
 Part of T087 legacy app cleanup.
 
-This migration registers the existing acted_exam_session_subject_products table
-with the catalog app. The table already exists and contains data - this migration
-only creates the model definition in Django, not the database table.
+This migration handles both:
+1. Existing databases: Registers the existing acted_exam_session_subject_products table
+2. Fresh databases (e.g., test DBs): Creates the table
 """
 from django.db import migrations, models
 import django.db.models.deletion
+
+
+def create_table_if_not_exists(apps, schema_editor):
+    """Create the table if it doesn't exist (for fresh databases)."""
+    with schema_editor.connection.cursor() as cursor:
+        # Check if table already exists
+        cursor.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables
+                WHERE table_schema = 'public'
+                AND table_name = 'acted_exam_session_subject_products'
+            )
+        """)
+        if cursor.fetchone()[0]:
+            return  # Table already exists
+
+        # Create the table for fresh database
+        cursor.execute("""
+            CREATE TABLE acted_exam_session_subject_products (
+                id BIGSERIAL PRIMARY KEY,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                exam_session_subject_id BIGINT NOT NULL
+                    REFERENCES acted.catalog_exam_session_subjects(id) ON DELETE CASCADE,
+                product_id BIGINT NOT NULL
+                    REFERENCES acted.catalog_products(id) ON DELETE CASCADE,
+                UNIQUE (exam_session_subject_id, product_id)
+            )
+        """)
+
+
+def drop_table(apps, schema_editor):
+    """Drop the table (reverse migration)."""
+    with schema_editor.connection.cursor() as cursor:
+        cursor.execute("DROP TABLE IF EXISTS acted_exam_session_subject_products")
 
 
 class Migration(migrations.Migration):
@@ -18,6 +53,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # Step 1: Create table if it doesn't exist (for fresh DBs)
+        migrations.RunPython(create_table_if_not_exists, drop_table),
+
+        # Step 2: Register model state
         migrations.SeparateDatabaseAndState(
             state_operations=[
                 migrations.CreateModel(
@@ -45,7 +84,6 @@ class Migration(migrations.Migration):
                     },
                 ),
             ],
-            # No database operations - table already exists
             database_operations=[],
         ),
     ]

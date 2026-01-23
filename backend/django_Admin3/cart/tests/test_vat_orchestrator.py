@@ -10,7 +10,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from cart.models import Cart, CartItem
 from store.models import Product as StoreProduct
-from vat.models import VATAudit
+# VATAudit import removed - audit is now captured via ActedRuleExecution
 from unittest.mock import Mock, patch, MagicMock
 
 User = get_user_model()
@@ -348,8 +348,7 @@ class VATOrchestratorTests(TestCase):
         self.assertEqual(Decimal(result['totals']['gross']), Decimal('160.00'))
 
     @patch('cart.services.vat_orchestrator.rule_engine')
-    @patch('cart.services.vat_orchestrator.VATAudit')
-    def test_store_vat_result_in_cart_jsonb(self, mock_vat_audit, mock_rule_engine):
+    def test_store_vat_result_in_cart_jsonb(self, mock_rule_engine):
         """Test cart.vat_result JSONB structure."""
         # Arrange
         CartItem.objects.create(
@@ -390,9 +389,8 @@ class VATOrchestratorTests(TestCase):
         self.assertIn('timestamp', self.cart.vat_result)
 
     @patch('cart.services.vat_orchestrator.rule_engine')
-    @patch('cart.services.vat_orchestrator.VATAudit')
-    def test_create_vat_audit_record(self, mock_vat_audit, mock_rule_engine):
-        """Test VATAudit record creation."""
+    def test_audit_is_no_op(self, mock_rule_engine):
+        """Test that audit record creation is a no-op (ActedRuleExecution captures audit)."""
         # Arrange
         CartItem.objects.create(
             cart=self.cart,
@@ -418,16 +416,14 @@ class VATOrchestratorTests(TestCase):
 
         from cart.services.vat_orchestrator import vat_orchestrator
 
-        # Act
-        vat_orchestrator.execute_vat_calculation(self.cart)
+        # Act - should complete without error (no VATAudit dependency)
+        result = vat_orchestrator.execute_vat_calculation(self.cart)
 
-        # Assert
-        mock_vat_audit.objects.create.assert_called_once()
-        call_kwargs = mock_vat_audit.objects.create.call_args[1]
-        self.assertEqual(call_kwargs['cart'], self.cart)
-        self.assertIsNone(call_kwargs['order'])
-        self.assertIn('input_context', call_kwargs)
-        self.assertIn('output_data', call_kwargs)
+        # Assert - calculation still works, audit is handled by ActedRuleExecution
+        self.assertEqual(result['status'], 'calculated')
+        self.assertIn('totals', result)
+        self.cart.refresh_from_db()
+        self.assertIsNotNone(self.cart.vat_result)
 
     @patch('cart.services.vat_orchestrator.rule_engine')
     def test_handle_rules_engine_failure_gracefully(self, mock_rule_engine):

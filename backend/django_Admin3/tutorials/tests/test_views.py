@@ -19,9 +19,8 @@ from tutorials.models import TutorialEvent
 from store.models import Product as StoreProduct
 from catalog.models import (
     ExamSession, ExamSessionSubject, ExamSessionSubjectProduct,
-    Product, ProductProductVariation, ProductVariation
+    Product, ProductProductVariation, ProductVariation, Subject
 )
-from subjects.models import Subject
 
 
 class TutorialEventAPITestCase(APITestCase):

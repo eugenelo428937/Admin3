@@ -123,7 +123,7 @@ coverage run --source='exam_sessions,marking,tutorials,userprofile,users,core_au
 
 coverage run --source='core_auth,catalog,cart,exam_sessions,exam_sessions_subjects,exam_sessions_subjects_products,marking,marking_vouchers,products,rules_engine,subjects,tutorials,userprofile,utils,vat' manage.py test   
 
-overage run --source='core_auth,catalog,cart,exam_sessions,exam_sessions_subjects,exam_sessions_subjects_products,marking,marking_vouchers,products,rules_engine,subjects,tutorials,userprofile,utils,vat' manage.py test 2>&1 | tee coverage_report20260114a.txt
+coverage run --source='core_auth,catalog,cart,exam_sessions,exam_sessions_subjects,exam_sessions_subjects_products,marking,marking_vouchers,products,rules_engine,subjects,tutorials,userprofile,utils,vat' manage.py test 2>&1 | tee coverage_report20260114a.txt
 
 # View coverage in terminal
 coverage report --omit="*/migrations/*,*/tests/*,*/test_*.py"
