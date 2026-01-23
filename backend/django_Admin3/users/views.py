@@ -12,7 +12,7 @@ from django.utils import timezone
 from .serializers import UserRegistrationSerializer
 from students.models import Student
 from userprofile.models import UserProfile, UserProfileAddress, UserProfileContactNumber, UserProfileEmail
-from utils.email_service import email_service
+from email_system.services.email_service import email_service
 import logging
 
 logger = logging.getLogger(__name__)

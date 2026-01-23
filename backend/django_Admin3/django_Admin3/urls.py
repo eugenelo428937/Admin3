@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from utils.health_check import health_check
+from utils.views import country_list
 
 urlpatterns = [
     path('admin/doc/', include('django.contrib.admindocs.urls')),  # Must be before admin/
@@ -25,13 +26,12 @@ urlpatterns = [
     path('api/auth/', include('core_auth.urls')),
     path('api/users/', include('users.urls')),
     path('api/students/', include('students.urls')),
-    # Include products for navigation endpoints (navbar-product-groups, distance-learning-dropdown, etc.)
-    # path('api/products/', include('products.urls')),
-    # Current products now served via /api/catalog/ and /api/store/ endpoints
+    # Filter system endpoints (product groups, filter configuration)
+    path('api/products/', include('filtering.urls')),
     path('api/cart/', include('cart.urls')),
     path('api/rules/', include('rules_engine.urls')),
     path('api/utils/', include('utils.urls')),
-    # path('api/countries/', include('country.urls')),
+    path('api/countries/', country_list, name='country_list'),
     path('api/markings/', include('marking.urls')),
     path('api/marking-vouchers/', include('marking_vouchers.urls')),
     path('api/tutorials/', include('tutorials.urls')),
