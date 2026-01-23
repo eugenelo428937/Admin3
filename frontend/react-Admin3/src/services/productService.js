@@ -4,6 +4,8 @@ import httpService from "./httpService";
 
 // Use fallback if productsUrl is not defined
 const PRODUCTS_API_URL = config.productsUrl || `${config.apiBaseUrl || config.apiUrl}/products`;
+// Catalog API for navigation, search, products, bundles (002-catalog-api-consolidation)
+const CATALOG_API_URL = config.catalogUrl || `${config.apiBaseUrl || config.apiUrl}/catalog`;
 // Store API for purchasable products (20250115-store-app-consolidation)
 // Derive from productsUrl pattern: /api/products -> /api/store
 const STORE_API_URL = config.productsUrl ? config.productsUrl.replace('/products', '/store') : `${config.apiBaseUrl || config.apiUrl}/store`;
@@ -56,7 +58,7 @@ const productService = {
 	getNavigationData: async () => {
 		try {
 			const response = await httpService.get(
-				`${PRODUCTS_API_URL}/navigation-data/`
+				`${CATALOG_API_URL}/navigation-data/`
 			);
 			const data = response.data;
 			return {
@@ -381,7 +383,7 @@ const productService = {
 	searchProducts: async (params = {}) => {
 		try {
 			const response = await httpService.get(
-				`${PRODUCTS_API_URL}/search/`,
+				`${CATALOG_API_URL}/search/`,
 				{ params }
 			);
 			return {

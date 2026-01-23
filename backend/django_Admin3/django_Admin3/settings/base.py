@@ -109,6 +109,7 @@ INSTALLED_APPS = [
     'core_auth',
     'rules_engine.apps.RulesEngineConfig',
     'utils.apps.UtilsConfig',  # Added utils app for email functionality
+    'email_system.apps.EmailSystemConfig',  # Extracted email system (20260115-util-refactoring)
     'search.apps.SearchConfig',  # Product search API (002-catalog-api-consolidation)
     'filtering.apps.FilteringConfig',  # Product filtering (model consolidation)
     # 'vat',  # REMOVED: Legacy VAT app - functionality moved to rules_engine and utils

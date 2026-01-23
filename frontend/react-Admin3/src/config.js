@@ -12,6 +12,9 @@ const config = {
 	productsUrl:
 		process.env.REACT_APP_API_BASE_URL +
 		process.env.REACT_APP_API_PRODUCT_URL,
+	catalogUrl:
+		process.env.REACT_APP_API_BASE_URL +
+		process.env.REACT_APP_API_CATALOG_URL,
 	subjectUrl:
 		process.env.REACT_APP_API_BASE_URL +
 		process.env.REACT_APP_API_SUBJECT_URL,
