@@ -189,17 +189,7 @@ const MainNavBar = () => {
             component="nav"
             aria-label="Main navigation"
             elevation={5}
-            sx={{
-               px: {
-                  xs: theme.liftkit.spacing.lg,
-                  md: theme.liftkit.spacing.xl,
-                  lg: theme.liftkit.spacing.xl2,
-                  xl: theme.liftkit.spacing.xl3,
-               },
-               py: {
-                  xs: 0,
-                  md: theme.liftkit.spacing.xs,
-               },
+            sx={{              
                alignContent:"center",
             }}
             className="navbar navbar-expand-md navbar-main align-content-center justify-content-between"
@@ -323,7 +313,7 @@ const MainNavBar = () => {
                            display: { xs: "flex", md: "none" },
                         }}
                      >
-                        <Box sx={{ display: "flex", flexDirection: "column",height: theme.liftkit.spacing.xl, }}>
+                        <Box sx={{ display: "flex", flexDirection: "column",height: theme.spacing.xl, }}>
                            <span className="toggler-icon top-bar"></span>
                            <span className="toggler-icon middle-bar"></span>
                            <span className="toggler-icon bottom-bar"></span>

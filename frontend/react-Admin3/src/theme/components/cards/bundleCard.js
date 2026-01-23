@@ -1,5 +1,5 @@
 // Bundle Product Card Variant Styles
-import liftKitTheme from '../../liftKitTheme';
+import { spacing } from '../../spacing'
 import { bundle } from '../../semantic/productCards';
 import { semantic } from '../../semantic/common';
 
@@ -66,7 +66,7 @@ export const bundleCardStyles = {
     "& .bundle-details-title": {
       color: bundle.title,
       textAlign: "left",
-      marginBottom: liftKitTheme.spacing.xs3,
+      marginBottom: spacing.xs3,
     },
     "& .MuiList-root": {
       paddingTop: 0,
@@ -80,7 +80,7 @@ export const bundleCardStyles = {
             fontSize: "1.2rem",
             color: bundle.buttonHover,
           },
-          marginRight: liftKitTheme.spacing.sm,
+          marginRight: spacing.sm,
         },
         "& .MuiListItemText-root": {
           marginBottom: 0,

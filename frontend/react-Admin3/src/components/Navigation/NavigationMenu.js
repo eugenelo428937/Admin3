@@ -57,7 +57,7 @@ const NavigationMenu = ({
             alignItems: "center",
             justifyContent: { xs: "flex-start", lg: "space-evenly" },
             width: 'auto',
-            gap: theme.liftkit.spacing.md,
+            gap: theme.spacing.md,
          }}
       >
          <Button component={NavLink} to="/home">

@@ -1,5 +1,5 @@
 // Material Product Card Variant Styles
-import liftKitTheme from '../../liftKitTheme';
+import { spacing } from '../../tokens/spacing';
 import { material } from '../../semantic/productCards';
 import { semantic } from '../../semantic/common';
 
@@ -44,7 +44,7 @@ export const materialCardStyles = {
 
   // Content styling
   "& .MuiCardContent-root": {
-    padding: liftKitTheme.spacing.md,
+    padding: spacing.md ,
     "& .product-variations": {
       display: "flex",
       flexDirection: "column",
@@ -52,7 +52,7 @@ export const materialCardStyles = {
       justifyContent: "start",
       textAlign: "left",
       "& .variations-title": {
-        marginBottom: liftKitTheme.spacing.md,
+        marginBottom: spacing.md ,
         textAlign: "left",
         color: material.title,
         fontWeight: 600,
@@ -68,8 +68,8 @@ export const materialCardStyles = {
           "& .variation-option": {
             border: "1px solid",
             borderColor: "divider",
-            borderRadius: liftKitTheme.spacing.xs,
-            padding: liftKitTheme.spacing.xs,
+            borderRadius: spacing.xs ,
+            padding: spacing.xs ,
             width: "100%",
             color: material.title,
             transition: "all 0.2s ease-in-out",
@@ -77,15 +77,15 @@ export const materialCardStyles = {
             alignItems: "center",
             justifyContent: "space-between",
             "& .MuiRadio-root": {
-              padding: liftKitTheme.spacing.sm,
-              width: liftKitTheme.spacing.md,
-              height: liftKitTheme.spacing.md,
+              padding: spacing.sm ,
+              width: spacing.md ,
+              height: spacing.md ,
               color: material.subtitle,
               alignItems: "center",
               justifyContent: "center",
             },
             "& .MuiSvgIcon-root": {
-              fontSize: liftKitTheme.spacing.md,
+              fontSize: spacing.md ,
             },
             "&:hover": {
               boxShadow: "var(--Paper-shadow)",
@@ -96,10 +96,10 @@ export const materialCardStyles = {
               flex: 1,
             },
             "& .variation-label": {
-              marginLeft: liftKitTheme.spacing.xs,
+              marginLeft: spacing.xs ,
             },
             "& .variation-price": {
-              paddingRight: liftKitTheme.spacing.md,
+              paddingRight: spacing.md ,
             },
           },
         },

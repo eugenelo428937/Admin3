@@ -9,16 +9,13 @@ import {
   scales,
   legacyScales,
   statusColors,
-  liftkitColors
 } from './tokens/colors';
 
-// Import liftKitTheme for spacing and typography (still needed)
-import liftKitTheme from './liftKitTheme';
 import { typographyConfig, responsiveTypography } from './typography';
 import componentOverrides from './components';
 import { createGradientStyle, gradientColorSchemes } from './utils';
 import { semanticColors } from './colors/semantic';
-import { semanticSpacing } from './spacing/semantic';
+import { spacing, semanticSpacing } from './spacing';
 
 // NEW: Import semantic layer
 import { semantic } from './semantic/common';
@@ -30,8 +27,7 @@ const colorTheme = {
   palette: {
     ...legacyScales,
     ...statusColors,
-    md3: md3,
-    liftkit: liftkitColors,
+    md3: md3,    
     bpp: {
       // Map BPP scales for backward compatibility
       purple: legacyScales.purple,
@@ -144,6 +140,8 @@ const theme = createTheme({
     // NEW: Consolidated token layer - raw scales access
     scales: scales,
 
+    
+
     // NEW: Flat semantic tokens for common styling
     // Usage: sx={{ color: 'semantic.textPrimary', bgcolor: 'semantic.bgPaper' }}
     semantic: {
@@ -160,15 +158,14 @@ const theme = createTheme({
     navigation: navigation,
   },
 
+  spacing: spacing,
+
+  // Custom spacing tokens (for direct access via theme.spacingTokens.xl, etc.)
+  // MUI transforms theme.spacing, so we need a separate property for named tokens
+  spacingTokens: spacing,
+
   // Component overrides from modules
   components: componentOverrides,
-
-  // Liftkit spacing and typography system
-  liftkit: {
-    spacing: liftKitTheme.spacing,
-    typography: liftKitTheme.typography,
-    semantic: semanticSpacing,
-  },
 
   // Custom gradient utilities
   gradients: {
@@ -179,10 +176,9 @@ const theme = createTheme({
 
 // Re-export everything for backward compatibility
 export default theme;
-export { liftKitTheme, colorTheme };
+export { colorTheme };
 export { typographyConfig as typographyTheme };
-export { semanticColors, semanticSpacing };
+export { semanticColors, semanticSpacing, spacing };
 export { createGradientStyle, gradientColorSchemes };
-
 // NEW: Export consolidated tokens and semantic layer
 export { scales, semantic, productCards, navigation };

@@ -99,24 +99,27 @@ const TopNavBar = ({ onOpenSearch }) => {
    return (
       <>
          <Container
-            maxWidth="xl"
-            className="d-flex flex-row navbar-top justify-content-between align-content-end"
+            maxWidth="xl"            
+            className="d-flex flex-row justify-content-between align-content-end"
             sx={{
+               bgcolor: 'navigation.background.topNavBar',
                px: {
-                  md: theme.liftkit.spacing.xl,
-                  lg: theme.liftkit.spacing.xl2,
-                  xl: theme.liftkit.spacing.xl3,
+                  md: theme.spacingTokens.xl,
+                  lg: theme.spacingTokens.xl2,
+                  xl: theme.spacingTokens.xl3,
                },
                py: {
-                  xs: theme.liftkit.spacing.xs3,
-                  lg: theme.liftkit.spacing.xs3,
+                  xs: theme.spacingTokens.xs3,
+                  lg: theme.spacingTokens.xs3,
                },
             }}
          >
             {/* Left Group - ActEd Home and Help */}
-            <Box className="d-flex flex-row flex-wrap" sx={{
-               paddingX: theme.liftkit.spacing.sm,
-               gap: { xs: 0, md: 2 },
+            <Box sx={{
+               display: 'flex',
+               flexDirection: 'row',
+               flexWrap: 'wrap',
+               gap: { xs: '0', md: theme.spacingTokens.md },
             }}>
                <Tooltip title="ActEd Homepage">
                   <Button
@@ -128,7 +131,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                      endIcon={!isDesktop ? <HomeIcon /> : null}
                      sx={{
                         minWidth: {
-                           xs: theme.liftkit.spacing.xl,
+                           xs: theme.spacingTokens.xl,
                            lg: 64,
                         },
                         justifyContent: {
@@ -157,7 +160,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                      endIcon={!isDesktop ? <HelpIcon /> : null}
                      sx={{
                         minWidth: {
-                           xs: theme.liftkit.spacing.xl,
+                           xs: theme.spacingTokens.xl,
                            lg: 64,
                         },
                         justifyContent: {
@@ -179,9 +182,11 @@ const TopNavBar = ({ onOpenSearch }) => {
             </Box>
 
             {/* Right Group - TopNavActions (Brochure and Search) */}
-            <Box className="d-flex flex-row flex-wrap" sx={{
-               paddingX: theme.liftkit.spacing.sm,
-               gap: { xs: 0, md: 2 },
+            <Box sx={{
+               display: 'flex',
+               flexDirection: 'row',
+               flexWrap: 'wrap',
+               gap: { xs: '0', md: theme.spacingTokens.md },
             }}>
                {/* Brochure Download - Desktop Only */}
                <Tooltip title="Download Brochure">
@@ -194,7 +199,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                      endIcon={!isDesktop ? <DownloadIcon /> : null}
                      sx={{
                         minWidth: {
-                           xs: theme.liftkit.spacing.xl,
+                           xs: theme.spacingTokens.xl,
                            lg: 64,
                         },
                         justifyContent: {
@@ -222,7 +227,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                      onClick={onOpenSearch}
                      sx={{
                         minWidth: {
-                           xs: theme.liftkit.spacing.xl,
+                           xs: theme.spacingTokens.xl,
                            lg: 64,
                         },
                         justifyContent: {

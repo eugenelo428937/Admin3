@@ -2,7 +2,7 @@
 // Maps design intent to actual colors for consistent usage across components
 
 import { legacyScales } from '../tokens/colors';
-
+import { scales } from '../tokens/colors';
 /**
  * Semantic colors map purpose/intent to actual color values.
  * Use these in components instead of raw palette colors.
@@ -98,7 +98,18 @@ export const semanticColors = {
   avatar: {
     default: legacyScales.granite['020'],
   },
-
+  topnavbar: {
+    text: {
+      primary: legacyScales.offwhite['000'],      // Main nav text (#fdfdfd)
+      secondary: legacyScales.offwhite['001'],    // Secondary nav text (#f0edf1)
+      muted: legacyScales.granite['040'],     // Disabled/placeholder text (#9e9e9e)
+    },
+    background: {
+      color: legacyScales.granite['090'],
+      hover: legacyScales.granite['080'],     // Menu item hover (#525252)
+      active: legacyScales.granite['080'],    // Active/selected state (#3b3b3a)
+    },
+  },
   // Navigation semantic tokens (20260113-Styling-Clean-up)
   // Centralized colors for navigation components - enables theme switching by changing token values
   navigation: {
@@ -112,7 +123,7 @@ export const semanticColors = {
       divider: legacyScales.granite['030'],   // Menu dividers (#bababa)
     },
     background: {
-      color: legacyScales.granite['080'],
+      color: legacyScales.granite['090'],
       hover: legacyScales.granite['070'],     // Menu item hover (#525252)
       active: legacyScales.granite['080'],    // Active/selected state (#3b3b3a)
     },

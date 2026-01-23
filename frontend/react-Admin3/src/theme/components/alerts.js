@@ -1,6 +1,6 @@
 // Alert Component Overrides
 import { statusColors } from '../tokens/colors';
-import liftKitTheme from '../liftKitTheme';
+import { spacing } from '../tokens/spacing';
 
 export const alertOverrides = {
   MuiAlert: {
@@ -15,10 +15,10 @@ export const alertOverrides = {
       standardSuccess: {
         backgroundColor: statusColors.success.background,
         color: statusColors.success.main,
-        marginBottom: liftKitTheme.spacing.xs3,
+        marginBottom: spacing.xs3,
         "& .MuiAlertTitle-root": {
           color: statusColors.success.dark,
-          marginBottom: liftKitTheme.spacing.xs3,
+          marginBottom: spacing.xs3,
         },
         "& .MuiTypography-root": {
           color: statusColors.success.dark,
@@ -29,7 +29,7 @@ export const alertOverrides = {
         color: statusColors.error.dark,
         "& .MuiAlertTitle-root": {
           color: statusColors.error.dark,
-          marginBottom: liftKitTheme.spacing.xs3,
+          marginBottom: spacing.xs3,
         },
         "& .MuiTypography-root": {
           color: statusColors.error.dark,
@@ -40,7 +40,7 @@ export const alertOverrides = {
         color: statusColors.warning.dark,
         "& .MuiAlertTitle-root": {
           color: statusColors.warning.dark,
-          marginBottom: liftKitTheme.spacing.xs3,
+          marginBottom: spacing.xs3,
         },
         "& .MuiTypography-root": {
           color: statusColors.warning.dark,
@@ -51,7 +51,7 @@ export const alertOverrides = {
         color: statusColors.info.dark,
         "& .MuiAlertTitle-root": {
           color: statusColors.info.dark,
-          marginBottom: liftKitTheme.spacing.xs3,
+          marginBottom: spacing.xs3,
         },
         "& .MuiTypography-root": {
           color: statusColors.info.dark,

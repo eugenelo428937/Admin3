@@ -1,5 +1,6 @@
 // Button Component Overrides
-import liftKitTheme from '../liftKitTheme';
+import { spacing } from '../tokens/spacing';
+import { fontSizes } from '../tokens/typography';
 
 export const buttonOverrides = {
   MuiButton: {
@@ -15,13 +16,13 @@ export const buttonOverrides = {
           textTransform: "none",
           borderRadius: 6,
           width: "auto",
-          height: liftKitTheme.typography.title1.fontSize,
+          height: fontSizes.title1,
           alignItems: "center",
           justifyContent: "center",
           "& .MuiButton-startIcon": {
-            fontSize: liftKitTheme.typography.heading.fontSize,
+            fontSize: fontSizes.heading,
             "& .MuiSvgIcon-root": {
-              fontSize: liftKitTheme.typography.title3.fontSize,
+              fontSize: fontSizes.title3,
             },
           },
           "&:hover": {

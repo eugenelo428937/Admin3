@@ -38,12 +38,13 @@ export const border = {
 // Navigation Background Colors
 // =============================================================================
 export const background = {
-  default: md3.surface, // #FDF8FF - Default nav background
-  active: scales.granite[80], // #E6E1E9 - Active state
-  hover: md3.surfaceContainerHigh, // #EBE6EE - Hover state
-  elevated: md3.surfaceContainerHigh, // #EBE6EE - Elevated nav
-  dropdown: staticColors.white, // #FFFFFF - Dropdown background
-  overlay: 'rgba(0, 0, 0, 0.5)', // Overlay for mobile menu
+  default: scales.granite[85], 
+  active: scales.granite[90], 
+  hover: md3.surfaceContainerHigh, 
+  elevated: md3.surfaceContainerHigh, 
+  dropdown: staticColors.white,
+  overlay: 'rgba(0, 0, 0, 0.5)',
+  topNavBar: scales.granite[90],
 };
 
 // =============================================================================

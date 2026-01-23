@@ -25,18 +25,18 @@ const testTheme = createTheme(theme, {
             "& .floating-badges-container": {
               position: "absolute",
               top: "calc(var(--product-card-header-height) - var(--badge-height) / 1.618)",
-              right: liftKitTheme.spacing.sm,
+              right: spacing.sm,
               zIndex: 10,
               display: "flex",
-              gap: liftKitTheme.spacing.xs2,
+              gap: spacing.xs2,
               pointerEvents: "none",
               "& .subject-badge, & .session-badge": {
                 color: legacyScales.granite["100"],
                 fontSize: liftKitTheme.typography.bodyBold.fontSize,
-                paddingLeft: liftKitTheme.spacing.sm,
-                paddingRight: liftKitTheme.spacing.sm,
-                paddingTop: liftKitTheme.spacing.sm,
-                paddingBottom: liftKitTheme.spacing.sm,
+                paddingLeft: spacing.sm,
+                paddingRight: spacing.sm,
+                paddingTop: spacing.sm,
+                paddingBottom: spacing.sm,
                 alignItems: "center",
                 justifyContent: "center",
                 alignContent: "center",
@@ -83,12 +83,12 @@ const testTheme = createTheme(theme, {
 
             // Content
             "& .MuiCardContent-root": {
-              padding: liftKitTheme.spacing.md,
-              paddingTop: liftKitTheme.spacing.lg,
+              padding: spacing.md,
+              paddingTop: spacing.lg,
               "& .product-chips": {
                 display: "flex",
-                gap: liftKitTheme.spacing.sm,
-                marginBottom: liftKitTheme.spacing.md,
+                gap: spacing.sm,
+                marginBottom: spacing.md,
                 "& .MuiChip-root": {
                   boxShadow: "var(--Paper-shadow)",
                 },
@@ -99,10 +99,10 @@ const testTheme = createTheme(theme, {
                 alignItems: "start",
                 justifyContent: "start",
                 textAlign: "left",
-                paddingLeft: liftKitTheme.spacing.sm,
-                paddingRight: liftKitTheme.spacing.sm,
+                paddingLeft: spacing.sm,
+                paddingRight: spacing.sm,
                 "& .variations-title": {
-                  marginBottom: liftKitTheme.spacing.xs2,
+                  marginBottom: spacing.xs2,
                   textAlign: "left",
                 },
                 "& .variations-group": {
@@ -119,9 +119,9 @@ const testTheme = createTheme(theme, {
             "& .MuiCardActions-root": {
               height: "10.2rem !important",
               boxShadow: "var(--shadow-lg)",
-              paddingTop: liftKitTheme.spacing.md,
-              paddingLeft: liftKitTheme.spacing.md,
-              paddingRight: liftKitTheme.spacing.md,
+              paddingTop: spacing.md,
+              paddingLeft: spacing.md,
+              paddingRight: spacing.md,
               flexDirection: "column",
               alignItems: "stretch",
               justifyContent: "space-between",

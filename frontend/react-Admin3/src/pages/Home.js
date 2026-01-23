@@ -4,21 +4,22 @@ import { useNavigate } from "react-router-dom";
 import SearchBox from "../components/SearchBox";
 import SearchResults from "../components/SearchResults";
 import RulesEngineInlineAlert from "../components/Common/RulesEngineInlineAlert";
-import { Row, Col } from "react-bootstrap";
 import { Typography, Container } from "@mui/material";
 import { heroContainerStyles, heroContentStyles } from "../theme/styles";
 import { rulesEngineHelpers } from "../utils/rulesEngineUtils";
 import rulesEngineService from "../services/rulesEngineService";
 import { useDispatch } from "react-redux";
 import { navSelectProductGroup } from "../store/slices/filtersSlice";
-import {
+import
+{
    MenuBook,
    RateReview,
    School,
    ArrowForward,
 } from "@mui/icons-material";
 
-const Home = () => {
+const Home = () =>
+{
    const navigate = useNavigate();
    const theme = useTheme();
    const dispatch = useDispatch();
@@ -37,22 +38,26 @@ const Home = () => {
    // const graphic2 = `${process.env.PUBLIC_URL}/brand070.59c82c5e.webp`;
    // const graphic3 = `${process.env.PUBLIC_URL}/halftone_sq.df9804eb.avif`;
    // Debug video paths
-   useEffect(() => {}, [backgroundVideo, backgroundVideoPoster]);
+   useEffect(() => { }, [backgroundVideo, backgroundVideoPoster]);
 
    // Execute home_page_mount rules when component mounts
-   useEffect(() => {
-      const executeRules = async () => {
+   useEffect(() =>
+   {
+      const executeRules = async () =>
+      {
          setRulesLoading(true);
          setRulesMessages([]); // Clear previous messages
 
-         try {
+         try
+         {
             // Use the new helper function for simplified execution
             const result = await rulesEngineHelpers.executeHomePage(
                null,
                rulesEngineService
             );
 
-            if (result.success && result.messages?.processed?.length > 0) {
+            if (result.success && result.messages?.processed?.length > 0)
+            {
                // Extract processed display messages for home page (filter out acknowledgments)
                const displayMessages = result.messages.processed.filter(
                   (msg) =>
@@ -64,31 +69,37 @@ const Home = () => {
             }
 
             // Handle any processing errors
-            if (result.errors && result.errors.length > 0) {
+            if (result.errors && result.errors.length > 0)
+            {
                console.error("🚨 Rules processing errors:", result.errors);
-               if (process.env.NODE_ENV === "development") {
+               if (process.env.NODE_ENV === "development")
+               {
                   setError(`Development Error: ${result.errors.join(", ")}`);
                }
             }
-         } catch (err) {
+         } catch (err)
+         {
             console.error("Error executing home_page_mount rules:", err);
 
             // Handle schema validation errors specifically
-            if (err.name === "SchemaValidationError") {
+            if (err.name === "SchemaValidationError")
+            {
                console.error(
                   "🚨 Schema validation failed for rules engine:",
                   err.details
                );
                console.error("🔍 Schema errors:", err.schemaErrors);
                // For development, show schema validation errors to help debugging
-               if (process.env.NODE_ENV === "development") {
+               if (process.env.NODE_ENV === "development")
+               {
                   setError(
                      `Development Error: Schema validation failed - ${err.details}`
                   );
                }
             }
             // Don't show other rule engine errors to user - shouldn't block home page
-         } finally {
+         } finally
+         {
             setRulesLoading(false);
          }
       };
@@ -97,19 +108,22 @@ const Home = () => {
    }, []); // Empty dependency array since this should run once on mount
 
    // Handle search results from SearchBox
-   const handleSearchResults = (results) => {
+   const handleSearchResults = (results) =>
+   {
       setSearchResults(results);
       setError(null);
    };
 
    // Handle "Show Matching Products" button click
    // Redux state and URL sync middleware handle filters automatically
-   const handleShowMatchingProducts = () => {
+   const handleShowMatchingProducts = () =>
+   {
       navigate("/products");
    };
 
    // Handle navigation to products page with specific product type filter
-   const handleProductCategoryClick = (productType) => {
+   const handleProductCategoryClick = (productType) =>
+   {
       dispatch(navSelectProductGroup(productType));
       navigate("/products");
    };
@@ -172,7 +186,7 @@ const Home = () => {
                   lg: "5rem",
                   xl: "6rem",
                },
-               width: { xs: "100%", md: "70%", lg: "64%", xl: "50%" },
+               width: { sm: "80%", md: "70%", lg: "64%", xl: "50%" },
                height: "45rem",
                zIndex: 2,
                overflow: "visible",
@@ -220,124 +234,124 @@ const Home = () => {
          <Container
             data-testid="hero-container"
             disableGutters={true}
-            maxWidth={true}
+            maxWidth={false}
             sx={{
                ...heroContainerStyles,
-               width:"100%",
+               width: "100%",
             }}
          >
-            <Row style={{ height: "100%" }}>
-               <Col
-                  className="text-center"
+            <Container
+               disableGutters={true}
+               maxWidth={false}
+               sx={{
+                  position: "relative",
+                  overflow: "hidden",
+                  height: "100%",
+                  padding: 0,
+               }}>
+               {/* Background Video */}
+               <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  poster={backgroundVideoPoster}
                   style={{
-                     position: "relative",
-                     overflow: "hidden",
+                     position: "absolute",
+                     top: 0,
+                     left: 0,
+                     width: "100%",
                      height: "100%",
+                     objectFit: "cover",
+                     zIndex: 0,
                   }}
                >
-                  {/* Background Video */}
-                  <video
-                     autoPlay
-                     loop
-                     muted
-                     playsInline
-                     poster={backgroundVideoPoster}
-                     style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        zIndex: 0,
-                     }}
-                  >
-                     <source src={backgroundVideo} type="video/mp4" />
-                  </video>
+                  <source src={backgroundVideo} type="video/mp4" />
+               </video>
 
-                  {/* Grey Overlay */}
-                  <div
-                     style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        backgroundColor: "rgba(0, 0, 0, 0.75)",
-                        zIndex: 1,
-                     }}
-                  />                                    
-                  {/* Content */}
-                  <Container
+               {/* Grey Overlay */}
+               <div
+                  style={{
+                     position: "absolute",
+                     top: 0,
+                     left: 0,
+                     width: "100%",
+                     height: "100%",
+                     backgroundColor: "rgba(0, 0, 0, 0.75)",
+                     zIndex: 1,
+                  }}
+               />
+               {/* Content */}
+               <Container
+                  sx={{
+                     ...heroContentStyles,
+                     padding: {
+                        xs: theme.spacing.lg,
+                        lg: theme.spacing.lg,
+                     },
+                     zIndex: 3,
+                     display: "flex",
+                     flexDirection: "column",
+                     justifyContent: "space-evenly",
+                     alignItems: "center",
+                  }}
+               >
+                  {/* Rules Engine Messages Section (Holiday Messages, etc.) */}
+                  <RulesEngineInlineAlert
+                     messages={rulesMessages}
+                     loading={rulesLoading}
+                     loadingMessage="Checking for important notices..."
+                     fullWidth={true}
+                     float={true}
+                     floatPosition="right"
+                  />
+                  <Box
                      sx={{
-                        ...heroContentStyles,
-                        padding: {
-                           xs: theme.liftkit.spacing.lg,
-                           lg: theme.liftkit.spacing.lg,
-                        },
-                        zIndex: 3,
                         display: "flex",
                         flexDirection: "column",
-                        justifyContent: "space-evenly",
-                        alignItems: "center",
+                        alignItems: "start",
                      }}
                   >
-                     {/* Rules Engine Messages Section (Holiday Messages, etc.) */}
-                     <RulesEngineInlineAlert
-                           messages={rulesMessages}
-                           loading={rulesLoading}
-                           loadingMessage="Checking for important notices..."
-                           fullWidth={true}
-                           float={true}
-                           floatPosition="right"
-                        />   
-                     <Box
-                        sx={{
-                           display: "flex",
-                           flexDirection: "column",
-                           alignItems: "start",
-                        }}
+                     <Typography
+                        variant="BPP"
+                        color={theme.palette.md3.surfaceVariant}
                      >
-                        <Typography
-                           variant="BPP"
-                           color={theme.palette.md3.surfaceVariant}
-                        >
-                           BPP
-                        </Typography>
-                        <Typography
-                           variant="Acted"
-                           color={theme.palette.md3.surfaceVariant}
-                           className="m-top__xs"
-                        >
-                           Actuarial Education
-                        </Typography>
-                        <Divider flexItem />
-                        <Typography
-                           variant="h3"
-                           align="start"
-                           color={theme.palette.md3.surfaceVariant}
-                        >
-                           Online Store
-                        </Typography>
-                     </Box>
+                        BPP
+                     </Typography>
+                     <Typography
+                        variant="Acted"
+                        color={theme.palette.md3.surfaceVariant}
+                        className="m-top__xs"
+                     >
+                        Actuarial Education
+                     </Typography>
+                     <Divider flexItem />
+                     <Typography
+                        variant="h3"
+                        align="start"
+                        color={theme.palette.md3.surfaceVariant}
+                     >
+                        Online Store
+                     </Typography>
+                  </Box>
 
-                     <Container
-                        style={{ maxWidth: "600px", margin: "0 auto" }}
-                        disableGutters="true"
-                     >
-                        <SearchBox
-                           onSearchResults={handleSearchResults}
-                           onShowMatchingProducts={handleShowMatchingProducts}
-                           autoFocus={false}
-                        />
-                     </Container>
+                  <Container
+                     style={{ maxWidth: "600px", margin: "0 auto" }}
+                     disableGutters="true"
+                  >
+                     <SearchBox
+                        onSearchResults={handleSearchResults}
+                        onShowMatchingProducts={handleShowMatchingProducts}
+                        autoFocus={false}
+                     />
                   </Container>
-               </Col>
-            </Row>
+               </Container>
+            </Container>
 
             {/* Search Results Section */}
             <Container
                disableGutters={true}
+               maxWidth={false}
                sx={{
                   justifyContent: "center",
                   alignItems: "center",
@@ -353,117 +367,111 @@ const Home = () => {
                   maxSuggestions={5}
                />
             </Container>
-            {/* SVG Chevron Section with Grid Overlay */}
-            <Box
+            <Grid
+               container>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>red</Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>green</Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>blue</Grid>
+               </Grid>
+            {/* Product Cards Grid */}
+            <Grid
+               container
+               // spacing={3}
                sx={{
-                  position: "relative",
-                  // minHeight: { xs: "300px", md: "400px", lg: "500px" },
-                  overflow: "hidden",
-                  backgroundColor: theme.palette.background.default,
+                  // justifyContent: "center",
+                  // alignItems: "stretch",
+                  // maxWidth: "1200px",
+                  // mx: "auto",
+                  // zIndex: 99,
+                  // height: "100%",
+                  // minHeight: "inherit",
+                  // alignItems: "center",
+                  // justifyContent: "flex-end",
+                  // position: "relative",                  
                }}
             >
-               {/* Product Cards Grid */}
-               <Grid
-                  container
-                  spacing={3}
-                  sx={{
-                     justifyContent: "center",
-                     alignItems: "stretch",
-                     maxWidth: "1200px",
-                     mx: "auto",
-                     zIndex: 99,
-                     height: "100%",
-                     minHeight: "inherit",
-                     alignItems: "center",
-                     justifyContent: "flex-end",
-                     position: "relative",
-                     px: { xs: 2, md: 4, lg: 6 },
-                     py: { xs: 4, md: 6 },
-                  }}
-               >
-                  {productCards.map((card) => (
-                     <Grid
-                        key={card.id}
-                        size={{ xs: 12, sm: 6, md: 4 }}
+               {productCards.map((card) => (
+                  <Grid
+                     key={card.id}
+                     size={{ xs: 12, sm: 6, md: 4, lg: 4 }}
+                     sx={{
+                        // alignSelf: "stretch",
+                        zIndex: 99,
+                     }}
+                  >
+                     <Card
+                        elevation={3}
                         sx={{
-                           alignSelf: "stretch",
-                           zIndex: 99,
+                           p: { xs: 2, md: 3 },
+                           py: { xs: 2, md: 5 },
+                           backgroundColor: "rgba(255, 255, 255, 0.95)",
+                           borderRadius: theme.spacing.sm,
+                           height: "100%",
+                           justifyContent: "space-between",
+                           display: "flex",
+                           flexDirection: "column",
                         }}
                      >
-                        <Card
-                           elevation={3}
-                           sx={{
-                              p: { xs: 2, md: 3 },
-                              py: { xs: 2, md: 5 },
-                              backgroundColor: "rgba(255, 255, 255, 0.95)",
-                              borderRadius: theme.liftkit.spacing.sm,
-                              height: "100%",
-                              justifyContent: "space-between",
-                              display: "flex",
-                              flexDirection: "column",
-                           }}
-                        >
-                           <CardContent>
-                              <Typography
-                                 variant="h4"
-                                 sx={{
-                                    color: theme.palette.granite["090"],
-                                    fontWeight: 500,
-                                    marginBottom: theme.liftkit.spacing.lg,
-                                 }}
-                              >
-                                 {card.title}
-                              </Typography>
-                              <Typography
-                                 variant="body2"
-                                 sx={{
-                                    color: theme.palette.text.secondary,
-                                    lineHeight: 1.7,
-                                    flexGrow: 1,
-                                    mb: 3,
-                                 }}
-                              >
-                                 {card.description}
-                              </Typography>
-                           </CardContent>
-                           {/* CTA Button */}
-                           <Box
-                              component="button"
-                              onClick={() =>
-                                 handleProductCategoryClick(card.filterValue)
-                              }
+                        <CardContent>
+                           <Typography
+                              variant="h4"
                               sx={{
-                                 display: "flex",
-                                 alignItems: "center",
-                                 justifyContent: "center",
-                                 width: "100%",
-                                 py: 1.5,
-                                 px: 3,
-                                 border: "none",
-                                 borderRadius: 2,
-                                 background: card.gradient,
-                                 color: "#ffffff",
-                                 fontSize: "0.875rem",
-                                 fontWeight: 600,
-                                 cursor: "pointer",
-                                 transition: "all 0.2s ease",
-                                 "&:hover": {
-                                    opacity: 0.9,
-                                    transform: "scale(1.02)",
-                                 },
-                                 "&:active": {
-                                    transform: "scale(0.98)",
-                                 },
+                                 color: theme.palette.granite["090"],
+                                 fontWeight: 500,
+                                 marginBottom: theme.spacing.lg,
                               }}
                            >
-                              View Products
-                              <ArrowForward sx={{ fontSize: 18 }} />
-                           </Box>
-                        </Card>
-                     </Grid>
-                  ))}
-               </Grid>
-            </Box>
+                              {card.title}
+                           </Typography>
+                           <Typography
+                              variant="body2"
+                              sx={{
+                                 color: theme.palette.text.secondary,
+                                 lineHeight: 1.7,
+                                 flexGrow: 1,
+                                 mb: 3,
+                              }}
+                           >
+                              {card.description}
+                           </Typography>
+                        </CardContent>
+                        {/* CTA Button */}
+                        <Box
+                           component="button"
+                           onClick={() =>
+                              handleProductCategoryClick(card.filterValue)
+                           }
+                           sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              width: "100%",
+                              py: 1.5,
+                              px: 3,
+                              border: "none",
+                              borderRadius: 2,
+                              background: card.gradient,
+                              color: "#ffffff",
+                              fontSize: "0.875rem",
+                              fontWeight: 600,
+                              cursor: "pointer",
+                              transition: "all 0.2s ease",
+                              "&:hover": {
+                                 opacity: 0.9,
+                                 transform: "scale(1.02)",
+                              },
+                              "&:active": {
+                                 transform: "scale(0.98)",
+                              },
+                           }}
+                        >
+                           View Products
+                           <ArrowForward sx={{ fontSize: 18 }} />
+                        </Box>
+                     </Card>
+                  </Grid>
+               ))}
+            </Grid>
          </Container>
       </>
    );

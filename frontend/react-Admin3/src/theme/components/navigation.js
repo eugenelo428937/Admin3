@@ -1,16 +1,32 @@
 // Navigation Component Overrides (AppBar, Tabs, Menu, Button, Typography)
 import { semanticColors } from '../colors/semantic';
-import liftKitTheme from '../liftKitTheme';
+import { spacing } from '../tokens/spacing';
 import { navigation } from '../semantic/navigation';
 
 export const navigationOverrides = {
   MuiAppBar: {
     styleOverrides: {
-      root: {
-        backgroundColor: navigation.background.active,
-      },
+      root: ({ theme }) => ({
+        backgroundColor: navigation.background.default,
+        // Use actual CSS properties with breakpoints
+        paddingTop: spacing.xs3,
+        paddingBottom: spacing.xs3,
+        [theme.breakpoints.up('md')]: {
+          paddingLeft: spacing.xl,
+          paddingRight: spacing.xl,
+        },
+        [theme.breakpoints.up('lg')]: {
+          paddingLeft: spacing.xl2,
+          paddingRight: spacing.xl2,
+        },
+        [theme.breakpoints.up('xl')]: {
+          paddingLeft: spacing.xl3,
+          paddingRight: spacing.xl3,
+        },
+      }),
     },
   },
+
   MuiTabs: {
     styleOverrides: {
       root: {
@@ -122,7 +138,7 @@ export const navigationOverrides = {
           color: semanticColors.navigation.button.color,
           textTransform: 'none',
           paddingTop: 0,
-          marginBottom: liftKitTheme.spacing.sm,
+          marginBottom: spacing.sm,
         },
       },
       // topNavAction: Top navigation action buttons (search, cart, account)
@@ -131,9 +147,9 @@ export const navigationOverrides = {
         style: {
           color: semanticColors.navigation.text.secondary,
           textTransform: 'none',
-          padding: `${liftKitTheme.spacing.xs3} ${liftKitTheme.spacing.xs2}`,
+          padding: 0,
           justifyContent: 'center',
-          borderRadius: liftKitTheme.spacing.xs2,
+          borderRadius: spacing.xs2,
           overflow: 'hidden', // Contain ripple effect within button boundary
           transition: 'background-color 0.2s ease-in-out',
           '&:hover': {
@@ -143,10 +159,10 @@ export const navigationOverrides = {
             outline: `2px solid ${semanticColors.navigation.text.secondary}`,
             outlineOffset: '2px',
           },
-          "& .MuiButton-startIcon":{
-            margin:0,
-            marginRight: liftKitTheme.spacing.xs3,
-            fontSize: liftKitTheme.spacing.sm,
+          "& .MuiButton-startIcon": {
+            margin: 0,
+            marginRight: spacing.xs3,
+            fontSize: spacing.sm,
           },
         },
       },
@@ -167,7 +183,7 @@ export const navigationOverrides = {
       {
         props: { variant: 'navHeading' },
         style: {
-          marginBottom: liftKitTheme.spacing.xs,
+          marginBottom: spacing.xs,
           fontWeight: 'bold',
           cursor: 'pointer',
         },
@@ -200,11 +216,11 @@ export const navigationOverrides = {
       {
         props: { variant: 'hamburgerToggle' },
         style: {
-          borderRadius: liftKitTheme.spacing.sm,
-          paddingLeft: liftKitTheme.spacing.xs,
-          paddingRight: liftKitTheme.spacing.xs,
-          paddingTop: liftKitTheme.spacing.sm,
-          paddingBottom: liftKitTheme.spacing.sm,
+          borderRadius: spacing.sm,
+          paddingLeft: spacing.xs,
+          paddingRight: spacing.xs,
+          paddingTop: spacing.sm,
+          paddingBottom: spacing.sm,
           border: 0,
           zIndex: 10000,
           '&:hover': {

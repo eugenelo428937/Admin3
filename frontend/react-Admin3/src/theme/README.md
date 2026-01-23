@@ -314,7 +314,7 @@ const primary = md3.primary;
 ```javascript
 // OLD (deprecated)
 import liftKitTheme from './theme/liftKitTheme';
-const spacing = liftKitTheme.spacing.lg;
+const spacing = spacing.lg;
 
 // NEW (preferred)
 import { spacing } from './theme/tokens/spacing';

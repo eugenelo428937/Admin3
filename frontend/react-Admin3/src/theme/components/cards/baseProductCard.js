@@ -1,6 +1,6 @@
 // Base Product Card Styles
 // Common styles shared by all product card variants
-import liftKitTheme from '../../liftKitTheme';
+import { spacing } from '../../tokens/spacing';
 import { semantic } from '../../semantic/common';
 
 /**
@@ -63,13 +63,13 @@ export const baseProductCardStyles = {
   "& .floating-badges-container": {
     position: "absolute",
     top: "calc(var(--product-card-header-height) - var(--badge-height) / 1.618)",
-    right: liftKitTheme.spacing.sm,
+    right: spacing.sm,
     zIndex: 10,
     display: "flex",
-    gap: liftKitTheme.spacing.xs2,
+    gap: spacing.xs2,
     pointerEvents: "none",
     "& .subject-badge": {
-      padding: liftKitTheme.spacing.sm,
+      padding: spacing.sm,
       alignItems: "center",
       justifyContent: "center",
       alignContent: "center",
@@ -83,7 +83,7 @@ export const baseProductCardStyles = {
       color: semantic.textPrimary,
     },
     "& .session-badge": {
-      padding: liftKitTheme.spacing.sm,
+      padding: spacing.sm,
       alignItems: "center",
       justifyContent: "center",
       alignContent: "center",
@@ -149,7 +149,7 @@ export const baseProductCardStyles = {
         backgroundColor: 'rgba(0, 0, 0, 0.3)',
       },
     },
-    padding: liftKitTheme.spacing.md,
+    padding: spacing.md,
     flex: 1,
     display: "flex",
     flexDirection: "column",
@@ -162,9 +162,9 @@ export const baseProductCardStyles = {
   "& .MuiCardActions-root": {
     height: "9.4em !important",
     boxShadow: "var(--shadow-lg)",
-    paddingTop: liftKitTheme.spacing.md,
-    paddingLeft: liftKitTheme.spacing.md,
-    paddingRight: liftKitTheme.spacing.md,
+    paddingTop: spacing.md,
+    paddingLeft: spacing.md,
+    paddingRight: spacing.md,
     flexDirection: "column",
     alignItems: "stretch",
     justifyContent: "space-between",
@@ -183,7 +183,7 @@ export const baseProductCardStyles = {
         justifyContent: "start",
         textAlign: "left",
         maxWidth: "7.5rem",
-        paddingRight: liftKitTheme.spacing.xs2,
+        paddingRight: spacing.xs2,
         "& .discount-title": {
           textAlign: "left",
         },
@@ -192,10 +192,10 @@ export const baseProductCardStyles = {
           flexDirection: "column",
           alignItems: "flex-start",
           justifyContent: "flex-start",
-          marginLeft: liftKitTheme.spacing.sm,
+          marginLeft: spacing.sm,
           maxWidth: "7.5rem",
           "& .discount-radio-option": {
-            padding: liftKitTheme.spacing.xs3,
+            padding: spacing.xs3,
             paddingBottom: 0,
             width: "100%",
             transition: "all 0.2s ease-in-out",
@@ -204,16 +204,16 @@ export const baseProductCardStyles = {
               backdropFilter: "saturate(2.4)",
             },
             "& .MuiRadio-root": {
-              width: liftKitTheme.spacing.md,
-              height: liftKitTheme.spacing.md,
+              width: spacing.md,
+              height: spacing.md,
               alignItems: "center",
               justifyContent: "center",
               "& .MuiSvgIcon-root": {
-                fontSize: liftKitTheme.spacing.md,
+                fontSize: spacing.md,
               },
             },
             "& .discount-label": {
-              paddingLeft: liftKitTheme.spacing.xs,
+              paddingLeft: spacing.xs,
             },
           },
         },
@@ -259,12 +259,12 @@ export const baseProductCardStyles = {
         "& .add-to-cart-button": {
           alignSelf: "flex-end",
           borderRadius: "50%",
-          minWidth: liftKitTheme.spacing.xl15,
-          minHeight: liftKitTheme.spacing.xl15,
-          width: liftKitTheme.spacing.xl15,
-          height: liftKitTheme.spacing.xl15,
-          padding: liftKitTheme.spacing.sm,
-          marginTop: liftKitTheme.spacing.sm,
+          minWidth: spacing.xl15,
+          minHeight: spacing.xl15,
+          width: spacing.xl15,
+          height: spacing.xl15,
+          padding: spacing.sm,
+          marginTop: spacing.sm,
           boxShadow: "var(--Paper-shadow)",
           transition: "all 0.15s ease-in-out",
           "&:hover": {
