@@ -22,7 +22,7 @@
 ### Existing System Integration
 
 - **Integrates with:** `acted_product_productvariation` table, `ProductListSerializer`, exam sessions products search API
-- **Technology:** Django 5.1 ORM, Django REST Framework serializers, PostgreSQL
+- **Technology:** Django 6.0 ORM, Django REST Framework serializers, PostgreSQL
 - **Follows pattern:** Junction table foreign key relationships (similar to `ExamSessionSubjectProductVariation`)
 - **Touch points:**
   - Database: Foreign keys to existing product variation table

@@ -18,8 +18,8 @@ So that I can manage my tutorial choices reliably without persistent state issue
 - Backend cart API endpoints (DELETE /api/cart/items/{id}/)
 
 **Technology:**
-- React 18 with functional components and hooks
-- Material-UI for UI components
+- React 19.2 with functional components and hooks
+- Material-UI v7 for UI components
 - Context API for state management
 - localStorage for persistence
 - Django REST API backend

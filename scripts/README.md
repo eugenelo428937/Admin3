@@ -8,7 +8,7 @@ Before using these scripts, ensure you have:
 
 - **Git 2.5+** with worktree support
 - **PostgreSQL 14+** installed and running
-- **Python 3.10+** with Admin3 dependencies
+- **Python 3.14+** with Admin3 dependencies
 - **Node.js 16+** and npm
 - **PowerShell** (Windows) or Bash (Linux/Mac)
 

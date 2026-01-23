@@ -6,7 +6,7 @@
 
 **Architecture:** Migrate incrementally by component - create shared utilities first (keyboard nav hook, MegaMenuPopover), then migrate NavigationMenu (most complex), MobileNavigation, and finally MainNavBar. Each component is migrated with its tests.
 
-**Tech Stack:** React 18, Material-UI v5 (AppBar, Toolbar, Popover, Drawer, Menu, List), React Router v6, Jest + React Testing Library + jest-axe
+**Tech Stack:** React 19.2, Material-UI v7 (AppBar, Toolbar, Popover, Drawer, Menu, List), React Router v6, Jest + React Testing Library + jest-axe
 
 ---
 

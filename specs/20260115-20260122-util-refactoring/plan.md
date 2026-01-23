@@ -9,7 +9,7 @@ Extract the email system from the monolithic `utils` app into a standalone `emai
 
 ## Technical Context
 
-**Language/Version**: Python 3.14, Django 5.1
+**Language/Version**: Python 3.14, Django 6.0
 **Primary Dependencies**: Django REST Framework, psycopg2-binary, mjml (email templates)
 **Storage**: PostgreSQL with existing `utils_*` tables (preserved)
 **Testing**: Django TestCase / APITestCase with pytest patterns
