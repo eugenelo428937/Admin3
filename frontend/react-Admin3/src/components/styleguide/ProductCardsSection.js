@@ -23,10 +23,10 @@ const ProductCardsSection = () => {
 	return (
 		<Container sx={{mt:2}} maxWidth="xl">
 			{/* All Product Types Grid */}
-			<Typography variant="h4" sx={{ mb: theme.liftkit.spacing.xs }}>
+			<Typography variant="h4" sx={{ mb: theme.spacing.xs }}>
 				Product Cards
 			</Typography>			
-			<Divider sx={{mb: theme.liftkit.spacing.md }}/>
+			<Divider sx={{mb: theme.spacing.md }}/>
 			<Grid container spacing={0} sx={{ mb: 6, alignItems: "start" }}>
 				<Grid size={{ xs: 12, sm: 6, lg: 4, xl : 3 }} sx={{justifyItems:"center"}}>
 					<Typography variant="h6" gutterBottom>

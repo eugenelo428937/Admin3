@@ -1,5 +1,6 @@
 // Marking Product Card Variant Styles
-import liftKitTheme from '../../liftKitTheme';
+import { spacing } from '../../tokens/spacing';
+import { fontSizes } from '../../tokens/typography';
 import { marking } from '../../semantic/productCards';
 import { semantic } from '../../semantic/common';
 
@@ -38,16 +39,16 @@ export const markingCardStyles = {
     },
   },
   "& .MuiCardContent-root": {
-    padding: liftKitTheme.spacing.md,
+    padding: spacing.md,
     "& .submissions-info-row": {
-      marginBottom: liftKitTheme.spacing.xs2,
+      marginBottom: spacing.xs2,
     },
     "& .submissions-info-icon": {
       fontSize: "1rem",
       color: marking.subtitle,
     },
     "& .submissions-info-count": {
-      marginLeft: liftKitTheme.spacing.lg,
+      marginLeft: spacing.lg,
     },
     "& .marking-deadline-message": {
       borderRadius: 1,
@@ -77,14 +78,14 @@ export const markingCardStyles = {
       justifyContent: "center",
       width: "100%",
       "& .submission-deadlines-button": {
-        marginTop: liftKitTheme.spacing.sm,
+        marginTop: spacing.sm,
         alignSelf: "flex-start",
         textTransform: "none",
         border: "none",
-        fontSize: liftKitTheme.typography.body.fontSize,
+        fontSize: fontSizes.body1,
         color: marking.subtitle,
         backgroundColor: marking.header,
-        padding: liftKitTheme.spacing.sm,
+        padding: spacing.sm,
         "&:hover": {
           backgroundColor: marking.badge,
           borderColor: marking.button,

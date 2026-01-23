@@ -1,248 +1,238 @@
 // Typography Module
-// All typography variants extracted from theme.js
+// MUI theme typography configuration using token layer
+//
+// This module composes MUI-ready typography from the tokens layer.
+// The tokens layer provides primitive values; this module adds MUI-specific
+// configurations like !important flags and responsive overrides.
 
-import liftKitTheme from '../liftKitTheme';
+import { spacing } from '../tokens/spacing';
+import {
+  fontFamilies,
+  fontSizes,
+  lineHeights,
+  letterSpacing,
+  variants,
+} from '../tokens/typography';
+
+// =============================================================================
+// Helper: Add !important to CSS values for MUI specificity
+// =============================================================================
+const important = (value) => `${value} !important`;
 
 /**
  * Typography configuration for MUI theme.
- * Includes standard MUI variants and custom variants (BPP, Acted, navlink, etc.)
+ * Imports primitives from tokens/typography.js and adds MUI-specific modifications.
  */
 export const typographyConfig = {
-  fontFamily: "'Inter', 'Poppins', sans-serif",
+  fontFamily: fontFamilies.primary,
+
+  // Brand variants
   BPP: {
-    fontFamily: "'Inter', sans-serif",
-    fontWeight: 600,
-    fontSize: "calc(1em * var(--wholestep) * var(--wholestep) * var(--wholestep)) !important",
-    lineHeight: "var(--halfstep-dec) !important",
-    letterSpacing: "-0.022em",
-    fontOpticalSizing: "auto",
-    fontStyle: "normal",
-    fontVariationSettings: "'wght' 600",
+    ...variants.BPP,
+    fontSize: important(fontSizes.display1),
+    lineHeight: important('var(--halfstep-dec)'),
   },
   Acted: {
-    fontFamily: "'Inter', sans-serif",
-    fontWeight: 200,
-    fontSize: "calc(1em * var(--wholestep) * var(--wholestep)) !important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.022em !important",
-    fontOpticalSizing: "auto",
-    fontStyle: "normal",
-    fontVariationSettings: "'wght' 200",
+    ...variants.Acted,
+    fontSize: important(fontSizes.display2),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.tighter),
     marginTop: "calc( var(--2xs) / var(--halfstep) / var(--halfstep) / var(--eighthstep))",
   },
+
+  // Heading variants
   h1: {
-    fontFamily: "'Inter', sans-serif",
-    fontWeight: 400,
-    fontSize: "calc(1em * var(--wholestep) * var(--wholestep) * var(--wholestep)) !important",
-    lineHeight: "var(--quarterstep) !important",
-    letterSpacing: "-0.022em !important",
-    textWrap: "balance",
+    ...variants.h1,
+    fontSize: important(fontSizes.display1),
+    lineHeight: important(lineHeights.tight),
+    letterSpacing: important(letterSpacing.tighter),
   },
   h2: {
-    fontFamily: "'Inter', sans-serif",
-    fontWeight: 400,
-    fontSize: "calc(1em * var(--wholestep) * var(--wholestep)) !important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.022em !important",
+    ...variants.h2,
+    fontSize: important(fontSizes.display2),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.tighter),
   },
   h3: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 400,
-    fontSize: "calc(1em * var(--wholestep) * var(--halfstep)) !important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.022em !important",
-    textWrap: "balance",
-  },
-  price: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 400,
-    fontSize: "calc(1em * var(--wholestep) * var(--eighthstep)) !important",
-    lineHeight: "var(--quarterstep) !important",
-    letterSpacing: "-0.022em !important",
-    textWrap: "balance",
+    ...variants.h3,
+    fontSize: important(fontSizes.title1),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.tighter),
   },
   h4: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 400,
-    fontSize: "calc(1em * var(--wholestep)) !important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.02em !important",
-    textWrap: "balance",
-  },
-  productTitle: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 500,
-    fontSize: "calc(1em * var(--halfstep) * var(--quarterstep)) !important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.02em !important",
-    textWrap: "balance",
+    ...variants.h4,
+    fontSize: important(fontSizes.title2),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.tight),
   },
   h5: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 500,
-    fontSize: "calc(1em * var(--halfstep) * var(--eighthstep)) !important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.017em !important",
-    textWrap: "balance",
+    ...variants.h5,
+    fontSize: important('calc(1em * var(--halfstep) * var(--eighthstep))'),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.normal),
+  },
+  h6: {
+    ...variants.h6,
+    fontSize: important(fontSizes.heading),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.slight),
+  },
+
+  // Body variants
+  body1: {
+    ...variants.body1,
+    fontSize: important(fontSizes.body1),
+    lineHeight: important(lineHeights.relaxed),
+    letterSpacing: important(letterSpacing.subtle),
+  },
+  body2: {
+    ...variants.body2,
+    fontSize: important(fontSizes.body2),
+    lineHeight: important('calc(var(--wholestep) / var(--quarterstep))'),
+    letterSpacing: important(letterSpacing.subtle),
+  },
+
+  // Subtitle variants
+  subtitle1: {
+    ...variants.subtitle1,
+    fontSize: important(fontSizes.subheading),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.fine),
+  },
+  subtitle2: {
+    ...variants.subtitle2,
+    fontSize: important('calc(1em / var(--halfstep))'),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.fine),
+  },
+
+  // Caption variants
+  caption: {
+    ...variants.caption,
+    fontSize: important(fontSizes.caption),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.fine),
+  },
+  captionBold: {
+    ...variants.captionBold,
+    fontSize: important(fontSizes.caption),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.fine),
+  },
+  captionSemiBold: {
+    ...variants.captionSemiBold,
+    fontSize: important(fontSizes.caption),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.fine),
+  },
+  caption2: {
+    ...variants.caption2,
+    fontSize: important(fontSizes.caption2),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.fine),
+  },
+
+  // Utility variants
+  button: {
+    ...variants.button,
+    fontSize: important(fontSizes.button),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.minimal),
+    position: "static",
+    top: "6.235em",
+  },
+  overline: {
+    ...variants.overline,
+    fontSize: important(fontSizes.overline),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.wide),
+  },
+  fineprint: {
+    ...variants.fineprint,
+    fontSize: important(fontSizes.fineprint),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.fine),
+  },
+
+  // Custom variants
+  price: {
+    ...variants.price,
+    fontSize: important(fontSizes.price),
+    lineHeight: important(lineHeights.tight),
+    letterSpacing: important(letterSpacing.tighter),
+  },
+  productTitle: {
+    ...variants.productTitle,
+    fontSize: important(fontSizes.productTitle),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.tight),
   },
   navlink: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 500,
-    fontSize: "calc( 1em * var(--quarterstep) )!important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.004em !important",
-    textTransform: "none",
+    ...variants.navlink,
+    fontSize: important(fontSizes.navlink),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.minimal),
     position: "static",
     top: "6.235em",
   },
   topnavlink: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 300,
-    fontSize: "calc(1em / var(--quarterstep)) !important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.017em !important",
+    fontFamily: fontFamilies.primary,
+    fontWeight: 300, // Lighter than token default for this context
+    fontSize: important(fontSizes.topnavlink),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.normal),
     textWrap: "balance",
-  },
-  h6: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 600,
-    fontSize: "calc(1em * var(--quarterstep)) !important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.014em !important",
-    textWrap: "balance",
-  },
-  subtitle1: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 400,
-    fontSize: "calc(1em / var(--quarterstep)) !important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.007em !important",
-  },
-  subtitle2: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 400,
-    fontSize: "calc(1em / var(--halfstep)) !important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.007em !important",
-  },
-  body1: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 400,
-    fontSize: "1em !important",
-    lineHeight: "var(--wholestep) !important",
-    letterSpacing: "-0.011em !important",
-    textWrap: "pretty",
-  },
-  body2: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 400,
-    fontSize: "calc(1em / var(--quarterstep)) !important",
-    lineHeight: "calc(var(--wholestep) / var(--quarterstep)) !important",
-    letterSpacing: "-0.011em !important",
-    textWrap: "balance",
-  },
-  button: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 500,
-    fontSize: "calc( 1em * var(--eighthstep) )!important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.004em !important",
-    textTransform: "none",
-    position: "static",
-    top: "6.235em",
   },
   chip: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 600,
-    fontSize: "calc( 1em * var(--quarterstep) )!important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.004em !important",
-    textTransform: "none",
+    ...variants.chip,
+    fontSize: important(fontSizes.chip),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.minimal),
     position: "static",
     top: "6.235em",
-  },
-  caption: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 400,
-    fontSize: "calc(1em / var(--halfstep)) !important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.007em !important",
-  },
-  captionBold: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 600,
-    fontSize: "calc(1em / var(--halfstep)) !important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.007em !important",
-  },
-  captionSemiBold: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 500,
-    fontSize: "calc(1em / var(--halfstep)) !important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.007em !important",
-  },
-  caption2: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 400,
-    fontSize: "calc(1em / var(--halfstep) / var(--quarterstep) ) !important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.007em !important",
-  },
-  overline: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 400,
-    fontSize: "calc(1em / var(--halfstep)) !important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "0.0618em !important",
-    textTransform: "uppercase",
-  },
-  fineprint: {
-    fontFamily: "'Inter', 'Poppins', sans-serif",
-    fontWeight: 200,
-    fontSize: "calc(1em /  var(--halfstep)/  var(--quarterstep)) !important",
-    lineHeight: "var(--halfstep) !important",
-    letterSpacing: "-0.007em !important",
   },
 };
 
 /**
  * Responsive typography overrides.
  * Applied via breakpoints in the main theme.
+ *
+ * Note: These are responsive-specific calculations that differ from base sizes.
+ * They use the same golden ratio multipliers but with different compositions.
  */
 export const responsiveTypography = {
   BPP: {
     sm: {
-      fontSize: "calc(1em * var(--wholestep) * var(--wholestep) * var(--halfstep)) !important",
+      fontSize: important('calc(1em * var(--wholestep) * var(--wholestep) * var(--halfstep))'),
       textAlign: "start",
-      lineHeight: "calc(1em * var(--wholestep-dec) * var(--eighthstep)) !important",
+      lineHeight: important('calc(1em * var(--wholestep-dec) * var(--eighthstep))'),
     },
   },
   Acted: {
     sm: {
-      fontSize: "calc(1em * var(--wholestep) * var(--halfstep)) !important",
+      fontSize: important(fontSizes.title1), // Scales down from display2
       textAlign: "start",
-      lineHeight: "calc(1em * var(--wholestep-dec) * var(--quarterstep) * var(--eighthstep) * var(--eighthstep)) !important",
-      marginBottom: liftKitTheme.spacing.xs3,
+      lineHeight: important('calc(1em * var(--wholestep-dec) * var(--quarterstep) * var(--eighthstep) * var(--eighthstep))'),
+      marginBottom: spacing.xs3,
     },
   },
   h3: {
     sm: {
-      fontSize: "calc(1em * var(--wholestep) * var(--eighthstep)) !important",
+      fontSize: important(fontSizes.price), // Scales down from title1
     },
   },
   price: {
     sm: {
-      fontSize: "calc(1em * var(--wholestep) * var(--eighthstep)) !important",
+      fontSize: important(fontSizes.price),
     },
   },
   navlink: {
     lg: {
-      fontSize: "calc(1em * var(--quarterstep)) !important",
+      fontSize: important(fontSizes.navlink),
       fontWeight: 400,
     },
     md: {
-      fontSize: "1em !important",
+      fontSize: important(fontSizes.body1),
       fontWeight: 400,
     },
   },
