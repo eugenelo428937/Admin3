@@ -39,7 +39,7 @@ This brownfield architecture supports the integration of new features while main
 
 ### Backend Architecture
 ```
-Django 5.1 + Django REST Framework
+Django 6.0 + Django REST Framework
 ├── Authentication: JWT with refresh tokens
 ├── Database: PostgreSQL (ACTEDDBDEV01)
 ├── Apps Structure:
@@ -60,7 +60,7 @@ Django 5.1 + Django REST Framework
 
 ### Frontend Architecture
 ```
-React 18 + Material-UI
+React 19.2 + Material-UI v7
 ├── State Management: Context API
 ├── Routing: React Router
 ├── HTTP Client: Axios
@@ -127,14 +127,14 @@ src/contexts/
 The current technology stack demonstrates mature choices suitable for educational administration:
 
 **Backend Stack (Recommended: Continue)**
-- Django 5.1: Mature, stable LTS version
+- Django 6.0: Latest stable version
 - Django REST Framework: Industry standard for API development
 - PostgreSQL: Enterprise-grade database with excellent performance
 - JWT Authentication: Modern, stateless authentication
 - GraphQL Client: Sophisticated external API integration
 
 **Frontend Stack (Recommended: Standardize)**
-- React 18: Modern, well-supported framework
+- React 19.2: Modern, well-supported framework
 - Material-UI: Consistent UI components (migrate from Bootstrap)
 - Axios: Reliable HTTP client
 - Context API: Sufficient for current complexity

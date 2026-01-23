@@ -18,7 +18,7 @@ So that I have a consistent view of my choices and can trust that what I see in 
 - localStorage (persistence layer for draft choices)
 
 **Technology:**
-- React 18 with functional components and hooks
+- React 19.2 with functional components and hooks
 - Context API for state management (async state updates)
 - localStorage for client-side persistence
 - Django REST API backend (asynchronous cart operations)

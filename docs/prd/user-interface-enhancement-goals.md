@@ -2,7 +2,7 @@
 
 ### Integration with Existing UI
 
-The new UI elements will integrate with the existing Material-UI component library and React component patterns. Based on the existing system architecture using React 18 with Material-UI, the enhancements will:
+The new UI elements will integrate with the existing Material-UI component library and React component patterns. Based on the existing system architecture using React 19.2 with Material-UI v7, the enhancements will:
 
 - **Rules Engine UI**: Extend existing admin dashboard components for rule configuration and management
 - **Mobile Layout**: Utilize Material-UI's responsive grid system and breakpoints while maintaining existing component hierarchy

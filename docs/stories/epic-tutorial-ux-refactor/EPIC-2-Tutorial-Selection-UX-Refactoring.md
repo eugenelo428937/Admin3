@@ -21,7 +21,7 @@ Refactor tutorial selection components to comply with SOLID principles, improve 
 ### Existing System Context
 
 - **Current relevant functionality:** TutorialChoiceDialog and TutorialChoicePanel manage tutorial selection UI. TutorialProductCard displays products with SpeedDial actions.
-- **Technology stack:** React 18, Material-UI v5 (Dialog, Snackbar, SpeedDial, Grid components)
+- **Technology stack:** React 19.2, Material-UI v7 (Dialog, Snackbar, SpeedDial, Grid components)
 - **Integration points:**
   - TutorialChoiceContext: State management with `isDraft` flag (from Epic 1)
   - Material-UI components and theming

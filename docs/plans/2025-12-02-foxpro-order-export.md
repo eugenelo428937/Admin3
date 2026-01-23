@@ -6,7 +6,7 @@
 
 **Architecture:** Builds on existing `DbfExportService` infrastructure. Creates a specialized management command that exports 4 related tables (acted_orders, acted_order_items, auth_user, acted_user_profile) with proper FoxPro field naming conventions. Uses SQL joins to flatten related data where appropriate.
 
-**Tech Stack:** Django 5.1, PostgreSQL, ydbf library (existing), cp1252 encoding for Windows/FoxPro compatibility
+**Tech Stack:** Django 6.0, PostgreSQL, ydbf library (existing), cp1252 encoding for Windows/FoxPro compatibility
 
 ---
 

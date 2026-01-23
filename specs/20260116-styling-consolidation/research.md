@@ -7,11 +7,11 @@
 
 ### 1. MUI Theme Palette Extension Best Practices
 
-**Question**: How should custom palette properties be structured in MUI v5 for optimal TypeScript support and sx prop access?
+**Question**: How should custom palette properties be structured in MUI v7 for optimal TypeScript support and sx prop access?
 
 **Decision**: Use module augmentation pattern with flat + nested structure.
 
-**Rationale**: MUI v5 supports custom palette properties that can be accessed via sx prop string paths (e.g., `bgcolor: 'semantic.bgPaper'`). The key is that nested objects work but require the path string syntax in sx props.
+**Rationale**: MUI v7 supports custom palette properties that can be accessed via sx prop string paths (e.g., `bgcolor: 'semantic.bgPaper'`). The key is that nested objects work but require the path string syntax in sx props.
 
 **Alternatives Considered**:
 
@@ -138,4 +138,4 @@ const activeColors = isDarkMode
 
 ## Unresolved Questions
 
-None. All technical decisions have been made with high confidence based on MUI v5 documentation and existing codebase patterns.
+None. All technical decisions have been made with high confidence based on MUI v7 documentation and existing codebase patterns.
