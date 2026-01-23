@@ -48,12 +48,9 @@ class LoginAPITestCase(APITestCase):
             is_active=True
         )
 
-    @patch('core_auth.views.CartViewSet')
-    def test_login_with_valid_credentials(self, mock_cart):
+    @patch('core_auth.views.cart_service')
+    def test_login_with_valid_credentials(self, mock_cart_service):
         """Test POST /api/auth/login/ with valid credentials."""
-        mock_cart_instance = MagicMock()
-        mock_cart.return_value = mock_cart_instance
-
         data = {
             'username': 'testuser@example.com',
             'password': 'testpassword123'
@@ -67,7 +64,7 @@ class LoginAPITestCase(APITestCase):
         self.assertIn('user', response.data)
 
         # Verify cart merge was called
-        mock_cart_instance.merge_guest_cart.assert_called_once()
+        mock_cart_service.merge_guest_cart.assert_called_once()
 
     def test_login_with_invalid_password(self):
         """Test POST /api/auth/login/ with invalid password."""
