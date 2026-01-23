@@ -22,7 +22,7 @@ class CramMD5EmailBackend(EmailBackend):
 
     Usage:
         Set in settings.py:
-        EMAIL_BACKEND = 'utils.email_backends.CramMD5EmailBackend'
+        EMAIL_BACKEND = 'email_system.backends.CramMD5EmailBackend'
     """
 
     def open(self):
@@ -142,7 +142,7 @@ class CustomSMTPEmailBackend(EmailBackend):
 
     Usage:
         Set in settings.py:
-        EMAIL_BACKEND = 'utils.email_backends.CustomSMTPEmailBackend'
+        EMAIL_BACKEND = 'email_system.backends.CustomSMTPEmailBackend'
         EMAIL_AUTH_METHOD = 'CRAM-MD5'  # or 'PLAIN', 'LOGIN', 'STANDARD'
     """
 

@@ -11,7 +11,7 @@ from .serializers import CartSerializer, CartItemSerializer, ActedOrderSerialize
 from store.models import Product as StoreProduct
 from catalog.models import ProductProductVariation
 from marking.models import MarkingPaper
-from utils.email_service import email_service
+from email_system.services.email_service import email_service
 from .services.vat_orchestrator import vat_orchestrator
 import logging
 from django.utils import timezone
