@@ -227,7 +227,7 @@ const MainNavActions = ({
                         xs: cartCount === 0 ? "flex" : "none",
                         md: "flex",
                      },                     
-                     borderRadius: { xs: theme.liftkit.spacing.xl2, lg: 0 },
+                     borderRadius: { xs: theme.spacing.xl2, lg: 0 },
 					 "&:hover": {
                               backgroundColor: theme.palette.navigation.background.hover,
 							  boxShadow: "var(--Paper-shadow)",
@@ -241,11 +241,11 @@ const MainNavActions = ({
                         lg: 1,
                      },
                      minWidth: {
-                        xs: theme.liftkit.spacing.md,
+                        xs: theme.spacing.md,
                         lg: 64,
                      },
 					 minHeight: {
-                        xs: theme.liftkit.spacing.md,
+                        xs: theme.spacing.md,
                         lg: 64,
                      },
 					 alignContent:"center",

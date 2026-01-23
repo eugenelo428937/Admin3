@@ -7,7 +7,6 @@
 
 export {
   default,
-  liftKitTheme,
   colorTheme,
   typographyTheme,
   semanticColors,

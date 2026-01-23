@@ -1,6 +1,6 @@
 // Miscellaneous Component Overrides
 import { legacyScales } from '../tokens/colors';
-import liftKitTheme from '../liftKitTheme';
+import { spacing } from '../tokens/spacing';
 
 export const miscOverrides = {
   MuiDivider: {
@@ -22,10 +22,10 @@ export const miscOverrides = {
     styleOverrides: {
       root: {
         "& .MuiFab-root": {
-          minWidth: liftKitTheme.spacing.xl15,
-          minHeight: liftKitTheme.spacing.xl15,
-          width: liftKitTheme.spacing.xl15,
-          height: liftKitTheme.spacing.xl15,
+          minWidth: spacing.xl15,
+          minHeight: spacing.xl15,
+          width: spacing.xl15,
+          height: spacing.xl15,
         },
       },
       variants: [
@@ -103,7 +103,7 @@ export const miscOverrides = {
     styleOverrides: {
       root: {
         '&:hover': {
-          backgroundColor: '#f8f9fa',
+          backgroundColor: '#f8f9fa', // #f8f9fa
         },
       },
     },

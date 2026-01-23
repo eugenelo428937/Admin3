@@ -528,7 +528,7 @@ const RegistrationWizard = ({ onSuccess, onError, onSwitchToLogin }) => {
                   <Box
                      sx={{
                         textAlign: "center",
-                        mb: theme.liftkit.spacing.sm,
+                        mb: theme.spacing.sm,
                         display: "flex",
                         flexDirection: "row",
                         alignItems: "center",
@@ -545,14 +545,14 @@ const RegistrationWizard = ({ onSuccess, onError, onSwitchToLogin }) => {
                         Personal & Contact Information
                      </Typography>
                   </Box>
-                  <Divider sx={{ mb: theme.liftkit.spacing.lg }}></Divider>
+                  <Divider sx={{ mb: theme.spacing.lg }}></Divider>
 
                   <Grid
                      container
-                     spacing={theme.liftkit.spacing.sm}
+                     spacing={theme.spacing.sm}
                      sx={{ flexGrow: 1 }}
                   >
-                     <Grid size={2} sx={{ mr: theme.liftkit.spacing.sm }}>
+                     <Grid size={2} sx={{ mr: theme.spacing.sm }}>
                         <Autocomplete
                            options={[
                               { label: "Mr", value: "Mr" },
@@ -737,7 +737,7 @@ const RegistrationWizard = ({ onSuccess, onError, onSwitchToLogin }) => {
                   <Box
                      sx={{
                         textAlign: "center",
-                        mb: theme.liftkit.spacing.sm,
+                        mb: theme.spacing.sm,
                         display: "flex",
                         flexDirection: "row",
                         alignItems: "center",
@@ -752,7 +752,7 @@ const RegistrationWizard = ({ onSuccess, onError, onSwitchToLogin }) => {
                      />
                      <Typography variant="h5">Home Address</Typography>
                   </Box>
-                  <Divider sx={{ mb: theme.liftkit.spacing.lg }}></Divider>
+                  <Divider sx={{ mb: theme.spacing.lg }}></Divider>
                   <SmartAddressInput
                      values={form}
                      onChange={handleChange}
@@ -769,7 +769,7 @@ const RegistrationWizard = ({ onSuccess, onError, onSwitchToLogin }) => {
                   <Box
                      sx={{
                         textAlign: "center",
-                        mb: theme.liftkit.spacing.sm,
+                        mb: theme.spacing.sm,
                         display: "flex",
                         flexDirection: "row",
                         alignItems: "center",
@@ -784,7 +784,7 @@ const RegistrationWizard = ({ onSuccess, onError, onSwitchToLogin }) => {
                      />
                      <Typography variant="h5">Work Address</Typography>
                   </Box>
-                  <Divider sx={{ mb: theme.liftkit.spacing.lg }}></Divider>
+                  <Divider sx={{ mb: theme.spacing.lg }}></Divider>
 
                   <Paper
                      sx={{
@@ -1109,7 +1109,7 @@ const RegistrationWizard = ({ onSuccess, onError, onSwitchToLogin }) => {
                      <Typography
                         variant="body2"
                         color={theme.palette.text.primary}
-                        sx={{ mb: theme.liftkit.spacing.md }}
+                        sx={{ mb: theme.spacing.md }}
                      >
                         Follow these steps below to register your account
                      </Typography>
@@ -1118,7 +1118,7 @@ const RegistrationWizard = ({ onSuccess, onError, onSwitchToLogin }) => {
                         variant="determinate"
                         value={getProgressPercentage()}
                         sx={{
-                           mb: theme.liftkit.spacing.md,
+                           mb: theme.spacing.md,
                            height: 6,
                            borderRadius: 4,
                            backgroundColor: "rgba(255,255,255,0.2)",
@@ -1250,7 +1250,7 @@ const RegistrationWizard = ({ onSuccess, onError, onSwitchToLogin }) => {
          </Card>
 
          {onSwitchToLogin && (
-            <Box sx={{ textAlign: "center", mt: theme.liftkit.spacing.md }}>
+            <Box sx={{ textAlign: "center", mt: theme.spacing.md }}>
                <Button variant="text" onClick={onSwitchToLogin}>
                   Already have an account? Login
                </Button>

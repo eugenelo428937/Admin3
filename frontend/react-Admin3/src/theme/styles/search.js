@@ -39,10 +39,10 @@ export const searchInputStyles = {
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
     backgroundColor: 'white',
     '&:hover': {
-      borderColor: '#007bff',
+      borderColor: '#007bff', // #007bff
     },
     '&.Mui-focused': {
-      borderColor: '#007bff',
+      borderColor: '#007bff', // #007bff
       boxShadow: '0 4px 12px rgba(0, 123, 255, 0.15)',
     },
   },
@@ -53,7 +53,7 @@ export const searchInputStyles = {
  * Migrated from .search-icon in search_box.css
  */
 export const searchIconStyles = {
-  color: '#6c757d',
+  color: '#6c757d', // #6c757d
   pointerEvents: 'none',
 };
 
@@ -125,13 +125,13 @@ export const filterBadgeSelectedStyles = {
  */
 export const filterBadgeUnselectedStyles = {
   ...filterBadgeStyles,
-  backgroundColor: '#f8f9fa',
-  color: '#495057',
-  borderColor: '#dee2e6',
+  backgroundColor: '#f8f9fa', // #f8f9fa
+  color: '#495057', // #495057
+  borderColor: '#dee2e6', // #dee2e6
   '&:hover': {
     ...filterBadgeStyles['&:hover'],
-    backgroundColor: '#e9ecef',
-    borderColor: '#adb5bd',
+    backgroundColor: '#e9ecef', // #e9ecef
+    borderColor: '#adb5bd', // #adb5bd
   },
 };
 
@@ -140,7 +140,7 @@ export const filterBadgeUnselectedStyles = {
  * Migrated from .selected-filters in search_box.css
  */
 export const selectedFiltersStyles = {
-  backgroundColor: '#f8f9fa',
+  backgroundColor: '#f8f9fa', // #f8f9fa
   padding: '15px',
   borderRadius: '10px',
   border: '1px solid #e9ecef',
@@ -182,7 +182,7 @@ export const suggestionFiltersCardStyles = {
   border: '1px solid #e0e6ed',
   borderRadius: '12px',
   boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-  backgroundColor: '#ffffff',
+  backgroundColor: '#ffffff', // #ffffff
   transition: 'box-shadow 0.3s ease',
   '&:hover': {
     boxShadow: '0 6px 12px rgba(0, 0, 0, 0.15)',
@@ -197,7 +197,7 @@ export const topProductsCardStyles = {
   border: '1px solid #e0e6ed',
   borderRadius: '12px',
   boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-  backgroundColor: '#ffffff',
+  backgroundColor: '#ffffff', // #ffffff
   transition: 'box-shadow 0.3s ease',
   '&:hover': {
     boxShadow: '0 6px 12px rgba(0, 0, 0, 0.15)',
@@ -209,7 +209,7 @@ export const topProductsCardStyles = {
  * Migrated from .filter-category-title in search_results.css
  */
 export const filterCategoryTitleStyles = {
-  color: '#495057',
+  color: '#495057', // #495057
   fontSize: '0.9rem',
   fontWeight: 600,
   marginBottom: '0.75rem',
@@ -223,7 +223,7 @@ export const filterCategoryTitleStyles = {
  */
 export const noResultsContainerStyles = {
   padding: '3rem 1.5rem',
-  backgroundColor: '#f8f9fa',
+  backgroundColor: '#f8f9fa', // #f8f9fa
   borderRadius: '12px',
   border: '2px dashed #dee2e6',
 };

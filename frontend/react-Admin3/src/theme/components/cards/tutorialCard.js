@@ -1,5 +1,6 @@
 // Tutorial Product Card Variant Styles
-import liftKitTheme from '../../liftKitTheme';
+import { spacing } from '../../tokens/spacing';
+import { fontWeights } from '../../tokens/typography';
 import { tutorial } from '../../semantic/productCards';
 import { semantic, status } from '../../semantic/common';
 import { md3 } from '../../tokens/colors';
@@ -13,8 +14,8 @@ export const tutorialCardStyles = {
   "& .floating-badges-container": {
     "& .availability-badge": {
       color: md3.error,
-      paddingLeft: liftKitTheme.spacing.sm,
-      paddingRight: liftKitTheme.spacing.sm,
+      paddingLeft: spacing.sm ,
+      paddingRight: spacing.sm ,
       alignItems: "center",
       justifyContent: "center",
       alignContent: "center",
@@ -89,18 +90,18 @@ export const tutorialCardStyles = {
 
   // Content styling
   "& .MuiCardContent-root": {
-    padding: liftKitTheme.spacing.md,
-    paddingTop: liftKitTheme.spacing.lg,
+    padding: spacing.md ,
+    paddingTop: spacing.lg ,
     "& .product-chips": {
       display: "flex",
-      gap: liftKitTheme.spacing.sm,
-      marginBottom: liftKitTheme.spacing.md,
+      gap: spacing.sm ,
+      marginBottom: spacing.md ,
       "& .MuiChip-root": {
         boxShadow: "var(--Paper-shadow)",
         "& .MuiChip-label": {
-          fontWeight: liftKitTheme.typography.overline.fontWeight,
-          paddingX: liftKitTheme.spacing.md,
-          paddingY: liftKitTheme.spacing.xs,
+          fontWeight: fontWeights.regular,
+          paddingX: spacing.md ,
+          paddingY: spacing.xs ,
         },
       },
     },
@@ -108,20 +109,20 @@ export const tutorialCardStyles = {
       display: "flex",
       flexDirection: "column",
       textAlign: "left",
-      marginLeft: liftKitTheme.spacing.sm,
-      marginRight: liftKitTheme.spacing.sm,
+      marginLeft: spacing.sm ,
+      marginRight: spacing.sm ,
       "& .info-row": {
         display: "flex",
-        marginBottom: liftKitTheme.spacing.sm,
+        marginBottom: spacing.sm ,
         alignItems: "flex-start",
         textAlign: "left",
         "& .info-title": {
-          marginBottom: liftKitTheme.spacing.xs2,
+          marginBottom: spacing.xs2 ,
         },
         "& .info-icon": {
           fontSize: "16px",
           color: tutorial.subtitle,
-          marginRight: liftKitTheme.spacing.xs2,
+          marginRight: spacing.xs2 ,
         },
         "& .info-text": {
           color: tutorial.title,
@@ -130,7 +131,7 @@ export const tutorialCardStyles = {
       },
       "& .info-sub-text": {
         color: tutorial.subtitle,
-        marginLeft: liftKitTheme.spacing.md,
+        marginLeft: spacing.md ,
         fontWeight: "500",
       },
     },
