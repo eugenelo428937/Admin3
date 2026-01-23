@@ -1,5 +1,6 @@
 // Marking Voucher Product Card Variant Styles
-import liftKitTheme from '../../liftKitTheme';
+import { spacing } from '../../tokens/spacing';
+import { fontSizes } from '../../tokens/typography';
 import { markingVoucher } from '../../semantic/productCards';
 import { semantic } from '../../semantic/common';
 
@@ -31,11 +32,11 @@ export const markingVoucherCardStyles = {
     "& .expiry-badge": {
       backgroundColor: markingVoucher.button,
       color: semantic.textPrimary,
-      fontSize: liftKitTheme.typography.bodyBold.fontSize,
-      paddingLeft: liftKitTheme.spacing.sm,
-      paddingRight: liftKitTheme.spacing.sm,
-      paddingTop: liftKitTheme.spacing.sm,
-      paddingBottom: liftKitTheme.spacing.sm,
+      fontSize: fontSizes.body1,
+      paddingLeft: spacing.sm,
+      paddingRight: spacing.sm,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.sm,
       alignItems: "center",
       justifyContent: "center",
       alignContent: "center",
@@ -51,25 +52,25 @@ export const markingVoucherCardStyles = {
   "& .MuiCardContent-root": {
     "& .product-chips": {
       display: "flex",
-      gap: liftKitTheme.spacing.sm,
-      marginBottom: liftKitTheme.spacing.md,
+      gap: spacing.sm,
+      marginBottom: spacing.md,
       "& .MuiChip-root": {
         boxShadow: "var(--Paper-shadow)",
       },
     },
     "& .product-description": {
-      marginBottom: liftKitTheme.spacing.sm,
+      marginBottom: spacing.sm,
       textAlign: "left",
     },
     "& .voucher-info-alert": {
-      marginBottom: liftKitTheme.spacing.sm,
+      marginBottom: spacing.sm,
       textAlign: "left",
     },
     "& .voucher-validity-info": {
-      marginBottom: liftKitTheme.spacing.sm,
+      marginBottom: spacing.sm,
     },
     "& .validity-info-row": {
-      marginBottom: liftKitTheme.spacing.sm,
+      marginBottom: spacing.sm,
     },
     "& .validity-info-icon": {
       fontSize: "1rem",
@@ -78,7 +79,7 @@ export const markingVoucherCardStyles = {
     "& .voucher-quantity-section": {
       display: "flex",
       alignItems: "center",
-      marginTop: liftKitTheme.spacing.sm,
+      marginTop: spacing.sm,
       flexDirection: "row",
     },
   },
@@ -86,9 +87,9 @@ export const markingVoucherCardStyles = {
     height: "10.2rem !important",
     backgroundColor: markingVoucher.badge,
     boxShadow: "var(--shadow-lg)",
-    paddingTop: liftKitTheme.spacing.md,
-    paddingLeft: liftKitTheme.spacing.md,
-    paddingRight: liftKitTheme.spacing.md,
+    paddingTop: spacing.md,
+    paddingLeft: spacing.md,
+    paddingRight: spacing.md,
     flexDirection: "column",
     alignItems: "stretch",
     justifyContent: "space-between",
@@ -140,14 +141,14 @@ export const markingVoucherCardStyles = {
           color: markingVoucher.title,
           alignSelf: "flex-end",
           borderRadius: "50%",
-          minWidth: liftKitTheme.spacing.xl15,
-          minHeight: liftKitTheme.spacing.xl15,
-          width: liftKitTheme.spacing.xl15,
-          height: liftKitTheme.spacing.xl15,
-          padding: liftKitTheme.spacing.sm,
-          marginLeft: liftKitTheme.spacing.md,
-          marginRight: liftKitTheme.spacing.md,
-          marginTop: liftKitTheme.spacing.md,
+          minWidth: spacing.xl15,
+          minHeight: spacing.xl15,
+          width: spacing.xl15,
+          height: spacing.xl15,
+          padding: spacing.sm,
+          marginLeft: spacing.md,
+          marginRight: spacing.md,
+          marginTop: spacing.md,
           boxShadow: "var(--Paper-shadow)",
           backgroundColor: markingVoucher.header,
           transition: "all 0.15s ease-in-out",

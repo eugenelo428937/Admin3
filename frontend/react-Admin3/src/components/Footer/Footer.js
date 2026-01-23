@@ -527,8 +527,8 @@ const Footer = () => {
          component="footer"
          sx={{
             backgroundColor: theme.palette.granite["080"],
-            pt: theme.liftkit.spacing.lg,
-            px: theme.liftkit.spacing.xl,
+            pt: theme.spacing.lg,
+            px: theme.spacing.xl,
             zIndex: 99,
             position: "relative",
          }}
