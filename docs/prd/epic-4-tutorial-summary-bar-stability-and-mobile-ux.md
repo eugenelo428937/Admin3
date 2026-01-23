@@ -16,8 +16,8 @@ Fix critical bugs in the tutorial selection summary bar system and improve mobil
 - State managed via TutorialChoiceContext with localStorage persistence
 
 **Technology Stack:**
-- React 18 with functional components and hooks
-- Material-UI for UI components
+- React 19.2 with functional components and hooks
+- Material-UI v7 for UI components
 - Context API for state management (TutorialChoiceContext, CartContext)
 - localStorage for draft choice persistence
 - Django REST API backend for cart operations

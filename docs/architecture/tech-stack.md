@@ -3,7 +3,7 @@
 ## Backend Technologies
 
 ### Core Framework
-- **Django 5.1** - Web framework
+- **Django 6.0** - Web framework
 - **Django REST Framework** - API development
 - **PostgreSQL** - Primary database (ACTEDDBDEV01)
 
@@ -17,19 +17,19 @@
 - **MJML** - Email template system for responsive emails
 
 ### Development Tools
-- **Python 3.x** - Programming language
+- **Python 3.14** - Programming language
 - **pip** - Package management
 - **virtualenv** - Environment isolation
 
 ## Frontend Technologies
 
 ### Core Framework
-- **React 18** - Frontend framework
+- **React 19.2** - Frontend framework
 - **React Router** - Client-side routing
 - **React Hooks** - State management patterns
 
 ### UI & Styling
-- **Material-UI (MUI)** - Primary UI component library
+- **Material-UI v7 (MUI)** - Primary UI component library
 - **Chakra UI** - Additional UI components
 - **Framer Motion** - Animation library
 - **CSS-in-JS** - Styling approach

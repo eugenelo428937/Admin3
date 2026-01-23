@@ -9,15 +9,15 @@ Admin3 is a Django REST API backend with React frontend for the Online Store for
 ## Architecture
 
 ### Backend Structure
-- **Django 5.1** with Django REST Framework
+- **Django 6.0** with Django REST Framework
 - **PostgreSQL** database (ACTEDDBDEV01)
 - **JWT Authentication** with refresh tokens
 - **Modular app structure** for different business domains
 - **GraphQL integration** for external Administrate API calls
 
 ### Frontend Structure
-- **React 19** with functional components and hooks
-- **Material-UI** for consistent UI components
+- **React 19.2** with functional components and hooks
+- **Material-UI v7** for consistent UI components
 - **Axios** for API communication
 - **React Router** for navigation
 - **Redux Toolkit** for filter state management (product filtering)
@@ -973,7 +973,7 @@ const ComponentName = () => {
 
 ## Mobile Responsive Patterns
 
-### Responsive Breakpoint Strategy (Material-UI v5)
+### Responsive Breakpoint Strategy (Material-UI v7)
 
 The application uses Material-UI's standardized breakpoint system:
 
@@ -1322,13 +1322,13 @@ browser_close()
 ```
 
 ## Active Technologies
-- Python 3.14, Django 5.1 + Django REST Framework, PostgreSQL psycopg2-binary (001-catalog-consolidation)
+- Python 3.14, Django 6.0 + Django REST Framework, PostgreSQL psycopg2-binary (001-catalog-consolidation)
 - PostgreSQL with new `acted` schema (001-catalog-consolidation)
-- Python 3.14, Django 5.1 + Django REST Framework + Rules Engine (`rules_engine` app), Cart Services (`cart` app), Utils (`utils` app) (20260121-remove-legacy-vat)
+- Python 3.14, Django 6.0 + Django REST Framework + Rules Engine (`rules_engine` app), Cart Services (`cart` app), Utils (`utils` app) (20260121-remove-legacy-vat)
 - PostgreSQL (existing `acted` schema, `vat_audit` table to be dropped) (20260121-remove-legacy-vat)
 
 ## Recent Changes
-- 001-catalog-consolidation: Added Python 3.14, Django 5.1 + Django REST Framework, PostgreSQL psycopg2-binary
+- 001-catalog-consolidation: Added Python 3.14, Django 6.0 + Django REST Framework, PostgreSQL psycopg2-binary
 - 002-catalog-api-consolidation: Migrated API layer to catalog app using Strangler Fig pattern
   - New endpoints: /api/catalog/subjects/, /api/catalog/exam-sessions/, /api/catalog/products/, /api/catalog/bundles/
   - Legacy apps (subjects/, exam_sessions/, products/) are now thin wrappers with deprecation warnings

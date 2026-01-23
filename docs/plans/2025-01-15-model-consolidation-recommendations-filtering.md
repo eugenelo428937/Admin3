@@ -6,7 +6,7 @@
 
 **Architecture:** Two-phase migration: (1) Move ProductVariationRecommendation into catalog app with table rename to `"acted".product_productvariation_recommendations`, (2) Create new `filtering` Django app and migrate FilterGroup, FilterConfiguration, and related models from products app with proper "acted" schema tables.
 
-**Tech Stack:** Django 5.1, PostgreSQL with schema namespacing, Django migrations for table renaming
+**Tech Stack:** Django 6.0, PostgreSQL with schema namespacing, Django migrations for table renaming
 
 ---
 

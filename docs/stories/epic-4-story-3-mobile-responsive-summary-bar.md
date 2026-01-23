@@ -18,8 +18,8 @@ So that I can easily review my tutorial selections without losing visibility of 
 - SpeedDial and other fixed-position UI elements (z-index coordination)
 
 **Technology:**
-- React 18 with functional components and hooks
-- Material-UI v5 responsive design system (sx prop, breakpoints)
+- React 19.2 with functional components and hooks
+- Material-UI v7 responsive design system (sx prop, breakpoints)
 - CSS-in-JS (Material-UI sx prop for styling)
 - Touch event handlers for mobile interactions
 - Existing touchButtonStyle and touchIconButtonStyle patterns

@@ -16,7 +16,7 @@ Remove the legacy `vat` Django app which contains redundant code superseded by t
 
 ## Technical Context
 
-**Language/Version**: Python 3.14, Django 5.1 + Django REST Framework
+**Language/Version**: Python 3.14, Django 6.0 + Django REST Framework
 **Primary Dependencies**: Rules Engine (`rules_engine` app), Cart Services (`cart` app), Utils (`utils` app)
 **Storage**: PostgreSQL (existing `acted` schema, `vat_audit` table to be dropped)
 **Testing**: `python manage.py test` with pytest patterns
