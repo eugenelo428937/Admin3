@@ -14,8 +14,8 @@
 
 ## Test Environment
 
-- **Backend**: Django 5.1 on localhost:8888
-- **Frontend**: React 18 on localhost:3000  
+- **Backend**: Django 6.0 on localhost:8888
+- **Frontend**: React 19.2 on localhost:3000
 - **Database**: PostgreSQL (development)
 - **Test Method**: Backend model verification + Django management commands
 
