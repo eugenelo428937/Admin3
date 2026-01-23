@@ -13,9 +13,7 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 
 from marking.models import MarkingPaper
-from catalog.models import ExamSession, ExamSessionSubject, ExamSessionSubjectProduct
-from subjects.models import Subject
-from products.models.products import Product
+from catalog.models import ExamSession, ExamSessionSubject, ExamSessionSubjectProduct, Subject, Product
 
 
 class MarkingPaperAPITestCase(APITestCase):
