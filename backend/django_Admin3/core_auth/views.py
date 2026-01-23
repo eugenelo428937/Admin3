@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.middleware.csrf import get_token
 from users.serializers import UserRegistrationSerializer
 from cart.views import CartViewSet
-from utils.email_service import email_service
+from email_system.services.email_service import email_service
 from utils.recaptcha_utils import verify_recaptcha_v3, is_recaptcha_enabled, get_client_ip
 # Token configuration - now using Django settings directly
 from django.contrib.auth.tokens import default_token_generator
@@ -268,7 +268,7 @@ class AuthViewSet(viewsets.ViewSet):
             
             # Set expiry time with proper priority: Database setting > Django setting > Default
             try:
-                from utils.models import EmailSettings
+                from email_system.models import EmailSettings
                 expiry_hours = EmailSettings.get_setting('password_reset_timeout_hours') or getattr(settings, 'PASSWORD_RESET_TIMEOUT_HOURS', 24)
             except Exception:
                 # Fallback if database is not available or models not accessible
@@ -349,7 +349,7 @@ class AuthViewSet(viewsets.ViewSet):
                 # Send password reset completion email
                 try:
                     from django.utils import timezone
-                    from utils.email_service import email_service
+                    from email_system.services.email_service import email_service
 
                     completion_data = {
                         'user': serialize_user_for_email(user),
@@ -639,7 +639,7 @@ class AuthViewSet(viewsets.ViewSet):
             
             # Get expiry hours from settings
             try:
-                from utils.models import EmailSettings
+                from email_system.models import EmailSettings
                 expiry_hours = EmailSettings.get_setting('email_verification_timeout_hours') or getattr(settings, 'EMAIL_VERIFICATION_TIMEOUT_HOURS', 24)
             except Exception:
                 expiry_hours = getattr(settings, 'EMAIL_VERIFICATION_TIMEOUT_HOURS', 24)
