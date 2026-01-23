@@ -29,6 +29,7 @@ urlpatterns = [
     # Filter system endpoints (product groups, filter configuration)
     path('api/products/', include('filtering.urls')),
     path('api/cart/', include('cart.urls')),
+    path('api/orders/', include('orders.urls')),
     path('api/rules/', include('rules_engine.urls')),
     path('api/utils/', include('utils.urls')),
     path('api/countries/', country_list, name='country_list'),
