@@ -111,7 +111,7 @@ The current Admin3 system has a fundamentally broken product filtering architect
 
 ### Integration with Existing UI
 
-The new UI elements will integrate with the existing Material-UI component library and React component patterns. Based on the existing system architecture using React 18 with Material-UI, the enhancements will:
+The new UI elements will integrate with the existing Material-UI component library and React component patterns. Based on the existing system architecture using React 19.2 with Material-UI v7, the enhancements will:
 
 - **Rules Engine UI**: Extend existing admin dashboard components for rule configuration and management
 - **Mobile Layout**: Utilize Material-UI's responsive grid system and breakpoints while maintaining existing component hierarchy
@@ -150,8 +150,8 @@ The new UI elements will integrate with the existing Material-UI component libra
 
 ### Existing Technology Stack
 
-**Languages**: Python 3.x, JavaScript (ES6+), HTML5, CSS3
-**Frameworks**: Django 5.1, Django REST Framework, React 18, Material-UI
+**Languages**: Python 3.14, JavaScript (ES6+), HTML5, CSS3
+**Frameworks**: Django 6.0, Django REST Framework, React 19.2, Material-UI v7
 **Database**: PostgreSQL (ACTEDDBDEV01)
 **Infrastructure**: Windows development environment, existing deployment pipeline
 **External Dependencies**: Administrate API (GraphQL), MJML for email templates

@@ -26,8 +26,8 @@ Enhance the Material Product Card component to use Material UI SpeedDial for "Bu
 - No recommendation system exists for suggesting complementary products
 
 **Technology stack:**
-- Backend: Django 5.1, DRF, PostgreSQL
-- Frontend: React 18, Material-UI v5
+- Backend: Django 6.0, DRF, PostgreSQL
+- Frontend: React 19.2, Material-UI v7
 - State: Context API for cart management
 - API: RESTful endpoint `/api/exam-sessions-subjects-products/search/`
 

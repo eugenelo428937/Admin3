@@ -6,7 +6,7 @@
 
 **Architecture:** Split theme into domain-specific modules (colors, typography, spacing, components). Each component category gets its own file. Create semantic style objects that components import instead of inline sx. Maintain backward compatibility during migration.
 
-**Tech Stack:** MUI v5 theming, createTheme, deepmerge for theme composition
+**Tech Stack:** MUI v7 theming, createTheme, deepmerge for theme composition
 
 ---
 
