@@ -555,6 +555,19 @@ def address_lookup_proxy(request, is_test=True):
         # return JsonResponse(mock_response)
         # return JsonResponse({"addresses": []})  
 
+@require_GET
+def country_list(request):
+    """Return all active countries with iso_code and phone_code for frontend components."""
+    from utils.models import UtilsCountrys
+
+    countries = UtilsCountrys.objects.filter(active=True).values('code', 'name', 'phone_code')
+    result = [
+        {'iso_code': c['code'], 'name': c['name'], 'phone_code': c['phone_code']}
+        for c in countries
+    ]
+    return JsonResponse(result, safe=False)
+
+
 @csrf_exempt
 @require_http_methods(["GET"])
 def health_check(request):
