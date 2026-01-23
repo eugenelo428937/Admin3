@@ -1,14 +1,14 @@
 // Input Component Overrides (TextField, InputBase, etc.)
-import { liftkitColors } from '../tokens/colors';
-import liftKitTheme from '../liftKitTheme';
+import { md3 } from '../tokens/colors';
+import { spacing } from '../tokens/spacing';
 
 export const inputOverrides = {
   MuiTextField: {
     styleOverrides: {
       root: {
-        marginBottom: liftKitTheme.spacing.sm,
+        marginBottom: spacing.sm,
         "& .MuiInputBase-input": {
-          color: liftkitColors.light.onSurface,
+          color: md3.onSurface,
         },
       },
     },
@@ -29,7 +29,7 @@ export const inputOverrides = {
   MuiFormHelperText: {
     styleOverrides: {
       root: {
-        marginTop: liftKitTheme.spacing.xs2,
+        marginTop: spacing.xs2,
       },
     },
   },
