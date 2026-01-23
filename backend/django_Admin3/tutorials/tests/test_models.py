@@ -16,9 +16,7 @@ from decimal import Decimal
 
 from tutorials.models import TutorialEvent
 from store.models import Product as StoreProduct
-from catalog.models import ExamSession, ExamSessionSubject
-from subjects.models import Subject
-from catalog.models import Product, ProductProductVariation, ProductVariation
+from catalog.models import ExamSession, ExamSessionSubject, Subject, Product, ProductProductVariation, ProductVariation
 
 
 class TutorialEventTestCase(TestCase):

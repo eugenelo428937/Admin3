@@ -63,7 +63,7 @@ if USE_INTERNAL_SMTP:
     # Internal SMTP Server with optional CRAM-MD5 authentication
     EMAIL_AUTH_METHOD = env('EMAIL_AUTH_METHOD', default='')
     if EMAIL_AUTH_METHOD == 'CRAM-MD5':
-        EMAIL_BACKEND = 'utils.email_backends.CramMD5EmailBackend'
+        EMAIL_BACKEND = 'email_system.backends.custom_backends.CramMD5EmailBackend'
     else:
         EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
