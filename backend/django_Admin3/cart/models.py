@@ -394,7 +394,7 @@ class CartItem(models.Model):
         ordering = ['added_at']
         constraints = [
             models.CheckConstraint(
-                check=(
+                condition=(
                     models.Q(product__isnull=False) |
                     models.Q(marking_voucher__isnull=False) |
                     models.Q(item_type='fee')
@@ -402,26 +402,26 @@ class CartItem(models.Model):
                 name='cart_item_has_product_or_voucher_or_is_fee'
             ),
             models.CheckConstraint(
-                check=~(models.Q(product__isnull=False) & models.Q(marking_voucher__isnull=False)),
+                condition=~(models.Q(product__isnull=False) & models.Q(marking_voucher__isnull=False)),
                 name='cart_item_not_both_product_and_voucher'
             ),
             # Phase 4: VAT validation constraints
             models.CheckConstraint(
-                check=(
+                condition=(
                     models.Q(vat_rate__isnull=True) |
                     (models.Q(vat_rate__gte=0.0000) & models.Q(vat_rate__lte=1.0000))
                 ),
                 name='cart_item_vat_rate_range'
             ),
             models.CheckConstraint(
-                check=(
+                condition=(
                     models.Q(vat_amount__isnull=True) |
                     models.Q(vat_amount__gte=0)
                 ),
                 name='cart_item_vat_amount_non_negative'
             ),
             models.CheckConstraint(
-                check=(
+                condition=(
                     models.Q(gross_amount__isnull=True) |
                     models.Q(gross_amount__gte=0)
                 ),
@@ -569,7 +569,7 @@ class ActedOrderItem(models.Model):
         verbose_name_plural = 'Order Items'
         constraints = [
             models.CheckConstraint(
-                check=(
+                condition=(
                     models.Q(product__isnull=False) |
                     models.Q(marking_voucher__isnull=False) |
                     models.Q(item_type='fee')
@@ -577,7 +577,7 @@ class ActedOrderItem(models.Model):
                 name='order_item_has_product_or_voucher_or_is_fee'
             ),
             models.CheckConstraint(
-                check=~(models.Q(product__isnull=False) & models.Q(marking_voucher__isnull=False)),
+                condition=~(models.Q(product__isnull=False) & models.Q(marking_voucher__isnull=False)),
                 name='order_item_not_both_product_and_voucher'
             )
         ]
