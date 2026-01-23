@@ -124,10 +124,10 @@ const MegaMenuPopover = ({
             p: 2,
             maxWidth: width,
             pl: {
-              xs: theme.liftkit.spacing.lg,
-              md: theme.liftkit.spacing.xl,
-              lg: theme.liftkit.spacing.xl2,
-              xl: theme.liftkit.spacing.xl3,
+              xs: theme.spacing.lg,
+              md: theme.spacing.xl,
+              lg: theme.spacing.xl2,
+              xl: theme.spacing.xl3,
            },
             justifyContent: 'flex-start',
           }}
