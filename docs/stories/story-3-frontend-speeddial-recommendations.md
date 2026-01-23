@@ -22,7 +22,7 @@
 ### Existing System Integration
 
 - **Integrates with:** MaterialProductCard component (extends Story 2 SpeedDial pattern), API recommendation data from Story 1
-- **Technology:** React 18, Material-UI v5 SpeedDial, existing cart handlers
+- **Technology:** React 19.2, Material-UI v7 SpeedDial, existing cart handlers
 - **Follows pattern:** Conditional SpeedDial rendering (established in Story 2), price extraction, cart metadata structure
 - **Touch points:**
   - API response: `variation.recommended_product` nested object

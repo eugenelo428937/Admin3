@@ -752,14 +752,14 @@ This document provides a strategic framework for demonstrating Admin3 as the nat
 
 ## Appendix: Admin3 Key Capabilities Summary
 
-### Frontend (React 18)
+### Frontend (React 19.2)
 - Redux Toolkit state management (centralized filters)
 - RTK Query for API caching and synchronization
-- Material-UI v5 component library
+- Material-UI v7 component library
 - Mobile-responsive design (breakpoint-based)
 - Comprehensive testing (87 test files)
 
-### Backend (Django 5.1)
+### Backend (Django 6.0)
 - Django REST Framework API
 - PostgreSQL with JSONB support
 - JWT authentication with refresh tokens

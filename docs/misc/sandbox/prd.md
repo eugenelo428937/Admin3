@@ -124,8 +124,8 @@ To create a unified, scalable platform that simplifies educational administratio
 ## 5. Technical Requirements
 
 ### 5.1 Architecture
-- **Backend**: Django 5.1 with PostgreSQL database
-- **Frontend**: React 18 with responsive design
+- **Backend**: Django 6.0 with PostgreSQL database
+- **Frontend**: React 19.2 with responsive design
 - **API**: RESTful with Django REST Framework
 - **Authentication**: JWT with refresh tokens
 - **External Integration**: GraphQL support for Administrate API

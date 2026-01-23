@@ -14,8 +14,8 @@ Consolidate the frontend styling system from 4 disconnected layers (CSS variable
 
 ## Technical Context
 
-**Language/Version**: JavaScript (ES6+), React 19
-**Primary Dependencies**: MUI v5 (Material-UI), React Router
+**Language/Version**: JavaScript (ES6+), React 19.2
+**Primary Dependencies**: MUI v7 (Material-UI), React Router
 **Storage**: N/A (styling refactoring - no data changes)
 **Testing**: Jest, React Testing Library (existing test infrastructure)
 **Target Platform**: Web browsers (Chrome, Firefox, Safari, Edge)
@@ -188,6 +188,6 @@ No complexity violations identified. This feature *reduces* complexity by consol
 
 ## Dependencies
 
-- MUI v5+ (already installed)
+- MUI v7 (already installed)
 - Existing theme tests in `theme/__tests__/`
 - Component tests for visual validation

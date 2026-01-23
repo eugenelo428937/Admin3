@@ -41,8 +41,8 @@ This is NOT a simple epic-level task.
 
 **Admin3 - Online Store for Actuarial Education**
 
-**Backend**: Django 5.1 REST API with PostgreSQL, JWT authentication, modular app structure
-**Frontend**: React 18 with Material-UI, Axios, React Router, Context API
+**Backend**: Django 6.0 REST API with PostgreSQL, JWT authentication, modular app structure
+**Frontend**: React 19.2 with Material-UI v7, Axios, React Router, Context API
 
 **Current Filtering System (Problem Area)**:
 - **Product filtering, navigation, and search** functionality across frontend
@@ -279,10 +279,10 @@ The UI enhancements will integrate seamlessly with the existing Material-UI desi
 - Frontend: JavaScript (ES6+), JSX
 
 **Frameworks**:
-- Backend: Django 5.1, Django REST Framework
-- Frontend: React 18.x (functional components with hooks)
+- Backend: Django 6.0, Django REST Framework
+- Frontend: React 19.2 (functional components with hooks)
 - State Management: Redux Toolkit (RTK), React Redux
-- UI Library: Material-UI v5 (MUI)
+- UI Library: Material-UI v7 (MUI)
 
 **Database**:
 - PostgreSQL (ACTEDDBDEV01)
@@ -537,7 +537,7 @@ Phase 4 (Testing/Docs):
 
 "Please develop detailed user stories for this brownfield epic. Key considerations:
 
-- This is an enhancement to an existing system running **React 18 + Redux Toolkit + Material-UI**
+- This is an enhancement to an existing system running **React 19.2 + Redux Toolkit + Material-UI v7**
 - Integration points:
   - Redux store with existing filters slice
   - React Router v6 for navigation

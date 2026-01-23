@@ -20,7 +20,7 @@ Fix the tutorial cart integration bug that creates duplicate cart items when add
 ### Existing System Context
 
 - **Current relevant functionality:** Tutorial selection uses TutorialChoiceContext to manage up to 3 choices per subject. Cart operations use CartContext with addToCart functionality.
-- **Technology stack:** React 18, Context API (TutorialChoiceContext, CartContext), localStorage persistence
+- **Technology stack:** React 19.2, Context API (TutorialChoiceContext, CartContext), localStorage persistence
 - **Integration points:**
   - TutorialChoiceContext: Manages tutorial choice state
   - CartContext: Handles cart item CRUD operations

@@ -22,7 +22,7 @@
 ### Existing System Integration
 
 - **Integrates with:** MaterialProductCard component, existing cart context and onAddToCart handlers
-- **Technology:** React 18, Material-UI v5 SpeedDial component, existing state management hooks
+- **Technology:** React 19.2, Material-UI v7 SpeedDial component, existing state management hooks
 - **Follows pattern:** Conditional rendering based on product flags (similar to Tutorial/Marking product routing)
 - **Touch points:**
   - Component rendering logic (replace radio button with SpeedDial)

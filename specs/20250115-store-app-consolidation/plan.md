@@ -13,7 +13,7 @@ The key architectural change is eliminating the redundant `ExamSessionSubjectPro
 
 ## Technical Context
 
-**Language/Version**: Python 3.11, Django 5.1
+**Language/Version**: Python 3.14, Django 6.0
 **Primary Dependencies**: Django REST Framework, psycopg2-binary
 **Storage**: PostgreSQL with `acted` schema namespace
 **Testing**: `python manage.py test` (Django TestCase/APITestCase), 80% coverage required

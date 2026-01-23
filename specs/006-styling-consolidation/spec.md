@@ -134,7 +134,7 @@ The theme architecture supports dark mode by providing a `darkColors` object tha
 
 ## Dependencies
 
-- MUI v5+ (already in use)
+- MUI v7 (already in use)
 - Existing theme infrastructure in `src/theme/`
 - Current component implementations that will be updated to use new token paths
 

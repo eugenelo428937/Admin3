@@ -23,8 +23,8 @@ Admin3/
 ```
 
 ## Technology Stack
-- **Backend**: Django 5.1, Django REST Framework, PostgreSQL
-- **Frontend**: React 18, Axios for API calls
+- **Backend**: Django 6.0, Django REST Framework, PostgreSQL
+- **Frontend**: React 19.2, Material-UI v7, Axios for API calls
 - **Integration**: GraphQL queries to Administrate API
 - **Authentication**: JWT tokens with refresh mechanism
 - **Database**: PostgreSQL (ACTEDDBTEST01)
