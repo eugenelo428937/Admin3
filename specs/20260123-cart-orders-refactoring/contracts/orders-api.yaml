@@ -1,0 +1,460 @@
+openapi: '3.0.3'
+info:
+  title: Orders API
+  version: '2.0.0'
+  description: |
+    Orders API for the Online Store for Actuarial Education.
+    Handles checkout (cart → order conversion), payment processing,
+    and order history retrieval.
+
+servers:
+  - url: http://127.0.0.1:8888/api/orders
+    description: Development server
+
+security:
+  - bearerAuth: []
+
+paths:
+  /checkout/:
+    post:
+      operationId: checkout
+      summary: Create order from cart
+      description: |
+        Converts the authenticated user's cart into a persistent order.
+        Pipeline steps:
+        1. Validate payment data
+        2. Validate blocking rules (terms acceptance)
+        3. Calculate VAT (outside transaction)
+        4. Build order (within transaction: order + items + fees)
+        5. Save acknowledgments
+        6. Save preferences
+        7. Save contact/delivery info
+        8. Process payment
+        9. Send notifications
+        10. Clear cart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutResponse'
+        '400':
+          description: Validation error (missing payment data, terms not accepted)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutError'
+        '402':
+          description: Payment failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentFailedResponse'
+        '403':
+          description: Checkout blocked by rules engine
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutBlockedResponse'
+
+  /:
+    get:
+      operationId: listOrders
+      summary: List user's order history
+      description: |
+        Returns paginated list of orders for the authenticated user.
+        Orders are sorted by creation date (newest first).
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        '200':
+          description: Order list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderListResponse'
+
+  /{id}/:
+    get:
+      operationId: getOrder
+      summary: Get order detail
+      description: |
+        Returns full order details including items, VAT breakdown,
+        payment status, and acknowledgments. Only accessible by the order owner.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Order detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetailResponse'
+        '404':
+          description: Order not found or not owned by user
+
+  /{id}/test-email/:
+    post:
+      operationId: testOrderEmail
+      summary: Send test order confirmation email
+      description: Resends the order confirmation email for testing purposes.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Order confirmation email sent successfully
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CheckoutRequest:
+      type: object
+      required:
+        - payment_method
+      properties:
+        payment_method:
+          type: string
+          enum: [card, invoice]
+          description: Payment method selection
+        # Card payment fields (required when payment_method=card)
+        card_holder_name:
+          type: string
+          description: Name on card (required for card payments)
+        card_number:
+          type: string
+          description: Card number (required for card payments)
+        expiry_date:
+          type: string
+          description: Card expiry MM/YY (required for card payments)
+        security_code:
+          type: string
+          description: CVV/CVC (required for card payments)
+        card_type:
+          type: string
+          enum: [visa, mastercard, amex]
+          description: Card type (required for card payments)
+        # Contact information
+        contact_data:
+          type: object
+          properties:
+            mobile_phone:
+              type: string
+            mobile_phone_country:
+              type: string
+            home_phone:
+              type: string
+            home_phone_country:
+              type: string
+            work_phone:
+              type: string
+            work_phone_country:
+              type: string
+            email_address:
+              type: string
+              format: email
+        # Delivery information
+        delivery_data:
+          type: object
+          properties:
+            delivery_address_type:
+              type: string
+              enum: [home, work]
+            invoice_address_type:
+              type: string
+              enum: [home, work]
+            delivery_address_data:
+              type: object
+            invoice_address_data:
+              type: object
+        # Acknowledgments from rules engine
+        acknowledgments:
+          type: array
+          items:
+            type: object
+            properties:
+              rule_id:
+                type: integer
+              template_id:
+                type: integer
+              acknowledgment_type:
+                type: string
+              title:
+                type: string
+              content_summary:
+                type: string
+              is_accepted:
+                type: boolean
+        # Preferences from rules engine
+        preferences:
+          type: array
+          items:
+            type: object
+            properties:
+              rule_id:
+                type: integer
+              template_id:
+                type: integer
+              preference_key:
+                type: string
+              preference_value:
+                type: object
+              preference_type:
+                type: string
+              input_type:
+                type: string
+              title:
+                type: string
+
+    CheckoutResponse:
+      type: object
+      properties:
+        order:
+          $ref: '#/components/schemas/OrderSummary'
+        payment:
+          $ref: '#/components/schemas/PaymentResult'
+        message:
+          type: string
+          example: Order created successfully
+
+    CheckoutError:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: object
+          description: Field-level validation errors
+
+    PaymentFailedResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Payment processing failed
+        order_id:
+          type: integer
+          description: Order was created but payment failed
+        payment_error:
+          type: object
+          properties:
+            message:
+              type: string
+            error_code:
+              type: string
+              nullable: true
+
+    CheckoutBlockedResponse:
+      type: object
+      properties:
+        blocked:
+          type: boolean
+          example: true
+        errors:
+          type: array
+          items:
+            type: string
+        required_acknowledgments:
+          type: array
+          items:
+            type: object
+            properties:
+              ack_key:
+                type: string
+              rule_id:
+                type: integer
+
+    OrderListResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+          format: uri
+        previous:
+          type: string
+          nullable: true
+          format: uri
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderSummary'
+
+    OrderSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        subtotal:
+          type: string
+          format: decimal
+        vat_amount:
+          type: string
+          format: decimal
+        total_amount:
+          type: string
+          format: decimal
+        vat_country:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        item_count:
+          type: integer
+          description: Number of items in the order
+
+    OrderDetailResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        user:
+          type: integer
+        subtotal:
+          type: string
+          format: decimal
+        vat_amount:
+          type: string
+          format: decimal
+        total_amount:
+          type: string
+          format: decimal
+        vat_rate:
+          type: string
+          format: decimal
+          nullable: true
+        vat_country:
+          type: string
+          nullable: true
+        vat_calculation_type:
+          type: string
+          nullable: true
+        calculations_applied:
+          type: object
+        created_at:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemResponse'
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentResult'
+
+    OrderItemResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        product_id:
+          type: integer
+          nullable: true
+        item_type:
+          type: string
+          enum: [product, marking_voucher, fee]
+        quantity:
+          type: integer
+        price_type:
+          type: string
+        actual_price:
+          type: string
+          format: decimal
+          nullable: true
+        net_amount:
+          type: string
+          format: decimal
+        vat_amount:
+          type: string
+          format: decimal
+        gross_amount:
+          type: string
+          format: decimal
+        vat_rate:
+          type: string
+          format: decimal
+        is_vat_exempt:
+          type: boolean
+        metadata:
+          type: object
+        # Read-only derived fields
+        product_name:
+          type: string
+        product_code:
+          type: string
+        subject_code:
+          type: string
+
+    PaymentResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        payment_method:
+          type: string
+          enum: [card, invoice, bank_transfer]
+        amount:
+          type: string
+          format: decimal
+        currency:
+          type: string
+        status:
+          type: string
+          enum: [pending, processing, completed, failed, cancelled, refunded]
+        transaction_id:
+          type: string
+          nullable: true
+        error_message:
+          type: string
+          nullable: true
+        error_code:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        processed_at:
+          type: string
+          format: date-time
+          nullable: true
