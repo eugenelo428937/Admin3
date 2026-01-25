@@ -6,6 +6,12 @@
 **Input**: Refactor catalog app into nested Django apps for better file organization, independent deployability, and code isolation.
 **Design Document**: [2026-01-25-catalog-nested-apps-refactoring-design.md](../../docs/plans/2026-01-25-catalog-nested-apps-refactoring-design.md)
 
+## Clarifications
+
+### Session 2026-01-25
+
+- Q: How should existing MarkingPaper records be linked to store.Product during migration? → A: Direct 1:1 mapping - marking products have only one variation, so each MarkingPaper links to its corresponding store.Product directly.
+
 ## Overview
 
 Restructure the existing monolithic catalog Django app into a hierarchy of nested Django apps, creating clear domain boundaries and enabling independent deployment of core modules.
@@ -113,7 +119,7 @@ As a developer, I want fresh migrations for all nested apps with correct table n
 - **FR-003**: System MUST enforce dependency direction where products layer imports from catalog core, but not vice versa
 - **FR-004**: System MUST move ProductProductGroup model to the filtering app
 - **FR-005**: System MUST update all database tables to use the `acted` schema with consistent naming
-- **FR-006**: System MUST migrate marking app from ExamSessionSubjectProduct to store.Product
+- **FR-006**: System MUST migrate marking app from ExamSessionSubjectProduct to store.Product (1:1 mapping - each marking product has only one variation)
 - **FR-007**: System MUST remove ExamSessionSubjectProduct model after marking migration
 - **FR-008**: System MUST update all import statements across the codebase to use new paths
 - **FR-009**: System MUST create fresh migrations for each nested app without preserving old migration history
