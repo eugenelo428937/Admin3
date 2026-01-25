@@ -23,7 +23,8 @@
       "Bash(c:/Code/Admin3/.venv/Scripts/coverage.exe report:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
-      "Skill(brainstorming)"
+      "Skill(brainstorming)",
+      "Bash(bash:*)"
     ],
     "deny": [
       "Read(.claude/tdd-guard/**)",
