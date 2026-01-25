@@ -1,5 +1,7 @@
 # Cart → Cart + Orders Refactoring Plan
 
+**Branch**: `20260123-cart-orders-refactoring` | **Date**: 2026-01-23 | **Spec**: [spec.md](spec.md)
+
 ## Overview
 
 Refactor the monolithic `cart` app into two focused Django apps following Domain-Driven Design with a Service Layer pattern (Option B). No backward compatibility required.
@@ -7,17 +9,138 @@ Refactor the monolithic `cart` app into two focused Django apps following Domain
 **Current State**: Single `cart` app (700+ line view, 10 database tables, mixed concerns)
 **Target State**: Two apps — `cart` (ephemeral shopping state) + `orders` (persistent business records)
 
+## Technical Context
+
+**Language/Version**: Python 3.14, Django 6.0 + Django REST Framework
+**Primary Dependencies**: DRF, Rules Engine (`rules_engine` app), Opayo Payment Gateway, Email System
+**Storage**: PostgreSQL (existing `acted` schema — no migrations)
+**Testing**: Django `APITestCase`, `TestCase`; Frontend: Jest + React Testing Library
+**Target Platform**: Web (Django API + React SPA)
+**Project Type**: Web application (backend + frontend)
+**Performance Goals**: Cart ops < 1s, VAT calc < 500ms, Checkout < 10s (from SC-001/002/003)
+**Constraints**: No schema changes, no backward compatibility, existing rules engine unchanged
+**Scale/Scope**: ~10 tables, ~1430 lines deleted, ~1040 lines added, 8 frontend API calls updated
+
+## Constitution Check
+
+*GATE: Passed. No violations.*
+
+| Principle | Status | Notes |
+|-----------|--------|-------|
+| I. TDD (NON-NEGOTIABLE) | ✅ PASS | Step 1 writes integration tests first; each service developed test-first |
+| II. Modular Architecture | ✅ PASS | Two focused apps, service layer, strategy pattern |
+| III. Security First | ✅ PASS | JWT auth preserved, audit trail maintained, no secrets in code |
+| IV. Performance Optimization | ✅ PASS | Performance targets in success criteria, select_related patterns |
+| V. Code Quality & Conventions | ✅ PASS | snake_case, DRF patterns, clean model names, conventional commits |
+
+## Project Structure
+
+### Documentation (this feature)
+
+```text
+specs/20260123-cart-orders-refactoring/
+├── plan.md              # This file
+├── spec.md              # Feature specification
+├── research.md          # Phase 0: architectural decisions
+├── data-model.md        # Phase 1: entity definitions
+├── quickstart.md        # Phase 1: implementation guide
+├── contracts/           # Phase 1: API contracts
+│   ├── cart-api.yaml    # Cart REST API (OpenAPI 3.0)
+│   └── orders-api.yaml  # Orders REST API (OpenAPI 3.0)
+└── checklists/
+    └── requirements.md  # Spec quality checklist
+```
+
+### Source Code (repository root)
+
+```text
+backend/django_Admin3/
+├── apps/
+│   ├── cart/                    # Refactored cart app (ephemeral state)
+│   │   ├── models/             # Cart, CartItem, CartFee
+│   │   ├── services/
+│   │   │   └── cart_service.py # CartService facade (~200 lines)
+│   │   ├── serializers/        # Cart serializers
+│   │   ├── views.py            # Slim CartViewSet (~60 lines)
+│   │   ├── urls.py             # RESTful cart endpoints
+│   │   └── tests/              # Cart-specific tests
+│   └── orders/                  # New orders app (persistent records)
+│       ├── models/             # Order, OrderItem, Payment, etc.
+│       ├── services/
+│       │   ├── checkout_orchestrator.py  # Pipeline pattern (~150 lines)
+│       │   ├── order_builder.py          # Builder pattern (~60 lines)
+│       │   ├── payment_gateway.py        # Strategy pattern (~150 lines)
+│       │   └── order_notification.py     # Email notifications (~30 lines)
+│       ├── serializers/        # Order serializers
+│       ├── views.py            # CheckoutView + OrderViewSet (~80 lines)
+│       ├── urls.py             # RESTful order endpoints
+│       └── tests/              # Order-specific tests
+└── ...
+
+frontend/react-Admin3/src/
+├── services/
+│   └── cartService.js          # Updated API calls (8 endpoints changed)
+└── contexts/
+    └── CartContext.js           # Updated to use new endpoints
+```
+
+**Structure Decision**: Web application (Option 2) — existing Django backend + React frontend structure preserved. New `orders` app added alongside refactored `cart` app.
+
 ---
 
-## Architecture Decision: Eliminate VATOrchestrator
+## Architecture Decision: VAT Calculation Consolidation
 
-The current `VATOrchestrator` (566 lines) is a thin adapter that:
-1. Resolves user country from profile addresses
-2. Maps cart item metadata → product type strings
-3. Calls `rule_engine.execute('cart_calculate_vat', context)` per item
-4. Sums results into totals
+### Problem: Three Redundant VAT Implementations
 
-**Decision**: Absorb into `CartService.calculate_vat()` as a private method. The rules engine owns the VAT logic — the cart only needs to build context and aggregate.
+The codebase has **three overlapping** VAT calculation paths (total ~780 lines):
+
+| # | Location | Method | Calls | Phase |
+|---|----------|--------|-------|-------|
+| 1 | `Cart` model (line 62) | `calculate_vat(country_code)` | `VATCalculationService` directly (bypasses rules) | Phase 2 |
+| 2 | `Cart` model (line 144) | `calculate_vat_for_all_items(country_code)` | `rule_engine.execute()` per item | Phase 4 |
+| 3 | `VATOrchestrator` service (566 lines) | `execute_vat_calculation(cart)` | `rule_engine.execute()` per item | Phase 5 |
+
+Each phase added a new implementation without removing the previous one.
+
+### Decision: Replace All Three With `CartService.calculate_vat()`
+
+**Delete** (780 lines):
+- `Cart.calculate_vat()` — bypasses rules engine, redundant
+- `Cart.calculate_and_save_vat()` — wrapper around #1, redundant
+- `Cart.get_vat_calculation()` — trivial getter, move to serializer
+- `Cart.calculate_vat_for_all_items()` — superseded by VATOrchestrator
+- `VATOrchestrator` class — replaced by CartService method
+
+**Keep** (unchanged):
+- `VATCalculationService` (utils/services/) — still used by rules engine's `FUNCTION_REGISTRY`
+- `FUNCTION_REGISTRY` functions — `lookup_region`, `lookup_vat_rate`, `calculate_vat_amount`
+- Rules engine `cart_calculate_vat` entry point and database rules
+
+**Add** (~60 lines):
+- `CartService.calculate_vat(cart)` — thin coordinator method
+
+### Why CartService.calculate_vat() Cannot Be Merged Into Rules Engine
+
+The rules engine is a **generic** condition→action evaluator. These cart-domain concerns don't belong in it:
+
+| Concern | Why Cart-Domain |
+|---------|----------------|
+| User country resolution | Queries `UserProfileAddress.filter(address_type='HOME')` → `Country` model |
+| Product type detection | Reads `CartItem.metadata['variationType']` or variation chain |
+| Per-item iteration | Rules engine expects singular `cart_item`, not array |
+| Aggregation | Sum per-item VAT into cart totals with ROUND_HALF_UP |
+| JSONB storage | Write to `cart.vat_result` field |
+| CartItem field updates | Set `vat_region`, `vat_rate`, `vat_amount`, `gross_amount` |
+
+### Responsibility Split
+
+```
+CartService.calculate_vat()     = WHAT to calculate (which items, which user, store where)
+Rules Engine                    = HOW to calculate (which rules, what rate, what region)
+VATCalculationService           = THE MATH (rate × net = vat, net + vat = gross)
+```
+
+See `docs/architecture/vat-calculation-architecture.md` for full details.
 
 ---
 
@@ -126,13 +249,38 @@ class CartService:
         """Merge guest cart items into authenticated user's cart."""
 
     def calculate_vat(self, cart) -> dict:
-        """Calculate VAT via rules engine. Replaces VATOrchestrator."""
+        """
+        Calculate VAT via rules engine. Thin coordinator (~60 lines).
+        Replaces: VATOrchestrator (566 lines) + Cart model methods (215 lines).
+
+        Flow: resolve country → iterate items → call rules engine per item → aggregate → store
+        """
+        user_context = self._resolve_user_country(cart)
+
+        items_results = []
+        for cart_item in cart.items.all():
+            context = {
+                'user': user_context,
+                'cart_item': {
+                    'id': str(cart_item.id),
+                    'product_type': self._get_product_type(cart_item),
+                    'product_code': self._get_product_code(cart_item),
+                    'net_amount': float((cart_item.actual_price or 0) * cart_item.quantity),
+                }
+            }
+            result = rule_engine.execute('cart_calculate_vat', context)
+            items_results.append(result)
+
+        aggregated = self._aggregate_vat(items_results)
+        self._store_vat_result(cart, aggregated)
+        return aggregated
 
     # Private helpers
-    def _resolve_user_country(self, cart) -> str: ...
-    def _get_product_type(self, cart_item) -> str: ...
-    def _build_vat_context(self, cart_item, user_context) -> dict: ...
-    def _aggregate_vat_totals(self, processed_items, results) -> dict: ...
+    def _resolve_user_country(self, cart) -> dict: ...   # ~15 lines: profile → address → country
+    def _get_product_type(self, cart_item) -> str: ...   # ~20 lines: metadata → variation chain
+    def _get_product_code(self, cart_item) -> str: ...   # ~5 lines: product.product.code
+    def _aggregate_vat(self, results) -> dict: ...       # ~20 lines: sum totals, build items list
+    def _store_vat_result(self, cart, data) -> None: ... # ~5 lines: cart.vat_result = data; save
     def _update_cart_flags(self, cart) -> None: ...
     def _handle_tutorial_merge(self, cart, product, metadata, ...) -> CartItem: ...
 ```
@@ -503,12 +651,17 @@ urlpatterns = [
 
 ### Step 3: Delete Old Files
 
-| File to Delete | Reason |
-|----------------|--------|
-| `cart/services/vat_orchestrator.py` | Logic absorbed into CartService |
-| `cart/services/payment_service.py` | Moved to orders/services/payment_gateway.py |
-| `cart/models.py` (if monolithic) | Split into models/ directory |
-| `cart/tests/test_vat_orchestrator.py` | Replaced by test_cart_service.py |
+| File/Method to Delete | Lines | Reason |
+|-----------------------|-------|--------|
+| `cart/services/vat_orchestrator.py` | 566 | Replaced by CartService.calculate_vat() (~60 lines) |
+| `cart/services/payment_service.py` | 338 | Moved to orders/services/payment_gateway.py |
+| `Cart.calculate_vat()` | 40 | Bypasses rules engine, redundant |
+| `Cart.calculate_and_save_vat()` | 25 | Wrapper around above, redundant |
+| `Cart.get_vat_calculation()` | 10 | Trivial getter, moved to serializer |
+| `Cart.calculate_vat_for_all_items()` | 150 | Superseded by VATOrchestrator (now CartService) |
+| `cart/tests/test_vat_orchestrator.py` | ~200 | Replaced by test_cart_service.py |
+| `cart/tests/test_cart_vat_methods.py` | ~100 | Tests for deleted model methods |
+| **Total deleted** | **~1430** | |
 
 ---
 

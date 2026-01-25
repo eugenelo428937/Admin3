@@ -2,6 +2,7 @@ import httpService from "./httpService";
 import config from "../config";
 
 const API_BASE = config.cartUrl;
+const ORDERS_API_URL = `${config.apiBaseUrl}/api/orders`;
 const MARKING_VOUCHERS_API_URL = `${config.apiBaseUrl}/api/marking-vouchers`;
 
 /**
@@ -157,8 +158,8 @@ const cartService = {
 	removeItem: (itemId) =>
 		httpService.delete(`${API_BASE}/remove/`, { data: { item_id: itemId } }),
 	clearCart: () => httpService.post(`${API_BASE}/clear/`),
-	checkout: (paymentData = {}) => httpService.post(`${API_BASE}/checkout/`, paymentData),
-	fetchOrders: () => httpService.get(`${API_BASE}/orders/`),
+	checkout: (paymentData = {}) => httpService.post(`${ORDERS_API_URL}/checkout/`, paymentData),
+	fetchOrders: () => httpService.get(`${ORDERS_API_URL}/`),
 
 	// Add marking voucher to cart using dedicated voucher endpoint
 	addVoucherToCart: (voucherId, quantity = 1) => {
