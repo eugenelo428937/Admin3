@@ -133,7 +133,8 @@ const cartService = {
 	fetchCart: () => httpService.get(API_BASE),
 	addToCart: (product, quantity = 1, priceInfo = {}) => {
 		const payload = {
-			current_product: product.essp_id || product.id,
+			// Use store product ID (id) which is the correct identifier after cart-orders refactoring
+			current_product: product.id || product.store_product_id,
 			quantity,
 			price_type: priceInfo.priceType || 'standard',
 			actual_price: priceInfo.actualPrice,

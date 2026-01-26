@@ -1,13 +1,15 @@
 """Django admin configuration for catalog models.
 
-Registers all catalog models with the Django admin interface for
-staff management of subjects, exam sessions, products, and bundles.
+Registers catalog models with the Django admin interface.
+Note: ExamSession and Subject admin moved to their nested apps.
 """
 from django.contrib import admin
+
+# Import from catalog parent app
+from .models import ExamSessionSubject
+
+# Import product models (still in catalog.models, to be moved in Phase 4)
 from .models import (
-    Subject,
-    ExamSession,
-    ExamSessionSubject,
     Product,
     ProductVariation,
     ProductProductVariation,
@@ -18,22 +20,8 @@ from .models import (
 )
 
 
-@admin.register(Subject)
-class SubjectAdmin(admin.ModelAdmin):
-    """Admin interface for Subject model."""
-    list_display = ('code', 'description', 'active', 'created_at', 'updated_at')
-    list_filter = ('active', 'created_at')
-    search_fields = ('code', 'description')
-    ordering = ('code',)
-
-
-@admin.register(ExamSession)
-class ExamSessionAdmin(admin.ModelAdmin):
-    """Admin interface for ExamSession model."""
-    list_display = ('session_code', 'start_date', 'end_date', 'create_date')
-    list_filter = ('start_date', 'end_date')
-    search_fields = ('session_code',)
-    ordering = ('-start_date',)
+# Note: ExamSession admin -> catalog.exam_session.admin
+# Note: Subject admin -> catalog.subject.admin
 
 
 @admin.register(ExamSessionSubject)
@@ -48,7 +36,7 @@ class ExamSessionSubjectAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'exam_session', 'subject')
     search_fields = ('exam_session__session_code', 'subject__code', 'subject__description')
     ordering = ('-exam_session__session_code', 'subject__code')
-    autocomplete_fields = ('exam_session', 'subject')
+    raw_id_fields = ('exam_session', 'subject')  # Use raw_id instead of autocomplete for cross-app FKs
 
     @admin.display(description='Exam Session')
     def get_session_code(self, obj):
@@ -104,7 +92,7 @@ class ProductBundleAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'is_featured', 'subject')
     search_fields = ('bundle_name', 'bundle_description', 'subject__code')
     ordering = ('subject__code', 'display_order', 'bundle_name')
-    autocomplete_fields = ('subject',)
+    raw_id_fields = ('subject',)  # Use raw_id for cross-app FK to catalog.subject
 
 
 @admin.register(ProductBundleProduct)

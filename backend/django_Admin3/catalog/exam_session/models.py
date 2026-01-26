@@ -1,6 +1,5 @@
-"""ExamSession model for the catalog app.
+"""ExamSession model - standalone, no product dependencies.
 
-Migrated from exam_sessions/models.py to catalog/models/exam_session.py.
 Table: acted.catalog_exam_sessions
 """
 from django.db import models
@@ -12,9 +11,7 @@ class ExamSession(models.Model):
 
     Exam sessions represent the examination periods (e.g., April 2025, September 2025)
     during which students can take actuarial exams. Related to
-    :model:`exam_sessions_subjects.ExamSessionSubject` for subject availability
-    and :model:`exam_sessions_subjects_products.ExamSessionSubjectProduct` for
-    products available in each session.
+    :model:`catalog.ExamSessionSubject` for subject availability.
 
     **Usage Example**::
 
@@ -40,6 +37,7 @@ class ExamSession(models.Model):
 
     class Meta:
         db_table = '"acted"."catalog_exam_sessions"'
+        app_label = 'catalog_exam_sessions'
         verbose_name = 'Exam Session'
         verbose_name_plural = 'Exam Sessions'
 
