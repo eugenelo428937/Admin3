@@ -1,6 +1,5 @@
-"""ProductVariation model for the catalog app.
+"""ProductVariation model for the catalog.products app.
 
-Migrated from products/models/product_variation.py to catalog/models/product_variation.py.
 Table: acted.catalog_product_variations
 """
 from django.db import models
@@ -11,9 +10,8 @@ class ProductVariation(models.Model):
     Stores variation types for products (eBook, Printed, Hub, Marking, Tutorial).
 
     Product variations define the different formats or delivery methods available
-    for products. A single :model:`catalog.Product` can have multiple variations
-    (e.g., eBook and Printed versions of the same study material). The association
-    is managed through :model:`catalog.ProductProductVariation`.
+    for products. A single Product can have multiple variations
+    (e.g., eBook and Printed versions of the same study material).
 
     **Variation Types**:
 
@@ -22,12 +20,6 @@ class ProductVariation(models.Model):
     - **Hub**: Online learning hub access
     - **Marking**: Mock exam marking service
     - **Tutorial**: Live tutorial sessions
-
-    **Related Models**:
-
-    - :model:`catalog.Product` - Products this variation applies to
-    - :model:`catalog.ProductProductVariation` - Product-variation assignments
-    - :model:`exam_sessions_subjects_products.ExamSessionSubjectProductVariation` - Session availability
 
     **Usage Example**::
 
@@ -75,6 +67,7 @@ class ProductVariation(models.Model):
 
     class Meta:
         db_table = '"acted"."catalog_product_variations"'
+        app_label = 'catalog_products'
         unique_together = ('variation_type', 'name')
         verbose_name = 'Product Variation'
         verbose_name_plural = 'Product Variations'
