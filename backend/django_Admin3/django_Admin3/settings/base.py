@@ -97,7 +97,14 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 
 # Application definition
 INSTALLED_APPS = [
-    'catalog.apps.CatalogConfig',  # Must be before subjects, exam_sessions, products
+    # Catalog nested apps (leaf nodes first - no internal dependencies)
+    'catalog.exam_session.apps.ExamSessionConfig',  # label='catalog_exam_sessions'
+    'catalog.subject.apps.SubjectConfig',           # label='catalog_subjects'
+    'catalog.apps.CatalogConfig',                   # label='catalog' (depends on exam_session, subject)
+    # Products layer (depends on catalog core)
+    'catalog.products.apps.ProductsConfig',         # label='catalog_products'
+    'catalog.products.bundle.apps.BundleConfig',    # label='catalog_products_bundles'
+    'catalog.products.recommendation.apps.RecommendationConfig',  # label='catalog_products_recommendations'
     'store.apps.StoreConfig',  # Purchasable items (depends on catalog)
     'users',
     'userprofile',

@@ -1,7 +1,6 @@
-"""ProductVariationRecommendation model.
+"""ProductVariationRecommendation model for the catalog.products.recommendation app.
 
 Recommendation relationship between product-variation combinations.
-Migrated from products/models/product_variation_recommendation.py.
 
 Table: "acted"."product_productvariation_recommendations"
 """
@@ -21,7 +20,8 @@ class ProductVariationRecommendation(models.Model):
 
     **Usage Example**::
 
-        from catalog.models import ProductVariationRecommendation, ProductProductVariation
+        from catalog.products.recommendation.models import ProductVariationRecommendation
+        from catalog.products.models import ProductProductVariation
 
         ppv_source = ProductProductVariation.objects.get(product__code='MOCK_EXAM')
         ppv_target = ProductProductVariation.objects.get(product__code='MARKING_SERVICE')
@@ -33,14 +33,14 @@ class ProductVariationRecommendation(models.Model):
     """
 
     product_product_variation = models.OneToOneField(
-        'catalog.ProductProductVariation',
+        'catalog_products.ProductProductVariation',
         on_delete=models.CASCADE,
         related_name='recommendation',
         help_text="Source product-variation combination that makes the recommendation"
     )
 
     recommended_product_product_variation = models.ForeignKey(
-        'catalog.ProductProductVariation',
+        'catalog_products.ProductProductVariation',
         on_delete=models.CASCADE,
         related_name='recommended_by',
         help_text="Recommended complementary product-variation combination"
@@ -51,6 +51,7 @@ class ProductVariationRecommendation(models.Model):
 
     class Meta:
         db_table = '"acted"."product_productvariation_recommendations"'
+        app_label = 'catalog_products_recommendations'
         indexes = [
             models.Index(fields=['product_product_variation'], name='cat_pvr_ppv_idx'),
             models.Index(fields=['recommended_product_product_variation'], name='cat_pvr_rec_ppv_idx'),

@@ -8,6 +8,7 @@ from .filter_configuration import FilterConfiguration, FilterConfigurationGroup
 from .filter_preset import FilterPreset
 from .filter_analytics import FilterUsageAnalytics
 from .product_group_filter import ProductGroupFilter
+from .product_product_group import ProductProductGroup
 
 __all__ = [
     'FilterGroup',
@@ -16,4 +17,5 @@ __all__ = [
     'FilterPreset',
     'FilterUsageAnalytics',
     'ProductGroupFilter',
+    'ProductProductGroup',
 ]

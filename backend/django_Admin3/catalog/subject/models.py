@@ -1,6 +1,5 @@
-"""Subject model for the catalog app.
+"""Subject model - standalone, no product dependencies.
 
-Migrated from subjects/models.py to catalog/models/subject.py.
 Table: acted.catalog_subjects
 """
 from django.db import models
@@ -11,14 +10,13 @@ class Subject(models.Model):
     Stores an academic subject for actuarial exams and courses.
 
     Subjects represent the core academic units (e.g., CB1, CM2, SA1) that
-    students study and take exams for. Related to :model:`catalog.ProductBundle`
-    for subject-specific product bundles and :model:`exam_sessions_subjects.ExamSessionSubject`
+    students study and take exams for. Related to :model:`catalog.ExamSessionSubject`
     for exam session availability.
 
     **Usage Example**::
 
         subject = Subject.objects.get(code='CM2')
-        bundles = subject.bundles.filter(is_active=True)
+        sessions = subject.exam_session_subjects.all()
     """
 
     code = models.CharField(
@@ -43,6 +41,7 @@ class Subject(models.Model):
 
     class Meta:
         db_table = '"acted"."catalog_subjects"'
+        app_label = 'catalog_subjects'
         verbose_name = 'Subject'
         verbose_name_plural = 'Subjects'
         ordering = ['code']
