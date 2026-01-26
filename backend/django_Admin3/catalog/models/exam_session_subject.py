@@ -27,13 +27,13 @@ class ExamSessionSubject(models.Model):
     """
 
     exam_session = models.ForeignKey(
-        'catalog.ExamSession',
+        'catalog_exam_sessions.ExamSession',
         on_delete=models.CASCADE,
         related_name='exam_session_subjects',
         help_text="The exam session period"
     )
     subject = models.ForeignKey(
-        'catalog.Subject',
+        'catalog_subjects.Subject',
         on_delete=models.CASCADE,
         related_name='exam_session_subjects',
         help_text="The subject available in this session"

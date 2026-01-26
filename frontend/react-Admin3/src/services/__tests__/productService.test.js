@@ -255,14 +255,14 @@ describe('productService', () => {
   });
 
   describe('getMarkingDeadlines', () => {
-    test('should return marking deadlines for essp', async () => {
+    test('should return marking deadlines for store product', async () => {
       const mockDeadlines = { deadline: '2025-01-01' };
       httpService.get.mockResolvedValue({ data: mockDeadlines });
 
       const result = await productService.getMarkingDeadlines(123);
 
       expect(result).toEqual(mockDeadlines);
-      expect(httpService.get).toHaveBeenCalledWith('/api/marking/papers/deadlines/?essp_id=123');
+      expect(httpService.get).toHaveBeenCalledWith('/api/marking/papers/deadlines/?store_product_id=123');
     });
   });
 
@@ -276,7 +276,7 @@ describe('productService', () => {
       expect(result).toEqual(mockDeadlines);
       expect(httpService.post).toHaveBeenCalledWith(
         '/api/marking/papers/bulk-deadlines/',
-        { essp_ids: [1, 2, 3] }
+        { store_product_ids: [1, 2, 3] }
       );
     });
   });
