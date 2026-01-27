@@ -41,7 +41,7 @@ class MessageTemplate(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'acted_rules_message_templates'
+        db_table = '"acted"."rules_message_templates"'
         verbose_name = 'Message Template'
         verbose_name_plural = 'Message Templates'
 

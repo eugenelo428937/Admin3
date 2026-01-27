@@ -23,7 +23,7 @@ class UserProfileAddress(models.Model):
     department = models.CharField(max_length=64, blank=True, null=True)  # Only for work
 
     class Meta:
-        db_table = 'acted_user_profile_address'
+        db_table = '"acted"."user_profile_address"'
         verbose_name = 'User Profile Address'
         verbose_name_plural = 'User Profile Addresses'
 

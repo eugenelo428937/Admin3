@@ -26,7 +26,7 @@ class RuleEntryPoint(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        db_table = 'acted_rule_entry_points'
+        db_table = '"acted"."rule_entry_points"'
         verbose_name = 'Rule Entry Point'
         verbose_name_plural = 'Rule Entry Points'
         ordering = ['code']

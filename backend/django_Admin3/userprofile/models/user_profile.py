@@ -12,6 +12,6 @@ class UserProfile(models.Model):
         return self.user.username
     
     class Meta:
-        db_table = 'acted_user_profile'
+        db_table = '"acted"."user_profile"'
         verbose_name = 'User Profile'
         verbose_name_plural = 'User Profiles'

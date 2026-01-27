@@ -27,7 +27,7 @@ class ActedRule(models.Model):
     class Meta:
         verbose_name = "Acted Rule"
         verbose_name_plural = "Acted Rules"
-        db_table = "acted_rules"
+        db_table = '"acted"."rules"'
         ordering = ["entry_point", "priority", "created_at"]
         indexes = [
             models.Index(fields=["entry_point", "active", "priority"], name="acted_rules_entry_active"),
