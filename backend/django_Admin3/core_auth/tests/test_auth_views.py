@@ -889,7 +889,7 @@ class AdditionalCoverageTestCase(APITestCase):
         self.user.save()
 
         # Patch EmailSettings.get_setting to raise exception
-        with patch('utils.models.EmailSettings') as mock_email_settings:
+        with patch('email_system.models.EmailSettings') as mock_email_settings:
             mock_email_settings.get_setting.side_effect = Exception('Database unavailable')
 
             with patch('core_auth.views.email_service.send_password_reset') as mock_send:
@@ -1018,7 +1018,7 @@ class AdditionalCoverageTestCase(APITestCase):
         data = {'new_email': 'newemail@example.com'}
 
         # Patch EmailSettings to raise exception when accessed
-        with patch('utils.models.EmailSettings') as mock_email_settings:
+        with patch('email_system.models.EmailSettings') as mock_email_settings:
             mock_email_settings.get_setting.side_effect = Exception('Database unavailable')
 
             with patch('core_auth.views.email_service.send_email_verification') as mock_send:
@@ -1029,3 +1029,70 @@ class AdditionalCoverageTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Verify EmailSettings was accessed (exception was raised and caught)
         mock_email_settings.get_setting.assert_called_once_with('email_verification_timeout_hours')
+
+
+class SimpleJWTTokenRefreshAPITestCase(APITestCase):
+    """Test the simplejwt TokenRefreshView at /api/auth/token/refresh/."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username='testuser_jwt',
+            email='jwt@example.com',
+            password='testpassword123',
+            is_active=True,
+        )
+
+    def test_token_refresh_valid(self):
+        """POST /api/auth/token/refresh/ with valid refresh token returns new access token."""
+        refresh = RefreshToken.for_user(self.user)
+        response = self.client.post(
+            '/api/auth/token/refresh/',
+            {'refresh': str(refresh)},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('access', response.data)
+
+    def test_token_refresh_invalid(self):
+        """POST /api/auth/token/refresh/ with invalid token returns 401."""
+        response = self.client.post(
+            '/api/auth/token/refresh/',
+            {'refresh': 'invalid-token'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class SendTestEmailAPITestCase(APITestCase):
+    """Test the send_test_email function view at /api/auth/test-email/."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username='testuser_email',
+            email='testmail@example.com',
+            password='testpassword123',
+            is_active=True,
+        )
+
+    @patch('core_auth.views.email_service')
+    def test_send_test_email_authenticated(self, mock_email_service):
+        """POST /api/auth/test-email/ with auth sends a test email."""
+        mock_email_service.send_order_confirmation.return_value = True
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(
+            '/api/auth/test-email/',
+            {'email': 'test@example.com'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_send_test_email_unauthenticated(self):
+        """POST /api/auth/test-email/ without auth returns 401."""
+        response = self.client.post(
+            '/api/auth/test-email/',
+            {'email': 'test@example.com'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

@@ -1,9 +1,8 @@
 import csv
 from django.core.management.base import BaseCommand, CommandError
 from marking.models import MarkingPaper
-from catalog.models import ExamSessionSubjectProduct
-from django.utils.dateparse import parse_date
 from catalog.models import Product, ExamSessionSubject
+from store.models import Product as StoreProduct
 from datetime import datetime
 from subjects.models import Subject
 
@@ -57,10 +56,13 @@ class Command(BaseCommand):
                     except Product.DoesNotExist:
                         self.stderr.write(f"Row {row_num}: No active Product with code '{product_code}'. Skipping.")
                         continue
-                    # Find ExamSessionSubjectProduct
-                    essp = ExamSessionSubjectProduct.objects.filter(exam_session_subject=ess, product=product).first()
-                    if not essp:
-                        self.stderr.write(f"Row {row_num}: No ExamSessionSubjectProduct for subject '{subject_code}' and product '{product}'. Skipping.")
+                    # Find store.Product via ESS + PPV
+                    store_product = StoreProduct.objects.filter(
+                        exam_session_subject=ess,
+                        product_product_variation__product=product
+                    ).first()
+                    if not store_product:
+                        self.stderr.write(f"Row {row_num}: No store Product for subject '{subject_code}' and product '{product}'. Skipping.")
                         continue
                     # Parse dates (expecting DD/MM/YYYY)
                     try:
@@ -73,7 +75,7 @@ class Command(BaseCommand):
                         self.stderr.write(f"Row {row_num}: Invalid date(s). Skipping.")
                         continue
                     MarkingPaper.objects.create(
-                        exam_session_subject_product=essp,
+                        store_product=store_product,
                         name=paper_name.strip(),
                         recommended_submit_date=recommended,
                         deadline=deadline

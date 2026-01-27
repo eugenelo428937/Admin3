@@ -15,6 +15,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('marking_vouchers', '0001_initial'),
+        ('orders', '0001_initial'),  # orders.0001 has FK to acted_marking_vouchers; must run before we move the table
     ]
 
     operations = [

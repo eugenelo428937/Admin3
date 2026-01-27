@@ -668,6 +668,12 @@ class TutorialProductVariationListViewTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
 
+    def test_list_product_variations_coverage_detection(self):
+        """GET /api/tutorials/products/999999/variations/ with nonexistent product returns empty."""
+        response = self.client.get('/api/tutorials/products/999999/variations/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)
+
 
 class TutorialComprehensiveDataViewTestCase(APITestCase):
     """Test cases for TutorialComprehensiveDataView."""
