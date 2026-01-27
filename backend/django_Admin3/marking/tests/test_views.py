@@ -13,7 +13,11 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 
 from marking.models import MarkingPaper
-from catalog.models import ExamSession, ExamSessionSubject, ExamSessionSubjectProduct, Subject, Product
+from catalog.models import (
+    ExamSession, ExamSessionSubject, Subject,
+    Product as CatalogProduct, ProductVariation, ProductProductVariation
+)
+from store.models import Product as StoreProduct
 
 
 class MarkingPaperAPITestCase(APITestCase):
@@ -41,48 +45,54 @@ class MarkingPaperAPITestCase(APITestCase):
             subject=self.subject
         )
 
-        # Create products (using correct field names)
-        self.product1 = Product.objects.create(
+        # Create catalog products + variation chain for store.Product
+        self.cat_product1 = CatalogProduct.objects.create(
             code='PROD001',
             fullname='Test Product 1 Full Name',
             shortname='Test Product 1'
         )
-
-        self.product2 = Product.objects.create(
+        self.cat_product2 = CatalogProduct.objects.create(
             code='PROD002',
             fullname='Test Product 2 Full Name',
             shortname='Test Product 2'
         )
-
-        # Create ESSPs (must have different products due to unique_together constraint)
-        self.essp1 = ExamSessionSubjectProduct.objects.create(
-            exam_session_subject=self.exam_session_subject,
-            product=self.product1
+        self.variation = ProductVariation.objects.create(
+            variation_type='Marking', name='Standard Marking'
+        )
+        self.ppv1 = ProductProductVariation.objects.create(
+            product=self.cat_product1, product_variation=self.variation
+        )
+        self.ppv2 = ProductProductVariation.objects.create(
+            product=self.cat_product2, product_variation=self.variation
         )
 
-        # Create another ESSP for testing
-        self.essp2 = ExamSessionSubjectProduct.objects.create(
+        # Create store products (replace old ESSPs)
+        self.store_product1 = StoreProduct.objects.create(
             exam_session_subject=self.exam_session_subject,
-            product=self.product2
+            product_product_variation=self.ppv1
+        )
+        self.store_product2 = StoreProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product_product_variation=self.ppv2
         )
 
         # Create marking papers
         self.paper1 = MarkingPaper.objects.create(
-            exam_session_subject_product=self.essp1,
+            store_product=self.store_product1,
             name='Paper1',
             deadline=timezone.now() + timedelta(days=45),
             recommended_submit_date=timezone.now() + timedelta(days=40)
         )
 
         self.paper2 = MarkingPaper.objects.create(
-            exam_session_subject_product=self.essp1,
+            store_product=self.store_product1,
             name='Paper2',
             deadline=timezone.now() + timedelta(days=50),
             recommended_submit_date=timezone.now() + timedelta(days=45)
         )
 
         self.paper3 = MarkingPaper.objects.create(
-            exam_session_subject_product=self.essp2,
+            store_product=self.store_product2,
             name='Paper3',
             deadline=timezone.now() + timedelta(days=60),
             recommended_submit_date=timezone.now() + timedelta(days=55)
@@ -110,11 +120,11 @@ class MarkingPaperAPITestCase(APITestCase):
 
     def test_deadlines_action_with_valid_essp_id(self):
         """Test GET /api/markings/papers/deadlines/?essp_id={id}."""
-        response = self.client.get(f'/api/markings/papers/deadlines/?essp_id={self.essp1.id}')
+        response = self.client.get(f'/api/markings/papers/deadlines/?essp_id={self.store_product1.id}')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsInstance(response.data, list)
-        self.assertEqual(len(response.data), 2)  # essp1 has 2 papers
+        self.assertEqual(len(response.data), 2)  # store_product1 has 2 papers
 
         # Verify paper names are in response
         paper_names = [p['name'] for p in response.data]
@@ -138,30 +148,33 @@ class MarkingPaperAPITestCase(APITestCase):
         self.assertEqual(response.data['error'], 'ExamSessionSubjectProduct not found')
 
     def test_deadlines_action_with_nonexistent_essp(self):
-        """Test deadlines action for ESSP with no marking papers."""
-        # Create third product for ESSP with no papers
-        product3 = Product.objects.create(
+        """Test deadlines action for store product with no marking papers."""
+        # Create third product for store product with no papers
+        cat_product3 = CatalogProduct.objects.create(
             code='PROD003',
             fullname='Test Product 3 Full Name',
             shortname='Test Product 3'
         )
-
-        # Create ESSP with no papers
-        essp_no_papers = ExamSessionSubjectProduct.objects.create(
-            exam_session_subject=self.exam_session_subject,
-            product=product3
+        ppv3 = ProductProductVariation.objects.create(
+            product=cat_product3, product_variation=self.variation
         )
 
-        response = self.client.get(f'/api/markings/papers/deadlines/?essp_id={essp_no_papers.id}')
+        # Create store product with no papers
+        store_product_no_papers = StoreProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product_product_variation=ppv3
+        )
+
+        response = self.client.get(f'/api/markings/papers/deadlines/?essp_id={store_product_no_papers.id}')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsInstance(response.data, list)
         self.assertEqual(len(response.data), 0)  # No papers
 
     def test_bulk_deadlines_action_with_valid_essp_ids(self):
-        """Test POST /api/markings/papers/bulk-deadlines/ with valid essp_ids."""
+        """Test POST /api/markings/papers/bulk-deadlines/ with valid store product ids."""
         data = {
-            'essp_ids': [self.essp1.id, self.essp2.id]
+            'essp_ids': [self.store_product1.id, self.store_product2.id]
         }
 
         response = self.client.post('/api/markings/papers/bulk-deadlines/', data, format='json')
@@ -169,15 +182,15 @@ class MarkingPaperAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsInstance(response.data, dict)
 
-        # Should have mappings for both ESSPs
-        self.assertIn(self.essp1.id, response.data)
-        self.assertIn(self.essp2.id, response.data)
+        # Should have mappings for both store products
+        self.assertIn(self.store_product1.id, response.data)
+        self.assertIn(self.store_product2.id, response.data)
 
-        # essp1 should have 2 papers
-        self.assertEqual(len(response.data[self.essp1.id]), 2)
+        # store_product1 should have 2 papers
+        self.assertEqual(len(response.data[self.store_product1.id]), 2)
 
-        # essp2 should have 1 paper
-        self.assertEqual(len(response.data[self.essp2.id]), 1)
+        # store_product2 should have 1 paper
+        self.assertEqual(len(response.data[self.store_product2.id]), 1)
 
     def test_bulk_deadlines_action_without_essp_ids(self):
         """Test POST /api/markings/papers/bulk-deadlines/ without essp_ids."""
@@ -210,7 +223,7 @@ class MarkingPaperAPITestCase(APITestCase):
         self.assertIn('error', response.data)
 
     def test_bulk_deadlines_action_with_nonexistent_essp_ids(self):
-        """Test POST /api/markings/papers/bulk-deadlines/ with nonexistent ESSP IDs."""
+        """Test POST /api/markings/papers/bulk-deadlines/ with nonexistent IDs."""
         data = {
             'essp_ids': [999998, 999999]
         }
@@ -225,7 +238,7 @@ class MarkingPaperAPITestCase(APITestCase):
     def test_bulk_deadlines_action_mixed_valid_invalid_ids(self):
         """Test POST /api/markings/papers/bulk-deadlines/ with mixed valid/invalid IDs."""
         data = {
-            'essp_ids': [self.essp1.id, 999999]  # One valid, one invalid
+            'essp_ids': [self.store_product1.id, 999999]  # One valid, one invalid
         }
 
         response = self.client.post('/api/markings/papers/bulk-deadlines/', data, format='json')
@@ -233,13 +246,13 @@ class MarkingPaperAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsInstance(response.data, dict)
 
-        # Should have mapping only for valid ESSP
-        self.assertIn(self.essp1.id, response.data)
+        # Should have mapping only for valid store product
+        self.assertIn(self.store_product1.id, response.data)
         self.assertNotIn(999999, response.data)
 
     def test_deadlines_response_structure(self):
         """Test deadlines action response contains expected fields."""
-        response = self.client.get(f'/api/markings/papers/deadlines/?essp_id={self.essp1.id}')
+        response = self.client.get(f'/api/markings/papers/deadlines/?essp_id={self.store_product1.id}')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreater(len(response.data), 0)
@@ -254,19 +267,19 @@ class MarkingPaperAPITestCase(APITestCase):
     def test_bulk_deadlines_response_structure(self):
         """Test bulk deadlines action response structure."""
         data = {
-            'essp_ids': [self.essp1.id]
+            'essp_ids': [self.store_product1.id]
         }
 
         response = self.client.post('/api/markings/papers/bulk-deadlines/', data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # Response should be dict with ESSP IDs as keys
+        # Response should be dict with store product IDs as keys
         self.assertIsInstance(response.data, dict)
-        self.assertIn(self.essp1.id, response.data)
+        self.assertIn(self.store_product1.id, response.data)
 
-        # Each ESSP should have list of papers
-        papers = response.data[self.essp1.id]
+        # Each store product should have list of papers
+        papers = response.data[self.store_product1.id]
         self.assertIsInstance(papers, list)
         self.assertGreater(len(papers), 0)
 
@@ -280,7 +293,7 @@ class MarkingPaperAPITestCase(APITestCase):
     def test_readonly_viewset_no_create(self):
         """Test ReadOnlyModelViewSet does not allow POST to create papers."""
         data = {
-            'exam_session_subject_product': self.essp1.id,
+            'store_product': self.store_product1.id,
             'name': 'NewPaper',
             'deadline': (timezone.now() + timedelta(days=70)).isoformat(),
             'recommended_submit_date': (timezone.now() + timedelta(days=65)).isoformat()
@@ -315,7 +328,7 @@ class MarkingPaperAPITestCase(APITestCase):
     def test_permission_classes_allow_any(self):
         """Test API endpoints are accessible without authentication (AllowAny)."""
         # Test without authentication
-        response = self.client.get(f'/api/markings/papers/deadlines/?essp_id={self.essp1.id}')
+        response = self.client.get(f'/api/markings/papers/deadlines/?essp_id={self.store_product1.id}')
 
         # Should allow access (AllowAny permission)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

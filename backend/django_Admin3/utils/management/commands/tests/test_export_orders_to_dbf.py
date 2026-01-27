@@ -2,6 +2,7 @@
 import os
 import tempfile
 import shutil
+import unittest
 from decimal import Decimal
 from datetime import datetime, timedelta
 
@@ -13,9 +14,10 @@ from django.db import connection
 
 from cart.models import ActedOrder, ActedOrderItem
 from userprofile.models import UserProfile
-from utils.services.dbf_export_service import DbfExportService
+from utils.services.dbf_export_service import DbfExportService, YDBF_AVAILABLE
 
 
+@unittest.skipUnless(YDBF_AVAILABLE, 'ydbf library not installed')
 class ExportOrdersToDbfCommandTests(TestCase):
     """Test cases for export_orders_to_dbf management command."""
 

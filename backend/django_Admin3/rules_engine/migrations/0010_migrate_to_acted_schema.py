@@ -17,6 +17,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('rules_engine', '0009_add_cart_calculate_vat_entry_point'),
+        ('orders', '0001_initial'),  # orders.0001 has FKs to acted_rules and acted_rules_message_templates; must run before we move the tables
     ]
 
     operations = [
