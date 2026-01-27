@@ -1,10 +1,16 @@
 from django.test import TestCase, override_settings
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from decimal import Decimal
 from unittest.mock import patch, MagicMock
 
 from cart.models import Cart, CartItem
 from cart.services.cart_service import CartService
+from catalog.models import (
+    Subject, ExamSession, ExamSessionSubject,
+    Product as CatalogProduct, ProductVariation, ProductProductVariation
+)
+from store.models import Product as StoreProduct
 
 User = get_user_model()
 
@@ -16,9 +22,23 @@ class CartServiceVATTest(TestCase):
         self.user = User.objects.create_user(
             username='testuser', email='test@example.com', password='testpass123'
         )
+        # Create store product fixture for check constraint
+        subject = Subject.objects.create(code='CM2')
+        exam_session = ExamSession.objects.create(
+            session_code='2025-04',
+            start_date=timezone.now(), end_date=timezone.now()
+        )
+        ess = ExamSessionSubject.objects.create(exam_session=exam_session, subject=subject)
+        cat_product = CatalogProduct.objects.create(fullname='Test Product', shortname='TP', code='TP01')
+        variation = ProductVariation.objects.create(variation_type='eBook', name='Standard eBook')
+        ppv = ProductProductVariation.objects.create(product=cat_product, product_variation=variation)
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=ess, product_product_variation=ppv
+        )
         self.cart = Cart.objects.create(user=self.user)
         self.cart_item = CartItem.objects.create(
             cart=self.cart,
+            product=self.store_product,
             item_type='product',
             quantity=2,
             price_type='standard',
@@ -58,6 +78,7 @@ class CartServiceVATTest(TestCase):
     def test_calculate_vat_multiple_items(self, mock_engine):
         CartItem.objects.create(
             cart=self.cart,
+            product=self.store_product,
             item_type='product',
             quantity=1,
             price_type='standard',
@@ -175,7 +196,7 @@ class CartServiceVATTest(TestCase):
                 'cart_item': {
                     'id': str(self.cart_item.id),
                     'product_type': 'Printed',
-                    'product_code': '',
+                    'product_code': 'TP01',
                     'net_amount': 100.0,
                 },
             }

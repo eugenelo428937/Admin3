@@ -1,0 +1,801 @@
+{
+  "generated_at": "2026-01-27T17:15:51.280961",
+  "summary": {
+    "total_endpoints": 85,
+    "tested_endpoints": 48,
+    "untested_endpoints": 37,
+    "endpoint_coverage_pct": 56.5,
+    "total_serializer_fields": 146,
+    "read_tested_fields": 81,
+    "write_tested_fields": 75,
+    "untested_fields": 44,
+    "field_read_coverage_pct": 55.5,
+    "field_write_coverage_pct": 51.4
+  },
+  "endpoint_coverage_by_app": {
+    "utils": {
+      "total": 6,
+      "tested": 0,
+      "untested": 6
+    },
+    "core_auth": {
+      "total": 13,
+      "tested": 11,
+      "untested": 2
+    },
+    "users": {
+      "total": 3,
+      "tested": 3,
+      "untested": 0
+    },
+    "students": {
+      "total": 1,
+      "tested": 0,
+      "untested": 1
+    },
+    "filtering": {
+      "total": 5,
+      "tested": 0,
+      "untested": 5
+    },
+    "cart": {
+      "total": 6,
+      "tested": 3,
+      "untested": 3
+    },
+    "orders": {
+      "total": 2,
+      "tested": 2,
+      "untested": 0
+    },
+    "rules_engine": {
+      "total": 16,
+      "tested": 7,
+      "untested": 9
+    },
+    "misc": {
+      "total": 1,
+      "tested": 0,
+      "untested": 1
+    },
+    "marking": {
+      "total": 3,
+      "tested": 3,
+      "untested": 0
+    },
+    "marking_vouchers": {
+      "total": 3,
+      "tested": 0,
+      "untested": 3
+    },
+    "tutorials": {
+      "total": 8,
+      "tested": 7,
+      "untested": 1
+    },
+    "catalog": {
+      "total": 11,
+      "tested": 9,
+      "untested": 2
+    },
+    "search": {
+      "total": 4,
+      "tested": 0,
+      "untested": 4
+    },
+    "store": {
+      "total": 3,
+      "tested": 3,
+      "untested": 0
+    }
+  },
+  "untested_endpoints": [
+    {
+      "path": "/api/health/",
+      "methods": [
+        "GET"
+      ],
+      "view": "utils.health_check.health_check",
+      "app": "utils",
+      "name": "health_check"
+    },
+    {
+      "path": "/api/auth/token/refresh/",
+      "methods": [
+        "POST"
+      ],
+      "view": "rest_framework_simplejwt.views.TokenRefreshView",
+      "app": "core_auth",
+      "name": "token-refresh"
+    },
+    {
+      "path": "/api/auth/test-email/",
+      "methods": [
+        "POST"
+      ],
+      "view": "core_auth.views.send_test_email",
+      "app": "core_auth",
+      "name": "test-email"
+    },
+    {
+      "path": "/api/students/",
+      "methods": [
+        "GET"
+      ],
+      "view": "students.views.StudentViewSet",
+      "app": "students",
+      "name": "student-list"
+    },
+    {
+      "path": "/api/products/product-categories/all/",
+      "methods": [
+        "GET"
+      ],
+      "view": "filtering.views.product_group_three_level_tree",
+      "app": "filtering",
+      "name": "product-group-three-level-tree"
+    },
+    {
+      "path": "/api/products/product-groups/tree/",
+      "methods": [
+        "GET"
+      ],
+      "view": "filtering.views.product_group_tree",
+      "app": "filtering",
+      "name": "product-group-tree"
+    },
+    {
+      "path": "/api/products/product-groups/{group_id}/products/",
+      "methods": [
+        "GET"
+      ],
+      "view": "filtering.views.products_by_group",
+      "app": "filtering",
+      "name": "products-by-group"
+    },
+    {
+      "path": "/api/products/product-group-filters/",
+      "methods": [
+        "GET"
+      ],
+      "view": "filtering.views.product_group_filters",
+      "app": "filtering",
+      "name": "product-group-filters"
+    },
+    {
+      "path": "/api/products/filter-configuration/",
+      "methods": [
+        "GET"
+      ],
+      "view": "filtering.views.filter_configuration",
+      "app": "filtering",
+      "name": "filter-configuration"
+    },
+    {
+      "path": "/api/cart/clear/",
+      "methods": [
+        "GET"
+      ],
+      "view": "cart.views.CartViewSet",
+      "app": "cart",
+      "name": "cart-clear"
+    },
+    {
+      "path": "/api/cart/update_item/",
+      "methods": [
+        "GET"
+      ],
+      "view": "cart.views.CartViewSet",
+      "app": "cart",
+      "name": "cart-update-item"
+    },
+    {
+      "path": "/api/cart/vat/recalculate/",
+      "methods": [
+        "GET"
+      ],
+      "view": "cart.views.CartViewSet",
+      "app": "cart",
+      "name": "cart-vat-recalculate"
+    },
+    {
+      "path": "/api/rules/engine/accept-terms/",
+      "methods": [
+        "GET"
+      ],
+      "view": "rules_engine.views.RulesEngineViewSet",
+      "app": "rules_engine",
+      "name": "rules-engine-accept-terms"
+    },
+    {
+      "path": "/api/rules/engine/checkout-terms-status/",
+      "methods": [
+        "GET"
+      ],
+      "view": "rules_engine.views.RulesEngineViewSet",
+      "app": "rules_engine",
+      "name": "rules-engine-checkout-terms-status"
+    },
+    {
+      "path": "/api/rules/engine/checkout-validation/",
+      "methods": [
+        "GET"
+      ],
+      "view": "rules_engine.views.RulesEngineViewSet",
+      "app": "rules_engine",
+      "name": "rules-engine-checkout-validation"
+    },
+    {
+      "path": "/api/rules/engine/evaluate/",
+      "methods": [
+        "GET"
+      ],
+      "view": "rules_engine.views.RulesEngineViewSet",
+      "app": "rules_engine",
+      "name": "rules-engine-evaluate-rules"
+    },
+    {
+      "path": "/api/rules/engine/pending-acknowledgments/",
+      "methods": [
+        "GET"
+      ],
+      "view": "rules_engine.views.RulesEngineViewSet",
+      "app": "rules_engine",
+      "name": "rules-engine-pending-acknowledgments"
+    },
+    {
+      "path": "/api/rules/templates/",
+      "methods": [
+        "GET"
+      ],
+      "view": "rules_engine.views.MessageTemplateViewSet",
+      "app": "rules_engine",
+      "name": "messagetemplate-list"
+    },
+    {
+      "path": "/api/rules/templates/template-styles/",
+      "methods": [
+        "GET"
+      ],
+      "view": "rules_engine.views.MessageTemplateViewSet",
+      "app": "rules_engine",
+      "name": "messagetemplate-get-template-styles"
+    },
+    {
+      "path": "/api/rules/acted-rules/",
+      "methods": [
+        "GET"
+      ],
+      "view": "rules_engine.views.ActedRuleViewSet",
+      "app": "rules_engine",
+      "name": "acted-rules-list"
+    },
+    {
+      "path": "/api/rules/validate-comprehensive-checkout/",
+      "methods": [
+        "POST"
+      ],
+      "view": "rules_engine.views.validate_comprehensive_checkout",
+      "app": "rules_engine",
+      "name": "validate-comprehensive-checkout"
+    },
+    {
+      "path": "/api/utils/address-lookup/",
+      "methods": [
+        "GET"
+      ],
+      "view": "utils.views.postcoder_address_lookup",
+      "app": "utils",
+      "name": "address_lookup_proxy"
+    },
+    {
+      "path": "/api/utils/getaddress-lookup/",
+      "methods": [
+        "GET"
+      ],
+      "view": "utils.views.address_lookup_proxy",
+      "app": "utils",
+      "name": "getaddress_lookup_proxy"
+    },
+    {
+      "path": "/api/utils/postcoder-address-lookup/",
+      "methods": [
+        "GET"
+      ],
+      "view": "utils.views.postcoder_address_lookup",
+      "app": "utils",
+      "name": "postcoder_address_lookup"
+    },
+    {
+      "path": "/api/utils/address-retrieve/",
+      "methods": [
+        "GET"
+      ],
+      "view": "utils.views.address_retrieve",
+      "app": "utils",
+      "name": "address_retrieve"
+    },
+    {
+      "path": "/api/utils/health/",
+      "methods": [
+        "GET"
+      ],
+      "view": "utils.views.health_check",
+      "app": "utils",
+      "name": "health_check"
+    },
+    {
+      "path": "/api/countries/",
+      "methods": [
+        "GET"
+      ],
+      "view": "utils.views.country_list",
+      "app": "misc",
+      "name": "country_list"
+    },
+    {
+      "path": "/api/marking-vouchers/",
+      "methods": [
+        "GET"
+      ],
+      "view": "marking_vouchers.views.MarkingVoucherListView",
+      "app": "marking_vouchers",
+      "name": "marking-voucher-list"
+    },
+    {
+      "path": "/api/marking-vouchers/{pk}/",
+      "methods": [
+        "GET"
+      ],
+      "view": "marking_vouchers.views.MarkingVoucherDetailView",
+      "app": "marking_vouchers",
+      "name": "marking-voucher-detail"
+    },
+    {
+      "path": "/api/marking-vouchers/add-to-cart/",
+      "methods": [
+        "POST"
+      ],
+      "view": "marking_vouchers.views.add_voucher_to_cart",
+      "app": "marking_vouchers",
+      "name": "add-voucher-to-cart"
+    },
+    {
+      "path": "/api/tutorials/products/{product_id}/variations/",
+      "methods": [
+        "GET"
+      ],
+      "view": "tutorials.views.TutorialProductVariationListView",
+      "app": "tutorials",
+      "name": "tutorial-product-variations"
+    },
+    {
+      "path": "/api/catalog/products/bulk-import/",
+      "methods": [
+        "GET"
+      ],
+      "view": "catalog.views.product_views.ProductViewSet",
+      "app": "catalog",
+      "name": "product-bulk-import-products"
+    },
+    {
+      "path": "/api/catalog/products/bundle-contents/",
+      "methods": [
+        "GET"
+      ],
+      "view": "catalog.views.product_views.ProductViewSet",
+      "app": "catalog",
+      "name": "product-get-bundle-contents"
+    },
+    {
+      "path": "/api/search/unified/",
+      "methods": [
+        "POST"
+      ],
+      "view": "search.views.UnifiedSearchView",
+      "app": "search",
+      "name": "unified-search"
+    },
+    {
+      "path": "/api/search/default-data/",
+      "methods": [
+        "GET"
+      ],
+      "view": "search.views.DefaultSearchDataView",
+      "app": "search",
+      "name": "default-search-data"
+    },
+    {
+      "path": "/api/search/fuzzy/",
+      "methods": [
+        "GET"
+      ],
+      "view": "search.views.FuzzySearchView",
+      "app": "search",
+      "name": "fuzzy-search"
+    },
+    {
+      "path": "/api/search/advanced-fuzzy/",
+      "methods": [
+        "GET"
+      ],
+      "view": "search.views.AdvancedFuzzySearchView",
+      "app": "search",
+      "name": "advanced-fuzzy-search"
+    }
+  ],
+  "serializer_coverage": {
+    "cart.ActedOrderItemSerializer": {
+      "total_fields": 12,
+      "read_tested": [
+        "id",
+        "product",
+        "product_name",
+        "product_code",
+        "subject_code",
+        "exam_session_code",
+        "product_type",
+        "price_type"
+      ],
+      "write_tested": [
+        "id",
+        "quantity",
+        "price_type",
+        "actual_price"
+      ],
+      "untested": [
+        "item_type",
+        "metadata"
+      ]
+    },
+    "cart.ActedOrderSerializer": {
+      "total_fields": 5,
+      "read_tested": [
+        "id",
+        "user",
+        "created_at",
+        "updated_at",
+        "items"
+      ],
+      "write_tested": [
+        "id",
+        "user",
+        "created_at",
+        "updated_at",
+        "items"
+      ],
+      "untested": []
+    },
+    "cart.CartFeeSerializer": {
+      "total_fields": 10,
+      "read_tested": [
+        "id",
+        "name",
+        "description",
+        "amount",
+        "currency"
+      ],
+      "write_tested": [
+        "id",
+        "name",
+        "description",
+        "amount"
+      ],
+      "untested": [
+        "fee_type",
+        "is_refundable",
+        "applied_at",
+        "applied_by_rule",
+        "metadata"
+      ]
+    },
+    "cart.CartItemSerializer": {
+      "total_fields": 21,
+      "read_tested": [
+        "id",
+        "product_name",
+        "product_code",
+        "subject_code",
+        "exam_session_code",
+        "product_type",
+        "price_type",
+        "net_amount",
+        "vat_region",
+        "vat_rate",
+        "vat_amount",
+        "gross_amount"
+      ],
+      "write_tested": [
+        "id",
+        "current_product",
+        "product_id",
+        "quantity",
+        "price_type",
+        "actual_price",
+        "net_amount",
+        "vat_amount"
+      ],
+      "untested": [
+        "metadata",
+        "is_marking",
+        "has_expired_deadline",
+        "expired_deadlines_count",
+        "marking_paper_count"
+      ]
+    },
+    "cart.CartSerializer": {
+      "total_fields": 17,
+      "read_tested": [
+        "id",
+        "user",
+        "items",
+        "created_at",
+        "updated_at",
+        "has_marking",
+        "has_material",
+        "vat_totals",
+        "vat_last_calculated_at",
+        "vat_calculation_error",
+        "vat_calculation_error_message"
+      ],
+      "write_tested": [
+        "id",
+        "user",
+        "session_key",
+        "items",
+        "created_at",
+        "updated_at",
+        "has_marking",
+        "has_tutorial",
+        "has_material"
+      ],
+      "untested": [
+        "fees",
+        "has_digital",
+        "user_context",
+        "vat_calculations"
+      ]
+    },
+    "students.StudentSerializer": {
+      "total_fields": 7,
+      "read_tested": [
+        "student_ref",
+        "user"
+      ],
+      "write_tested": [
+        "user",
+        "remarks"
+      ],
+      "untested": [
+        "student_type",
+        "apprentice_type",
+        "create_date",
+        "modified_date"
+      ]
+    },
+    "students.UserSerializer": {
+      "total_fields": 6,
+      "read_tested": [
+        "id",
+        "username"
+      ],
+      "write_tested": [
+        "id",
+        "username",
+        "email",
+        "password",
+        "first_name",
+        "last_name"
+      ],
+      "untested": []
+    },
+    "users.UserRegistrationSerializer": {
+      "total_fields": 7,
+      "read_tested": [
+        "id",
+        "username"
+      ],
+      "write_tested": [
+        "id",
+        "username",
+        "email",
+        "password",
+        "first_name",
+        "last_name"
+      ],
+      "untested": [
+        "profile"
+      ]
+    },
+    "tutorials.TutorialEventSerializer": {
+      "total_fields": 13,
+      "read_tested": [
+        "id",
+        "subject_code",
+        "code",
+        "venue",
+        "is_soldout",
+        "finalisation_date",
+        "remain_space",
+        "start_date",
+        "end_date",
+        "created_at",
+        "updated_at"
+      ],
+      "write_tested": [
+        "id",
+        "code",
+        "venue",
+        "remain_space",
+        "start_date",
+        "end_date",
+        "created_at",
+        "updated_at",
+        "store_product"
+      ],
+      "untested": [
+        "store_product_code"
+      ]
+    },
+    "marking.MarkingPaperSerializer": {
+      "total_fields": 4,
+      "read_tested": [
+        "id",
+        "name"
+      ],
+      "write_tested": [
+        "id",
+        "name",
+        "deadline",
+        "recommended_submit_date"
+      ],
+      "untested": []
+    },
+    "marking_vouchers.AddMarkingVoucherToCartSerializer": {
+      "total_fields": 2,
+      "read_tested": [],
+      "write_tested": [
+        "quantity"
+      ],
+      "untested": [
+        "voucher_id"
+      ]
+    },
+    "marking_vouchers.MarkingVoucherSerializer": {
+      "total_fields": 10,
+      "read_tested": [
+        "id",
+        "code",
+        "name",
+        "description",
+        "is_active",
+        "created_at",
+        "updated_at"
+      ],
+      "write_tested": [
+        "id",
+        "code",
+        "name",
+        "description",
+        "created_at",
+        "updated_at"
+      ],
+      "untested": [
+        "price",
+        "expiry_date",
+        "is_available"
+      ]
+    },
+    "search.FilterCountSerializer": {
+      "total_fields": 5,
+      "read_tested": [
+        "subjects",
+        "products"
+      ],
+      "write_tested": [
+        "subjects"
+      ],
+      "untested": [
+        "categories",
+        "product_types",
+        "modes_of_delivery"
+      ]
+    },
+    "search.ProductSearchPaginationSerializer": {
+      "total_fields": 5,
+      "read_tested": [
+        "page",
+        "page_size"
+      ],
+      "write_tested": [
+        "page",
+        "page_size"
+      ],
+      "untested": [
+        "total_count",
+        "has_next",
+        "has_previous"
+      ]
+    },
+    "search.ProductSearchRequestSerializer": {
+      "total_fields": 4,
+      "read_tested": [],
+      "write_tested": [],
+      "untested": [
+        "searchQuery",
+        "filters",
+        "pagination",
+        "options"
+      ]
+    },
+    "search.ProductSearchResponseSerializer": {
+      "total_fields": 3,
+      "read_tested": [
+        "products"
+      ],
+      "write_tested": [],
+      "untested": [
+        "filter_counts",
+        "pagination"
+      ]
+    },
+    "filtering.FilterGroupSerializer": {
+      "total_fields": 4,
+      "read_tested": [
+        "id",
+        "name"
+      ],
+      "write_tested": [
+        "id",
+        "name"
+      ],
+      "untested": [
+        "parent",
+        "children"
+      ]
+    },
+    "filtering.FilterGroupThreeLevelSerializer": {
+      "total_fields": 4,
+      "read_tested": [
+        "id",
+        "name"
+      ],
+      "write_tested": [
+        "id",
+        "name"
+      ],
+      "untested": [
+        "parent",
+        "children"
+      ]
+    },
+    "filtering.FilterGroupWithProductsSerializer": {
+      "total_fields": 3,
+      "read_tested": [
+        "id",
+        "name",
+        "products"
+      ],
+      "write_tested": [
+        "id",
+        "name"
+      ],
+      "untested": []
+    },
+    "filtering.ProductGroupFilterSerializer": {
+      "total_fields": 4,
+      "read_tested": [
+        "id",
+        "name"
+      ],
+      "write_tested": [
+        "id",
+        "name"
+      ],
+      "untested": [
+        "filter_type",
+        "groups"
+      ]
+    }
+  }
+}

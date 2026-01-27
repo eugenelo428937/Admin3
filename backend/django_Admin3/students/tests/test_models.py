@@ -194,7 +194,7 @@ class StudentTestCase(TestCase):
 
     def test_db_table_name(self):
         """Test custom database table name."""
-        self.assertEqual(Student._meta.db_table, 'acted_students')
+        self.assertEqual(Student._meta.db_table, '"acted"."students"')
 
     def test_student_ref_is_primary_key(self):
         """Test student_ref is the primary key."""

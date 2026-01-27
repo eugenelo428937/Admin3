@@ -298,7 +298,7 @@ class MarkingVoucherTestCase(TestCase):
         """Test custom database table name."""
         self.assertEqual(
             MarkingVoucher._meta.db_table,
-            'acted_marking_vouchers'
+            '"acted"."marking_vouchers"'
         )
 
     def test_query_active_vouchers(self):

@@ -1,4 +1,6 @@
+import base64
 import logging
+import requests
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from decimal import Decimal
@@ -119,9 +121,6 @@ class OpayoGateway(PaymentGateway):
         )
 
     def process(self, order, payment_data: dict, client_ip: str, user_agent: str) -> PaymentResult:
-        import base64
-        import requests
-
         try:
             payment = Payment.objects.create(
                 order=order,
