@@ -34,7 +34,7 @@ class TutorialEvent(models.Model):
 
     class Meta:
         app_label = 'tutorials'
-        db_table = 'acted_tutorial_events'
+        db_table = '"acted"."tutorial_events"'
         ordering = ['start_date', 'code']
         verbose_name = 'Tutorial Event'
         verbose_name_plural = 'Tutorial Events'

@@ -25,7 +25,7 @@ class MarkingPaper(models.Model):
     recommended_submit_date = models.DateTimeField()
 
     class Meta:
-        db_table = 'acted_marking_paper'
+        db_table = '"acted"."marking_paper"'
 
     def __str__(self):
         return f"{self.name} ({self.exam_session_subject_product})"
