@@ -135,7 +135,31 @@ export const typographyConfig = {
   // Utility variants
   button: {
     ...variants.button,
-    fontSize: important(fontSizes.button),
+    fontSize: important(fontSizes.buttonMedium),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.minimal),
+    position: "static",
+    top: "6.235em",
+  },
+  buttonSmall: {
+    ...variants.button,
+    fontSize: important(fontSizes.buttonSmall),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.minimal),
+    position: "static",
+    top: "6.235em",
+  },
+  buttonMedium: {
+    ...variants.button,
+    fontSize: important(fontSizes.buttonMedium),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing.minimal),
+    position: "static",
+    top: "6.235em",
+  },
+  buttonLarge: {
+    ...variants.button,
+    fontSize: important(fontSizes.buttonLarge),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.minimal),
     position: "static",
@@ -153,7 +177,6 @@ export const typographyConfig = {
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.fine),
   },
-
   // Custom variants
   price: {
     ...variants.price,

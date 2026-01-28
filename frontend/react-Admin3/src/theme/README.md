@@ -15,7 +15,7 @@ theme/
 │
 ├── tokens/               # NEW: Single source of truth for primitive values
 │   ├── index.js          # Tokens module entry
-│   ├── colors.js         # md3, scales, staticColors, darkMd3
+│   ├── colors.js         # md3, scales, staticColors
 │   ├── typography.js     # fonts, sizes, weights, lineHeights
 │   └── spacing.js        # scale, multipliers, gaps, padding, borderRadius
 │
@@ -180,7 +180,7 @@ The theme now uses a layered architecture:
 
 ```
 tokens/           → Raw primitive values (colors, typography, spacing)
-  └── colors.js      (md3, scales, staticColors, darkMd3)
+  └── colors.js      (md3, scales, staticColors)
   └── typography.js  (fonts, sizes, weights)
   └── spacing.js     (scale, gaps, padding, borderRadius)
 
@@ -202,75 +202,6 @@ sx={{ color: 'navigation.text.primary' }}
 import { navigation } from '../semantic/navigation';
 import { semantic } from '../semantic/common';
 ```
-
-## Dark Mode Support
-
-### Architecture Ready
-
-Dark mode colors are exported from `tokens/colors.js`:
-
-```javascript
-import { darkMd3 } from './theme/tokens/colors';
-// or
-import { darkMd3 } from './theme/tokens';
-```
-
-### Implementation Pattern
-
-To implement dark mode in the future:
-
-1. **Create a dark theme variant**:
-```javascript
-import { createTheme } from '@mui/material/styles';
-import { darkMd3 } from './tokens/colors';
-
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: { main: darkMd3.primary },
-    background: {
-      default: darkMd3.background,
-      paper: darkMd3.surface,
-    },
-    text: {
-      primary: darkMd3.onSurface,
-      secondary: darkMd3.onSurfaceVariant,
-    },
-  },
-});
-```
-
-2. **Use ThemeProvider with mode switching**:
-```javascript
-const [mode, setMode] = useState('light');
-const theme = mode === 'light' ? lightTheme : darkTheme;
-
-<ThemeProvider theme={theme}>
-  <App />
-</ThemeProvider>
-```
-
-3. **Store preference** in localStorage or user settings
-
-### Available Dark Colors
-
-The `darkMd3` object provides MD3 dark theme colors:
-
-| Token | Light | Dark |
-|-------|-------|------|
-| `primary` | #755085 | #E3B7F3 |
-| `onPrimary` | #FFFFFF | #432353 |
-| `background` | #FFF7FB | #151218 |
-| `surface` | #FDF8FF | #151218 |
-| `onSurface` | #1C1B20 | #E8E0E6 |
-| `error` | #904A43 | #FFB4AB |
-
-### Current Status
-
-- ✅ Dark color tokens defined (`darkMd3`)
-- ✅ Exported from tokens layer
-- ⏳ UI toggle not implemented (future work)
-- ⏳ Preference persistence not implemented (future work)
 
 ## Deprecated Files
 

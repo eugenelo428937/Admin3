@@ -23,7 +23,9 @@
       "Bash(c:/Code/Admin3/.venv/Scripts/coverage.exe report:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
-      "Skill(brainstorming)"
+      "Skill(brainstorming)",
+      "Skill(agent-browser)",
+      "Skill(agent-browser:*)"
     ],
     "deny": [
       "Read(.claude/tdd-guard/**)",
@@ -42,8 +44,7 @@
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "trello",
-    "browsermcp"
+    "trello"
   ],
   "hooks": {
     "PreToolUse": [

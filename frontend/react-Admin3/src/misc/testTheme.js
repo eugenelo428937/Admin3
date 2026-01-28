@@ -1,6 +1,6 @@
 import { createTheme } from "@mui/material/styles";
 import theme from "./theme";
-import { legacyScales } from "./tokens/colors";
+import { scales } from "../theme/tokens/colors";
 import liftKitTheme from "./liftKitTheme";
 
 // Test theme that adds a custom ProductCard component with base + subvariants
@@ -31,7 +31,7 @@ const testTheme = createTheme(theme, {
               gap: spacing.xs2,
               pointerEvents: "none",
               "& .subject-badge, & .session-badge": {
-                color: legacyScales.granite["100"],
+                color: scales.granite[100],
                 fontSize: liftKitTheme.typography.bodyBold.fontSize,
                 paddingLeft: spacing.sm,
                 paddingRight: spacing.sm,
@@ -75,7 +75,7 @@ const testTheme = createTheme(theme, {
                 marginLeft: "auto",
                 marginRight: "0",
                 "& .product-avatar": {
-                  backgroundColor: legacyScales.granite["020"],
+                  backgroundColor: scales.granite[20],
                   boxShadow: "var(--Paper-shadow)",
                 },
               },
@@ -142,28 +142,28 @@ const testTheme = createTheme(theme, {
           props: { variant: "product", producttype: "material" },
           style: {
             "& .floating-badges-container .subject-badge": {
-              backgroundColor: legacyScales.cobalt["060"],
+              backgroundColor: scales.cobalt[60],
             },
             "& .floating-badges-container .session-badge": {
-              backgroundColor: legacyScales.mint["030"],
+              backgroundColor: scales.mint[30],
             },
             "& .product-header": {
-              backgroundColor: legacyScales.sky["020"],
+              backgroundColor: scales.sky[20],
               "& .MuiCardHeader-content .product-title": {
-                color: legacyScales.sky["100"],
+                color: scales.sky[100],
               },
               "& .MuiCardHeader-content .product-subtitle": {
-                color: legacyScales.sky["090"],
+                color: scales.sky[90],
               },
               "& .MuiCardHeader-avatar .product-avatar .product-avatar-icon": {
-                color: legacyScales.sky["090"],
+                color: scales.sky[90],
               },
             },
             "& .MuiCardActions-root": {
-              backgroundColor: legacyScales.sky["030"],
+              backgroundColor: scales.sky[30],
               "& .add-to-cart-button": {
-                color: legacyScales.sky["100"],
-                backgroundColor: legacyScales.sky["020"],
+                color: scales.sky[100],
+                backgroundColor: scales.sky[20],
               },
             },
           },
@@ -174,28 +174,28 @@ const testTheme = createTheme(theme, {
           props: { variant: "product", producttype: "tutorial" },
           style: {
             "& .floating-badges-container .subject-badge": {
-              backgroundColor: legacyScales.cobalt["060"],
+              backgroundColor: scales.cobalt[60],
             },
             "& .floating-badges-container .session-badge": {
-              backgroundColor: legacyScales.mint["030"],
+              backgroundColor: scales.mint[30],
             },
             "& .product-header": {
-              backgroundColor: legacyScales.purple["020"],
+              backgroundColor: scales.purple[20],
               "& .MuiCardHeader-content .product-title": {
-                color: legacyScales.sky["100"],
+                color: scales.sky[100],
               },
               "& .MuiCardHeader-content .product-subtitle": {
-                color: legacyScales.sky["090"],
+                color: scales.sky[90],
               },
               "& .MuiCardHeader-avatar .product-avatar .product-avatar-icon": {
-                color: legacyScales.purple["090"],
+                color: scales.purple[90],
               },
             },
             "& .MuiCardActions-root": {
-              backgroundColor: legacyScales.purple["030"],
+              backgroundColor: scales.purple[30],
               "& .add-to-cart-button": {
-                color: legacyScales.purple["100"],
-                backgroundColor: legacyScales.purple["020"],
+                color: scales.purple[100],
+                backgroundColor: scales.purple[20],
               },
             },
           },

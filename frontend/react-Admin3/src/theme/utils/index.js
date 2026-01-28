@@ -1,5 +1,109 @@
-// Theme Utilities - Gradient functions, style helpers
-// Extracted from theme.js
+/**
+ * Theme Utilities
+ *
+ * Gradient functions and style helpers for the theme system.
+ * @module theme/utils
+ */
+
+// =============================================================================
+// SX Composition Utilities
+// =============================================================================
+
+/**
+ * Merges multiple sx objects into a single sx object.
+ * Later objects take precedence over earlier ones for conflicting keys.
+ *
+ * @param {...(object|function)} sxObjects - sx objects or sx callbacks to merge
+ * @returns {function} - A merged sx callback function
+ *
+ * @example
+ * // Merge static sx objects
+ * const combinedSx = composeSx(
+ *   { padding: 2, margin: 1 },
+ *   { padding: 3 }  // padding becomes 3
+ * );
+ * <Box sx={combinedSx} />
+ *
+ * @example
+ * // Merge with theme callbacks
+ * const baseSx = { color: 'primary.main' };
+ * const responsiveSx = (theme) => ({ padding: { xs: 1, md: 2 } });
+ * <Box sx={composeSx(baseSx, responsiveSx)} />
+ */
+export const composeSx = (...sxObjects) => {
+  return (theme) => {
+    return sxObjects.reduce((merged, sx) => {
+      if (!sx) return merged;
+      const resolved = typeof sx === 'function' ? sx(theme) : sx;
+      return { ...merged, ...resolved };
+    }, {});
+  };
+};
+
+/**
+ * Returns product card styling based on product type.
+ * Maps product types to semantic color tokens.
+ *
+ * @param {object} theme - MUI theme object
+ * @param {string} productType - Product type ('tutorial', 'material', 'bundle', 'marking', 'online-classroom', 'marking-voucher')
+ * @returns {object} - sx-compatible style object with header, button, and text colors
+ *
+ * @example
+ * const CardComponent = ({ productType }) => {
+ *   const theme = useTheme();
+ *   const cardStyles = productCardSx(theme, productType);
+ *
+ *   return (
+ *     <Card>
+ *       <CardHeader sx={{ bgcolor: cardStyles.header }} />
+ *       <Button sx={{ bgcolor: cardStyles.button, color: cardStyles.buttonText }}>
+ *         Action
+ *       </Button>
+ *     </Card>
+ *   );
+ * };
+ *
+ * @example
+ * // Available product types and their colors:
+ * // 'tutorial'         -> purple scale (scales.purple[60])
+ * // 'material'         -> sky scale (scales.sky[60])
+ * // 'bundle'           -> green scale (scales.green[60])
+ * // 'marking'          -> pink scale (scales.pink[60])
+ * // 'online-classroom' -> cobalt scale (scales.cobalt[60])
+ * // 'marking-voucher'  -> orange scale (scales.orange[50])
+ */
+export const productCardSx = (theme, productType) => {
+  const productCards = theme.palette.productCards;
+
+  // Normalize product type to match semantic token keys
+  const normalizedType = productType?.toLowerCase().replace('-', '') || 'material';
+
+  // Map product type to semantic token key
+  const typeMap = {
+    tutorial: 'tutorial',
+    material: 'material',
+    bundle: 'bundle',
+    marking: 'marking',
+    onlineclassroom: 'onlineClassroom',
+    markingvoucher: 'markingVoucher',
+  };
+
+  const tokenKey = typeMap[normalizedType] || 'material';
+  const tokens = productCards[tokenKey] || productCards.material;
+
+  return {
+    header: tokens.header,
+    headerHover: tokens.headerHover,
+    button: tokens.button,
+    buttonHover: tokens.buttonHover,
+    buttonText: tokens.buttonText,
+    accent: tokens.accent,
+  };
+};
+
+// =============================================================================
+// Gradient Utilities (legacy - extracted from theme.js)
+// =============================================================================
 
 export const createGradientStyle = (mousePosition, isHovered, colorScheme) => {
   const { x, y } = mousePosition;
@@ -51,4 +155,11 @@ export const gradientColorSchemes = {
   },
 };
 
-export default { createGradientStyle, gradientColorSchemes };
+export default {
+  // Style composition helpers
+  composeSx,
+  productCardSx,
+  // Gradient utilities
+  createGradientStyle,
+  gradientColorSchemes,
+};

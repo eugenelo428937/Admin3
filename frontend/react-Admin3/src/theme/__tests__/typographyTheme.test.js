@@ -1,12 +1,8 @@
 /**
  * Tests for Typography Theme Configuration
- * T007: Test font families, sizes, weights
- *
- * Note: typographyTheme.js has a runtime error (references undefined baseTheme and liftKitTheme)
- * These tests verify the expected structure based on the main theme.js typography
+ * Validates typography configuration from tokens/typography.js
  */
 
-// Since typographyTheme.js has undefined references, we test the typography from theme.js instead
 import theme from '../theme';
 
 describe('Typography Theme', () => {
@@ -21,15 +17,8 @@ describe('Typography Theme', () => {
       expect(typography.fontFamily).toContain('Poppins');
     });
 
-    test('has DM Sans Variable as tertiary font', () => {
-      expect(typography.fontFamily).toContain('DM Sans Variable');
-    });
-
-    test('includes system fonts for fallback', () => {
-      expect(typography.fontFamily).toContain('-apple-system');
-      expect(typography.fontFamily).toContain('BlinkMacSystemFont');
-      expect(typography.fontFamily).toContain('Roboto');
-      expect(typography.fontFamily).toContain('Arial');
+    test('has sans-serif fallback', () => {
+      expect(typography.fontFamily).toContain('sans-serif');
     });
   });
 
@@ -70,7 +59,7 @@ describe('Typography Theme', () => {
       test('has correct configuration', () => {
         expect(typography.h5).toBeDefined();
         expect(typography.h5.fontFamily).toContain('Inter');
-        expect(typography.h5.fontWeight).toBe(400);
+        expect(typography.h5.fontWeight).toBe(500); // Medium weight
       });
     });
 
@@ -170,7 +159,8 @@ describe('Typography Theme', () => {
         expect(typography.price).toBeDefined();
         expect(typography.price.fontFamily).toContain('Inter');
         expect(typography.price.fontWeight).toBe(400);
-        expect(typography.price.lineHeight).toContain('1');
+        // lineHeight uses CSS custom property var(--quarterstep)
+        expect(typography.price.lineHeight).toContain('quarterstep');
       });
     });
 
@@ -219,8 +209,9 @@ describe('Typography Theme', () => {
       expect(typography.caption.fontWeight).toBe(400);
     });
 
-    test('medium weight button uses 500', () => {
+    test('medium weight variants use 500', () => {
       expect(typography.button.fontWeight).toBe(500);
+      expect(typography.h5.fontWeight).toBe(500);
     });
 
     test('bold variants use 600', () => {

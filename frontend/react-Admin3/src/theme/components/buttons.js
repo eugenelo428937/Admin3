@@ -1,39 +1,57 @@
-// Button Component Overrides
+/**
+ * Button Component Overrides
+ *
+ * Defines MUI Button component size-based style overrides.
+ * Font sizes are driven by typography tokens for consistency.
+ *
+ * @module theme/components/buttons
+ *
+ * ## Size Overrides
+ *
+ * @size small - Uses typographyConfig.buttonSmall font size
+ * @size medium - Uses typographyConfig.buttonMedium font size, enlarged icons (28-29px)
+ * @size large - Uses typographyConfig.buttonLarge font size
+ *
+ * @example
+ * // Standard MUI button sizes - no variant prop needed
+ * <Button size="small">Small</Button>
+ * <Button size="medium">Medium</Button>
+ * <Button size="large">Large</Button>
+ *
+ * @note For navigation-specific button variants, see navigation.js
+ */
+
 import { spacing } from '../tokens/spacing';
-import { fontSizes } from '../tokens/typography';
+import { staticColors } from '../tokens/colors';
+import { typographyConfig } from '../typography';
 
 export const buttonOverrides = {
   MuiButton: {
     styleOverrides: {
-      root: {},
-    },
-    variants: [
-      {
-        props: { variant: "transparent-background" },
-        style: {
-          fontFamily: "'Inter', 'Poppins', sans-serif",
-          fontWeight: 500,
-          textTransform: "none",
-          borderRadius: 6,
-          width: "auto",
-          height: fontSizes.title1,
-          alignItems: "center",
-          justifyContent: "center",
-          "& .MuiButton-startIcon": {
-            fontSize: fontSizes.heading,
-            "& .MuiSvgIcon-root": {
-              fontSize: fontSizes.title3,
-            },
+      root: ({ ownerState }) => ({
+        ...(ownerState.size === 'small' && {
+          fontSize: typographyConfig.buttonSmall,
+        }),
+        ...(ownerState.size === 'medium' && {
+          fontSize: typographyConfig.buttonMedium,
+          "& .MuiButton-startIcon > *:nth-of-type(1), & .MuiButton-endIcon > *:nth-of-type(1)": {
+            fontSize: '29px',
           },
-          "&:hover": {
-            boxShadow: "var(--Paper-shadow)",
-            backdropFilter: "brightness(1.26)",
+          "& .MuiSvgIcon-root": {
+            fontSize: '28px',
           },
-          backgroundColor: "transparent",
-          boxShadow: "none",
+        }),
+        ...(ownerState.size === 'large' && {
+          fontSize: typographyConfig.buttonLarge,
+        }),
+      }),
+      // Contained buttons should have white icons
+      contained: {
+        "& .MuiSvgIcon-root": {
+          color: staticColors.white,
         },
       },
-    ],
+    },
   },
 };
 

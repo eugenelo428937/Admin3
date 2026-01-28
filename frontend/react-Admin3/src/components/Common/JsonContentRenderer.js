@@ -196,14 +196,14 @@ const JsonContentRenderer = ({ content, className }) => {
                                 marginBottom: '16px',
                                 border: '1px solid',
                                 ...(cssClass.includes('alert-warning') && {
-                                    backgroundColor: '#fff3cd',
-                                    borderColor: '#ffeaa7',
-                                    color: '#856404'
+                                    backgroundColor: 'warning.light',
+                                    borderColor: 'warning.main',
+                                    color: 'warning.dark'
                                 }),
                                 ...(cssClass.includes('holiday-tips') && {
-                                    backgroundColor: '#f8f9fa',
-                                    borderColor: '#dee2e6',
-                                    color: '#495057'
+                                    backgroundColor: 'grey.100',
+                                    borderColor: 'grey.300',
+                                    color: 'text.secondary'
                                 })
                             })
                         }}

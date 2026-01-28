@@ -72,7 +72,7 @@ const UserActions = ({ onOpenSearch, onOpenAuth, onOpenCart, onToggleMobileMenu,
 						startIcon={<DownloadIcon />}
 						sx={{
 							textTransform: "none",
-							color: theme.palette.liftkit.light.background,
+							color: 'navigation.text.inverse',
 							display: { xs: "none", md: "flex" },
 						}}>
 						Brochure
@@ -84,7 +84,7 @@ const UserActions = ({ onOpenSearch, onOpenAuth, onOpenCart, onToggleMobileMenu,
 			<Tooltip title="Search Products (Ctrl+K)">
 				<Button
 					onClick={onOpenSearch}
-					sx={{ color: theme.palette.liftkit.light.background }}
+					sx={{ color: 'navigation.text.inverse' }}
 					aria-label="search products">
 					<SearchIcon />
 					Search
@@ -96,7 +96,7 @@ const UserActions = ({ onOpenSearch, onOpenAuth, onOpenCart, onToggleMobileMenu,
 				<Button
                     id="main-cart-button"
 					onClick={onOpenCart}
-					sx={{ color: theme.palette.liftkit.light.onSurface }}
+					sx={{ color: 'navigation.text.inverse' }}
 					aria-label={`shopping cart with ${cartCount} items`}
 					startIcon={<CartIcon />}>
 					<Badge badgeContent={cartCount} color="primary" max={99}>						

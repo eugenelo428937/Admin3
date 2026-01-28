@@ -81,7 +81,7 @@ const SectionSubHeader = ({ children }) => (
   <Typography
      variant="captionSemiBold"
      sx={(theme) => ({
-        color: theme.palette.granite["030"],
+        color: theme.palette.scales.granite[30],
         mb: 0.36,
         display: "block",
      })}
@@ -95,10 +95,10 @@ const SectionHeader = ({ children }) => (
    <Typography
       variant="captionSemiBold"
       sx={(theme) => ({
-         color: theme.palette.granite["020"],
+         color: theme.palette.scales.granite[20],
          mb: 0.6,
          display: "block",
-         borderBottom: `1px solid ${theme.palette.granite["070"]}`,
+         borderBottom: `1px solid ${theme.palette.scales.granite[70]}`,
       })}
    >
       {children}
@@ -110,10 +110,10 @@ const MainSectionHeader = ({ children }) => (
    <Typography
       variant="captionBold"
       sx={(theme) => ({
-         color: theme.palette.granite["010"],
+         color: theme.palette.scales.granite[10],
          mb: 1.2,
          display: "block",
-         borderBottom: `1px solid ${theme.palette.granite["050"]}`,
+         borderBottom: `1px solid ${theme.palette.scales.granite[50]}`,
       })}
    >
       {children}
@@ -123,12 +123,12 @@ const MainSectionHeader = ({ children }) => (
 // Reusable link component with caption2 typography
 const FooterLink = ({ to, onClick, children, external = false }) => {
    const linkStyles = (theme) => ({
-      color: theme.palette.granite["030"],
+      color: theme.palette.scales.granite[30],
       textDecoration: "none",
       display: "block",
       py: 0.25,
       "&:hover": {
-         color: theme.palette.granite["000"],
+         color: theme.palette.scales.granite[0],
          textDecoration: "underline",
       },
    });
@@ -382,9 +382,9 @@ const SocialMediaSection = () => (
                rel="noopener noreferrer"
                aria-label={social.label}
                sx={(theme) => ({
-                  color: theme.palette.granite["030"],
+                  color: theme.palette.scales.granite[30],
                   "&:hover": {
-                     color: theme.palette.granite["000"],
+                     color: theme.palette.scales.granite[0],
                      backgroundColor: "rgba(255, 255, 255, 0.1)",
                   },
                })}
@@ -401,7 +401,7 @@ const CopyrightSection = () => (
    <Box>
       <Typography
          variant="caption2"
-         sx={(theme) => ({ color: theme.palette.granite["030"] })}
+         sx={(theme) => ({ color: theme.palette.scales.granite[30] })}
       >
          Copyright &copy; 2026 BPP Actuarial Education - Part of the BPP
          Professional Education Group -{" "}
@@ -411,10 +411,10 @@ const CopyrightSection = () => (
          component="a"
          href="mailto:acted@bpp.com"
          sx={(theme) => ({
-            color: theme.palette.granite["030"],
+            color: theme.palette.scales.granite[30],
             textDecoration: "none",
             "&:hover": {
-               color: theme.palette.granite["000"],
+               color: theme.palette.scales.granite[0],
                textDecoration: "underline",
             },
          })}
@@ -432,7 +432,7 @@ const BottomLinksSection = () => (
       divider={
          <Typography
             variant="caption2"
-            sx={(theme) => ({ color: theme.palette.granite["040"] })}
+            sx={(theme) => ({ color: theme.palette.scales.granite[40] })}
          >
             |
          </Typography>
@@ -526,7 +526,7 @@ const Footer = () => {
       <Box
          component="footer"
          sx={{
-            backgroundColor: theme.palette.granite["080"],
+            backgroundColor: theme.palette.scales.granite[80],
             pt: theme.spacing.lg,
             px: theme.spacing.xl,
             zIndex: 99,

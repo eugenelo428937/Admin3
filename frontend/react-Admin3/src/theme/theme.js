@@ -7,9 +7,7 @@
 
 export {
   default,
-  colorTheme,
   typographyTheme,
-  semanticColors,
   semanticSpacing,
   createGradientStyle,
   gradientColorSchemes,

@@ -36,7 +36,7 @@ const StyleGuide = () => {
 			maxWidth="xl"
 			disableGutters
 			sx={{
-				px: theme.liftkit.spacing["2xl"],
+				px: theme.spacing.xl2,
 				py: theme.spacing.lg,
 			}}>
 			<Typography variant="h2">

@@ -5,8 +5,6 @@
  * Uses CSS custom properties for dynamic calculations.
  *
  * Scale factor: 1.618 (golden ratio)
- *
- * @see liftKitTheme.js for original implementation
  */
 
 // =============================================================================

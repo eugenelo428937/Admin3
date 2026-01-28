@@ -416,7 +416,7 @@ const Home = () =>
                            <Typography
                               variant="h4"
                               sx={{
-                                 color: theme.palette.granite["090"],
+                                 color: theme.palette.scales.granite[90],
                                  fontWeight: 500,
                                  marginBottom: theme.spacing.lg,
                               }}

@@ -79,7 +79,7 @@ const MobileNavigation = ({
 				pt: 1.5,
 				gap: 0.5,
 				borderBottom: 1,
-				borderColor: theme.palette.semantic.navigation.mobile.border.color,
+				borderColor: theme.palette.navigation.mobile.border,
 			}}
 		>
 			{/* Top row - Action icons on left */}
@@ -648,7 +648,7 @@ const MobileNavigation = ({
 				'& .MuiDrawer-paper': {
 					width: '85%',
 					maxWidth: 360,
-					backgroundColor: theme.palette.semantic.navigation.mobile.background,
+					backgroundColor: theme.palette.navigation.mobile.background,
 				},
 			}}
 		>

@@ -99,6 +99,29 @@ export const primary = {
 };
 
 // =============================================================================
+// Accessibility Tokens
+// =============================================================================
+/**
+ * Accessibility tokens for focus states, high contrast, and WCAG compliance.
+ *
+ * @example
+ * // Focus ring for interactive elements
+ * sx={{ '&:focus-visible': { outline: `2px solid ${theme.palette.semantic.a11yFocusRing}` } }}
+ *
+ * @example
+ * // Error focus ring for invalid inputs
+ * sx={{ '&:focus-visible': { outline: `2px solid ${theme.palette.semantic.a11yFocusRingError}` } }}
+ */
+export const a11y = {
+  focusRing: md3.primary, // #755085 - Standard focus ring color (3:1 contrast min)
+  focusRingError: md3.error, // #904A43 - Error state focus ring
+  focusVisible: md3.inversePrimary, // #E3B7F3 - High-visibility focus for dark backgrounds
+  contrastBorder: scales.granite[90], // #272524 - High contrast border for WCAG AAA
+  skipLinkBg: md3.primary, // Skip link background
+  skipLinkText: md3.onPrimary, // Skip link text
+};
+
+// =============================================================================
 // Flat Semantic Export (for sx prop string paths)
 // Usage: sx={{ color: 'semantic.textPrimary' }}
 // =============================================================================
@@ -146,6 +169,12 @@ export const semantic = {
   primaryLight: primary.light,
   primaryDark: primary.dark,
   primaryContrast: primary.contrastText,
+
+  // Accessibility
+  a11yFocusRing: a11y.focusRing,
+  a11yFocusRingError: a11y.focusRingError,
+  a11yFocusVisible: a11y.focusVisible,
+  a11yContrastBorder: a11y.contrastBorder,
 };
 
 // =============================================================================
@@ -158,6 +187,7 @@ const common = {
   border,
   status,
   primary,
+  a11y,
   semantic,
 };
 

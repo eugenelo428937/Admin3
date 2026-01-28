@@ -1333,7 +1333,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      <Person
                         sx={{
                            fontSize: "3rem",
-                           color: theme.palette.granite["030"],
+                           color: theme.palette.scales.granite[30],
                         }}
                      />
                      <Typography variant="h5">
@@ -1542,7 +1542,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      <Home
                         sx={{
                            fontSize: "3rem",
-                           color: theme.palette.granite["030"],
+                           color: theme.palette.scales.granite[30],
                         }}
                      />
                      <Typography variant="h5">Home Address</Typography>
@@ -1676,7 +1676,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      <Business
                         sx={{
                            fontSize: "3rem",
-                           color: theme.palette.granite["030"],
+                           color: theme.palette.scales.granite[30],
                         }}
                      />
                      <Typography variant="h5">Work Address</Typography>
@@ -2156,13 +2156,12 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
       >
          <Card elevation={3}>
             <CardHeader
-               sx={{
-                  background:
-                     "linear-gradient(135deg, #9E9E9E 0%, #d9d9d9 100%)",
+               sx={(theme) => ({
+                  background: `linear-gradient(135deg, ${theme.palette.scales.granite[40]} 0%, ${theme.palette.scales.granite[20]} 100%)`,
                   color: "white",
                   textAlign: "center",
                   py: 4,
-               }}
+               })}
                title={
                   <Box>
                      <Typography
@@ -2191,7 +2190,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                            borderRadius: 4,
                            backgroundColor: "rgba(255,255,255,0.2)",
                            "& .MuiLinearProgress-bar": {
-                              backgroundColor: theme.palette.pink["050"],
+                              backgroundColor: theme.palette.scales.pink[50],
                               opacity: 0.65,
                            },
                         }}
@@ -2311,7 +2310,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      disabled={isLoading}
                      sx={{
                         backgroundColor: theme.palette.primary,
-                        color: theme.palette.liftkit.light.onPrimary,
+                        color: 'primary.contrastText',
                      }}
                      endIcon={
                         currentStep === 5 ? <span>✓</span> : <span>→</span>
@@ -2324,7 +2323,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      ) : (
                         <Typography
                            variant="button"
-                           color={theme.palette.liftkit.light.onPrimary}
+                           color={'primary.contrastText'}
                         >
                            Next
                         </Typography>

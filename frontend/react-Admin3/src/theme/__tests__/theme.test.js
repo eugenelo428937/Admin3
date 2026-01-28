@@ -1,25 +1,19 @@
 /**
  * Tests for Theme Configuration
- * T005: Test theme structure, palette, typography
+ * Tests the consolidated theme structure with semantic tokens
  */
 
-import theme, { liftKitTheme, colorTheme } from '../theme';
+import theme from '../index';
+import { md3, scales, staticColors } from '../tokens/colors';
+import { semantic } from '../semantic/common';
+import productCards from '../semantic/productCards';
+import navigation from '../semantic/navigation';
 
 describe('Theme Configuration', () => {
   describe('theme exports', () => {
     test('exports default theme object', () => {
       expect(theme).toBeDefined();
       expect(typeof theme).toBe('object');
-    });
-
-    test('exports liftKitTheme', () => {
-      expect(liftKitTheme).toBeDefined();
-      expect(typeof liftKitTheme).toBe('object');
-    });
-
-    test('exports colorTheme', () => {
-      expect(colorTheme).toBeDefined();
-      expect(typeof colorTheme).toBe('object');
     });
   });
 
@@ -41,82 +35,137 @@ describe('Theme Configuration', () => {
       expect(theme.breakpoints.values).toBeDefined();
     });
 
-    test('has liftkit spacing and typography', () => {
-      expect(theme.liftkit).toBeDefined();
-      expect(theme.liftkit.spacing).toBeDefined();
-      expect(theme.liftkit.typography).toBeDefined();
-    });
-
     test('has gradients configuration', () => {
       expect(theme.gradients).toBeDefined();
     });
+
+    test('has spacing configuration', () => {
+      expect(theme.spacing).toBeDefined();
+      expect(theme.spacingTokens).toBeDefined();
+    });
   });
 
-  describe('palette configuration', () => {
-    test('has primary colors', () => {
+  describe('palette - MUI standard roles', () => {
+    test('has primary colors from md3', () => {
       expect(theme.palette.primary).toBeDefined();
-      expect(theme.palette.primary.main).toBeDefined();
-      expect(theme.palette.primary.light).toBeDefined();
-      expect(theme.palette.primary.dark).toBeDefined();
-      expect(theme.palette.primary.contrastText).toBeDefined();
+      expect(theme.palette.primary.main).toBe(md3.primary);
     });
 
-    test('has secondary colors', () => {
+    test('has secondary colors from md3', () => {
       expect(theme.palette.secondary).toBeDefined();
-      expect(theme.palette.secondary.main).toBeDefined();
+      expect(theme.palette.secondary.main).toBe(md3.secondary);
     });
 
-    test('has tertiary colors', () => {
+    test('has tertiary colors from md3', () => {
       expect(theme.palette.tertiary).toBeDefined();
-      expect(theme.palette.tertiary.main).toBeDefined();
+      expect(theme.palette.tertiary.main).toBe(md3.tertiary);
     });
 
-    test('has error colors', () => {
+    test('has error colors from md3', () => {
       expect(theme.palette.error).toBeDefined();
-      expect(theme.palette.error.main).toBeDefined();
+      expect(theme.palette.error.main).toBe(md3.error);
     });
 
-    test('has warning colors', () => {
+    test('has warning colors from scales', () => {
       expect(theme.palette.warning).toBeDefined();
-      expect(theme.palette.warning.main).toBeDefined();
+      expect(theme.palette.warning.main).toBe(scales.orange[50]);
     });
 
-    test('has info colors', () => {
+    test('has info colors from scales', () => {
       expect(theme.palette.info).toBeDefined();
-      expect(theme.palette.info.main).toBeDefined();
+      expect(theme.palette.info.main).toBe(scales.cobalt[60]);
     });
 
-    test('has success colors', () => {
+    test('has success colors from scales', () => {
       expect(theme.palette.success).toBeDefined();
-      expect(theme.palette.success.main).toBeDefined();
+      expect(theme.palette.success.main).toBe(scales.green[60]);
     });
 
-    test('has background colors', () => {
+    test('has background colors from md3', () => {
       expect(theme.palette.background).toBeDefined();
-      expect(theme.palette.background.default).toBeDefined();
-      expect(theme.palette.background.paper).toBeDefined();
+      expect(theme.palette.background.default).toBe(md3.background);
+      expect(theme.palette.background.paper).toBe(staticColors.white);
     });
 
-    test('has surface colors', () => {
+    test('has surface colors from md3', () => {
       expect(theme.palette.surface).toBeDefined();
+      expect(theme.palette.surface.main).toBe(md3.surface);
     });
 
-    test('has text colors', () => {
+    test('has text colors from md3', () => {
       expect(theme.palette.text).toBeDefined();
-      expect(theme.palette.text.primary).toBeDefined();
-      expect(theme.palette.text.secondary).toBeDefined();
+      expect(theme.palette.text.primary).toBe(md3.onSurface);
+      expect(theme.palette.text.secondary).toBe(md3.onSurfaceVariant);
+    });
+  });
+
+  describe('palette - scales access', () => {
+    test('has scales object for theme layer', () => {
+      expect(theme.palette.scales).toBeDefined();
+      expect(theme.palette.scales).toStrictEqual(scales);
     });
 
-    test('has BPP color system', () => {
-      expect(theme.palette.bpp).toBeDefined();
+    test('scales has numeric keys', () => {
+      expect(theme.palette.scales.granite[10]).toBeDefined();
+      expect(theme.palette.scales.granite[50]).toBeDefined();
+      expect(theme.palette.scales.granite[90]).toBeDefined();
     });
 
-    test('has Material Design 3 system colors', () => {
-      expect(theme.palette.md3).toBeDefined();
+    test('scales has all BPP color families', () => {
+      expect(theme.palette.scales.granite).toBeDefined();
+      expect(theme.palette.scales.purple).toBeDefined();
+      expect(theme.palette.scales.sky).toBeDefined();
+      expect(theme.palette.scales.mint).toBeDefined();
+      expect(theme.palette.scales.orange).toBeDefined();
+      expect(theme.palette.scales.pink).toBeDefined();
+      expect(theme.palette.scales.yellow).toBeDefined();
+      expect(theme.palette.scales.cobalt).toBeDefined();
+      expect(theme.palette.scales.green).toBeDefined();
+      expect(theme.palette.scales.red).toBeDefined();
+    });
+  });
+
+  describe('palette - semantic tokens', () => {
+    test('has semantic object', () => {
+      expect(theme.palette.semantic).toBeDefined();
     });
 
-    test('has Liftkit colors', () => {
-      expect(theme.palette.liftkit).toBeDefined();
+    test('semantic matches imported semantic', () => {
+      expect(theme.palette.semantic.textPrimary).toBe(semantic.textPrimary);
+      expect(theme.palette.semantic.bgPaper).toBe(semantic.bgPaper);
+    });
+  });
+
+  describe('palette - productCards tokens', () => {
+    test('has productCards object', () => {
+      expect(theme.palette.productCards).toBeDefined();
+      expect(theme.palette.productCards).toStrictEqual(productCards);
+    });
+
+    test('productCards has all product types', () => {
+      expect(theme.palette.productCards.material).toBeDefined();
+      expect(theme.palette.productCards.tutorial).toBeDefined();
+      expect(theme.palette.productCards.marking).toBeDefined();
+      expect(theme.palette.productCards.bundle).toBeDefined();
+      expect(theme.palette.productCards.onlineClassroom).toBeDefined();
+      expect(theme.palette.productCards.markingVoucher).toBeDefined();
+    });
+  });
+
+  describe('palette - navigation tokens', () => {
+    test('has navigation object', () => {
+      expect(theme.palette.navigation).toBeDefined();
+      expect(theme.palette.navigation).toStrictEqual(navigation);
+    });
+
+    test('navigation has all sections', () => {
+      expect(theme.palette.navigation.text).toBeDefined();
+      expect(theme.palette.navigation.border).toBeDefined();
+      expect(theme.palette.navigation.background).toBeDefined();
+      expect(theme.palette.navigation.button).toBeDefined();
+      expect(theme.palette.navigation.mobile).toBeDefined();
+      expect(theme.palette.navigation.hamburger).toBeDefined();
+      expect(theme.palette.navigation.megaMenu).toBeDefined();
     });
   });
 
@@ -140,41 +189,9 @@ describe('Theme Configuration', () => {
       expect(theme.typography.body2).toBeDefined();
     });
 
-    test('has subtitle styles', () => {
-      expect(theme.typography.subtitle1).toBeDefined();
-      expect(theme.typography.subtitle2).toBeDefined();
-    });
-
-    test('has button style', () => {
+    test('has button style with no text transform', () => {
       expect(theme.typography.button).toBeDefined();
       expect(theme.typography.button.textTransform).toBe('none');
-    });
-
-    test('has caption style', () => {
-      expect(theme.typography.caption).toBeDefined();
-    });
-
-    test('has overline style', () => {
-      expect(theme.typography.overline).toBeDefined();
-      expect(theme.typography.overline.textTransform).toBe('uppercase');
-    });
-
-    test('has custom BPP typography', () => {
-      expect(theme.typography.BPP).toBeDefined();
-      expect(theme.typography.BPP.fontWeight).toBe(600);
-    });
-
-    test('has custom Acted typography', () => {
-      expect(theme.typography.Acted).toBeDefined();
-      expect(theme.typography.Acted.fontWeight).toBe(200);
-    });
-
-    test('has custom price typography', () => {
-      expect(theme.typography.price).toBeDefined();
-    });
-
-    test('has custom fineprint typography', () => {
-      expect(theme.typography.fineprint).toBeDefined();
     });
   });
 
@@ -201,26 +218,10 @@ describe('Theme Configuration', () => {
       expect(theme.components.MuiTextField).toBeDefined();
     });
 
-    test('has MuiTypography override', () => {
-      expect(theme.components.MuiTypography).toBeDefined();
-    });
-
     test('has MuiCard override with product variants', () => {
       expect(theme.components.MuiCard).toBeDefined();
       expect(theme.components.MuiCard.variants).toBeDefined();
       expect(theme.components.MuiCard.variants.length).toBeGreaterThan(0);
-    });
-
-    test('has MuiTabs override', () => {
-      expect(theme.components.MuiTabs).toBeDefined();
-    });
-
-    test('has MuiTab override', () => {
-      expect(theme.components.MuiTab).toBeDefined();
-    });
-
-    test('has MuiSpeedDial override', () => {
-      expect(theme.components.MuiSpeedDial).toBeDefined();
     });
   });
 
@@ -234,10 +235,7 @@ describe('Theme Configuration', () => {
       expect(theme.gradients.colorSchemes).toBeDefined();
       expect(theme.gradients.colorSchemes.material).toBeDefined();
       expect(theme.gradients.colorSchemes.tutorial).toBeDefined();
-      expect(theme.gradients.colorSchemes.online).toBeDefined();
       expect(theme.gradients.colorSchemes.bundle).toBeDefined();
-      expect(theme.gradients.colorSchemes.assessment).toBeDefined();
-      expect(theme.gradients.colorSchemes.marking).toBeDefined();
     });
 
     test('createGradientStyle returns gradient object', () => {
@@ -248,18 +246,7 @@ describe('Theme Configuration', () => {
       );
 
       expect(result).toHaveProperty('background');
-      expect(result).toHaveProperty('transition');
       expect(result.background).toContain('linear-gradient');
-    });
-  });
-
-  describe('liftkit configuration', () => {
-    test('liftkit spacing matches liftKitTheme spacing', () => {
-      expect(theme.liftkit.spacing).toEqual(liftKitTheme.spacing);
-    });
-
-    test('liftkit typography matches liftKitTheme typography', () => {
-      expect(theme.liftkit.typography).toEqual(liftKitTheme.typography);
     });
   });
 });

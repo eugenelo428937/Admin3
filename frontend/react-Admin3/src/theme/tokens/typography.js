@@ -86,8 +86,10 @@ export const fontSizes = {
   price: 'calc(1em * var(--wholestep) * var(--eighthstep))', // ~1.717em
   productTitle: 'calc(1em * var(--halfstep) * var(--quarterstep))', // ~1.435em
   navlink: 'calc(1em * var(--quarterstep))', // 1.128em
-  topnavlink: 'calc(1em / var(--quarterstep))', // ~0.886em
-  button: 'calc(1em * var(--eighthstep))', // 1.061em
+  topnavlink: 'calc(1em / var(--quarterstep))', // ~0.886em    
+  buttonSmall: 'calc(1em * var(--eighthstep))', // 1.061em
+  buttonMedium: 'calc(1em * var(--quarterstep))', // 1.061em
+  buttonLarge: 'calc(1em * var(--halfstep))', // 1.061em
   chip: 'calc(1em * var(--quarterstep))', // 1.128em
 };
 

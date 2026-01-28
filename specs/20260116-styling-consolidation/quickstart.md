@@ -1,17 +1,15 @@
-# Quickstart: Using the New Theme System
+# Quickstart: Using the Theme System
 
 **Feature**: 20260116-styling-consolidation
-**Date**: 2025-01-16
+**Updated**: 2025-01-27
 
 ## Overview
 
-This guide explains how to use the consolidated styling system. All colors now come from the MUI theme - no more CSS files or multiple color objects.
+All colors come from the MUI theme. No CSS files, no multiple color objects, no legacy wrappers. Two access patterns only.
 
-## Basic Usage
+## Pattern A: String Path (Static Values)
 
-### Flat Semantic Tokens (Most Common)
-
-Use string paths for common styling needs:
+Use for known, compile-time values:
 
 ```jsx
 import { Box, Typography } from '@mui/material';
@@ -33,43 +31,9 @@ function MyComponent() {
 }
 ```
 
-### Available Flat Tokens
+## Pattern B: Theme Callback (Dynamic Values)
 
-| Token | Purpose |
-| ----- | ------- |
-| `semantic.textPrimary` | Main text color |
-| `semantic.textSecondary` | Muted text color |
-| `semantic.textDisabled` | Disabled text |
-| `semantic.textInverse` | Text on dark backgrounds |
-| `semantic.bgDefault` | Default background |
-| `semantic.bgPaper` | Card/paper background |
-| `semantic.bgElevated` | Elevated surface |
-| `semantic.bgSubtle` | Subtle background |
-| `semantic.borderDefault` | Standard borders |
-| `semantic.borderStrong` | Emphasized borders |
-| `semantic.statusError` | Error state |
-| `semantic.statusWarning` | Warning state |
-| `semantic.statusSuccess` | Success state |
-| `semantic.statusInfo` | Info state |
-
-## Product Card Theming
-
-### Static Product Type
-
-When product type is known at compile time:
-
-```jsx
-<Card sx={{
-  '& .MuiCardHeader-root': {
-    bgcolor: 'productCards.tutorial.header',
-    color: 'productCards.tutorial.title',
-  }
-}} />
-```
-
-### Dynamic Product Type
-
-When product type comes from props/state:
+Use when values depend on props, state, or computed logic:
 
 ```jsx
 function ProductCard({ productType }) {
@@ -90,10 +54,44 @@ function ProductCard({ productType }) {
 }
 ```
 
+## Available Flat Tokens
+
+| Token | Purpose |
+|-------|---------|
+| `semantic.textPrimary` | Main text color |
+| `semantic.textSecondary` | Muted text color |
+| `semantic.textDisabled` | Disabled text |
+| `semantic.textInverse` | Text on dark backgrounds |
+| `semantic.textOnPrimary` | Text on primary color |
+| `semantic.bgDefault` | Default background |
+| `semantic.bgPaper` | Card/paper background |
+| `semantic.bgElevated` | Elevated surface |
+| `semantic.bgSubtle` | Subtle background |
+| `semantic.borderDefault` | Standard borders |
+| `semantic.borderStrong` | Emphasized borders |
+| `semantic.borderSubtle` | Subtle borders |
+| `semantic.statusError` | Error state |
+| `semantic.statusWarning` | Warning state |
+| `semantic.statusSuccess` | Success state |
+| `semantic.statusInfo` | Info state |
+
+## Product Card Theming
+
+### Static Product Type
+
+```jsx
+<Card sx={{
+  '& .MuiCardHeader-root': {
+    bgcolor: 'productCards.tutorial.header',
+    color: 'productCards.tutorial.title',
+  }
+}} />
+```
+
 ### Product Types
 
 | Type | Color Family |
-| ---- | ------------ |
+|------|--------------|
 | `tutorial` | Purple |
 | `material` | Sky blue |
 | `bundle` | Green |
@@ -103,16 +101,7 @@ function ProductCard({ productType }) {
 
 ### Product Card Token Structure
 
-Each product type has these tokens:
-
-- `header` - Card header background
-- `actions` - Action area background
-- `badge` - Badge background
-- `title` - Title text color
-- `subtitle` - Subtitle text color
-- `button` - Button background
-- `buttonHover` - Button hover state
-- `icon` - Icon color
+Each product type has: `header`, `actions`, `badge`, `title`, `subtitle`, `button`, `buttonHover`, `icon`.
 
 ## Navigation Theming
 
@@ -130,78 +119,84 @@ Each product type has these tokens:
 </AppBar>
 ```
 
-## Raw Scale Access (Rare)
-
-For edge cases not covered by semantic tokens:
+## Accessibility Tokens
 
 ```jsx
-// Use theme callback for raw access
-<Box sx={(theme) => ({
-  bgcolor: theme.palette.scales.purple[20],
-  borderColor: theme.palette.scales.granite[30],
-})} />
+// Focus ring
+<Box sx={{ boxShadow: (theme) => theme.palette.semantic.a11y.focusRing }} />
+
+// prefers-reduced-motion is handled globally via MuiCssBaseline
+// No per-component work needed
 ```
 
-**Note**: Prefer semantic tokens when possible. Raw scale access should be rare.
+## Forbidden Patterns
+
+```jsx
+// FORBIDDEN: Import raw tokens in components
+import { scales } from '../theme/tokens/colors';  // ESLint error
+
+// FORBIDDEN: Use deleted paths
+theme.palette.granite['020']          // Deleted
+theme.palette.bpp.purple['020']       // Deleted
+theme.palette.liftkit.light.background // Deleted
+theme.palette.md3.primary             // Deleted
+theme.palette.semantic.cardHeader.tutorial // Old semantic, deleted
+
+// FORBIDDEN: Raw hex colors
+sx={{ color: '#755085' }}             // CI will fail
+
+// FORBIDDEN: Direct scale access in components
+sx={{ color: theme.palette.scales.purple[20] }}  // Use semantic token
+```
 
 ## Migration Cheatsheet
 
-### Before (Old Patterns)
+| Old Pattern | New Pattern |
+|-------------|-------------|
+| `colorTheme.palette.purple['020']` | `'productCards.tutorial.header'` |
+| `theme.palette.granite["090"]` | `'semantic.textPrimary'` |
+| `theme.palette.granite["030"]` | `'semantic.borderDefault'` |
+| `theme.palette.liftkit.light.background` | `'semantic.bgDefault'` |
+| `theme.palette.liftkit.light.onSurface` | `'semantic.textPrimary'` |
+| `theme.palette.semantic.navigation.text.primary` | `'navigation.text.primary'` |
+| `theme.palette.semantic.cardHeader.tutorial` | `'productCards.tutorial.header'` |
+| `statusColors.success.background` | `status.successContainer` (in overrides) |
+| `statusColors.error.dark` | `status.onErrorContainer` (in overrides) |
+| `'#dee2e6'` | `'semantic.borderDefault'` |
+| `'#f8f9fa'` | `'semantic.bgSubtle'` |
+
+## Style Helpers
 
 ```jsx
-// DON'T: Import colorTheme directly
-import colorTheme from '../theme/colorTheme';
-<Box sx={{ color: colorTheme.palette.purple['020'] }} />
+import { composeSx, productCardSx } from '../theme/utils/styleHelpers';
 
-// DON'T: Use CSS class
-<div className="product-tutorial">
+// Merge multiple sx objects
+<Box sx={composeSx(baseStyles, variantStyles, conditionalStyles)} />
 
-// DON'T: Hardcode colors
-<Box sx={{ bgcolor: '#dfd4f7' }} />
+// Common product card theming
+<Card sx={(theme) => productCardSx(theme, 'tutorial')} />
 ```
 
-### After (New Patterns)
+## File Locations
 
-```jsx
-// DO: Use semantic token path
-<Box sx={{ color: 'productCards.tutorial.header' }} />
-
-// DO: Use sx prop with theme
-<Box sx={{ bgcolor: 'semantic.bgPaper' }} />
-
-// DO: Use theme callback for dynamic values
-<Box sx={(theme) => ({
-  bgcolor: theme.palette.productCards[type].header,
-})} />
-```
-
-## TypeScript Support (Future)
-
-Type definitions will be added in a future update. For now, use JSDoc comments:
-
-```jsx
-/**
- * @param {Object} props
- * @param {'tutorial'|'material'|'bundle'|'onlineClassroom'|'marking'|'markingVoucher'} props.productType
- */
-function ProductCard({ productType }) {
-  // ...
-}
-```
+| What | Where |
+|------|-------|
+| Raw colors | `src/theme/tokens/colors.js` |
+| Flat semantics | `src/theme/semantic/common.js` |
+| Product cards | `src/theme/semantic/productCards.js` |
+| Navigation | `src/theme/semantic/navigation.js` |
+| Theme entry | `src/theme/index.js` |
+| Style helpers | `src/theme/utils/styleHelpers.js` |
 
 ## Troubleshooting
 
 ### Token Not Found
 
-If a string path doesn't work, check:
-
-1. Spelling (case-sensitive)
-2. Path structure matches theme palette
-3. Token exists in the semantic layer
+1. Check spelling (case-sensitive)
+2. Verify path exists in theme palette
+3. Check token exists in the semantic layer
 
 ### Visual Mismatch
-
-If colors don't match expected values:
 
 1. Clear browser cache
 2. Restart dev server
@@ -209,74 +204,6 @@ If colors don't match expected values:
 
 ### Import Errors
 
-If you see "Cannot find module" errors:
-
-1. Ensure old files are deleted
+1. Ensure old files are deleted (`colors/semantic.js`, `colors/index.js`)
 2. Check import paths are updated
 3. Run `npm install` to clear cache
-
-## Dark Mode (Architecture Ready)
-
-Dark mode colors are already defined in the token layer. Here's how to use them when implementing dark mode:
-
-### Accessing Dark Colors
-
-```javascript
-import { darkMd3 } from './theme/tokens/colors';
-// or
-import { darkMd3 } from './theme/tokens';
-```
-
-### Future Implementation
-
-When ready to implement dark mode:
-
-```jsx
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { darkMd3 } from './theme/tokens/colors';
-
-// Create dark theme
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: { main: darkMd3.primary },
-    background: {
-      default: darkMd3.background,
-      paper: darkMd3.surface,
-    },
-  },
-});
-
-// Toggle between themes
-function App() {
-  const [mode, setMode] = useState('light');
-  const theme = mode === 'light' ? lightTheme : darkTheme;
-
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <YourApp />
-    </ThemeProvider>
-  );
-}
-```
-
-### Current Status
-
-| Feature | Status |
-| ------- | ------ |
-| Dark color tokens (`darkMd3`) | ✅ Ready |
-| Exported from tokens layer | ✅ Ready |
-| UI toggle component | ⏳ Not implemented |
-| User preference persistence | ⏳ Not implemented |
-
-## File Locations
-
-| What | Where |
-| ---- | ----- |
-| Raw colors | `src/theme/tokens/colors.js` |
-| Dark colors | `src/theme/tokens/colors.js` (darkMd3 export) |
-| Flat semantics | `src/theme/semantic/common.js` |
-| Product cards | `src/theme/semantic/productCards.js` |
-| Navigation | `src/theme/semantic/navigation.js` |
-| Theme entry | `src/theme/index.js` |
