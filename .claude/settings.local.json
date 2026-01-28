@@ -24,6 +24,8 @@
       "Bash(find:*)",
       "Bash(grep:*)",
       "Skill(brainstorming)",
+      "Skill(agent-browser)",
+      "Skill(agent-browser:*)",
       "Bash(bash:*)",
       "mcp__plugin_episodic-memory_episodic-memory__search",
       "Bash(python:*)"
@@ -45,8 +47,7 @@
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "trello",
-    "browsermcp"
+    "trello"
   ],
   "hooks": {
     "PreToolUse": [

@@ -3,50 +3,18 @@
 
 import { createTheme } from "@mui/material/styles";
 
-// Import from consolidated token layer (NEW - single source of truth)
-import {
-  md3,
-  scales,
-  legacyScales,
-  statusColors,
-} from './tokens/colors';
+// Import from consolidated token layer (single source of truth)
+import { md3, scales, staticColors } from './tokens/colors';
 
 import { typographyConfig, responsiveTypography } from './typography';
 import componentOverrides from './components';
 import { createGradientStyle, gradientColorSchemes } from './utils';
-import { semanticColors } from './colors/semantic';
 import { spacing, semanticSpacing } from './spacing';
 
-// NEW: Import semantic layer
+// Import semantic layer
 import { semantic } from './semantic/common';
 import productCards from './semantic/productCards';
 import navigation from './semantic/navigation';
-
-// Backward compatibility: create colorTheme-like object from tokens
-const colorTheme = {
-  palette: {
-    ...legacyScales,
-    ...statusColors,
-    md3: md3,    
-    bpp: {
-      // Map BPP scales for backward compatibility
-      purple: legacyScales.purple,
-      sky: legacyScales.sky,
-      mint: legacyScales.mint,
-      green: legacyScales.green,
-      orange: legacyScales.orange,
-      pink: legacyScales.pink,
-      cobalt: legacyScales.cobalt,
-      granite: legacyScales.granite,
-      yellow: legacyScales.yellow,
-      red: legacyScales.red,
-      offwhite: legacyScales.offwhite,
-    },
-  },
-};
-
-// Backward compatibility: palettesTheme is just md3
-const palettesTheme = md3;
 
 // Base theme with breakpoints
 const baseTheme = createTheme({
@@ -62,17 +30,13 @@ const baseTheme = createTheme({
 });
 
 // Apply responsive typography overrides
-const applyResponsiveTypography = (typography) =>
-{
+const applyResponsiveTypography = (typography) => {
   const result = { ...typography };
 
   // Apply breakpoint-specific overrides
-  Object.entries(responsiveTypography).forEach(([variant, breakpoints]) =>
-  {
-    if (result[variant])
-    {
-      Object.entries(breakpoints).forEach(([breakpoint, styles]) =>
-      {
+  Object.entries(responsiveTypography).forEach(([variant, breakpoints]) => {
+    if (result[variant]) {
+      Object.entries(breakpoints).forEach(([breakpoint, styles]) => {
         result[variant] = {
           ...result[variant],
           [baseTheme.breakpoints.down(breakpoint)]: styles,
@@ -81,10 +45,9 @@ const applyResponsiveTypography = (typography) =>
     }
   });
 
-  // Add navlink color from colorTheme
-  if (result.navlink)
-  {
-    result.navlink.color = colorTheme.palette.offwhite["001"];
+  // Add navlink color (light text for dark nav bar)
+  if (result.navlink) {
+    result.navlink.color = md3.inverseOnSurface;
   }
 
   return result;
@@ -95,9 +58,8 @@ const applyResponsiveTypography = (typography) =>
  *
  * Structure:
  * - typography: All text styles (h1-h6, body, custom variants)
- * - palette: Colors (primary, secondary, bpp, md3, liftkit, semantic)
+ * - palette: Colors (primary, secondary, semantic, productCards, navigation, scales)
  * - components: MUI component overrides
- * - liftkit: Spacing and typography tokens
  * - gradients: Gradient utilities
  */
 const theme = createTheme({
@@ -106,62 +68,52 @@ const theme = createTheme({
   // Typography with responsive overrides
   typography: applyResponsiveTypography(typographyConfig),
 
-  // Enhanced palette with all color systems
+  // Palette with MD3 system colors and semantic tokens
   palette: {
-    primary: { main: palettesTheme.primary, },
-    secondary: { main: palettesTheme.secondary, },
-    tertiary: { main: palettesTheme.tertiary, },
-    error: { main: palettesTheme.error, },
-    warning: colorTheme.palette.warning,
-    info: colorTheme.palette.info,
-    success: colorTheme.palette.success,
-    background: { main: palettesTheme.background, },
-    surface: { main: palettesTheme.surface, },
-    text: colorTheme.palette.text,
+    // MD3 system colors (direct access for components)
+    // Usage: theme.palette.md3.surfaceVariant
+    md3: md3,
 
-    // BPP Color Scales (legacy - for backward compatibility)
-    offwhite: colorTheme.palette.offwhite,
-    granite: colorTheme.palette.granite,
-    purple: colorTheme.palette.purple,
-    sky: colorTheme.palette.sky,
-    mint: colorTheme.palette.mint,
-    orange: colorTheme.palette.orange,
-    pink: colorTheme.palette.pink,
-    yellow: colorTheme.palette.yellow,
-    cobalt: colorTheme.palette.cobalt,
-    green: colorTheme.palette.green,
-    red: colorTheme.palette.red,
-
-    // Design System Colors (legacy)
-    bpp: colorTheme.palette.bpp,
-    md3: colorTheme.palette.md3,
-    liftkit: colorTheme.palette.liftkit,
-
-    // NEW: Consolidated token layer - raw scales access
-    scales: scales,
-
-    
-
-    // NEW: Flat semantic tokens for common styling
-    // Usage: sx={{ color: 'semantic.textPrimary', bgcolor: 'semantic.bgPaper' }}
-    semantic: {
-      ...semanticColors, // Keep existing for backward compatibility
-      ...semantic, // Add new flat semantic tokens
+    // MUI standard roles from MD3
+    primary: { main: md3.primary },
+    secondary: { main: md3.secondary },
+    tertiary: { main: md3.tertiary },
+    error: { main: md3.error },
+    warning: { main: scales.orange[50] },
+    info: { main: scales.cobalt[60] },
+    success: { main: scales.green[60] },
+    background: { default: md3.background, paper: staticColors.white },
+    surface: { main: md3.surface },
+    text: {
+      primary: md3.onSurface,
+      secondary: md3.onSurfaceVariant,
     },
 
-    // NEW: Product card semantic tokens
+    // Raw scales access for theme layer only
+    // Components should NOT access this directly - use semantic tokens
+    scales: scales,
+
+    // Flat semantic tokens for common styling
+    // Usage: sx={{ color: 'semantic.textPrimary', bgcolor: 'semantic.bgPaper' }}
+    semantic: {
+      ...semantic,
+    },
+
+    // Product card semantic tokens
     // Usage: sx={{ bgcolor: 'productCards.tutorial.header' }}
     productCards: productCards,
 
-    // NEW: Navigation semantic tokens
+    // Navigation semantic tokens
     // Usage: sx={{ color: 'navigation.text.primary' }}
     navigation: navigation,
   },
 
-  spacing: spacing,
+  // MUI spacing base unit (8px is Material Design standard)
+  // Usage: theme.spacing(1) = 8px, theme.spacing(2) = 16px
+  spacing: 8,
 
   // Custom spacing tokens (for direct access via theme.spacingTokens.xl, etc.)
-  // MUI transforms theme.spacing, so we need a separate property for named tokens
+  // Usage: theme.spacingTokens.lg, theme.spacingTokens.xl
   spacingTokens: spacing,
 
   // Component overrides from modules
@@ -174,11 +126,9 @@ const theme = createTheme({
   },
 });
 
-// Re-export everything for backward compatibility
+// Exports
 export default theme;
-export { colorTheme };
 export { typographyConfig as typographyTheme };
-export { semanticColors, semanticSpacing, spacing };
+export { semanticSpacing, spacing };
 export { createGradientStyle, gradientColorSchemes };
-// NEW: Export consolidated tokens and semantic layer
 export { scales, semantic, productCards, navigation };
