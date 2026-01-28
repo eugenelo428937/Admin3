@@ -15,7 +15,7 @@ const FilterDebugger = ({
         <Box sx={{ 
             p: 2, 
             mb: 2, 
-            backgroundColor: '#f5f5f5', 
+            backgroundColor: 'grey.100', 
             borderRadius: 1,
             fontSize: '0.875rem'
         }}>

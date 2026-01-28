@@ -104,13 +104,14 @@ const TopNavBar = ({ onOpenSearch }) => {
             sx={{
                bgcolor: 'navigation.background.topNavBar',
                px: {
-                  md: theme.spacingTokens.xl,
-                  lg: theme.spacingTokens.xl2,
-                  xl: theme.spacingTokens.xl3,
+                  sm: theme.spacing.lg,
+                  md: theme.spacing.xl,
+                  lg: theme.spacing.xl2,
+                  xl: theme.spacing.xl3,
                },
                py: {
-                  xs: theme.spacingTokens.xs3,
-                  lg: theme.spacingTokens.xs3,
+                  xs: theme.spacing.xs3,
+                  lg: theme.spacing.xs3,
                },
             }}
          >
@@ -119,7 +120,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                display: 'flex',
                flexDirection: 'row',
                flexWrap: 'wrap',
-               gap: { xs: '0', md: theme.spacingTokens.md },
+               gap: { xs: '0', md: theme.spacing.md },
             }}>
                <Tooltip title="ActEd Homepage">
                   <Button
@@ -131,7 +132,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                      endIcon={!isDesktop ? <HomeIcon /> : null}
                      sx={{
                         minWidth: {
-                           xs: theme.spacingTokens.xl,
+                           xs: theme.spacing.xl,
                            lg: 64,
                         },
                         justifyContent: {
@@ -143,7 +144,6 @@ const TopNavBar = ({ onOpenSearch }) => {
                         variant="topnavlink"
                         sx={{
                            display: { xs: "none", md: "flex" },
-                           color: theme.palette.semantic.navigation.text.secondary,
                         }}
                      >
                         ActEd
@@ -160,7 +160,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                      endIcon={!isDesktop ? <HelpIcon /> : null}
                      sx={{
                         minWidth: {
-                           xs: theme.spacingTokens.xl,
+                           xs: theme.spacing.xl,
                            lg: 64,
                         },
                         justifyContent: {
@@ -172,7 +172,6 @@ const TopNavBar = ({ onOpenSearch }) => {
                         variant="topnavlink"
                         sx={{
                            display: { xs: "none", md: "flex" },
-                           color: theme.palette.semantic.navigation.text.secondary,
                         }}
                      >
                         Help
@@ -186,7 +185,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                display: 'flex',
                flexDirection: 'row',
                flexWrap: 'wrap',
-               gap: { xs: '0', md: theme.spacingTokens.md },
+               gap: { xs: '0', md: theme.spacing.md },
             }}>
                {/* Brochure Download - Desktop Only */}
                <Tooltip title="Download Brochure">
@@ -199,7 +198,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                      endIcon={!isDesktop ? <DownloadIcon /> : null}
                      sx={{
                         minWidth: {
-                           xs: theme.spacingTokens.xl,
+                           xs: theme.spacing.xl,
                            lg: 64,
                         },
                         justifyContent: {
@@ -212,7 +211,6 @@ const TopNavBar = ({ onOpenSearch }) => {
                         variant="topnavlink"
                         sx={{
                            display: { xs: "none", md: "flex" },
-                           color: theme.palette.semantic.navigation.text.primary,
                         }}
                      >
                         Brochure
@@ -227,7 +225,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                      onClick={onOpenSearch}
                      sx={{
                         minWidth: {
-                           xs: theme.spacingTokens.xl,
+                           xs: theme.spacing.xl,
                            lg: 64,
                         },
                         justifyContent: {
@@ -243,7 +241,6 @@ const TopNavBar = ({ onOpenSearch }) => {
                         variant="topnavlink"
                         sx={{
                            display: { xs: "none", md: "flex" },
-                           color: theme.palette.semantic.navigation.text.primary,
                         }}
                      >
                         Search
