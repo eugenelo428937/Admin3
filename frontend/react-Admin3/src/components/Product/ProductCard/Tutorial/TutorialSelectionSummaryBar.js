@@ -197,7 +197,7 @@ const TutorialSelectionSummaryBar = React.memo(
 					onClick={handleExpand}
 					sx={{
 						backgroundColor: "rgba(99, 50, 185, 0.965)" || "#7950d1",
-						color: "#fff",
+						color: 'common.white',
 						width: "100%",
 						maxWidth: { xs: "100%", md: "24rem" },
 						px: 3,
@@ -259,7 +259,7 @@ const TutorialSelectionSummaryBar = React.memo(
 				role="alert"
 				sx={{
 					backgroundColor: "rgba(99, 50, 185, 0.965)" || "#7950d1",
-					color: "#fff",
+					color: 'common.white',
 					width: "100%",
 					maxWidth: { xs: "100%", md: "24rem" },
 					px: 3,

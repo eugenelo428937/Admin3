@@ -550,7 +550,7 @@ const SmartAddressInput = ({
 														zIndex: 1300, // Above most MUI components
 														maxHeight: "300px",
 														overflowY: "auto",
-														bgcolor: theme.palette.liftkit.light.background,
+														bgcolor: 'background.paper',
 														border: `1px solid ${theme.palette.divider}`,
 													}}>
 													<List disablePadding>
@@ -583,9 +583,7 @@ const SmartAddressInput = ({
 															justifyContent: "center",
 															alignItems: "center",
 															p: 2,
-															bgcolor:
-																theme.palette.liftkit.light
-																	.background,
+															bgcolor: 'background.paper',
 														}}>
 														<Button
 															variant="outlined"
@@ -594,19 +592,12 @@ const SmartAddressInput = ({
 																setShowManualEntry(true)
 															}
 															sx={{
-																bgcolor:
-																	theme.palette.liftkit.dark
-																		.primary,
+																bgcolor: 'primary.main',
 																border: 1,
-																borderColor:
-																	theme.palette.liftkit.dark
-																		.primary,
-																color: theme.palette.liftkit
-																	.dark.onPrimary,
+																borderColor: 'primary.main',
+																color: 'primary.contrastText',
 																"&:hover": {
-																	bgcolor:
-																		theme.palette.liftkit.dark
-																			.primary,
+																	bgcolor: 'primary.dark',
 																},
 																mr: 2,
 															}}

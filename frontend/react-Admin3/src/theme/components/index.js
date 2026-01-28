@@ -3,6 +3,7 @@
 
 import { cardOverrides } from './cards';
 import alertOverrides from './alerts';
+import baselineOverrides from './baseline';
 import buttonOverrides from './buttons';
 import inputOverrides from './inputs';
 import navigationOverrides from './navigation';
@@ -13,6 +14,7 @@ import miscOverrides from './misc';
  * Used in createTheme({ components: componentOverrides })
  */
 export const componentOverrides = {
+  ...baselineOverrides,
   ...cardOverrides,
   ...alertOverrides,
   ...buttonOverrides,
@@ -23,6 +25,7 @@ export const componentOverrides = {
 
 // Export individual overrides for selective use
 export {
+  baselineOverrides,
   cardOverrides,
   alertOverrides,
   buttonOverrides,

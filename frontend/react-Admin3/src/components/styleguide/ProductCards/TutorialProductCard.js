@@ -362,11 +362,11 @@ const TutorialProductCard = ({
                            bottom: 18,
                            right: 8,
                            "& .MuiFab-root": {
-                              backgroundColor: theme.palette.purple["070"],
+                              backgroundColor: theme.palette.scales.purple[70],
                               boxShadow: "var(--Paper-shadow)",
                               "&:hover": {
                                  backgroundColor:
-                                    theme.palette.purple["080"],
+                                    theme.palette.scales.purple[80],
                               },
                               "& .MuiSpeedDialIcon-root": {
                                  "& .MuiSvgIcon-root": {
@@ -389,10 +389,10 @@ const TutorialProductCard = ({
                               "& .MuiSpeedDialAction-fab": {
                                  color: "white",
                                  backgroundColor:
-                                    theme.palette.purple["060"],
+                                    theme.palette.scales.purple[60],
                                  "&:hover": {
                                     backgroundColor:
-                                       theme.palette.purple["070"],
+                                       theme.palette.scales.purple[70],
                                  },
                               },
                            }}
@@ -416,10 +416,10 @@ const TutorialProductCard = ({
                               "& .MuiSpeedDialAction-fab": {
                                  color: "white",
                                  backgroundColor:
-                                    theme.palette.purple["060"],
+                                    theme.palette.scales.purple[60],
                                  "&:hover": {
                                     backgroundColor:
-                                       theme.palette.purple["070"],
+                                       theme.palette.scales.purple[70],
                                  },
                               },
                            }}
@@ -443,10 +443,10 @@ const TutorialProductCard = ({
                               "& .MuiSpeedDialAction-fab": {
                                  color: "white",
                                  backgroundColor:
-                                    theme.palette.purple["060"],
+                                    theme.palette.scales.purple[60],
                                  "&:hover": {
                                     backgroundColor:
-                                       theme.palette.purple["070"],
+                                       theme.palette.scales.purple[70],
                                  },
                               },
                            }}
