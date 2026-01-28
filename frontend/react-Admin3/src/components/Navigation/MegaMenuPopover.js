@@ -68,7 +68,7 @@ const MegaMenuPopover = ({
         onClick={handleOpen}
         endIcon={<ExpandMoreIcon sx={{
           ml: 0,
-          color: theme.palette.semantic.navigation.button.color,
+          color: theme.palette.navigation.text.inverse,
         }}/>}
         sx={{
           ...buttonProps.sx,
