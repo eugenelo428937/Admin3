@@ -572,10 +572,9 @@ const MaterialProductCard = React.memo(
                                           alignContent: "center",
                                        },
                                     "& .MuiSpeedDialAction-fab": {
-                                       color: "white",
                                        backgroundColor:
-                                          theme.palette.productCards.material.button,                                       
-                                       boxShadow: "var(--Paper-shadow)",  
+                                          theme.palette.productCards.material.button,
+                                       boxShadow: "var(--Paper-shadow)",
                                        "&:hover": {
                                           backgroundColor:
                                              theme.palette.productCards.material.buttonHover,
@@ -625,7 +624,6 @@ const MaterialProductCard = React.memo(
                                        },
 
                                     "& .MuiSpeedDialAction-fab": {
-                                       color: "white",
                                        backgroundColor:
                                           theme.palette.productCards.material.button,
                                        "&:hover": {
@@ -740,7 +738,6 @@ const MaterialProductCard = React.memo(
                                        },
 
                                     "& .MuiSpeedDialAction-fab": {
-                                       color: "white",
                                        backgroundColor:
                                           theme.palette.productCards.material.button,
                                        "&:hover": {
@@ -800,7 +797,6 @@ const MaterialProductCard = React.memo(
                                           alignContent: "center",
                                        },
                                     "& .MuiSpeedDialAction-fab": {
-                                       color: "white",
                                        backgroundColor:
                                           theme.palette.productCards.material.button,
                                        "&:hover": {

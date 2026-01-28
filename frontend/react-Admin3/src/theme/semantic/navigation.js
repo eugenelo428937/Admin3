@@ -71,6 +71,15 @@ export const mobile = {
 };
 
 // =============================================================================
+// Hamburger Menu Colors
+// =============================================================================
+export const hamburger = {
+  hover: {
+    background: scales.granite[70], // #525252 - Hamburger hover bg
+  },
+};
+
+// =============================================================================
 // Mega Menu Colors
 // =============================================================================
 export const megaMenu = {
@@ -91,6 +100,7 @@ export const navigation = {
   background,
   button,
   mobile,
+  hamburger,
   megaMenu,
 };
 

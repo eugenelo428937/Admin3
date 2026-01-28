@@ -96,8 +96,8 @@ const SearchModal = ({ open, onClose }) => {
       <DialogTitle
         id="search-modal-title"
         sx={{
-          background: "#dee2e6",
-          color: "#495057",
+          background: 'grey.300',
+          color: 'text.secondary',
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -116,16 +116,15 @@ const SearchModal = ({ open, onClose }) => {
         </Box>
         <IconButton
           edge="end"
-          color="#495057"
           onClick={handleCloseSearchModal}
           aria-label="close"
-          sx={{ color: "#495057" }}>
+          sx={{ color: 'text.secondary' }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       <DialogContent
         sx={{
-          backgroundColor: "#f8f9fa",
+          backgroundColor: 'grey.100',
           padding: 3,
         }}>
         
@@ -143,7 +142,7 @@ const SearchModal = ({ open, onClose }) => {
             marginLeft: 5,
             marginRight: 5,
             borderRadius: 2,
-            backgroundColor: "#E9ECEF00",
+            backgroundColor: 'transparent',
           }}
           className="search-results-container">
           <SearchResults
