@@ -45,8 +45,8 @@ describe('Auth Service - Pact Consumer Tests', () => {
           status: 200,
           headers: JSON_RESPONSE_HEADERS,
           body: like({
-            token: string('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.access'),
-            refresh: string('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.refresh'),
+            token: string('fake-access-token'),
+            refresh: string('fake-refresh-token'),
             user: like({
               id: integer(1),
               username: string('test@example.com'),
@@ -132,8 +132,8 @@ describe('Auth Service - Pact Consumer Tests', () => {
           body: like({
             status: string('success'),
             message: string('Account created successfully'),
-            token: string('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.new'),
-            refresh: string('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.refresh'),
+            token: string('fake-access-token'),
+            refresh: string('fake-refresh-token'),
             user: like({
               id: integer(2),
               username: string('newuser@example.com'),

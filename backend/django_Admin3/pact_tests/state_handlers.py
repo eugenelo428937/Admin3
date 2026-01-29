@@ -351,9 +351,174 @@ def state_searchable_products_exist(params=None):
 
 
 def state_products_exist_for_default_search(params=None):
-    """State: products exist for default search"""
+    """State: products exist for default search
+
+    The /api/search/default-data/ endpoint returns:
+    - popular_products: from StoreProduct
+    - suggested_filters.subjects: from Subject
+    - suggested_filters.product_groups: from FilterGroup (is_active=True)
+    """
     setup_store_product()
     setup_catalog_foundation()
+    setup_filter_groups()  # Required for product_groups in suggested_filters
+
+
+# ---------------------------------------------------------------------------
+# Catalog state handlers (Phase 2)
+# ---------------------------------------------------------------------------
+
+def state_catalog_subjects_exist(params=None):
+    """State: catalog subjects exist"""
+    setup_catalog_foundation()
+
+
+def state_catalog_exam_sessions_exist(params=None):
+    """State: catalog exam sessions exist"""
+    setup_catalog_foundation()
+
+
+def state_catalog_products_exist(params=None):
+    """State: catalog products exist"""
+    setup_catalog_foundation()
+
+
+# ---------------------------------------------------------------------------
+# Rules Engine state handlers (Phase 3)
+# ---------------------------------------------------------------------------
+
+def state_rules_for_home_page_mount_exist(params=None):
+    """State: rules for home_page_mount exist
+
+    The execute endpoint returns {success, rules_evaluated, effects} even
+    when no rules match, so we just need a valid entry point.
+    """
+    pass  # execute endpoint handles missing entry points gracefully
+
+
+def state_vat_configuration_exists(params=None):
+    """State: VAT configuration exists
+
+    Creates a UtilsCountrys record for GB with 20% VAT so the
+    calculate-vat endpoint can look up the rate.
+    """
+    from utils.models import UtilsCountrys
+
+    UtilsCountrys.objects.get_or_create(
+        code='GB',
+        defaults={
+            'name': 'United Kingdom',
+            'vat_percent': Decimal('20.00'),
+            'active': True,
+        },
+    )
+
+
+def state_acted_rules_exist(params=None):
+    """State: acted rules exist
+
+    Creates an ActedRule so the acted-rules list endpoint returns data.
+    """
+    from rules_engine.models import ActedRule
+
+    ActedRule.objects.get_or_create(
+        rule_code='rule_home_banner',
+        defaults={
+            'name': 'Home Page Banner',
+            'entry_point': 'home_page_mount',
+            'priority': 100,
+            'active': True,
+            'condition': {'==': [True, True]},
+            'actions': [
+                {
+                    'type': 'display_message',
+                    'message': 'Welcome to the store',
+                }
+            ],
+        },
+    )
+
+
+# ---------------------------------------------------------------------------
+# Tutorial state handlers (Phase 3)
+# ---------------------------------------------------------------------------
+
+def setup_tutorial_catalog_product():
+    """Create a tutorial-type catalog product with variation and store product.
+
+    Returns (store_product, catalog_product).
+    """
+    from catalog.models import (
+        Product as CatalogProduct, ProductVariation,
+        ProductProductVariation,
+    )
+    from store.models import Product as StoreProduct
+
+    subject, exam_session, ess, _cp, _var, _ppv = setup_catalog_foundation()
+
+    tutorial_product, _ = CatalogProduct.objects.get_or_create(
+        code='TUT01',
+        defaults={
+            'fullname': 'CM2 Tutorial London',
+            'shortname': 'CM2 Tutorial',
+            'is_active': True,
+        },
+    )
+
+    tutorial_variation, _ = ProductVariation.objects.get_or_create(
+        code='TLONCM2',
+        defaults={
+            'variation_type': 'Tutorial',
+            'name': 'London Face-to-Face Tutorial',
+        },
+    )
+
+    tutorial_ppv, _ = ProductProductVariation.objects.get_or_create(
+        product=tutorial_product,
+        product_variation=tutorial_variation,
+    )
+
+    tutorial_store_product, _ = StoreProduct.objects.get_or_create(
+        exam_session_subject=ess,
+        product_product_variation=tutorial_ppv,
+        defaults={
+            'product_code': 'CM2/TLONCM2/2025-04',
+            'is_active': True,
+        },
+    )
+
+    return tutorial_store_product, tutorial_product
+
+
+def state_tutorial_events_exist(params=None):
+    """State: tutorial events exist
+
+    Creates a TutorialEvent linked to a tutorial store product.
+    """
+    from tutorials.models import TutorialEvent
+    import datetime
+
+    tutorial_store_product, _cp = setup_tutorial_catalog_product()
+
+    TutorialEvent.objects.get_or_create(
+        code='TUT-CM2-LON-2025',
+        defaults={
+            'venue': 'London',
+            'is_soldout': False,
+            'remain_space': 20,
+            'start_date': datetime.date(2025, 4, 1),
+            'end_date': datetime.date(2025, 4, 5),
+            'store_product': tutorial_store_product,
+        },
+    )
+
+
+def state_tutorial_products_exist(params=None):
+    """State: tutorial products exist
+
+    Creates tutorial store products so products/all/ returns data.
+    The view filters by fullname__icontains='tutorial'.
+    """
+    setup_tutorial_catalog_product()
 
 
 # ---------------------------------------------------------------------------
@@ -377,4 +542,15 @@ STATE_HANDLERS = {
     'exam session bundles exist': state_exam_session_bundles_exist,
     'searchable products exist': state_searchable_products_exist,
     'products exist for default search': state_products_exist_for_default_search,
+    # Phase 2: Catalog
+    'catalog subjects exist': state_catalog_subjects_exist,
+    'catalog exam sessions exist': state_catalog_exam_sessions_exist,
+    'catalog products exist': state_catalog_products_exist,
+    # Phase 3: Rules Engine
+    'rules for home_page_mount exist': state_rules_for_home_page_mount_exist,
+    'VAT configuration exists': state_vat_configuration_exists,
+    'acted rules exist': state_acted_rules_exist,
+    # Phase 3: Tutorials
+    'tutorial events exist': state_tutorial_events_exist,
+    'tutorial products exist': state_tutorial_products_exist,
 }
