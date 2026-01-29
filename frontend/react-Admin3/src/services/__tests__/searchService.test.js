@@ -24,6 +24,7 @@ jest.mock('../../config', () => ({
   __esModule: true,
   default: {
     productsUrl: 'http://test-api/products',
+    catalogUrl: 'http://test-api/catalog',
     apiBaseUrl: 'http://test-api',
   },
 }));
@@ -102,7 +103,7 @@ describe('searchService', () => {
       const result = await searchService.fuzzySearch('CM1');
 
       expect(httpService.get).toHaveBeenCalledWith(
-        'http://test-api/products/search/',
+        'http://test-api/catalog/search/',
         {
           params: {
             q: 'CM1',
@@ -244,7 +245,7 @@ describe('searchService', () => {
       const result = await searchService.advancedSearch({ q: 'test' });
 
       expect(httpService.get).toHaveBeenCalledWith(
-        'http://test-api/products/advanced-search/',
+        'http://test-api/catalog/advanced-search/',
         {
           params: {
             q: 'test',

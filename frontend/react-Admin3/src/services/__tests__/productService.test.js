@@ -509,7 +509,7 @@ describe('productService', () => {
       const result = await productService.searchProducts({ q: 'test' });
 
       expect(result.data).toEqual(mockResults);
-      expect(httpService.get).toHaveBeenCalledWith('/api/products/search/', { params: { q: 'test' } });
+      expect(httpService.get).toHaveBeenCalledWith('/api/catalog/search/', { params: { q: 'test' } });
     });
 
     test('should return empty object if no results', async () => {
