@@ -257,7 +257,7 @@ class Stage1RuleEntryPointTests(TestCase):
         Expected to FAIL initially - no proper meta configuration
         """
         # Test table name
-        self.assertEqual(RuleEntryPoint._meta.db_table, 'acted_rule_entry_points')
+        self.assertEqual(RuleEntryPoint._meta.db_table, '"acted"."rule_entry_points"')
         
         # Test ordering
         self.assertEqual(RuleEntryPoint._meta.ordering, ['code'])

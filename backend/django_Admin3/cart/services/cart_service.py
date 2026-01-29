@@ -290,7 +290,7 @@ class CartService:
         """Get expired deadline information for a marking product."""
         try:
             current_time = timezone.now()
-            papers = MarkingPaper.objects.filter(exam_session_subject_product=product)
+            papers = MarkingPaper.objects.filter(store_product=product)
             total = papers.count()
             expired = papers.filter(deadline__lt=current_time).count()
             return {'has_expired': expired > 0, 'expired_count': expired, 'total_papers': total}

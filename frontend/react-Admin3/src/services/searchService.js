@@ -1,8 +1,8 @@
 import config from "../config";
 import httpService from "./httpService";
 
-// Search endpoints are now on the products API (not /current/ which was ESSP)
-const SEARCH_API_URL = config.productsUrl;
+// Search endpoints are now on the catalog API (002-catalog-api-consolidation)
+const SEARCH_API_URL = config.catalogUrl;
 // Default search data endpoint is on the search API
 const SEARCH_DEFAULT_API_URL = `${config.apiBaseUrl || config.apiUrl}/api/search`;
 
@@ -30,11 +30,12 @@ const searchService = {
             
             
             // The backend returns the data in the correct format
+            // API returns: suggested_products (array), suggested_filters, total_matches (object)
             return {
                 suggested_filters: response.data.suggested_filters || { subjects: [], product_groups: [], variations: [], products: [] },
-                suggested_products: response.data.products || [],
-                search_info: response.data.search_info || {},
-                total_count: response.data.total_count || 0
+                suggested_products: response.data.suggested_products || response.data.products || [],
+                search_info: response.data.search_info || { query: response.data.query || '' },
+                total_count: response.data.total_matches?.products || response.data.total_count || 0
             };
             
         } catch (error) {
