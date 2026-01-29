@@ -10,6 +10,8 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("catalog", "0009_add_exam_session_subject_product"),
+        ("catalog_products", "0001_initial"),
+        ("catalog_products_bundles", "0001_initial"),
     ]
 
     operations = [
@@ -63,7 +65,7 @@ class Migration(migrations.Migration):
                         help_text="The catalog bundle template this is based on",
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="store_bundles",
-                        to="catalog.productbundle",
+                        to="catalog_products_bundles.productbundle",
                     ),
                 ),
                 (
@@ -128,7 +130,7 @@ class Migration(migrations.Migration):
                         help_text="The product variation (template + variation combination)",
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="store_products",
-                        to="catalog.productproductvariation",
+                        to="catalog_products.productproductvariation",
                     ),
                 ),
             ],
