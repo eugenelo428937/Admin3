@@ -1328,6 +1328,7 @@ browser_close()
 - PostgreSQL (existing `acted` schema, `vat_audit` table to be dropped) (20260121-remove-legacy-vat)
 - Python 3.14, Django 6.0 + Django ORM, Django migrations framework, psycopg2-binary (20260126-schema-migration)
 - PostgreSQL with `acted` schema (existing) (20260126-schema-migration)
+- Python 3.14 (backend), JavaScript ES2022 / React 19.2 (frontend) + Django 6.0, Django REST Framework, Redux Toolkit, RTK Query, Material-UI v7 (20260129-filter-system-fix)
 
 ## Recent Changes
 - 001-catalog-consolidation: Added Python 3.14, Django 6.0 + Django REST Framework, PostgreSQL psycopg2-binary
