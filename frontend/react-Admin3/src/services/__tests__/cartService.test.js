@@ -94,8 +94,7 @@ describe('cartService', () => {
 
   describe('addToCart', () => {
     const mockProduct = {
-      id: 1,
-      essp_id: 101,
+      id: 101,
       name: 'Test Product',
     };
 
@@ -252,7 +251,6 @@ describe('cartService', () => {
 
       const markingProduct = {
         id: 200,
-        essp_id: 200,
         type: 'Markings',
         name: 'CM2 Marking',
       };
@@ -278,7 +276,6 @@ describe('cartService', () => {
 
       const tutorialProduct = {
         id: 300,
-        essp_id: 300,
         type: 'Tutorial',
         name: 'CM2 Tutorial - London',
       };
@@ -302,7 +299,6 @@ describe('cartService', () => {
 
       const onlineClassroomProduct = {
         id: 400,
-        essp_id: 400,
         type: 'Materials',
         product_name: 'CM2 Online Classroom',
       };
@@ -319,12 +315,12 @@ describe('cartService', () => {
       );
     });
 
-    test('should use product id when essp_id not available', async () => {
-      const productWithoutEssp = { id: 1, name: 'Test Product' };
+    test('should use store product id (product.id)', async () => {
+      const product = { id: 1, name: 'Test Product' };
       const mockResponse = { data: { success: true } };
       httpService.post.mockResolvedValue(mockResponse);
 
-      await cartService.addToCart(productWithoutEssp);
+      await cartService.addToCart(product);
 
       expect(httpService.post).toHaveBeenCalledWith(
         'http://test-api/cart/add/',

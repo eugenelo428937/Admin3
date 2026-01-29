@@ -30,7 +30,7 @@ class Product(models.Model):
         help_text='The exam session subject this product is available for'
     )
     product_product_variation = models.ForeignKey(
-        'catalog.ProductProductVariation',
+        'catalog_products.ProductProductVariation',
         on_delete=models.CASCADE,
         related_name='store_products',
         help_text='The product variation (template + variation combination)'

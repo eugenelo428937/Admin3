@@ -1,10 +1,15 @@
+"""
+Management command to import marking deadlines from TSV file.
+
+Updated 2026-01-25: Uses store.Product instead of ExamSessionSubjectProduct.
+"""
 import csv
+from datetime import datetime
 from django.core.management.base import BaseCommand, CommandError
 from marking.models import MarkingPaper
-from catalog.models import Product, ExamSessionSubject
+from catalog.models import ExamSessionSubject, Subject
 from store.models import Product as StoreProduct
-from datetime import datetime
-from subjects.models import Subject
+
 
 class Command(BaseCommand):
     help = 'Bulk import marking deadlines from a TSV file.'
@@ -22,14 +27,15 @@ class Command(BaseCommand):
                     continue
                 subject_col, paper_name, recommended_date, deadline_date = row[:4]
                 # Split multiple subjects (remove quotes, split by comma, strip spaces)
-                subjects = [s.strip().replace('"','').replace("'","") for s in subject_col.replace('"','').split(',')]
+                subjects = [s.strip().replace('"', '').replace("'", "") for s in subject_col.replace('"', '').split(',')]
                 # Determine product_code by paper_name prefix
+                # Product codes in catalog: X (X papers), Y (Y papers), M1 (Mock Exam Marking)
                 if paper_name.startswith('X'):
-                    product_code = "MX" 
+                    product_code = "X"
                 elif paper_name.startswith('Y'):
-                    product_code = "MY"
+                    product_code = "Y"
                 elif paper_name.startswith('M'):
-                    product_code = 'MM'                
+                    product_code = 'M1'
                 else:
                     self.stderr.write(f"Row {row_num}: Unknown paper type for {paper_name}. Stopping import.")
                     raise CommandError(f"Unknown paper type for {paper_name}")
@@ -45,24 +51,19 @@ class Command(BaseCommand):
                     if not ess:
                         self.stderr.write(f"Row {row_num}: No ExamSessionSubject for subject '{subject_code}'. Skipping.")
                         continue
-                    # Find product in this group
-                    try:
-                        product_qs = Product.objects.filter(is_active=True)
-                        if product_code:
-                            product_qs = product_qs.filter(code=product_code)
-                        product = product_qs.order_by('-id').first()
-                        if not product:
-                            raise Product.DoesNotExist
-                    except Product.DoesNotExist:
-                        self.stderr.write(f"Row {row_num}: No active Product with code '{product_code}'. Skipping.")
-                        continue
-                    # Find store.Product via ESS + PPV
+                    # Find store.Product directly by ESS, product code, and Marking variation type
+                    # This avoids ambiguity when multiple catalog products share the same code
+                    # (e.g., M1 exists for both Mock Exam eBook and Mock Exam Marking)
                     store_product = StoreProduct.objects.filter(
                         exam_session_subject=ess,
-                        product_product_variation__product=product
+                        product_product_variation__product__code=product_code,
+                        product_product_variation__product_variation__variation_type='Marking'
                     ).first()
                     if not store_product:
-                        self.stderr.write(f"Row {row_num}: No store Product for subject '{subject_code}' and product '{product}'. Skipping.")
+                        self.stderr.write(
+                            f"Row {row_num}: No store.Product for subject '{subject_code}' "
+                            f"and product code '{product_code}' with Marking variation. Skipping."
+                        )
                         continue
                     # Parse dates (expecting DD/MM/YYYY)
                     try:
