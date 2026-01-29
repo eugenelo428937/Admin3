@@ -1,11 +1,17 @@
 from django.test import TestCase, RequestFactory, override_settings
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.backends.db import SessionStore
+from django.utils import timezone
 from decimal import Decimal
 from unittest.mock import patch, MagicMock
 
 from cart.models import Cart, CartItem
 from orders.models import Order, Payment, OrderAcknowledgment
+from catalog.models import (
+    Subject, ExamSession, ExamSessionSubject,
+    Product as CatalogProduct, ProductVariation, ProductProductVariation
+)
+from store.models import Product as StoreProduct
 from orders.services.checkout_orchestrator import (
     CheckoutOrchestrator,
     CheckoutValidationError,
@@ -23,9 +29,23 @@ class CheckoutOrchestratorTest(TestCase):
         self.user = User.objects.create_user(
             username='testuser', email='test@example.com', password='testpass123'
         )
+        # Create store product fixture for check constraint
+        subject = Subject.objects.create(code='CM2')
+        exam_session = ExamSession.objects.create(
+            session_code='2025-04',
+            start_date=timezone.now(), end_date=timezone.now()
+        )
+        ess = ExamSessionSubject.objects.create(exam_session=exam_session, subject=subject)
+        cat_product = CatalogProduct.objects.create(fullname='Test Product', shortname='TP', code='TP01')
+        variation = ProductVariation.objects.create(variation_type='eBook', name='Standard eBook')
+        ppv = ProductProductVariation.objects.create(product=cat_product, product_variation=variation)
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=ess, product_product_variation=ppv
+        )
         self.cart = Cart.objects.create(user=self.user)
         self.cart_item = CartItem.objects.create(
             cart=self.cart,
+            product=self.store_product,
             item_type='product',
             quantity=1,
             price_type='standard',
@@ -40,7 +60,7 @@ class CheckoutOrchestratorTest(TestCase):
         request.META['HTTP_USER_AGENT'] = 'test-agent'
         return request
 
-    @patch('orders.services.checkout_orchestrator.rule_engine')
+    @patch('rules_engine.services.rule_engine.rule_engine')
     @patch('cart.services.cart_service.cart_service.calculate_vat')
     def test_successful_card_checkout(self, mock_vat, mock_rules):
         mock_rules.execute.return_value = {'blocked': False}
@@ -71,7 +91,7 @@ class CheckoutOrchestratorTest(TestCase):
         # Cart should be cleared
         self.assertEqual(self.cart.items.count(), 0)
 
-    @patch('orders.services.checkout_orchestrator.rule_engine')
+    @patch('rules_engine.services.rule_engine.rule_engine')
     @patch('cart.services.cart_service.cart_service.calculate_vat')
     def test_successful_invoice_checkout(self, mock_vat, mock_rules):
         mock_rules.execute.return_value = {'blocked': False}
@@ -134,7 +154,7 @@ class CheckoutOrchestratorTest(TestCase):
         with self.assertRaises(CheckoutValidationError):
             orchestrator.execute()
 
-    @patch('orders.services.checkout_orchestrator.rule_engine')
+    @patch('rules_engine.services.rule_engine.rule_engine')
     @patch('cart.services.cart_service.cart_service.calculate_vat')
     def test_payment_failure_deletes_order(self, mock_vat, mock_rules):
         mock_rules.execute.return_value = {'blocked': False}
@@ -162,7 +182,7 @@ class CheckoutOrchestratorTest(TestCase):
         # Order should not exist after payment failure
         self.assertEqual(Order.objects.filter(user=self.user).count(), 0)
 
-    @patch('orders.services.checkout_orchestrator.rule_engine')
+    @patch('rules_engine.services.rule_engine.rule_engine')
     @patch('cart.services.cart_service.cart_service.calculate_vat')
     def test_saves_acknowledgments(self, mock_vat, mock_rules):
         mock_rules.execute.return_value = {'blocked': False}
@@ -189,7 +209,7 @@ class CheckoutOrchestratorTest(TestCase):
         self.assertEqual(acks.count(), 1)
         self.assertTrue(acks.first().is_accepted)
 
-    @patch('orders.services.checkout_orchestrator.rule_engine')
+    @patch('rules_engine.services.rule_engine.rule_engine')
     def test_blocked_rules_raise_error(self, mock_rules):
         mock_rules.execute.return_value = {
             'blocked': True,

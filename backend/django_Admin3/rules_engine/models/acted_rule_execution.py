@@ -31,7 +31,7 @@ class ActedRuleExecution(models.Model):
     class Meta:
         verbose_name = "Acted Rule Execution"
         verbose_name_plural = "Acted Rule Executions"
-        db_table = "acted_rule_executions"
+        db_table = '"acted"."rule_executions"'
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["rule_code", "created_at"], name="acted_exec_rule_created"),

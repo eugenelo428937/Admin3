@@ -259,20 +259,10 @@ class CartVATSerializerTestCase(TestCase):
         vat_totals = data['vat_totals']
         self.assertEqual(vat_totals['vat_breakdown'][0]['region'], 'SA')
 
-    @patch('cart.models.Cart.calculate_vat_for_all_items')
-    def test_cart_serializer_includes_timestamp(self, mock_calculate_vat):
+    def test_cart_serializer_includes_timestamp(self):
         """Test that CartSerializer includes VAT calculation timestamp"""
         from django.utils import timezone
         timestamp = timezone.now()
-
-        mock_calculate_vat.return_value = {
-            'success': True,
-            'items': [],
-            'total_net_amount': Decimal('0.00'),
-            'total_vat_amount': Decimal('0.00'),
-            'total_gross_amount': Decimal('0.00'),
-            'vat_breakdown': []
-        }
 
         # Set timestamp on cart
         self.cart.vat_last_calculated_at = timestamp
@@ -287,19 +277,8 @@ class CartVATSerializerTestCase(TestCase):
         self.assertIn('vat_last_calculated_at', data)
         self.assertIsNotNone(data['vat_last_calculated_at'])
 
-    @patch('cart.models.Cart.calculate_vat_for_all_items')
-    def test_cart_serializer_includes_error_flags(self, mock_calculate_vat):
+    def test_cart_serializer_includes_error_flags(self):
         """Test that CartSerializer includes VAT error flags"""
-        mock_calculate_vat.return_value = {
-            'success': False,
-            'error': 'Test error',
-            'items': [],
-            'total_net_amount': Decimal('0.00'),
-            'total_vat_amount': Decimal('0.00'),
-            'total_gross_amount': Decimal('0.00'),
-            'vat_breakdown': []
-        }
-
         # Set error state
         self.cart.vat_calculation_error = True
         self.cart.vat_calculation_error_message = "Test error"

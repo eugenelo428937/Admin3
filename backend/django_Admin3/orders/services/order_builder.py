@@ -38,7 +38,7 @@ class OrderBuilder:
             vat_amount=Decimal(str(totals.get('vat', '0.00'))),
             total_amount=Decimal(str(totals.get('gross', '0.00'))),
             vat_rate=Decimal('0.0000'),
-            vat_country=region if region != 'UNKNOWN' else None,
+            vat_country=region if region not in ('UNKNOWN', 'ROW') and len(region) <= 2 else None,
             vat_calculation_type='rules_engine_vat_v1',
             calculations_applied={'vat_result': self.vat_result},
         )

@@ -137,7 +137,7 @@ class UserProfileTestCase(TestCase):
         """Test custom database table name."""
         self.assertEqual(
             UserProfile._meta.db_table,
-            'acted_user_profile'
+            '"acted"."user_profile"'
         )
 
     def test_verbose_name(self):
@@ -364,7 +364,7 @@ class UserProfileAddressTestCase(TestCase):
         """Test custom database table name."""
         self.assertEqual(
             UserProfileAddress._meta.db_table,
-            'acted_user_profile_address'
+            '"acted"."user_profile_address"'
         )
 
 
@@ -498,7 +498,7 @@ class UserProfileContactNumberTestCase(TestCase):
         """Test custom database table name."""
         self.assertEqual(
             UserProfileContactNumber._meta.db_table,
-            'acted_user_profile_contact_number'
+            '"acted"."user_profile_contact_number"'
         )
 
 
@@ -630,5 +630,5 @@ class UserProfileEmailTestCase(TestCase):
         """Test custom database table name."""
         self.assertEqual(
             UserProfileEmail._meta.db_table,
-            'acted_user_profile_email'
+            '"acted"."user_profile_email"'
         )

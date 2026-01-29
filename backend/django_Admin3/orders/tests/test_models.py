@@ -1,11 +1,17 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from decimal import Decimal
 from orders.models import (
     Order, OrderItem, Payment,
     OrderAcknowledgment, OrderPreference,
     OrderContact, OrderDelivery,
 )
+from catalog.models import (
+    Subject, ExamSession, ExamSessionSubject,
+    Product as CatalogProduct, ProductVariation, ProductProductVariation
+)
+from store.models import Product as StoreProduct
 
 User = get_user_model()
 
@@ -40,7 +46,7 @@ class OrderModelTest(TestCase):
         self.assertIn('120.00', str(order))
 
     def test_order_db_table(self):
-        self.assertEqual(Order._meta.db_table, 'acted_orders')
+        self.assertEqual(Order._meta.db_table, '"acted"."orders"')
 
     def test_order_ordering(self):
         self.assertEqual(Order._meta.ordering, ['-created_at'])
@@ -55,10 +61,24 @@ class OrderItemModelTest(TestCase):
             user=self.user, subtotal=Decimal('100.00'),
             vat_amount=Decimal('20.00'), total_amount=Decimal('120.00')
         )
+        # Create store product fixture for check constraint
+        subject = Subject.objects.create(code='CM2')
+        exam_session = ExamSession.objects.create(
+            session_code='2025-04',
+            start_date=timezone.now(), end_date=timezone.now()
+        )
+        ess = ExamSessionSubject.objects.create(exam_session=exam_session, subject=subject)
+        cat_product = CatalogProduct.objects.create(fullname='Test Product', shortname='TP', code='TP01')
+        variation = ProductVariation.objects.create(variation_type='eBook', name='Standard eBook')
+        ppv = ProductProductVariation.objects.create(product=cat_product, product_variation=variation)
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=ess, product_product_variation=ppv
+        )
 
     def test_order_item_creation(self):
         item = OrderItem.objects.create(
             order=self.order,
+            product=self.store_product,
             item_type='product',
             quantity=2,
             price_type='standard',
@@ -73,7 +93,7 @@ class OrderItemModelTest(TestCase):
         self.assertEqual(item.net_amount, Decimal('100.00'))
 
     def test_order_item_db_table(self):
-        self.assertEqual(OrderItem._meta.db_table, 'acted_order_items')
+        self.assertEqual(OrderItem._meta.db_table, '"acted"."order_items"')
 
 
 class PaymentModelTest(TestCase):
@@ -126,7 +146,7 @@ class PaymentModelTest(TestCase):
         self.assertFalse(payment.is_card_payment)
 
     def test_payment_db_table(self):
-        self.assertEqual(Payment._meta.db_table, 'acted_order_payments')
+        self.assertEqual(Payment._meta.db_table, '"acted"."order_payments"')
 
 
 class OrderAcknowledgmentModelTest(TestCase):
@@ -151,7 +171,7 @@ class OrderAcknowledgmentModelTest(TestCase):
         self.assertTrue(ack.is_terms_and_conditions)
 
     def test_acknowledgment_db_table(self):
-        self.assertEqual(OrderAcknowledgment._meta.db_table, 'acted_order_user_acknowledgments')
+        self.assertEqual(OrderAcknowledgment._meta.db_table, '"acted"."order_user_acknowledgments"')
 
 
 class OrderPreferenceModelTest(TestCase):
@@ -176,7 +196,7 @@ class OrderPreferenceModelTest(TestCase):
         self.assertEqual(pref.preference_key, 'email_opt_in')
 
     def test_preference_db_table(self):
-        self.assertEqual(OrderPreference._meta.db_table, 'acted_order_user_preferences')
+        self.assertEqual(OrderPreference._meta.db_table, '"acted"."order_user_preferences"')
 
 
 class OrderContactModelTest(TestCase):
@@ -199,7 +219,7 @@ class OrderContactModelTest(TestCase):
         self.assertEqual(contact.email_address, 'test@example.com')
 
     def test_contact_db_table(self):
-        self.assertEqual(OrderContact._meta.db_table, 'acted_order_user_contact')
+        self.assertEqual(OrderContact._meta.db_table, '"acted"."order_user_contact"')
 
 
 class OrderDeliveryModelTest(TestCase):
@@ -227,4 +247,4 @@ class OrderDeliveryModelTest(TestCase):
         self.assertEqual(delivery.delivery_address_data['city'], 'London')
 
     def test_delivery_db_table(self):
-        self.assertEqual(OrderDelivery._meta.db_table, 'acted_order_delivery_detail')
+        self.assertEqual(OrderDelivery._meta.db_table, '"acted"."order_delivery_detail"')

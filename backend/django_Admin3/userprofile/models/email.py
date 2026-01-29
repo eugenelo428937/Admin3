@@ -11,7 +11,7 @@ class UserProfileEmail(models.Model):
     email = models.EmailField(max_length=128)
 
     class Meta:
-        db_table = 'acted_user_profile_email'
+        db_table = '"acted"."user_profile_email"'
         verbose_name = 'User Profile Email'
         verbose_name_plural = 'User Profile Emails'
 

@@ -1,8 +1,8 @@
 """
 Marking views.
 
-Updated 2026-01-25: Changed to use store.Product instead of ESSP
-as part of catalog nested apps refactoring.
+Updated 2026-01-27: Changed to use store.Product instead of ESSP
+as part of schema migration.
 
 API still accepts essp_id for backward compatibility but queries via store.Product.
 """
