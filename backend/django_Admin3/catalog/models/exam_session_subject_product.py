@@ -24,7 +24,7 @@ class ExamSessionSubjectProduct(models.Model):
         related_name='exam_session_subject_products'
     )
     product = models.ForeignKey(
-        'catalog.Product',
+        'catalog_products.Product',
         on_delete=models.CASCADE,
         related_name='exam_session_subject_products'
     )

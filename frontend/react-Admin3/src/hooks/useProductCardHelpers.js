@@ -10,16 +10,17 @@ const useProductCardHelpers = (products = []) => {
     const [bulkDeadlines, setBulkDeadlines] = useState({});
     const { addToCart } = useCart();
 
-    // Memoize expensive calculations
-    const allEsspIds = useMemo(() => {
+    // Memoize expensive calculations - extract store product IDs for marking products
+    const allStoreProductIds = useMemo(() => {
         const markingProducts = products.filter((p) => p.type === "Markings");
-        return markingProducts.map((p) => p.essp_id || p.id || p.product_id);
+        // Use id (store product ID) as primary identifier after cart-orders refactoring
+        return markingProducts.map((p) => p.id || p.store_product_id || p.product_id);
     }, [products]);
 
     // Create a stable string representation of IDs for comparison
     const idsString = useMemo(() => {
-        return allEsspIds.sort().join(',');
-    }, [allEsspIds]);
+        return allStoreProductIds.sort().join(',');
+    }, [allStoreProductIds]);
 
     // Handle add to cart functionality
     const handleAddToCart = useCallback((product, priceInfo) => {
@@ -28,9 +29,9 @@ const useProductCardHelpers = (products = []) => {
 
     // Fetch bulk deadlines whenever marking products IDs actually change
     useEffect(() => {
-        if (allEsspIds.length > 0) {
+        if (allStoreProductIds.length > 0) {
             productService
-                .getBulkMarkingDeadlines(allEsspIds)
+                .getBulkMarkingDeadlines(allStoreProductIds)
                 .then((deadlines) => {
                     setBulkDeadlines(deadlines);
                 })
@@ -41,11 +42,13 @@ const useProductCardHelpers = (products = []) => {
         } else {
             setBulkDeadlines({});
         }
-    }, [idsString]); // Use idsString instead of allEsspIds for more stable comparison
+    }, [idsString]); // Use idsString instead of allStoreProductIds for more stable comparison
 
     return {
         handleAddToCart,
-        allEsspIds,
+        // Keep allEsspIds as alias for backward compatibility
+        allEsspIds: allStoreProductIds,
+        allStoreProductIds,
         bulkDeadlines
     };
 };

@@ -1,9 +1,8 @@
-"""Product model for the catalog app.
+"""Product model for the catalog.products app.
 
 Master product template definitions. This is NOT the purchasable product -
 see store.Product for the actual purchasable items.
 
-Migrated from products/models/products.py to catalog/models/product.py.
 Table: acted.catalog_products
 """
 from django.db import models
@@ -14,21 +13,12 @@ class Product(models.Model):
     Master product template for study materials, tutorials, and markings.
 
     This model defines the product catalog (templates). Products are combined with
-    :model:`catalog.ProductVariation` via :model:`catalog.ProductProductVariation`
+    :model:`catalog_products.ProductVariation` via :model:`catalog_products.ProductProductVariation`
     to create purchasable items in :model:`store.Product`.
 
     **IMPORTANT**: This is NOT the model for cart/checkout operations.
     For purchasable products, use :model:`store.Product` which links to this
     template via ProductProductVariation.
-
-    **Related Models**:
-
-    - :model:`catalog.ProductVariation` - Available variations (eBook, Printed, etc.)
-    - :model:`catalog.ProductProductVariation` - Product-variation combinations
-    - :model:`store.Product` - Purchasable products (links ESS + PPV)
-    - :model:`catalog.ProductProductGroup` - Product-group assignments
-    - :model:`products.FilterGroup` - Filter/category groups
-    - :model:`catalog.ProductBundleProduct` - Bundle inclusions
 
     **Usage Example**::
 
@@ -64,12 +54,12 @@ class Product(models.Model):
     groups = models.ManyToManyField(
         'filtering.FilterGroup',
         related_name='catalog_products',
-        through='catalog.ProductProductGroup',
+        through='filtering.ProductProductGroup',
         help_text="Filter groups this product belongs to"
     )
     product_variations = models.ManyToManyField(
-        'catalog.ProductVariation',
-        through='catalog.ProductProductVariation',
+        'catalog_products.ProductVariation',
+        through='catalog_products.ProductProductVariation',
         related_name='products',
         blank=True,
         help_text="Available variations for this product"
@@ -94,6 +84,7 @@ class Product(models.Model):
 
     class Meta:
         db_table = '"acted"."catalog_products"'
+        app_label = 'catalog_products'
         verbose_name = 'Product'
         verbose_name_plural = 'Products'
         ordering = ['shortname']
