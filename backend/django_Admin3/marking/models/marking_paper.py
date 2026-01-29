@@ -1,8 +1,8 @@
 """
 MarkingPaper model.
 
-Updated 2026-01-25: Changed FK from ExamSessionSubjectProduct to store.Product
-as part of catalog nested apps refactoring.
+Updated 2026-01-27: Changed FK from catalog.ExamSessionSubjectProduct to
+store.Product as part of schema migration to acted schema.
 """
 from django.db import models
 
@@ -14,6 +14,7 @@ class MarkingPaper(models.Model):
     Links to a store.Product to identify which purchasable product
     this marking paper belongs to.
 
+
     **Backward Compatibility**:
     The `exam_session_subject_product` property provides compatibility with
     code that still expects the old ESSP reference.
@@ -22,7 +23,7 @@ class MarkingPaper(models.Model):
         'store.Product',
         on_delete=models.CASCADE,
         related_name='marking_papers',
-        null=True,  # Nullable for migration - existing rows need data migration
+        null=True,
         blank=True,
         help_text='The store product this marking paper belongs to'
     )
@@ -31,7 +32,7 @@ class MarkingPaper(models.Model):
     recommended_submit_date = models.DateTimeField()
 
     class Meta:
-        db_table = 'acted_marking_paper'
+        db_table = '"acted"."marking_paper"'
 
     # ─────────────────────────────────────────────────────────────────────────
     # Backward-compatible properties for ESSP access

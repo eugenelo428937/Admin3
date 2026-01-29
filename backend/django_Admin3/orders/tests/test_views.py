@@ -1,5 +1,6 @@
 from django.test import override_settings
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from rest_framework.test import APITestCase
 from rest_framework import status
 from decimal import Decimal
@@ -7,6 +8,11 @@ from unittest.mock import patch
 
 from cart.models import Cart, CartItem
 from orders.models import Order, OrderItem, Payment
+from catalog.models import (
+    Subject, ExamSession, ExamSessionSubject,
+    Product as CatalogProduct, ProductVariation, ProductProductVariation
+)
+from store.models import Product as StoreProduct
 
 User = get_user_model()
 
@@ -18,16 +24,30 @@ class CheckoutViewTest(APITestCase):
             username='testuser', email='test@example.com', password='testpass123'
         )
         self.client.force_authenticate(user=self.user)
+        # Create store product fixture for check constraint
+        subject = Subject.objects.create(code='CM2')
+        exam_session = ExamSession.objects.create(
+            session_code='2025-04',
+            start_date=timezone.now(), end_date=timezone.now()
+        )
+        ess = ExamSessionSubject.objects.create(exam_session=exam_session, subject=subject)
+        cat_product = CatalogProduct.objects.create(fullname='Test Product', shortname='TP', code='TP01')
+        variation = ProductVariation.objects.create(variation_type='eBook', name='Standard eBook')
+        ppv = ProductProductVariation.objects.create(product=cat_product, product_variation=variation)
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=ess, product_product_variation=ppv
+        )
         self.cart = Cart.objects.create(user=self.user)
         CartItem.objects.create(
             cart=self.cart,
+            product=self.store_product,
             item_type='product',
             quantity=1,
             price_type='standard',
             actual_price=Decimal('100.00'),
         )
 
-    @patch('orders.services.checkout_orchestrator.rule_engine')
+    @patch('rules_engine.services.rule_engine.rule_engine')
     @patch('cart.services.cart_service.cart_service.calculate_vat')
     def test_checkout_card_success(self, mock_vat, mock_rules):
         mock_rules.execute.return_value = {'blocked': False}
@@ -48,7 +68,7 @@ class CheckoutViewTest(APITestCase):
         self.assertIn('order', response.data)
         self.assertIn('payment', response.data)
 
-    @patch('orders.services.checkout_orchestrator.rule_engine')
+    @patch('rules_engine.services.rule_engine.rule_engine')
     @patch('cart.services.cart_service.cart_service.calculate_vat')
     def test_checkout_invoice_success(self, mock_vat, mock_rules):
         mock_rules.execute.return_value = {'blocked': False}
@@ -99,6 +119,19 @@ class OrderViewSetTest(APITestCase):
             username='otheruser', email='other@example.com', password='testpass123'
         )
         self.client.force_authenticate(user=self.user)
+        # Create store product fixture for check constraint
+        subject = Subject.objects.create(code='CM2')
+        exam_session = ExamSession.objects.create(
+            session_code='2025-04',
+            start_date=timezone.now(), end_date=timezone.now()
+        )
+        ess = ExamSessionSubject.objects.create(exam_session=exam_session, subject=subject)
+        cat_product = CatalogProduct.objects.create(fullname='Test Product', shortname='TP', code='TP01')
+        variation = ProductVariation.objects.create(variation_type='eBook', name='Standard eBook')
+        ppv = ProductProductVariation.objects.create(product=cat_product, product_variation=variation)
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=ess, product_product_variation=ppv
+        )
 
         # Create test orders
         self.order1 = Order.objects.create(
@@ -124,11 +157,11 @@ class OrderViewSetTest(APITestCase):
     def test_list_orders(self):
         response = self.client.get('/api/orders/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data['results']), 2)
 
     def test_list_only_own_orders(self):
         response = self.client.get('/api/orders/')
-        order_ids = [o['id'] for o in response.data]
+        order_ids = [o['id'] for o in response.data['results']]
         self.assertIn(self.order1.id, order_ids)
         self.assertIn(self.order2.id, order_ids)
         self.assertNotIn(self.other_order.id, order_ids)
@@ -136,6 +169,7 @@ class OrderViewSetTest(APITestCase):
     def test_retrieve_order_detail(self):
         OrderItem.objects.create(
             order=self.order1,
+            product=self.store_product,
             item_type='product',
             quantity=2,
             actual_price=Decimal('50.00'),

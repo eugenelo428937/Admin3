@@ -319,7 +319,7 @@ class TutorialEventTestCase(TestCase):
         """Test custom database table name."""
         self.assertEqual(
             TutorialEvent._meta.db_table,
-            'acted_tutorial_events'
+            '"acted"."tutorial_events"'
         )
 
     def test_verbose_name(self):

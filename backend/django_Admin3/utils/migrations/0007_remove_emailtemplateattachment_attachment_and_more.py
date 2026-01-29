@@ -10,6 +10,15 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # AlterUniqueTogether must run before RemoveField drops the referenced fields
+        migrations.AlterUniqueTogether(
+            name='emailtemplateattachment',
+            unique_together=None,
+        ),
+        migrations.AlterUniqueTogether(
+            name='emailtemplatecontentrule',
+            unique_together=None,
+        ),
         migrations.RemoveField(
             model_name='emailtemplateattachment',
             name='attachment',
@@ -65,14 +74,6 @@ class Migration(migrations.Migration):
         migrations.RemoveField(
             model_name='emailtemplateattachment',
             name='template',
-        ),
-        migrations.AlterUniqueTogether(
-            name='emailtemplateattachment',
-            unique_together=None,
-        ),
-        migrations.AlterUniqueTogether(
-            name='emailtemplatecontentrule',
-            unique_together=None,
         ),
         migrations.DeleteModel(
             name='EmailAttachment',

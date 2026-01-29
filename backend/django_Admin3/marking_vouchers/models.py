@@ -22,7 +22,7 @@ class MarkingVoucher(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'acted_marking_vouchers'
+        db_table = '"acted"."marking_vouchers"'
         verbose_name = 'Marking Voucher'
         verbose_name_plural = 'Marking Vouchers'
         ordering = ['-created_at']
