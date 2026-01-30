@@ -276,31 +276,18 @@ def state_catalog_data_exists(params=None):
         group.catalog_products.add(catalog_product)
 
 
-def state_product_groups_exist(params=None):
-    """State: product groups exist
-
-    product-group-filters endpoint needs ProductGroupFilter with groups.
-    """
-    from filtering.models import ProductGroupFilter
-
-    groups = setup_filter_groups()
-
-    pgf, _ = ProductGroupFilter.objects.get_or_create(
-        name='Study Materials',
-        defaults={'filter_type': 'type'},
-    )
-    pgf.groups.add(groups['Core Study Materials'])
-
-
 def state_filter_configuration_exists(params=None):
     """State: filter configuration exists
 
     filter-configuration endpoint needs FilterConfiguration with options.
+    Seeds FilterConfigurationGroup data so filter_groups is populated
+    in the response (US1/US5 contract update).
     """
-    from filtering.models import FilterConfiguration
+    from filtering.models import FilterConfiguration, FilterGroup, FilterConfigurationGroup
 
     setup_catalog_foundation()  # ensures subjects exist
 
+    # Subjects config (no filter groups — uses subject options)
     FilterConfiguration.objects.get_or_create(
         name='subjects',
         defaults={
@@ -313,14 +300,73 @@ def state_filter_configuration_exists(params=None):
         },
     )
 
+    # Categories config with filter groups (US1)
+    categories_config, _ = FilterConfiguration.objects.get_or_create(
+        name='Categories',
+        defaults={
+            'display_label': 'Categories',
+            'filter_type': 'filter_group',
+            'filter_key': 'categories',
+            'ui_component': 'multi_select',
+            'is_active': True,
+            'display_order': 2,
+        },
+    )
+
+    # Create and assign groups to categories
+    groups = setup_filter_groups()
+    material, _ = FilterGroup.objects.get_or_create(
+        name='Material',
+        defaults={'is_active': True, 'display_order': 0},
+    )
+    FilterConfigurationGroup.objects.get_or_create(
+        filter_configuration=categories_config,
+        filter_group=material,
+        defaults={'display_order': 0},
+    )
+
+    # Product types config with filter groups
+    pt_config, _ = FilterConfiguration.objects.get_or_create(
+        name='Product Types',
+        defaults={
+            'display_label': 'Product Types',
+            'filter_type': 'filter_group',
+            'filter_key': 'product_types',
+            'ui_component': 'multi_select',
+            'is_active': True,
+            'display_order': 3,
+        },
+    )
+
+    for group_name in ['Core Study Materials', 'Revision Materials']:
+        if group_name in groups:
+            FilterConfigurationGroup.objects.get_or_create(
+                filter_configuration=pt_config,
+                filter_group=groups[group_name],
+                defaults={'display_order': 0},
+            )
+
 
 def state_exam_session_bundles_exist(params=None):
-    """State: exam session bundles exist"""
+    """State: exam session bundles exist
+
+    Creates a bundle with component products. The component products
+    are linked to filter groups so bundle filtering across dimensions
+    can be verified (US4).
+    """
     from catalog.models import ProductBundle
     from store.models import Bundle, BundleProduct
+    from filtering.models import FilterGroup
 
     subject, _es, ess, _cp, _var, _ppv = setup_catalog_foundation()
     store_product, _price = setup_store_product()
+
+    # Associate catalog product with a filter group for dimension filtering
+    core_group, _ = FilterGroup.objects.get_or_create(
+        name='Core Study Materials',
+        defaults={'is_active': True, 'display_order': 0},
+    )
+    _cp.groups.add(core_group)
 
     bundle_template, _ = ProductBundle.objects.get_or_create(
         subject=subject,
@@ -537,7 +583,6 @@ STATE_HANDLERS = {
     'an authenticated user with items in cart and valid payment': state_authenticated_user_with_valid_payment,
     'store products exist': state_store_products_exist,
     'catalog data exists': state_catalog_data_exists,
-    'product groups exist': state_product_groups_exist,
     'filter configuration exists': state_filter_configuration_exists,
     'exam session bundles exist': state_exam_session_bundles_exist,
     'searchable products exist': state_searchable_products_exist,

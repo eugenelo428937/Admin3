@@ -425,6 +425,171 @@ describe('FilterRegistry', () => {
     });
   });
 
+  describe('registerFromBackend (T045)', () => {
+    test('populates registry from backend config array', () => {
+      // Simulate backend response: dict with config name keys
+      const backendConfigs = {
+        'Categories': {
+          filter_key: 'categories',
+          label: 'Category',
+          display_order: 1,
+          type: 'filter_group',
+          allow_multiple: true,
+          collapsible: true,
+          default_open: false,
+          filter_groups: [
+            { id: 1, name: 'Material', code: 'MATERIAL' },
+            { id: 2, name: 'Tutorial', code: 'TUTORIAL' },
+          ],
+        },
+        'Product Types': {
+          filter_key: 'product_types',
+          label: 'Product Type',
+          display_order: 2,
+          type: 'filter_group',
+          allow_multiple: true,
+          collapsible: true,
+          default_open: false,
+          filter_groups: [
+            { id: 3, name: 'Core Study Materials', code: 'CORE' },
+          ],
+        },
+      };
+
+      FilterRegistry.registerFromBackend(backendConfigs);
+
+      // Should have registered both filter types
+      expect(FilterRegistry.has('categories')).toBe(true);
+      expect(FilterRegistry.has('product_types')).toBe(true);
+
+      // Verify config properties are mapped correctly
+      const catConfig = FilterRegistry.get('categories');
+      expect(catConfig.label).toBe('Category');
+      expect(catConfig.pluralLabel).toBe('Categories');
+      expect(catConfig.order).toBe(1);
+      expect(catConfig.multiple).toBe(true);
+
+      const ptConfig = FilterRegistry.get('product_types');
+      expect(ptConfig.label).toBe('Product Type');
+      expect(ptConfig.order).toBe(2);
+    });
+
+    test('clears existing registrations before re-registering', () => {
+      // Register a custom filter first
+      FilterRegistry.register({
+        type: 'custom_filter',
+        label: 'Custom',
+        urlParam: 'custom',
+      });
+      expect(FilterRegistry.has('custom_filter')).toBe(true);
+
+      // Now register from backend — should clear custom_filter
+      FilterRegistry.registerFromBackend({
+        'Categories': {
+          filter_key: 'categories',
+          label: 'Category',
+          display_order: 1,
+          type: 'filter_group',
+          allow_multiple: true,
+          collapsible: true,
+          default_open: false,
+          filter_groups: [],
+        },
+      });
+
+      // Custom filter should be gone
+      expect(FilterRegistry.has('custom_filter')).toBe(false);
+      // Backend filter should be present
+      expect(FilterRegistry.has('categories')).toBe(true);
+    });
+
+    test('preserves searchQuery registration after backend load', () => {
+      // searchQuery is special — not rendered in panel, should survive
+      FilterRegistry.registerFromBackend({
+        'Categories': {
+          filter_key: 'categories',
+          label: 'Category',
+          display_order: 1,
+          type: 'filter_group',
+          allow_multiple: true,
+          collapsible: true,
+          default_open: false,
+          filter_groups: [],
+        },
+      });
+
+      // searchQuery should be re-registered automatically
+      expect(FilterRegistry.has('searchQuery')).toBe(true);
+    });
+  });
+
+  describe('registerFromBackend preserves Redux state keys (T048)', () => {
+    test('maps to standard Redux state keys', () => {
+      const backendConfigs = {
+        'Subjects': {
+          filter_key: 'subjects',
+          label: 'Subject',
+          display_order: 0,
+          type: 'subject',
+          allow_multiple: true,
+          collapsible: true,
+          default_open: true,
+          filter_groups: [],
+        },
+        'Categories': {
+          filter_key: 'categories',
+          label: 'Category',
+          display_order: 1,
+          type: 'filter_group',
+          allow_multiple: true,
+          collapsible: true,
+          default_open: false,
+          filter_groups: [],
+        },
+        'Product Types': {
+          filter_key: 'product_types',
+          label: 'Product Type',
+          display_order: 2,
+          type: 'filter_group',
+          allow_multiple: true,
+          collapsible: true,
+          default_open: false,
+          filter_groups: [],
+        },
+        'Products': {
+          filter_key: 'products',
+          label: 'Product',
+          display_order: 3,
+          type: 'product',
+          allow_multiple: true,
+          collapsible: true,
+          default_open: false,
+          filter_groups: [],
+        },
+        'Modes of Delivery': {
+          filter_key: 'modes_of_delivery',
+          label: 'Mode of Delivery',
+          display_order: 4,
+          type: 'variation_type',
+          allow_multiple: true,
+          collapsible: true,
+          default_open: false,
+          filter_groups: [],
+        },
+      };
+
+      FilterRegistry.registerFromBackend(backendConfigs);
+
+      // All standard Redux state keys must be preserved
+      const expectedKeys = ['subjects', 'categories', 'product_types', 'products', 'modes_of_delivery'];
+      for (const key of expectedKeys) {
+        expect(FilterRegistry.has(key)).toBe(true);
+        const config = FilterRegistry.get(key);
+        expect(config.type).toBe(key);
+      }
+    });
+  });
+
   describe('module initialization (default registrations)', () => {
     // This test verifies that the module registers default filters on import
     // by re-importing in a fresh context

@@ -354,10 +354,25 @@ class ProductFilterService:
     
     def get_filter_configuration(self) -> Dict[str, Dict[str, Any]]:
         """Get complete filter configuration for frontend"""
-        configs = FilterConfiguration.objects.filter(is_active=True).order_by('display_order').prefetch_related('filter_groups')
-        
+        from filtering.serializers import FilterConfigurationGroupSerializer
+
+        configs = FilterConfiguration.objects.filter(
+            is_active=True
+        ).order_by('display_order').prefetch_related(
+            'filter_groups',
+            'filterconfigurationgroup_set__filter_group',
+        )
+
         result = {}
         for config in configs:
+            # Serialize the junction records to get filter_groups with metadata
+            config_groups = config.filterconfigurationgroup_set.select_related(
+                'filter_group'
+            ).order_by('display_order', 'filter_group__name')
+            filter_groups_data = FilterConfigurationGroupSerializer(
+                config_groups, many=True
+            ).data
+
             result[config.name] = {
                 'type': config.ui_component,
                 'label': config.display_label,
@@ -372,11 +387,12 @@ class ProductFilterService:
                 'validation_rules': config.validation_rules,
                 'dependency_rules': config.dependency_rules,
                 'options': self.get_filter_options([config.name]).get(config.name, []),
+                'filter_groups': filter_groups_data,
                 # Additional metadata
                 'filter_type': config.filter_type,
                 'group_count': config.filter_groups.count() if config.filter_type == 'filter_group' else 0,
             }
-        
+
         return result
     
     def get_main_category_filter(self) -> Optional[Dict[str, Any]]:

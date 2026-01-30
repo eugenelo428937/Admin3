@@ -487,7 +487,6 @@ python manage.py test_emails preview --template password_reset --save
 /api/products/product-categories/all/           # Three-level category tree
 /api/products/product-groups/tree/              # Product group tree
 /api/products/product-groups/<id>/products/     # Products by group
-/api/products/product-group-filters/            # Product group filters
 /api/products/filter-configuration/             # Dynamic filter configuration
 ```
 

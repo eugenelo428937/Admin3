@@ -1,7 +1,7 @@
 """Tests for filtering API view endpoints."""
 from rest_framework.test import APITestCase
 from rest_framework import status
-from filtering.models import FilterGroup, ProductGroupFilter
+from filtering.models import FilterGroup
 
 
 class TestProductCategoriesAllEndpoint(APITestCase):
@@ -48,15 +48,6 @@ class TestProductsByGroupEndpoint(APITestCase):
         """GET /api/products/product-groups/999999/products/ with invalid group returns 404."""
         response = self.client.get('/api/products/product-groups/999999/products/')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-
-class TestProductGroupFiltersEndpoint(APITestCase):
-    """Test the GET /api/products/product-group-filters/ endpoint."""
-
-    def test_product_group_filters(self):
-        """GET /api/products/product-group-filters/ returns filter definitions."""
-        response = self.client.get('/api/products/product-group-filters/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class TestFilterConfigurationEndpoint(APITestCase):
