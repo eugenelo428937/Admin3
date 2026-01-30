@@ -56,6 +56,10 @@ const initialState = {
     modes_of_delivery: {}
   },
   validationErrors: [], // Story 1.14: Added from baseFiltersInitialState
+  // US5: Dynamic filter configuration from backend
+  filterConfiguration: null,
+  filterConfigurationLoading: false,
+  filterConfigurationError: null,
 };
 
 describe('filtersSlice', () => {

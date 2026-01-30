@@ -312,14 +312,19 @@ const FilterPanel = ({
                     <FormGroup>
                         {Object.entries(options).map(([value, filterData]) => {
                             // Handle new structure: filterData can be either a number (old) or object with {count, name} (new)
-                            const count = typeof filterData === 'object' && filterData !== null 
-                                ? filterData.count 
+                            const count = typeof filterData === 'object' && filterData !== null
+                                ? filterData.count
                                 : filterData || 0;
                             const displayLabel = typeof filterData === 'object' && filterData !== null
                                 ? (filterData.display_name || filterData.name || value)
                                 : value;
                             const isChecked = activeValues.includes(value);
-                            
+
+                            // FR-013: Hide zero-count options unless actively selected
+                            if (count === 0 && !isChecked) {
+                                return null;
+                            }
+
                             return (
                                 <FormControlLabel
                                     key={value}
