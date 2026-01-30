@@ -88,14 +88,18 @@ class SearchService:
                 # No fuzzy matches
                 base_queryset = base_queryset.none()
 
-        # Check for bundle-only filter
+        # Check for bundle filter — "Bundle" is a virtual category handled
+        # separately (bundles aren't in FilterGroup), so we strip it from
+        # the group-based filter and fetch bundles via _get_bundles().
         bundle_filter_active = 'Bundle' in filters.get('categories', [])
+        non_bundle_categories = [c for c in filters.get('categories', []) if c != 'Bundle']
 
-        if bundle_filter_active:
-            # Only return bundles
+        if bundle_filter_active and not non_bundle_categories:
+            # ONLY Bundle selected — no individual products
             filtered_queryset = base_queryset.none()
         else:
-            # Apply filters
+            # Apply filters (Bundle is already excluded from group resolution
+            # by _resolve_group_ids_with_hierarchy's exclude_names=['Bundle'])
             filtered_queryset = self._apply_filters(base_queryset, filters)
             filtered_queryset = self._apply_navbar_filters(filtered_queryset, navbar_filters)
 
@@ -242,7 +246,16 @@ class SearchService:
         return max(scores) if scores else 0
 
     def _apply_filters(self, queryset, filters: Dict) -> Any:
-        """Apply filter criteria to queryset."""
+        """Apply filter criteria to queryset.
+
+        Non-M2M filters (subjects, product IDs, modes of delivery) are
+        combined into a single Q object and applied in one .filter() call.
+
+        M2M group filters (categories, product_types) each get their own
+        .filter() call so Django creates separate JOINs.  A single Q with
+        &= would require one JOIN row to satisfy both conditions — which
+        fails when category and product-type groups are disjoint sets.
+        """
         q_filter = Q()
 
         # Subject filter
@@ -254,22 +267,6 @@ class SearchService:
                 else:
                     subject_q |= Q(exam_session_subject__subject__code=subject)
             q_filter &= subject_q
-
-        # Category filter (via product groups with hierarchy resolution)
-        if filters.get('categories'):
-            category_group_ids = self._resolve_group_ids_with_hierarchy(
-                filters['categories'], exclude_names=['Bundle']
-            )
-            if category_group_ids:
-                q_filter &= Q(product_product_variation__product__groups__id__in=category_group_ids)
-
-        # Product type filter (via product groups with hierarchy resolution)
-        if filters.get('product_types'):
-            type_group_ids = self._resolve_group_ids_with_hierarchy(
-                filters['product_types']
-            )
-            if type_group_ids:
-                q_filter &= Q(product_product_variation__product__groups__id__in=type_group_ids)
 
         # Product ID filter (support both 'product_ids' and 'products' parameter names)
         product_ids = filters.get('product_ids') or filters.get('products')
@@ -298,9 +295,31 @@ class SearchService:
             q_filter &= mode_q
 
         if q_filter:
-            queryset = queryset.filter(q_filter).distinct()
+            queryset = queryset.filter(q_filter)
 
-        return queryset
+        # M2M group filters — each dimension gets its own .filter() call
+        # so Django creates separate JOINs on the groups M2M table.
+        # Category filter (via product groups with hierarchy resolution)
+        if filters.get('categories'):
+            category_group_ids = self._resolve_group_ids_with_hierarchy(
+                filters['categories'], exclude_names=['Bundle']
+            )
+            if category_group_ids:
+                queryset = queryset.filter(
+                    product_product_variation__product__groups__id__in=category_group_ids
+                )
+
+        # Product type filter (via product groups with hierarchy resolution)
+        if filters.get('product_types'):
+            type_group_ids = self._resolve_group_ids_with_hierarchy(
+                filters['product_types']
+            )
+            if type_group_ids:
+                queryset = queryset.filter(
+                    product_product_variation__product__groups__id__in=type_group_ids
+                )
+
+        return queryset.distinct()
 
     def _apply_navbar_filters(self, queryset, navbar_filters: Dict) -> Any:
         """Apply navbar dropdown filters."""
@@ -680,6 +699,9 @@ class SearchService:
         one of its component products matches ALL active filter conditions
         simultaneously.
 
+        M2M group filters (categories, product_types) use separate .filter()
+        calls so Django creates independent JOINs — same fix as _apply_filters.
+
         Args:
             filters: Dict of active filters.
 
@@ -697,22 +719,6 @@ class SearchService:
         # Start with all active store products
         product_qs = StoreProduct.objects.filter(is_active=True)
         q_filter = Q()
-
-        # Category filter (via groups with hierarchy)
-        if filters.get('categories'):
-            category_group_ids = self._resolve_group_ids_with_hierarchy(
-                filters['categories'], exclude_names=['Bundle']
-            )
-            if category_group_ids:
-                q_filter &= Q(product_product_variation__product__groups__id__in=category_group_ids)
-
-        # Product type filter (via groups with hierarchy)
-        if filters.get('product_types'):
-            type_group_ids = self._resolve_group_ids_with_hierarchy(
-                filters['product_types']
-            )
-            if type_group_ids:
-                q_filter &= Q(product_product_variation__product__groups__id__in=type_group_ids)
 
         # Product ID filter
         product_ids = filters.get('product_ids') or filters.get('products')
@@ -735,9 +741,30 @@ class SearchService:
             q_filter &= mode_q
 
         if q_filter:
-            product_qs = product_qs.filter(q_filter).distinct()
+            product_qs = product_qs.filter(q_filter)
 
-        return set(product_qs.values_list('id', flat=True))
+        # M2M group filters — separate .filter() calls for independent JOINs
+        # Category filter (via groups with hierarchy)
+        if filters.get('categories'):
+            category_group_ids = self._resolve_group_ids_with_hierarchy(
+                filters['categories'], exclude_names=['Bundle']
+            )
+            if category_group_ids:
+                product_qs = product_qs.filter(
+                    product_product_variation__product__groups__id__in=category_group_ids
+                )
+
+        # Product type filter (via groups with hierarchy)
+        if filters.get('product_types'):
+            type_group_ids = self._resolve_group_ids_with_hierarchy(
+                filters['product_types']
+            )
+            if type_group_ids:
+                product_qs = product_qs.filter(
+                    product_product_variation__product__groups__id__in=type_group_ids
+                )
+
+        return set(product_qs.distinct().values_list('id', flat=True))
 
     def _get_filtered_bundle_count(self, filters: Dict) -> int:
         """Count bundles that match ALL active filter dimensions.

@@ -32,28 +32,46 @@ from catalog.models import (
 # =============================================================================
 
 def create_subject(code='CM2', description='Financial Mathematics', active=True, **kwargs):
-    """Create a test Subject instance."""
-    return Subject.objects.create(
+    """Create or retrieve a test Subject instance.
+
+    Uses get_or_create to avoid IntegrityError when running with --keepdb
+    and the test database already contains subjects from data migrations.
+    """
+    subject, _ = Subject.objects.get_or_create(
         code=code,
-        description=description,
-        active=active,
-        **kwargs
+        defaults={
+            'description': description,
+            'active': active,
+            **kwargs,
+        }
     )
+    # Update fields in case they differ from existing record
+    if subject.description != description or subject.active != active:
+        subject.description = description
+        subject.active = active
+        subject.save()
+    return subject
 
 
 def create_exam_session(session_code='2026-04', start_date=None, end_date=None, **kwargs):
-    """Create a test ExamSession instance."""
+    """Create or retrieve a test ExamSession instance.
+
+    Uses get_or_create to avoid duplicate key errors with --keepdb.
+    """
     if start_date is None:
         start_date = timezone.now() + timedelta(days=30)
     if end_date is None:
         end_date = start_date + timedelta(days=14)
 
-    return ExamSession.objects.create(
+    session, _ = ExamSession.objects.get_or_create(
         session_code=session_code,
-        start_date=start_date,
-        end_date=end_date,
-        **kwargs
+        defaults={
+            'start_date': start_date,
+            'end_date': end_date,
+            **kwargs,
+        }
     )
+    return session
 
 
 def create_product_variation(
@@ -64,18 +82,24 @@ def create_product_variation(
     code=None,
     **kwargs
 ):
-    """Create a test ProductVariation instance."""
+    """Create or retrieve a test ProductVariation instance.
+
+    Uses get_or_create keyed on code to avoid duplicate key errors with --keepdb.
+    """
     if code is None:
         code = f'{variation_type}-{name}'.replace(' ', '-').upper()
 
-    return ProductVariation.objects.create(
-        variation_type=variation_type,
-        name=name,
-        description=description,
-        description_short=description_short,
+    variation, _ = ProductVariation.objects.get_or_create(
         code=code,
-        **kwargs
+        defaults={
+            'variation_type': variation_type,
+            'name': name,
+            'description': description,
+            'description_short': description_short,
+            **kwargs,
+        }
     )
+    return variation
 
 
 def create_product(
@@ -87,29 +111,47 @@ def create_product(
     buy_both=False,
     **kwargs
 ):
-    """Create a test Product instance."""
-    return Product.objects.create(
-        fullname=fullname,
-        shortname=shortname,
-        description=description,
+    """Create or retrieve a test Product instance.
+
+    Uses get_or_create keyed on code to avoid duplicate key errors with --keepdb.
+    """
+    product, _ = Product.objects.get_or_create(
         code=code,
-        is_active=is_active,
-        buy_both=buy_both,
-        **kwargs
+        defaults={
+            'fullname': fullname,
+            'shortname': shortname,
+            'description': description,
+            'is_active': is_active,
+            'buy_both': buy_both,
+            **kwargs,
+        }
     )
+    # Update fields to match requested values
+    updated = False
+    for attr, val in [('fullname', fullname), ('shortname', shortname),
+                      ('description', description), ('is_active', is_active),
+                      ('buy_both', buy_both)]:
+        if getattr(product, attr) != val:
+            setattr(product, attr, val)
+            updated = True
+    if updated:
+        product.save()
+    return product
 
 
 def create_product_product_variation(product, product_variation, **kwargs):
-    """Create a ProductProductVariation junction record.
+    """Create or retrieve a ProductProductVariation junction record.
 
     Note: ProductProductVariation does not have an is_active field.
     Active status is determined by the Product's is_active field.
+    Uses get_or_create to avoid duplicate key errors with --keepdb.
     """
-    return ProductProductVariation.objects.create(
+    ppv, _ = ProductProductVariation.objects.get_or_create(
         product=product,
         product_variation=product_variation,
-        **kwargs
+        defaults=kwargs,
     )
+    return ppv
 
 
 def create_product_bundle(
@@ -121,16 +163,31 @@ def create_product_bundle(
     display_order=0,
     **kwargs
 ):
-    """Create a test ProductBundle instance."""
-    return ProductBundle.objects.create(
+    """Create or retrieve a test ProductBundle instance.
+
+    Uses get_or_create to avoid duplicate key errors with --keepdb.
+    """
+    bundle, _ = ProductBundle.objects.get_or_create(
         subject=subject,
         bundle_name=bundle_name,
-        bundle_description=bundle_description,
-        is_featured=is_featured,
-        is_active=is_active,
-        display_order=display_order,
-        **kwargs
+        defaults={
+            'bundle_description': bundle_description,
+            'is_featured': is_featured,
+            'is_active': is_active,
+            'display_order': display_order,
+            **kwargs,
+        }
     )
+    # Ensure fields match
+    updated = False
+    for attr, val in [('is_featured', is_featured), ('is_active', is_active),
+                      ('display_order', display_order)]:
+        if getattr(bundle, attr) != val:
+            setattr(bundle, attr, val)
+            updated = True
+    if updated:
+        bundle.save()
+    return bundle
 
 
 def create_product_bundle_product(
@@ -142,36 +199,53 @@ def create_product_bundle_product(
     is_active=True,
     **kwargs
 ):
-    """Create a ProductBundleProduct junction record."""
-    return ProductBundleProduct.objects.create(
+    """Create or retrieve a ProductBundleProduct junction record.
+
+    Uses get_or_create to avoid duplicate key errors with --keepdb.
+    """
+    bp, _ = ProductBundleProduct.objects.get_or_create(
         bundle=bundle,
         product_product_variation=product_product_variation,
-        default_price_type=default_price_type,
-        quantity=quantity,
-        sort_order=sort_order,
-        is_active=is_active,
-        **kwargs
+        defaults={
+            'default_price_type': default_price_type,
+            'quantity': quantity,
+            'sort_order': sort_order,
+            'is_active': is_active,
+            **kwargs,
+        }
     )
+    # Ensure is_active matches (tests may toggle it)
+    if bp.is_active != is_active or bp.sort_order != sort_order:
+        bp.is_active = is_active
+        bp.sort_order = sort_order
+        bp.save()
+    return bp
 
 
 def create_superuser(username='admin', email='admin@test.com', password='testpass123'):
-    """Create a superuser for permission testing."""
+    """Create or retrieve a superuser for permission testing."""
     User = get_user_model()
-    return User.objects.create_superuser(
+    user, created = User.objects.get_or_create(
         username=username,
-        email=email,
-        password=password
+        defaults={'email': email, 'is_superuser': True, 'is_staff': True}
     )
+    if created:
+        user.set_password(password)
+        user.save()
+    return user
 
 
 def create_regular_user(username='user', email='user@test.com', password='testpass123'):
-    """Create a regular (non-superuser) user for permission testing."""
+    """Create or retrieve a regular (non-superuser) user for permission testing."""
     User = get_user_model()
-    return User.objects.create_user(
+    user, created = User.objects.get_or_create(
         username=username,
-        email=email,
-        password=password
+        defaults={'email': email, 'is_superuser': False, 'is_staff': False}
     )
+    if created:
+        user.set_password(password)
+        user.save()
+    return user
 
 
 # =============================================================================
