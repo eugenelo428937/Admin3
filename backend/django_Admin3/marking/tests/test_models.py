@@ -159,6 +159,45 @@ class MarkingPaperTestCase(TestCase):
         str_representation = str(paper)
         self.assertIn('Paper1', str_representation)
 
+    def test_str_method_exact_format(self):
+        """Test __str__ returns exact format: '{name} ({store_product})'."""
+        paper = MarkingPaper.objects.create(
+            store_product=self.store_product,
+            name='Paper1',
+            deadline=timezone.now() + timedelta(days=45),
+            recommended_submit_date=timezone.now() + timedelta(days=40)
+        )
+
+        expected = f"Paper1 ({self.store_product})"
+        self.assertEqual(str(paper), expected)
+
+    def test_str_method_includes_store_product_code(self):
+        """Test __str__ includes the store product's product_code."""
+        paper = MarkingPaper.objects.create(
+            store_product=self.store_product,
+            name='Paper1',
+            deadline=timezone.now() + timedelta(days=45),
+            recommended_submit_date=timezone.now() + timedelta(days=40)
+        )
+
+        str_representation = str(paper)
+        # store.Product.__str__ returns product_code
+        self.assertIn(self.store_product.product_code, str_representation)
+        self.assertIn('(', str_representation)
+        self.assertIn(')', str_representation)
+
+    def test_str_method_with_none_store_product(self):
+        """Test __str__ handles None store_product (nullable FK)."""
+        paper = MarkingPaper.objects.create(
+            store_product=None,
+            name='OrphanP',
+            deadline=timezone.now() + timedelta(days=45),
+            recommended_submit_date=timezone.now() + timedelta(days=40)
+        )
+
+        str_representation = str(paper)
+        self.assertEqual(str_representation, "OrphanP (None)")
+
     def test_db_table_name(self):
         """Test custom database table name."""
         self.assertEqual(
@@ -290,3 +329,115 @@ class MarkingPaperTestCase(TestCase):
         )
 
         self.assertEqual(MarkingPaper.objects.filter(name='Paper1').count(), 2)
+
+
+class MarkingPaperBackwardCompatTestCase(TestCase):
+    """Test cases for MarkingPaper backward-compatible properties."""
+
+    def setUp(self):
+        """Set up test fixtures including ESSP for backward compat property test."""
+        from catalog.models import ExamSessionSubjectProduct
+
+        # Create exam session
+        self.exam_session = ExamSession.objects.create(
+            session_code='DEC2025',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=60)
+        )
+
+        # Create subject
+        self.subject = Subject.objects.create(
+            code='CS2',
+            description='Risk Modelling',
+            active=True
+        )
+
+        # Create exam session subject
+        self.exam_session_subject = ExamSessionSubject.objects.create(
+            exam_session=self.exam_session,
+            subject=self.subject
+        )
+
+        # Create catalog product + variation chain
+        self.cat_product = CatalogProduct.objects.create(
+            code='BC01',
+            fullname='Compat Product Full',
+            shortname='Compat Product'
+        )
+        self.variation = ProductVariation.objects.create(
+            variation_type='Marking', name='Compat Marking'
+        )
+        self.ppv = ProductProductVariation.objects.create(
+            product=self.cat_product, product_variation=self.variation
+        )
+
+        # Create store product
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product_product_variation=self.ppv
+        )
+
+        # Create ESSP that matches the store product's ESS + catalog product
+        self.essp = ExamSessionSubjectProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product=self.cat_product
+        )
+
+        # Create marking paper
+        self.paper = MarkingPaper.objects.create(
+            store_product=self.store_product,
+            name='CompatP1',
+            deadline=timezone.now() + timedelta(days=45),
+            recommended_submit_date=timezone.now() + timedelta(days=40)
+        )
+
+    def test_exam_session_subject_product_property_returns_essp(self):
+        """Test backward-compatible property returns matching ESSP record."""
+        result = self.paper.exam_session_subject_product
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result.id, self.essp.id)
+        self.assertEqual(result.exam_session_subject, self.exam_session_subject)
+        self.assertEqual(result.product, self.cat_product)
+
+    def test_exam_session_subject_product_property_returns_none_when_no_essp(self):
+        """Test backward-compatible property returns None when no ESSP exists."""
+        # Create a different catalog product with no ESSP record
+        cat_product2 = CatalogProduct.objects.create(
+            code='BC02',
+            fullname='No ESSP Product Full',
+            shortname='No ESSP Product'
+        )
+        ppv2 = ProductProductVariation.objects.create(
+            product=cat_product2, product_variation=self.variation
+        )
+        store_product2 = StoreProduct.objects.create(
+            exam_session_subject=self.exam_session_subject,
+            product_product_variation=ppv2
+        )
+        paper2 = MarkingPaper.objects.create(
+            store_product=store_product2,
+            name='NoEsspP',
+            deadline=timezone.now() + timedelta(days=45),
+            recommended_submit_date=timezone.now() + timedelta(days=40)
+        )
+
+        result = paper2.exam_session_subject_product
+        self.assertIsNone(result)
+
+
+class MarkingModelsModuleTestCase(TestCase):
+    """Test that the marking.models package is properly structured."""
+
+    def test_models_package_exports_marking_paper(self):
+        """Test that marking.models package exports MarkingPaper."""
+        import marking.models as models_pkg
+        self.assertTrue(hasattr(models_pkg, 'MarkingPaper'))
+        self.assertIs(models_pkg.MarkingPaper, MarkingPaper)
+
+    def test_models_package_resolves_to_package_init(self):
+        """Test that marking.models resolves to the models/ package, not models.py."""
+        import marking.models as models_pkg
+        # The models/ package __init__.py should be what's loaded,
+        # not the dead top-level models.py file
+        self.assertTrue(models_pkg.__file__.endswith('__init__.py'))

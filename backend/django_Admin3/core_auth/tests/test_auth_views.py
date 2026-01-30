@@ -1096,3 +1096,195 @@ class SendTestEmailAPITestCase(APITestCase):
             format='json',
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class CoverageGapTestCase(APITestCase):
+    """
+    Tests targeting specific uncovered lines in core_auth/views.py.
+
+    Coverage gaps addressed:
+    - Lines 157-159: register email exception handler
+    - Lines 175-177: register transaction failure
+    - Line 212: logout successful blacklist path
+    - Line 572: verify_email UserProfile.DoesNotExist path
+    - Lines 715-718: send_test_email failure path
+    - Lines 720-724: send_test_email exception path
+    - Lines 729-730: get_token_expiry_hours utility function
+    """
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username='covuser',
+            email='covuser@example.com',
+            password='testpassword123',
+            is_active=True
+        )
+
+    # ---- Lines 157-159: register - email service throws exception ----
+
+    @patch('core_auth.views.email_service.send_account_activation')
+    def test_register_email_service_exception_does_not_block(self, mock_send_email):
+        """Registration succeeds when email_service.send_account_activation raises an exception (lines 157-159)."""
+        mock_send_email.side_effect = Exception('SMTP connection refused')
+
+        data = {
+            'username': 'emailexc',
+            'email': 'emailexc@example.com',
+            'password': 'password123',
+        }
+
+        response = self.client.post('/api/auth/register/', data, format='json')
+
+        # Registration must succeed even when activation email raises exception
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['status'], 'success')
+        self.assertTrue(User.objects.filter(username='emailexc').exists())
+
+    # ---- Lines 175-177: register - transaction.atomic failure ----
+
+    @patch('core_auth.views.email_service.send_account_activation')
+    @patch('core_auth.views.Student.objects.create')
+    def test_register_student_creation_failure(self, mock_student_create, mock_send_email):
+        """Registration returns 500 when Student creation fails inside transaction (lines 175-177)."""
+        mock_student_create.side_effect = Exception('Database constraint violation')
+
+        data = {
+            'username': 'studfail',
+            'email': 'studfail@example.com',
+            'password': 'password123',
+        }
+
+        response = self.client.post('/api/auth/register/', data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertEqual(response.data['status'], 'error')
+        self.assertIn('Failed to create account', response.data['message'])
+
+    # ---- Line 212: logout with successful blacklist ----
+
+    @patch('rest_framework_simplejwt.tokens.RefreshToken.blacklist')
+    def test_logout_successful_blacklist(self, mock_blacklist):
+        """Logout returns success when token blacklisting works (line 212)."""
+        mock_blacklist.return_value = None  # Successful blacklist
+
+        refresh = RefreshToken.for_user(self.user)
+        data = {'refresh': str(refresh)}
+
+        response = self.client.post('/api/auth/logout/', data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status'], 'success')
+        mock_blacklist.assert_called_once()
+
+    # ---- Line 572: verify_email UserProfile.DoesNotExist ----
+
+    def test_verify_email_no_user_profile_exists(self):
+        """Email verification succeeds when user has no UserProfile (line 572)."""
+        from userprofile.models.user_profile import UserProfile
+
+        # Generate valid token for user that has no UserProfile
+        token = default_token_generator.make_token(self.user)
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+
+        data = {
+            'uid': uid,
+            'token': token,
+            'email': 'verified@example.com'
+        }
+
+        # Patch UserProfile.objects.get to raise DoesNotExist
+        with patch('userprofile.models.user_profile.UserProfile.objects.get') as mock_get:
+            mock_get.side_effect = UserProfile.DoesNotExist('No profile')
+
+            response = self.client.post('/api/auth/verify_email/', data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status'], 'success')
+
+        # Verify email was updated despite no UserProfile
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email, 'verified@example.com')
+
+    # ---- Lines 715-718: send_test_email failure path ----
+
+    @patch('core_auth.views.email_service')
+    def test_send_test_email_failure(self, mock_email_service):
+        """send_test_email returns 500 when email service returns False (lines 715-718)."""
+        mock_email_service.send_order_confirmation.return_value = False
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.post(
+            '/api/auth/test-email/',
+            {'email': 'fail@example.com'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertFalse(response.data['success'])
+        self.assertIn('Failed to send test email', response.data['message'])
+
+    # ---- Lines 720-724: send_test_email exception path ----
+
+    @patch('core_auth.views.email_service')
+    def test_send_test_email_exception(self, mock_email_service):
+        """send_test_email returns 500 when email service raises exception (lines 720-724)."""
+        mock_email_service.send_order_confirmation.side_effect = Exception('SMTP error')
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.post(
+            '/api/auth/test-email/',
+            {'email': 'exc@example.com'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertFalse(response.data['success'])
+        self.assertIn('Error:', response.data['message'])
+
+    # ---- Lines 729-730: get_token_expiry_hours utility function ----
+
+    def test_get_token_expiry_hours_password_reset(self):
+        """get_token_expiry_hours returns configured value for password_reset (lines 729-730)."""
+        from core_auth.views import get_token_expiry_hours
+
+        result = get_token_expiry_hours('password_reset')
+        # Should return TOKEN_EXPIRY_PASSWORD_RESET_HOURS from settings or default 24
+        self.assertIsInstance(result, (int, float))
+        self.assertGreater(result, 0)
+
+    def test_get_token_expiry_hours_account_activation(self):
+        """get_token_expiry_hours returns configured value for account_activation (lines 729-730)."""
+        from core_auth.views import get_token_expiry_hours
+
+        result = get_token_expiry_hours('account_activation')
+        self.assertIsInstance(result, (int, float))
+        self.assertGreater(result, 0)
+
+    def test_get_token_expiry_hours_unknown_type_defaults_to_24(self):
+        """get_token_expiry_hours returns 24 for unknown token type (lines 729-730)."""
+        from core_auth.views import get_token_expiry_hours
+
+        result = get_token_expiry_hours('nonexistent_type')
+        self.assertEqual(result, 24)
+
+    # ---- send_test_email with default email (no email in request) ----
+
+    @patch('core_auth.views.email_service')
+    def test_send_test_email_default_recipient(self, mock_email_service):
+        """send_test_email uses default email when none provided (line 691)."""
+        mock_email_service.send_order_confirmation.return_value = True
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.post(
+            '/api/auth/test-email/',
+            {},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['success'])
+        # Verify default email was used
+        call_args = mock_email_service.send_order_confirmation.call_args
+        self.assertEqual(call_args[0][0], 'eugenelo1030@gmail.com')

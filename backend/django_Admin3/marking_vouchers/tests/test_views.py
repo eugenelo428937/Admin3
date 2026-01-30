@@ -109,3 +109,86 @@ class TestAddVoucherToCartEndpoint(APITestCase):
             format='json',
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    @patch('marking_vouchers.views.CartService')
+    def test_add_voucher_to_cart_unavailable_after_validation(
+        self, mock_cart_service_cls
+    ):
+        """POST returns 400 when voucher becomes unavailable between validation and use."""
+        # The serializer calls .get() first (passes because voucher is active),
+        # then the view calls .get() again. We use side_effect to return the
+        # real voucher on the first call (serializer) and an unavailable mock
+        # on the second call (view).
+        real_voucher = self.voucher
+        unavailable_voucher = MagicMock()
+        unavailable_voucher.is_available = False
+
+        original_get = MarkingVoucher.objects.get
+        call_count = {'n': 0}
+
+        def side_effect_get(**kwargs):
+            call_count['n'] += 1
+            if call_count['n'] == 1:
+                return original_get(**kwargs)
+            return unavailable_voucher
+
+        self.client.force_authenticate(user=self.user)
+        with patch.object(MarkingVoucher.objects, 'get', side_effect=side_effect_get):
+            response = self.client.post(
+                '/api/marking-vouchers/add-to-cart/',
+                {'voucher_id': self.voucher.id, 'quantity': 1},
+                format='json',
+            )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.data)
+        self.assertIn('not available', response.data['error'])
+
+    def test_add_voucher_to_cart_voucher_not_found_in_view(self):
+        """POST returns 404 when voucher is deleted between validation and retrieval."""
+        # First call (serializer) returns real voucher, second call (view) raises DoesNotExist
+        original_get = MarkingVoucher.objects.get
+        call_count = {'n': 0}
+
+        def side_effect_get(**kwargs):
+            call_count['n'] += 1
+            if call_count['n'] == 1:
+                return original_get(**kwargs)
+            raise MarkingVoucher.DoesNotExist
+
+        self.client.force_authenticate(user=self.user)
+        with patch.object(MarkingVoucher.objects, 'get', side_effect=side_effect_get):
+            response = self.client.post(
+                '/api/marking-vouchers/add-to-cart/',
+                {'voucher_id': self.voucher.id, 'quantity': 1},
+                format='json',
+            )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIn('error', response.data)
+        self.assertIn('not found', response.data['error'])
+
+    @patch('marking_vouchers.views.CartService')
+    def test_add_voucher_to_cart_generic_exception(self, mock_cart_service_cls):
+        """POST returns 400 when CartService raises a generic exception."""
+        mock_service = mock_cart_service_cls.return_value
+        mock_service.add_marking_voucher.side_effect = Exception('Cart service error')
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(
+            '/api/marking-vouchers/add-to-cart/',
+            {'voucher_id': self.voucher.id, 'quantity': 1},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.data)
+        self.assertIn('Cart service error', response.data['error'])
+
+    def test_add_voucher_to_cart_invalid_data(self):
+        """POST returns 400 with serializer errors for missing voucher_id."""
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(
+            '/api/marking-vouchers/add-to-cart/',
+            {},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('voucher_id', response.data)
