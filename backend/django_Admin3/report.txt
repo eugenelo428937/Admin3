@@ -1,6 +1,6 @@
 ============================================================
 Test Coverage Audit Report - Admin3
-Generated: 2026-01-30T11:22:22.988614
+Generated: 2026-01-31T22:33:00.769624
 ============================================================
 
 ENDPOINT COVERAGE
@@ -14,54 +14,10 @@ UNTESTED ENDPOINTS BY APP:
 SERIALIZER FIELD COVERAGE
 ----------------------------------------
   Total fields:      148
-  Read-tested:       83 (56.1%)
-  Write-tested:      83 (56.1%)
-  Untested:          40 (27.0%)
+  Read-tested:       146 (98.6%)
+  Write-tested:      112 (75.7%)
+  Untested:          0 (0.0%)
 
 TOP SERIALIZER GAPS:
-  cart.CartFeeSerializer - 5 untested field(s):
-    - fee_type
-    - is_refundable
-    - applied_at
-    - applied_by_rule
-    - metadata
-  cart.CartItemSerializer - 5 untested field(s):
-    - metadata
-    - is_marking
-    - has_expired_deadline
-    - expired_deadlines_count
-    - marking_paper_count
-  cart.CartSerializer - 4 untested field(s):
-    - fees
-    - has_digital
-    - user_context
-    - vat_calculations
-  students.StudentSerializer - 4 untested field(s):
-    - student_type
-    - apprentice_type
-    - create_date
-    - modified_date
-  search.ProductSearchRequestSerializer - 4 untested field(s):
-    - searchQuery
-    - filters
-    - pagination
-    - options
-  marking_vouchers.MarkingVoucherSerializer - 3 untested field(s):
-    - price
-    - expiry_date
-    - is_available
-  search.FilterCountSerializer - 3 untested field(s):
-    - categories
-    - product_types
-    - modes_of_delivery
-  cart.ActedOrderItemSerializer - 2 untested field(s):
-    - item_type
-    - metadata
-  search.ProductSearchResponseSerializer - 2 untested field(s):
-    - filter_counts
-    - pagination
-  filtering.FilterConfigurationGroupSerializer - 2 untested field(s):
-    - is_default
-    - parent_id
 
 ============================================================
