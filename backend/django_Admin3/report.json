@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-01-30T11:22:22.988614",
+  "generated_at": "2026-01-31T22:33:00.769624",
   "summary": {
     "total_endpoints": 84,
     "tested_endpoints": 84,
     "untested_endpoints": 0,
     "endpoint_coverage_pct": 100.0,
     "total_serializer_fields": 148,
-    "read_tested_fields": 83,
-    "write_tested_fields": 83,
-    "untested_fields": 40,
-    "field_read_coverage_pct": 56.1,
-    "field_write_coverage_pct": 56.1
+    "read_tested_fields": 146,
+    "write_tested_fields": 112,
+    "untested_fields": 0,
+    "field_read_coverage_pct": 98.6,
+    "field_write_coverage_pct": 75.7
   },
   "endpoint_coverage_by_app": {
     "utils": {
@@ -95,24 +95,27 @@
       "total_fields": 12,
       "read_tested": [
         "id",
+        "item_type",
         "product",
         "product_name",
         "product_code",
         "subject_code",
         "exam_session_code",
         "product_type",
-        "price_type"
+        "quantity",
+        "price_type",
+        "actual_price",
+        "metadata"
       ],
       "write_tested": [
         "id",
+        "product_code",
+        "subject_code",
         "quantity",
         "price_type",
         "actual_price"
       ],
-      "untested": [
-        "item_type",
-        "metadata"
-      ]
+      "untested": []
     },
     "cart.ActedOrderSerializer": {
       "total_fields": 5,
@@ -136,35 +139,44 @@
       "total_fields": 10,
       "read_tested": [
         "id",
+        "fee_type",
         "name",
         "description",
         "amount",
-        "currency"
-      ],
-      "write_tested": [
-        "id",
-        "name",
-        "description",
-        "amount"
-      ],
-      "untested": [
-        "fee_type",
+        "currency",
         "is_refundable",
         "applied_at",
         "applied_by_rule",
         "metadata"
-      ]
+      ],
+      "write_tested": [
+        "id",
+        "fee_type",
+        "name",
+        "description",
+        "amount"
+      ],
+      "untested": []
     },
     "cart.CartItemSerializer": {
       "total_fields": 21,
       "read_tested": [
         "id",
+        "current_product",
+        "product_id",
         "product_name",
         "product_code",
         "subject_code",
         "exam_session_code",
         "product_type",
+        "quantity",
         "price_type",
+        "actual_price",
+        "metadata",
+        "is_marking",
+        "has_expired_deadline",
+        "expired_deadlines_count",
+        "marking_paper_count",
         "net_amount",
         "vat_region",
         "vat_rate",
@@ -175,30 +187,34 @@
         "id",
         "current_product",
         "product_id",
+        "product_code",
+        "subject_code",
         "quantity",
         "price_type",
         "actual_price",
         "net_amount",
-        "vat_amount"
+        "vat_rate",
+        "vat_amount",
+        "gross_amount"
       ],
-      "untested": [
-        "metadata",
-        "is_marking",
-        "has_expired_deadline",
-        "expired_deadlines_count",
-        "marking_paper_count"
-      ]
+      "untested": []
     },
     "cart.CartSerializer": {
       "total_fields": 17,
       "read_tested": [
         "id",
         "user",
+        "session_key",
         "items",
+        "fees",
         "created_at",
         "updated_at",
         "has_marking",
+        "has_digital",
+        "has_tutorial",
         "has_material",
+        "user_context",
+        "vat_calculations",
         "vat_totals",
         "vat_last_calculated_at",
         "vat_calculation_error",
@@ -215,35 +231,38 @@
         "has_tutorial",
         "has_material"
       ],
-      "untested": [
-        "fees",
-        "has_digital",
-        "user_context",
-        "vat_calculations"
-      ]
+      "untested": []
     },
     "students.StudentSerializer": {
       "total_fields": 7,
       "read_tested": [
         "student_ref",
-        "user"
-      ],
-      "write_tested": [
         "user",
-        "remarks"
-      ],
-      "untested": [
         "student_type",
         "apprentice_type",
         "create_date",
-        "modified_date"
-      ]
+        "modified_date",
+        "remarks"
+      ],
+      "write_tested": [
+        "student_ref",
+        "user",
+        "student_type",
+        "apprentice_type",
+        "create_date",
+        "modified_date",
+        "remarks"
+      ],
+      "untested": []
     },
     "students.UserSerializer": {
       "total_fields": 6,
       "read_tested": [
         "id",
-        "username"
+        "username",
+        "email",
+        "first_name",
+        "last_name"
       ],
       "write_tested": [
         "id",
@@ -259,7 +278,11 @@
       "total_fields": 7,
       "read_tested": [
         "id",
-        "username"
+        "username",
+        "email",
+        "first_name",
+        "last_name",
+        "profile"
       ],
       "write_tested": [
         "id",
@@ -269,14 +292,13 @@
         "first_name",
         "last_name"
       ],
-      "untested": [
-        "profile"
-      ]
+      "untested": []
     },
     "tutorials.TutorialEventSerializer": {
       "total_fields": 13,
       "read_tested": [
         "id",
+        "store_product_code",
         "subject_code",
         "code",
         "venue",
@@ -286,12 +308,17 @@
         "start_date",
         "end_date",
         "created_at",
-        "updated_at"
+        "updated_at",
+        "store_product"
       ],
       "write_tested": [
         "id",
+        "store_product_code",
+        "subject_code",
         "code",
         "venue",
+        "is_soldout",
+        "finalisation_date",
         "remain_space",
         "start_date",
         "end_date",
@@ -299,15 +326,15 @@
         "updated_at",
         "store_product"
       ],
-      "untested": [
-        "store_product_code"
-      ]
+      "untested": []
     },
     "marking.MarkingPaperSerializer": {
       "total_fields": 4,
       "read_tested": [
         "id",
-        "name"
+        "name",
+        "deadline",
+        "recommended_submit_date"
       ],
       "write_tested": [
         "id",
@@ -319,7 +346,10 @@
     },
     "marking_vouchers.AddMarkingVoucherToCartSerializer": {
       "total_fields": 2,
-      "read_tested": [],
+      "read_tested": [
+        "voucher_id",
+        "quantity"
+      ],
       "write_tested": [
         "voucher_id",
         "quantity"
@@ -333,7 +363,10 @@
         "code",
         "name",
         "description",
+        "price",
         "is_active",
+        "expiry_date",
+        "is_available",
         "created_at",
         "updated_at"
       ],
@@ -342,36 +375,39 @@
         "code",
         "name",
         "description",
+        "price",
+        "is_active",
+        "expiry_date",
+        "is_available",
         "created_at",
         "updated_at"
       ],
-      "untested": [
-        "price",
-        "expiry_date",
-        "is_available"
-      ]
+      "untested": []
     },
     "search.FilterCountSerializer": {
       "total_fields": 5,
       "read_tested": [
         "subjects",
-        "products"
+        "categories",
+        "product_types",
+        "products",
+        "modes_of_delivery"
       ],
       "write_tested": [
         "subjects",
+        "categories",
         "products"
       ],
-      "untested": [
-        "categories",
-        "product_types",
-        "modes_of_delivery"
-      ]
+      "untested": []
     },
     "search.ProductSearchPaginationSerializer": {
       "total_fields": 5,
       "read_tested": [
         "page",
-        "page_size"
+        "page_size",
+        "total_count",
+        "has_next",
+        "has_previous"
       ],
       "write_tested": [
         "page",
@@ -384,27 +420,28 @@
     },
     "search.ProductSearchRequestSerializer": {
       "total_fields": 4,
-      "read_tested": [],
-      "write_tested": [],
-      "untested": [
+      "read_tested": [
         "searchQuery",
         "filters",
         "pagination",
         "options"
-      ]
+      ],
+      "write_tested": [
+        "searchQuery"
+      ],
+      "untested": []
     },
     "search.ProductSearchResponseSerializer": {
       "total_fields": 3,
       "read_tested": [
-        "products"
+        "products",
+        "filter_counts",
+        "pagination"
       ],
       "write_tested": [
         "products"
       ],
-      "untested": [
-        "filter_counts",
-        "pagination"
-      ]
+      "untested": []
     },
     "filtering.FilterConfigurationGroupSerializer": {
       "total_fields": 6,
@@ -412,47 +449,51 @@
         "id",
         "name",
         "code",
-        "display_order"
+        "display_order",
+        "is_default",
+        "parent_id"
       ],
       "write_tested": [
         "id",
         "name",
-        "code"
-      ],
-      "untested": [
+        "code",
+        "display_order",
         "is_default",
         "parent_id"
-      ]
+      ],
+      "untested": []
     },
     "filtering.FilterGroupSerializer": {
       "total_fields": 4,
       "read_tested": [
         "id",
-        "name"
+        "name",
+        "parent",
+        "children"
       ],
       "write_tested": [
         "id",
-        "name"
-      ],
-      "untested": [
+        "name",
         "parent",
         "children"
-      ]
+      ],
+      "untested": []
     },
     "filtering.FilterGroupThreeLevelSerializer": {
       "total_fields": 4,
       "read_tested": [
         "id",
-        "name"
+        "name",
+        "parent",
+        "children"
       ],
       "write_tested": [
         "id",
-        "name"
-      ],
-      "untested": [
+        "name",
         "parent",
         "children"
-      ]
+      ],
+      "untested": []
     },
     "filtering.FilterGroupWithProductsSerializer": {
       "total_fields": 3,

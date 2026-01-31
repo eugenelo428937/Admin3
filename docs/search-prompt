@@ -1,0 +1,7 @@
+
+
+I would like to improve the accuracy of the fuzzy search and further refactor the search service app. When I search for "CS2 addition mock", the top 3 search result is cs2 course note, cs2 core reading and paper b online resources.
+1, study how the FuzzyWuzzy search is implemented in the codebase, how the search text is build and have a thorough understanding on score calculation.
+2, In the @search_service.py, explain the difference of _apply_filters and _apply_navbar_filters.
+the _generate_filter_counts seems to be better if it is move to the filter app. After the search returning match store.product IDs, the SearchService calls the ProductFilterService to apply the filters. Is it better than the current implementation?
+
