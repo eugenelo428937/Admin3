@@ -104,7 +104,7 @@ class TestDisjunctiveFaceting(TestCase):
         Product type counts: Core Study=2, Revision=1
         """
         base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service._generate_filter_counts(base_qs)
+        counts = self.service.filter_service.generate_filter_counts(base_qs)
 
         # Subject counts should include all subjects
         self.assertIn('CM2', counts['subjects'])
@@ -130,7 +130,7 @@ class TestDisjunctiveFaceting(TestCase):
         """
         base_qs = StoreProduct.objects.filter(is_active=True)
         filters = {'subjects': ['CM2']}
-        counts = self.service._generate_filter_counts(base_qs, filters=filters)
+        counts = self.service.filter_service.generate_filter_counts(base_qs, filters=filters)
 
         # Category counts should reflect only CM2 products
         self.assertIn('Material', counts['categories'])
@@ -154,7 +154,7 @@ class TestDisjunctiveFaceting(TestCase):
         """
         base_qs = StoreProduct.objects.filter(is_active=True)
         filters = {'subjects': ['CM2'], 'categories': ['Material']}
-        counts = self.service._generate_filter_counts(base_qs, filters=filters)
+        counts = self.service.filter_service.generate_filter_counts(base_qs, filters=filters)
 
         # Product type counts should reflect CM2 + Material intersection
         self.assertIn('Core Study Materials', counts['product_types'])
@@ -171,7 +171,7 @@ class TestDisjunctiveFaceting(TestCase):
         """
         base_qs = StoreProduct.objects.filter(is_active=True)
         filters = {'subjects': ['CM2']}
-        counts = self.service._generate_filter_counts(base_qs, filters=filters)
+        counts = self.service.filter_service.generate_filter_counts(base_qs, filters=filters)
 
         # Subject counts should still show ALL subjects
         self.assertIn('CM2', counts['subjects'])
@@ -197,7 +197,7 @@ class TestDisjunctiveFaceting(TestCase):
         # (since we filter by product_type=Core Study, categories should
         # show Material with only core products)
         filters = {'product_types': ['Core Study Materials']}
-        counts = self.service._generate_filter_counts(base_qs, filters=filters)
+        counts = self.service.filter_service.generate_filter_counts(base_qs, filters=filters)
 
         # With product_type=Core Study, the product_types dimension should
         # still show Revision Materials (self-exclusion applies to own dimension)

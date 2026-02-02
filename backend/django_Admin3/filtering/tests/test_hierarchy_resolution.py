@@ -204,7 +204,7 @@ class TestHierarchyResolution(TestCase):
         include products from all descendant groups.
         """
         base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service._generate_filter_counts(base_qs)
+        counts = self.service.filter_service.generate_filter_counts(base_qs)
 
         # Material should count all 3 products (1 direct + 2 from children)
         self.assertIn('Material', counts['categories'])

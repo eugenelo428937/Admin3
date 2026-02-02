@@ -256,18 +256,28 @@ class TestBundleFiltering(TestCase):
         base_qs = StoreProduct.objects.filter(is_active=True)
 
         # Case 1: Core filter — all bundles have at least one Core product
-        counts = self.service._generate_filter_counts(
-            base_qs, filters={'product_types': ['Core Study Materials']}
+        # Bundle counts are injected by SearchService.unified_search via
+        # _get_filtered_bundle_count, not by filter_service.generate_filter_counts.
+        filters_core = {'product_types': ['Core Study Materials']}
+        counts = self.service.filter_service.generate_filter_counts(
+            base_qs, filters=filters_core
         )
+        bundle_count = self.service._get_filtered_bundle_count(filters_core)
+        if bundle_count > 0:
+            counts['categories']['Bundle'] = {'count': bundle_count, 'name': 'Bundle'}
         self.assertEqual(
             counts['categories']['Bundle']['count'], 3,
             "All 3 bundles contain Core Study Materials products"
         )
 
         # Case 2: Revision filter — only CM2 Complete has Revision
-        counts = self.service._generate_filter_counts(
-            base_qs, filters={'product_types': ['Revision Materials']}
+        filters_rev = {'product_types': ['Revision Materials']}
+        counts = self.service.filter_service.generate_filter_counts(
+            base_qs, filters=filters_rev
         )
+        bundle_count = self.service._get_filtered_bundle_count(filters_rev)
+        if bundle_count > 0:
+            counts['categories']['Bundle'] = {'count': bundle_count, 'name': 'Bundle'}
         self.assertEqual(
             counts['categories']['Bundle']['count'], 1,
             "Only CM2 Complete Study Pack has Revision Materials"
