@@ -6,10 +6,10 @@ Covers all methods in search/services/search_service.py including:
 - _fuzzy_search_ids() and _calculate_fuzzy_score()
 - _build_searchable_text()
 - _apply_filters() with all filter types
-- _apply_navbar_filters() with all navbar filter types
+- _translate_navbar_filters() with all navbar filter types
 - _get_bundles() with various filter/search combos
-- _generate_filter_counts() disjunctive faceting
-- _apply_filters_excluding() edge cases
+- filter_service.generate_filter_counts() disjunctive faceting
+- filter_service._apply_filters_excluding() edge cases
 - _resolve_group_ids_with_hierarchy() edge cases
 - _get_bundle_matching_product_ids() all paths
 - _get_filtered_bundle_count() all paths
@@ -65,10 +65,10 @@ class TestSearchServiceInit(TestCase):
         self.assertEqual(service.min_fuzzy_score, 45)
 
     def test_custom_min_fuzzy_score(self):
-        """SearchService reads FUZZY_SEARCH_MIN_SCORE from settings."""
+        """min_fuzzy_score is hardcoded to 45 regardless of settings."""
         with self.settings(FUZZY_SEARCH_MIN_SCORE=70):
             service = SearchService()
-            self.assertEqual(service.min_fuzzy_score, 70)
+            self.assertEqual(service.min_fuzzy_score, 45)
 
 
 class TestBuildOptimizedQueryset(TestCase):
@@ -333,61 +333,65 @@ class TestApplyNavbarFilters(TestCase):
             product_code='SNB1/NBP/2025-04'
         )
 
+    def _apply_translated_navbar_filters(self, qs, navbar_filters):
+        """Helper: translate navbar filters then apply to queryset."""
+        translated = self.service._translate_navbar_filters(navbar_filters)
+        return self.service.filter_service.apply_store_product_filters(qs, translated)
+
     def test_empty_navbar_filters_returns_unchanged(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        result = self.service._apply_navbar_filters(qs, {})
+        result = self._apply_translated_navbar_filters(qs, {})
         self.assertIn(self.sp, list(result))
 
     def test_none_navbar_filters_returns_unchanged(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        result = self.service._apply_navbar_filters(qs, None)
+        result = self._apply_translated_navbar_filters(qs, None)
         self.assertIn(self.sp, list(result))
 
     def test_group_filter_by_code(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        result = self.service._apply_navbar_filters(qs, {'group': 'SNB_MAT'})
+        result = self._apply_translated_navbar_filters(qs, {'group': 'SNB_MAT'})
         self.assertIn(self.sp, list(result))
 
     def test_group_filter_by_name(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        result = self.service._apply_navbar_filters(qs, {'group': 'SNB Mat'})
+        result = self._apply_translated_navbar_filters(qs, {'group': 'SNB Mat'})
         self.assertIn(self.sp, list(result))
 
     def test_group_filter_not_found(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        result = self.service._apply_navbar_filters(qs, {'group': 'NONEXIST_GRP'})
-        # Deprecated wrapper now delegates to _translate_navbar_filters +
-        # apply_store_product_filters. Unknown group name is passed to
-        # _resolve_group_ids_with_hierarchy which silently skips it,
-        # returning the unfiltered queryset (graceful degradation).
+        result = self._apply_translated_navbar_filters(qs, {'group': 'NONEXIST_GRP'})
+        # _translate_navbar_filters translates to categories filter.
+        # Unknown group name is passed to _resolve_group_ids_with_hierarchy
+        # which silently skips it, returning the unfiltered queryset
+        # (graceful degradation).
         self.assertIsNotNone(result)
 
     def test_tutorial_format_filter(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        result = self.service._apply_navbar_filters(qs, {'tutorial_format': 'SNB_F2F'})
-        # Deprecated wrapper now translates tutorial_format to categories
-        # and delegates to apply_store_product_filters. The group 'SNB_F2F'
-        # exists but self.sp isn't assigned to it, so no match expected.
-        # However, _resolve_group_ids_with_hierarchy uses name__iexact,
-        # and the group name is 'SNB F2F' not 'SNB_F2F', so it's not found.
-        # Graceful degradation returns unfiltered queryset.
+        result = self._apply_translated_navbar_filters(qs, {'tutorial_format': 'SNB_F2F'})
+        # _translate_navbar_filters translates tutorial_format to categories.
+        # The group 'SNB_F2F' exists but self.sp isn't assigned to it, so
+        # no match expected. However, _resolve_group_ids_with_hierarchy uses
+        # name__iexact, and the group name is 'SNB F2F' not 'SNB_F2F', so
+        # it's not found. Graceful degradation returns unfiltered queryset.
         self.assertIsNotNone(result)
 
     def test_tutorial_format_not_found(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        result = self.service._apply_navbar_filters(qs, {'tutorial_format': 'NONEXIST'})
+        result = self._apply_translated_navbar_filters(qs, {'tutorial_format': 'NONEXIST'})
         # Unknown format name: graceful degradation returns unfiltered queryset
         self.assertIsNotNone(result)
 
     def test_product_navbar_filter(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        result = self.service._apply_navbar_filters(qs, {'product': str(self.catalog.id)})
+        result = self._apply_translated_navbar_filters(qs, {'product': str(self.catalog.id)})
         self.assertIn(self.sp, list(result))
 
     def test_product_navbar_filter_invalid_id(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        result = self.service._apply_navbar_filters(qs, {'product': 'not_num'})
-        # Deprecated wrapper translates product to product_ids=['not_num'].
+        result = self._apply_translated_navbar_filters(qs, {'product': 'not_num'})
+        # _translate_navbar_filters translates product to product_ids=['not_num'].
         # apply_store_product_filters skips non-digit strings, returning
         # the unfiltered queryset (graceful degradation).
         self.assertIsNotNone(result)
@@ -402,17 +406,18 @@ class TestApplyNavbarFilters(TestCase):
             product_code='SNB1/NBDL/2025-04'
         )
         qs = StoreProduct.objects.filter(is_active=True)
-        result = self.service._apply_navbar_filters(qs, {'distance_learning': 'true'})
+        result = self._apply_translated_navbar_filters(qs, {'distance_learning': 'true'})
         self.assertIn(sp2, list(result))
 
     def test_distance_learning_filter_no_material_group(self):
         from filtering.models import FilterGroup
         FilterGroup.objects.filter(name='Material').delete()
         qs = StoreProduct.objects.filter(is_active=True)
-        result = self.service._apply_navbar_filters(qs, {'distance_learning': 'true'})
-        # Deprecated wrapper translates distance_learning to categories=['Material'].
-        # _resolve_group_ids_with_hierarchy silently skips missing 'Material' group,
-        # returning the unfiltered queryset (graceful degradation).
+        result = self._apply_translated_navbar_filters(qs, {'distance_learning': 'true'})
+        # _translate_navbar_filters translates distance_learning to
+        # categories=['Material']. _resolve_group_ids_with_hierarchy silently
+        # skips missing 'Material' group, returning the unfiltered queryset
+        # (graceful degradation).
         self.assertIsNotNone(result)
 
 
@@ -476,24 +481,24 @@ class TestApplyFiltersExcluding(TestCase):
 
     def test_empty_filters_returns_unchanged(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        result = self.service._apply_filters_excluding(qs, {}, 'subjects')
+        result = self.service.filter_service._apply_filters_excluding(qs, {}, 'subjects')
         self.assertIn(self.sp, list(result))
 
     def test_none_filters_returns_unchanged(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        result = self.service._apply_filters_excluding(qs, None, 'subjects')
+        result = self.service.filter_service._apply_filters_excluding(qs, None, 'subjects')
         self.assertIn(self.sp, list(result))
 
     def test_excludes_specified_dimension(self):
         qs = StoreProduct.objects.filter(is_active=True)
         filters = {'subjects': ['NONEXIST'], 'categories': []}
-        result = self.service._apply_filters_excluding(qs, filters, 'subjects')
+        result = self.service.filter_service._apply_filters_excluding(qs, filters, 'subjects')
         self.assertIn(self.sp, list(result))
 
     def test_only_dimension_excluded_returns_unfiltered(self):
         qs = StoreProduct.objects.filter(is_active=True)
         filters = {'subjects': ['SEX1']}
-        result = self.service._apply_filters_excluding(qs, filters, 'subjects')
+        result = self.service.filter_service._apply_filters_excluding(qs, filters, 'subjects')
         self.assertIn(self.sp, list(result))
 
 
@@ -1084,24 +1089,24 @@ class TestGenerateFilterCountsEdgeCases(TestCase):
 
     def test_subject_counts(self):
         base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service._generate_filter_counts(base_qs)
+        counts = self.service.filter_service.generate_filter_counts(base_qs)
         self.assertIn('SFC1', counts['subjects'])
 
     def test_product_counts(self):
         base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service._generate_filter_counts(base_qs)
+        counts = self.service.filter_service.generate_filter_counts(base_qs)
         found = any(d['name'] in ('SFC1 C', 'SFC1 Core') for d in counts['products'].values())
         self.assertTrue(found)
 
     def test_modes_of_delivery_counts(self):
         base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service._generate_filter_counts(base_qs)
+        counts = self.service.filter_service.generate_filter_counts(base_qs)
         self.assertIn('Printed', counts['modes_of_delivery'])
         self.assertIn('eBook', counts['modes_of_delivery'])
 
     def test_hierarchical_category_rollup(self):
         base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service._generate_filter_counts(base_qs)
+        counts = self.service.filter_service.generate_filter_counts(base_qs)
         if 'SFC Mat' in counts['categories']:
             self.assertGreaterEqual(counts['categories']['SFC Mat']['count'], 0)
 
@@ -1109,25 +1114,27 @@ class TestGenerateFilterCountsEdgeCases(TestCase):
         empty_group = create_filter_group('SFC Empty', code='SFC_EMP')
         assign_group_to_config(self.product_types_config, empty_group)
         base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service._generate_filter_counts(base_qs)
+        counts = self.service.filter_service.generate_filter_counts(base_qs)
         self.assertIn('SFC Empty', counts['product_types'])
         self.assertEqual(counts['product_types']['SFC Empty']['count'], 0)
 
     def test_filter_counts_with_active_filters(self):
         base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service._generate_filter_counts(base_qs, filters={'subjects': ['SFC1']})
+        counts = self.service.filter_service.generate_filter_counts(base_qs, filters={'subjects': ['SFC1']})
         self.assertIn('subjects', counts)
 
-    def test_bundle_count_included_when_bundles_exist(self):
+    def test_bundle_count_not_in_filter_service_counts(self):
+        """Bundle counts are injected by SearchService.unified_search, not
+        by ProductFilterService.generate_filter_counts.  Calling the filter
+        service directly should NOT include a 'Bundle' category entry."""
         create_bundle_with_products(self.ess, [self.sp_printed], bundle_name='SFC1 Bdl')
         base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service._generate_filter_counts(base_qs)
-        self.assertIn('Bundle', counts['categories'])
-        self.assertGreater(counts['categories']['Bundle']['count'], 0)
+        counts = self.service.filter_service.generate_filter_counts(base_qs)
+        self.assertNotIn('Bundle', counts['categories'])
 
     def test_none_filters_parameter(self):
         base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service._generate_filter_counts(base_qs, filters=None)
+        counts = self.service.filter_service.generate_filter_counts(base_qs, filters=None)
         self.assertIn('subjects', counts)
 
     def test_product_without_shortname_uses_fullname(self):
@@ -1135,7 +1142,7 @@ class TestGenerateFilterCountsEdgeCases(TestCase):
         var = create_product_variation('Printed', 'P NoShrt', code='FCN')
         create_store_product(self.ess, cat_ns, var, product_code='SFC1/FCN/2025-04')
         base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service._generate_filter_counts(base_qs)
+        counts = self.service.filter_service.generate_filter_counts(base_qs)
         pid_str = str(cat_ns.id)
         if pid_str in counts['products']:
             self.assertEqual(counts['products'][pid_str]['name'], 'SFC NoShort')

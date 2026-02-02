@@ -1117,7 +1117,9 @@ class CartServiceEdgeCaseTest(TestCase, CartTestDataMixin):
             cart=self.cart, product=self.store_product,
             item_type='product', metadata={'variationId': 99999},
         )
-        self.assertFalse(self.service._is_material_product(item))
+        # PPV lookup fails but falls through to product fullname check;
+        # 'Test Material' contains 'material' so this correctly returns True.
+        self.assertTrue(self.service._is_material_product(item))
 
     def test_is_material_product_exception(self):
         item = MagicMock()
@@ -1440,7 +1442,7 @@ class CartSerializerUserContextAddressTest(TestCase):
         """get_user_context includes home_country and work_country (lines 193, 203)."""
         from userprofile.models import UserProfile
         from userprofile.models.address import UserProfileAddress
-        profile = UserProfile.objects.create(user=self.user)
+        profile, _ = UserProfile.objects.get_or_create(user=self.user)
         UserProfileAddress.objects.create(
             user_profile=profile, address_type='HOME', country='United Kingdom',
         )
@@ -1466,7 +1468,7 @@ class CartSerializerUserContextAddressTest(TestCase):
     def test_user_context_profile_no_addresses(self):
         """get_user_context handles missing addresses (lines 194-195, 204-205)."""
         from userprofile.models import UserProfile
-        UserProfile.objects.create(user=self.user)
+        UserProfile.objects.get_or_create(user=self.user)
         # Profile exists but no addresses
         request = self._make_auth_request()
         serializer = CartSerializer(self.cart, context={'request': request})
@@ -1551,7 +1553,7 @@ class CartServiceMarkingFlagsTest(TestCase, CartTestDataMixin):
         """_resolve_user_country resolves from HOME address (lines 506-515)."""
         from userprofile.models import UserProfile
         from userprofile.models.address import UserProfileAddress
-        profile = UserProfile.objects.create(user=self.user)
+        profile, _ = UserProfile.objects.get_or_create(user=self.user)
         UserProfileAddress.objects.create(
             user_profile=profile, address_type='HOME', country='GB',
         )

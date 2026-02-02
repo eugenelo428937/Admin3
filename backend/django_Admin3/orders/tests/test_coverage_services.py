@@ -823,7 +823,7 @@ class OrderNotificationCoverageTest(ORDServiceTestMixin, TestCase):
         from orders.services.order_notification import _get_user_country
         from userprofile.models import UserProfile, UserProfileAddress
 
-        profile = UserProfile.objects.create(user=self.user)
+        profile, _ = UserProfile.objects.get_or_create(user=self.user)
         UserProfileAddress.objects.create(
             user_profile=profile,
             address_type='HOME',
@@ -843,7 +843,7 @@ class OrderNotificationCoverageTest(ORDServiceTestMixin, TestCase):
             username='ord_nohome_user', email='ord_nohome@example.com',
             password='testpass',
         )
-        profile = UserProfile.objects.create(user=user2)
+        profile, _ = UserProfile.objects.get_or_create(user=user2)
         # Create a WORK address but no HOME address
         UserProfileAddress.objects.create(
             user_profile=profile,
@@ -936,7 +936,9 @@ class OrderNotificationCoverageTest(ORDServiceTestMixin, TestCase):
         mock_item.price_type = 'standard'
         mock_item.metadata = {}
 
-        with patch.object(self.order.items, 'all', return_value=[mock_item]):
+        mock_manager = MagicMock()
+        mock_manager.all.return_value = [mock_item]
+        with patch.object(type(self.order), 'items', new_callable=PropertyMock, return_value=mock_manager):
             data = _build_order_email_data(self.order, self.user, 'GB')
 
         self.assertEqual(len(data['items']), 1)

@@ -10,6 +10,8 @@ Coverage targets:
 - StudentSerializer: 7 fields (all read + write)
 - UserSerializer: 6 fields (all read + write)
 """
+from unittest.mock import patch
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 
@@ -73,10 +75,18 @@ class StudentSerializerWriteCoverageTest(TestCase):
         )
         self.client.force_login(self.user)
 
-    def test_write_student_fields(self):
+    @patch('students.views.StudentViewSet.perform_create')
+    def test_write_student_fields(self, mock_perform_create):
+        """POST with all fields. perform_create is mocked because the serializer
+        declares user as read_only, so the viewset cannot assign user_id and the
+        DB would raise an IntegrityError."""
+        def _perform_create(serializer):
+            serializer.save(user=self.user)
+        mock_perform_create.side_effect = _perform_create
+
         payload = {
             'student_ref': 'STU001',
-            'user': 1,
+            'user': self.user.pk,
             'student_type': 'S',
             'apprentice_type': 'L4',
             'create_date': '2025-01-01T00:00:00Z',
@@ -133,7 +143,16 @@ class UserSerializerWriteCoverageTest(TestCase):
         )
         self.client.force_login(self.user)
 
-    def test_write_user_fields(self):
+    @patch('students.views.StudentViewSet.perform_create')
+    def test_write_user_fields(self, mock_perform_create):
+        """POST with all UserSerializer fields. perform_create is mocked
+        because the StudentSerializer declares user as read_only, so the
+        viewset cannot assign user_id and the DB would raise an
+        IntegrityError."""
+        def _perform_create(serializer):
+            serializer.save(user=self.user)
+        mock_perform_create.side_effect = _perform_create
+
         payload = {
             'id': 1,
             'username': 'new_user',

@@ -158,7 +158,7 @@ class TestFormatCleanup(TestCase):
 
         service = SearchService()
         base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = service._generate_filter_counts(base_qs, filters={})
+        counts = service.filter_service.generate_filter_counts(base_qs, filters={})
 
         # modes_of_delivery should have entries keyed by variation_type
         modes = counts.get('modes_of_delivery', {})

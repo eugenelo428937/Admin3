@@ -95,7 +95,7 @@ class TestFilterPartitioning(TestCase):
         """
         from store.models import Product as StoreProduct
         base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service._generate_filter_counts(base_qs)
+        counts = self.service.filter_service.generate_filter_counts(base_qs)
 
         category_names = set(counts['categories'].keys()) - {'Bundle'}
         product_type_names = set(counts['product_types'].keys())
@@ -128,7 +128,7 @@ class TestFilterPartitioning(TestCase):
         """
         from store.models import Product as StoreProduct
         base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service._generate_filter_counts(base_qs)
+        counts = self.service.filter_service.generate_filter_counts(base_qs)
 
         all_category_keys = set(counts['categories'].keys())
         all_type_keys = set(counts['product_types'].keys())
@@ -158,7 +158,7 @@ class TestFilterPartitioning(TestCase):
 
         from store.models import Product as StoreProduct
         base_qs = StoreProduct.objects.filter(is_active=True)
-        counts = self.service._generate_filter_counts(base_qs)
+        counts = self.service.filter_service.generate_filter_counts(base_qs)
 
         self.assertIn(
             'Dual Purpose Group', counts['categories'],
