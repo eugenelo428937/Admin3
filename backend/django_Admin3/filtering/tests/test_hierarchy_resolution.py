@@ -114,7 +114,7 @@ class TestHierarchyResolution(TestCase):
         """
         base_qs = StoreProduct.objects.filter(is_active=True)
         filters = {'categories': ['Material']}
-        filtered_qs = self.service._apply_filters(base_qs, filters)
+        filtered_qs = self.service.filter_service.apply_store_product_filters(base_qs, filters)
 
         product_codes = set(filtered_qs.values_list('product_code', flat=True))
 
@@ -150,7 +150,7 @@ class TestHierarchyResolution(TestCase):
 
         base_qs = StoreProduct.objects.filter(is_active=True)
         filters = {'categories': ['Material']}
-        filtered_qs = self.service._apply_filters(base_qs, filters)
+        filtered_qs = self.service.filter_service.apply_store_product_filters(base_qs, filters)
 
         product_codes = set(filtered_qs.values_list('product_code', flat=True))
 
@@ -167,7 +167,7 @@ class TestHierarchyResolution(TestCase):
         """
         base_qs = StoreProduct.objects.filter(is_active=True)
         filters = {'categories': ['Core Study Materials']}
-        filtered_qs = self.service._apply_filters(base_qs, filters)
+        filtered_qs = self.service.filter_service.apply_store_product_filters(base_qs, filters)
 
         product_codes = set(filtered_qs.values_list('product_code', flat=True))
 
@@ -184,7 +184,7 @@ class TestHierarchyResolution(TestCase):
         """
         base_qs = StoreProduct.objects.filter(is_active=True)
         filters = {'categories': ['Material']}
-        filtered_qs = self.service._apply_filters(base_qs, filters)
+        filtered_qs = self.service.filter_service.apply_store_product_filters(base_qs, filters)
 
         product_codes = set(filtered_qs.values_list('product_code', flat=True))
 

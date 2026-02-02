@@ -61,7 +61,7 @@ OPAYO_INTEGRATION_PASSWORD = 'test_password'
 USE_DUMMY_PAYMENT_GATEWAY = True
 
 # Fuzzy Search Configuration
-FUZZY_SEARCH_MIN_SCORE = 60
+FUZZY_SEARCH_MIN_SCORE = 45
 
 # Email settings
 USE_SENDGRID = False

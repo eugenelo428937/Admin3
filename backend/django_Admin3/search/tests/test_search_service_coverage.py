@@ -60,9 +60,15 @@ class TestSearchServiceInit(TestCase):
             self.assertEqual(service.cache_timeout, 600)
 
     def test_default_min_fuzzy_score(self):
-        """SearchService defaults min_fuzzy_score to 45 (R2: lowered threshold)."""
+        """SearchService reads FUZZY_SEARCH_MIN_SCORE from settings (default 45)."""
         service = SearchService()
         self.assertEqual(service.min_fuzzy_score, 45)
+
+    def test_custom_min_fuzzy_score(self):
+        """SearchService reads FUZZY_SEARCH_MIN_SCORE from settings."""
+        with self.settings(FUZZY_SEARCH_MIN_SCORE=70):
+            service = SearchService()
+            self.assertEqual(service.min_fuzzy_score, 70)
 
 
 class TestBuildOptimizedQueryset(TestCase):
@@ -239,72 +245,72 @@ class TestApplyFilters(TestCase):
 
     def test_filter_by_subject_code(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        filtered = self.service._apply_filters(qs, {'subjects': ['SAF1']})
+        filtered = self.service.filter_service.apply_store_product_filters(qs, {'subjects': ['SAF1']})
         self.assertIn(self.cm2_sp, list(filtered))
         self.assertNotIn(self.sa1_sp, list(filtered))
 
     def test_filter_by_subject_id_as_int(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        filtered = self.service._apply_filters(qs, {'subjects': [self.cm2.id]})
+        filtered = self.service.filter_service.apply_store_product_filters(qs, {'subjects': [self.cm2.id]})
         self.assertIn(self.cm2_sp, list(filtered))
         self.assertNotIn(self.sa1_sp, list(filtered))
 
     def test_filter_by_subject_id_as_string_digit(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        filtered = self.service._apply_filters(qs, {'subjects': [str(self.cm2.id)]})
+        filtered = self.service.filter_service.apply_store_product_filters(qs, {'subjects': [str(self.cm2.id)]})
         self.assertIn(self.cm2_sp, list(filtered))
 
     def test_filter_by_product_ids(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        filtered = self.service._apply_filters(qs, {'product_ids': [self.cm2_catalog.id]})
+        filtered = self.service.filter_service.apply_store_product_filters(qs, {'product_ids': [self.cm2_catalog.id]})
         self.assertIn(self.cm2_sp, list(filtered))
         self.assertNotIn(self.sa1_sp, list(filtered))
 
     def test_filter_by_products_key(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        filtered = self.service._apply_filters(qs, {'products': [str(self.cm2_catalog.id)]})
+        filtered = self.service.filter_service.apply_store_product_filters(qs, {'products': [str(self.cm2_catalog.id)]})
         self.assertIn(self.cm2_sp, list(filtered))
 
     def test_filter_by_products_with_non_digit_strings_skipped(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        filtered = self.service._apply_filters(qs, {'products': ['abc', str(self.cm2_catalog.id)]})
+        filtered = self.service.filter_service.apply_store_product_filters(qs, {'products': ['abc', str(self.cm2_catalog.id)]})
         self.assertIn(self.cm2_sp, list(filtered))
 
     def test_filter_by_essp_ids(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        filtered = self.service._apply_filters(qs, {'essp_ids': [self.cm2_sp.id]})
+        filtered = self.service.filter_service.apply_store_product_filters(qs, {'essp_ids': [self.cm2_sp.id]})
         result = list(filtered)
         self.assertIn(self.cm2_sp, result)
         self.assertNotIn(self.sa1_sp, result)
 
     def test_filter_by_modes_of_delivery(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        filtered = self.service._apply_filters(qs, {'modes_of_delivery': ['eBook']})
+        filtered = self.service.filter_service.apply_store_product_filters(qs, {'modes_of_delivery': ['eBook']})
         result = list(filtered)
         self.assertIn(self.sa1_sp, result)
         self.assertNotIn(self.cm2_sp, result)
 
     def test_filter_by_categories(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        filtered = self.service._apply_filters(qs, {'categories': ['SC Material']})
+        filtered = self.service.filter_service.apply_store_product_filters(qs, {'categories': ['SC Material']})
         result = list(filtered)
         self.assertIn(self.cm2_sp, result)
 
     def test_filter_by_product_types(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        filtered = self.service._apply_filters(qs, {'product_types': ['SC Tutorial']})
+        filtered = self.service.filter_service.apply_store_product_filters(qs, {'product_types': ['SC Tutorial']})
         result = list(filtered)
         self.assertEqual(len(result), 0)
 
     def test_no_filters_returns_all_distinct(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        filtered = self.service._apply_filters(qs, {})
+        filtered = self.service.filter_service.apply_store_product_filters(qs, {})
         self.assertIn(self.cm2_sp, list(filtered))
         self.assertIn(self.sa1_sp, list(filtered))
 
     def test_filter_bundle_category_excluded(self):
         qs = StoreProduct.objects.filter(is_active=True)
-        filtered = self.service._apply_filters(qs, {'categories': ['Bundle', 'SC Material']})
+        filtered = self.service.filter_service.apply_store_product_filters(qs, {'categories': ['Bundle', 'SC Material']})
         result = list(filtered)
         self.assertIn(self.cm2_sp, result)
 
