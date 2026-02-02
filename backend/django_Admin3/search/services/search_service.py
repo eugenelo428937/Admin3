@@ -14,8 +14,6 @@ from django.core.cache import cache
 from django.conf import settings
 from fuzzywuzzy import fuzz
 
-import warnings
-
 from store.models import Product as StoreProduct, Bundle as StoreBundle
 from catalog.models import Subject
 from filtering.models import FilterGroup, FilterConfiguration, FilterConfigurationGroup
@@ -149,7 +147,14 @@ class SearchService:
         paginated_items = all_items[start_idx:end_idx]
 
         # Generate filter counts (disjunctive faceting)
-        filter_counts = self._generate_filter_counts(self._build_optimized_queryset(), filters=filters)
+        filter_counts = self.filter_service.generate_filter_counts(self._build_optimized_queryset(), filters=filters)
+
+        # Add bundle count (bundle logic stays in SearchService)
+        bundle_count = self._get_filtered_bundle_count(filters)
+        if bundle_count > 0:
+            filter_counts['categories']['Bundle'] = {
+                'count': bundle_count, 'name': 'Bundle'
+            }
 
         result = {
             'products': paginated_items,
@@ -270,21 +275,6 @@ class SearchService:
 
         return int(round(score))
 
-    def _apply_filters(self, queryset, filters: Dict) -> Any:
-        """Apply filter criteria to queryset.
-
-        .. deprecated::
-            Delegates to ProductFilterService.apply_store_product_filters().
-            Use self.filter_service.apply_store_product_filters() directly.
-        """
-        warnings.warn(
-            "SearchService._apply_filters is deprecated. "
-            "Use ProductFilterService.apply_store_product_filters() instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.filter_service.apply_store_product_filters(queryset, filters)
-
     def _translate_navbar_filters(self, navbar_filters):
         """Translate navbar GET parameters to standard filter dict format (R5).
 
@@ -322,26 +312,6 @@ class SearchService:
             result['product_ids'] = [navbar_filters['product']]
 
         return result
-
-    def _apply_navbar_filters(self, queryset, navbar_filters: Dict) -> Any:
-        """Apply navbar dropdown filters.
-
-        .. deprecated::
-            Delegates to _translate_navbar_filters() + apply_store_product_filters().
-        """
-        if not navbar_filters:
-            return queryset
-
-        warnings.warn(
-            "SearchService._apply_navbar_filters is deprecated. "
-            "Use _translate_navbar_filters() + apply_store_product_filters() instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        translated = self._translate_navbar_filters(navbar_filters)
-        if translated:
-            return self.filter_service.apply_store_product_filters(queryset, translated)
-        return queryset
 
     def _get_bundles(self, filters: Dict, search_query: str,
                      bundle_filter_active: bool, no_fuzzy_results: bool) -> List[Dict]:
@@ -463,45 +433,6 @@ class SearchService:
             bundles_data.append(bundle_data)
 
         return bundles_data
-
-    def _generate_filter_counts(self, base_queryset, filters=None) -> Dict[str, Dict]:
-        """Generate disjunctive facet counts for all filter dimensions.
-
-        .. deprecated::
-            Delegates to ProductFilterService.generate_filter_counts().
-            Use self.filter_service.generate_filter_counts() directly.
-        """
-        warnings.warn(
-            "SearchService._generate_filter_counts is deprecated. "
-            "Use ProductFilterService.generate_filter_counts() instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        filter_counts = self.filter_service.generate_filter_counts(base_queryset, filters)
-
-        # Add bundle count (bundle logic stays in SearchService)
-        filters = filters or {}
-        bundle_count = self._get_filtered_bundle_count(filters)
-        if bundle_count > 0:
-            filter_counts['categories']['Bundle'] = {
-                'count': bundle_count, 'name': 'Bundle'
-            }
-
-        return filter_counts
-
-    def _apply_filters_excluding(self, queryset, filters: Dict, exclude_dimension: str):
-        """Apply all filters EXCEPT the excluded dimension.
-
-        .. deprecated::
-            Delegates to ProductFilterService._apply_filters_excluding().
-        """
-        warnings.warn(
-            "SearchService._apply_filters_excluding is deprecated. "
-            "Use ProductFilterService._apply_filters_excluding() instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.filter_service._apply_filters_excluding(queryset, filters, exclude_dimension)
 
     @staticmethod
     def _resolve_group_ids_with_hierarchy(group_names, exclude_names=None):

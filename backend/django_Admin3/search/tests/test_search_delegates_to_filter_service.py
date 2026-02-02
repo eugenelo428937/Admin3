@@ -1,12 +1,8 @@
-"""Tests for SearchService delegation to ProductFilterService (US2).
+"""Tests for SearchService and ProductFilterService consistency (US2).
 
 Validates that:
-- SearchService._apply_filters delegates to ProductFilterService.apply_store_product_filters()
-- SearchService._generate_filter_counts delegates to ProductFilterService.generate_filter_counts()
-- Deprecated wrappers emit deprecation warnings
-- Identical filters produce identical product sets via search and browse
+- Identical filters produce identical product sets via search and browse paths
 """
-from unittest.mock import patch, MagicMock
 from django.test import TestCase
 
 from search.services.search_service import SearchService
@@ -26,53 +22,6 @@ from filtering.tests.factories import (
     assign_group_to_config,
 )
 from store.models import Product as StoreProduct
-
-
-class SearchDelegatesToFilterServiceTest(TestCase):
-    """Test that SearchService delegates filter operations to ProductFilterService."""
-
-    def setUp(self):
-        self.search_service = SearchService()
-
-    def test_apply_filters_delegates_to_product_filter_service(self):
-        """R6: _apply_filters delegates to ProductFilterService.apply_store_product_filters()."""
-        base_qs = StoreProduct.objects.filter(is_active=True)
-        filters = {'subjects': ['CS2']}
-
-        with patch.object(
-            self.search_service, 'filter_service', create=True
-        ) as mock_fs:
-            mock_fs.apply_store_product_filters.return_value = base_qs.none()
-            self.search_service._apply_filters(base_qs, filters)
-            mock_fs.apply_store_product_filters.assert_called_once_with(base_qs, filters)
-
-    def test_generate_filter_counts_delegates_to_product_filter_service(self):
-        """R4: _generate_filter_counts delegates to ProductFilterService.generate_filter_counts()."""
-        base_qs = StoreProduct.objects.filter(is_active=True)
-        filters = {'subjects': ['CS2']}
-        expected = {
-            'subjects': {}, 'categories': {}, 'product_types': {},
-            'products': {}, 'modes_of_delivery': {},
-        }
-
-        with patch.object(
-            self.search_service, 'filter_service', create=True
-        ) as mock_fs:
-            mock_fs.generate_filter_counts.return_value = expected
-            result = self.search_service._generate_filter_counts(base_qs, filters=filters)
-            mock_fs.generate_filter_counts.assert_called_once_with(base_qs, filters)
-
-    def test_deprecated_apply_filters_emits_warning(self):
-        """R6: Deprecated _apply_filters wrapper emits deprecation warning."""
-        import warnings
-        base_qs = StoreProduct.objects.filter(is_active=True)
-
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            self.search_service._apply_filters(base_qs, {})
-            deprecation_warnings = [x for x in w if issubclass(x.category, DeprecationWarning)]
-            self.assertGreater(len(deprecation_warnings), 0,
-                               "Should emit DeprecationWarning")
 
 
 class SearchBrowseConsistencyTest(TestCase):
@@ -108,8 +57,8 @@ class SearchBrowseConsistencyTest(TestCase):
         browse_result = filter_service.apply_store_product_filters(base_qs, filters)
         browse_ids = set(browse_result.values_list('id', flat=True))
 
-        # Search path: SearchService delegates to same ProductFilterService
-        search_result = search_service._apply_filters(base_qs, filters)
+        # Search path: SearchService uses same ProductFilterService
+        search_result = search_service.filter_service.apply_store_product_filters(base_qs, filters)
         search_ids = set(search_result.values_list('id', flat=True))
 
         self.assertEqual(browse_ids, search_ids,
