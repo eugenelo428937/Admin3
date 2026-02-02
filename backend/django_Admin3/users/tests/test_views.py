@@ -839,20 +839,35 @@ class UserProfileAddressFallbackTestCase(APITestCase):
         self.assertEqual(response.data['status'], 'error')
 
     def test_get_profile_home_address_none_address_data(self):
-        """Test GET /api/users/profile/ with home address that has None address_data."""
+        """Test GET /api/users/profile/ with home address that has None address_data.
+
+        The database column has a NOT NULL constraint so we cannot store None
+        directly. Instead we create a valid address and wrap QuerySet.first()
+        so that any HOME address returned has address_data set to None at the
+        Python level, which exercises the falsy fallback branch in the view.
+        """
         self.client.force_authenticate(user=self.user)
 
-        # Create address with None address_data
-        address = UserProfileAddress.objects.create(
+        # Create a valid address in the database
+        UserProfileAddress.objects.create(
             user_profile=self.profile,
             address_type='HOME',
             address_data={'street': '123 Valid St', 'city': 'Test City'},
             country='UK'
         )
-        # Force address_data to None in database
-        UserProfileAddress.objects.filter(pk=address.pk).update(address_data=None)
 
-        response = self.client.get('/api/users/profile/')
+        # Wrap QuerySet.first() to nullify address_data on HOME addresses
+        from django.db.models import QuerySet
+        original_first = QuerySet.first
+
+        def patched_first(qs_self):
+            obj = original_first(qs_self)
+            if obj is not None and isinstance(obj, UserProfileAddress) and obj.address_type == 'HOME':
+                obj.address_data = None
+            return obj
+
+        with patch.object(QuerySet, 'first', patched_first):
+            response = self.client.get('/api/users/profile/')
 
         # None is also falsy, so triggers the fallback path
         self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)

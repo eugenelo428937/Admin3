@@ -1164,19 +1164,21 @@ class CoverageGapTestCase(APITestCase):
 
     # ---- Line 212: logout with successful blacklist ----
 
-    @patch('rest_framework_simplejwt.tokens.RefreshToken.blacklist')
-    def test_logout_successful_blacklist(self, mock_blacklist):
+    @patch('core_auth.views.RefreshToken')
+    def test_logout_successful_blacklist(self, MockRefreshToken):
         """Logout returns success when token blacklisting works (line 212)."""
-        mock_blacklist.return_value = None  # Successful blacklist
+        mock_token_instance = MagicMock()
+        mock_token_instance.blacklist.return_value = None  # Successful blacklist
+        MockRefreshToken.return_value = mock_token_instance
 
-        refresh = RefreshToken.for_user(self.user)
-        data = {'refresh': str(refresh)}
+        data = {'refresh': 'fake-refresh-token'}
 
         response = self.client.post('/api/auth/logout/', data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['status'], 'success')
-        mock_blacklist.assert_called_once()
+        MockRefreshToken.assert_called_once_with('fake-refresh-token')
+        mock_token_instance.blacklist.assert_called_once()
 
     # ---- Line 572: verify_email UserProfile.DoesNotExist ----
 
