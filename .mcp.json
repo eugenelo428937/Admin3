@@ -3,7 +3,7 @@
       "trello": {
          "command": "node",
          "args": ["./scripts/trello-mcp-wrapper.mjs"]
-      },            
+      },
       "railway-cli Docs": {
          "command": "node",
          "args": ["./scripts/run-mcp.js", "railway-cli Docs"]
