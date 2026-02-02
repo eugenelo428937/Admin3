@@ -14,9 +14,12 @@ from django.core.cache import cache
 from django.conf import settings
 from fuzzywuzzy import fuzz
 
+import warnings
+
 from store.models import Product as StoreProduct, Bundle as StoreBundle
 from catalog.models import Subject
 from filtering.models import FilterGroup, FilterConfiguration, FilterConfigurationGroup
+from filtering.services.filter_service import ProductFilterService
 from search.serializers import StoreProductListSerializer
 
 logger = logging.getLogger('search')
@@ -36,7 +39,8 @@ class SearchService:
 
     def __init__(self):
         self.cache_timeout = getattr(settings, 'SEARCH_CACHE_TIMEOUT', 300)
-        self.min_fuzzy_score = 60
+        self.min_fuzzy_score = 45
+        self.filter_service = ProductFilterService()
 
     def unified_search(self, search_query='', filters=None, pagination=None,
                        options=None, navbar_filters=None) -> Dict[str, Any]:
@@ -94,14 +98,23 @@ class SearchService:
         bundle_filter_active = 'Bundle' in filters.get('categories', [])
         non_bundle_categories = [c for c in filters.get('categories', []) if c != 'Bundle']
 
+        # Translate navbar filters and merge with panel filters
+        translated_navbar = self._translate_navbar_filters(navbar_filters)
+        if translated_navbar:
+            for key, values in translated_navbar.items():
+                if key in filters and isinstance(filters[key], list):
+                    filters[key] = filters[key] + [v for v in values if v not in filters[key]]
+                else:
+                    filters[key] = values
+
         if bundle_filter_active and not non_bundle_categories:
             # ONLY Bundle selected — no individual products
             filtered_queryset = base_queryset.none()
         else:
-            # Apply filters (Bundle is already excluded from group resolution
-            # by _resolve_group_ids_with_hierarchy's exclude_names=['Bundle'])
-            filtered_queryset = self._apply_filters(base_queryset, filters)
-            filtered_queryset = self._apply_navbar_filters(filtered_queryset, navbar_filters)
+            # Apply merged filters through ProductFilterService
+            filtered_queryset = self.filter_service.apply_store_product_filters(
+                base_queryset, filters
+            )
 
         # Get bundles if enabled
         bundles_data = []
@@ -223,144 +236,112 @@ class SearchService:
 
     def _calculate_fuzzy_score(self, query: str, searchable_text: str,
                                store_product: StoreProduct) -> int:
-        """Calculate fuzzy match score using multiple algorithms."""
+        """Calculate fuzzy match score using weighted composite formula.
+
+        Formula (R1):
+            score = 0.15 * subject_bonus + 0.40 * token_sort + 0.25 * partial_name + 0.20 * token_set
+
+        This replaces the previous max(scores) approach which flattened ranking
+        by letting subject_bonus (95) dominate all other signals.
+        """
         catalog_product = store_product.product_product_variation.product
         subject_code = store_product.exam_session_subject.subject.code.lower()
         product_name = (catalog_product.shortname or catalog_product.fullname or '').lower()
 
-        scores = []
-
-        # Subject code exact match bonus
-        if query.startswith(subject_code):
-            scores.append(95)
+        # Subject code exact match bonus (binary: 0 or 100)
+        subject_bonus = 100 if query.startswith(subject_code) else 0
 
         # Token sort ratio (handles word order)
-        scores.append(fuzz.token_sort_ratio(query, searchable_text))
+        token_sort = fuzz.token_sort_ratio(query, searchable_text)
 
-        # Partial ratio (substring matching)
-        scores.append(fuzz.partial_ratio(query, product_name))
+        # Partial ratio (substring matching on product name)
+        partial_name = fuzz.partial_ratio(query, product_name)
 
         # Token set ratio (handles extra words)
-        scores.append(fuzz.token_set_ratio(query, searchable_text))
+        token_set = fuzz.token_set_ratio(query, searchable_text)
 
-        return max(scores) if scores else 0
+        # Weighted composite (R1)
+        score = (
+            0.15 * subject_bonus
+            + 0.40 * token_sort
+            + 0.25 * partial_name
+            + 0.20 * token_set
+        )
+
+        return int(round(score))
 
     def _apply_filters(self, queryset, filters: Dict) -> Any:
         """Apply filter criteria to queryset.
 
-        Non-M2M filters (subjects, product IDs, modes of delivery) are
-        combined into a single Q object and applied in one .filter() call.
-
-        M2M group filters (categories, product_types) each get their own
-        .filter() call so Django creates separate JOINs.  A single Q with
-        &= would require one JOIN row to satisfy both conditions — which
-        fails when category and product-type groups are disjoint sets.
+        .. deprecated::
+            Delegates to ProductFilterService.apply_store_product_filters().
+            Use self.filter_service.apply_store_product_filters() directly.
         """
-        q_filter = Q()
+        warnings.warn(
+            "SearchService._apply_filters is deprecated. "
+            "Use ProductFilterService.apply_store_product_filters() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.filter_service.apply_store_product_filters(queryset, filters)
 
-        # Subject filter
-        if filters.get('subjects'):
-            subject_q = Q()
-            for subject in filters['subjects']:
-                if isinstance(subject, int) or (isinstance(subject, str) and subject.isdigit()):
-                    subject_q |= Q(exam_session_subject__subject__id=int(subject))
-                else:
-                    subject_q |= Q(exam_session_subject__subject__code=subject)
-            q_filter &= subject_q
+    def _translate_navbar_filters(self, navbar_filters):
+        """Translate navbar GET parameters to standard filter dict format (R5).
 
-        # Product ID filter (support both 'product_ids' and 'products' parameter names)
-        product_ids = filters.get('product_ids') or filters.get('products')
-        if product_ids:
-            # Convert string IDs to integers if needed
-            int_product_ids = []
-            for pid in product_ids:
-                if isinstance(pid, int):
-                    int_product_ids.append(pid)
-                elif isinstance(pid, str) and pid.isdigit():
-                    int_product_ids.append(int(pid))
-            if int_product_ids:
-                q_filter &= Q(product_product_variation__product__id__in=int_product_ids)
+        Translation mapping:
+            group           -> categories[]
+            tutorial_format -> categories[]
+            product         -> product_ids[]
+            distance_learning -> categories['Material']
 
-        # Store product ID filter (essp_ids for backward compatibility)
-        if filters.get('essp_ids'):
-            q_filter &= Q(id__in=filters['essp_ids'])
+        Args:
+            navbar_filters: Dict from GET query params.
 
-        # Mode of delivery filter (variation type)
-        # Matches against both variation_type (eBook, Printed, etc.) and variation name
-        if filters.get('modes_of_delivery'):
-            mode_q = Q()
-            for mode in filters['modes_of_delivery']:
-                mode_q |= Q(product_product_variation__product_variation__variation_type__iexact=mode)
-                mode_q |= Q(product_product_variation__product_variation__name__icontains=mode)
-            q_filter &= mode_q
+        Returns:
+            Standard filter dict compatible with apply_store_product_filters().
+        """
+        if not navbar_filters:
+            return {}
 
-        if q_filter:
-            queryset = queryset.filter(q_filter)
+        result = {}
+        categories = []
 
-        # M2M group filters — each dimension gets its own .filter() call
-        # so Django creates separate JOINs on the groups M2M table.
-        # Category filter (via product groups with hierarchy resolution)
-        if filters.get('categories'):
-            category_group_ids = self._resolve_group_ids_with_hierarchy(
-                filters['categories'], exclude_names=['Bundle']
-            )
-            if category_group_ids:
-                queryset = queryset.filter(
-                    product_product_variation__product__groups__id__in=category_group_ids
-                )
+        if 'group' in navbar_filters:
+            categories.append(navbar_filters['group'])
 
-        # Product type filter (via product groups with hierarchy resolution)
-        if filters.get('product_types'):
-            type_group_ids = self._resolve_group_ids_with_hierarchy(
-                filters['product_types']
-            )
-            if type_group_ids:
-                queryset = queryset.filter(
-                    product_product_variation__product__groups__id__in=type_group_ids
-                )
+        if 'tutorial_format' in navbar_filters:
+            categories.append(navbar_filters['tutorial_format'])
 
-        return queryset.distinct()
+        if 'distance_learning' in navbar_filters:
+            categories.append('Material')
+
+        if categories:
+            result['categories'] = categories
+
+        if 'product' in navbar_filters:
+            result['product_ids'] = [navbar_filters['product']]
+
+        return result
 
     def _apply_navbar_filters(self, queryset, navbar_filters: Dict) -> Any:
-        """Apply navbar dropdown filters."""
+        """Apply navbar dropdown filters.
+
+        .. deprecated::
+            Delegates to _translate_navbar_filters() + apply_store_product_filters().
+        """
         if not navbar_filters:
             return queryset
 
-        # Group filter
-        if 'group' in navbar_filters:
-            try:
-                group = FilterGroup.objects.get(
-                    Q(code=navbar_filters['group']) | Q(name=navbar_filters['group'])
-                )
-                queryset = queryset.filter(product_product_variation__product__groups=group)
-            except FilterGroup.DoesNotExist:
-                queryset = queryset.none()
-
-        # Tutorial format filter
-        if 'tutorial_format' in navbar_filters:
-            try:
-                format_group = FilterGroup.objects.get(code=navbar_filters['tutorial_format'])
-                queryset = queryset.filter(product_product_variation__product__groups=format_group)
-            except FilterGroup.DoesNotExist:
-                queryset = queryset.none()
-
-        # Product filter
-        if 'product' in navbar_filters:
-            try:
-                product_id = int(navbar_filters['product'])
-                queryset = queryset.filter(product_product_variation__product__id=product_id)
-            except (ValueError, TypeError):
-                queryset = queryset.none()
-
-        # Distance learning filter
-        if 'distance_learning' in navbar_filters:
-            try:
-                dl_group = FilterGroup.objects.get(name='Material')
-                queryset = queryset.filter(product_product_variation__product__groups=dl_group)
-            except FilterGroup.DoesNotExist:
-                queryset = queryset.none()
-
-        return queryset.distinct()
+        warnings.warn(
+            "SearchService._apply_navbar_filters is deprecated. "
+            "Use _translate_navbar_filters() + apply_store_product_filters() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        translated = self._translate_navbar_filters(navbar_filters)
+        if translated:
+            return self.filter_service.apply_store_product_filters(queryset, translated)
+        return queryset
 
     def _get_bundles(self, filters: Dict, search_query: str,
                      bundle_filter_active: bool, no_fuzzy_results: bool) -> List[Dict]:
@@ -486,180 +467,41 @@ class SearchService:
     def _generate_filter_counts(self, base_queryset, filters=None) -> Dict[str, Dict]:
         """Generate disjunctive facet counts for all filter dimensions.
 
-        Disjunctive faceting: each dimension's counts are computed against
-        a queryset with all OTHER active filters applied, but excluding
-        that dimension's own filter. This allows users to see what options
-        are available within each dimension without the dimension filtering
-        itself out.
-
-        Args:
-            base_queryset: The unfiltered base queryset of active store products.
-            filters: Dict of active filters (subjects, categories, product_types, etc.)
+        .. deprecated::
+            Delegates to ProductFilterService.generate_filter_counts().
+            Use self.filter_service.generate_filter_counts() directly.
         """
+        warnings.warn(
+            "SearchService._generate_filter_counts is deprecated. "
+            "Use ProductFilterService.generate_filter_counts() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        filter_counts = self.filter_service.generate_filter_counts(base_queryset, filters)
+
+        # Add bundle count (bundle logic stays in SearchService)
         filters = filters or {}
-        filter_counts = {
-            'subjects': {},
-            'categories': {},
-            'product_types': {},
-            'products': {},
-            'modes_of_delivery': {}
-        }
-
-        # Subject counts - use queryset excluding subjects filter
-        subjects_qs = self._apply_filters_excluding(base_queryset, filters, 'subjects')
-        subject_counts = subjects_qs.values(
-            'exam_session_subject__subject__code'
-        ).annotate(count=Count('id')).order_by('-count')
-
-        for item in subject_counts:
-            code = item['exam_session_subject__subject__code']
-            count = item['count']
-            if code and count > 0:
-                filter_counts['subjects'][code] = {'count': count, 'name': code}
-
-        # Group counts partitioned by FilterConfigurationGroup assignments.
-        # Each filter dimension (categories, product_types) only shows groups
-        # assigned to its FilterConfiguration record.
-        # Disjunctive: each dimension excludes its own filter from the queryset.
-        for filter_key in ('categories', 'product_types'):
-            assigned_groups = list(
-                FilterConfigurationGroup.objects.filter(
-                    filter_configuration__filter_key=filter_key,
-                    filter_configuration__is_active=True,
-                ).select_related('filter_group').values_list(
-                    'filter_group_id', 'filter_group__name', named=True
-                )
-            )
-            if not assigned_groups:
-                continue
-
-            assigned_group_ids = {g.filter_group_id for g in assigned_groups}
-            assigned_group_names = {g.filter_group_id: g.filter_group__name for g in assigned_groups}
-
-            # Pre-populate all assigned groups with count=0 (FR-013: zero-count included)
-            for group_id, group_name in assigned_group_names.items():
-                if group_name:
-                    filter_counts[filter_key][group_name] = {
-                        'count': 0, 'name': group_name
-                    }
-
-            # Build queryset excluding this dimension's own filter
-            dimension_qs = self._apply_filters_excluding(base_queryset, filters, filter_key)
-
-            # Hierarchy-aware counts: for each assigned group, expand to
-            # include descendant IDs so parent counts roll up child products.
-            group_to_descendant_ids = {}
-            for group_id in assigned_group_ids:
-                try:
-                    group = FilterGroup.objects.get(id=group_id)
-                    descendants = group.get_descendants(include_self=True)
-                    group_to_descendant_ids[group_id] = {g.id for g in descendants}
-                except FilterGroup.DoesNotExist:
-                    group_to_descendant_ids[group_id] = {group_id}
-
-            # Collect all descendant IDs for the single query
-            all_descendant_ids = set()
-            for desc_ids in group_to_descendant_ids.values():
-                all_descendant_ids.update(desc_ids)
-
-            # Query counts for all descendant groups at once
-            group_counts = dimension_qs.filter(
-                product_product_variation__product__groups__id__in=all_descendant_ids
-            ).values(
-                'product_product_variation__product__groups__id',
-            ).annotate(count=Count('id', distinct=True))
-
-            # Build a map of descendant_id → count
-            descendant_count_map = {}
-            for item in group_counts:
-                desc_id = item['product_product_variation__product__groups__id']
-                descendant_count_map[desc_id] = item['count']
-
-            # Roll up: each assigned group's count = sum of its descendant counts
-            # Use distinct product IDs to avoid double-counting
-            for group_id in assigned_group_ids:
-                group_name = assigned_group_names.get(group_id)
-                if not group_name:
-                    continue
-                desc_ids = group_to_descendant_ids.get(group_id, {group_id})
-                # To get accurate distinct count, query directly
-                rollup_count = dimension_qs.filter(
-                    product_product_variation__product__groups__id__in=desc_ids
-                ).distinct().count()
-                filter_counts[filter_key][group_name] = {
-                    'count': rollup_count, 'name': group_name
-                }
-
-        # Add bundle count (filtered by active dimensions)
         bundle_count = self._get_filtered_bundle_count(filters)
         if bundle_count > 0:
             filter_counts['categories']['Bundle'] = {
                 'count': bundle_count, 'name': 'Bundle'
             }
 
-        # Product counts - use queryset excluding products filter
-        products_qs = self._apply_filters_excluding(base_queryset, filters, 'products')
-        product_counts = products_qs.values(
-            'product_product_variation__product__id',
-            'product_product_variation__product__shortname',
-            'product_product_variation__product__fullname'
-        ).annotate(count=Count('id', distinct=True)).order_by('-count')
-
-        for item in product_counts:
-            product_id = item['product_product_variation__product__id']
-            shortname = item['product_product_variation__product__shortname']
-            fullname = item['product_product_variation__product__fullname']
-            count = item['count']
-            if product_id and count > 0:
-                filter_counts['products'][str(product_id)] = {
-                    'count': count,
-                    'name': shortname or fullname or f'Product {product_id}',
-                    'display_name': shortname or fullname or f'Product {product_id}'
-                }
-
-        # Modes of delivery - use queryset excluding modes_of_delivery filter
-        modes_qs = self._apply_filters_excluding(base_queryset, filters, 'modes_of_delivery')
-        mode_counts = modes_qs.values(
-            'product_product_variation__product_variation__variation_type',
-            'product_product_variation__product_variation__name'
-        ).annotate(count=Count('id', distinct=True)).order_by('-count')
-
-        for item in mode_counts:
-            variation_type = item['product_product_variation__product_variation__variation_type']
-            variation_name = item['product_product_variation__product_variation__name']
-            count = item['count']
-            if variation_type and count > 0:
-                filter_counts['modes_of_delivery'][variation_type] = {
-                    'count': count,
-                    'name': variation_name or variation_type,
-                    'display_name': variation_name or variation_type
-                }
-
         return filter_counts
 
     def _apply_filters_excluding(self, queryset, filters: Dict, exclude_dimension: str):
         """Apply all filters EXCEPT the excluded dimension.
 
-        This is the core of disjunctive faceting: for computing counts
-        of a given dimension, we apply every other active filter but
-        skip the dimension we're counting.
-
-        Args:
-            queryset: Base queryset to filter.
-            filters: Dict of all active filters.
-            exclude_dimension: The filter key to exclude (e.g., 'subjects').
-
-        Returns:
-            Filtered queryset with the excluded dimension's filter removed.
+        .. deprecated::
+            Delegates to ProductFilterService._apply_filters_excluding().
         """
-        if not filters:
-            return queryset
-
-        reduced_filters = {k: v for k, v in filters.items() if k != exclude_dimension}
-        if not reduced_filters:
-            return queryset
-
-        return self._apply_filters(queryset, reduced_filters)
+        warnings.warn(
+            "SearchService._apply_filters_excluding is deprecated. "
+            "Use ProductFilterService._apply_filters_excluding() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.filter_service._apply_filters_excluding(queryset, filters, exclude_dimension)
 
     @staticmethod
     def _resolve_group_ids_with_hierarchy(group_names, exclude_names=None):

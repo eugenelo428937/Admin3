@@ -448,6 +448,262 @@ class ProductFilterService:
                 cache_key = self.strategies[filter_name].get_cache_key()
                 cache.delete(cache_key)
     
+    # ── store.Product filter methods (US2) ──────────────────────────
+
+    @staticmethod
+    def _resolve_group_ids_with_hierarchy(group_names, exclude_names=None):
+        """Resolve group names to IDs, expanding each group to include descendants.
+
+        Uses FilterGroup.get_descendants() to expand parent selections
+        to include all child group IDs.
+
+        Args:
+            group_names: List of group names to resolve.
+            exclude_names: Optional list of names to skip (e.g., ['Bundle']).
+
+        Returns:
+            Set of FilterGroup IDs (including descendants).
+        """
+        exclude_names = set(exclude_names or [])
+        resolved_ids = set()
+
+        for name in group_names:
+            if name in exclude_names:
+                continue
+            try:
+                group = FilterGroup.objects.get(name__iexact=name)
+                descendants = group.get_descendants(include_self=True)
+                resolved_ids.update(g.id for g in descendants)
+            except FilterGroup.DoesNotExist:
+                continue
+
+        return resolved_ids
+
+    def apply_store_product_filters(self, queryset, filters):
+        """Apply filters to a store.Product queryset.
+
+        Uses store.Product-specific field paths (R3):
+        - subjects: exam_session_subject__subject__id / __code
+        - categories: product_product_variation__product__groups__id__in
+        - product_types: product_product_variation__product__groups__id__in
+        - modes_of_delivery: product_product_variation__product_variation__name__in
+
+        Args:
+            queryset: Base queryset of store.Product instances.
+            filters: Dict with filter dimensions.
+
+        Returns:
+            Filtered and distinct queryset.
+        """
+        from django.db.models import Q
+
+        if not filters:
+            return queryset.distinct()
+
+        q_filter = Q()
+
+        # Subject filter
+        if filters.get('subjects'):
+            subject_q = Q()
+            for subject in filters['subjects']:
+                if isinstance(subject, int) or (isinstance(subject, str) and subject.isdigit()):
+                    subject_q |= Q(exam_session_subject__subject__id=int(subject))
+                else:
+                    subject_q |= Q(exam_session_subject__subject__code=subject)
+            q_filter &= subject_q
+
+        # Product ID filter
+        product_ids = filters.get('product_ids') or filters.get('products')
+        if product_ids:
+            int_product_ids = []
+            for pid in product_ids:
+                if isinstance(pid, int):
+                    int_product_ids.append(pid)
+                elif isinstance(pid, str) and pid.isdigit():
+                    int_product_ids.append(int(pid))
+            if int_product_ids:
+                q_filter &= Q(product_product_variation__product__id__in=int_product_ids)
+
+        # Store product ID filter (essp_ids for backward compatibility)
+        if filters.get('essp_ids'):
+            q_filter &= Q(id__in=filters['essp_ids'])
+
+        # Mode of delivery filter
+        if filters.get('modes_of_delivery'):
+            mode_q = Q()
+            for mode in filters['modes_of_delivery']:
+                mode_q |= Q(product_product_variation__product_variation__variation_type__iexact=mode)
+                mode_q |= Q(product_product_variation__product_variation__name__icontains=mode)
+            q_filter &= mode_q
+
+        if q_filter:
+            queryset = queryset.filter(q_filter)
+
+        # M2M group filters — separate .filter() calls for independent JOINs
+        if filters.get('categories'):
+            category_group_ids = self._resolve_group_ids_with_hierarchy(
+                filters['categories'], exclude_names=['Bundle']
+            )
+            if category_group_ids:
+                queryset = queryset.filter(
+                    product_product_variation__product__groups__id__in=category_group_ids
+                )
+
+        if filters.get('product_types'):
+            type_group_ids = self._resolve_group_ids_with_hierarchy(
+                filters['product_types']
+            )
+            if type_group_ids:
+                queryset = queryset.filter(
+                    product_product_variation__product__groups__id__in=type_group_ids
+                )
+
+        return queryset.distinct()
+
+    def _apply_filters_excluding(self, queryset, filters, exclude_dimension):
+        """Apply all filters EXCEPT the excluded dimension (for disjunctive faceting).
+
+        Args:
+            queryset: Base queryset to filter.
+            filters: Dict of all active filters.
+            exclude_dimension: The filter key to exclude.
+
+        Returns:
+            Filtered queryset with the excluded dimension removed.
+        """
+        if not filters:
+            return queryset
+
+        reduced_filters = {k: v for k, v in filters.items() if k != exclude_dimension}
+        if not reduced_filters:
+            return queryset
+
+        return self.apply_store_product_filters(queryset, reduced_filters)
+
+    def generate_filter_counts(self, base_queryset, filters=None):
+        """Generate disjunctive facet counts for all filter dimensions.
+
+        Each dimension's counts are computed against a queryset with all OTHER
+        active filters applied, but excluding that dimension's own filter (R4).
+
+        Args:
+            base_queryset: Unfiltered queryset of active store.Product instances.
+            filters: Dict with optional filter keys.
+
+        Returns:
+            Dict with five dimensions, each containing {name: {count, name}} entries.
+        """
+        from django.db.models import Count
+
+        filters = filters or {}
+        filter_counts = {
+            'subjects': {},
+            'categories': {},
+            'product_types': {},
+            'products': {},
+            'modes_of_delivery': {},
+        }
+
+        # Subject counts — exclude subjects filter
+        subjects_qs = self._apply_filters_excluding(base_queryset, filters, 'subjects')
+        subject_counts = subjects_qs.values(
+            'exam_session_subject__subject__code'
+        ).annotate(count=Count('id')).order_by('-count')
+
+        for item in subject_counts:
+            code = item['exam_session_subject__subject__code']
+            count = item['count']
+            if code and count > 0:
+                filter_counts['subjects'][code] = {'count': count, 'name': code}
+
+        # Group counts partitioned by FilterConfigurationGroup assignments
+        for filter_key in ('categories', 'product_types'):
+            assigned_groups = list(
+                FilterConfigurationGroup.objects.filter(
+                    filter_configuration__filter_key=filter_key,
+                    filter_configuration__is_active=True,
+                ).select_related('filter_group').values_list(
+                    'filter_group_id', 'filter_group__name', named=True
+                )
+            )
+            if not assigned_groups:
+                continue
+
+            assigned_group_ids = {g.filter_group_id for g in assigned_groups}
+            assigned_group_names = {g.filter_group_id: g.filter_group__name for g in assigned_groups}
+
+            # Pre-populate with count=0
+            for group_id, group_name in assigned_group_names.items():
+                if group_name:
+                    filter_counts[filter_key][group_name] = {
+                        'count': 0, 'name': group_name
+                    }
+
+            dimension_qs = self._apply_filters_excluding(base_queryset, filters, filter_key)
+
+            # Hierarchy-aware counts
+            group_to_descendant_ids = {}
+            for group_id in assigned_group_ids:
+                try:
+                    group = FilterGroup.objects.get(id=group_id)
+                    descendants = group.get_descendants(include_self=True)
+                    group_to_descendant_ids[group_id] = {g.id for g in descendants}
+                except FilterGroup.DoesNotExist:
+                    group_to_descendant_ids[group_id] = {group_id}
+
+            # Roll up counts per assigned group
+            for group_id in assigned_group_ids:
+                group_name = assigned_group_names.get(group_id)
+                if not group_name:
+                    continue
+                desc_ids = group_to_descendant_ids.get(group_id, {group_id})
+                rollup_count = dimension_qs.filter(
+                    product_product_variation__product__groups__id__in=desc_ids
+                ).distinct().count()
+                filter_counts[filter_key][group_name] = {
+                    'count': rollup_count, 'name': group_name
+                }
+
+        # Product counts — exclude products filter
+        products_qs = self._apply_filters_excluding(base_queryset, filters, 'products')
+        product_counts = products_qs.values(
+            'product_product_variation__product__id',
+            'product_product_variation__product__shortname',
+            'product_product_variation__product__fullname'
+        ).annotate(count=Count('id', distinct=True)).order_by('-count')
+
+        for item in product_counts:
+            product_id = item['product_product_variation__product__id']
+            shortname = item['product_product_variation__product__shortname']
+            fullname = item['product_product_variation__product__fullname']
+            count = item['count']
+            if product_id and count > 0:
+                filter_counts['products'][str(product_id)] = {
+                    'count': count,
+                    'name': shortname or fullname or f'Product {product_id}',
+                    'display_name': shortname or fullname or f'Product {product_id}'
+                }
+
+        # Modes of delivery — exclude modes_of_delivery filter
+        modes_qs = self._apply_filters_excluding(base_queryset, filters, 'modes_of_delivery')
+        mode_counts = modes_qs.values(
+            'product_product_variation__product_variation__variation_type',
+            'product_product_variation__product_variation__name'
+        ).annotate(count=Count('id', distinct=True)).order_by('-count')
+
+        for item in mode_counts:
+            variation_type = item['product_product_variation__product_variation__variation_type']
+            variation_name = item['product_product_variation__product_variation__name']
+            count = item['count']
+            if variation_type and count > 0:
+                filter_counts['modes_of_delivery'][variation_type] = {
+                    'count': count,
+                    'name': variation_name or variation_type,
+                    'display_name': variation_name or variation_type
+                }
+
+        return filter_counts
+
     def reload_configurations(self):
         """Reload filter configurations from database"""
         self.strategies.clear()

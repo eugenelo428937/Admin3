@@ -1328,6 +1328,8 @@ browser_close()
 - Python 3.14, Django 6.0 + Django ORM, Django migrations framework, psycopg2-binary (20260126-schema-migration)
 - PostgreSQL with `acted` schema (existing) (20260126-schema-migration)
 - Python 3.14 (backend), JavaScript ES2022 / React 19.2 (frontend) + Django 6.0, Django REST Framework, Redux Toolkit, RTK Query, Material-UI v7 (20260129-filter-system-fix)
+- Python 3.14, Django 6.0 + Django REST Framework, FuzzyWuzzy (fuzz module), store.models.Product, filtering.models.FilterGroup/FilterConfiguration/FilterConfigurationGroup (20260202-fuzzy-search-refactor)
+- PostgreSQL (existing `acted` schema, no schema changes) (20260202-fuzzy-search-refactor)
 
 ## Recent Changes
 - 001-catalog-consolidation: Added Python 3.14, Django 6.0 + Django REST Framework, PostgreSQL psycopg2-binary
