@@ -9,20 +9,6 @@ on:
 jobs:
   test-backend:
     runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_admin3
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
 
     steps:
     - uses: actions/checkout@v4
@@ -38,25 +24,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run Django migrations
-      working-directory: ./backend/django_Admin3
-      env:
-        DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_admin3
-        DJANGO_DEBUG: "False"
-        ALLOWED_HOSTS: localhost,127.0.0.1
-        EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
-      run: python manage.py migrate --settings=django_Admin3.settings.development
-
     - name: Run Django tests
       working-directory: ./backend/django_Admin3
-      env:
-        DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_admin3
-        DJANGO_DEBUG: "False"
-        ALLOWED_HOSTS: localhost,127.0.0.1
-        EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
-      run: python manage.py test --settings=django_Admin3.settings.development
+      run: python manage.py test --settings=django_Admin3.settings.test
 
   test-frontend:
     runs-on: ubuntu-latest
@@ -115,20 +85,6 @@ jobs:
     needs: [test-pact-consumer]
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_admin3
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
     - uses: actions/checkout@v4
 
@@ -149,25 +105,9 @@ jobs:
         name: pact-contracts
         path: pacts/
 
-    - name: Run Django migrations
-      working-directory: ./backend/django_Admin3
-      env:
-        DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_admin3
-        DJANGO_DEBUG: "False"
-        ALLOWED_HOSTS: localhost,127.0.0.1
-        EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
-      run: python manage.py migrate --settings=django_Admin3.settings.development
-
     - name: Run Pact provider verification
       working-directory: ./backend/django_Admin3
-      env:
-        DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_admin3
-        DJANGO_DEBUG: "False"
-        ALLOWED_HOSTS: localhost,127.0.0.1
-        EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
-      run: python manage.py test pact_tests --settings=django_Admin3.settings.development
+      run: python manage.py test pact_tests --settings=django_Admin3.settings.test
 
   deploy:
     needs: [test-backend, test-frontend, test-pact-provider]
