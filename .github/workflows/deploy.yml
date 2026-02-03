@@ -5,6 +5,7 @@ on:
     branches: [main, uat]
   pull_request:
     branches: [main, uat]
+  workflow_dispatch:  # Allow manual trigger
 
 jobs:
   test-backend:
