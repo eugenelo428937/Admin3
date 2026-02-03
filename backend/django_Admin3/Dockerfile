@@ -10,6 +10,7 @@ WORKDIR /app
 # Install system dependencies for building Python packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    libffi-dev \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
@@ -28,6 +29,7 @@ FROM python:3.14-slim as production
 # Install runtime dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
+    libffi-dev \
     bash \
     && rm -rf /var/lib/apt/lists/*
 
