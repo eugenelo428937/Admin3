@@ -487,7 +487,6 @@ python manage.py test_emails preview --template password_reset --save
 /api/products/product-categories/all/           # Three-level category tree
 /api/products/product-groups/tree/              # Product group tree
 /api/products/product-groups/<id>/products/     # Products by group
-/api/products/product-group-filters/            # Product group filters
 /api/products/filter-configuration/             # Dynamic filter configuration
 ```
 
@@ -1326,6 +1325,11 @@ browser_close()
 - PostgreSQL with new `acted` schema (001-catalog-consolidation)
 - Python 3.14, Django 6.0 + Django REST Framework + Rules Engine (`rules_engine` app), Cart Services (`cart` app), Utils (`utils` app) (20260121-remove-legacy-vat)
 - PostgreSQL (existing `acted` schema, `vat_audit` table to be dropped) (20260121-remove-legacy-vat)
+- Python 3.14, Django 6.0 + Django ORM, Django migrations framework, psycopg2-binary (20260126-schema-migration)
+- PostgreSQL with `acted` schema (existing) (20260126-schema-migration)
+- Python 3.14 (backend), JavaScript ES2022 / React 19.2 (frontend) + Django 6.0, Django REST Framework, Redux Toolkit, RTK Query, Material-UI v7 (20260129-filter-system-fix)
+- Python 3.14, Django 6.0 + Django REST Framework, FuzzyWuzzy (fuzz module), store.models.Product, filtering.models.FilterGroup/FilterConfiguration/FilterConfigurationGroup (20260202-fuzzy-search-refactor)
+- PostgreSQL (existing `acted` schema, no schema changes) (20260202-fuzzy-search-refactor)
 
 ## Recent Changes
 - 001-catalog-consolidation: Added Python 3.14, Django 6.0 + Django REST Framework, PostgreSQL psycopg2-binary

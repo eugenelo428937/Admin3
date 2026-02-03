@@ -16,12 +16,10 @@ import { md3, scales, staticColors } from '../tokens/colors';
 // Navigation Text Colors
 // =============================================================================
 export const text = {
-  primary: md3.onSurface, // #1C1B20 - Main nav text
-  secondary: md3.onSurfaceVariant, // #47464F - Secondary nav text
-  muted: scales.granite[50], // #848484 - Muted text
-  active: md3.primary, // #755085 - Active link
-  hover: md3.primary, // #755085 - Hover state
-  inverse: md3.inverseOnSurface, // #F4EFF7 - Text on dark nav
+  primary: md3.inverseOnSurface, // #F4EFF7 - Main nav text  
+  secondary: md3.surfaceDim, // #DDD8E0  
+  active: scales.pink[50], // #ff7536 - Active link
+  hover: scales.pink[50], // #755085 - Hover state  
 };
 
 // =============================================================================
@@ -56,6 +54,7 @@ export const button = {
   background: 'transparent', // Default transparent
   hoverBackground: md3.primaryContainer, // #F7D8FF - Button hover bg
   activeBackground: scales.purple[20], // #dfd4f7 - Button active bg
+  icon: md3.surface,
 };
 
 // =============================================================================
@@ -84,7 +83,7 @@ export const hamburger = {
 // =============================================================================
 export const megaMenu = {
   background: staticColors.white, // #FFFFFF - Mega menu background
-  sectionTitle: md3.onSurface, // #1C1B20 - Section header
+  sectionTitle: md3.surfaceDim, // #1C1B20 - Section header
   itemText: md3.onSurfaceVariant, // #47464F - Menu item text
   itemHover: md3.surfaceContainerLow, // #F7F2FA - Item hover bg
   border: md3.outlineVariant, // #C9C5D0 - Section borders

@@ -13,7 +13,7 @@ class UserProfileContactNumber(models.Model):
     country_code = models.CharField(max_length=2, blank=True, default='', help_text="ISO 3166-1 alpha-2 country code (e.g., 'HK', 'GB')")
 
     class Meta:
-        db_table = 'acted_user_profile_contact_number'
+        db_table = '"acted"."user_profile_contact_number"'
         verbose_name = 'User Profile Contact Number'
         verbose_name_plural = 'User Profile Contact Numbers'
 

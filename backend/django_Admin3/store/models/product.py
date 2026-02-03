@@ -30,7 +30,7 @@ class Product(models.Model):
         help_text='The exam session subject this product is available for'
     )
     product_product_variation = models.ForeignKey(
-        'catalog.ProductProductVariation',
+        'catalog_products.ProductProductVariation',
         on_delete=models.CASCADE,
         related_name='store_products',
         help_text='The product variation (template + variation combination)'
@@ -56,8 +56,19 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         """Auto-generate product_code if not provided."""
         if not self.product_code:
-            self.product_code = self._generate_product_code()
-        super().save(*args, **kwargs)
+            variation_type = self.product_product_variation.product_variation.variation_type
+            if variation_type in ('eBook', 'Printed', 'Marking'):
+                # Material/Marking codes don't need PK, generate before save
+                self.product_code = self._generate_product_code()
+                super().save(*args, **kwargs)
+            else:
+                # Tutorial/Other codes include PK for uniqueness;
+                # save first to get PK, then generate and update
+                super().save(*args, **kwargs)
+                self.product_code = self._generate_product_code()
+                super().save(update_fields=['product_code'])
+        else:
+            super().save(*args, **kwargs)
 
     def _generate_product_code(self):
         """

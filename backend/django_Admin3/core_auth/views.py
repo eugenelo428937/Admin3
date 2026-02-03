@@ -8,7 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.middleware.csrf import get_token
 from users.serializers import UserRegistrationSerializer
-from cart.views import CartViewSet
+from cart.services import cart_service
 from email_system.services.email_service import email_service
 from utils.recaptcha_utils import verify_recaptcha_v3, is_recaptcha_enabled, get_client_ip
 # Token configuration - now using Django settings directly
@@ -85,7 +85,7 @@ class AuthViewSet(viewsets.ViewSet):
             user = authenticate(username=user.username, password=password)
             if user:
                 # Merge guest cart into user cart after successful login
-                CartViewSet().merge_guest_cart(request, user)
+                cart_service.merge_guest_cart(user, request.session.session_key)
                 refresh = RefreshToken.for_user(user)
                 serializer = UserRegistrationSerializer(user)
                 return Response({

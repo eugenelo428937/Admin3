@@ -1,0 +1,173 @@
+# Filter Configuration API Contract
+# Endpoint: GET /api/products/filter-configuration/
+# Changes: Include partitioned filter_groups per configuration, enhanced response
+
+openapi: "3.0.3"
+info:
+  title: Filter Configuration API (Filter Remediation)
+  version: "2.0.0"
+  description: |
+    Updated contract for the filter configuration endpoint reflecting:
+    - FR-006: Frontend fetches configuration from this endpoint
+    - FR-009: FilterConfiguration is the canonical source (replaces ProductGroupFilter)
+    - FR-011: Includes display order, labels, active status
+    - New: filter_groups array per configuration for partitioning (FR-001)
+
+paths:
+  /api/products/filter-configuration/:
+    get:
+      summary: Get dynamic filter configuration for frontend panel
+      operationId: getFilterConfiguration
+      parameters:
+        - name: types
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          description: Optional filter by specific filter_type values
+      responses:
+        '200':
+          description: Filter configurations with associated groups
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FilterConfigurationResponse'
+
+components:
+  schemas:
+    FilterConfigurationResponse:
+      type: object
+      description: |
+        Map of filter name → configuration.
+        CHANGED: Now includes filter_groups array for each config (FR-001).
+        Frontend uses this to populate FilterRegistry dynamically (FR-006).
+      additionalProperties:
+        $ref: '#/components/schemas/FilterConfigEntry'
+
+    FilterConfigEntry:
+      type: object
+      required:
+        - type
+        - label
+        - filter_key
+        - display_order
+        - options
+        - filter_type
+      properties:
+        type:
+          type: string
+          description: UI component type (multi_select, single_select, checkbox, etc.)
+          example: "multi_select"
+        label:
+          type: string
+          description: User-facing display label
+          example: "Category"
+        description:
+          type: string
+          description: Admin description
+        display_order:
+          type: integer
+          description: Sort order in filter panel (FR-011)
+          example: 2
+        collapsible:
+          type: boolean
+          description: Whether section can be collapsed
+          default: true
+        default_open:
+          type: boolean
+          description: Whether section starts expanded
+          default: false
+        required:
+          type: boolean
+          description: Whether a selection is required
+          default: false
+        allow_multiple:
+          type: boolean
+          description: Whether multiple options can be selected
+          default: true
+        filter_key:
+          type: string
+          description: |
+            API parameter key and Redux state key mapping.
+            One of: subjects, categories, product_types, products, modes_of_delivery
+          example: "categories"
+        ui_config:
+          type: object
+          description: Additional UI-specific configuration (JSON)
+        validation_rules:
+          type: object
+          description: Validation constraints (JSON)
+        dependency_rules:
+          type: object
+          description: Dependencies on other filters (JSON)
+        filter_type:
+          type: string
+          description: Backend filter type (subject, filter_group, product_variation, etc.)
+          example: "filter_group"
+        group_count:
+          type: integer
+          description: Number of associated filter groups
+          example: 3
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterOption'
+          description: Available filter options for this configuration
+        filter_groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterGroupEntry'
+          description: |
+            NEW: Filter groups assigned to this configuration (FR-001).
+            This is the canonical source for partitioning groups into sections.
+            Only groups listed here should appear in this filter section.
+
+    FilterOption:
+      type: object
+      description: A selectable filter option
+      properties:
+        id:
+          oneOf:
+            - type: integer
+            - type: string
+          description: Option identifier
+        value:
+          type: string
+          description: Option value for API requests
+        label:
+          type: string
+          description: Display label
+
+    FilterGroupEntry:
+      type: object
+      description: |
+        A filter group assigned to this configuration via FilterConfigurationGroup.
+        NEW field added for FR-001 partitioning support.
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          description: FilterGroup primary key
+        name:
+          type: string
+          description: Display name
+          example: "Core Study Materials"
+        code:
+          type: string
+          nullable: true
+          description: Unique code identifier
+          example: "core_study_materials"
+        display_order:
+          type: integer
+          description: Order within this filter configuration
+        is_default:
+          type: boolean
+          description: Whether this is a default selection
+        parent_id:
+          type: integer
+          nullable: true
+          description: Parent FilterGroup ID (for hierarchy display)

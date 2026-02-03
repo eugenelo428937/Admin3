@@ -14,6 +14,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('utils', '0007_remove_emailtemplateattachment_attachment_and_more'),  # utils.0007 deletes old email models; must run before we recreate them here
     ]
 
     operations = [

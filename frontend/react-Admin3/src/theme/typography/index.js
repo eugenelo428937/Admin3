@@ -6,13 +6,14 @@
 // configurations like !important flags and responsive overrides.
 
 import { spacing } from '../tokens/spacing';
-import {
-  fontFamilies,
-  fontSizes,
-  lineHeights,
-  letterSpacing,
-  variants,
-} from '../tokens/typography';
+import
+  {
+    fontFamilies,
+    fontSizes,
+    fontWeights,
+    lineHeights,
+    letterSpacing,
+  } from '../tokens/typography';
 
 // =============================================================================
 // Helper: Add !important to CSS values for MUI specificity
@@ -21,199 +22,249 @@ const important = (value) => `${value} !important`;
 
 /**
  * Typography configuration for MUI theme.
- * Imports primitives from tokens/typography.js and adds MUI-specific modifications.
+ * All variant definitions are self-contained using token primitives.
+ * Adds MUI-specific !important flags and layout overrides.
  */
 export const typographyConfig = {
   fontFamily: fontFamilies.primary,
 
   // Brand variants
   BPP: {
-    ...variants.BPP,
-    fontSize: important(fontSizes.display1),
+    fontFamily: important(fontFamilies.brand),
+    fontWeight: important(fontWeights.semibold),
+    fontSize: important(fontSizes.heading[10]),
     lineHeight: important('var(--halfstep-dec)'),
+    letterSpacing: important(letterSpacing.tighter),
+    fontOpticalSizing: important('auto'),
+    fontStyle: important('normal'),
+    fontVariationSettings: important("'wght' 600"),
   },
   Acted: {
-    ...variants.Acted,
-    fontSize: important(fontSizes.display2),
+    fontFamily: important(fontFamilies.brand),
+    fontWeight: important(fontWeights.light),
+    fontSize: important(fontSizes.h2),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.tighter),
-    marginTop: "calc( var(--2xs) / var(--halfstep) / var(--halfstep) / var(--eighthstep))",
+    fontOpticalSizing: important('auto'),
+    fontStyle: important('normal'),
+    fontVariationSettings: important("'wght' 200"),
+    marginTop: important("calc( var(--2xs) / var(--halfstep) / var(--halfstep) / var(--eighthstep))"),
   },
 
   // Heading variants
   h1: {
-    ...variants.h1,
-    fontSize: important(fontSizes.display1),
+    fontFamily: fontFamilies.brand,
+    fontWeight: fontWeights.regular,
+    fontSize: important(fontSizes.heading[10]),
     lineHeight: important(lineHeights.tight),
     letterSpacing: important(letterSpacing.tighter),
+    textWrap: 'balance',
   },
   h2: {
-    ...variants.h2,
-    fontSize: important(fontSizes.display2),
+    fontFamily: fontFamilies.brand,
+    fontWeight: fontWeights.regular,
+    fontSize: important(fontSizes.heading[20]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.tighter),
   },
   h3: {
-    ...variants.h3,
-    fontSize: important(fontSizes.title1),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.regular,
+    fontSize: important(fontSizes.heading[30]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.tighter),
+    textWrap: 'balance',
   },
   h4: {
-    ...variants.h4,
-    fontSize: important(fontSizes.title2),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.regular,
+    fontSize: important(fontSizes.heading[40]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.tight),
+    textWrap: 'balance',
   },
   h5: {
-    ...variants.h5,
-    fontSize: important('calc(1em * var(--halfstep) * var(--eighthstep))'),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.medium,
+    fontSize: important(fontSizes.heading[45]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.normal),
+    textWrap: 'balance',
   },
   h6: {
-    ...variants.h6,
-    fontSize: important(fontSizes.heading),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.semibold,
+    fontSize: important(fontSizes.heading[50]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.slight),
+    textWrap: 'balance',
   },
 
   // Body variants
   body1: {
-    ...variants.body1,
-    fontSize: important(fontSizes.body1),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.regular,
+    fontSize: important(fontSizes.body[10]),
     lineHeight: important(lineHeights.relaxed),
     letterSpacing: important(letterSpacing.subtle),
+    textWrap: 'pretty',
   },
   body2: {
-    ...variants.body2,
-    fontSize: important(fontSizes.body2),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.regular,
+    fontSize: important(fontSizes.body[20]),
     lineHeight: important('calc(var(--wholestep) / var(--quarterstep))'),
     letterSpacing: important(letterSpacing.subtle),
+    textWrap: 'balance',
   },
 
   // Subtitle variants
-  subtitle1: {
-    ...variants.subtitle1,
-    fontSize: important(fontSizes.subheading),
+  subh3: {
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.regular,
+    fontSize: important(fontSizes.body[20]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.fine),
   },
-  subtitle2: {
-    ...variants.subtitle2,
-    fontSize: important('calc(1em / var(--halfstep))'),
+  subh4: {
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.regular,
+    fontSize: important(fontSizes.caption[10]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.fine),
   },
 
   // Caption variants
   caption: {
-    ...variants.caption,
-    fontSize: important(fontSizes.caption),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.regular,
+    fontSize: important(fontSizes.caption[10]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.fine),
   },
   captionBold: {
-    ...variants.captionBold,
-    fontSize: important(fontSizes.caption),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.semibold,
+    fontSize: important(fontSizes.caption[10]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.fine),
   },
   captionSemiBold: {
-    ...variants.captionSemiBold,
-    fontSize: important(fontSizes.caption),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.medium,
+    fontSize: important(fontSizes.caption[10]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.fine),
   },
   caption2: {
-    ...variants.caption2,
-    fontSize: important(fontSizes.caption2),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.regular,
+    fontSize: important(fontSizes.caption[20]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.fine),
   },
 
   // Utility variants
   button: {
-    ...variants.button,
-    fontSize: important(fontSizes.buttonMedium),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.medium,
+    fontSize: important(fontSizes.heading[60]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.minimal),
+    textTransform: 'none',
     position: "static",
     top: "6.235em",
   },
   buttonSmall: {
-    ...variants.button,
-    fontSize: important(fontSizes.buttonSmall),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.medium,
+    fontSize: important(fontSizes.body[10]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.minimal),
+    textTransform: 'none',
     position: "static",
     top: "6.235em",
   },
   buttonMedium: {
-    ...variants.button,
-    fontSize: important(fontSizes.buttonMedium),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.medium,
+    fontSize: important(fontSizes.heading[60]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.minimal),
+    textTransform: 'none',
     position: "static",
     top: "6.235em",
   },
   buttonLarge: {
-    ...variants.button,
-    fontSize: important(fontSizes.buttonLarge),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.medium,
+    fontSize: important(fontSizes.heading[50]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.minimal),
+    textTransform: 'none',
     position: "static",
     top: "6.235em",
   },
   overline: {
-    ...variants.overline,
-    fontSize: important(fontSizes.overline),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.regular,
+    fontSize: important(fontSizes.caption[10]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.wide),
+    textTransform: 'uppercase',
   },
   fineprint: {
-    ...variants.fineprint,
-    fontSize: important(fontSizes.fineprint),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.light,
+    fontSize: important(fontSizes.caption[20]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.fine),
   },
   // Custom variants
   price: {
-    ...variants.price,
-    fontSize: important(fontSizes.price),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.regular,
+    fontSize: important(fontSizes.heading[45]),
     lineHeight: important(lineHeights.tight),
     letterSpacing: important(letterSpacing.tighter),
+    textWrap: 'balance',
   },
   productTitle: {
-    ...variants.productTitle,
-    fontSize: important(fontSizes.productTitle),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.medium,
+    fontSize: important(fontSizes.heading[40]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.tight),
+    textWrap: 'balance',
   },
   navlink: {
-    ...variants.navlink,
-    fontSize: important(fontSizes.navlink),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.medium,
+    fontSize: important(fontSizes.heading[60]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.minimal),
+    textTransform: 'none',
     position: "static",
     top: "6.235em",
   },
   topnavlink: {
     fontFamily: fontFamilies.primary,
     fontWeight: 300, // Lighter than token default for this context
-    fontSize: important(fontSizes.topnavlink),
+    fontSize: important(fontSizes.body[20]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.normal),
     textWrap: "balance",
   },
   chip: {
-    ...variants.chip,
-    fontSize: important(fontSizes.chip),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.semibold,
+    fontSize: important(fontSizes.heading[60]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.minimal),
+    textTransform: 'none',
     position: "static",
     top: "6.235em",
-  },
+  },  
 };
 
 /**
@@ -233,7 +284,7 @@ export const responsiveTypography = {
   },
   Acted: {
     sm: {
-      fontSize: important(fontSizes.title1), // Scales down from display2
+      fontSize: important(fontSizes.h3), // Scales down from h2
       textAlign: "start",
       lineHeight: important('calc(1em * var(--wholestep-dec) * var(--quarterstep) * var(--eighthstep) * var(--eighthstep))'),
       marginBottom: spacing.xs3,
@@ -241,7 +292,7 @@ export const responsiveTypography = {
   },
   h3: {
     sm: {
-      fontSize: important(fontSizes.price), // Scales down from title1
+      fontSize: important(fontSizes.price), // Scales down from h3
     },
   },
   price: {
@@ -254,8 +305,8 @@ export const responsiveTypography = {
       fontSize: important(fontSizes.navlink),
       fontWeight: 400,
     },
-    md: {
-      fontSize: important(fontSizes.body1),
+    sm: {
+      fontSize: important(fontSizes.body2),
       fontWeight: 400,
     },
   },

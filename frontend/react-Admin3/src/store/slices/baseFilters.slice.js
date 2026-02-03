@@ -54,6 +54,11 @@ export const baseFiltersInitialState = {
   // Validation errors for filter combinations (Story 1.12)
   validationErrors: [],
 
+  // Dynamic filter configuration from backend (US5, FR-007)
+  filterConfiguration: null,
+  filterConfigurationLoading: false,
+  filterConfigurationError: null,
+
   // Last updated timestamp for cache management
   lastUpdated: null,
 };
@@ -381,5 +386,24 @@ export const baseFiltersReducers = {
   // (Validation logic itself handled in main slice via FilterValidator)
   clearValidationErrors: (state) => {
     state.validationErrors = [];
+  },
+
+  // ========================================
+  // Filter Configuration Actions (US5)
+  // ========================================
+
+  setFilterConfiguration: (state, action) => {
+    state.filterConfiguration = action.payload;
+    state.filterConfigurationLoading = false;
+    state.filterConfigurationError = null;
+  },
+
+  setFilterConfigurationLoading: (state, action) => {
+    state.filterConfigurationLoading = action.payload;
+  },
+
+  setFilterConfigurationError: (state, action) => {
+    state.filterConfigurationError = action.payload;
+    state.filterConfigurationLoading = false;
   },
 };
