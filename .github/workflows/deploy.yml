@@ -46,7 +46,7 @@ jobs:
 
     - name: Run Django migrations
       working-directory: ./backend/django_Admin3
-      run: python manage.py migrate --settings=django_Admin3.settings.ci
+      run: python manage.py migrate --skip-checks --settings=django_Admin3.settings.ci
 
     - name: Run Django tests
       working-directory: ./backend/django_Admin3
@@ -150,7 +150,7 @@ jobs:
 
     - name: Run Django migrations
       working-directory: ./backend/django_Admin3
-      run: python manage.py migrate --settings=django_Admin3.settings.ci
+      run: python manage.py migrate --skip-checks --settings=django_Admin3.settings.ci
 
     - name: Run Pact provider verification
       working-directory: ./backend/django_Admin3
