@@ -181,6 +181,75 @@ export class FilterRegistry {
   static clear() {
     this.#filters.clear();
   }
+
+  /**
+   * Register filters from backend configuration response (FR-007).
+   *
+   * Clears existing registrations and re-registers from the backend
+   * config object. Preserves Redux state key mappings by using
+   * filter_key as the registry type.
+   *
+   * Always re-registers searchQuery (not returned by backend but
+   * required for URL sync).
+   *
+   * @param {Object} backendConfigs - Response from /api/products/filter-configuration/
+   *   Keys are config names, values are config objects with filter_key, label, etc.
+   */
+  static registerFromBackend(backendConfigs) {
+    this.#filters.clear();
+
+    // URL param mapping for known filter keys
+    const URL_PARAM_MAP = {
+      subjects: { urlParam: 'subject_code', urlParamAliases: ['subject'], urlFormat: 'indexed', color: 'primary' },
+      categories: { urlParam: 'category_code', urlParamAliases: ['category'], urlFormat: 'indexed', color: 'info' },
+      product_types: { urlParam: 'group', urlParamAliases: [], urlFormat: 'comma-separated', color: 'success' },
+      products: { urlParam: 'product', urlParamAliases: [], urlFormat: 'comma-separated', color: 'default' },
+      modes_of_delivery: { urlParam: 'mode_of_delivery', urlParamAliases: [], urlFormat: 'comma-separated', color: 'warning' },
+    };
+
+    for (const [configName, config] of Object.entries(backendConfigs)) {
+      const filterKey = config.filter_key;
+      if (!filterKey) continue;
+
+      const urlDefaults = URL_PARAM_MAP[filterKey] || {
+        urlParam: filterKey,
+        urlParamAliases: [],
+        urlFormat: 'comma-separated',
+        color: 'default',
+      };
+
+      this.register({
+        type: filterKey,
+        label: config.label || configName,
+        pluralLabel: configName,
+        urlParam: urlDefaults.urlParam,
+        urlParamAliases: urlDefaults.urlParamAliases,
+        color: urlDefaults.color,
+        multiple: config.allow_multiple !== false,
+        dataType: 'array',
+        urlFormat: urlDefaults.urlFormat,
+        getDisplayValue: (value) => value,
+        order: config.display_order || 100,
+      });
+    }
+
+    // Always re-register searchQuery (not in backend config but required)
+    if (!this.#filters.has('searchQuery')) {
+      this.register({
+        type: 'searchQuery',
+        label: 'Search',
+        pluralLabel: 'Search',
+        urlParam: 'search_query',
+        urlParamAliases: ['q', 'search'],
+        color: 'info',
+        multiple: false,
+        dataType: 'string',
+        urlFormat: 'single',
+        getDisplayValue: (value) => value,
+        order: 0,
+      });
+    }
+  }
 }
 
 // ===================================================================

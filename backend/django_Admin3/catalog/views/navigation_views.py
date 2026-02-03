@@ -234,7 +234,7 @@ def fuzzy_search(request):
 
     search_query = request.query_params.get('q', '').strip()
     limit = int(request.query_params.get('limit', 5))
-    min_score = int(request.query_params.get('min_score', 60))
+    min_score = int(request.query_params.get('min_score', 45))
 
     if not search_query:
         return Response({
@@ -315,36 +315,19 @@ def fuzzy_search(request):
             )
         )
 
-        # Apply fuzzy search to store products (same algorithm as search_service)
+        # Apply fuzzy search to store products using SearchService scoring
+        from search.services.search_service import SearchService
+        search_service = SearchService()
+
         products_with_scores = []
         for sp in store_products_queryset:
-            catalog_product = sp.product_product_variation.product
-            pv = sp.product_product_variation.product_variation
-            subject_code = sp.exam_session_subject.subject.code
+            searchable_text = search_service._build_searchable_text(sp)
+            score = search_service._calculate_fuzzy_score(
+                query_lower, searchable_text, sp
+            )
 
-            # Build searchable text
-            searchable_parts = [
-                catalog_product.fullname or '',
-                catalog_product.shortname or '',
-                subject_code,
-                pv.name or '',
-            ]
-            searchable_text = ' '.join(searchable_parts).lower()
-
-            # Calculate score using multiple algorithms
-            scores = [
-                fuzz.token_sort_ratio(query_lower, searchable_text),
-                fuzz.partial_ratio(query_lower, (catalog_product.shortname or catalog_product.fullname or '').lower()),
-                fuzz.token_set_ratio(query_lower, searchable_text),
-            ]
-
-            # Subject code exact match bonus
-            if query_lower.startswith(subject_code.lower()):
-                scores.append(95)
-
-            max_score = max(scores)
-            if max_score >= min_score:
-                products_with_scores.append((sp, max_score))
+            if score >= min_score:
+                products_with_scores.append((sp, score))
 
         # Sort by score descending
         products_with_scores.sort(key=lambda x: x[1], reverse=True)

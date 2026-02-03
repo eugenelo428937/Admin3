@@ -1,19 +1,17 @@
 """
 Filtering views.
 
-Filter system views for product group trees, product group filters,
-and dynamic filter configuration.
+Filter system views for product group trees and dynamic filter configuration.
 """
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
 from catalog.models import Product
-from .models import FilterGroup, ProductGroupFilter
+from .models import FilterGroup
 from .serializers import (
     FilterGroupSerializer,
     FilterGroupThreeLevelSerializer,
-    ProductGroupFilterSerializer,
 )
 from .services.filter_service import get_filter_service
 
@@ -61,17 +59,6 @@ def products_by_group(request, group_id):
     products = Product.objects.filter(groups__in=group_ids).distinct()
     from catalog.serializers import ProductSerializer
     serializer = ProductSerializer(products, many=True)
-    return Response({'results': serializer.data})
-
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def product_group_filters(request):
-    """
-    Returns all product group filters with their associated groups.
-    """
-    filters = ProductGroupFilter.objects.prefetch_related('groups').all()
-    serializer = ProductGroupFilterSerializer(filters, many=True)
     return Response({'results': serializer.data})
 
 

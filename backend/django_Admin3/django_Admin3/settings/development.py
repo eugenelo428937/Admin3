@@ -48,7 +48,7 @@ OPAYO_INTEGRATION_PASSWORD = env('OPAYO_INTEGRATION_PASSWORD', default='test_pas
 USE_DUMMY_PAYMENT_GATEWAY = True
 
 # Fuzzy Search Configuration
-FUZZY_SEARCH_MIN_SCORE = int(env('FUZZY_SEARCH_MIN_SCORE', default=60))
+FUZZY_SEARCH_MIN_SCORE = int(env('FUZZY_SEARCH_MIN_SCORE', default=45))
 
 # Email Backend Configuration
 # Priority: Internal SMTP > SendGrid > Gmail SMTP (from base.py)
