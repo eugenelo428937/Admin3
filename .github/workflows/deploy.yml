@@ -39,6 +39,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Create acted schema
+      working-directory: ./backend/django_Admin3
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_admin3 -c "CREATE SCHEMA IF NOT EXISTS acted;"
+
     - name: Run Django migrations
       working-directory: ./backend/django_Admin3
       run: python manage.py migrate --settings=django_Admin3.settings.ci
@@ -137,6 +142,11 @@ jobs:
       with:
         name: pact-contracts
         path: pacts/
+
+    - name: Create acted schema
+      working-directory: ./backend/django_Admin3
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_admin3 -c "CREATE SCHEMA IF NOT EXISTS acted;"
 
     - name: Run Django migrations
       working-directory: ./backend/django_Admin3
