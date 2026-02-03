@@ -52,13 +52,6 @@ export const miscOverrides = {
       },
     },
   },
-  MuiTypography: {
-    styleOverrides: {
-      root: {
-        fontFamily: "'Inter', 'Poppins', sans-serif",
-      },
-    },
-  },
   MuiSpeedDial: {
     styleOverrides: {
       root: {

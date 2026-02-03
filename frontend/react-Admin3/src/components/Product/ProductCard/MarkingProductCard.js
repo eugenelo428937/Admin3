@@ -132,18 +132,19 @@ const MarkingProductCard = React.memo(
 
 		React.useEffect(() => {
 			setLoading(true);
-			const esspId = product.essp_id;
+			// Use store product ID (id) after cart-orders refactoring
+			const storeProductId = product.id || product.store_product_id;
 
 			// Only call single API if bulkDeadlines is undefined (not just empty)
-			if (bulkDeadlines && esspId in bulkDeadlines) {
-				setDeadlines(bulkDeadlines[esspId] || []);
+			if (bulkDeadlines && storeProductId in bulkDeadlines) {
+				setDeadlines(bulkDeadlines[storeProductId] || []);
 				setLoading(false);
 			} else if (bulkDeadlines && Object.keys(bulkDeadlines).length === 0) {
 				// Do nothing, wait for bulkDeadlines to be populated
 				setLoading(true);
-			} else if (esspId) {
+			} else if (storeProductId) {
 				// fallback: only for single product view
-				productService.getMarkingDeadlines(esspId).then((data) => {
+				productService.getMarkingDeadlines(storeProductId).then((data) => {
 					setDeadlines(data || []);
 					setLoading(false);
 				});
@@ -440,8 +441,8 @@ const MarkingProductCard = React.memo(
 			if (recommendedPriceObj) {
 				onAddToCart(
 					{
-						id: recommendedProduct.essp_id,
-						essp_id: recommendedProduct.essp_id,
+						// Use store product ID (id) after cart-orders refactoring
+						id: recommendedProduct.id || recommendedProduct.store_product_id,
 						product_code: recommendedProduct.product_code,
 						product_name: recommendedProduct.product_name,
 						product_short_name: recommendedProduct.product_short_name,

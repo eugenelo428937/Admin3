@@ -198,30 +198,43 @@ def fuzzy_search(request):
     """
     Fuzzy search endpoint that returns suggested filters and products.
 
-    Uses PostgreSQL trigram similarity for typo-tolerant search.
+    Uses FuzzyWuzzy for typo-tolerant search (same algorithm as /api/search/unified/).
+    Joins catalog.Product matches with store.Product to return purchasable
+    items with prices for MaterialProductCard rendering.
 
     Query Parameters:
         - q: Search query string
+        - limit: Maximum number of suggested products (default: 5)
+        - min_score: Minimum fuzzy match score 0-100 (default: 60)
 
     Returns:
         {
             "suggested_filters": {
                 "subjects": [...],
                 "product_groups": [...],
-                "variations": [...],
+                "variations": [],
                 "products": [...]
             },
-            "suggested_products": [...],
+            "suggested_products": [...],  # Purchasable products with prices
             "query": "...",
+            "total_count": N,
             "total_matches": {...}
         }
+
+    Note: suggested_filters is for filter dropdown suggestions (subjects, groups).
+          suggested_products is for product card display (store products with prices).
+          The formats are intentionally different as they serve different purposes.
     """
-    # Import for trigram similarity and FilterGroup
-    from django.contrib.postgres.search import TrigramSimilarity
+    from fuzzywuzzy import fuzz
     from filtering.models import FilterGroup
     from filtering.serializers import FilterGroupSerializer
+    from store.models import Product as StoreProduct
+    from search.serializers import StoreProductListSerializer
+    from catalog.models import ProductVariationRecommendation
 
     search_query = request.query_params.get('q', '').strip()
+    limit = int(request.query_params.get('limit', 5))
+    min_score = int(request.query_params.get('min_score', 45))
 
     if not search_query:
         return Response({
@@ -232,71 +245,123 @@ def fuzzy_search(request):
                 'products': []
             },
             'suggested_products': [],
-            'query': search_query
+            'query': search_query,
+            'total_count': 0
         })
 
     try:
-        # Define similarity threshold
-        similarity_threshold = 0.2
+        query_lower = search_query.lower()
 
-        # Search for similar subjects
-        subjects = Subject.objects.filter(
-            Q(code__icontains=search_query) |
-            Q(description__icontains=search_query)
-        ).annotate(
-            similarity=TrigramSimilarity('description', search_query) +
-                      TrigramSimilarity('code', search_query)
-        ).filter(similarity__gt=similarity_threshold).order_by('-similarity')[:5]
+        # Helper function to calculate fuzzy score using multiple algorithms
+        def calculate_fuzzy_score(query, text):
+            """Calculate fuzzy match score using multiple algorithms (same as search_service)."""
+            text_lower = text.lower()
+            scores = [
+                fuzz.token_sort_ratio(query, text_lower),
+                fuzz.partial_ratio(query, text_lower),
+                fuzz.token_set_ratio(query, text_lower),
+            ]
+            return max(scores)
 
-        # Search for similar product groups
-        product_groups = FilterGroup.objects.filter(
-            name__icontains=search_query
-        ).annotate(
-            similarity=TrigramSimilarity('name', search_query)
-        ).filter(similarity__gt=similarity_threshold).order_by('-similarity')[:5]
+        # Search for similar subjects using fuzzy matching
+        all_subjects = Subject.objects.filter(active=True)
+        subjects_with_scores = []
+        for subj in all_subjects:
+            searchable = f"{subj.code} {subj.description}".lower()
+            score = calculate_fuzzy_score(query_lower, searchable)
+            if score >= min_score:
+                subjects_with_scores.append((subj, score))
+        subjects_with_scores.sort(key=lambda x: x[1], reverse=True)
+        matched_subjects = [s for s, _ in subjects_with_scores[:5]]
 
-        # Search for similar product variations
-        variations = ProductVariation.objects.filter(
-            Q(name__icontains=search_query) |
-            Q(variation_type__icontains=search_query) |
-            Q(description__icontains=search_query)
-        ).annotate(
-            similarity=TrigramSimilarity('name', search_query) +
-                      TrigramSimilarity('variation_type', search_query)
-        ).filter(similarity__gt=similarity_threshold).order_by('-similarity')[:5]
+        # Search for similar product groups using fuzzy matching
+        all_groups = FilterGroup.objects.filter(is_active=True)
+        groups_with_scores = []
+        for group in all_groups:
+            score = calculate_fuzzy_score(query_lower, group.name)
+            if score >= min_score:
+                groups_with_scores.append((group, score))
+        groups_with_scores.sort(key=lambda x: x[1], reverse=True)
+        matched_groups = [g for g, _ in groups_with_scores[:5]]
 
-        # Search for similar products (for filter suggestions)
-        similar_products = Product.objects.filter(
-            Q(fullname__icontains=search_query) |
-            Q(shortname__icontains=search_query) |
-            Q(description__icontains=search_query) |
-            Q(code__icontains=search_query)
-        ).annotate(
-            similarity=TrigramSimilarity('fullname', search_query) +
-                      TrigramSimilarity('shortname', search_query) +
-                      TrigramSimilarity('description', search_query)
-        ).filter(similarity__gt=similarity_threshold).order_by('-similarity')[:10]
+        # Search for similar catalog products using fuzzy matching
+        all_catalog_products = Product.objects.filter(is_active=True)
+        catalog_products_with_scores = []
+        for prod in all_catalog_products:
+            searchable = f"{prod.code} {prod.fullname} {prod.shortname}".lower()
+            score = calculate_fuzzy_score(query_lower, searchable)
+            if score >= min_score:
+                catalog_products_with_scores.append((prod, score))
+        catalog_products_with_scores.sort(key=lambda x: x[1], reverse=True)
+        matched_catalog_products = [p for p, _ in catalog_products_with_scores[:5]]
 
-        # Get suggested products for preview (limited to 5)
-        suggested_products = similar_products[:5]
+        # Get all active store products with prefetched data
+        store_products_queryset = StoreProduct.objects.filter(
+            is_active=True
+        ).select_related(
+            'exam_session_subject__subject',
+            'exam_session_subject__exam_session',
+            'product_product_variation__product',
+            'product_product_variation__product_variation',
+        ).prefetch_related(
+            'prices',
+            'product_product_variation__product__groups',
+            Prefetch(
+                'product_product_variation__recommendation',
+                queryset=ProductVariationRecommendation.objects.select_related(
+                    'recommended_product_product_variation__product',
+                    'recommended_product_product_variation__product_variation'
+                )
+            )
+        )
 
-        # Serialize results
+        # Apply fuzzy search to store products using SearchService scoring
+        from search.services.search_service import SearchService
+        search_service = SearchService()
+
+        products_with_scores = []
+        for sp in store_products_queryset:
+            searchable_text = search_service._build_searchable_text(sp)
+            score = search_service._calculate_fuzzy_score(
+                query_lower, searchable_text, sp
+            )
+
+            if score >= min_score:
+                products_with_scores.append((sp, score))
+
+        # Sort by score descending
+        products_with_scores.sort(key=lambda x: x[1], reverse=True)
+
+        # Get matched store products
+        matched_store_products = [sp for sp, _ in products_with_scores]
+
+        # Use StoreProductListSerializer for consistent format with unified search
+        # This groups by (exam_session_subject_id, catalog_product_id) correctly
+        all_products_data = StoreProductListSerializer.serialize_grouped_products(
+            matched_store_products
+        )
+        total_count = len(all_products_data)
+
+        # Limit for suggested products preview
+        suggested_products_data = all_products_data[:limit]
+
+        # Serialize filter suggestions
         suggested_filters = {
-            'subjects': SubjectSerializer(subjects, many=True).data,
-            'product_groups': FilterGroupSerializer(product_groups, many=True).data,
-            'variations': ProductVariationSerializer(variations, many=True).data,
-            'products': ProductSerializer(similar_products, many=True).data
+            'subjects': SubjectSerializer(matched_subjects, many=True).data,
+            'product_groups': FilterGroupSerializer(matched_groups, many=True).data,
+            'variations': [],  # Variations are included in product data, not as separate filter
+            'products': ProductSerializer(matched_catalog_products, many=True).data,
         }
 
         return Response({
             'suggested_filters': suggested_filters,
-            'suggested_products': ProductSerializer(suggested_products, many=True).data,
+            'suggested_products': suggested_products_data,
             'query': search_query,
+            'total_count': total_count,
             'total_matches': {
-                'subjects': subjects.count(),
-                'product_groups': product_groups.count(),
-                'variations': variations.count(),
-                'products': similar_products.count()
+                'subjects': len(matched_subjects),
+                'product_groups': len(matched_groups),
+                'products': total_count
             }
         })
 
@@ -310,7 +375,8 @@ def fuzzy_search(request):
                 'products': []
             },
             'suggested_products': [],
-            'query': search_query
+            'query': search_query,
+            'total_count': 0
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

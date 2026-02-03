@@ -107,10 +107,8 @@ const theme = createTheme({
     // Usage: sx={{ color: 'navigation.text.primary' }}
     navigation: navigation,
   },
-
-  // MUI spacing base unit (8px is Material Design standard)
-  // Usage: theme.spacing(1) = 8px, theme.spacing(2) = 16px
-  spacing: 8,
+  
+  spacing: spacing.xs,
 
   // Custom spacing tokens (for direct access via theme.spacingTokens.xl, etc.)
   // Usage: theme.spacingTokens.lg, theme.spacingTokens.xl

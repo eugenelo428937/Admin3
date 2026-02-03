@@ -1,0 +1,362 @@
+openapi: '3.0.3'
+info:
+  title: Cart API
+  version: '2.0.0'
+  description: |
+    Shopping cart API for the Online Store for Actuarial Education.
+    Manages ephemeral cart state: items, fees, and VAT calculation.
+
+servers:
+  - url: http://127.0.0.1:8888/api/cart
+    description: Development server
+
+security:
+  - bearerAuth: []
+
+paths:
+  /:
+    get:
+      operationId: getCart
+      summary: Get current cart with items, fees, and VAT
+      description: |
+        Returns the authenticated user's cart, or creates one if none exists.
+        Includes nested items, fees, user context, and VAT totals.
+      responses:
+        '200':
+          description: Cart retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /items/:
+    post:
+      operationId: addItem
+      summary: Add item to cart
+      description: |
+        Add a product or marking voucher to the cart. Handles:
+        - Regular products (store.Product)
+        - Marking vouchers
+        - Tutorial products with location/choice metadata
+        - Bundle products
+        Triggers VAT recalculation after adding.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddItemRequest'
+      responses:
+        '201':
+          description: Item added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          description: Product not found
+
+    delete:
+      operationId: clearCart
+      summary: Clear all items from cart
+      description: Removes all items and fees from the cart. Resets VAT totals.
+      responses:
+        '200':
+          description: Cart cleared
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+
+  /items/{id}/:
+    patch:
+      operationId: updateItem
+      summary: Update cart item
+      description: |
+        Update quantity, price_type, actual_price, or metadata for a cart item.
+        Triggers VAT recalculation after update.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateItemRequest'
+      responses:
+        '200':
+          description: Item updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '404':
+          description: Cart item not found
+
+    delete:
+      operationId: removeItem
+      summary: Remove item from cart
+      description: Remove a single item by ID. Triggers VAT recalculation.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Item removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '404':
+          description: Cart item not found
+
+  /vat/:
+    post:
+      operationId: recalculateVat
+      summary: Force VAT recalculation
+      description: |
+        Manually triggers VAT recalculation via rules engine.
+        Normally VAT is recalculated automatically on item changes.
+        Use this when customer profile (country) changes.
+      responses:
+        '200':
+          description: VAT recalculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: object
+
+  schemas:
+    AddItemRequest:
+      type: object
+      required:
+        - product_id
+      properties:
+        product_id:
+          type: integer
+          description: store.Product ID
+        quantity:
+          type: integer
+          default: 1
+          minimum: 1
+        price_type:
+          type: string
+          enum: [standard, retaker, additional]
+          default: standard
+        actual_price:
+          type: string
+          format: decimal
+          description: Override price (normally resolved from store.Price)
+        metadata:
+          type: object
+          description: Product-specific metadata (tutorial choices, variation info)
+          properties:
+            variationType:
+              type: string
+            variationId:
+              type: integer
+            variationName:
+              type: string
+            choices:
+              type: array
+              items:
+                type: object
+            locations:
+              type: array
+              items:
+                type: object
+        # Marking voucher alternative
+        marking_voucher_id:
+          type: integer
+          description: MarkingVoucher ID (alternative to product_id)
+
+    UpdateItemRequest:
+      type: object
+      properties:
+        quantity:
+          type: integer
+          minimum: 1
+        price_type:
+          type: string
+          enum: [standard, retaker, additional]
+        actual_price:
+          type: string
+          format: decimal
+        metadata:
+          type: object
+
+    CartResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItemResponse'
+        fees:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartFeeResponse'
+        user_context:
+          type: object
+          properties:
+            user_id:
+              type: integer
+              nullable: true
+            email:
+              type: string
+              nullable: true
+            country_code:
+              type: string
+              nullable: true
+        vat_totals:
+          type: object
+          nullable: true
+          description: Stored VAT calculation result from rules engine
+          properties:
+            total_net:
+              type: string
+              format: decimal
+            total_vat:
+              type: string
+              format: decimal
+            total_gross:
+              type: string
+              format: decimal
+            items:
+              type: array
+              items:
+                type: object
+        has_marking:
+          type: boolean
+        has_digital:
+          type: boolean
+        has_tutorial:
+          type: boolean
+        has_material:
+          type: boolean
+        vat_calculation_error:
+          type: boolean
+        vat_calculation_error_message:
+          type: string
+          nullable: true
+
+    CartItemResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        product_id:
+          type: integer
+          nullable: true
+        item_type:
+          type: string
+          enum: [product, marking_voucher, fee]
+        quantity:
+          type: integer
+        price_type:
+          type: string
+        actual_price:
+          type: string
+          format: decimal
+          nullable: true
+        is_marking:
+          type: boolean
+        metadata:
+          type: object
+        added_at:
+          type: string
+          format: date-time
+        # Read-only derived fields
+        subject_code:
+          type: string
+        product_name:
+          type: string
+        product_code:
+          type: string
+        exam_session_code:
+          type: string
+        product_type:
+          type: string
+        net_amount:
+          type: string
+          format: decimal
+        # VAT fields
+        vat_region:
+          type: string
+          nullable: true
+          enum: [UK, IE, EU, SA, ROW]
+        vat_rate:
+          type: string
+          format: decimal
+          nullable: true
+        vat_amount:
+          type: string
+          format: decimal
+          nullable: true
+        gross_amount:
+          type: string
+          format: decimal
+          nullable: true
+
+    CartFeeResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        fee_type:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        amount:
+          type: string
+          format: decimal
+        currency:
+          type: string
+        is_refundable:
+          type: boolean

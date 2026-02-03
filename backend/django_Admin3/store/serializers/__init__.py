@@ -11,6 +11,11 @@ from store.serializers.unified import (
     UnifiedProductSerializer,
     UnifiedBundleSerializer,
 )
+from store.serializers.search import (
+    SearchProductSerializer,
+    SearchVariationPriceSerializer,
+    group_store_products_for_search,
+)
 
 __all__ = [
     'ProductSerializer',
@@ -23,4 +28,7 @@ __all__ = [
     'BundleComponentSerializer',
     'UnifiedProductSerializer',
     'UnifiedBundleSerializer',
+    'SearchProductSerializer',
+    'SearchVariationPriceSerializer',
+    'group_store_products_for_search',
 ]

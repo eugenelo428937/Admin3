@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import {
+import
+{
    Home as HomeIcon,
-   HelpOutline as HelpIcon, 
+   HelpOutline as HelpIcon,
    Search as SearchIcon,
    Download as DownloadIcon,
 } from "@mui/icons-material";
@@ -14,7 +15,8 @@ import CartPanel from "../Ordering/CartPanel";
 import SearchModal from "./SearchModal";
 import { Box, Button, Container, Tooltip, Typography, useTheme, useMediaQuery } from "@mui/material";
 
-const TopNavBar = ({ onOpenSearch }) => {
+const TopNavBar = ({ onOpenSearch }) =>
+{
    // State for authentication status
    const { isAuthenticated, user, logout } = useAuth();
    const theme = useTheme();
@@ -26,8 +28,10 @@ const TopNavBar = ({ onOpenSearch }) => {
    const [showSearchModal, setShowSearchModal] = useState(false);
 
    // Listen for navigation state to auto-trigger auth modal
-   useEffect(() => {
-      if (location.state?.showLogin && !isAuthenticated) {
+   useEffect(() =>
+   {
+      if (location.state?.showLogin && !isAuthenticated)
+      {
          setShowAuthModal(true);
          // Clear the state to prevent repeated triggering
          navigate(location.pathname, { replace: true, state: null });
@@ -37,11 +41,14 @@ const TopNavBar = ({ onOpenSearch }) => {
    const { cartCount, refreshCart } = useCart();
 
    // Close cart panel and refresh cart when user authenticates
-   useEffect(() => {
-      if (isAuthenticated) {
+   useEffect(() =>
+   {
+      if (isAuthenticated)
+      {
          setShowCartPanel(false);
          // Refresh cart to recalculate VAT with user profile
-         refreshCart().catch((err) => {
+         refreshCart().catch((err) =>
+         {
             console.error("Failed to refresh cart after login:", err);
          });
       }
@@ -49,69 +56,83 @@ const TopNavBar = ({ onOpenSearch }) => {
    }, [isAuthenticated]); // Only run when isAuthenticated changes, not when refreshCart changes
 
    // Listen for custom event to show auth modal (from CartPanel checkout)
-   useEffect(() => {
-      const handleShowAuthModal = () => {
-         if (!isAuthenticated) {
+   useEffect(() =>
+   {
+      const handleShowAuthModal = () =>
+      {
+         if (!isAuthenticated)
+         {
             setShowAuthModal(true);
          }
       };
 
       window.addEventListener("show-login-modal", handleShowAuthModal);
 
-      return () => {
+      return () =>
+      {
          window.removeEventListener("show-login-modal", handleShowAuthModal);
       };
    }, [isAuthenticated]);
 
    // Handle closing the auth modal
-   const handleCloseAuthModal = () => {
+   const handleCloseAuthModal = () =>
+   {
       setShowAuthModal(false);
    };
 
    // Handle logout
-   const handleLogout = async (e) => {
+   const handleLogout = async (e) =>
+   {
       e.preventDefault();
-      try {
+      try
+      {
          await logout();
-      } catch (error) {
+      } catch (error)
+      {
          console.error("Logout error:", error);
       }
    };
 
    // Handle user icon click
-   const handleUserIconClick = () => {
-      if (!isAuthenticated) {
+   const handleUserIconClick = () =>
+   {
+      if (!isAuthenticated)
+      {
          setShowAuthModal(true);
       }
       // If authenticated, the dropdown will handle showing logout option
    };
 
    // Handle opening the search modal
-   const handleOpenSearchModal = () => {
+   const handleOpenSearchModal = () =>
+   {
       setShowSearchModal(true);
    };
 
    // Handle closing the search modal
-   const handleCloseSearchModal = () => {
+   const handleCloseSearchModal = () =>
+   {
       setShowSearchModal(false);
    };
 
    return (
       <>
          <Container
-            maxWidth="xl"            
-            className="d-flex flex-row justify-content-between align-content-end"
+            maxWidth="xl"
             sx={{
+               display: 'flex',
+               justifyContent: 'space-between',
+               alignContent: 'end',
                bgcolor: 'navigation.background.topNavBar',
                px: {
-                  sm: theme.spacing.lg,
-                  md: theme.spacing.xl,
-                  lg: theme.spacing.xl2,
-                  xl: theme.spacing.xl3,
+                  sm: theme.spacingTokens.lg,
+                  md: theme.spacingTokens.xl,
+                  lg: theme.spacingTokens.xl2,
+                  xl: theme.spacingTokens.xl3,
                },
                py: {
-                  xs: theme.spacing.xs3,
-                  lg: theme.spacing.xs3,
+                  xs: theme.spacingTokens.xs3,
+                  lg: theme.spacingTokens.xs3,
                },
             }}
          >
@@ -120,7 +141,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                display: 'flex',
                flexDirection: 'row',
                flexWrap: 'wrap',
-               gap: { xs: '0', md: theme.spacing.md },
+               gap: theme.spacingTokens.md,
             }}>
                <Tooltip title="ActEd Homepage">
                   <Button
@@ -132,19 +153,13 @@ const TopNavBar = ({ onOpenSearch }) => {
                      endIcon={!isDesktop ? <HomeIcon /> : null}
                      sx={{
                         minWidth: {
-                           xs: theme.spacing.xl,
-                           lg: 64,
+                           xs: theme.spacingTokens.xl,
+                           lg: theme.spacingTokens.xl2,
                         },
-                        justifyContent: {
-                           xs: "start",
-                           md: "center",
-                        },
+                        justifyContent: "center",
                      }}>
                      <Typography
                         variant="topnavlink"
-                        sx={{
-                           display: { xs: "none", md: "flex" },
-                        }}
                      >
                         ActEd
                      </Typography>
@@ -160,19 +175,13 @@ const TopNavBar = ({ onOpenSearch }) => {
                      endIcon={!isDesktop ? <HelpIcon /> : null}
                      sx={{
                         minWidth: {
-                           xs: theme.spacing.xl,
-                           lg: 64,
+                           xs: theme.spacingTokens.xl,
+                           lg: theme.spacingTokens.xl2,
                         },
-                        justifyContent: {
-                           xs: "start",
-                           md: "center",
-                        },
+                        justifyContent: "center",
                      }}>
                      <Typography
                         variant="topnavlink"
-                        sx={{
-                           display: { xs: "none", md: "flex" },
-                        }}
                      >
                         Help
                      </Typography>
@@ -185,7 +194,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                display: 'flex',
                flexDirection: 'row',
                flexWrap: 'wrap',
-               gap: { xs: '0', md: theme.spacing.md },
+               gap: theme.spacingTokens.md,
             }}>
                {/* Brochure Download - Desktop Only */}
                <Tooltip title="Download Brochure">
@@ -198,20 +207,14 @@ const TopNavBar = ({ onOpenSearch }) => {
                      endIcon={!isDesktop ? <DownloadIcon /> : null}
                      sx={{
                         minWidth: {
-                           xs: theme.spacing.xl,
-                           lg: 64,
+                           xs: theme.spacingTokens.xl,
+                           lg: theme.spacingTokens.xl2,
                         },
-                        justifyContent: {
-                           xs: "end",
-                           md: "center",
-                        },
+                        justifyContent: "center",
                      }}
                   >
                      <Typography
                         variant="topnavlink"
-                        sx={{
-                           display: { xs: "none", md: "flex" },
-                        }}
                      >
                         Brochure
                      </Typography>
@@ -225,13 +228,10 @@ const TopNavBar = ({ onOpenSearch }) => {
                      onClick={onOpenSearch}
                      sx={{
                         minWidth: {
-                           xs: theme.spacing.xl,
-                           lg: 64,
+                           xs: theme.spacingTokens.xl,
+                           lg: theme.spacingTokens.xl2,
                         },
-                        justifyContent: {
-                           xs: "end",
-                           md: "center",
-                        },
+                        justifyContent: "center",
                      }}
                      aria-label="search products"
                      startIcon={isDesktop ? <SearchIcon /> : null}
@@ -239,9 +239,6 @@ const TopNavBar = ({ onOpenSearch }) => {
                   >
                      <Typography
                         variant="topnavlink"
-                        sx={{
-                           display: { xs: "none", md: "flex" },
-                        }}
                      >
                         Search
                      </Typography>
@@ -250,16 +247,16 @@ const TopNavBar = ({ onOpenSearch }) => {
             </Box>
             {/* <TopNavActions onOpenSearch={handleOpenSearchModal} /> */}
 
-         </Container>
+         </Container >
 
          {/* Search Modal */}
-         <SearchModal open={showSearchModal} onClose={handleCloseSearchModal} />
+         < SearchModal open={showSearchModal} onClose={handleCloseSearchModal} />
 
          {/* Auth Modal */}
-         <AuthModal open={showAuthModal} onClose={handleCloseAuthModal} />
+         < AuthModal open={showAuthModal} onClose={handleCloseAuthModal} />
 
          {/* Cart Panel */}
-         <CartPanel
+         < CartPanel
             show={showCartPanel}
             handleClose={() => setShowCartPanel(false)}
          />

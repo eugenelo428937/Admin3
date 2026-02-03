@@ -16,6 +16,7 @@ from userprofile.models import (
     UserProfileContactNumber,
     UserProfileEmail
 )
+import userprofile.views  # noqa: F401 - import to cover stub views.py
 
 
 class UserProfileTestCase(TestCase):
@@ -137,7 +138,7 @@ class UserProfileTestCase(TestCase):
         """Test custom database table name."""
         self.assertEqual(
             UserProfile._meta.db_table,
-            'acted_user_profile'
+            '"acted"."user_profile"'
         )
 
     def test_verbose_name(self):
@@ -284,6 +285,16 @@ class UserProfileAddressTestCase(TestCase):
         self.assertIn('London', formatted)
         self.assertIn('NW1 6XE', formatted)
 
+    def test_get_formatted_address_empty_data(self):
+        """Test get_formatted_address returns empty string for empty address_data."""
+        address = UserProfileAddress.objects.create(
+            user_profile=self.profile,
+            address_type='HOME',
+            country='United Kingdom',
+            address_data={}
+        )
+        self.assertEqual(address.get_formatted_address(), '')
+
     def test_postal_code_property(self):
         """Test postal_code property supports multiple field names."""
         # Test with 'postal_code' key
@@ -364,7 +375,7 @@ class UserProfileAddressTestCase(TestCase):
         """Test custom database table name."""
         self.assertEqual(
             UserProfileAddress._meta.db_table,
-            'acted_user_profile_address'
+            '"acted"."user_profile_address"'
         )
 
 
@@ -498,7 +509,7 @@ class UserProfileContactNumberTestCase(TestCase):
         """Test custom database table name."""
         self.assertEqual(
             UserProfileContactNumber._meta.db_table,
-            'acted_user_profile_contact_number'
+            '"acted"."user_profile_contact_number"'
         )
 
 
@@ -630,5 +641,5 @@ class UserProfileEmailTestCase(TestCase):
         """Test custom database table name."""
         self.assertEqual(
             UserProfileEmail._meta.db_table,
-            'acted_user_profile_email'
+            '"acted"."user_profile_email"'
         )

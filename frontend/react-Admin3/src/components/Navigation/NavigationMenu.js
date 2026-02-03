@@ -57,7 +57,7 @@ const NavigationMenu = ({
             alignItems: "center",
             justifyContent: { xs: "flex-start", lg: "space-evenly" },
             width: 'auto',
-            gap: theme.spacing.md,
+            gap: 1,
          }}
       >
          <Button component={NavLink} to="/home">
@@ -75,7 +75,7 @@ const NavigationMenu = ({
          >
             <Grid container spacing={1}>
                <Grid size={{ xs: 12, md: 3, xl: 2 }}>
-                  <Typography variant="navlink" id="core-principles-heading">
+                  <Typography variant="navHeading" id="core-principles-heading">
                      Core Principles
                   </Typography>
                   <MenuList
@@ -101,7 +101,7 @@ const NavigationMenu = ({
                   </MenuList>
                </Grid>
                <Grid size={{ xs: 12, md: 3, xl: 2 }}>
-                  <Typography variant="navlink" id="core-practices-heading">
+                  <Typography variant="navHeading" id="core-practices-heading">
                      Core Practices
                   </Typography>
                   <MenuList
@@ -128,7 +128,7 @@ const NavigationMenu = ({
                </Grid>
                <Grid size={{ xs: 12, md: 3, xl: 2 }}>
                   <Typography
-                     variant="navlink"
+                     variant="navHeading"
                      id="specialist-principles-heading"
                   >
                      Specialist Principles
@@ -157,7 +157,7 @@ const NavigationMenu = ({
                </Grid>
                <Grid size={{ xs: 12, md: 3, xl: 2 }}>
                   <Typography
-                     variant="navlink"
+                     variant="navHeading"
                      id="specialist-advanced-heading"
                   >
                      Specialist Advanced
@@ -500,8 +500,6 @@ const NavigationMenu = ({
             onClose={onCollapseNavbar}
          >
             <Grid container spacing={2}>
-
-
                {/* Tutorial content */}
                {loadingTutorial ? (
                   <Grid size={12}>

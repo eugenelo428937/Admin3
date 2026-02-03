@@ -18,7 +18,7 @@ class ActedRulesFields(models.Model):
     class Meta:
         verbose_name = "Acted Rules Fields Schema"
         verbose_name_plural = "Acted Rules Fields Schemas"
-        db_table = "acted_rules_fields"
+        db_table = '"acted"."rules_fields"'
         ordering = ["name"]
     
     def __str__(self):

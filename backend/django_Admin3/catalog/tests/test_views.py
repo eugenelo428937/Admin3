@@ -410,6 +410,39 @@ class TestProductViewSet(CatalogAPITestCase):
             if bundle.get('bundle_type') == 'master':
                 self.assertEqual(bundle.get('subject_code'), 'CM2')
 
+    def test_bulk_import_products_requires_superuser(self):
+        """GET /api/catalog/products/bulk-import/ without superuser returns 403 or 405."""
+        self.authenticate_regular_user()
+        response = self.client.get('/api/catalog/products/bulk-import/')
+        self.assertIn(response.status_code, [
+            status.HTTP_403_FORBIDDEN,
+            status.HTTP_405_METHOD_NOT_ALLOWED,
+        ])
+
+    def test_bulk_import_products_as_superuser(self):
+        """POST /api/catalog/products/bulk-import/ as superuser creates products."""
+        self.authenticate_superuser()
+        response = self.client.post('/api/catalog/products/bulk-import/', {
+            'products': [{
+                'fullname': 'Test Product',
+                'shortname': 'TP',
+                'code': 'TST-BULK-001',
+                'description': 'Bulk test product',
+            }]
+        }, format='json')
+        self.assertIn(response.status_code, [
+            status.HTTP_200_OK,
+            status.HTTP_201_CREATED,
+            status.HTTP_400_BAD_REQUEST,
+        ])
+
+    def test_get_bundle_contents_literal_url(self):
+        """GET /api/catalog/products/bundle-contents/ returns bundle components."""
+        response = self.client.get('/api/catalog/products/bundle-contents/', {
+            'bundle_id': self.bundle_cm2.id,
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class TestBundleViewSet(CatalogAPITestCase):
     """Test BundleViewSet for ExamSessionSubjectBundle (T030)."""

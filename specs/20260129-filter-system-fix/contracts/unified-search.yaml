@@ -1,0 +1,210 @@
+# Unified Search API Contract
+# Endpoint: POST /api/search/unified/
+# Changes: Disjunctive filter counts, partitioned groups, bundle filtering, hierarchy
+
+openapi: "3.0.3"
+info:
+  title: Unified Search API (Filter Remediation)
+  version: "2.0.0"
+  description: |
+    Updated contract for the unified search endpoint reflecting:
+    - FR-001: Partitioned filter groups per FilterConfigurationGroup
+    - FR-002: Disjunctive faceted counts
+    - FR-004: Bundle filtering across all dimensions
+    - FR-013: Zero-count options included (frontend hides them)
+    - FR-014: Single-product bundle matching semantics
+
+paths:
+  /api/search/unified/:
+    post:
+      summary: Search products with faceted filtering
+      operationId: unifiedSearch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+      responses:
+        '200':
+          description: Search results with disjunctive filter counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+
+components:
+  schemas:
+    SearchRequest:
+      type: object
+      properties:
+        searchQuery:
+          type: string
+          description: Fuzzy text search query
+          example: "CM2"
+        filters:
+          $ref: '#/components/schemas/FilterParams'
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+              default: 1
+            page_size:
+              type: integer
+              default: 20
+        options:
+          type: object
+          properties:
+            include_bundles:
+              type: boolean
+              default: true
+              description: Include matching bundles in results
+
+    FilterParams:
+      type: object
+      description: Active filter selections
+      properties:
+        subjects:
+          type: array
+          items:
+            type: string
+          description: Subject codes (e.g., ["CM2", "SA1"])
+        categories:
+          type: array
+          items:
+            type: string
+          description: |
+            Category group names/codes.
+            CHANGED: Only groups assigned to a "category" FilterConfiguration appear here.
+            Previously identical to product_types (bug).
+        product_types:
+          type: array
+          items:
+            type: string
+          description: |
+            Product type group names/codes.
+            CHANGED: Only groups assigned to a "product_type" FilterConfiguration appear here.
+            Previously identical to categories (bug).
+        products:
+          type: array
+          items:
+            type: string
+          description: Product IDs (catalog product IDs as strings)
+        modes_of_delivery:
+          type: array
+          items:
+            type: string
+          description: |
+            Variation types (e.g., ["eBook", "Printed"]).
+            Uses ProductVariation.variation_type, NOT filter groups (FR-008).
+
+    SearchResponse:
+      type: object
+      required:
+        - products
+        - filter_counts
+        - pagination
+      properties:
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductResult'
+          description: |
+            Combined list of individual products and matching bundles.
+            CHANGED: Bundles now filtered by ALL active dimensions (FR-004).
+            Bundle appears only if at least one component product matches
+            ALL active filter dimensions simultaneously (FR-014).
+        filter_counts:
+          $ref: '#/components/schemas/FilterCounts'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    FilterCounts:
+      type: object
+      description: |
+        Disjunctive faceted counts (FR-002).
+        CHANGED: Each dimension's counts now reflect the queryset with
+        all OTHER active filters applied but NOT that dimension's own filter.
+        Previously all counts came from the unfiltered base queryset (bug).
+      properties:
+        subjects:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/FilterCountEntry'
+          description: |
+            Keyed by subject code.
+            CHANGED: Counts reflect products matching all non-subject filters.
+        categories:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/FilterCountEntry'
+          description: |
+            Keyed by group name/code.
+            CHANGED: Only groups assigned to "category" FilterConfiguration (FR-001).
+            Counts reflect products matching all non-category filters.
+        product_types:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/FilterCountEntry'
+          description: |
+            Keyed by group name/code.
+            CHANGED: Only groups assigned to "product_type" FilterConfiguration (FR-001).
+            Previously identical to categories (bug).
+        products:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/FilterCountEntry'
+          description: Keyed by catalog product ID (string)
+        modes_of_delivery:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/FilterCountEntry'
+          description: |
+            Keyed by variation_type.
+            Uses ProductVariation.variation_type (FR-008).
+
+    FilterCountEntry:
+      type: object
+      required:
+        - count
+      properties:
+        count:
+          type: integer
+          minimum: 0
+          description: |
+            Number of products matching this option given other active filters.
+            Zero-count entries ARE included in response (frontend hides them per FR-013).
+        name:
+          type: string
+          description: Display name for the option
+        display_name:
+          type: string
+          description: Alternative display name (overrides name if present)
+
+    ProductResult:
+      type: object
+      description: A product or bundle in search results
+      properties:
+        id:
+          type: integer
+        product_code:
+          type: string
+        is_bundle:
+          type: boolean
+          default: false
+        # Additional fields inherited from existing serializers
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total_count:
+          type: integer
+        has_next:
+          type: boolean
+        has_previous:
+          type: boolean

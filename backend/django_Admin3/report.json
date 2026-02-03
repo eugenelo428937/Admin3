@@ -1,0 +1,513 @@
+{
+  "generated_at": "2026-02-02T15:34:26.041747",
+  "summary": {
+    "total_endpoints": 84,
+    "tested_endpoints": 84,
+    "untested_endpoints": 0,
+    "endpoint_coverage_pct": 100.0,
+    "total_serializer_fields": 148,
+    "read_tested_fields": 146,
+    "write_tested_fields": 112,
+    "untested_fields": 0,
+    "field_read_coverage_pct": 98.6,
+    "field_write_coverage_pct": 75.7
+  },
+  "endpoint_coverage_by_app": {
+    "utils": {
+      "total": 6,
+      "tested": 6,
+      "untested": 0
+    },
+    "core_auth": {
+      "total": 13,
+      "tested": 13,
+      "untested": 0
+    },
+    "users": {
+      "total": 3,
+      "tested": 3,
+      "untested": 0
+    },
+    "students": {
+      "total": 1,
+      "tested": 1,
+      "untested": 0
+    },
+    "filtering": {
+      "total": 4,
+      "tested": 4,
+      "untested": 0
+    },
+    "cart": {
+      "total": 6,
+      "tested": 6,
+      "untested": 0
+    },
+    "orders": {
+      "total": 2,
+      "tested": 2,
+      "untested": 0
+    },
+    "rules_engine": {
+      "total": 16,
+      "tested": 16,
+      "untested": 0
+    },
+    "misc": {
+      "total": 1,
+      "tested": 1,
+      "untested": 0
+    },
+    "marking": {
+      "total": 3,
+      "tested": 3,
+      "untested": 0
+    },
+    "marking_vouchers": {
+      "total": 3,
+      "tested": 3,
+      "untested": 0
+    },
+    "tutorials": {
+      "total": 8,
+      "tested": 8,
+      "untested": 0
+    },
+    "catalog": {
+      "total": 11,
+      "tested": 11,
+      "untested": 0
+    },
+    "search": {
+      "total": 4,
+      "tested": 4,
+      "untested": 0
+    },
+    "store": {
+      "total": 3,
+      "tested": 3,
+      "untested": 0
+    }
+  },
+  "untested_endpoints": [],
+  "serializer_coverage": {
+    "cart.ActedOrderItemSerializer": {
+      "total_fields": 12,
+      "read_tested": [
+        "id",
+        "item_type",
+        "product",
+        "product_name",
+        "product_code",
+        "subject_code",
+        "exam_session_code",
+        "product_type",
+        "quantity",
+        "price_type",
+        "actual_price",
+        "metadata"
+      ],
+      "write_tested": [
+        "id",
+        "product_code",
+        "subject_code",
+        "quantity",
+        "price_type",
+        "actual_price"
+      ],
+      "untested": []
+    },
+    "cart.ActedOrderSerializer": {
+      "total_fields": 5,
+      "read_tested": [
+        "id",
+        "user",
+        "created_at",
+        "updated_at",
+        "items"
+      ],
+      "write_tested": [
+        "id",
+        "user",
+        "created_at",
+        "updated_at",
+        "items"
+      ],
+      "untested": []
+    },
+    "cart.CartFeeSerializer": {
+      "total_fields": 10,
+      "read_tested": [
+        "id",
+        "fee_type",
+        "name",
+        "description",
+        "amount",
+        "currency",
+        "is_refundable",
+        "applied_at",
+        "applied_by_rule",
+        "metadata"
+      ],
+      "write_tested": [
+        "id",
+        "fee_type",
+        "name",
+        "description",
+        "amount"
+      ],
+      "untested": []
+    },
+    "cart.CartItemSerializer": {
+      "total_fields": 21,
+      "read_tested": [
+        "id",
+        "current_product",
+        "product_id",
+        "product_name",
+        "product_code",
+        "subject_code",
+        "exam_session_code",
+        "product_type",
+        "quantity",
+        "price_type",
+        "actual_price",
+        "metadata",
+        "is_marking",
+        "has_expired_deadline",
+        "expired_deadlines_count",
+        "marking_paper_count",
+        "net_amount",
+        "vat_region",
+        "vat_rate",
+        "vat_amount",
+        "gross_amount"
+      ],
+      "write_tested": [
+        "id",
+        "current_product",
+        "product_id",
+        "product_code",
+        "subject_code",
+        "quantity",
+        "price_type",
+        "actual_price",
+        "net_amount",
+        "vat_rate",
+        "vat_amount",
+        "gross_amount"
+      ],
+      "untested": []
+    },
+    "cart.CartSerializer": {
+      "total_fields": 17,
+      "read_tested": [
+        "id",
+        "user",
+        "session_key",
+        "items",
+        "fees",
+        "created_at",
+        "updated_at",
+        "has_marking",
+        "has_digital",
+        "has_tutorial",
+        "has_material",
+        "user_context",
+        "vat_calculations",
+        "vat_totals",
+        "vat_last_calculated_at",
+        "vat_calculation_error",
+        "vat_calculation_error_message"
+      ],
+      "write_tested": [
+        "id",
+        "user",
+        "session_key",
+        "items",
+        "created_at",
+        "updated_at",
+        "has_marking",
+        "has_tutorial",
+        "has_material"
+      ],
+      "untested": []
+    },
+    "students.StudentSerializer": {
+      "total_fields": 7,
+      "read_tested": [
+        "student_ref",
+        "user",
+        "student_type",
+        "apprentice_type",
+        "create_date",
+        "modified_date",
+        "remarks"
+      ],
+      "write_tested": [
+        "student_ref",
+        "user",
+        "student_type",
+        "apprentice_type",
+        "create_date",
+        "modified_date",
+        "remarks"
+      ],
+      "untested": []
+    },
+    "students.UserSerializer": {
+      "total_fields": 6,
+      "read_tested": [
+        "id",
+        "username",
+        "email",
+        "first_name",
+        "last_name"
+      ],
+      "write_tested": [
+        "id",
+        "username",
+        "email",
+        "password",
+        "first_name",
+        "last_name"
+      ],
+      "untested": []
+    },
+    "users.UserRegistrationSerializer": {
+      "total_fields": 7,
+      "read_tested": [
+        "id",
+        "username",
+        "email",
+        "first_name",
+        "last_name",
+        "profile"
+      ],
+      "write_tested": [
+        "id",
+        "username",
+        "email",
+        "password",
+        "first_name",
+        "last_name"
+      ],
+      "untested": []
+    },
+    "tutorials.TutorialEventSerializer": {
+      "total_fields": 13,
+      "read_tested": [
+        "id",
+        "store_product_code",
+        "subject_code",
+        "code",
+        "venue",
+        "is_soldout",
+        "finalisation_date",
+        "remain_space",
+        "start_date",
+        "end_date",
+        "created_at",
+        "updated_at",
+        "store_product"
+      ],
+      "write_tested": [
+        "id",
+        "store_product_code",
+        "subject_code",
+        "code",
+        "venue",
+        "is_soldout",
+        "finalisation_date",
+        "remain_space",
+        "start_date",
+        "end_date",
+        "created_at",
+        "updated_at",
+        "store_product"
+      ],
+      "untested": []
+    },
+    "marking.MarkingPaperSerializer": {
+      "total_fields": 4,
+      "read_tested": [
+        "id",
+        "name",
+        "deadline",
+        "recommended_submit_date"
+      ],
+      "write_tested": [
+        "id",
+        "name",
+        "deadline",
+        "recommended_submit_date"
+      ],
+      "untested": []
+    },
+    "marking_vouchers.AddMarkingVoucherToCartSerializer": {
+      "total_fields": 2,
+      "read_tested": [
+        "voucher_id",
+        "quantity"
+      ],
+      "write_tested": [
+        "voucher_id",
+        "quantity"
+      ],
+      "untested": []
+    },
+    "marking_vouchers.MarkingVoucherSerializer": {
+      "total_fields": 10,
+      "read_tested": [
+        "id",
+        "code",
+        "name",
+        "description",
+        "price",
+        "is_active",
+        "expiry_date",
+        "is_available",
+        "created_at",
+        "updated_at"
+      ],
+      "write_tested": [
+        "id",
+        "code",
+        "name",
+        "description",
+        "price",
+        "is_active",
+        "expiry_date",
+        "is_available",
+        "created_at",
+        "updated_at"
+      ],
+      "untested": []
+    },
+    "search.FilterCountSerializer": {
+      "total_fields": 5,
+      "read_tested": [
+        "subjects",
+        "categories",
+        "product_types",
+        "products",
+        "modes_of_delivery"
+      ],
+      "write_tested": [
+        "subjects",
+        "categories",
+        "products"
+      ],
+      "untested": []
+    },
+    "search.ProductSearchPaginationSerializer": {
+      "total_fields": 5,
+      "read_tested": [
+        "page",
+        "page_size",
+        "total_count",
+        "has_next",
+        "has_previous"
+      ],
+      "write_tested": [
+        "page",
+        "page_size",
+        "total_count",
+        "has_next",
+        "has_previous"
+      ],
+      "untested": []
+    },
+    "search.ProductSearchRequestSerializer": {
+      "total_fields": 4,
+      "read_tested": [
+        "searchQuery",
+        "filters",
+        "pagination",
+        "options"
+      ],
+      "write_tested": [
+        "searchQuery"
+      ],
+      "untested": []
+    },
+    "search.ProductSearchResponseSerializer": {
+      "total_fields": 3,
+      "read_tested": [
+        "products",
+        "filter_counts",
+        "pagination"
+      ],
+      "write_tested": [
+        "products"
+      ],
+      "untested": []
+    },
+    "filtering.FilterConfigurationGroupSerializer": {
+      "total_fields": 6,
+      "read_tested": [
+        "id",
+        "name",
+        "code",
+        "display_order",
+        "is_default",
+        "parent_id"
+      ],
+      "write_tested": [
+        "id",
+        "name",
+        "code",
+        "display_order",
+        "is_default",
+        "parent_id"
+      ],
+      "untested": []
+    },
+    "filtering.FilterGroupSerializer": {
+      "total_fields": 4,
+      "read_tested": [
+        "id",
+        "name",
+        "parent",
+        "children"
+      ],
+      "write_tested": [
+        "id",
+        "name",
+        "parent",
+        "children"
+      ],
+      "untested": []
+    },
+    "filtering.FilterGroupThreeLevelSerializer": {
+      "total_fields": 4,
+      "read_tested": [
+        "id",
+        "name",
+        "parent",
+        "children"
+      ],
+      "write_tested": [
+        "id",
+        "name",
+        "parent",
+        "children"
+      ],
+      "untested": []
+    },
+    "filtering.FilterGroupWithProductsSerializer": {
+      "total_fields": 3,
+      "read_tested": [
+        "id",
+        "name",
+        "products"
+      ],
+      "write_tested": [
+        "id",
+        "name",
+        "products"
+      ],
+      "untested": []
+    }
+  }
+}
