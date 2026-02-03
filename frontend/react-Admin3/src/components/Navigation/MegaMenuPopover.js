@@ -67,8 +67,7 @@ const MegaMenuPopover = ({
         aria-expanded={open}
         onClick={handleOpen}
         endIcon={<ExpandMoreIcon sx={{
-          ml: 0,
-          color: theme.palette.navigation.text.inverse,
+          ml: 0,          
         }}/>}
         sx={{
           ...buttonProps.sx,

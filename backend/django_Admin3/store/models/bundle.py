@@ -26,7 +26,7 @@ class Bundle(models.Model):
     """
 
     bundle_template = models.ForeignKey(
-        'catalog.ProductBundle',
+        'catalog_products_bundles.ProductBundle',
         on_delete=models.CASCADE,
         related_name='store_bundles',
         help_text='The catalog bundle template this is based on'

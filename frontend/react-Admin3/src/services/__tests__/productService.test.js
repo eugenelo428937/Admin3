@@ -82,26 +82,6 @@ describe('productService', () => {
     });
   });
 
-  describe('getProductGroupFilters', () => {
-    test('should return product group filters', async () => {
-      const mockFilters = [{ id: 1, name: 'Filter 1' }];
-      httpService.get.mockResolvedValue({ data: { results: mockFilters } });
-
-      const result = await productService.getProductGroupFilters();
-
-      expect(result).toEqual(mockFilters);
-      expect(httpService.get).toHaveBeenCalledWith('/api/products/product-group-filters/');
-    });
-
-    test('should throw error on failure', async () => {
-      httpService.get.mockRejectedValue({ message: 'Network error' });
-
-      await expect(productService.getProductGroupFilters()).rejects.toMatchObject({
-        message: 'Network error',
-      });
-    });
-  });
-
   describe('getAvailableProducts', () => {
     test('should return available products with pagination', async () => {
       const mockResponse = { results: [], count: 0, page: 1 };
@@ -255,14 +235,14 @@ describe('productService', () => {
   });
 
   describe('getMarkingDeadlines', () => {
-    test('should return marking deadlines for essp', async () => {
+    test('should return marking deadlines for store product', async () => {
       const mockDeadlines = { deadline: '2025-01-01' };
       httpService.get.mockResolvedValue({ data: mockDeadlines });
 
       const result = await productService.getMarkingDeadlines(123);
 
       expect(result).toEqual(mockDeadlines);
-      expect(httpService.get).toHaveBeenCalledWith('/api/marking/papers/deadlines/?essp_id=123');
+      expect(httpService.get).toHaveBeenCalledWith('/api/marking/papers/deadlines/?store_product_id=123');
     });
   });
 
@@ -276,7 +256,7 @@ describe('productService', () => {
       expect(result).toEqual(mockDeadlines);
       expect(httpService.post).toHaveBeenCalledWith(
         '/api/marking/papers/bulk-deadlines/',
-        { essp_ids: [1, 2, 3] }
+        { store_product_ids: [1, 2, 3] }
       );
     });
   });
@@ -509,7 +489,7 @@ describe('productService', () => {
       const result = await productService.searchProducts({ q: 'test' });
 
       expect(result.data).toEqual(mockResults);
-      expect(httpService.get).toHaveBeenCalledWith('/api/products/search/', { params: { q: 'test' } });
+      expect(httpService.get).toHaveBeenCalledWith('/api/catalog/search/', { params: { q: 'test' } });
     });
 
     test('should return empty object if no results', async () => {

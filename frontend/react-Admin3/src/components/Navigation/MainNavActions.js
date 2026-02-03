@@ -1,24 +1,24 @@
 import React, { useState } from "react";
 import
-   {
-      Box,
-      IconButton,
-      Button,
-      Menu,
-      MenuItem,
-      Avatar,
-      Typography,
-      Badge,
-      Tooltip,
-   } from "@mui/material";
+{
+   Box,
+   IconButton,
+   Button,
+   Menu,
+   MenuItem,
+   Avatar,
+   Typography,
+   Badge,
+   Tooltip,
+} from "@mui/material";
 import
-   {
-      Login as LoginIcon,
-      ShoppingCartOutlined as CartIcon,
-      Menu as MenuIcon,
-      Logout as LogoutIcon,
-      Person as ProfileIcon,
-   } from "@mui/icons-material";
+{
+   Login as LoginIcon,
+   ShoppingCartOutlined as CartIcon,
+   Menu as MenuIcon,
+   Logout as LogoutIcon,
+   Person as ProfileIcon,
+} from "@mui/icons-material";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
@@ -108,7 +108,7 @@ const MainNavActions = ({
                      }}
                      aria-label={`shopping cart with ${cartCount} items`}
                   >
-                     <CartIcon/>
+                     <CartIcon />
                   </Badge>
                }
             >
@@ -117,7 +117,6 @@ const MainNavActions = ({
                   noWrap
                   sx={{
                      display: { xs: "none", lg: "block" },
-                     color: theme.palette.navigation.text.inverse,
                   }}
                >
                   Cart
@@ -166,7 +165,6 @@ const MainNavActions = ({
                      <Typography
                         variant="button"
                         noWrap
-                        disableRipple
                         sx={{
                            display: { xs: "none", lg: "block" },
                            color: theme.palette.navigation.text.inverse,
@@ -231,55 +229,23 @@ const MainNavActions = ({
                   onClick={onOpenAuth}
                   variant="navAction"
                   size="medium"
+                  disableRipple
                   sx={{
                      display: {
                         xs: cartCount === 0 ? "flex" : "none",
                         md: "flex",
                      },
-                     // borderRadius: { xs: theme.spacing.xl2, lg: 0 },
-                     //  "&:hover": {
-                     //                backgroundColor: theme.palette.navigation.background.hover,
-                     // 		  boxShadow: "var(--Paper-shadow)",
-                     //             },
-                     //       p: {
-                     // 	xs:1,
-                     // 	lg:0,
-                     //  },
-                     //  px: {
-                     //          xs: 1,
-                     //          lg: 1,
-                     //       },
-                     //       minWidth: {
-                     //          xs: theme.spacing.md,
-                     //          lg: 64,
-                     //       },
-                     //  minHeight: {
-                     //          xs: theme.spacing.md,
-                     //          lg: 64,
-                     //       },
-                     //  alignContent:"center",
-                     //  justifyContent:"center",
-                     //  "& .MuiButton-startIcon":{
-                     // 	m: "1px",
-                     // 	mr:"2.5px",
-                     // 	minWidth:{xs: theme.typography.h3,
-                     // 		lg: theme.typography.h5,},
-                     // 		minHeight:{xs: theme.typography.h3,
-                     // 			lg: theme.typography.h5,}
-                     //  }
                   }}
                   startIcon={
-                     <LoginIcon/>
+                     <LoginIcon />
                   }
                >
                   <Typography
                      variant="button"
                      noWrap
-                      sx={{
-                         display: { xs: "none", lg: "block" },
-                  //       color: theme.palette.navigation.text.inverse,
-                  // ml:1,
-                      }}
+                     sx={{
+                        display: { xs: "none", lg: "block" },
+                     }}
                   >
                      Login
                   </Typography>

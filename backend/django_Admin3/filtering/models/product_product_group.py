@@ -1,0 +1,53 @@
+"""ProductProductGroup junction model for the filtering app.
+
+Junction table linking catalog.Product to filtering.FilterGroup.
+Table: acted.filter_product_product_groups
+"""
+from django.db import models
+
+
+class ProductProductGroup(models.Model):
+    """
+    Junction table linking :model:`catalog_products.Product` to :model:`filtering.FilterGroup`.
+
+    This through model manages the many-to-many relationship between products
+    and filter groups used for categorization and filtering in the online store.
+    Filter groups include categories like 'Core Study Materials', 'Revision Materials',
+    'eBook', 'Printed', etc.
+
+    **Related Models**:
+
+    - :model:`catalog_products.Product` - The product being categorized
+    - :model:`filtering.FilterGroup` - The filter/category group
+
+    **Usage Example**::
+
+        # Get all products in the 'Core Study Materials' group
+        from filtering.models import ProductProductGroup
+        groups = ProductProductGroup.objects.filter(
+            product_group__name='Core Study Materials'
+        ).select_related('product')
+    """
+
+    product = models.ForeignKey(
+        'catalog_products.Product',
+        on_delete=models.CASCADE,
+        related_name='product_groups',
+        help_text="The product being categorized"
+    )
+    product_group = models.ForeignKey(
+        'filtering.FilterGroup',
+        on_delete=models.CASCADE,
+        related_name='product_product_groups',
+        help_text="The filter group this product belongs to"
+    )
+
+    class Meta:
+        db_table = '"acted"."filter_product_product_groups"'
+        app_label = 'filtering'
+        unique_together = ('product', 'product_group')
+        verbose_name = 'Product Product Group'
+        verbose_name_plural = 'Product Product Groups'
+
+    def __str__(self):
+        return f"{self.product} - {self.product_group}"

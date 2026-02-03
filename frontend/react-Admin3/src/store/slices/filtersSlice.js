@@ -156,6 +156,11 @@ export const {
   setFilterCounts,
   clearValidationErrors,
 
+  // Filter configuration actions (US5)
+  setFilterConfiguration,
+  setFilterConfigurationLoading,
+  setFilterConfigurationError,
+
   // Navigation filter actions
   navSelectSubject,
   navViewAllProducts,

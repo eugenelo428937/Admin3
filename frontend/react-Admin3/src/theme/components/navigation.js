@@ -57,6 +57,8 @@
 
 import { spacing } from '../tokens/spacing';
 import { navigation } from '../semantic/navigation';
+import { typographyConfig } from '../typography';
+import { fontSize } from '@mui/system';
 
 export const navigationOverrides = {
   MuiAppBar: {
@@ -81,69 +83,15 @@ export const navigationOverrides = {
       }),
     },
   },
-
-  MuiTabs: {
-    styleOverrides: {
-      root: {
-        fontFamily: "'Inter', 'Poppins', sans-serif",
-        minHeight: "48px",
-        "& .MuiTabs-flexContainer": {
-          display: "flex !important",
-          alignItems: "center !important",
-        },
-        "& .MuiTabs-indicator": {
-          backgroundColor: "#1976d2 !important",
-          height: "3px !important",
-          display: "block !important",
-        },
-      },
-    },
-  },
-  MuiTab: {
-    styleOverrides: {
-      root: {
-        fontFamily: "'Inter', 'Poppins', sans-serif",
-        display: "flex !important",
-        alignItems: "center !important",
-        justifyContent: "center !important",
-        minHeight: "48px !important",
-        height: "48px !important",
-        padding: "12px 16px !important",
-        color: "#666666 !important",
-        fontSize: "14px !important",
-        fontWeight: "500 !important",
-        textTransform: "none !important",
-        border: "none !important",
-        background: "transparent !important",
-        cursor: "pointer !important",
-        transition: "all 0.2s ease !important",
-        boxSizing: "border-box !important",
-        visibility: "visible !important",
-        opacity: "1 !important",
-        position: "relative !important",
-        "&.Mui-selected": {
-          color: "#1976d2 !important",
-          fontWeight: "600 !important",
-          backgroundColor: "transparent !important",
-        },
-        "&:hover": {
-          color: "#1976d2 !important",
-          backgroundColor: "rgba(25, 118, 210, 0.04) !important",
-        },
-      },
-    },
-  },
   MuiMenuItem: {
     styleOverrides: {
-      root: {
-        fontFamily: "'Inter', 'Poppins', sans-serif",
-      },
+      root: {},
     },
     variants: [
       {
         props: { variant: 'navmenu' },
         style: {
-          color: navigation.text.secondary,
+          color: navigation.text.primary,
           '&:hover': {
             backgroundColor: navigation.background.hover,
           },
@@ -165,9 +113,15 @@ export const navigationOverrides = {
       },
     ],
   },
-
-  // Navigation Button Variants (20260113-Styling-Clean-up)
+  // Navigation Button Variants
   MuiButton: {
+    styleOverrides: {
+      root: {
+        '& .MuiSvgIcon-root': {
+          color: navigation.button.icon,
+        },
+      },
+    },
     variants: [
       {
         props: { variant: 'navAction' },
@@ -175,29 +129,26 @@ export const navigationOverrides = {
           color: navigation.text.primary,
           backgroundColor: 'transparent',
           paddingRight: 0,
-          // "& .MuiSvgIcon-root":{
-          //   fontSize:'',
-          // }
+          '& .MuiSvgIcon-root': {
+            fontSize: typographyConfig.h5,
+          },
         },
       },
       // navPrimary: Main nav buttons, MegaMenu triggers, conditional nav links
       {
         props: { variant: 'navPrimary' },
         style: {
-          color: navigation.text.inverse,
           textTransform: 'none',
           padding: 0,
+          color: navigation.text.hover,
           '&:hover': {
             backgroundColor: 'transparent',
-            color: navigation.text.inverse,
+            color: navigation.text.hover,
             opacity: 0.8,
           },
           '& .MuiButton-endIcon ': {
             marginRight: 0,
             marginLeft: 0,
-          },
-          '& .MuiSvgIcon-root': {
-            color: navigation.text.inverse,
           },
         },
       },
@@ -205,7 +156,6 @@ export const navigationOverrides = {
       {
         props: { variant: 'navViewAll' },
         style: {
-          color: navigation.button.color,
           textTransform: 'none',
           paddingTop: 0,
           marginBottom: spacing.sm,
@@ -215,7 +165,7 @@ export const navigationOverrides = {
       {
         props: { variant: 'topNavAction' },
         style: {
-          color: navigation.text.inverse,
+          color: navigation.text.primary,
           textTransform: 'none',
           padding: 0,
           justifyContent: 'center',
@@ -233,9 +183,6 @@ export const navigationOverrides = {
             margin: 0,
             marginRight: spacing.xs3,
           },
-          "& .MuiSvgIcon-root": {
-            color: navigation.text.inverse,
-          },
         },
       },
     ],
@@ -248,6 +195,7 @@ export const navigationOverrides = {
       {
         props: { variant: 'navViewAllText' },
         style: {
+          color: navigation.text.primary,
           borderBottom: `1px solid ${navigation.border.subtle}`,
         },
       },
@@ -258,6 +206,7 @@ export const navigationOverrides = {
           marginBottom: spacing.xs,
           fontWeight: 'bold',
           cursor: 'pointer',
+          color: navigation.text.secondary,
         },
       },
       // mobileNavTitle: Mobile navigation panel title (Phase 7 - US4)
@@ -267,21 +216,14 @@ export const navigationOverrides = {
           flex: 1,
           fontSize: '1.1rem',
           fontWeight: '500',
-          color: navigation.mobile.title,
+          color: 'red'
         },
       },
-      // topnavlink: Top navigation link text (used in topNavAction buttons)
-      {
-        props: { variant: 'topnavlink' },
-        style: {
-          color: navigation.text.inverse,
-        },
-      },
-      // navlink: Main navigation link text (used in navPrimary buttons)
+      //navlink: Main navigation link text (used in navPrimary buttons)
       {
         props: { variant: 'navlink' },
         style: {
-          color: navigation.text.inverse,
+          color: navigation.text.primary,
         },
       },
     ],
@@ -295,7 +237,7 @@ export const navigationOverrides = {
         props: { variant: 'mobileNavIcon' },
         style: {
           padding: '6px',
-          color: navigation.mobile.icon,
+          color: navigation.text.primary
         },
       },
       // hamburgerToggle: Hamburger menu toggle button
@@ -318,14 +260,6 @@ export const navigationOverrides = {
       },
     ],
   },
-  MuiSvgIcon: {
-    styleOverrides: {
-      root: {
-        color: navigation.mobile.icon,
-      },
-    },
-  }
-
 };
 
 export default navigationOverrides;
