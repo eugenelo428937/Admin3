@@ -559,11 +559,14 @@ class Stage6ActedRuleExecutionTests(TestCase):
         """
         rule = self.test_rule
         context = self.basic_context
-        
+
         # This will fail until cleanup functionality is implemented
         try:
             from rules_engine.models.acted_rule_execution import ActedRuleExecution
-            
+
+            # Clean up any leftover records from previous --keepdb runs
+            ActedRuleExecution.objects.all().delete()
+
             # Create many execution records
             executions = []
             for i in range(25):
@@ -576,25 +579,25 @@ class Stage6ActedRuleExecutionTests(TestCase):
                     created_at=timezone.now() - timedelta(days=i)
                 )
                 executions.append(execution)
-            
+
             # Test pagination
             page1 = ActedRuleExecution.objects.order_by('-created_at')[:10]
             self.assertEqual(len(page1), 10)
-            
+
             page2 = ActedRuleExecution.objects.order_by('-created_at')[10:20]
             self.assertEqual(len(page2), 10)
-            
+
             # Test cleanup of old records (older than 30 days)
             cutoff_date = timezone.now() - timedelta(days=30)
             old_executions = ActedRuleExecution.objects.filter(created_at__lt=cutoff_date)
             old_count = old_executions.count()
-            
+
             # Simulate cleanup
             old_executions.delete()
-            
+
             # Verify cleanup worked
             remaining_executions = ActedRuleExecution.objects.all()
             self.assertEqual(remaining_executions.count(), 25 - old_count)
-            
+
         except ImportError:
             self.fail("Execution pagination and cleanup not implemented")

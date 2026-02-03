@@ -28,11 +28,11 @@ class TestCatalogTablesExist(TestCase):
     EXPECTED_TABLES = [
         'catalog_subjects',
         'catalog_exam_sessions',
+        'catalog_exam_session_subjects',
         'catalog_products',
         'catalog_product_variations',
         'catalog_product_bundles',
         'catalog_product_product_variations',
-        'catalog_product_product_groups',
         'catalog_product_bundle_products',
     ]
 
@@ -122,11 +122,13 @@ class TestCatalogTablesExist(TestCase):
                 self.assertIn(col, columns, f"Column '{col}' should exist in acted.catalog_product_variations")
 
     def test_table_count(self):
-        """Verify exactly 9 catalog tables exist in acted schema.
+        """Verify exactly 8 catalog tables exist in acted schema.
 
-        Tables: subjects, exam_sessions, products, product_variations,
-        product_product_variations, product_product_groups, product_bundles,
-        product_bundle_products, exam_session_subjects (added in store consolidation)
+        Tables: subjects, exam_sessions, exam_session_subjects, products,
+        product_variations, product_product_variations, product_bundles,
+        product_bundle_products.
+
+        Note: ProductProductGroup is in filtering app (filter_product_product_groups).
         """
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -136,7 +138,7 @@ class TestCatalogTablesExist(TestCase):
                 AND table_name LIKE 'catalog_%'
             """)
             count = cursor.fetchone()[0]
-            self.assertEqual(count, 9, "Should have exactly 9 catalog_* tables in acted schema")
+            self.assertEqual(count, 8, "Should have exactly 8 catalog_* tables in acted schema")
 
 
 class TestDataMigration(TestCase):

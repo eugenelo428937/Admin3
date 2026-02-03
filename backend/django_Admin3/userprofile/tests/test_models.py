@@ -16,6 +16,7 @@ from userprofile.models import (
     UserProfileContactNumber,
     UserProfileEmail
 )
+import userprofile.views  # noqa: F401 - import to cover stub views.py
 
 
 class UserProfileTestCase(TestCase):
@@ -283,6 +284,16 @@ class UserProfileAddressTestCase(TestCase):
         self.assertIn('Baker Street', formatted)
         self.assertIn('London', formatted)
         self.assertIn('NW1 6XE', formatted)
+
+    def test_get_formatted_address_empty_data(self):
+        """Test get_formatted_address returns empty string for empty address_data."""
+        address = UserProfileAddress.objects.create(
+            user_profile=self.profile,
+            address_type='HOME',
+            country='United Kingdom',
+            address_data={}
+        )
+        self.assertEqual(address.get_formatted_address(), '')
 
     def test_postal_code_property(self):
         """Test postal_code property supports multiple field names."""

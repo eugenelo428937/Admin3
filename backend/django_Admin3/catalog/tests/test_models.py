@@ -48,7 +48,7 @@ class TestCatalogModelImports(TestCase):
         """Test ProductProductGroup junction can be imported from catalog.models."""
         from catalog.models import ProductProductGroup
         self.assertTrue(hasattr(ProductProductGroup, '_meta'))
-        self.assertEqual(ProductProductGroup._meta.db_table, '"acted"."catalog_product_product_groups"')
+        self.assertEqual(ProductProductGroup._meta.db_table, '"acted"."filter_product_product_groups"')
 
     def test_import_product_bundle_product(self):
         """Test ProductBundleProduct junction can be imported from catalog.models."""

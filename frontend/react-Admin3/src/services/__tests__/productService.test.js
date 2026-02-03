@@ -82,26 +82,6 @@ describe('productService', () => {
     });
   });
 
-  describe('getProductGroupFilters', () => {
-    test('should return product group filters', async () => {
-      const mockFilters = [{ id: 1, name: 'Filter 1' }];
-      httpService.get.mockResolvedValue({ data: { results: mockFilters } });
-
-      const result = await productService.getProductGroupFilters();
-
-      expect(result).toEqual(mockFilters);
-      expect(httpService.get).toHaveBeenCalledWith('/api/products/product-group-filters/');
-    });
-
-    test('should throw error on failure', async () => {
-      httpService.get.mockRejectedValue({ message: 'Network error' });
-
-      await expect(productService.getProductGroupFilters()).rejects.toMatchObject({
-        message: 'Network error',
-      });
-    });
-  });
-
   describe('getAvailableProducts', () => {
     test('should return available products with pagination', async () => {
       const mockResponse = { results: [], count: 0, page: 1 };

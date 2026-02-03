@@ -1,7 +1,7 @@
 """ProductProductGroup junction model for the filtering app.
 
 Junction table linking catalog.Product to filtering.FilterGroup.
-Table: acted.catalog_product_product_groups
+Table: acted.filter_product_product_groups
 """
 from django.db import models
 
@@ -43,7 +43,7 @@ class ProductProductGroup(models.Model):
     )
 
     class Meta:
-        db_table = '"acted"."catalog_product_product_groups"'
+        db_table = '"acted"."filter_product_product_groups"'
         app_label = 'filtering'
         unique_together = ('product', 'product_group')
         verbose_name = 'Product Product Group'

@@ -34,26 +34,6 @@ const productService = {
 		}
 	},
 
-	// Get product group filters
-	getProductGroupFilters: async () => {
-		try {
-			const response = await httpService.get(
-				`${PRODUCTS_API_URL}/product-group-filters/`
-			);
-			return response.data.results || response.data;
-		} catch (error) {
-			console.error("Error fetching product group filters:", error);
-			throw {
-				message:
-					error.response?.data?.message ||
-					error.message ||
-					"Failed to fetch product group filters",
-				status: error.response?.status || 0,
-				data: error.response?.data || null,
-			};
-		}
-	},
-
 	// Get all navigation data in a single API call (subjects, navbar groups, distance learning, tutorials)
 	getNavigationData: async () => {
 		try {
