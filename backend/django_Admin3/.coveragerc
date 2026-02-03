@@ -1,0 +1,34 @@
+[run]
+source =
+    cart
+    catalog
+    core_auth
+    email_system
+    filtering
+    marking
+    marking_vouchers
+    orders
+    rules_engine
+    search
+    store
+    students
+    tutorials
+    userprofile
+    users
+    utils
+omit =
+    */tests/*
+    */test_*.py
+    */migrations/*
+    */settings/*
+    *_backup.py
+    *_legacy.py
+    manage.py
+    email_system/admin.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if __name__ == .__main__
+    raise NotImplementedError

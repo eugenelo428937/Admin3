@@ -1,0 +1,23 @@
+============================================================
+Test Coverage Audit Report - Admin3
+Generated: 2026-02-02T15:34:26.041747
+============================================================
+
+ENDPOINT COVERAGE
+----------------------------------------
+  Total endpoints:   84
+  Tested:            84 (100.0%)
+  Untested:          0 (0.0%)
+
+UNTESTED ENDPOINTS BY APP:
+
+SERIALIZER FIELD COVERAGE
+----------------------------------------
+  Total fields:      148
+  Read-tested:       146 (98.6%)
+  Write-tested:      112 (75.7%)
+  Untested:          0 (0.0%)
+
+TOP SERIALIZER GAPS:
+
+============================================================

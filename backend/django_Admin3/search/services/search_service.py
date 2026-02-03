@@ -16,7 +16,8 @@ from fuzzywuzzy import fuzz
 
 from store.models import Product as StoreProduct, Bundle as StoreBundle
 from catalog.models import Subject
-from filtering.models import FilterGroup, FilterConfiguration
+from filtering.models import FilterGroup, FilterConfiguration, FilterConfigurationGroup
+from filtering.services.filter_service import ProductFilterService
 from search.serializers import StoreProductListSerializer
 
 logger = logging.getLogger('search')
@@ -36,7 +37,8 @@ class SearchService:
 
     def __init__(self):
         self.cache_timeout = getattr(settings, 'SEARCH_CACHE_TIMEOUT', 300)
-        self.min_fuzzy_score = 60
+        self.min_fuzzy_score = 45
+        self.filter_service = ProductFilterService()
 
     def unified_search(self, search_query='', filters=None, pagination=None,
                        options=None, navbar_filters=None) -> Dict[str, Any]:
@@ -88,16 +90,29 @@ class SearchService:
                 # No fuzzy matches
                 base_queryset = base_queryset.none()
 
-        # Check for bundle-only filter
+        # Check for bundle filter — "Bundle" is a virtual category handled
+        # separately (bundles aren't in FilterGroup), so we strip it from
+        # the group-based filter and fetch bundles via _get_bundles().
         bundle_filter_active = 'Bundle' in filters.get('categories', [])
+        non_bundle_categories = [c for c in filters.get('categories', []) if c != 'Bundle']
 
-        if bundle_filter_active:
-            # Only return bundles
+        # Translate navbar filters and merge with panel filters
+        translated_navbar = self._translate_navbar_filters(navbar_filters)
+        if translated_navbar:
+            for key, values in translated_navbar.items():
+                if key in filters and isinstance(filters[key], list):
+                    filters[key] = filters[key] + [v for v in values if v not in filters[key]]
+                else:
+                    filters[key] = values
+
+        if bundle_filter_active and not non_bundle_categories:
+            # ONLY Bundle selected — no individual products
             filtered_queryset = base_queryset.none()
         else:
-            # Apply filters
-            filtered_queryset = self._apply_filters(base_queryset, filters)
-            filtered_queryset = self._apply_navbar_filters(filtered_queryset, navbar_filters)
+            # Apply merged filters through ProductFilterService
+            filtered_queryset = self.filter_service.apply_store_product_filters(
+                base_queryset, filters
+            )
 
         # Get bundles if enabled
         bundles_data = []
@@ -132,7 +147,14 @@ class SearchService:
         paginated_items = all_items[start_idx:end_idx]
 
         # Generate filter counts (disjunctive faceting)
-        filter_counts = self._generate_filter_counts(self._build_optimized_queryset())
+        filter_counts = self.filter_service.generate_filter_counts(self._build_optimized_queryset(), filters=filters)
+
+        # Add bundle count (bundle logic stays in SearchService)
+        bundle_count = self._get_filtered_bundle_count(filters)
+        if bundle_count > 0:
+            filter_counts['categories']['Bundle'] = {
+                'count': bundle_count, 'name': 'Bundle'
+            }
 
         result = {
             'products': paginated_items,
@@ -219,133 +241,87 @@ class SearchService:
 
     def _calculate_fuzzy_score(self, query: str, searchable_text: str,
                                store_product: StoreProduct) -> int:
-        """Calculate fuzzy match score using multiple algorithms."""
+        """Calculate fuzzy match score using weighted composite formula.
+
+        Formula (R1):
+            score = 0.15 * subject_bonus + 0.40 * token_sort + 0.25 * partial_name + 0.20 * token_set
+
+        This replaces the previous max(scores) approach which flattened ranking
+        by letting subject_bonus (95) dominate all other signals.
+        """
         catalog_product = store_product.product_product_variation.product
         subject_code = store_product.exam_session_subject.subject.code.lower()
         product_name = (catalog_product.shortname or catalog_product.fullname or '').lower()
 
-        scores = []
-
-        # Subject code exact match bonus
-        if query.startswith(subject_code):
-            scores.append(95)
+        # Subject code exact match bonus (binary: 0 or 100)
+        subject_bonus = 100 if query.startswith(subject_code) else 0
 
         # Token sort ratio (handles word order)
-        scores.append(fuzz.token_sort_ratio(query, searchable_text))
+        token_sort = fuzz.token_sort_ratio(query, searchable_text)
 
-        # Partial ratio (substring matching)
-        scores.append(fuzz.partial_ratio(query, product_name))
+        # Partial ratio (substring matching on product name)
+        partial_name = fuzz.partial_ratio(query, product_name)
 
         # Token set ratio (handles extra words)
-        scores.append(fuzz.token_set_ratio(query, searchable_text))
+        token_set = fuzz.token_set_ratio(query, searchable_text)
 
-        return max(scores) if scores else 0
+        # Weighted composite (R1)
+        score = (
+            0.15 * subject_bonus
+            + 0.40 * token_sort
+            + 0.25 * partial_name
+            + 0.20 * token_set
+        )
 
-    def _apply_filters(self, queryset, filters: Dict) -> Any:
-        """Apply filter criteria to queryset."""
-        q_filter = Q()
+        return int(round(score))
 
-        # Subject filter
-        if filters.get('subjects'):
-            subject_q = Q()
-            for subject in filters['subjects']:
-                if isinstance(subject, int) or (isinstance(subject, str) and subject.isdigit()):
-                    subject_q |= Q(exam_session_subject__subject__id=int(subject))
-                else:
-                    subject_q |= Q(exam_session_subject__subject__code=subject)
-            q_filter &= subject_q
+    def _translate_navbar_filters(self, navbar_filters):
+        """Translate navbar GET parameters to standard filter dict format (R5).
 
-        # Category filter (via product groups)
-        if filters.get('categories'):
-            category_q = Q()
-            for category in filters['categories']:
-                if category != 'Bundle':  # Bundle handled separately
-                    category_q |= Q(product_product_variation__product__groups__name__iexact=category)
-            if category_q:
-                q_filter &= category_q
+        Translation mapping:
+            group           -> categories[]
+            tutorial_format -> categories[]
+            product         -> product_ids[]
+            distance_learning -> categories['Material']
 
-        # Product type filter (via product groups)
-        if filters.get('product_types'):
-            type_q = Q()
-            for product_type in filters['product_types']:
-                type_q |= Q(product_product_variation__product__groups__name__iexact=product_type)
-            q_filter &= type_q
+        Args:
+            navbar_filters: Dict from GET query params.
 
-        # Product ID filter (support both 'product_ids' and 'products' parameter names)
-        product_ids = filters.get('product_ids') or filters.get('products')
-        if product_ids:
-            # Convert string IDs to integers if needed
-            int_product_ids = []
-            for pid in product_ids:
-                if isinstance(pid, int):
-                    int_product_ids.append(pid)
-                elif isinstance(pid, str) and pid.isdigit():
-                    int_product_ids.append(int(pid))
-            if int_product_ids:
-                q_filter &= Q(product_product_variation__product__id__in=int_product_ids)
-
-        # Store product ID filter (essp_ids for backward compatibility)
-        if filters.get('essp_ids'):
-            q_filter &= Q(id__in=filters['essp_ids'])
-
-        # Mode of delivery filter (variation type)
-        # Matches against both variation_type (eBook, Printed, etc.) and variation name
-        if filters.get('modes_of_delivery'):
-            mode_q = Q()
-            for mode in filters['modes_of_delivery']:
-                mode_q |= Q(product_product_variation__product_variation__variation_type__iexact=mode)
-                mode_q |= Q(product_product_variation__product_variation__name__icontains=mode)
-            q_filter &= mode_q
-
-        if q_filter:
-            queryset = queryset.filter(q_filter).distinct()
-
-        return queryset
-
-    def _apply_navbar_filters(self, queryset, navbar_filters: Dict) -> Any:
-        """Apply navbar dropdown filters."""
+        Returns:
+            Standard filter dict compatible with apply_store_product_filters().
+        """
         if not navbar_filters:
-            return queryset
+            return {}
 
-        # Group filter
+        result = {}
+        categories = []
+
         if 'group' in navbar_filters:
-            try:
-                group = FilterGroup.objects.get(
-                    Q(code=navbar_filters['group']) | Q(name=navbar_filters['group'])
-                )
-                queryset = queryset.filter(product_product_variation__product__groups=group)
-            except FilterGroup.DoesNotExist:
-                queryset = queryset.none()
+            categories.append(navbar_filters['group'])
 
-        # Tutorial format filter
         if 'tutorial_format' in navbar_filters:
-            try:
-                format_group = FilterGroup.objects.get(code=navbar_filters['tutorial_format'])
-                queryset = queryset.filter(product_product_variation__product__groups=format_group)
-            except FilterGroup.DoesNotExist:
-                queryset = queryset.none()
+            categories.append(navbar_filters['tutorial_format'])
 
-        # Product filter
-        if 'product' in navbar_filters:
-            try:
-                product_id = int(navbar_filters['product'])
-                queryset = queryset.filter(product_product_variation__product__id=product_id)
-            except (ValueError, TypeError):
-                queryset = queryset.none()
-
-        # Distance learning filter
         if 'distance_learning' in navbar_filters:
-            try:
-                dl_group = FilterGroup.objects.get(name='Material')
-                queryset = queryset.filter(product_product_variation__product__groups=dl_group)
-            except FilterGroup.DoesNotExist:
-                queryset = queryset.none()
+            categories.append('Material')
 
-        return queryset.distinct()
+        if categories:
+            result['categories'] = categories
+
+        if 'product' in navbar_filters:
+            result['product_ids'] = [navbar_filters['product']]
+
+        return result
 
     def _get_bundles(self, filters: Dict, search_query: str,
                      bundle_filter_active: bool, no_fuzzy_results: bool) -> List[Dict]:
-        """Get bundles matching filters."""
+        """Get bundles matching filters using single-product matching semantics.
+
+        Single-product matching: a bundle qualifies if at least one of its
+        component products satisfies ALL active filter conditions simultaneously.
+        This prevents false matches where different products satisfy different
+        filter dimensions.
+        """
         if no_fuzzy_results and not bundle_filter_active:
             return []
 
@@ -361,7 +337,7 @@ class SearchService:
             'bundle_products__product__product_product_variation__product_variation',
         )
 
-        # Apply subject filter
+        # Apply subject filter (at bundle level — bundles have their own ESS)
         if filters.get('subjects'):
             subject_q = Q()
             for subject in filters['subjects']:
@@ -370,6 +346,15 @@ class SearchService:
                 else:
                     subject_q |= Q(exam_session_subject__subject__code=subject)
             bundles_queryset = bundles_queryset.filter(subject_q)
+
+        # Apply non-subject filters via single-product matching on component products
+        matching_product_ids = self._get_bundle_matching_product_ids(filters)
+        if matching_product_ids is not None:
+            # Filter bundles to those containing at least one matching product
+            bundles_queryset = bundles_queryset.filter(
+                bundle_products__product__id__in=matching_product_ids,
+                bundle_products__is_active=True
+            ).distinct()
 
         # Serialize bundles with format expected by BundleCard.js
         bundles_data = []
@@ -449,95 +434,145 @@ class SearchService:
 
         return bundles_data
 
-    def _generate_filter_counts(self, base_queryset) -> Dict[str, Dict]:
-        """Generate disjunctive facet counts for all filter types."""
-        filter_counts = {
-            'subjects': {},
-            'categories': {},
-            'product_types': {},
-            'products': {},
-            'modes_of_delivery': {}
-        }
+    @staticmethod
+    def _resolve_group_ids_with_hierarchy(group_names, exclude_names=None):
+        """Resolve group names to IDs, expanding each group to include descendants.
 
-        # Subject counts
-        subject_counts = base_queryset.values(
-            'exam_session_subject__subject__code'
-        ).annotate(count=Count('id')).order_by('-count')
+        Uses FilterGroup.get_descendants() to expand parent selections
+        to include all child group IDs. This enables hierarchical filtering
+        where selecting "Material" also matches products in child groups
+        like "Core Study Materials" and "Revision Materials".
 
-        for item in subject_counts:
-            code = item['exam_session_subject__subject__code']
-            count = item['count']
-            if code and count > 0:
-                filter_counts['subjects'][code] = {'count': count, 'name': code}
+        Args:
+            group_names: List of group names to resolve.
+            exclude_names: Optional list of names to skip (e.g., ['Bundle']).
 
-        # Group counts (for categories and product_types)
-        # Groups are used as product types for filtering
-        group_counts = base_queryset.values(
-            'product_product_variation__product__groups__id',
-            'product_product_variation__product__groups__name'
-        ).annotate(count=Count('id', distinct=True)).order_by('-count')
+        Returns:
+            Set of FilterGroup IDs (including descendants).
+        """
+        exclude_names = set(exclude_names or [])
+        resolved_ids = set()
 
-        for item in group_counts:
-            group_name = item['product_product_variation__product__groups__name']
-            count = item['count']
-            if group_name and count > 0:
-                # Groups map to both categories and product_types
-                # This ensures FilterPanel can display them under either section
-                filter_counts['categories'][group_name] = {
-                    'count': count, 'name': group_name
-                }
-                filter_counts['product_types'][group_name] = {
-                    'count': count, 'name': group_name
-                }
+        for name in group_names:
+            if name in exclude_names:
+                continue
+            try:
+                group = FilterGroup.objects.get(name__iexact=name)
+                descendants = group.get_descendants(include_self=True)
+                resolved_ids.update(g.id for g in descendants)
+            except FilterGroup.DoesNotExist:
+                continue
 
-        # Add bundle count
-        bundle_count = StoreBundle.objects.filter(is_active=True).count()
-        if bundle_count > 0:
-            filter_counts['categories']['Bundle'] = {
-                'count': bundle_count, 'name': 'Bundle'
-            }
+        return resolved_ids
 
-        # Product counts (catalog.Product) - for product filter section
-        # Use distinct product IDs with their names for display
-        product_counts = base_queryset.values(
-            'product_product_variation__product__id',
-            'product_product_variation__product__shortname',
-            'product_product_variation__product__fullname'
-        ).annotate(count=Count('id', distinct=True)).order_by('-count')
+    def _get_bundle_matching_product_ids(self, filters: Dict) -> Optional[set]:
+        """Find store.Product IDs that satisfy ALL non-subject filter dimensions.
 
-        for item in product_counts:
-            product_id = item['product_product_variation__product__id']
-            shortname = item['product_product_variation__product__shortname']
-            fullname = item['product_product_variation__product__fullname']
-            count = item['count']
-            if product_id and count > 0:
-                # Use string ID as key (frontend sends string IDs)
-                filter_counts['products'][str(product_id)] = {
-                    'count': count,
-                    'name': shortname or fullname or f'Product {product_id}',
-                    'display_name': shortname or fullname or f'Product {product_id}'
-                }
+        Used for single-product matching: a bundle qualifies only if at least
+        one of its component products matches ALL active filter conditions
+        simultaneously.
 
-        # Modes of delivery (product variation types)
-        # These are the variation types like eBook, Printed, Hub, etc.
-        mode_counts = base_queryset.values(
-            'product_product_variation__product_variation__variation_type',
-            'product_product_variation__product_variation__name'
-        ).annotate(count=Count('id', distinct=True)).order_by('-count')
+        M2M group filters (categories, product_types) use separate .filter()
+        calls so Django creates independent JOINs — same fix as _apply_filters.
 
-        for item in mode_counts:
-            variation_type = item['product_product_variation__product_variation__variation_type']
-            variation_name = item['product_product_variation__product_variation__name']
-            count = item['count']
-            if variation_type and count > 0:
-                # Use variation_type as the filter key
-                filter_counts['modes_of_delivery'][variation_type] = {
-                    'count': count,
-                    'name': variation_name or variation_type,
-                    'display_name': variation_name or variation_type
-                }
+        Args:
+            filters: Dict of active filters.
 
-        return filter_counts
+        Returns:
+            Set of matching store.Product IDs, or None if no non-subject
+            filters are active (meaning all bundles qualify).
+        """
+        # Collect non-subject filter conditions
+        has_non_subject_filters = any(
+            filters.get(key) for key in ('categories', 'product_types', 'products', 'modes_of_delivery')
+        )
+        if not has_non_subject_filters:
+            return None  # No filtering needed
+
+        # Start with all active store products
+        product_qs = StoreProduct.objects.filter(is_active=True)
+        q_filter = Q()
+
+        # Product ID filter
+        product_ids = filters.get('product_ids') or filters.get('products')
+        if product_ids:
+            int_product_ids = []
+            for pid in product_ids:
+                if isinstance(pid, int):
+                    int_product_ids.append(pid)
+                elif isinstance(pid, str) and pid.isdigit():
+                    int_product_ids.append(int(pid))
+            if int_product_ids:
+                q_filter &= Q(product_product_variation__product__id__in=int_product_ids)
+
+        # Mode of delivery filter (variation type)
+        if filters.get('modes_of_delivery'):
+            mode_q = Q()
+            for mode in filters['modes_of_delivery']:
+                mode_q |= Q(product_product_variation__product_variation__variation_type__iexact=mode)
+                mode_q |= Q(product_product_variation__product_variation__name__icontains=mode)
+            q_filter &= mode_q
+
+        if q_filter:
+            product_qs = product_qs.filter(q_filter)
+
+        # M2M group filters — separate .filter() calls for independent JOINs
+        # Category filter (via groups with hierarchy)
+        if filters.get('categories'):
+            category_group_ids = self._resolve_group_ids_with_hierarchy(
+                filters['categories'], exclude_names=['Bundle']
+            )
+            if category_group_ids:
+                product_qs = product_qs.filter(
+                    product_product_variation__product__groups__id__in=category_group_ids
+                )
+
+        # Product type filter (via groups with hierarchy)
+        if filters.get('product_types'):
+            type_group_ids = self._resolve_group_ids_with_hierarchy(
+                filters['product_types']
+            )
+            if type_group_ids:
+                product_qs = product_qs.filter(
+                    product_product_variation__product__groups__id__in=type_group_ids
+                )
+
+        return set(product_qs.distinct().values_list('id', flat=True))
+
+    def _get_filtered_bundle_count(self, filters: Dict) -> int:
+        """Count bundles that match ALL active filter dimensions.
+
+        Uses the same single-product matching semantics as _get_bundles():
+        a bundle is counted only if at least one component product satisfies
+        ALL active filter conditions simultaneously.
+
+        Args:
+            filters: Dict of active filters.
+
+        Returns:
+            Count of matching active bundles.
+        """
+        bundles_qs = StoreBundle.objects.filter(is_active=True)
+
+        # Apply subject filter at bundle level
+        if filters.get('subjects'):
+            subject_q = Q()
+            for subject in filters['subjects']:
+                if isinstance(subject, int) or (isinstance(subject, str) and subject.isdigit()):
+                    subject_q |= Q(exam_session_subject__subject__id=int(subject))
+                else:
+                    subject_q |= Q(exam_session_subject__subject__code=subject)
+            bundles_qs = bundles_qs.filter(subject_q)
+
+        # Apply non-subject filters via single-product matching
+        matching_product_ids = self._get_bundle_matching_product_ids(filters)
+        if matching_product_ids is not None:
+            bundles_qs = bundles_qs.filter(
+                bundle_products__product__id__in=matching_product_ids,
+                bundle_products__is_active=True
+            ).distinct()
+
+        return bundles_qs.count()
 
     def fuzzy_search(self, query: str, min_score: int = 60, limit: int = 50) -> Dict[str, Any]:
         """

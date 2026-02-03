@@ -4,7 +4,6 @@
  * Covers:
  * - GET /api/store/products/         (getAvailableProducts)
  * - GET /api/catalog/navigation-data/ (getNavigationData)
- * - GET /api/products/product-group-filters/ (getProductGroupFilters)
  * - GET /api/products/filter-configuration/  (getFilterConfiguration)
  * - GET /api/store/bundles/          (getBundles)
  */
@@ -135,45 +134,8 @@ describe('Product Service - Pact Consumer Tests', () => {
     });
   });
 
-  describe('GET /api/products/product-group-filters/', () => {
-    it('returns product group filter configuration', async () => {
-      provider
-        .given('product groups exist')
-        .uponReceiving('a request for product group filters')
-        .withRequest({
-          method: 'GET',
-          path: '/api/products/product-group-filters/',
-        })
-        .willRespondWith({
-          status: 200,
-          headers: JSON_RESPONSE_HEADERS,
-          body: like({
-            results: eachLike({
-              id: integer(1),
-              name: string('Study Materials'),
-              filter_type: string('type'),
-              groups: eachLike(like({
-                id: integer(1),
-                name: string('Core Study Materials'),
-              })),
-            }),
-          }),
-        });
-
-      await provider.executeTest(async (mockServer) => {
-        const response = await axios.get(
-          `${mockServer.url}/api/products/product-group-filters/`
-        );
-
-        expect(response.status).toBe(200);
-        expect(response.data).toHaveProperty('results');
-        expect(response.data.results.length).toBeGreaterThan(0);
-      });
-    });
-  });
-
   describe('GET /api/products/filter-configuration/', () => {
-    it('returns dynamic filter configuration', async () => {
+    it('returns dynamic filter configuration with full UI fields', async () => {
       provider
         .given('filter configuration exists')
         .uponReceiving('a request for filter configuration')
@@ -188,6 +150,12 @@ describe('Product Service - Pact Consumer Tests', () => {
             subjects: like({
               type: string('multi_select'),
               label: string('Subjects'),
+              filter_key: string('subjects'),
+              display_order: integer(1),
+              allow_multiple: boolean(true),
+              collapsible: boolean(true),
+              default_open: boolean(true),
+              filter_groups: [],
               options: eachLike({
                 id: integer(1),
                 value: string('CM2'),
@@ -204,6 +172,14 @@ describe('Product Service - Pact Consumer Tests', () => {
 
         expect(response.status).toBe(200);
         expect(response.data).toHaveProperty('subjects');
+        // US5: Verify full UI config fields present
+        const subjectsConfig = response.data.subjects;
+        expect(subjectsConfig).toHaveProperty('filter_key');
+        expect(subjectsConfig).toHaveProperty('display_order');
+        expect(subjectsConfig).toHaveProperty('allow_multiple');
+        expect(subjectsConfig).toHaveProperty('filter_groups');
+        expect(subjectsConfig).toHaveProperty('collapsible');
+        expect(subjectsConfig).toHaveProperty('default_open');
       });
     });
   });
