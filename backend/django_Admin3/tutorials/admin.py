@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import TutorialEvent
+from .models import TutorialEvents
 
-@admin.register(TutorialEvent)
+@admin.register(TutorialEvents)
 class TutorialEventAdmin(admin.ModelAdmin):
     list_display = ('code', 'venue', 'start_date', 'end_date', 'is_soldout', 'remain_space', 'finalisation_date')
     list_filter = ('is_soldout', 'venue', 'start_date')

@@ -71,7 +71,7 @@ python manage.py shell
 ```python
 # Test queries for each model
 from marking.models import MarkingPaper
-from tutorials.models import TutorialEvent
+from tutorials.models import TutorialEvents
 from rules_engine.models import ActedRule, ActedRulesFields, ActedRuleExecution
 from students.models import Student
 from userprofile.models import UserProfile

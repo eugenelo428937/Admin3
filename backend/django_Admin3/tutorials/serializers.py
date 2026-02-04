@@ -5,10 +5,10 @@ Updated 2026-01-16: Migrated to use store_product FK
 as part of T087 legacy app cleanup.
 """
 from rest_framework import serializers
-from .models import TutorialEvent
+from .models import TutorialEvents
 
 
-class TutorialEventSerializer(serializers.ModelSerializer):
+class TutorialEventsSerializer(serializers.ModelSerializer):
     # Use store_product.product_code as the identifier
     store_product_code = serializers.CharField(
         source='store_product.product_code',
@@ -20,6 +20,6 @@ class TutorialEventSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = TutorialEvent
+        model = TutorialEvents
         fields = '__all__'
         extra_fields = ['store_product_code', 'subject_code']

@@ -15,7 +15,7 @@ from datetime import timedelta, date
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 
-from tutorials.models import TutorialEvent
+from tutorials.models import TutorialEvents
 from store.models import Product as StoreProduct
 from catalog.models import (
     ExamSession, ExamSessionSubject, ExamSessionSubjectProduct,

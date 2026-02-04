@@ -8,7 +8,7 @@ from django.db import models
 from store.models import Product as StoreProduct
 
 
-class TutorialEvent(models.Model):
+class TutorialEvents(models.Model):
     """
     Simplified Tutorial Event model.
 

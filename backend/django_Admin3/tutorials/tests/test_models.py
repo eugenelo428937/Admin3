@@ -14,7 +14,7 @@ from django.utils import timezone
 from datetime import timedelta, date
 from decimal import Decimal
 
-from tutorials.models import TutorialEvent
+from tutorials.models import TutorialEvents
 from store.models import Product as StoreProduct
 from catalog.models import ExamSession, ExamSessionSubject, Subject, Product, ProductProductVariation, ProductVariation
 

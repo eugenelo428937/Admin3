@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-02T15:34:26.041747",
+  "generated_at": "2026-02-04T12:08:03.324874",
   "summary": {
     "total_endpoints": 84,
     "tested_endpoints": 84,
@@ -294,7 +294,7 @@
       ],
       "untested": []
     },
-    "tutorials.TutorialEventSerializer": {
+    "tutorials.TutorialEventsSerializer": {
       "total_fields": 13,
       "read_tested": [
         "id",
