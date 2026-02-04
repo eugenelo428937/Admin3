@@ -1,9 +1,9 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import TutorialEventViewSet, TutorialEventListView, TutorialProductListView, TutorialProductVariationListView, TutorialProductListAllView, TutorialViewSet, get_all_tutorial_products, get_tutorial_product_variations, clear_tutorial_cache, TutorialComprehensiveDataView
+from .views import TutorialEventsViewSet, TutorialEventListView, TutorialProductListView, TutorialProductVariationListView, TutorialProductListAllView, TutorialViewSet, get_all_tutorial_products, get_tutorial_product_variations, clear_tutorial_cache, TutorialComprehensiveDataView
 
 router = DefaultRouter()
-router.register(r'events', TutorialEventViewSet)
+router.register(r'events', TutorialEventsViewSet)
 router.register(r'events', TutorialViewSet, basename='tutorial-event')
 
 urlpatterns = [

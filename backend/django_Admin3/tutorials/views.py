@@ -12,8 +12,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.core.cache import cache
 from django.db.models import Prefetch, Q
-from .models import TutorialEvent
-from .serializers import TutorialEventSerializer
+from .models import TutorialEvents
+from .serializers import TutorialEventsSerializer
 from store.models import Product as StoreProduct
 from catalog.models import Product as CatalogProduct
 import logging
@@ -21,12 +21,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class TutorialEventViewSet(viewsets.ModelViewSet):
-    queryset = TutorialEvent.objects.select_related(
+class TutorialEventsViewSet(viewsets.ModelViewSet):
+    queryset = TutorialEvents.objects.select_related(
         'store_product__exam_session_subject__subject',
         'store_product__product_product_variation__product'
     ).all()
-    serializer_class = TutorialEventSerializer
+    serializer_class = TutorialEventsSerializer
     permission_classes = [AllowAny]
 
 
@@ -35,8 +35,8 @@ class TutorialViewSet(viewsets.ViewSet):
 
     def list(self, request):
         """List all tutorial events"""
-        events = TutorialEvent.objects.all()
-        serializer = TutorialEventSerializer(events, many=True)
+        events = TutorialEvents.objects.all()
+        serializer = TutorialEventsSerializer(events, many=True)
         return Response(serializer.data)
 
 
@@ -45,7 +45,7 @@ class TutorialEventListView(APIView):
 
     def get(self, request):
         """Get tutorial events with basic filtering"""
-        queryset = TutorialEvent.objects.select_related(
+        queryset = TutorialEvents.objects.select_related(
             'store_product__exam_session_subject__subject'
         ).all()
 
@@ -56,7 +56,7 @@ class TutorialEventListView(APIView):
                 store_product__exam_session_subject__subject__code=subject_code
             )
 
-        serializer = TutorialEventSerializer(queryset, many=True)
+        serializer = TutorialEventsSerializer(queryset, many=True)
         return Response(serializer.data)
 
 
@@ -178,7 +178,7 @@ class TutorialComprehensiveDataView(APIView):
             return Response(cached_data)
 
         # Get all tutorial events with related data via store.Product
-        tutorial_events = TutorialEvent.objects.select_related(
+        tutorial_events = TutorialEvents.objects.select_related(
             'store_product__exam_session_subject__subject',
             'store_product__product_product_variation__product',
             'store_product__product_product_variation__product_variation'

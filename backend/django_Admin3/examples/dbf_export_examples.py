@@ -210,7 +210,7 @@ def export_tutorial_events():
         service = DbfExportService(encoding='cp1252', debug=True)
         
         # Using QuerySet approach
-        from tutorials.models import TutorialEvent
+        from tutorials.models import TutorialEvents
         
         queryset = TutorialEvent.objects.filter(
             is_active=True
