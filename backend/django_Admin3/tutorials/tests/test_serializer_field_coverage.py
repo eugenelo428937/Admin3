@@ -7,15 +7,15 @@ patterns that the coverage auditor scanner detects:
 - Write: 'field_name': value in dict literals (in files with .post() calls)
 
 Coverage targets:
-- TutorialEventSerializer: 13 fields (all read + write)
+- TutorialEventsSerializer: 13 fields (all read + write)
 """
 from datetime import timedelta
 
 from django.test import TestCase
 from django.utils import timezone
 
-from tutorials.models import TutorialEvent
-from tutorials.serializers import TutorialEventSerializer
+from tutorials.models import TutorialEvents
+from tutorials.serializers import TutorialEventsSerializer
 from store.models import Product as StoreProduct
 from catalog.models import (
     ExamSession, ExamSessionSubject, Subject,
@@ -23,8 +23,8 @@ from catalog.models import (
 )
 
 
-class TutorialEventSerializerReadCoverageTest(TestCase):
-    """Read coverage: access every TutorialEventSerializer field via data['field']."""
+class TutorialEventsSerializerReadCoverageTest(TestCase):
+    """Read coverage: access every TutorialEventsSerializer field via data['field']."""
 
     def setUp(self):
         self.exam_session = ExamSession.objects.create(
@@ -63,7 +63,7 @@ class TutorialEventSerializerReadCoverageTest(TestCase):
             is_soldout=True,
             finalisation_date=timezone.now().date() + timedelta(days=25),
         )
-        self.data = TutorialEventSerializer(self.event).data
+        self.data = TutorialEventsSerializer(self.event).data
 
     def test_read_id(self):
         _ = self.data['id']
@@ -105,7 +105,7 @@ class TutorialEventSerializerReadCoverageTest(TestCase):
         _ = self.data['updated_at']
 
 
-class TutorialEventSerializerWriteCoverageTest(TestCase):
+class TutorialEventsSerializerWriteCoverageTest(TestCase):
     """Write coverage: dict literals with .post() trigger write-field detection."""
 
     def setUp(self):
@@ -116,7 +116,7 @@ class TutorialEventSerializerWriteCoverageTest(TestCase):
         self.client.force_login(self.user)
 
     def test_write_tutorial_event_fields(self):
-        """Trigger write coverage for all TutorialEventSerializer fields."""
+        """Trigger write coverage for all TutorialEventsSerializer fields."""
         payload = {
             'id': 1,
             'store_product_code': 'COV1/TCOVWKCOVTUT/COV2025',

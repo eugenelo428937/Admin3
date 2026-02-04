@@ -1,2 +1,2 @@
 from django.db import models
-from .tutorial_event import TutorialEvent
+from .tutorial_events import TutorialEvents
