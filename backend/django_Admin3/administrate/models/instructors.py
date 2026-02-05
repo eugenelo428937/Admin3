@@ -17,7 +17,7 @@ class Instructor(models.Model):
         
     class Meta:
         app_label = 'administrate'
-        db_table = 'adm.instructors'
+        db_table = '"adm"."instructors"'
         ordering = ['last_name', 'first_name']
         verbose_name = 'Instructor'
         verbose_name_plural = 'Instructors'

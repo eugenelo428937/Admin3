@@ -1,38 +1,27 @@
-# test.py - Test-specific settings using SQLite for isolated testing
+# test.py - Test-specific settings using PostgreSQL
 from .base import *
 
 DEBUG = True
 SECRET_KEY = 'test-secret-key-not-for-production'
 
-# Use SQLite for tests to avoid PostgreSQL test DB creation issues
+# Use PostgreSQL for tests — same engine as production.
+# Django creates a test_<NAME> database automatically.
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME', 'ACTEDDBDEV01'),
+        'USER': os.environ.get('DB_USER', 'actedadmin'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'Act3d@dm1n0EEoo'),
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
-# Disable all migrations for SQLite testing.
-# Django's CREATE SCHEMA SQL in catalog.0001_initial is PostgreSQL-only.
-# With migrations disabled, Django uses syncdb to create tables from models,
-# bypassing all migration SQL (including schema creation).
+# Use PostgreSQLTestRunner to handle test DB cleanup
+TEST_RUNNER = 'django_Admin3.test_runner.PostgreSQLTestRunner'
 
-
-class DisableMigrations:
-    """Return None for all migration modules, disabling migrations."""
-
-    def __contains__(self, item):
-        return True
-
-    def __getitem__(self, item):
-        return None
-
-
-MIGRATION_MODULES = DisableMigrations()
-
-# Custom test runner that strips PostgreSQL schema prefixes from db_table
-# so that SQLite can create tables. e.g. '"acted"."products"' -> '"products"'
-TEST_RUNNER = 'django_Admin3.test_runner.SQLiteSchemaTestRunner'
+# Enable assertion mode for migrations in test
+MIGRATION_ASSERT_MODE = True
 
 # Disable password hashers for faster tests
 PASSWORD_HASHERS = [

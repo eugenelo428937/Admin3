@@ -110,6 +110,7 @@ INSTALLED_APPS = [
     'catalog.products.bundle.apps.BundleConfig',    # label='catalog_products_bundles'
     'catalog.products.recommendation.apps.RecommendationConfig',  # label='catalog_products_recommendations'
     'store.apps.StoreConfig',  # Purchasable items (depends on catalog)
+    'administrate.apps.AdministrateConfig',  # Administrate API data (adm schema)
     'users',
     'userprofile',
     'cart',
@@ -367,6 +368,11 @@ RECAPTCHA_ACTIONS = {
     'registration': 'registration',
     'contact_form': 'contact'
 }
+
+# Migration behavior for conditional operations (IF EXISTS checks).
+# When True (CI/test): raise exceptions if expected tables not found.
+# When False (production): log warnings and skip gracefully.
+MIGRATION_ASSERT_MODE = os.environ.get('MIGRATION_ASSERT_MODE', 'false').lower() == 'true'
 
 # Administrate API Settings
 # ADMINISTRATE_INSTANCE_URL = env('ADMINISTRATE_INSTANCE_URL')

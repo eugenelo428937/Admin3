@@ -24,7 +24,7 @@ class CourseTemplate(models.Model):
 
     class Meta:
         app_label = 'administrate'
-        db_table = 'adm.course_templates'
+        db_table = '"adm"."course_templates"'
         ordering = ['code']
         verbose_name = 'Course Template'
         verbose_name_plural = 'Course Templates'

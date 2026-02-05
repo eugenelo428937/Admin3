@@ -565,7 +565,7 @@ def state_tutorial_events_exist(params=None):
 
     tutorial_store_product, _cp = setup_tutorial_catalog_product()
 
-    TutorialEvent.objects.get_or_create(
+    TutorialEvents.objects.get_or_create(
         code='TUT-CM2-LON-2025',
         defaults={
             'venue': 'London',
