@@ -26,6 +26,6 @@ class Venue(models.Model):
         
     class Meta:
         app_label = 'administrate'
-        db_table = 'adm.venues'
+        db_table = '"adm"."venues"'
         verbose_name = 'Venue'
         verbose_name_plural = 'Venues'

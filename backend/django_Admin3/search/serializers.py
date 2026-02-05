@@ -130,10 +130,23 @@ class StoreProductListSerializer:
 
     @classmethod
     def _serialize_tutorial_events(cls, store_product):
-        """Serialize tutorial events for a store product."""
+        """Serialize tutorial events for a store product, including sessions."""
         events = []
         try:
             for event in store_product.tutorial_events.all():
+                sessions = [
+                    {
+                        'id': session.id,
+                        'title': session.title,
+                        'location': session.location,
+                        'venue': session.venue,
+                        'start_date': session.start_date.isoformat() if session.start_date else None,
+                        'end_date': session.end_date.isoformat() if session.end_date else None,
+                        'sequence': session.sequence,
+                        'url': session.url,
+                    }
+                    for session in event.sessions.all()
+                ]
                 events.append({
                     'id': event.id,
                     'code': event.code,
@@ -144,7 +157,8 @@ class StoreProductListSerializer:
                     'start_date': event.start_date.isoformat() if event.start_date else None,
                     'end_date': event.end_date.isoformat() if event.end_date else None,
                     'title': event.code,
-                    'price': None
+                    'price': None,
+                    'sessions': sessions,
                 })
         except Exception:
             pass

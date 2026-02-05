@@ -3,9 +3,19 @@ Tutorial serializers.
 
 Updated 2026-01-16: Migrated to use store_product FK
 as part of T087 legacy app cleanup.
+Updated 2026-02-05: Added TutorialSessionsSerializer for sessions API.
 """
 from rest_framework import serializers
-from .models import TutorialEvents
+from .models import TutorialEvents, TutorialSessions
+
+
+class TutorialSessionsSerializer(serializers.ModelSerializer):
+    """Serializer for TutorialSessions model per API contract."""
+
+    class Meta:
+        model = TutorialSessions
+        fields = ['id', 'title', 'location', 'venue',
+                  'start_date', 'end_date', 'sequence', 'url']
 
 
 class TutorialEventsSerializer(serializers.ModelSerializer):

@@ -4,6 +4,9 @@ from .base import *
 DEBUG = True
 SECRET_KEY = env('DJANGO_SECRET_KEY')
 
+# Force-terminate lingering connections before dropping/creating the test DB
+TEST_RUNNER = 'django_Admin3.test_runner.PostgreSQLTestRunner'
+
 # HTTPS settings for development
 SECURE_SSL_REDIRECT = False
 SECURE_HSTS_SECONDS = 0

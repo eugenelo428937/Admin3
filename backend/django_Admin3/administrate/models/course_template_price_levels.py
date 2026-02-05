@@ -26,7 +26,7 @@ class CourseTemplatePriceLevel(models.Model):
 
     class Meta:
         app_label = 'administrate'
-        db_table = 'adm.course_template_price_levels'
+        db_table = '"adm"."course_template_price_levels"'
         unique_together = [['course_template', 'price_level']]
         ordering = ['course_template', 'price_level']
         verbose_name = 'Course Template Price Level'

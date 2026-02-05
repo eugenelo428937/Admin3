@@ -9,9 +9,9 @@ class Location(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:                
+    class Meta:
         app_label = 'administrate'
-        db_table = 'adm.locations'
+        db_table = '"adm"."locations"'
         ordering = ['code']
         verbose_name = 'Location'
         verbose_name_plural = 'Locations'

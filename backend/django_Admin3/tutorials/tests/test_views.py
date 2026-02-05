@@ -23,8 +23,8 @@ from catalog.models import (
 )
 
 
-class TutorialEventAPITestCase(APITestCase):
-    """Test cases for TutorialEvent API endpoints."""
+class TutorialEventsAPITestCase(APITestCase):
+    """Test cases for TutorialEvents API endpoints."""
 
     def setUp(self):
         """Set up test fixtures - create tutorial events."""
@@ -78,7 +78,7 @@ class TutorialEventAPITestCase(APITestCase):
         )
 
         # Create tutorial events
-        self.event1 = TutorialEvent.objects.create(
+        self.event1 = TutorialEvents.objects.create(
             code='TUT-CM2-LON-001',
             venue='London Convention Center',
             start_date=date.today() + timedelta(days=30),
@@ -87,7 +87,7 @@ class TutorialEventAPITestCase(APITestCase):
             store_product=self.store_product
         )
 
-        self.event2 = TutorialEvent.objects.create(
+        self.event2 = TutorialEvents.objects.create(
             code='TUT-CM2-LON-002',
             venue='Manchester Training Centre',
             start_date=date.today() + timedelta(days=40),
@@ -139,7 +139,7 @@ class TutorialEventAPITestCase(APITestCase):
         # Should create successfully (AllowAny permission)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['code'], 'TUT-CM2-NEW-001')
-        self.assertEqual(TutorialEvent.objects.filter(code='TUT-CM2-NEW-001').count(), 1)
+        self.assertEqual(TutorialEvents.objects.filter(code='TUT-CM2-NEW-001').count(), 1)
 
     def test_create_tutorial_event_missing_required_fields(self):
         """Test POST /api/tutorials/events/ with missing required fields."""
@@ -209,7 +209,7 @@ class TutorialEventAPITestCase(APITestCase):
         # Should delete successfully
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         # Event should be deleted
-        self.assertFalse(TutorialEvent.objects.filter(id=self.event2.id).exists())
+        self.assertFalse(TutorialEvents.objects.filter(id=self.event2.id).exists())
 
     def test_list_tutorial_events_response_structure(self):
         """Test tutorial event list response contains expected fields."""
@@ -272,7 +272,7 @@ class TutorialEventAPITestCase(APITestCase):
         self.assertIn('TUT-CM2-LON-002', codes)
 
 
-class TutorialEventListViewTestCase(APITestCase):
+class TutorialEventsListViewTestCase(APITestCase):
     """Test cases for TutorialEventListView (/api/tutorials/list/)."""
 
     def setUp(self):
@@ -355,7 +355,7 @@ class TutorialEventListViewTestCase(APITestCase):
         )
 
         # Create tutorial events
-        self.event1 = TutorialEvent.objects.create(
+        self.event1 = TutorialEvents.objects.create(
             code='TUT-CM2-001',
             venue='London',
             start_date=date.today() + timedelta(days=30),
@@ -363,7 +363,7 @@ class TutorialEventListViewTestCase(APITestCase):
             store_product=self.store_product1
         )
 
-        self.event2 = TutorialEvent.objects.create(
+        self.event2 = TutorialEvents.objects.create(
             code='TUT-SA1-001',
             venue='Manchester',
             start_date=date.today() + timedelta(days=40),
@@ -733,7 +733,7 @@ class TutorialComprehensiveDataViewTestCase(APITestCase):
         )
 
         # Create tutorial event
-        self.event = TutorialEvent.objects.create(
+        self.event = TutorialEvents.objects.create(
             code='TUT-CM2-001',
             venue='London',
             start_date=date.today() + timedelta(days=30),
@@ -867,7 +867,7 @@ class TutorialBackwardCompatPropertyTestCase(TestCase):
             exam_session_subject=ess,
             product_product_variation=ppv
         )
-        event = TutorialEvent.objects.create(
+        event = TutorialEvents.objects.create(
             code='TUT-BC-001',
             venue='Test Venue',
             start_date='2026-06-01',
@@ -947,7 +947,7 @@ class TutorialFunctionViewsDirectTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class TutorialEventListViewSubjectFilterTestCase(APITestCase):
+class TutorialEventsListViewSubjectFilterTestCase(APITestCase):
     """Test TutorialEventListView subject_code filter path (views.py line 55)."""
 
     def setUp(self):
@@ -1001,14 +1001,14 @@ class TutorialEventListViewSubjectFilterTestCase(APITestCase):
             product_code='FLT_SA1/WKD/2025'
         )
 
-        self.event_cm2 = TutorialEvent.objects.create(
+        self.event_cm2 = TutorialEvents.objects.create(
             code='FLT-CM2-EVT',
             venue='London Filter',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.sp_cm2
         )
-        self.event_sa1 = TutorialEvent.objects.create(
+        self.event_sa1 = TutorialEvents.objects.create(
             code='FLT-SA1-EVT',
             venue='Manchester Filter',
             start_date=date.today() + timedelta(days=40),
@@ -1018,7 +1018,7 @@ class TutorialEventListViewSubjectFilterTestCase(APITestCase):
         self.client = APIClient()
 
     def test_filter_by_subject_code_returns_only_matching_events(self):
-        """Test subject_code filter in TutorialEventListView (views.py:55)."""
+        """Test subject_code filter in TutorialEventsListView (views.py:55)."""
         response = self.client.get('/api/tutorials/list/?subject_code=FLT_CM2')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         codes = [e['code'] for e in response.data]
@@ -1303,7 +1303,7 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
         )
 
         # Create tutorial events - multiple events per variation to test grouping
-        self.event1 = TutorialEvent.objects.create(
+        self.event1 = TutorialEvents.objects.create(
             code='COMP-CM2-WKD-001',
             venue='London Venue A',
             start_date=date.today() + timedelta(days=30),
@@ -1311,7 +1311,7 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
             remain_space=20,
             store_product=self.sp1
         )
-        self.event2 = TutorialEvent.objects.create(
+        self.event2 = TutorialEvents.objects.create(
             code='COMP-CM2-WKD-002',
             venue='London Venue B',
             start_date=date.today() + timedelta(days=40),
@@ -1321,7 +1321,7 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
             finalisation_date=date.today() + timedelta(days=25),
             store_product=self.sp1
         )
-        self.event3 = TutorialEvent.objects.create(
+        self.event3 = TutorialEvents.objects.create(
             code='COMP-CM2-DAY-001',
             venue='London Day Venue',
             start_date=date.today() + timedelta(days=35),
@@ -1329,7 +1329,7 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
             remain_space=15,
             store_product=self.sp2
         )
-        self.event4 = TutorialEvent.objects.create(
+        self.event4 = TutorialEvents.objects.create(
             code='COMP-SA1-WKD-001',
             venue='Manchester Venue',
             start_date=date.today() + timedelta(days=50),
@@ -1504,7 +1504,7 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
         cache.clear()
 
         # Delete all tutorial events
-        TutorialEvent.objects.all().delete()
+        TutorialEvents.objects.all().delete()
 
         response = self.client.get('/api/tutorials/data/comprehensive/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)

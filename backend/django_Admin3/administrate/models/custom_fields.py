@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
+
 
 class CustomField(models.Model):
     external_id = models.CharField(max_length=255)
@@ -7,8 +7,7 @@ class CustomField(models.Model):
     field_type = models.CharField(max_length=50)
     description = models.TextField(blank=True, null=True)
     is_required = models.BooleanField(default=False)
-    roles = ArrayField(
-        models.CharField(max_length=255),
+    roles = models.JSONField(
         blank=True,
         null=True,
         default=list
@@ -18,7 +17,7 @@ class CustomField(models.Model):
 
     class Meta:
         app_label = 'administrate'
-        db_table = 'adm.custom_fields'
+        db_table = '"adm"."custom_fields"'
         verbose_name = 'Custom Field'
         verbose_name_plural = 'Custom Fields'
         indexes = [

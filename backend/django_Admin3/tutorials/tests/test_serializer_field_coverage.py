@@ -54,7 +54,7 @@ class TutorialEventsSerializerReadCoverageTest(TestCase):
             product_product_variation=self.ppv,
             product_code='COV1/TCOVWKCOVTUT/COV2025',
         )
-        self.event = TutorialEvent.objects.create(
+        self.event = TutorialEvents.objects.create(
             code='COV-TUT-001',
             venue='Coverage Venue',
             start_date=timezone.now().date() + timedelta(days=30),
