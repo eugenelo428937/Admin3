@@ -189,6 +189,7 @@ class SearchService:
         ).prefetch_related(
             'prices',
             'product_product_variation__product__groups',
+            'tutorial_events__sessions',
             Prefetch(
                 'product_product_variation__recommendation',
                 queryset=ProductVariationRecommendation.objects.select_related(
