@@ -15,7 +15,27 @@ class TutorialEvents(models.Model):
     Links to store.Product for the purchasable tutorial product variation.
     """
     code = models.CharField(max_length=100, unique=True)
-    venue = models.CharField(max_length=255)
+    instructor = models.ForeignKey(
+        'tutorials.TutorialInstructor',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='events',
+    )
+    venue = models.ForeignKey(
+        'tutorials.TutorialVenue',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='events',
+    )
+    location = models.ForeignKey(
+        'tutorials.TutorialLocation',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='events',
+    )
     is_soldout = models.BooleanField(default=False)
     finalisation_date = models.DateField(null=True, blank=True)
     remain_space = models.IntegerField(default=0)
@@ -51,4 +71,5 @@ class TutorialEvents(models.Model):
         return self.store_product
 
     def __str__(self):
-        return f"{self.code} - {self.venue}"
+        venue_name = str(self.venue) if self.venue else 'No Venue'
+        return f"{self.code} - {venue_name}"

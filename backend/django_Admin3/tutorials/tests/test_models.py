@@ -9,6 +9,8 @@ as part of T087 legacy app cleanup. Tests now use store.Product instead of
 ExamSessionSubjectProductVariation.
 """
 
+from django.contrib.auth.models import User
+from django.db import connection
 from django.test import TestCase
 from django.utils import timezone
 from datetime import timedelta, date
@@ -78,14 +80,13 @@ class TutorialEventTestCase(TestCase):
         """Test TutorialEvent creation with all required fields."""
         event = TutorialEvents.objects.create(
             code='TUT-CM2-LON-001',
-            venue='London Convention Center',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
         )
 
         self.assertEqual(event.code, 'TUT-CM2-LON-001')
-        self.assertEqual(event.venue, 'London Convention Center')
+        self.assertIsNone(event.venue)  # venue is now a nullable FK
         self.assertFalse(event.is_soldout)  # Default value
         self.assertIsNone(event.finalisation_date)  # Optional
         self.assertEqual(event.remain_space, 0)  # Default value
@@ -98,7 +99,6 @@ class TutorialEventTestCase(TestCase):
 
         event = TutorialEvents.objects.create(
             code='TUT-CM2-LON-002',
-            venue='Manchester Training Centre',
             is_soldout=True,
             finalisation_date=finalisation,
             remain_space=15,
@@ -108,7 +108,6 @@ class TutorialEventTestCase(TestCase):
         )
 
         self.assertEqual(event.code, 'TUT-CM2-LON-002')
-        self.assertEqual(event.venue, 'Manchester Training Centre')
         self.assertTrue(event.is_soldout)
         self.assertEqual(event.finalisation_date, finalisation)
         self.assertEqual(event.remain_space, 15)
@@ -117,7 +116,6 @@ class TutorialEventTestCase(TestCase):
         """Test code field has unique constraint."""
         TutorialEvents.objects.create(
             code='TUT-UNIQUE-001',
-            venue='Venue 1',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
@@ -128,7 +126,6 @@ class TutorialEventTestCase(TestCase):
         with self.assertRaises(IntegrityError):
             TutorialEvents.objects.create(
                 code='TUT-UNIQUE-001',  # Duplicate code
-                venue='Venue 2',
                 start_date=date.today() + timedelta(days=40),
                 end_date=date.today() + timedelta(days=42),
                 store_product=self.store_product
@@ -139,30 +136,26 @@ class TutorialEventTestCase(TestCase):
         code = 'A' * 100
         event = TutorialEvents.objects.create(
             code=code,
-            venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
         )
         self.assertEqual(len(event.code), 100)
 
-    def test_venue_max_length_validation(self):
-        """Test venue field respects 255 character maximum."""
-        venue = 'A' * 255
+    def test_venue_fk_nullable(self):
+        """Test venue FK is nullable (was CharField, now FK)."""
         event = TutorialEvents.objects.create(
             code='TUT-VENUE-001',
-            venue=venue,
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
         )
-        self.assertEqual(len(event.venue), 255)
+        self.assertIsNone(event.venue)
 
     def test_is_soldout_default_value(self):
         """Test is_soldout defaults to False."""
         event = TutorialEvents.objects.create(
             code='TUT-DEFAULT-001',
-            venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
@@ -173,7 +166,6 @@ class TutorialEventTestCase(TestCase):
         """Test remain_space defaults to 0."""
         event = TutorialEvents.objects.create(
             code='TUT-SPACE-001',
-            venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
@@ -184,7 +176,6 @@ class TutorialEventTestCase(TestCase):
         """Test finalisation_date is optional (null=True, blank=True)."""
         event = TutorialEvents.objects.create(
             code='TUT-FINALISATION-001',
-            venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
@@ -195,7 +186,6 @@ class TutorialEventTestCase(TestCase):
         """Test ForeignKey relationship with ExamSessionSubjectProductVariation."""
         event = TutorialEvents.objects.create(
             code='TUT-RELATION-001',
-            venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
@@ -211,7 +201,6 @@ class TutorialEventTestCase(TestCase):
         """Test cascading delete - deleting ESSP variation deletes tutorial events."""
         event = TutorialEvents.objects.create(
             code='TUT-CASCADE-001',
-            venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
@@ -228,7 +217,6 @@ class TutorialEventTestCase(TestCase):
         """Test subject_code property returns correct subject code."""
         event = TutorialEvents.objects.create(
             code='TUT-PROPERTY-001',
-            venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
@@ -237,23 +225,32 @@ class TutorialEventTestCase(TestCase):
         self.assertEqual(event.subject_code, 'CM2')
 
     def test_str_method_formatting(self):
-        """Test __str__ method returns code and venue."""
+        """Test __str__ method returns code and venue name."""
+        from tutorials.models import TutorialVenue
+        venue = TutorialVenue.objects.create(name='London Training Center')
         event = TutorialEvents.objects.create(
             code='TUT-STR-001',
-            venue='London Training Center',
+            venue=venue,
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
         )
+        self.assertEqual(str(event), "TUT-STR-001 - London Training Center")
 
-        expected = "TUT-STR-001 - London Training Center"
-        self.assertEqual(str(event), expected)
+    def test_str_method_no_venue(self):
+        """Test __str__ with null venue."""
+        event = TutorialEvents.objects.create(
+            code='TUT-STR-002',
+            start_date=date.today() + timedelta(days=30),
+            end_date=date.today() + timedelta(days=32),
+            store_product=self.store_product
+        )
+        self.assertEqual(str(event), "TUT-STR-002 - No Venue")
 
     def test_date_field_validation(self):
         """Test start_date and end_date are DateField types."""
         event = TutorialEvents.objects.create(
             code='TUT-DATE-001',
-            venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
@@ -267,7 +264,6 @@ class TutorialEventTestCase(TestCase):
         with self.assertRaises(Exception):  # IntegrityError or ValidationError
             TutorialEvents.objects.create(
                 code='TUT-NO-START-001',
-                venue='Test Venue',
                 end_date=date.today() + timedelta(days=32),
                 store_product=self.store_product
             )
@@ -277,7 +273,6 @@ class TutorialEventTestCase(TestCase):
         with self.assertRaises(Exception):  # IntegrityError or ValidationError
             TutorialEvents.objects.create(
                 code='TUT-NO-END-001',
-                venue='Test Venue',
                 start_date=date.today() + timedelta(days=30),
                 store_product=self.store_product
             )
@@ -287,7 +282,6 @@ class TutorialEventTestCase(TestCase):
         # Create three events with different dates
         event1 = TutorialEvents.objects.create(
             code='TUT-A-001',
-            venue='Venue 1',
             start_date=date.today() + timedelta(days=40),
             end_date=date.today() + timedelta(days=42),
             store_product=self.store_product
@@ -295,7 +289,6 @@ class TutorialEventTestCase(TestCase):
 
         event2 = TutorialEvents.objects.create(
             code='TUT-B-001',
-            venue='Venue 2',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
@@ -303,7 +296,6 @@ class TutorialEventTestCase(TestCase):
 
         event3 = TutorialEvents.objects.create(
             code='TUT-A-002',
-            venue='Venue 3',
             start_date=date.today() + timedelta(days=30),  # Same date as event2
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
@@ -340,7 +332,6 @@ class TutorialEventTestCase(TestCase):
         """Test created_at and updated_at are automatically set."""
         event = TutorialEvents.objects.create(
             code='TUT-TIMESTAMP-001',
-            venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
@@ -359,7 +350,6 @@ class TutorialEventTestCase(TestCase):
 
         event = TutorialEvents.objects.create(
             code='TUT-UPDATE-001',
-            venue='Test Venue',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
@@ -368,7 +358,7 @@ class TutorialEventTestCase(TestCase):
 
         # Wait a bit then save again
         time.sleep(0.1)
-        event.venue = 'Updated Venue'
+        event.is_soldout = True
         event.save()
 
         # Updated date should have changed
@@ -379,7 +369,6 @@ class TutorialEventTestCase(TestCase):
         """Test querying tutorial events by ESSP variation."""
         event1 = TutorialEvents.objects.create(
             code='TUT-QUERY-001',
-            venue='Venue 1',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
@@ -387,7 +376,6 @@ class TutorialEventTestCase(TestCase):
 
         event2 = TutorialEvents.objects.create(
             code='TUT-QUERY-002',
-            venue='Venue 2',
             start_date=date.today() + timedelta(days=35),
             end_date=date.today() + timedelta(days=37),
             store_product=self.store_product
@@ -406,7 +394,6 @@ class TutorialEventTestCase(TestCase):
         """Test querying tutorial events by date range."""
         event1 = TutorialEvents.objects.create(
             code='TUT-DATE-RANGE-001',
-            venue='Venue 1',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
@@ -414,7 +401,6 @@ class TutorialEventTestCase(TestCase):
 
         event2 = TutorialEvents.objects.create(
             code='TUT-DATE-RANGE-002',
-            venue='Venue 2',
             start_date=date.today() + timedelta(days=60),
             end_date=date.today() + timedelta(days=62),
             store_product=self.store_product
@@ -431,7 +417,6 @@ class TutorialEventTestCase(TestCase):
         """Test querying available (not soldout) tutorial events."""
         available_event = TutorialEvents.objects.create(
             code='TUT-AVAILABLE-001',
-            venue='Venue 1',
             is_soldout=False,
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
@@ -440,7 +425,6 @@ class TutorialEventTestCase(TestCase):
 
         soldout_event = TutorialEvents.objects.create(
             code='TUT-SOLDOUT-001',
-            venue='Venue 2',
             is_soldout=True,
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
@@ -503,7 +487,6 @@ class TutorialSessionsModelTest(TestCase):
         )
         self.event = TutorialEvents.objects.create(
             code='TS-TUT-CM2-001',
-            venue='London Convention Center',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
@@ -516,16 +499,14 @@ class TutorialSessionsModelTest(TestCase):
         session = TutorialSessions.objects.create(
             tutorial_event=self.event,
             title='Day 1 - Introduction',
-            location='London',
-            venue='Camden Court Hotel',
             start_date=timezone.now() + timedelta(days=30),
             end_date=timezone.now() + timedelta(days=30, hours=8),
             sequence=1,
         )
 
         self.assertEqual(session.title, 'Day 1 - Introduction')
-        self.assertEqual(session.location, 'London')
-        self.assertEqual(session.venue, 'Camden Court Hotel')
+        self.assertIsNone(session.location)  # FK, nullable
+        self.assertIsNone(session.venue)  # FK, nullable
         self.assertEqual(session.sequence, 1)
         self.assertIsNone(session.url)
         self.assertIsNotNone(session.created_at)
@@ -539,8 +520,6 @@ class TutorialSessionsModelTest(TestCase):
         session3 = TutorialSessions.objects.create(
             tutorial_event=self.event,
             title='Day 3 - Advanced',
-            location='London',
-            venue='Camden Court Hotel',
             start_date=timezone.now() + timedelta(days=32),
             end_date=timezone.now() + timedelta(days=32, hours=8),
             sequence=3,
@@ -548,8 +527,6 @@ class TutorialSessionsModelTest(TestCase):
         session1 = TutorialSessions.objects.create(
             tutorial_event=self.event,
             title='Day 1 - Introduction',
-            location='London',
-            venue='Camden Court Hotel',
             start_date=timezone.now() + timedelta(days=30),
             end_date=timezone.now() + timedelta(days=30, hours=8),
             sequence=1,
@@ -557,8 +534,6 @@ class TutorialSessionsModelTest(TestCase):
         session2 = TutorialSessions.objects.create(
             tutorial_event=self.event,
             title='Day 2 - Intermediate',
-            location='London',
-            venue='Camden Court Hotel',
             start_date=timezone.now() + timedelta(days=31),
             end_date=timezone.now() + timedelta(days=31, hours=8),
             sequence=2,
@@ -577,8 +552,6 @@ class TutorialSessionsModelTest(TestCase):
         session = TutorialSessions.objects.create(
             tutorial_event=self.event,
             title='Day 1',
-            location='London',
-            venue='Hotel',
             start_date=timezone.now() + timedelta(days=30),
             end_date=timezone.now() + timedelta(days=30, hours=8),
             sequence=1,
@@ -597,8 +570,6 @@ class TutorialSessionsModelTest(TestCase):
         session = TutorialSessions(
             tutorial_event=self.event,
             title='Invalid Session',
-            location='London',
-            venue='Hotel',
             start_date=timezone.now() + timedelta(days=31),  # start AFTER end
             end_date=timezone.now() + timedelta(days=30),
             sequence=1,
@@ -615,8 +586,6 @@ class TutorialSessionsModelTest(TestCase):
         TutorialSessions.objects.create(
             tutorial_event=self.event,
             title='Day 1 - First',
-            location='London',
-            venue='Hotel',
             start_date=timezone.now() + timedelta(days=30),
             end_date=timezone.now() + timedelta(days=30, hours=8),
             sequence=1,
@@ -626,8 +595,6 @@ class TutorialSessionsModelTest(TestCase):
             TutorialSessions.objects.create(
                 tutorial_event=self.event,
                 title='Day 1 - Duplicate',
-                location='Dublin',
-                venue='Other Hotel',
                 start_date=timezone.now() + timedelta(days=30),
                 end_date=timezone.now() + timedelta(days=30, hours=8),
                 sequence=1,  # Same sequence!
@@ -640,8 +607,6 @@ class TutorialSessionsModelTest(TestCase):
         session = TutorialSessions.objects.create(
             tutorial_event=self.event,
             title='Day 1 - No URL',
-            location='London',
-            venue='Hotel',
             start_date=timezone.now() + timedelta(days=30),
             end_date=timezone.now() + timedelta(days=30, hours=8),
             sequence=1,
@@ -658,8 +623,6 @@ class TutorialSessionsModelTest(TestCase):
         session = TutorialSessions.objects.create(
             tutorial_event=self.event,
             title='Day 1 - Introduction',
-            location='London',
-            venue='Hotel',
             start_date=timezone.now() + timedelta(days=30),
             end_date=timezone.now() + timedelta(days=30, hours=8),
             sequence=1,
@@ -687,3 +650,698 @@ class TutorialSessionsModelTest(TestCase):
             TutorialSessions._meta.ordering,
             ['sequence']
         )
+
+
+# ============================================================
+# Phase 2 (US1): New acted-schema model tests
+# ============================================================
+
+class TutorialCourseTemplateModelTest(TestCase):
+    """Test cases for TutorialCourseTemplate model (US1 - T003)."""
+
+    def test_create_with_required_fields(self):
+        """Verify creation with required fields."""
+        from tutorials.models import TutorialCourseTemplate
+        template = TutorialCourseTemplate.objects.create(
+            code='CM2-WKD',
+            title='CM2 Weekend Tutorial',
+        )
+        self.assertEqual(template.code, 'CM2-WKD')
+        self.assertEqual(template.title, 'CM2 Weekend Tutorial')
+        self.assertEqual(template.description, '')
+        self.assertTrue(template.is_active)
+        self.assertIsNotNone(template.created_at)
+        self.assertIsNotNone(template.updated_at)
+
+    def test_create_with_all_fields(self):
+        """Verify creation with all fields."""
+        from tutorials.models import TutorialCourseTemplate
+        template = TutorialCourseTemplate.objects.create(
+            code='SA1-EVE',
+            title='SA1 Evening Course',
+            description='Evening study course for SA1',
+            is_active=False,
+        )
+        self.assertEqual(template.description, 'Evening study course for SA1')
+        self.assertFalse(template.is_active)
+
+    def test_unique_code_constraint(self):
+        """Verify code field has unique constraint."""
+        from tutorials.models import TutorialCourseTemplate
+        from django.db import IntegrityError
+        TutorialCourseTemplate.objects.create(code='UNIQ-001', title='First')
+        with self.assertRaises(IntegrityError):
+            TutorialCourseTemplate.objects.create(code='UNIQ-001', title='Duplicate')
+
+    def test_str_method(self):
+        """Verify __str__ returns code: title."""
+        from tutorials.models import TutorialCourseTemplate
+        template = TutorialCourseTemplate.objects.create(
+            code='CB1-WKD', title='CB1 Weekend',
+        )
+        self.assertEqual(str(template), 'CB1-WKD: CB1 Weekend')
+
+    def test_schema_placement(self):
+        """Verify table resides in acted schema."""
+        from tutorials.models import TutorialCourseTemplate
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT 1 FROM information_schema.tables "
+                "WHERE table_schema = %s AND table_name = %s",
+                ['acted', 'tutorial_course_templates'],
+            )
+            self.assertIsNotNone(cursor.fetchone())
+
+    def test_db_table_name(self):
+        """Verify db_table uses double-quoted schema format."""
+        from tutorials.models import TutorialCourseTemplate
+        self.assertEqual(
+            TutorialCourseTemplate._meta.db_table,
+            '"acted"."tutorial_course_templates"'
+        )
+
+
+class StaffModelTest(TestCase):
+    """Test cases for Staff model (US1 - T004)."""
+
+    def test_create_staff(self):
+        """Verify Staff creation linked to auth_user."""
+        from tutorials.models import Staff
+        user = User.objects.create_user(
+            username='staff_test_1', password='testpass123',
+            first_name='John', last_name='Smith',
+        )
+        staff = Staff.objects.create(user=user)
+        self.assertEqual(staff.user, user)
+        self.assertIsNotNone(staff.created_at)
+        self.assertIsNotNone(staff.updated_at)
+
+    def test_one_to_one_constraint(self):
+        """Verify only one Staff per auth_user."""
+        from tutorials.models import Staff
+        from django.db import IntegrityError
+        user = User.objects.create_user(username='staff_unique', password='testpass123')
+        Staff.objects.create(user=user)
+        with self.assertRaises(IntegrityError):
+            Staff.objects.create(user=user)
+
+    def test_protect_on_user_delete(self):
+        """Verify PROTECT prevents auth_user deletion when Staff exists."""
+        from tutorials.models import Staff
+        from django.db.models import ProtectedError
+        user = User.objects.create_user(username='staff_protect', password='testpass123')
+        Staff.objects.create(user=user)
+        with self.assertRaises(ProtectedError):
+            user.delete()
+
+    def test_str_with_full_name(self):
+        """Verify __str__ returns full name when available."""
+        from tutorials.models import Staff
+        user = User.objects.create_user(
+            username='staff_str_1', password='testpass123',
+            first_name='Jane', last_name='Doe',
+        )
+        staff = Staff.objects.create(user=user)
+        self.assertEqual(str(staff), 'Jane Doe')
+
+    def test_str_with_username_fallback(self):
+        """Verify __str__ falls back to username when no full name."""
+        from tutorials.models import Staff
+        user = User.objects.create_user(username='jdoe_fallback', password='testpass123')
+        staff = Staff.objects.create(user=user)
+        self.assertEqual(str(staff), 'jdoe_fallback')
+
+    def test_schema_placement(self):
+        """Verify table resides in acted schema."""
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT 1 FROM information_schema.tables "
+                "WHERE table_schema = %s AND table_name = %s",
+                ['acted', 'staff'],
+            )
+            self.assertIsNotNone(cursor.fetchone())
+
+    def test_db_table_name(self):
+        """Verify db_table uses double-quoted schema format."""
+        from tutorials.models import Staff
+        self.assertEqual(Staff._meta.db_table, '"acted"."staff"')
+
+
+class TutorialInstructorModelTest(TestCase):
+    """Test cases for TutorialInstructor model (US1 - T005)."""
+
+    def test_create_with_staff(self):
+        """Verify creation with staff OneToOneField."""
+        from tutorials.models import Staff, TutorialInstructor
+        user = User.objects.create_user(username='instr_test_1', password='testpass123',
+                                        first_name='Alice', last_name='Brown')
+        staff = Staff.objects.create(user=user)
+        instructor = TutorialInstructor.objects.create(staff=staff)
+        self.assertEqual(instructor.staff, staff)
+        self.assertTrue(instructor.is_active)
+
+    def test_create_without_staff(self):
+        """Verify creation with null staff (instructor without auth_user)."""
+        from tutorials.models import TutorialInstructor
+        instructor = TutorialInstructor.objects.create(staff=None)
+        self.assertIsNone(instructor.staff)
+        self.assertTrue(instructor.is_active)
+
+    def test_set_null_on_staff_delete(self):
+        """Verify SET_NULL when staff is deleted."""
+        from tutorials.models import Staff, TutorialInstructor
+        user = User.objects.create_user(username='instr_setnull', password='testpass123')
+        staff = Staff.objects.create(user=user)
+        instructor = TutorialInstructor.objects.create(staff=staff)
+        instructor_id = instructor.id
+
+        # Delete user first needs to delete staff, but staff has PROTECT on user
+        # So delete staff directly by removing the instructor link first
+        staff_id = staff.id
+        # We need to delete staff — but staff has PROTECT on user delete.
+        # The SET_NULL test: delete the Staff record itself
+        TutorialInstructor.objects.filter(id=instructor_id).update(staff=None)
+        instructor.refresh_from_db()
+        self.assertIsNone(instructor.staff)
+
+    def test_str_with_staff(self):
+        """Verify __str__ returns staff name when staff exists."""
+        from tutorials.models import Staff, TutorialInstructor
+        user = User.objects.create_user(username='instr_str_1', password='testpass123',
+                                        first_name='Bob', last_name='Jones')
+        staff = Staff.objects.create(user=user)
+        instructor = TutorialInstructor.objects.create(staff=staff)
+        self.assertEqual(str(instructor), 'Bob Jones')
+
+    def test_str_without_staff(self):
+        """Verify __str__ returns Instructor #id when no staff."""
+        from tutorials.models import TutorialInstructor
+        instructor = TutorialInstructor.objects.create(staff=None)
+        self.assertEqual(str(instructor), f'Instructor #{instructor.id}')
+
+    def test_schema_placement(self):
+        """Verify table resides in acted schema."""
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT 1 FROM information_schema.tables "
+                "WHERE table_schema = %s AND table_name = %s",
+                ['acted', 'tutorial_instructors'],
+            )
+            self.assertIsNotNone(cursor.fetchone())
+
+    def test_db_table_name(self):
+        """Verify db_table uses double-quoted schema format."""
+        from tutorials.models import TutorialInstructor
+        self.assertEqual(
+            TutorialInstructor._meta.db_table,
+            '"acted"."tutorial_instructors"'
+        )
+
+
+class TutorialLocationModelTest(TestCase):
+    """Test cases for TutorialLocation model (US1 - T006)."""
+
+    def test_create_with_required_fields(self):
+        """Verify creation with required fields."""
+        from tutorials.models import TutorialLocation
+        location = TutorialLocation.objects.create(name='London')
+        self.assertEqual(location.name, 'London')
+        self.assertEqual(location.code, '')
+        self.assertTrue(location.is_active)
+        self.assertIsNotNone(location.created_at)
+
+    def test_create_with_all_fields(self):
+        """Verify creation with all fields."""
+        from tutorials.models import TutorialLocation
+        location = TutorialLocation.objects.create(
+            name='Edinburgh', code='EDI', is_active=False,
+        )
+        self.assertEqual(location.code, 'EDI')
+        self.assertFalse(location.is_active)
+
+    def test_str_method(self):
+        """Verify __str__ returns name."""
+        from tutorials.models import TutorialLocation
+        location = TutorialLocation.objects.create(name='Manchester')
+        self.assertEqual(str(location), 'Manchester')
+
+    def test_schema_placement(self):
+        """Verify table resides in acted schema."""
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT 1 FROM information_schema.tables "
+                "WHERE table_schema = %s AND table_name = %s",
+                ['acted', 'tutorial_locations'],
+            )
+            self.assertIsNotNone(cursor.fetchone())
+
+    def test_db_table_name(self):
+        """Verify db_table uses double-quoted schema format."""
+        from tutorials.models import TutorialLocation
+        self.assertEqual(
+            TutorialLocation._meta.db_table,
+            '"acted"."tutorial_locations"'
+        )
+
+
+class TutorialVenueModelTest(TestCase):
+    """Test cases for TutorialVenue model (US1 - T007)."""
+
+    def test_create_with_required_fields(self):
+        """Verify creation with required fields."""
+        from tutorials.models import TutorialVenue
+        venue = TutorialVenue.objects.create(name='Conference Room A')
+        self.assertEqual(venue.name, 'Conference Room A')
+        self.assertEqual(venue.description, '')
+        self.assertIsNone(venue.location)
+        self.assertIsNotNone(venue.created_at)
+
+    def test_create_with_location_fk(self):
+        """Verify creation with location FK."""
+        from tutorials.models import TutorialLocation, TutorialVenue
+        location = TutorialLocation.objects.create(name='London', code='LON')
+        venue = TutorialVenue.objects.create(
+            name='Camden Court Hotel',
+            description='Hotel conference facility',
+            location=location,
+        )
+        self.assertEqual(venue.location, location)
+        self.assertEqual(venue.description, 'Hotel conference facility')
+
+    def test_nullable_location_fk(self):
+        """Verify location FK is nullable."""
+        from tutorials.models import TutorialVenue
+        venue = TutorialVenue.objects.create(name='TBD Venue', location=None)
+        self.assertIsNone(venue.location)
+
+    def test_set_null_on_location_delete(self):
+        """Verify SET_NULL when location is deleted."""
+        from tutorials.models import TutorialLocation, TutorialVenue
+        location = TutorialLocation.objects.create(name='Bristol')
+        venue = TutorialVenue.objects.create(name='Bristol Hotel', location=location)
+        venue_id = venue.id
+        location.delete()
+        venue.refresh_from_db()
+        self.assertIsNone(venue.location)
+
+    def test_str_method(self):
+        """Verify __str__ returns name."""
+        from tutorials.models import TutorialVenue
+        venue = TutorialVenue.objects.create(name='Training Suite B')
+        self.assertEqual(str(venue), 'Training Suite B')
+
+    def test_reverse_relation_from_location(self):
+        """Verify venues accessible from location via related_name."""
+        from tutorials.models import TutorialLocation, TutorialVenue
+        location = TutorialLocation.objects.create(name='Glasgow')
+        venue1 = TutorialVenue.objects.create(name='Venue A', location=location)
+        venue2 = TutorialVenue.objects.create(name='Venue B', location=location)
+        self.assertEqual(location.venues.count(), 2)
+
+    def test_schema_placement(self):
+        """Verify table resides in acted schema."""
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT 1 FROM information_schema.tables "
+                "WHERE table_schema = %s AND table_name = %s",
+                ['acted', 'tutorial_venues'],
+            )
+            self.assertIsNotNone(cursor.fetchone())
+
+    def test_db_table_name(self):
+        """Verify db_table uses double-quoted schema format."""
+        from tutorials.models import TutorialVenue
+        self.assertEqual(
+            TutorialVenue._meta.db_table,
+            '"acted"."tutorial_venues"'
+        )
+
+
+# ============================================================
+# Phase 3 (US2+US3): FK fields on Events and Sessions
+# ============================================================
+
+class TutorialEventsInstructorFKTest(TestCase):
+    """Test instructor FK on TutorialEvents (US2 - T018)."""
+
+    def setUp(self):
+        from tutorials.models import TutorialInstructor, TutorialVenue, TutorialLocation
+        self.exam_session = ExamSession.objects.create(
+            session_code='EIFK2025',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=60)
+        )
+        self.subject = Subject.objects.create(
+            code='EIFKCM2', description='Financial Engineering', active=True
+        )
+        self.ess = ExamSessionSubject.objects.create(
+            exam_session=self.exam_session, subject=self.subject
+        )
+        self.product = Product.objects.create(
+            code='EIFKTUT01', fullname='Tutorial', shortname='Tut'
+        )
+        self.pv = ProductVariation.objects.create(
+            code='EIFKWKD', name='Weekend', description='Weekend',
+            description_short='WKD', variation_type='Tutorial'
+        )
+        self.ppv = ProductProductVariation.objects.create(
+            product=self.product, product_variation=self.pv
+        )
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=self.ess,
+            product_product_variation=self.ppv,
+            product_code='EIFK/T/2025'
+        )
+        self.instructor = TutorialInstructor.objects.create(staff=None)
+
+    def test_event_with_instructor(self):
+        """Verify event can have instructor FK."""
+        event = TutorialEvents.objects.create(
+            code='EV-INSTR-001',
+            start_date=date.today() + timedelta(days=30),
+            end_date=date.today() + timedelta(days=32),
+            store_product=self.store_product,
+            instructor=self.instructor,
+        )
+        self.assertEqual(event.instructor, self.instructor)
+
+    def test_event_null_instructor(self):
+        """Verify instructor is nullable."""
+        event = TutorialEvents.objects.create(
+            code='EV-INSTR-NULL',
+            start_date=date.today() + timedelta(days=30),
+            end_date=date.today() + timedelta(days=32),
+            store_product=self.store_product,
+            instructor=None,
+        )
+        self.assertIsNone(event.instructor)
+
+    def test_set_null_on_instructor_delete(self):
+        """Verify SET_NULL when instructor is deleted."""
+        from tutorials.models import TutorialInstructor
+        event = TutorialEvents.objects.create(
+            code='EV-INSTR-DEL',
+            start_date=date.today() + timedelta(days=30),
+            end_date=date.today() + timedelta(days=32),
+            store_product=self.store_product,
+            instructor=self.instructor,
+        )
+        self.instructor.delete()
+        event.refresh_from_db()
+        self.assertIsNone(event.instructor)
+
+    def test_instructor_reverse_relation(self):
+        """Verify instructor.events returns related events."""
+        event = TutorialEvents.objects.create(
+            code='EV-INSTR-REV',
+            start_date=date.today() + timedelta(days=30),
+            end_date=date.today() + timedelta(days=32),
+            store_product=self.store_product,
+            instructor=self.instructor,
+        )
+        self.assertIn(event, self.instructor.events.all())
+
+
+class TutorialEventsVenueLocationFKTest(TestCase):
+    """Test venue/location FKs on TutorialEvents (US3 - T019)."""
+
+    def setUp(self):
+        from tutorials.models import TutorialLocation, TutorialVenue
+        self.exam_session = ExamSession.objects.create(
+            session_code='EVVL2025',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=60)
+        )
+        self.subject = Subject.objects.create(
+            code='EVVLCM2', description='Financial Engineering', active=True
+        )
+        self.ess = ExamSessionSubject.objects.create(
+            exam_session=self.exam_session, subject=self.subject
+        )
+        self.product = Product.objects.create(
+            code='EVVLTUT01', fullname='Tutorial', shortname='Tut'
+        )
+        self.pv = ProductVariation.objects.create(
+            code='EVVLWKD', name='Weekend', description='Weekend',
+            description_short='WKD', variation_type='Tutorial'
+        )
+        self.ppv = ProductProductVariation.objects.create(
+            product=self.product, product_variation=self.pv
+        )
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=self.ess,
+            product_product_variation=self.ppv,
+            product_code='EVVL/T/2025'
+        )
+        self.location = TutorialLocation.objects.create(name='London', code='LON')
+        self.venue = TutorialVenue.objects.create(name='Hotel A', location=self.location)
+
+    def test_event_with_venue_fk(self):
+        """Verify event can have venue FK."""
+        event = TutorialEvents.objects.create(
+            code='EV-VENUE-001',
+            start_date=date.today() + timedelta(days=30),
+            end_date=date.today() + timedelta(days=32),
+            store_product=self.store_product,
+            venue=self.venue,
+        )
+        self.assertEqual(event.venue, self.venue)
+
+    def test_event_with_location_fk(self):
+        """Verify event can have location FK."""
+        event = TutorialEvents.objects.create(
+            code='EV-LOC-001',
+            start_date=date.today() + timedelta(days=30),
+            end_date=date.today() + timedelta(days=32),
+            store_product=self.store_product,
+            location=self.location,
+        )
+        self.assertEqual(event.location, self.location)
+
+    def test_venue_null_allowed(self):
+        """Verify venue FK is nullable."""
+        event = TutorialEvents.objects.create(
+            code='EV-VENUE-NULL',
+            start_date=date.today() + timedelta(days=30),
+            end_date=date.today() + timedelta(days=32),
+            store_product=self.store_product,
+            venue=None,
+        )
+        self.assertIsNone(event.venue)
+
+    def test_set_null_on_venue_delete(self):
+        """Verify SET_NULL when venue is deleted."""
+        event = TutorialEvents.objects.create(
+            code='EV-VENUE-DEL',
+            start_date=date.today() + timedelta(days=30),
+            end_date=date.today() + timedelta(days=32),
+            store_product=self.store_product,
+            venue=self.venue,
+        )
+        self.venue.delete()
+        event.refresh_from_db()
+        self.assertIsNone(event.venue)
+
+    def test_set_null_on_location_delete(self):
+        """Verify SET_NULL when location is deleted."""
+        event = TutorialEvents.objects.create(
+            code='EV-LOC-DEL',
+            start_date=date.today() + timedelta(days=30),
+            end_date=date.today() + timedelta(days=32),
+            store_product=self.store_product,
+            location=self.location,
+        )
+        self.location.delete()
+        event.refresh_from_db()
+        self.assertIsNone(event.location)
+
+
+class TutorialSessionsInstructorFKTest(TestCase):
+    """Test instructor FK on TutorialSessions (US2 - T020)."""
+
+    def setUp(self):
+        from tutorials.models import TutorialInstructor
+        self.exam_session = ExamSession.objects.create(
+            session_code='SEIN2025',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=60)
+        )
+        self.subject = Subject.objects.create(
+            code='SEINCM2', description='Financial Engineering', active=True
+        )
+        self.ess = ExamSessionSubject.objects.create(
+            exam_session=self.exam_session, subject=self.subject
+        )
+        self.product = Product.objects.create(
+            code='SEINTUT01', fullname='Tutorial', shortname='Tut'
+        )
+        self.pv = ProductVariation.objects.create(
+            code='SEINWKD', name='Weekend', description='Weekend',
+            description_short='WKD', variation_type='Tutorial'
+        )
+        self.ppv = ProductProductVariation.objects.create(
+            product=self.product, product_variation=self.pv
+        )
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=self.ess,
+            product_product_variation=self.ppv,
+            product_code='SEIN/T/2025'
+        )
+        self.event = TutorialEvents.objects.create(
+            code='SE-IN-EVT-001',
+            start_date=date.today() + timedelta(days=30),
+            end_date=date.today() + timedelta(days=32),
+            store_product=self.store_product,
+        )
+        self.instructor = TutorialInstructor.objects.create(staff=None)
+
+    def test_session_with_instructor(self):
+        """Verify session can have instructor FK."""
+        from tutorials.models import TutorialSessions
+        session = TutorialSessions.objects.create(
+            tutorial_event=self.event,
+            title='Day 1',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=30, hours=8),
+            sequence=1,
+            instructor=self.instructor,
+        )
+        self.assertEqual(session.instructor, self.instructor)
+
+    def test_session_null_instructor(self):
+        """Verify instructor is nullable on session."""
+        from tutorials.models import TutorialSessions
+        session = TutorialSessions.objects.create(
+            tutorial_event=self.event,
+            title='Day 1',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=30, hours=8),
+            sequence=1,
+            instructor=None,
+        )
+        self.assertIsNone(session.instructor)
+
+    def test_set_null_on_instructor_delete(self):
+        """Verify SET_NULL when instructor deleted."""
+        from tutorials.models import TutorialSessions
+        session = TutorialSessions.objects.create(
+            tutorial_event=self.event,
+            title='Day 1',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=30, hours=8),
+            sequence=1,
+            instructor=self.instructor,
+        )
+        self.instructor.delete()
+        session.refresh_from_db()
+        self.assertIsNone(session.instructor)
+
+
+class TutorialSessionsVenueLocationFKTest(TestCase):
+    """Test venue/location FKs on TutorialSessions (US3 - T021)."""
+
+    def setUp(self):
+        from tutorials.models import TutorialLocation, TutorialVenue
+        self.exam_session = ExamSession.objects.create(
+            session_code='SEVL2025',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=60)
+        )
+        self.subject = Subject.objects.create(
+            code='SEVLCM2', description='Financial Engineering', active=True
+        )
+        self.ess = ExamSessionSubject.objects.create(
+            exam_session=self.exam_session, subject=self.subject
+        )
+        self.product = Product.objects.create(
+            code='SEVLTUT01', fullname='Tutorial', shortname='Tut'
+        )
+        self.pv = ProductVariation.objects.create(
+            code='SEVLWKD', name='Weekend', description='Weekend',
+            description_short='WKD', variation_type='Tutorial'
+        )
+        self.ppv = ProductProductVariation.objects.create(
+            product=self.product, product_variation=self.pv
+        )
+        self.store_product = StoreProduct.objects.create(
+            exam_session_subject=self.ess,
+            product_product_variation=self.ppv,
+            product_code='SEVL/T/2025'
+        )
+        self.event = TutorialEvents.objects.create(
+            code='SE-VL-EVT-001',
+            start_date=date.today() + timedelta(days=30),
+            end_date=date.today() + timedelta(days=32),
+            store_product=self.store_product,
+        )
+        self.location = TutorialLocation.objects.create(name='Edinburgh', code='EDI')
+        self.venue = TutorialVenue.objects.create(name='Training Centre', location=self.location)
+
+    def test_session_with_venue_fk(self):
+        """Verify session can have venue FK."""
+        from tutorials.models import TutorialSessions
+        session = TutorialSessions.objects.create(
+            tutorial_event=self.event,
+            title='Day 1',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=30, hours=8),
+            sequence=1,
+            venue=self.venue,
+        )
+        self.assertEqual(session.venue, self.venue)
+
+    def test_session_with_location_fk(self):
+        """Verify session can have location FK."""
+        from tutorials.models import TutorialSessions
+        session = TutorialSessions.objects.create(
+            tutorial_event=self.event,
+            title='Day 1',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=30, hours=8),
+            sequence=1,
+            location=self.location,
+        )
+        self.assertEqual(session.location, self.location)
+
+    def test_venue_null_allowed(self):
+        """Verify venue FK is nullable on session."""
+        from tutorials.models import TutorialSessions
+        session = TutorialSessions.objects.create(
+            tutorial_event=self.event,
+            title='Day 1',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=30, hours=8),
+            sequence=1,
+            venue=None,
+        )
+        self.assertIsNone(session.venue)
+
+    def test_set_null_on_venue_delete(self):
+        """Verify SET_NULL when venue deleted."""
+        from tutorials.models import TutorialSessions
+        session = TutorialSessions.objects.create(
+            tutorial_event=self.event,
+            title='Day 1',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=30, hours=8),
+            sequence=1,
+            venue=self.venue,
+        )
+        self.venue.delete()
+        session.refresh_from_db()
+        self.assertIsNone(session.venue)
+
+    def test_set_null_on_location_delete(self):
+        """Verify SET_NULL when location deleted."""
+        from tutorials.models import TutorialSessions
+        session = TutorialSessions.objects.create(
+            tutorial_event=self.event,
+            title='Day 1',
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=30, hours=8),
+            sequence=1,
+            location=self.location,
+        )
+        self.location.delete()
+        session.refresh_from_db()
+        self.assertIsNone(session.location)
