@@ -6,13 +6,15 @@
 // configurations like !important flags and responsive overrides.
 
 import { spacing } from '../tokens/spacing';
-import {
-  fontFamilies,
-  fontSizes,
-  lineHeights,
-  letterSpacing,
-  variants,
-} from '../tokens/typography';
+import { md3 } from '../tokens/colors';
+import
+  {
+    fontFamilies,
+    fontSizes,
+    fontWeights,
+    lineHeights,
+    letterSpacing,
+  } from '../tokens/typography';
 
 // =============================================================================
 // Helper: Add !important to CSS values for MUI specificity
@@ -28,18 +30,36 @@ export const typographyConfig = {
 
   // Brand variants
   BPP: {
-    ...variants.BPP,
-    fontSize: important(fontSizes.display1),
-    lineHeight: important('var(--halfstep-dec)'),
+    fontFamily: important(fontFamilies.brand),
+    fontWeight: important(fontWeights.bold),
+    fontSize: important(fontSizes.display.medium),
+    lineHeight: important(lineHeights.shortest),
+    letterSpacing: important(letterSpacing[10]),
+    fontOpticalSizing: important('auto'),
+    fontStyle: important('normal'),
+    fontVariationSettings: important("'wght' 700"),
+    color: md3.inverseOnSurface,
   },
   Acted: {
-    ...variants.Acted,
-    fontSize: important(fontSizes.display2),
-    lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.tighter),
-    marginTop: "calc( var(--2xs) / var(--halfstep) / var(--halfstep) / var(--eighthstep))",
+    fontFamily: important(fontFamilies.primary),
+    fontWeight: important(fontWeights.light),
+    fontSize: important(fontSizes.heading[30]),
+    lineHeight: important(lineHeights.shorter),
+    letterSpacing: important(letterSpacing[40]),
+    fontOpticalSizing: important('auto'),
+    fontStyle: important('normal'),
+    fontVariationSettings: important("'wght' 200"),    
+    color: md3.inverseOnSurface,    
   },
-
+  onlineStoreTitle:{
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.regular,
+    fontSize: important(fontSizes.heading[30]),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing[50]),
+    textWrap: 'balance',        
+    color: md3.inverseOnSurface,    
+  },
   // Heading variants
   h1: {
     ...variants.h1,
@@ -60,20 +80,23 @@ export const typographyConfig = {
     letterSpacing: important(letterSpacing.tighter),
   },
   h4: {
-    ...variants.h4,
-    fontSize: important(fontSizes.title2),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.regular,
+    fontSize: important(fontSizes.heading[60]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.tight),
   },
   h5: {
-    ...variants.h5,
-    fontSize: important('calc(1em * var(--halfstep) * var(--eighthstep))'),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.medium,
+    fontSize: important(fontSizes.heading[80]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.normal),
   },
   h6: {
-    ...variants.h6,
-    fontSize: important(fontSizes.heading),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.semibold,
+    fontSize: important(fontSizes.heading[90]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.slight),
   },
@@ -150,8 +173,9 @@ export const typographyConfig = {
     top: "6.235em",
   },
   buttonMedium: {
-    ...variants.button,
-    fontSize: important(fontSizes.buttonMedium),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.medium,
+    fontSize: important(fontSizes.heading[80]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.minimal),
     position: "static",
@@ -191,8 +215,9 @@ export const typographyConfig = {
     letterSpacing: important(letterSpacing.tight),
   },
   navlink: {
-    ...variants.navlink,
-    fontSize: important(fontSizes.navlink),
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.medium,
+    fontSize: important(fontSizes.heading[80]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.minimal),
     position: "static",
@@ -201,8 +226,8 @@ export const typographyConfig = {
   topnavlink: {
     fontFamily: fontFamilies.primary,
     fontWeight: 300, // Lighter than token default for this context
-    fontSize: important(fontSizes.topnavlink),
-    lineHeight: important(lineHeights.normal),
+    fontSize: important(fontSizes.body.small),
+    lineHeight: important(lineHeights.wide),
     letterSpacing: important(letterSpacing.normal),
     textWrap: "balance",
   },
