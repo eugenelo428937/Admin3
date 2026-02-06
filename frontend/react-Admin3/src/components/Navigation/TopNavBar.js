@@ -151,11 +151,7 @@ const TopNavBar = ({ onOpenSearch }) =>
                      target="_blank"
                      startIcon={isDesktop ? <HomeIcon /> : null}
                      endIcon={!isDesktop ? <HomeIcon /> : null}
-                     sx={{
-                        minWidth: {
-                           xs: theme.spacingTokens.xl,
-                           lg: theme.spacingTokens.xl2,
-                        },
+                     sx={{                        
                         justifyContent: "center",
                      }}>
                      <Typography
@@ -173,11 +169,7 @@ const TopNavBar = ({ onOpenSearch }) =>
                      target="_blank"
                      startIcon={isDesktop ? <HelpIcon /> : null}
                      endIcon={!isDesktop ? <HelpIcon /> : null}
-                     sx={{
-                        minWidth: {
-                           xs: theme.spacingTokens.xl,
-                           lg: theme.spacingTokens.xl2,
-                        },
+                     sx={{                       
                         justifyContent: "center",
                      }}>
                      <Typography
@@ -205,11 +197,7 @@ const TopNavBar = ({ onOpenSearch }) =>
                      target="_blank"
                      startIcon={isDesktop ? <DownloadIcon /> : null}
                      endIcon={!isDesktop ? <DownloadIcon /> : null}
-                     sx={{
-                        minWidth: {
-                           xs: theme.spacingTokens.xl,
-                           lg: theme.spacingTokens.xl2,
-                        },
+                     sx={{                       
                         justifyContent: "center",
                      }}
                   >
@@ -226,11 +214,7 @@ const TopNavBar = ({ onOpenSearch }) =>
                   <Button
                      variant="topNavAction"
                      onClick={onOpenSearch}
-                     sx={{
-                        minWidth: {
-                           xs: theme.spacingTokens.xl,
-                           lg: theme.spacingTokens.xl2,
-                        },
+                     sx={{                        
                         justifyContent: "center",
                      }}
                      aria-label="search products"
