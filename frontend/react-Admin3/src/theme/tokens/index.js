@@ -17,7 +17,8 @@ export { default as colors, md3, scales, staticColors } from './colors';
 
 // Typography tokens - font families, sizes, weights
 export { default as typography } from './typography';
-export {
+export
+{
   fontFamilies,
   fontWeights,
   fontSizes,
@@ -28,7 +29,8 @@ export {
 
 // Spacing tokens - spacing scale, gaps, padding, border radius
 export { default as spacing } from './spacing';
-export {
+export
+{
   scaleFactor,
   multipliers,
   spacing as spacingScale,
@@ -37,12 +39,14 @@ export {
   padding,
   borderRadius,
 } from './spacing';
+export { iconSizes } from './icons'
 
 // Consolidated export for convenience
 const tokens = {
   colors: require('./colors').default,
   typography: require('./typography').default,
   spacing: require('./spacing').default,
+  iconSizes: require('./icons').default,
 };
 
 export default tokens;

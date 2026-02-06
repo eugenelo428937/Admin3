@@ -48,7 +48,7 @@ export const miscOverrides = {
     styleOverrides: {
       root: {
         borderColor: scales.granite[50],
-        opacity: 0.5,
+        opacity: 0.7,
       },
     },
   },
