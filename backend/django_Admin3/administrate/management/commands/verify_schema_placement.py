@@ -42,6 +42,11 @@ EXPECTED_SCHEMAS = {
         # tutorials
         'tutorial_events',
         'tutorial_sessions',
+        'tutorial_course_templates',
+        'staff',
+        'tutorial_instructors',
+        'tutorial_locations',
+        'tutorial_venues',
         # filtering
         'filter_product_product_groups',
         'filter_groups',

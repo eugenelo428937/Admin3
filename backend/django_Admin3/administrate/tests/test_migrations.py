@@ -56,13 +56,9 @@ class AdministrateSchemaMigrationTest(TestCase):
 
         location = Location.objects.create(
             external_id='LOC-FK-TEST',
-            name='FK Test Location',
-            code='FKT',
-            active=True,
         )
         venue = Venue.objects.create(
             external_id='VEN-FK-TEST',
-            name='FK Test Venue',
             location=location,
         )
         self.assertEqual(venue.location.external_id, 'LOC-FK-TEST')
@@ -75,17 +71,13 @@ class AdministrateSchemaMigrationTest(TestCase):
             Location, PriceLevel, Venue,
         )
 
-        Location.objects.create(external_id='L1', name='London', code='LON')
+        Location.objects.create(external_id='L1')
         Venue.objects.create(
-            external_id='V1', name='Room A',
+            external_id='V1',
             location=Location.objects.get(external_id='L1'),
         )
-        Instructor.objects.create(
-            external_id='I1', first_name='Jane', last_name='Doe',
-        )
-        CourseTemplate.objects.create(
-            external_id='CT1', code='CT001', title='Course 1',
-        )
+        Instructor.objects.create(external_id='I1')
+        CourseTemplate.objects.create(external_id='CT1')
         CustomField.objects.create(
             external_id='CF1', label='Field 1',
             field_type='text', entity_type='event',

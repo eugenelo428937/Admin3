@@ -10,7 +10,10 @@ from datetime import date, timedelta
 from django.test import TestCase
 from django.utils import timezone
 
-from tutorials.models import TutorialEvents, TutorialSessions
+from tutorials.models import (
+    TutorialEvents, TutorialSessions,
+    TutorialLocation, TutorialVenue,
+)
 from tutorials.serializers import TutorialSessionsSerializer
 from search.serializers import StoreProductListSerializer
 
@@ -60,9 +63,14 @@ class TutorialSessionsSerializerFieldsTest(TestCase):
     def setUp(self):
         self.store_product = _create_store_product()
 
+        self.tl_dublin = TutorialLocation.objects.create(name='Dublin', code='DUB')
+        self.tv_camden = TutorialVenue.objects.create(
+            name='Camden Court Hotel', location=self.tl_dublin,
+        )
+
         self.event = TutorialEvents.objects.create(
             code='CM2-55-25S',
-            venue='Camden Court Hotel',
+            venue=self.tv_camden,
             is_soldout=False,
             remain_space=11,
             start_date=date(2025, 7, 22),
@@ -73,8 +81,8 @@ class TutorialSessionsSerializerFieldsTest(TestCase):
         self.session1 = TutorialSessions.objects.create(
             tutorial_event=self.event,
             title='Day 1 - Introduction',
-            location='Dublin',
-            venue='Camden Court Hotel',
+            location=self.tl_dublin,
+            venue=self.tv_camden,
             start_date=timezone.make_aware(timezone.datetime(2025, 7, 22, 9, 0)),
             end_date=timezone.make_aware(timezone.datetime(2025, 7, 22, 17, 0)),
             sequence=1,
@@ -83,8 +91,8 @@ class TutorialSessionsSerializerFieldsTest(TestCase):
         self.session2 = TutorialSessions.objects.create(
             tutorial_event=self.event,
             title='Day 2 - Stochastic Models',
-            location='Dublin',
-            venue='Camden Court Hotel',
+            location=self.tl_dublin,
+            venue=self.tv_camden,
             start_date=timezone.make_aware(timezone.datetime(2025, 7, 23, 9, 0)),
             end_date=timezone.make_aware(timezone.datetime(2025, 7, 23, 17, 0)),
             sequence=2,
@@ -142,9 +150,10 @@ class TutorialSessionsSerializerFieldsTest(TestCase):
 
     def test_empty_sessions_for_event_with_no_sessions(self):
         """T029: Verify empty sessions array for events without sessions."""
+        tv_london = TutorialVenue.objects.create(name='London Office')
         event2 = TutorialEvents.objects.create(
             code='CM2-56-25S',
-            venue='London Office',
+            venue=tv_london,
             is_soldout=False,
             remain_space=5,
             start_date=date(2025, 9, 1),
@@ -186,9 +195,14 @@ class TutorialSessionsModelSerializerTest(TestCase):
     def setUp(self):
         store_product = _create_store_product()
 
+        tl_london = TutorialLocation.objects.create(name='London', code='LON')
+        tv_office = TutorialVenue.objects.create(
+            name='London Office', location=tl_london,
+        )
+
         event = TutorialEvents.objects.create(
             code='CB1-33-25S',
-            venue='London Office',
+            venue=tv_office,
             is_soldout=False,
             remain_space=8,
             start_date=date(2025, 8, 1),
@@ -199,8 +213,8 @@ class TutorialSessionsModelSerializerTest(TestCase):
         self.session = TutorialSessions.objects.create(
             tutorial_event=event,
             title='Day 1 - Business Finance Basics',
-            location='London',
-            venue='London Office',
+            location=tl_london,
+            venue=tv_office,
             start_date=timezone.make_aware(timezone.datetime(2025, 8, 1, 9, 0)),
             end_date=timezone.make_aware(timezone.datetime(2025, 8, 1, 17, 0)),
             sequence=1,
@@ -212,7 +226,7 @@ class TutorialSessionsModelSerializerTest(TestCase):
         data = serializer.data
 
         expected_fields = {
-            'id', 'title', 'location', 'venue',
+            'id', 'title', 'instructor', 'venue', 'location',
             'start_date', 'end_date', 'sequence', 'url'
         }
         self.assertEqual(set(data.keys()), expected_fields)

@@ -138,8 +138,8 @@ class StoreProductListSerializer:
                     {
                         'id': session.id,
                         'title': session.title,
-                        'location': session.location,
-                        'venue': session.venue,
+                        'location': str(session.location) if session.location else None,
+                        'venue': str(session.venue) if session.venue else None,
                         'start_date': session.start_date.isoformat() if session.start_date else None,
                         'end_date': session.end_date.isoformat() if session.end_date else None,
                         'sequence': session.sequence,
@@ -150,7 +150,7 @@ class StoreProductListSerializer:
                 events.append({
                     'id': event.id,
                     'code': event.code,
-                    'venue': event.venue,
+                    'venue': str(event.venue) if event.venue else None,
                     'is_soldout': event.is_soldout,
                     'finalisation_date': event.finalisation_date.isoformat() if event.finalisation_date else None,
                     'remain_space': event.remain_space,

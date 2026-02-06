@@ -221,7 +221,7 @@ class TutorialComprehensiveDataView(APIView):
             results[key]['variations'][variation_key]['events'].append({
                 'id': event.id,
                 'code': event.code,
-                'venue': event.venue,
+                'venue': str(event.venue) if event.venue else None,
                 'is_soldout': event.is_soldout,
                 'finalisation_date': event.finalisation_date,
                 'remain_space': event.remain_space,
