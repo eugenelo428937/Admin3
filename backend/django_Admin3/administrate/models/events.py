@@ -135,7 +135,9 @@ class Event(models.Model):
     @property
     def course_code(self):
         """Get the course code from the associated course template"""
-        return self.course_template.code if self.course_template else ''
+        if self.course_template and self.course_template.tutorial_course_template:
+            return self.course_template.tutorial_course_template.code
+        return ''
         
     @property
     def total_sessions(self):

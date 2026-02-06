@@ -15,7 +15,7 @@ from datetime import timedelta, date
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 
-from tutorials.models import TutorialEvents
+from tutorials.models import TutorialEvents, TutorialVenue
 from store.models import Product as StoreProduct
 from catalog.models import (
     ExamSession, ExamSessionSubject, ExamSessionSubjectProduct,
@@ -80,7 +80,7 @@ class TutorialEventsAPITestCase(APITestCase):
         # Create tutorial events
         self.event1 = TutorialEvents.objects.create(
             code='TUT-CM2-LON-001',
-            venue='London Convention Center',
+            venue=TutorialVenue.objects.create(name='London Convention Center'),
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             remain_space=20,
@@ -89,7 +89,7 @@ class TutorialEventsAPITestCase(APITestCase):
 
         self.event2 = TutorialEvents.objects.create(
             code='TUT-CM2-LON-002',
-            venue='Manchester Training Centre',
+            venue=TutorialVenue.objects.create(name='Manchester Training Centre'),
             start_date=date.today() + timedelta(days=40),
             end_date=date.today() + timedelta(days=42),
             is_soldout=True,
@@ -115,7 +115,7 @@ class TutorialEventsAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['code'], 'TUT-CM2-LON-001')
-        self.assertEqual(response.data['venue'], 'London Convention Center')
+        self.assertEqual(response.data['venue']['name'], 'London Convention Center')
 
     def test_retrieve_tutorial_event_nonexistent(self):
         """Test GET /api/tutorials/events/{id}/ for nonexistent event."""
@@ -171,9 +171,10 @@ class TutorialEventsAPITestCase(APITestCase):
 
     def test_update_tutorial_event_put(self):
         """Test PUT /api/tutorials/events/{id}/ to update event."""
+        updated_venue = TutorialVenue.objects.create(name='Updated Venue')
         data = {
             'code': 'TUT-CM2-LON-001-UPDATED',
-            'venue': 'Updated Venue',
+            'venue_id': updated_venue.id,
             'start_date': self.event1.start_date.isoformat(),
             'end_date': self.event1.end_date.isoformat(),
             'store_product': self.store_product.id
@@ -185,12 +186,13 @@ class TutorialEventsAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.event1.refresh_from_db()
         self.assertEqual(self.event1.code, 'TUT-CM2-LON-001-UPDATED')
-        self.assertEqual(self.event1.venue, 'Updated Venue')
+        self.assertEqual(self.event1.venue, updated_venue)
 
     def test_update_tutorial_event_patch(self):
         """Test PATCH /api/tutorials/events/{id}/ to partially update event."""
+        patched_venue = TutorialVenue.objects.create(name='Partially Updated Venue')
         data = {
-            'venue': 'Partially Updated Venue',
+            'venue_id': patched_venue.id,
             'remain_space': 15
         }
 
@@ -199,7 +201,7 @@ class TutorialEventsAPITestCase(APITestCase):
         # Should update successfully
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.event1.refresh_from_db()
-        self.assertEqual(self.event1.venue, 'Partially Updated Venue')
+        self.assertEqual(self.event1.venue, patched_venue)
         self.assertEqual(self.event1.remain_space, 15)
 
     def test_delete_tutorial_event(self):
@@ -357,7 +359,7 @@ class TutorialEventsListViewTestCase(APITestCase):
         # Create tutorial events
         self.event1 = TutorialEvents.objects.create(
             code='TUT-CM2-001',
-            venue='London',
+            venue=TutorialVenue.objects.create(name='London'),
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product1
@@ -365,7 +367,7 @@ class TutorialEventsListViewTestCase(APITestCase):
 
         self.event2 = TutorialEvents.objects.create(
             code='TUT-SA1-001',
-            venue='Manchester',
+            venue=TutorialVenue.objects.create(name='Manchester'),
             start_date=date.today() + timedelta(days=40),
             end_date=date.today() + timedelta(days=42),
             store_product=self.store_product2
@@ -735,7 +737,7 @@ class TutorialComprehensiveDataViewTestCase(APITestCase):
         # Create tutorial event
         self.event = TutorialEvents.objects.create(
             code='TUT-CM2-001',
-            venue='London',
+            venue=TutorialVenue.objects.create(name='London'),
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product
@@ -869,7 +871,7 @@ class TutorialBackwardCompatPropertyTestCase(TestCase):
         )
         event = TutorialEvents.objects.create(
             code='TUT-BC-001',
-            venue='Test Venue',
+            venue=TutorialVenue.objects.create(name='Test Venue'),
             start_date='2026-06-01',
             end_date='2026-06-03',
             store_product=store_product
@@ -1003,14 +1005,14 @@ class TutorialEventsListViewSubjectFilterTestCase(APITestCase):
 
         self.event_cm2 = TutorialEvents.objects.create(
             code='FLT-CM2-EVT',
-            venue='London Filter',
+            venue=TutorialVenue.objects.create(name='London Filter'),
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.sp_cm2
         )
         self.event_sa1 = TutorialEvents.objects.create(
             code='FLT-SA1-EVT',
-            venue='Manchester Filter',
+            venue=TutorialVenue.objects.create(name='Manchester Filter'),
             start_date=date.today() + timedelta(days=40),
             end_date=date.today() + timedelta(days=42),
             store_product=self.sp_sa1
@@ -1305,7 +1307,7 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
         # Create tutorial events - multiple events per variation to test grouping
         self.event1 = TutorialEvents.objects.create(
             code='COMP-CM2-WKD-001',
-            venue='London Venue A',
+            venue=TutorialVenue.objects.create(name='London Venue A'),
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             remain_space=20,
@@ -1313,7 +1315,7 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
         )
         self.event2 = TutorialEvents.objects.create(
             code='COMP-CM2-WKD-002',
-            venue='London Venue B',
+            venue=TutorialVenue.objects.create(name='London Venue B'),
             start_date=date.today() + timedelta(days=40),
             end_date=date.today() + timedelta(days=42),
             is_soldout=True,
@@ -1323,7 +1325,7 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
         )
         self.event3 = TutorialEvents.objects.create(
             code='COMP-CM2-DAY-001',
-            venue='London Day Venue',
+            venue=TutorialVenue.objects.create(name='London Day Venue'),
             start_date=date.today() + timedelta(days=35),
             end_date=date.today() + timedelta(days=37),
             remain_space=15,
@@ -1331,7 +1333,7 @@ class TutorialComprehensiveDataViewFullCoverageTestCase(APITestCase):
         )
         self.event4 = TutorialEvents.objects.create(
             code='COMP-SA1-WKD-001',
-            venue='Manchester Venue',
+            venue=TutorialVenue.objects.create(name='Manchester Venue'),
             start_date=date.today() + timedelta(days=50),
             end_date=date.today() + timedelta(days=52),
             remain_space=25,

@@ -17,8 +17,27 @@ class TutorialSessions(models.Model):
         related_name='sessions',
     )
     title = models.CharField(max_length=255)
-    location = models.CharField(max_length=255)
-    venue = models.CharField(max_length=255)
+    instructor = models.ForeignKey(
+        'tutorials.TutorialInstructor',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sessions',
+    )
+    venue = models.ForeignKey(
+        'tutorials.TutorialVenue',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sessions',
+    )
+    location = models.ForeignKey(
+        'tutorials.TutorialLocation',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sessions',
+    )
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     sequence = models.PositiveIntegerField()
