@@ -280,6 +280,9 @@ def state_product_groups_exist(params=None):
     """State: product groups exist
 
     Creates FilterGroup data for the product-group-filters endpoint.
+    Uses update_or_create for the child group to ensure the parent
+    relationship is set correctly even if the record already exists
+    (e.g. created by setup_filter_groups() without a parent).
     """
     from filtering.models import FilterGroup
 
@@ -289,8 +292,8 @@ def state_product_groups_exist(params=None):
         defaults={'is_active': True, 'display_order': 0, 'parent': None},
     )
 
-    # Create child group
-    core_materials, _ = FilterGroup.objects.get_or_create(
+    # Create or update child group — ensure parent is always set
+    core_materials, _ = FilterGroup.objects.update_or_create(
         name='Core Study Materials',
         defaults={'is_active': True, 'display_order': 0, 'parent': study_materials},
     )

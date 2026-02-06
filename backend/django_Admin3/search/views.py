@@ -233,7 +233,7 @@ class AdvancedFuzzySearchView(APIView):
         query = request.query_params.get('q', '').strip() or None
         subject_ids_param = request.query_params.get('subjects', '')
         category_ids_param = request.query_params.get('categories', '')
-        min_score = int(request.query_params.get('min_score', 65))
+        min_score = int(request.query_params.get('min_score', 60))
         limit = int(request.query_params.get('limit', 50))
 
         # Parse subject IDs

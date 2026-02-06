@@ -630,7 +630,7 @@ class SearchService:
     def advanced_fuzzy_search(self, query: Optional[str] = None,
                                subject_ids: Optional[List[int]] = None,
                                category_ids: Optional[List[int]] = None,
-                               min_score: int = 65, limit: int = 50) -> Dict[str, Any]:
+                               min_score: int = 60, limit: int = 50) -> Dict[str, Any]:
         """
         Execute advanced fuzzy search with pre-filtering.
         """

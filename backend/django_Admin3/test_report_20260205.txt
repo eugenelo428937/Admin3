@@ -475,11 +475,11 @@ WARNING Failed to process dynamic content insertion: Insertion failed
 INFO Email BCC monitoring enabled. BCC recipients: ['eugene.lo1030@gmail.com', 'eugenelo@bpp.com']
 .ERROR Error loading MJML include test_include.mjml: Permission denied
 INFO Email BCC monitoring enabled. BCC recipients: ['eugene.lo1030@gmail.com', 'eugenelo@bpp.com']
-.WARNING Django template processing failed for tmpkzl8vh4f.mjml, using raw file: Template error
+.WARNING Django template processing failed for tmp_89eys0s.mjml, using raw file: Template error
 INFO Email BCC monitoring enabled. BCC recipients: ['eugene.lo1030@gmail.com', 'eugenelo@bpp.com']
-.WARNING Some emails failed, scheduled retry for a60197b1-a0c1-4069-9074-afb920053413
-.WARNING Some emails failed, scheduled retry for 385aee2d-ee32-405f-acba-b8aeb6bcaf17
-.WARNING Some emails failed, scheduled retry for 1ec18110-8b49-4807-adbb-b3e1b71b7a58
+.WARNING Some emails failed, scheduled retry for 95901be4-71e5-4a80-8fac-9fba36bba652
+.WARNING Some emails failed, scheduled retry for 44aab1af-f5ee-48f7-9834-762a80babd8e
+.WARNING Some emails failed, scheduled retry for 30c5bee1-00c7-4fcb-9599-7d6714cdbd13
 .ERROR Failed to serialize context: Not serializable
 ........ERROR MJML include file not found: /Users/work/Documents/Code/Admin3/backend/django_Admin3/email_system/templates/emails/mjml/nonexistent.mjml
 .ERROR Error loading MJML include test.mjml: Permission denied
@@ -516,12 +516,12 @@ ERROR Master template fallback also failed: Render failed
 ..WARNING Converting non-serializable context item 'custom': <class 'email_system.tests.test_queue_service.CleanContextForSerializationTest.test_clean_non_serializable_fallback_to_string.<locals>.CustomObj'>
 .WARNING Converting non-serializable context item 'obj': <class 'email_system.tests.test_queue_service.CleanContextForSerializationTest.test_clean_object_with_dict_but_no_meta.<locals>.SimpleObj'>
 ............ERROR Failed to get template attachments: DB error
-........ERROR Failed to process queue item 3daba9b2-b23d-4f7e-9792-24ce26d85457: Process error
-.......ERROR Failed to process queue item e62a34ad-0e1c-4c92-89c4-f63acbc495c9: Unexpected error
-.ERROR Queue item 3366d2f8-0752-46d6-a06a-f96af8178562 failed after max attempts
-.ERROR Queue item 26079aae-cb32-4580-ad90-941edd4ce6de failed after max attempts
-.ERROR Queue item 79d2bed6-8583-4329-b052-0b8766e53e65 failed after max attempts
-..ERROR Queue item 9017c0d7-f7b6-4e7d-935e-4e888af02a64 failed after max attempts
+........ERROR Failed to process queue item d423e759-7a4a-465b-b9a9-02d87ec2b824: Process error
+.......ERROR Failed to process queue item cf73199f-3c01-47b3-ba9d-496cc04e3b1b: Unexpected error
+.ERROR Queue item 5716f961-3d7a-4e62-a1a7-81b60f74d9ca failed after max attempts
+.ERROR Queue item 392d1ac8-35e2-4742-ad7d-ee6cc98d9ddf failed after max attempts
+.ERROR Queue item 9e359f41-6532-49ea-bf14-9d478df07d4d failed after max attempts
+..ERROR Queue item 0fb26c6c-1130-4ac4-a70d-5adc29a73582 failed after max attempts
 ....WARNING No template configuration found for nonexistent_eqs_template_xyz, using defaults
 ....WARNING Failed to render template subject: Invalid block tag on line 1: 'invalid_tag'. Did you forget to register or load this tag?
 .......WARNING No template configuration found for nonexistent_eqs_template, using defaults
@@ -796,15 +796,15 @@ DEBUG   Rule 'test_aset_warning_rule' condition not matched
 .DEBUG Cache hit for rules:checkout_start: 1 rules
 DEBUG  Schema validation passed for checkout_context_test
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308842_34ccce72
+DEBUG Stored execution record: exec_1770327319_588ea42c
 .DEBUG Cache hit for rules:checkout_start: 1 rules
 DEBUG  Schema validation passed for checkout_context_test
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308842_74ddd77b
+DEBUG Stored execution record: exec_1770327319_49533230
 .DEBUG Cache hit for rules:checkout_start: 1 rules
 DEBUG  Schema validation passed for checkout_context_test
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308842_aaaf035f
+DEBUG Stored execution record: exec_1770327319_7e6f5ecd
 .DEBUG Rule admin_test_rule_1 created, invalidating cache for home_page_mount
 INFO Invalidated rules cache for entry point: home_page_mount (key: rules:home_page_mount)
 DEBUG Rule admin_test_rule_2 created, invalidating cache for checkout_terms
@@ -855,7 +855,7 @@ ERROR Internal Server Error: /api/rules/engine/accept-terms/
 .ERROR Error accepting terms: DB explosion
 ERROR Internal Server Error: /api/rules/engine/accept-terms/
 .WARNING Not Found: /api/rules/engine/accept-terms/
-.INFO ✅ [Acknowledge] Created new session: tj4st6ngtu8rawqfzo94cor8d888tqz3
+.INFO ✅ [Acknowledge] Created new session: z9oeq5u9yhsjufa8jazjrs70cuf0erao
 ERROR Error recording acknowledgment: Session save failed
 ERROR Internal Server Error: /api/rules/acknowledge/
 ....ERROR Error in apply_tutorial_booking_fee: Field 'id' expected a number but got [].
@@ -891,14 +891,14 @@ DEBUG No schema validation - context keys: ['counter']
 DEBUG  JSONLogic condition evaluated to: True
 WARNING Unknown update target/operation: counter/increment
 ERROR  Error processing rule 'gap_incr_exist': 'RuleEngine' object has no attribute '_get_nested_value'
-DEBUG Stored execution record: exec_1770308851_e8085020
+DEBUG Stored execution record: exec_1770327329_dae9c9d3
 .DEBUG Rule gap_proc_err created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
 DEBUG Cached 1 rules for checkout_terms
 DEBUG No schema validation - context keys: []
 ERROR  Error processing rule 'gap_proc_err': Eval crash
-DEBUG Stored execution record: exec_1770308851_fe9536ef
+DEBUG Stored execution record: exec_1770327329_e4a37add
 .DEBUG Rule gap_upd_collect created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
@@ -907,11 +907,11 @@ DEBUG No schema validation - context keys: []
 DEBUG  JSONLogic condition evaluated to: True
 DEBUG Updated context during dispatch: order.total = 100.0
 DEBUG Updated context: order.total = 100.0
-DEBUG Stored execution record: exec_1770308851_818bffe8
+DEBUG Stored execution record: exec_1770327329_3869859d
 ..WARNING Error calling function boom: Boom
 ..WARNING Error in filter_and_extract: Match error
 ......ERROR Error removing cart fee: Connection lost
-...INFO 🔍 [Comprehensive Validation] Session ID: c3gmaoozfb92t1b28rzv7zvd2mim6yv3
+...INFO 🔍 [Comprehensive Validation] Session ID: 60eou8dg3hk5qv5y0lrynbs84l4y8iy8
 INFO 🔍 [Comprehensive Validation] Raw session acknowledgments: [{'ack_key': 'gap_sat_ack_key', 'acknowledged': True, 'entry_point_location': 'checkout_terms', 'acknowledged_timestamp': '2026-01-01T00:00:00'}]
 INFO 🔍 [Comprehensive Validation] Ack keys in session: ['gap_sat_ack_key']
 INFO 🔍 [Comprehensive Validation] Acknowledgments dict keys: ['gap_sat_ack_key']
@@ -924,7 +924,7 @@ DEBUG No schema validation - context keys: ['user', 'acknowledgments']
 DEBUG  JSONLogic condition evaluated to: True
 DEBUG Updated context during dispatch: order.total = 100.0
 DEBUG Updated context: order.total = 100.0
-DEBUG Stored execution record: exec_1770308854_ecccf0b5
+DEBUG Stored execution record: exec_1770327331_e453e065
 DEBUG Cache miss for rules:checkout_payment
 DEBUG Cached 0 rules for checkout_payment
 DEBUG Cache miss for rules:checkout_preference
@@ -938,7 +938,7 @@ DEBUG No schema validation - context keys: ['user', 'acknowledgments']
 DEBUG  JSONLogic condition evaluated to: True
 DEBUG Updated context during dispatch: order.total = 100.0
 DEBUG Updated context: order.total = 100.0
-DEBUG Stored execution record: exec_1770308854_6c67090f
+DEBUG Stored execution record: exec_1770327331_b0c0b6d6
 DEBUG Cache hit for rules:checkout_payment: 0 rules
 DEBUG Cache hit for rules:checkout_preference: 0 rules
 .INFO 🔍 [Comprehensive Validation] Session ID: None
@@ -950,7 +950,7 @@ DEBUG No schema validation - context keys: ['user', 'acknowledgments']
 DEBUG  JSONLogic condition evaluated to: True
 DEBUG Updated context during dispatch: order.total = 100.0
 DEBUG Updated context: order.total = 100.0
-DEBUG Stored execution record: exec_1770308854_9823255a
+DEBUG Stored execution record: exec_1770327331_cd68f796
 DEBUG Cache hit for rules:checkout_payment: 0 rules
 DEBUG Cache hit for rules:checkout_preference: 0 rules
 ........WARNING Unknown update target/operation: /
@@ -1029,16 +1029,16 @@ DEBUG  JSONLogic condition evaluated to: False
 ..WARNING Unknown JSONLogic operator: unknown_op
 DEBUG  JSONLogic condition evaluated to: False
 ..ERROR Failed to store execution record: DB error
-.DEBUG Stored execution record: exec_1770308855_91f00ea2
-.DEBUG Stored execution record: exec_1770308855_bbeaa193
-.DEBUG Stored execution record: exec_1770308855_2e97d036
+.DEBUG Stored execution record: exec_1770327332_866b5dd5
+.DEBUG Stored execution record: exec_1770327332_94bf9a92
+.DEBUG Stored execution record: exec_1770327332_eca45d16
 .DEBUG Rule cov_blocking_ack created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
 DEBUG Cached 1 rules for checkout_terms
 DEBUG No schema validation - context keys: []
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308855_6bc8e1b2
+DEBUG Stored execution record: exec_1770327332_63de8289
 .ERROR  Rules Engine: Fatal error in 'checkout_terms': Fatal
 .DEBUG Cache miss for rules:nonexistent_entry
 DEBUG Cached 0 rules for nonexistent_entry
@@ -1048,21 +1048,21 @@ DEBUG Cache miss for rules:checkout_terms
 DEBUG Cached 1 rules for checkout_terms
 DEBUG No schema validation - context keys: []
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308855_79bd28d8
+DEBUG Stored execution record: exec_1770327332_4272cdc6
 .DEBUG Rule cov_exception_rule created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
 DEBUG Cached 1 rules for checkout_terms
 DEBUG No schema validation - context keys: []
 ERROR  Error processing rule 'cov_exception_rule': Eval boom
-DEBUG Stored execution record: exec_1770308855_7b8ab46c
+DEBUG Stored execution record: exec_1770327332_74a16172
 .DEBUG Rule cov_satisfied_ack created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
 DEBUG Cached 1 rules for checkout_terms
 DEBUG No schema validation - context keys: ['acknowledgments']
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308855_d59ec827
+DEBUG Stored execution record: exec_1770327332_ce952593
 .DEBUG Rule cov_schema_fail created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
@@ -1079,7 +1079,7 @@ DEBUG No schema validation - context keys: ['counter']
 DEBUG  JSONLogic condition evaluated to: True
 WARNING Unknown update target/operation: counter/increment
 ERROR  Error processing rule 'cov_update_incr': 'RuleEngine' object has no attribute '_get_nested_value'
-DEBUG Stored execution record: exec_1770308855_df0d3748
+DEBUG Stored execution record: exec_1770327332_0543451e
 .DEBUG Rule cov_update_collect created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
@@ -1088,7 +1088,7 @@ DEBUG No schema validation - context keys: []
 DEBUG  JSONLogic condition evaluated to: True
 DEBUG Updated context during dispatch: order.total = 120.0
 DEBUG Updated context: order.total = 120.0
-DEBUG Stored execution record: exec_1770308855_a2176612
+DEBUG Stored execution record: exec_1770327332_fdd5da86
 .DEBUG Rule cov_update_set created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
@@ -1097,21 +1097,21 @@ DEBUG No schema validation - context keys: []
 DEBUG  JSONLogic condition evaluated to: True
 DEBUG Updated context during dispatch: vat.rate = 0.2
 DEBUG Updated context: vat.rate = 0.2
-DEBUG Stored execution record: exec_1770308855_ff6f8a58
+DEBUG Stored execution record: exec_1770327332_d30a8dc7
 .DEBUG Rule cov_pref_action created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
 DEBUG Cached 1 rules for checkout_terms
 DEBUG No schema validation - context keys: []
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308855_1f045f93
+DEBUG Stored execution record: exec_1770327332_395f44d1
 .DEBUG Rule cov_engine_match created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
 DEBUG Cached 1 rules for checkout_terms
 DEBUG No schema validation - context keys: []
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308855_63a88e70
+DEBUG Stored execution record: exec_1770327332_141de7f8
 .DEBUG Rule cov_engine_no_match created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
@@ -1127,7 +1127,7 @@ DEBUG Cache miss for rules:checkout_terms
 DEBUG Cached 2 rules for checkout_terms
 DEBUG No schema validation - context keys: []
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308855_7fee9b0a
+DEBUG Stored execution record: exec_1770327332_5f1993c4
 ......ERROR Failed to set nested value a.b.c = 42: 'str' object does not support item assignment
 ...DEBUG Rule cov_block_err created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
@@ -1135,7 +1135,7 @@ DEBUG Cache miss for rules:checkout_terms
 DEBUG Cached 1 rules for checkout_terms
 DEBUG No schema validation - context keys: []
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308855_c0bdef9b
+DEBUG Stored execution record: exec_1770327332_84e52d03
 .DEBUG Rule cov_ctx_merge created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
@@ -1144,7 +1144,7 @@ DEBUG No schema validation - context keys: ['existing']
 DEBUG  JSONLogic condition evaluated to: True
 DEBUG Updated context during dispatch: custom.field = merged
 DEBUG Updated context: custom.field = merged
-DEBUG Stored execution record: exec_1770308855_bb4aa006
+DEBUG Stored execution record: exec_1770327332_313664eb
 .DEBUG Rule cov_incr_new created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
@@ -1153,7 +1153,7 @@ DEBUG No schema validation - context keys: []
 DEBUG  JSONLogic condition evaluated to: True
 WARNING Unknown update target/operation: new_counter/increment
 ERROR  Error processing rule 'cov_incr_new': 'RuleEngine' object has no attribute '_get_nested_value'
-DEBUG Stored execution record: exec_1770308855_aee0f29b
+DEBUG Stored execution record: exec_1770327332_03673cdf
 .DEBUG Rule cov_multi_1 created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Rule cov_multi_2 created, invalidating cache for checkout_terms
@@ -1164,17 +1164,17 @@ DEBUG No schema validation - context keys: []
 DEBUG  JSONLogic condition evaluated to: True
 DEBUG Updated context during dispatch: calculated.value = 42
 DEBUG Updated context: calculated.value = 42
-DEBUG Stored execution record: exec_1770308855_a8ce0c00
+DEBUG Stored execution record: exec_1770327332_9e7b3c56
 DEBUG No schema validation - context keys: ['calculated']
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308855_809eda7f
+DEBUG Stored execution record: exec_1770327332_10124b40
 .DEBUG Rule cov_pref_alias created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
 DEBUG Cached 1 rules for checkout_terms
 DEBUG No schema validation - context keys: []
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308855_28dd7908
+DEBUG Stored execution record: exec_1770327332_fcb8ad6d
 .DEBUG Rule cov_upd_collect created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
@@ -1183,7 +1183,7 @@ DEBUG No schema validation - context keys: []
 DEBUG  JSONLogic condition evaluated to: True
 DEBUG Updated context during dispatch: vat.rate = 0.2
 DEBUG Updated context: vat.rate = 0.2
-DEBUG Stored execution record: exec_1770308855_09e77c9c
+DEBUG Stored execution record: exec_1770327332_ffda8607
 ....DEBUG Cache miss for rules:entry with spaces
 DEBUG Cached 0 rules for entry with spaces
 DEBUG Invalidated cache for entry with spaces
@@ -1317,17 +1317,17 @@ ERROR Internal Server Error: /api/rules/templates/template-styles/
 ERROR Internal Server Error: /api/rules/engine/pending-acknowledgments/
 .WARNING Bad Request: /api/rules/acknowledge/
 .WARNING Bad Request: /api/rules/acknowledge/
-.INFO ✅ [Acknowledge] Created new session: b66kttjscaggfx9nk9mj6ae2c1rp73nm
-INFO ✅ [Acknowledge] Session ID: b66kttjscaggfx9nk9mj6ae2c1rp73nm
+.INFO ✅ [Acknowledge] Created new session: trvz39c326pyvrtc9t9so7uzdtc4mmee
+INFO ✅ [Acknowledge] Session ID: trvz39c326pyvrtc9t9so7uzdtc4mmee
 INFO ✅ [Acknowledge] Stored ack_key: test_ack_key
 INFO ✅ [Acknowledge] Total acknowledgments: 1
 INFO ✅ [Acknowledge] All ack_keys in session: ['test_ack_key']
-.INFO ✅ [Acknowledge] Created new session: g20r3qb0duwrnoh6bt4wetntrqad3546
-INFO ✅ [Acknowledge] Session ID: g20r3qb0duwrnoh6bt4wetntrqad3546
+.INFO ✅ [Acknowledge] Created new session: i9h5dhqdm36jjogneehze8378m5h3emt
+INFO ✅ [Acknowledge] Session ID: i9h5dhqdm36jjogneehze8378m5h3emt
 INFO ✅ [Acknowledge] Stored ack_key: ack_update_key
 INFO ✅ [Acknowledge] Total acknowledgments: 1
 INFO ✅ [Acknowledge] All ack_keys in session: ['ack_update_key']
-INFO ✅ [Acknowledge] Session ID: g20r3qb0duwrnoh6bt4wetntrqad3546
+INFO ✅ [Acknowledge] Session ID: i9h5dhqdm36jjogneehze8378m5h3emt
 INFO ✅ [Acknowledge] Stored ack_key: ack_update_key
 INFO ✅ [Acknowledge] Total acknowledgments: 1
 INFO ✅ [Acknowledge] All ack_keys in session: ['ack_update_key']
@@ -1417,12 +1417,12 @@ DEBUG Cache miss for rules:checkout_terms
 DEBUG Cached 1 rules for checkout_terms
 DEBUG No schema validation - context keys: ['acknowledgments']
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308875_f716d7c5
+DEBUG Stored execution record: exec_1770327352_6bb610a1
 DEBUG Cache hit for rules:checkout_payment: 0 rules
 DEBUG Cache hit for rules:checkout_preference: 0 rules
 .DEBUG Rule cov_comp_satisfied created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
-INFO 🔍 [Comprehensive Validation] Session ID: 8q5gn2plzqa0b9th5xg6tpkgawskgzou
+INFO 🔍 [Comprehensive Validation] Session ID: 1mifcyr3s6iuedcnfeteg38f1i7md9td
 INFO 🔍 [Comprehensive Validation] Raw session acknowledgments: [{'ack_key': 'satisfied_ack', 'acknowledged': True, 'entry_point_location': 'checkout_terms'}]
 INFO 🔍 [Comprehensive Validation] Ack keys in session: ['satisfied_ack']
 INFO 🔍 [Comprehensive Validation] Acknowledgments dict keys: ['satisfied_ack']
@@ -1430,7 +1430,7 @@ DEBUG Cache miss for rules:checkout_terms
 DEBUG Cached 1 rules for checkout_terms
 DEBUG No schema validation - context keys: ['acknowledgments']
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308876_3441e8b4
+DEBUG Stored execution record: exec_1770327352_299e50ce
 DEBUG Cache hit for rules:checkout_payment: 0 rules
 DEBUG Cache hit for rules:checkout_preference: 0 rules
 ........WARNING Country not found: UNKNOWN
@@ -1476,14 +1476,14 @@ DEBUG Cache miss for rules:test_no_schema
 DEBUG Cached 1 rules for test_no_schema
 DEBUG No schema validation - context keys: ['arbitrary', 'can', 'request']
 DEBUG Always-true condition evaluated to True
-DEBUG Stored execution record: exec_1770308878_bb85540c
+DEBUG Stored execution record: exec_1770327355_9d2580d1
 .sDEBUG Rule test_schema_validation_rule created, invalidating cache for checkout_start
 INFO Invalidated rules cache for entry point: checkout_start (key: rules:checkout_start)
 DEBUG Cache miss for rules:checkout_start
 DEBUG Cached 1 rules for checkout_start
 DEBUG  Schema validation passed for test_schema_validation
 DEBUG Always-true condition evaluated to True
-DEBUG Stored execution record: exec_1770308879_785a40b3
+DEBUG Stored execution record: exec_1770327355_23918013
 .DEBUG Rule premium_customer_check created, invalidating cache for cart_update
 INFO Invalidated rules cache for entry point: cart_update (key: rules:cart_update)
 DEBUG Rule base_discount created, invalidating cache for cart_update
@@ -1498,7 +1498,7 @@ DEBUG No schema validation - context keys: ['user', 'cart', 'request']
 DEBUG  JSONLogic condition evaluated to: True
 DEBUG Updated context during dispatch: cart.never_field = should_not_see_this
 DEBUG Updated context: cart.never_field = should_not_see_this
-DEBUG Stored execution record: exec_1770308879_bec64628
+DEBUG Stored execution record: exec_1770327356_b765f536
 DEBUG No schema validation - context keys: ['user', 'cart', 'request']
 DEBUG  JSONLogic condition evaluated to: False
 DEBUG   Rule 'apply_final_discount' condition not matched
@@ -1506,18 +1506,18 @@ DEBUG No schema validation - context keys: ['user', 'cart', 'request']
 DEBUG  JSONLogic condition evaluated to: True
 DEBUG Updated context during dispatch: cart.base_discount = 10
 DEBUG Updated context: cart.base_discount = 10
-DEBUG Stored execution record: exec_1770308879_dcb171a1
+DEBUG Stored execution record: exec_1770327356_29c7ca53
 DEBUG No schema validation - context keys: ['user', 'cart', 'request']
 DEBUG  JSONLogic condition evaluated to: True
 DEBUG Updated context during dispatch: cart.discount_multiplier = 1.5
 DEBUG Updated context: cart.discount_multiplier = 1.5
-DEBUG Stored execution record: exec_1770308879_9207abf3
+DEBUG Stored execution record: exec_1770327356_ec8b66fc
 DEBUG Cache hit for rules:cart_update: 4 rules
 DEBUG No schema validation - context keys: ['user', 'cart', 'request']
 DEBUG  JSONLogic condition evaluated to: True
 DEBUG Updated context during dispatch: cart.never_field = should_not_see_this
 DEBUG Updated context: cart.never_field = should_not_see_this
-DEBUG Stored execution record: exec_1770308879_ecbcce5c
+DEBUG Stored execution record: exec_1770327356_b4d75dd2
 DEBUG No schema validation - context keys: ['user', 'cart', 'request']
 DEBUG  JSONLogic condition evaluated to: False
 DEBUG   Rule 'apply_final_discount' condition not matched
@@ -1525,7 +1525,7 @@ DEBUG No schema validation - context keys: ['user', 'cart', 'request']
 DEBUG  JSONLogic condition evaluated to: True
 DEBUG Updated context during dispatch: cart.base_discount = 10
 DEBUG Updated context: cart.base_discount = 10
-DEBUG Stored execution record: exec_1770308879_fafd9668
+DEBUG Stored execution record: exec_1770327356_64ac46e1
 DEBUG No schema validation - context keys: ['user', 'cart', 'request']
 DEBUG  JSONLogic condition evaluated to: False
 DEBUG   Rule 'premium_customer_check' condition not matched
@@ -1540,7 +1540,7 @@ DEBUG  JSONLogic condition evaluated to: False
 DEBUG   Rule 'us_terms_rule' condition not matched
 DEBUG No schema validation - context keys: ['user', 'cart', 'request']
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308880_bef0a991
+DEBUG Stored execution record: exec_1770327357_4d45d5ae
 WARNING Bad Request: /api/rules/acknowledge/
 DEBUG Cache hit for rules:checkout_terms: 2 rules
 DEBUG No schema validation - context keys: ['user', 'cart', 'acknowledgments', 'request']
@@ -1549,11 +1549,11 @@ DEBUG   Rule 'us_terms_rule' condition not matched
 DEBUG No schema validation - context keys: ['user', 'cart', 'acknowledgments', 'request']
 DEBUG  JSONLogic condition evaluated to: True
 ERROR  Error processing rule 'eu_terms_rule': 'bool' object has no attribute 'get'
-DEBUG Stored execution record: exec_1770308880_bdc23473
+DEBUG Stored execution record: exec_1770327357_9cec175b
 DEBUG Cache hit for rules:checkout_terms: 2 rules
 DEBUG No schema validation - context keys: ['user', 'cart', 'request']
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308880_f2f315d0
+DEBUG Stored execution record: exec_1770327357_48b85f98
 DEBUG No schema validation - context keys: ['user', 'cart', 'request']
 DEBUG  JSONLogic condition evaluated to: False
 DEBUG   Rule 'eu_terms_rule' condition not matched
@@ -1565,7 +1565,7 @@ DEBUG No schema validation - context keys: ['user', 'cart', 'request']
 DEBUG  JSONLogic condition evaluated to: True
 DEBUG Updated context during dispatch: cart.discount = 50.0
 DEBUG Updated context: cart.discount = 50.0
-DEBUG Stored execution record: exec_1770308880_8cbe9c26
+DEBUG Stored execution record: exec_1770327357_ccb24855
 DEBUG Cache hit for rules:cart_update: 1 rules
 DEBUG No schema validation - context keys: ['user', 'cart', 'request']
 DEBUG  JSONLogic condition evaluated to: False
@@ -1576,14 +1576,14 @@ DEBUG Cache miss for rules:home_page_mount
 DEBUG Cached 1 rules for home_page_mount
 DEBUG No schema validation - context keys: ['user', 'cart', 'request']
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308881_8dce8d0f
+DEBUG Stored execution record: exec_1770327358_7a6796a5
 DEBUG Cache hit for rules:checkout_terms: 2 rules
 DEBUG No schema validation - context keys: ['user', 'cart', 'request']
 DEBUG  JSONLogic condition evaluated to: False
 DEBUG   Rule 'us_terms_rule' condition not matched
 DEBUG No schema validation - context keys: ['user', 'cart', 'request']
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308881_25a7f724
+DEBUG Stored execution record: exec_1770327358_8431ad68
 ..DEBUG Rule rule_checkout_terms_lookup_1 created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Rule rule_checkout_terms_lookup_2 created, invalidating cache for checkout_terms
@@ -1674,28 +1674,28 @@ DEBUG Cache miss for rules:checkout_start
 DEBUG Cached 3 rules for checkout_start
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308882_54e429b7
+DEBUG Stored execution record: exec_1770327359_7ba339c1
 .DEBUG Rule eu_checkout_terms_given_test2 created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
 DEBUG Cached 1 rules for checkout_terms
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308882_8ee65f66
+DEBUG Stored execution record: exec_1770327359_7d952cb3
 .DEBUG Rule eu_checkout_terms_required_test1 created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
 DEBUG Cached 1 rules for checkout_terms
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308882_0623a5f7
+DEBUG Stored execution record: exec_1770327359_518474ff
 .DEBUG Rule homepage_newsletter_preference created, invalidating cache for home_page_mount
 INFO Invalidated rules cache for entry point: home_page_mount (key: rules:home_page_mount)
 DEBUG Cache miss for rules:home_page_mount
 DEBUG Cached 1 rules for home_page_mount
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_9e4d4446
+DEBUG Stored execution record: exec_1770327359_3033bd9a
 .DEBUG Rule performance_rule_0 created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Rule performance_rule_1 created, invalidating cache for checkout_terms
@@ -1720,1553 +1720,1553 @@ DEBUG Cache miss for rules:checkout_terms
 DEBUG Cached 10 rules for checkout_terms
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_e7cc7dc5
+DEBUG Stored execution record: exec_1770327360_784904df
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_5c28bd3d
+DEBUG Stored execution record: exec_1770327360_9ce9866d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_46d227ce
+DEBUG Stored execution record: exec_1770327360_8092fb5f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_d9104698
+DEBUG Stored execution record: exec_1770327360_b4646dba
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_df15172d
+DEBUG Stored execution record: exec_1770327360_4e1fdf44
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_3610c1b4
+DEBUG Stored execution record: exec_1770327360_fdbb95b5
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_c81efc6e
+DEBUG Stored execution record: exec_1770327360_c0dc2cca
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_0703424a
+DEBUG Stored execution record: exec_1770327360_13dda1d1
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_19d8d681
+DEBUG Stored execution record: exec_1770327360_ad74ff73
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_43d38ac8
+DEBUG Stored execution record: exec_1770327360_c4fce409
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_77476708
+DEBUG Stored execution record: exec_1770327360_500bc046
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_811c5af6
+DEBUG Stored execution record: exec_1770327360_44ca04a7
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_63ebce9b
+DEBUG Stored execution record: exec_1770327360_ba9ecac9
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_ddd89979
+DEBUG Stored execution record: exec_1770327360_33d53717
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_9573c2c2
+DEBUG Stored execution record: exec_1770327360_9892d95d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_bb237f5f
+DEBUG Stored execution record: exec_1770327360_aa428b7e
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_e64e02d0
+DEBUG Stored execution record: exec_1770327360_6c21b4c1
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_e36af98c
+DEBUG Stored execution record: exec_1770327360_420fe677
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_12f5bc7b
+DEBUG Stored execution record: exec_1770327360_48adfbda
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_434e1eac
+DEBUG Stored execution record: exec_1770327360_0ff1f06b
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_cfef18e2
+DEBUG Stored execution record: exec_1770327360_c72443bc
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_74347c71
+DEBUG Stored execution record: exec_1770327360_8771d67c
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_fcb51041
+DEBUG Stored execution record: exec_1770327360_7f7b92c8
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_d41dcf8d
+DEBUG Stored execution record: exec_1770327360_4bd77d85
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_de16fcd6
+DEBUG Stored execution record: exec_1770327360_d558bdd2
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_efe0b1cc
+DEBUG Stored execution record: exec_1770327360_4fc5fc07
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_bc6635d2
+DEBUG Stored execution record: exec_1770327360_b09b1c60
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_0368113d
+DEBUG Stored execution record: exec_1770327360_908dadad
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_db62fef1
+DEBUG Stored execution record: exec_1770327360_2adea3a9
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_1ac3ac72
+DEBUG Stored execution record: exec_1770327360_1d2fad15
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_531bfa99
+DEBUG Stored execution record: exec_1770327360_6cdfe911
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_e1a4039e
+DEBUG Stored execution record: exec_1770327360_43b38af6
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_7f79fc43
+DEBUG Stored execution record: exec_1770327360_6ef6251b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_fe5a2b0a
+DEBUG Stored execution record: exec_1770327360_afbce369
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_8548f66a
+DEBUG Stored execution record: exec_1770327360_16df1c43
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_934d5871
+DEBUG Stored execution record: exec_1770327360_6c44d3dd
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_f85a3761
+DEBUG Stored execution record: exec_1770327360_c66244d0
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_6a1600db
+DEBUG Stored execution record: exec_1770327360_eaaf378b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_98c4df15
+DEBUG Stored execution record: exec_1770327360_7ed0175b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_f2f66479
+DEBUG Stored execution record: exec_1770327360_a96e29c6
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_b29e4a1f
+DEBUG Stored execution record: exec_1770327360_15722104
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_6317764c
+DEBUG Stored execution record: exec_1770327360_3e9f53c2
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_1c305f5a
+DEBUG Stored execution record: exec_1770327360_b6571c57
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_f3b6334b
+DEBUG Stored execution record: exec_1770327360_5e31aa65
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_fb56cb06
+DEBUG Stored execution record: exec_1770327360_5948ba76
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_61cbc5a9
+DEBUG Stored execution record: exec_1770327360_e221a30b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_7dbbc701
+DEBUG Stored execution record: exec_1770327360_317ae93c
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_c776cf37
+DEBUG Stored execution record: exec_1770327360_cd2f4353
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_14955d8a
+DEBUG Stored execution record: exec_1770327360_ee280dba
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_22d77fff
+DEBUG Stored execution record: exec_1770327360_b48d56d0
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_d73fc1c6
+DEBUG Stored execution record: exec_1770327360_4996a9c0
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_2b2493a1
+DEBUG Stored execution record: exec_1770327360_bb5ab709
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_64e7517f
+DEBUG Stored execution record: exec_1770327360_3232b1c4
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_f1d092fe
+DEBUG Stored execution record: exec_1770327360_9971e35f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_b4ba3351
+DEBUG Stored execution record: exec_1770327360_57cb632c
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_b09076b0
+DEBUG Stored execution record: exec_1770327360_b50517f3
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_37cbba2a
+DEBUG Stored execution record: exec_1770327360_5c35519a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_e432b20a
+DEBUG Stored execution record: exec_1770327360_ce8bbd65
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_1514dc5e
+DEBUG Stored execution record: exec_1770327360_40222c19
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_df57c32b
+DEBUG Stored execution record: exec_1770327360_009f79c4
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_0f4b1fb7
+DEBUG Stored execution record: exec_1770327360_0d91305f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_e1e4c87f
+DEBUG Stored execution record: exec_1770327360_da0d7ba1
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_e3b51796
+DEBUG Stored execution record: exec_1770327360_b5c804ec
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_5c52b183
+DEBUG Stored execution record: exec_1770327360_7abff479
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_07397b93
+DEBUG Stored execution record: exec_1770327360_8889da99
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_de6e5bf1
+DEBUG Stored execution record: exec_1770327360_eeaedc60
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_94e7a28a
+DEBUG Stored execution record: exec_1770327360_32558d0d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_1253cd10
+DEBUG Stored execution record: exec_1770327360_ecc17347
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_9124b966
+DEBUG Stored execution record: exec_1770327360_307b6a01
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_3b82f27a
+DEBUG Stored execution record: exec_1770327360_44066f57
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_03e8f85f
+DEBUG Stored execution record: exec_1770327360_50a5b0d6
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_0accadf2
+DEBUG Stored execution record: exec_1770327360_a7701b0a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_ca1128f0
+DEBUG Stored execution record: exec_1770327360_417390e0
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_72758061
+DEBUG Stored execution record: exec_1770327360_f0fd4a81
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_79893348
+DEBUG Stored execution record: exec_1770327360_63b1c2a5
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_fd2a51d5
+DEBUG Stored execution record: exec_1770327360_0c61afcd
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_aa31dbac
+DEBUG Stored execution record: exec_1770327360_50e7a497
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_c2e8328e
+DEBUG Stored execution record: exec_1770327360_4a57d618
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_6c586c21
+DEBUG Stored execution record: exec_1770327360_4eab5d1f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308883_041a85a9
+DEBUG Stored execution record: exec_1770327360_975f6925
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_a4927f6b
+DEBUG Stored execution record: exec_1770327360_0fea758a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_793dde64
+DEBUG Stored execution record: exec_1770327360_42bc7dd0
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_e7d2338c
+DEBUG Stored execution record: exec_1770327360_49872590
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_2ed494c6
+DEBUG Stored execution record: exec_1770327360_a82efb66
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_0ecff302
+DEBUG Stored execution record: exec_1770327360_992faf4b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_893b4fce
+DEBUG Stored execution record: exec_1770327360_d74f9a34
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_2e40f8bc
+DEBUG Stored execution record: exec_1770327360_1ab0a095
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_7a94dca8
+DEBUG Stored execution record: exec_1770327360_05348a7d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_7d39c21c
+DEBUG Stored execution record: exec_1770327360_85493b7c
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_372013e1
+DEBUG Stored execution record: exec_1770327360_87cca270
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_cce78a42
+DEBUG Stored execution record: exec_1770327360_c9ad0e29
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_e2ae1d47
+DEBUG Stored execution record: exec_1770327360_bb447fe9
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_97e80f00
+DEBUG Stored execution record: exec_1770327360_8c2de238
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_8b0293ee
+DEBUG Stored execution record: exec_1770327360_58d67c8f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_32e4fabd
+DEBUG Stored execution record: exec_1770327360_bfa3d021
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_9a892744
+DEBUG Stored execution record: exec_1770327360_48baf5a5
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_a6cd853e
+DEBUG Stored execution record: exec_1770327360_4217aab5
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_417d1e1f
+DEBUG Stored execution record: exec_1770327360_83f6adb6
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_56972f23
+DEBUG Stored execution record: exec_1770327360_bfcf09ad
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_4a3295fe
+DEBUG Stored execution record: exec_1770327360_d4682532
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_af8830e1
+DEBUG Stored execution record: exec_1770327360_15526793
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_43e1da97
+DEBUG Stored execution record: exec_1770327360_9b99d0f5
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_9d44525f
+DEBUG Stored execution record: exec_1770327360_bb2a6bdb
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_0634fac8
+DEBUG Stored execution record: exec_1770327360_99098b97
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_e1b884d9
+DEBUG Stored execution record: exec_1770327360_cf781f17
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_84840c8b
+DEBUG Stored execution record: exec_1770327360_77ef5e38
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_646082ce
+DEBUG Stored execution record: exec_1770327360_a7f9a421
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_9a5dd9cf
+DEBUG Stored execution record: exec_1770327360_2802e3c0
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_c1e40708
+DEBUG Stored execution record: exec_1770327360_eaaf0495
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_aec18c86
+DEBUG Stored execution record: exec_1770327360_dd347f28
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_41ece0fc
+DEBUG Stored execution record: exec_1770327360_eae170f3
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_5732b1fa
+DEBUG Stored execution record: exec_1770327360_b4cfbe3d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_4d4bbbbd
+DEBUG Stored execution record: exec_1770327360_cc92dcb9
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_3492f167
+DEBUG Stored execution record: exec_1770327360_c178b473
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_2b845c46
+DEBUG Stored execution record: exec_1770327360_e6af172c
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_653cda8d
+DEBUG Stored execution record: exec_1770327360_342983c6
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_d5a132c1
+DEBUG Stored execution record: exec_1770327360_fc49efe5
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_bd905276
+DEBUG Stored execution record: exec_1770327360_9a8639d4
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_3f8d757d
+DEBUG Stored execution record: exec_1770327360_9396bc0b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_2d4eb4d0
+DEBUG Stored execution record: exec_1770327360_6365fc99
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_5aa1f0c2
+DEBUG Stored execution record: exec_1770327360_4b87789d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_d32a1a37
+DEBUG Stored execution record: exec_1770327360_0a78a84d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_ba8263a2
+DEBUG Stored execution record: exec_1770327360_5eb17378
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_0fbba521
+DEBUG Stored execution record: exec_1770327360_6b5fa2c2
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_8a13018b
+DEBUG Stored execution record: exec_1770327360_b6085896
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_d80afeb3
+DEBUG Stored execution record: exec_1770327360_03edce48
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_7f71ced0
+DEBUG Stored execution record: exec_1770327360_3375a15e
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_30cca48e
+DEBUG Stored execution record: exec_1770327360_20d5857b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_e60ae0c3
+DEBUG Stored execution record: exec_1770327360_437d6e94
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_b7862f3b
+DEBUG Stored execution record: exec_1770327360_e635bdfb
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_13b9342d
+DEBUG Stored execution record: exec_1770327360_d94c7d46
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_65731298
+DEBUG Stored execution record: exec_1770327360_2e250a7e
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_293a426f
+DEBUG Stored execution record: exec_1770327360_3906f2c8
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_d081677d
+DEBUG Stored execution record: exec_1770327360_7d17e849
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_511d322a
+DEBUG Stored execution record: exec_1770327360_611649dc
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_3583f357
+DEBUG Stored execution record: exec_1770327360_a2e3616b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_f56a25cf
+DEBUG Stored execution record: exec_1770327360_376bea3b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_76267e86
+DEBUG Stored execution record: exec_1770327360_f771b0ca
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_340f1b79
+DEBUG Stored execution record: exec_1770327360_00242a64
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_d09728e8
+DEBUG Stored execution record: exec_1770327360_5e7ab4f5
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_7655fc92
+DEBUG Stored execution record: exec_1770327360_9d2abd51
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_811be826
+DEBUG Stored execution record: exec_1770327360_54c581bf
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_411c7c00
+DEBUG Stored execution record: exec_1770327360_ac2636ca
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_3d0eebfd
+DEBUG Stored execution record: exec_1770327361_d5f004d0
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_c4de6b43
+DEBUG Stored execution record: exec_1770327361_ec1aeab9
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_e6f888b1
+DEBUG Stored execution record: exec_1770327361_34a45847
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_59b0d883
+DEBUG Stored execution record: exec_1770327361_6b6ce7c8
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_c05ca830
+DEBUG Stored execution record: exec_1770327361_bc9d4aa7
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_7d0451da
+DEBUG Stored execution record: exec_1770327361_b56eff97
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_38b63239
+DEBUG Stored execution record: exec_1770327361_fcdd16cf
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_6426d5f3
+DEBUG Stored execution record: exec_1770327361_98e9afa7
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_62ee0519
+DEBUG Stored execution record: exec_1770327361_adae3507
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_b5551bb4
+DEBUG Stored execution record: exec_1770327361_ace57297
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_5c37ba1d
+DEBUG Stored execution record: exec_1770327361_5d346117
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_b4b04591
+DEBUG Stored execution record: exec_1770327361_d427733c
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_13eaf26b
+DEBUG Stored execution record: exec_1770327361_83e4955c
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_75ed20dd
+DEBUG Stored execution record: exec_1770327361_4b755bea
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_5f2fd3cf
+DEBUG Stored execution record: exec_1770327361_cbece591
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_125b5612
+DEBUG Stored execution record: exec_1770327361_c75b7220
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_fb35cbb1
+DEBUG Stored execution record: exec_1770327361_64c0424b
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_369580d9
+DEBUG Stored execution record: exec_1770327361_1f1fb4db
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_4ddcd5cf
+DEBUG Stored execution record: exec_1770327361_6bd0db26
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_a6920b6a
+DEBUG Stored execution record: exec_1770327361_e3b8411b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_96e2ef1e
+DEBUG Stored execution record: exec_1770327361_e676cc88
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_a8405bd4
+DEBUG Stored execution record: exec_1770327361_cf081e94
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_99ea6689
+DEBUG Stored execution record: exec_1770327361_4e62e9ce
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_0c44c30b
+DEBUG Stored execution record: exec_1770327361_2fa110af
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_4479a7e5
+DEBUG Stored execution record: exec_1770327361_be1a8211
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_f9e9a7ca
+DEBUG Stored execution record: exec_1770327361_20ef85c5
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_585fa98f
+DEBUG Stored execution record: exec_1770327361_7798f132
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_72df2b08
+DEBUG Stored execution record: exec_1770327361_5cbea652
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_cc312cd5
+DEBUG Stored execution record: exec_1770327361_dac6e857
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_d7febaee
+DEBUG Stored execution record: exec_1770327361_3a73bf83
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_de1a3285
+DEBUG Stored execution record: exec_1770327361_3858da64
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_faf41a3c
+DEBUG Stored execution record: exec_1770327361_1d376650
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_2089bf0b
+DEBUG Stored execution record: exec_1770327361_529b69f3
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_2b050f42
+DEBUG Stored execution record: exec_1770327361_6f077053
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_6846b3df
+DEBUG Stored execution record: exec_1770327361_a5577aff
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_bce59b98
+DEBUG Stored execution record: exec_1770327361_0f9afe15
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_f6eb4783
+DEBUG Stored execution record: exec_1770327361_e28dbe83
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_db6f0fc9
+DEBUG Stored execution record: exec_1770327361_0cba28d3
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_83acb51f
+DEBUG Stored execution record: exec_1770327361_5ff3dd7a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_a227f779
+DEBUG Stored execution record: exec_1770327361_d7289c92
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_57a98e0c
+DEBUG Stored execution record: exec_1770327361_f5865957
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_1f81d2dd
+DEBUG Stored execution record: exec_1770327361_1f78b59a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_0f540ee6
+DEBUG Stored execution record: exec_1770327361_950518cd
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_34de0995
+DEBUG Stored execution record: exec_1770327361_90f0a81b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_d2e2c4bf
+DEBUG Stored execution record: exec_1770327361_c32aacca
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_9daf735b
+DEBUG Stored execution record: exec_1770327361_665f5086
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_d94d059a
+DEBUG Stored execution record: exec_1770327361_32c0ec72
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_26040756
+DEBUG Stored execution record: exec_1770327361_f11f9c02
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_76720819
+DEBUG Stored execution record: exec_1770327361_a3948210
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_d4938a0d
+DEBUG Stored execution record: exec_1770327361_c3d59611
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_5e962856
+DEBUG Stored execution record: exec_1770327361_c9a37c53
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_2d99515f
+DEBUG Stored execution record: exec_1770327361_5948eede
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_76a55b8c
+DEBUG Stored execution record: exec_1770327361_9decafcf
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_741f85e7
+DEBUG Stored execution record: exec_1770327361_fad89de2
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_ec08a298
+DEBUG Stored execution record: exec_1770327361_c7feccf7
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_fc518366
+DEBUG Stored execution record: exec_1770327361_a60afa05
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_5da182c3
+DEBUG Stored execution record: exec_1770327361_1e2925dd
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_ed078da6
+DEBUG Stored execution record: exec_1770327361_f1f24b8f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_6c551e92
+DEBUG Stored execution record: exec_1770327361_d6e46b10
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_e7afa80b
+DEBUG Stored execution record: exec_1770327361_e877e716
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_150b9614
+DEBUG Stored execution record: exec_1770327361_c69eaee4
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_e3ba9d7d
+DEBUG Stored execution record: exec_1770327361_b898ba8f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_45c8a6e5
+DEBUG Stored execution record: exec_1770327361_1b3cc2e9
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_2734f275
+DEBUG Stored execution record: exec_1770327361_e18c8e68
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_15d7048d
+DEBUG Stored execution record: exec_1770327361_ed39f8f8
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_bddf798f
+DEBUG Stored execution record: exec_1770327361_ec72b192
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_7f21e82e
+DEBUG Stored execution record: exec_1770327361_adde0f20
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_9891aecd
+DEBUG Stored execution record: exec_1770327361_4f7b90ce
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_0192286c
+DEBUG Stored execution record: exec_1770327361_d7fad744
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_f8c32bf1
+DEBUG Stored execution record: exec_1770327361_90f5a227
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_e29716d0
+DEBUG Stored execution record: exec_1770327361_daaf2d69
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_c9dd208f
+DEBUG Stored execution record: exec_1770327361_0731789a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_b76a55df
+DEBUG Stored execution record: exec_1770327361_61309221
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_8a3a4c69
+DEBUG Stored execution record: exec_1770327361_4a81caa0
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_9e9f8455
+DEBUG Stored execution record: exec_1770327361_21bca88d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_4983f925
+DEBUG Stored execution record: exec_1770327361_ab0ed4b5
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_3a6f9d4e
+DEBUG Stored execution record: exec_1770327361_bb7cc6f1
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_248bfc57
+DEBUG Stored execution record: exec_1770327361_a6a4b73a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_801d78a3
+DEBUG Stored execution record: exec_1770327361_608f822e
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_f686e762
+DEBUG Stored execution record: exec_1770327361_8d93cf14
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_0e46fa40
+DEBUG Stored execution record: exec_1770327361_a87a99cb
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_32c06d1e
+DEBUG Stored execution record: exec_1770327361_46061464
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_e2ca522c
+DEBUG Stored execution record: exec_1770327361_b8e9d770
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_1ee2e4c9
+DEBUG Stored execution record: exec_1770327361_23b3c7f9
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_af1236ea
+DEBUG Stored execution record: exec_1770327361_cf31a9e4
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_096939c6
+DEBUG Stored execution record: exec_1770327361_ccbce3f1
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_dd0c2887
+DEBUG Stored execution record: exec_1770327361_a6b4dd53
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_d75bffe1
+DEBUG Stored execution record: exec_1770327361_10fb55a8
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_5eaf5061
+DEBUG Stored execution record: exec_1770327361_ef1be345
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_2a9bd90b
+DEBUG Stored execution record: exec_1770327361_d5b8c695
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_1f64e741
+DEBUG Stored execution record: exec_1770327361_ad4f3c5f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_bd70f237
+DEBUG Stored execution record: exec_1770327361_3a277a84
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_bc5416fe
+DEBUG Stored execution record: exec_1770327361_f2d5555f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_52e5aa1a
+DEBUG Stored execution record: exec_1770327361_130f6fc4
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_a9b1d493
+DEBUG Stored execution record: exec_1770327361_94224e85
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_d6596820
+DEBUG Stored execution record: exec_1770327361_5e979f10
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_d9ceec5b
+DEBUG Stored execution record: exec_1770327361_d89c5eee
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_89f9e0ba
+DEBUG Stored execution record: exec_1770327361_20e691df
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_94c5d398
+DEBUG Stored execution record: exec_1770327361_8ac67294
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_8f7977fc
+DEBUG Stored execution record: exec_1770327361_7ed59df6
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_cace9364
+DEBUG Stored execution record: exec_1770327361_793738c2
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_5ee1efff
+DEBUG Stored execution record: exec_1770327361_acddab75
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_635dc7a1
+DEBUG Stored execution record: exec_1770327361_bf6ac266
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_9c6f533f
+DEBUG Stored execution record: exec_1770327361_34e097c1
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_9dd0e320
+DEBUG Stored execution record: exec_1770327361_969bc28c
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_2a284bab
+DEBUG Stored execution record: exec_1770327361_385f5dd7
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_ce7e8371
+DEBUG Stored execution record: exec_1770327361_553ac461
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_cf7d9c6b
+DEBUG Stored execution record: exec_1770327361_bf5bd5ff
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_99486073
+DEBUG Stored execution record: exec_1770327361_47a725eb
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_d7fa5c9d
+DEBUG Stored execution record: exec_1770327361_5b8a17bb
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_15cd184f
+DEBUG Stored execution record: exec_1770327361_b9e53142
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_57476936
+DEBUG Stored execution record: exec_1770327361_c0b3e972
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_279b454e
+DEBUG Stored execution record: exec_1770327361_97ed8c66
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_4728fed4
+DEBUG Stored execution record: exec_1770327361_2d5a4569
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_ee1746a9
+DEBUG Stored execution record: exec_1770327361_47d7f960
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_caeadf96
+DEBUG Stored execution record: exec_1770327361_cf8b49a3
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_e789056d
+DEBUG Stored execution record: exec_1770327361_1e6b2feb
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_cb010ebe
+DEBUG Stored execution record: exec_1770327361_9689d339
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_6b41d7d2
+DEBUG Stored execution record: exec_1770327361_87e9518b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_5b05f7af
+DEBUG Stored execution record: exec_1770327361_a32a5f9f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_8607818d
+DEBUG Stored execution record: exec_1770327361_efecd117
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_ce6717ff
+DEBUG Stored execution record: exec_1770327361_2d3d4998
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_8a580cae
+DEBUG Stored execution record: exec_1770327361_4c2d64cb
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_fb574072
+DEBUG Stored execution record: exec_1770327361_b4749b11
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_2736d34d
+DEBUG Stored execution record: exec_1770327361_da7afc6d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_1b9b439a
+DEBUG Stored execution record: exec_1770327361_e5d10de4
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_1407e889
+DEBUG Stored execution record: exec_1770327361_55b92c6d
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_f98b9ec4
+DEBUG Stored execution record: exec_1770327361_3aafc2ec
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_e401dd78
+DEBUG Stored execution record: exec_1770327361_75eae928
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_90f4869a
+DEBUG Stored execution record: exec_1770327361_6e9bce7b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308884_bb26bcad
+DEBUG Stored execution record: exec_1770327361_e2be8676
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_f0cbf338
+DEBUG Stored execution record: exec_1770327361_133fc680
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_775f2584
+DEBUG Stored execution record: exec_1770327361_6aba4687
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_14b4c7ea
+DEBUG Stored execution record: exec_1770327361_9a91fa22
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_2cd2b4bd
+DEBUG Stored execution record: exec_1770327361_e2922c18
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_6c8babd7
+DEBUG Stored execution record: exec_1770327361_c8f46cae
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_7c54e1fe
+DEBUG Stored execution record: exec_1770327361_320e7b38
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_48911c23
+DEBUG Stored execution record: exec_1770327361_4bef9962
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_3b4c3d01
+DEBUG Stored execution record: exec_1770327361_f957920c
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_967d7755
+DEBUG Stored execution record: exec_1770327361_410e545d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_fcd3b602
+DEBUG Stored execution record: exec_1770327361_7ea5fd7a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_cef21768
+DEBUG Stored execution record: exec_1770327361_d2f434e2
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_bc063193
+DEBUG Stored execution record: exec_1770327361_b4f1ee4d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_7982acf4
+DEBUG Stored execution record: exec_1770327361_f3db9698
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_697c69d6
+DEBUG Stored execution record: exec_1770327361_500a9d3a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_5d7ba711
+DEBUG Stored execution record: exec_1770327361_0fa47c1a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_d2fa40b6
+DEBUG Stored execution record: exec_1770327361_3a4ca3b4
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_bfb8d49b
+DEBUG Stored execution record: exec_1770327361_318d2c9b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_169c2a6a
+DEBUG Stored execution record: exec_1770327361_c39f5a63
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_4ba6429c
+DEBUG Stored execution record: exec_1770327361_286364cb
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_8653feaf
+DEBUG Stored execution record: exec_1770327361_b9d12e1c
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_7094125e
+DEBUG Stored execution record: exec_1770327361_6aef80f3
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_9ab9b8e6
+DEBUG Stored execution record: exec_1770327361_5cedcad1
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_d4b0e12e
+DEBUG Stored execution record: exec_1770327361_1e1151f6
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_d18ade1b
+DEBUG Stored execution record: exec_1770327361_eab523c7
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_ced4457f
+DEBUG Stored execution record: exec_1770327361_a816813c
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_1c052128
+DEBUG Stored execution record: exec_1770327361_dde15cd4
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_d95bc241
+DEBUG Stored execution record: exec_1770327361_d13d1e49
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_64512ecb
+DEBUG Stored execution record: exec_1770327361_ffbd45e8
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_3a9d1aad
+DEBUG Stored execution record: exec_1770327361_017a8642
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_ab68fce3
+DEBUG Stored execution record: exec_1770327361_a1d51c31
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_42f23088
+DEBUG Stored execution record: exec_1770327361_c2375b9e
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_8f58e8a2
+DEBUG Stored execution record: exec_1770327361_bea97630
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_16ebb862
+DEBUG Stored execution record: exec_1770327361_bebee3ba
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_a46f8ea5
+DEBUG Stored execution record: exec_1770327361_7e961687
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_1877ec15
+DEBUG Stored execution record: exec_1770327361_fd126757
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_be6ee070
+DEBUG Stored execution record: exec_1770327361_1d181da7
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_9eb0d058
+DEBUG Stored execution record: exec_1770327361_120c966a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_939f8fda
+DEBUG Stored execution record: exec_1770327361_d5a0d4a3
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_864f65fe
+DEBUG Stored execution record: exec_1770327361_a7cd2eae
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_b074c66c
+DEBUG Stored execution record: exec_1770327361_d35df99a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_67055e3e
+DEBUG Stored execution record: exec_1770327361_e95fd4b1
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_74ba07c7
+DEBUG Stored execution record: exec_1770327361_c81be0f8
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_e4507f2e
+DEBUG Stored execution record: exec_1770327361_798b9afa
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_20b372da
+DEBUG Stored execution record: exec_1770327361_943ca519
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_83535078
+DEBUG Stored execution record: exec_1770327361_833619c9
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_658be00a
+DEBUG Stored execution record: exec_1770327361_f2ffc92b
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_484065a9
+DEBUG Stored execution record: exec_1770327361_3ca34e4b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_51c8731d
+DEBUG Stored execution record: exec_1770327361_41e7e451
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_188861ac
+DEBUG Stored execution record: exec_1770327361_7cce2242
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_b390038c
+DEBUG Stored execution record: exec_1770327361_38989ed3
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_076da5bd
+DEBUG Stored execution record: exec_1770327361_ab80368b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_c38542f7
+DEBUG Stored execution record: exec_1770327361_13b64816
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_648f5804
+DEBUG Stored execution record: exec_1770327361_e971efed
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_a348557d
+DEBUG Stored execution record: exec_1770327362_9bc8286a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_8b652816
+DEBUG Stored execution record: exec_1770327362_5318bb37
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_1dced7a5
+DEBUG Stored execution record: exec_1770327362_ce1be3d5
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_308d7a30
+DEBUG Stored execution record: exec_1770327362_5f944a7d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_83cbd66d
+DEBUG Stored execution record: exec_1770327362_60a70da9
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_384fa6df
+DEBUG Stored execution record: exec_1770327362_7ef985c4
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_c67eb286
+DEBUG Stored execution record: exec_1770327362_7618be59
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_694076e0
+DEBUG Stored execution record: exec_1770327362_38369ecc
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_ee4debf1
+DEBUG Stored execution record: exec_1770327362_f0ff9f3d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_db87ad69
+DEBUG Stored execution record: exec_1770327362_7de5260a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_3dadb6d3
+DEBUG Stored execution record: exec_1770327362_ed33af01
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_0171cd0c
+DEBUG Stored execution record: exec_1770327362_683c8e90
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_ccef3ebd
+DEBUG Stored execution record: exec_1770327362_38ebe022
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_2eccb3ee
+DEBUG Stored execution record: exec_1770327362_72be4704
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_e0463e81
+DEBUG Stored execution record: exec_1770327362_7f14b603
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_22af3569
+DEBUG Stored execution record: exec_1770327362_18871012
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_85c0d18b
+DEBUG Stored execution record: exec_1770327362_2366292d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_901be01c
+DEBUG Stored execution record: exec_1770327362_35be6fa3
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_9408e812
+DEBUG Stored execution record: exec_1770327362_4adbf374
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_8990f489
+DEBUG Stored execution record: exec_1770327362_cf4ed0b1
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_4d90816a
+DEBUG Stored execution record: exec_1770327362_0655c61c
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_cb80193b
+DEBUG Stored execution record: exec_1770327362_cc686a4d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_5761a3b3
+DEBUG Stored execution record: exec_1770327362_5169120c
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_efaaa2a0
+DEBUG Stored execution record: exec_1770327362_f2728c27
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_df05dbd6
+DEBUG Stored execution record: exec_1770327362_744e73e7
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_cb8448bd
+DEBUG Stored execution record: exec_1770327362_0398c798
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_6226319b
+DEBUG Stored execution record: exec_1770327362_fcde5a94
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_a2504539
+DEBUG Stored execution record: exec_1770327362_df877c91
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_7eca64a0
+DEBUG Stored execution record: exec_1770327362_7ca48f37
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_64559e4e
+DEBUG Stored execution record: exec_1770327362_aaaf960d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_104b97ce
+DEBUG Stored execution record: exec_1770327362_33a8f12d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_c8a5db14
+DEBUG Stored execution record: exec_1770327362_a7b7cc7a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_44003077
+DEBUG Stored execution record: exec_1770327362_0bb7ed2d
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_2e30fbb6
+DEBUG Stored execution record: exec_1770327362_cef60436
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_5dfd743a
+DEBUG Stored execution record: exec_1770327362_8d783c1f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_fe098b8e
+DEBUG Stored execution record: exec_1770327362_fac36a3a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_2de72f68
+DEBUG Stored execution record: exec_1770327362_72782431
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_e5c76408
+DEBUG Stored execution record: exec_1770327362_9a677785
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_2d3e896e
+DEBUG Stored execution record: exec_1770327362_45f31a94
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_eb8b0e43
+DEBUG Stored execution record: exec_1770327362_68f0afe1
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_a4c1adf6
+DEBUG Stored execution record: exec_1770327362_16f99c92
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_afcd32e2
+DEBUG Stored execution record: exec_1770327362_0f3b9234
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_d1c722c3
+DEBUG Stored execution record: exec_1770327362_b6d4a313
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_7b300377
+DEBUG Stored execution record: exec_1770327362_f1c6ab06
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_defc4e41
+DEBUG Stored execution record: exec_1770327362_06db20a6
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_f4f4211c
+DEBUG Stored execution record: exec_1770327362_bcaede4b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_c50ec2fd
+DEBUG Stored execution record: exec_1770327362_ec2a03e5
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_35240d79
+DEBUG Stored execution record: exec_1770327362_bd8822f3
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_87b3b138
+DEBUG Stored execution record: exec_1770327362_daaf9622
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_4b2d406a
+DEBUG Stored execution record: exec_1770327362_663afb48
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_80697ec2
+DEBUG Stored execution record: exec_1770327362_d4db98a6
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_1e5bf822
+DEBUG Stored execution record: exec_1770327362_84b9b95b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_e7c05044
+DEBUG Stored execution record: exec_1770327362_793504e0
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_4f7b5b7e
+DEBUG Stored execution record: exec_1770327362_e3833b9f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_602989ed
+DEBUG Stored execution record: exec_1770327362_434c6962
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_dff0d198
+DEBUG Stored execution record: exec_1770327362_e635e074
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_a66e5b75
+DEBUG Stored execution record: exec_1770327362_4ad9c1ff
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_33fd3e4a
+DEBUG Stored execution record: exec_1770327362_839624bf
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_0fe30885
+DEBUG Stored execution record: exec_1770327362_f1e653f0
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_f40b37d4
+DEBUG Stored execution record: exec_1770327362_488a053e
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_9fdc6fc7
+DEBUG Stored execution record: exec_1770327362_8807a9b7
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_34e691c1
+DEBUG Stored execution record: exec_1770327362_bcd98281
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_e6f43cd7
+DEBUG Stored execution record: exec_1770327362_9a5d8af4
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_860b7eac
+DEBUG Stored execution record: exec_1770327362_ce5df048
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_0b4ac376
+DEBUG Stored execution record: exec_1770327362_098f4838
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_3d482899
+DEBUG Stored execution record: exec_1770327362_583a50c6
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_9e251380
+DEBUG Stored execution record: exec_1770327362_847766be
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_bd4af64c
+DEBUG Stored execution record: exec_1770327362_f668ad1b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_9e1fd71c
+DEBUG Stored execution record: exec_1770327362_654ba81d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_1f0348d5
+DEBUG Stored execution record: exec_1770327362_495ab691
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_f0e666b7
+DEBUG Stored execution record: exec_1770327362_66a972ba
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_58bb6a67
+DEBUG Stored execution record: exec_1770327362_40b06b2d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_cd3849e8
+DEBUG Stored execution record: exec_1770327362_9160288d
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_3ca63d6a
+DEBUG Stored execution record: exec_1770327362_5054bc8f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_ccbc8fde
+DEBUG Stored execution record: exec_1770327362_85808db3
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_bdd34d76
+DEBUG Stored execution record: exec_1770327362_882d5682
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_f446beff
+DEBUG Stored execution record: exec_1770327362_c9f10949
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_c6a558be
+DEBUG Stored execution record: exec_1770327362_b02a8ded
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_f4793347
+DEBUG Stored execution record: exec_1770327362_812859e6
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_c6f5ac1e
+DEBUG Stored execution record: exec_1770327362_12a08fc7
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_58908308
+DEBUG Stored execution record: exec_1770327362_ea0cd4ba
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_e1d81bc1
+DEBUG Stored execution record: exec_1770327362_9ce794e4
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_f839af3f
+DEBUG Stored execution record: exec_1770327362_541e646a
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_1c09ce55
+DEBUG Stored execution record: exec_1770327362_17374b24
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_f1eefc36
+DEBUG Stored execution record: exec_1770327362_16633338
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_e7fcb131
+DEBUG Stored execution record: exec_1770327362_547e455c
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_a45fa556
+DEBUG Stored execution record: exec_1770327362_74cea110
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_654d8f79
+DEBUG Stored execution record: exec_1770327362_71b83c11
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_e50cb634
+DEBUG Stored execution record: exec_1770327362_3e13f97e
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_7ea19aed
+DEBUG Stored execution record: exec_1770327362_6f79d23b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_43e1efef
+DEBUG Stored execution record: exec_1770327362_8a038643
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_f5137bbc
+DEBUG Stored execution record: exec_1770327362_9d16b87a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_2412cb67
+DEBUG Stored execution record: exec_1770327362_9eb6d542
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_ca978482
+DEBUG Stored execution record: exec_1770327362_8ca4164d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_736b2134
+DEBUG Stored execution record: exec_1770327362_32129918
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_ca8e876a
+DEBUG Stored execution record: exec_1770327362_3829c9da
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_1dd33b36
+DEBUG Stored execution record: exec_1770327362_1f0814e8
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_08ddb01e
+DEBUG Stored execution record: exec_1770327362_f33c4434
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_cbe9d9ec
+DEBUG Stored execution record: exec_1770327362_a59ff2ec
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_c214608e
+DEBUG Stored execution record: exec_1770327362_8d38832b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_913ed8d5
+DEBUG Stored execution record: exec_1770327362_a9c6984d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_854d9c75
+DEBUG Stored execution record: exec_1770327362_3025c660
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_59bb7cbe
+DEBUG Stored execution record: exec_1770327362_6e64bc63
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_016c5f15
+DEBUG Stored execution record: exec_1770327362_aaa5063f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_605a752a
+DEBUG Stored execution record: exec_1770327362_ad9e8ab5
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_611e409d
+DEBUG Stored execution record: exec_1770327362_1981882d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_369c1a7c
+DEBUG Stored execution record: exec_1770327362_0c8f728f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_6b16daa1
+DEBUG Stored execution record: exec_1770327362_37f8e18f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_a231d9b4
+DEBUG Stored execution record: exec_1770327362_1c62ba2a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_6fed9037
+DEBUG Stored execution record: exec_1770327362_d8f2ecd1
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_49356527
+DEBUG Stored execution record: exec_1770327362_6fbb5d91
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_107ec8a2
+DEBUG Stored execution record: exec_1770327362_6bc77d7a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_397a2bff
+DEBUG Stored execution record: exec_1770327362_623f9911
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_ea9f9038
+DEBUG Stored execution record: exec_1770327362_2cfd7710
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_a768cfb4
+DEBUG Stored execution record: exec_1770327362_3d481a4a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_641016ce
+DEBUG Stored execution record: exec_1770327362_ae1a75a7
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_3f269233
+DEBUG Stored execution record: exec_1770327362_63c3ff39
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_9e2e2bd4
+DEBUG Stored execution record: exec_1770327362_f1c5c913
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_d6467dc9
+DEBUG Stored execution record: exec_1770327362_158a4f21
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_35e7954c
+DEBUG Stored execution record: exec_1770327362_b2b54a02
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_df0407ef
+DEBUG Stored execution record: exec_1770327362_4ebf7531
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_0a86d924
+DEBUG Stored execution record: exec_1770327362_7b6c376e
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_1326e44c
+DEBUG Stored execution record: exec_1770327362_28f35d35
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_b88b97d5
+DEBUG Stored execution record: exec_1770327362_5af79928
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_33367c5f
+DEBUG Stored execution record: exec_1770327362_d3e9033a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_5c15d580
+DEBUG Stored execution record: exec_1770327362_cd980e98
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_e4a540cd
+DEBUG Stored execution record: exec_1770327362_732a03e1
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_fc42f5e6
+DEBUG Stored execution record: exec_1770327362_d4a259db
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_30b8149b
+DEBUG Stored execution record: exec_1770327362_a4bf1dbd
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_d930d058
+DEBUG Stored execution record: exec_1770327362_ef71096a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_2a4e8d73
+DEBUG Stored execution record: exec_1770327362_ecd0385b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_fc32bd3b
+DEBUG Stored execution record: exec_1770327362_dd3ff4ca
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_8c4fc5a8
+DEBUG Stored execution record: exec_1770327362_56eab7cb
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_9224d406
+DEBUG Stored execution record: exec_1770327362_36543317
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_b3e1cbcf
+DEBUG Stored execution record: exec_1770327362_e0ad3e21
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_3035f941
+DEBUG Stored execution record: exec_1770327362_4538e86f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_baa96dba
+DEBUG Stored execution record: exec_1770327362_cc585e4f
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308885_4ffd3bbe
+DEBUG Stored execution record: exec_1770327362_8700c957
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_d0a229ba
+DEBUG Stored execution record: exec_1770327362_96c458a0
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_27f3c804
+DEBUG Stored execution record: exec_1770327362_27e58157
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_ba1ec56d
+DEBUG Stored execution record: exec_1770327362_f9121721
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_a4a2a433
+DEBUG Stored execution record: exec_1770327362_77d9c4a9
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_543596c7
+DEBUG Stored execution record: exec_1770327362_317344ad
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_cc0cd073
+DEBUG Stored execution record: exec_1770327362_fb6c91a1
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_2a7ba51e
+DEBUG Stored execution record: exec_1770327362_f853c566
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_800faa97
+DEBUG Stored execution record: exec_1770327362_1433fa94
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_08146709
+DEBUG Stored execution record: exec_1770327362_8d478599
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_88e81eaa
+DEBUG Stored execution record: exec_1770327362_18f89844
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_fe3e1b40
+DEBUG Stored execution record: exec_1770327362_78f61679
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_a3a47f8b
+DEBUG Stored execution record: exec_1770327362_c9dc939e
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_e522744f
+DEBUG Stored execution record: exec_1770327362_ce43f148
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_ac38d60d
+DEBUG Stored execution record: exec_1770327362_9fe77638
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_b1c41c92
+DEBUG Stored execution record: exec_1770327362_835f4f54
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_bc955727
+DEBUG Stored execution record: exec_1770327362_49edebd8
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_c7bbdedb
+DEBUG Stored execution record: exec_1770327362_76aa084d
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_3ffde76e
+DEBUG Stored execution record: exec_1770327362_501dbe41
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_46c57049
+DEBUG Stored execution record: exec_1770327362_67df1091
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_9c84f87b
+DEBUG Stored execution record: exec_1770327362_3f0f995b
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_1f3a233e
+DEBUG Stored execution record: exec_1770327362_c169bfd7
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_a6df1d67
+DEBUG Stored execution record: exec_1770327362_251dd6b8
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_e6f35ab5
+DEBUG Stored execution record: exec_1770327362_3179a0ae
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_6b13ee75
+DEBUG Stored execution record: exec_1770327362_1174e495
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_9d6e0658
+DEBUG Stored execution record: exec_1770327362_c0f5e896
 DEBUG Cache hit for rules:checkout_terms: 10 rules
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_5a27db95
+DEBUG Stored execution record: exec_1770327363_789ecea3
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_07dc1369
+DEBUG Stored execution record: exec_1770327363_c5977935
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_a43e72a2
+DEBUG Stored execution record: exec_1770327363_fb9a112a
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_067126a8
+DEBUG Stored execution record: exec_1770327363_74e47f53
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_6419680c
+DEBUG Stored execution record: exec_1770327363_830c0032
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_25d93b72
+DEBUG Stored execution record: exec_1770327363_a11db6d4
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_cb6b03db
+DEBUG Stored execution record: exec_1770327363_a162d0f8
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_dd75bdb5
+DEBUG Stored execution record: exec_1770327363_1dff413e
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_4caa4d54
+DEBUG Stored execution record: exec_1770327363_74ff0eea
 DEBUG  Schema validation passed for full_checkout_context
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_581588db
+DEBUG Stored execution record: exec_1770327363_dea1c37c
 .sDEBUG Rule bulk_rule_0 created, invalidating cache for home_page_mount
 INFO Invalidated rules cache for entry point: home_page_mount (key: rules:home_page_mount)
 DEBUG Rule bulk_rule_1 created, invalidating cache for home_page_mount
@@ -3299,14 +3299,14 @@ DEBUG Cached 1 rules for checkout_terms
 DEBUG  Schema validation passed for checkout_context_v1
 DEBUG  JSONLogic condition evaluated to: True
 ERROR  Error processing rule 'terms_ack_required': 'bool' object has no attribute 'get'
-DEBUG Stored execution record: exec_1770308886_b0b5c12e
+DEBUG Stored execution record: exec_1770327363_0e853b1b
 .DEBUG Rule terms_ack_required created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Cache miss for rules:checkout_terms
 DEBUG Cached 1 rules for checkout_terms
 DEBUG  Schema validation passed for checkout_context_v1
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308886_412bba61
+DEBUG Stored execution record: exec_1770327363_73ac11ea
 .DEBUG Rule delete_test_rule created, invalidating cache for checkout_terms
 INFO Invalidated rules cache for entry point: checkout_terms (key: rules:checkout_terms)
 DEBUG Rule delete_test_rule updated, invalidating cache for checkout_terms
@@ -3430,7 +3430,7 @@ INFO VAT calculated for XX: 0.00
 .....WARNING Method Not Allowed: /api/catalog/search/
 ....WARNING Method Not Allowed: /api/catalog/search/
 .........................................................WARNING Bad Request: /api/search/fuzzy/
-.......WARNING Bad Request: /api/search/advanced-fuzzy/
+.....F.WARNING Bad Request: /api/search/advanced-fuzzy/
 .WARNING Bad Request: /api/search/advanced-fuzzy/
 ....ERROR [SEARCH] Advanced fuzzy search error: Search error
 Traceback (most recent call last):
@@ -3559,10 +3559,10 @@ ERROR Internal Server Error: /api/users/profile/
 .WARNING Bad Request: /api/users/
 ..WARNING No template configuration found for account_activation, using defaults
 ERROR Failed to queue email: null value in column "reply_to_email" of relation "utils_email_queue" violates not-null constraint
-DETAIL:  Failing row contains (104, 3a009a10-b346-48b4-a612-173e99806f86, ["anonymous@example.com"], [], [], eugene.lo1030@gmail.com, null, Activate Your ActEd Account, {"user": {"id": 1225, "email": "anonymous@example.com", "usernam..., , , high, pending, 2026-02-05 16:29:03.442669+00, 2026-02-05 16:29:03.442728+00, null, 0, 3, null, null, null, , {}, 2026-02-05 16:29:03.442892+00, 2026-02-05 16:29:03.442894+00, [], 1225, null).
+DETAIL:  Failing row contains (104, a84b5a91-e129-4fc6-ba61-a2367f640609, ["anonymous@example.com"], [], [], eugene.lo1030@gmail.com, null, Activate Your ActEd Account, {"user": {"id": 1225, "email": "anonymous@example.com", "usernam..., , , high, pending, 2026-02-05 21:36:59.881117+00, 2026-02-05 21:36:59.881168+00, null, 0, 3, null, null, null, , {}, 2026-02-05 21:36:59.881311+00, 2026-02-05 21:36:59.881315+00, [], 1225, null).
 
 ERROR Failed to queue email: Failed to queue email: null value in column "reply_to_email" of relation "utils_email_queue" violates not-null constraint
-DETAIL:  Failing row contains (104, 3a009a10-b346-48b4-a612-173e99806f86, ["anonymous@example.com"], [], [], eugene.lo1030@gmail.com, null, Activate Your ActEd Account, {"user": {"id": 1225, "email": "anonymous@example.com", "usernam..., , , high, pending, 2026-02-05 16:29:03.442669+00, 2026-02-05 16:29:03.442728+00, null, 0, 3, null, null, null, , {}, 2026-02-05 16:29:03.442892+00, 2026-02-05 16:29:03.442894+00, [], 1225, null).
+DETAIL:  Failing row contains (104, a84b5a91-e129-4fc6-ba61-a2367f640609, ["anonymous@example.com"], [], [], eugene.lo1030@gmail.com, null, Activate Your ActEd Account, {"user": {"id": 1225, "email": "anonymous@example.com", "usernam..., , , high, pending, 2026-02-05 21:36:59.881117+00, 2026-02-05 21:36:59.881168+00, null, 0, 3, null, null, null, , {}, 2026-02-05 21:36:59.881311+00, 2026-02-05 21:36:59.881315+00, [], 1225, null).
 
 WARNING Failed to get placeholders for template account_activation: EmailTemplate matching query does not exist.
 ERROR	MediaQuery: No match: ('IDENT', 'mso', 240, 10)
@@ -3701,51 +3701,51 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 2 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 2 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW1A1AA: 2 addresses in 105ms
+INFO [POSTCODER] SUCCESS (API) SW1A1AA: 2 addresses in 106ms
 ..sssINFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 165ms
+INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 167ms
 .
-  [OK] Cache miss response time: 176.30ms (target: <500ms)
-INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
-INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
-INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
-INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
-INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
-INFO Calling Postcoder Autocomplete Find API for GB
-INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
-INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
-INFO Calling Postcoder Autocomplete Find API for GB
-INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
-INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
-INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
-INFO ✅ Successfully retrieved 1 address suggestions for GB
-INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
-INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
-INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
-INFO ✅ Successfully retrieved 1 address suggestions for GB
+  [OK] Cache miss response time: 178.01ms (target: <500ms)
 INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
-INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
-INFO Calling Postcoder Autocomplete Find API for GB
-INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
-INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
-INFO Calling Postcoder Autocomplete Find API for GB
-INFO Calling Postcoder Autocomplete Find API for GB
-INFO ✅ Successfully retrieved 1 address suggestions for GB
+INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
+INFO ✅ Successfully retrieved 1 address suggestions for GB
+INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
+INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
+INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
+INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
+INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
+INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
+INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
+INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
+INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
+INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
+INFO Calling Postcoder Autocomplete Find API for GB
+INFO ✅ Successfully retrieved 1 address suggestions for GB
+INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
+INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
+INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
+INFO Calling Postcoder Autocomplete Find API for GB
+INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
+INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
+INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
+INFO ✅ Successfully retrieved 1 address suggestions for GB
+INFO Calling Postcoder Autocomplete Find API for GB
+INFO Calling Postcoder Autocomplete Find API for GB
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
@@ -3753,43 +3753,43 @@ INFO ✅ Successfully retrieved 1 address suggestions for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 39ms
+INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 34ms
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 48ms
-WARNING Country code GB not found in UtilsCountrys
-INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 58ms
+INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 44ms
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
 WARNING Country code GB not found in UtilsCountrys
-INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 64ms
+INFO ✅ Transformed 1 autocomplete suggestions
+INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 56ms
+INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 56ms
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
+WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
+INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 65ms
+WARNING Country code GB not found in UtilsCountrys
+INFO ✅ Transformed 1 autocomplete suggestions
+INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 69ms
+WARNING Country code GB not found in UtilsCountrys
+INFO ✅ Transformed 1 autocomplete suggestions
+INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 69ms
 INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 76ms
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 76ms
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
+INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 78ms
 INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 81ms
-INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 84ms
-WARNING Country code GB not found in UtilsCountrys
-INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 88ms
-WARNING Country code GB not found in UtilsCountrys
-INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 91ms
 ..
   [OK] Concurrent requests performance:
-    - Average: 77.02ms
-    - Min: 47.41ms
-    - Max: 94.52ms
+    - Average: 69.39ms
+    - Min: 41.89ms
+    - Max: 85.22ms
     - Requests: 10
 
   ✓ Database query performance:
-    - Query time: 1.99ms
+    - Query time: 2.06ms
     - Queries executed: 1
     - Total cache entries: 101
 INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
@@ -3864,9 +3864,9 @@ INFO ✅ Transformed 1 autocomplete suggestions
 INFO [POSTCODER] SUCCESS (API) PL11AA: 1 addresses in 0ms
 .
   ✓ Different postcode performance:
-    - Average: 1.00ms
-    - Min: 0.87ms
-    - Max: 1.36ms
+    - Average: 1.02ms
+    - Min: 0.91ms
+    - Max: 1.46ms
     - Postcodes tested: 10
 INFO 🔍 Address lookup request: query='SW00AA', postcode='SW00AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
@@ -3888,7 +3888,7 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW02AA: 1 addresses in 1ms
+INFO [POSTCODER] SUCCESS (API) SW02AA: 1 addresses in 2ms
 INFO 🔍 Address lookup request: query='SW03AA', postcode='SW03AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -3902,7 +3902,7 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW04AA: 1 addresses in 2ms
+INFO [POSTCODER] SUCCESS (API) SW04AA: 1 addresses in 1ms
 INFO 🔍 Address lookup request: query='SW05AA', postcode='SW05AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -4000,7 +4000,7 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW18AA: 1 addresses in 0ms
+INFO [POSTCODER] SUCCESS (API) SW18AA: 1 addresses in 1ms
 INFO 🔍 Address lookup request: query='SW19AA', postcode='SW19AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -4028,42 +4028,42 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW22AA: 1 addresses in 0ms
+INFO [POSTCODER] SUCCESS (API) SW22AA: 1 addresses in 1ms
 INFO 🔍 Address lookup request: query='SW23AA', postcode='SW23AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW23AA: 1 addresses in 1ms
+INFO [POSTCODER] SUCCESS (API) SW23AA: 1 addresses in 0ms
 INFO 🔍 Address lookup request: query='SW24AA', postcode='SW24AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW24AA: 1 addresses in 1ms
+INFO [POSTCODER] SUCCESS (API) SW24AA: 1 addresses in 0ms
 INFO 🔍 Address lookup request: query='SW25AA', postcode='SW25AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW25AA: 1 addresses in 0ms
+INFO [POSTCODER] SUCCESS (API) SW25AA: 1 addresses in 1ms
 INFO 🔍 Address lookup request: query='SW26AA', postcode='SW26AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW26AA: 1 addresses in 0ms
+INFO [POSTCODER] SUCCESS (API) SW26AA: 1 addresses in 1ms
 INFO 🔍 Address lookup request: query='SW27AA', postcode='SW27AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW27AA: 1 addresses in 0ms
+INFO [POSTCODER] SUCCESS (API) SW27AA: 1 addresses in 1ms
 INFO 🔍 Address lookup request: query='SW28AA', postcode='SW28AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -4084,7 +4084,7 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW30AA: 1 addresses in 1ms
+INFO [POSTCODER] SUCCESS (API) SW30AA: 1 addresses in 0ms
 INFO 🔍 Address lookup request: query='SW31AA', postcode='SW31AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -4105,14 +4105,14 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW33AA: 1 addresses in 1ms
+INFO [POSTCODER] SUCCESS (API) SW33AA: 1 addresses in 0ms
 INFO 🔍 Address lookup request: query='SW34AA', postcode='SW34AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW34AA: 1 addresses in 0ms
+INFO [POSTCODER] SUCCESS (API) SW34AA: 1 addresses in 1ms
 INFO 🔍 Address lookup request: query='SW35AA', postcode='SW35AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -4140,7 +4140,7 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW38AA: 1 addresses in 1ms
+INFO [POSTCODER] SUCCESS (API) SW38AA: 1 addresses in 0ms
 INFO 🔍 Address lookup request: query='SW39AA', postcode='SW39AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -4154,14 +4154,14 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW40AA: 1 addresses in 1ms
+INFO [POSTCODER] SUCCESS (API) SW40AA: 1 addresses in 0ms
 INFO 🔍 Address lookup request: query='SW41AA', postcode='SW41AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW41AA: 1 addresses in 0ms
+INFO [POSTCODER] SUCCESS (API) SW41AA: 1 addresses in 1ms
 INFO 🔍 Address lookup request: query='SW42AA', postcode='SW42AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -4175,7 +4175,7 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW43AA: 1 addresses in 0ms
+INFO [POSTCODER] SUCCESS (API) SW43AA: 1 addresses in 1ms
 INFO 🔍 Address lookup request: query='SW44AA', postcode='SW44AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -4196,7 +4196,7 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW46AA: 1 addresses in 0ms
+INFO [POSTCODER] SUCCESS (API) SW46AA: 1 addresses in 1ms
 INFO 🔍 Address lookup request: query='SW47AA', postcode='SW47AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -4217,28 +4217,28 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW49AA: 1 addresses in 4ms
+INFO [POSTCODER] SUCCESS (API) SW49AA: 1 addresses in 0ms
 INFO 🔍 Address lookup request: query='SW50AA', postcode='SW50AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW50AA: 1 addresses in 1ms
+INFO [POSTCODER] SUCCESS (API) SW50AA: 1 addresses in 0ms
 INFO 🔍 Address lookup request: query='SW51AA', postcode='SW51AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW51AA: 1 addresses in 0ms
+INFO [POSTCODER] SUCCESS (API) SW51AA: 1 addresses in 1ms
 INFO 🔍 Address lookup request: query='SW52AA', postcode='SW52AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW52AA: 1 addresses in 1ms
+INFO [POSTCODER] SUCCESS (API) SW52AA: 1 addresses in 0ms
 INFO 🔍 Address lookup request: query='SW53AA', postcode='SW53AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -4252,14 +4252,14 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW54AA: 1 addresses in 0ms
+INFO [POSTCODER] SUCCESS (API) SW54AA: 1 addresses in 1ms
 INFO 🔍 Address lookup request: query='SW55AA', postcode='SW55AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW55AA: 1 addresses in 0ms
+INFO [POSTCODER] SUCCESS (API) SW55AA: 1 addresses in 1ms
 INFO 🔍 Address lookup request: query='SW56AA', postcode='SW56AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -4273,7 +4273,7 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW57AA: 1 addresses in 1ms
+INFO [POSTCODER] SUCCESS (API) SW57AA: 1 addresses in 0ms
 INFO 🔍 Address lookup request: query='SW58AA', postcode='SW58AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -4294,7 +4294,7 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW60AA: 1 addresses in 0ms
+INFO [POSTCODER] SUCCESS (API) SW60AA: 1 addresses in 1ms
 INFO 🔍 Address lookup request: query='SW61AA', postcode='SW61AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -4308,7 +4308,7 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW62AA: 1 addresses in 0ms
+INFO [POSTCODER] SUCCESS (API) SW62AA: 1 addresses in 1ms
 INFO 🔍 Address lookup request: query='SW63AA', postcode='SW63AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -4571,8 +4571,8 @@ INFO [POSTCODER] SUCCESS (API) SW99AA: 1 addresses in 1ms
 .
   ✓ Memory leak test:
     - Baseline: 0.00MB
-    - Final: 0.72MB
-    - Growth: 0.72MB
+    - Final: 0.71MB
+    - Growth: 0.71MB
     - Requests: 100
 INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
@@ -4657,14 +4657,14 @@ INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 0ms
+INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 2ms
 INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 1ms
+INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 0ms
 INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -4716,9 +4716,9 @@ INFO ✅ Transformed 1 autocomplete suggestions
 INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 0ms
 .
   ✓ Sequential request consistency:
-    - Average: 1.43ms
-    - Std Dev: 1.68ms
-    - Variation: 117.59%
+    - Average: 1.25ms
+    - Std Dev: 0.54ms
+    - Variation: 43.32%
     - Requests: 20
 INFO 🔍 Address lookup request: query='SW1A1AA', postcode='SW1A1AA', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
@@ -4737,14 +4737,14 @@ WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
 INFO [POSTCODER] SUCCESS (API) SW1A1AA: 1 addresses in 0ms
 .
-[OK] Cache miss response time: 1.59ms (target: <500ms)
+[OK] Cache miss response time: 1.56ms (target: <500ms)
 INFO 🔍 Address lookup request: query='TEST01', postcode='TEST01', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
 INFO ✅ Successfully retrieved 1 address suggestions for GB
 WARNING Country code GB not found in UtilsCountrys
 INFO ✅ Transformed 1 autocomplete suggestions
-INFO [POSTCODER] SUCCESS (API) TEST01: 1 addresses in 55ms
+INFO [POSTCODER] SUCCESS (API) TEST01: 1 addresses in 53ms
 INFO 🔍 Address lookup request: query='TEST01', postcode='TEST01', country=GB
 INFO 🔍 Calling Postcoder Autocomplete API (no cache for suggestions)
 INFO Calling Postcoder Autocomplete Find API for GB
@@ -4756,9 +4756,9 @@ INFO [POSTCODER] SUCCESS (API) TEST01: 1 addresses in 54ms
 ============================================================
 PERFORMANCE TEST SUMMARY
 ============================================================
-Cache Miss (API Call):  55.80ms
-Cache Hit (Database):   55.75ms
-Performance Gain:       1.00x faster
+Cache Miss (API Call):  54.74ms
+Cache Hit (Database):   55.23ms
+Performance Gain:       0.99x faster
 ============================================================
 
 [OK] All performance targets met
@@ -4913,20 +4913,19 @@ DEBUG Rule rule_home_banner created, invalidating cache for home_page_mount
 INFO Invalidated rules cache for entry point: home_page_mount (key: rules:home_page_mount)
 /Users/work/Documents/Code/Admin3/.venv/lib/python3.14/site-packages/django/core/cache/backends/base.py:119: CacheKeyWarning: Cache key contains characters that will cause errors if used with memcached: ':1:filter_options_Product Types'
   warnings.warn(warning, CacheKeyWarning)
-WARNING Not Found: /api/products/product-group-filters/
 WARNING get_vat_calculations() is deprecated. Use get_vat_totals() instead. This method will be removed in a future version.
 DEBUG Cache miss for rules:home_page_mount
 DEBUG Cached 1 rules for home_page_mount
 DEBUG No schema validation - context keys: ['request']
 DEBUG  JSONLogic condition evaluated to: True
-DEBUG Stored execution record: exec_1770308962_fe7db136
+DEBUG Stored execution record: exec_1770327438_6323f3cd
 WARNING get_vat_calculations() is deprecated. Use get_vat_totals() instead. This method will be removed in a future version.
 WARNING No template configuration found for account_activation, using defaults
 ERROR Failed to queue email: null value in column "reply_to_email" of relation "utils_email_queue" violates not-null constraint
-DETAIL:  Failing row contains (105, 9d4f2d3d-efbb-4520-a002-abf3df3ffd37, ["newuser@example.com"], [], [], eugene.lo1030@gmail.com, null, Activate Your ActEd Account, {"user": {"id": null, "email": "", "username": "", "is_active": ..., , , high, pending, 2026-02-05 16:29:24.304358+00, 2026-02-05 16:29:24.304425+00, null, 0, 3, null, null, null, , {}, 2026-02-05 16:29:24.304597+00, 2026-02-05 16:29:24.3046+00, [], 1259, null).
+DETAIL:  Failing row contains (105, 727d622d-fac6-4b7f-986d-8c51127886cc, ["newuser@example.com"], [], [], eugene.lo1030@gmail.com, null, Activate Your ActEd Account, {"user": {"id": null, "email": "", "username": "", "is_active": ..., , , high, pending, 2026-02-05 21:37:20.471658+00, 2026-02-05 21:37:20.471734+00, null, 0, 3, null, null, null, , {}, 2026-02-05 21:37:20.47191+00, 2026-02-05 21:37:20.471914+00, [], 1259, null).
 
 ERROR Failed to queue email: Failed to queue email: null value in column "reply_to_email" of relation "utils_email_queue" violates not-null constraint
-DETAIL:  Failing row contains (105, 9d4f2d3d-efbb-4520-a002-abf3df3ffd37, ["newuser@example.com"], [], [], eugene.lo1030@gmail.com, null, Activate Your ActEd Account, {"user": {"id": null, "email": "", "username": "", "is_active": ..., , , high, pending, 2026-02-05 16:29:24.304358+00, 2026-02-05 16:29:24.304425+00, null, 0, 3, null, null, null, , {}, 2026-02-05 16:29:24.304597+00, 2026-02-05 16:29:24.3046+00, [], 1259, null).
+DETAIL:  Failing row contains (105, 727d622d-fac6-4b7f-986d-8c51127886cc, ["newuser@example.com"], [], [], eugene.lo1030@gmail.com, null, Activate Your ActEd Account, {"user": {"id": null, "email": "", "username": "", "is_active": ..., , , high, pending, 2026-02-05 21:37:20.471658+00, 2026-02-05 21:37:20.471734+00, null, 0, 3, null, null, null, , {}, 2026-02-05 21:37:20.47191+00, 2026-02-05 21:37:20.471914+00, [], 1259, null).
 
 WARNING Failed to get placeholders for template account_activation: EmailTemplate matching query does not exist.
 INFO Email BCC monitoring enabled. BCC recipients: ['eugene.lo1030@gmail.com', 'eugenelo@bpp.com']
@@ -4934,7 +4933,7 @@ WARNING Creating token for inactive user: 1259. If this is not intentional, cons
 
 Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
 
-  a fuzzy search request for CM2 (0s loading, 444ms verification)
+  a fuzzy search request for CM2 (4ms loading, 361ms verification)
      Given searchable products exist
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -4942,7 +4941,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a fuzzy search request with no matches (0s loading, 323ms verification)
+  a fuzzy search request with no matches (4ms loading, 318ms verification)
      Given searchable products exist
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -4950,7 +4949,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a login request with wrong password (0s loading, 906ms verification)
+  a login request with wrong password (4ms loading, 887ms verification)
      Given a registered user exists
     returns a response which
       has status code [1m401[0m ([32mOK[0m)
@@ -4958,7 +4957,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a logout request (0s loading, 266ms verification)
+  a logout request (4ms loading, 260ms verification)
      Given an authenticated user
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -4966,7 +4965,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a request for acted rules (0s loading, 300ms verification)
+  a request for acted rules (4ms loading, 297ms verification)
      Given acted rules exist
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -4974,7 +4973,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a request for all tutorial products (0s loading, 276ms verification)
+  a request for all tutorial products (4ms loading, 273ms verification)
      Given tutorial products exist
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -4982,7 +4981,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a request for available store products (0s loading, 307ms verification)
+  a request for available store products (4ms loading, 304ms verification)
      Given store products exist
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -4990,7 +4989,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a request for bundles (0s loading, 344ms verification)
+  a request for bundles (4ms loading, 337ms verification)
      Given exam session bundles exist
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -4998,7 +4997,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a request for catalog exam sessions (0s loading, 309ms verification)
+  a request for catalog exam sessions (4ms loading, 303ms verification)
      Given catalog exam sessions exist
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -5006,7 +5005,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a request for catalog products (0s loading, 315ms verification)
+  a request for catalog products (4ms loading, 305ms verification)
      Given catalog products exist
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -5014,7 +5013,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a request for catalog subjects (0s loading, 300ms verification)
+  a request for catalog subjects (4ms loading, 304ms verification)
      Given catalog subjects exist
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -5022,7 +5021,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a request for default search data (0s loading, 328ms verification)
+  a request for default search data (4ms loading, 322ms verification)
      Given products exist for default search
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -5030,7 +5029,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a request for filter configuration (0s loading, 337ms verification)
+  a request for filter configuration (4ms loading, 334ms verification)
      Given filter configuration exists
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -5038,7 +5037,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a request for navigation data (0s loading, 320ms verification)
+  a request for navigation data (4ms loading, 314ms verification)
      Given catalog data exists
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -5046,15 +5045,15 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a request for product group filters (0s loading, 270ms verification)
+  a request for product group filters (4ms loading, 299ms verification)
      Given product groups exist
     returns a response which
-      has status code [1m200[0m ([31mFAILED[0m)
+      has status code [1m200[0m ([32mOK[0m)
       includes headers
-        "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([31mFAILED[0m)
-      has a matching body ([31mFAILED[0m)
+        "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
+      has a matching body ([32mOK[0m)
 
-  a request for tutorial events list (0s loading, 318ms verification)
+  a request for tutorial events list (4ms loading, 312ms verification)
      Given tutorial events exist
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -5062,7 +5061,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a request to calculate VAT (0s loading, 297ms verification)
+  a request to calculate VAT (4ms loading, 297ms verification)
      Given VAT configuration exists
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -5070,7 +5069,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a request to clear the cart (0s loading, 320ms verification)
+  a request to clear the cart (4ms loading, 319ms verification)
      Given an authenticated user with empty cart
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -5078,7 +5077,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a request to execute rules for home_page_mount (0s loading, 305ms verification)
+  a request to execute rules for home_page_mount (4ms loading, 296ms verification)
      Given rules for home_page_mount exist
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -5086,7 +5085,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a request to fetch an empty cart (0s loading, 312ms verification)
+  a request to fetch an empty cart (4ms loading, 308ms verification)
      Given an authenticated user with empty cart
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -5094,7 +5093,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a valid login request (0s loading, 603ms verification)
+  a valid login request (4ms loading, 601ms verification)
      Given a registered user exists
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
@@ -5102,7 +5101,7 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  a valid registration request (0s loading, 626ms verification)
+  a valid registration request (4ms loading, 629ms verification)
      Given no user with email newuser@example.com exists
     returns a response which
       has status code [1m201[0m ([32mOK[0m)
@@ -5110,31 +5109,16 @@ Verifying a pact between [1mAdmin3Frontend[0m and [1mAdmin3Backend[0m
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
       has a matching body ([32mOK[0m)
 
-  an advanced search request with subject filter (0s loading, 320ms verification)
+  an advanced search request with subject filter (4ms loading, 316ms verification)
      Given searchable products exist
     returns a response which
       has status code [1m200[0m ([32mOK[0m)
       includes headers
         "[1mContent-Type[0m" with value "[1mapplication/json[0m" ([32mOK[0m)
-      has a matching body ([31mFAILED[0m)
+      has a matching body ([32mOK[0m)
 
 
-Failures:
-
-1) Verifying a pact between Admin3Frontend and Admin3Backend Given product groups exist - a request for product group filters
-    1.1) has a matching body
-           expected a body of '[31mapplication/json[0m' but the actual content type was '[32mtext/html;charset=utf-8[0m'
-    1.2) has status code 200
-           expected [31m200[0m but was [32m404[0m
-    1.3) includes header 'Content-Type' with value 'application/json'
-           Expected header '[1mContent-Type[0m' to have value '[31mapplication/json[0m' but was '[32mtext/html; charset=utf-8[0m'
-2) Verifying a pact between Admin3Frontend and Admin3Backend Given searchable products exist - an advanced search request with subject filter
-    2.1) has a matching body
-           [1m$.products[0m -> Expected [] (size 0) to have minimum size of 1
-
-There were 2 pact failures
-
-E............................................An error occurred in add_student: Database threaded connections to 'default' are not allowed in SimpleTestCase subclasses. Either subclass TestCase or TransactionTestCase to ensure proper test isolation or add 'default' to students.tests.test_coverage.TestAddStudentUtil.databases to silence this failure.
+.............................................An error occurred in add_student: Database threaded connections to 'default' are not allowed in SimpleTestCase subclasses. Either subclass TestCase or TransactionTestCase to ensure proper test isolation or add 'default' to students.tests.test_coverage.TestAddStudentUtil.databases to silence this failure.
 An error occurred in add_student: Database threaded connections to 'default' are not allowed in SimpleTestCase subclasses. Either subclass TestCase or TransactionTestCase to ensure proper test isolation or add 'default' to students.tests.test_coverage.TestAddStudentUtil.databases to silence this failure.
 WARNING Converting non-serializable context item 'items': <class 'list'>
 .WARNING Converting non-serializable context item 'model': <class 'utils.tests.test_coverage_gaps.TestQueueServiceCleanContextBranches.test_clean_model_instance_meta_iteration_fails.<locals>.FakeModel'>
@@ -5180,9 +5164,9 @@ DEBUG Localhost IP detected: None, defaulting to UK
 .WARNING Converting non-serializable context item 'items': <class 'list'>
 ..WARNING Converting non-serializable context item 'obj': <class 'utils.tests.test_queue_service.TestCleanContextForSerialization.test_clean_object_with_dict.<locals>.SimpleObj'>
 .........ERROR Failed to process queue item test-123: boom
-.ERROR Queue item <MagicMock name='mock.queue_id' id='4533885920'> failed after max attempts
-..WARNING Some emails failed, scheduled retry for <MagicMock name='mock.queue_id' id='4651033200'>
-..WARNING Some emails failed, scheduled retry for <MagicMock name='mock.queue_id' id='4651505984'>
+.ERROR Queue item <MagicMock name='mock.queue_id' id='4590232848'> failed after max attempts
+..WARNING Some emails failed, scheduled retry for <MagicMock name='mock.queue_id' id='4586756416'>
+..WARNING Some emails failed, scheduled retry for <MagicMock name='mock.queue_id' id='4588587728'>
 .WARNING No template configuration found for missing_template, using defaults
 ..WARNING No template configuration found for test, using defaults
 .ERROR Exception sending email to test@example.com: SMTP error
@@ -5191,24 +5175,21 @@ DEBUG Localhost IP detected: None, defaulting to UK
 .......WARNING Failed to evaluate attachment condition for test.pdf: 'NoneType' object has no attribute 'get'
 ...........
 ======================================================================
-ERROR: test_provider_honours_pact_with_consumer (pact_tests.test_provider_verification.PactProviderVerificationTest.test_provider_honours_pact_with_consumer)
-Replay all consumer interactions and verify responses match.
+FAIL: test_default_params (search.tests.test_views_coverage.TestAdvancedFuzzySearchViewGet.test_default_params)
+Default min_score=65 and limit=50.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/Users/work/Documents/Code/Admin3/backend/django_Admin3/pact_tests/test_provider_verification.py", line 95, in test_provider_honours_pact_with_consumer
-    verifier.verify()
-    ~~~~~~~~~~~~~~~^^
-  File "/Users/work/Documents/Code/Admin3/.venv/lib/python3.14/site-packages/pact/v3/verifier.py", line 769, in verify
-    pact.v3.ffi.verifier_execute(self._handle)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "/Users/work/Documents/Code/Admin3/.venv/lib/python3.14/site-packages/pact/v3/ffi.py", line 7330, in verifier_execute
-    raise RuntimeError(msg)
-RuntimeError: Failed to execute verifier for VerifierHandle(0x10f668a50).
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1432, in patched
+    return func(*newargs, **newkeywargs)
+  File "/Users/work/Documents/Code/Admin3/backend/django_Admin3/search/tests/test_views_coverage.py", line 540, in test_default_params
+    self.assertEqual(min_score, 65)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: 60 != 65
 
 ----------------------------------------------------------------------
-Ran 3496 tests in 449.858s
+Ran 3496 tests in 447.401s
 
-FAILED (errors=1, skipped=68)
+FAILED (failures=1, skipped=68)
 Destroying test database for alias 'default'...
 Pre-dropped test database 'test_test_ACTEDDBDEV01'
 Traceback (most recent call last):
