@@ -59,6 +59,7 @@ import { spacing } from '../tokens/spacing';
 import { navigation } from '../semantic/navigation';
 import { typographyConfig } from '../typography';
 import { fontSize } from '@mui/system';
+import { iconSizes} from '../tokens/icons'
 
 export const navigationOverrides = {
   MuiAppBar: {
@@ -120,6 +121,9 @@ export const navigationOverrides = {
         '& .MuiSvgIcon-root': {
           color: navigation.button.icon,
         },
+        '& .MuiButton-icon':{
+          marginRight: spacing.xs2,
+        }
       },
     },
     variants: [
@@ -130,7 +134,7 @@ export const navigationOverrides = {
           backgroundColor: 'transparent',
           paddingRight: 0,
           '& .MuiSvgIcon-root': {
-            fontSize: typographyConfig.h5,
+            fontSize: iconSizes.md,
           },
         },
       },
@@ -182,6 +186,10 @@ export const navigationOverrides = {
           "& .MuiButton-startIcon": {
             margin: 0,
             marginRight: spacing.xs3,
+            '& .MuiSvgIcon-root': {
+                fontSize: iconSizes.xs,
+            },
+            
           },
         },
       },

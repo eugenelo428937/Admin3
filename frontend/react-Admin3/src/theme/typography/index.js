@@ -6,6 +6,7 @@
 // configurations like !important flags and responsive overrides.
 
 import { spacing } from '../tokens/spacing';
+import { md3 } from '../tokens/colors';
 import
   {
     fontFamilies,
@@ -31,26 +32,35 @@ export const typographyConfig = {
   // Brand variants
   BPP: {
     fontFamily: important(fontFamilies.brand),
-    fontWeight: important(fontWeights.semibold),
-    fontSize: important(fontSizes.heading[10]),
-    lineHeight: important('var(--halfstep-dec)'),
-    letterSpacing: important(letterSpacing.tighter),
+    fontWeight: important(fontWeights.bold),
+    fontSize: important(fontSizes.display.medium),
+    lineHeight: important(lineHeights.shortest),
+    letterSpacing: important(letterSpacing[10]),
     fontOpticalSizing: important('auto'),
     fontStyle: important('normal'),
-    fontVariationSettings: important("'wght' 600"),
+    fontVariationSettings: important("'wght' 700"),
+    color: md3.inverseOnSurface,
   },
   Acted: {
-    fontFamily: important(fontFamilies.brand),
+    fontFamily: important(fontFamilies.primary),
     fontWeight: important(fontWeights.light),
-    fontSize: important(fontSizes.h2),
-    lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.tighter),
+    fontSize: important(fontSizes.heading[30]),
+    lineHeight: important(lineHeights.shorter),
+    letterSpacing: important(letterSpacing[40]),
     fontOpticalSizing: important('auto'),
     fontStyle: important('normal'),
-    fontVariationSettings: important("'wght' 200"),
-    marginTop: important("calc( var(--2xs) / var(--halfstep) / var(--halfstep) / var(--eighthstep))"),
+    fontVariationSettings: important("'wght' 200"),    
+    color: md3.inverseOnSurface,    
   },
-
+  onlineStoreTitle:{
+    fontFamily: fontFamilies.primary,
+    fontWeight: fontWeights.regular,
+    fontSize: important(fontSizes.heading[30]),
+    lineHeight: important(lineHeights.normal),
+    letterSpacing: important(letterSpacing[50]),
+    textWrap: 'balance',        
+    color: md3.inverseOnSurface,    
+  },
   // Heading variants
   h1: {
     fontFamily: fontFamilies.brand,
@@ -78,7 +88,7 @@ export const typographyConfig = {
   h4: {
     fontFamily: fontFamilies.primary,
     fontWeight: fontWeights.regular,
-    fontSize: important(fontSizes.heading[40]),
+    fontSize: important(fontSizes.heading[60]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.tight),
     textWrap: 'balance',
@@ -86,7 +96,7 @@ export const typographyConfig = {
   h5: {
     fontFamily: fontFamilies.primary,
     fontWeight: fontWeights.medium,
-    fontSize: important(fontSizes.heading[45]),
+    fontSize: important(fontSizes.heading[80]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.normal),
     textWrap: 'balance',
@@ -94,7 +104,7 @@ export const typographyConfig = {
   h6: {
     fontFamily: fontFamilies.primary,
     fontWeight: fontWeights.semibold,
-    fontSize: important(fontSizes.heading[50]),
+    fontSize: important(fontSizes.heading[90]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.slight),
     textWrap: 'balance',
@@ -188,7 +198,7 @@ export const typographyConfig = {
   buttonMedium: {
     fontFamily: fontFamilies.primary,
     fontWeight: fontWeights.medium,
-    fontSize: important(fontSizes.heading[60]),
+    fontSize: important(fontSizes.heading[80]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.minimal),
     textTransform: 'none',
@@ -240,7 +250,7 @@ export const typographyConfig = {
   navlink: {
     fontFamily: fontFamilies.primary,
     fontWeight: fontWeights.medium,
-    fontSize: important(fontSizes.heading[60]),
+    fontSize: important(fontSizes.heading[80]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.minimal),
     textTransform: 'none',
@@ -250,8 +260,8 @@ export const typographyConfig = {
   topnavlink: {
     fontFamily: fontFamilies.primary,
     fontWeight: 300, // Lighter than token default for this context
-    fontSize: important(fontSizes.body[20]),
-    lineHeight: important(lineHeights.normal),
+    fontSize: important(fontSizes.body.small),
+    lineHeight: important(lineHeights.wide),
     letterSpacing: important(letterSpacing.normal),
     textWrap: "balance",
   },

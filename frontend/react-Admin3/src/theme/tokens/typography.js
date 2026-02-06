@@ -15,8 +15,9 @@
 // Font Families
 // =============================================================================
 export const fontFamilies = {
-  primary: "'Inter', 'Poppins', sans-serif",
-  brand: "'Inter', sans-serif",
+  primary: "'Inter',sans-serif",
+  brand: "'DM Sans', sans-serif",
+  secondary : "'DM Sans', sans-serif",
 };
 
 // =============================================================================
@@ -50,53 +51,66 @@ export const scaleMultipliers = {
 // Font Sizes (using scale calculations)
 // =============================================================================
 export const fontSizes = {
-  // Heading sizes
+  display: {
+    large: 'calc(1rem * pow(var(--wholestep), 4))',  //109.66px
+    medium: 'calc(1rem * pow(var(--wholestep), 3) * var(--halfstep))',    //86.21px
+  },
   heading: {
-    10: 'calc(1em * pow(var(--wholestep), 3))', // ~4.236em  // 67.776px
-    20: 'calc(1em * pow(var(--wholestep), 2))', // ~2.618em  // 41.888px
-    30: 'calc(1em * var(--wholestep) * var(--halfstep))', // ~2.058em  // 32.928px
-    35: 'calc(1em * var(--wholestep) * var(--quarterstep))', // ~1.825em // 29.2px 
-    355: 'calc(1em * var(--wholestep) * var(--eighthstep))', // ~1.717em // 
-    40: 'calc(1em * var(--wholestep))', // 1.618em  // 25.888px
-    45: 'calc(1em * var(--halfstep) * var(--quarterstep))', // ~1.435em // 22.96px  
-    50: 'calc(1em * var(--halfstep))', // 1.272em  // 20.352px
-    60: 'calc(1em * var(--quarterstep))', // 1.128em  // 18.048px  
+    10: 'calc(1rem * pow(var(--wholestep), 3))', // ~4.236em  // 67.776px
+    20: 'calc(1rem * pow(var(--wholestep), 2))', // ~2.618em  // 41.888px
+    30: 'calc(1rem * var(--wholestep) * var(--halfstep))', // ~2.058em  // 32.928px
+    40: 'calc(1rem * var(--wholestep) * var(--quarterstep))', // ~1.825em // 29.2px 
+    50: 'calc(1rem * var(--wholestep) * var(--eighthstep))', // ~1.717em // 27.47
+    60: 'calc(1rem * var(--wholestep))', // 1.618em  // 25.888px
+    70: 'calc(1rem * var(--halfstep) * var(--quarterstep))', // ~1.435em // 22.96px  
+    80: 'calc(1rem * var(--halfstep))', // 1.272em  // 20.352px
+    90: 'calc(1rem * var(--quarterstep))', // 1.128em  // 18.048px  
   },
   body: {
-    10: '1em', // Base size // 16px
-    20: 'calc(1em / var(--quarterstep))', // ~0.886em // 14.176px
+    large: 'calc(1rem * var(--quarterstep))', // 1.128em  // 18.048px  
+    medium: '1rem', // Base size // 16px
+    small: 'calc(1rem / var(--quarterstep))', // ~0.886em // 14.176px
   },
-  caption: {
-    10: 'calc(1em / var(--halfstep))', // ~0.786em // 12.576px
-    20: 'calc(1em / var(--halfstep) / var(--quarterstep))', // ~0.697em // 11.152px
-  },
-  
   // Label
-  label: 'calc((1em / var(--quarterstep)) / var(--eighthstep))', // ~0.835em // 13.36px  
-
+  label: 'calc((1rem / var(--quarterstep)) / var(--eighthstep))', // ~0.835em // 13.36px  
+  caption: {
+    large: 'calc(1rem / var(--halfstep))', // ~0.786em // 12.576px
+    medium: 'calc(1rem / var(--halfstep) / var(--quarterstep))', // ~0.697em // 11.152px
+    small: 'calc(1rem / var(--halfstep) / var(--halfstep))', // 0.62em // 9.8px 
+  },
+  overline: 'calc(1rem / var(--halfstep) / var(--halfstep)/ var(--quarterstep))', // 0.55em // 8.7px  
 };
 
 // =============================================================================
 // Line Heights (using scale values)
 // =============================================================================
 export const lineHeights = {
-  tight: 'var(--quarterstep)', // 1.128
-  normal: 'var(--halfstep)', // 1.272
-  relaxed: 'var(--wholestep)', // 1.618
+  shortest: 'calc( 1 / var(--halfstep))',
+  shorter: 1,
+  short: 'calc( var(--halfstep)', //1.272  
+  normal: 'calc(var(--halfstep) * var(--quarterstep))',  //1.435
+  tall: 'calc(var(--whole))',  //1.618  
 };
 
 // =============================================================================
 // Letter Spacing
 // =============================================================================
 export const letterSpacing = {
-  tighter: '-0.022em',
-  tight: '-0.02em',
-  normal: '-0.017em',
-  slight: '-0.014em',
-  subtle: '-0.011em',
-  fine: '-0.007em',
-  minimal: '-0.004em',
-  wide: '0.0618em', // For uppercase/overline
+  10: '-0.0618em',
+  20: '-0.022em',
+  30: '-0.02em',
+  40: '-0.017em',
+  50: '-0.014em',
+  60: '-0.007em',
+  70: '0.004em',
+  80: '0.012em',
+  90: '0.016em',
+  100: '0.02em',
+  120: '0.024em',
+  130: '0.03em',
+  140: '0.038em',
+  150: '0.045em',
+  160: '0.0618em',
 };
 
 // =============================================================================
@@ -112,3 +126,4 @@ const typography = {
 };
 
 export default typography;
+
