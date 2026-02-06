@@ -113,7 +113,7 @@ const MainNavActions = ({
                }
             >
                <Typography
-                  variant="button"
+                  variant="buttonMedium"
                   noWrap
                   sx={{
                      display: { xs: "none", lg: "block" },
@@ -273,7 +273,7 @@ const MainNavActions = ({
                   }
                >
                   <Typography
-                     variant="button"
+                     variant="buttonMedium"
                      noWrap
                       sx={{
                          display: { xs: "none", lg: "block" },

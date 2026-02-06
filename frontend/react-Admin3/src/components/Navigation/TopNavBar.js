@@ -130,15 +130,8 @@ const TopNavBar = ({ onOpenSearch }) => {
                      target="_blank"
                      startIcon={isDesktop ? <HomeIcon /> : null}
                      endIcon={!isDesktop ? <HomeIcon /> : null}
-                     sx={{
-                        minWidth: {
-                           xs: theme.spacing.xl,
-                           lg: 64,
-                        },
-                        justifyContent: {
-                           xs: "start",
-                           md: "center",
-                        },
+                     sx={{                        
+                        justifyContent: "center",
                      }}>
                      <Typography
                         variant="topnavlink"
@@ -158,15 +151,8 @@ const TopNavBar = ({ onOpenSearch }) => {
                      target="_blank"
                      startIcon={isDesktop ? <HelpIcon /> : null}
                      endIcon={!isDesktop ? <HelpIcon /> : null}
-                     sx={{
-                        minWidth: {
-                           xs: theme.spacing.xl,
-                           lg: 64,
-                        },
-                        justifyContent: {
-                           xs: "start",
-                           md: "center",
-                        },
+                     sx={{                       
+                        justifyContent: "center",
                      }}>
                      <Typography
                         variant="topnavlink"
@@ -196,15 +182,8 @@ const TopNavBar = ({ onOpenSearch }) => {
                      target="_blank"
                      startIcon={isDesktop ? <DownloadIcon /> : null}
                      endIcon={!isDesktop ? <DownloadIcon /> : null}
-                     sx={{
-                        minWidth: {
-                           xs: theme.spacing.xl,
-                           lg: 64,
-                        },
-                        justifyContent: {
-                           xs: "end",
-                           md: "center",
-                        },
+                     sx={{                       
+                        justifyContent: "center",
                      }}
                   >
                      <Typography
@@ -223,15 +202,8 @@ const TopNavBar = ({ onOpenSearch }) => {
                   <Button
                      variant="topNavAction"
                      onClick={onOpenSearch}
-                     sx={{
-                        minWidth: {
-                           xs: theme.spacing.xl,
-                           lg: 64,
-                        },
-                        justifyContent: {
-                           xs: "end",
-                           md: "center",
-                        },
+                     sx={{                        
+                        justifyContent: "center",
                      }}
                      aria-label="search products"
                      startIcon={isDesktop ? <SearchIcon /> : null}
