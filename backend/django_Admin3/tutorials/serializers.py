@@ -51,13 +51,13 @@ class TutorialCourseTemplateSerializer(serializers.ModelSerializer):
 
 class TutorialSessionsSerializer(serializers.ModelSerializer):
     """Serializer for TutorialSessions model per API contract."""
-    instructor = TutorialInstructorSerializer(read_only=True)
-    instructor_id = serializers.PrimaryKeyRelatedField(
+    instructors = TutorialInstructorSerializer(many=True, read_only=True)
+    instructor_ids = serializers.PrimaryKeyRelatedField(
         queryset=TutorialInstructor.objects.all(),
-        source='instructor',
+        source='instructors',
         write_only=True,
         required=False,
-        allow_null=True,
+        many=True,
     )
     venue = TutorialVenueSerializer(read_only=True)
     venue_id = serializers.PrimaryKeyRelatedField(
@@ -78,7 +78,7 @@ class TutorialSessionsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TutorialSessions
-        fields = ['id', 'title', 'instructor', 'instructor_id',
+        fields = ['id', 'title', 'instructors', 'instructor_ids',
                   'venue', 'venue_id', 'location', 'location_id',
                   'start_date', 'end_date', 'sequence', 'url']
 
@@ -93,14 +93,7 @@ class TutorialEventsSerializer(serializers.ModelSerializer):
         source='store_product.exam_session_subject.subject.code',
         read_only=True
     )
-    instructor = TutorialInstructorSerializer(read_only=True)
-    instructor_id = serializers.PrimaryKeyRelatedField(
-        queryset=TutorialInstructor.objects.all(),
-        source='instructor',
-        write_only=True,
-        required=False,
-        allow_null=True,
-    )
+    instructors = TutorialInstructorSerializer(many=True, read_only=True)
     venue = TutorialVenueSerializer(read_only=True)
     venue_id = serializers.PrimaryKeyRelatedField(
         queryset=TutorialVenue.objects.all(),
@@ -120,5 +113,10 @@ class TutorialEventsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TutorialEvents
-        fields = '__all__'
-        extra_fields = ['store_product_code', 'subject_code']
+        fields = [
+            'id', 'code', 'venue', 'venue_id', 'location', 'location_id',
+            'is_soldout', 'finalisation_date', 'remain_space',
+            'start_date', 'end_date', 'store_product',
+            'created_at', 'updated_at',
+            'store_product_code', 'subject_code', 'instructors',
+        ]
