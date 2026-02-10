@@ -17,12 +17,11 @@ class TutorialSessions(models.Model):
         related_name='sessions',
     )
     title = models.CharField(max_length=255)
-    instructor = models.ForeignKey(
+    instructors = models.ManyToManyField(
         'tutorials.TutorialInstructor',
-        on_delete=models.SET_NULL,
-        null=True,
         blank=True,
         related_name='sessions',
+        db_table='"acted"."tutorial_session_instructors"',
     )
     venue = models.ForeignKey(
         'tutorials.TutorialVenue',

@@ -226,7 +226,7 @@ class TutorialSessionsModelSerializerTest(TestCase):
         data = serializer.data
 
         expected_fields = {
-            'id', 'title', 'instructor', 'venue', 'location',
+            'id', 'title', 'instructors', 'venue', 'location',
             'start_date', 'end_date', 'sequence', 'url'
         }
         self.assertEqual(set(data.keys()), expected_fields)

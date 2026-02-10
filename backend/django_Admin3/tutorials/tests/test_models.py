@@ -981,11 +981,11 @@ class TutorialVenueModelTest(TestCase):
 # Phase 3 (US2+US3): FK fields on Events and Sessions
 # ============================================================
 
-class TutorialEventsInstructorFKTest(TestCase):
-    """Test instructor FK on TutorialEvents (US2 - T018)."""
+class TutorialEventsInstructorsDerivedTest(TestCase):
+    """Test event.instructors property derived from sessions."""
 
     def setUp(self):
-        from tutorials.models import TutorialInstructor, TutorialVenue, TutorialLocation
+        from tutorials.models import TutorialInstructor, TutorialSessions
         self.exam_session = ExamSession.objects.create(
             session_code='EIFK2025',
             start_date=timezone.now() + timedelta(days=30),
@@ -1012,54 +1012,55 @@ class TutorialEventsInstructorFKTest(TestCase):
             product_product_variation=self.ppv,
             product_code='EIFK/T/2025'
         )
-        self.instructor = TutorialInstructor.objects.create(staff=None)
-
-    def test_event_with_instructor(self):
-        """Verify event can have instructor FK."""
-        event = TutorialEvents.objects.create(
+        self.event = TutorialEvents.objects.create(
             code='EV-INSTR-001',
             start_date=date.today() + timedelta(days=30),
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product,
-            instructor=self.instructor,
         )
-        self.assertEqual(event.instructor, self.instructor)
+        self.instructor1 = TutorialInstructor.objects.create(staff=None)
+        self.instructor2 = TutorialInstructor.objects.create(staff=None)
 
-    def test_event_null_instructor(self):
-        """Verify instructor is nullable."""
-        event = TutorialEvents.objects.create(
-            code='EV-INSTR-NULL',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
-            store_product=self.store_product,
-            instructor=None,
+    def test_event_instructors_from_sessions(self):
+        """Event.instructors aggregates distinct instructors across sessions."""
+        from tutorials.models import TutorialSessions
+        s1 = TutorialSessions.objects.create(
+            tutorial_event=self.event, title='Day 1', sequence=1,
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=30, hours=8),
         )
-        self.assertIsNone(event.instructor)
+        s1.instructors.add(self.instructor1)
+        s2 = TutorialSessions.objects.create(
+            tutorial_event=self.event, title='Day 2', sequence=2,
+            start_date=timezone.now() + timedelta(days=31),
+            end_date=timezone.now() + timedelta(days=31, hours=8),
+        )
+        s2.instructors.add(self.instructor2)
+        result = self.event.instructors
+        self.assertEqual(result.count(), 2)
+        self.assertIn(self.instructor1, result)
+        self.assertIn(self.instructor2, result)
 
-    def test_set_null_on_instructor_delete(self):
-        """Verify SET_NULL when instructor is deleted."""
-        from tutorials.models import TutorialInstructor
-        event = TutorialEvents.objects.create(
-            code='EV-INSTR-DEL',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
-            store_product=self.store_product,
-            instructor=self.instructor,
-        )
-        self.instructor.delete()
-        event.refresh_from_db()
-        self.assertIsNone(event.instructor)
+    def test_event_no_sessions_empty_instructors(self):
+        """Event with no sessions returns empty queryset for instructors."""
+        self.assertEqual(self.event.instructors.count(), 0)
 
-    def test_instructor_reverse_relation(self):
-        """Verify instructor.events returns related events."""
-        event = TutorialEvents.objects.create(
-            code='EV-INSTR-REV',
-            start_date=date.today() + timedelta(days=30),
-            end_date=date.today() + timedelta(days=32),
-            store_product=self.store_product,
-            instructor=self.instructor,
+    def test_event_duplicate_instructor_across_sessions(self):
+        """Same instructor in multiple sessions appears only once."""
+        from tutorials.models import TutorialSessions
+        s1 = TutorialSessions.objects.create(
+            tutorial_event=self.event, title='Day 1', sequence=1,
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=30, hours=8),
         )
-        self.assertIn(event, self.instructor.events.all())
+        s1.instructors.add(self.instructor1)
+        s2 = TutorialSessions.objects.create(
+            tutorial_event=self.event, title='Day 2', sequence=2,
+            start_date=timezone.now() + timedelta(days=31),
+            end_date=timezone.now() + timedelta(days=31, hours=8),
+        )
+        s2.instructors.add(self.instructor1)  # same instructor
+        self.assertEqual(self.event.instructors.count(), 1)
 
 
 class TutorialEventsVenueLocationFKTest(TestCase):
@@ -1156,8 +1157,8 @@ class TutorialEventsVenueLocationFKTest(TestCase):
         self.assertIsNone(event.location)
 
 
-class TutorialSessionsInstructorFKTest(TestCase):
-    """Test instructor FK on TutorialSessions (US2 - T020)."""
+class TutorialSessionsInstructorsM2MTest(TestCase):
+    """Test instructors M2M on TutorialSessions."""
 
     def setUp(self):
         from tutorials.models import TutorialInstructor
@@ -1193,48 +1194,69 @@ class TutorialSessionsInstructorFKTest(TestCase):
             end_date=date.today() + timedelta(days=32),
             store_product=self.store_product,
         )
-        self.instructor = TutorialInstructor.objects.create(staff=None)
+        self.instructor1 = TutorialInstructor.objects.create(staff=None)
+        self.instructor2 = TutorialInstructor.objects.create(staff=None)
 
-    def test_session_with_instructor(self):
-        """Verify session can have instructor FK."""
+    def test_session_with_multiple_instructors(self):
+        """Verify session can have multiple instructors via M2M."""
         from tutorials.models import TutorialSessions
         session = TutorialSessions.objects.create(
-            tutorial_event=self.event,
-            title='Day 1',
+            tutorial_event=self.event, title='Day 1', sequence=1,
             start_date=timezone.now() + timedelta(days=30),
             end_date=timezone.now() + timedelta(days=30, hours=8),
-            sequence=1,
-            instructor=self.instructor,
         )
-        self.assertEqual(session.instructor, self.instructor)
+        session.instructors.add(self.instructor1, self.instructor2)
+        self.assertEqual(session.instructors.count(), 2)
+        self.assertIn(self.instructor1, session.instructors.all())
+        self.assertIn(self.instructor2, session.instructors.all())
 
-    def test_session_null_instructor(self):
-        """Verify instructor is nullable on session."""
+    def test_session_no_instructors(self):
+        """Verify session can have no instructors (blank=True)."""
         from tutorials.models import TutorialSessions
         session = TutorialSessions.objects.create(
-            tutorial_event=self.event,
-            title='Day 1',
+            tutorial_event=self.event, title='Day 1', sequence=1,
             start_date=timezone.now() + timedelta(days=30),
             end_date=timezone.now() + timedelta(days=30, hours=8),
-            sequence=1,
-            instructor=None,
         )
-        self.assertIsNone(session.instructor)
+        self.assertEqual(session.instructors.count(), 0)
 
-    def test_set_null_on_instructor_delete(self):
-        """Verify SET_NULL when instructor deleted."""
+    def test_instructor_reverse_relation(self):
+        """Verify instructor.sessions returns related sessions."""
         from tutorials.models import TutorialSessions
         session = TutorialSessions.objects.create(
-            tutorial_event=self.event,
-            title='Day 1',
+            tutorial_event=self.event, title='Day 1', sequence=1,
             start_date=timezone.now() + timedelta(days=30),
             end_date=timezone.now() + timedelta(days=30, hours=8),
-            sequence=1,
-            instructor=self.instructor,
         )
-        self.instructor.delete()
-        session.refresh_from_db()
-        self.assertIsNone(session.instructor)
+        session.instructors.add(self.instructor1)
+        self.assertIn(session, self.instructor1.sessions.all())
+
+    def test_remove_instructor_from_session(self):
+        """Verify removing instructor from M2M doesn't delete the instructor."""
+        from tutorials.models import TutorialSessions, TutorialInstructor
+        session = TutorialSessions.objects.create(
+            tutorial_event=self.event, title='Day 1', sequence=1,
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=30, hours=8),
+        )
+        session.instructors.add(self.instructor1, self.instructor2)
+        session.instructors.remove(self.instructor1)
+        self.assertEqual(session.instructors.count(), 1)
+        self.assertIn(self.instructor2, session.instructors.all())
+        self.assertTrue(TutorialInstructor.objects.filter(pk=self.instructor1.pk).exists())
+
+    def test_instructor_delete_removes_from_m2m(self):
+        """Verify deleting instructor removes junction row."""
+        from tutorials.models import TutorialSessions
+        session = TutorialSessions.objects.create(
+            tutorial_event=self.event, title='Day 1', sequence=1,
+            start_date=timezone.now() + timedelta(days=30),
+            end_date=timezone.now() + timedelta(days=30, hours=8),
+        )
+        session.instructors.add(self.instructor1, self.instructor2)
+        self.instructor1.delete()
+        self.assertEqual(session.instructors.count(), 1)
+        self.assertIn(self.instructor2, session.instructors.all())
 
 
 class TutorialSessionsVenueLocationFKTest(TestCase):

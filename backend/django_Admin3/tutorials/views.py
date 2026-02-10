@@ -25,7 +25,7 @@ class TutorialEventsViewSet(viewsets.ModelViewSet):
     queryset = TutorialEvents.objects.select_related(
         'store_product__exam_session_subject__subject',
         'store_product__product_product_variation__product'
-    ).all()
+    ).prefetch_related('sessions__instructors').all()
     serializer_class = TutorialEventsSerializer
     permission_classes = [AllowAny]
 
@@ -47,7 +47,7 @@ class TutorialEventListView(APIView):
         """Get tutorial events with basic filtering"""
         queryset = TutorialEvents.objects.select_related(
             'store_product__exam_session_subject__subject'
-        ).all()
+        ).prefetch_related('sessions__instructors').all()
 
         # Filter by subject code if provided
         subject_code = request.GET.get('subject_code')
@@ -179,10 +179,12 @@ class TutorialComprehensiveDataView(APIView):
 
         # Get all tutorial events with related data via store.Product
         tutorial_events = TutorialEvents.objects.select_related(
+            'venue',
+            'location',
             'store_product__exam_session_subject__subject',
             'store_product__product_product_variation__product',
             'store_product__product_product_variation__product_variation'
-        ).all()
+        ).prefetch_related('sessions__instructors').all()
 
         # Group data by subject and product
         results = {}
@@ -222,6 +224,7 @@ class TutorialComprehensiveDataView(APIView):
                 'id': event.id,
                 'code': event.code,
                 'venue': str(event.venue) if event.venue else None,
+                'location': str(event.location) if event.location else None,
                 'is_soldout': event.is_soldout,
                 'finalisation_date': event.finalisation_date,
                 'remain_space': event.remain_space,

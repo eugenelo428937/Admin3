@@ -25,7 +25,8 @@
       "Bash(grep:*)",
       "Skill(brainstorming)",
       "Bash(bash:*)",
-      "mcp__plugin_episodic-memory_episodic-memory__search"
+      "mcp__plugin_episodic-memory_episodic-memory__search",
+      "Bash(python:*)"
     ],
     "deny": [
       "Read(.claude/tdd-guard/**)",
