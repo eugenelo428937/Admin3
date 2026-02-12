@@ -8,6 +8,7 @@ import { BrowserRouter as Router } from "react-router-dom";
 import "@fontsource-variable/dm-sans";
 import "@fontsource/poppins";
 import "@fontsource-variable/inter";
+import '@fontsource-variable/geist';
 
 const container = document.getElementById("root");
 const root = createRoot(container);
