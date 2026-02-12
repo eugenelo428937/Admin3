@@ -26,11 +26,16 @@ class CourseTemplatePriceLevel(models.Model):
 
     class Meta:
         app_label = 'administrate'
-        db_table = 'adm.course_template_price_levels'
+        db_table = '"adm"."course_template_price_levels"'
         unique_together = [['course_template', 'price_level']]
         ordering = ['course_template', 'price_level']
         verbose_name = 'Course Template Price Level'
         verbose_name_plural = 'Course Template Price Levels'
 
     def __str__(self):
-        return f"{self.course_template.code} - {self.price_level.name}: £{self.amount}"
+        ct_code = (
+            self.course_template.tutorial_course_template.code
+            if self.course_template.tutorial_course_template
+            else self.course_template.external_id
+        )
+        return f"{ct_code} - {self.price_level.name}: £{self.amount}"

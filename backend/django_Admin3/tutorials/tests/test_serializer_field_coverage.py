@@ -14,7 +14,7 @@ from datetime import timedelta
 from django.test import TestCase
 from django.utils import timezone
 
-from tutorials.models import TutorialEvents
+from tutorials.models import TutorialEvents, TutorialVenue
 from tutorials.serializers import TutorialEventsSerializer
 from store.models import Product as StoreProduct
 from catalog.models import (
@@ -54,9 +54,10 @@ class TutorialEventsSerializerReadCoverageTest(TestCase):
             product_product_variation=self.ppv,
             product_code='COV1/TCOVWKCOVTUT/COV2025',
         )
-        self.event = TutorialEvent.objects.create(
+        self.tv = TutorialVenue.objects.create(name='Coverage Venue')
+        self.event = TutorialEvents.objects.create(
             code='COV-TUT-001',
-            venue='Coverage Venue',
+            venue=self.tv,
             start_date=timezone.now().date() + timedelta(days=30),
             end_date=timezone.now().date() + timedelta(days=31),
             store_product=self.store_product,

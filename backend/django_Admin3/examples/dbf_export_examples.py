@@ -212,7 +212,7 @@ def export_tutorial_events():
         # Using QuerySet approach
         from tutorials.models import TutorialEvents
         
-        queryset = TutorialEvent.objects.filter(
+        queryset = TutorialEvents.objects.filter(
             is_active=True
         ).select_related('location', 'subject')
         

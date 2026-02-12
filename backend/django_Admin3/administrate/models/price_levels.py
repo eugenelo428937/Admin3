@@ -8,7 +8,7 @@ class PriceLevel(models.Model):
 
     class Meta:
         app_label = 'administrate'
-        db_table = 'adm.pricelevels'
+        db_table = '"adm"."pricelevels"'
         verbose_name = 'Price Level'
         verbose_name_plural = 'Price Levels'
 

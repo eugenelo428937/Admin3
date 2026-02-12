@@ -73,6 +73,32 @@ Examples of foundational tasks (adjust based on your project):
 
 ---
 
+## Database Schema Assertions
+
+**When tasks involve schema migrations or table placement:**
+
+Tasks that create, move, or rename database tables MUST include a verification step that queries `information_schema.tables` to confirm the table is in the expected schema. Proxy assertions (CRUD operations, source code inspection) are NOT sufficient for schema-level tasks.
+
+**Required test pattern for schema tasks:**
+
+```python
+def test_table_in_expected_schema(self):
+    """Verify table physically resides in the correct PostgreSQL schema."""
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT 1 FROM information_schema.tables "
+            "WHERE table_schema = %s AND table_name = %s",
+            ['expected_schema', 'table_name'],
+        )
+        self.assertIsNotNone(cursor.fetchone())
+```
+
+**Convention:** `db_table` values MUST use quoted format: `'"schema"."table_name"'`
+- Correct: `db_table = '"adm"."course_templates"'`
+- Wrong: `db_table = 'adm.course_templates'` (creates literal dot-name in public schema)
+
+---
+
 ## Phase 3: User Story 1 - [Title] (Priority: P1) 🎯 MVP
 
 **Goal**: [Brief description of what this story delivers]

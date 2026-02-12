@@ -15,6 +15,27 @@ Admin3 is a Django REST API backend with React frontend for the Online Store for
 - **Modular app structure** for different business domains
 - **GraphQL integration** for external Administrate API calls
 
+### Database Schema Conventions
+
+**Schema-qualified table names** — All models that belong to a custom PostgreSQL schema MUST use the double-quoted format:
+
+```python
+# CORRECT — creates table in the adm schema:
+db_table = '"adm"."course_templates"'
+
+# WRONG — creates literal "adm.course_templates" in public schema:
+db_table = 'adm.course_templates'
+```
+
+| Schema | Apps | Example |
+|--------|------|---------|
+| `adm` | administrate | `'"adm"."course_templates"'` |
+| `acted` | tutorials, catalog, store, marking, rules_engine, students, userprofile | `'"acted"."tutorial_events"'` |
+
+**Testing:** All tests run against PostgreSQL (not SQLite). Schema placement is verified by `python manage.py verify_schema_placement`.
+
+**Migration assertions:** Set `MIGRATION_ASSERT_MODE = True` in test/CI settings to make conditional migration operations raise exceptions instead of silently skipping.
+
 ### Frontend Structure
 - **React 19.2** with functional components and hooks
 - **Material-UI v7** for consistent UI components
@@ -1330,6 +1351,8 @@ browser_close()
 - Python 3.14 (backend), JavaScript ES2022 / React 19.2 (frontend) + Django 6.0, Django REST Framework, Redux Toolkit, RTK Query, Material-UI v7 (20260129-filter-system-fix)
 - Python 3.14, Django 6.0 + Django REST Framework, FuzzyWuzzy (fuzz module), store.models.Product, filtering.models.FilterGroup/FilterConfiguration/FilterConfigurationGroup (20260202-fuzzy-search-refactor)
 - PostgreSQL (existing `acted` schema, no schema changes) (20260202-fuzzy-search-refactor)
+- Python 3.14, Django 6.0 + Django REST Framework + Django ORM, Django migrations framework, psycopg2-binary (20260206-tutorial-schema-refactor)
+- PostgreSQL with `acted` schema (tutorial models) and `adm` schema (administrate models) (20260206-tutorial-schema-refactor)
 
 ## Recent Changes
 - 001-catalog-consolidation: Added Python 3.14, Django 6.0 + Django REST Framework, PostgreSQL psycopg2-binary
