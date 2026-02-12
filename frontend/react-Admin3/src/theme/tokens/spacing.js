@@ -33,20 +33,22 @@ export const multipliers = {
 // =============================================================================
 export const spacing = {
   // Negative scale (smaller than base)
-  xs3: 'calc(1rem / var(--scaleFactor) / var(--scaleFactor) / var(--scaleFactor) / var(--halfstep))', // ~0.15rem
-  xs2: 'calc(1rem / var(--scaleFactor) / var(--scaleFactor))', // ~0.38rem
-  xs: 'calc(1rem / var(--scaleFactor) / var(--halfstep))', // ~0.49rem
-  sm: 'calc(1rem / var(--scaleFactor))', // ~0.62rem
-
+  xs: {
+    1: 'calc(1rem / var(--scaleFactor) / var(--halfstep))',
+    2: 'calc(1rem / pow(var(--scaleFactor), 2))',
+    3: 'calc(1rem / pow(var(--scaleFactor), 3))',
+    4: 'calc(1rem / pow(var(--scaleFactor), 4))',
+    5: 'calc(1rem / pow(var(--scaleFactor), 5))',
+  },
   // Base
-  md: '1rem', // Base unit (16px at default)
-
-  // Positive scale (larger than base)
+  md: '1rem', // Base unit (16px at default)  
   lg: 'calc(1rem * var(--scaleFactor))', // ~1.62rem
-  xl: 'calc(1rem * var(--scaleFactor) * var(--scaleFactor))', // ~2.62rem
-  xl15: 'calc(1rem * var(--scaleFactor) * var(--scaleFactor) * var(--halfstep))', // ~3.33rem
-  xl2: 'calc(1rem * var(--scaleFactor) * var(--scaleFactor) * var(--scaleFactor))', // ~4.24rem
-  xl3: 'calc(1rem * var(--scaleFactor) * var(--scaleFactor) * var(--scaleFactor) * var(--scaleFactor))', // ~6.85rem
+  xl: {
+    1: 'calc(1rem * pow(var(--scaleFactor), 2))', // ~2.62rem
+    2: 'calc(1rem * pow(var(--scaleFactor), 2)) * var(--halfstep))', // ~3.33rem
+    3: 'calc(1rem * pow(var(--scaleFactor), 3))', // ~4.24rem
+    4: 'calc(1rem * pow(var(--scaleFactor), 4))', // ~6.85rem
+  }
 };
 
 // =============================================================================
@@ -105,37 +107,12 @@ export const borderRadius = {
 };
 
 // =============================================================================
-// LiftKit-compatible spacing structure
-// For backward compatibility with liftKitTheme.spacing usage
-// =============================================================================
-export const liftkitSpacing = {
-  // Base spacing values
-  ...spacing,
-
-  // Scale factor
-  scaleFactor: '1.618',
-
-  // Incremental multipliers
-  wholestep: '1.618',
-  halfstep: '1.272',
-  quarterstep: '1.128',
-  eighthstep: '1.061',
-
-  // Decimal increments
-  'wholestep-dec': '0.618',
-  'halfstep-dec': '0.272',
-  'quarterstep-dec': '0.128',
-  'eighthstep-dec': '0.061',
-};
-
-// =============================================================================
 // Default Export
 // =============================================================================
 const spacingTokens = {
   scaleFactor,
   multipliers,
   spacing,
-  liftkitSpacing,
   numericSpacing,
   gaps,
   padding,

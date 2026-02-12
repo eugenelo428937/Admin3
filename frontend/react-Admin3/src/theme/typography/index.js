@@ -5,7 +5,7 @@
 // The tokens layer provides primitive values; this module adds MUI-specific
 // configurations like !important flags and responsive overrides.
 
-import { spacing } from '../tokens/spacing';
+import spacingTokens, { spacing } from '../tokens/spacing';
 import { md3 } from '../tokens/colors';
 import
   {
@@ -15,7 +15,7 @@ import
     lineHeights,
     letterSpacing,
   } from '../tokens/typography';
-
+import { navigation } from '../semantic/navigation';
 // =============================================================================
 // Helper: Add !important to CSS values for MUI specificity
 // =============================================================================
@@ -27,82 +27,128 @@ const important = (value) => `${value} !important`;
  * Adds MUI-specific !important flags and layout overrides.
  */
 export const typographyConfig = {
-  fontFamily: fontFamilies.primary,
+  fontFamily: fontFamilies.inter,
 
   // Brand variants
-  BPP: {
-    fontFamily: important(fontFamilies.brand),
+  logo_bpp:{
+    fontFamily: important(fontFamilies.dm_sans),
     fontWeight: important(fontWeights.bold),
-    fontSize: important(fontSizes.display.medium),
+    fontSize: important(fontSizes.heading[60]),    
+    lineHeight: important('0.85'),
+    letterSpacing: important(letterSpacing.scale[10]),
+    color: md3.inverseOnSurface,
+    fontOpticalSizing: important('auto'),
+    fontStyle: important('normal'),
+    alignContent: 'bottom',
+    display:'flex'
+  },
+  logo_acted: {
+    fontFamily: important(fontFamilies.inter),
+    fontWeight: important(fontWeights.extralight),
+    fontSize: important(fontSizes.caption.large),
+    lineHeight: important('1'),
+    color: md3.inverseOnSurface,
+    fontOpticalSizing: important('auto'),
+    fontStyle: important('normal'),    
+    alignContent: 'top',
+    display:'flex',
+    marginBottom:spacing.xs[4]
+  },
+  logo_lyceum: {
+    fontFamily: important(fontFamilies.dm_sans),
+    fontWeight: important(fontWeights.light),
+    fontSize: important(fontSizes.overline),
+    lineHeight: important('1.1'),
+    color: md3.inverseOnSurface,
+    fontOpticalSizing: important('auto'),
+    fontStyle: important('normal'),
+    alignContent: 'center',    
+  },
+  logo_education_group:{
+    fontFamily: important(fontFamilies.dm_sans),
+    fontWeight: important(fontWeights.semibold),
+    fontSize: important(fontSizes.fineprint),
+    lineHeight: important('1.1'),
+    color: md3.OnSurface,
+    fontOpticalSizing: important('auto'),
+    fontStyle: important('normal'),
+    alignContent: 'center',
+    backgroundColor: md3.surfaceDim,
+    padding: spacing.xs[5],
+  },
+  title_BPP: {
+    fontFamily: important(fontFamilies.dm_sans),
+    fontWeight: important(fontWeights.bold),
+    fontSize: important(fontSizes.display.large),
     lineHeight: important(lineHeights.shortest),
-    letterSpacing: important(letterSpacing[10]),
+    letterSpacing: important(letterSpacing.scale[10]),
     fontOpticalSizing: important('auto'),
     fontStyle: important('normal'),
     fontVariationSettings: important("'wght' 700"),
     color: md3.inverseOnSurface,
   },
-  Acted: {
-    fontFamily: important(fontFamilies.primary),
+  title_Acted: {
+    fontFamily: important(fontFamilies.inter),
     fontWeight: important(fontWeights.light),
     fontSize: important(fontSizes.heading[30]),
     lineHeight: important(lineHeights.shorter),
-    letterSpacing: important(letterSpacing[40]),
+    letterSpacing: important(letterSpacing.scale[40]),
     fontOpticalSizing: important('auto'),
     fontStyle: important('normal'),
     fontVariationSettings: important("'wght' 200"),    
     color: md3.inverseOnSurface,    
   },
-  onlineStoreTitle:{
-    fontFamily: fontFamilies.primary,
+  title_onlineStore:{
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.regular,
     fontSize: important(fontSizes.heading[30]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing[50]),
+    letterSpacing: important(letterSpacing.scale[50]),
     textWrap: 'balance',        
     color: md3.inverseOnSurface,    
   },
   // Heading variants
   h1: {
-    fontFamily: fontFamilies.brand,
+    fontFamily: fontFamilies.dm_sans,
     fontWeight: fontWeights.regular,
     fontSize: important(fontSizes.heading[10]),
     lineHeight: important(lineHeights.tight),
-    letterSpacing: important(letterSpacing.tighter),
+    letterSpacing: important(letterSpacing.scale[40]),
     textWrap: 'balance',
   },
   h2: {
-    fontFamily: fontFamilies.brand,
+    fontFamily: fontFamilies.dm_sans,
     fontWeight: fontWeights.regular,
     fontSize: important(fontSizes.heading[20]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.tighter),
+    letterSpacing: important(letterSpacing.scale[40]),
   },
   h3: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.regular,
     fontSize: important(fontSizes.heading[30]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.tighter),
+    letterSpacing: important(letterSpacing.scale[40]),
     textWrap: 'balance',
   },
   h4: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.regular,
     fontSize: important(fontSizes.heading[60]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.tight),
+    letterSpacing: important(letterSpacing.scale[40]),
     textWrap: 'balance',
   },
   h5: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.medium,
     fontSize: important(fontSizes.heading[80]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.normal),
+    letterSpacing: important(letterSpacing.scale[80]),
     textWrap: 'balance',
   },
   h6: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.semibold,
     fontSize: important(fontSizes.heading[90]),
     lineHeight: important(lineHeights.normal),
@@ -112,7 +158,7 @@ export const typographyConfig = {
 
   // Body variants
   body1: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.regular,
     fontSize: important(fontSizes.body[10]),
     lineHeight: important(lineHeights.relaxed),
@@ -120,7 +166,7 @@ export const typographyConfig = {
     textWrap: 'pretty',
   },
   body2: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.regular,
     fontSize: important(fontSizes.body[20]),
     lineHeight: important('calc(var(--wholestep) / var(--quarterstep))'),
@@ -130,93 +176,93 @@ export const typographyConfig = {
 
   // Subtitle variants
   subh3: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.regular,
     fontSize: important(fontSizes.body[20]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.fine),
+    letterSpacing: important(letterSpacing.scale[80]),
   },
   subh4: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.regular,
     fontSize: important(fontSizes.caption[10]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.fine),
+    letterSpacing: important(letterSpacing.scale[80]),
   },
 
   // Caption variants
   caption: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.regular,
     fontSize: important(fontSizes.caption[10]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.fine),
+    letterSpacing: important(letterSpacing.scale[80]),
   },
   captionBold: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.semibold,
     fontSize: important(fontSizes.caption[10]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.fine),
+    letterSpacing: important(letterSpacing.scale[80]),
   },
   captionSemiBold: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.medium,
     fontSize: important(fontSizes.caption[10]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.fine),
+    letterSpacing: important(letterSpacing.scale[80]),
   },
   caption2: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.regular,
     fontSize: important(fontSizes.caption[20]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.fine),
+    letterSpacing: important(letterSpacing.scale[80]),
   },
 
   // Utility variants
   button: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.medium,
     fontSize: important(fontSizes.heading[60]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.minimal),
+    letterSpacing: important(letterSpacing.scale[40]),
     textTransform: 'none',
     position: "static",
     top: "6.235em",
   },
   buttonSmall: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.medium,
     fontSize: important(fontSizes.body[10]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.minimal),
+    letterSpacing: important(letterSpacing.scale[40]),
     textTransform: 'none',
     position: "static",
     top: "6.235em",
   },
   buttonMedium: {
-    fontFamily: fontFamilies.primary,
-    fontWeight: fontWeights.medium,
-    fontSize: important(fontSizes.heading[80]),
+    fontFamily: fontFamilies.inter,
+    fontWeight: fontWeights.regular,
+    fontSize: important(fontSizes.heading[90]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.minimal),
+    letterSpacing: important(letterSpacing.scale[40]),
     textTransform: 'none',
     position: "static",
     top: "6.235em",
   },
   buttonLarge: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.medium,
     fontSize: important(fontSizes.heading[50]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.minimal),
+    letterSpacing: important(letterSpacing.scale[40]),
     textTransform: 'none',
     position: "static",
     top: "6.235em",
   },
   overline: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.regular,
     fontSize: important(fontSizes.caption[10]),
     lineHeight: important(lineHeights.normal),
@@ -224,53 +270,36 @@ export const typographyConfig = {
     textTransform: 'uppercase',
   },
   fineprint: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.light,
     fontSize: important(fontSizes.caption[20]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.fine),
+    letterSpacing: important(letterSpacing.scale[80]),
   },
   // Custom variants
   price: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.regular,
     fontSize: important(fontSizes.heading[45]),
     lineHeight: important(lineHeights.tight),
-    letterSpacing: important(letterSpacing.tighter),
+    letterSpacing: important(letterSpacing.scale[40]),
     textWrap: 'balance',
   },
   productTitle: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.medium,
     fontSize: important(fontSizes.heading[40]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.tight),
+    letterSpacing: important(letterSpacing.scale[40]),
     textWrap: 'balance',
   },
-  navlink: {
-    fontFamily: fontFamilies.primary,
-    fontWeight: fontWeights.medium,
-    fontSize: important(fontSizes.heading[80]),
-    lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.minimal),
-    textTransform: 'none',
-    position: "static",
-    top: "6.235em",
-  },
-  topnavlink: {
-    fontFamily: fontFamilies.primary,
-    fontWeight: 300, // Lighter than token default for this context
-    fontSize: important(fontSizes.body.small),
-    lineHeight: important(lineHeights.wide),
-    letterSpacing: important(letterSpacing.normal),
-    textWrap: "balance",
-  },
+  
   chip: {
-    fontFamily: fontFamilies.primary,
+    fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.semibold,
     fontSize: important(fontSizes.heading[60]),
     lineHeight: important(lineHeights.normal),
-    letterSpacing: important(letterSpacing.minimal),
+    letterSpacing: important(letterSpacing.scale[40]),
     textTransform: 'none',
     position: "static",
     top: "6.235em",
