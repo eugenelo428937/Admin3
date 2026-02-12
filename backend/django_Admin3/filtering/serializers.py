@@ -55,6 +55,23 @@ class FilterConfigurationGroupSerializer(serializers.Serializer):
     parent_id = serializers.IntegerField(source='filter_group.parent_id', allow_null=True)
 
 
+class ProductGroupFilterSerializer(serializers.ModelSerializer):
+    """Serializer for product group filters with child groups."""
+    filter_type = serializers.SerializerMethodField()
+    groups = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FilterGroup
+        fields = ['id', 'name', 'filter_type', 'groups']
+
+    def get_filter_type(self, obj):
+        return 'category' if obj.parent is None else 'type'
+
+    def get_groups(self, obj):
+        children = obj.children.filter(is_active=True)
+        return [{'id': child.id, 'name': child.name} for child in children]
+
+
 class FilterGroupWithProductsSerializer(serializers.ModelSerializer):
     """Serializer for filter groups with their products."""
     products = serializers.SerializerMethodField()
