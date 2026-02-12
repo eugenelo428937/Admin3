@@ -12,6 +12,7 @@ from .models import FilterGroup
 from .serializers import (
     FilterGroupSerializer,
     FilterGroupThreeLevelSerializer,
+    ProductGroupFilterSerializer,
 )
 from .services.filter_service import get_filter_service
 
@@ -82,3 +83,30 @@ def filter_configuration(request):
         config = {k: v for k, v in config.items() if k in filter_types}
 
     return Response(config)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def product_group_filters(request):
+    """
+    Returns parent filter groups with their child groups for filtering.
+
+    Response format:
+    {
+        "results": [
+            {
+                "id": 1,
+                "name": "Study Materials",
+                "filter_type": "category",
+                "groups": [
+                    {"id": 2, "name": "Core Study Materials"}
+                ]
+            }
+        ]
+    }
+    """
+    roots = FilterGroup.objects.filter(
+        parent__isnull=True, is_active=True, children__isnull=False
+    ).prefetch_related('children').distinct()
+    serializer = ProductGroupFilterSerializer(roots, many=True)
+    return Response({'results': serializer.data})

@@ -17,6 +17,12 @@ DATABASES = {
     }
 }
 
+# Enable assertion mode — migrations raise exceptions instead of skipping
+MIGRATION_ASSERT_MODE = True
+
+# Use PostgreSQLTestRunner for reliable test DB management
+TEST_RUNNER = 'django_Admin3.test_runner.PostgreSQLTestRunner'
+
 # Disable password hashers for faster tests
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.MD5PasswordHasher',

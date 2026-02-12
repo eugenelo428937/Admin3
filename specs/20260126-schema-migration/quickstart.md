@@ -78,7 +78,7 @@ from userprofile.models import UserProfile
 
 # Should return counts without error
 print(f"MarkingPaper: {MarkingPaper.objects.count()}")
-print(f"TutorialEvent: {TutorialEvent.objects.count()}")
+print(f"TutorialEvent: {TutorialEvents.objects.count()}")
 print(f"ActedRule: {ActedRule.objects.count()}")
 print(f"Student: {Student.objects.count()}")
 print(f"UserProfile: {UserProfile.objects.count()}")
