@@ -313,7 +313,7 @@ const MainNavBar = () => {
                            display: { xs: "flex", md: "none" },
                         }}
                      >
-                        <Box sx={{ display: "flex", flexDirection: "column",height: theme.spacing.xl, }}>
+                        <Box sx={{ display: "flex", flexDirection: "column",height: theme.spacingTokens.xl[1] }}>
                            <span className="toggler-icon top-bar"></span>
                            <span className="toggler-icon middle-bar"></span>
                            <span className="toggler-icon bottom-bar"></span>
