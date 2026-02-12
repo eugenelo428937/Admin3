@@ -57,9 +57,11 @@
 
 import { spacing } from '../tokens/spacing';
 import { navigation } from '../semantic/navigation';
-import { typographyConfig } from '../typography';
-import { fontSize } from '@mui/system';
-import { iconSizes} from '../tokens/icons'
+import { fontSizes, fontWeights, fontFamilies  } from '../tokens/typography';
+import { iconSizes } from '../tokens/icons'
+import { shadows } from '../tokens/shadows'
+
+const important = (value) => `${value} !important`;
 
 export const navigationOverrides = {
   MuiAppBar: {
@@ -67,19 +69,20 @@ export const navigationOverrides = {
       root: ({ theme }) => ({
         backgroundColor: navigation.background.default,
         // Use actual CSS properties with breakpoints
-        paddingTop: spacing.xs3,
-        paddingBottom: spacing.xs3,
+        paddingTop: spacing.xs[3],
+        paddingTop: spacing.xs[3],
+        paddingBottom: spacing.xs[1],
         [theme.breakpoints.up('md')]: {
-          paddingLeft: spacing.xl,
-          paddingRight: spacing.xl,
+          paddingLeft: spacing.xl[1],
+          paddingRight: spacing.xl[1],
         },
         [theme.breakpoints.up('lg')]: {
-          paddingLeft: spacing.xl2,
-          paddingRight: spacing.xl2,
+          paddingLeft: spacing.xl[2],
+          paddingRight: spacing.xl[2],
         },
         [theme.breakpoints.up('xl')]: {
-          paddingLeft: spacing.xl3,
-          paddingRight: spacing.xl3,
+          paddingLeft: spacing.xl[3],
+          paddingRight: spacing.xl[3],
         },
       }),
     },
@@ -148,7 +151,9 @@ export const navigationOverrides = {
         style: {
           color: navigation.text.secondary,
           '&:hover': {
+            borderLeft: `3px solid ${navigation.text.hover}`,
             backgroundColor: navigation.background.hover,
+            boxShadow: shadows.dark[1],
           },
         },
       },
@@ -176,8 +181,8 @@ export const navigationOverrides = {
         '& .MuiSvgIcon-root': {
           color: navigation.button.icon,
         },
-        '& .MuiButton-icon':{
-          marginRight: spacing.xs2,
+        '& .MuiButton-icon': {
+          marginRight: spacing.xs[2],
         }
       },
     },
@@ -189,7 +194,7 @@ export const navigationOverrides = {
           backgroundColor: 'transparent',
           paddingRight: 0,
           '& .MuiSvgIcon-root': {
-            fontSize: iconSizes.md,
+            fontSize: iconSizes.sm,
           },
         },
       },
@@ -220,8 +225,9 @@ export const navigationOverrides = {
         style: {
           color: navigation.button.color,
           textTransform: 'none',
-          paddingTop: 0,
-          marginBottom: spacing.sm,
+          padding: 0,
+          borderRadius: 0,
+          borderBottom: `1px solid ${navigation.border.subtle}`,
         },
       },
       // topNavAction: Top navigation action buttons (search, cart, account)
@@ -231,10 +237,13 @@ export const navigationOverrides = {
           color: navigation.text.inverse,
           textTransform: 'none',
           padding: 0,
+          paddingleft: spacing.xs[3],
+          paddingRight: spacing.xs[3],
           justifyContent: 'center',
-          borderRadius: spacing.xs2,
-          overflow: 'hidden', // Contain ripple effect within button boundary
+          borderRadius: spacing.xs[2],
+          overflow: 'hidden',
           transition: 'background-color 0.2s ease-in-out',
+          minWidth: 'auto',
           '&:hover': {
             backgroundColor: 'rgba(255, 255, 255, 0.1)',
           },
@@ -244,34 +253,76 @@ export const navigationOverrides = {
           },
           "& .MuiButton-startIcon": {
             margin: 0,
-            marginRight: spacing.xs3,
+            marginRight: spacing.xs[5],
             '& .MuiSvgIcon-root': {
-                fontSize: iconSizes.xs,
+              fontSize: iconSizes.xs,
             },
-            
+
           },
         },
       },
     ],
   },
 
-  // Navigation Typography Variants (20260113-Styling-Clean-up)
+  // Navigation Typography Variants
   MuiTypography: {
     variants: [
+      {
+        props: { variant: 'topnavlink' },
+        style: {
+          fontFamily: fontFamilies.inter,
+          fontWeight: fontWeights.extralight,
+          fontSize: important(fontSizes.body.small),
+          lineHeight: important(lineHeights.tall),
+          letterSpacing: important(letterSpacing.scale[80]),
+          textWrap: "balance",
+        }
+      },
+      {
+        props: { variant: 'mainnavlink' },
+        style: {
+          fontFamily: fontFamilies.inter,
+          fontWeight: fontWeights.light,
+          fontSize: important(fontSizes.heading[90]),
+          lineHeight: important(lineHeights.normal),
+          letterSpacing: important(letterSpacing.normal),
+          textTransform: 'none',
+          position: "static",
+          top: "6.235em",
+        }
+      },
+      {
+        props: {
+          variant: 'meganavlink',
+          style: {
+            fontFamily: fontFamilies.inter,
+            fontWeight: fontWeights.light,
+            fontSize: important(fontSizes.body.medium),
+            lineHeight: important(lineHeights.tall),
+            letterSpacing: important(letterSpacing.scale[80]),
+            textWrap: "balance",
+            color: navigation.text.primary,
+          }
+        }
+      },
       // navViewAllText: Underlined text for "View All" links
       {
         props: { variant: 'navViewAllText' },
         style: {
-          borderBottom: `1px solid ${navigation.border.subtle}`,
+          fontSize: fontSizes.heading[90],
+          paddingBottom: 1,
+
         },
       },
       // navHeading: Menu section headings (e.g., "Core Principles", "Location")
       {
         props: { variant: 'navHeading' },
         style: {
-          marginBottom: spacing.xs,
-          fontWeight: 'bold',
+          marginBottom: 1,
+          fontWeight: fontWeights.regular,
           cursor: 'pointer',
+          color: navigation.text.secondary,
+          borderBottom: `1px solid ${navigation.border.subtle}`,
         },
       },
       // mobileNavTitle: Mobile navigation panel title (Phase 7 - US4)
@@ -291,9 +342,9 @@ export const navigationOverrides = {
           color: navigation.text.inverse,
         },
       },
-      // navlink: Main navigation link text (used in navPrimary buttons)
+      //mainnavlink: Main navigation link text (used in navPrimary buttons)
       {
-        props: { variant: 'navlink' },
+        props: { variant: 'mainnavlink' },
         style: {
           color: navigation.text.inverse,
         },
@@ -317,8 +368,8 @@ export const navigationOverrides = {
         props: { variant: 'hamburgerToggle' },
         style: {
           borderRadius: spacing.sm,
-          paddingLeft: spacing.xs,
-          paddingRight: spacing.xs,
+          paddingLeft: spacing.xs[1],
+          paddingRight: spacing.xs[1],
           paddingTop: spacing.sm,
           paddingBottom: spacing.sm,
           border: 0,

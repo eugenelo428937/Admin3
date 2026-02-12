@@ -9,13 +9,14 @@ import { md3, scales, staticColors } from './tokens/colors';
 import { typographyConfig, responsiveTypography } from './typography';
 import componentOverrides from './components';
 import { createGradientStyle, gradientColorSchemes } from './utils';
-import { spacing, semanticSpacing } from './spacing';
+import { spacing, semanticSpacing,numericSpacing } from './spacing';
 
 // Import semantic layer
 import { semantic } from './semantic/common';
 import productCards from './semantic/productCards';
 import navigation from './semantic/navigation';
-
+const baseUnit = 8;
+const goldenRatio = 1.618;
 // Base theme with breakpoints
 const baseTheme = createTheme({
   breakpoints: {
@@ -107,10 +108,15 @@ const theme = createTheme({
     // Usage: sx={{ color: 'navigation.text.primary' }}
     navigation: navigation,
   },
-
-  // MUI spacing base unit (8px is Material Design standard)
-  // Usage: theme.spacing(1) = 8px, theme.spacing(2) = 16px
-  spacing: 8,
+  
+  spacing: (factor) => {
+    // 0 = 0px
+    if (factor === 0) return '0px';
+    // Calculate 8 * (1.618 ^ (factor - 1)) for exponential growth
+    // or use a Fibonacci sequence approach.
+    const size = baseUnit * Math.pow(goldenRatio, factor - 1);
+    return `${Math.round(size)}px`;
+  },
 
   // Custom spacing tokens (for direct access via theme.spacingTokens.xl, etc.)
   // Usage: theme.spacingTokens.lg, theme.spacingTokens.xl
