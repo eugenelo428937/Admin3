@@ -15,20 +15,25 @@
 // Font Families
 // =============================================================================
 export const fontFamilies = {
-  primary: "'Inter',sans-serif",
-  brand: "'DM Sans', sans-serif",
-  secondary : "'DM Sans', sans-serif",
+  inter: "'Inter',sans-serif",
+  dm_sans: "'DM Sans', sans-serif",
+  secondary: "'DM Sans', sans-serif",
+  geist: "'geist',sans-serif",
 };
 
 // =============================================================================
 // Font Weights
 // =============================================================================
 export const fontWeights = {
-  light: 200,
+  thin: 100,
+  extralight: 200,
+  light: 300,
   regular: 400,
   medium: 500,
   semibold: 600,
   bold: 700,
+  extrabold: 800,
+  black: 900
 };
 
 // =============================================================================
@@ -78,39 +83,44 @@ export const fontSizes = {
     medium: 'calc(1rem / var(--halfstep) / var(--quarterstep))', // ~0.697em // 11.152px
     small: 'calc(1rem / var(--halfstep) / var(--halfstep))', // 0.62em // 9.8px 
   },
-  overline: 'calc(1rem / var(--halfstep) / var(--halfstep)/ var(--quarterstep))', // 0.55em // 8.7px  
+  overline: 'calc(1rem / var(--wholestep) / var(--quarterstep))', // 0.55em // 8.7px  
+  fineprint: 'calc(1rem / var(--wholestep) / var(--halfstep))', // 0.48em // 7.7px  
 };
 
 // =============================================================================
 // Line Heights (using scale values)
 // =============================================================================
 export const lineHeights = {
-  shortest: 'calc( 1 / var(--halfstep))',
-  shorter: 1,
-  short: 'calc( var(--halfstep)', //1.272  
-  normal: 'calc(var(--halfstep) * var(--quarterstep))',  //1.435
-  tall: 'calc(var(--whole))',  //1.618  
+  shortest: 'calc( 1 / var(--halfstep) / var(--halfstep))',
+  shorter: 'calc( 1 / var(--halfstep))',
+  short: 1,
+  normal: 'calc(var(--halfstep))', //1.272
+  tall: 'calc(var(--halfstep) * var(--quarterstep))',  //1.435
+  taller: 'calc(var(--whole))',  //1.618  
 };
 
 // =============================================================================
 // Letter Spacing
 // =============================================================================
 export const letterSpacing = {
-  10: '-0.0618em',
-  20: '-0.022em',
-  30: '-0.02em',
-  40: '-0.017em',
-  50: '-0.014em',
-  60: '-0.007em',
-  70: '0.004em',
-  80: '0.012em',
-  90: '0.016em',
-  100: '0.02em',
-  120: '0.024em',
-  130: '0.03em',
-  140: '0.038em',
-  150: '0.045em',
-  160: '0.0618em',
+  normal: 'normal',
+  scale: {
+    10: '-0.0618em',
+    20: '-0.022em',
+    30: '-0.02em',
+    40: '-0.017em',
+    50: '-0.014em',
+    60: '-0.007em',
+    70: '0.004em',
+    80: '0.012em',
+    90: '0.016em',
+    100: '0.02em',
+    120: '0.024em',
+    130: '0.03em',
+    140: '0.038em',
+    150: '0.045em',
+    160: '0.0618em',
+  }
 };
 
 // =============================================================================

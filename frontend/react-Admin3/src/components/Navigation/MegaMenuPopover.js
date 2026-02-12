@@ -74,7 +74,7 @@ const MegaMenuPopover = ({
         }}
         {...buttonProps}
       >
-        <Typography variant="navlink">
+        <Typography variant="mainnavlink">
           {label}
         </Typography>
       </Button>
@@ -120,13 +120,13 @@ const MegaMenuPopover = ({
             }
           }}
           sx={{
-            p: 2,
+            p: 3,
             maxWidth: width,
             pl: {
-              xs: theme.spacing.lg,
-              md: theme.spacing.xl,
-              lg: theme.spacing.xl2,
-              xl: theme.spacing.xl3,
+              xs: theme.spacingTokens.lg,
+              md: theme.spacingTokens.xl[1],
+              lg: theme.spacingTokens.xl[2],
+              xl: theme.spacingTokens.xl[3],
            },
             justifyContent: 'flex-start',
           }}

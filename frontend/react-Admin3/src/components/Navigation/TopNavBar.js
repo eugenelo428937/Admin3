@@ -126,13 +126,13 @@ const TopNavBar = ({ onOpenSearch }) =>
                bgcolor: 'navigation.background.topNavBar',
                px: {
                   sm: theme.spacingTokens.lg,
-                  md: theme.spacingTokens.xl,
-                  lg: theme.spacingTokens.xl2,
-                  xl: theme.spacingTokens.xl3,
+                  md: theme.spacingTokens.xl[1],
+                  lg: theme.spacingTokens.xl[2],
+                  xl: theme.spacingTokens.xl[3],
                },
                py: {
-                  xs: theme.spacingTokens.xs3,
-                  lg: theme.spacingTokens.xs3,
+                  xs: theme.spacingTokens.xs[3],
+                  lg: theme.spacingTokens.xs[3],
                },
             }}
          >

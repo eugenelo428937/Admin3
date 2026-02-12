@@ -87,7 +87,6 @@ const MainNavActions = ({
                onClick={onOpenCart}
                variant="navAction"
                size="medium"
-               disableRipple
                sx={{
                   display: {
                      xs: cartCount > 0 ? "flex" : "none",
@@ -131,7 +130,6 @@ const MainNavActions = ({
                   <Button
                      variant="navAction"
                      onClick={handleProfileOpen}
-                     disableRipple
                      sx={{
 
                         display: {
@@ -229,7 +227,6 @@ const MainNavActions = ({
                   onClick={onOpenAuth}
                   variant="navAction"
                   size="medium"
-                  disableRipple
                   sx={{
                      display: {
                         xs: cartCount === 0 ? "flex" : "none",

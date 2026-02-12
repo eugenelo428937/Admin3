@@ -23,7 +23,7 @@ const TypographySection = () => {
          <CardContent>
             <Grid container spacing={0}>
                <Grid size={{ xs: 12, md: 12, lg: 6 }}>
-                  <Card elevation={2} sx={{ padding: theme.spacing.lg }}>
+                  <Card elevation={2} sx={{ padding: theme.spacingTokens.lg }}>
                      <CardHeader
                         title={<Typography variant="h4">Typography</Typography>}
                         subheader={
@@ -99,7 +99,7 @@ const TypographySection = () => {
                               textAlign="left"
                               className="justify-content__end"
 							  sx = {{
-								paddingTop : theme.spacing.lg
+								paddingTop : theme.spacingTokens.lg
 							  }}
                            >                              
                               <Box>
@@ -200,7 +200,7 @@ const TypographySection = () => {
                   </Card>
                </Grid>
                <Grid size={{ xs: 12, md: 12, lg: 6 }}>				
-                  <Card elevation={2} sx={{ padding: theme.spacing.lg, width:1  }}>
+                  <Card elevation={2} sx={{ padding: theme.spacingTokens.lg, width:1  }}>
                      <CardHeader
                         title={
                            <Typography variant="h4">LiftKit Spacing</Typography>
@@ -224,7 +224,7 @@ const TypographySection = () => {
                            >
                               <Box
                                  sx={{
-                                    width: theme.spacing.xs3,
+                                    width: theme.spacingTokens.xs3,
                                     height: 16,
                                     backgroundColor: "primary.main",
                                  }}
@@ -244,7 +244,7 @@ const TypographySection = () => {
 													
                               <Box
                                  sx={{
-                                    width: theme.spacing.xs2,
+                                    width: theme.spacingTokens.xs2,
                                     height: 16,
                                     backgroundColor: "primary.main",
                                  }}
@@ -262,7 +262,7 @@ const TypographySection = () => {
                            >
 						   <Box
                                  sx={{
-                                    width: theme.spacing.xs,
+                                    width: theme.spacingTokens.xs,
                                     height: 16,
                                     backgroundColor: "primary.main",
                                  }}
@@ -280,7 +280,7 @@ const TypographySection = () => {
                            >
 						   <Box
                                  sx={{
-                                    width: theme.spacing.sm,
+                                    width: theme.spacingTokens.sm,
                                     height: 16,
                                     backgroundColor: "primary.main",
                                  }}
@@ -298,7 +298,7 @@ const TypographySection = () => {
                            >
 						   <Box
                                  sx={{
-                                    width: theme.spacing.md,
+                                    width: theme.spacingTokens.md,
                                     height: 16,
                                     backgroundColor: "primary.main",
                                  }}
@@ -316,7 +316,7 @@ const TypographySection = () => {
                            >
 						   <Box
                                  sx={{
-                                    width: theme.spacing.lg,
+                                    width: theme.spacingTokens.lg,
                                     height: 16,
                                     backgroundColor: "primary.main",
                                  }}
@@ -334,7 +334,7 @@ const TypographySection = () => {
                            >
 						   <Box
                                  sx={{
-                                    width: theme.spacing.xl,
+                                    width: theme.spacingTokens.xl[1],
                                     height: 16,
                                     backgroundColor: "primary.main",
                                  }}
@@ -352,7 +352,7 @@ const TypographySection = () => {
                            >
 						   <Box
                                  sx={{
-                                    width: theme.spacing.xl2,
+                                    width: theme.spacingTokens.xl2,
                                     height: 16,
                                     backgroundColor: "primary.main",
                                  }}

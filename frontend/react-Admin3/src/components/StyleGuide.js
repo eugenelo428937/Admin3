@@ -36,8 +36,8 @@ const StyleGuide = () => {
 			maxWidth="xl"
 			disableGutters
 			sx={{
-				px: theme.spacing.xl2,
-				py: theme.spacing.lg,
+				px: theme.spacingTokens.xl2,
+				py: theme.spacingTokens.lg,
 			}}>
 			<Typography variant="h2">
 				Style Guide
@@ -46,7 +46,7 @@ const StyleGuide = () => {
 			<Typography
 				variant="subtitle1"
 				gutterBottom
-				sx={{ mb: theme.spacing.md }}
+				sx={{ mb: theme.spacingTokens.md }}
 				>
 				BPP branding palette with Material UI components
 			</Typography>
@@ -55,7 +55,7 @@ const StyleGuide = () => {
 			<Box
 				sx={{					
 					borderColor: "divider",
-					marginX: theme.spacing.xl2
+					marginX: theme.spacingTokens.xl2
 				}}>
 				<Tabs
 					defaultActiveKey="typography"

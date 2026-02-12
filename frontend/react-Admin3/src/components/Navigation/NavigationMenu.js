@@ -57,11 +57,11 @@ const NavigationMenu = ({
             alignItems: "center",
             justifyContent: { xs: "flex-start", lg: "space-evenly" },
             width: 'auto',
-            gap: 1,
+            gap: theme.spacingTokens.md,
          }}
       >
          <Button component={NavLink} to="/home">
-            <Typography variant="navlink">Home</Typography>
+            <Typography variant="mainnavlink">Home</Typography>
          </Button>
 
          {/* Subjects Menu */}
@@ -95,7 +95,7 @@ const NavigationMenu = ({
                                     onCollapseNavbar && onCollapseNavbar();
                                  }}
                               >
-                                 {subject.code} - {subject.description}
+                                 <Typography variant="meganavlink">{subject.code} - {subject.description}</Typography>
                               </MenuItem>
                            ))}
                   </MenuList>
@@ -224,7 +224,7 @@ const NavigationMenu = ({
                               <Grid container spacing={1}>
                                  <Grid size={6}>
                                     <Typography
-                                       variant="navlink"
+                                       variant="mainnavlink"
                                        sx={{ mb: 1 }}
                                        onClick={() => {
                                           handleProductGroupClick(group.name);
@@ -289,7 +289,7 @@ const NavigationMenu = ({
                            size={{ xs: 12, md: 2, xl: 2 }}
                         >
                            <Typography
-                              variant="navlink"
+                              variant="mainnavlink"
                               sx={{
                                  mb: 1,
                                  cursor: "pointer",
@@ -407,7 +407,7 @@ const NavigationMenu = ({
                         size={{ xs: 12, md: 2, xl: 2 }}
                      >
                         <Typography
-                           variant="navlink"
+                           variant="mainnavlink"
                            sx={{ mb: 1, cursor: "pointer" }}
                            onClick={() => {
                               handleProductGroupClick(group.name);
@@ -512,7 +512,7 @@ const NavigationMenu = ({
                      {/* Location Column - Split into 2 sub-columns */}
                      <Grid size={{ xs: 12, md: 4 }}>
                         <Typography
-                           variant="navlink"
+                           variant="mainnavlink"
                            sx={{ mb: 1, fontWeight: "bold" }}
                            id="tutorial-location-heading"
                         >
@@ -579,7 +579,7 @@ const NavigationMenu = ({
                      {/* Format Column */}
                      <Grid size={{ xs: 12, md: 4 }}>
                         <Typography
-                           variant="navlink"
+                           variant="mainnavlink"
                            sx={{ mb: 1, fontWeight: "bold" }}
                            id="tutorial-format-heading"
                         >
@@ -647,7 +647,7 @@ const NavigationMenu = ({
                to="/apprenticeships"
                sx={{ mx: { xl: 2 } }}
             >
-               <Typography variant="navlink">Apprenticeships</Typography>
+               <Typography variant="mainnavlink">Apprenticeships</Typography>
             </Button>
          ) : null}
 
@@ -658,7 +658,7 @@ const NavigationMenu = ({
                to="/study-plus"
                sx={{ mx: { xl: 2 } }}
             >
-               <Typography variant="navlink">Study Plus</Typography>
+               <Typography variant="mainnavlink">Study Plus</Typography>
             </Button>
          ) : null}
 
@@ -674,7 +674,7 @@ const NavigationMenu = ({
                   onClick={handleAdminClick}
                   sx={{ mx: { xl: 2 } }}
                >
-                  <Typography variant="navlink">Admin</Typography>
+                  <Typography variant="mainnavlink">Admin</Typography>
                </Button>
                <Menu
                   id="admin-menu"

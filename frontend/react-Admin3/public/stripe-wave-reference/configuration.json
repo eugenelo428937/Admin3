@@ -1,0 +1,123 @@
+{
+  "extractedFrom": "https://stripe.com/gb",
+  "extractedDate": "2026-02-09",
+  "engine": "Three.js r178",
+  "framework": "React (Next.js)",
+
+  "architecture": {
+    "renderPasses": 2,
+    "waveMeshes": 2,
+    "drawCallsPerFrame": 4,
+    "pattern": "For each mesh: wave draw (196608 indices) -> post-process (6 indices/fullscreen quad)",
+    "meshDifference": "Only u_time differs by ~49.5 seconds between the two meshes",
+    "indicesPerMesh": 196608,
+    "quadsPerMesh": 32768,
+    "estimatedGridSize": "256x128 or 128x256"
+  },
+
+  "waveUniforms": {
+    "u_speed": 0.00004,
+    "u_twistFrequencyX": -0.65,
+    "u_twistFrequencyY": 0.41,
+    "u_twistFrequencyZ": -0.58,
+    "u_twistPowerX": 3.63,
+    "u_twistPowerY": 0.70,
+    "u_twistPowerZ": 3.95,
+    "u_displaceFrequencyX": 0.00583,
+    "u_displaceFrequencyZ": 0.016,
+    "u_displaceAmount": -7.821,
+    "u_colorSaturation": 1.0,
+    "u_colorContrast": 1.0,
+    "u_colorHueShift": -0.0016,
+    "u_glowAmount": 1.98,
+    "u_glowPower": 0.806,
+    "u_glowRamp": 0.834
+  },
+
+  "postProcessUniforms": {
+    "u_blurAmount": 0.02,
+    "u_blurSamples": 6,
+    "u_grainAmount": 1.1,
+    "u_opaque": 0
+  },
+
+  "camera": {
+    "type": "perspective",
+    "note": "Very wide FOV (~180deg) with mesh at Z=-5004, effectively orthographic-like",
+    "modelViewTranslation": [380.15, -301.70, -5004.50],
+    "modelViewRotation": "Complex rotation - see modelViewMatrix",
+    "modelViewMatrix": [
+      -2.591, 7.598, -4.069, 0,
+      -7.585, -2.543, 0.081, 0,
+      -0.676, 2.158, 4.459, 0,
+      380.15, -301.70, -5004.50, 1
+    ]
+  },
+
+  "cssLayout": {
+    "heroBackground": {
+      "position": "absolute",
+      "top": "-76px",
+      "left": "0px",
+      "right": "0px",
+      "bottom": "0px",
+      "overflow": "hidden",
+      "zIndex": 1
+    },
+    "waveLayout": {
+      "position": "relative",
+      "width": "~1266px (70% of viewport)",
+      "height": "~753px"
+    },
+    "waveContents": {
+      "position": "absolute",
+      "top": "0",
+      "left": "250px",
+      "note": "Offset 250px from left of layout area"
+    },
+    "canvas": {
+      "width": "~1393px",
+      "height": "~753px",
+      "noFilterOrMask": true,
+      "note": "No CSS filter/blur - all effects in WebGL post-processing"
+    }
+  },
+
+  "paletteColors": {
+    "description": "256-pixel wide gradient texture, 2D (slight vertical variation from noise)",
+    "gradient": [
+      { "x": 0.00, "hex": "#d9d5fb", "name": "Light lavender" },
+      { "x": 0.06, "hex": "#cdbcf9", "name": "Lavender" },
+      { "x": 0.13, "hex": "#c99ef3", "name": "Purple" },
+      { "x": 0.19, "hex": "#d08de8", "name": "Pink-purple" },
+      { "x": 0.22, "hex": "#d489e7", "name": "Orchid" },
+      { "x": 0.25, "hex": "#db87e6", "name": "Magenta" },
+      { "x": 0.31, "hex": "#e787de", "name": "Pink" },
+      { "x": 0.38, "hex": "#ef96cf", "name": "Salmon pink" },
+      { "x": 0.41, "hex": "#f2a2c4", "name": "Rose" },
+      { "x": 0.44, "hex": "#f4b1ba", "name": "Light rose" },
+      { "x": 0.47, "hex": "#f7bbb0", "name": "Peach" },
+      { "x": 0.50, "hex": "#f6c1a8", "name": "Warm peach" },
+      { "x": 0.56, "hex": "#f6c8a5", "name": "Apricot" },
+      { "x": 0.63, "hex": "#f5cfae", "name": "Light peach" },
+      { "x": 0.69, "hex": "#f5d7c1", "name": "Bisque" },
+      { "x": 0.75, "hex": "#f3e4d4", "name": "Cream" },
+      { "x": 0.81, "hex": "#f6eae9", "name": "Near-white pink" },
+      { "x": 0.88, "hex": "#f4e3eb", "name": "Light pink" },
+      { "x": 0.94, "hex": "#f3dbd6", "name": "Blush" },
+      { "x": 1.00, "hex": "#f1e1d2", "name": "Warm cream" }
+    ]
+  },
+
+  "keyDifferencesFromOurImplementation": [
+    "NO pre-baked texture images - colors from procedural palette gradient + simplex noise",
+    "Twist deformation via 3 rotation matrices with expStep shaping (not static fold geometry)",
+    "2 meshes (same geometry, time offset) vs our 3 separate meshes with different textures",
+    "Post-processing pass (angular blur + grain) in WebGL, not CSS blur",
+    "Screen-space derivative glow (dFdy) on edges for soft highlighting",
+    "Perspective camera at large distance vs our orthographic",
+    "Much slower animation (speed=0.00004 vs our breathing ~0.3-0.4)",
+    "Completely procedural - no image files loaded for the wave effect",
+    "Uses waveGeometry.js web worker for mesh (same as ours) but with simplex noise displacement on top"
+  ]
+}

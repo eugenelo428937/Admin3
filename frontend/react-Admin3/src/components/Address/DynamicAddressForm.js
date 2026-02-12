@@ -161,7 +161,7 @@ const DynamicAddressForm = ({
 						md: gridSize,
 					}}
 					key={fieldName}
-					sx={{ mr: theme.spacing.md }}>
+					sx={{ mr: theme.spacingTokens.md }}>
 					<FormControl fullWidth error={hasError}>
 						<InputLabel>
 							{fieldConfig.label}
@@ -193,7 +193,7 @@ const DynamicAddressForm = ({
 					md: gridSize,
 				}}
 				key={fieldName}
-				sx={{ mr: theme.spacing.md }}>
+				sx={{ mr: theme.spacingTokens.md }}>
 				<TextField
 					fullWidth
 					required={isRequired}
@@ -268,7 +268,7 @@ const DynamicAddressForm = ({
 
 			{/* Render fields according to layout */}
 			{addressMetadata.layout.map((row, rowIndex) => (
-				<Grid container spacing={1} key={rowIndex} sx={{ mb: theme.spacing.sm }}>
+				<Grid container spacing={1} key={rowIndex} sx={{ mb: theme.spacingTokens.sm }}>
 					{row.map(({ field, span }) => {
 						const fieldConfig = addressMetadata.fields[field];
 						if (
@@ -288,7 +288,7 @@ const DynamicAddressForm = ({
 			{!showOptionalFields &&
 				Object.keys(addressMetadata.fields).length >
 					addressMetadata.required.length && (
-					<Box sx={{ textAlign: "center", mt: theme.spacing.md }}>
+					<Box sx={{ textAlign: "center", mt: theme.spacingTokens.md }}>
 						<Typography variant="body2" color="text.secondary">
 							Some optional fields are hidden.
 						</Typography>

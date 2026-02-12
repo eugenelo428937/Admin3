@@ -649,7 +649,7 @@ const CheckoutSteps = ({ onComplete }) => {
                 backdrop="static"
                 disableEscapeKeyDown={true}
               />
-              <Box sx={{ px: { xs: theme.spacing.sm, md: theme.spacing.md, lg: theme.spacing.md } }}>
+              <Box sx={{ px: { xs: theme.spacingTokens.sm, md: theme.spacingTokens.md, lg: theme.spacingTokens.md } }}>
                  {/* Two-column grid layout for all steps */}
                  <Grid container spacing={1} className="justify-content-center">
                     {/* Left column: Step content (lg:8, md:12) */}

@@ -1,0 +1,40 @@
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-6,6,3,-3,0.1,10);
+camera.position.z = 5;
+
+const renderer = new THREE.WebGLRenderer({ alpha:true });
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const geo = new THREE.BufferGeometry();
+const mat = new THREE.LineBasicMaterial({ opacity:0.5, transparent:true });
+
+const pts = [];
+for(let i=0;i<200;i++) pts.push(new THREE.Vector3());
+
+geo.setFromPoints(pts);
+const curve = new THREE.Line(geo, mat);
+scene.add(curve);
+
+function animate(time){
+  const t = time * 0.001;
+  const lambda = 0.4 + 0.2*Math.sin(t*0.6);
+
+  const arr = geo.attributes.position.array;
+
+  for(let i=0;i<200;i++){
+    let x = i/200 * 10;
+    let s = Math.exp(-lambda * x);
+
+    arr[i*3]   = x - 5;
+    arr[i*3+1] = s*2 - 1;
+    arr[i*3+2] = 0;
+  }
+
+  geo.attributes.position.needsUpdate = true;
+
+  renderer.render(scene,camera);
+  requestAnimationFrame(animate);
+}
+
+animate();

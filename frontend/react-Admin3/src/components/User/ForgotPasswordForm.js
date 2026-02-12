@@ -223,7 +223,7 @@ const ForgotPasswordForm = () => {
                         <Typography
                            variant="h4"
                            color={theme.palette.scales.granite[90]}
-                           sx={{ mb: theme.spacing.md }}
+                           sx={{ mb: theme.spacingTokens.md }}
                         >
                            Reset Your Password
                         </Typography>
@@ -241,7 +241,7 @@ const ForgotPasswordForm = () => {
                      sx={{
                         textAlign: "center",
                         bgcolor: theme.palette.scales.granite[10],
-                        padding: theme.spacing.lg,
+                        padding: theme.spacingTokens.lg,
                      }}
                   />
                   <CardContent>

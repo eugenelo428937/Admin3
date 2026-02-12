@@ -1323,7 +1323,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                   <Box
                      sx={{
                         textAlign: "center",
-                        mb: theme.spacing.sm,
+                        mb: theme.spacingTokens.sm,
                         display: "flex",
                         flexDirection: "row",
                         alignItems: "center",
@@ -1340,14 +1340,14 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                         Personal & Contact Information
                      </Typography>
                   </Box>
-                  <Divider sx={{ mb: theme.spacing.lg }}></Divider>
+                  <Divider sx={{ mb: theme.spacingTokens.lg }}></Divider>
 
                   <Grid
                      container
-                     spacing={theme.spacing.sm}
+                     spacing={theme.spacingTokens.sm}
                      sx={{ flexGrow: 1 }}
                   >
-                     <Grid size={2} sx={{ mr: theme.spacing.sm }}>
+                     <Grid size={2} sx={{ mr: theme.spacingTokens.sm }}>
                         <Autocomplete
                            options={[
                               { label: "Mr", value: "Mr" },
@@ -1532,7 +1532,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                   <Box
                      sx={{
                         textAlign: "center",
-                        mb: theme.spacing.sm,
+                        mb: theme.spacingTokens.sm,
                         display: "flex",
                         flexDirection: "row",
                         alignItems: "center",
@@ -1547,7 +1547,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      />
                      <Typography variant="h5">Home Address</Typography>
                   </Box>
-                  <Divider sx={{ mb: theme.spacing.lg }}></Divider>
+                  <Divider sx={{ mb: theme.spacingTokens.lg }}></Divider>
 
                   {/* Three-layer address pattern: readonly -> manual/smart toggle -> cancel */}
                   {!isEditingHomeAddress ? (
@@ -1666,7 +1666,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                   <Box
                      sx={{
                         textAlign: "center",
-                        mb: theme.spacing.sm,
+                        mb: theme.spacingTokens.sm,
                         display: "flex",
                         flexDirection: "row",
                         alignItems: "center",
@@ -1681,7 +1681,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      />
                      <Typography variant="h5">Work Address</Typography>
                   </Box>
-                  <Divider sx={{ mb: theme.spacing.lg }}></Divider>
+                  <Divider sx={{ mb: theme.spacingTokens.lg }}></Divider>
 
                   <Paper
                      sx={{
@@ -2174,7 +2174,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      <Typography
                         variant="body2"
                         color={theme.palette.text.primary}
-                        sx={{ mb: theme.spacing.md }}
+                        sx={{ mb: theme.spacingTokens.md }}
                      >
                         {isProfileMode
                            ? "Update your profile information below. You can save changes at each step."
@@ -2185,7 +2185,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                         variant="determinate"
                         value={getProgressPercentage()}
                         sx={{
-                           mb: theme.spacing.md,
+                           mb: theme.spacingTokens.md,
                            height: 6,
                            borderRadius: 4,
                            backgroundColor: "rgba(255,255,255,0.2)",
@@ -2334,7 +2334,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
          </Card>
 
          {onSwitchToLogin && (
-            <Box sx={{ textAlign: "center", mt: theme.spacing.md }}>
+            <Box sx={{ textAlign: "center", mt: theme.spacingTokens.md }}>
                <Button variant="text" onClick={onSwitchToLogin}>
                   Already have an account? Login
                </Button>

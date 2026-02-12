@@ -304,22 +304,22 @@ const Home = () =>
                      }}
                   >
                      <Typography
-                        variant="BPP"
+                        variant="title_BPP"
                      >
                         BPP
                      </Typography>
                      <Box sx={{
-                        paddingLeft: theme.spacingTokens.xs2,
+                        paddingLeft: theme.spacingTokens.xs[2],
                         textAlign: 'start',
                      }}>
                         <Typography
-                           variant="Acted"
+                           variant="title_Acted"
                         >
                            Actuarial Education
                         </Typography>
                         <Divider flexItem />
                         <Typography
-                           variant="onlineStoreTitle"
+                           variant="title_onlineStore"
                         >
                            Online Store
                         </Typography>
@@ -361,8 +361,9 @@ const Home = () =>
             {/* Product Cards Grid */}
             <Grid
                container
-               // spacing={3}
+               spacing={5}
                sx={{
+                  padding: theme.spacingTokens.md
                   // justifyContent: "center",
                   // alignItems: "stretch",
                   // maxWidth: "1200px",
@@ -391,7 +392,7 @@ const Home = () =>
                            p: { xs: 2, md: 3 },
                            py: { xs: 2, md: 5 },
                            backgroundColor: "rgba(255, 255, 255, 0.95)",
-                           borderRadius: theme.spacing.sm,
+                           borderRadius: theme.spacingTokens.sm,
                            height: "100%",
                            justifyContent: "space-between",
                            display: "flex",
@@ -404,7 +405,7 @@ const Home = () =>
                               sx={{
                                  color: theme.palette.scales.granite[90],
                                  fontWeight: 500,
-                                 marginBottom: theme.spacing.lg,
+                                 marginBottom: theme.spacingTokens.lg,
                               }}
                            >
                               {card.title}

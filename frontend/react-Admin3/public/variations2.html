@@ -1,0 +1,50 @@
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-6,6,3,-3,0.1,10);
+camera.position.z = 5;
+
+const renderer = new THREE.WebGLRenderer({ alpha:true });
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const points = [];
+const geo = new THREE.BufferGeometry();
+const mat = new THREE.LineBasicMaterial({ opacity:0.6, transparent:true });
+
+function bondPrice(y, n=10, C=1, M=10){
+  let p = 0;
+  for(let t=1;t<=n;t++){
+    p += C/Math.pow(1+y,t);
+  }
+  p += M/Math.pow(1+y,n);
+  return p;
+}
+
+for(let i=0;i<200;i++){
+  points.push(new THREE.Vector3());
+}
+
+geo.setFromPoints(points);
+const line = new THREE.Line(geo, mat);
+scene.add(line);
+
+function animate(time){
+  const t = time * 0.001;
+  const arr = geo.attributes.position.array;
+
+  for(let i=0;i<200;i++){
+    let y = i/200 * 0.15 + 0.01;
+    let shift = 0.01*Math.sin(t*0.7);
+    let price = bondPrice(y+shift);
+
+    arr[i*3]   = (i/200)*10 - 5;
+    arr[i*3+1] = price*0.2 - 2;
+    arr[i*3+2] = 0;
+  }
+
+  geo.attributes.position.needsUpdate = true;
+
+  renderer.render(scene,camera);
+  requestAnimationFrame(animate);
+}
+
+animate();

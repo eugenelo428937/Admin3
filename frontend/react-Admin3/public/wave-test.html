@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wave Geometry Test - Stripe Style</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #ffffff;
+      color: #0a2540;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    .hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Wave canvas - Stripe's exact layout:
+       heroBackground spans viewport, wave canvas is ~77% width positioned right,
+       all visual effects in WebGL post-processing (no CSS filter/blur/mask) */
+    .wave-background {
+      position: absolute;
+      top: -76px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .wave-layout {
+      position: absolute;
+      top: 76px; /* Compensate for parent's -76px offset, so canvas top = viewport top */
+      right: 0;
+      width: 77%;
+      height: 85%;
+    }
+    .wave-contents {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .wave-background canvas {
+      display: block;
+    }
+    .wave-static {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .wave-static img { width: 100%; height: 100%; object-fit: cover; }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 160px 0 60px;
+      margin-left: max(60px, 14%);
+      max-width: 600px;
+    }
+    .hero-content h1 {
+      font-size: clamp(40px, 4vw, 56px);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      color: #0a2540;
+      margin-bottom: 24px;
+    }
+    .hero-content h1 em { font-style: normal; color: #635bff; }
+    .hero-content p {
+      font-size: 20px;
+      line-height: 1.6;
+      color: #425466;
+      margin-bottom: 32px;
+    }
+    .cta-buttons { display: flex; gap: 12px; }
+    .cta-buttons a {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; border-radius: 999px;
+      font-size: 16px; font-weight: 600; text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .cta-buttons a:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .cta-primary { background: #635bff; color: #fff; }
+    .cta-secondary { background: #fff; color: #0a2540; border: 1px solid #e0e6eb; }
+
+    .hint { position: fixed; bottom: 16px; right: 16px; font-size: 12px; color: #aaa; z-index: 10; }
+    #loading {
+      position: fixed; top: 50%; left: 60%; transform: translate(-50%, -50%);
+      font-size: 14px; color: #99a; z-index: 5;
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="wave-background">
+      <div class="wave-layout"><div class="wave-contents">
+      <canvas id="canvas"></canvas>
+      </div></div>
+      <div class="wave-static" id="staticFallback">
+        <img src="wave__1_.webp" alt="" />
+      </div>
+    </div>
+    <div class="hero-content">
+      <h1><em>Wave Geometry</em> Test Page</h1>
+      <p>Testing waveGeometry.js with Stripe's actual extracted shaders — procedural palette, simplex noise, twist deformations, and post-processing blur+grain.</p>
+      <div class="cta-buttons">
+        <a href="#" class="cta-primary">Get started &rsaquo;</a>
+        <a href="#" class="cta-secondary">Learn more</a>
+      </div>
+    </div>
+  </div>
+  <div id="loading">Generating wave geometry...</div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════════
+    // Stripe Wave — Exact replica using extracted shaders & uniforms
+    // Source: stripe.com/gb (extracted 2026-02-09)
+    // Architecture: 2 wave meshes → framebuffer → post-process → screen
+    // ═══════════════════════════════════════════════════════════════════
+
+    const canvas = document.getElementById('canvas');
+    const waveLayout = document.querySelector('.wave-layout');
+
+    // ── WebGL2 (required for #version 300 es, uint, dFdy) ────────────
+    const gl = canvas.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: false });
+    if (!gl) { document.getElementById('loading').textContent = 'WebGL2 required'; throw new Error('No WebGL2'); }
+
+    // ── Resize — match Stripe's canvas sizing ────────────────────────
+    // Stripe's canvas is a fixed size (~1393×753 CSS), NOT full-viewport.
+    // The canvas sits inside a layout area, offset from the left.
+    // The MV matrix and projection are based on these CSS dimensions.
+    let cssW, cssH;
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const layoutRect = waveLayout.getBoundingClientRect();
+      // Canvas sized to match the layout area (Stripe uses ~77% viewport width, ~85% height)
+      cssW = layoutRect.width;
+      cssH = layoutRect.height;
+      canvas.style.width = cssW + 'px';
+      canvas.style.height = cssH + 'px';
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      setupFramebuffer(); // Recreate FBO at new size
+    }
+
+    // ── Shader compilation ───────────────────────────────────────────
+    function compileShader(src, type) {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+        console.error('Shader error:', gl.getShaderInfoLog(s));
+        console.error(src.split('\n').map((l,i) => `${i+1}: ${l}`).join('\n'));
+        return null;
+      }
+      return s;
+    }
+    function createProgram(vs, fs) {
+      const p = gl.createProgram();
+      gl.attachShader(p, compileShader(vs, gl.VERTEX_SHADER));
+      gl.attachShader(p, compileShader(fs, gl.FRAGMENT_SHADER));
+      gl.linkProgram(p);
+      if (!gl.getProgramParameter(p, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(p));
+      return p;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // WAVE SHADER — Stripe's extracted vertex + fragment shader
+    // Twist deformations, simplex noise displacement, palette coloring
+    // ═══════════════════════════════════════════════════════════════════
+    const waveVS = `#version 300 es
+precision highp float;
+
+in vec3 aPosition;
+in vec2 aUV;
+
+uniform mat4 uProjection;
+uniform mat4 uModelView;
+uniform float uTime;
+uniform float uSpeed;
+uniform vec2 uResolution;
+
+uniform float uTwistFreqX, uTwistFreqY, uTwistFreqZ;
+uniform float uTwistPowX, uTwistPowY, uTwistPowZ;
+uniform float uDisplaceFreqX, uDisplaceFreqZ, uDisplaceAmount;
+
+out float vTime;
+out vec2 vUV;
+out vec3 vPosition;
+out vec4 vClipPosition;
+out vec2 vResolution;
+
+// ── xxhash ─────────────────────────────────────────────
+float xxhash(vec2 x) {
+  uvec2 t = floatBitsToUint(x);
+  uint h = 0xc2b2ae3du * t.x + 0x165667b9u;
+  h = (h << 17u | h >> 15u) * 0x27d4eb2fu;
+  h += 0xc2b2ae3du * t.y;
+  h = (h << 17u | h >> 15u) * 0x27d4eb2fu;
+  h ^= h >> 15u; h *= 0x85ebca77u;
+  h ^= h >> 13u; h *= 0xc2b2ae3du;
+  h ^= h >> 16u;
+  return uintBitsToFloat(h >> 9u | 0x3f800000u) - 1.0;
+}
+vec2 hash(vec2 x) {
+  float k = 6.283185307 * xxhash(x);
+  return vec2(cos(k), sin(k));
+}
+
+// ── Simplex noise ──────────────────────────────────────
+float simplexNoise(in vec2 p) {
+  const float K1 = 0.366025404;
+  const float K2 = 0.211324865;
+  vec2 i = floor(p + (p.x + p.y) * K1);
+  vec2 a = p - i + (i.x + i.y) * K2;
+  float m = step(a.y, a.x);
+  vec2 o = vec2(m, 1.0 - m);
+  vec2 b = a - o + K2;
+  vec2 c = a - 1.0 + 2.0 * K2;
+  vec3 h = max(0.5 - vec3(dot(a, a), dot(b, b), dot(c, c)), 0.0);
+  vec3 n = h * h * h * vec3(dot(a, hash(i)), dot(b, hash(i + o)), dot(c, hash(i + 1.0)));
+  return dot(n, vec3(32.99));
+}
+
+// ── Shaping ────────────────────────────────────────────
+float expStep(float x, float n) {
+  return exp2(-exp2(n) * pow(x, n));
+}
+float mapLinear(float v, float a, float b, float c, float d) {
+  return c + (v - a) * (d - c) / (b - a);
+}
+
+// ── Rotation matrix ────────────────────────────────────
+mat4 rotationMatrix(vec3 axis, float angle) {
+  axis = normalize(axis);
+  float s = sin(angle), c = cos(angle), oc = 1.0 - c;
+  return mat4(
+    oc*axis.x*axis.x+c,         oc*axis.x*axis.y-axis.z*s,  oc*axis.z*axis.x+axis.y*s, 0.0,
+    oc*axis.x*axis.y+axis.z*s,  oc*axis.y*axis.y+c,         oc*axis.y*axis.z-axis.x*s, 0.0,
+    oc*axis.z*axis.x-axis.y*s,  oc*axis.y*axis.z+axis.x*s,  oc*axis.z*axis.z+c,        0.0,
+    0.0, 0.0, 0.0, 1.0);
+}
+
+// ── Displacement ───────────────────────────────────────
+vec3 displace(vec2 uv, vec3 pos, float time, float freqX, float freqZ, float amount) {
+  float noise = simplexNoise(vec2(pos.x * freqX + time, pos.z * freqZ + time));
+  pos.y += amount * noise;
+  return pos;
+}
+
+void main() {
+  vTime = uTime;
+  vUV = aUV;
+  vResolution = uResolution;
+
+  // Three twist rotation matrices (Stripe's exact logic)
+  mat4 rotA = rotationMatrix(vec3(0.5, 0.0, 0.5), uTwistFreqY * expStep(aUV.x, uTwistPowY));
+  mat4 rotB = rotationMatrix(vec3(0.0, 0.5, 0.5), uTwistFreqX * expStep(aUV.y, uTwistPowX));
+  mat4 rotC = rotationMatrix(vec3(0.5, 0.0, 0.5), uTwistFreqZ * expStep(aUV.y, uTwistPowZ));
+
+  // Simplex noise displacement
+  vec3 pos = displace(aUV, aPosition, uTime * uSpeed, uDisplaceFreqX, uDisplaceFreqZ, uDisplaceAmount);
+
+  // Apply twist rotations
+  pos = (vec4(pos, 1.0) * rotA).xyz;
+  pos = (vec4(pos, 1.0) * rotB).xyz;
+  pos = (vec4(pos, 1.0) * rotC).xyz;
+
+  vPosition = pos;
+  vClipPosition = uProjection * uModelView * vec4(pos, 1.0);
+  gl_Position = vClipPosition;
+}`;
+
+    const waveFS = `#version 300 es
+precision highp float;
+
+in float vTime;
+in vec2 vUV;
+in vec3 vPosition;
+in vec4 vClipPosition;
+in vec2 vResolution;
+
+uniform sampler2D uPaletteTexture;
+uniform float uColorSaturation;
+uniform float uColorContrast;
+uniform float uColorHueShift;
+uniform float uGlowAmount;
+uniform float uGlowPower;
+uniform float uGlowRamp;
+
+out vec4 fragColor;
+
+// ── xxhash + simplex noise (same as VS) ────────────────
+float xxhash(vec2 x) {
+  uvec2 t = floatBitsToUint(x);
+  uint h = 0xc2b2ae3du * t.x + 0x165667b9u;
+  h = (h << 17u | h >> 15u) * 0x27d4eb2fu;
+  h += 0xc2b2ae3du * t.y;
+  h = (h << 17u | h >> 15u) * 0x27d4eb2fu;
+  h ^= h >> 15u; h *= 0x85ebca77u;
+  h ^= h >> 13u; h *= 0xc2b2ae3du;
+  h ^= h >> 16u;
+  return uintBitsToFloat(h >> 9u | 0x3f800000u) - 1.0;
+}
+vec2 hash(vec2 x) {
+  float k = 6.283185307 * xxhash(x);
+  return vec2(cos(k), sin(k));
+}
+float simplexNoise(in vec2 p) {
+  const float K1 = 0.366025404;
+  const float K2 = 0.211324865;
+  vec2 i = floor(p + (p.x + p.y) * K1);
+  vec2 a = p - i + (i.x + i.y) * K2;
+  float m = step(a.y, a.x);
+  vec2 o = vec2(m, 1.0 - m);
+  vec2 b = a - o + K2;
+  vec2 c = a - 1.0 + 2.0 * K2;
+  vec3 h = max(0.5 - vec3(dot(a, a), dot(b, b), dot(c, c)), 0.0);
+  vec3 n = h * h * h * vec3(dot(a, hash(i)), dot(b, hash(i + o)), dot(c, hash(i + 1.0)));
+  return dot(n, vec3(32.99));
+}
+
+// ── Shaping + color functions ──────────────────────────
+float parabola(float x, float k) { return pow(4.0 * x * (1.0 - x), k); }
+float mapLinear(float v, float a, float b, float c, float d) {
+  return c + (v - a) * (d - c) / (b - a);
+}
+vec3 contrast(vec3 v, float a) { return (v - 0.5) * a + 0.5; }
+vec3 desaturate(vec3 color, float factor) {
+  vec3 gray = vec3(dot(vec3(0.299, 0.587, 0.114), color));
+  return mix(color, gray, factor);
+}
+vec3 hueShift(vec3 color, float shift) {
+  vec3 gray = vec3(0.57735);
+  vec3 proj = gray * dot(gray, color);
+  vec3 U = color - proj;
+  vec3 V = cross(gray, U);
+  return U * cos(shift) + V * sin(shift) + proj;
+}
+
+// ── Surface color (Stripe's exact logic) ───────────────
+vec3 surfaceColor(vec2 uv, vec3 pos, float pdy) {
+  vec3 color = texture(uPaletteTexture, vec2(uv.x, uv.y)).rgb;
+
+  float p = 1.0 - parabola(uv.x, 3.0);
+  float n0 = simplexNoise(vec2(vUV.x * 0.1, vUV.y * 0.5));
+  float n1 = simplexNoise(vec2(vUV.x * (600.0 + 300.0 * n0), vUV.y * 4.0 * n0));
+  n1 = mapLinear(n1, -1.0, 1.0, 0.0, 1.0);
+
+  vec3 texColor = color;
+  texColor += (n1 * 0.2 * (1.0 - texColor.b * 0.9) * pdy * p);
+  return texColor;
+}
+
+void main() {
+  // Screen-space derivative glow (edge highlighting)
+  vec2 dy = dFdy(vUV);
+  float pdy = dy.y * vResolution.y * uGlowAmount;
+  pdy = mapLinear(pdy, -1.0, 1.0, 0.0, 1.0);
+  pdy = clamp(pdy, 0.0, 1.0);
+  pdy = pow(pdy, uGlowPower);
+  pdy = smoothstep(0.0, uGlowRamp, pdy);
+  pdy = clamp(pdy, 0.0, 1.0);
+
+  vec4 color = vec4(surfaceColor(vUV, vPosition, pdy), 1.0);
+
+  // Color adjustments
+  color.rgb = contrast(color.rgb, uColorContrast);
+  color.rgb = desaturate(color.rgb, 1.0 - uColorSaturation);
+  color.rgb = hueShift(color.rgb, uColorHueShift);
+
+  // Edge brightening — adds white to flat (non-edge) areas
+  color += (1.0 - pdy) * 0.25;
+  fragColor = clamp(color, 0.0, 1.0);
+}`;
+
+    // ═══════════════════════════════════════════════════════════════════
+    // POST-PROCESSING SHADER — Angular blur + film grain
+    // ═══════════════════════════════════════════════════════════════════
+    const ppVS = `#version 300 es
+precision highp float;
+in vec2 aPosition;
+out vec2 vUV;
+void main() {
+  vUV = aPosition * 0.5 + 0.5;
+  gl_Position = vec4(aPosition, 0.0, 1.0);
+}`;
+
+    const ppFS = `#version 300 es
+precision highp float;
+
+in vec2 vUV;
+uniform sampler2D uScene;
+uniform float uBlurAmount;
+uniform int uBlurSamples;
+uniform float uGrainAmount;
+uniform float uOpaque;
+uniform vec2 uResolution;
+
+out vec4 fragColor;
+
+float random(vec2 st) {
+  return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453);
+}
+vec3 grain(vec3 color, float amount) {
+  float r = random(gl_FragCoord.xy * 0.01);
+  vec3 shift = vec3(4.0 / 255.0);
+  shift = mix(amount * shift, -amount * shift, r);
+  return color + shift;
+}
+vec4 blurAngular(sampler2D tex, vec2 uv, float angle, int samples) {
+  vec4 total = vec4(0);
+  vec2 coord = uv - 0.5;
+  float dist = 1.0 / float(samples);
+  vec2 dir = vec2(cos(angle * dist), sin(angle * dist));
+  mat2 rot = mat2(dir.xy, -dir.y, dir.x);
+  for (int i = 0; i < 16; i++) {
+    if (i >= samples) break;
+    total += texture(tex, coord + 0.5);
+    coord *= rot;
+  }
+  return total * dist;
+}
+
+void main() {
+  vec4 sceneColor = texture(uScene, vUV);
+  vec4 blurColor = blurAngular(uScene, vUV, uBlurAmount, uBlurSamples);
+  float blurPower = smoothstep(0.0, 0.7, vUV.y) - smoothstep(0.2, 1.0, vUV.y);
+  vec4 finalColor = mix(blurColor, sceneColor, blurPower);
+  finalColor.rgb = grain(finalColor.rgb, uGrainAmount);
+  float alpha = mix(finalColor.a, 1.0, uOpaque);
+  fragColor = vec4(min(finalColor.rgb, 1.0), alpha);
+}`;
+
+    // ── Compile programs ─────────────────────────────────────────────
+    const waveProg = createProgram(waveVS, waveFS);
+    const ppProg = createProgram(ppVS, ppFS);
+
+    // ── Wave shader locations ────────────────────────────────────────
+    const wLoc = {
+      aPosition:       gl.getAttribLocation(waveProg, 'aPosition'),
+      aUV:             gl.getAttribLocation(waveProg, 'aUV'),
+      uProjection:     gl.getUniformLocation(waveProg, 'uProjection'),
+      uModelView:      gl.getUniformLocation(waveProg, 'uModelView'),
+      uTime:           gl.getUniformLocation(waveProg, 'uTime'),
+      uSpeed:          gl.getUniformLocation(waveProg, 'uSpeed'),
+      uResolution:     gl.getUniformLocation(waveProg, 'uResolution'),
+      uTwistFreqX:     gl.getUniformLocation(waveProg, 'uTwistFreqX'),
+      uTwistFreqY:     gl.getUniformLocation(waveProg, 'uTwistFreqY'),
+      uTwistFreqZ:     gl.getUniformLocation(waveProg, 'uTwistFreqZ'),
+      uTwistPowX:      gl.getUniformLocation(waveProg, 'uTwistPowX'),
+      uTwistPowY:      gl.getUniformLocation(waveProg, 'uTwistPowY'),
+      uTwistPowZ:      gl.getUniformLocation(waveProg, 'uTwistPowZ'),
+      uDisplaceFreqX:  gl.getUniformLocation(waveProg, 'uDisplaceFreqX'),
+      uDisplaceFreqZ:  gl.getUniformLocation(waveProg, 'uDisplaceFreqZ'),
+      uDisplaceAmount: gl.getUniformLocation(waveProg, 'uDisplaceAmount'),
+      uPaletteTexture: gl.getUniformLocation(waveProg, 'uPaletteTexture'),
+      uColorSaturation:gl.getUniformLocation(waveProg, 'uColorSaturation'),
+      uColorContrast:  gl.getUniformLocation(waveProg, 'uColorContrast'),
+      uColorHueShift:  gl.getUniformLocation(waveProg, 'uColorHueShift'),
+      uGlowAmount:     gl.getUniformLocation(waveProg, 'uGlowAmount'),
+      uGlowPower:      gl.getUniformLocation(waveProg, 'uGlowPower'),
+      uGlowRamp:       gl.getUniformLocation(waveProg, 'uGlowRamp'),
+    };
+
+    // ── Post-processing locations ────────────────────────────────────
+    const pLoc = {
+      aPosition:    gl.getAttribLocation(ppProg, 'aPosition'),
+      uScene:       gl.getUniformLocation(ppProg, 'uScene'),
+      uBlurAmount:  gl.getUniformLocation(ppProg, 'uBlurAmount'),
+      uBlurSamples: gl.getUniformLocation(ppProg, 'uBlurSamples'),
+      uGrainAmount: gl.getUniformLocation(ppProg, 'uGrainAmount'),
+      uOpaque:      gl.getUniformLocation(ppProg, 'uOpaque'),
+      uResolution:  gl.getUniformLocation(ppProg, 'uResolution'),
+    };
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PALETTE TEXTURE — Stripe's exact extracted gradient
+    // Lavender → purple → pink → peach → cream
+    // ═══════════════════════════════════════════════════════════════════
+    const paletteStops = [
+      [0.000, 217,213,251], [0.031, 211,203,251], [0.063, 205,188,249],
+      [0.094, 201,174,244], [0.125, 201,158,243], [0.156, 202,146,238],
+      [0.188, 208,141,232], [0.219, 212,137,231], [0.250, 219,135,230],
+      [0.281, 224,134,224], [0.313, 231,135,222], [0.344, 234,139,219],
+      [0.375, 239,150,207], [0.406, 242,162,196], [0.438, 244,177,186],
+      [0.469, 247,187,176], [0.500, 246,193,168], [0.531, 248,196,166],
+      [0.563, 246,200,165], [0.594, 245,203,170], [0.625, 245,207,174],
+      [0.656, 246,210,183], [0.688, 245,215,193], [0.719, 245,220,204],
+      [0.750, 243,228,212], [0.781, 245,233,223], [0.813, 246,234,233],
+      [0.844, 245,231,233], [0.875, 244,227,235], [0.906, 244,215,227],
+      [0.938, 243,219,214], [0.969, 241,225,210],
+    ];
+
+    function createPaletteTexture() {
+      const width = 256;
+      const data = new Uint8Array(width * 4);
+      for (let x = 0; x < width; x++) {
+        const t = x / (width - 1);
+        // Find surrounding stops
+        let i0 = 0;
+        for (let i = 1; i < paletteStops.length; i++) {
+          if (paletteStops[i][0] <= t) i0 = i; else break;
+        }
+        const i1 = Math.min(i0 + 1, paletteStops.length - 1);
+        const s0 = paletteStops[i0], s1 = paletteStops[i1];
+        const f = s0[0] === s1[0] ? 0 : (t - s0[0]) / (s1[0] - s0[0]);
+        data[x * 4 + 0] = Math.round(s0[1] + (s1[1] - s0[1]) * f);
+        data[x * 4 + 1] = Math.round(s0[2] + (s1[2] - s0[2]) * f);
+        data[x * 4 + 2] = Math.round(s0[3] + (s1[3] - s0[3]) * f);
+        data[x * 4 + 3] = 255;
+      }
+      const tex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      return tex;
+    }
+    const paletteTex = createPaletteTexture();
+
+    // ═══════════════════════════════════════════════════════════════════
+    // FRAMEBUFFER — Render-to-texture for post-processing
+    // ═══════════════════════════════════════════════════════════════════
+    let fbo, fboColorTex;
+    function setupFramebuffer() {
+      if (fbo) { gl.deleteFramebuffer(fbo); gl.deleteTexture(fboColorTex); }
+      fboColorTex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, fboColorTex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+      fbo = gl.createFramebuffer();
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, fboColorTex, 0);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
+
+    // ── Fullscreen quad for post-processing ──────────────────────────
+    const quadBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+
+    // ═══════════════════════════════════════════════════════════════════
+    // GEOMETRY — 2 identical meshes from waveGeometry.js worker
+    // ═══════════════════════════════════════════════════════════════════
+    const NUM_MESHES = 2;
+    const meshes = [];
+    for (let i = 0; i < NUM_MESHES; i++) {
+      meshes.push({
+        posBuf: gl.createBuffer(),
+        uvBuf: gl.createBuffer(),
+        idxBuf: gl.createBuffer(),
+        indexCount: 0,
+        ready: false,
+      });
+    }
+
+    function uploadMesh(idx, data) {
+      const m = meshes[idx];
+      gl.bindBuffer(gl.ARRAY_BUFFER, m.posBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, data.positions, gl.STATIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, m.uvBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, data.uvs, gl.STATIC_DRAW);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, m.idxBuf);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data.indices, gl.STATIC_DRAW);
+      m.indexCount = data.indices.length;
+      m.ready = true;
+
+      if (meshes.every(m => m.ready)) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('staticFallback').style.display = 'none';
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // MATRIX UTILITIES
+    // ═══════════════════════════════════════════════════════════════════
+    function mat4Ortho(l, r, b, t, n, f) {
+      return new Float32Array([
+        2/(r-l),0,0,0, 0,2/(t-b),0,0, 0,0,-2/(f-n),0,
+        -(r+l)/(r-l),-(t+b)/(t-b),-(f+n)/(f-n),1
+      ]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // STRIPE'S EXACT UNIFORM VALUES (extracted from live site)
+    // ═══════════════════════════════════════════════════════════════════
+    const STRIPE = {
+      // Full-precision values extracted from stripe.com/gb on 2026-02-09
+      speed:           0.000039999998989515007,
+      twistFreqX:     -0.6499999761581421,
+      twistFreqY:      0.4099999964237213,
+      twistFreqZ:     -0.5799999833106995,
+      twistPowX:       3.630000114440918,
+      twistPowY:       0.699999988079071,
+      twistPowZ:       3.950000047683716,
+      displaceFreqX:   0.005830999929457903,
+      displaceFreqZ:   0.01600099913775921,
+      displaceAmount: -7.821000099182129,
+      colorSaturation: 1.0,
+      colorContrast:   1.0,
+      colorHueShift:  -0.0015926535706967115,
+      glowAmount:      1.9800000190734863,
+      glowPower:       0.8059999942779541,
+      glowRamp:        0.8339999914169312,
+      blurAmount:      0.02,
+      blurSamples:     6,
+      grainAmount:     1.1,
+      // Time offset between the 2 meshes (creates layered look)
+      timeOffset:      49.5,
+      // Stripe's canvas CSS dimensions (used for ortho projection)
+      refWidth:        1393,
+      refHeight:       753,
+      // Full-precision model-view matrix (column-major)
+      mv: [-2.591275691986084, 7.59769868850708, -4.069430828094482, 0,
+           -7.584522724151611, -2.5433096885681152, 0.08116345852613449, 0,
+           -0.6759144067764282, 2.157986640930176, 4.45939826965332, 0,
+            380.1459655761719, -301.70001220703125, -5004.4990234375, 1],
+    };
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RENDER LOOP
+    // ═══════════════════════════════════════════════════════════════════
+    const startTime = performance.now();
+
+    function getModelView() {
+      // Use Stripe's raw MV matrix — NO scaling.
+      // The ortho projection adapts to canvas CSS size, keeping the wave at
+      // the correct proportional position. The MV matrix stays constant
+      // (confirmed by extracting from Stripe at different viewport sizes).
+      return new Float32Array(STRIPE.mv);
+    }
+
+    function drawWaveMesh(meshIdx, proj, mv, time) {
+      const m = meshes[meshIdx];
+      if (!m.ready) return;
+
+      gl.useProgram(waveProg);
+
+      // Matrices
+      gl.uniformMatrix4fv(wLoc.uProjection, false, proj);
+      gl.uniformMatrix4fv(wLoc.uModelView, false, mv);
+
+      // Stripe's exact uniform values
+      gl.uniform1f(wLoc.uTime, time);
+      gl.uniform1f(wLoc.uSpeed, STRIPE.speed);
+      gl.uniform2f(wLoc.uResolution, canvas.width, canvas.height);
+      gl.uniform1f(wLoc.uTwistFreqX, STRIPE.twistFreqX);
+      gl.uniform1f(wLoc.uTwistFreqY, STRIPE.twistFreqY);
+      gl.uniform1f(wLoc.uTwistFreqZ, STRIPE.twistFreqZ);
+      gl.uniform1f(wLoc.uTwistPowX, STRIPE.twistPowX);
+      gl.uniform1f(wLoc.uTwistPowY, STRIPE.twistPowY);
+      gl.uniform1f(wLoc.uTwistPowZ, STRIPE.twistPowZ);
+      gl.uniform1f(wLoc.uDisplaceFreqX, STRIPE.displaceFreqX);
+      gl.uniform1f(wLoc.uDisplaceFreqZ, STRIPE.displaceFreqZ);
+      gl.uniform1f(wLoc.uDisplaceAmount, STRIPE.displaceAmount);
+      gl.uniform1f(wLoc.uColorSaturation, STRIPE.colorSaturation);
+      gl.uniform1f(wLoc.uColorContrast, STRIPE.colorContrast);
+      gl.uniform1f(wLoc.uColorHueShift, STRIPE.colorHueShift);
+      gl.uniform1f(wLoc.uGlowAmount, STRIPE.glowAmount);
+      gl.uniform1f(wLoc.uGlowPower, STRIPE.glowPower);
+      gl.uniform1f(wLoc.uGlowRamp, STRIPE.glowRamp);
+
+      // Palette texture
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, paletteTex);
+      gl.uniform1i(wLoc.uPaletteTexture, 0);
+
+      // Attributes
+      gl.bindBuffer(gl.ARRAY_BUFFER, m.posBuf);
+      gl.enableVertexAttribArray(wLoc.aPosition);
+      gl.vertexAttribPointer(wLoc.aPosition, 3, gl.FLOAT, false, 0, 0);
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, m.uvBuf);
+      gl.enableVertexAttribArray(wLoc.aUV);
+      gl.vertexAttribPointer(wLoc.aUV, 2, gl.FLOAT, false, 0, 0);
+
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, m.idxBuf);
+      gl.drawElements(gl.TRIANGLES, m.indexCount, gl.UNSIGNED_INT, 0);
+    }
+
+    function drawPostProcess() {
+      gl.useProgram(ppProg);
+
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, fboColorTex);
+      gl.uniform1i(pLoc.uScene, 0);
+      gl.uniform1f(pLoc.uBlurAmount, STRIPE.blurAmount);
+      gl.uniform1i(pLoc.uBlurSamples, STRIPE.blurSamples);
+      gl.uniform1f(pLoc.uGrainAmount, STRIPE.grainAmount);
+      gl.uniform1f(pLoc.uOpaque, 0.0);
+      gl.uniform2f(pLoc.uResolution, canvas.width, canvas.height);
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
+      gl.enableVertexAttribArray(pLoc.aPosition);
+      gl.vertexAttribPointer(pLoc.aPosition, 2, gl.FLOAT, false, 0, 0);
+
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+
+    function render() {
+      requestAnimationFrame(render);
+      if (!meshes[0].ready) return;
+
+      const time = (performance.now() - startTime) / 1000;
+      // Orthographic projection using CSS dimensions (matching Stripe's exact approach)
+      const proj = mat4Ortho(-cssW / 2, cssW / 2, -cssH / 2, cssH / 2, 1, 10000);
+      const mv = getModelView();
+
+      // Clear screen to white
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.clearColor(1.0, 1.0, 1.0, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      // For each mesh: render to FBO → post-process to screen
+      for (let i = 0; i < NUM_MESHES; i++) {
+        const meshTime = time + i * STRIPE.timeOffset;
+
+        // ── Pass 1: Render wave mesh to framebuffer ──
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.clearColor(1.0, 1.0, 1.0, 0.0); // White color, zero alpha
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        gl.disable(gl.BLEND);
+        gl.disable(gl.DEPTH_TEST);
+        gl.disable(gl.CULL_FACE); // DOUBLE_SIDED — Stripe renders both faces
+
+        drawWaveMesh(i, proj, mv, meshTime);
+
+        // ── Pass 2: Post-process FBO → screen ──
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0, 0, canvas.width, canvas.height);
+
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.disable(gl.CULL_FACE);
+
+        drawPostProcess();
+      }
+    }
+
+    // ── Initialize ───────────────────────────────────────────────────
+    window.addEventListener('resize', resize);
+    resize();
+    requestAnimationFrame(render);
+
+    // ── Workers: Generate 2 identical mesh geometries ────────────────
+    // Stripe's actual mesh: 257 rows × 129 cols = 33153 verts, 196608 indices
+    // Verified by extracting vertex buffer from stripe.com/gb:
+    //   Bounds: X[-200,200], Y[-4,4], Z[-100,88]
+    //   Grid: subdivisionsX=128 (→129 cols), subdivisionsY=256 (→257 rows)
+    //   height=400 (not 200!) — gives Final X range [-200,200] after fold+rotation
+    const workerParams = { width: 400, height: 400, subdivisionsX: 128, subdivisionsY: 256 };
+
+    for (let i = 0; i < NUM_MESHES; i++) {
+      const w = new Worker('waveGeometry.js');
+      w.onmessage = (e) => { uploadMesh(i, e.data); w.terminate(); };
+      w.postMessage(workerParams);
+    }
+  </script>
+</body>
+</html>
