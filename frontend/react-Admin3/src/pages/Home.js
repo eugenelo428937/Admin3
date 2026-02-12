@@ -18,6 +18,14 @@ import
    ArrowForward,
 } from "@mui/icons-material";
 import StripeWaveBackground from "../components/Effects/StripeWaveBackground";
+import AuroraBorealisBackground from '../components/Effects/AuroraBorealisBackground';
+import OceanDepthBackground from '../components/Effects/OceanDepthBackground';
+import NeonMeshBackground from '../components/Effects/NeonMeshBackground';
+import SunsetSilkBackground from "../components/Effects/SunsetSilkBackground";
+import IrisDawnBackground from "../components/Effects/IrisDawnBackground";
+import CopperRoseBackground from "../components/Effects/CopperRoseBackground";
+// import NeonMeshBackground from './Effects/NeonMeshBackground';
+
 
 const Home = () =>
 {
@@ -251,8 +259,13 @@ const Home = () =>
                   padding: 0,
                }}>
                {/* Animated Gradient Wave Background (Stripe-style) */}
-               <StripeWaveBackground />
-
+               {/* <StripeWaveBackground /> */}
+               {/* <AuroraBorealisBackground style={{ opacity: 0.8 }} /> */}
+               {/* <OceanDepthBackground/> */}
+               <NeonMeshBackground/>
+               {/* <SunsetSilkBackground /> */}
+               {/* <IrisDawnBackground /> */}
+               {/* <CopperRoseBackground /> */}
                {/* Dark Overlay for text readability */}
                <div
                   style={{
