@@ -16,12 +16,10 @@ import { md3, scales, staticColors } from '../tokens/colors';
 // Navigation Text Colors
 // =============================================================================
 export const text = {
-  primary: md3.onSurface, // #1C1B20 - Main nav text
-  secondary: md3.onSurfaceVariant, // #47464F - Secondary nav text
-  muted: scales.granite[50], // #848484 - Muted text
-  active: md3.primary, // #755085 - Active link
-  hover: md3.primary, // #755085 - Hover state
-  inverse: md3.inverseOnSurface, // #F4EFF7 - Text on dark nav
+  primary: md3.inverseOnSurface,
+  secondary: md3.surfaceDim,
+  active: scales.orange[110], 
+  hover: scales.orange[110], 
 };
 
 // =============================================================================
@@ -40,7 +38,7 @@ export const border = {
 export const background = {
   default: scales.granite[85], 
   active: scales.granite[90], 
-  hover: md3.surfaceContainerHigh, 
+  hover: scales.granite[95], 
   elevated: md3.surfaceContainerHigh, 
   dropdown: staticColors.white,
   overlay: 'rgba(0, 0, 0, 0.5)',

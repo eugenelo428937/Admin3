@@ -894,7 +894,7 @@ const TutorialProductCard = React.memo(
                                  "& .MuiSpeedDialAction-staticTooltipLabel": {
                                     whiteSpace: "nowrap",
                                     maxWidth: "none",
-                                    minHeight: theme.spacing.xl,
+                                    minHeight: theme.spacingTokens.xl[1],
                                     alignContent: "center",
                                  },
                                  "& .MuiSpeedDialAction-fab": {

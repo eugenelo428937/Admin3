@@ -1,8 +1,9 @@
 // Spacing Module
-// Exports liftkit spacing system and semantic spacing tokens
+// Exports semantic spacing tokens
 
-import { spacing } from '../tokens/spacing';
+import { spacing, numericSpacing  } from '../tokens/spacing';
 import semanticSpacing from './semantic';
 
 export { spacing };
+export {numericSpacing};
 export { semanticSpacing };

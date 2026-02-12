@@ -568,7 +568,7 @@ const MaterialProductCard = React.memo(
                                        {
                                           whiteSpace: "nowrap",
                                           maxWidth: "none",
-                                          minHeight: theme.spacing.xl,
+                                          minHeight: theme.spacingTokens.xl[1],
                                           alignContent: "center",
                                        },
                                     "& .MuiSpeedDialAction-fab": {
@@ -619,7 +619,7 @@ const MaterialProductCard = React.memo(
                                        {
                                           whiteSpace: "nowrap",
                                           maxWidth: "none",
-                                          minHeight: theme.spacing.xl,
+                                          minHeight: theme.spacingTokens.xl[1],
                                           alignContent: "center",
                                        },
 
@@ -733,7 +733,7 @@ const MaterialProductCard = React.memo(
                                        {
                                           whiteSpace: "nowrap",
                                           maxWidth: "none",
-                                          minHeight: theme.spacing.xl,
+                                          minHeight: theme.spacingTokens.xl[1],
                                           alignContent: "center",
                                        },
 
@@ -793,7 +793,7 @@ const MaterialProductCard = React.memo(
                                           whiteSpace: "normal",
                                           textWrap: "balance",
                                           minWidth: "200px",
-                                          minHeight: theme.spacing.xl,
+                                          minHeight: theme.spacingTokens.xl[1],
                                           alignContent: "center",
                                        },
                                     "& .MuiSpeedDialAction-fab": {

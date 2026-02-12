@@ -114,11 +114,11 @@ const NavigationMenu = ({
             alignItems: "center",
             justifyContent: { xs: "flex-start", lg: "space-evenly" },
             width: 'auto',
-            gap: theme.spacing.md,
+            gap: theme.spacingTokens.md,
          }}
       >
          <Button component={NavLink} to="/home">
-            <Typography variant="navlink">Home</Typography>
+            <Typography variant="mainnavlink">Home</Typography>
          </Button>
 
          {/* Subjects Menu */}
@@ -152,7 +152,7 @@ const NavigationMenu = ({
                                     onCollapseNavbar && onCollapseNavbar();
                                  }}
                               >
-                                 {subject.code} - {subject.description}
+                                 <Typography variant="meganavlink">{subject.code} - {subject.description}</Typography>
                               </MenuItem>
                            ))}
                   </MenuList>
@@ -281,7 +281,7 @@ const NavigationMenu = ({
                               <Grid container spacing={1}>
                                  <Grid size={6}>
                                     <Typography
-                                       variant="navlink"
+                                       variant="mainnavlink"
                                        sx={{ mb: 1 }}
                                        onClick={() => {
                                           handleProductGroupClick(group.name);
@@ -346,7 +346,7 @@ const NavigationMenu = ({
                            size={{ xs: 12, md: 2, xl: 2 }}
                         >
                            <Typography
-                              variant="navlink"
+                              variant="mainnavlink"
                               sx={{
                                  mb: 1,
                                  cursor: "pointer",
@@ -464,7 +464,7 @@ const NavigationMenu = ({
                         size={{ xs: 12, md: 2, xl: 2 }}
                      >
                         <Typography
-                           variant="navlink"
+                           variant="mainnavlink"
                            sx={{ mb: 1, cursor: "pointer" }}
                            onClick={() => {
                               handleProductGroupClick(group.name);
@@ -571,7 +571,7 @@ const NavigationMenu = ({
                      {/* Location Column - Split into 2 sub-columns */}
                      <Grid size={{ xs: 12, md: 4 }}>
                         <Typography
-                           variant="navlink"
+                           variant="mainnavlink"
                            sx={{ mb: 1, fontWeight: "bold" }}
                            id="tutorial-location-heading"
                         >
@@ -638,7 +638,7 @@ const NavigationMenu = ({
                      {/* Format Column */}
                      <Grid size={{ xs: 12, md: 4 }}>
                         <Typography
-                           variant="navlink"
+                           variant="mainnavlink"
                            sx={{ mb: 1, fontWeight: "bold" }}
                            id="tutorial-format-heading"
                         >
@@ -706,7 +706,7 @@ const NavigationMenu = ({
                to="/apprenticeships"
                sx={{ mx: { xl: 2 } }}
             >
-               <Typography variant="navlink">Apprenticeships</Typography>
+               <Typography variant="mainnavlink">Apprenticeships</Typography>
             </Button>
          ) : null}
 
@@ -717,64 +717,65 @@ const NavigationMenu = ({
                to="/study-plus"
                sx={{ mx: { xl: 2 } }}
             >
-               <Typography variant="navlink">Study Plus</Typography>
+               <Typography variant="mainnavlink">Study Plus</Typography>
             </Button>
          ) : null}
 
          {/* Admin MegaMenu */}
          {isSuperuser ? (
-            <MegaMenuPopover
-               id="admin-menu"
-               label="Admin"
-               onClose={() => onCollapseNavbar?.()}
-            >
-               {[adminCategories.row1, adminCategories.row2].map((row, rowIndex) => (
-                  <Grid container spacing={3} key={rowIndex} sx={{ mb: rowIndex === 0 ? 2 : 0 }}>
-                     {row.map((category) => (
-                        <Grid item xs={6} sm={3} key={category.label}>
-                           <Box
-                              data-disabled={!category.enabled ? "true" : undefined}
-                              sx={{
-                                 ...((!category.enabled) && {
-                                    opacity: 0.5,
-                                    pointerEvents: 'none',
-                                 }),
-                              }}
-                           >
-                              <Typography
-                                 variant="subtitle2"
-                                 sx={{
-                                    fontWeight: 'bold',
-                                    mb: 1,
-                                    color: theme.palette.semantic?.navigation?.button?.color || 'inherit',
-                                 }}
-                              >
-                                 {category.label}
-                              </Typography>
-                              <MenuList dense>
-                                 {category.links.map((link) => (
-                                    <MenuItem
-                                       key={link.to}
-                                       component={NavLink}
-                                       to={link.to}
-                                       onClick={() => onCollapseNavbar?.()}
-                                       sx={{
-                                          color: theme.palette.semantic?.navigation?.button?.color || 'inherit',
-                                          '&:hover': {
-                                             backgroundColor: theme.palette.action?.hover || 'rgba(255,255,255,0.1)',
-                                          },
-                                       }}
-                                    >
-                                       {link.label}
-                                    </MenuItem>
-                                 ))}
-                              </MenuList>
-                           </Box>
-                        </Grid>
-                     ))}
-                  </Grid>
-               ))}
-            </MegaMenuPopover>
+            <>
+               <Button
+                  variant="navPrimary"
+                  id="admin-menu-button"
+                  aria-controls={adminMenuOpen ? "admin-menu" : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={adminMenuOpen ? "true" : undefined}
+                  onClick={handleAdminClick}
+                  sx={{ mx: { xl: 2 } }}
+               >
+                  <Typography variant="mainnavlink">Admin</Typography>
+               </Button>
+               <Menu
+                  id="admin-menu"
+                  anchorEl={adminAnchorEl}
+                  open={adminMenuOpen}
+                  onClose={handleAdminClose}
+                  MenuListProps={{
+                     "aria-labelledby": "admin-menu-button",
+                  }}
+               >
+                  <MenuItem
+                     component={NavLink}
+                     to="admin/exam-sessions"
+                     onClick={() => {
+                        handleAdminClose();
+                        onCollapseNavbar?.();
+                     }}
+                  >
+                     Exam Sessions
+                  </MenuItem>
+                  <MenuItem
+                     component={NavLink}
+                     to="admin/subjects"
+                     onClick={() => {
+                        handleAdminClose();
+                        onCollapseNavbar?.();
+                     }}
+                  >
+                     Subjects
+                  </MenuItem>
+                  <MenuItem
+                     component={NavLink}
+                     to="admin/products"
+                     onClick={() => {
+                        handleAdminClose();
+                        onCollapseNavbar?.();
+                     }}
+                  >
+                     Products
+                  </MenuItem>
+               </Menu>
+            </>
          ) : null}
       </Container>
    );
