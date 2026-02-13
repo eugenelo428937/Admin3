@@ -99,8 +99,7 @@ const TopNavBar = ({ onOpenSearch }) => {
    return (
       <>
          <Container
-            maxWidth="xl"            
-            className="d-flex flex-row justify-content-between align-content-end"
+         maxWidth={false}            
             sx={{
                bgcolor: 'navigation.background.topNavBar',
                px: {
@@ -134,10 +133,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                         justifyContent: "center",
                      }}>
                      <Typography
-                        variant="topnavlink"
-                        sx={{
-                           display: { xs: "none", md: "flex" },
-                        }}
+                        variant="top_nav_link"
                      >
                         ActEd
                      </Typography>
@@ -155,10 +151,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                         justifyContent: "center",
                      }}>
                      <Typography
-                        variant="topnavlink"
-                        sx={{
-                           display: { xs: "none", md: "flex" },
-                        }}
+                        variant="top_nav_link"
                      >
                         Help
                      </Typography>
@@ -187,10 +180,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                      }}
                   >
                      <Typography
-                        variant="topnavlink"
-                        sx={{
-                           display: { xs: "none", md: "flex" },
-                        }}
+                        variant="top_nav_link"
                      >
                         Brochure
                      </Typography>
@@ -210,10 +200,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                      endIcon={!isDesktop ? <SearchIcon /> : null}
                   >
                      <Typography
-                        variant="topnavlink"
-                        sx={{
-                           display: { xs: "none", md: "flex" },
-                        }}
+                        variant="top_nav_link"
                      >
                         Search
                      </Typography>
