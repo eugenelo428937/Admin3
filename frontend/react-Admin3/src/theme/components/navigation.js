@@ -40,9 +40,9 @@
  *
  * ## Custom MenuItem Variants
  *
- * @variant navmenu
+ * @variant nav_menu
  * @description Navigation menu items with semantic colors
- * @usage <MenuItem variant="navmenu">Menu Item</MenuItem>
+ * @usage <MenuItem variant="nav_menu">Menu Item</MenuItem>
  *
  * ## Custom IconButton Variants
  *
@@ -57,7 +57,7 @@
 
 import { spacing } from '../tokens/spacing';
 import { navigation } from '../semantic/navigation';
-import { fontSizes, fontWeights, fontFamilies  } from '../tokens/typography';
+import { fontSizes, fontWeights, fontFamilies, letterSpacing, lineHeights } from '../tokens/typography';
 import { iconSizes } from '../tokens/icons'
 import { shadows } from '../tokens/shadows'
 
@@ -93,17 +93,19 @@ export const navigationOverrides = {
     },
     variants: [
       {
-        props: { variant: 'navmenu' },
+        props: { variant: 'nav_menu' },
         style: {
           color: navigation.text.primary,
+          paddingLeft: spacing.xs[1],
+          paddingRight: 0,
+          borderLeft: `${spacing.xs[2]} solid transparent`,
           '&:hover': {
-            borderLeft: `3px solid ${navigation.text.hover}`,
+            borderLeft: `${spacing.xs[2]} solid ${navigation.text.hover}`,
             backgroundColor: navigation.background.hover,
-            boxShadow: shadows.dark[1],
           },
         },
       },
-    ],
+  ],
   },
   MuiMenuList: {
     styleOverrides: {
@@ -111,7 +113,7 @@ export const navigationOverrides = {
     },
     variants: [
       {
-        props: { variant: 'navmenu' },
+        props: { variant: 'nav_menu' },
         style: {
           paddingLeft: 0,
           paddingRight: 0,
@@ -139,8 +141,9 @@ export const navigationOverrides = {
           backgroundColor: 'transparent',
           paddingRight: 0,
           '& .MuiSvgIcon-root': {
-            fontSize: iconSizes.sm,
-          },
+            lg: {fontSize: iconSizes.md},
+            xl: {fontSize: iconSizes.sm},
+          },          
         },
       },
       // navPrimary: Main nav buttons, MegaMenu triggers, conditional nav links
@@ -177,16 +180,19 @@ export const navigationOverrides = {
         style: {
           color: navigation.text.primary,
           textTransform: 'none',
-          padding: 0,
-          paddingleft: spacing.xs[3],
-          paddingRight: spacing.xs[3],
+          paddingTop: 0,
+          paddingBottom: 0,
+          paddingLeft: spacing.xs[2],
+          paddingRight: spacing.xs[2],
           justifyContent: 'center',
-          borderRadius: spacing.xs[2],
+          borderRadius: spacing.md,
           overflow: 'hidden',
           transition: 'background-color 0.2s ease-in-out',
           minWidth: 'auto',
           '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            borderBottom: `1px solid ${shadows.dark[1]}`,
+            transition: 'all 0.1s ease-in',
+            boxShadow: shadows.dark[1],
           },
           '&:focus-visible': {
             outline: `2px solid ${navigation.text.inverse}`,
@@ -198,7 +204,6 @@ export const navigationOverrides = {
             '& .MuiSvgIcon-root': {
               fontSize: iconSizes.xs,
             },
-
           },
         },
       },
@@ -209,7 +214,7 @@ export const navigationOverrides = {
   MuiTypography: {
     variants: [
       {
-        props: { variant: 'topnavlink' },
+        props: { variant: 'top_nav_link' },
         style: {
           fontFamily: fontFamilies.inter,
           fontWeight: fontWeights.extralight,
@@ -217,10 +222,11 @@ export const navigationOverrides = {
           lineHeight: important(lineHeights.tall),
           letterSpacing: important(letterSpacing.scale[80]),
           textWrap: "balance",
+
         }
       },
       {
-        props: { variant: 'mainnavlink' },
+        props: { variant: 'main_nav_link' },
         style: {
           fontFamily: fontFamilies.inter,
           fontWeight: fontWeights.light,
@@ -230,11 +236,12 @@ export const navigationOverrides = {
           textTransform: 'none',
           position: "static",
           top: "6.235em",
+          color: navigation.text.primary,
         }
       },
       {
         props: {
-          variant: 'meganavlink',
+          variant: 'mega_nav_link',
           style: {
             fontFamily: fontFamilies.inter,
             fontWeight: fontWeights.light,
@@ -242,7 +249,7 @@ export const navigationOverrides = {
             lineHeight: important(lineHeights.tall),
             letterSpacing: important(letterSpacing.scale[80]),
             textWrap: "balance",
-            color: navigation.text.primary,
+            width:0.8,
           }
         }
       },
@@ -256,15 +263,20 @@ export const navigationOverrides = {
 
         },
       },
-      // navHeading: Menu section headings (e.g., "Core Principles", "Location")
+      // mega_nav_heading: Menu section headings (e.g., "Core Principles", "Location")
       {
-        props: { variant: 'navHeading' },
+        props: { variant: 'mega-nav-heading' },
         style: {
           marginBottom: 1,
           fontWeight: fontWeights.regular,
           cursor: 'pointer',
-          color: navigation.text.secondary,
+          color: navigation.text.primary,
           borderBottom: `1px solid ${navigation.border.subtle}`,
+          '&:hover': {
+            boxShadow: shadows.dark[1],
+            backgroundColor: navigation.hamburger.hover.background,
+            transition: 'all 0.1s ease-in',
+          },
         },
       },
       // mobileNavTitle: Mobile navigation panel title (Phase 7 - US4)
@@ -277,13 +289,7 @@ export const navigationOverrides = {
           color: 'red'
         },
       },
-      //mainnavlink: Main navigation link text (used in navPrimary buttons)
-      {
-        props: { variant: 'mainnavlink' },
-        style: {
-          color: navigation.text.primary,
-        },
-      },
+
     ],
   },
 
@@ -310,7 +316,7 @@ export const navigationOverrides = {
           border: 0,
           zIndex: 10000,
           '&:hover': {
-            boxShadow: 'var(--Paper-shadow)',
+            boxShadow: shadows.dark[1],
             backgroundColor: navigation.hamburger.hover.background,
             transition: 'all 0.1s ease-in',
           },

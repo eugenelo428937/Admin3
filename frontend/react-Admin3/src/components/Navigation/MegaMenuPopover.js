@@ -74,7 +74,7 @@ const MegaMenuPopover = ({
         }}
         {...buttonProps}
       >
-        <Typography variant="mainnavlink">
+        <Typography variant="main_nav_link">
           {label}
         </Typography>
       </Button>
