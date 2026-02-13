@@ -6,5 +6,6 @@ from .locations import Location
 from .instructors import Instructor
 from .venues import Venue
 from .events import Event, Session
+from .api_audit_log import ApiAuditLog
 # Import any other models to maintain backward compatibility
 # This ensures that imports like `from administrate.models import CustomField` still work
