@@ -12,14 +12,28 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
+            '--debug',
+            action='store_true',
+            help='Enable debug logging',
+        )
+        parser.add_argument(
             '--force',
             action='store_true',
             help='Force synchronization even if no changes detected',
         )
+        parser.add_argument(
+            '--no-prompt',
+            action='store_true',
+            help='Skip interactive prompts; unmatched records are logged only'
+        )
 
     def handle(self, *args, **options):
+        debug = options['debug']
         force = options['force']
-        
+
+        if debug:
+            logger.setLevel(logging.DEBUG)
+
         self.stdout.write('Fetching price levels from Administrate API...')
         
         try:

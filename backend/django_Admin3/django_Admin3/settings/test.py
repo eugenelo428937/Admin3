@@ -34,8 +34,10 @@ ADMINISTRATE_API_URL = 'https://api.example.com/graphql'
 ADMINISTRATE_API_KEY = 'test-key'
 ADMINISTRATE_API_SECRET = 'test-secret'
 ADMINISTRATE_REST_API_URL = 'https://test.example.com'
+ADMINISTRATE_AUTH_USER = 'test@example.com'
 GETADDRESS_API_KEY = 'test-key'
 GETADDRESS_ADMIN_KEY = 'test-key'
+ADMINISTRATE_AUTH_URL='https://auth.getadministrate.com/oauth'
 
 # Postcoder.com API Settings
 POSTCODER_API_KEY = 'test-key'

@@ -1033,30 +1033,61 @@ def create_administrate_events(api_service, valid_data, debug=False):
         api_service, "Event", debug)
     session_custom_field_keys = get_custom_field_keys_by_entity_type(
         api_service, "Session", debug)    
+    tutorial_event = None  # tracks current tutorial event across rows
+
     for row_data in valid_data:
-        rownum+=1        
-        # try:
+        rownum+=1
+        result = None
         if row_data['event_or_session'] == "event":
             parent_event = None
-            if "OC" not in row_data['Course template code'] and "WAITLIST" not in row_data['Course template code']:            
-                # create blended event 
-                result = create_blended_event(
-                    api_service, row_data, event_custom_field_keys, session_custom_field_keys, eventType, tax_type, timeZone, debug)
 
-                if result:                        
-                    parent_event = result
-                    successful_events.append(result)
-                    session = parent_event['sessions']['edges'][0]['node']
-                    session_result = update_session(api_service, parent_event, row_data, session['id'], session_custom_field_keys, timeZone, debug)
+            # Dual-write step 1: create local tutorial event FIRST
+            tutorial_event = create_tutorial_event(row_data, debug)
 
-            else:
-                # create LMS event - includes OC and WAITLIST
-                result = create_lms_event(
-                    api_service, row_data, event_custom_field_keys, eventType, tax_type, timeZone, debug)                                
-                        
+            try:
+                if "OC" not in row_data['Course template code'] and "WAITLIST" not in row_data['Course template code']:
+                    # create blended event
+                    result = create_blended_event(
+                        api_service, row_data, event_custom_field_keys, session_custom_field_keys, eventType, tax_type, timeZone, debug)
+
+                    if result:
+                        parent_event = result
+                        successful_events.append(result)
+                        session = parent_event['sessions']['edges'][0]['node']
+                        session_result = update_session(api_service, parent_event, row_data, session['id'], session_custom_field_keys, timeZone, debug)
+
+                        # Dual-write: create tutorial session for the first session
+                        if tutorial_event:
+                            create_tutorial_session(row_data, tutorial_event, debug)
+
+                else:
+                    # create LMS event - includes OC and WAITLIST
+                    result = create_lms_event(
+                        api_service, row_data, event_custom_field_keys, eventType, tax_type, timeZone, debug)
+
+                # Dual-write step 2: create bridge record after successful API call
+                if result and tutorial_event:
+                    api_event_id = result.get('id') if isinstance(result, dict) else None
+                    if api_event_id:
+                        create_event_bridge_record(
+                            tutorial_event, api_event_id, row_data, debug)
+
+            except Exception as e:
+                # Tutorial records survive API failures
+                logger.error(
+                    f"API call failed for '{row_data.get('Event title', '')}', "
+                    f"tutorial records preserved: {e}")
+                if debug:
+                    logger.exception(e)
+
         else:
             # session are created automatically when creating with a valid course template
             # so use update session mutation to update the session details
+
+            # Dual-write: create tutorial session for additional sessions
+            if tutorial_event:
+                create_tutorial_session(row_data, tutorial_event, debug)
+
             if parent_event:
                 session = parent_event['sessions']['edges'][row_data['session_day']-1]['node']
                 session_result = update_session(api_service, parent_event, row_data, session['id'],
@@ -1065,32 +1096,12 @@ def create_administrate_events(api_service, valid_data, debug=False):
         if (result):
                 successful_events.append(row_data)
         else:
-            # Check for errors
-            # errors = []
-            # if 'errors' in result:
-            #     errors = [error.get('message', 'Unknown error')
-            #             for error in result.get('errors', [])]
-            # elif 'data' in result and 'createEvent' in result['data'] and 'errors' in result['data']['createEvent']:
-            #     errors = [error.get('message', 'Unknown error')
-            #             for error in result['data']['createEvent'].get('errors', [])]
-
-            # error_message = ', '.join(
-            #     errors) if errors else "Unknown error creating event"
-            # row_data['error'] = error_message
             failed_events.append(row_data)
             logger.error(
-                f"Failed to create event '{row_data['Event title']}'")
+                f"Failed to create event '{row_data.get('Event title', '')}'")
 
             if debug:
                 logger.debug(f"Failed event creation response: {result}")
-
-        # except Exception as e:
-        #     row_data['error'] = str(e)
-        #     failed_events.append(row_data)
-        #     logger.error(
-        #         f"Exception creating event '{row_data['Event title']}': {str(e)}")
-        #     if debug:
-        #         logger.exception(e)
 
     return successful_events, failed_events
 
@@ -1474,6 +1485,14 @@ def writeResultToFile(contentList):
 
 # Note: get_events, delete_events, and set_event_websale functions have been moved to
 # administrate.services.event_management_service.EventManagementService
+
+# Dual-write functions live in a separate module to avoid top-level dependency
+# issues (e.g. the 'validators' package used by legacy validation code above).
+from administrate.utils.event_dual_write import (  # noqa: E402
+    create_tutorial_event,
+    create_tutorial_session,
+    create_event_bridge_record,
+)
 
 if __name__ == "__main__":
     result = bulk_upload_events_from_excel(file_path,debug=True,dry_run=False)
