@@ -10,6 +10,7 @@ class AdministrateAuthService:
     def __init__(self):
         self.instance_url = settings.ADMINISTRATE_INSTANCE_URL
         self.api_url = settings.ADMINISTRATE_API_URL
+        self.auth_url = settings.ADMINISTRATE_AUTH_URL
         self.token_file_path = os.path.join(settings.BASE_DIR, 'tokens')
         self.token_cache = {}
         
@@ -39,7 +40,6 @@ class AdministrateAuthService:
         """Check if token has all required fields and values"""
         required_fields = [
             'access_token',
-            'refresh_token',
             'expires_at',
             'client_id',
             'client_secret',
@@ -66,7 +66,6 @@ class AdministrateAuthService:
             'grant_type': 'client_credentials',
             'client_id': client_id,
             'client_secret': client_secret,
-            'scope': 'read write'
         }
 
         try:
@@ -190,13 +189,9 @@ class AdministrateAuthService:
 
     def _get_token_server_url(self, url_type):
         """Get the appropriate token server URL"""
-        if ".staging" in self.instance_url:
-            base_url = "https://auth.stagingadministratehq.com/oauth"
-        else:
-            base_url = "https://auth.getadministrate.com/oauth"
-
+        
         endpoints = {
-            'auth': f"{base_url}/authorize",
-            'token': f"{base_url}/token"
+            'auth': f"{self.auth_url}/authorize",
+            'token': f"{self.auth_url}/token"
         }
         return endpoints[url_type]

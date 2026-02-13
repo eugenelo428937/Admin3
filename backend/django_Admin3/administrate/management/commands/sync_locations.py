@@ -1,13 +1,17 @@
 import logging
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.utils import timezone
 from administrate.models import Location
 from administrate.services.api_service import AdministrateAPIService
-from administrate.exceptions import AdministrateAPIError
 from administrate.utils.graphql_loader import load_graphql_query
+from administrate.utils.sync_helpers import (
+    SyncStats, match_records, report_discrepancies,
+    prompt_create_unmatched,
+)
+from tutorials.models import TutorialLocation
 
 logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
     help = 'Synchronize locations from Administrate API to local database'
@@ -24,61 +28,56 @@ class Command(BaseCommand):
             default=100,
             help='Number of records per page'
         )
+        parser.add_argument(
+            '--no-prompt',
+            action='store_true',
+            help='Skip interactive prompts; unmatched records are logged only'
+        )
 
     def handle(self, *args, **options):
         debug = options['debug']
         page_size = options['page_size']
-         
+        no_prompt = options['no_prompt']
+
         if debug:
             logger.setLevel(logging.DEBUG)
 
         try:
             api_service = AdministrateAPIService()
-            
-            # GraphQL query for locations
             query = load_graphql_query('get_all_locations')
-            
+
             self.stdout.write('Fetching locations...')
-            
+
             has_next_page = True
             offset = 0
             all_locations = []
 
             while has_next_page:
                 try:
-                    # Add pagination variables to the query
-                    variables = {
-                        "first": page_size,
-                        "offset": offset
-                    }
-
+                    variables = {"first": page_size, "offset": offset}
                     result = api_service.execute_query(query, variables)
-                    
+
                     if not self._validate_response(result):
                         self.stdout.write(
                             self.style.WARNING('Invalid response format from API')
                         )
                         return
-                    
+
                     page_info = result['data']['locations']['pageInfo']
                     locations = result['data']['locations']['edges']
-                    
                     all_locations.extend(locations)
-                    
-                    # Update pagination info
+
                     has_next_page = page_info.get('hasNextPage', False)
                     offset += page_size
-                    self.stdout.write("AFTER")
+
                     self.stdout.write(
                         f'Fetched {len(locations)} locations. '
                         f'Total so far: {len(all_locations)}'
                     )
-                    
+
                     if not locations:
-                        self.stdout.write(self.style.WARNING('No locations found to sync'))
-                    else:
-                        self._sync_locations(locations, debug)                        
-                    
+                        break
+
                 except Exception as e:
                     self.stdout.write(
                         self.style.ERROR(f'Error processing locations: {str(e)}')
@@ -87,13 +86,21 @@ class Command(BaseCommand):
                         logger.exception(e)
                     return
 
+            if all_locations:
+                self.stdout.write(f'Syncing {len(all_locations)} locations...')
+                stats = self._sync_locations(all_locations, debug, no_prompt)
+                self.stdout.write(
+                    self.style.SUCCESS(f'Sync completed: {stats.summary_line()}')
+                )
+            else:
+                self.stdout.write(self.style.WARNING('No locations found to sync'))
+
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Unexpected error: {str(e)}'))
             if debug:
                 logger.exception(e)
 
     def _validate_response(self, result):
-        """Validate the API response format"""
         return (
             isinstance(result, dict) and
             'data' in result and
@@ -103,95 +110,118 @@ class Command(BaseCommand):
             'pageInfo' in result['data']['locations']
         )
 
-    def _sync_locations(self, api_locations, debug=False):
-        """Synchronize locations with database"""
+    def _sync_locations(self, api_locations, debug=False, no_prompt=False):
+        stats = SyncStats()
+
         existing_locations = {
             loc.external_id: loc for loc in Location.objects.all()
         }
-        
+
+        # Load tutorial locations keyed by lowercase name
+        tutorial_locations = {
+            l.name.lower(): l
+            for l in TutorialLocation.objects.filter(is_active=True)
+        }
+
+        # Match API records against tutorial records
+        matched, unmatched_tutorial, unmatched_api = match_records(
+            tutorial_locations, api_locations, 'name'
+        )
+
         processed_ids = set()
-        created_count = 0
-        updated_count = 0
-        unchanged_count = 0
-        deleted_count = 0
-        error_count = 0
-        
+
         for edge in api_locations:
             location = edge.get('node', {})
             external_id = location.get('id')
-            
+
             if not external_id:
                 continue
-            
+
             try:
                 with transaction.atomic():
+                    name = location.get('name', '')
+
+                    # Resolve tutorial FK via match
+                    tutorial_loc = None
+                    if name and name.lower() in tutorial_locations:
+                        tutorial_loc = tutorial_locations[name.lower()]
+
                     location_data = {
-                        'name': location.get('name', ''),
-                        'code': location.get('code', ''),
                         'legacy_id': location.get('legacyId'),
-                        'active': True
+                        'tutorial_location': tutorial_loc,
                     }
-                    
-                    logger.debug(f"Processing location: {external_id}")
+
                     if debug:
-                        logger.debug(f"Location data: {location_data}")
-                    
+                        logger.debug(f"Processing location: {external_id} (name: {name})")
+
                     processed_ids.add(external_id)
-                    
+
                     if external_id in existing_locations:
                         location_obj = existing_locations[external_id]
                         has_changed = False
-                        
+
                         for key, value in location_data.items():
-                            current_value = getattr(location_obj, key)
-                            if current_value != value:
-                                logger.debug(f"Updating {key}: {current_value} -> {value}")
-                                setattr(location_obj, key, value)
-                                has_changed = True
-                        
+                            if key == 'tutorial_location':
+                                current_id = location_obj.tutorial_location_id
+                                new_id = value.pk if value else None
+                                if current_id != new_id:
+                                    setattr(location_obj, key, value)
+                                    has_changed = True
+                            else:
+                                current_value = getattr(location_obj, key)
+                                if current_value != value:
+                                    setattr(location_obj, key, value)
+                                    has_changed = True
+
                         if has_changed:
                             location_obj.save()
-                            updated_count += 1
-                            self.stdout.write(f'Updated location: {location_obj.name}')
+                            stats.updated += 1
+                            self.stdout.write(f'Updated location: {external_id}')
                         else:
-                            unchanged_count += 1
+                            stats.unchanged += 1
                     else:
-                        location_obj = Location.objects.create(
+                        Location.objects.create(
                             external_id=external_id,
                             **location_data
                         )
-                        created_count += 1
-                        self.stdout.write(f'Created location: {location_obj.name}')
-            
+                        stats.created += 1
+                        self.stdout.write(f'Created location: {external_id}')
+
             except Exception as e:
-                error_count += 1
+                stats.errors += 1
                 self.stdout.write(
                     self.style.ERROR(f"Error processing location {external_id}: {str(e)}")
                 )
                 if debug:
                     logger.exception(e)
-        
-        # Handle deletions in separate transactions
+
+        # Handle deletions
         for external_id, location_obj in existing_locations.items():
             if external_id not in processed_ids:
                 try:
                     with transaction.atomic():
-                        location_name = location_obj.name
                         location_obj.delete()
-                        deleted_count += 1
-                        self.stdout.write(f'Deleted location: {location_name}')
+                        stats.deleted += 1
+                        self.stdout.write(f'Deleted location: {external_id}')
                 except Exception as e:
-                    error_count += 1
+                    stats.errors += 1
                     self.stdout.write(
                         self.style.ERROR(f"Error deleting location {external_id}: {str(e)}")
                     )
                     if debug:
                         logger.exception(e)
-        
-        self.stdout.write(
-            self.style.SUCCESS(
-                f'Synchronization completed: {created_count} created, '
-                f'{updated_count} updated, {unchanged_count} unchanged, '
-                f'{deleted_count} deleted, {error_count} errors'
-            )
+
+        # Report discrepancies
+        stats.unmatched_tutorial = unmatched_tutorial
+        stats.unmatched_api = unmatched_api
+
+        report_discrepancies(
+            self.stdout, self.style,
+            unmatched_tutorial, unmatched_api, 'location'
         )
+        prompt_create_unmatched(
+            self.stdout, self.style,
+            unmatched_tutorial, 'location', no_prompt
+        )
+
+        return stats

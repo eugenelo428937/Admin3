@@ -45,7 +45,16 @@ class Event(models.Model):
 
     # Administrate Integration
     external_id = models.CharField(max_length=50, null=True, blank=True, unique=True)
-    
+
+    # Tutorial Integration (cross-schema FK to acted.tutorial_events)
+    tutorial_event = models.ForeignKey(
+        'tutorials.TutorialEvents',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='adm_events',
+    )
+
     # Course Information
     course_template = models.ForeignKey(CourseTemplate, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
@@ -124,7 +133,7 @@ class Event(models.Model):
 
     class Meta:
         app_label = 'administrate'
-        db_table = 'adm.events'
+        db_table = '"adm"."events"'
         ordering = ['title', 'lms_start_date']
         verbose_name = 'Tutorial Event'
         verbose_name_plural = 'Tutorial Events'
@@ -207,7 +216,7 @@ class Session(models.Model):
 
     class Meta:
         app_label = 'administrate'
-        db_table = 'adm.sessions'
+        db_table = '"adm"."sessions"'
         ordering = ['event', 'day_number']
         verbose_name = 'Tutorial Session'
         verbose_name_plural = 'Tutorial Sessions'

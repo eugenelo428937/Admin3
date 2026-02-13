@@ -7,6 +7,7 @@ from administrate.models import CourseTemplate, PriceLevel, CourseTemplatePriceL
 from administrate.services.api_service import AdministrateAPIService
 from administrate.exceptions import AdministrateAPIError
 from administrate.utils.graphql_loader import load_graphql_query
+from administrate.utils.sync_helpers import validate_dependencies
 
 logger = logging.getLogger(__name__)
 
@@ -25,13 +26,25 @@ class Command(BaseCommand):
             default=100,
             help='Number of records per page'
         )
+        parser.add_argument(
+            '--no-prompt',
+            action='store_true',
+            help='Skip interactive prompts; unmatched records are logged only'
+        )
 
     def handle(self, *args, **options):
         debug = options['debug']
         page_size = options['page_size']
-        
+
         if debug:
             logger.setLevel(logging.DEBUG)
+
+        # Validate dependencies
+        if not validate_dependencies(self.stdout, self.style, {
+            'CourseTemplate': CourseTemplate.objects.exists,
+            'PriceLevel': PriceLevel.objects.exists,
+        }):
+            return
 
         try:
             api_service = AdministrateAPIService()
@@ -233,11 +246,17 @@ class Command(BaseCommand):
                             price_level_obj.amount = amount
                             has_changed = True
 
+                        ct_label = (
+                            course_template.tutorial_course_template.code
+                            if course_template.tutorial_course_template
+                            else course_template.external_id
+                        )
+
                         if has_changed:
                             price_level_obj.save()
                             updated_count += 1
                             self.stdout.write(
-                                f'Updated Price Level: {course_template.code} - '
+                                f'Updated Price Level: {ct_label} - '
                                 f'{price_level.name}: £{amount}'
                             )
                         else:
@@ -248,9 +267,14 @@ class Command(BaseCommand):
                             external_id=price_external_id,
                             **price_level_data
                         )
+                        ct_label = (
+                            course_template.tutorial_course_template.code
+                            if course_template.tutorial_course_template
+                            else course_template.external_id
+                        )
                         created_count += 1
                         self.stdout.write(
-                            f'Created Price Level: {course_template.code} - '
+                            f'Created Price Level: {ct_label} - '
                             f'{price_level.name}: £{amount}'
                         )
 
@@ -269,8 +293,14 @@ class Command(BaseCommand):
             if external_id not in processed_ids:
                 try:
                     with transaction.atomic():
+                        ct = price_level_obj.course_template
+                        ct_label = (
+                            ct.tutorial_course_template.code
+                            if ct.tutorial_course_template
+                            else ct.external_id
+                        )
                         price_info = (
-                            f'{price_level_obj.course_template.code} - '
+                            f'{ct_label} - '
                             f'{price_level_obj.price_level.name}'
                         )
                         price_level_obj.delete()

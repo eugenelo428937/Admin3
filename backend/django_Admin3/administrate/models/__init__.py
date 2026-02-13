@@ -5,5 +5,6 @@ from .course_template_price_levels import CourseTemplatePriceLevel
 from .locations import Location
 from .instructors import Instructor
 from .venues import Venue
+from .events import Event, Session
 # Import any other models to maintain backward compatibility
 # This ensures that imports like `from administrate.models import CustomField` still work

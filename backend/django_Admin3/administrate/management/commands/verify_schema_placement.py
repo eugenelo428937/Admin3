@@ -22,6 +22,8 @@ EXPECTED_SCHEMAS = {
         'pricelevels',
         'venues',
         'course_template_price_levels',
+        'events',
+        'sessions',
     ],
     'acted': [
         # catalog
