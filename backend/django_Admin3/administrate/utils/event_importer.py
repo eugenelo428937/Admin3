@@ -35,10 +35,10 @@ from administrate.models import CourseTemplate, Location, Venue, Instructor, Cus
 from administrate.exceptions import AdministrateAPIError
 from administrate.utils.graphql_loader import load_graphql_query, load_graphql_mutation
 logger = logging.getLogger(__name__)
-file_path = r"C:\Code\Admin3\backend\django_Admin3\administrate\src\EventSessionImportTemplate 2026A V1 WAITLIST.xlsx"
-queryFilePath = r"C:\Administrate\Result\query"+datetime.now().strftime("%Y%m%d")+"FINALLIVE.txt"
-resultFilePath = r"C:\Administrate\Result\importResult"+datetime.now().strftime("%Y%m%d")+"FINALLIVE.txt"
-ValidationFilePath = r"C:\Administrate\Result\ValidationResult"+datetime.now().strftime("%Y%m%d")+".txt"
+file_path = r"/Users/work/Documents/Code/Admin3/backend/django_Admin3/administrate/templates/xlsx/EventSessionImportTemplate.xlsx"
+queryFilePath = r"/Users/work/Documents/Code/Admin3/backend/django_Admin3/administrate/log/"+datetime.now().strftime("%Y%m%d")+"FINALLIVE.txt"
+resultFilePath = r"/Users/work/Documents/Code/Admin3/backend/django_Admin3/administrate/log/"+datetime.now().strftime("%Y%m%d")+"FINALLIVE.txt"
+ValidationFilePath = r"/Users/work/Documents/Code/Admin3/backend/django_Admin3/administrate/log/"+datetime.now().strftime("%Y%m%d")+".txt"
 tbc_venue_name = list(map(str.casefold, ["To be confirmed", "TBC", "TBD"]))
 
 class EventLifecycleState(Enum):
@@ -98,15 +98,15 @@ def validate_and_process_event_excel(file_path, debug=False):
             'LMS end time',
             'Max places',
             'Instructor',
-            'Session_instructor',
-            'Event_administrator',
+            'Session instructor',
+            'Event administrator',
             'Day',
             'Event url',
-            'Session_url',
+            'Session url',
             'Finalisation date',
             'Web sale',
             'Sitting',
-            'OCR_moodle_code',            
+            'OCR moodle code',            
          ]
         
         missing_columns = [col for col in required_columns if col not in df.columns]
