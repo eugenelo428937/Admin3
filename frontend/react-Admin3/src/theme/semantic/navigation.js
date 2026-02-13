@@ -13,6 +13,17 @@
 import { md3, scales, staticColors } from '../tokens/colors';
 
 // =============================================================================
+// Helper: Convert hex color + opacity to rgba string
+// =============================================================================
+export const hexToRgba = (hex, opacity = 1) => {
+  const sanitized = hex.replace('#', '');
+  const r = parseInt(sanitized.substring(0, 2), 16);
+  const g = parseInt(sanitized.substring(2, 4), 16);
+  const b = parseInt(sanitized.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
+
+// =============================================================================
 // Navigation Text Colors
 // =============================================================================
 export const text = {
@@ -38,7 +49,7 @@ export const border = {
 export const background = {
   default: scales.granite[85], 
   active: scales.granite[90], 
-  hover: scales.granite[95], 
+  hover: hexToRgba(scales.granite[95], 0.5),
   elevated: md3.surfaceContainerHigh, 
   dropdown: staticColors.white,
   overlay: 'rgba(0, 0, 0, 0.5)',

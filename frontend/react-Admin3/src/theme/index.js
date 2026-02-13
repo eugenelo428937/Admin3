@@ -9,7 +9,7 @@ import { md3, scales, staticColors } from './tokens/colors';
 import { typographyConfig, responsiveTypography } from './typography';
 import componentOverrides from './components';
 import { createGradientStyle, gradientColorSchemes } from './utils';
-import { spacing, semanticSpacing,numericSpacing } from './spacing';
+import { spacing, semanticSpacing, gaps } from './spacing';
 
 // Import semantic layer
 import { semantic } from './semantic/common';
@@ -25,7 +25,8 @@ const baseTheme = createTheme({
       sm: 600,
       md: 960,
       lg: 1280,
-      xl: 1920,
+      xl: 1440,
+      xxl: 1920,
     },
   },
 });
@@ -104,6 +105,8 @@ const theme = createTheme({
     // Usage: sx={{ bgcolor: 'productCards.tutorial.header' }}
     productCards: productCards,
 
+    gap: gaps,
+
     // Navigation semantic tokens
     // Usage: sx={{ color: 'navigation.text.primary' }}
     navigation: navigation,
@@ -124,6 +127,8 @@ const theme = createTheme({
 
   // Component overrides from modules
   components: componentOverrides,
+
+  gaps: gaps,
 
   // Custom gradient utilities
   gradients: {

@@ -52,34 +52,16 @@ export const spacing = {
 };
 
 // =============================================================================
-// Numeric Spacing (for MUI spacing function compatibility)
-// Values in rem, calculated from golden ratio
-// =============================================================================
-export const numericSpacing = {
-  0: '0',
-  0.5: '0.15rem', // xs3
-  1: '0.38rem', // xs2
-  1.5: '0.49rem', // xs
-  2: '0.62rem', // sm
-  3: '1rem', // md (base)
-  4: '1.62rem', // lg
-  5: '2.62rem', // xl
-  6: '3.33rem', // xl15
-  7: '4.24rem', // xl2
-  8: '6.85rem', // xl3
-};
-
-// =============================================================================
 // Gap Values (common spacing patterns)
 // =============================================================================
 export const gaps = {
   none: '0',
-  tight: spacing.xs2,
-  compact: spacing.xs,
+  tight: spacing.xs[2],
+  compact: spacing.xs[1],
   normal: spacing.sm,
   relaxed: spacing.md,
   loose: spacing.lg,
-  spacious: spacing.xl,
+  spacious: spacing.xl[1],
 };
 
 // =============================================================================
@@ -113,7 +95,6 @@ const spacingTokens = {
   scaleFactor,
   multipliers,
   spacing,
-  numericSpacing,
   gaps,
   padding,
   borderRadius,

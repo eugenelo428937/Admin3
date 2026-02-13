@@ -118,7 +118,7 @@ const TopNavBar = ({ onOpenSearch }) =>
    return (
       <>
          <Container
-            maxWidth="xl"
+         maxWidth={false}            
             sx={{
                display: 'flex',
                justifyContent: 'space-between',
@@ -155,7 +155,7 @@ const TopNavBar = ({ onOpenSearch }) =>
                         justifyContent: "center",
                      }}>
                      <Typography
-                        variant="topnavlink"
+                        variant="top_nav_link"
                      >
                         ActEd
                      </Typography>
@@ -173,7 +173,7 @@ const TopNavBar = ({ onOpenSearch }) =>
                         justifyContent: "center",
                      }}>
                      <Typography
-                        variant="topnavlink"
+                        variant="top_nav_link"
                      >
                         Help
                      </Typography>
@@ -202,7 +202,7 @@ const TopNavBar = ({ onOpenSearch }) =>
                      }}
                   >
                      <Typography
-                        variant="topnavlink"
+                        variant="top_nav_link"
                      >
                         Brochure
                      </Typography>
@@ -222,7 +222,7 @@ const TopNavBar = ({ onOpenSearch }) =>
                      endIcon={!isDesktop ? <SearchIcon /> : null}
                   >
                      <Typography
-                        variant="topnavlink"
+                        variant="top_nav_link"
                      >
                         Search
                      </Typography>
