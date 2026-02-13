@@ -196,7 +196,7 @@ const MainNavBar = () => {
          >
             <Toolbar disableGutters sx={{ width: "100%" }}>
                <Container                  
-                  maxWidth="xl"
+                  maxWidth={false}
                   disableGutters
                   sx={{
                      display: "flex",

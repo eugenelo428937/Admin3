@@ -33,8 +33,7 @@ export
 {
   scaleFactor,
   multipliers,
-  spacing as spacingScale,
-  numericSpacing,
+  spacing as spacingScale,  
   gaps,
   padding,
   borderRadius,
