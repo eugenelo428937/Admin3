@@ -136,14 +136,14 @@ def validate_and_process_event_excel(file_path, debug=False):
                         row['Location'], 
                         row['Venue'], 
                         row['Instructor'],
-                        row['Session_instructor'],
+                        row['Session instructor'],
                         row['Day'],
                         row['Max places'],
                         row['Sitting'],
                         row['Finalisation date'],
                         row['Event url'],
                         row['Web sale'],
-                        row['Event_administrator'],
+                        row['Event administrator'],
                         )
                 )
                 if result['row_errors']:
@@ -198,8 +198,8 @@ def validate_and_process_event_excel(file_path, debug=False):
                                           row['Classroom start time'],
                                           row['Classroom end date'],
                                           row['Classroom end time'],
-                                          row['Session_instructor'],
-                                          row['Session_url'],
+                                          row['Session instructor'],
+                                          row['Session url'],
                                           row['Day'])
                 if result['row_errors']:
                     row_errors.extend(result['row_errors'])
@@ -648,7 +648,7 @@ def validate_session(api_service,
         if session_url and not validators.url(session_url):
             row_errors.append(
                 f"Invalid Session URL: {session_url}")
-            row_data['session_url'] = session_url
+            row_data['Session url'] = session_url
     except Exception as e:
         row_errors.append(f"Error validating Session URL: {str(e)}")
 
@@ -1404,7 +1404,7 @@ def update_session(api_service, parent_event, row_data, session_id, session_cust
         "dayDefinitionKey": session_custom_field_keys["Day"],
         "dayValue": row_data["session_day"],
         "urlDefinitionKey": session_custom_field_keys["URL"],
-        "urlValue": row_data['Session_url']
+        "urlValue": row_data['Session url']
     }
     result = api_service.execute_query(query, variables)
     writeQueryToFile(query)        
