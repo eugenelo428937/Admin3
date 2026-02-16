@@ -53,7 +53,10 @@ export const background = {
   elevated: md3.surfaceContainerHigh, 
   dropdown: staticColors.white,
   overlay: 'rgba(0, 0, 0, 0.5)',
-  topNavBar: scales.granite[90],
+  topNavBar: {
+    primary: scales.granite[90],
+    hover: hexToRgba(scales.granite[95], 0.5),
+  }
 };
 
 // =============================================================================
