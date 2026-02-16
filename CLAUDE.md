@@ -1353,6 +1353,8 @@ browser_close()
 - PostgreSQL (existing `acted` schema, no schema changes) (20260202-fuzzy-search-refactor)
 - Python 3.14, Django 6.0 + Django REST Framework + Django ORM, Django migrations framework, psycopg2-binary (20260206-tutorial-schema-refactor)
 - PostgreSQL with `acted` schema (tutorial models) and `adm` schema (administrate models) (20260206-tutorial-schema-refactor)
+- Python 3.14, Django 6.0 + Django REST Framework, `AdministrateAPIService` (GraphQL client), `openpyxl` (Excel parsing) (20260212-administrate-tutorial-sync)
+- PostgreSQL with `acted` schema (tutorial models) and `adm` schema (administrate bridge models) (20260212-administrate-tutorial-sync)
 
 ## Recent Changes
 - 001-catalog-consolidation: Added Python 3.14, Django 6.0 + Django REST Framework, PostgreSQL psycopg2-binary

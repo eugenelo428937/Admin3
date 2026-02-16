@@ -124,6 +124,8 @@ ADMINISTRATE_API_URL = env('ADMINISTRATE_API_URL', default='https://api.example.
 ADMINISTRATE_API_KEY = env('ADMINISTRATE_API_KEY', default='build-placeholder-key')
 ADMINISTRATE_API_SECRET = env('ADMINISTRATE_API_SECRET', default='build-placeholder-secret')
 ADMINISTRATE_REST_API_URL = env('ADMINISTRATE_REST_API_URL', default='https://build-placeholder.example.com')
+ADMINISTRATE_AUTH_USER = env('ADMINISTRATE_AUTH_USER', default='build-placeholder@example.com')
+ADMINISTRATE_AUTH_URL = env('ADMINISTRATE_AUTH_URL', default='https://auth.getadministrate.com/oauth')
 GETADDRESS_API_KEY = env('GETADDRESS_API_KEY', default='build-placeholder-key')
 GETADDRESS_ADMIN_KEY = env('GETADDRESS_ADMIN_KEY', default='')
 
