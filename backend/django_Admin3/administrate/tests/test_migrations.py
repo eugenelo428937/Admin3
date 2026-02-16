@@ -19,6 +19,8 @@ class AdministrateSchemaMigrationTest(TestCase):
         'pricelevels',
         'venues',
         'course_template_price_levels',
+        'events',
+        'sessions',
     ]
 
     def test_all_tables_in_adm_schema(self):
@@ -90,3 +92,49 @@ class AdministrateSchemaMigrationTest(TestCase):
         self.assertEqual(CourseTemplate.objects.count(), 1)
         self.assertEqual(CustomField.objects.count(), 1)
         self.assertEqual(PriceLevel.objects.count(), 1)
+
+    def test_event_tutorial_event_fk_exists(self):
+        """Verify Event model has tutorial_event FK field."""
+        from administrate.models import Event
+        field = Event._meta.get_field('tutorial_event')
+        self.assertTrue(field.null)
+        self.assertTrue(field.blank)
+        self.assertEqual(field.remote_field.on_delete.__name__, 'SET_NULL')
+        self.assertEqual(field.remote_field.related_name, 'adm_events')
+
+    def test_event_session_crud(self):
+        """Verify CRUD works for Event and Session models in adm schema."""
+        from administrate.models import (
+            Event, Session, CourseTemplate, Location,
+            Venue, Instructor,
+        )
+        from datetime import date, time
+
+        ct = CourseTemplate.objects.create(external_id='CT-EVT')
+        loc = Location.objects.create(external_id='LOC-EVT')
+        venue = Venue.objects.create(external_id='VEN-EVT', location=loc)
+        instr = Instructor.objects.create(external_id='INSTR-EVT')
+
+        event = Event.objects.create(
+            external_id='EVT-1',
+            course_template=ct,
+            title='Test Event',
+            location=loc,
+            venue=venue,
+            primary_instructor=instr,
+        )
+        self.assertEqual(event.external_id, 'EVT-1')
+        self.assertIsNone(event.tutorial_event)
+
+        session = Session.objects.create(
+            event=event,
+            title='Day 1',
+            day_number=1,
+            classroom_start_date=date(2026, 3, 1),
+            classroom_start_time=time(9, 0),
+            classroom_end_date=date(2026, 3, 1),
+            classroom_end_time=time(17, 0),
+            session_instructor=instr,
+        )
+        self.assertEqual(session.event, event)
+        self.assertEqual(event.sessions.count(), 1)
