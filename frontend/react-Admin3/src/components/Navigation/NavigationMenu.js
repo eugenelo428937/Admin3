@@ -61,11 +61,11 @@ const NavigationMenu = ({
             alignItems: "center",
             justifyContent: { xs: "flex-start"},
             width: 'auto',
-            gap: theme.gaps?.compact ?? '0.5rem',
+            gap: theme.gaps.normal,
          }}
       >
-         <Button component={NavLink} to="/home">
-            <Typography variant="main_nav_link">Home</Typography>
+         <Button component={NavLink} to="/home" variant="main_nav_link">
+            <Typography variant="main_nav_text">Home</Typography>
          </Button>
 
          {/* Subjects Menu */}
@@ -670,7 +670,7 @@ const NavigationMenu = ({
          {/* Conditional sections */}
          {isApprentice ? (
             <Button
-               variant="navPrimary"
+               variant="main_nav_link"
                component={NavLink}
                to="/apprenticeships"
                sx={{ mx: { xl: 2 } }}
@@ -681,7 +681,7 @@ const NavigationMenu = ({
 
          {isStudyPlus ? (
             <Button
-               variant="navPrimary"
+               variant="main_nav_link"
                component={NavLink}
                to="/study-plus"
                sx={{ mx: { xl: 2 } }}
@@ -694,7 +694,7 @@ const NavigationMenu = ({
          {isSuperuser ? (
             <>
                <Button
-                  variant="navPrimary"
+                  variant="main_nav_link"
                   id="admin-menu-button"
                   aria-controls={adminMenuOpen ? "admin-menu" : undefined}
                   aria-haspopup="true"
