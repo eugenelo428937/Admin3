@@ -61,7 +61,7 @@ const MegaMenuPopover = ({
       <Button
         ref={buttonRef}
         id={`${id}-button`}
-        variant="navPrimary"
+        variant="main_nav_link"
         aria-controls={open ? popoverId : undefined}
         aria-haspopup="true"
         aria-expanded={open}
@@ -74,7 +74,7 @@ const MegaMenuPopover = ({
         }}
         {...buttonProps}
       >
-        <Typography variant="main_nav_link">
+        <Typography variant="main_nav_text">
           {label}
         </Typography>
       </Button>
