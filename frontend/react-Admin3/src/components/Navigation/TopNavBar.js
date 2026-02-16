@@ -101,7 +101,10 @@ const TopNavBar = ({ onOpenSearch }) => {
          <Container
          maxWidth={false}            
             sx={{
-               bgcolor: 'navigation.background.topNavBar',
+               display: 'flex',
+               justifyContent: 'space-between',
+               alignContent: 'end',
+               bgcolor: 'navigation.background.topNavBar.primary',
                px: {
                   sm: theme.spacingTokens.lg,
                   md: theme.spacingTokens.xl[1],
