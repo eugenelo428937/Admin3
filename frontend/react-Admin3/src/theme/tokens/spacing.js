@@ -40,12 +40,12 @@ export const spacing = {
     4: 'calc(1rem / pow(var(--scaleFactor), 4))',
     5: 'calc(1rem / pow(var(--scaleFactor), 5))',
   },
-  // Base
+  sm: 'calc(1rem / var(--scaleFactor))',
   md: '1rem', // Base unit (16px at default)  
   lg: 'calc(1rem * var(--scaleFactor))', // ~1.62rem
   xl: {
     1: 'calc(1rem * pow(var(--scaleFactor), 2))', // ~2.62rem
-    2: 'calc(1rem * pow(var(--scaleFactor), 2)) * var(--halfstep))', // ~3.33rem
+    2: 'calc(1rem * pow(var(--scaleFactor), 2) * var(--halfstep))', // ~3.33rem
     3: 'calc(1rem * pow(var(--scaleFactor), 3))', // ~4.24rem
     4: 'calc(1rem * pow(var(--scaleFactor), 4))', // ~6.85rem
   }
@@ -55,8 +55,7 @@ export const spacing = {
 // Gap Values (common spacing patterns)
 // =============================================================================
 export const gaps = {
-  none: '0',
-  tight: spacing.xs[2],
+  none: '0',  
   compact: spacing.xs[1],
   normal: spacing.sm,
   relaxed: spacing.md,
