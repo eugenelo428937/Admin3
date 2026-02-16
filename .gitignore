@@ -14,7 +14,6 @@ __pycache__/
 dist/
 build/
 *.egg
-.DS_Store # for macOS
 .idea/
 .vscode/
 __pycache__/
@@ -105,3 +104,4 @@ backend/django_Admin3/misc/***
 .playwrite-mcp/*
 # Pact contract JSON artifacts (generated, not committed)
 pacts/*.json
+.DS_Store
