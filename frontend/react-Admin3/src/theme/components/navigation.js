@@ -135,6 +135,23 @@ export const navigationOverrides = {
     },
     variants: [
       {
+        props: { variant: 'main_nav_link'},
+        style: {
+          textTransform: 'none',
+          padding: important(0),
+          margin: important(0),          
+          '&:hover': {
+            backgroundColor: 'transparent',
+            color: navigation.text.hover,
+            opacity: 0.8,
+          },
+          '& .MuiButton-endIcon ': {
+            marginRight: 0,
+            marginLeft: 0,
+          },
+        },
+      },
+      {
         props: { variant: 'navAction' },
         style: {
           color: navigation.text.primary,
@@ -150,18 +167,7 @@ export const navigationOverrides = {
       {
         props: { variant: 'navPrimary' },
         style: {
-          textTransform: 'none',
-          padding: 0,
-          color: navigation.text.hover,
-          '&:hover': {
-            backgroundColor: 'transparent',
-            color: navigation.text.hover,
-            opacity: 0.8,
-          },
-          '& .MuiButton-endIcon ': {
-            marginRight: 0,
-            marginLeft: 0,
-          },
+          
         },
       },
       // navViewAll: "View All X" action buttons with bottom margin
@@ -182,15 +188,17 @@ export const navigationOverrides = {
           textTransform: 'none',
           paddingTop: 0,
           paddingBottom: 0,
-          paddingLeft: spacing.xs[2],
-          paddingRight: spacing.xs[2],
+          paddingLeft: spacing.sm,
+          paddingRight: spacing.sm,
           justifyContent: 'center',
           borderRadius: spacing.md,
           overflow: 'hidden',
           transition: 'background-color 0.2s ease-in-out',
           minWidth: 'auto',
+          backgroundColor: navigation.background.topNavBar.primary,
           '&:hover': {
-            borderBottom: `1px solid ${shadows.dark[1]}`,
+            //borderBottom: `1px solid ${shadows.dark[1]}`,
+            backgroundColor: navigation.background.topNavBar.hover,
             transition: 'all 0.1s ease-in',
             boxShadow: shadows.dark[1],
           },
@@ -226,7 +234,7 @@ export const navigationOverrides = {
         }
       },
       {
-        props: { variant: 'main_nav_link' },
+        props: { variant: 'main_nav_text' },
         style: {
           fontFamily: fontFamilies.inter,
           fontWeight: fontWeights.light,
