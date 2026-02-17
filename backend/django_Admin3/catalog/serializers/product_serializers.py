@@ -88,6 +88,31 @@ class ProductBundleProductAdminSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
 
 
+class ProductBundleProductDetailSerializer(serializers.ModelSerializer):
+    """Read-only serializer for BundleProduct with nested product and variation details."""
+    product_name = serializers.CharField(
+        source='product_product_variation.product.shortname', read_only=True
+    )
+    product_code = serializers.CharField(
+        source='product_product_variation.product.code', read_only=True
+    )
+    variation_name = serializers.CharField(
+        source='product_product_variation.product_variation.name', read_only=True
+    )
+    variation_code = serializers.CharField(
+        source='product_product_variation.product_variation.code', read_only=True
+    )
+
+    class Meta:
+        model = ProductBundleProduct
+        fields = [
+            'id', 'bundle', 'product_product_variation',
+            'product_name', 'product_code', 'variation_name', 'variation_code',
+            'default_price_type', 'quantity', 'sort_order', 'is_active',
+        ]
+        read_only_fields = ['id']
+
+
 class RecommendationAdminSerializer(serializers.ModelSerializer):
     """Admin serializer for ProductVariationRecommendation CRUD."""
 
