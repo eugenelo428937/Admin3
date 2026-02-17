@@ -48,7 +48,7 @@ const AdminProductTable = ({ products, onDelete }) => {
                                     <IconButton
                                         size="small"
                                         onClick={() => handleToggleExpand(product.id)}
-                                        aria-label={expandedId === product.id ? "collapse" : "expand"}
+                                        aria-label={expandedId === product.id ? `Collapse variations for ${product.code}` : `Expand variations for ${product.code}`}
                                     >
                                         {expandedId === product.id
                                             ? <KeyboardArrowUpIcon />
@@ -94,7 +94,7 @@ const AdminProductTable = ({ products, onDelete }) => {
                                     </Box>
                                 </TableCell>
                             </TableRow>
-                            <TableRow>
+                            <TableRow aria-hidden={expandedId !== product.id}>
                                 <TableCell sx={{ py: 0 }} colSpan={8}>
                                     <Collapse in={expandedId === product.id} timeout="auto" unmountOnExit>
                                         <ProductVariationsPanel productId={product.id} />
