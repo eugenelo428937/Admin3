@@ -20,6 +20,7 @@ from .product_serializers import (
     ProductProductVariationDetailSerializer,
     ProductBundleAdminSerializer,
     ProductBundleProductAdminSerializer,
+    ProductBundleProductDetailSerializer,
     RecommendationAdminSerializer,
 )
 from .bundle_serializers import (
@@ -44,6 +45,7 @@ __all__ = [
     'ProductProductVariationDetailSerializer',
     'ProductBundleAdminSerializer',
     'ProductBundleProductAdminSerializer',
+    'ProductBundleProductDetailSerializer',
     'RecommendationAdminSerializer',
 
     # Bundle serializers

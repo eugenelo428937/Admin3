@@ -502,6 +502,30 @@ class TestProductBundleProductAdminViewSet(CatalogAdminTestCase):
         response = self.client.delete(f'/api/catalog/bundle-products/{bp.id}/')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_list_response_includes_product_details(self):
+        """GET list should include nested product name, code, variation name, and code."""
+        response = self.client.get('/api/catalog/bundle-products/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        results = data if isinstance(data, list) else data.get('results', data)
+        self.assertTrue(len(results) > 0)
+        first = results[0]
+        self.assertIn('product_name', first)
+        self.assertIn('product_code', first)
+        self.assertIn('variation_name', first)
+        self.assertIn('variation_code', first)
+
+    def test_list_filter_by_bundle_excludes_others(self):
+        """GET ?bundle={id} must NOT include products from other bundles."""
+        response = self.client.get(
+            f'/api/catalog/bundle-products/?bundle={self.bundle_sa1.id}'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        results = data if isinstance(data, list) else data.get('results', data)
+        bundle_ids = {item['bundle'] for item in results}
+        self.assertNotIn(self.bundle_cm2.id, bundle_ids)
+
 
 class TestRecommendationAdminViewSet(CatalogAdminTestCase):
     """T015: Tests for ProductVariationRecommendation admin CRUD."""
