@@ -162,27 +162,32 @@ describe('AdminProductTable', () => {
   describe('expandable rows', () => {
     test('renders expand button for each product', () => {
       renderComponent();
-      const expandButtons = screen.getAllByLabelText(/expand/i);
+      const expandButtons = screen.getAllByLabelText(/expand variations for/i);
       expect(expandButtons).toHaveLength(2);
     });
 
-    test('expand button toggles row expansion', async () => {
+    test('expand button toggles row expansion', () => {
       renderComponent();
-      const expandButtons = screen.getAllByLabelText(/expand/i);
+      const expandButton = screen.getByLabelText(/expand variations for CM2-SM/i);
 
       // Click to expand first product
-      fireEvent.click(expandButtons[0]);
+      fireEvent.click(expandButton);
 
       // The Collapse should now be open — ProductVariationsPanel renders inside
       expect(screen.getByTestId('expand-row-1')).toBeInTheDocument();
+      // Button label should change to "Collapse"
+      expect(screen.getByLabelText(/collapse variations for CM2-SM/i)).toBeInTheDocument();
     });
 
     test('clicking expand on another row collapses the first', async () => {
       renderComponent();
-      const expandButtons = screen.getAllByLabelText(/expand/i);
 
-      fireEvent.click(expandButtons[0]); // expand row 1
-      fireEvent.click(expandButtons[1]); // expand row 2
+      // Expand row 1
+      fireEvent.click(screen.getByLabelText(/expand variations for CM2-SM/i));
+      expect(screen.getByTestId('expand-row-1')).toBeInTheDocument();
+
+      // Expand row 2
+      fireEvent.click(screen.getByLabelText(/expand variations for SA1-TUT/i));
 
       // Row 2 should be expanded
       expect(screen.getByTestId('expand-row-2')).toBeInTheDocument();
