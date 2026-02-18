@@ -9,8 +9,6 @@
  * - halfstep: 1.272 (sqrt of wholestep)
  * - quarterstep: 1.128 (sqrt of halfstep)
  * - eighthstep: 1.061 (sqrt of quarterstep)
- *
- * @see liftKitTheme.js for original implementation
  */
 
 // =============================================================================
