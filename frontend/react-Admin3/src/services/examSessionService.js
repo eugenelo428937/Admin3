@@ -1,9 +1,11 @@
 import httpService from "./httpService";
 import config from "../config";
-const API_URL = config.examSessionUrl;
+import { parsePaginatedResponse } from "./paginationHelper";
+// Use catalog API endpoint (legacy /api/exam-sessions/ was removed during catalog consolidation)
+const API_URL = `${config.catalogUrl}/exam-sessions`;
 const examSessionService = {
 	getAll: async () => {
-		try {			
+		try {
 			const response = await httpService.get(`${API_URL}/`);
 
 			// Ensure we're returning an array
@@ -15,6 +17,11 @@ const examSessionService = {
 		}
 	},
 
+	list: async (params = {}) => {
+		const response = await httpService.get(`${API_URL}/`, { params });
+		return parsePaginatedResponse(response.data);
+	},
+
 	getById: async (id) => {
 		const response = await httpService.get(`${API_URL}/${id}/`);
 		return response.data;
@@ -22,7 +29,6 @@ const examSessionService = {
 
 	create: async (examSession) => {
 		const response = await httpService.post(`${API_URL}/`, examSession);
-		const response2 = await httpService.post(`${config.examSessionSubjectUrl}/insert-subjects/`, examSession);
 		return response.data;
 	},
 
@@ -32,7 +38,7 @@ const examSessionService = {
 	},
 
 	delete: async (id) => {
-		await httpService.delete(`${API_URL}${id}/`);
+		await httpService.delete(`${API_URL}/${id}/`);
 	},
 };
 

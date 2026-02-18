@@ -17,12 +17,13 @@ class ExamSessionSubjectSerializer(serializers.ModelSerializer):
     """
     Serializer for ExamSessionSubject model.
 
-    Used to serialize exam session and subject associations.
+    Write: accepts integer PKs for exam_session and subject.
+    Read: returns nested objects with session_code and subject code.
 
     Fields:
         id (int): Primary key
-        exam_session (int): Foreign key to ExamSession
-        subject (int): Foreign key to Subject
+        exam_session (int/object): FK to ExamSession (nested on read)
+        subject (int/object): FK to Subject (nested on read)
         is_active (bool): Whether this combination is active
         created_at (datetime): Auto-set on creation (read-only)
         updated_at (datetime): Auto-updated on save (read-only)
@@ -32,6 +33,18 @@ class ExamSessionSubjectSerializer(serializers.ModelSerializer):
         model = ExamSessionSubject
         fields = ['id', 'exam_session', 'subject', 'is_active', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['exam_session'] = {
+            'id': instance.exam_session_id,
+            'session_code': instance.exam_session.session_code,
+        }
+        rep['subject'] = {
+            'id': instance.subject_id,
+            'code': instance.subject.code,
+        }
+        return rep
 
 
 class ExamSessionSerializer(serializers.ModelSerializer):

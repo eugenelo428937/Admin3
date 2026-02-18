@@ -4,6 +4,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import AdminExamSessionForm from '../ExamSessionForm';
 
+// Mock useAuth
+jest.mock('../../../../hooks/useAuth', () => ({
+  __esModule: true,
+  useAuth: jest.fn(),
+}));
+
+import { useAuth } from '../../../../hooks/useAuth';
+
 // Mock navigate function
 const mockNavigate = jest.fn();
 
@@ -12,6 +20,7 @@ jest.mock('react-router-dom', () => {
   return {
     useNavigate: () => mockNavigate,
     useParams: () => ({}),
+    Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
@@ -51,6 +60,11 @@ const renderComponent = (isEditMode = false) => {
 describe('AdminExamSessionForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    useAuth.mockReturnValue({
+      isSuperuser: true,
+      isApprentice: false,
+      isStudyPlus: false,
+    });
   });
 
   describe('create mode', () => {
@@ -141,7 +155,7 @@ describe('AdminExamSessionForm', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
 
-      expect(mockNavigate).toHaveBeenCalledWith('/exam-sessions');
+      expect(mockNavigate).toHaveBeenCalledWith('/admin/exam-sessions');
     });
   });
 

@@ -1,9 +1,11 @@
 """Product views for the store app."""
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from django.db.models import ProtectedError
 
+from catalog.permissions import IsSuperUser
 from store.models import Product, Bundle
 from store.serializers import (
     ProductSerializer,
@@ -14,33 +16,46 @@ from store.serializers import (
 )
 
 
-class ProductViewSet(viewsets.ReadOnlyModelViewSet):
+class ProductViewSet(viewsets.ModelViewSet):
     """
     ViewSet for store products.
 
-    Provides list and retrieve operations with filtering support.
-    Public read access (no authentication required).
+    Read operations: AllowAny (public access)
+    Write operations: IsSuperUser
 
     The list endpoint returns BOTH products and bundles in a unified format,
     with an `is_bundle` flag to distinguish between them.
 
     FR-012: Hides products when their catalog template is inactive.
     """
-    permission_classes = [AllowAny]
     queryset = Product.objects.select_related(
         'exam_session_subject__exam_session',
         'exam_session_subject__subject',
         'product_product_variation__product',
         'product_product_variation__product_variation',
-    ).filter(
-        is_active=True,
-        product_product_variation__product__is_active=True,  # FR-012: Hide if catalog template inactive
-    )
+    ).all()
 
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['product_code']
     ordering_fields = ['product_code', 'created_at']
     ordering = ['product_code']
+
+    def get_queryset(self):
+        """Filter to active products for public read, all for admin writes."""
+        qs = super().get_queryset()
+        if self.action == 'retrieve':
+            return qs.filter(
+                is_active=True,
+                product_product_variation__product__is_active=True,
+            )
+        return qs
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve', 'prices']:
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsSuperUser]
+        return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -124,6 +139,18 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             'has_next': end_idx < total_count,
             'has_previous': page > 1,
         })
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        try:
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except ProtectedError as e:
+            return Response(
+                {"error": "Cannot delete: record has dependent records",
+                 "dependents": [str(obj) for obj in e.protected_objects]},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     @action(detail=True, methods=['get'])
     def prices(self, request, pk=None):

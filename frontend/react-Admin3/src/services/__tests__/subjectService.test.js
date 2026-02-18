@@ -24,7 +24,7 @@ describe('subjectService', () => {
     jest.doMock('../../config', () => ({
       __esModule: true,
       default: {
-        subjectUrl: 'http://test-api/subjects',
+        catalogUrl: 'http://test-api/catalog',
       },
     }));
 
@@ -58,7 +58,7 @@ describe('subjectService', () => {
       const result = await subjectService.getAll();
 
       expect(result).toEqual(mockSubjects);
-      expect(httpService.get).toHaveBeenCalledWith('http://test-api/subjects/');
+      expect(httpService.get).toHaveBeenCalledWith('http://test-api/catalog/admin-subjects/');
     });
 
     test('should return results from paginated response', async () => {
@@ -111,7 +111,7 @@ describe('subjectService', () => {
       const result = await subjectService.getSubjects();
 
       expect(result).toEqual(mockSubjects);
-      expect(httpService.get).toHaveBeenCalledWith('http://test-api/subjects/');
+      expect(httpService.get).toHaveBeenCalledWith('http://test-api/catalog/admin-subjects/');
     });
 
     test('should throw error on API failure', async () => {
@@ -129,7 +129,7 @@ describe('subjectService', () => {
       const result = await subjectService.getById(1);
 
       expect(result).toEqual(mockSubject);
-      expect(httpService.get).toHaveBeenCalledWith('http://test-api/subjects/1/');
+      expect(httpService.get).toHaveBeenCalledWith('http://test-api/catalog/admin-subjects/1/');
     });
 
     test('should throw error on API failure', async () => {
@@ -149,7 +149,7 @@ describe('subjectService', () => {
 
       expect(result).toEqual({ id: 3, ...mockSubject });
       expect(httpService.post).toHaveBeenCalledWith(
-        'http://test-api/subjects/',
+        'http://test-api/catalog/admin-subjects/',
         mockSubject
       );
     });
@@ -171,7 +171,7 @@ describe('subjectService', () => {
 
       expect(result).toEqual({ id: 1, code: 'CM1', ...mockSubject });
       expect(httpService.put).toHaveBeenCalledWith(
-        'http://test-api/subjects/1/',
+        'http://test-api/catalog/admin-subjects/1/',
         mockSubject
       );
     });
@@ -189,7 +189,7 @@ describe('subjectService', () => {
 
       await subjectService.delete(1);
 
-      expect(httpService.delete).toHaveBeenCalledWith('http://test-api/subjects/1/');
+      expect(httpService.delete).toHaveBeenCalledWith('http://test-api/catalog/admin-subjects/1/');
     });
 
     test('should throw error on delete failure', async () => {
@@ -212,7 +212,7 @@ describe('subjectService', () => {
 
       expect(result).toEqual(mockResponse);
       expect(httpService.post).toHaveBeenCalledWith(
-        'http://test-api/subjects/bulk-import/',
+        'http://test-api/catalog/admin-subjects/bulk-import/',
         { subjects }
       );
     });

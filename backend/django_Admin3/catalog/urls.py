@@ -23,6 +23,13 @@ from .views import (
     ExamSessionViewSet,
     ProductViewSet,
     BundleViewSet,
+    ExamSessionSubjectViewSet,
+    ProductVariationViewSet,
+    ProductProductVariationViewSet,
+    ProductBundleAdminViewSet,
+    ProductBundleProductViewSet,
+    RecommendationViewSet,
+    SubjectAdminViewSet,
     navigation_data,
     fuzzy_search,
     advanced_product_search,
@@ -36,6 +43,13 @@ router.register(r'subjects', SubjectViewSet, basename='subject')
 router.register(r'exam-sessions', ExamSessionViewSet, basename='exam-session')
 router.register(r'products', ProductViewSet, basename='product')
 router.register(r'bundles', BundleViewSet, basename='bundle')
+router.register(r'exam-session-subjects', ExamSessionSubjectViewSet, basename='exam-session-subject')
+router.register(r'product-variations', ProductVariationViewSet, basename='product-variation')
+router.register(r'product-product-variations', ProductProductVariationViewSet, basename='product-product-variation')
+router.register(r'product-bundles', ProductBundleAdminViewSet, basename='product-bundle')
+router.register(r'bundle-products', ProductBundleProductViewSet, basename='bundle-product')
+router.register(r'recommendations', RecommendationViewSet, basename='recommendation')
+router.register(r'admin-subjects', SubjectAdminViewSet, basename='admin-subject')
 
 urlpatterns = [
     # Function-based views

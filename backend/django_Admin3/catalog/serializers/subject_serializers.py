@@ -5,7 +5,7 @@ Location: catalog/serializers/subject_serializers.py
 Model: catalog.models.Subject
 
 Contract (from contracts/serializers.md):
-- Fields: id, code, description, name
+- Fields: id, code, description, name, active
 - name is a read-only alias for description (frontend compatibility)
 """
 from rest_framework import serializers
@@ -26,10 +26,11 @@ class SubjectSerializer(serializers.ModelSerializer):
         code (str): Subject code (e.g., "CM2"), max 10 chars
         description (str): Full subject name
         name (str): Read-only alias for description
+        active (bool): Whether the subject is currently active
     """
     # Frontend compatibility: name aliases description
     name = serializers.CharField(source='description', read_only=True)
 
     class Meta:
         model = Subject
-        fields = ['id', 'code', 'description', 'name']
+        fields = ['id', 'code', 'description', 'name', 'active']

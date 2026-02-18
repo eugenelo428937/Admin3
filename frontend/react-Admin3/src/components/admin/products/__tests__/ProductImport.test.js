@@ -14,8 +14,8 @@ jest.mock('react-router-dom', () => {
   };
 });
 
-// Mock productService
-jest.mock('../../../../services/productService', () => ({
+// Mock catalogProductService
+jest.mock('../../../../services/catalogProductService', () => ({
   __esModule: true,
   default: {
     bulkImport: jest.fn(),
@@ -39,7 +39,7 @@ jest.mock('papaparse', () => ({
   }),
 }));
 
-import productService from '../../../../services/productService';
+import catalogProductService from '../../../../services/catalogProductService';
 
 const theme = createTheme();
 
