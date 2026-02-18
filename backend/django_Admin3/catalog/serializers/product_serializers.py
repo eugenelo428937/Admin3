@@ -113,6 +113,33 @@ class ProductBundleProductDetailSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 
+class RecommendationListSerializer(serializers.ModelSerializer):
+    """Read-only list serializer with human-readable PPV labels."""
+    source_product_code = serializers.CharField(
+        source='product_product_variation.product.code', read_only=True
+    )
+    source_variation_name = serializers.CharField(
+        source='product_product_variation.product_variation.name', read_only=True
+    )
+    recommended_product_code = serializers.CharField(
+        source='recommended_product_product_variation.product.code', read_only=True
+    )
+    recommended_variation_name = serializers.CharField(
+        source='recommended_product_product_variation.product_variation.name', read_only=True
+    )
+
+    class Meta:
+        model = ProductVariationRecommendation
+        fields = [
+            'id',
+            'product_product_variation',
+            'source_product_code', 'source_variation_name',
+            'recommended_product_product_variation',
+            'recommended_product_code', 'recommended_variation_name',
+            'created_at', 'updated_at',
+        ]
+
+
 class RecommendationAdminSerializer(serializers.ModelSerializer):
     """Admin serializer for ProductVariationRecommendation CRUD."""
 

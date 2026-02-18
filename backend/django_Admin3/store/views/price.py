@@ -6,7 +6,8 @@ from django.db.models import ProtectedError
 
 from catalog.permissions import IsSuperUser
 from store.models import Price
-from store.serializers import PriceSerializer, PriceListSerializer
+from store.serializers import PriceSerializer
+from store.views.product_admin import AdminPagination
 
 
 class PriceViewSet(viewsets.ModelViewSet):
@@ -16,7 +17,9 @@ class PriceViewSet(viewsets.ModelViewSet):
     Read operations: AllowAny (public access)
     Write operations: IsSuperUser
     """
+    pagination_class = AdminPagination
     queryset = Price.objects.select_related('product')
+    serializer_class = PriceSerializer
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -24,11 +27,6 @@ class PriceViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [IsSuperUser]
         return [permission() for permission in permission_classes]
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return PriceListSerializer
-        return PriceSerializer
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

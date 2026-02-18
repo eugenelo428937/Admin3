@@ -30,6 +30,7 @@ const theme = createTheme();
 const mockPrices = [
   {
     id: '1',
+    product: 10,
     product_code: 'CM2/PC/2025-04',
     price_type: 'standard',
     amount: '99.99',
@@ -37,9 +38,18 @@ const mockPrices = [
   },
   {
     id: '2',
-    product_code: 'SA1/EB/2025-04',
+    product: 10,
+    product_code: 'CM2/PC/2025-04',
     price_type: 'retaker',
     amount: '79.99',
+    currency: 'GBP',
+  },
+  {
+    id: '3',
+    product: 20,
+    product_code: 'SA1/EB/2025-04',
+    price_type: 'standard',
+    amount: '49.99',
     currency: 'GBP',
   },
 ];
@@ -90,40 +100,78 @@ describe('AdminPriceList', () => {
     });
   });
 
-  describe('data display', () => {
-    test('fetches and displays prices', async () => {
+  describe('grouped data display', () => {
+    test('groups prices by product and shows product codes', async () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(priceService.list).toHaveBeenCalled();
         expect(screen.getByText('CM2/PC/2025-04')).toBeInTheDocument();
         expect(screen.getByText('SA1/EB/2025-04')).toBeInTheDocument();
-        expect(screen.getByText('99.99')).toBeInTheDocument();
-        expect(screen.getByText('79.99')).toBeInTheDocument();
       });
     });
 
-    test('displays edit buttons for each price', async () => {
+    test('shows two grouped rows from three price records', async () => {
       renderComponent();
 
       await waitFor(() => {
-        const editButtons = screen.getAllByRole('link', { name: /edit/i });
+        // 3 prices grouped into 2 product rows
+        const rows = screen.getAllByRole('row');
+        // 1 header row + 2 data rows = 3
+        expect(rows).toHaveLength(3);
+      });
+    });
+
+    test('pivots price types into columns', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        // CM2 product has standard £99.99 and retaker £79.99
+        expect(screen.getByText('£99.99')).toBeInTheDocument();
+        expect(screen.getByText('£79.99')).toBeInTheDocument();
+        // SA1 product has standard £49.99
+        expect(screen.getByText('£49.99')).toBeInTheDocument();
+      });
+    });
+
+    test('shows em-dash for missing price types', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        // SA1 has no retaker or additional prices — should show em-dashes
+        const dashes = screen.getAllByText('—');
+        expect(dashes.length).toBeGreaterThanOrEqual(1);
+      });
+    });
+
+    test('shows product and price count summary', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText(/2 products, 3 prices total/i)).toBeInTheDocument();
+      });
+    });
+
+    test('displays edit icon buttons for each product row', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        const editButtons = screen.getAllByRole('link', { name: /edit prices/i });
         expect(editButtons).toHaveLength(2);
       });
     });
 
-    test('displays delete buttons for each price', async () => {
+    test('displays delete icon buttons for each product row', async () => {
       renderComponent();
 
       await waitFor(() => {
-        const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
+        const deleteButtons = screen.getAllByRole('button', { name: /delete prices/i });
         expect(deleteButtons).toHaveLength(2);
       });
     });
   });
 
   describe('delete functionality', () => {
-    test('calls delete when delete button clicked and confirmed', async () => {
+    test('deletes all prices for a product when confirmed', async () => {
       window.confirm = jest.fn().mockReturnValue(true);
       priceService.delete.mockResolvedValue({});
 
@@ -133,12 +181,14 @@ describe('AdminPriceList', () => {
         expect(screen.getByText('CM2/PC/2025-04')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
+      const deleteButtons = screen.getAllByRole('button', { name: /delete prices/i });
       fireEvent.click(deleteButtons[0]);
 
       await waitFor(() => {
-        expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to delete this price?');
+        // CM2 product has 2 prices (IDs 1 and 2), both should be deleted
         expect(priceService.delete).toHaveBeenCalledWith('1');
+        expect(priceService.delete).toHaveBeenCalledWith('2');
+        expect(priceService.delete).toHaveBeenCalledTimes(2);
       });
     });
 
@@ -151,7 +201,7 @@ describe('AdminPriceList', () => {
         expect(screen.getByText('CM2/PC/2025-04')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
+      const deleteButtons = screen.getAllByRole('button', { name: /delete prices/i });
       fireEvent.click(deleteButtons[0]);
 
       expect(priceService.delete).not.toHaveBeenCalled();
@@ -179,11 +229,11 @@ describe('AdminPriceList', () => {
         expect(screen.getByText('CM2/PC/2025-04')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
+      const deleteButtons = screen.getAllByRole('button', { name: /delete prices/i });
       fireEvent.click(deleteButtons[0]);
 
       await waitFor(() => {
-        expect(screen.getByText(/failed to delete price/i)).toBeInTheDocument();
+        expect(screen.getByText(/failed to delete prices/i)).toBeInTheDocument();
       });
     });
   });
@@ -200,6 +250,19 @@ describe('AdminPriceList', () => {
     });
   });
 
+  describe('pagination', () => {
+    test('passes pagination params with page_size 500', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(priceService.list).toHaveBeenCalledWith({
+          page: 1,
+          page_size: 500,
+        });
+      });
+    });
+  });
+
   describe('links', () => {
     test('add new price links to correct path', async () => {
       renderComponent();
@@ -207,6 +270,15 @@ describe('AdminPriceList', () => {
       await waitFor(() => {
         const link = screen.getByRole('link', { name: /add new price/i });
         expect(link).toHaveAttribute('href', '/admin/prices/new');
+      });
+    });
+
+    test('edit button links to first price edit page', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        const editButtons = screen.getAllByRole('link', { name: /edit prices/i });
+        expect(editButtons[0]).toHaveAttribute('href', '/admin/prices/1/edit');
       });
     });
   });

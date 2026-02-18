@@ -1,0 +1,62 @@
+"""Store product admin views for unfiltered CRUD operations.
+
+Unlike ProductViewSet (which returns a unified product+bundle list filtered
+to active-only for the public store), this ViewSet returns all store products
+and requires IsSuperUser for all operations.
+
+Supports ?catalog_product_id=X query parameter to filter store products
+by their linked catalog product — used by the frontend expandable panel.
+"""
+from rest_framework import viewsets, status
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
+from django.db.models import ProtectedError
+
+from catalog.permissions import IsSuperUser
+from store.models import Product
+from store.serializers.product_admin import StoreProductAdminSerializer
+
+
+class AdminPagination(PageNumberPagination):
+    page_size_query_param = 'page_size'
+    max_page_size = 500
+
+
+class StoreProductAdminViewSet(viewsets.ModelViewSet):
+    """Admin CRUD ViewSet for store products.
+
+    Returns all store products (including inactive) for admin management.
+    All operations require IsSuperUser permission — unlike the public
+    ProductViewSet, reads are also restricted because this endpoint
+    exposes inactive products.
+    """
+    pagination_class = AdminPagination
+    queryset = Product.objects.select_related(
+        'exam_session_subject__exam_session',
+        'exam_session_subject__subject',
+        'product_product_variation__product',
+        'product_product_variation__product_variation',
+    ).all()
+    serializer_class = StoreProductAdminSerializer
+    permission_classes = [IsSuperUser]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        catalog_product_id = self.request.query_params.get('catalog_product_id')
+        if catalog_product_id:
+            qs = qs.filter(
+                product_product_variation__product_id=catalog_product_id
+            )
+        return qs.order_by('product_code')
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        try:
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except ProtectedError as e:
+            return Response(
+                {"error": "Cannot delete: record has dependent records",
+                 "dependents": [str(obj) for obj in e.protected_objects]},
+                status=status.HTTP_400_BAD_REQUEST
+            )

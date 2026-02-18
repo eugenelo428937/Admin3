@@ -30,13 +30,21 @@ const theme = createTheme();
 const mockRecommendations = [
   {
     id: '1',
-    source_label: 'CM2 eBook',
-    recommended_label: 'CM2 Printed',
+    product_product_variation: 10,
+    source_product_code: 'CM2CR',
+    source_variation_name: 'eBook',
+    recommended_product_product_variation: 11,
+    recommended_product_code: 'CM2CR',
+    recommended_variation_name: 'Printed Copy',
   },
   {
     id: '2',
-    source_label: 'SA1 eBook',
-    recommended_label: 'SA1 Hub',
+    product_product_variation: 20,
+    source_product_code: 'SA1SN',
+    source_variation_name: 'eBook',
+    recommended_product_product_variation: 21,
+    recommended_product_code: 'SA1SN',
+    recommended_variation_name: 'Hub Access',
   },
 ];
 
@@ -87,15 +95,17 @@ describe('AdminRecommendationList', () => {
   });
 
   describe('data display', () => {
-    test('fetches and displays recommendations', async () => {
+    test('fetches and displays recommendations with PPV labels', async () => {
       renderComponent();
 
       await waitFor(() => {
         expect(recommendationService.list).toHaveBeenCalled();
-        expect(screen.getByText('CM2 eBook')).toBeInTheDocument();
-        expect(screen.getByText('CM2 Printed')).toBeInTheDocument();
-        expect(screen.getByText('SA1 eBook')).toBeInTheDocument();
-        expect(screen.getByText('SA1 Hub')).toBeInTheDocument();
+        // Source PPV labels: "ProductCode — VariationName"
+        expect(screen.getByText(/CM2CR — eBook/)).toBeInTheDocument();
+        expect(screen.getByText(/SA1SN — eBook/)).toBeInTheDocument();
+        // Recommended PPV labels
+        expect(screen.getByText(/CM2CR — Printed Copy/)).toBeInTheDocument();
+        expect(screen.getByText(/SA1SN — Hub Access/)).toBeInTheDocument();
       });
     });
 
@@ -126,7 +136,7 @@ describe('AdminRecommendationList', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('CM2 eBook')).toBeInTheDocument();
+        expect(screen.getByText(/CM2CR — eBook/)).toBeInTheDocument();
       });
 
       const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
@@ -144,7 +154,7 @@ describe('AdminRecommendationList', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('CM2 eBook')).toBeInTheDocument();
+        expect(screen.getByText(/CM2CR — eBook/)).toBeInTheDocument();
       });
 
       const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
@@ -172,7 +182,7 @@ describe('AdminRecommendationList', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('CM2 eBook')).toBeInTheDocument();
+        expect(screen.getByText(/CM2CR — eBook/)).toBeInTheDocument();
       });
 
       const deleteButtons = screen.getAllByRole('button', { name: /delete/i });

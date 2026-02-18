@@ -2,11 +2,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Button, Container, Alert, Paper, Typography, Box, CircularProgress, TablePagination
+  Button, Container, Alert, Paper, Typography, Box, CircularProgress,
+  TablePagination, IconButton, Collapse
 } from '@mui/material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import storeBundleService from '../../../services/storeBundleService';
+import StoreBundleProductsPanel from './StoreBundleProductsPanel';
 
 const AdminStoreBundleList = () => {
     const { isSuperuser } = useAuth();
@@ -16,11 +20,16 @@ const AdminStoreBundleList = () => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(50);
     const [totalCount, setTotalCount] = useState(0);
+    const [expandedId, setExpandedId] = useState(null);
+
+    const handleToggleExpand = (bundleId) => {
+        setExpandedId(prev => prev === bundleId ? null : bundleId);
+    };
 
     const fetchStoreBundles = useCallback(async () => {
         try {
             setLoading(true);
-            const { results, count } = await storeBundleService.list({
+            const { results, count } = await storeBundleService.adminList({
                 page: page + 1,
                 page_size: rowsPerPage,
             });
@@ -81,46 +90,71 @@ const AdminStoreBundleList = () => {
                     <Table>
                         <TableHead>
                             <TableRow>
+                                <TableCell sx={{ width: 50 }} />
                                 <TableCell>ID</TableCell>
                                 <TableCell>Name</TableCell>
+                                <TableCell>Template</TableCell>
                                 <TableCell>Subject</TableCell>
                                 <TableCell>Exam Session</TableCell>
-                                <TableCell>Is Active</TableCell>
-                                <TableCell>Components Count</TableCell>
+                                <TableCell>Active</TableCell>
+                                <TableCell>Components</TableCell>
                                 <TableCell>Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {storeBundles.map((bundle) => (
-                                <TableRow key={bundle.id} hover>
-                                    <TableCell>{bundle.id}</TableCell>
-                                    <TableCell>{bundle.name || bundle.override_name || ''}</TableCell>
-                                    <TableCell>{bundle.subject_code || bundle.exam_session_subject?.subject_code || ''}</TableCell>
-                                    <TableCell>{bundle.exam_session_code || bundle.exam_session_subject?.session_code || ''}</TableCell>
-                                    <TableCell>{bundle.is_active ? 'Active' : 'Inactive'}</TableCell>
-                                    <TableCell>{bundle.components_count !== undefined ? bundle.components_count : ''}</TableCell>
-                                    <TableCell>
-                                        <Box sx={{ display: 'flex', gap: 1 }}>
-                                            <Button
-                                                component={Link}
-                                                to={`/admin/store-bundles/${bundle.id}/edit`}
-                                                variant="contained"
-                                                color="info"
+                                <React.Fragment key={bundle.id}>
+                                    <TableRow hover>
+                                        <TableCell>
+                                            <IconButton
                                                 size="small"
+                                                onClick={() => handleToggleExpand(bundle.id)}
+                                                aria-label={expandedId === bundle.id
+                                                    ? `Collapse products for ${bundle.name}`
+                                                    : `Expand products for ${bundle.name}`}
                                             >
-                                                Edit
-                                            </Button>
-                                            <Button
-                                                variant="contained"
-                                                color="error"
-                                                size="small"
-                                                onClick={() => handleDelete(bundle.id)}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </Box>
-                                    </TableCell>
-                                </TableRow>
+                                                {expandedId === bundle.id
+                                                    ? <KeyboardArrowUpIcon />
+                                                    : <KeyboardArrowDownIcon />}
+                                            </IconButton>
+                                        </TableCell>
+                                        <TableCell>{bundle.id}</TableCell>
+                                        <TableCell>{bundle.name || '-'}</TableCell>
+                                        <TableCell>{bundle.bundle_template_name || '-'}</TableCell>
+                                        <TableCell>{bundle.subject_code || '-'}</TableCell>
+                                        <TableCell>{bundle.exam_session_code || '-'}</TableCell>
+                                        <TableCell>{bundle.is_active ? 'Active' : 'Inactive'}</TableCell>
+                                        <TableCell>{bundle.components_count !== undefined ? bundle.components_count : '-'}</TableCell>
+                                        <TableCell>
+                                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                                <Button
+                                                    component={Link}
+                                                    to={`/admin/store-bundles/${bundle.id}/edit`}
+                                                    variant="contained"
+                                                    color="info"
+                                                    size="small"
+                                                >
+                                                    Edit
+                                                </Button>
+                                                <Button
+                                                    variant="contained"
+                                                    color="error"
+                                                    size="small"
+                                                    onClick={() => handleDelete(bundle.id)}
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </Box>
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow aria-hidden={expandedId !== bundle.id}>
+                                        <TableCell sx={{ py: 0 }} colSpan={9}>
+                                            <Collapse in={expandedId === bundle.id} timeout="auto" unmountOnExit>
+                                                <StoreBundleProductsPanel bundleId={bundle.id} />
+                                            </Collapse>
+                                        </TableCell>
+                                    </TableRow>
+                                </React.Fragment>
                             ))}
                         </TableBody>
                     </Table>
