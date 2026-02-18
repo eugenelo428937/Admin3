@@ -3,6 +3,23 @@ from rest_framework import serializers
 from store.models import Bundle, BundleProduct
 
 
+class BundleAdminWriteSerializer(serializers.ModelSerializer):
+    """Simple write serializer for store.Bundle admin operations.
+
+    Avoids the heavy computed fields in BundleSerializer.
+    Used for create/update actions only.
+    """
+
+    class Meta:
+        model = Bundle
+        fields = [
+            'id', 'bundle_template', 'exam_session_subject',
+            'is_active', 'override_name', 'override_description',
+            'display_order', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
 class BundleComponentPriceSerializer(serializers.Serializer):
     """Serializer for prices within a bundle component."""
     price_type = serializers.CharField()
@@ -115,6 +132,7 @@ class BundleProductSerializer(serializers.ModelSerializer):
         model = BundleProduct
         fields = [
             'id',
+            'bundle',
             'product',
             'product_code',
             'default_price_type',

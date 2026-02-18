@@ -1355,6 +1355,10 @@ browser_close()
 - PostgreSQL with `acted` schema (tutorial models) and `adm` schema (administrate models) (20260206-tutorial-schema-refactor)
 - Python 3.14, Django 6.0 + Django REST Framework, `AdministrateAPIService` (GraphQL client), `openpyxl` (Excel parsing) (20260212-administrate-tutorial-sync)
 - PostgreSQL with `acted` schema (tutorial models) and `adm` schema (administrate bridge models) (20260212-administrate-tutorial-sync)
+- JavaScript ES2022, React 19.2 + Material-UI v7, React Router v6, Axios, React Testing Library (20260216-admin-panel)
+- N/A (frontend only; consumes REST API via httpService/Axios) (20260216-admin-panel)
+- Python 3.14, Django 6.0 + Django REST Framework + Django REST Framework ViewSets, DRF Routers, `IsSuperUser` permission class (20260216-admin-panel-api)
+- PostgreSQL with `acted` schema (all models pre-exist, no migrations needed) (20260216-admin-panel-api)
 
 ## Recent Changes
 - 001-catalog-consolidation: Added Python 3.14, Django 6.0 + Django REST Framework, PostgreSQL psycopg2-binary

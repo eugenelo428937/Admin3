@@ -9,13 +9,141 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.utils import timezone
-from .serializers import UserRegistrationSerializer
+from django.shortcuts import get_object_or_404
+from .serializers import (
+    UserRegistrationSerializer,
+    UserProfileAdminSerializer,
+    UserProfileAddressSerializer,
+    UserProfileContactSerializer,
+    UserProfileEmailSerializer,
+    StaffAdminSerializer,
+)
+from catalog.permissions import IsSuperUser
 from students.models import Student
+from tutorials.models import Staff
 from userprofile.models import UserProfile, UserProfileAddress, UserProfileContactNumber, UserProfileEmail
 from email_system.services.email_service import email_service
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# Admin ViewSets
+# =============================================================================
+
+class UserProfileViewSet(viewsets.ModelViewSet):
+    """Admin ViewSet for UserProfile management.
+
+    ALL operations require IsSuperUser — user data is sensitive.
+    Includes nested @action endpoints for addresses, contacts, emails.
+    """
+    queryset = UserProfile.objects.select_related('user').all()
+    serializer_class = UserProfileAdminSerializer
+    permission_classes = [IsSuperUser]
+
+    @action(detail=True, methods=['get'])
+    def addresses(self, request, pk=None):
+        """Get all addresses for a profile."""
+        profile = self.get_object()
+        addresses = profile.addresses.all()
+        serializer = UserProfileAddressSerializer(addresses, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def contacts(self, request, pk=None):
+        """Get all contacts for a profile."""
+        profile = self.get_object()
+        contacts = profile.contact_numbers.all()
+        serializer = UserProfileContactSerializer(contacts, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def emails(self, request, pk=None):
+        """Get all emails for a profile."""
+        profile = self.get_object()
+        emails = profile.emails.all()
+        serializer = UserProfileEmailSerializer(emails, many=True)
+        return Response(serializer.data)
+
+
+class StaffViewSet(viewsets.ModelViewSet):
+    """Admin ViewSet for Staff management.
+
+    ALL operations require IsSuperUser.
+    """
+    queryset = Staff.objects.select_related('user').all()
+    serializer_class = StaffAdminSerializer
+    permission_classes = [IsSuperUser]
+
+
+# =============================================================================
+# Nested Sub-Resource Views (PUT for addresses, contacts, emails)
+# =============================================================================
+
+def _check_superuser(request):
+    """Check if user is authenticated superuser."""
+    if not request.user or not request.user.is_authenticated:
+        return Response(
+            {"detail": "Authentication credentials were not provided."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    if not request.user.is_superuser:
+        return Response(
+            {"detail": "You do not have permission to perform this action."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+    return None
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_address(request, profile_pk, pk):
+    """PUT /api/users/profiles/{profile_pk}/addresses/{pk}/"""
+    error = _check_superuser(request)
+    if error:
+        return error
+    profile = get_object_or_404(UserProfile, pk=profile_pk)
+    address = get_object_or_404(UserProfileAddress, pk=pk, user_profile=profile)
+    serializer = UserProfileAddressSerializer(address, data=request.data)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_contact(request, profile_pk, pk):
+    """PUT /api/users/profiles/{profile_pk}/contacts/{pk}/"""
+    error = _check_superuser(request)
+    if error:
+        return error
+    profile = get_object_or_404(UserProfile, pk=profile_pk)
+    contact = get_object_or_404(UserProfileContactNumber, pk=pk, user_profile=profile)
+    serializer = UserProfileContactSerializer(contact, data=request.data)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_email(request, profile_pk, pk):
+    """PUT /api/users/profiles/{profile_pk}/emails/{pk}/"""
+    error = _check_superuser(request)
+    if error:
+        return error
+    profile = get_object_or_404(UserProfile, pk=profile_pk)
+    email_obj = get_object_or_404(UserProfileEmail, pk=pk, user_profile=profile)
+    serializer = UserProfileEmailSerializer(email_obj, data=request.data)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data)
+
+
+# =============================================================================
+# Existing Registration ViewSet
+# =============================================================================
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()

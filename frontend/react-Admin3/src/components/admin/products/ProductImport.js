@@ -18,7 +18,7 @@ import {
   Paper
 } from "@mui/material";
 import Papa from "papaparse";
-import productService from "../../../services/productService";
+import catalogProductService from "../../../services/catalogProductService";
 
 const AdminProductImport = () => {
     const navigate = useNavigate();
@@ -76,7 +76,7 @@ const AdminProductImport = () => {
                             active: product.active === "true" || product.active === true
                         }));
 
-                        const response = await productService.bulkImport(products);
+                        const response = await catalogProductService.bulkImport(products);
                         setSuccess(`Successfully imported ${response.created || products.length} products.`);
 
                         setFile(null);

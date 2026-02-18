@@ -2,9 +2,11 @@
 from store.views.product import ProductViewSet
 from store.views.price import PriceViewSet
 from store.views.bundle import BundleViewSet
+from store.views.bundle_product import BundleProductViewSet
 
 __all__ = [
     'ProductViewSet',
     'PriceViewSet',
     'BundleViewSet',
+    'BundleProductViewSet',
 ]

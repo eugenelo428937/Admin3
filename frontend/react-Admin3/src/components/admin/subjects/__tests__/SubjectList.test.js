@@ -5,11 +5,20 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
 import AdminSubjectList from '../SubjectList';
 
+// Mock useAuth
+jest.mock('../../../../hooks/useAuth', () => ({
+  __esModule: true,
+  useAuth: jest.fn(),
+}));
+
+import { useAuth } from '../../../../hooks/useAuth';
+
 // Mock subjectService
 jest.mock('../../../../services/subjectService', () => ({
   __esModule: true,
   default: {
     getAll: jest.fn(),
+    list: jest.fn(),
     delete: jest.fn(),
   },
 }));
@@ -46,7 +55,12 @@ const renderComponent = () => {
 describe('AdminSubjectList', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    subjectService.getAll.mockResolvedValue(mockSubjects);
+    useAuth.mockReturnValue({
+      isSuperuser: true,
+      isApprentice: false,
+      isStudyPlus: false,
+    });
+    subjectService.list.mockResolvedValue({ results: mockSubjects, count: mockSubjects.length });
   });
 
   describe('rendering', () => {
@@ -59,7 +73,7 @@ describe('AdminSubjectList', () => {
     });
 
     test('renders loading state initially', () => {
-      subjectService.getAll.mockReturnValue(new Promise(() => {}));
+      subjectService.list.mockReturnValue(new Promise(() => {}));
       renderComponent();
 
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
@@ -98,7 +112,7 @@ describe('AdminSubjectList', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(subjectService.getAll).toHaveBeenCalled();
+        expect(subjectService.list).toHaveBeenCalled();
         expect(screen.getByText('CM2')).toBeInTheDocument();
         expect(screen.getByText('SA1')).toBeInTheDocument();
       });
@@ -179,7 +193,7 @@ describe('AdminSubjectList', () => {
 
   describe('error handling', () => {
     test('displays error when fetch fails', async () => {
-      subjectService.getAll.mockRejectedValueOnce(new Error('Network error'));
+      subjectService.list.mockRejectedValueOnce(new Error('Network error'));
 
       renderComponent();
 
@@ -209,47 +223,12 @@ describe('AdminSubjectList', () => {
 
   describe('empty state', () => {
     test('displays empty message when no subjects', async () => {
-      subjectService.getAll.mockResolvedValueOnce([]);
+      subjectService.list.mockResolvedValueOnce({ results: [], count: 0 });
 
       renderComponent();
 
       await waitFor(() => {
         expect(screen.getByText(/no subjects found/i)).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('data format handling', () => {
-    test('handles array response', async () => {
-      subjectService.getAll.mockResolvedValueOnce(mockSubjects);
-
-      renderComponent();
-
-      await waitFor(() => {
-        expect(screen.getByText('CM2')).toBeInTheDocument();
-      });
-    });
-
-    test('handles paginated response with results property', async () => {
-      subjectService.getAll.mockResolvedValueOnce({ results: mockSubjects });
-
-      renderComponent();
-
-      await waitFor(() => {
-        expect(screen.getByText('CM2')).toBeInTheDocument();
-      });
-    });
-
-    test('handles object response', async () => {
-      subjectService.getAll.mockResolvedValueOnce({
-        '1': mockSubjects[0],
-        '2': mockSubjects[1],
-      });
-
-      renderComponent();
-
-      await waitFor(() => {
-        expect(screen.getByText('CM2')).toBeInTheDocument();
       });
     });
   });
@@ -260,7 +239,7 @@ describe('AdminSubjectList', () => {
 
       await waitFor(() => {
         const link = screen.getByRole('link', { name: /add new subject/i });
-        expect(link).toHaveAttribute('href', '/subjects/new');
+        expect(link).toHaveAttribute('href', '/admin/subjects/new');
       });
     });
 
@@ -269,7 +248,7 @@ describe('AdminSubjectList', () => {
 
       await waitFor(() => {
         const link = screen.getByRole('link', { name: /upload subject/i });
-        expect(link).toHaveAttribute('href', '/subjects/import');
+        expect(link).toHaveAttribute('href', '/admin/subjects/import');
       });
     });
   });

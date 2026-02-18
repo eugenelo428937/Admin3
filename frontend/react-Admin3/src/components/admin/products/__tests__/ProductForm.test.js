@@ -4,6 +4,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import AdminProductForm from '../ProductForm';
 
+// Mock useAuth
+jest.mock('../../../../hooks/useAuth', () => ({
+  __esModule: true,
+  useAuth: jest.fn(),
+}));
+
+import { useAuth } from '../../../../hooks/useAuth';
+
 // Mock navigate function
 const mockNavigate = jest.fn();
 
@@ -12,11 +20,12 @@ jest.mock('react-router-dom', () => {
   return {
     useNavigate: () => mockNavigate,
     useParams: () => ({}),
+    Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
-// Mock productService
-jest.mock('../../../../services/productService', () => ({
+// Mock catalogProductService
+jest.mock('../../../../services/catalogProductService', () => ({
   __esModule: true,
   default: {
     getById: jest.fn(),
@@ -25,7 +34,7 @@ jest.mock('../../../../services/productService', () => ({
   },
 }));
 
-import productService from '../../../../services/productService';
+import catalogProductService from '../../../../services/catalogProductService';
 
 const theme = createTheme();
 
@@ -51,6 +60,11 @@ const renderComponent = (isEditMode = false) => {
 describe('AdminProductForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    useAuth.mockReturnValue({
+      isSuperuser: true,
+      isApprentice: false,
+      isStudyPlus: false,
+    });
   });
 
   describe('create mode', () => {
@@ -117,7 +131,7 @@ describe('AdminProductForm', () => {
     };
 
     beforeEach(() => {
-      productService.getById.mockResolvedValue(mockProduct);
+      catalogProductService.getById.mockResolvedValue(mockProduct);
     });
 
     test('renders edit form title', async () => {
@@ -132,7 +146,7 @@ describe('AdminProductForm', () => {
       renderComponent(true);
 
       await waitFor(() => {
-        expect(productService.getById).toHaveBeenCalledWith('1');
+        expect(catalogProductService.getById).toHaveBeenCalledWith('1');
       });
     });
 
@@ -180,7 +194,7 @@ describe('AdminProductForm', () => {
 
   describe('form submission', () => {
     test('creates product on submit in create mode', async () => {
-      productService.create.mockResolvedValue({});
+      catalogProductService.create.mockResolvedValue({});
 
       renderComponent();
 
@@ -193,14 +207,14 @@ describe('AdminProductForm', () => {
       fireEvent.click(screen.getByRole('button', { name: /create product/i }));
 
       await waitFor(() => {
-        expect(productService.create).toHaveBeenCalledWith({
+        expect(catalogProductService.create).toHaveBeenCalledWith({
           code: 'NEW-CODE',
           fullname: 'New Product Full Name',
           shortname: 'New Product',
           description: 'Product description',
           active: true,
         });
-        expect(mockNavigate).toHaveBeenCalledWith('/products');
+        expect(mockNavigate).toHaveBeenCalledWith('/admin/products');
       });
     });
 
@@ -212,8 +226,8 @@ describe('AdminProductForm', () => {
         description: 'Original description',
         active: true,
       };
-      productService.getById.mockResolvedValue(mockProduct);
-      productService.update.mockResolvedValue({});
+      catalogProductService.getById.mockResolvedValue(mockProduct);
+      catalogProductService.update.mockResolvedValue({});
 
       renderComponent(true);
 
@@ -227,10 +241,10 @@ describe('AdminProductForm', () => {
       fireEvent.click(screen.getByRole('button', { name: /update product/i }));
 
       await waitFor(() => {
-        expect(productService.update).toHaveBeenCalledWith('1', expect.objectContaining({
+        expect(catalogProductService.update).toHaveBeenCalledWith('1', expect.objectContaining({
           fullname: 'Updated Full Name',
         }));
-        expect(mockNavigate).toHaveBeenCalledWith('/products');
+        expect(mockNavigate).toHaveBeenCalledWith('/admin/products');
       });
     });
 
@@ -251,13 +265,13 @@ describe('AdminProductForm', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
 
-      expect(mockNavigate).toHaveBeenCalledWith('/products');
+      expect(mockNavigate).toHaveBeenCalledWith('/admin/products');
     });
   });
 
   describe('error handling', () => {
     test('shows error when fetch fails in edit mode', async () => {
-      productService.getById.mockRejectedValueOnce(new Error('Fetch error'));
+      catalogProductService.getById.mockRejectedValueOnce(new Error('Fetch error'));
 
       renderComponent(true);
 
@@ -267,7 +281,7 @@ describe('AdminProductForm', () => {
     });
 
     test('shows error when create fails', async () => {
-      productService.create.mockRejectedValueOnce({
+      catalogProductService.create.mockRejectedValueOnce({
         response: { data: { message: 'Create error' } },
         message: 'Request failed',
       });

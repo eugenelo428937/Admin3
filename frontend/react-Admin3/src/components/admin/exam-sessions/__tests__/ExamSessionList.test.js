@@ -5,11 +5,20 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
 import AdminExamSessionList from '../ExamSessionList';
 
+// Mock useAuth
+jest.mock('../../../../hooks/useAuth', () => ({
+  __esModule: true,
+  useAuth: jest.fn(),
+}));
+
+import { useAuth } from '../../../../hooks/useAuth';
+
 // Mock examSessionService
 jest.mock('../../../../services/examSessionService', () => ({
   __esModule: true,
   default: {
     getAll: jest.fn(),
+    list: jest.fn(),
     delete: jest.fn(),
   },
 }));
@@ -46,7 +55,12 @@ const renderComponent = () => {
 describe('AdminExamSessionList', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    examSessionService.getAll.mockResolvedValue(mockExamSessions);
+    useAuth.mockReturnValue({
+      isSuperuser: true,
+      isApprentice: false,
+      isStudyPlus: false,
+    });
+    examSessionService.list.mockResolvedValue({ results: mockExamSessions, count: mockExamSessions.length });
   });
 
   describe('rendering', () => {
@@ -83,7 +97,7 @@ describe('AdminExamSessionList', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(examSessionService.getAll).toHaveBeenCalled();
+        expect(examSessionService.list).toHaveBeenCalled();
         expect(screen.getByText('SEPT2024')).toBeInTheDocument();
         expect(screen.getByText('DEC2024')).toBeInTheDocument();
       });
@@ -146,7 +160,7 @@ describe('AdminExamSessionList', () => {
 
   describe('error handling', () => {
     test('displays error when fetch fails', async () => {
-      examSessionService.getAll.mockRejectedValueOnce(new Error('Network error'));
+      examSessionService.list.mockRejectedValueOnce(new Error('Network error'));
 
       renderComponent();
 
@@ -176,7 +190,7 @@ describe('AdminExamSessionList', () => {
 
   describe('empty state', () => {
     test('renders empty table when no sessions', async () => {
-      examSessionService.getAll.mockResolvedValueOnce([]);
+      examSessionService.list.mockResolvedValueOnce({ results: [], count: 0 });
 
       renderComponent();
 
