@@ -7,8 +7,7 @@ import
       Grid,
       MenuItem,
       MenuList,
-      Menu,
-      Typography,
+         Typography,
       useTheme
    } from "@mui/material";
 import { NavLink } from "react-router-dom";
@@ -36,18 +35,74 @@ const NavigationMenu = ({
    const theme = useTheme();
    const { isSuperuser, isApprentice, isStudyPlus } = useAuth();
 
-   // Admin menu state
-   const [adminAnchorEl, setAdminAnchorEl] = React.useState(null);
-   const adminMenuOpen = Boolean(adminAnchorEl);
-
-   const handleAdminClick = (event) =>
-   {
-      setAdminAnchorEl(event.currentTarget);
-   };
-
-   const handleAdminClose = () =>
-   {
-      setAdminAnchorEl(null);
+   // Admin MegaMenu category definitions
+   const adminCategories = {
+      row1: [
+         {
+            label: 'Catalog',
+            enabled: true,
+            links: [
+               { label: 'Exam Sessions', to: '/admin/exam-sessions' },
+               { label: 'Subjects', to: '/admin/subjects' },
+               { label: 'Exam Session Subjects', to: '/admin/exam-session-subjects' },
+               { label: 'Products', to: '/admin/products' },
+               { label: 'Product Variations', to: '/admin/product-variations' },
+               { label: 'Product Bundles', to: '/admin/product-bundles' },
+            ],
+         },
+         {
+            label: 'Store',
+            enabled: true,
+            links: [
+               { label: 'Store Products', to: '/admin/store-products' },
+               { label: 'Recommendations', to: '/admin/recommendations' },
+               { label: 'Prices', to: '/admin/prices' },
+               { label: 'Store Bundles', to: '/admin/store-bundles' },
+            ],
+         },
+         {
+            label: 'Filtering',
+            enabled: false,
+            links: [
+               { label: 'Filter Groups', to: '/admin/filter-groups' },
+               { label: 'Filter Configuration', to: '/admin/filter-config' },
+            ],
+         },
+         {
+            label: 'User',
+            enabled: true,
+            links: [
+               { label: 'User Profiles', to: '/admin/user-profiles' },
+               { label: 'Staff', to: '/admin/staff' },
+            ],
+         },
+      ],
+      row2: [
+         {
+            label: 'Tutorials',
+            enabled: false,
+            links: [
+               { label: 'Tutorial Events', to: '/admin/tutorial-events' },
+               { label: 'Tutorial Sessions', to: '/admin/tutorial-sessions' },
+            ],
+         },
+         {
+            label: 'Marking',
+            enabled: false,
+            links: [
+               { label: 'Marking Vouchers', to: '/admin/marking-vouchers' },
+               { label: 'Marking Assignments', to: '/admin/marking-assignments' },
+            ],
+         },
+         {
+            label: 'Orders',
+            enabled: false,
+            links: [
+               { label: 'Orders', to: '/admin/orders' },
+               { label: 'Order Items', to: '/admin/order-items' },
+            ],
+         },
+      ],
    };
 
    return (
@@ -692,62 +747,58 @@ const NavigationMenu = ({
 
          {/* Admin MegaMenu */}
          {isSuperuser ? (
-            <>
-               <Button
-                  variant="main_nav_link"
-                  id="admin-menu-button"
-                  aria-controls={adminMenuOpen ? "admin-menu" : undefined}
-                  aria-haspopup="true"
-                  aria-expanded={adminMenuOpen ? "true" : undefined}
-                  onClick={handleAdminClick}
-                  sx={{ mx: { xl: 2 } }}
-               >
-                  <Typography variant="mega-nav-heading">Admin</Typography>
-               </Button>
-               <Menu
-                  id="admin-menu"
-                  anchorEl={adminAnchorEl}
-                  open={adminMenuOpen}
-                  onClose={handleAdminClose}
-                  MenuListProps={{
-                     "aria-labelledby": "admin-menu-button",
-                  }}
-               >
-                  <MenuItem
-                     component={NavLink}
-                     to="admin/exam-sessions"
-                     onClick={() =>
-                     {
-                        handleAdminClose();
-                        onCollapseNavbar?.();
-                     }}
-                  >
-                     Exam Sessions
-                  </MenuItem>
-                  <MenuItem
-                     component={NavLink}
-                     to="admin/subjects"
-                     onClick={() =>
-                     {
-                        handleAdminClose();
-                        onCollapseNavbar?.();
-                     }}
-                  >
-                     Subjects
-                  </MenuItem>
-                  <MenuItem
-                     component={NavLink}
-                     to="admin/products"
-                     onClick={() =>
-                     {
-                        handleAdminClose();
-                        onCollapseNavbar?.();
-                     }}
-                  >
-                     Products
-                  </MenuItem>
-               </Menu>
-            </>
+            <MegaMenuPopover
+               id="admin-menu"
+               label="Admin"
+               onClose={() => onCollapseNavbar?.()}
+            >
+               {[adminCategories.row1, adminCategories.row2].map((row, rowIndex) => (
+                  <Grid container spacing={3} key={rowIndex} sx={{ mb: rowIndex === 0 ? 2 : 0 }}>
+                     {row.map((category) => (
+                        <Grid item xs={6} sm={3} key={category.label}>
+                           <Box
+                              data-disabled={!category.enabled ? "true" : undefined}
+                              sx={{
+                                 ...((!category.enabled) && {
+                                    opacity: 0.5,
+                                    pointerEvents: 'none',
+                                 }),
+                              }}
+                           >
+                              <Typography
+                                 variant="subtitle2"
+                                 sx={{
+                                    fontWeight: 'bold',
+                                    mb: 1,
+                                    color: theme.palette.semantic?.navigation?.button?.color || 'inherit',
+                                 }}
+                              >
+                                 {category.label}
+                              </Typography>
+                              <MenuList dense>
+                                 {category.links.map((link) => (
+                                    <MenuItem
+                                       key={link.to}
+                                       component={NavLink}
+                                       to={link.to}
+                                       onClick={() => onCollapseNavbar?.()}
+                                       sx={{
+                                          color: theme.palette.semantic?.navigation?.button?.color || 'inherit',
+                                          '&:hover': {
+                                             backgroundColor: theme.palette.action?.hover || 'rgba(255,255,255,0.1)',
+                                          },
+                                       }}
+                                    >
+                                       {link.label}
+                                    </MenuItem>
+                                 ))}
+                              </MenuList>
+                           </Box>
+                        </Grid>
+                     ))}
+                  </Grid>
+               ))}
+            </MegaMenuPopover>
          ) : null}
       </Container>
    );
