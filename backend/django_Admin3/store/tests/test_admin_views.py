@@ -433,3 +433,189 @@ class TestStoreBundleProductViewSet(StoreAdminTestCase):
         )
         response = self.client.delete(f'/api/store/bundle-products/{bp.id}/')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+# =============================================================================
+# Store Product Admin ViewSet (admin-products endpoint)
+# =============================================================================
+
+class TestStoreProductAdminViewSet(StoreAdminTestCase):
+    """Tests for StoreProductAdminViewSet — unfiltered admin CRUD at /api/store/admin-products/."""
+
+    def _get_results(self, response):
+        """Extract results from paginated or flat response."""
+        data = response.json()
+        if isinstance(data, dict) and 'results' in data:
+            return data['results']
+        return data
+
+    def test_list_returns_all_products_including_inactive(self):
+        """Admin list must include inactive products."""
+        Product.objects.filter(id=self.store_product_2.id).update(is_active=False)
+
+        self.authenticate_superuser()
+        response = self.client.get('/api/store/admin-products/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        results = self._get_results(response)
+        product_codes = [p['product_code'] for p in results]
+        self.assertIn(self.store_product_2.product_code, product_codes)
+
+    def test_list_includes_variation_fields(self):
+        """Response must include catalog product and variation fields."""
+        self.authenticate_superuser()
+        response = self.client.get('/api/store/admin-products/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        results = self._get_results(response)
+        self.assertTrue(len(results) > 0)
+
+        first = results[0]
+        expected_fields = [
+            'id', 'product_code', 'is_active',
+            'subject_code', 'session_code',
+            'variation_type', 'variation_name', 'variation_code',
+            'product_name', 'catalog_product_id', 'catalog_product_code',
+        ]
+        for field in expected_fields:
+            self.assertIn(field, first, f"Missing field: {field}")
+
+    def test_list_filter_by_catalog_product_id(self):
+        """?catalog_product_id=X returns only products for that catalog product."""
+        self.authenticate_superuser()
+        response = self.client.get(
+            f'/api/store/admin-products/?catalog_product_id={self.catalog_product.id}'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        results = self._get_results(response)
+        # Both store products link to the same catalog product
+        self.assertEqual(len(results), 2)
+        for product in results:
+            self.assertEqual(product['catalog_product_id'], self.catalog_product.id)
+
+    def test_list_filter_by_nonexistent_catalog_product(self):
+        """?catalog_product_id=99999 returns empty list."""
+        self.authenticate_superuser()
+        response = self.client.get('/api/store/admin-products/?catalog_product_id=99999')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        results = self._get_results(response)
+        self.assertEqual(len(results), 0)
+
+    def test_list_requires_superuser(self):
+        """Non-superusers must get 403 on list."""
+        self.authenticate_regular_user()
+        response = self.client.get('/api/store/admin-products/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_list_rejects_anonymous(self):
+        """Anonymous users must get 401."""
+        self.unauthenticate()
+        response = self.client.get('/api/store/admin-products/')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_retrieve_single_product(self):
+        """GET single product returns full admin data."""
+        self.authenticate_superuser()
+        response = self.client.get(
+            f'/api/store/admin-products/{self.store_product_1.id}/'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data['product_code'], self.store_product_1.product_code)
+        self.assertEqual(data['catalog_product_code'], self.catalog_product.code)
+
+    def test_delete_product(self):
+        """DELETE removes product without dependents."""
+        self.authenticate_superuser()
+        product = Product.objects.create(
+            exam_session_subject=self.ess_2,
+            product_product_variation=self.ppv_ebook,
+            product_code='DEL-ADMIN/TEST/2026-04-ST',
+        )
+        response = self.client.delete(f'/api/store/admin-products/{product.id}/')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+# =============================================================================
+# Store Bundle Admin ViewSet (admin-bundles endpoint)
+# =============================================================================
+
+class TestStoreBundleAdminViewSet(StoreAdminTestCase):
+    """Tests for StoreBundleAdminViewSet — unfiltered admin CRUD at /api/store/admin-bundles/."""
+
+    def _get_results(self, response):
+        """Extract results from paginated or flat response."""
+        data = response.json()
+        if isinstance(data, dict) and 'results' in data:
+            return data['results']
+        return data
+
+    def test_list_returns_all_bundles_including_inactive(self):
+        """Admin list must include inactive bundles."""
+        Bundle.objects.filter(id=self.store_bundle.id).update(is_active=False)
+
+        self.authenticate_superuser()
+        response = self.client.get('/api/store/admin-bundles/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        results = self._get_results(response)
+        bundle_ids = [b['id'] for b in results]
+        self.assertIn(self.store_bundle.id, bundle_ids)
+
+    def test_list_includes_subject_and_session_fields(self):
+        """List must include subject_code, exam_session_code, components_count."""
+        self.authenticate_superuser()
+        response = self.client.get('/api/store/admin-bundles/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        results = self._get_results(response)
+        self.assertTrue(len(results) > 0)
+
+        first = results[0]
+        for field in ['subject_code', 'exam_session_code', 'components_count', 'name']:
+            self.assertIn(field, first, f"Missing field: {field}")
+
+        self.assertEqual(first['subject_code'], self.subject.code)
+
+    def test_list_requires_superuser(self):
+        """Non-superusers must get 403."""
+        self.authenticate_regular_user()
+        response = self.client.get('/api/store/admin-bundles/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_list_rejects_anonymous(self):
+        """Anonymous users must get 401."""
+        self.unauthenticate()
+        response = self.client.get('/api/store/admin-bundles/')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_products_action_returns_components(self):
+        """GET /admin-bundles/{id}/products/ returns component data."""
+        self.authenticate_superuser()
+        response = self.client.get(
+            f'/api/store/admin-bundles/{self.store_bundle.id}/products/'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.json()
+        self.assertEqual(len(data), 1)
+        component = data[0]
+        self.assertIn('product_code', component)
+        self.assertIn('product', component)
+        self.assertIn('product_variation', component)
+
+    def test_delete_bundle(self):
+        """DELETE removes bundle without dependents."""
+        self.authenticate_superuser()
+        template = ProductBundle.objects.create(
+            bundle_name='Delete Test Bundle',
+            subject=self.subject_2,
+        )
+        bundle = Bundle.objects.create(
+            bundle_template=template,
+            exam_session_subject=self.ess_2,
+        )
+        response = self.client.delete(f'/api/store/admin-bundles/{bundle.id}/')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)

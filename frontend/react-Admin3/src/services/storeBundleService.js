@@ -3,11 +3,31 @@ import config from "../config";
 import { parsePaginatedResponse } from "./paginationHelper";
 
 const API_URL = `${config.apiBaseUrl}/api/store/bundles`;
+const ADMIN_API_URL = `${config.apiBaseUrl}/api/store/admin-bundles`;
 
 const storeBundleService = {
     list: async (params = {}) => {
         const response = await httpService.get(`${API_URL}/`, { params });
         return parsePaginatedResponse(response.data);
+    },
+
+    adminList: async (params = {}) => {
+        const response = await httpService.get(`${ADMIN_API_URL}/`, { params });
+        return parsePaginatedResponse(response.data);
+    },
+
+    getProducts: async (bundleId) => {
+        try {
+            const response = await httpService.get(
+                `${ADMIN_API_URL}/${bundleId}/products/`
+            );
+            if (!response.data) return [];
+            return Array.isArray(response.data) ? response.data :
+                response.data.results || [];
+        } catch (error) {
+            console.error("Error fetching bundle products:", error);
+            return [];
+        }
     },
 
     getAll: async () => {
@@ -38,7 +58,7 @@ const storeBundleService = {
     },
 
     delete: async (id) => {
-        await httpService.delete(`${API_URL}/${id}/`);
+        await httpService.delete(`${ADMIN_API_URL}/${id}/`);
     },
 };
 
