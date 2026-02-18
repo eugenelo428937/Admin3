@@ -23,7 +23,8 @@ const important = (value) => `${value} !important`;
 
 /**
  * Typography configuration for MUI theme.
- * Imports primitives from tokens/typography.js and adds MUI-specific modifications.
+ * All variant definitions are self-contained using token primitives.
+ * Adds MUI-specific !important flags and layout overrides.
  */
 export const typographyConfig = {
   fontFamily: fontFamilies.inter,
@@ -162,6 +163,7 @@ export const typographyConfig = {
     fontSize: important(fontSizes.body[10]),
     lineHeight: important(lineHeights.relaxed),
     letterSpacing: important(letterSpacing.subtle),
+    textWrap: 'pretty',
   },
   body2: {
     fontFamily: fontFamilies.inter,
@@ -169,6 +171,7 @@ export const typographyConfig = {
     fontSize: important(fontSizes.body[20]),
     lineHeight: important('calc(var(--wholestep) / var(--quarterstep))'),
     letterSpacing: important(letterSpacing.subtle),
+    textWrap: 'balance',
   },
 
   // Subtitle variants
@@ -264,6 +267,7 @@ export const typographyConfig = {
     fontSize: important(fontSizes.caption[10]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacing.wide),
+    textTransform: 'uppercase',
   },
   fineprint: {
     fontFamily: fontFamilies.inter,
@@ -299,7 +303,7 @@ export const typographyConfig = {
     textTransform: 'none',
     position: "static",
     top: "6.235em",
-  },
+  },  
 };
 
 /**
@@ -319,7 +323,7 @@ export const responsiveTypography = {
   },
   Acted: {
     sm: {
-      fontSize: important(fontSizes.title1), // Scales down from display2
+      fontSize: important(fontSizes.h3), // Scales down from h2
       textAlign: "start",
       lineHeight: important('calc(1em * var(--wholestep-dec) * var(--quarterstep) * var(--eighthstep) * var(--eighthstep))'),
       marginBottom: spacing.xs3,
@@ -327,7 +331,7 @@ export const responsiveTypography = {
   },
   h3: {
     sm: {
-      fontSize: important(fontSizes.price), // Scales down from title1
+      fontSize: important(fontSizes.price), // Scales down from h3
     },
   },
   price: {
@@ -340,8 +344,8 @@ export const responsiveTypography = {
       fontSize: important(fontSizes.navlink),
       fontWeight: 400,
     },
-    md: {
-      fontSize: important(fontSizes.body1),
+    sm: {
+      fontSize: important(fontSizes.body2),
       fontWeight: 400,
     },
   },
