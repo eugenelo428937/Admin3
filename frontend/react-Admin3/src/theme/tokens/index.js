@@ -11,7 +11,6 @@
  * For components, prefer semantic tokens:
  * import { semantic, productCards } from '../theme/semantic';
  */
-
 // Color tokens - single source of truth for all colors
 export { default as colors, md3, scales, staticColors } from './colors';
 
@@ -34,12 +33,15 @@ export
 {
   scaleFactor,
   multipliers,
-  spacing as spacingScale,  
+  spacing as spacingScale,
   gaps,
   padding,
-  borderRadius,
 } from './spacing';
 export { iconSizes } from './icons'
+
+export { shadows } from './shadows'
+
+export { borderRadius } from './borderRadius'
 
 // Consolidated export for convenience
 const tokens = {
@@ -47,6 +49,8 @@ const tokens = {
   typography: require('./typography').default,
   spacing: require('./spacing').default,
   iconSizes: require('./icons').default,
+  shawdows: require('./shadows').default,
+  borderRadius: require('./borderRadius').default, 
 };
 
 export default tokens;
