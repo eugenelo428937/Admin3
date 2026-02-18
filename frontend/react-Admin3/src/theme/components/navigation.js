@@ -256,7 +256,7 @@ export const navigationOverrides = {
             //borderBottom: `1px solid ${shadows.dark[1]}`,
             backgroundColor: navigation.background.topNavBar.hover,
             transition: 'all 0.1s ease-in',
-            boxShadow: shadows.dark[1],
+            boxShadow: shadows.shades[1],
           },
           '&:focus-visible': {
             outline: `2px solid ${navigation.text.inverse}`,
@@ -336,7 +336,7 @@ export const navigationOverrides = {
           color: navigation.text.primary,
           borderBottom: `1px solid ${navigation.border.subtle}`,
           '&:hover': {
-            boxShadow: shadows.dark[1],
+            boxShadow: shadows.shades[1],
             backgroundColor: navigation.hamburger.hover.background,
             transition: 'all 0.1s ease-in',
           },
@@ -386,7 +386,7 @@ export const navigationOverrides = {
           border: 0,
           zIndex: 10000,
           '&:hover': {
-            boxShadow: shadows.dark[1],
+            boxShadow: shadows.shades[1],
             backgroundColor: navigation.hamburger.hover.background,
             transition: 'all 0.1s ease-in',
           },

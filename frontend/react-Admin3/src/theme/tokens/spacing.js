@@ -6,11 +6,27 @@
  *
  * Scale factor: 1.618 (golden ratio)
  */
-
-// =============================================================================
-// Scale Factor
-// =============================================================================
+const baseUnit = 8;
 export const scaleFactor = 1.618;
+
+  // Calculate 8 * (1.618 ^ (factor - 1)) for exponential growth
+  // or use a Fibonacci sequence approach.
+  // spacing[1] :1px
+  // spacing[2] :3.236px
+  // spacing[3] :7.853772px
+  // spacing[4] :16.943204128px
+  // spacing[5] :34.26763034888px
+  // spacing[6] :66.5340310853854px
+  // spacing[7] :125.594072678846px
+  // spacing[8] :232.241382393569px
+export const formulatedSpacing = (factor) =>
+{
+  if (factor === 0) return '0px';
+
+  const size = baseUnit * Math.pow(scaleFactor, factor - 1);
+
+  return `${Math.round(size)}px`;
+};
 
 // =============================================================================
 // Scale Multipliers
@@ -40,7 +56,7 @@ export const spacing = {
     4: 'calc(1rem / pow(var(--scaleFactor), 4))',
     5: 'calc(1rem / pow(var(--scaleFactor), 5))',
   },
-  sm: 'calc(1rem / var(--scaleFactor))',
+  sm: 'calc(1rem / var(--scaleFactor))', 
   md: '1rem', // Base unit (16px at default)  
   lg: 'calc(1rem * var(--scaleFactor))', // ~1.62rem
   xl: {
@@ -55,7 +71,7 @@ export const spacing = {
 // Gap Values (common spacing patterns)
 // =============================================================================
 export const gaps = {
-  none: '0',  
+  none: '0',
   compact: spacing.xs[1],
   normal: spacing.sm,
   relaxed: spacing.md,
@@ -76,27 +92,15 @@ export const padding = {
 };
 
 // =============================================================================
-// Border Radius
-// =============================================================================
-export const borderRadius = {
-  none: '0',
-  sm: '4px',
-  md: '8px',
-  lg: '12px',
-  xl: '16px',
-  full: '9999px',
-};
-
-// =============================================================================
 // Default Export
 // =============================================================================
 const spacingTokens = {
   scaleFactor,
+  formulatedSpacing,
   multipliers,
   spacing,
   gaps,
-  padding,
-  borderRadius,
+  padding,  
 };
 
 export default spacingTokens;

@@ -66,7 +66,7 @@ import ResetPasswordForm from "./components/User/ResetPasswordForm";
 import AccountActivation from "./components/User/AccountActivation";
 import ResendActivation from "./components/User/ResendActivation";
 import EmailVerification from "./components/User/EmailVerification";
-import StyleGuide from "./components/StyleGuide";
+import StyleGuide from "./pages/StyleGuide";
 import MaterialThemeVisualizer from "./components/styleguide/MaterialThemeVisualizer";
 import Registration from './pages/Registration';
 import Footer from "./components/Footer";
