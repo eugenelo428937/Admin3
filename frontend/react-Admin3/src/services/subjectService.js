@@ -1,7 +1,9 @@
 // src/services/subjectService.js
 import config from "../config";
 import httpService from "./httpService";
-const API_URL = config.subjectUrl;
+import { parsePaginatedResponse } from "./paginationHelper";
+// Use catalog API endpoint (legacy /api/subjects/ was removed during catalog consolidation)
+const API_URL = `${config.catalogUrl}/admin-subjects`;
 
 const subjectService = {
 	getAll: async () => {
@@ -15,6 +17,11 @@ const subjectService = {
 			return []; // Return empty array on error
 		}
 	},
+	list: async (params = {}) => {
+		const response = await httpService.get(`${API_URL}/`, { params });
+		return parsePaginatedResponse(response.data);
+	},
+
 	getSubjects: async () => {
 		const response = await httpService.get(`${API_URL}/`);
 		return response.data.results;

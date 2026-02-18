@@ -69,7 +69,7 @@ class SubjectViewSet(viewsets.ModelViewSet):
 
         # Only fetch active subjects, use lightweight .values() query
         subjects = Subject.objects.filter(active=True).order_by('code').values(
-            'id', 'code', 'description'
+            'id', 'code', 'description', 'active'
         )
 
         # Format to match serializer output (add 'name' alias for 'description')
@@ -79,6 +79,7 @@ class SubjectViewSet(viewsets.ModelViewSet):
                 'code': s['code'],
                 'description': s['description'],
                 'name': s['description'],  # Frontend compatibility alias
+                'active': s['active'],
             }
             for s in subjects
         ]

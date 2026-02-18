@@ -1,22 +1,15 @@
-// src/components/subjects/SubjectForm.js
+// src/components/admin/subjects/SubjectForm.js
 import React, { useState, useEffect } from 'react';
 import {
-  TextField,
-  Button,
-  Container,
-  Alert,
-  Box,
-  Typography,
-  FormControl,
-  FormLabel,
-  Checkbox,
-  FormControlLabel,
-  CircularProgress
+  TextField, Button, Container, Alert, Box, Typography,
+  FormControl, FormLabel, Checkbox, FormControlLabel, CircularProgress
 } from '@mui/material';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { useAuth } from '../../../hooks/useAuth';
 import subjectService from "../../../services/subjectService";
 
 const AdminSubjectForm = () => {
+  const { isSuperuser } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditMode = !!id;
@@ -31,20 +24,20 @@ const AdminSubjectForm = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-		const fetchSubject = async () => {
-			try {
-				const data = await subjectService.getById(id);
-				setFormData(data);
-				setLoading(false);
-			} catch (err) {
-				setError("Failed to fetch subject details. Please try again.");
-				setLoading(false);
-			}
-		};
+    const fetchSubject = async () => {
+      try {
+        const data = await subjectService.getById(id);
+        setFormData(data);
+      } catch (err) {
+        setError("Failed to fetch subject details. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-		if (isEditMode) {
-			fetchSubject();
-		}
+    if (isEditMode) {
+      fetchSubject();
+    }
   }, [id, isEditMode]);
 
   const handleChange = (e) => {
@@ -69,12 +62,13 @@ const AdminSubjectForm = () => {
       } else {
         await subjectService.create(formData);
       }
-      navigate('/subjects');
+      navigate('/admin/subjects');
     } catch (err) {
       setError(`Failed to ${isEditMode ? 'update' : 'create'} subject. Please check your input and try again.`);
     }
   };
 
+  if (!isSuperuser) return <Navigate to="/" replace />;
   if (loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
 
   return (
@@ -115,13 +109,7 @@ const AdminSubjectForm = () => {
 
         <FormControl fullWidth sx={{ mb: 3 }}>
           <FormControlLabel
-            control={
-              <Checkbox
-                name="active"
-                checked={formData.active}
-                onChange={handleChange}
-              />
-            }
+            control={<Checkbox name="active" checked={formData.active} onChange={handleChange} />}
             label="Active"
           />
         </FormControl>
@@ -130,7 +118,7 @@ const AdminSubjectForm = () => {
           <Button variant="contained" type="submit">
             {isEditMode ? 'Update Subject' : 'Create Subject'}
           </Button>
-          <Button variant="outlined" onClick={() => navigate('/subjects')}>
+          <Button variant="outlined" onClick={() => navigate('/admin/subjects')}>
             Cancel
           </Button>
         </Box>

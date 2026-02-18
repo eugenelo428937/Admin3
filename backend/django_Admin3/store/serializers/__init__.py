@@ -2,6 +2,7 @@
 from store.serializers.product import ProductSerializer, ProductListSerializer
 from store.serializers.price import PriceSerializer, PriceListSerializer
 from store.serializers.bundle import (
+    BundleAdminWriteSerializer,
     BundleSerializer,
     BundleListSerializer,
     BundleProductSerializer,
@@ -22,6 +23,7 @@ __all__ = [
     'ProductListSerializer',
     'PriceSerializer',
     'PriceListSerializer',
+    'BundleAdminWriteSerializer',
     'BundleSerializer',
     'BundleListSerializer',
     'BundleProductSerializer',
