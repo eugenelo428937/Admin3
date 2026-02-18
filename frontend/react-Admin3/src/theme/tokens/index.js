@@ -14,7 +14,7 @@
 // Color tokens - single source of truth for all colors
 export { default as colors, md3, scales, staticColors } from './colors';
 
-// Typography tokens - font families, sizes, weights, variants
+// Typography tokens - font families, sizes, weights
 export { default as typography } from './typography';
 export
 {

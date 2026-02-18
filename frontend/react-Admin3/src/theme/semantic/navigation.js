@@ -68,6 +68,7 @@ export const button = {
   background: 'transparent', // Default transparent
   hoverBackground: md3.primaryContainer, // #F7D8FF - Button hover bg
   activeBackground: scales.purple[20], // #dfd4f7 - Button active bg
+  icon: md3.surface,
 };
 
 // =============================================================================
@@ -96,7 +97,7 @@ export const hamburger = {
 // =============================================================================
 export const megaMenu = {
   background: staticColors.white, // #FFFFFF - Mega menu background
-  sectionTitle: md3.onSurface, // #1C1B20 - Section header
+  sectionTitle: md3.surfaceDim, // #1C1B20 - Section header
   itemText: md3.onSurfaceVariant, // #47464F - Menu item text
   itemHover: md3.surfaceContainerLow, // #F7F2FA - Item hover bg
   border: md3.outlineVariant, // #C9C5D0 - Section borders
