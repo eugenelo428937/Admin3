@@ -14,16 +14,16 @@ import {
 import { Add } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 // Import sub-components
-import TypographySection from "./styleguide/TypographySection";
-import ColorSystemSection from "./styleguide/ColorSystemSection";
-import ButtonsSection from "./styleguide/ButtonsSection";
-import FormElementsSection from "./styleguide/FormElementsSection";
-import FeedbackSection from "./styleguide/FeedbackSection";
-import NavigationSection from "./styleguide/NavigationSection";
-import LayoutSection from "./styleguide/LayoutSection";
-import TablesSection from "./styleguide/TablesSection";
-import ProductCardsSection from "./styleguide/ProductCardsSection";
-
+import TypographySection from "../components/styleguide/TypographySection";
+import ColorSystemSection from "../components/styleguide/ColorSystemSection";
+import ButtonsSection from "../components/styleguide/ButtonsSection";
+import FormElementsSection from "../components/styleguide/FormElementsSection";
+import FeedbackSection from "../components/styleguide/FeedbackSection";
+import NavigationSection from "../components/styleguide/NavigationSection";
+import LayoutSection from "../components/styleguide/LayoutSection";
+import TablesSection from "../components/styleguide/TablesSection";
+import ProductCardsSection from "../components/styleguide/ProductCardsSection";
+import Sandbox from "../components/styleguide/Sandbox";
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 
@@ -58,11 +58,25 @@ const StyleGuide = () => {
 					marginX: theme.spacingTokens.xl2
 				}}>
 				<Tabs
-					defaultActiveKey="typography"
+					defaultActiveKey="sanbox"
 					id="style-guide-tabs"
 					sx={{
 						justiftItems:"center"
 					}}>
+					<Tab
+						eventKey="sanbox"
+						title={
+							<Typography variant="h6">
+								Sandbox
+							</Typography>
+						}>
+						<Grid container>
+							<Grid size={{ xs: 12, lg: 12 }}>
+								<Sandbox/>
+							</Grid>
+						</Grid>
+					</Tab>
+					
 					<Tab
 						eventKey="typography"
 						title={
