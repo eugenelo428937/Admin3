@@ -9,14 +9,14 @@ import { md3, scales, staticColors } from './tokens/colors';
 import { typographyConfig, responsiveTypography } from './typography';
 import componentOverrides from './components';
 import { createGradientStyle, gradientColorSchemes } from './utils';
-import { spacing, semanticSpacing, gaps } from './spacing';
+import { spacing, semanticSpacing, gaps, formulatedSpacing } from './spacing';
+import {shadows } from './styles/shadows'
 
 // Import semantic layer
 import { semantic } from './semantic/common';
 import productCards from './semantic/productCards';
 import navigation from './semantic/navigation';
-const baseUnit = 8;
-const goldenRatio = 1.618;
+
 // Base theme with breakpoints
 const baseTheme = createTheme({
   breakpoints: {
@@ -111,19 +111,24 @@ const theme = createTheme({
     // Usage: sx={{ color: 'navigation.text.primary' }}
     navigation: navigation,
   },
-  
-  spacing: (factor) => {
-    // 0 = 0px
-    if (factor === 0) return '0px';
-    // Calculate 8 * (1.618 ^ (factor - 1)) for exponential growth
+
+  // Calculate 8 * (1.618 ^ (factor - 1)) for exponential growth
     // or use a Fibonacci sequence approach.
-    const size = baseUnit * Math.pow(goldenRatio, factor - 1);
-    return `${Math.round(size)}px`;
-  },
+    // spacing[1] :1px
+    // spacing[2] :3.236px
+    // spacing[3] :7.853772px
+    // spacing[4] :16.943204128px
+    // spacing[5] :34.26763034888px
+    // spacing[6] :66.5340310853854px
+    // spacing[7] :125.594072678846px
+    // spacing[8] :232.241382393569px
+  spacing: formulatedSpacing,
 
   // Custom spacing tokens (for direct access via theme.spacingTokens.xl, etc.)
   // Usage: theme.spacingTokens.lg, theme.spacingTokens.xl
   spacingTokens: spacing,
+
+  shadows : shadows.shades,
 
   // Component overrides from modules
   components: componentOverrides,
