@@ -5,6 +5,7 @@ export * from './containers';
 export * from './cards';
 export * from './search';
 export * from './chips';
+export * from './shadows';
 
 // Example usage in components:
 //
