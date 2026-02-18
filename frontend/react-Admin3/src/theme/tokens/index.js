@@ -23,7 +23,6 @@ export
   fontSizes,
   lineHeights,
   letterSpacing,
-  variants as typographyVariants,
   scaleMultipliers,
 } from './typography';
 
