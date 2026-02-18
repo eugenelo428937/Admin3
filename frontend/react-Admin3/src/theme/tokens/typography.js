@@ -134,8 +134,6 @@ const typography = {
   fontSizes,
   lineHeights,
   letterSpacing,
-  variants,
-  liftkitTypography,
   scaleMultipliers,
 };
 
