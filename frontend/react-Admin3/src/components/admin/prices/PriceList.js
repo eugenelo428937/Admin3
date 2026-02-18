@@ -1,12 +1,41 @@
 // src/components/admin/prices/PriceList.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Button, Container, Alert, Paper, Typography, Box, CircularProgress, TablePagination
+  Container, Alert, Paper, Typography, Box, CircularProgress,
+  TablePagination, IconButton, Button
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import priceService from '../../../services/priceService';
+
+/**
+ * Groups a flat array of prices into one row per product,
+ * pivoting price_type values into columns.
+ */
+const groupPricesByProduct = (prices) => {
+    const grouped = {};
+
+    prices.forEach(price => {
+        const productId = price.product;
+        if (!grouped[productId]) {
+            grouped[productId] = {
+                product_id: productId,
+                product_code: price.product_code || '',
+                prices: {},
+                price_ids: [],
+            };
+        }
+        grouped[productId].prices[price.price_type] = price.amount;
+        grouped[productId].price_ids.push(price.id);
+    });
+
+    return Object.values(grouped).sort((a, b) =>
+        (a.product_code || '').localeCompare(b.product_code || '')
+    );
+};
 
 const AdminPriceList = () => {
     const { isSuperuser } = useAuth();
@@ -14,7 +43,7 @@ const AdminPriceList = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(50);
+    const [rowsPerPage, setRowsPerPage] = useState(500);
     const [totalCount, setTotalCount] = useState(0);
 
     const fetchPrices = useCallback(async () => {
@@ -40,13 +69,14 @@ const AdminPriceList = () => {
         fetchPrices();
     }, [fetchPrices]);
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this price?')) {
+    const handleDeleteProduct = async (priceIds) => {
+        const count = priceIds.length;
+        if (window.confirm(`Delete ${count} price${count !== 1 ? 's' : ''} for this product?`)) {
             try {
-                await priceService.delete(id);
+                await Promise.all(priceIds.map(id => priceService.delete(id)));
                 fetchPrices();
             } catch (err) {
-                setError('Failed to delete price. Please try again later.');
+                setError('Failed to delete prices. Please try again later.');
             }
         }
     };
@@ -60,6 +90,8 @@ const AdminPriceList = () => {
         setPage(0);
     };
 
+    const groupedProducts = useMemo(() => groupPricesByProduct(prices), [prices]);
+
     if (!isSuperuser) return <Navigate to="/" replace />;
     if (loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
 
@@ -67,9 +99,14 @@ const AdminPriceList = () => {
         <Container sx={{ mt: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
                 <Typography variant="h4" component="h2">Prices</Typography>
-                <Button component={Link} to="/admin/prices/new" variant="contained">
-                    Add New Price
-                </Button>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">
+                        {groupedProducts.length} product{groupedProducts.length !== 1 ? 's' : ''}, {totalCount} price{totalCount !== 1 ? 's' : ''} total
+                    </Typography>
+                    <Button component={Link} to="/admin/prices/new" variant="contained">
+                        Add New Price
+                    </Button>
+                </Box>
             </Box>
 
             {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
@@ -78,44 +115,50 @@ const AdminPriceList = () => {
                 <Alert severity="info">No prices found.</Alert>
             ) : (
                 <TableContainer component={Paper}>
-                    <Table>
+                    <Table size="small">
                         <TableHead>
                             <TableRow>
                                 <TableCell>ID</TableCell>
                                 <TableCell>Product Code</TableCell>
-                                <TableCell>Price Type</TableCell>
-                                <TableCell>Amount</TableCell>
-                                <TableCell>Currency</TableCell>
-                                <TableCell>Actions</TableCell>
+                                <TableCell align="right">Standard</TableCell>
+                                <TableCell align="right">Retaker</TableCell>
+                                <TableCell align="right">Additional</TableCell>
+                                <TableCell align="center">Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {prices.map((price) => (
-                                <TableRow key={price.id} hover>
-                                    <TableCell>{price.id}</TableCell>
-                                    <TableCell>{price.product_code || price.product?.product_code || ''}</TableCell>
-                                    <TableCell>{price.price_type || ''}</TableCell>
-                                    <TableCell>{price.amount}</TableCell>
-                                    <TableCell>{price.currency || ''}</TableCell>
-                                    <TableCell>
-                                        <Box sx={{ display: 'flex', gap: 1 }}>
-                                            <Button
+                            {groupedProducts.map((row) => (
+                                <TableRow key={row.product_id} hover>
+                                    <TableCell>{row.product_id}</TableCell>
+                                    <TableCell>{row.product_code}</TableCell>
+                                    <TableCell align="right">
+                                        {row.prices.standard != null ? `£${row.prices.standard}` : '—'}
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        {row.prices.retaker != null ? `£${row.prices.retaker}` : '—'}
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        {row.prices.additional != null ? `£${row.prices.additional}` : '—'}
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                            <IconButton
                                                 component={Link}
-                                                to={`/admin/prices/${price.id}/edit`}
-                                                variant="contained"
+                                                to={`/admin/prices/${row.price_ids[0]}/edit`}
+                                                size="small"
                                                 color="info"
-                                                size="small"
+                                                aria-label={`Edit prices for ${row.product_code}`}
                                             >
-                                                Edit
-                                            </Button>
-                                            <Button
-                                                variant="contained"
+                                                <EditIcon fontSize="small" />
+                                            </IconButton>
+                                            <IconButton
+                                                size="small"
                                                 color="error"
-                                                size="small"
-                                                onClick={() => handleDelete(price.id)}
+                                                onClick={() => handleDeleteProduct(row.price_ids)}
+                                                aria-label={`Delete prices for ${row.product_code}`}
                                             >
-                                                Delete
-                                            </Button>
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
                                         </Box>
                                     </TableCell>
                                 </TableRow>
@@ -132,7 +175,7 @@ const AdminPriceList = () => {
                     onPageChange={handleChangePage}
                     rowsPerPage={rowsPerPage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    rowsPerPageOptions={[25, 50, 100]}
+                    rowsPerPageOptions={[100, 200, 500]}
                 />
             )}
         </Container>

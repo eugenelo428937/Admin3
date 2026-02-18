@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from catalog.models import ProductVariationRecommendation
 from catalog.permissions import IsSuperUser
-from catalog.serializers import RecommendationAdminSerializer
+from catalog.serializers import RecommendationAdminSerializer, RecommendationListSerializer
 
 
 class RecommendationViewSet(viewsets.ModelViewSet):
@@ -15,10 +15,11 @@ class RecommendationViewSet(viewsets.ModelViewSet):
     Write operations: IsSuperUser
     """
     queryset = ProductVariationRecommendation.objects.select_related(
-        'product_product_variation',
-        'recommended_product_product_variation',
+        'product_product_variation__product',
+        'product_product_variation__product_variation',
+        'recommended_product_product_variation__product',
+        'recommended_product_product_variation__product_variation',
     ).all()
-    serializer_class = RecommendationAdminSerializer
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -26,3 +27,8 @@ class RecommendationViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [IsSuperUser]
         return [permission() for permission in permission_classes]
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return RecommendationListSerializer
+        return RecommendationAdminSerializer

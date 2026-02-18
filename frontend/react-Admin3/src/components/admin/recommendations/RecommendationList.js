@@ -91,8 +91,16 @@ const AdminRecommendationList = () => {
                             {recommendations.map((rec) => (
                                 <TableRow key={rec.id} hover>
                                     <TableCell>{rec.id}</TableCell>
-                                    <TableCell>{rec.source_label || rec.source_ppv_display || rec.source_ppv || ''}</TableCell>
-                                    <TableCell>{rec.recommended_label || rec.recommended_ppv_display || rec.recommended_ppv || ''}</TableCell>
+                                    <TableCell>
+                                        {rec.source_product_code && rec.source_variation_name
+                                            ? `${rec.source_product_code} — ${rec.source_variation_name}`
+                                            : rec.product_product_variation || ''}
+                                    </TableCell>
+                                    <TableCell>
+                                        {rec.recommended_product_code && rec.recommended_variation_name
+                                            ? `${rec.recommended_product_code} — ${rec.recommended_variation_name}`
+                                            : rec.recommended_product_product_variation || ''}
+                                    </TableCell>
                                     <TableCell>
                                         <Box sx={{ display: 'flex', gap: 1 }}>
                                             <Button

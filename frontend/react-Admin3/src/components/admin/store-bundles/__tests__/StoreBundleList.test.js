@@ -17,8 +17,7 @@ import { useAuth } from '../../../../hooks/useAuth';
 jest.mock('../../../../services/storeBundleService', () => ({
   __esModule: true,
   default: {
-    getAll: jest.fn(),
-    list: jest.fn(),
+    adminList: jest.fn(),
     delete: jest.fn(),
   },
 }));
@@ -31,6 +30,7 @@ const mockStoreBundles = [
   {
     id: '1',
     name: 'CM2 Complete',
+    bundle_template_name: 'Complete Bundle',
     subject_code: 'CM2',
     exam_session_code: '2025-04',
     is_active: true,
@@ -39,6 +39,7 @@ const mockStoreBundles = [
   {
     id: '2',
     name: 'SA1 Complete',
+    bundle_template_name: 'Complete Bundle',
     subject_code: 'SA1',
     exam_session_code: '2025-09',
     is_active: false,
@@ -64,7 +65,7 @@ describe('AdminStoreBundleList', () => {
       isApprentice: false,
       isStudyPlus: false,
     });
-    storeBundleService.list.mockResolvedValue({ results: mockStoreBundles, count: mockStoreBundles.length });
+    storeBundleService.adminList.mockResolvedValue({ results: mockStoreBundles, count: mockStoreBundles.length });
   });
 
   describe('rendering', () => {
@@ -77,7 +78,7 @@ describe('AdminStoreBundleList', () => {
     });
 
     test('renders loading state initially', () => {
-      storeBundleService.list.mockReturnValue(new Promise(() => {}));
+      storeBundleService.adminList.mockReturnValue(new Promise(() => {}));
       renderComponent();
 
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
@@ -97,7 +98,7 @@ describe('AdminStoreBundleList', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(storeBundleService.list).toHaveBeenCalled();
+        expect(storeBundleService.adminList).toHaveBeenCalled();
         expect(screen.getByText('CM2 Complete')).toBeInTheDocument();
         expect(screen.getByText('SA1 Complete')).toBeInTheDocument();
       });
@@ -160,7 +161,7 @@ describe('AdminStoreBundleList', () => {
 
   describe('error handling', () => {
     test('displays error when fetch fails', async () => {
-      storeBundleService.list.mockRejectedValueOnce(new Error('Network error'));
+      storeBundleService.adminList.mockRejectedValueOnce(new Error('Network error'));
 
       renderComponent();
 
@@ -190,7 +191,7 @@ describe('AdminStoreBundleList', () => {
 
   describe('empty state', () => {
     test('displays empty message when no store bundles', async () => {
-      storeBundleService.list.mockResolvedValueOnce({ results: [], count: 0 });
+      storeBundleService.adminList.mockResolvedValueOnce({ results: [], count: 0 });
 
       renderComponent();
 
