@@ -142,7 +142,7 @@ const MobileNavigation = ({
 
 					{/* Title */}
 					{title && (
-						<Typography variant="navlink">
+						<Typography variant="mainnavlink">
 							{title}
 						</Typography>
 					)}
@@ -158,30 +158,30 @@ const MobileNavigation = ({
 			<List component="nav" sx={{ pl: 2 }}>
 				<ListItem disablePadding>
 					<ListItemButton component={NavLink} to="/home" onClick={closeNavigation}>
-						<ListItemText primary={<Typography variant="navlink">Home</Typography>} />
+						<ListItemText primary={<Typography variant="mainnavlink">Home</Typography>} />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
 					<ListItemButton onClick={() => navigateToPanel("subjects", "Subjects")}>
-						<ListItemText primary={<Typography variant="navlink">Subjects</Typography>} />
+						<ListItemText primary={<Typography variant="mainnavlink">Subjects</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
 					<ListItemButton onClick={() => navigateToPanel("products", "Products")}>
-						<ListItemText primary={<Typography variant="navlink">Products</Typography>} />
+						<ListItemText primary={<Typography variant="mainnavlink">Products</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
 					<ListItemButton onClick={() => navigateToPanel("distance-learning", "Distance Learning")}>
-						<ListItemText primary={<Typography variant="navlink">Distance Learning</Typography>} />
+						<ListItemText primary={<Typography variant="mainnavlink">Distance Learning</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
 					<ListItemButton onClick={() => navigateToPanel("tutorials", "Tutorials")}>
-						<ListItemText primary={<Typography variant="navlink">Tutorials</Typography>} />
+						<ListItemText primary={<Typography variant="mainnavlink">Tutorials</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
@@ -189,7 +189,7 @@ const MobileNavigation = ({
 				{isApprentice && (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary={<Typography variant="navlink">Apprenticeships</Typography>} />
+							<ListItemText primary={<Typography variant="mainnavlink">Apprenticeships</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				)}
@@ -197,7 +197,7 @@ const MobileNavigation = ({
 				{isStudyPlus && (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary={<Typography variant="navlink">Study Plus</Typography>} />
+							<ListItemText primary={<Typography variant="mainnavlink">Study Plus</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				)}
@@ -206,7 +206,7 @@ const MobileNavigation = ({
 				{isSuperuser && (
 					<ListItem disablePadding>
 						<ListItemButton onClick={() => navigateToPanel("admin", "Admin")}>
-							<ListItemText primary={<Typography variant="navlink">Admin</Typography>} />
+							<ListItemText primary={<Typography variant="mainnavlink">Admin</Typography>} />
 							<ExpandMore />
 						</ListItemButton>
 					</ListItem>
@@ -229,7 +229,7 @@ const MobileNavigation = ({
 								subjects.filter((s) => /^(CB|CS|CM)/.test(s.code))
 							)
 						}>
-						<ListItemText primary={<Typography variant="navlink">Core Principles</Typography>} />
+						<ListItemText primary={<Typography variant="mainnavlink">Core Principles</Typography>} />
 						<ExpandMore variant="mobileNavIcon"/>
 					</ListItemButton>
 				</ListItem>
@@ -242,7 +242,7 @@ const MobileNavigation = ({
 								subjects.filter((s) => /^CP[1-3]$/.test(s.code))
 							)
 						}>
-						<ListItemText primary={<Typography variant="navlink">Core Practices</Typography>} />
+						<ListItemText primary={<Typography variant="mainnavlink">Core Practices</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
@@ -255,7 +255,7 @@ const MobileNavigation = ({
 								subjects.filter((s) => /^SP/.test(s.code))
 							)
 						}>
-						<ListItemText primary={<Typography variant="navlink">Specialist Principles</Typography>} />
+						<ListItemText primary={<Typography variant="mainnavlink">Specialist Principles</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
@@ -268,7 +268,7 @@ const MobileNavigation = ({
 								subjects.filter((s) => /^SA/.test(s.code))
 							)
 						}>
-						<ListItemText primary={<Typography variant="navlink">Specialist Advanced</Typography>} />
+						<ListItemText primary={<Typography variant="mainnavlink">Specialist Advanced</Typography>} />
 						<ExpandMore />
 					</ListItemButton>
 				</ListItem>
@@ -289,7 +289,7 @@ const MobileNavigation = ({
 									handleSubjectClick(subject.code);
 									closeNavigation();
 								}}>
-								<ListItemText primary={<Typography variant="navlink">{`${subject.code} - ${subject.description}`}</Typography>} />
+								<ListItemText primary={<Typography variant="mainnavlink">{`${subject.code} - ${subject.description}`}</Typography>} />
 							</ListItemButton>
 						</ListItem>
 					))}
@@ -308,13 +308,13 @@ const MobileNavigation = ({
 							handleProductClick();
 							handleNavigation("/products");
 						}}>
-						<ListItemText primary={<Typography variant="navlink">View All Products</Typography>} />
+						<ListItemText primary={<Typography variant="mainnavlink">View All Products</Typography>} />
 					</ListItemButton>
 				</ListItem>
 				{loadingProductGroups ? (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary={<Typography variant="navlink">Loading products...</Typography>} />
+							<ListItemText primary={<Typography variant="mainnavlink">Loading products...</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				) : (
@@ -325,7 +325,7 @@ const MobileNavigation = ({
 								onClick={() =>
 									navigateToPanel("product-group", group.name, group)
 								}>
-								<ListItemText primary={<Typography variant="navlink">{group.name}</Typography>} />
+								<ListItemText primary={<Typography variant="mainnavlink">{group.name}</Typography>} />
 								<ExpandMore />
 							</ListItemButton>
 						</ListItem>
@@ -346,7 +346,7 @@ const MobileNavigation = ({
 							handleProductGroupClick(data.name);
 							closeNavigation();
 						}}>
-						<ListItemText primary={<Typography variant="navlink">{`View All ${data.name}`}</Typography>} />
+						<ListItemText primary={<Typography variant="mainnavlink">{`View All ${data.name}`}</Typography>} />
 					</ListItemButton>
 				</ListItem>
 				{data.products && data.products.length > 0 ? (
@@ -357,14 +357,14 @@ const MobileNavigation = ({
 									handleSpecificProductClick(product.id);
 									closeNavigation();
 								}}>
-								<ListItemText primary={<Typography variant="navlink">{product.shortname}</Typography>} />
+								<ListItemText primary={<Typography variant="mainnavlink">{product.shortname}</Typography>} />
 							</ListItemButton>
 						</ListItem>
 					))
 				) : (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary={<Typography variant="navlink">No products available</Typography>} />
+							<ListItemText primary={<Typography variant="mainnavlink">No products available</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				)}
@@ -376,7 +376,7 @@ const MobileNavigation = ({
 								handleMarkingVouchersClick(e);
 								handleNavigation("/products", { group: "8" });
 							}}>
-							<ListItemText primary={<Typography variant="navlink">Marking Vouchers</Typography>} />
+							<ListItemText primary={<Typography variant="mainnavlink">Marking Vouchers</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				)}
@@ -396,13 +396,13 @@ const MobileNavigation = ({
 								distance_learning: "true",
 							});
 						}}>
-						<ListItemText primary={<Typography variant="navlink">View All Distance Learning</Typography>} />
+						<ListItemText primary={<Typography variant="mainnavlink">View All Distance Learning</Typography>} />
 					</ListItemButton>
 				</ListItem>
 				{loadingDistanceLearning ? (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary={<Typography variant="navlink">Loading distance learning...</Typography>} />
+							<ListItemText primary={<Typography variant="mainnavlink">Loading distance learning...</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				) : (
@@ -417,7 +417,7 @@ const MobileNavigation = ({
 										group
 									)
 								}>
-								<ListItemText primary={<Typography variant="navlink">group.name</Typography>} />
+								<ListItemText primary={<Typography variant="mainnavlink">group.name</Typography>} />
 								<ExpandMore />
 							</ListItemButton>
 						</ListItem>
@@ -437,13 +437,13 @@ const MobileNavigation = ({
 						onClick={() => {
 							handleNavigation("/products?main_category=Tutorials");
 						}}>
-						<ListItemText primary={<Typography variant="navlink">View All Tutorials</Typography>} />
+						<ListItemText primary={<Typography variant="mainnavlink">View All Tutorials</Typography>} />
 					</ListItemButton>
 				</ListItem>
 				{loadingTutorial ? (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary={<Typography variant="navlink">Loading tutorials...</Typography>} />
+							<ListItemText primary={<Typography variant="mainnavlink">Loading tutorials...</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				) : tutorialData ? (
@@ -458,7 +458,7 @@ const MobileNavigation = ({
 											tutorialData.Location
 										)
 									}>
-									<ListItemText primary={<Typography variant="navlink">Location</Typography>} />
+									<ListItemText primary={<Typography variant="mainnavlink">Location</Typography>} />
 									<ExpandMore />
 								</ListItemButton>
 							</ListItem>
@@ -473,7 +473,7 @@ const MobileNavigation = ({
 											tutorialData.Format
 										)
 									}>
-									<ListItemText primary={<Typography variant="navlink">Format</Typography>} />
+									<ListItemText primary={<Typography variant="mainnavlink">Format</Typography>} />
 									<ExpandMore />
 								</ListItemButton>
 							</ListItem>
@@ -489,7 +489,7 @@ const MobileNavigation = ({
 												tutorialData["Online Classroom"]
 											)
 										}>
-										<ListItemText primary={<Typography variant="navlink">Online Classroom</Typography>} />
+										<ListItemText primary={<Typography variant="mainnavlink">Online Classroom</Typography>} />
 										<ExpandMore />
 									</ListItemButton>
 								</ListItem>
@@ -498,7 +498,7 @@ const MobileNavigation = ({
 				) : (
 					<ListItem disablePadding>
 						<ListItemButton disabled>
-							<ListItemText primary={<Typography variant="navlink">No tutorial data available</Typography>} />
+							<ListItemText primary={<Typography variant="mainnavlink">No tutorial data available</Typography>} />
 						</ListItemButton>
 					</ListItem>
 				)}
@@ -519,7 +519,7 @@ const MobileNavigation = ({
 									handleProductGroupClick(format.group_name);
 									closeNavigation();
 								}}>
-								<ListItemText primary={<Typography variant="navlink">{format.name}</Typography>} />
+								<ListItemText primary={<Typography variant="mainnavlink">{format.name}</Typography>} />
 							</ListItemButton>
 						</ListItem>
 					))
@@ -531,7 +531,7 @@ const MobileNavigation = ({
 									handleProductVariationClick(variation.id);
 									closeNavigation();
 								}}>
-								<ListItemText primary={<Typography variant="navlink">{variation.description || variation.name}</Typography>} />
+								<ListItemText primary={<Typography variant="mainnavlink">{variation.description || variation.name}</Typography>} />
 							</ListItemButton>
 						</ListItem>
 					))
@@ -546,7 +546,7 @@ const MobileNavigation = ({
 											handleSpecificProductClick(product.id);
 											closeNavigation();
 										}}>
-										<ListItemText primary={<Typography variant="navlink">{product.shortname}</Typography>} />
+										<ListItemText primary={<Typography variant="mainnavlink">{product.shortname}</Typography>} />
 									</ListItemButton>
 								</ListItem>
 							))}
@@ -558,7 +558,7 @@ const MobileNavigation = ({
 											handleSpecificProductClick(product.id);
 											closeNavigation();
 										}}>
-										<ListItemText primary={<Typography variant="navlink">{product.shortname}</Typography>} />
+										<ListItemText primary={<Typography variant="mainnavlink">{product.shortname}</Typography>} />
 									</ListItemButton>
 								</ListItem>
 							))}

@@ -1,10 +1,11 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { Box, Stack, Typography, useTheme } from '@mui/material';
 import { useNavigate } from "react-router-dom";
 
-const NavbarBrand = () => {
+const NavbarBrand = () =>
+{
 	const navigate = useNavigate();
-
+	const theme = useTheme();
 	return (
 		<Box
 			component="button"
@@ -23,12 +24,13 @@ const NavbarBrand = () => {
 			{/* Desktop logo - hidden on mobile */}
 			<Box
 				component="img"
-				src={require("../../assets/ActEdlogo.png")}
-				alt="ActEd Logo"				
+				src={require("../../assets/ActEdlogo-S.png")}
+				alt="ActEd Logo"
 				sx={{
 					display: { xs: 'none', lg: 'block' },
-					maxWidth: "114px",
-					minWidth: "114px",
+					maxWidth: '2.35rem',
+					minWidth: '2.35rem',
+					marginRight: theme.spacingTokens.xs[4],
 				}}
 			/>
 			{/* Mobile logo - hidden on desktop */}
@@ -38,10 +40,27 @@ const NavbarBrand = () => {
 				alt="ActEd Logo"
 				sx={{
 					display: { xs: 'block', lg: 'none' },
-					maxWidth: '2.35rem',					
+					maxWidth: '2.35rem',
 					minWidth: '2.35rem',
+
 				}}
 			/>
+			<Stack sx={{ maxWidth: '11.75rem', mt: 1 }}>
+
+				<Typography variant="logo_bpp">BPP</Typography>
+
+				<Typography variant="logo_acted">ACTUARIAL</Typography>
+
+				<Box sx={{
+					textAlign: 'left',
+					lineHeight: 1,
+					display: 'flex',
+					gap: theme.spacingTokens.xs[4]
+				}}>
+					<Typography variant='logo_lyceum'>LYCEUM</Typography>
+					<Typography variant='logo_education_group'>EDUCATION GROUP</Typography>
+				</Box>
+			</Stack>
 		</Box>
 	);
 };

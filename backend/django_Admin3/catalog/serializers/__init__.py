@@ -13,7 +13,17 @@ Serializer modules:
 
 from .subject_serializers import SubjectSerializer
 from .exam_session_serializers import ExamSessionSerializer, ExamSessionSubjectSerializer
-from .product_serializers import ProductSerializer, ProductVariationSerializer
+from .product_serializers import (
+    ProductSerializer,
+    ProductVariationSerializer,
+    ProductProductVariationAdminSerializer,
+    ProductProductVariationDetailSerializer,
+    ProductBundleAdminSerializer,
+    ProductBundleProductAdminSerializer,
+    ProductBundleProductDetailSerializer,
+    RecommendationAdminSerializer,
+    RecommendationListSerializer,
+)
 from .bundle_serializers import (
     ProductBundleSerializer,
     ProductBundleProductSerializer,
@@ -32,6 +42,13 @@ __all__ = [
     # Product serializers
     'ProductSerializer',
     'ProductVariationSerializer',
+    'ProductProductVariationAdminSerializer',
+    'ProductProductVariationDetailSerializer',
+    'ProductBundleAdminSerializer',
+    'ProductBundleProductAdminSerializer',
+    'ProductBundleProductDetailSerializer',
+    'RecommendationAdminSerializer',
+    'RecommendationListSerializer',
 
     # Bundle serializers
     'ProductBundleSerializer',

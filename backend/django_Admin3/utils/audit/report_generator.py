@@ -56,6 +56,8 @@ class ReportGenerator:
                 'untested_endpoints': ep_summary.get('untested_count', 0),
                 'endpoint_coverage_pct': ep_summary.get('coverage_pct', 0),
                 'total_serializer_fields': ser_summary.get('total_fields', 0),
+                'total_readable_fields': ser_summary.get('total_readable_fields', 0),
+                'total_writable_fields': ser_summary.get('total_writable_fields', 0),
                 'read_tested_fields': ser_summary.get('read_tested_count', 0),
                 'write_tested_fields': ser_summary.get('write_tested_count', 0),
                 'untested_fields': ser_summary.get('untested_count', 0),
@@ -124,14 +126,18 @@ class ReportGenerator:
         lines.append('SERIALIZER FIELD COVERAGE')
         lines.append('-' * 40)
         total_fields = ser_summary.get('total_fields', 0)
+        total_readable = ser_summary.get('total_readable_fields', 0)
+        total_writable = ser_summary.get('total_writable_fields', 0)
         read_tested = ser_summary.get('read_tested_count', 0)
         write_tested = ser_summary.get('write_tested_count', 0)
         untested_fields = ser_summary.get('untested_count', 0)
         read_pct = ser_summary.get('read_coverage_pct', 0)
         write_pct = ser_summary.get('write_coverage_pct', 0)
         lines.append(f'  Total fields:      {total_fields}')
-        lines.append(f'  Read-tested:       {read_tested} ({read_pct}%)')
-        lines.append(f'  Write-tested:      {write_tested} ({write_pct}%)')
+        lines.append(f'  Readable fields:   {total_readable} (excludes write-only)')
+        lines.append(f'  Writable fields:   {total_writable} (excludes read-only)')
+        lines.append(f'  Read-tested:       {read_tested}/{total_readable} ({read_pct}%)')
+        lines.append(f'  Write-tested:      {write_tested}/{total_writable} ({write_pct}%)')
         lines.append(f'  Untested:          {untested_fields} ({ser_summary.get("untested_pct", 0)}%)')
         lines.append('')
 

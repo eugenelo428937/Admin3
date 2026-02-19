@@ -5,11 +5,20 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
 import AdminProductList from '../ProductList';
 
-// Mock productService
-jest.mock('../../../../services/productService', () => ({
+// Mock useAuth
+jest.mock('../../../../hooks/useAuth', () => ({
+  __esModule: true,
+  useAuth: jest.fn(),
+}));
+
+import { useAuth } from '../../../../hooks/useAuth';
+
+// Mock catalogProductService
+jest.mock('../../../../services/catalogProductService', () => ({
   __esModule: true,
   default: {
     getAll: jest.fn(),
+    list: jest.fn(),
     delete: jest.fn(),
   },
 }));
@@ -30,7 +39,7 @@ jest.mock('../ProductTable', () => {
   };
 });
 
-import productService from '../../../../services/productService';
+import catalogProductService from '../../../../services/catalogProductService';
 
 const theme = createTheme();
 
@@ -64,7 +73,12 @@ const renderComponent = () => {
 describe('AdminProductList', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    productService.getAll.mockResolvedValue(mockProducts);
+    useAuth.mockReturnValue({
+      isSuperuser: true,
+      isApprentice: false,
+      isStudyPlus: false,
+    });
+    catalogProductService.list.mockResolvedValue({ results: mockProducts, count: mockProducts.length });
   });
 
   describe('rendering', () => {
@@ -77,7 +91,7 @@ describe('AdminProductList', () => {
     });
 
     test('renders loading state initially', () => {
-      productService.getAll.mockReturnValue(new Promise(() => {}));
+      catalogProductService.list.mockReturnValue(new Promise(() => {}));
       renderComponent();
 
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
@@ -105,7 +119,7 @@ describe('AdminProductList', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(productService.getAll).toHaveBeenCalled();
+        expect(catalogProductService.list).toHaveBeenCalled();
         expect(screen.getByTestId('product-table')).toBeInTheDocument();
         expect(screen.getByText('CM2 Study Material Bundle')).toBeInTheDocument();
         expect(screen.getByText('SA1 Tutorial Sessions')).toBeInTheDocument();
@@ -124,7 +138,7 @@ describe('AdminProductList', () => {
 
   describe('empty state', () => {
     test('displays empty message when no products', async () => {
-      productService.getAll.mockResolvedValueOnce([]);
+      catalogProductService.list.mockResolvedValueOnce({ results: [], count: 0 });
 
       renderComponent();
 
@@ -137,7 +151,7 @@ describe('AdminProductList', () => {
   describe('delete functionality', () => {
     test('calls delete when delete action triggered', async () => {
       window.confirm = jest.fn().mockReturnValue(true);
-      productService.delete.mockResolvedValue({});
+      catalogProductService.delete.mockResolvedValue({});
 
       renderComponent();
 
@@ -149,7 +163,7 @@ describe('AdminProductList', () => {
 
       await waitFor(() => {
         expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to delete this product?');
-        expect(productService.delete).toHaveBeenCalledWith('1');
+        expect(catalogProductService.delete).toHaveBeenCalledWith('1');
       });
     });
 
@@ -164,12 +178,17 @@ describe('AdminProductList', () => {
 
       fireEvent.click(screen.getByText('Delete CM2-SM'));
 
-      expect(productService.delete).not.toHaveBeenCalled();
+      expect(catalogProductService.delete).not.toHaveBeenCalled();
     });
 
     test('removes product from list after successful delete', async () => {
       window.confirm = jest.fn().mockReturnValue(true);
-      productService.delete.mockResolvedValue({});
+      catalogProductService.delete.mockResolvedValue({});
+      // After delete, component re-fetches - mock the second list() call without deleted product
+      const remainingProducts = [mockProducts[1]];
+      catalogProductService.list
+        .mockResolvedValueOnce({ results: mockProducts, count: mockProducts.length })
+        .mockResolvedValueOnce({ results: remainingProducts, count: remainingProducts.length });
 
       renderComponent();
 
@@ -188,7 +207,7 @@ describe('AdminProductList', () => {
 
   describe('error handling', () => {
     test('displays error when fetch fails', async () => {
-      productService.getAll.mockRejectedValueOnce(new Error('Network error'));
+      catalogProductService.list.mockRejectedValueOnce(new Error('Network error'));
 
       renderComponent();
 
@@ -199,7 +218,7 @@ describe('AdminProductList', () => {
 
     test('displays error when delete fails', async () => {
       window.confirm = jest.fn().mockReturnValue(true);
-      productService.delete.mockRejectedValueOnce(new Error('Delete error'));
+      catalogProductService.delete.mockRejectedValueOnce(new Error('Delete error'));
 
       renderComponent();
 
@@ -221,7 +240,7 @@ describe('AdminProductList', () => {
 
       await waitFor(() => {
         const link = screen.getByRole('link', { name: /add new product/i });
-        expect(link).toHaveAttribute('href', '/products/new');
+        expect(link).toHaveAttribute('href', '/admin/products/new');
       });
     });
 
@@ -230,7 +249,7 @@ describe('AdminProductList', () => {
 
       await waitFor(() => {
         const link = screen.getByRole('link', { name: /import products/i });
-        expect(link).toHaveAttribute('href', '/products/import');
+        expect(link).toHaveAttribute('href', '/admin/products/import');
       });
     });
   });

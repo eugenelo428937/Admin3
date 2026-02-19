@@ -40,6 +40,10 @@ if not os.getenv('DJANGO_ENV') and settings_module:
         os.environ.setdefault('DJANGO_ENV', 'production')
     elif 'development' in settings_module:
         os.environ.setdefault('DJANGO_ENV', 'development')
+    elif 'ci' in settings_module:
+        os.environ.setdefault('DJANGO_ENV', 'ci')
+    elif 'test' in settings_module:
+        os.environ.setdefault('DJANGO_ENV', 'test')
 
 DJANGO_ENV = os.getenv('DJANGO_ENV', 'development')
 print(f'DJANGO_ENV {DJANGO_ENV}')
@@ -106,6 +110,7 @@ INSTALLED_APPS = [
     'catalog.products.bundle.apps.BundleConfig',    # label='catalog_products_bundles'
     'catalog.products.recommendation.apps.RecommendationConfig',  # label='catalog_products_recommendations'
     'store.apps.StoreConfig',  # Purchasable items (depends on catalog)
+    'administrate.apps.AdministrateConfig',  # Administrate API data (adm schema)
     'users',
     'userprofile',
     'cart',
@@ -364,10 +369,8 @@ RECAPTCHA_ACTIONS = {
     'contact_form': 'contact'
 }
 
-# Administrate API Settings
-# ADMINISTRATE_INSTANCE_URL = env('ADMINISTRATE_INSTANCE_URL')
-# ADMINISTRATE_API_URL = env('ADMINISTRATE_API_URL')
-# ADMINISTRATE_API_KEY = env('ADMINISTRATE_API_KEY')
-# ADMINISTRATE_API_SECRET = env('ADMINISTRATE_API_SECRET')
-# ADMINISTRATE_REST_API_URL = env('ADMINISTRATE_REST_API_URL')
+# Migration behavior for conditional operations (IF EXISTS checks).
+# When True (CI/test): raise exceptions if expected tables not found.
+# When False (production): log warnings and skip gracefully.
+MIGRATION_ASSERT_MODE = os.environ.get('MIGRATION_ASSERT_MODE', 'false').lower() == 'true'
 
