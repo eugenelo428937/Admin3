@@ -24,6 +24,21 @@ const SecurityStep = ({
 
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
+  // Refs for direct callback pattern (avoids effect cascade)
+  const formRef = useRef(form);
+  const onDataChangeRef = useRef(onDataChange);
+  const isChangingPasswordRef = useRef(false);
+  useEffect(() => { onDataChangeRef.current = onDataChange; }, [onDataChange]);
+
+  const notifyParent = useCallback((nextForm, extras = {}) => {
+    onDataChangeRef.current?.({
+      ...nextForm,
+      _isChangingPassword: extras.isChangingPassword !== undefined
+        ? extras.isChangingPassword
+        : isChangingPasswordRef.current,
+    });
+  }, []);
+
   // Initialize from initialData only on subsequent changes
   const isInitialMount = useRef(true);
   useEffect(() => {
@@ -32,24 +47,37 @@ const SecurityStep = ({
       return;
     }
     if (initialData && Object.keys(initialData).length > 0) {
+      let changed = false;
       setForm(prev => {
         const hasChanges = Object.keys(initialData).some(key => prev[key] !== initialData[key]);
-        return hasChanges ? { ...prev, ...initialData } : prev;
+        if (!hasChanges) return prev;
+        const next = { ...prev, ...initialData };
+        formRef.current = next;
+        changed = true;
+        return next;
       });
+      if (changed) notifyParent(formRef.current);
     }
-  }, [initialData]);
+  }, [initialData, notifyParent]);
 
+  // Initial report to parent on mount (once only)
+  const hasSentInitial = useRef(false);
   useEffect(() => {
-    onDataChange?.({
-      ...form,
-      _isChangingPassword: isChangingPassword,
-    });
-  }, [form, isChangingPassword, onDataChange]);
+    if (!hasSentInitial.current) {
+      hasSentInitial.current = true;
+      notifyParent(form);
+    }
+  }, [form, notifyParent]);
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }, []);
+    setForm((prev) => {
+      const next = { ...prev, [name]: value };
+      formRef.current = next;
+      return next;
+    });
+    notifyParent(formRef.current);
+  }, [notifyParent]);
 
   if (isAdminMode) {
     return (
@@ -83,7 +111,11 @@ const SecurityStep = ({
         <Box sx={{ textAlign: "center", mb: 4 }}>
           <Button
             variant="outlined"
-            onClick={() => setIsChangingPassword(true)}
+            onClick={() => {
+              setIsChangingPassword(true);
+              isChangingPasswordRef.current = true;
+              notifyParent(formRef.current, { isChangingPassword: true });
+            }}
             sx={{
               color: theme.palette.primary.main,
               borderColor: theme.palette.primary.main,
@@ -137,11 +169,11 @@ const SecurityStep = ({
                   variant="text"
                   onClick={() => {
                     setIsChangingPassword(false);
-                    setForm(prev => ({
-                      ...prev,
-                      password: "",
-                      confirmPassword: "",
-                    }));
+                    isChangingPasswordRef.current = false;
+                    const next = { ...formRef.current, password: "", confirmPassword: "" };
+                    formRef.current = next;
+                    setForm(next);
+                    notifyParent(next, { isChangingPassword: false });
                   }}
                   sx={{ color: theme.palette.text.secondary }}
                 >

@@ -138,7 +138,14 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
 
       // Sync phone validation state from step components back to parent
       if (data._phoneValidation) {
-         setPhoneValidation(prev => ({ ...prev, ...data._phoneValidation }));
+         setPhoneValidation(prev => {
+            const hasChanges = Object.keys(data._phoneValidation).some(key => {
+               const existing = prev[key];
+               const incoming = data._phoneValidation[key];
+               return !existing || existing.isValid !== incoming.isValid || existing.error !== incoming.error;
+            });
+            return hasChanges ? { ...prev, ...data._phoneValidation } : prev;
+         });
       }
       // Sync phone country selections from step components back to parent
       if (data._phoneCountries) {
@@ -541,7 +548,13 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
    useEffect(() => {
       if (hasUserInteracted) {
          const errors = validateStep(currentStep);
-         setFieldErrors(errors);
+         setFieldErrors(prev => {
+            const prevKeys = Object.keys(prev);
+            const newKeys = Object.keys(errors);
+            if (prevKeys.length !== newKeys.length) return errors;
+            const hasChanges = newKeys.some(key => prev[key] !== errors[key]);
+            return hasChanges ? errors : prev;
+         });
       }
    }, [form, currentStep, phoneValidation, showWorkSection, hasUserInteracted]);
 
@@ -1327,19 +1340,47 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
    const emptyErrors = useMemo(() => ({}), []);
    const stepErrors = hasUserInteracted ? fieldErrors : emptyErrors;
 
+   // Memoize initialData for each step to prevent new object references on every render
+   const personalInitialData = useMemo(() => ({
+      title: form.title,
+      first_name: form.first_name,
+      last_name: form.last_name,
+      email: form.email,
+      home_phone: form.home_phone,
+      mobile_phone: form.mobile_phone,
+   }), [form.title, form.first_name, form.last_name, form.email, form.home_phone, form.mobile_phone]);
+
+   const homeAddressInitialData = useMemo(() =>
+      Object.fromEntries(Object.entries(form).filter(([k]) => k.startsWith('home_'))),
+      [form.home_building, form.home_address, form.home_district, form.home_city,
+       form.home_county, form.home_postal_code, form.home_state, form.home_country,
+       form.home_phone]
+   );
+
+   const workAddressInitialData = useMemo(() => ({
+      showWorkSection,
+      ...Object.fromEntries(Object.entries(form).filter(([k]) => k.startsWith('work_'))),
+   }), [showWorkSection, form.work_company, form.work_department, form.work_building,
+        form.work_address, form.work_district, form.work_city, form.work_county,
+        form.work_postal_code, form.work_state, form.work_country, form.work_phone,
+        form.work_email]);
+
+   const preferencesInitialData = useMemo(() => ({
+      send_invoices_to: form.send_invoices_to,
+      send_study_material_to: form.send_study_material_to,
+   }), [form.send_invoices_to, form.send_study_material_to]);
+
+   const securityInitialData = useMemo(() => ({
+      password: form.password,
+      confirmPassword: form.confirmPassword,
+   }), [form.password, form.confirmPassword]);
+
    const renderStepContent = () => {
       switch (currentStep) {
          case 1:
             return (
                <PersonalInfoStep
-                  initialData={{
-                     title: form.title,
-                     first_name: form.first_name,
-                     last_name: form.last_name,
-                     email: form.email,
-                     home_phone: form.home_phone,
-                     mobile_phone: form.mobile_phone,
-                  }}
+                  initialData={personalInitialData}
                   onDataChange={handlePersonalChange}
                   errors={stepErrors}
                   mode={mode}
@@ -1348,9 +1389,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
          case 2:
             return (
                <HomeAddressStep
-                  initialData={Object.fromEntries(
-                     Object.entries(form).filter(([k]) => k.startsWith('home_'))
-                  )}
+                  initialData={homeAddressInitialData}
                   onDataChange={handleHomeAddressChange}
                   errors={stepErrors}
                   mode={mode}
@@ -1359,12 +1398,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
          case 3:
             return (
                <WorkAddressStep
-                  initialData={{
-                     showWorkSection,
-                     ...Object.fromEntries(
-                        Object.entries(form).filter(([k]) => k.startsWith('work_'))
-                     ),
-                  }}
+                  initialData={workAddressInitialData}
                   onDataChange={handleWorkAddressChange}
                   errors={stepErrors}
                   mode={mode}
@@ -1373,10 +1407,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
          case 4:
             return (
                <PreferencesStep
-                  initialData={{
-                     send_invoices_to: form.send_invoices_to,
-                     send_study_material_to: form.send_study_material_to,
-                  }}
+                  initialData={preferencesInitialData}
                   onDataChange={handlePreferencesChange}
                   errors={stepErrors}
                   mode={mode}
@@ -1386,10 +1417,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
          case 5:
             return (
                <SecurityStep
-                  initialData={{
-                     password: form.password,
-                     confirmPassword: form.confirmPassword,
-                  }}
+                  initialData={securityInitialData}
                   onDataChange={handleSecurityChange}
                   errors={stepErrors}
                   mode={mode}

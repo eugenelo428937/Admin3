@@ -42,8 +42,26 @@ const PersonalInfoStep = ({
     mobile_phone: { isValid: true, error: null },
   });
 
-  // Initialize from initialData only on subsequent changes (not initial mount,
-  // since useState already applies initialData via spread)
+  // Refs to hold latest values for direct callback (avoids effect cascade)
+  const formRef = useRef(form);
+  const onDataChangeRef = useRef(onDataChange);
+  const phoneCountriesRef = useRef({ homePhoneCountry: null, mobilePhoneCountry: null });
+  const phoneValidationRef = useRef(phoneValidation);
+
+  useEffect(() => { onDataChangeRef.current = onDataChange; }, [onDataChange]);
+  useEffect(() => { phoneCountriesRef.current = { homePhoneCountry, mobilePhoneCountry }; }, [homePhoneCountry, mobilePhoneCountry]);
+  useEffect(() => { phoneValidationRef.current = phoneValidation; }, [phoneValidation]);
+
+  // Notify parent with current state — called directly from handlers, not from a useEffect
+  const notifyParent = useCallback((nextForm, nextPhoneValidation) => {
+    onDataChangeRef.current?.({
+      ...nextForm,
+      _phoneCountries: phoneCountriesRef.current,
+      _phoneValidation: nextPhoneValidation || phoneValidationRef.current,
+    });
+  }, []);
+
+  // Sync from parent's initialData (profile mode: when profile data loads)
   const isInitialMount = useRef(true);
   useEffect(() => {
     if (isInitialMount.current) {
@@ -51,12 +69,18 @@ const PersonalInfoStep = ({
       return;
     }
     if (initialData && Object.keys(initialData).length > 0) {
+      let changed = false;
       setForm(prev => {
         const hasChanges = Object.keys(initialData).some(key => prev[key] !== initialData[key]);
-        return hasChanges ? { ...prev, ...initialData } : prev;
+        if (!hasChanges) return prev;
+        const next = { ...prev, ...initialData };
+        formRef.current = next;
+        changed = true;
+        return next;
       });
+      if (changed) notifyParent(formRef.current);
     }
-  }, [initialData]);
+  }, [initialData, notifyParent]);
 
   // Load countries on mount
   useEffect(() => {
@@ -76,25 +100,47 @@ const PersonalInfoStep = ({
       .catch((err) => console.error("Failed to load countries:", err));
   }, []);
 
-  // Report data changes to parent
+  // Initial report to parent on mount (once only)
+  const hasSentInitial = useRef(false);
   useEffect(() => {
-    onDataChange?.({
-      ...form,
-      _phoneCountries: {
-        homePhoneCountry,
-        mobilePhoneCountry,
-      },
-      _phoneValidation: phoneValidation,
-    });
-  }, [form, homePhoneCountry, mobilePhoneCountry, phoneValidation, onDataChange]);
+    if (!hasSentInitial.current) {
+      hasSentInitial.current = true;
+      notifyParent(form);
+    }
+  }, [form, notifyParent]);
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }, []);
+    setForm((prev) => {
+      const next = { ...prev, [name]: value };
+      formRef.current = next;
+      return next;
+    });
+    // Notify parent after setForm — updater runs synchronously so formRef is current
+    notifyParent(formRef.current);
+  }, [notifyParent]);
 
   const handlePhoneValidationChange = useCallback((fieldName, result) => {
-    setPhoneValidation((prev) => ({ ...prev, [fieldName]: result }));
+    setPhoneValidation((prev) => {
+      const existing = prev[fieldName];
+      if (existing && existing.isValid === result.isValid && existing.error === result.error) {
+        return prev;
+      }
+      const next = { ...prev, [fieldName]: result };
+      phoneValidationRef.current = next;
+      return next;
+    });
+  }, []);
+
+  // Notify parent when phone country changes
+  const handleHomePhoneCountryChange = useCallback((country) => {
+    setHomePhoneCountry(country);
+    phoneCountriesRef.current = { ...phoneCountriesRef.current, homePhoneCountry: country };
+  }, []);
+
+  const handleMobilePhoneCountryChange = useCallback((country) => {
+    setMobilePhoneCountry(country);
+    phoneCountriesRef.current = { ...phoneCountriesRef.current, mobilePhoneCountry: country };
   }, []);
 
   return (
@@ -182,7 +228,7 @@ const PersonalInfoStep = ({
             onValidationChange={(result) => handlePhoneValidationChange("home_phone", result)}
             countries={countryList}
             selectedCountry={homePhoneCountry}
-            onCountryChange={setHomePhoneCountry}
+            onCountryChange={handleHomePhoneCountryChange}
             isInvalid={!!errors.home_phone}
             error={errors.home_phone || ""}
             placeholder="Enter home phone number"
@@ -200,7 +246,7 @@ const PersonalInfoStep = ({
             onValidationChange={(result) => handlePhoneValidationChange("mobile_phone", result)}
             countries={countryList}
             selectedCountry={mobilePhoneCountry}
-            onCountryChange={setMobilePhoneCountry}
+            onCountryChange={handleMobilePhoneCountryChange}
             isInvalid={!!errors.mobile_phone}
             error={errors.mobile_phone || ""}
             placeholder="Enter mobile phone number"
