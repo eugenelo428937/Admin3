@@ -53,14 +53,20 @@ const HomeAddressStep = ({
     setForm((prev) => ({ ...prev, [name]: value }));
   }, []);
 
+  const header = (
+    <>
+      <Box sx={{ textAlign: "center", mb: theme.spacingTokens?.sm || 2, display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+        <Home sx={{ fontSize: "3rem", color: theme.palette.scales?.granite?.[30] || "grey" }} />
+        <Typography variant="h5">Home Address</Typography>
+      </Box>
+      <Divider sx={{ mb: theme.spacingTokens?.lg || 3 }} />
+    </>
+  );
+
   if (readOnly) {
     return (
       <Box>
-        <Box sx={{ textAlign: "center", mb: theme.spacingTokens?.sm || 2, display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
-          <Home sx={{ fontSize: "3rem", color: theme.palette.scales?.granite?.[30] || "grey" }} />
-          <Typography variant="h5">Home Address</Typography>
-        </Box>
-        <Divider sx={{ mb: theme.spacingTokens?.lg || 3 }} />
+        {header}
         {form.home_country ? (
           <DynamicAddressForm
             country={form.home_country}
@@ -80,11 +86,7 @@ const HomeAddressStep = ({
 
   return (
     <Box>
-      <Box sx={{ textAlign: "center", mb: theme.spacingTokens?.sm || 2, display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
-        <Home sx={{ fontSize: "3rem", color: theme.palette.scales?.granite?.[30] || "grey" }} />
-        <Typography variant="h5">Home Address</Typography>
-      </Box>
-      <Divider sx={{ mb: theme.spacingTokens?.lg || 3 }} />
+      {header}
 
       {!isEditing ? (
         <Box>
