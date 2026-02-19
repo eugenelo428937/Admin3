@@ -6,36 +6,20 @@ import {
    CardHeader,
    CardActions,
    Typography,
-   TextField,
    Button,
-   Select,
-   MenuItem,
-   FormControl,
-   InputLabel,
-   FormControlLabel,
-   Radio,
-   RadioGroup,
-   FormLabel,
    LinearProgress,
    Chip,
-   Grid,
    Alert,
-   FormHelperText,
-   Paper,
-   Divider,
-   Autocomplete,
    Snackbar,
 } from "@mui/material";
-import { Person, Home, Business, Phone, Lock, Edit as EditIcon, MarkEmailRead as MarkEmailReadIcon } from "@mui/icons-material";
+import { Person, Home, Business, Phone, Lock } from "@mui/icons-material";
 import authService from "../../services/authService";
 import userService from "../../services/userService";
 import config from "../../config";
-import ValidatedPhoneInput from "./ValidatedPhoneInput";
-import SmartAddressInput from "../Address/SmartAddressInput";
-import DynamicAddressForm from "../Address/DynamicAddressForm";
 import addressMetadataService from "../../services/addressMetadataService";
 import AddressComparisonModal from '../Address/AddressComparisonModal';
 import addressValidationService from '../../services/addressValidationService';
+import { PersonalInfoStep, HomeAddressStep, WorkAddressStep, PreferencesStep, SecurityStep } from './steps';
 import { useTheme } from "@mui/material/styles";
 const initialForm = {
    title: "",
@@ -102,6 +86,60 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
    const [isLoading, setIsLoading] = useState(false);
    const [showWorkSection, setShowWorkSection] = useState(false);
    const [hasUserInteracted, setHasUserInteracted] = useState(false);
+   const [stepData, setStepData] = useState({});
+
+   const handleStepDataChange = useCallback((stepKey, data) => {
+      setStepData(prev => ({ ...prev, [stepKey]: data }));
+
+      // Mark user interaction when step data changes
+      if (!hasUserInteracted) {
+         setHasUserInteracted(true);
+      }
+
+      // Merge into flat form for backward compatibility with existing submit logic
+      setForm(prev => {
+         const newForm = { ...prev };
+         Object.keys(data).forEach(key => {
+            if (!key.startsWith('_')) {
+               newForm[key] = data[key];
+            }
+         });
+         return newForm;
+      });
+
+      // Track changed fields in profile mode
+      if (isProfileMode && initialFormData) {
+         setChangedFields(prev => {
+            const updated = new Set(prev);
+            Object.keys(data).forEach(key => {
+               if (!key.startsWith('_')) {
+                  if (initialFormData[key] !== data[key]) {
+                     updated.add(key);
+                  } else {
+                     updated.delete(key);
+                  }
+               }
+            });
+            return updated;
+         });
+      }
+
+      // Sync phone validation state from step components back to parent
+      if (data._phoneValidation) {
+         setPhoneValidation(prev => ({ ...prev, ...data._phoneValidation }));
+      }
+      // Sync phone country selections from step components back to parent
+      if (data._phoneCountries) {
+         const { homePhoneCountry: hpc, mobilePhoneCountry: mpc, workPhoneCountry: wpc } = data._phoneCountries;
+         if (hpc !== undefined) setHomePhoneCountry(hpc);
+         if (mpc !== undefined) setMobilePhoneCountry(mpc);
+         if (wpc !== undefined) setWorkPhoneCountry(wpc);
+      }
+      // Sync password change state from SecurityStep
+      if (data._isChangingPassword !== undefined) {
+         setIsChangingPassword(data._isChangingPassword);
+      }
+   }, [hasUserInteracted, isProfileMode, initialFormData]);
    const [countryList, setCountryList] = useState([]);
    const [homePhoneCountry, setHomePhoneCountry] = useState(null);
    const [mobilePhoneCountry, setMobilePhoneCountry] = useState(null);
@@ -113,12 +151,6 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
    const [isLoadingProfile, setIsLoadingProfile] = useState(false);
    const [profileLoadError, setProfileLoadError] = useState(null);
    const [initialFormData, setInitialFormData] = useState(null);
-
-   // Address input mode states (false = manual DynamicAddressForm, true = smart SmartAddressInput)
-   // In registration mode: start with SmartAddressInput (true)
-   // In profile mode: start with readonly view, then SmartAddressInput after Edit (false initially)
-   const [useSmartInputHome, setUseSmartInputHome] = useState(!isProfileMode);
-   const [useSmartInputWork, setUseSmartInputWork] = useState(!isProfileMode);
 
    // Address editing states (controls readonly vs editable mode in profile)
    const [isEditingHomeAddress, setIsEditingHomeAddress] = useState(!isProfileMode);
@@ -510,52 +542,6 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
          setShakingFields(new Set());
       }, 800);
    };
-
-   // Phone validation handler - memoized to prevent infinite loops
-   const handlePhoneValidationChange = useCallback(
-      (fieldName, validationResult) => {
-         // Mark that user has interacted when phone validation occurs
-         if (!hasUserInteracted) {
-            setHasUserInteracted(true);
-         }
-
-         setPhoneValidation((prev) => ({
-            ...prev,
-            [fieldName]: validationResult,
-         }));
-
-         // Clear field error if phone is now valid
-         if (validationResult.isValid) {
-            setFieldErrors((prev) => ({
-               ...prev,
-               [fieldName]: "",
-            }));
-         }
-      },
-      [hasUserInteracted]
-   );
-
-   // Memoized handlers for each phone field
-   const handleHomePhoneValidation = useCallback(
-      (result) => {
-         handlePhoneValidationChange("home_phone", result);
-      },
-      [handlePhoneValidationChange]
-   );
-
-   const handleMobilePhoneValidation = useCallback(
-      (result) => {
-         handlePhoneValidationChange("mobile_phone", result);
-      },
-      [handlePhoneValidationChange]
-   );
-
-   const handleWorkPhoneValidation = useCallback(
-      (result) => {
-         handlePhoneValidationChange("work_phone", result);
-      },
-      [handlePhoneValidationChange]
-   );
 
    const handleChange = (e) => {
       const { name, value, type, checked } = e.target;
@@ -1319,812 +1305,74 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
       switch (currentStep) {
          case 1:
             return (
-               <Box>
-                  <Box
-                     sx={{
-                        textAlign: "center",
-                        mb: theme.spacingTokens.sm,
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "center",
-                     }}
-                  >
-                     <Person
-                        sx={{
-                           fontSize: "3rem",
-                           color: theme.palette.scales.granite[30],
-                        }}
-                     />
-                     <Typography variant="h5">
-                        Personal & Contact Information
-                     </Typography>
-                  </Box>
-                  <Divider sx={{ mb: theme.spacingTokens.lg }}></Divider>
-
-                  <Grid
-                     container
-                     spacing={theme.spacingTokens.sm}
-                     sx={{ flexGrow: 1 }}
-                  >
-                     <Grid size={2} sx={{ mr: theme.spacingTokens.sm }}>
-                        <Autocomplete
-                           options={[
-                              { label: "Mr", value: "Mr" },
-                              { label: "Miss", value: "Miss" },
-                              { label: "Mrs", value: "Mrs" },
-                              { label: "Ms", value: "Ms" },
-                              { label: "Dr", value: "Dr" },
-                           ]}
-                           getOptionLabel={(option) => option.label || ""}
-                           value={
-                              form.title
-                                 ? { label: form.title, value: form.title }
-                                 : null
-                           }
-                           onChange={(event, newValue) => {
-                              handleChange({
-                                 target: {
-                                    name: "title",
-                                    value: newValue ? newValue.value : "",
-                                 },
-                              });
-                           }}
-                           renderInput={(params) => (
-                              <TextField
-                                 {...params}
-                                 label="Title"
-                                 placeholder="Select title"
-                                 variant="standard"
-                              />
-                           )}
-                           isOptionEqualToValue={(option, value) =>
-                              option.value === value.value
-                           }
-                        />
-                     </Grid>
-                     <Grid size={4}>
-                        <Box
-                           className={
-                              shakingFields.has("first_name")
-                                 ? "field-error-shake"
-                                 : ""
-                           }
-                        >
-                           <TextField
-                              fullWidth
-                              required
-                              label="First Name"
-                              name="first_name"
-                              value={form.first_name}
-                              onChange={handleChange}
-                              error={
-                                 hasUserInteracted && !!fieldErrors.first_name
-                              }
-                              helperText={
-                                 hasUserInteracted ? fieldErrors.first_name : ""
-                              }
-                              inputRef={fieldRefs.first_name}
-                              variant="standard"
-                           />
-                        </Box>
-                     </Grid>
-                     <Grid size={4}>
-                        <Box
-                           className={
-                              shakingFields.has("last_name")
-                                 ? "field-error-shake"
-                                 : ""
-                           }
-                        >
-                           <TextField
-                              fullWidth
-                              required
-                              label="Last Name"
-                              name="last_name"
-                              value={form.last_name}
-                              onChange={handleChange}
-                              error={
-                                 hasUserInteracted && !!fieldErrors.last_name
-                              }
-                              helperText={
-                                 hasUserInteracted ? fieldErrors.last_name : ""
-                              }
-                              inputRef={fieldRefs.last_name}
-                              variant="standard"
-                           />
-                        </Box>
-                     </Grid>
-                     <Grid size={12} sx={{ textAlign: "left" }}>
-                        <Box
-                           className={
-                              shakingFields.has("email")
-                                 ? "field-error-shake"
-                                 : ""
-                           }
-                        >
-                           <TextField
-                              fullWidth
-                              required
-                              type="email"
-                              label="Email Address"
-                              name="email"
-                              value={form.email}
-                              onChange={handleChange}
-                              error={hasUserInteracted && !!fieldErrors.email}
-                              helperText={
-                                 (hasUserInteracted && fieldErrors.email) ||
-                                 "This will be your login username"
-                              }
-                              variant="standard"
-                              sx={{ maxWidth: "24rem" }}
-                           />
-                        </Box>
-                     </Grid>
-                     <Grid size={12}>
-                        <Box
-                           className={
-                              shakingFields.has("home_phone")
-                                 ? "field-error-shake"
-                                 : ""
-                           }
-                        >
-                           <ValidatedPhoneInput
-                              name="home_phone"
-                              value={form.home_phone}
-                              onChange={handleChange}
-                              onValidationChange={handleHomePhoneValidation}
-                              countries={countryList}
-                              selectedCountry={homePhoneCountry}
-                              onCountryChange={setHomePhoneCountry}
-                              isInvalid={
-                                 hasUserInteracted && !!fieldErrors.home_phone
-                              }
-                              error={
-                                 hasUserInteracted ? fieldErrors.home_phone : ""
-                              }
-                              placeholder="Enter home phone number"
-                              label="Home Phone"
-                              variant="standard"
-                              sx={{ maxWidth: "24rem" }}
-                           />
-                        </Box>
-                     </Grid>
-                     <Grid size={12}>
-                        <Box
-                           className={
-                              shakingFields.has("mobile_phone")
-                                 ? "field-error-shake"
-                                 : ""
-                           }
-                        >
-                           <ValidatedPhoneInput
-                              name="mobile_phone"
-                              value={form.mobile_phone}
-                              onChange={handleChange}
-                              onValidationChange={handleMobilePhoneValidation}
-                              countries={countryList}
-                              selectedCountry={mobilePhoneCountry}
-                              onCountryChange={setMobilePhoneCountry}
-                              isInvalid={
-                                 hasUserInteracted && !!fieldErrors.mobile_phone
-                              }
-                              error={
-                                 hasUserInteracted
-                                    ? fieldErrors.mobile_phone
-                                    : ""
-                              }
-                              placeholder="Enter mobile phone number"
-                              required={true}
-                              label="Mobile Phone"
-                              variant="standard"
-                              sx={{ maxWidth: "24rem" }}
-                           />
-                        </Box>
-                     </Grid>
-                  </Grid>
-               </Box>
+               <PersonalInfoStep
+                  initialData={{
+                     title: form.title,
+                     first_name: form.first_name,
+                     last_name: form.last_name,
+                     email: form.email,
+                     home_phone: form.home_phone,
+                     mobile_phone: form.mobile_phone,
+                  }}
+                  onDataChange={(data) => handleStepDataChange('personal', data)}
+                  errors={hasUserInteracted ? fieldErrors : {}}
+                  mode={mode}
+               />
             );
-
          case 2:
             return (
-               <Box>
-                  <Box
-                     sx={{
-                        textAlign: "center",
-                        mb: theme.spacingTokens.sm,
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "center",
-                     }}
-                  >
-                     <Home
-                        sx={{
-                           fontSize: "3rem",
-                           color: theme.palette.scales.granite[30],
-                        }}
-                     />
-                     <Typography variant="h5">Home Address</Typography>
-                  </Box>
-                  <Divider sx={{ mb: theme.spacingTokens.lg }}></Divider>
-
-                  {/* Three-layer address pattern: readonly -> manual/smart toggle -> cancel */}
-                  {!isEditingHomeAddress ? (
-                     <Box>
-                        {form.home_country ? (
-                           <DynamicAddressForm
-                              country={form.home_country}
-                              values={form}
-                              onChange={handleChange}
-                              errors={hasUserInteracted ? fieldErrors : {}}
-                              fieldPrefix="home"
-                              showOptionalFields={true}
-                              readonly={true}
-                           />
-                        ) : (
-                           <Alert severity="info" sx={{ mb: 2 }}>
-                              No home address on file. Click "Edit Address" to add your address.
-                           </Alert>
-                        )}
-                        <Box sx={{ textAlign: 'center', mt: 3 }}>
-                           <Button
-                              variant="contained"
-                              startIcon={<EditIcon />}
-                              onClick={() => {
-                                 setIsEditingHomeAddress(true);
-                                 // If no country set, use SmartAddressInput which has country selector
-                                 setUseSmartInputHome(!form.home_country);
-                              }}
-                           >
-                              Edit Address
-                           </Button>
-                        </Box>
-                     </Box>
-                  ) : (
-                     <Box>
-                        {!useSmartInputHome ? (
-                           <Box>
-                              <DynamicAddressForm
-                                 country={form.home_country}
-                                 values={form}
-                                 onChange={handleChange}
-                                 errors={hasUserInteracted ? fieldErrors : {}}
-                                 fieldPrefix="home"
-                                 showOptionalFields={true}
-                                 shakingFields={shakingFields}
-                              />
-                              <Box sx={{ textAlign: 'center', mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
-                                 <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={async () => {
-                                       const result = await validateAndSaveAddress('home');
-                                       if (result.proceed) {
-                                          setIsEditingHomeAddress(false);
-                                          handleStepSave();
-                                       }
-                                    }}
-                                    disabled={isValidatingAddress}
-                                 >
-                                    {isValidatingAddress ? 'Validating...' : 'Save Address'}
-                                 </Button>
-                                 <Button
-                                    variant="outlined"
-                                    onClick={() => setUseSmartInputHome(true)}
-                                 >
-                                    Use address lookup
-                                 </Button>
-                                 {isProfileMode && (
-                                    <Button
-                                       variant="text"
-                                       onClick={() => {
-                                          setIsEditingHomeAddress(false);
-                                          setUseSmartInputHome(false);
-                                       }}
-                                    >
-                                       Cancel
-                                    </Button>
-                                 )}
-                              </Box>
-                           </Box>
-                        ) : (
-                           <Box>
-                              <Typography variant="body2" color="text.secondary" gutterBottom>
-                                 Using smart address lookup
-                              </Typography>
-                              <SmartAddressInput
-                                 values={form}
-                                 onChange={handleChange}
-                                 errors={hasUserInteracted ? fieldErrors : {}}
-                                 fieldPrefix="home"
-                                 shakingFields={shakingFields}
-                              />
-                              <Box sx={{ textAlign: 'center', mt: 2, display: 'flex', gap: 2, justifyContent: 'center' }}>
-                                 {isProfileMode && (
-                                    <Button
-                                       variant="text"
-                                       onClick={() => {
-                                          setIsEditingHomeAddress(false);
-                                          setUseSmartInputHome(false);
-                                       }}
-                                    >
-                                       Cancel
-                                    </Button>
-                                 )}
-                              </Box>
-                           </Box>
-                        )}
-                     </Box>
+               <HomeAddressStep
+                  initialData={Object.fromEntries(
+                     Object.entries(form).filter(([k]) => k.startsWith('home_'))
                   )}
-               </Box>
+                  onDataChange={(data) => handleStepDataChange('homeAddress', data)}
+                  errors={hasUserInteracted ? fieldErrors : {}}
+                  mode={mode}
+               />
             );
-
          case 3:
             return (
-               <Box>
-                  <Box
-                     sx={{
-                        textAlign: "center",
-                        mb: theme.spacingTokens.sm,
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "center",
-                     }}
-                  >
-                     <Business
-                        sx={{
-                           fontSize: "3rem",
-                           color: theme.palette.scales.granite[30],
-                        }}
-                     />
-                     <Typography variant="h5">Work Address</Typography>
-                  </Box>
-                  <Divider sx={{ mb: theme.spacingTokens.lg }}></Divider>
-
-                  <Paper
-                     sx={{
-                        p: 3,
-                        mb: 3,
-                        textAlign: "left",
-                     }}
-                  >
-                     <Button
-                        variant={showWorkSection ? "outlined" : "contained"}
-                        color={showWorkSection ? "error" : "primary"}
-                        onClick={() => setShowWorkSection(!showWorkSection)}
-                     >
-                        {showWorkSection
-                           ? "Remove Work Address"
-                           : "Add Work Address"}
-                     </Button>
-                  </Paper>
-
-                  {showWorkSection && (
-                     <Box>
-                        <Grid container spacing={3} sx={{ mb: 3 }}>
-                           <Grid size={{ xs: 12, md: 6 }}>
-                              <Box
-                                 className={
-                                    shakingFields.has("work_company")
-                                       ? "field-error-shake"
-                                       : ""
-                                 }
-                              >
-                                 <TextField
-                                    fullWidth
-                                    required
-                                    label="Company/Institution"
-                                    name="work_company"
-                                    value={form.work_company}
-                                    onChange={handleChange}
-                                    error={
-                                       hasUserInteracted &&
-                                       !!fieldErrors.work_company
-                                    }
-                                    helperText={
-                                       hasUserInteracted
-                                          ? fieldErrors.work_company
-                                          : ""
-                                    }
-                                    variant="standard"
-                                 />
-                              </Box>
-                           </Grid>
-                           <Grid size={{ xs: 12, md: 6 }}>
-                              <TextField
-                                 fullWidth
-                                 label="Department"
-                                 name="work_department"
-                                 value={form.work_department}
-                                 onChange={handleChange}
-                                 variant="standard"
-                              />
-                           </Grid>
-                        </Grid>
-
-                        {/* Three-layer address pattern for work address */}
-                        {!isEditingWorkAddress ? (
-                           <Box>
-                              {form.work_country ? (
-                                 <DynamicAddressForm
-                                    country={form.work_country}
-                                    values={form}
-                                    onChange={handleChange}
-                                    errors={hasUserInteracted ? fieldErrors : {}}
-                                    fieldPrefix="work"
-                                    showOptionalFields={true}
-                                    readonly={true}
-                                 />
-                              ) : (
-                                 <Alert severity="info" sx={{ mb: 2 }}>
-                                    No work address on file. Click "Edit Address" to add your address.
-                                 </Alert>
-                              )}
-                              <Box sx={{ textAlign: 'center', mt: 3 }}>
-                                 <Button
-                                    variant="contained"
-                                    startIcon={<EditIcon />}
-                                    onClick={() => {
-                                       setIsEditingWorkAddress(true);
-                                       // If no country set, use SmartAddressInput which has country selector
-                                       setUseSmartInputWork(!form.work_country);
-                                    }}
-                                 >
-                                    Edit Address
-                                 </Button>
-                              </Box>
-                           </Box>
-                        ) : (
-                           <Box>
-                              {!useSmartInputWork ? (
-                                 <Box>
-                                    <DynamicAddressForm
-                                       country={form.work_country}
-                                       values={form}
-                                       onChange={handleChange}
-                                       errors={hasUserInteracted ? fieldErrors : {}}
-                                       fieldPrefix="work"
-                                       showOptionalFields={true}
-                                       shakingFields={shakingFields}
-                                    />
-                                    <Box sx={{ textAlign: 'center', mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
-                                       <Button
-                                          variant="contained"
-                                          color="primary"
-                                          onClick={async () => {
-                                             const result = await validateAndSaveAddress('work');
-                                             if (result.proceed) {
-                                                setIsEditingWorkAddress(false);
-                                                handleStepSave();
-                                             }
-                                          }}
-                                          disabled={isValidatingAddress}
-                                       >
-                                          {isValidatingAddress ? 'Validating...' : 'Save Address'}
-                                       </Button>
-                                       <Button
-                                          variant="outlined"
-                                          onClick={() => setUseSmartInputWork(true)}
-                                       >
-                                          Use address lookup
-                                       </Button>
-                                       {isProfileMode && (
-                                          <Button
-                                             variant="text"
-                                             onClick={() => {
-                                                setIsEditingWorkAddress(false);
-                                                setUseSmartInputWork(false);
-                                             }}
-                                          >
-                                             Cancel
-                                          </Button>
-                                       )}
-                                    </Box>
-                                 </Box>
-                              ) : (
-                                 <Box>
-                                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                                       Using smart address lookup
-                                    </Typography>
-                                    <SmartAddressInput
-                                       values={form}
-                                       onChange={handleChange}
-                                       errors={hasUserInteracted ? fieldErrors : {}}
-                                       fieldPrefix="work"
-                                       shakingFields={shakingFields}
-                                    />
-                                    <Box sx={{ textAlign: 'center', mt: 2, display: 'flex', gap: 2, justifyContent: 'center' }}>
-                                       {isProfileMode && (
-                                          <Button
-                                             variant="text"
-                                             onClick={() => {
-                                                setIsEditingWorkAddress(false);
-                                                setUseSmartInputWork(false);
-                                             }}
-                                          >
-                                             Cancel
-                                          </Button>
-                                       )}
-                                    </Box>
-                                 </Box>
-                              )}
-                           </Box>
-                        )}
-
-                        <Grid container spacing={3} sx={{ mt: 2 }}>
-                           <Grid size={{ xs: 12, md: 6 }}>
-                              <Box
-                                 className={
-                                    shakingFields.has("work_phone")
-                                       ? "field-error-shake"
-                                       : ""
-                                 }
-                              >
-                                 <ValidatedPhoneInput
-                                    name="work_phone"
-                                    value={form.work_phone}
-                                    onChange={handleChange}
-                                    onValidationChange={
-                                       handleWorkPhoneValidation
-                                    }
-                                    countries={countryList}
-                                    selectedCountry={workPhoneCountry}
-                                    onCountryChange={setWorkPhoneCountry}
-                                    isInvalid={
-                                       hasUserInteracted &&
-                                       !!fieldErrors.work_phone
-                                    }
-                                    error={
-                                       hasUserInteracted
-                                          ? fieldErrors.work_phone
-                                          : ""
-                                    }
-                                    placeholder="Enter work phone number"
-                                    required={false}
-                                    label="Work Phone"
-                                    variant="standard"
-                                 />
-                              </Box>
-                           </Grid>
-                           <Grid size={{ xs: 12, md: 6 }}>
-                              <Box
-                                 className={
-                                    shakingFields.has("work_email")
-                                       ? "field-error-shake"
-                                       : ""
-                                 }
-                              >
-                                 <TextField
-                                    fullWidth
-                                    type="email"
-                                    label="Work Email"
-                                    name="work_email"
-                                    value={form.work_email}
-                                    onChange={handleChange}
-                                    error={
-                                       hasUserInteracted && !!fieldErrors.work_email
-                                    }
-                                    helperText={
-                                       hasUserInteracted ? fieldErrors.work_email : ""
-                                    }
-                                    variant="standard"
-                                 />
-                              </Box>
-                           </Grid>
-                        </Grid>
-                     </Box>
-                  )}
-               </Box>
+               <WorkAddressStep
+                  initialData={{
+                     showWorkSection,
+                     ...Object.fromEntries(
+                        Object.entries(form).filter(([k]) => k.startsWith('work_'))
+                     ),
+                  }}
+                  onDataChange={(data) => {
+                     const { showWorkSection: showWork, ...rest } = data;
+                     if (showWork !== undefined) setShowWorkSection(showWork);
+                     handleStepDataChange('workAddress', rest);
+                  }}
+                  errors={hasUserInteracted ? fieldErrors : {}}
+                  mode={mode}
+               />
             );
-
          case 4:
             return (
-               <Box sx={{ minHeight: "400px" }}>
-                  <Box sx={{ textAlign: "center", mb: 4 }}>
-                     <Phone
-                        sx={{ fontSize: "3rem", color: "primary.main", mb: 2 }}
-                     />
-                     <Typography variant="h4" gutterBottom>
-                        Delivery Preferences
-                     </Typography>
-                     <Typography variant="body2" color="text.secondary">
-                        Choose where to send your materials
-                     </Typography>
-                  </Box>
-
-                  <Grid container spacing={4}>
-                     <Grid size={{ xs: 12, md: 6 }}>
-                        <FormControl component="fieldset">
-                           <FormLabel component="legend" required>
-                              <Typography variant="h6">
-                                 Send invoices to
-                              </Typography>
-                           </FormLabel>
-                           <RadioGroup
-                              name="send_invoices_to"
-                              value={form.send_invoices_to}
-                              onChange={handleChange}
-                              sx={{ mt: 1 }}
-                           >
-                              <FormControlLabel
-                                 value="HOME"
-                                 control={<Radio />}
-                                 label="Home Address"
-                              />
-                              <FormControlLabel
-                                 value="WORK"
-                                 control={<Radio />}
-                                 label="Work Address"
-                                 disabled={!showWorkSection}
-                              />
-                           </RadioGroup>
-                        </FormControl>
-                     </Grid>
-                     <Grid size={{ xs: 12, md: 6 }}>
-                        <FormControl component="fieldset">
-                           <FormLabel component="legend" required>
-                              <Typography variant="h6">
-                                 Send study materials to
-                              </Typography>
-                           </FormLabel>
-                           <RadioGroup
-                              name="send_study_material_to"
-                              value={form.send_study_material_to}
-                              onChange={handleChange}
-                              sx={{ mt: 1 }}
-                           >
-                              <FormControlLabel
-                                 value="HOME"
-                                 control={<Radio />}
-                                 label="Home Address"
-                              />
-                              <FormControlLabel
-                                 value="WORK"
-                                 control={<Radio />}
-                                 label="Work Address"
-                                 disabled={!showWorkSection}
-                              />
-                           </RadioGroup>
-                        </FormControl>
-                     </Grid>
-                  </Grid>
-               </Box>
+               <PreferencesStep
+                  initialData={{
+                     send_invoices_to: form.send_invoices_to,
+                     send_study_material_to: form.send_study_material_to,
+                  }}
+                  onDataChange={(data) => handleStepDataChange('preferences', data)}
+                  errors={hasUserInteracted ? fieldErrors : {}}
+                  mode={mode}
+                  hasWorkAddress={showWorkSection}
+               />
             );
-
          case 5:
             return (
-               <Box sx={{ minHeight: "400px" }}>
-                  <Box sx={{ textAlign: "center", mb: 4 }}>
-                     <Lock
-                        sx={{ fontSize: "3rem", color: "primary.main", mb: 2 }}
-                     />
-                     <Typography variant="h4" gutterBottom>
-                        Account Security
-                     </Typography>
-                     <Typography variant="body2" color="text.secondary">
-                        {isProfileMode
-                           ? isChangingPassword
-                              ? "Enter your new password below"
-                              : "Your password is secure. Click below to change it."
-                           : "Create a secure password for your account"}
-                     </Typography>
-                  </Box>
-
-                  {/* In profile mode, show Change Password button when not changing */}
-                  {isProfileMode && !isChangingPassword && (
-                     <Box sx={{ textAlign: "center", mb: 4 }}>
-                        <Button
-                           variant="outlined"
-                           onClick={() => setIsChangingPassword(true)}
-                           sx={{
-                              color: theme.palette.primary.main,
-                              borderColor: theme.palette.primary.main,
-                           }}
-                        >
-                           Change Password
-                        </Button>
-                     </Box>
-                  )}
-
-                  {/* Show password fields in registration mode OR when changing password in profile mode */}
-                  {(!isProfileMode || isChangingPassword) && (
-                     <Grid container spacing={3}>
-                        <Grid size={{ xs: 12, md: 6 }}>
-                           <Box
-                              className={
-                                 shakingFields.has("password")
-                                    ? "field-error-shake"
-                                    : ""
-                              }
-                           >
-                              <TextField
-                                 fullWidth
-                                 required
-                                 type="password"
-                                 label="Password"
-                                 name="password"
-                                 value={form.password}
-                                 onChange={handleChange}
-                                 error={
-                                    hasUserInteracted && !!fieldErrors.password
-                                 }
-                                 helperText={
-                                    (hasUserInteracted && fieldErrors.password) ||
-                                    "Use at least 8 characters with a mix of letters, numbers, and symbols"
-                                 }
-                                 inputRef={fieldRefs.password}
-                                 variant="standard"
-                              />
-                           </Box>
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 6 }}>
-                           <Box
-                              className={
-                                 shakingFields.has("confirmPassword")
-                                    ? "field-error-shake"
-                                    : ""
-                              }
-                           >
-                              <TextField
-                                 fullWidth
-                                 required
-                                 type="password"
-                                 label="Confirm Password"
-                                 name="confirmPassword"
-                                 value={form.confirmPassword}
-                                 onChange={handleChange}
-                                 error={
-                                    hasUserInteracted &&
-                                    !!fieldErrors.confirmPassword
-                                 }
-                                 helperText={
-                                    hasUserInteracted
-                                       ? fieldErrors.confirmPassword
-                                       : ""
-                                 }
-                                 inputRef={fieldRefs.confirmPassword}
-                                 variant="standard"
-                              />
-                           </Box>
-                        </Grid>
-
-                        {/* Cancel button for profile mode password change */}
-                        {isProfileMode && isChangingPassword && (
-                           <Grid size={{ xs: 12 }}>
-                              <Box sx={{ textAlign: "center", mt: 2 }}>
-                                 <Button
-                                    variant="text"
-                                    onClick={() => {
-                                       setIsChangingPassword(false);
-                                       // Clear password fields
-                                       setForm((prev) => ({
-                                          ...prev,
-                                          password: "",
-                                          confirmPassword: "",
-                                       }));
-                                       // Clear password errors
-                                       setFieldErrors((prev) => ({
-                                          ...prev,
-                                          password: "",
-                                          confirmPassword: "",
-                                       }));
-                                    }}
-                                    sx={{
-                                       color: theme.palette.text.secondary,
-                                    }}
-                                 >
-                                    Cancel Password Change
-                                 </Button>
-                              </Box>
-                           </Grid>
-                        )}
-                     </Grid>
-                  )}
-               </Box>
+               <SecurityStep
+                  initialData={{
+                     password: form.password,
+                     confirmPassword: form.confirmPassword,
+                  }}
+                  onDataChange={(data) => handleStepDataChange('security', data)}
+                  errors={hasUserInteracted ? fieldErrors : {}}
+                  mode={mode}
+               />
             );
-
          default:
             return null;
       }
