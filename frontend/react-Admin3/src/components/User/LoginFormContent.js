@@ -83,7 +83,7 @@ const LoginFormContent = ({
 					direction="row"
 					justifyContent="space-between"
           sx={{
-            mt: theme.spacing.md,            
+            mt: theme.spacingTokens.md,            
           }}>
 					<Button
 						variant="contained"
@@ -92,8 +92,8 @@ const LoginFormContent = ({
 							navigate("/register");
 						}}
 						sx={{
-							px: theme.spacing.md,
-							py: theme.spacing.xs2,
+							px: theme.spacingTokens.md,
+							py: theme.spacingTokens.xs2,
 							width: "auto",
 							backgroundColor: theme.palette.secondary.main,
 						}}>
@@ -104,8 +104,8 @@ const LoginFormContent = ({
 						variant="contained"
 						disabled={isLoading}
 						sx={{
-							px: theme.spacing.md,
-							py: theme.spacing.xs2,
+							px: theme.spacingTokens.md,
+							py: theme.spacingTokens.xs2,
 							width: "auto",
 						}}>
 						{isLoading ? "Logging in..." : "Login"}

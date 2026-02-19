@@ -310,6 +310,261 @@
       }
     },
     {
+      "description": "a request for a single staff member",
+      "providerStates": [
+        {
+          "name": "staff member exists and requester is superuser"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/users/staff/1/"
+      },
+      "response": {
+        "body": {
+          "created_at": "2026-02-16T10:00:00Z",
+          "id": 1,
+          "updated_at": "2026-02-16T10:00:00Z",
+          "user": 5,
+          "user_detail": {
+            "email": "jsmith@example.com",
+            "first_name": "Jane",
+            "id": 5,
+            "last_name": "Smith",
+            "username": "tutor1"
+          }
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.created_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.updated_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.user": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.user_detail": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.user_detail.email": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.user_detail.first_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.user_detail.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.user_detail.last_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.user_detail.username": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for a single user profile",
+      "providerStates": [
+        {
+          "name": "user profile exists and requester is superuser"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/users/profiles/1/"
+      },
+      "response": {
+        "body": {
+          "id": 1,
+          "remarks": "",
+          "send_invoices_to": "HOME",
+          "send_study_material_to": "HOME",
+          "title": "Mr",
+          "user": {
+            "email": "jdoe@example.com",
+            "first_name": "John",
+            "id": 1,
+            "last_name": "Doe",
+            "username": "jdoe"
+          }
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.remarks": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.send_invoices_to": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.send_study_material_to": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.title": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.user": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.user.email": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.user.first_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.user.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.user.last_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.user.username": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
       "description": "a request for acted rules",
       "providerStates": [
         {
@@ -733,6 +988,211 @@
       }
     },
     {
+      "description": "a request for catalog bundle products",
+      "providerStates": [
+        {
+          "name": "catalog bundle products exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/catalog/bundle-products/"
+      },
+      "response": {
+        "body": [
+          {
+            "bundle": 1,
+            "created_at": "2026-02-16T10:00:00Z",
+            "default_price_type": "standard",
+            "id": 1,
+            "is_active": true,
+            "product_product_variation": 1,
+            "quantity": 1,
+            "sort_order": 0,
+            "updated_at": "2026-02-16T10:00:00Z"
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].bundle": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].created_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].default_price_type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].is_active": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].product_product_variation": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].quantity": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].sort_order": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].updated_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for catalog exam session subjects",
+      "providerStates": [
+        {
+          "name": "catalog exam session subjects exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/catalog/exam-session-subjects/"
+      },
+      "response": {
+        "body": [
+          {
+            "created_at": "2026-02-16T10:00:00Z",
+            "exam_session": 1,
+            "id": 1,
+            "is_active": true,
+            "subject": 1,
+            "updated_at": "2026-02-16T10:00:00Z"
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].created_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].exam_session": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].is_active": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].subject": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].updated_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
       "description": "a request for catalog exam sessions",
       "providerStates": [
         {
@@ -812,6 +1272,273 @@
               ]
             },
             "$.results[*].start_date": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for catalog product bundles",
+      "providerStates": [
+        {
+          "name": "catalog product bundles exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/catalog/product-bundles/"
+      },
+      "response": {
+        "body": [
+          {
+            "bundle_description": "All CM2 study materials",
+            "bundle_name": "CM2 Complete Bundle",
+            "created_at": "2026-02-16T10:00:00Z",
+            "display_order": 0,
+            "id": 1,
+            "is_active": true,
+            "is_featured": true,
+            "subject": 1,
+            "updated_at": "2026-02-16T10:00:00Z"
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].bundle_description": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].bundle_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].created_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].display_order": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].is_active": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].is_featured": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].subject": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].updated_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for catalog product product variations",
+      "providerStates": [
+        {
+          "name": "catalog product product variations exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/catalog/product-product-variations/"
+      },
+      "response": {
+        "body": [
+          {
+            "id": 1,
+            "product": 1,
+            "product_variation": 1
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].product": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].product_variation": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for catalog product variations",
+      "providerStates": [
+        {
+          "name": "catalog product variations exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/catalog/product-variations/"
+      },
+      "response": {
+        "body": [
+          {
+            "code": "PC",
+            "description": "Full printed study material",
+            "description_short": "Printed material",
+            "id": 1,
+            "name": "Standard Print",
+            "variation_type": "Printed"
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].description": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].description_short": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].variation_type": {
               "combine": "AND",
               "matchers": [
                 {
@@ -922,6 +1649,86 @@
               ]
             },
             "$.results[*].shortname": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for catalog recommendations",
+      "providerStates": [
+        {
+          "name": "catalog recommendations exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/catalog/recommendations/"
+      },
+      "response": {
+        "body": [
+          {
+            "created_at": "2026-02-16T10:00:00Z",
+            "id": 1,
+            "product_product_variation": 1,
+            "recommended_product_product_variation": 2,
+            "updated_at": "2026-02-16T10:00:00Z"
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].created_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].product_product_variation": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].recommended_product_product_variation": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].updated_at": {
               "combine": "AND",
               "matchers": [
                 {
@@ -1220,6 +2027,12 @@
       "response": {
         "body": {
           "subjects": {
+            "allow_multiple": true,
+            "collapsible": true,
+            "default_open": true,
+            "display_order": 1,
+            "filter_groups": [],
+            "filter_key": "subjects",
             "label": "Subjects",
             "options": [
               {
@@ -1245,6 +2058,46 @@
               ]
             },
             "$.subjects": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects.allow_multiple": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects.collapsible": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects.default_open": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subjects.display_order": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.subjects.filter_key": {
               "combine": "AND",
               "matchers": [
                 {
@@ -1688,6 +2541,382 @@
       }
     },
     {
+      "description": "a request for profile addresses",
+      "providerStates": [
+        {
+          "name": "user profile with addresses exists and requester is superuser"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/users/profiles/1/addresses/"
+      },
+      "response": {
+        "body": [
+          {
+            "address_data": {
+              "city": "London",
+              "line1": "123 Main St",
+              "postcode": "SW1A 1AA"
+            },
+            "address_type": "HOME",
+            "company": "",
+            "country": "United Kingdom",
+            "department": "",
+            "id": 1
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].address_data": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].address_data.city": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].address_data.line1": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].address_data.postcode": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].address_type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].company": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].country": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].department": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for profile contacts",
+      "providerStates": [
+        {
+          "name": "user profile with contacts exists and requester is superuser"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/users/profiles/1/contacts/"
+      },
+      "response": {
+        "body": [
+          {
+            "contact_type": "MOBILE",
+            "country_code": "GB",
+            "id": 1,
+            "number": "+44 7700 900000"
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].contact_type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].country_code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].number": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for profile emails",
+      "providerStates": [
+        {
+          "name": "user profile with emails exists and requester is superuser"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/users/profiles/1/emails/"
+      },
+      "response": {
+        "body": [
+          {
+            "email": "jdoe@example.com",
+            "email_type": "PERSONAL",
+            "id": 1
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].email": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].email_type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for staff members",
+      "providerStates": [
+        {
+          "name": "staff members exist and requester is superuser"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/users/staff/"
+      },
+      "response": {
+        "body": [
+          {
+            "created_at": "2026-02-16T10:00:00Z",
+            "id": 1,
+            "updated_at": "2026-02-16T10:00:00Z",
+            "user": 5,
+            "user_detail": {
+              "email": "jsmith@example.com",
+              "first_name": "Jane",
+              "id": 5,
+              "last_name": "Smith",
+              "username": "tutor1"
+            }
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].created_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].updated_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].user": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].user_detail": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].user_detail.email": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].user_detail.first_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].user_detail.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].user_detail.last_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].user_detail.username": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
       "description": "a request for tutorial events list",
       "providerStates": [
         {
@@ -1782,6 +3011,141 @@
               ]
             },
             "$[*].venue": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for user profiles",
+      "providerStates": [
+        {
+          "name": "user profiles exist and requester is superuser"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/users/profiles/"
+      },
+      "response": {
+        "body": [
+          {
+            "id": 1,
+            "remarks": "",
+            "send_invoices_to": "HOME",
+            "send_study_material_to": "HOME",
+            "title": "Mr",
+            "user": {
+              "email": "jdoe@example.com",
+              "first_name": "John",
+              "id": 1,
+              "last_name": "Doe",
+              "username": "jdoe"
+            }
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].remarks": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].send_invoices_to": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].send_study_material_to": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].title": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].user": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].user.email": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].user.first_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].user.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].user.last_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].user.username": {
               "combine": "AND",
               "matchers": [
                 {

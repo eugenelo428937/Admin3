@@ -1,21 +1,15 @@
-// src/components/subjects/SubjectDetail.js
+// src/components/admin/subjects/SubjectDetail.js
 import React, { useState, useEffect } from 'react';
 import {
-  Container,
-  Card,
-  CardHeader,
-  CardContent,
-  CardActions,
-  Button,
-  Alert,
-  Box,
-  Typography,
-  CircularProgress
+  Container, Card, CardHeader, CardContent, CardActions,
+  Button, Alert, Box, Typography, CircularProgress
 } from '@mui/material';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
+import { useAuth } from '../../../hooks/useAuth';
 import subjectService from "../../../services/subjectService";
 
 const AdminSubjectDetail = () => {
+  const { isSuperuser } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -25,15 +19,15 @@ const AdminSubjectDetail = () => {
 
   useEffect(() => {
     const fetchSubject = async () => {
-			try {
-				const data = await subjectService.getById(id);
-				setSubject(data);
-				setLoading(false);
-			} catch (err) {
-				setError("Failed to fetch subject details. Please try again.");
-				setLoading(false);
-			}
-		};
+      try {
+        const data = await subjectService.getById(id);
+        setSubject(data);
+      } catch (err) {
+        setError("Failed to fetch subject details. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchSubject();
   }, [id]);
@@ -42,13 +36,14 @@ const AdminSubjectDetail = () => {
     if (window.confirm('Are you sure you want to delete this subject?')) {
       try {
         await subjectService.delete(id);
-        navigate('/subjects');
+        navigate('/admin/subjects');
       } catch (err) {
         setError('Failed to delete subject. Please try again later.');
       }
     }
   };
 
+  if (!isSuperuser) return <Navigate to="/" replace />;
   if (loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
   if (error) return <Alert severity="error" sx={{ mt: 4 }}>{error}</Alert>;
   if (!subject) return <Alert severity="warning" sx={{ mt: 4 }}>Subject not found.</Alert>;
@@ -56,10 +51,7 @@ const AdminSubjectDetail = () => {
   return (
     <Container sx={{ mt: 4 }}>
       <Card>
-        <CardHeader
-          title={subject.code}
-          titleTypographyProps={{ variant: 'h4' }}
-        />
+        <CardHeader title={subject.code} titleTypographyProps={{ variant: 'h4' }} />
         <CardContent>
           <Typography sx={{ mb: 2 }}>
             <strong>Description:</strong> {subject.description || 'No description available.'}
@@ -76,14 +68,14 @@ const AdminSubjectDetail = () => {
         </CardContent>
         <CardActions sx={{ display: 'flex', justifyContent: 'space-between', p: 2 }}>
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button component={Link} to={`/subjects/${id}/edit`} variant="contained">
+            <Button component={Link} to={`/admin/subjects/${id}/edit`} variant="contained">
               Edit
             </Button>
             <Button variant="contained" color="error" onClick={handleDelete}>
               Delete
             </Button>
           </Box>
-          <Button variant="outlined" onClick={() => navigate('/subjects')}>
+          <Button variant="outlined" onClick={() => navigate('/admin/subjects')}>
             Back to Subjects
           </Button>
         </CardActions>

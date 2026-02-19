@@ -1,22 +1,15 @@
-// src/components/products/ProductForm.js
+// src/components/admin/products/ProductForm.js
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
+import { useAuth } from '../../../hooks/useAuth';
 import {
-  TextField,
-  Button,
-  Container,
-  Alert,
-  Box,
-  Typography,
-  FormControl,
-  FormLabel,
-  Checkbox,
-  FormControlLabel,
-  CircularProgress
+  TextField, Button, Container, Alert, Box, Typography,
+  FormControl, FormLabel, Checkbox, FormControlLabel, CircularProgress
 } from "@mui/material";
-import productService from "../../../services/productService";
+import catalogProductService from "../../../services/catalogProductService";
 
 const AdminProductForm = () => {
+    const { isSuperuser } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
     const isEditMode = !!id;
@@ -36,7 +29,7 @@ const AdminProductForm = () => {
         if (isEditMode) {
             const fetchProduct = async () => {
                 try {
-                    const data = await productService.getById(id);
+                    const data = await catalogProductService.getById(id);
                     setFormData({
                         code: data.code || "",
                         fullname: data.fullname || "",
@@ -77,17 +70,18 @@ const AdminProductForm = () => {
             const productData = { ...formData };
 
             if (isEditMode) {
-                await productService.update(id, productData);
+                await catalogProductService.update(id, productData);
             } else {
-                await productService.create(productData);
+                await catalogProductService.create(productData);
             }
-            navigate("/products");
+            navigate("/admin/products");
         } catch (err) {
             setError(`Failed to ${isEditMode ? "update" : "create"} product: ${err.response?.data?.message || err.message}`);
             console.error(err);
         }
     };
 
+    if (!isSuperuser) return <Navigate to="/" replace />;
     if (loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
 
     return (
@@ -115,48 +109,22 @@ const AdminProductForm = () => {
 
                 <FormControl fullWidth sx={{ mb: 3 }}>
                     <FormLabel>Full Name</FormLabel>
-                    <TextField
-                        name="fullname"
-                        value={formData.fullname}
-                        onChange={handleChange}
-                        required
-                        fullWidth
-                    />
+                    <TextField name="fullname" value={formData.fullname} onChange={handleChange} required fullWidth />
                 </FormControl>
 
                 <FormControl fullWidth sx={{ mb: 3 }}>
                     <FormLabel>Short Name</FormLabel>
-                    <TextField
-                        name="shortname"
-                        value={formData.shortname}
-                        onChange={handleChange}
-                        required
-                        inputProps={{ maxLength: 20 }}
-                        fullWidth
-                    />
+                    <TextField name="shortname" value={formData.shortname} onChange={handleChange} required inputProps={{ maxLength: 20 }} fullWidth />
                 </FormControl>
 
                 <FormControl fullWidth sx={{ mb: 3 }}>
                     <FormLabel>Description</FormLabel>
-                    <TextField
-                        multiline
-                        rows={3}
-                        name="description"
-                        value={formData.description}
-                        onChange={handleChange}
-                        fullWidth
-                    />
+                    <TextField multiline rows={3} name="description" value={formData.description} onChange={handleChange} fullWidth />
                 </FormControl>
 
                 <FormControl fullWidth sx={{ mb: 3 }}>
                     <FormControlLabel
-                        control={
-                            <Checkbox
-                                name="active"
-                                checked={formData.active}
-                                onChange={handleChange}
-                            />
-                        }
+                        control={<Checkbox name="active" checked={formData.active} onChange={handleChange} />}
                         label="Active"
                     />
                 </FormControl>
@@ -165,7 +133,7 @@ const AdminProductForm = () => {
                     <Button variant="contained" type="submit">
                         {isEditMode ? "Update Product" : "Create Product"}
                     </Button>
-                    <Button variant="outlined" onClick={() => navigate("/products")}>
+                    <Button variant="outlined" onClick={() => navigate("/admin/products")}>
                         Cancel
                     </Button>
                 </Box>

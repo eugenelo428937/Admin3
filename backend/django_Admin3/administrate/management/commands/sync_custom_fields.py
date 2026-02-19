@@ -30,6 +30,11 @@ class Command(BaseCommand):
             action='store_true',
             help='Enable debug logging'
         )
+        parser.add_argument(
+            '--no-prompt',
+            action='store_true',
+            help='Skip interactive prompts; unmatched records are logged only'
+        )
 
     def handle(self, *args, **options):
         debug = options['debug']

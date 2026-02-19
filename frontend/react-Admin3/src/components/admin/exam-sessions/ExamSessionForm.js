@@ -1,20 +1,16 @@
-// src/components/ExamSessionForm.js
+// src/components/admin/exam-sessions/ExamSessionForm.js
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  TextField,
-  Button,
-  Container,
-  Alert,
-  Box,
-  Typography,
-  FormControl,
-  FormLabel
+  TextField, Button, Container, Alert, Box, Typography,
+  FormControl, FormLabel
 } from '@mui/material';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Navigate } from 'react-router-dom';
+import { useAuth } from '../../../hooks/useAuth';
 import examSessionService from "../../../services/examSessionService";
 import moment from 'moment';
 
 const AdminExamSessionForm = () => {
+	const { isSuperuser } = useAuth();
 	const navigate = useNavigate();
 	const { id } = useParams();
 	const [error, setError] = useState(null);
@@ -60,7 +56,7 @@ const AdminExamSessionForm = () => {
 			} else {
 				await examSessionService.create(formData);
 			}
-			navigate("/exam-sessions");
+			navigate("/admin/exam-sessions");
 		} catch (err) {
 			setError("Failed to save exam session");
 		} finally {
@@ -75,6 +71,8 @@ const AdminExamSessionForm = () => {
 			[name]: value,
 		}));
 	};
+
+	if (!isSuperuser) return <Navigate to="/" replace />;
 
 	return (
 		<Container sx={{ mt: 4 }}>
@@ -131,7 +129,7 @@ const AdminExamSessionForm = () => {
 					</Button>
 					<Button
 						variant="outlined"
-						onClick={() => navigate("/exam-sessions")}
+						onClick={() => navigate("/admin/exam-sessions")}
 						disabled={isSubmitting}
 					>
 						Cancel

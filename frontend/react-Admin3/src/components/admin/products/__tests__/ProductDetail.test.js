@@ -4,6 +4,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import AdminProductDetail from '../ProductDetail';
 
+// Mock useAuth
+jest.mock('../../../../hooks/useAuth', () => ({
+  __esModule: true,
+  useAuth: jest.fn(),
+}));
+
+import { useAuth } from '../../../../hooks/useAuth';
+
 // Mock navigate function
 const mockNavigate = jest.fn();
 
@@ -13,11 +21,12 @@ jest.mock('react-router-dom', () => {
     useNavigate: () => mockNavigate,
     useParams: () => ({ id: '1' }),
     Link: ({ children, to }) => <a href={to}>{children}</a>,
+    Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
-// Mock productService
-jest.mock('../../../../services/productService', () => ({
+// Mock catalogProductService
+jest.mock('../../../../services/catalogProductService', () => ({
   __esModule: true,
   default: {
     getById: jest.fn(),
@@ -25,7 +34,7 @@ jest.mock('../../../../services/productService', () => ({
   },
 }));
 
-import productService from '../../../../services/productService';
+import catalogProductService from '../../../../services/catalogProductService';
 
 const theme = createTheme();
 
@@ -51,7 +60,12 @@ const renderComponent = () => {
 describe('AdminProductDetail', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    productService.getById.mockResolvedValue(mockProduct);
+    useAuth.mockReturnValue({
+      isSuperuser: true,
+      isApprentice: false,
+      isStudyPlus: false,
+    });
+    catalogProductService.getById.mockResolvedValue(mockProduct);
   });
 
   describe('rendering', () => {
@@ -64,7 +78,7 @@ describe('AdminProductDetail', () => {
     });
 
     test('renders loading state initially', () => {
-      productService.getById.mockReturnValue(new Promise(() => {}));
+      catalogProductService.getById.mockReturnValue(new Promise(() => {}));
       renderComponent();
 
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
@@ -113,7 +127,7 @@ describe('AdminProductDetail', () => {
     });
 
     test('displays inactive status when product is not active', async () => {
-      productService.getById.mockResolvedValueOnce({ ...mockProduct, active: false });
+      catalogProductService.getById.mockResolvedValueOnce({ ...mockProduct, active: false });
 
       renderComponent();
 
@@ -123,7 +137,7 @@ describe('AdminProductDetail', () => {
     });
 
     test('displays "No description" when description is empty', async () => {
-      productService.getById.mockResolvedValueOnce({ ...mockProduct, description: '' });
+      catalogProductService.getById.mockResolvedValueOnce({ ...mockProduct, description: '' });
 
       renderComponent();
 
@@ -162,7 +176,7 @@ describe('AdminProductDetail', () => {
   describe('delete functionality', () => {
     test('calls delete when delete button clicked and confirmed', async () => {
       window.confirm = jest.fn().mockReturnValue(true);
-      productService.delete.mockResolvedValue({});
+      catalogProductService.delete.mockResolvedValue({});
 
       renderComponent();
 
@@ -174,8 +188,8 @@ describe('AdminProductDetail', () => {
 
       await waitFor(() => {
         expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to delete this product?');
-        expect(productService.delete).toHaveBeenCalledWith('1');
-        expect(mockNavigate).toHaveBeenCalledWith('/products');
+        expect(catalogProductService.delete).toHaveBeenCalledWith('1');
+        expect(mockNavigate).toHaveBeenCalledWith('/admin/products');
       });
     });
 
@@ -190,13 +204,13 @@ describe('AdminProductDetail', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /delete/i }));
 
-      expect(productService.delete).not.toHaveBeenCalled();
+      expect(catalogProductService.delete).not.toHaveBeenCalled();
     });
   });
 
   describe('error handling', () => {
     test('displays error when fetch fails', async () => {
-      productService.getById.mockRejectedValueOnce(new Error('Network error'));
+      catalogProductService.getById.mockRejectedValueOnce(new Error('Network error'));
 
       renderComponent();
 
@@ -207,7 +221,7 @@ describe('AdminProductDetail', () => {
 
     test('displays error when delete fails', async () => {
       window.confirm = jest.fn().mockReturnValue(true);
-      productService.delete.mockRejectedValueOnce(new Error('Delete error'));
+      catalogProductService.delete.mockRejectedValueOnce(new Error('Delete error'));
 
       renderComponent();
 

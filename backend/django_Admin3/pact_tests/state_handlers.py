@@ -276,6 +276,29 @@ def state_catalog_data_exists(params=None):
         group.catalog_products.add(catalog_product)
 
 
+def state_product_groups_exist(params=None):
+    """State: product groups exist
+
+    Creates FilterGroup data for the product-group-filters endpoint.
+    Uses update_or_create for the child group to ensure the parent
+    relationship is set correctly even if the record already exists
+    (e.g. created by setup_filter_groups() without a parent).
+    """
+    from filtering.models import FilterGroup
+
+    # Create parent group (category level)
+    study_materials, _ = FilterGroup.objects.get_or_create(
+        name='Study Materials',
+        defaults={'is_active': True, 'display_order': 0, 'parent': None},
+    )
+
+    # Create or update child group — ensure parent is always set
+    core_materials, _ = FilterGroup.objects.update_or_create(
+        name='Core Study Materials',
+        defaults={'is_active': True, 'display_order': 0, 'parent': study_materials},
+    )
+
+
 def state_filter_configuration_exists(params=None):
     """State: filter configuration exists
 
@@ -540,12 +563,12 @@ def state_tutorial_events_exist(params=None):
 
     Creates a TutorialEvent linked to a tutorial store product.
     """
-    from tutorials.models import TutorialEvent
+    from tutorials.models import TutorialEvents
     import datetime
 
     tutorial_store_product, _cp = setup_tutorial_catalog_product()
 
-    TutorialEvent.objects.get_or_create(
+    TutorialEvents.objects.get_or_create(
         code='TUT-CM2-LON-2025',
         defaults={
             'venue': 'London',
@@ -587,6 +610,7 @@ STATE_HANDLERS = {
     'exam session bundles exist': state_exam_session_bundles_exist,
     'searchable products exist': state_searchable_products_exist,
     'products exist for default search': state_products_exist_for_default_search,
+    'product groups exist': state_product_groups_exist,
     # Phase 2: Catalog
     'catalog subjects exist': state_catalog_subjects_exist,
     'catalog exam sessions exist': state_catalog_exam_sessions_exist,

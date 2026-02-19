@@ -71,14 +71,14 @@ python manage.py shell
 ```python
 # Test queries for each model
 from marking.models import MarkingPaper
-from tutorials.models import TutorialEvent
+from tutorials.models import TutorialEvents
 from rules_engine.models import ActedRule, ActedRulesFields, ActedRuleExecution
 from students.models import Student
 from userprofile.models import UserProfile
 
 # Should return counts without error
 print(f"MarkingPaper: {MarkingPaper.objects.count()}")
-print(f"TutorialEvent: {TutorialEvent.objects.count()}")
+print(f"TutorialEvent: {TutorialEvents.objects.count()}")
 print(f"ActedRule: {ActedRule.objects.count()}")
 print(f"Student: {Student.objects.count()}")
 print(f"UserProfile: {UserProfile.objects.count()}")

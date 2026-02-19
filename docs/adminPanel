@@ -1,0 +1,55 @@
+# I would like to create an admin panel in the frontend to manage the backend setting. 
+
+1. In frontend/react-Admin3/src/components/Navigation/NavigationMenu.js, create a MegaMenuPopover for the admin panel. Within the panel will include the links following items. Disable the links that marked #disable, they are for future implementation.
+
+Row 1:
+
+- Catalog:
+  - exam_sessions (Exam sessions)
+  - subjects (Subjects)
+  - catalog_exam_session_subjects (Exam Session Subjects)
+  - catalog_products (Product Catalog)
+  - catalog_product_variations and catalog_product_product_variations (Product Variations Catalog setup)
+  - catalog_product_bundles and catalog_product_bundle_products (Product Bundles Catalog setup)
+
+- store:
+  - products (Current products)
+  - product_productvariation_recommendations (Current products recommendations)
+  - prices (Current products variation prices)
+  - bundles and bundle_products (Current products bundles)
+
+- filtering: #disable
+  - filter_configurations #disable
+  - filter_groups #disable
+  - filter_configuration_groups #disable
+  - filter_product_product_groups #disable
+
+- user:
+  - user_profile
+  - user_profile_address
+  - user_profile_contact_number
+  - user_profile_email
+  - staff
+
+Row 2:
+
+- tutorials : #disable
+  - tutorial_course_templates #disable
+  - tutorial_locations #disable
+  - tutorial_venues #disable
+  - tutorial_instructors #disable
+  - tutorial_events #disable
+  - tutorial_sessions #disable
+  - tutorial_session_instructors #disable
+
+- marking: #disable
+  - marking_paper #disable
+  - marking_vouchers #disable
+
+- orders: #disable
+
+2. Update the code in @frontend/react-Admin3/src/components/admin/exam-sessions/ and @frontend/react-Admin3/src/components/admin/subjects .
+
+3. Create the Catalog admin functions above.
+
+4. Create the store admin functions above.

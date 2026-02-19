@@ -118,21 +118,21 @@ const TopNavBar = ({ onOpenSearch }) =>
    return (
       <>
          <Container
-            maxWidth="xl"
+         maxWidth={false}            
             sx={{
                display: 'flex',
                justifyContent: 'space-between',
                alignContent: 'end',
-               bgcolor: 'navigation.background.topNavBar',
+               bgcolor: 'navigation.background.topNavBar.primary',
                px: {
                   sm: theme.spacingTokens.lg,
-                  md: theme.spacingTokens.xl,
-                  lg: theme.spacingTokens.xl2,
-                  xl: theme.spacingTokens.xl3,
+                  md: theme.spacingTokens.xl[1],
+                  lg: theme.spacingTokens.xl[2],
+                  xl: theme.spacingTokens.xl[3],
                },
                py: {
-                  xs: theme.spacingTokens.xs3,
-                  lg: theme.spacingTokens.xs3,
+                  xs: theme.spacingTokens.xs[3],
+                  lg: theme.spacingTokens.xs[3],
                },
             }}
          >
@@ -151,15 +151,11 @@ const TopNavBar = ({ onOpenSearch }) =>
                      target="_blank"
                      startIcon={isDesktop ? <HomeIcon /> : null}
                      endIcon={!isDesktop ? <HomeIcon /> : null}
-                     sx={{
-                        minWidth: {
-                           xs: theme.spacingTokens.xl,
-                           lg: theme.spacingTokens.xl2,
-                        },
+                     sx={{                        
                         justifyContent: "center",
                      }}>
                      <Typography
-                        variant="topnavlink"
+                        variant="top_nav_link"
                      >
                         ActEd
                      </Typography>
@@ -173,15 +169,11 @@ const TopNavBar = ({ onOpenSearch }) =>
                      target="_blank"
                      startIcon={isDesktop ? <HelpIcon /> : null}
                      endIcon={!isDesktop ? <HelpIcon /> : null}
-                     sx={{
-                        minWidth: {
-                           xs: theme.spacingTokens.xl,
-                           lg: theme.spacingTokens.xl2,
-                        },
+                     sx={{                       
                         justifyContent: "center",
                      }}>
                      <Typography
-                        variant="topnavlink"
+                        variant="top_nav_link"
                      >
                         Help
                      </Typography>
@@ -205,16 +197,12 @@ const TopNavBar = ({ onOpenSearch }) =>
                      target="_blank"
                      startIcon={isDesktop ? <DownloadIcon /> : null}
                      endIcon={!isDesktop ? <DownloadIcon /> : null}
-                     sx={{
-                        minWidth: {
-                           xs: theme.spacingTokens.xl,
-                           lg: theme.spacingTokens.xl2,
-                        },
+                     sx={{                       
                         justifyContent: "center",
                      }}
                   >
                      <Typography
-                        variant="topnavlink"
+                        variant="top_nav_link"
                      >
                         Brochure
                      </Typography>
@@ -226,11 +214,7 @@ const TopNavBar = ({ onOpenSearch }) =>
                   <Button
                      variant="topNavAction"
                      onClick={onOpenSearch}
-                     sx={{
-                        minWidth: {
-                           xs: theme.spacingTokens.xl,
-                           lg: theme.spacingTokens.xl2,
-                        },
+                     sx={{                        
                         justifyContent: "center",
                      }}
                      aria-label="search products"
@@ -238,7 +222,7 @@ const TopNavBar = ({ onOpenSearch }) =>
                      endIcon={!isDesktop ? <SearchIcon /> : null}
                   >
                      <Typography
-                        variant="topnavlink"
+                        variant="top_nav_link"
                      >
                         Search
                      </Typography>
