@@ -30,15 +30,11 @@ const theme = createTheme();
 const mockStaff = [
   {
     id: '1',
-    user_email: 'admin@example.com',
-    user_first_name: 'Admin',
-    user_last_name: 'User',
+    user_detail: { email: 'admin@example.com', first_name: 'Admin', last_name: 'User' },
   },
   {
     id: '2',
-    user_email: 'staff@example.com',
-    user_first_name: 'Staff',
-    user_last_name: 'Member',
+    user_detail: { email: 'staff@example.com', first_name: 'Staff', last_name: 'Member' },
   },
 ];
 
