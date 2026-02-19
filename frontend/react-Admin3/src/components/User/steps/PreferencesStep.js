@@ -19,6 +19,15 @@ const PreferencesStep = ({
     ...initialData,
   });
 
+  // Refs for direct callback pattern (avoids effect cascade)
+  const formRef = useRef(form);
+  const onDataChangeRef = useRef(onDataChange);
+  useEffect(() => { onDataChangeRef.current = onDataChange; }, [onDataChange]);
+
+  const notifyParent = useCallback((nextForm) => {
+    onDataChangeRef.current?.(nextForm);
+  }, []);
+
   // Initialize from initialData only on subsequent changes
   const isInitialMount = useRef(true);
   useEffect(() => {
@@ -27,21 +36,37 @@ const PreferencesStep = ({
       return;
     }
     if (initialData && Object.keys(initialData).length > 0) {
+      let changed = false;
       setForm(prev => {
         const hasChanges = Object.keys(initialData).some(key => prev[key] !== initialData[key]);
-        return hasChanges ? { ...prev, ...initialData } : prev;
+        if (!hasChanges) return prev;
+        const next = { ...prev, ...initialData };
+        formRef.current = next;
+        changed = true;
+        return next;
       });
+      if (changed) notifyParent(formRef.current);
     }
-  }, [initialData]);
+  }, [initialData, notifyParent]);
 
+  // Initial report to parent on mount (once only)
+  const hasSentInitial = useRef(false);
   useEffect(() => {
-    onDataChange?.(form);
-  }, [form, onDataChange]);
+    if (!hasSentInitial.current) {
+      hasSentInitial.current = true;
+      notifyParent(form);
+    }
+  }, [form, notifyParent]);
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }, []);
+    setForm((prev) => {
+      const next = { ...prev, [name]: value };
+      formRef.current = next;
+      return next;
+    });
+    notifyParent(formRef.current);
+  }, [notifyParent]);
 
   return (
     <Box sx={{ minHeight: "400px" }}>

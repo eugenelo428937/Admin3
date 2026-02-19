@@ -49,6 +49,27 @@ const WorkAddressStep = ({
     work_phone: { isValid: true, error: null },
   });
 
+  // Refs for direct callback pattern (avoids effect cascade)
+  const formRef = useRef(form);
+  const onDataChangeRef = useRef(onDataChange);
+  const phoneCountriesRef = useRef({ workPhoneCountry: null });
+  const phoneValidationRef = useRef(phoneValidation);
+  const showWorkSectionRef = useRef(showWorkSection);
+
+  useEffect(() => { onDataChangeRef.current = onDataChange; }, [onDataChange]);
+  useEffect(() => { phoneCountriesRef.current = { workPhoneCountry }; }, [workPhoneCountry]);
+  useEffect(() => { phoneValidationRef.current = phoneValidation; }, [phoneValidation]);
+  useEffect(() => { showWorkSectionRef.current = showWorkSection; }, [showWorkSection]);
+
+  const notifyParent = useCallback((nextForm, extras = {}) => {
+    onDataChangeRef.current?.({
+      ...nextForm,
+      showWorkSection: extras.showWorkSection !== undefined ? extras.showWorkSection : showWorkSectionRef.current,
+      _phoneCountries: phoneCountriesRef.current,
+      _phoneValidation: extras.phoneValidation || phoneValidationRef.current,
+    });
+  }, []);
+
   // Initialize from initialData only on subsequent changes (not initial mount)
   const isInitialMount = useRef(true);
   useEffect(() => {
@@ -57,15 +78,22 @@ const WorkAddressStep = ({
       return;
     }
     if (initialData && Object.keys(initialData).length > 0) {
+      let changed = false;
       setForm(prev => {
         const hasChanges = Object.keys(initialData).some(key => prev[key] !== initialData[key]);
-        return hasChanges ? { ...prev, ...initialData } : prev;
+        if (!hasChanges) return prev;
+        const next = { ...prev, ...initialData };
+        formRef.current = next;
+        changed = true;
+        return next;
       });
       if (initialData.showWorkSection !== undefined) {
         setShowWorkSection(initialData.showWorkSection);
+        showWorkSectionRef.current = initialData.showWorkSection;
       }
+      if (changed) notifyParent(formRef.current);
     }
-  }, [initialData]);
+  }, [initialData, notifyParent]);
 
   // Load countries on mount
   useEffect(() => {
@@ -85,23 +113,35 @@ const WorkAddressStep = ({
       .catch((err) => console.error("Failed to load countries:", err));
   }, []);
 
-  // Report data changes to parent
+  // Initial report to parent on mount (once only)
+  const hasSentInitial = useRef(false);
   useEffect(() => {
-    onDataChange?.({
-      ...form,
-      showWorkSection,
-      _phoneCountries: { workPhoneCountry },
-      _phoneValidation: phoneValidation,
-    });
-  }, [form, showWorkSection, workPhoneCountry, phoneValidation, onDataChange]);
+    if (!hasSentInitial.current) {
+      hasSentInitial.current = true;
+      notifyParent(form);
+    }
+  }, [form, notifyParent]);
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }, []);
+    setForm((prev) => {
+      const next = { ...prev, [name]: value };
+      formRef.current = next;
+      return next;
+    });
+    notifyParent(formRef.current);
+  }, [notifyParent]);
 
   const handlePhoneValidationChange = useCallback((fieldName, result) => {
-    setPhoneValidation((prev) => ({ ...prev, [fieldName]: result }));
+    setPhoneValidation((prev) => {
+      const existing = prev[fieldName];
+      if (existing && existing.isValid === result.isValid && existing.error === result.error) {
+        return prev;
+      }
+      const next = { ...prev, [fieldName]: result };
+      phoneValidationRef.current = next;
+      return next;
+    });
   }, []);
 
   const header = (
@@ -126,7 +166,11 @@ const WorkAddressStep = ({
             <Button
               variant="contained"
               startIcon={<Add />}
-              onClick={() => setShowWorkSection(true)}
+              onClick={() => {
+                setShowWorkSection(true);
+                showWorkSectionRef.current = true;
+                notifyParent(formRef.current, { showWorkSection: true });
+              }}
             >
               Add Work Address
             </Button>
@@ -146,7 +190,11 @@ const WorkAddressStep = ({
             variant="outlined"
             color="error"
             startIcon={<Remove />}
-            onClick={() => setShowWorkSection(false)}
+            onClick={() => {
+              setShowWorkSection(false);
+              showWorkSectionRef.current = false;
+              notifyParent(formRef.current, { showWorkSection: false });
+            }}
             size="small"
           >
             Remove Work Address
