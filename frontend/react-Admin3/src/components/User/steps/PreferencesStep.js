@@ -27,7 +27,10 @@ const PreferencesStep = ({
       return;
     }
     if (initialData && Object.keys(initialData).length > 0) {
-      setForm(prev => ({ ...prev, ...initialData }));
+      setForm(prev => {
+        const hasChanges = Object.keys(initialData).some(key => prev[key] !== initialData[key]);
+        return hasChanges ? { ...prev, ...initialData } : prev;
+      });
     }
   }, [initialData]);
 
