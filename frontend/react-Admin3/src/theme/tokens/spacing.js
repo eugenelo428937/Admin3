@@ -6,19 +6,20 @@
  *
  * Scale factor: 1.618 (golden ratio)
  */
-const baseUnit = 8;
+const baseUnit = 4;
 export const scaleFactor = 1.618;
 
   // Calculate 8 * (1.618 ^ (factor - 1)) for exponential growth
   // or use a Fibonacci sequence approach.
-  // spacing[1] :1px
-  // spacing[2] :3.236px
-  // spacing[3] :7.853772px
-  // spacing[4] :16.943204128px
-  // spacing[5] :34.26763034888px
-  // spacing[6] :66.5340310853854px
-  // spacing[7] :125.594072678846px
-  // spacing[8] :232.241382393569px
+  // spacing[1]  : 4px
+  // spacing[2]  : 6.472px
+  // spacing[3]  : 10.471696px
+  // spacing[4]  : 16.943204128px
+  // spacing[5]  : 27.414104279104px
+  // spacing[6]  : 44.3560207235903px
+  // spacing[7]  : 71.7680415307691px
+  // spacing[8]  : 116.120691196784px
+ 
 export const formulatedSpacing = (factor) =>
 {
   if (factor === 0) return '0px';
@@ -49,21 +50,23 @@ export const multipliers = {
 // =============================================================================
 export const spacing = {
   // Negative scale (smaller than base)
-  xs: {
-    1: 'calc(1rem / var(--scaleFactor) / var(--halfstep))',
-    2: 'calc(1rem / pow(var(--scaleFactor), 2))',
-    3: 'calc(1rem / pow(var(--scaleFactor), 3))',
-    4: 'calc(1rem / pow(var(--scaleFactor), 4))',
-    5: 'calc(1rem / pow(var(--scaleFactor), 5))',
+  xs: {    
+    5: 'calc(1rem / pow(var(--scaleFactor), 5))', // 1.44px 0.09rem
+    4: 'calc(1rem / pow(var(--scaleFactor), 4))', // 2.33px 0.15rem
+    3: 'calc(1rem / pow(var(--scaleFactor), 3))', // 3.78px 0.24rem
+    2: 'calc(1rem / pow(var(--scaleFactor), 2))', // 6.11px 0.38rem
+    1: 'calc(1rem / var(--scaleFactor) / var(--quarterstep))', // 8.77px 0.55rem   
   },
-  sm: 'calc(1rem / var(--scaleFactor))', 
-  md: '1rem', // Base unit (16px at default)  
-  lg: 'calc(1rem * var(--scaleFactor))', // ~1.62rem
+  sm: 'calc(1rem / var(--scaleFactor))', // 9.89px 0.62rem
+  md: '1rem', // 16px 1rem
+  lg: 'calc(1rem * var(--scaleFactor))', // 25.89px 1.62rem
+
   xl: {
-    1: 'calc(1rem * pow(var(--scaleFactor), 2))', // ~2.62rem
-    2: 'calc(1rem * pow(var(--scaleFactor), 2) * var(--halfstep))', // ~3.33rem
-    3: 'calc(1rem * pow(var(--scaleFactor), 3))', // ~4.24rem
-    4: 'calc(1rem * pow(var(--scaleFactor), 4))', // ~6.85rem
+    1: 'calc(1rem * var(--scaleFactor) * var(--halfstep))', // 32.93px 2.06rem
+    2: 'calc(1rem * pow(var(--scaleFactor), 2))', // 41.89px 2.62rem
+    3: 'calc(1rem * pow(var(--scaleFactor), 2) * var(--halfstep))', // 53.28px 3.33rem
+    4: 'calc(1rem * pow(var(--scaleFactor), 3))', // 67.77px 4.24rem
+    5: 'calc(1rem * pow(var(--scaleFactor), 4))', // 109.66px 6.85rem    
   }
 };
 

@@ -91,18 +91,18 @@ export const fontSizes = {
 // Line Heights (using scale values)
 // =============================================================================
 export const lineHeights = {
-  shortest: 'calc( 1 / var(--halfstep) / var(--halfstep))',
-  shorter: 'calc( 1 / var(--halfstep))',
-  short: 1,
-  normal: 'calc(var(--halfstep))', //1.272
-  tall: 'calc(var(--halfstep) * var(--quarterstep))',  //1.435
-  taller: 'calc(var(--whole))',  //1.618  
+  shortest: 1,
+  shorter: 'calc( 1 * var(--eighthstep))', //1.061
+  short: 'calc( 1 * var(--quarterstep))', //1.128
+  normal: 'calc( 1 * var(--halfstep))', //1.272
+  tall: 'calc( 1 * var(--halfstep) * var(--quarterstep))',  //1.435
+  taller: 'calc( 1 * var(--wholestep))',  //1.6181  
 };
 
 // =============================================================================
 // Letter Spacing
 // =============================================================================
-export const letterSpacing = {
+export const letterSpacings = {
   normal: 'normal',
   scale: {
     10: '-0.0618em',
@@ -131,7 +131,7 @@ const typography = {
   fontWeights,
   fontSizes,
   lineHeights,
-  letterSpacing,
+  letterSpacings,
   scaleMultipliers,
 };
 
