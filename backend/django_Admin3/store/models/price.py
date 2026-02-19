@@ -53,6 +53,10 @@ class Price(models.Model):
         default='GBP',
         help_text='Currency code (ISO 4217)'
     )
+    is_active = models.BooleanField(
+        default=True,
+        help_text='Whether this price is active'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

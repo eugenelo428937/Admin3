@@ -36,18 +36,80 @@ const NavigationMenu = ({
    const theme = useTheme();
    const { isSuperuser, isApprentice, isStudyPlus } = useAuth();
 
-   // Admin menu state
-   const [adminAnchorEl, setAdminAnchorEl] = React.useState(null);
-   const adminMenuOpen = Boolean(adminAnchorEl);
-
-   const handleAdminClick = (event) =>
-   {
-      setAdminAnchorEl(event.currentTarget);
-   };
-
-   const handleAdminClose = () =>
-   {
-      setAdminAnchorEl(null);
+   // Admin MegaMenu category definitions
+   const adminCategories = {
+      row1: [
+         {
+            label: "Catalog",
+            enabled: true,
+            links: [
+               { label: "Exam Sessions", to: "/admin/exam-sessions" },
+               { label: "Subjects", to: "/admin/subjects" },
+               {
+                  label: "Exam Session Subjects",
+                  to: "/admin/exam-session-subjects",
+               },
+               { label: "Products", to: "/admin/products" },
+               { label: "Product Variations", to: "/admin/product-variations" },
+               { label: "Product Bundles Template", to: "/admin/product-bundles" },
+            ],
+         },
+         {
+            label: "Current products",
+            enabled: true,
+            links: [
+               { label: "Products", to: "/admin/store-products" },
+               { label: "Recommendations", to: "/admin/recommendations" },
+               { label: "Prices", to: "/admin/prices" },
+               { label: "Bundles ", to: "/admin/store-bundles" },
+            ],
+         },
+         {
+            label: "Filtering",
+            enabled: false,
+            links: [
+               { label: "Filter Groups", to: "/admin/filter-groups" },
+               { label: "Filter Configuration", to: "/admin/filter-config" },
+            ],
+         },
+         {
+            label: "Users",
+            enabled: true,
+            links: [
+               { label: "User List", to: "/admin/user-profiles" },
+               { label: "Staff List", to: "/admin/staff" },
+            ],
+         },
+      ],
+      row2: [
+         {
+            label: "Tutorials",
+            enabled: false,
+            links: [
+               { label: "Tutorial Events", to: "/admin/tutorial-events" },
+               { label: "Tutorial Sessions", to: "/admin/tutorial-sessions" },
+            ],
+         },
+         {
+            label: "Marking",
+            enabled: false,
+            links: [
+               { label: "Marking Vouchers", to: "/admin/marking-vouchers" },
+               {
+                  label: "Marking Assignments",
+                  to: "/admin/marking-assignments",
+               },
+            ],
+         },
+         {
+            label: "Orders",
+            enabled: false,
+            links: [
+               { label: "Orders", to: "/admin/orders" },
+               { label: "Order Items", to: "/admin/order-items" },
+            ],
+         },
+      ],
    };
 
    return (
@@ -697,62 +759,78 @@ const NavigationMenu = ({
 
          {/* Admin MegaMenu */}
          {isSuperuser ? (
-            <>
-               <Button
-                  variant="main_nav_link"
-                  id="admin-menu-button"
-                  aria-controls={adminMenuOpen ? "admin-menu" : undefined}
-                  aria-haspopup="true"
-                  aria-expanded={adminMenuOpen ? "true" : undefined}
-                  onClick={handleAdminClick}
-                  sx={{ mx: { xl: 2 } }}
-               >
-                  <Typography variant="mega-nav-heading">Admin</Typography>
-               </Button>
-               <Menu
-                  id="admin-menu"
-                  anchorEl={adminAnchorEl}
-                  open={adminMenuOpen}
-                  onClose={handleAdminClose}
-                  MenuListProps={{
-                     "aria-labelledby": "admin-menu-button",
-                  }}
-               >
-                  <MenuItem
-                     component={NavLink}
-                     to="admin/exam-sessions"
-                     onClick={() =>
-                     {
-                        handleAdminClose();
-                        onCollapseNavbar?.();
-                     }}
-                  >
-                     Exam Sessions
-                  </MenuItem>
-                  <MenuItem
-                     component={NavLink}
-                     to="admin/subjects"
-                     onClick={() =>
-                     {
-                        handleAdminClose();
-                        onCollapseNavbar?.();
-                     }}
-                  >
-                     Subjects
-                  </MenuItem>
-                  <MenuItem
-                     component={NavLink}
-                     to="admin/products"
-                     onClick={() =>
-                     {
-                        handleAdminClose();
-                        onCollapseNavbar?.();
-                     }}
-                  >
-                     Products
-                  </MenuItem>
-               </Menu>
-            </>
+            <MegaMenuPopover
+               id="admin-menu"
+               label="Admin"
+               onClose={() => onCollapseNavbar?.()}
+            >
+               {[adminCategories.row1, adminCategories.row2].map(
+                  (row, rowIndex) => (
+                     <React.Fragment key={rowIndex}>
+                        <Grid
+                           container
+                           spacing={3}
+                           sx={{ mb: 2 }}
+                        >
+                           {row.map((category) => (
+                              <Grid item xs={6} sm={3} key={category.label}>
+                                 <Box
+                                    data-disabled={
+                                       !category.enabled ? "true" : undefined
+                                    }
+                                    sx={{
+                                       ...(!category.enabled && {
+                                          opacity: 0.5,
+                                          pointerEvents: "none",
+                                       }),
+                                    }}
+                                 >
+                                    <Typography
+                                       variant="mega-nav-heading"
+                                       sx={{
+                                          mb: 1,
+                                          fontWeight: "bold",
+                                       }}
+                                    >
+                                       {category.label}
+                                    </Typography>
+                                    <MenuList variant="nav_menu" dense>
+                                       {category.links.map((link) => (
+                                          <MenuItem
+                                             variant="nav_menu"
+                                             key={link.to}
+                                             component={NavLink}
+                                             to={link.to}
+                                             onClick={() => onCollapseNavbar?.()}
+                                          >
+                                             {link.label}
+                                          </MenuItem>
+                                       ))}
+                                    </MenuList>
+                                 </Box>
+                              </Grid>
+                           ))}
+                        </Grid>
+                        {/* New Session Setup button between row1 and row2 */}
+                        {rowIndex === 0 && (
+                           <Box sx={{ mb: 2 }}>
+                              <Button
+                                 variant="navViewAll"
+                                 component={NavLink}
+                                 to="/admin/new-session-setup"
+                                 onClick={() => onCollapseNavbar?.()}
+                              >
+                                 <Typography variant="navViewAllText">
+                                    New Session Setup
+                                 </Typography>
+                                 <NavigateNextIcon />
+                              </Button>
+                           </Box>
+                        )}
+                     </React.Fragment>
+                  )
+               )}
+            </MegaMenuPopover>
          ) : null}
       </Container>
    );

@@ -50,6 +50,9 @@ import AdminPriceForm from "./components/admin/prices/PriceForm";
 import AdminStoreBundleList from "./components/admin/store-bundles/StoreBundleList";
 import AdminStoreBundleForm from "./components/admin/store-bundles/StoreBundleForm";
 
+// New Session Setup wizard
+import NewSessionSetup from "./components/admin/new-session-setup/NewSessionSetup";
+
 // US5: User admin components
 import AdminUserProfileList from "./components/admin/user-profiles/UserProfileList";
 import AdminUserProfileForm from "./components/admin/user-profiles/UserProfileForm";
@@ -244,6 +247,10 @@ function App() {
 										<Route path="/admin/staff" element={<AdminStaffList />} />
 										<Route path="/admin/staff/new" element={<AdminStaffForm />} />
 										<Route path="/admin/staff/:id/edit" element={<AdminStaffForm />} />
+
+										{/* Admin: New Session Setup Wizard */}
+										<Route path="/admin/new-session-setup" element={<NewSessionSetup />} />
+										<Route path="/admin/new-session-setup/:sessionId" element={<NewSessionSetup />} />
 
 										{/* Public routes */}
 										<Route path="/checkout" element={<CheckoutPage />} />

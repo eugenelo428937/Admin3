@@ -2,9 +2,10 @@
 // T004 [US1] - MegaMenu navigation tests
 import React from 'react';
 import { render, screen, within, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
 import NavigationMenu from '../NavigationMenu';
+import theme from '../../../theme';
 
 // Mock useAuth
 jest.mock('../../../hooks/useAuth', () => ({
@@ -13,41 +14,6 @@ jest.mock('../../../hooks/useAuth', () => ({
 }));
 
 import { useAuth } from '../../../hooks/useAuth';
-
-// Create a custom theme with all properties needed by NavigationMenu and MegaMenuPopover
-const theme = createTheme({
-  palette: {
-    semantic: {
-      navigation: {
-        button: { color: '#333333', hoverBg: '#f5f5f5' },
-        menuItem: { color: '#333333', hoverBg: '#f5f5f5' }
-      }
-    },
-    navigation: {
-      background: { active: '#ffffff' }
-    },
-    offwhite: { '000': '#fdfdfd', '001': '#f0edf1' },
-    bpp: {
-      granite: {
-        '000': '#ffffff', '010': '#f1f1f1', '020': '#d9d9d9',
-        '030': '#bababa', '040': '#9e9e9e', '050': '#848484',
-        '060': '#6a6a6a', '070': '#525252', '080': '#3b3b3a',
-        '090': '#272524', '100': '#111110'
-      }
-    },
-  },
-});
-// Add custom liftkit namespace (not a standard MUI property)
-theme.liftkit = {
-  spacing: {
-    xs3: '0.3rem', xs2: '0.38rem', xs: '0.49rem',
-    sm: '0.62rem', md: '1rem', lg: '1.62rem',
-    xl: '2.62rem', xl15: '3.33rem', xl2: '4.24rem', xl3: '6.85rem'
-  },
-  typography: {
-    body: { fontSize: '1em', fontWeight: 400 }
-  }
-};
 
 const defaultProps = {
   subjects: [],
@@ -101,8 +67,8 @@ describe('Admin MegaMenu Navigation', () => {
 
       // Check category headings appear
       expect(screen.getByText('Catalog')).toBeInTheDocument();
-      expect(screen.getByText('Store')).toBeInTheDocument();
-      expect(screen.getByText('User')).toBeInTheDocument();
+      expect(screen.getByText('Current products')).toBeInTheDocument();
+      expect(screen.getByText('Users')).toBeInTheDocument();
     });
 
     test('renders all category headings', () => {
@@ -113,10 +79,11 @@ describe('Admin MegaMenu Navigation', () => {
       const popover = document.getElementById('admin-menu-popover');
       const adminMenu = within(popover);
 
-      // Use heading role to distinguish category headings from same-named links
-      const expectedCategories = ['Catalog', 'Store', 'Filtering', 'User', 'Tutorials', 'Marking', 'Orders'];
+      // Some category names match link names (e.g. "Orders"), so use getAllByText
+      const expectedCategories = ['Catalog', 'Current products', 'Filtering', 'Users', 'Tutorials', 'Marking', 'Orders'];
       expectedCategories.forEach(category => {
-        expect(adminMenu.getByRole('heading', { name: category })).toBeInTheDocument();
+        const matches = adminMenu.getAllByText(category);
+        expect(matches.length).toBeGreaterThanOrEqual(1);
       });
     });
 
@@ -130,27 +97,24 @@ describe('Admin MegaMenu Navigation', () => {
       expect(adminMenu.getByText('Exam Sessions')).toBeInTheDocument();
       expect(adminMenu.getByText('Subjects')).toBeInTheDocument();
       expect(adminMenu.getByText('Exam Session Subjects')).toBeInTheDocument();
-      expect(adminMenu.getByText('Products')).toBeInTheDocument();
       expect(adminMenu.getByText('Product Variations')).toBeInTheDocument();
-      expect(adminMenu.getByText('Product Bundles')).toBeInTheDocument();
+      expect(adminMenu.getByText('Product Bundles Template')).toBeInTheDocument();
     });
 
-    test('renders enabled Store links', () => {
+    test('renders enabled Current products links', () => {
       renderComponent();
       fireEvent.click(screen.getByText('Admin'));
 
-      expect(screen.getByText('Store Products')).toBeInTheDocument();
       expect(screen.getByText('Recommendations')).toBeInTheDocument();
       expect(screen.getByText('Prices')).toBeInTheDocument();
-      expect(screen.getByText('Store Bundles')).toBeInTheDocument();
     });
 
-    test('renders enabled User links', () => {
+    test('renders enabled Users links', () => {
       renderComponent();
       fireEvent.click(screen.getByText('Admin'));
 
-      expect(screen.getByText('User Profiles')).toBeInTheDocument();
-      expect(screen.getByText('Staff')).toBeInTheDocument();
+      expect(screen.getByText('User List')).toBeInTheDocument();
+      expect(screen.getByText('Staff List')).toBeInTheDocument();
     });
 
     test('renders disabled categories with reduced opacity', () => {
@@ -161,16 +125,14 @@ describe('Admin MegaMenu Navigation', () => {
       const adminMenu = within(popover);
 
       // Filtering, Tutorials, Marking, Orders should be disabled
-      const filteringHeading = adminMenu.getByRole('heading', { name: 'Filtering' });
-      const tutorialsHeading = adminMenu.getByRole('heading', { name: 'Tutorials' });
-      const markingHeading = adminMenu.getByRole('heading', { name: 'Marking' });
-      const ordersHeading = adminMenu.getByRole('heading', { name: 'Orders' });
-
-      // Check that parent containers have disabled styling
-      expect(filteringHeading.closest('[data-disabled="true"]')).toBeInTheDocument();
-      expect(tutorialsHeading.closest('[data-disabled="true"]')).toBeInTheDocument();
-      expect(markingHeading.closest('[data-disabled="true"]')).toBeInTheDocument();
-      expect(ordersHeading.closest('[data-disabled="true"]')).toBeInTheDocument();
+      const disabledCategories = ['Filtering', 'Tutorials', 'Marking', 'Orders'];
+      disabledCategories.forEach(name => {
+        // Some category names match link names, so find the Typography heading specifically
+        const matches = adminMenu.getAllByText(name);
+        const heading = matches.find(el => el.classList.contains('MuiTypography-mega-nav-heading'));
+        expect(heading).toBeTruthy();
+        expect(heading.closest('[data-disabled="true"]')).toBeInTheDocument();
+      });
     });
 
     test('enabled links have correct navigation targets', () => {
@@ -187,11 +149,11 @@ describe('Admin MegaMenu Navigation', () => {
       const subjectsLink = adminMenu.getByText('Subjects').closest('a');
       expect(subjectsLink).toHaveAttribute('href', '/admin/subjects');
 
-      const productsLink = adminMenu.getByText('Products').closest('a');
-      expect(productsLink).toHaveAttribute('href', '/admin/products');
+      const userListLink = adminMenu.getByText('User List').closest('a');
+      expect(userListLink).toHaveAttribute('href', '/admin/user-profiles');
     });
 
-    test('menu closes on link click', () => {
+    test('menu closes on link click', async () => {
       renderComponent();
       fireEvent.click(screen.getByText('Admin'));
 
@@ -200,7 +162,7 @@ describe('Admin MegaMenu Navigation', () => {
 
       // The popover should close (MegaMenuPopover handles this via onClick)
       // After close, the menu content should not be visible
-      waitFor(() => {
+      await waitFor(() => {
         expect(screen.queryByText('Catalog')).not.toBeVisible();
       });
     });

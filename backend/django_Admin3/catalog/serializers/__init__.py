@@ -24,6 +24,13 @@ from .product_serializers import (
     RecommendationAdminSerializer,
     RecommendationListSerializer,
 )
+from .session_setup_serializers import (
+    CopyProductsRequestSerializer,
+    CopyProductsResponseSerializer,
+    SessionDataCountsSerializer,
+    DeactivateSessionRequestSerializer,
+    DeactivateSessionResponseSerializer,
+)
 from .bundle_serializers import (
     ProductBundleSerializer,
     ProductBundleProductSerializer,
@@ -55,4 +62,11 @@ __all__ = [
     'ProductBundleProductSerializer',
     'ExamSessionSubjectBundleSerializer',
     'ExamSessionSubjectBundleProductSerializer',
+
+    # Session setup serializers
+    'CopyProductsRequestSerializer',
+    'CopyProductsResponseSerializer',
+    'SessionDataCountsSerializer',
+    'DeactivateSessionRequestSerializer',
+    'DeactivateSessionResponseSerializer',
 ]

@@ -1359,6 +1359,8 @@ browser_close()
 - N/A (frontend only; consumes REST API via httpService/Axios) (20260216-admin-panel)
 - Python 3.14, Django 6.0 + Django REST Framework + Django REST Framework ViewSets, DRF Routers, `IsSuperUser` permission class (20260216-admin-panel-api)
 - PostgreSQL with `acted` schema (all models pre-exist, no migrations needed) (20260216-admin-panel-api)
+- Python 3.14 (backend), JavaScript ES2022 / React 19.2 (frontend) + Django 6.0 + Django REST Framework (backend), Material-UI v7 + React Router v6 + Axios (frontend) (20260218-new-session-setup)
+- PostgreSQL with `acted` schema (all models pre-exist; no migrations needed) (20260218-new-session-setup)
 
 ## Recent Changes
 - 001-catalog-consolidation: Added Python 3.14, Django 6.0 + Django REST Framework, PostgreSQL psycopg2-binary
