@@ -28,6 +28,8 @@
       "Skill(agent-browser:*)",
       "Bash(bash:*)",
       "mcp__plugin_episodic-memory_episodic-memory__search",
+      "Skill(agent-browser)",
+      "Skill(agent-browser:*)",
       "Bash(python:*)",
       "Bash(python:*)"
     ],

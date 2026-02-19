@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import {
+import
+{
    Home as HomeIcon,
-   HelpOutline as HelpIcon, 
+   HelpOutline as HelpIcon,
    Search as SearchIcon,
    Download as DownloadIcon,
 } from "@mui/icons-material";
@@ -14,7 +15,8 @@ import CartPanel from "../Ordering/CartPanel";
 import SearchModal from "./SearchModal";
 import { Box, Button, Container, Tooltip, Typography, useTheme, useMediaQuery } from "@mui/material";
 
-const TopNavBar = ({ onOpenSearch }) => {
+const TopNavBar = ({ onOpenSearch }) =>
+{
    // State for authentication status
    const { isAuthenticated, user, logout } = useAuth();
    const theme = useTheme();
@@ -26,8 +28,10 @@ const TopNavBar = ({ onOpenSearch }) => {
    const [showSearchModal, setShowSearchModal] = useState(false);
 
    // Listen for navigation state to auto-trigger auth modal
-   useEffect(() => {
-      if (location.state?.showLogin && !isAuthenticated) {
+   useEffect(() =>
+   {
+      if (location.state?.showLogin && !isAuthenticated)
+      {
          setShowAuthModal(true);
          // Clear the state to prevent repeated triggering
          navigate(location.pathname, { replace: true, state: null });
@@ -37,11 +41,14 @@ const TopNavBar = ({ onOpenSearch }) => {
    const { cartCount, refreshCart } = useCart();
 
    // Close cart panel and refresh cart when user authenticates
-   useEffect(() => {
-      if (isAuthenticated) {
+   useEffect(() =>
+   {
+      if (isAuthenticated)
+      {
          setShowCartPanel(false);
          // Refresh cart to recalculate VAT with user profile
-         refreshCart().catch((err) => {
+         refreshCart().catch((err) =>
+         {
             console.error("Failed to refresh cart after login:", err);
          });
       }
@@ -49,50 +56,62 @@ const TopNavBar = ({ onOpenSearch }) => {
    }, [isAuthenticated]); // Only run when isAuthenticated changes, not when refreshCart changes
 
    // Listen for custom event to show auth modal (from CartPanel checkout)
-   useEffect(() => {
-      const handleShowAuthModal = () => {
-         if (!isAuthenticated) {
+   useEffect(() =>
+   {
+      const handleShowAuthModal = () =>
+      {
+         if (!isAuthenticated)
+         {
             setShowAuthModal(true);
          }
       };
 
       window.addEventListener("show-login-modal", handleShowAuthModal);
 
-      return () => {
+      return () =>
+      {
          window.removeEventListener("show-login-modal", handleShowAuthModal);
       };
    }, [isAuthenticated]);
 
    // Handle closing the auth modal
-   const handleCloseAuthModal = () => {
+   const handleCloseAuthModal = () =>
+   {
       setShowAuthModal(false);
    };
 
    // Handle logout
-   const handleLogout = async (e) => {
+   const handleLogout = async (e) =>
+   {
       e.preventDefault();
-      try {
+      try
+      {
          await logout();
-      } catch (error) {
+      } catch (error)
+      {
          console.error("Logout error:", error);
       }
    };
 
    // Handle user icon click
-   const handleUserIconClick = () => {
-      if (!isAuthenticated) {
+   const handleUserIconClick = () =>
+   {
+      if (!isAuthenticated)
+      {
          setShowAuthModal(true);
       }
       // If authenticated, the dropdown will handle showing logout option
    };
 
    // Handle opening the search modal
-   const handleOpenSearchModal = () => {
+   const handleOpenSearchModal = () =>
+   {
       setShowSearchModal(true);
    };
 
    // Handle closing the search modal
-   const handleCloseSearchModal = () => {
+   const handleCloseSearchModal = () =>
+   {
       setShowSearchModal(false);
    };
 
@@ -122,7 +141,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                display: 'flex',
                flexDirection: 'row',
                flexWrap: 'wrap',
-               gap: { xs: '0', md: theme.spacing.md },
+               gap: theme.spacingTokens.md,
             }}>
                <Tooltip title="ActEd Homepage">
                   <Button
@@ -167,7 +186,7 @@ const TopNavBar = ({ onOpenSearch }) => {
                display: 'flex',
                flexDirection: 'row',
                flexWrap: 'wrap',
-               gap: { xs: '0', md: theme.spacing.md },
+               gap: theme.spacingTokens.md,
             }}>
                {/* Brochure Download - Desktop Only */}
                <Tooltip title="Download Brochure">
@@ -212,16 +231,16 @@ const TopNavBar = ({ onOpenSearch }) => {
             </Box>
             {/* <TopNavActions onOpenSearch={handleOpenSearchModal} /> */}
 
-         </Container>
+         </Container >
 
          {/* Search Modal */}
-         <SearchModal open={showSearchModal} onClose={handleCloseSearchModal} />
+         < SearchModal open={showSearchModal} onClose={handleCloseSearchModal} />
 
          {/* Auth Modal */}
-         <AuthModal open={showAuthModal} onClose={handleCloseAuthModal} />
+         < AuthModal open={showAuthModal} onClose={handleCloseAuthModal} />
 
          {/* Cart Panel */}
-         <CartPanel
+         < CartPanel
             show={showCartPanel}
             handleClose={() => setShowCartPanel(false)}
          />
