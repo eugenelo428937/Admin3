@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
    Box,
    Card,
@@ -86,18 +86,30 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
    const [isLoading, setIsLoading] = useState(false);
    const [showWorkSection, setShowWorkSection] = useState(false);
    const [hasUserInteracted, setHasUserInteracted] = useState(false);
+   const hasUserInteractedRef = useRef(false);
    const [stepData, setStepData] = useState({});
+
+   // Ref to avoid stale closure in handleStepDataChange (synced after initialFormData declaration)
+   const initialFormDataRef = useRef(null);
 
    const handleStepDataChange = useCallback((stepKey, data) => {
       setStepData(prev => ({ ...prev, [stepKey]: data }));
 
-      // Mark user interaction when step data changes
-      if (!hasUserInteracted) {
+      // Mark user interaction when step data changes (using ref to avoid dep)
+      if (!hasUserInteractedRef.current) {
+         hasUserInteractedRef.current = true;
          setHasUserInteracted(true);
       }
 
       // Merge into flat form for backward compatibility with existing submit logic
       setForm(prev => {
+         let changed = false;
+         Object.keys(data).forEach(key => {
+            if (!key.startsWith('_') && prev[key] !== data[key]) {
+               changed = true;
+            }
+         });
+         if (!changed) return prev;
          const newForm = { ...prev };
          Object.keys(data).forEach(key => {
             if (!key.startsWith('_')) {
@@ -108,12 +120,12 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
       });
 
       // Track changed fields in profile mode
-      if (isProfileMode && initialFormData) {
+      if (isProfileMode && initialFormDataRef.current) {
          setChangedFields(prev => {
             const updated = new Set(prev);
             Object.keys(data).forEach(key => {
                if (!key.startsWith('_')) {
-                  if (initialFormData[key] !== data[key]) {
+                  if (initialFormDataRef.current[key] !== data[key]) {
                      updated.add(key);
                   } else {
                      updated.delete(key);
@@ -139,7 +151,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
       if (data._isChangingPassword !== undefined) {
          setIsChangingPassword(data._isChangingPassword);
       }
-   }, [hasUserInteracted, isProfileMode, initialFormData]);
+   }, [isProfileMode]);
    const [countryList, setCountryList] = useState([]);
    const [homePhoneCountry, setHomePhoneCountry] = useState(null);
    const [mobilePhoneCountry, setMobilePhoneCountry] = useState(null);
@@ -151,6 +163,7 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
    const [isLoadingProfile, setIsLoadingProfile] = useState(false);
    const [profileLoadError, setProfileLoadError] = useState(null);
    const [initialFormData, setInitialFormData] = useState(null);
+   useEffect(() => { initialFormDataRef.current = initialFormData; }, [initialFormData]);
 
    // Address editing states (controls readonly vs editable mode in profile)
    const [isEditingHomeAddress, setIsEditingHomeAddress] = useState(!isProfileMode);
@@ -1301,6 +1314,19 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
       return (currentStep / 5) * 100;
    };
 
+   // Stable callbacks for step data changes (prevent infinite render loops)
+   const handlePersonalChange = useCallback((data) => handleStepDataChange('personal', data), [handleStepDataChange]);
+   const handleHomeAddressChange = useCallback((data) => handleStepDataChange('homeAddress', data), [handleStepDataChange]);
+   const handleWorkAddressChange = useCallback((data) => {
+      const { showWorkSection: showWork, ...rest } = data;
+      if (showWork !== undefined) setShowWorkSection(showWork);
+      handleStepDataChange('workAddress', rest);
+   }, [handleStepDataChange]);
+   const handlePreferencesChange = useCallback((data) => handleStepDataChange('preferences', data), [handleStepDataChange]);
+   const handleSecurityChange = useCallback((data) => handleStepDataChange('security', data), [handleStepDataChange]);
+   const emptyErrors = useMemo(() => ({}), []);
+   const stepErrors = hasUserInteracted ? fieldErrors : emptyErrors;
+
    const renderStepContent = () => {
       switch (currentStep) {
          case 1:
@@ -1314,8 +1340,8 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      home_phone: form.home_phone,
                      mobile_phone: form.mobile_phone,
                   }}
-                  onDataChange={(data) => handleStepDataChange('personal', data)}
-                  errors={hasUserInteracted ? fieldErrors : {}}
+                  onDataChange={handlePersonalChange}
+                  errors={stepErrors}
                   mode={mode}
                />
             );
@@ -1325,8 +1351,8 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                   initialData={Object.fromEntries(
                      Object.entries(form).filter(([k]) => k.startsWith('home_'))
                   )}
-                  onDataChange={(data) => handleStepDataChange('homeAddress', data)}
-                  errors={hasUserInteracted ? fieldErrors : {}}
+                  onDataChange={handleHomeAddressChange}
+                  errors={stepErrors}
                   mode={mode}
                />
             );
@@ -1339,12 +1365,8 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                         Object.entries(form).filter(([k]) => k.startsWith('work_'))
                      ),
                   }}
-                  onDataChange={(data) => {
-                     const { showWorkSection: showWork, ...rest } = data;
-                     if (showWork !== undefined) setShowWorkSection(showWork);
-                     handleStepDataChange('workAddress', rest);
-                  }}
-                  errors={hasUserInteracted ? fieldErrors : {}}
+                  onDataChange={handleWorkAddressChange}
+                  errors={stepErrors}
                   mode={mode}
                />
             );
@@ -1355,8 +1377,8 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      send_invoices_to: form.send_invoices_to,
                      send_study_material_to: form.send_study_material_to,
                   }}
-                  onDataChange={(data) => handleStepDataChange('preferences', data)}
-                  errors={hasUserInteracted ? fieldErrors : {}}
+                  onDataChange={handlePreferencesChange}
+                  errors={stepErrors}
                   mode={mode}
                   hasWorkAddress={showWorkSection}
                />
@@ -1368,8 +1390,8 @@ const UserFormWizard = ({ mode = "registration", initialData = null, onSuccess, 
                      password: form.password,
                      confirmPassword: form.confirmPassword,
                   }}
-                  onDataChange={(data) => handleStepDataChange('security', data)}
-                  errors={hasUserInteracted ? fieldErrors : {}}
+                  onDataChange={handleSecurityChange}
+                  errors={stepErrors}
                   mode={mode}
                />
             );
