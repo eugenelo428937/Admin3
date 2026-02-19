@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Box, Typography, TextField, Grid, Divider, Autocomplete,
 } from "@mui/material";
@@ -42,8 +42,14 @@ const PersonalInfoStep = ({
     mobile_phone: { isValid: true, error: null },
   });
 
-  // Initialize from initialData when it changes
+  // Initialize from initialData only on subsequent changes (not initial mount,
+  // since useState already applies initialData via spread)
+  const isInitialMount = useRef(true);
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     if (initialData && Object.keys(initialData).length > 0) {
       setForm(prev => ({ ...prev, ...initialData }));
     }
@@ -77,7 +83,7 @@ const PersonalInfoStep = ({
       },
       _phoneValidation: phoneValidation,
     });
-  }, [form, homePhoneCountry, mobilePhoneCountry, phoneValidation]);
+  }, [form, homePhoneCountry, mobilePhoneCountry, phoneValidation, onDataChange]);
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
