@@ -5,15 +5,30 @@ import
     CardContent,
     Container,
     Grid,
-    Paper,
     Stack,
     Typography,
-    useTheme
+    Paper,
 } from "@mui/material";
-import { alpha, darken } from "@mui/material/styles";
+import StarIcon from "@mui/icons-material/Star";
 import TextButton from "../../theme/components/styled-components/TextButton.styled";
-import { Button, ContainedButton, OutlinedButton } from "../../theme/components/styled-components/Button.styled";
+import { Button } from "../../theme/components/styled-components/Button.styled";
+import ContainedButton from "../../theme/components/styled-components/ContainedButton.styled";
+import OutlinedButton from "../../theme/components/styled-components/OutlinedButton.styled";
+import { IconButton } from "../../theme/components/styled-components/IconButton.styled";
 
+
+const BUTTON_VARIANTS = [
+    { variant: 'text', label: 'Text' },
+    { variant: 'contained', label: 'Contained' },
+    { variant: 'outlined', label: 'Outline' },
+    { variant: 'icon', label: 'Icon' },
+];
+
+const BUTTON_SIZES = [
+    { size: 'small', label: 'Small' },
+    { size: 'medium', label: 'Medium' },
+    { size: 'large', label: 'Large' },
+];
 
 const BUTTON_STATES = [
     { state: 'default', label: 'Default' },
@@ -23,127 +38,32 @@ const BUTTON_STATES = [
     { state: 'disabled', label: 'Disabled' },
 ];
 
-const BUTTON_VARIANTS = [
-    { variant: 'text', label: 'Text Buttons', showColors: false },
-    { variant: 'contained', label: 'Contained Buttons', showColors: true },
-    { variant: 'outlined', label: 'Outlined Buttons', showColors: true },
-];
-
-const BUTTON_SIZES = [
-    { size: 'small', label: 'Small' },
-    { size: 'medium', label: 'Medium' },
-    { size: 'large', label: 'Large' },
-];
-
-const BUTTON_COLOR_ROWS = [
-    [
-        { color: 'primary', label: 'Primary' },
-        { color: 'secondary', label: 'Secondary' },
-        { color: 'tertiary', label: 'Tertiary' },
-    ],
-    [
-        { color: 'error', label: 'Error' },
-        { color: 'warning', label: 'Warning' },
-        { color: 'info', label: 'Info' },
-        { color: 'success', label: 'Success' },
-    ],
+const BUTTON_COLORS = [
+    { color: 'primary', label: 'Primary' },
+    { color: 'secondary', label: 'Secondary' },
+    { color: 'tertiary', label: 'Tertiary' },
+    { color: 'warning', label: 'Warning' },
+    { color: 'error', label: 'Error' },
+    { color: 'info', label: 'Info' },
+    { color: 'success', label: 'Success' },
 ];
 
 /**
- * Returns sx styles that force a button's visual pseudo-state as its
- * resting appearance. Reads colors and opacities from the theme so the
- * style guide stays in sync with any theme changes.
- */
-const getButtonStateStyles = (variant, state, theme, color = 'primary') =>
-{
-    const p = theme.palette;
-    const c = p[color] || p.primary;
-
-    const focusRing = {
-        outline: `2px solid ${c.main}`,
-        outlineOffset: '2px',
-    };
-
-    const styles = {
-        contained: {
-            hover: {
-                backgroundColor: c.dark,
-                boxShadow: theme.shadows[1],
-                '&:hover': { backgroundColor: c.dark, boxShadow: theme.shadows[2], },
-            },
-            active: {
-                backgroundColor: darken(c.dark, 0.15),
-                boxShadow: theme.shadows[3],
-                '&:hover': { backgroundColor: darken(c.dark, 0.15), boxShadow: theme.shadows[4], },
-            },
-            focus: {
-                ...focusRing,
-                '&.Mui-focusVisible': focusRing,
-            },
-        },
-        text: {
-            hover: {
-                backgroundColor: alpha(c.main, p.action.hoverOpacity),
-                '&:hover': { backgroundColor: alpha(c.main, p.action.hoverOpacity) },
-            },
-            active: {
-                backgroundColor: alpha(c.main, p.action.selectedOpacity),
-                '&:hover': { backgroundColor: alpha(c.main, p.action.selectedOpacity) },
-            },
-            focus: {
-                ...focusRing,
-                '&.Mui-focusVisible': focusRing,
-            },
-        },
-        outlined: {
-            hover: {
-                backgroundColor: alpha(c.main, p.action.hoverOpacity),
-                borderColor: c.main,
-                '&:hover': {
-                    backgroundColor: alpha(c.main, p.action.hoverOpacity),
-                    borderColor: c.main,
-                },
-            },
-            active: {
-                backgroundColor: alpha(c.main, p.action.selectedOpacity),
-                borderColor: c.main,
-                '&:hover': {
-                    backgroundColor: alpha(c.main, p.action.selectedOpacity),
-                    borderColor: c.main,
-                },
-            },
-            focus: {
-                ...focusRing,
-                borderColor: c.main,
-                '&.Mui-focusVisible': {
-                    ...focusRing,
-                    borderColor: c.main,
-                },
-            },
-        },
-    };
-
-    return styles[variant]?.[state] || {};
-};
-
-/**
- * Maps variant to the correct styled component:
- * - text → TextButton (wraps children in Typography for underline effect)
- * - contained → ContainedButton
- * - outlined → OutlinedButton
+ * Maps variant to the correct styled component.
+ * Each component supports the $forcedState transient prop
+ * for rendering forced visual states in the style guide.
  */
 const VARIANT_COMPONENT = {
     text: TextButton,
     contained: ContainedButton,
     outlined: OutlinedButton,
+    icon: IconButton,
 };
 
 /**
- * Renders a Button forced into a specific visual state.
- * - default: normal resting appearance
- * - hover / active: uses getButtonStateStyles to override background/shadow
- * - focus: applies MUI's Mui-focusVisible class for the focus ring
- * - disabled: sets the disabled prop
+ * Renders a Button forced into a specific visual state via $forcedState.
+ * All state logic (hover, active, focus, disabled) is handled
+ * by the styled components — no manual sx or className needed.
  */
 const StateButton = ({ variant, forcedState, size, color, children }) =>
 {
@@ -152,101 +72,129 @@ const StateButton = ({ variant, forcedState, size, color, children }) =>
     if (size) btnProps.size = size;
     if (color) btnProps.color = color;
 
-    if (forcedState === 'disabled')
-    {
-        return <Btn {...btnProps} disabled>{children}</Btn>;
-    }
-    if (forcedState === 'hover' || forcedState === 'active' || forcedState === 'focus')
-    {
-        return (
-            <Btn
-                {...btnProps}
-                className={forcedState === 'focus' ? 'Mui-focusVisible' : undefined}
-                sx={(theme) => getButtonStateStyles(variant, forcedState, theme, color)}
-            >
-                {children}
-            </Btn>
-        );
-    }
-    return <Btn {...btnProps}>{children}</Btn>;
+    return (
+        <Btn {...btnProps} $forcedState={forcedState}>
+            {children}
+        </Btn>
+    );
 };
+
+const ButtonContent = ({ variant }) =>
+    variant === 'icon' ? <StarIcon fontSize="small" /> : 'Text';
+
+const SectionHeader = ({ children }) => (
+    <Typography variant="h6" sx={{ mb: 2 }}>{children}</Typography>
+);
+
+const ColumnHeader = ({ children }) => (
+    <Typography variant="body2" fontWeight="bold" align="center">{children}</Typography>
+);
+
+const RowLabel = ({ children }) => (
+    <Typography variant="body2" color="text.secondary">{children}</Typography>
+);
 
 const Sandbox = () =>
 {
-    const theme = useTheme();
     return (
-
-        <Container sx={{ mt: 3}} disableGutters maxWidth="xl">
-            <Grid container columns={12} rowSpacing={2} columnSpacing={2}>
-                {BUTTON_VARIANTS.map(({ variant, label, showColors }) => (
-                    <Fragment key={variant}>
-                        {/* Variant header */}
-                        <Grid size={6} sx={{ mt: 3 }}>
-                            <Card elevation={3} sx={{ p: 2, alignItems: 'center', justifyItems: 'center', width:'700px' }}>
-                                <CardContent sx={{ alignItems: 'center', justifyItems: 'center', width:'100%' }}>
-                                    <Grid size={12}>
-                                        <Typography variant="h6">{label}</Typography>
+        <Container sx={{ mt: 3 }} disableGutters maxWidth="xl">
+            <Typography variant="h5" sx={{ mb: 3 }}>Button</Typography>
+            <Paper>
+                <Stack spacing={4} sx={{ maxWidth: "800px", display: "flex", justifyContent: "center" }}>
+                    {/* ── Sizes ── */}
+                    <Card elevation={3} sx={{ p: 2 }}>
+                        <CardContent>
+                            <SectionHeader>Sizes</SectionHeader>
+                            <Grid container columns={5} rowSpacing={3} columnSpacing={2} alignItems="center">
+                                {/* Header row */}
+                                <Grid size={1} />
+                                {BUTTON_VARIANTS.map(({ label }) => (
+                                    <Grid key={label} size={1}>
+                                        <ColumnHeader>{label}</ColumnHeader>
                                     </Grid>
-                                    {/* Size variant rows */}
-                                    {BUTTON_SIZES.map(({ size, label: sizeLabel}) => (
-                                        <Fragment key={size}>
-                                            <Grid size={2} sx={{ alignContent: 'center' }}>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    {sizeLabel}
-                                                </Typography>
+                                ))}
+                                {/* Data rows */}
+                                {BUTTON_SIZES.map(({ size, label }) => (
+                                    <Fragment key={size}>
+                                        <Grid size={1}>
+                                            <RowLabel>{label}</RowLabel>
+                                        </Grid>
+                                        {BUTTON_VARIANTS.map(({ variant }) => (
+                                            <Grid key={variant} size={1} sx={{ textAlign: 'center' }}>
+                                                <StateButton variant={variant} size={size} forcedState="default">
+                                                    <ButtonContent variant={variant} />
+                                                </StateButton>
                                             </Grid>
-                                            <Grid size={10} sx={{ alignContent: 'center' }}>
-                                                <Grid container columns={10} rowSpacing={2} columnSpacing={2}>
-                                                    {BUTTON_STATES.map(({ state, label: stateLabel }) => (
-                                                        <Grid key={state} size={2}>
-                                                            <Stack sx={{ gap: 1, alignItems: 'center' }}>
-                                                                <StateButton variant={variant} size={size} forcedState={state}>
-                                                                    Text
-                                                                </StateButton>
-                                                                <Typography variant="caption2">{stateLabel}</Typography>
-                                                            </Stack>
-                                                        </Grid>
-                                                    ))}
-                                                </Grid>
-                                            </Grid>
-                                        </Fragment>
-                                    ))}
+                                        ))}
+                                    </Fragment>
+                                ))}
+                            </Grid>
+                        </CardContent>
+                    </Card>
 
-                                    {/* Color variant rows (contained & outlined only) */}
-                                    {showColors && BUTTON_COLOR_ROWS.map((colorRow, rowIdx) => (
-                                        <Fragment key={rowIdx}>
-                                            <Grid size={2} sx={{ alignContent: 'center' }}>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    Colors
-                                                </Typography>
+                    {/* ── States ── */}
+                    <Card elevation={3} sx={{ p: 2 }}>
+                        <CardContent>
+                            <SectionHeader>States</SectionHeader>
+                            <Grid container columns={6} rowSpacing={3} columnSpacing={2} alignItems="center">
+                                {/* Header row */}
+                                <Grid size={1} />
+                                {BUTTON_STATES.map(({ label }) => (
+                                    <Grid key={label} size={1}>
+                                        <ColumnHeader>{label}</ColumnHeader>
+                                    </Grid>
+                                ))}
+                                {/* Data rows */}
+                                {BUTTON_VARIANTS.map(({ variant, label }) => (
+                                    <Fragment key={variant}>
+                                        <Grid size={1}>
+                                            <RowLabel>{label}</RowLabel>
+                                        </Grid>
+                                        {BUTTON_STATES.map(({ state }) => (
+                                            <Grid key={state} size={1} sx={{ textAlign: 'center' }}>
+                                                <StateButton variant={variant} size="small" forcedState={state}>
+                                                    <ButtonContent variant={variant} />
+                                                </StateButton>
                                             </Grid>
-                                            <Grid size={10} sx={{ alignContent: 'center' }}>
-                                                <Grid container columns={12} rowSpacing={2} columnSpacing={2}>
-                                                    {colorRow.map(({ color, label: colorLabel }) => (
-                                                        <Grid key={color} size={3}>
-                                                            <Stack sx={{ gap: 1, alignItems: 'center' }}>
-                                                                <Button variant={variant} color={color} size="small">
-                                                                    {colorLabel}
-                                                                </Button>
-                                                            </Stack>
-                                                        </Grid>
-                                                    ))}
-                                                </Grid>
-                                                {/* Fill remaining columns to keep grid aligned */}
-                                                {
-                                                    Array.from({ length: 12 - colorRow.length }).map((_, i) => (
-                                                        <Grid key={`empty-${i}`} size={1} />
-                                                    ))
-                                                }
+                                        ))}
+                                    </Fragment>
+                                ))}
+                            </Grid>
+                        </CardContent>
+                    </Card>
+
+                    {/* ── Colours ── */}
+                    <Card elevation={3} sx={{ p: 2 }}>
+                        <CardContent>
+                            <SectionHeader>Colours</SectionHeader>
+                            <Grid container columns={5} rowSpacing={2} columnSpacing={2} alignItems="center">
+                                {/* Header row */}
+                                <Grid size={1} />
+                                {BUTTON_VARIANTS.map(({ label }) => (
+                                    <Grid key={label} size={1}>
+                                        <ColumnHeader>{label}</ColumnHeader>
+                                    </Grid>
+                                ))}
+                                {/* Data rows */}
+                                {BUTTON_COLORS.map(({ color, label }) => (
+                                    <Fragment key={color}>
+                                        <Grid size={1}>
+                                            <RowLabel>{label}</RowLabel>
+                                        </Grid>
+                                        {BUTTON_VARIANTS.map(({ variant }) => (
+                                            <Grid key={variant} size={1} sx={{ textAlign: 'center' }}>
+                                                <StateButton variant={variant} size="small" color={color} forcedState="default">
+                                                    <ButtonContent variant={variant} />
+                                                </StateButton>
                                             </Grid>
-                                        </Fragment>
-                                    ))}
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                    </Fragment>
-                ))}
-            </Grid>
+                                        ))}
+                                    </Fragment>
+                                ))}
+                            </Grid>
+                        </CardContent>
+                    </Card>
+                </Stack>
+            </Paper>
         </Container>
     );
 };

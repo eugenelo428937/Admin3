@@ -22,7 +22,7 @@ export
   fontWeights,
   fontSizes,
   lineHeights,
-  letterSpacing,
+  letterSpacings,
   scaleMultipliers,
 } from './typography';
 
