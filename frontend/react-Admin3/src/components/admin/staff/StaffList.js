@@ -92,9 +92,9 @@ const AdminStaffList = () => {
               {staff.map((member) => (
                 <TableRow key={member.id} hover>
                   <TableCell>{member.id}</TableCell>
-                  <TableCell>{member.user_email}</TableCell>
-                  <TableCell>{member.user_first_name}</TableCell>
-                  <TableCell>{member.user_last_name}</TableCell>
+                  <TableCell>{member.user_detail?.email}</TableCell>
+                  <TableCell>{member.user_detail?.first_name}</TableCell>
+                  <TableCell>{member.user_detail?.last_name}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 1 }}>
                       <Button

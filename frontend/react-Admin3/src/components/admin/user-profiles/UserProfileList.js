@@ -79,9 +79,9 @@ const AdminUserProfileList = () => {
               {profiles.map((profile) => (
                 <TableRow key={profile.id} hover>
                   <TableCell>{profile.id}</TableCell>
-                  <TableCell>{profile.user_email}</TableCell>
-                  <TableCell>{profile.user_first_name}</TableCell>
-                  <TableCell>{profile.user_last_name}</TableCell>
+                  <TableCell>{profile.user?.email}</TableCell>
+                  <TableCell>{profile.user?.first_name}</TableCell>
+                  <TableCell>{profile.user?.last_name}</TableCell>
                   <TableCell>{profile.title}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 1 }}>
