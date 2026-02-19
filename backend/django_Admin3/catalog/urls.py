@@ -30,6 +30,7 @@ from .views import (
     ProductBundleProductViewSet,
     RecommendationViewSet,
     SubjectAdminViewSet,
+    SessionSetupViewSet,
     navigation_data,
     fuzzy_search,
     advanced_product_search,
@@ -50,6 +51,7 @@ router.register(r'product-bundles', ProductBundleAdminViewSet, basename='product
 router.register(r'bundle-products', ProductBundleProductViewSet, basename='bundle-product')
 router.register(r'recommendations', RecommendationViewSet, basename='recommendation')
 router.register(r'admin-subjects', SubjectAdminViewSet, basename='admin-subject')
+router.register(r'session-setup', SessionSetupViewSet, basename='session-setup')
 
 urlpatterns = [
     # Function-based views

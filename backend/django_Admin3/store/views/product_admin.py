@@ -47,6 +47,11 @@ class StoreProductAdminViewSet(viewsets.ModelViewSet):
             qs = qs.filter(
                 product_product_variation__product_id=catalog_product_id
             )
+        exam_session_id = self.request.query_params.get('exam_session_id')
+        if exam_session_id:
+            qs = qs.filter(
+                exam_session_subject__exam_session_id=exam_session_id
+            )
         return qs.order_by('product_code')
 
     def destroy(self, request, *args, **kwargs):

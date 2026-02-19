@@ -25,6 +25,9 @@ from .product_bundle_views import ProductBundleAdminViewSet, ProductBundleProduc
 from .recommendation_views import RecommendationViewSet
 from .subject_admin_views import SubjectAdminViewSet
 
+# Session setup views
+from .session_setup_views import SessionSetupViewSet
+
 # Function-based view imports
 from .navigation_views import navigation_data, fuzzy_search, advanced_product_search
 
@@ -42,6 +45,8 @@ __all__ = [
     'ProductBundleProductViewSet',
     'RecommendationViewSet',
     'SubjectAdminViewSet',
+    # Session setup views
+    'SessionSetupViewSet',
     # Function-based views
     'navigation_data',
     'fuzzy_search',

@@ -433,6 +433,101 @@
       }
     },
     {
+      "description": "a request for a single store product",
+      "providerStates": [
+        {
+          "name": "store product exists"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/store/products/1/"
+      },
+      "response": {
+        "body": {
+          "created_at": "2026-02-16T10:00:00Z",
+          "exam_session_subject": 1,
+          "id": 1,
+          "is_active": true,
+          "product_code": "CM2/PC/2025-04",
+          "product_product_variation": 1,
+          "updated_at": "2026-02-16T10:00:00Z"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.created_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.exam_session_subject": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.is_active": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.product_code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.product_product_variation": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.updated_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
       "description": "a request for a single user profile",
       "providerStates": [
         {
@@ -2917,6 +3012,264 @@
       }
     },
     {
+      "description": "a request for store bundle products",
+      "providerStates": [
+        {
+          "name": "store bundle products exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/store/bundle-products/"
+      },
+      "response": {
+        "body": [
+          {
+            "bundle": 1,
+            "default_price_type": "standard",
+            "id": 1,
+            "is_active": true,
+            "product": 1,
+            "quantity": 1,
+            "sort_order": 0
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].bundle": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].default_price_type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].is_active": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].product": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].quantity": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].sort_order": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for store bundles list",
+      "providerStates": [
+        {
+          "name": "store bundles exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/store/bundles/"
+      },
+      "response": {
+        "body": [
+          {
+            "bundle_template": 1,
+            "display_order": 0,
+            "exam_session_subject": 1,
+            "id": 1,
+            "is_active": true
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].bundle_template": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].display_order": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].exam_session_subject": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].is_active": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for store prices",
+      "providerStates": [
+        {
+          "name": "store prices exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/store/prices/"
+      },
+      "response": {
+        "body": [
+          {
+            "amount": "59.99",
+            "currency": "GBP",
+            "id": 1,
+            "price_type": "standard",
+            "product": 1
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].amount": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].currency": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].price_type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].product": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
       "description": "a request for tutorial events list",
       "providerStates": [
         {
@@ -3276,6 +3629,195 @@
           }
         },
         "status": 200
+      }
+    },
+    {
+      "description": "a request to copy products from previous session",
+      "providerStates": [
+        {
+          "name": "session setup data exists for copy"
+        }
+      ],
+      "request": {
+        "body": {
+          "new_exam_session_id": 42,
+          "previous_exam_session_id": 41
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.new_exam_session_id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.previous_exam_session_id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            }
+          }
+        },
+        "method": "POST",
+        "path": "/api/catalog/session-setup/copy-products/"
+      },
+      "response": {
+        "body": {
+          "bundle_products_created": 142,
+          "bundles_created": 28,
+          "message": "Successfully created 95 products, 285 prices, and 28 bundles for session 2026-09.",
+          "prices_created": 285,
+          "products_created": 95,
+          "skipped_subjects": [
+            "SP9"
+          ]
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.bundle_products_created": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.bundles_created": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.message": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.prices_created": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.products_created": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.skipped_subjects": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.skipped_subjects[*]": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 201
+      }
+    },
+    {
+      "description": "a request to copy products with missing ESS",
+      "providerStates": [
+        {
+          "name": "session exists but has no exam session subjects"
+        }
+      ],
+      "request": {
+        "body": {
+          "new_exam_session_id": 99,
+          "previous_exam_session_id": 41
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.new_exam_session_id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.previous_exam_session_id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            }
+          }
+        },
+        "method": "POST",
+        "path": "/api/catalog/session-setup/copy-products/"
+      },
+      "response": {
+        "body": {
+          "new_exam_session_id": [
+            "No exam session subjects found for session 99. Complete Step 2 first."
+          ]
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.new_exam_session_id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.new_exam_session_id[*]": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 400
       }
     },
     {
