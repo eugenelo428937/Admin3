@@ -57,7 +57,10 @@ const WorkAddressStep = ({
       return;
     }
     if (initialData && Object.keys(initialData).length > 0) {
-      setForm(prev => ({ ...prev, ...initialData }));
+      setForm(prev => {
+        const hasChanges = Object.keys(initialData).some(key => prev[key] !== initialData[key]);
+        return hasChanges ? { ...prev, ...initialData } : prev;
+      });
       if (initialData.showWorkSection !== undefined) {
         setShowWorkSection(initialData.showWorkSection);
       }
