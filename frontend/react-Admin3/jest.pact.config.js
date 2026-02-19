@@ -23,9 +23,9 @@ module.exports = {
   // Don't use CRA's module name mapper (no CSS/image imports in Pact tests)
   moduleNameMapper: {},
 
-  // Same node_modules transform ignore as main config
+  // Transform ESM packages (axios v1+, @pact-foundation) for Jest compatibility
   transformIgnorePatterns: [
-    'node_modules/(?!(@reduxjs/toolkit|@standard-schema|msw|@mswjs)/)',
+    'node_modules/(?!(@reduxjs/toolkit|@standard-schema|msw|@mswjs|axios|@pact-foundation)/)',
   ],
 
   // Pact tests run in Node (not jsdom) since they're API-only

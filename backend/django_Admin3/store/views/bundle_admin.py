@@ -38,6 +38,15 @@ class StoreBundleAdminViewSet(viewsets.ModelViewSet):
     ).all()
     permission_classes = [IsSuperUser]
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        exam_session_id = self.request.query_params.get('exam_session_id')
+        if exam_session_id:
+            qs = qs.filter(
+                exam_session_subject__exam_session_id=exam_session_id
+            )
+        return qs
+
     def get_serializer_class(self):
         if self.action == 'list':
             return StoreBundleAdminListSerializer
