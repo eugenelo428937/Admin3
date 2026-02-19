@@ -110,6 +110,24 @@ const theme = createTheme({
     // Navigation semantic tokens
     // Usage: sx={{ color: 'navigation.text.primary' }}
     navigation: navigation,
+
+    action: {
+      hoverOpacity: 0.08,      // default is 0.04
+      activeOpacity: 0.1,   // default is 0.08
+      focused : {
+        opacity : 0.1,
+        ringOpacity : 0.6,
+      },
+      disabled : {
+        text : {
+          colour : "#1D1B20",
+          opacity: 0.38,
+        },
+        container : {
+          opacity: 0.1,
+        }        
+      }
+    },
   },
 
   // Calculate 8 * (1.618 ^ (factor - 1)) for exponential growth
