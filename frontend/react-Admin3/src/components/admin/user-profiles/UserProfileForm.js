@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Container, Stepper, Step, StepLabel, Button, Alert,
   Box, Typography, CircularProgress, Paper, Snackbar,
@@ -55,6 +55,63 @@ const AdminUserProfileForm = () => {
     }
   }, []);
 
+  // Transform profile data into step-compatible slices (memoized to prevent infinite render loops)
+  // All hooks MUST be before any conditional returns to satisfy React's rules of hooks
+  const personalData = useMemo(() => profileData ? {
+    title: profileData.title || '',
+    first_name: profileData.user?.first_name || '',
+    last_name: profileData.user?.last_name || '',
+    email: profileData.user?.email || '',
+    home_phone: '',
+    mobile_phone: '',
+  } : {}, [profileData]);
+
+  const homeAddressData = useMemo(() => {
+    const homeAddress = profileData?.addresses?.find(a => a.address_type === 'HOME') || {};
+    return {
+      home_building: homeAddress.building || '',
+      home_address: homeAddress.address_line_1 || '',
+      home_district: homeAddress.district || '',
+      home_city: homeAddress.city || '',
+      home_county: homeAddress.county || '',
+      home_postal_code: homeAddress.postcode || '',
+      home_state: homeAddress.state || '',
+      home_country: homeAddress.country || '',
+    };
+  }, [profileData]);
+
+  const workAddressData = useMemo(() => {
+    const workAddress = profileData?.addresses?.find(a => a.address_type === 'WORK') || {};
+    return {
+      showWorkSection: !!workAddress.id,
+      work_company: workAddress.company || '',
+      work_department: workAddress.department || '',
+      work_building: workAddress.building || '',
+      work_address: workAddress.address_line_1 || '',
+      work_district: workAddress.district || '',
+      work_city: workAddress.city || '',
+      work_county: workAddress.county || '',
+      work_postal_code: workAddress.postcode || '',
+      work_state: workAddress.state || '',
+      work_country: workAddress.country || '',
+      work_phone: '',
+      work_email: '',
+    };
+  }, [profileData]);
+
+  const preferencesData = useMemo(() => ({
+    send_invoices_to: profileData?.send_invoices_to || 'HOME',
+    send_study_material_to: profileData?.send_study_material_to || 'HOME',
+  }), [profileData]);
+
+  // Stable callbacks for step data changes
+  const handlePersonalChange = useCallback((data) => handleStepDataChange('personal', data), [handleStepDataChange]);
+  const handleHomeAddressChange = useCallback((data) => handleStepDataChange('homeAddress', data), [handleStepDataChange]);
+  const handleWorkAddressChange = useCallback((data) => handleStepDataChange('workAddress', data), [handleStepDataChange]);
+  const handlePreferencesChange = useCallback((data) => handleStepDataChange('preferences', data), [handleStepDataChange]);
+
+  const emptyErrors = useMemo(() => ({}), []);
+
   const handleSave = async () => {
     setIsSubmitting(true);
     setError(null);
@@ -79,55 +136,14 @@ const AdminUserProfileForm = () => {
   if (!isSuperuser) return <Navigate to="/" replace />;
   if (loading) return <Box sx={{ textAlign: 'center', mt: 5 }}><CircularProgress /></Box>;
 
-  // Transform profile data into step-compatible slices
-  const personalData = profileData ? {
-    title: profileData.title || '',
-    first_name: profileData.user?.first_name || '',
-    last_name: profileData.user?.last_name || '',
-    email: profileData.user?.email || '',
-    home_phone: '',
-    mobile_phone: '',
-  } : {};
-
-  // Extract home address fields from addresses array
-  const homeAddress = profileData?.addresses?.find(a => a.address_type === 'HOME') || {};
-  const homeAddressData = {
-    home_building: homeAddress.building || '',
-    home_address: homeAddress.address_line_1 || '',
-    home_district: homeAddress.district || '',
-    home_city: homeAddress.city || '',
-    home_county: homeAddress.county || '',
-    home_postal_code: homeAddress.postcode || '',
-    home_state: homeAddress.state || '',
-    home_country: homeAddress.country || '',
-  };
-
-  // Extract work address fields
-  const workAddress = profileData?.addresses?.find(a => a.address_type === 'WORK') || {};
-  const workAddressData = {
-    showWorkSection: !!workAddress.id,
-    work_company: workAddress.company || '',
-    work_department: workAddress.department || '',
-    work_building: workAddress.building || '',
-    work_address: workAddress.address_line_1 || '',
-    work_district: workAddress.district || '',
-    work_city: workAddress.city || '',
-    work_county: workAddress.county || '',
-    work_postal_code: workAddress.postcode || '',
-    work_state: workAddress.state || '',
-    work_country: workAddress.country || '',
-    work_phone: '',
-    work_email: '',
-  };
-
   const renderStepContent = () => {
     switch (activeStep) {
       case 0:
         return (
           <PersonalInfoStep
             initialData={personalData}
-            onDataChange={(data) => handleStepDataChange('personal', data)}
-            errors={{}}
+            onDataChange={handlePersonalChange}
+            errors={emptyErrors}
             mode="admin"
           />
         );
@@ -135,8 +151,8 @@ const AdminUserProfileForm = () => {
         return (
           <HomeAddressStep
             initialData={homeAddressData}
-            onDataChange={(data) => handleStepDataChange('homeAddress', data)}
-            errors={{}}
+            onDataChange={handleHomeAddressChange}
+            errors={emptyErrors}
             mode="admin"
           />
         );
@@ -144,20 +160,17 @@ const AdminUserProfileForm = () => {
         return (
           <WorkAddressStep
             initialData={workAddressData}
-            onDataChange={(data) => handleStepDataChange('workAddress', data)}
-            errors={{}}
+            onDataChange={handleWorkAddressChange}
+            errors={emptyErrors}
             mode="admin"
           />
         );
       case 3:
         return (
           <PreferencesStep
-            initialData={{
-              send_invoices_to: profileData?.send_invoices_to || 'HOME',
-              send_study_material_to: profileData?.send_study_material_to || 'HOME',
-            }}
-            onDataChange={(data) => handleStepDataChange('preferences', data)}
-            errors={{}}
+            initialData={preferencesData}
+            onDataChange={handlePreferencesChange}
+            errors={emptyErrors}
             mode="admin"
             hasWorkAddress={hasWorkAddress}
           />

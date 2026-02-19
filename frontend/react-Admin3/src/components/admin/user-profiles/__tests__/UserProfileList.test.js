@@ -29,16 +29,12 @@ const theme = createTheme();
 const mockProfiles = [
   {
     id: '1',
-    user_email: 'john@example.com',
-    user_first_name: 'John',
-    user_last_name: 'Doe',
+    user: { email: 'john@example.com', first_name: 'John', last_name: 'Doe' },
     title: 'Mr',
   },
   {
     id: '2',
-    user_email: 'jane@example.com',
-    user_first_name: 'Jane',
-    user_last_name: 'Smith',
+    user: { email: 'jane@example.com', first_name: 'Jane', last_name: 'Smith' },
     title: 'Ms',
   },
 ];

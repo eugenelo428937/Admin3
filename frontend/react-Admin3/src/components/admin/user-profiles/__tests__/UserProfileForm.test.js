@@ -33,9 +33,15 @@ jest.mock('../../../../services/userProfileService', () => ({
     update: jest.fn(),
     getAddresses: jest.fn(),
     getContacts: jest.fn(),
-    getEmails: jest.fn(),
   },
 }));
+
+// Mock ValidatedPhoneInput to avoid country API fetch
+jest.mock('../../../User/ValidatedPhoneInput', () => {
+  return function MockValidatedPhoneInput({ label, name, value, onChange }) {
+    return <input aria-label={label} name={name} value={value || ''} onChange={onChange} />;
+  };
+});
 
 import userProfileService from '../../../../services/userProfileService';
 
@@ -60,9 +66,9 @@ describe('AdminUserProfileForm', () => {
   const mockProfileData = {
     id: '1',
     title: 'Mr',
-    send_invoices_to: 'Home',
-    send_study_material_to: 'Office',
-    remarks: 'VIP student',
+    user: { first_name: 'John', last_name: 'Doe', email: 'john@example.com' },
+    send_invoices_to: 'HOME',
+    send_study_material_to: 'HOME',
   };
 
   beforeEach(() => {
@@ -75,7 +81,6 @@ describe('AdminUserProfileForm', () => {
     userProfileService.getById.mockResolvedValue(mockProfileData);
     userProfileService.getAddresses.mockResolvedValue([]);
     userProfileService.getContacts.mockResolvedValue([]);
-    userProfileService.getEmails.mockResolvedValue([]);
   });
 
   describe('rendering', () => {
@@ -87,101 +92,58 @@ describe('AdminUserProfileForm', () => {
       });
     });
 
-    test('renders title field label', async () => {
+    test('renders stepper with 4 steps', async () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Title')).toBeInTheDocument();
+        expect(screen.getByText('Personal')).toBeInTheDocument();
+        expect(screen.getByText('Home')).toBeInTheDocument();
+        expect(screen.getByText('Work')).toBeInTheDocument();
+        expect(screen.getByText('Preferences')).toBeInTheDocument();
       });
     });
 
-    test('renders send invoices to field label', async () => {
+    test('renders personal info step by default', async () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByText('Send Invoices To')).toBeInTheDocument();
-      });
-    });
-
-    test('renders send study material to field label', async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        expect(screen.getByText('Send Study Material To')).toBeInTheDocument();
-      });
-    });
-
-    test('renders remarks field label', async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        expect(screen.getByText('Remarks')).toBeInTheDocument();
+        expect(screen.getByText(/personal & contact information/i)).toBeInTheDocument();
       });
     });
   });
 
   describe('data loading', () => {
-    test('fetches profile data on mount', async () => {
+    test('fetches profile, addresses, and contacts on mount', async () => {
       renderComponent();
 
       await waitFor(() => {
         expect(userProfileService.getById).toHaveBeenCalledWith('1');
-      });
-    });
-
-    test('fetches addresses on mount', async () => {
-      renderComponent();
-
-      await waitFor(() => {
         expect(userProfileService.getAddresses).toHaveBeenCalledWith('1');
-      });
-    });
-
-    test('fetches contacts on mount', async () => {
-      renderComponent();
-
-      await waitFor(() => {
         expect(userProfileService.getContacts).toHaveBeenCalledWith('1');
       });
     });
 
-    test('fetches emails on mount', async () => {
+    test('displays fetched first name', async () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(userProfileService.getEmails).toHaveBeenCalledWith('1');
+        expect(screen.getByDisplayValue('John')).toBeInTheDocument();
       });
     });
 
-    test('displays fetched title', async () => {
+    test('displays fetched last name', async () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByDisplayValue('Mr')).toBeInTheDocument();
+        expect(screen.getByDisplayValue('Doe')).toBeInTheDocument();
       });
     });
 
-    test('displays fetched send invoices to value', async () => {
+    test('displays fetched email', async () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByDisplayValue('Home')).toBeInTheDocument();
-      });
-    });
-
-    test('displays fetched send study material to value', async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        expect(screen.getByDisplayValue('Office')).toBeInTheDocument();
-      });
-    });
-
-    test('displays fetched remarks', async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        expect(screen.getByDisplayValue('VIP student')).toBeInTheDocument();
+        expect(screen.getByDisplayValue('john@example.com')).toBeInTheDocument();
       });
     });
   });
@@ -191,12 +153,21 @@ describe('AdminUserProfileForm', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(screen.getByDisplayValue('Mr')).toBeInTheDocument();
+        expect(screen.getByText(/personal & contact information/i)).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
 
       expect(mockNavigate).toHaveBeenCalledWith('/admin/user-profiles');
+    });
+
+    test('renders save and next buttons', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /next/i })).toBeInTheDocument();
+      });
     });
   });
 
