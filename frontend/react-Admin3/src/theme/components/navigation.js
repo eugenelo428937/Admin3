@@ -57,7 +57,7 @@
 
 import { spacing } from '../tokens/spacing';
 import { navigation } from '../semantic/navigation';
-import { fontSizes, fontWeights, fontFamilies, letterSpacing, lineHeights } from '../tokens/typography';
+import { fontSizes, fontWeights, fontFamilies, letterSpacings, lineHeights } from '../tokens/typography';
 import { iconSizes } from '../tokens/icons'
 import { shadows } from '../tokens/shadows'
 
@@ -228,7 +228,7 @@ export const navigationOverrides = {
           fontWeight: fontWeights.extralight,
           fontSize: important(fontSizes.body.small),
           lineHeight: important(lineHeights.tall),
-          letterSpacing: important(letterSpacing.scale[80]),
+          letterSpacing: important(letterSpacings.scale[80]),
           textWrap: "balance",
 
         }
@@ -240,7 +240,7 @@ export const navigationOverrides = {
           fontWeight: fontWeights.light,
           fontSize: important(fontSizes.heading[90]),
           lineHeight: important(lineHeights.normal),
-          letterSpacing: important(letterSpacing.normal),
+          letterSpacing: important(letterSpacings.normal),
           textTransform: 'none',
           position: "static",
           top: "6.235em",
@@ -255,7 +255,7 @@ export const navigationOverrides = {
             fontWeight: fontWeights.light,
             fontSize: important(fontSizes.body.medium),
             lineHeight: important(lineHeights.tall),
-            letterSpacing: important(letterSpacing.scale[80]),
+            letterSpacing: important(letterSpacings.scale[80]),
             textWrap: "balance",
             width:0.8,
           }
