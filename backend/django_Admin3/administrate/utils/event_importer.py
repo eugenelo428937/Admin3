@@ -35,10 +35,10 @@ from administrate.models import CourseTemplate, Location, Venue, Instructor, Cus
 from administrate.exceptions import AdministrateAPIError
 from administrate.utils.graphql_loader import load_graphql_query, load_graphql_mutation
 logger = logging.getLogger(__name__)
-file_path = r"C:\Code\Admin3\backend\django_Admin3\administrate\src\EventSessionImportTemplate 2026A V1 WAITLIST.xlsx"
-queryFilePath = r"C:\Administrate\Result\query"+datetime.now().strftime("%Y%m%d")+"FINALLIVE.txt"
-resultFilePath = r"C:\Administrate\Result\importResult"+datetime.now().strftime("%Y%m%d")+"FINALLIVE.txt"
-ValidationFilePath = r"C:\Administrate\Result\ValidationResult"+datetime.now().strftime("%Y%m%d")+".txt"
+file_path = r"/Users/work/Documents/Code/Admin3/backend/django_Admin3/administrate/templates/xlsx/EventSessionImportTemplate.xlsx"
+queryFilePath = r"/Users/work/Documents/Code/Admin3/backend/django_Admin3/administrate/log/"+datetime.now().strftime("%Y%m%d")+"FINALLIVE.txt"
+resultFilePath = r"/Users/work/Documents/Code/Admin3/backend/django_Admin3/administrate/log/"+datetime.now().strftime("%Y%m%d")+"FINALLIVE.txt"
+ValidationFilePath = r"/Users/work/Documents/Code/Admin3/backend/django_Admin3/administrate/log/"+datetime.now().strftime("%Y%m%d")+".txt"
 tbc_venue_name = list(map(str.casefold, ["To be confirmed", "TBC", "TBD"]))
 
 class EventLifecycleState(Enum):
@@ -98,15 +98,15 @@ def validate_and_process_event_excel(file_path, debug=False):
             'LMS end time',
             'Max places',
             'Instructor',
-            'Session_instructor',
-            'Event_administrator',
+            'Session instructor',
+            'Event administrator',
             'Day',
             'Event url',
-            'Session_url',
+            'Session url',
             'Finalisation date',
             'Web sale',
             'Sitting',
-            'OCR_moodle_code',            
+            'OCR moodle code',            
          ]
         
         missing_columns = [col for col in required_columns if col not in df.columns]
@@ -136,14 +136,14 @@ def validate_and_process_event_excel(file_path, debug=False):
                         row['Location'], 
                         row['Venue'], 
                         row['Instructor'],
-                        row['Session_instructor'],
+                        row['Session instructor'],
                         row['Day'],
                         row['Max places'],
                         row['Sitting'],
                         row['Finalisation date'],
                         row['Event url'],
                         row['Web sale'],
-                        row['Event_administrator'],
+                        row['Event administrator'],
                         )
                 )
                 if result['row_errors']:
@@ -198,8 +198,8 @@ def validate_and_process_event_excel(file_path, debug=False):
                                           row['Classroom start time'],
                                           row['Classroom end date'],
                                           row['Classroom end time'],
-                                          row['Session_instructor'],
-                                          row['Session_url'],
+                                          row['Session instructor'],
+                                          row['Session url'],
                                           row['Day'])
                 if result['row_errors']:
                     row_errors.extend(result['row_errors'])
@@ -648,7 +648,7 @@ def validate_session(api_service,
         if session_url and not validators.url(session_url):
             row_errors.append(
                 f"Invalid Session URL: {session_url}")
-            row_data['session_url'] = session_url
+            row_data['Session url'] = session_url
     except Exception as e:
         row_errors.append(f"Error validating Session URL: {str(e)}")
 
@@ -715,30 +715,29 @@ def validate_and_format_datetime(date_value, time_value):
 
 def validate_course_template(api_service, course_code):
     """
-    Validate that a course template exists with the given code
-    
-    Args:
-        api_service: AdministrateAPIService instance
-        course_code: Course template code to validate
-    
-    Returns:
-        dict: Course template data or None if invalid
+    Validate that a course template exists with the given code.
+    Queries local tutorial tables via bridge FK first, falls back to API.
+    Auto-creates tutorial + bridge records from API data if not found locally.
     """
     try:
-        # First try to find in our local database
-        course_templates = CourseTemplate.objects.filter(
-            code__iexact=course_code
-        )
+        # Query through bridge FK to tutorial_course_template
+        ct = CourseTemplate.objects.select_related(
+            'tutorial_course_template'
+        ).filter(
+            tutorial_course_template__code__iexact=course_code
+        ).first()
 
-        if course_templates.exists():
-            course_template = course_templates.first()
+        if ct and ct.tutorial_course_template:
             return {
-                'id': course_template.external_id,                
-                'code': course_template.code,
-                'title': course_template.title
+                'id': ct.external_id,
+                'code': ct.tutorial_course_template.code,
+                'title': ct.tutorial_course_template.title,
             }
 
-        # If not found locally, try the API
+        # Fallback: query Administrate API
+        if not api_service:
+            return None
+
         query = load_graphql_query('get_course_template_by_code')
         variables = {"code": course_code}
         result = api_service.execute_query(query, variables)
@@ -747,7 +746,40 @@ def validate_course_template(api_service, course_code):
             'courseTemplates' in result['data'] and
             'edges' in result['data']['courseTemplates'] and
                 len(result['data']['courseTemplates']['edges']) > 0):
-            return result['data']['courseTemplates']['edges'][0]['node']
+
+            node = result['data']['courseTemplates']['edges'][0]['node']
+
+            # Auto-create tutorial + bridge records
+            try:
+                from tutorials.models import TutorialCourseTemplate
+                from django.db import transaction
+
+                with transaction.atomic():
+                    tct, _ = TutorialCourseTemplate.objects.get_or_create(
+                        code=node.get('code', course_code),
+                        defaults={
+                            'title': node.get('title', ''),
+                            'is_active': True,
+                        }
+                    )
+                    bridge_ct, created = CourseTemplate.objects.get_or_create(
+                        external_id=node['id'],
+                        defaults={'tutorial_course_template': tct}
+                    )
+                    if not created and not bridge_ct.tutorial_course_template:
+                        bridge_ct.tutorial_course_template = tct
+                        bridge_ct.save(update_fields=['tutorial_course_template'])
+
+                logger.info(
+                    f"Auto-created records for course template: "
+                    f"{node.get('code', course_code)}"
+                )
+            except Exception as e:
+                logger.warning(
+                    f"Failed to auto-create course template records: {e}"
+                )
+
+            return node
 
         logger.warning(f"Course template not found: {course_code}")
         return None
@@ -758,73 +790,101 @@ def validate_course_template(api_service, course_code):
 
 def validate_location(api_service, location_name):
     """
-    Validate that a location exists with the given name
-    
-    Args:
-        api_service: AdministrateAPIService instance
-        location_name: Location name to validate
-    
-    Returns:
-        dict: Location data or None if invalid
+    Validate that a location exists with the given name.
+    Queries local tutorial tables via bridge FK first, falls back to API.
+    Auto-creates tutorial + bridge records from API data if not found locally.
     """
     try:
-        # First try to find in our local database
-        locations = Location.objects.filter(
-            name__iexact=location_name
-        )
+        loc = Location.objects.select_related(
+            'tutorial_location'
+        ).filter(
+            tutorial_location__name__iexact=location_name
+        ).first()
 
-        if locations.exists():
-            location = locations.first()
+        if loc and loc.tutorial_location:
             return {
-                'id': location.external_id,
-                'code': location.code,
-                'name': location.name
+                'id': loc.external_id,
+                'code': loc.tutorial_location.code,
+                'name': loc.tutorial_location.name,
             }
-        
-        # If not found locally, try the API
+
+        if not api_service:
+            return None
+
         query = load_graphql_query('get_location_by_name')
         variables = {"location_name": location_name}
         result = api_service.execute_query(query, variables)
-        
+
         if (result and 'data' in result and
             'locations' in result['data'] and
             'edges' in result['data']['locations'] and
-            len(result['data']['locations']['edges']) > 0):
-            return result['data']['locations']['edges'][0]['node']
+                len(result['data']['locations']['edges']) > 0):
+
+            node = result['data']['locations']['edges'][0]['node']
+
+            try:
+                from tutorials.models import TutorialLocation
+                from django.db import transaction
+
+                with transaction.atomic():
+                    tl, _ = TutorialLocation.objects.get_or_create(
+                        name=node.get('name', location_name),
+                        defaults={'is_active': True}
+                    )
+                    bridge_loc, created = Location.objects.get_or_create(
+                        external_id=node['id'],
+                        defaults={'tutorial_location': tl}
+                    )
+                    if not created and not bridge_loc.tutorial_location:
+                        bridge_loc.tutorial_location = tl
+                        bridge_loc.save(update_fields=['tutorial_location'])
+
+                logger.info(
+                    f"Auto-created records for location: "
+                    f"{node.get('name', location_name)}"
+                )
+            except Exception as e:
+                logger.warning(
+                    f"Failed to auto-create location records: {e}"
+                )
+
+            return node
+
         return None
-    except AdministrateAPIError as e:
-        logger.warning(f"API error validating location {location_name}: {str(e)}")
+    except Exception as e:
+        logger.warning(
+            f"Error validating location {location_name}: {str(e)}")
         return None
 
 def validate_venue(api_service, venue_name, location_id):
     """
-    Validate that a venue exists with the given name 
-    and the given location
-    
-    Args:
-        api_service: AdministrateAPIService instance
-        venue_name: Venue name to validate
-        location_id: Location name to validate
-    
-    Returns:
-        dict: Location data or None if invalid
-    """
-    
-    try:
-        # First try to find in our local database    
-        venues = Venue.objects.filter(
-            name__iexact=venue_name,
-            location_id=location_id
-        )
+    Validate that a venue exists with the given name and location.
+    Queries local tutorial tables via bridge FK first, falls back to API.
+    Auto-creates tutorial + bridge records from API data if not found locally.
 
-        if venues.exists():
-            venue = venues.first()
+    Note: location_id is the Administrate external_id for the location.
+    """
+    try:
+        venue = Venue.objects.select_related(
+            'tutorial_venue', 'location__tutorial_location'
+        ).filter(
+            tutorial_venue__name__iexact=venue_name,
+            location__external_id=location_id,
+        ).first()
+
+        if venue and venue.tutorial_venue:
             return {
-                'id': venue.external_id,                
-                'name': venue.name
+                'id': venue.external_id,
+                'name': venue.tutorial_venue.name,
             }
 
-        # If not found locally, try the API
+        # Check TBC venue names
+        if venue_name and venue_name.casefold() in tbc_venue_name:
+            return {'id': None, 'name': venue_name}
+
+        if not api_service:
+            return None
+
         query = load_graphql_query('get_venue_by_name')
         variables = {"venue_name": venue_name}
         result = api_service.execute_query(query, variables)
@@ -833,65 +893,155 @@ def validate_venue(api_service, venue_name, location_id):
             'locations' in result['data'] and
             'edges' in result['data']['locations'] and
                 len(result['data']['locations']['edges']) > 0):
-            return result['data']['locations']['edges'][0]['node']
+
+            node = result['data']['locations']['edges'][0]['node']
+
+            try:
+                from tutorials.models import TutorialVenue
+                from django.db import transaction
+
+                # Resolve the tutorial location from the adm.Location bridge
+                adm_loc = Location.objects.select_related(
+                    'tutorial_location'
+                ).filter(external_id=location_id).first()
+
+                tutorial_location = (
+                    adm_loc.tutorial_location if adm_loc else None
+                )
+
+                with transaction.atomic():
+                    tv, _ = TutorialVenue.objects.get_or_create(
+                        name=node.get('name', venue_name),
+                        location=tutorial_location,
+                        defaults={}
+                    )
+                    bridge_ven, created = Venue.objects.get_or_create(
+                        external_id=node['id'],
+                        defaults={
+                            'tutorial_venue': tv,
+                            'location': adm_loc,
+                        }
+                    )
+                    if not created and not bridge_ven.tutorial_venue:
+                        bridge_ven.tutorial_venue = tv
+                        bridge_ven.save(update_fields=['tutorial_venue'])
+
+                logger.info(
+                    f"Auto-created records for venue: "
+                    f"{node.get('name', venue_name)}"
+                )
+            except Exception as e:
+                logger.warning(
+                    f"Failed to auto-create venue records: {e}"
+                )
+
+            return node
+
         return None
-    except AdministrateAPIError as e:
+    except Exception as e:
         logger.warning(
-            f"API error validating location {venue_name}: {str(e)}")
-        return None    
+            f"Error validating venue {venue_name}: {str(e)}")
+        return None
 
 def validate_instructor(api_service, instructor_name):
     """
-    Validate that an instructor exists with the given name
-    
-    Args:
-        api_service: AdministrateAPIService instance
-        instructor_name: Instructor name to validate
-    
-    Returns:
-        dict: Instructor data or None if invalid
+    Validate that an instructor exists with the given name.
+    Queries local tutorial tables via bridge FK first, falls back to API.
+    Auto-creates User + Staff + TutorialInstructor + bridge from API data.
     """
     try:
-        # First try to find in our local database
         name_parts = instructor_name.strip().split()
-
-        # If there's only one part, return it as lastname with empty firstname
         if len(name_parts) == 1:
-            return ("", name_parts[0])
+            first_name = ''
+            last_name = name_parts[0]
+        else:
+            last_name = name_parts[-1]
+            first_name = ' '.join(name_parts[:-1])
 
-        # Last part is the lastname
-        last_name = name_parts[-1]
+        # Query through bridge FK chain
+        ins = Instructor.objects.select_related(
+            'tutorial_instructor__staff__user'
+        ).filter(
+            tutorial_instructor__staff__user__first_name__iexact=first_name,
+            tutorial_instructor__staff__user__last_name__iexact=last_name,
+            tutorial_instructor__is_active=True,
+        ).first()
 
-        # All other parts are firstname
-        first_name = " ".join(name_parts[:-1])        
-        # the "i" in iexact stands for "case-insensitive"
-        instructors = Instructor.objects.filter(
-            first_name__iexact=first_name,
-            last_name__iexact=last_name,
-            is_active=True
-        )
-        
-        if instructors.exists():
-            instructor = instructors.first()
+        if ins and ins.tutorial_instructor:
             return {
-                'id': instructor.external_id,
-                'legacy_id': instructor.legacy_id,
-                'name': instructor.name
+                'id': ins.external_id,
+                'legacy_id': ins.legacy_id,
+                'name': str(ins.tutorial_instructor),
             }
-        
-        # If not found locally, try the API
+
+        if not api_service:
+            return None
+
         query = load_graphql_query('get_instructor_by_name')
         variables = {"tutorname": instructor_name.replace(" ", "%")}
         result = api_service.execute_query(query, variables)
-        
+
         if (result and 'data' in result and
             'contacts' in result['data'] and
             'edges' in result['data']['contacts'] and
-            len(result['data']['contacts']['edges']) > 0):
-            return result['data']['contacts']['edges'][0]['node']
+                len(result['data']['contacts']['edges']) > 0):
+
+            node = result['data']['contacts']['edges'][0]['node']
+
+            try:
+                from django.contrib.auth.models import User
+                from tutorials.models import Staff, TutorialInstructor
+                from django.db import transaction
+
+                api_first = node.get('firstName', first_name)
+                api_last = node.get('lastName', last_name)
+
+                with transaction.atomic():
+                    username = f"adm_{api_first}_{api_last}".lower().replace(
+                        ' ', '_'
+                    )[:150]
+                    user, _ = User.objects.get_or_create(
+                        first_name__iexact=api_first,
+                        last_name__iexact=api_last,
+                        defaults={
+                            'username': username,
+                            'first_name': api_first,
+                            'last_name': api_last,
+                        }
+                    )
+                    staff, _ = Staff.objects.get_or_create(user=user)
+                    ti, _ = TutorialInstructor.objects.get_or_create(
+                        staff=staff,
+                        defaults={'is_active': True}
+                    )
+                    bridge_ins, created = Instructor.objects.get_or_create(
+                        external_id=node['id'],
+                        defaults={
+                            'tutorial_instructor': ti,
+                            'is_active': True,
+                        }
+                    )
+                    if not created and not bridge_ins.tutorial_instructor:
+                        bridge_ins.tutorial_instructor = ti
+                        bridge_ins.save(
+                            update_fields=['tutorial_instructor']
+                        )
+
+                logger.info(
+                    f"Auto-created records for instructor: "
+                    f"{api_first} {api_last}"
+                )
+            except Exception as e:
+                logger.warning(
+                    f"Failed to auto-create instructor records: {e}"
+                )
+
+            return node
+
         return None
-    except AdministrateAPIError as e:
-        logger.warning(f"API error validating instructor {instructor_name}: {str(e)}")
+    except Exception as e:
+        logger.warning(
+            f"Error validating instructor {instructor_name}: {str(e)}")
         return None
 
 def validate_admin(api_service, contact_name):
@@ -1033,30 +1183,61 @@ def create_administrate_events(api_service, valid_data, debug=False):
         api_service, "Event", debug)
     session_custom_field_keys = get_custom_field_keys_by_entity_type(
         api_service, "Session", debug)    
+    tutorial_event = None  # tracks current tutorial event across rows
+
     for row_data in valid_data:
-        rownum+=1        
-        # try:
+        rownum+=1
+        result = None
         if row_data['event_or_session'] == "event":
             parent_event = None
-            if "OC" not in row_data['Course template code'] and "WAITLIST" not in row_data['Course template code']:            
-                # create blended event 
-                result = create_blended_event(
-                    api_service, row_data, event_custom_field_keys, session_custom_field_keys, eventType, tax_type, timeZone, debug)
 
-                if result:                        
-                    parent_event = result
-                    successful_events.append(result)
-                    session = parent_event['sessions']['edges'][0]['node']
-                    session_result = update_session(api_service, parent_event, row_data, session['id'], session_custom_field_keys, timeZone, debug)
+            # Dual-write step 1: create local tutorial event FIRST
+            tutorial_event = create_tutorial_event(row_data, debug)
 
-            else:
-                # create LMS event - includes OC and WAITLIST
-                result = create_lms_event(
-                    api_service, row_data, event_custom_field_keys, eventType, tax_type, timeZone, debug)                                
-                        
+            try:
+                if "OC" not in row_data['Course template code'] and "WAITLIST" not in row_data['Course template code']:
+                    # create blended event
+                    result = create_blended_event(
+                        api_service, row_data, event_custom_field_keys, session_custom_field_keys, eventType, tax_type, timeZone, debug)
+
+                    if result:
+                        parent_event = result
+                        successful_events.append(result)
+                        session = parent_event['sessions']['edges'][0]['node']
+                        session_result = update_session(api_service, parent_event, row_data, session['id'], session_custom_field_keys, timeZone, debug)
+
+                        # Dual-write: create tutorial session for the first session
+                        if tutorial_event:
+                            create_tutorial_session(row_data, tutorial_event, debug)
+
+                else:
+                    # create LMS event - includes OC and WAITLIST
+                    result = create_lms_event(
+                        api_service, row_data, event_custom_field_keys, eventType, tax_type, timeZone, debug)
+
+                # Dual-write step 2: create bridge record after successful API call
+                if result and tutorial_event:
+                    api_event_id = result.get('id') if isinstance(result, dict) else None
+                    if api_event_id:
+                        create_event_bridge_record(
+                            tutorial_event, api_event_id, row_data, debug)
+
+            except Exception as e:
+                # Tutorial records survive API failures
+                logger.error(
+                    f"API call failed for '{row_data.get('Event title', '')}', "
+                    f"tutorial records preserved: {e}")
+                if debug:
+                    logger.exception(e)
+
         else:
             # session are created automatically when creating with a valid course template
             # so use update session mutation to update the session details
+
+            # Dual-write: create tutorial session for additional sessions
+            if tutorial_event:
+                create_tutorial_session(row_data, tutorial_event, debug)
+
             if parent_event:
                 session = parent_event['sessions']['edges'][row_data['session_day']-1]['node']
                 session_result = update_session(api_service, parent_event, row_data, session['id'],
@@ -1065,32 +1246,12 @@ def create_administrate_events(api_service, valid_data, debug=False):
         if (result):
                 successful_events.append(row_data)
         else:
-            # Check for errors
-            # errors = []
-            # if 'errors' in result:
-            #     errors = [error.get('message', 'Unknown error')
-            #             for error in result.get('errors', [])]
-            # elif 'data' in result and 'createEvent' in result['data'] and 'errors' in result['data']['createEvent']:
-            #     errors = [error.get('message', 'Unknown error')
-            #             for error in result['data']['createEvent'].get('errors', [])]
-
-            # error_message = ', '.join(
-            #     errors) if errors else "Unknown error creating event"
-            # row_data['error'] = error_message
             failed_events.append(row_data)
             logger.error(
-                f"Failed to create event '{row_data['Event title']}'")
+                f"Failed to create event '{row_data.get('Event title', '')}'")
 
             if debug:
                 logger.debug(f"Failed event creation response: {result}")
-
-        # except Exception as e:
-        #     row_data['error'] = str(e)
-        #     failed_events.append(row_data)
-        #     logger.error(
-        #         f"Exception creating event '{row_data['Event title']}': {str(e)}")
-        #     if debug:
-        #         logger.exception(e)
 
     return successful_events, failed_events
 
@@ -1243,7 +1404,7 @@ def update_session(api_service, parent_event, row_data, session_id, session_cust
         "dayDefinitionKey": session_custom_field_keys["Day"],
         "dayValue": row_data["session_day"],
         "urlDefinitionKey": session_custom_field_keys["URL"],
-        "urlValue": row_data['Session_url']
+        "urlValue": row_data['Session url']
     }
     result = api_service.execute_query(query, variables)
     writeQueryToFile(query)        
@@ -1474,6 +1635,14 @@ def writeResultToFile(contentList):
 
 # Note: get_events, delete_events, and set_event_websale functions have been moved to
 # administrate.services.event_management_service.EventManagementService
+
+# Dual-write functions live in a separate module to avoid top-level dependency
+# issues (e.g. the 'validators' package used by legacy validation code above).
+from administrate.utils.event_dual_write import (  # noqa: E402
+    create_tutorial_event,
+    create_tutorial_session,
+    create_event_bridge_record,
+)
 
 if __name__ == "__main__":
     result = bulk_upload_events_from_excel(file_path,debug=True,dry_run=False)

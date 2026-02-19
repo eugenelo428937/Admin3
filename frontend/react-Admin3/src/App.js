@@ -6,7 +6,7 @@ import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
-import theme from "./theme/theme";
+import theme from "./theme";
 import { bodyContainerStyles } from "./theme/styles";
 import { store } from './store';
 import { AuthProvider } from "./hooks/useAuth";
@@ -19,6 +19,8 @@ import { CartProvider } from "./contexts/CartContext";
 import { ProductProvider } from "./contexts/ProductContext";
 import { TutorialChoiceProvider } from "./contexts/TutorialChoiceContext";
 import { Container } from "@mui/material";
+
+// Existing admin components
 import AdminExamSessionList from "./components/admin/exam-sessions/ExamSessionList";
 import AdminExamSessionForm from "./components/admin/exam-sessions/ExamSessionForm";
 import AdminSubjectList from "./components/admin/subjects/SubjectList";
@@ -29,6 +31,32 @@ import AdminProductList from "./components/admin/products/ProductList";
 import AdminProductDetail from "./components/admin/products/ProductDetail";
 import AdminProductForm from "./components/admin/products/ProductForm";
 import AdminProductImport from "./components/admin/products/ProductImport";
+
+// US3: New catalog admin components
+import AdminExamSessionSubjectList from "./components/admin/exam-session-subjects/ExamSessionSubjectList";
+import AdminExamSessionSubjectForm from "./components/admin/exam-session-subjects/ExamSessionSubjectForm";
+import AdminProductVariationList from "./components/admin/product-variations/ProductVariationList";
+import AdminProductVariationForm from "./components/admin/product-variations/ProductVariationForm";
+import AdminProductBundleList from "./components/admin/product-bundles/ProductBundleList";
+import AdminProductBundleForm from "./components/admin/product-bundles/ProductBundleForm";
+
+// US4: Store admin components
+import AdminStoreProductList from "./components/admin/store-products/StoreProductList";
+import AdminStoreProductForm from "./components/admin/store-products/StoreProductForm";
+import AdminRecommendationList from "./components/admin/recommendations/RecommendationList";
+import AdminRecommendationForm from "./components/admin/recommendations/RecommendationForm";
+import AdminPriceList from "./components/admin/prices/PriceList";
+import AdminPriceForm from "./components/admin/prices/PriceForm";
+import AdminStoreBundleList from "./components/admin/store-bundles/StoreBundleList";
+import AdminStoreBundleForm from "./components/admin/store-bundles/StoreBundleForm";
+
+// US5: User admin components
+import AdminUserProfileList from "./components/admin/user-profiles/UserProfileList";
+import AdminUserProfileForm from "./components/admin/user-profiles/UserProfileForm";
+import AdminStaffList from "./components/admin/staff/StaffList";
+import AdminStaffForm from "./components/admin/staff/StaffForm";
+
+// Public pages
 import ProductList from "./components/Product/ProductList";
 import CheckoutPage from "./components/Ordering/CheckoutPage";
 import OrderHistory from "./components/User/OrderHistory";
@@ -38,7 +66,7 @@ import ResetPasswordForm from "./components/User/ResetPasswordForm";
 import AccountActivation from "./components/User/AccountActivation";
 import ResendActivation from "./components/User/ResendActivation";
 import EmailVerification from "./components/User/EmailVerification";
-import StyleGuide from "./components/StyleGuide";
+import StyleGuide from "./pages/StyleGuide";
 import MaterialThemeVisualizer from "./components/styleguide/MaterialThemeVisualizer";
 import Registration from './pages/Registration';
 import Footer from "./components/Footer";
@@ -147,133 +175,95 @@ function App() {
 									disableGutters={true}
 									sx={bodyContainerStyles}>
 									<Routes>
-														<Route
-															path="/"
-															element={
-																<Navigate to="/home" replace />
-															}
-														/>
-														<Route
-															path="/styleguide"
-															element={<StyleGuide />}
-														/>
-														<Route
-															path="/theme-visualizer"
-															element={<MaterialThemeVisualizer />}
-														/>
-														<Route
-															path="/home"
-															element={<Home />}
-														/>						
-													{/* New wizard-based profile page (T038) */}
-														<Route
-															path="/profile"
-															element={<ProfilePage />}
-														/>
-														<Route
-															path="/products"
-															element={<ProductList />}
-														/>
-														<Route
-															path="admin/exam-sessions"
-															element={<AdminExamSessionList />}
-														/>
-														<Route
-															path="admin/exam-sessions/new"
-															element={<AdminExamSessionForm />}
-														/>
-														<Route
-															path="/exam-sessions/edit/:id"
-															element={<AdminExamSessionForm />}
-														/>
-														<Route
-															path="admin/subjects"
-															element={<AdminSubjectList />}
-														/>
-														<Route
-															path="admin/subjects/new"
-															element={<AdminSubjectForm />}
-														/>
-														<Route
-															path="admin/subjects/:id"
-															element={<AdminSubjectDetail />}
-														/>
-														<Route
-															path="admin/subjects/:id/edit"
-															element={<AdminSubjectForm />}
-														/>
-														<Route
-															path="admin/subjects/import"
-															element={<AdminSubjectImport />}
-														/>
-														<Route
-															path="admin/products"
-															element={<AdminProductList />}
-														/>
-														<Route
-															path="admin/products/:id"
-															element={<AdminProductDetail />}
-														/>
-														<Route
-															path="admin/products/new"
-															element={<AdminProductForm />}
-														/>
-														<Route
-															path="admin/products/edit/:id"
-															element={<AdminProductForm />}
-														/>
-														<Route
-															path="admin/products/import"
-															element={<AdminProductImport />}
-														/>
-														<Route
-															path="/checkout"
-															element={<CheckoutPage />}
-														/>
-														<Route
-															path="/orders"
-															element={<OrderHistory />}
-														/>														
-														<Route
-															path="/auth/forgot-password"
-															element={<ForgotPasswordForm />}
-														/>
-														<Route
-															path="/auth/reset-password"
-															element={<ResetPasswordForm />}
-														/>
-														<Route
-															path="/auth/activate"
-															element={<AccountActivation />}
-														/>
-														<Route
-															path="/auth/verify-email"
-															element={<AccountActivation />}
-														/>
-														<Route
-															path="/auth/resend-activation"
-															element={<ResendActivation />}
-														/>
-														<Route
-															path="/auth/email-verification"
-															element={<EmailVerification />}
-														/>
-														<Route
-															path="*"
-															element={<NoMatch />}
-														/>																
-														<Route
-															path="/register"
-															element={<Registration />}
-														/>
-													</Routes>
+										<Route path="/" element={<Navigate to="/home" replace />} />
+										<Route path="/styleguide" element={<StyleGuide />} />
+										<Route path="/theme-visualizer" element={<MaterialThemeVisualizer />} />
+										<Route path="/home" element={<Home />} />
+										<Route path="/profile" element={<ProfilePage />} />
+										<Route path="/products" element={<ProductList />} />
+
+										{/* Admin: Exam Sessions (US2) */}
+										<Route path="/admin/exam-sessions" element={<AdminExamSessionList />} />
+										<Route path="/admin/exam-sessions/new" element={<AdminExamSessionForm />} />
+										<Route path="/admin/exam-sessions/:id/edit" element={<AdminExamSessionForm />} />
+
+										{/* Admin: Subjects (US2) */}
+										<Route path="/admin/subjects" element={<AdminSubjectList />} />
+										<Route path="/admin/subjects/new" element={<AdminSubjectForm />} />
+										<Route path="/admin/subjects/:id" element={<AdminSubjectDetail />} />
+										<Route path="/admin/subjects/:id/edit" element={<AdminSubjectForm />} />
+										<Route path="/admin/subjects/import" element={<AdminSubjectImport />} />
+
+										{/* Admin: Products (US2/US3) */}
+										<Route path="/admin/products" element={<AdminProductList />} />
+										<Route path="/admin/products/new" element={<AdminProductForm />} />
+										<Route path="/admin/products/:id" element={<AdminProductDetail />} />
+										<Route path="/admin/products/:id/edit" element={<AdminProductForm />} />
+										<Route path="/admin/products/import" element={<AdminProductImport />} />
+
+										{/* Admin: Exam Session Subjects (US3) */}
+										<Route path="/admin/exam-session-subjects" element={<AdminExamSessionSubjectList />} />
+										<Route path="/admin/exam-session-subjects/new" element={<AdminExamSessionSubjectForm />} />
+										<Route path="/admin/exam-session-subjects/:id/edit" element={<AdminExamSessionSubjectForm />} />
+
+										{/* Admin: Product Variations (US3) */}
+										<Route path="/admin/product-variations" element={<AdminProductVariationList />} />
+										<Route path="/admin/product-variations/new" element={<AdminProductVariationForm />} />
+										<Route path="/admin/product-variations/:id/edit" element={<AdminProductVariationForm />} />
+
+										{/* Admin: Product Bundles (US3) */}
+										<Route path="/admin/product-bundles" element={<AdminProductBundleList />} />
+										<Route path="/admin/product-bundles/new" element={<AdminProductBundleForm />} />
+										<Route path="/admin/product-bundles/:id/edit" element={<AdminProductBundleForm />} />
+
+										{/* Admin: Store Products (US4) */}
+										<Route path="/admin/store-products" element={<AdminStoreProductList />} />
+										<Route path="/admin/store-products/new" element={<AdminStoreProductForm />} />
+										<Route path="/admin/store-products/:id/edit" element={<AdminStoreProductForm />} />
+
+										{/* Admin: Recommendations (US4) */}
+										<Route path="/admin/recommendations" element={<AdminRecommendationList />} />
+										<Route path="/admin/recommendations/new" element={<AdminRecommendationForm />} />
+										<Route path="/admin/recommendations/:id/edit" element={<AdminRecommendationForm />} />
+
+										{/* Admin: Prices (US4) */}
+										<Route path="/admin/prices" element={<AdminPriceList />} />
+										<Route path="/admin/prices/new" element={<AdminPriceForm />} />
+										<Route path="/admin/prices/:id/edit" element={<AdminPriceForm />} />
+
+										{/* Admin: Store Bundles (US4) */}
+										<Route path="/admin/store-bundles" element={<AdminStoreBundleList />} />
+										<Route path="/admin/store-bundles/new" element={<AdminStoreBundleForm />} />
+										<Route path="/admin/store-bundles/:id/edit" element={<AdminStoreBundleForm />} />
+
+										{/* Admin: User Profiles (US5) */}
+										<Route path="/admin/user-profiles" element={<AdminUserProfileList />} />
+										<Route path="/admin/user-profiles/:id/edit" element={<AdminUserProfileForm />} />
+
+										{/* Admin: Staff (US5) */}
+										<Route path="/admin/staff" element={<AdminStaffList />} />
+										<Route path="/admin/staff/new" element={<AdminStaffForm />} />
+										<Route path="/admin/staff/:id/edit" element={<AdminStaffForm />} />
+
+										{/* Public routes */}
+										<Route path="/checkout" element={<CheckoutPage />} />
+										<Route path="/orders" element={<OrderHistory />} />
+										<Route path="/auth/forgot-password" element={<ForgotPasswordForm />} />
+										<Route path="/auth/reset-password" element={<ResetPasswordForm />} />
+										<Route path="/auth/activate" element={<AccountActivation />} />
+										<Route path="/auth/verify-email" element={<AccountActivation />} />
+										<Route path="/auth/resend-activation" element={<ResendActivation />} />
+										<Route path="/auth/email-verification" element={<EmailVerification />} />
+										<Route path="/register" element={<Registration />} />
+										<Route path="*" element={<NoMatch />} />
+									</Routes>
 
 									{/* T015: Global tutorial summary bars - visible across all routes */}
 									<TutorialSummaryBarContainer />
 								</Container>
 
 								{/* Footer component */}
-								<Footer />
+								<Footer sx={{mt:5}}/>
 							</div>
 						</TutorialChoiceProvider>
 					</ProductProvider>

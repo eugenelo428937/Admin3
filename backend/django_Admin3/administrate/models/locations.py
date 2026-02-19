@@ -1,20 +1,27 @@
 from django.db import models
 
+
 class Location(models.Model):
     external_id = models.CharField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
-    code = models.CharField(max_length=50, blank=True)
     legacy_id = models.CharField(max_length=255, null=True, blank=True)
-    active = models.BooleanField(default=True)
+    tutorial_location = models.ForeignKey(
+        'tutorials.TutorialLocation',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='adm_locations',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:                
+    class Meta:
         app_label = 'administrate'
-        db_table = 'adm.locations'
-        ordering = ['code']
+        db_table = '"adm"."locations"'
+        ordering = ['external_id']
         verbose_name = 'Location'
         verbose_name_plural = 'Locations'
 
     def __str__(self):
-        return self.name
+        if self.tutorial_location:
+            return str(self.tutorial_location)
+        return f"Location-{self.external_id}"

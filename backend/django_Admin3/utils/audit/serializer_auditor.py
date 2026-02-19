@@ -53,6 +53,8 @@ class SerializerAuditor:
         total_read_tested = 0
         total_write_tested = 0
         total_untested = 0
+        total_readable_fields = 0  # Fields that CAN be read (not write_only)
+        total_writable_fields = 0  # Fields that CAN be written (not read_only)
 
         for ser_key, ser_info in all_serializers.items():
             fields = ser_info['fields']
@@ -62,20 +64,31 @@ class SerializerAuditor:
                 is_read_tested = field_name in field_refs['read_fields']
                 is_write_tested = field_name in field_refs['write_fields']
                 is_read_only = field_data.get('read_only', False)
+                is_write_only = field_data.get('write_only', False)
 
                 field_results[field_name] = {
                     'type': field_data['type'],
                     'read_only': is_read_only,
+                    'write_only': is_write_only,
                     'read_tested': is_read_tested,
                     'write_tested': is_write_tested,
                     'untested': not is_read_tested and not is_write_tested,
                 }
 
                 total_fields += 1
-                if is_read_tested:
-                    total_read_tested += 1
-                if is_write_tested:
-                    total_write_tested += 1
+
+                # Only count read tests for fields that CAN be read (not write_only)
+                if not is_write_only:
+                    total_readable_fields += 1
+                    if is_read_tested:
+                        total_read_tested += 1
+
+                # Only count write tests for fields that CAN be written (not read_only)
+                if not is_read_only:
+                    total_writable_fields += 1
+                    if is_write_tested:
+                        total_write_tested += 1
+
                 if not is_read_tested and not is_write_tested:
                     total_untested += 1
 
@@ -98,11 +111,15 @@ class SerializerAuditor:
             'summary': {
                 'total_serializers': len(results),
                 'total_fields': total_fields,
+                'total_readable_fields': total_readable_fields,
+                'total_writable_fields': total_writable_fields,
                 'read_tested_count': total_read_tested,
                 'write_tested_count': total_write_tested,
                 'untested_count': total_untested,
-                'read_coverage_pct': round(total_read_tested / max(total_fields, 1) * 100, 1),
-                'write_coverage_pct': round(total_write_tested / max(total_fields, 1) * 100, 1),
+                # Calculate read coverage based on readable fields only (excludes write_only)
+                'read_coverage_pct': round(total_read_tested / max(total_readable_fields, 1) * 100, 1),
+                # Calculate write coverage based on writable fields only (excludes read_only)
+                'write_coverage_pct': round(total_write_tested / max(total_writable_fields, 1) * 100, 1),
                 'untested_pct': round(total_untested / max(total_fields, 1) * 100, 1),
             }
         }

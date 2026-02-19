@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..')))
 project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(project_root))
-env_path = os.path.join(project_root, '.env.production')
+env_path = os.path.join(project_root, '.env.development')
 
 load_dotenv(env_path)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE',
@@ -114,7 +114,7 @@ def main():
     api_service = AdministrateAPIService()
     first = 100
     offset = 0
-    title = "25S"            
+    title = "26A"            
 
     eventLifecycleState = LifecycleState.PUBLISHED.value
     sessionLifecycleState = LifecycleState.DRAFT.value

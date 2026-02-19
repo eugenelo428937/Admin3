@@ -1,0 +1,188 @@
+import React, { useState } from "react";
+import {
+	Box,
+	Typography,
+	Container,
+	Grid,
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogActions,
+	Button,
+	Paper,
+} from "@mui/material";
+import { Add } from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
+// Import sub-components
+import TypographySection from "../components/styleguide/TypographySection";
+import ColorSystemSection from "../components/styleguide/ColorSystemSection";
+import ButtonsSection from "../components/styleguide/ButtonsSection";
+import FormElementsSection from "../components/styleguide/FormElementsSection";
+import FeedbackSection from "../components/styleguide/FeedbackSection";
+import NavigationSection from "../components/styleguide/NavigationSection";
+import LayoutSection from "../components/styleguide/LayoutSection";
+import TablesSection from "../components/styleguide/TablesSection";
+import ProductCardsSection from "../components/styleguide/ProductCardsSection";
+import Sandbox from "../components/styleguide/Sandbox";
+import Tab from "react-bootstrap/Tab";
+import Tabs from "react-bootstrap/Tabs";
+
+const StyleGuide = () => {
+	const [dialogOpen, setDialogOpen] = useState(false);
+	const theme = useTheme();
+
+	return (
+		<Container
+			maxWidth="xl"
+			disableGutters
+			sx={{
+				px: theme.spacingTokens.xl2,
+				py: theme.spacingTokens.lg,
+			}}>
+			<Typography variant="h2">
+				Style Guide
+			</Typography>
+
+			<Typography
+				variant="subtitle1"
+				gutterBottom
+				sx={{ mb: theme.spacingTokens.md }}
+				>
+				BPP branding palette with Material UI components
+			</Typography>
+
+			{/* Tab Navigation - Styled via theme.js */}
+			<Box
+				sx={{					
+					borderColor: "divider",
+					marginX: theme.spacingTokens.xl2
+				}}>
+				<Tabs
+					defaultActiveKey="sanbox"
+					id="style-guide-tabs"
+					sx={{
+						justiftItems:"center"
+					}}>
+					<Tab
+						eventKey="sanbox"
+						title={
+							<Typography variant="h6">
+								Sandbox
+							</Typography>
+						}>
+						<Grid container>
+							<Grid size={{ xs: 12, lg: 12 }}>
+								<Sandbox/>
+							</Grid>
+						</Grid>
+					</Tab>
+					
+					<Tab
+						eventKey="typography"
+						title={
+							<Typography
+								variant="heading"
+								className="p-2 color-light__onsurface_lkv">
+								Typography
+							</Typography>
+						}>
+						<Grid container>
+							<Grid size={{ xs: 12, lg: 12 }}>
+								<TypographySection />
+							</Grid>
+						</Grid>
+					</Tab>
+					<Tab
+						eventKey="colours"
+						title={
+							<Typography
+								variant="heading"
+								className="p-2 color-light__onsurface_lkv">
+								Colour palette
+							</Typography>
+						}>
+						<Grid size={{ xs: 12, lg: 12 }}>
+							<ColorSystemSection />
+						</Grid>
+					</Tab>
+					<Tab
+						eventKey="product-cards"
+						title={
+							<Typography
+								variant="heading"
+								className="p-2 color-light__onsurface_lkv">
+								Product Cards
+							</Typography>
+						}>
+						<ProductCardsSection />						
+					</Tab>
+					<Tab
+						eventKey="buttons-forms-feedback"
+						title={
+							<Typography
+								variant="heading"
+								className="p-2 color-light__onsurface_lkv">
+								Buttons, Forms & Feedback
+							</Typography>
+						}>
+						<Grid container spacing={2}>
+							<Grid size={{ xs: 12, md: 4 }}>
+								<ButtonsSection />
+							</Grid>
+							<Grid size={{ xs: 12, md: 4 }}>
+								<FormElementsSection />
+							</Grid>
+							<Grid size={{ xs: 12, md: 4 }}>
+								<FeedbackSection />
+							</Grid>
+						</Grid>
+					</Tab>
+					<Tab
+						eventKey="navigation-layout-tables"
+						title={
+							<Typography
+								variant="heading"
+								className="p-2 color-light__onsurface_lkv">
+								Navigation, Layout & Tables
+							</Typography>
+						}>
+						<Grid container spacing={3}>
+							<Grid size={{ xs: 12, md: 4 }}>
+								<NavigationSection />
+							</Grid>
+							<Grid size={{ xs: 12, md: 4 }}>
+								<LayoutSection />
+							</Grid>
+							<Grid size={{ xs: 12, md: 4 }}>
+								<TablesSection />
+							</Grid>
+						</Grid>
+					</Tab>
+				</Tabs>
+			</Box>
+
+			{/* Sample Dialog for interaction */}
+			<Dialog
+				open={dialogOpen}
+				onClose={() => setDialogOpen(false)}
+				maxWidth="sm"
+				fullWidth>
+				<DialogTitle>Example Dialog</DialogTitle>
+				<DialogContent>
+					<Typography>
+						This demonstrates the modal component styling with BPP color
+						system.
+					</Typography>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+					<Button onClick={() => setDialogOpen(false)} variant="contained">
+						Confirm
+					</Button>
+				</DialogActions>
+			</Dialog>
+		</Container>
+	);
+};
+
+export default StyleGuide;

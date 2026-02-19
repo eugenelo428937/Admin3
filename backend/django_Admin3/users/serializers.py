@@ -1,6 +1,79 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from userprofile.models import UserProfile, UserProfileAddress, UserProfileContactNumber, UserProfileEmail
+from tutorials.models import Staff
+
+
+# =============================================================================
+# Admin Serializers
+# =============================================================================
+
+class UserSerializer(serializers.ModelSerializer):
+    """Read-only nested serializer for User model."""
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        read_only_fields = fields
+
+
+class UserProfileAdminSerializer(serializers.ModelSerializer):
+    """Admin serializer for UserProfile.
+
+    Nested read-only user info, writable profile fields.
+    """
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = UserProfile
+        fields = ['id', 'user', 'title', 'send_invoices_to', 'send_study_material_to', 'remarks']
+        read_only_fields = ['id']
+
+
+class UserProfileAddressSerializer(serializers.ModelSerializer):
+    """Serializer for UserProfileAddress."""
+
+    class Meta:
+        model = UserProfileAddress
+        fields = ['id', 'user_profile', 'address_type', 'address_data', 'country',
+                  'company', 'department']
+        read_only_fields = ['id', 'user_profile']
+
+
+class UserProfileContactSerializer(serializers.ModelSerializer):
+    """Serializer for UserProfileContactNumber."""
+
+    class Meta:
+        model = UserProfileContactNumber
+        fields = ['id', 'user_profile', 'contact_type', 'number', 'country_code']
+        read_only_fields = ['id', 'user_profile']
+
+
+class UserProfileEmailSerializer(serializers.ModelSerializer):
+    """Serializer for UserProfileEmail."""
+
+    class Meta:
+        model = UserProfileEmail
+        fields = ['id', 'user_profile', 'email_type', 'email']
+        read_only_fields = ['id', 'user_profile']
+
+
+class StaffAdminSerializer(serializers.ModelSerializer):
+    """Admin serializer for Staff.
+
+    Shows nested user info on read, accepts user FK ID on write.
+    """
+    user_detail = UserSerializer(source='user', read_only=True)
+
+    class Meta:
+        model = Staff
+        fields = ['id', 'user', 'user_detail', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+# =============================================================================
+# Registration Serializer
+# =============================================================================
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -8,7 +81,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name', 'profile')
+        fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name', 'profile', 'is_superuser')
         extra_kwargs = {
             'password': {'write_only': True},
             'email': {'required': True}

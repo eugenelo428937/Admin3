@@ -66,6 +66,37 @@ class LoginAPITestCase(APITestCase):
         # Verify cart merge was called
         mock_cart_service.merge_guest_cart.assert_called_once()
 
+    @patch('core_auth.views.cart_service')
+    def test_login_response_includes_is_superuser_false(self, mock_cart_service):
+        """Test login response includes is_superuser field for regular user."""
+        data = {
+            'username': 'testuser@example.com',
+            'password': 'testpassword123'
+        }
+
+        response = self.client.post('/api/auth/login/', data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('is_superuser', response.data['user'])
+        self.assertFalse(response.data['user']['is_superuser'])
+
+    @patch('core_auth.views.cart_service')
+    def test_login_response_includes_is_superuser_true(self, mock_cart_service):
+        """Test login response includes is_superuser=True for superuser."""
+        self.user.is_superuser = True
+        self.user.save()
+
+        data = {
+            'username': 'testuser@example.com',
+            'password': 'testpassword123'
+        }
+
+        response = self.client.post('/api/auth/login/', data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('is_superuser', response.data['user'])
+        self.assertTrue(response.data['user']['is_superuser'])
+
     def test_login_with_invalid_password(self):
         """Test POST /api/auth/login/ with invalid password."""
         data = {

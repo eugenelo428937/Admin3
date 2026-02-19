@@ -13,7 +13,14 @@ Contract (from contracts/serializers.md):
 """
 from rest_framework import serializers
 
-from catalog.models import Product, ProductVariation
+from catalog.models import (
+    Product,
+    ProductVariation,
+    ProductProductVariation,
+    ProductBundle,
+    ProductBundleProduct,
+    ProductVariationRecommendation,
+)
 
 
 class ProductVariationSerializer(serializers.ModelSerializer):
@@ -25,11 +32,135 @@ class ProductVariationSerializer(serializers.ModelSerializer):
         variation_type (str): Type category (eBook, Printed, Hub, Marking, Tutorial)
         name (str): Variation display name
         description (str): Full description
+        description_short (str): Short description
+        code (str): Unique code
     """
 
     class Meta:
         model = ProductVariation
-        fields = ['id', 'variation_type', 'name', 'description']
+        fields = ['id', 'variation_type', 'name', 'description', 'description_short', 'code']
+
+
+class ProductProductVariationAdminSerializer(serializers.ModelSerializer):
+    """Admin serializer for ProductProductVariation CRUD."""
+
+    class Meta:
+        model = ProductProductVariation
+        fields = ['id', 'product', 'product_variation']
+        read_only_fields = ['id']
+
+
+class ProductProductVariationDetailSerializer(serializers.ModelSerializer):
+    """Read-only serializer for PPV with nested variation details."""
+    variation_name = serializers.CharField(source='product_variation.name', read_only=True)
+    variation_code = serializers.CharField(source='product_variation.code', read_only=True)
+    variation_type = serializers.CharField(source='product_variation.variation_type', read_only=True)
+
+    class Meta:
+        model = ProductProductVariation
+        fields = ['id', 'product', 'product_variation', 'variation_name', 'variation_code', 'variation_type']
+        read_only_fields = ['id']
+
+
+class ProductBundleAdminSerializer(serializers.ModelSerializer):
+    """Admin serializer for ProductBundle CRUD."""
+
+    class Meta:
+        model = ProductBundle
+        fields = [
+            'id', 'bundle_name', 'subject', 'bundle_description',
+            'is_featured', 'is_active', 'display_order',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class ProductBundleProductAdminSerializer(serializers.ModelSerializer):
+    """Admin serializer for ProductBundleProduct CRUD."""
+
+    class Meta:
+        model = ProductBundleProduct
+        fields = [
+            'id', 'bundle', 'product_product_variation',
+            'default_price_type', 'quantity', 'sort_order', 'is_active',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class ProductBundleProductDetailSerializer(serializers.ModelSerializer):
+    """Read-only serializer for BundleProduct with nested product and variation details."""
+    product_name = serializers.CharField(
+        source='product_product_variation.product.shortname', read_only=True
+    )
+    product_code = serializers.CharField(
+        source='product_product_variation.product.code', read_only=True
+    )
+    variation_name = serializers.CharField(
+        source='product_product_variation.product_variation.name', read_only=True
+    )
+    variation_code = serializers.CharField(
+        source='product_product_variation.product_variation.code', read_only=True
+    )
+
+    class Meta:
+        model = ProductBundleProduct
+        fields = [
+            'id', 'bundle', 'product_product_variation',
+            'product_name', 'product_code', 'variation_name', 'variation_code',
+            'default_price_type', 'quantity', 'sort_order', 'is_active',
+        ]
+        read_only_fields = ['id']
+
+
+class RecommendationListSerializer(serializers.ModelSerializer):
+    """Read-only list serializer with human-readable PPV labels."""
+    source_product_code = serializers.CharField(
+        source='product_product_variation.product.code', read_only=True
+    )
+    source_variation_name = serializers.CharField(
+        source='product_product_variation.product_variation.name', read_only=True
+    )
+    recommended_product_code = serializers.CharField(
+        source='recommended_product_product_variation.product.code', read_only=True
+    )
+    recommended_variation_name = serializers.CharField(
+        source='recommended_product_product_variation.product_variation.name', read_only=True
+    )
+
+    class Meta:
+        model = ProductVariationRecommendation
+        fields = [
+            'id',
+            'product_product_variation',
+            'source_product_code', 'source_variation_name',
+            'recommended_product_product_variation',
+            'recommended_product_code', 'recommended_variation_name',
+            'created_at', 'updated_at',
+        ]
+
+
+class RecommendationAdminSerializer(serializers.ModelSerializer):
+    """Admin serializer for ProductVariationRecommendation CRUD."""
+
+    class Meta:
+        model = ProductVariationRecommendation
+        fields = [
+            'id', 'product_product_variation',
+            'recommended_product_product_variation',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def validate(self, data):
+        """Prevent self-reference (source PPV == recommended PPV)."""
+        ppv = data.get('product_product_variation')
+        rec_ppv = data.get('recommended_product_product_variation')
+        if ppv and rec_ppv and ppv == rec_ppv:
+            raise serializers.ValidationError(
+                "A product-variation combination cannot recommend itself."
+            )
+        return data
 
 
 class ProductSerializer(serializers.ModelSerializer):

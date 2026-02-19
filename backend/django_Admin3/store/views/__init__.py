@@ -2,9 +2,18 @@
 from store.views.product import ProductViewSet
 from store.views.price import PriceViewSet
 from store.views.bundle import BundleViewSet
+from store.views.bundle_product import BundleProductViewSet
+
+# Admin ViewSets
+from store.views.product_admin import StoreProductAdminViewSet
+from store.views.bundle_admin import StoreBundleAdminViewSet
 
 __all__ = [
     'ProductViewSet',
     'PriceViewSet',
     'BundleViewSet',
+    'BundleProductViewSet',
+    # Admin ViewSets
+    'StoreProductAdminViewSet',
+    'StoreBundleAdminViewSet',
 ]

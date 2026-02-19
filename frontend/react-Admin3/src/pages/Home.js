@@ -17,6 +17,15 @@ import
    School,
    ArrowForward,
 } from "@mui/icons-material";
+import StripeWaveBackground from "../components/Effects/StripeWaveBackground";
+import AuroraBorealisBackground from '../components/Effects/AuroraBorealisBackground';
+import OceanDepthBackground from '../components/Effects/OceanDepthBackground';
+import NeonMeshBackground from '../components/Effects/NeonMeshBackground';
+import SunsetSilkBackground from "../components/Effects/SunsetSilkBackground";
+import IrisDawnBackground from "../components/Effects/IrisDawnBackground";
+import CopperRoseBackground from "../components/Effects/CopperRoseBackground";
+// import NeonMeshBackground from './Effects/NeonMeshBackground';
+
 
 const Home = () =>
 {
@@ -249,27 +258,15 @@ const Home = () =>
                   height: "100%",
                   padding: 0,
                }}>
-               {/* Background Video */}
-               <video
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  poster={backgroundVideoPoster}
-                  style={{
-                     position: "absolute",
-                     top: 0,
-                     left: 0,
-                     width: "100%",
-                     height: "100%",
-                     objectFit: "cover",
-                     zIndex: 0,
-                  }}
-               >
-                  <source src={backgroundVideo} type="video/mp4" />
-               </video>
-
-               {/* Grey Overlay */}
+               {/* Animated Gradient Wave Background (Stripe-style) */}
+               {/* <StripeWaveBackground /> */}
+               {/* <AuroraBorealisBackground style={{ opacity: 0.8 }} /> */}
+               {/* <OceanDepthBackground/> */}
+               <NeonMeshBackground/>
+               {/* <SunsetSilkBackground /> */}
+               {/* <IrisDawnBackground /> */}
+               {/* <CopperRoseBackground /> */}
+               {/* Dark Overlay for text readability */}
                <div
                   style={{
                      position: "absolute",
@@ -277,7 +274,7 @@ const Home = () =>
                      left: 0,
                      width: "100%",
                      height: "100%",
-                     backgroundColor: "rgba(0, 0, 0, 0.75)",
+                     backgroundColor: "rgba(0, 0, 0, 0.45)",
                      zIndex: 1,
                   }}
                />
@@ -286,8 +283,8 @@ const Home = () =>
                   sx={{
                      ...heroContentStyles,
                      padding: {
-                        xs: theme.spacing.lg,
-                        lg: theme.spacing.lg,
+                        xs: theme.spacingTokens.lg,
+                        lg: theme.spacingTokens.lg,
                      },
                      zIndex: 3,
                      display: "flex",
@@ -297,14 +294,21 @@ const Home = () =>
                   }}
                >
                   {/* Rules Engine Messages Section (Holiday Messages, etc.) */}
-                  <RulesEngineInlineAlert
-                     messages={rulesMessages}
-                     loading={rulesLoading}
-                     loadingMessage="Checking for important notices..."
-                     fullWidth={true}
-                     float={true}
-                     floatPosition="right"
-                  />
+                  <Box
+                     sx={{
+                        position: "absolute",
+                        top: theme.spacingTokens.sm,
+                        right: theme.spacingTokens.sm,
+                        zIndex: 10,
+                        maxWidth: { xs: "90%", sm: "400px", md: "450px" },
+                     }}
+                  >
+                     <RulesEngineInlineAlert
+                        messages={rulesMessages}
+                        loading={rulesLoading}
+                        loadingMessage="Checking for important notices..."
+                     />
+                  </Box>
                   <Box
                      sx={{
                         display: "flex",
@@ -313,26 +317,26 @@ const Home = () =>
                      }}
                   >
                      <Typography
-                        variant="BPP"
-                        color={theme.palette.md3.surfaceVariant}
+                        variant="title_BPP"
                      >
                         BPP
                      </Typography>
-                     <Typography
-                        variant="Acted"
-                        color={theme.palette.md3.surfaceVariant}
-                        className="m-top__xs"
-                     >
-                        Actuarial Education
-                     </Typography>
-                     <Divider flexItem />
-                     <Typography
-                        variant="h3"
-                        align="start"
-                        color={theme.palette.md3.surfaceVariant}
-                     >
-                        Online Store
-                     </Typography>
+                     <Box sx={{
+                        paddingLeft: theme.spacingTokens.xs[2],
+                        textAlign: 'start',
+                     }}>
+                        <Typography
+                           variant="title_Acted"
+                        >
+                           Actuarial Education
+                        </Typography>
+                        <Divider flexItem />
+                        <Typography
+                           variant="title_onlineStore"
+                        >
+                           Online Store
+                        </Typography>
+                     </Box>
                   </Box>
 
                   <Container
@@ -366,18 +370,13 @@ const Home = () =>
                   error={error}
                   maxSuggestions={5}
                />
-            </Container>
-            <Grid
-               container>
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>red</Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>green</Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>blue</Grid>
-               </Grid>
+            </Container>            
             {/* Product Cards Grid */}
             <Grid
                container
-               // spacing={3}
+               spacing={5}
                sx={{
+                  padding: theme.spacingTokens.md
                   // justifyContent: "center",
                   // alignItems: "stretch",
                   // maxWidth: "1200px",
@@ -396,6 +395,7 @@ const Home = () =>
                      size={{ xs: 12, sm: 6, md: 4, lg: 4 }}
                      sx={{
                         // alignSelf: "stretch",
+                        gap: 2,
                         zIndex: 99,
                      }}
                   >
@@ -405,7 +405,7 @@ const Home = () =>
                            p: { xs: 2, md: 3 },
                            py: { xs: 2, md: 5 },
                            backgroundColor: "rgba(255, 255, 255, 0.95)",
-                           borderRadius: theme.spacing.sm,
+                           borderRadius: theme.spacingTokens.sm,
                            height: "100%",
                            justifyContent: "space-between",
                            display: "flex",
@@ -418,7 +418,7 @@ const Home = () =>
                               sx={{
                                  color: theme.palette.scales.granite[90],
                                  fontWeight: 500,
-                                 marginBottom: theme.spacing.lg,
+                                 marginBottom: theme.spacingTokens.lg,
                               }}
                            >
                               {card.title}

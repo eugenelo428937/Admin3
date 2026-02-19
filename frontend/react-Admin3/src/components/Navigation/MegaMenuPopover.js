@@ -61,7 +61,7 @@ const MegaMenuPopover = ({
       <Button
         ref={buttonRef}
         id={`${id}-button`}
-        variant="navPrimary"
+        variant="main_nav_link"
         aria-controls={open ? popoverId : undefined}
         aria-haspopup="true"
         aria-expanded={open}
@@ -74,7 +74,7 @@ const MegaMenuPopover = ({
         }}
         {...buttonProps}
       >
-        <Typography variant="navlink">
+        <Typography variant="main_nav_text">
           {label}
         </Typography>
       </Button>
@@ -105,7 +105,7 @@ const MegaMenuPopover = ({
               marginLeft: 0,
               marginRight: 0,
               borderRadius: 0,
-              boxShadow: theme.shadows[8],
+              boxShadow: theme.shadows[3],
               backgroundColor: theme.palette.navigation.background.active,
             },
           },
@@ -120,13 +120,13 @@ const MegaMenuPopover = ({
             }
           }}
           sx={{
-            p: 2,
+            p: 3,
             maxWidth: width,
             pl: {
-              xs: theme.spacing.lg,
-              md: theme.spacing.xl,
-              lg: theme.spacing.xl2,
-              xl: theme.spacing.xl3,
+              xs: theme.spacingTokens.lg,
+              md: theme.spacingTokens.xl[1],
+              lg: theme.spacingTokens.xl[2],
+              xl: theme.spacingTokens.xl[3],
            },
             justifyContent: 'flex-start',
           }}

@@ -4,6 +4,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import AdminSubjectDetail from '../SubjectDetail';
 
+// Mock useAuth
+jest.mock('../../../../hooks/useAuth', () => ({
+  __esModule: true,
+  useAuth: jest.fn(),
+}));
+
+import { useAuth } from '../../../../hooks/useAuth';
+
 // Mock navigate function
 const mockNavigate = jest.fn();
 
@@ -13,6 +21,7 @@ jest.mock('react-router-dom', () => {
     useNavigate: () => mockNavigate,
     useParams: () => ({ id: '1' }),
     Link: ({ children, to }) => <a href={to}>{children}</a>,
+    Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
@@ -49,6 +58,11 @@ const renderComponent = () => {
 describe('AdminSubjectDetail', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    useAuth.mockReturnValue({
+      isSuperuser: true,
+      isApprentice: false,
+      isStudyPlus: false,
+    });
     subjectService.getById.mockResolvedValue(mockSubject);
   });
 
@@ -149,7 +163,7 @@ describe('AdminSubjectDetail', () => {
       await waitFor(() => {
         expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to delete this subject?');
         expect(subjectService.delete).toHaveBeenCalledWith('1');
-        expect(mockNavigate).toHaveBeenCalledWith('/subjects');
+        expect(mockNavigate).toHaveBeenCalledWith('/admin/subjects');
       });
     });
 
@@ -178,7 +192,7 @@ describe('AdminSubjectDetail', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /back to subjects/i }));
 
-      expect(mockNavigate).toHaveBeenCalledWith('/subjects');
+      expect(mockNavigate).toHaveBeenCalledWith('/admin/subjects');
     });
   });
 

@@ -1,4 +1,4 @@
-{
+ {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
@@ -24,10 +24,14 @@
       "Bash(find:*)",
       "Bash(grep:*)",
       "Skill(brainstorming)",
+      "Skill(agent-browser)",
+      "Skill(agent-browser:*)",
       "Bash(bash:*)",
       "mcp__plugin_episodic-memory_episodic-memory__search",
       "Skill(agent-browser)",
-      "Skill(agent-browser:*)"
+      "Skill(agent-browser:*)",
+      "Bash(python:*)",
+      "Bash(python:*)"
     ],
     "deny": [
       "Read(.claude/tdd-guard/**)",

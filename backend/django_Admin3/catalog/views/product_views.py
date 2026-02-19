@@ -57,9 +57,12 @@ class ProductViewSet(viewsets.ModelViewSet):
         """
         Return filtered queryset based on query parameters.
 
-        Only returns active products by default.
+        Superusers see all products; other users see active only.
         """
-        queryset = Product.objects.filter(is_active=True)
+        if self.request.user.is_superuser:
+            queryset = Product.objects.all()
+        else:
+            queryset = Product.objects.filter(is_active=True)
 
         # Filter by product group
         group_id = self.request.query_params.get('group')
