@@ -59,6 +59,22 @@ import AdminUserProfileForm from "./components/admin/user-profiles/UserProfileFo
 import AdminStaffList from "./components/admin/staff/StaffList";
 import AdminStaffForm from "./components/admin/staff/StaffForm";
 
+// US6: Email System admin components
+import EmailSettingsList from "./components/admin/email/settings/EmailSettingsList";
+import EmailTemplateList from "./components/admin/email/templates/EmailTemplateList";
+import EmailTemplateForm from "./components/admin/email/templates/EmailTemplateForm";
+import EmailQueueList from "./components/admin/email/queue/EmailQueueList";
+import EmailQueueDetail from "./components/admin/email/queue/EmailQueueDetail";
+import EmailQueueDuplicateForm from "./components/admin/email/queue/EmailQueueDuplicateForm";
+import EmailAttachmentList from "./components/admin/email/attachments/EmailAttachmentList";
+import EmailAttachmentForm from "./components/admin/email/attachments/EmailAttachmentForm";
+import EmailContentRuleList from "./components/admin/email/content-rules/EmailContentRuleList";
+import EmailContentRuleForm from "./components/admin/email/content-rules/EmailContentRuleForm";
+import EmailPlaceholderList from "./components/admin/email/placeholders/EmailPlaceholderList";
+import EmailPlaceholderForm from "./components/admin/email/placeholders/EmailPlaceholderForm";
+import ClosingSalutationList from "./components/admin/email/closing-salutations/ClosingSalutationList";
+import ClosingSalutationForm from "./components/admin/email/closing-salutations/ClosingSalutationForm";
+
 // Public pages
 import ProductList from "./components/Product/ProductList";
 import CheckoutPage from "./components/Ordering/CheckoutPage";
@@ -252,7 +268,40 @@ function App() {
 										<Route path="/admin/new-session-setup" element={<NewSessionSetup />} />
 										<Route path="/admin/new-session-setup/:sessionId" element={<NewSessionSetup />} />
 
-										{/* Public routes */}
+										{/* Admin: Email Settings (US6) */}
+									<Route path="/admin/email/settings" element={<EmailSettingsList />} />
+
+									{/* Admin: Email Templates (US6) */}
+									<Route path="/admin/email/templates" element={<EmailTemplateList />} />
+									<Route path="/admin/email/templates/new" element={<EmailTemplateForm />} />
+									<Route path="/admin/email/templates/:id/edit" element={<EmailTemplateForm />} />
+
+									{/* Admin: Email Queue (US6) */}
+									<Route path="/admin/email/queue" element={<EmailQueueList />} />
+									<Route path="/admin/email/queue/:id" element={<EmailQueueDetail />} />
+									<Route path="/admin/email/queue/:id/duplicate" element={<EmailQueueDuplicateForm />} />
+
+									{/* Admin: Email Attachments (US6) */}
+									<Route path="/admin/email/attachments" element={<EmailAttachmentList />} />
+									<Route path="/admin/email/attachments/new" element={<EmailAttachmentForm />} />
+									<Route path="/admin/email/attachments/:id/edit" element={<EmailAttachmentForm />} />
+
+									{/* Admin: Email Content Rules (US6) */}
+									<Route path="/admin/email/content-rules" element={<EmailContentRuleList />} />
+									<Route path="/admin/email/content-rules/new" element={<EmailContentRuleForm />} />
+									<Route path="/admin/email/content-rules/:id/edit" element={<EmailContentRuleForm />} />
+
+									{/* Admin: Email Placeholders (US6) */}
+									<Route path="/admin/email/placeholders" element={<EmailPlaceholderList />} />
+									<Route path="/admin/email/placeholders/new" element={<EmailPlaceholderForm />} />
+									<Route path="/admin/email/placeholders/:id/edit" element={<EmailPlaceholderForm />} />
+
+									{/* Admin: Email Closing Salutations (US6) */}
+									<Route path="/admin/email/closing-salutations" element={<ClosingSalutationList />} />
+									<Route path="/admin/email/closing-salutations/new" element={<ClosingSalutationForm />} />
+									<Route path="/admin/email/closing-salutations/:id/edit" element={<ClosingSalutationForm />} />
+
+									{/* Public routes */}
 										<Route path="/checkout" element={<CheckoutPage />} />
 										<Route path="/orders" element={<OrderHistory />} />
 										<Route path="/auth/forgot-password" element={<ForgotPasswordForm />} />
