@@ -671,7 +671,7 @@ const NavigationMenu = ({
                      {/* Format Column */}
                      <Grid size={{ xs: 12, md: 4 }}>
                         <Typography
-                           variant="meganavheading"
+                           variant="mega-nav-heading"
                            sx={{ mb: 1, fontWeight: "bold" }}
                            id="tutorial-format-heading"
                         >
