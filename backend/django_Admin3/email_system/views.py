@@ -113,6 +113,7 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
             '    <mj-wrapper>\n'
             f'      {parts["banner"]}\n'
             '      <!-- CONTENT_PLACEHOLDER -->\n'
+            '      <!-- SIGNATURE_PLACEHOLDER -->\n'
             f'      {parts["footer"]}\n'
             '    </mj-wrapper>\n'
             '  </mj-body>\n'
