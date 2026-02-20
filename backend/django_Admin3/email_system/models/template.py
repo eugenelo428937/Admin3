@@ -50,6 +50,21 @@ class EmailTemplate(models.Model):
     # Outlook compatibility
     enhance_outlook_compatibility = models.BooleanField(default=True, help_text="Apply Outlook enhancements")
 
+    # Master/shared template flag
+    is_master = models.BooleanField(default=False, help_text="Shared MJML component (master template, banner, footer, styles)")
+
+    closing_salutation = models.ForeignKey(
+        'email_system.ClosingSalutation',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='templates',
+        help_text="Closing salutation block for this template",
+    )
+
+    # MJML content storage (for admin editor)
+    mjml_content = models.TextField(blank=True, default='', help_text="MJML source content for the template editor")
+    mjml_last_synced = models.DateTimeField(null=True, blank=True, help_text="When MJML content was last imported from file")
+
     # Metadata
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
