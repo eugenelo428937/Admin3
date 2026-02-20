@@ -74,6 +74,18 @@ class ClosingSalutationViewSetTest(TestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(response.data['signature_mjml'], '')
 
+    def test_mjml_shell_includes_signature_placeholder(self):
+        response = self.client.get('/api/email/templates/mjml-shell/')
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertIn('<!-- SIGNATURE_PLACEHOLDER -->', response.data['shell'])
+        # Verify ordering: content before signature before footer
+        shell = response.data['shell']
+        content_pos = shell.index('<!-- CONTENT_PLACEHOLDER -->')
+        sig_pos = shell.index('<!-- SIGNATURE_PLACEHOLDER -->')
+        footer_pos = shell.index('Mctimoney House')  # footer content
+        self.assertLess(content_pos, sig_pos)
+        self.assertLess(sig_pos, footer_pos)
+
     def test_non_superuser_denied(self):
         regular = User.objects.create_user('regular', 'reg@test.com', 'pass')
         client = APIClient()
