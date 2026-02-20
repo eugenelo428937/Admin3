@@ -5,6 +5,7 @@ from .log import EmailLog
 from .settings import EmailSettings
 from .content_rule import EmailContentRule, EmailTemplateContentRule
 from .placeholder import EmailContentPlaceholder
+from .closing_salutation import ClosingSalutation, ClosingSalutationStaff
 
 __all__ = [
     'EmailTemplate',
@@ -16,4 +17,6 @@ __all__ = [
     'EmailContentRule',
     'EmailTemplateContentRule',
     'EmailContentPlaceholder',
+    'ClosingSalutation',
+    'ClosingSalutationStaff',
 ]
