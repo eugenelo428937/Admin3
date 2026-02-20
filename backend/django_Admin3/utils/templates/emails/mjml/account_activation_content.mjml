@@ -52,9 +52,5 @@
 			If you did not create this account, please ignore this email or contact our support team.
 		</mj-text>
 		
-		<mj-text padding="16px" align="left">
-			Welcome aboard!<br/>
-			The ActEd Team
-		</mj-text>
 	</mj-column>
-</mj-section> 
+</mj-section>
