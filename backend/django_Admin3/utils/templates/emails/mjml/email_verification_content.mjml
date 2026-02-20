@@ -61,12 +61,4 @@
 			Until this email is verified, we'll continue using your previous email address for important notifications.
 		</mj-text>				
 	</mj-column>
-</mj-section> 
-<mj-section background-color="#ffffff">
-  <mj-column width="100%" padding="0" background-color="#ffffff">
-    <mj-text align="left" background-color="#ffffff"  css-class="signature-section" padding="12px 24px">
-      Kind Regards,<br/>
-      <b>THE ACTUARIAL EDUCATION COMPANY (ActEd)</b><br/>
-	  </mj-text>
-	</mj-column>
-</mj-section> 
+</mj-section>
