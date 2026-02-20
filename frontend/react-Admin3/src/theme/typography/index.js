@@ -288,7 +288,7 @@ export const typographyConfig = {
   productTitle: {
     fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.medium,
-    fontSize: important(fontSizes.heading[40]),
+    fontSize: important(fontSizes.heading[70]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacings.scale[40]),
     textWrap: 'balance',
@@ -297,7 +297,7 @@ export const typographyConfig = {
   chip: {
     fontFamily: fontFamilies.inter,
     fontWeight: fontWeights.semibold,
-    fontSize: important(fontSizes.heading[60]),
+    fontSize: important(fontSizes.heading[80]),
     lineHeight: important(lineHeights.normal),
     letterSpacing: important(letterSpacings.scale[40]),
     textTransform: 'none',
