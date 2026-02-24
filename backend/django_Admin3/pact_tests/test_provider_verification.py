@@ -71,6 +71,24 @@ class PactProviderVerificationTest(LiveServerTestCase):
             )
 
         from pact.v3 import Verifier
+        from rest_framework_simplejwt.tokens import AccessToken
+        from django.contrib.auth import get_user_model
+
+        # Create a superuser and generate a JWT token so the verifier
+        # can access IsSuperUser-protected endpoints (email, staff, etc.)
+        User = get_user_model()
+        superuser, _ = User.objects.get_or_create(
+            username='pact_superuser',
+            defaults={
+                'email': 'pact_superuser@example.com',
+                'is_staff': True,
+                'is_superuser': True,
+                'is_active': True,
+            },
+        )
+        superuser.set_password('PactSuper123!')
+        superuser.save()
+        token = str(AccessToken.for_user(superuser))
 
         verifier = Verifier()
 
@@ -87,6 +105,10 @@ class PactProviderVerificationTest(LiveServerTestCase):
             teardown=False,
             body=True,
         )
+
+        # Inject JWT auth header so IsSuperUser-protected endpoints
+        # return real data instead of 401/403.
+        verifier.add_custom_header('Authorization', f'Bearer {token}')
 
         # Load the contract file
         verifier.add_source(PACT_FILE)
@@ -127,6 +149,9 @@ def _start_state_server(port):
                         STATE_HANDLERS[state](params)
                         self.send_response(200)
                     except Exception as e:
+                        import traceback
+                        tb = traceback.format_exc()
+                        print(f"\n!!! STATE HANDLER FAILED: '{state}'\n{tb}")
                         self.send_response(500)
                         self.end_headers()
                         self.wfile.write(str(e).encode())

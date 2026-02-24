@@ -29,6 +29,7 @@ class EmailSettingsViewSet(viewsets.ModelViewSet):
     queryset = EmailSettings.objects.all()
     serializer_class = EmailSettingsSerializer
     permission_classes = [IsSuperUser]
+    pagination_class = None
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -46,6 +47,16 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
 
     queryset = EmailTemplate.objects.all()
     permission_classes = [IsSuperUser]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        template_type = self.request.query_params.get('template_type')
+        if template_type:
+            qs = qs.filter(template_type=template_type)
+        is_master = self.request.query_params.get('is_master')
+        if is_master is not None:
+            qs = qs.filter(is_master=is_master.lower() in ('true', '1'))
+        return qs
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -132,35 +143,6 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
             mjml = ''
         return Response({'signature_mjml': mjml})
 
-    @action(detail=True, methods=['post'], url_path='import-mjml')
-    def import_mjml(self, request, pk=None):
-        """Import MJML content from the corresponding file on disk."""
-        instance = self.get_object()
-        mjml_path = os.path.join(
-            settings.BASE_DIR,
-            'utils', 'templates', 'emails', 'mjml',
-            f'{instance.content_template_name}.mjml',
-        )
-
-        if not os.path.isfile(mjml_path):
-            return Response(
-                {'error': f'MJML file not found: {mjml_path}'},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        try:
-            with open(mjml_path, 'r', encoding='utf-8') as f:
-                instance.mjml_content = f.read()
-            instance.mjml_last_synced = timezone.now()
-            instance.save()
-
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-        except Exception as e:
-            return Response(
-                {'error': f'Failed to import MJML file: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
 
 
 class EmailAttachmentViewSet(viewsets.ModelViewSet):

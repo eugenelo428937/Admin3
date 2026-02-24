@@ -707,6 +707,8 @@ class EmailService:
             str: Rendered MJML content with master template
         """
         try:
+            from django.template import Template, Context
+
             # Determine template name from content template
             template_name = content_template.replace('_content', '') if content_template.endswith('_content') else content_template
 
@@ -719,9 +721,13 @@ class EmailService:
                 **context  # Original context takes precedence
             }
 
-            # First, render the specific content template
-            content_template_path = f'{self.mjml_template_dir}/{content_template}.mjml'
-            rendered_content = render_to_string(content_template_path, placeholder_context)
+            # Render the content template — prefer DB content over disk files
+            db_template = self._get_db_template(template_name)
+            if db_template and db_template.mjml_content:
+                rendered_content = Template(db_template.mjml_content).render(Context(placeholder_context))
+            else:
+                content_template_path = f'{self.mjml_template_dir}/{content_template}.mjml'
+                rendered_content = render_to_string(content_template_path, placeholder_context)
 
             # Process dynamic content insertion for placeholders
             try:
@@ -745,15 +751,35 @@ class EmailService:
                 **context  # Include original context for any master template variables
             }
 
-            # Render the master template with the content injected
-            master_template_path = f'{self.mjml_template_dir}/master_template.mjml'
-            final_mjml = render_to_string(master_template_path, master_context)
+            # Render the master template — prefer DB content over disk files
+            master_db = self._get_db_master_template()
+            if master_db and master_db.mjml_content:
+                final_mjml = Template(master_db.mjml_content).render(Context(master_context))
+            else:
+                master_template_path = f'{self.mjml_template_dir}/master_template.mjml'
+                final_mjml = render_to_string(master_template_path, master_context)
 
             return final_mjml
 
         except Exception as e:
             logger.error(f"Failed to render email with master template: {str(e)}")
             raise Exception(f"Email template rendering failed: {str(e)}")
+
+    def _get_db_template(self, template_name: str):
+        """Look up an active EmailTemplate by name. Returns None on miss."""
+        try:
+            from email_system.models import EmailTemplate
+            return EmailTemplate.objects.filter(name=template_name, is_active=True).first()
+        except Exception:
+            return None
+
+    def _get_db_master_template(self):
+        """Look up the active master EmailTemplate. Returns None on miss."""
+        try:
+            from email_system.models import EmailTemplate
+            return EmailTemplate.objects.filter(name='master_template', is_master=True, is_active=True).first()
+        except Exception:
+            return None
 
     def send_order_confirmation(self, user_email: str, order_data: Dict, use_mjml: bool = True, enhance_outlook: bool = True, use_queue: bool = None, user=None) -> bool:
         """Send order confirmation email using master template with dynamic content."""
@@ -1093,7 +1119,6 @@ class EmailService:
                     'display_name': template_name.replace('_', ' ').title(),
                     'description': f'Email template for {template_name}',
                     'subject_template': f'{template_name.replace("_", " ").title()} - ActEd',
-                    'content_template_name': f'{template_name}_content',
                     'use_master_template': True,
                     'is_active': True
                 }

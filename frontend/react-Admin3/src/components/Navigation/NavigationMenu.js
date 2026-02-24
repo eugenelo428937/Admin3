@@ -109,6 +109,18 @@ const NavigationMenu = ({
                { label: "Order Items", to: "/admin/order-items" },
             ],
          },
+         {
+            label: "Email System",
+            enabled: true,
+            links: [
+               { label: "Settings", to: "/admin/email/settings" },
+               { label: "Templates", to: "/admin/email/templates" },
+               { label: "Queue", to: "/admin/email/queue" },
+               { label: "Attachments", to: "/admin/email/attachments" },
+               { label: "Content Rules", to: "/admin/email/content-rules" },
+               { label: "Placeholders", to: "/admin/email/placeholders" },
+            ],
+         },
       ],
    };
 

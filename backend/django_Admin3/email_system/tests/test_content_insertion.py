@@ -21,7 +21,6 @@ class EmailContentInsertionServiceTest(TestCase):
             name='order_confirmation',
             display_name='Order Confirmation',
             subject_template='Order Confirmation',
-            content_template_name='order_confirmation_content',
             is_active=True,
         )
         self.placeholder = EmailContentPlaceholder.objects.create(

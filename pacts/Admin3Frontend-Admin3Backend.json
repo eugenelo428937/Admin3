@@ -310,6 +310,243 @@
       }
     },
     {
+      "description": "a request for a single email template",
+      "providerStates": [
+        {
+          "name": "email template exists"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/email/templates/1/"
+      },
+      "response": {
+        "body": {
+          "default_priority": "normal",
+          "display_name": "Order Confirmation",
+          "id": 1,
+          "is_active": true,
+          "mjml_content": "",
+          "name": "order_confirmation",
+          "subject_template": "Your Order #{{order_id}}",
+          "template_type": "transactional",
+          "use_master_template": true
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.default_priority": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.display_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.is_active": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.mjml_content": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subject_template": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.template_type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.use_master_template": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for a single queue item",
+      "providerStates": [
+        {
+          "name": "email queue item exists"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/email/queue/1/"
+      },
+      "response": {
+        "body": {
+          "attempts": 0,
+          "from_email": "noreply@acted.co.uk",
+          "id": 1,
+          "max_attempts": 3,
+          "priority": "normal",
+          "queue_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "status": "pending",
+          "subject": "Test Email Subject",
+          "to_emails": [
+            "test@example.com"
+          ]
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.attempts": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.from_email": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.max_attempts": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.priority": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.queue_id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.status": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.subject": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.to_emails": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.to_emails[*]": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
       "description": "a request for a single staff member",
       "providerStates": [
         {
@@ -1004,17 +1241,14 @@
         "path": "/api/store/bundles/"
       },
       "response": {
-        "body": {
-          "count": 1,
-          "results": [
-            {
-              "id": 1,
-              "is_active": true,
-              "name": "CM2 April 2025 Bundle",
-              "product_count": 1
-            }
-          ]
-        },
+        "body": [
+          {
+            "id": 1,
+            "is_active": true,
+            "name": "CM2 April 2025 Bundle",
+            "product_count": 1
+          }
+        ],
         "headers": {
           "Content-Type": "application/json"
         },
@@ -1024,28 +1258,12 @@
               "combine": "AND",
               "matchers": [
                 {
-                  "match": "type"
-                }
-              ]
-            },
-            "$.count": {
-              "combine": "AND",
-              "matchers": [
-                {
-                  "match": "integer"
-                }
-              ]
-            },
-            "$.results": {
-              "combine": "AND",
-              "matchers": [
-                {
                   "match": "type",
                   "min": 1
                 }
               ]
             },
-            "$.results[*].id": {
+            "$[*].id": {
               "combine": "AND",
               "matchers": [
                 {
@@ -1053,7 +1271,7 @@
                 }
               ]
             },
-            "$.results[*].is_active": {
+            "$[*].is_active": {
               "combine": "AND",
               "matchers": [
                 {
@@ -1061,7 +1279,7 @@
                 }
               ]
             },
-            "$.results[*].name": {
+            "$[*].name": {
               "combine": "AND",
               "matchers": [
                 {
@@ -1069,7 +1287,7 @@
                 }
               ]
             },
-            "$.results[*].product_count": {
+            "$[*].product_count": {
               "combine": "AND",
               "matchers": [
                 {
@@ -1213,10 +1431,16 @@
         "body": [
           {
             "created_at": "2026-02-16T10:00:00Z",
-            "exam_session": 1,
+            "exam_session": {
+              "id": 1,
+              "session_code": "2025-04"
+            },
             "id": 1,
             "is_active": true,
-            "subject": 1,
+            "subject": {
+              "id": 1,
+              "code": "CM2"
+            },
             "updated_at": "2026-02-16T10:00:00Z"
           }
         ],
@@ -1242,14 +1466,6 @@
                 }
               ]
             },
-            "$[*].exam_session": {
-              "combine": "AND",
-              "matchers": [
-                {
-                  "match": "integer"
-                }
-              ]
-            },
             "$[*].id": {
               "combine": "AND",
               "matchers": [
@@ -1266,7 +1482,23 @@
                 }
               ]
             },
-            "$[*].subject": {
+            "$[*].updated_at": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].exam_session": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].exam_session.id": {
               "combine": "AND",
               "matchers": [
                 {
@@ -1274,7 +1506,31 @@
                 }
               ]
             },
-            "$[*].updated_at": {
+            "$[*].exam_session.session_code": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].subject": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].subject.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].subject.code": {
               "combine": "AND",
               "matchers": [
                 {
@@ -2100,6 +2356,606 @@
               "matchers": [
                 {
                   "match": "integer"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for email attachments list",
+      "providerStates": [
+        {
+          "name": "email attachments exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/email/attachments/"
+      },
+      "response": {
+        "body": {
+          "count": 1,
+          "results": [
+            {
+              "attachment_type": "static",
+              "display_name": "Terms and Conditions",
+              "file_size": 1024,
+              "id": 1,
+              "is_active": true,
+              "name": "terms_and_conditions"
+            }
+          ]
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.count": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.results[*].attachment_type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].display_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].file_size": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results[*].is_active": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for email content rules list",
+      "providerStates": [
+        {
+          "name": "email content rules exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/email/content-rules/"
+      },
+      "response": {
+        "body": {
+          "count": 1,
+          "results": [
+            {
+              "id": 1,
+              "is_active": true,
+              "name": "product_upsell_rule",
+              "priority": 100,
+              "rule_type": "product_based"
+            }
+          ]
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.count": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.results[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results[*].is_active": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].priority": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results[*].rule_type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for email placeholders list",
+      "providerStates": [
+        {
+          "name": "email placeholders exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/email/placeholders/"
+      },
+      "response": {
+        "body": {
+          "count": 1,
+          "results": [
+            {
+              "display_name": "Order Details Block",
+              "id": 1,
+              "insert_position": "replace",
+              "is_active": true,
+              "is_required": true,
+              "name": "order_details_block"
+            }
+          ]
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.count": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.results[*].display_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results[*].insert_position": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].is_active": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].is_required": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for email queue list",
+      "providerStates": [
+        {
+          "name": "email queue items exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/email/queue/"
+      },
+      "response": {
+        "body": {
+          "count": 1,
+          "results": [
+            {
+              "id": 1,
+              "priority": "normal",
+              "queue_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+              "status": "pending",
+              "subject": "Test Email Subject",
+              "to_emails": [
+                "test@example.com"
+              ]
+            }
+          ]
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.count": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.results[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results[*].priority": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].queue_id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].status": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].subject": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].to_emails": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.results[*].to_emails[*]": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for email settings list",
+      "providerStates": [
+        {
+          "name": "email settings exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/email/settings/"
+      },
+      "response": {
+        "body": [
+          {
+            "display_name": "SMTP Host",
+            "id": 1,
+            "is_active": true,
+            "key": "smtp_host",
+            "setting_type": "smtp",
+            "value": "mail.example.com"
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$[*].display_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].is_active": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].key": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].setting_type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].value": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for email templates list",
+      "providerStates": [
+        {
+          "name": "email templates exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/email/templates/"
+      },
+      "response": {
+        "body": {
+          "count": 1,
+          "results": [
+            {
+              "default_priority": "normal",
+              "display_name": "Order Confirmation",
+              "id": 1,
+              "is_active": true,
+              "name": "order_confirmation",
+              "subject_template": "Your Order #{{order_id}}",
+              "template_type": "transactional"
+            }
+          ]
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.count": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ]
+            },
+            "$.results[*].default_priority": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].display_name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$.results[*].is_active": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].subject_template": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.results[*].template_type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
                 }
               ]
             }
@@ -3290,7 +4146,12 @@
             "start_date": "2025-04-01",
             "store_product_code": "CM2/PCSM01P/2025-04",
             "subject_code": "CM2",
-            "venue": "London"
+            "venue": {
+              "id": 1,
+              "name": "London",
+              "description": "London venue",
+              "location": null
+            }
           }
         ],
         "headers": {
@@ -3364,6 +4225,22 @@
               ]
             },
             "$[*].venue": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$[*].venue.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            },
+            "$[*].venue.name": {
               "combine": "AND",
               "matchers": [
                 {

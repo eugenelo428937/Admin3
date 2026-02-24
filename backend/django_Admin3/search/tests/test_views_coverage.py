@@ -527,7 +527,7 @@ class TestAdvancedFuzzySearchViewGet(APITestCase):
 
     @patch('search.views.search_service')
     def test_default_params(self, mock_service):
-        """Default min_score=65 and limit=50."""
+        """Default min_score=60 and limit=50."""
         mock_service.advanced_fuzzy_search.return_value = {
             'products': [], 'total_count': 0,
             'suggested_filters': {},
@@ -537,7 +537,7 @@ class TestAdvancedFuzzySearchViewGet(APITestCase):
         call_kwargs = mock_service.advanced_fuzzy_search.call_args
         min_score = call_kwargs.kwargs.get('min_score') or call_kwargs[1].get('min_score')
         limit = call_kwargs.kwargs.get('limit') or call_kwargs[1].get('limit')
-        self.assertEqual(min_score, 65)
+        self.assertEqual(min_score, 60)
         self.assertEqual(limit, 50)
 
     @patch('search.views.search_service')

@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.html import escape
 
 
 class ClosingSalutation(models.Model):
@@ -37,16 +38,16 @@ class ClosingSalutation(models.Model):
     def render_mjml(self):
         """Generate the MJML snippet for this closing salutation."""
         if self.signature_type == 'team':
-            name_lines = f'<b>{self.team_signature}</b><br/>' if self.team_signature else ''
+            name_lines = f'<b>{escape(self.team_signature)}</b><br/>' if self.team_signature else ''
         else:
             staff_entries = self.staff_members.select_related('staff__user').order_by('display_order')
             lines = []
             for entry in staff_entries:
                 user = entry.staff.user
                 if self.staff_name_format == 'first_name':
-                    name = user.first_name
+                    name = escape(user.first_name)
                 else:
-                    name = user.get_full_name() or user.username
+                    name = escape(user.get_full_name() or user.username)
                 lines.append(f'<b>{name}</b><br/>')
             name_lines = '\n      '.join(lines)
 
@@ -54,7 +55,7 @@ class ClosingSalutation(models.Model):
             '<mj-section background-color="#ffffff">\n'
             '  <mj-column width="100%" padding="0" background-color="#ffffff">\n'
             '    <mj-text align="left" css-class="signature-section" padding="12px 24px">\n'
-            f'      {self.sign_off_text},<br/>\n'
+            f'      {escape(self.sign_off_text)},<br/>\n'
             f'      {name_lines}\n'
             '    </mj-text>\n'
             '  </mj-column>\n'

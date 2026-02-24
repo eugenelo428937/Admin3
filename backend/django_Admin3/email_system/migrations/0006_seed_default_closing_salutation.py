@@ -13,7 +13,7 @@ def seed_default_salutation(apps, schema_editor):
             'display_name': 'ActEd',
             'sign_off_text': 'Kind Regards',
             'signature_type': 'team',
-            'team_signature': 'BPP Actuarial (ActEd)',
+            'team_signature': 'THE ACTUARIAL EDUCATION COMPANY (ActEd)',
             'staff_name_format': 'full_name',
             'is_active': True,
         },
