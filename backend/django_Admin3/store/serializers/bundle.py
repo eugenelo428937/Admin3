@@ -208,7 +208,7 @@ class BundleListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Bundle
-        fields = ['id', 'name', 'is_active', 'display_order', 'product_count']
+        fields = ['id', 'bundle_template', 'exam_session_subject', 'name', 'is_active', 'display_order', 'product_count']
 
     def get_product_count(self, obj):
         return obj.bundle_products.filter(is_active=True).count()

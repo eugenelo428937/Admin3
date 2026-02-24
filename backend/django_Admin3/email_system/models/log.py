@@ -190,19 +190,29 @@ class EmailLog(models.Model):
                         'mjml_content': mjml_content
                     }
 
-            # Fallback to regular template
+            # Fallback: render MJML content from database
             try:
-                from django.template.loader import render_to_string
+                if self.template.mjml_content:
+                    from django.template import Template, Context
+                    from mjml import mjml2html
 
-                mjml_template = f'emails/mjml/{self.template.content_template_name}.mjml'
-                html_content = render_to_string(mjml_template, self.email_context)
-                text_content = email_service._html_to_text(html_content)
+                    rendered_mjml = Template(self.template.mjml_content).render(Context(self.email_context))
+                    html_content = mjml2html(rendered_mjml)
+                    text_content = email_service._html_to_text(html_content)
 
-                return {
-                    'success': True,
-                    'html_content': html_content,
-                    'text_content': text_content
-                }
+                    return {
+                        'success': True,
+                        'html_content': html_content,
+                        'text_content': text_content,
+                        'mjml_content': rendered_mjml
+                    }
+                else:
+                    return {
+                        'success': False,
+                        'error': 'Template has no MJML content',
+                        'html_content': '',
+                        'text_content': ''
+                    }
             except Exception as template_error:
                 return {
                     'success': False,

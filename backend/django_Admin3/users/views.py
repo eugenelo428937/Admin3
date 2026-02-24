@@ -41,6 +41,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.select_related('user').all()
     serializer_class = UserProfileAdminSerializer
     permission_classes = [IsSuperUser]
+    pagination_class = None
 
     @action(detail=True, methods=['get'])
     def addresses(self, request, pk=None):
@@ -75,6 +76,7 @@ class StaffViewSet(viewsets.ModelViewSet):
     queryset = Staff.objects.select_related('user').all()
     serializer_class = StaffAdminSerializer
     permission_classes = [IsSuperUser]
+    pagination_class = None
 
 
 # =============================================================================

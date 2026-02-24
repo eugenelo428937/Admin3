@@ -12,7 +12,6 @@ import type {
     EmailContentRule,
     EmailTemplateContentRule,
     MjmlPreviewResponse,
-    MjmlImportResponse,
     MjmlShellResponse,
     ClosingSalutation,
     SignatureMjmlResponse,
@@ -85,11 +84,6 @@ const emailService = {
         const response = await httpService.post(`${BASE_URL}/templates/${id}/preview/`, {
             mjml_content: mjmlContent,
         });
-        return response.data;
-    },
-
-    importMjml: async (id: number): Promise<MjmlImportResponse> => {
-        const response = await httpService.post(`${BASE_URL}/templates/${id}/import-mjml/`);
         return response.data;
     },
 

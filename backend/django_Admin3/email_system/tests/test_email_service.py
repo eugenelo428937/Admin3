@@ -95,7 +95,6 @@ class ShouldUseQueueTest(TestCase):
             name='test_template',
             display_name='Test Template',
             subject_template='Test',
-            content_template_name='test_content',
             enable_queue=True,
             is_active=True,
         )
@@ -633,7 +632,6 @@ class GetTemplatePlaceholdersTest(TestCase):
             name='test_template',
             display_name='Test Template',
             subject_template='Test',
-            content_template_name='test_content',
             is_active=True,
         )
         self.placeholder = EmailContentPlaceholder.objects.create(
@@ -661,8 +659,10 @@ class RenderEmailWithMasterTemplateTest(TestCase):
         self.service = EmailService()
 
     @patch('email_system.services.email_service.render_to_string')
+    @patch.object(EmailService, '_get_db_master_template', return_value=None)
+    @patch.object(EmailService, '_get_db_template', return_value=None)
     @patch.object(EmailService, '_get_template_placeholders', return_value={})
-    def test_successful_render(self, mock_placeholders, mock_render):
+    def test_successful_render(self, mock_placeholders, mock_db_tpl, mock_db_master, mock_render):
         mock_render.side_effect = ['<content>rendered</content>', '<master>final</master>']
         result = self.service._render_email_with_master_template(
             content_template='order_confirmation_content',

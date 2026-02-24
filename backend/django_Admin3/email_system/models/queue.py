@@ -72,6 +72,12 @@ class EmailQueue(models.Model):
     # Tags for organization
     tags = models.JSONField(default=list, blank=True, help_text="Tags for categorization and filtering")
 
+    # Duplicate tracking
+    duplicated_from = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='duplicates', help_text="Original queue item this was duplicated from"
+    )
+
     class Meta:
         db_table = 'utils_email_queue'
         ordering = ['-priority', 'scheduled_at', 'created_at']

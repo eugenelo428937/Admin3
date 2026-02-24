@@ -55,6 +55,14 @@ USE_DUMMY_PAYMENT_GATEWAY = True
 # Fuzzy Search Configuration
 FUZZY_SEARCH_MIN_SCORE = int(env('FUZZY_SEARCH_MIN_SCORE', default=45))
 
+# SSL Certificate fix for macOS — Python's default cert.pem is missing;
+# point OpenSSL at certifi's CA bundle so SMTP TLS verification succeeds.
+try:
+    import certifi
+    os.environ.setdefault('SSL_CERT_FILE', certifi.where())
+except ImportError:
+    pass
+
 # Email Backend Configuration
 # Priority: Internal SMTP > SendGrid > Gmail SMTP (from base.py)
 USE_SENDGRID = env.bool('USE_SENDGRID', default=False)
@@ -104,6 +112,9 @@ DEV_EMAIL_RECIPIENTS = env.list('DEV_EMAIL_RECIPIENTS', default=[
 # Email monitoring - BCC copy of all emails
 EMAIL_BCC_MONITORING = env.bool('EMAIL_BCC_MONITORING', default=False)
 EMAIL_BCC_RECIPIENTS = env.list('EMAIL_BCC_RECIPIENTS', default=[])
+
+# Email attachment upload path
+EMAIL_ATTACHMENT_UPLOAD_PATH = env('EMAIL_ATTACHMENT_UPLOAD_PATH', default='static/documents')
 
 # Token Expiry Configuration (in hours)
 # These can be overridden in database via EmailSettings model

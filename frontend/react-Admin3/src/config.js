@@ -32,6 +32,9 @@ const config = {
 	tutorialUrl:
 		process.env.REACT_APP_API_BASE_URL +
 		process.env.REACT_APP_API_TUTORIAL_URL,
+	emailUrl:
+		process.env.REACT_APP_API_BASE_URL +
+		process.env.REACT_APP_API_EMAIL_URL,
 	isDevelopment: process.env.NODE_ENV === "development",
 	isUAT: process.env.REACT_APP_ENV === "uat" || process.env.REACT_APP_ENVIRONMENT === "uat",
 	pageSize: process.env.REACT_APP_API_PAGE_SIZE,

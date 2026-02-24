@@ -20,6 +20,7 @@ class BundleProductViewSet(viewsets.ModelViewSet):
         'bundle', 'product'
     ).all()
     serializer_class = BundleProductSerializer
+    pagination_class = None
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:

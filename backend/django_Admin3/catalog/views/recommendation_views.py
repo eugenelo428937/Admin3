@@ -20,6 +20,7 @@ class RecommendationViewSet(viewsets.ModelViewSet):
         'recommended_product_product_variation__product',
         'recommended_product_product_variation__product_variation',
     ).all()
+    pagination_class = None
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:

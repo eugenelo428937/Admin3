@@ -93,7 +93,7 @@ const useClosingSalutationFormVM = (): ClosingSalutationFormVM => {
             };
 
             if (isEditMode && id) {
-                await emailService.updateClosingSalutation(Number(id), submitData);
+                await emailService.patchClosingSalutation(Number(id), submitData);
             } else {
                 await emailService.createClosingSalutation(submitData);
             }

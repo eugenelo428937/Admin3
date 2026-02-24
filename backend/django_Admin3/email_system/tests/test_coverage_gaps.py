@@ -338,7 +338,6 @@ class QueueServiceSerializationFallbackTest(TestCase):
             name='cov_serial_tpl',
             display_name='Coverage Serial Template',
             subject_template='Coverage Serial Subject',
-            content_template_name='cov_serial_content',
             is_active=True,
         )
 
@@ -521,7 +520,6 @@ class QueueServiceRetrySchedulingTest(TestCase):
             name='cov_retry_tpl',
             display_name='Coverage Retry Template',
             subject_template='Coverage Retry Subject',
-            content_template_name='cov_retry_content',
             retry_delay_minutes=10,
             max_retry_attempts=5,
             is_active=True,
@@ -611,7 +609,6 @@ class ShouldIncludeAttachmentObjectItemsTest(TestCase):
             name='cov_obj_item_tpl',
             display_name='Coverage Object Item Template',
             subject_template='Coverage Object Item Subject',
-            content_template_name='cov_obj_content',
             is_active=True,
         )
         self.attachment = EmailAttachment.objects.create(
@@ -661,7 +658,6 @@ class RegenerateEmailContentSuccessTest(TestCase):
             name='order_confirmation',
             display_name='Regen Template',
             subject_template='Regen Subject',
-            content_template_name='regen_content',
             use_master_template=True,
             is_active=True,
         )
@@ -690,12 +686,13 @@ class RegenerateEmailContentSuccessTest(TestCase):
         self.assertEqual(result['text_content'], 'plain text version')
         self.assertEqual(result['mjml_content'], '<mjml>rendered master</mjml>')
 
-    @patch('django.template.loader.render_to_string', return_value='<html>regular template</html>')
+    @patch('mjml.mjml2html', return_value='<html>regular template</html>')
     @patch('email_system.services.email_service.EmailService')
-    def test_regenerate_regular_template_success(self, mock_service_cls, mock_render):
-        """Test regenerate_email_content success with regular template (lines 199-201)."""
-        # Make template NOT use master template
+    def test_regenerate_regular_template_success(self, mock_service_cls, mock_mjml):
+        """Test regenerate_email_content success with regular template via DB MJML content."""
+        # Make template NOT use master template but has MJML content in DB
         self.template.use_master_template = False
+        self.template.mjml_content = '<mjml><mj-body><mj-section><mj-column><mj-text>Hello</mj-text></mj-column></mj-section></mj-body></mjml>'
         self.template.save()
 
         mock_service = MagicMock()
