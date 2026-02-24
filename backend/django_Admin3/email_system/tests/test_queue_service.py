@@ -71,7 +71,6 @@ class QueueEmailTest(TestCase):
             display_name='EQS Order Confirmation',
             template_type='order_confirmation',
             subject_template='Order #{{ order_number }} Confirmed',
-            content_template_name='eqs_order_content',
             from_email='eqs_orders@example.com',
             reply_to_email='eqs_reply@example.com',
             default_priority='high',
@@ -327,7 +326,6 @@ class ProcessQueueItemTest(TestCase):
             name='eqs_process_tpl',
             display_name='EQS Process Template',
             subject_template='EQS Process Test',
-            content_template_name='eqs_process_content',
             max_retry_attempts=3,
             retry_delay_minutes=5,
             is_active=True,
@@ -518,7 +516,6 @@ class SendSingleEmailTest(TestCase):
             name='eqs_send_single_tpl',
             display_name='EQS Send Single Template',
             subject_template='EQS Send Single Test',
-            content_template_name='eqs_send_single_content',
             use_master_template=True,
             enhance_outlook_compatibility=True,
             is_active=True,
@@ -591,7 +588,7 @@ class SendSingleEmailTest(TestCase):
             'esp_message_id': None
         }
         with patch.object(
-            self.service.email_service, '_send_mjml_email',
+            self.service.email_service, '_send_mjml_email_from_content',
             return_value=mock_response
         ):
             start_time = timezone.now()
@@ -612,7 +609,7 @@ class SendSingleEmailTest(TestCase):
             'esp_message_id': None
         }
         with patch.object(
-            self.service.email_service, '_send_mjml_email',
+            self.service.email_service, '_send_mjml_email_from_content',
             return_value=mock_response
         ):
             start_time = timezone.now()
@@ -656,7 +653,6 @@ class SendWithMasterTemplateTest(TestCase):
             name='order_confirmation',
             display_name='EQS OC Master',
             subject_template='Order Confirmed',
-            content_template_name='eqs_oc_content',
             use_master_template=True,
             enhance_outlook_compatibility=True,
             is_active=True,
@@ -703,7 +699,7 @@ class SendWithMasterTemplateTest(TestCase):
             'esp_message_id': None
         }
         with patch.object(
-            self.service.email_service, '_send_mjml_email',
+            self.service.email_service, '_send_mjml_email_from_content',
             return_value=mock_response
         ):
             result = self.service._send_with_master_template(
@@ -764,7 +760,6 @@ class CreateEmailLogTest(TestCase):
             name='eqs_log_tpl',
             display_name='EQS Log Template',
             subject_template='EQS Log Test',
-            content_template_name='eqs_log_content',
             is_active=True,
         )
         self.queue_item = EmailQueue.objects.create(
@@ -812,7 +807,6 @@ class GetTemplateAttachmentsTest(TestCase):
             name='eqs_attach_tpl',
             display_name='EQS Attach Template',
             subject_template='EQS Attach Test',
-            content_template_name='eqs_attach_content',
             is_active=True,
         )
         self.attachment = EmailAttachment.objects.create(
@@ -881,7 +875,6 @@ class ShouldIncludeAttachmentTest(TestCase):
             name='eqs_incl_tpl',
             display_name='EQS Include Template',
             subject_template='EQS Include Test',
-            content_template_name='eqs_include_content',
             is_active=True,
         )
         self.attachment = EmailAttachment.objects.create(
@@ -1096,7 +1089,6 @@ class ProcessPendingQueueTest(TestCase):
             name='eqs_pending_tpl',
             display_name='EQS Pending Template',
             subject_template='EQS Pending Test',
-            content_template_name='eqs_pending_content',
             is_active=True,
         )
 
@@ -1201,7 +1193,6 @@ class GetQueueStatsTest(TestCase):
             name='eqs_stats_tpl',
             display_name='EQS Stats Template',
             subject_template='EQS Stats Test',
-            content_template_name='eqs_stats_content',
             is_active=True,
         )
 

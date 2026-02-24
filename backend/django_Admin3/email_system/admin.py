@@ -31,7 +31,7 @@ class EmailTemplateAdmin(admin.ModelAdmin):
         }),
         ('Template Configuration', {
             'fields': (
-                'subject_template', 'content_template_name', 'use_master_template'
+                'subject_template', 'use_master_template'
             )
         }),
         ('Email Settings', {

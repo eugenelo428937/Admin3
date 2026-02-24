@@ -23,7 +23,6 @@ const DEFAULT_FORM_DATA: Partial<EmailTemplate> = {
     display_name: '',
     description: '',
     subject_template: '',
-    content_template_name: '',
     use_master_template: true,
     from_email: '',
     reply_to_email: '',

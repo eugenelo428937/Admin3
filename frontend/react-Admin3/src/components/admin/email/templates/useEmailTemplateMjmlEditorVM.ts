@@ -14,7 +14,6 @@ export interface EmailTemplateMjmlEditorVM {
     shellLoading: boolean;
     handleContentChange: (content: string) => void;
     handleSave: () => Promise<void>;
-    handleImportFromFile: () => Promise<void>;
     initContent: (content: string) => void;
     refreshSignature: () => Promise<void>;
 }
@@ -123,21 +122,6 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
         }
     };
 
-    const handleImportFromFile = async () => {
-        try {
-            setIsSaving(true);
-            const result = await emailService.importMjml(templateId);
-            setMjmlContent(result.mjml_content);
-            compileMjml(result.mjml_content);
-            setIsDirty(false);
-        } catch (err) {
-            console.error('Error importing MJML from file:', err);
-            setCompileError('Failed to import MJML from file. Please try again.');
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
     const initContent = useCallback(
         (content: string) => {
             setMjmlContent(content);
@@ -184,7 +168,6 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
         shellLoading,
         handleContentChange,
         handleSave,
-        handleImportFromFile,
         initContent,
         refreshSignature,
     };

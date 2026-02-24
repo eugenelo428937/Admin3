@@ -109,8 +109,9 @@ class ProductBundleProductDetailSerializer(serializers.ModelSerializer):
             'id', 'bundle', 'product_product_variation',
             'product_name', 'product_code', 'variation_name', 'variation_code',
             'default_price_type', 'quantity', 'sort_order', 'is_active',
+            'created_at', 'updated_at',
         ]
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
 
 class RecommendationListSerializer(serializers.ModelSerializer):

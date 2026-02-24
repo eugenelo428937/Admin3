@@ -34,6 +34,9 @@ const config = {
 	tutorialUrl:
 		env.VITE_API_BASE_URL +
 		env.VITE_API_TUTORIAL_URL,
+	emailUrl:
+		env.VITE_API_BASE_URL +
+		env.VITE_API_EMAIL_URL,
 	isDevelopment: env.MODE === "development",
 	isUAT: env.VITE_ENV === "uat" || env.VITE_ENVIRONMENT === "uat",
 	pageSize: env.VITE_API_PAGE_SIZE,
