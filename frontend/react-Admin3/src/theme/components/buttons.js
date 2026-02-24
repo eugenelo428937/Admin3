@@ -23,12 +23,14 @@
 
 import { alpha, darken } from '@mui/material/styles';
 import { spacing } from '../tokens/spacing';
+import { iconSizes } from '../tokens/icons'
 import { md3, staticColors } from '../tokens/colors';
 import { shadows } from '../tokens/shadows';
 import { borderRadius } from '../tokens/borderRadius';
 import { fontSizes, lineHeights, fontWeights, letterSpacings } from '../tokens/typography';
 import { color } from '@mui/system';
 
+const important = (value) => `${value} !important`;
 /**
  * Shared shadow tokens per button variant and state.
  * Used both by the MUI overrides below and by getButtonStateStyles()
@@ -67,6 +69,184 @@ export const buttonOverrides = {
     styleOverrides: {
       root: {
         fontSize: fontSizes.body.small,
+        textTransform: 'capitalize',
+        minWidth:0,
+        "& .MuiTypography-root": {
+          fontSize: fontSizes.body.small,
+          textTransform: important('capitalize'),
+        },
+        borderRadius: borderRadius[9],
+        
+        "& .MuiTouchRipple-child": {
+          animation: "cubic-bezier(0.4, 0, 0.2, 1)",
+          opacity: 0.3,
+        },
+        '&:active': {
+          boxShadow: 'none',
+          transition: 'all 0.28s',
+          transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        },
+        '&:disabled': {
+          backgroundColor: `color-mix(in srgb, ${md3.onSurface} 10%, transparent)`,
+          color: `color-mix(in srgb, ${md3.onSurface} 38%, transparent)`,
+        },
+        '&:focus': {
+          outlineOffset: '2px',
+          outlineColor: 'color-mix(in srgb, currentColor 30%, transparent)',
+          outlineWidth: '2px',
+          outlineStyle: 'solid',
+        },
+      },
+    },
+    variants: [
+      {
+        props: { size: 'small' },
+        style: {
+          height: spacing.lg,
+          paddingLeft: spacing.xs[4],
+          paddingRight: spacing.xs[4],
+
+          // Default MUI button text
+          fontSize: fontSizes.body.small,
+          // Styled button text
+          "& .MuiTypography-root": {
+            fontSize: fontSizes.body.small,
+            lineHeight: important(lineHeights.shortest),
+            fontWeight: fontWeights.medium,
+            letterSpacing: letterSpacings.scale[100],
+          },
+          '&:active': {
+            borderRadius: borderRadius[2],
+          },
+          "& .MuiButton-startIcon": {
+            margin: 0,
+            marginRight: spacing.xs[5],
+            '& .MuiSvgIcon-root': {
+              fontSize: iconSizes.xs,
+            },
+          },
+          "& .MuiButton-endIcon": {
+            margin: 0,
+            marginLeft: spacing.xs[5],
+            '& .MuiSvgIcon-root': {
+              fontSize: iconSizes.xs,
+            },
+          },
+          '& .MuiSvgIcon-root': {
+            fontSize: iconSizes.xs,
+          },
+        },
+      },
+      {
+        props: { size: 'medium' },
+        style: {
+          height: spacing.xl[1],
+          paddingLeft: spacing.md,
+          paddingRight: spacing.md,
+
+          // Default MUI button text
+          fontSize: fontSizes.body.medium,
+
+          // Styled button text
+          "& .MuiTypography-root": {
+            fontSize: fontSizes.body.medium,
+            lineHeight: lineHeights.short,
+            fontWeight: fontWeights.medium,
+            letterSpacing: letterSpacings.scale[90],
+          },
+          '&:active': {
+            borderRadius: borderRadius[3],
+          },
+        },
+      },
+      {
+        props: { size: 'large' },
+        style: {
+          height: spacing.xl[2],
+          padding: `${spacing.sm} ${spacing.lg}`,
+
+          // Default MUI button text          
+          fontSize: fontSizes.heading[60],
+
+          // Styled button text
+          "& .MuiTypography-root": {
+            fontSize: fontSizes.heading[60],
+            lineHeight: lineHeights.shorter,
+            fontWeight: fontWeights.regular,
+            letterSpacing: letterSpacings.scale[70],
+          },
+          '&:active': {
+            borderRadius: borderRadius[4],
+          },
+        },
+      },
+      {
+        props: { variant: 'text' },
+        style: {
+          '&:hover': {
+            boxShadow: buttonShadows.textButton.hover,
+          },
+          '&:active': {
+            boxShadow: buttonShadows.textButton.active,
+          },
+          '&:focused': {
+            outlineOffset: '2px',
+          },
+        },
+      },
+      {
+        props: { variant: 'text', size: 'small' },
+        style: {
+          height: spacing.md,
+        },
+      },
+      {
+        props: { variant: 'contained' },
+        style: {
+          boxShadow: buttonShadows.containedButton.default,
+
+          // border radius override in .\styled-components\ContainedButton.styled.js
+          //borderRadius: borderRadius[9],
+
+          '&:hover': {
+            boxShadow: buttonShadows.containedButton.hover,
+          },
+          "& .MuiTouchRipple-child": {
+            animation: "cubic-bezier(0.4, 0, 0.2, 1)",
+            opacity: 0.06,
+          },
+
+          "& .MuiSvgIcon-root": {
+            color: staticColors.white,
+          },
+        },
+      },
+      {
+        props: { variant: 'outlined' },
+        style: {
+          // border radius override in .\styled-components\IconButton.styled.js
+          //borderRadius: borderRadius[9],
+        },
+      },
+      {
+        props: { color: 'onDark' },
+        style: {
+          color: md3.inverseOnSurface,
+        }
+      }
+    ]
+  },
+  MuiIconButton: {
+    styleOverrides: {
+      root: {
+        fontSize: fontSizes.body.small,
+        borderRadius: borderRadius[9],
+        backgroundColor: md3.primaryContainer,
+        color: md3.onPrimaryContainer,
+        '&:disabled': {
+          backgroundColor: `color-mix(in srgb, ${md3.onSurface} 10%, transparent)`,
+          color: `color-mix(in srgb, ${md3.onSurface} 38%, transparent)`,
+        },
         "& .MuiTouchRipple-child": {
           animation: "cubic-bezier(0.4, 0, 0.2, 1)",
           opacity: 0.3,
@@ -89,136 +269,34 @@ export const buttonOverrides = {
       {
         props: { size: 'small' },
         style: {
-          height: spacing.lg,
-          paddingLeft: spacing.sm,
-          paddingRight: spacing.sm,
-
-          // Default MUI button text
-          fontSize: fontSizes.caption.large,
-          // Styled button text
-          "& .MuiTypography-root": {
-            fontSize: fontSizes.caption.large,
-            lineHeight: lineHeights.short,
-            fontWeight : fontWeights.medium,
-            letterSpacing : letterSpacings.scale[80],
-          },
-          '&:active': {
-            borderRadius: borderRadius[2],
+          height: fontSizes.heading[30],
+          width: fontSizes.heading[30],
+          "& .MuiSvgIcon-root": {
+            fontSize: fontSizes.heading[80],
           },
         },
       },
       {
         props: { size: 'medium' },
         style: {
-          height: spacing.xl[1],
-          paddingLeft: spacing.md,
-          paddingRight: spacing.md,
-
-          // Default MUI button text
-          fontSize: fontSizes.body.medium,
-
-          // Styled button text
-          "& .MuiTypography-root": {
-            fontSize: fontSizes.body.medium,
-            lineHeight: lineHeights.short,
-            fontWeight : fontWeights.medium,
-            letterSpacing : letterSpacings.scale[90],
-          },
-          '&:active': {
-            borderRadius: borderRadius[3],
+          height: fontSizes.heading[20],
+          width: fontSizes.heading[20],
+          "& .MuiSvgIcon-root": {
+            fontSize: fontSizes.heading[60],
           },
         },
       },
       {
         props: { size: 'large' },
         style: {
-          height: spacing.xl[2],
-          padding: `${spacing.sm} ${spacing.lg}`,
-
-          // Default MUI button text          
-          fontSize: fontSizes.heading[60],
-          
-          // Styled button text
-          "& .MuiTypography-root": {
-            fontSize: fontSizes.heading[60],
-            lineHeight: lineHeights.shorter,
-            fontWeight : fontWeights.regular,
-            letterSpacing : letterSpacings.scale[70],
-          },
-          '&:active': {
-            borderRadius: borderRadius[4],
-          },
-        },
-      },
-      {
-        props: { variant: 'text' },
-        style: {
-          borderRadius: borderRadius[9],
-          '&:hover': {
-            boxShadow: buttonShadows.textButton.hover,            
-          },
-          '&:active': {
-            boxShadow: buttonShadows.textButton.active,            
-          },
-          '&:focused': {            
-            outlineOffset: '2px',
-          },
-          "& .MuiTypography-root": {
-            borderBottomStyle: 'solid',
-            borderBottomColor: 'currentColor',
-            borderBottomWidth: '1.5px',            
-          },
-        },
-      },
-      {
-        props: { variant: 'text', size: 'small' },
-        style: {
-          "& .MuiTypography-root": {
-            borderBottomWidth: '1px'
-          },
-        },
-      },
-      {
-        props: { variant: 'text', size: 'medium' },
-        style: {
-          "& .MuiTypography-root": {
-            borderBottomWidth: '1.5px'
-          },
-        },
-      },
-      {
-        props: { variant: 'text', size: 'large' },
-        style: {
-          "& .MuiTypography-root": {
-            borderBottomWidth: '2px',            
-          },
-        },
-      },
-      {
-        props: { variant: 'contained' },
-        style: {
-          boxShadow: buttonShadows.containedButton.default,
-          '&:hover': {
-            boxShadow: buttonShadows.containedButton.hover,
-          },
+          height: fontSizes.display.medium,
+          width: fontSizes.display.medium,
           "& .MuiSvgIcon-root": {
-            color: staticColors.white,
+            fontSize: fontSizes.heading[30],
           },
         },
       },
-      {
-        props: { variant: 'outlined' },
-        style: {
-          borderRadius: '2rem',
-        },
-      },
-      {
-        props: { color: 'primary' },
-        style: {
-
-        }
-      }
-    ]
+    ],
   }
 };
 

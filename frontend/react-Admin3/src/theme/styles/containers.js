@@ -1,6 +1,48 @@
 // Container Style Objects
 // Reusable styles for common container patterns
+import { spacing, gaps } from '../tokens/spacing'
+import { md3 } from '../tokens/colors'
+import { navigation } from '../semantic/navigation'
+/**
+ * Top nav section container styles.
+ * Usage: <Container sx={topNavContainerStyles}>
+ */
+export const topNavContainerStyles = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignContent: 'end',
+  bgcolor: navigation.background.topNavBar.primary,
+  px: {
+    sm: spacing.lg,
+    md: spacing.xl[1],
+    lg: spacing.xl[2],
+    xl: spacing.xl[3],
+  },
+  py: {
+    xs: spacing.xs[3],
+    lg: spacing.xs[3],
+  },
+};
 
+export const mainNavContainerStyles = {
+  display: "flex",
+  justifyContent: "space-between",
+  px: "0 !Important",
+};
+
+export const mainNavMenuContainerStyles = {
+  display: { 
+    xs: "none", 
+    md: "flex" 
+  },
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: {
+    xs: "flex-start" 
+  },
+  width: 'auto',
+  gap: gaps.relaxed,
+};
 /**
  * Hero section container styles.
  * Usage: <Container sx={heroContainerStyles}>
@@ -29,11 +71,12 @@ export const heroContentStyles = {
  * Migrated from .body-container in custom-bootstrap.css
  */
 export const bodyContainerStyles = {
+  backgroundColor: md3.surfaceContainerLow,
   paddingTop: 0,
-  margin: 0,
   padding: 0,
   position: "relative",
   minHeight: "calc(100vh - 80px)",
+  justifyItems: "center",
   "@media (max-width: 768px)": {
     minHeight: "calc(100vh - 100px)",
   },
@@ -157,6 +200,9 @@ export const productsContainerMobileStyles = {
 };
 
 export default {
+  topNavContainerStyles,
+  mainNavContainerStyles,
+  mainNavMenuContainerStyles,
   heroContainerStyles,
   heroContentStyles,
   bodyContainerStyles,

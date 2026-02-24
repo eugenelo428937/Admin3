@@ -46,7 +46,8 @@ import "./App.scss";
 
 const system = createSystem(defaultConfig);
 
-function App() {
+function App()
+{
 	// eslint-disable-next-line
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -54,8 +55,10 @@ function App() {
 	const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
 
 	// Validate reCAPTCHA configuration
-	useEffect(() => {
-		if (!RECAPTCHA_SITE_KEY) {
+	useEffect(() =>
+	{
+		if (!RECAPTCHA_SITE_KEY)
+		{
 			console.error(
 				'CRITICAL: REACT_APP_RECAPTCHA_SITE_KEY is not configured. ' +
 				'reCAPTCHA v3 will not function. Please add it to your .env file.'
@@ -63,42 +66,53 @@ function App() {
 		}
 	}, [RECAPTCHA_SITE_KEY]);
 
-	useEffect(() => {
+	useEffect(() =>
+	{
 		// Check if the user is authenticated
 		const authStatus = localStorage.getItem("isAuthenticated");
-		if (authStatus === "true") {
+		if (authStatus === "true")
+		{
 			setIsAuthenticated(true);
 		}
 	}, []);
 
 	// Clear legacy filter cookies (Story 1.13 - Cookie Middleware Removal)
-	useEffect(() => {
+	useEffect(() =>
+	{
 		// Clear any legacy filter cookies from before cookie middleware was removed
-		document.cookie.split(";").forEach((c) => {
-			if (c.trim().startsWith("filters_") || c.trim().startsWith("productFilters")) {
+		document.cookie.split(";").forEach((c) =>
+		{
+			if (c.trim().startsWith("filters_") || c.trim().startsWith("productFilters"))
+			{
 				document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
 			}
 		});
 	}, []);
 
 	// Handle reCAPTCHA badge: hide duplicates and scroll behavior for mobile
-	useEffect(() => {
+	useEffect(() =>
+	{
 		let hasScrolled = false;
 
 		// Function to hide duplicate badges (keep only the first one)
-		const hideDuplicateBadges = () => {
+		const hideDuplicateBadges = () =>
+		{
 			const badges = document.querySelectorAll('.grecaptcha-badge');
-			if (badges.length > 1) {
+			if (badges.length > 1)
+			{
 				// Hide all badges except the first one
-				badges.forEach((badge, index) => {
-					if (index > 0) {
+				badges.forEach((badge, index) =>
+				{
+					if (index > 0)
+					{
 						badge.style.display = 'none';
 					}
 				});
 			}
 		};
 
-		const handleScroll = () => {
+		const handleScroll = () =>
+		{
 			// Only apply on mobile (< 900px)
 			if (window.innerWidth >= 900) return;
 
@@ -109,10 +123,12 @@ function App() {
 			const currentScrollY = window.scrollY;
 
 			// If user has scrolled more than 10px from top, hide the badge
-			if (currentScrollY > 10 && !hasScrolled) {
+			if (currentScrollY > 10 && !hasScrolled)
+			{
 				badge.classList.add('recaptcha-hidden');
 				hasScrolled = true;
-			} else if (currentScrollY <= 10 && hasScrolled) {
+			} else if (currentScrollY <= 10 && hasScrolled)
+			{
 				// Show badge again when scrolled back to top
 				badge.classList.remove('recaptcha-hidden');
 				hasScrolled = false;
@@ -127,7 +143,8 @@ function App() {
 
 		window.addEventListener('scroll', handleScroll, { passive: true });
 
-		return () => {
+		return () =>
+		{
 			window.removeEventListener('scroll', handleScroll);
 			clearInterval(checkInterval);
 		};
@@ -140,133 +157,139 @@ function App() {
 				<AuthProvider>
 					<ProductProvider>
 						<TutorialChoiceProvider>
-							<div className="App">
+							<Container 
+							disableGutters
+							className="App" 
+							maxWidth={false}
+							sx={{
+								backgroundColor: theme.palette.md3.surfaceContainerLowest,
+							}}>
 								<MainNavBar className="main-navbar" />
 								<Container
-									maxWidth={true}
+									maxWidth={false}
 									disableGutters={true}
 									sx={bodyContainerStyles}>
 									<Routes>
-														<Route
-															path="/"
-															element={
-																<Navigate to="/home" replace />
-															}
-														/>
-														<Route
-															path="/styleguide"
-															element={<StyleGuide />}
-														/>
-														<Route
-															path="/theme-visualizer"
-															element={<MaterialThemeVisualizer />}
-														/>
-														<Route
-															path="/home"
-															element={<Home />}
-														/>						
-													{/* New wizard-based profile page (T038) */}
-														<Route
-															path="/profile"
-															element={<ProfilePage />}
-														/>
-														<Route
-															path="/products"
-															element={<ProductList />}
-														/>
-														<Route
-															path="admin/exam-sessions"
-															element={<AdminExamSessionList />}
-														/>
-														<Route
-															path="admin/exam-sessions/new"
-															element={<AdminExamSessionForm />}
-														/>
-														<Route
-															path="/exam-sessions/edit/:id"
-															element={<AdminExamSessionForm />}
-														/>
-														<Route
-															path="admin/subjects"
-															element={<AdminSubjectList />}
-														/>
-														<Route
-															path="admin/subjects/new"
-															element={<AdminSubjectForm />}
-														/>
-														<Route
-															path="admin/subjects/:id"
-															element={<AdminSubjectDetail />}
-														/>
-														<Route
-															path="admin/subjects/:id/edit"
-															element={<AdminSubjectForm />}
-														/>
-														<Route
-															path="admin/subjects/import"
-															element={<AdminSubjectImport />}
-														/>
-														<Route
-															path="admin/products"
-															element={<AdminProductList />}
-														/>
-														<Route
-															path="admin/products/:id"
-															element={<AdminProductDetail />}
-														/>
-														<Route
-															path="admin/products/new"
-															element={<AdminProductForm />}
-														/>
-														<Route
-															path="admin/products/edit/:id"
-															element={<AdminProductForm />}
-														/>
-														<Route
-															path="admin/products/import"
-															element={<AdminProductImport />}
-														/>
-														<Route
-															path="/checkout"
-															element={<CheckoutPage />}
-														/>
-														<Route
-															path="/orders"
-															element={<OrderHistory />}
-														/>														
-														<Route
-															path="/auth/forgot-password"
-															element={<ForgotPasswordForm />}
-														/>
-														<Route
-															path="/auth/reset-password"
-															element={<ResetPasswordForm />}
-														/>
-														<Route
-															path="/auth/activate"
-															element={<AccountActivation />}
-														/>
-														<Route
-															path="/auth/verify-email"
-															element={<AccountActivation />}
-														/>
-														<Route
-															path="/auth/resend-activation"
-															element={<ResendActivation />}
-														/>
-														<Route
-															path="/auth/email-verification"
-															element={<EmailVerification />}
-														/>
-														<Route
-															path="*"
-															element={<NoMatch />}
-														/>																
-														<Route
-															path="/register"
-															element={<Registration />}
-														/>
-													</Routes>
+										<Route
+											path="/"
+											element={
+												<Navigate to="/home" replace />
+											}
+										/>
+										<Route
+											path="/styleguide"
+											element={<StyleGuide />}
+										/>
+										<Route
+											path="/theme-visualizer"
+											element={<MaterialThemeVisualizer />}
+										/>
+										<Route
+											path="/home"
+											element={<Home />}
+										/>
+										{/* New wizard-based profile page (T038) */}
+										<Route
+											path="/profile"
+											element={<ProfilePage />}
+										/>
+										<Route
+											path="/products"
+											element={<ProductList />}
+										/>
+										<Route
+											path="admin/exam-sessions"
+											element={<AdminExamSessionList />}
+										/>
+										<Route
+											path="admin/exam-sessions/new"
+											element={<AdminExamSessionForm />}
+										/>
+										<Route
+											path="/exam-sessions/edit/:id"
+											element={<AdminExamSessionForm />}
+										/>
+										<Route
+											path="admin/subjects"
+											element={<AdminSubjectList />}
+										/>
+										<Route
+											path="admin/subjects/new"
+											element={<AdminSubjectForm />}
+										/>
+										<Route
+											path="admin/subjects/:id"
+											element={<AdminSubjectDetail />}
+										/>
+										<Route
+											path="admin/subjects/:id/edit"
+											element={<AdminSubjectForm />}
+										/>
+										<Route
+											path="admin/subjects/import"
+											element={<AdminSubjectImport />}
+										/>
+										<Route
+											path="admin/products"
+											element={<AdminProductList />}
+										/>
+										<Route
+											path="admin/products/:id"
+											element={<AdminProductDetail />}
+										/>
+										<Route
+											path="admin/products/new"
+											element={<AdminProductForm />}
+										/>
+										<Route
+											path="admin/products/edit/:id"
+											element={<AdminProductForm />}
+										/>
+										<Route
+											path="admin/products/import"
+											element={<AdminProductImport />}
+										/>
+										<Route
+											path="/checkout"
+											element={<CheckoutPage />}
+										/>
+										<Route
+											path="/orders"
+											element={<OrderHistory />}
+										/>
+										<Route
+											path="/auth/forgot-password"
+											element={<ForgotPasswordForm />}
+										/>
+										<Route
+											path="/auth/reset-password"
+											element={<ResetPasswordForm />}
+										/>
+										<Route
+											path="/auth/activate"
+											element={<AccountActivation />}
+										/>
+										<Route
+											path="/auth/verify-email"
+											element={<AccountActivation />}
+										/>
+										<Route
+											path="/auth/resend-activation"
+											element={<ResendActivation />}
+										/>
+										<Route
+											path="/auth/email-verification"
+											element={<EmailVerification />}
+										/>
+										<Route
+											path="*"
+											element={<NoMatch />}
+										/>
+										<Route
+											path="/register"
+											element={<Registration />}
+										/>
+									</Routes>
 
 									{/* T015: Global tutorial summary bars - visible across all routes */}
 									<TutorialSummaryBarContainer />
@@ -274,7 +297,7 @@ function App() {
 
 								{/* Footer component */}
 								<Footer />
-							</div>
+							</Container>
 						</TutorialChoiceProvider>
 					</ProductProvider>
 				</AuthProvider>
