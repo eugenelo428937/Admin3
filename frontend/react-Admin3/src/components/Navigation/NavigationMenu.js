@@ -1,20 +1,21 @@
 import React from "react";
-import
-   {
-      Box,
-      Button,
-      Container,
-      Grid,
-      MenuItem,
-      MenuList,
-      Menu,
-      Typography,
-      useTheme
-   } from "@mui/material";
+import {
+   Box,
+   Button,
+   Container,
+   Grid,
+   MenuItem,
+   MenuList,
+   Menu,
+   Typography,
+   useTheme,
+} from "@mui/material";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import MegaMenuPopover from "./MegaMenuPopover";
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import { mainNavMenuContainerStyles } from "../../theme/styles/containers";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const NavigationMenu = ({
    subjects,
@@ -31,8 +32,7 @@ const NavigationMenu = ({
    handleProductVariationClick,
    handleMarkingVouchersClick,
    onCollapseNavbar,
-}) =>
-{
+}) => {
    const theme = useTheme();
    const { isSuperuser, isApprentice, isStudyPlus } = useAuth();
 
@@ -40,13 +40,11 @@ const NavigationMenu = ({
    const [adminAnchorEl, setAdminAnchorEl] = React.useState(null);
    const adminMenuOpen = Boolean(adminAnchorEl);
 
-   const handleAdminClick = (event) =>
-   {
+   const handleAdminClick = (event) => {
       setAdminAnchorEl(event.currentTarget);
    };
 
-   const handleAdminClose = () =>
-   {
+   const handleAdminClose = () => {
       setAdminAnchorEl(null);
    };
 
@@ -55,16 +53,21 @@ const NavigationMenu = ({
          component="nav"
          aria-label="Main navigation"
          disableGutters
-         sx={{
-            display: { xs: "none", md: "flex" },
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: { xs: "flex-start"},
-            width: 'auto',
-            gap: theme.gaps.normal,
-         }}
+         sx={mainNavMenuContainerStyles}
       >
-         <Button component={NavLink} to="/home" variant="main_nav_link">
+         <Button
+            component={NavLink}
+            to="/home"
+            variant="main_nav_link"
+            endIcon={
+               <ExpandMoreIcon
+                  sx={{
+                     ml: 0,
+                     opacity: 0,
+                  }}
+               />
+            }
+         >
             <Typography variant="main_nav_text">Home</Typography>
          </Button>
 
@@ -79,7 +82,10 @@ const NavigationMenu = ({
          >
             <Grid container spacing={1}>
                <Grid size={{ xs: 12, md: 6, xl: 3, xxl: 2 }}>
-                  <Typography variant="mega-nav-heading" id="core-principles-heading">
+                  <Typography
+                     variant="mega-nav-heading"
+                     id="core-principles-heading"
+                  >
                      Core Principles
                   </Typography>
                   <MenuList
@@ -94,19 +100,23 @@ const NavigationMenu = ({
                               <MenuItem
                                  variant="nav_menu"
                                  key={subject.id}
-                                 onClick={() =>
-                                 {
+                                 onClick={() => {
                                     handleSubjectClick(subject.code);
                                     onCollapseNavbar && onCollapseNavbar();
                                  }}
                               >
-                                 <Typography variant="mega_nav_link">{subject.code} - {subject.description}</Typography>
+                                 <Typography variant="mega_nav_link">
+                                    {subject.code} - {subject.description}
+                                 </Typography>
                               </MenuItem>
                            ))}
                   </MenuList>
                </Grid>
                <Grid size={{ xs: 12, md: 6, xl: 3, xxl: 2 }}>
-                  <Typography variant="mega-nav-heading" id="core-practices-heading">
+                  <Typography
+                     variant="mega-nav-heading"
+                     id="core-practices-heading"
+                  >
                      Core Practices
                   </Typography>
                   <MenuList
@@ -121,8 +131,7 @@ const NavigationMenu = ({
                               <MenuItem
                                  variant="nav_menu"
                                  key={subject.id}
-                                 onClick={() =>
-                                 {
+                                 onClick={() => {
                                     handleSubjectClick(subject.code);
                                     onCollapseNavbar && onCollapseNavbar();
                                  }}
@@ -151,8 +160,7 @@ const NavigationMenu = ({
                               <MenuItem
                                  variant="nav_menu"
                                  key={subject.id}
-                                 onClick={() =>
-                                 {
+                                 onClick={() => {
                                     handleSubjectClick(subject.code);
                                     onCollapseNavbar && onCollapseNavbar();
                                  }}
@@ -181,8 +189,7 @@ const NavigationMenu = ({
                               <MenuItem
                                  variant="nav_menu"
                                  key={subject.id}
-                                 onClick={() =>
-                                 {
+                                 onClick={() => {
                                     handleSubjectClick(subject.code);
                                     onCollapseNavbar && onCollapseNavbar();
                                  }}
@@ -212,16 +219,14 @@ const NavigationMenu = ({
                      </Typography>
                   </Grid>
                ) : Array.isArray(navbarProductGroups) &&
-                  navbarProductGroups.length > 0 ? (
-                  navbarProductGroups.map((group) =>
-                  {
+                 navbarProductGroups.length > 0 ? (
+                  navbarProductGroups.map((group) => {
                      // Special handling for Tutorial group - split into two columns
                      if (
                         group.name === "Tutorial" &&
                         group.products &&
                         group.products.length > 0
-                     )
-                     {
+                     ) {
                         const midPoint = Math.ceil(group.products.length / 2);
                         const leftColumn = group.products.slice(0, midPoint);
                         const rightColumn = group.products.slice(midPoint);
@@ -236,8 +241,7 @@ const NavigationMenu = ({
                                     <Typography
                                        variant="mega-nav-heading"
                                        sx={{ mb: 1 }}
-                                       onClick={() =>
-                                       {
+                                       onClick={() => {
                                           handleProductGroupClick(group.name);
                                           onCollapseNavbar &&
                                              onCollapseNavbar();
@@ -250,8 +254,7 @@ const NavigationMenu = ({
                                           <MenuItem
                                              variant="nav_menu"
                                              key={product.id}
-                                             onClick={() =>
-                                             {
+                                             onClick={() => {
                                                 handleSpecificProductClick(
                                                    product.id
                                                 );
@@ -276,8 +279,7 @@ const NavigationMenu = ({
                                           <MenuItem
                                              variant="nav_menu"
                                              key={product.id}
-                                             onClick={() =>
-                                             {
+                                             onClick={() => {
                                                 handleSpecificProductClick(
                                                    product.id
                                                 );
@@ -307,8 +309,7 @@ const NavigationMenu = ({
                                  mb: 1,
                                  cursor: "pointer",
                               }}
-                              onClick={() =>
-                              {
+                              onClick={() => {
                                  handleProductGroupClick(group.name);
                                  onCollapseNavbar && onCollapseNavbar();
                               }}
@@ -321,8 +322,7 @@ const NavigationMenu = ({
                                     <MenuItem
                                        variant="nav_menu"
                                        key={product.id}
-                                       onClick={() =>
-                                       {
+                                       onClick={() => {
                                           handleSpecificProductClick(
                                              product.id
                                           );
@@ -339,41 +339,38 @@ const NavigationMenu = ({
                                        variant="nav_menu"
                                        component={NavLink}
                                        to="/products?group=8"
-                                       onClick={(e) =>
-                                       {
+                                       onClick={(e) => {
                                           handleMarkingVouchersClick(e);
-                                          onCollapseNavbar && onCollapseNavbar();
+                                          onCollapseNavbar &&
+                                             onCollapseNavbar();
                                        }}
                                     >
                                        Marking Vouchers
                                     </MenuItem>
                                  )}
                               </MenuList>
-                           ) : (
-                              /* If Marking group has no products, still show Marking Vouchers */
-                              group.name === "Marking" ? (
-                                 <MenuList variant="nav_menu" dense>
-                                    <MenuItem
-                                       variant="nav_menu"
-                                       component={NavLink}
-                                       to="/products?group=8"
-                                       onClick={(e) =>
-                                       {
-                                          handleMarkingVouchersClick(e);
-                                          onCollapseNavbar && onCollapseNavbar();
-                                       }}
-                                    >
-                                       Marking Vouchers
-                                    </MenuItem>
-                                 </MenuList>
-                              ) : (
-                                 <Typography
-                                    color="text.secondary"
-                                    variant="body2"
+                           ) : /* If Marking group has no products, still show Marking Vouchers */
+                           group.name === "Marking" ? (
+                              <MenuList variant="nav_menu" dense>
+                                 <MenuItem
+                                    variant="nav_menu"
+                                    component={NavLink}
+                                    to="/products?group=8"
+                                    onClick={(e) => {
+                                       handleMarkingVouchersClick(e);
+                                       onCollapseNavbar && onCollapseNavbar();
+                                    }}
                                  >
-                                    No products available
-                                 </Typography>
-                              )
+                                    Marking Vouchers
+                                 </MenuItem>
+                              </MenuList>
+                           ) : (
+                              <Typography
+                                 color="text.secondary"
+                                 variant="body2"
+                              >
+                                 No products available
+                              </Typography>
                            )}
                         </Grid>
                      );
@@ -388,13 +385,14 @@ const NavigationMenu = ({
                <Grid size={{ xs: 12, md: 2, xl: 2 }}>
                   <Button
                      variant="navViewAll"
-                     onClick={() =>
-                     {
+                     onClick={() => {
                         handleProductClick();
                         onCollapseNavbar && onCollapseNavbar();
                      }}
                   >
-                     <Typography variant="navViewAllText">View All Products</Typography>
+                     <Typography variant="navViewAllText">
+                        View All Products
+                     </Typography>
                      <NavigateNextIcon />
                   </Button>
                </Grid>
@@ -418,7 +416,7 @@ const NavigationMenu = ({
                      </Typography>
                   </Grid>
                ) : Array.isArray(distanceLearningData) &&
-                  distanceLearningData.length > 0 ? (
+                 distanceLearningData.length > 0 ? (
                   distanceLearningData.map((group) => (
                      <Grid
                         key={group.id || group.name}
@@ -427,8 +425,7 @@ const NavigationMenu = ({
                         <Typography
                            variant="mega-nav-heading"
                            sx={{ mb: 1, cursor: "pointer" }}
-                           onClick={() =>
-                           {
+                           onClick={() => {
                               handleProductGroupClick(group.name);
                               onCollapseNavbar && onCollapseNavbar();
                            }}
@@ -441,8 +438,7 @@ const NavigationMenu = ({
                                  <MenuItem
                                     variant="nav_menu"
                                     key={product.id}
-                                    onClick={() =>
-                                    {
+                                    onClick={() => {
                                        handleSpecificProductClick(product.id);
                                        onCollapseNavbar && onCollapseNavbar();
                                     }}
@@ -456,8 +452,7 @@ const NavigationMenu = ({
                                     variant="nav_menu"
                                     component={NavLink}
                                     to="/products?group=8"
-                                    onClick={(e) =>
-                                    {
+                                    onClick={(e) => {
                                        handleMarkingVouchersClick(e);
                                        onCollapseNavbar && onCollapseNavbar();
                                     }}
@@ -466,28 +461,25 @@ const NavigationMenu = ({
                                  </MenuItem>
                               )}
                            </MenuList>
+                        ) : /* If Marking group has no products, still show Marking Vouchers */
+                        group.name === "Marking" ? (
+                           <MenuList variant="nav_menu" dense>
+                              <MenuItem
+                                 variant="nav_menu"
+                                 component={NavLink}
+                                 to="/products?group=8"
+                                 onClick={(e) => {
+                                    handleMarkingVouchersClick(e);
+                                    onCollapseNavbar && onCollapseNavbar();
+                                 }}
+                              >
+                                 Marking Vouchers
+                              </MenuItem>
+                           </MenuList>
                         ) : (
-                           /* If Marking group has no products, still show Marking Vouchers */
-                           group.name === "Marking" ? (
-                              <MenuList variant="nav_menu" dense>
-                                 <MenuItem
-                                    variant="nav_menu"
-                                    component={NavLink}
-                                    to="/products?group=8"
-                                    onClick={(e) =>
-                                    {
-                                       handleMarkingVouchersClick(e);
-                                       onCollapseNavbar && onCollapseNavbar();
-                                    }}
-                                 >
-                                    Marking Vouchers
-                                 </MenuItem>
-                              </MenuList>
-                           ) : (
-                              <Typography color="text.secondary" variant="body2">
-                                 No products available
-                              </Typography>
-                           )
+                           <Typography color="text.secondary" variant="body2">
+                              No products available
+                           </Typography>
                         )}
                      </Grid>
                   ))
@@ -503,12 +495,13 @@ const NavigationMenu = ({
                      variant="navViewAll"
                      component={NavLink}
                      to="/products?distance_learning=true"
-                     onClick={() =>
-                     {
+                     onClick={() => {
                         onCollapseNavbar && onCollapseNavbar();
                      }}
                   >
-                     <Typography variant="navViewAllText">View All Distance Learning</Typography>
+                     <Typography variant="navViewAllText">
+                        View All Distance Learning
+                     </Typography>
                      <NavigateNextIcon />
                   </Button>
                </Grid>
@@ -554,8 +547,7 @@ const NavigationMenu = ({
                                           <MenuItem
                                              variant="nav_menu"
                                              key={product.id}
-                                             onClick={() =>
-                                             {
+                                             onClick={() => {
                                                 handleSpecificProductClick(
                                                    product.id
                                                 );
@@ -584,8 +576,7 @@ const NavigationMenu = ({
                                           <MenuItem
                                              variant="nav_menu"
                                              key={product.id}
-                                             onClick={() =>
-                                             {
+                                             onClick={() => {
                                                 handleSpecificProductClick(
                                                    product.id
                                                 );
@@ -620,8 +611,7 @@ const NavigationMenu = ({
                                  <MenuItem
                                     variant="nav_menu"
                                     key={format.filter_type}
-                                    onClick={() =>
-                                    {
+                                    onClick={() => {
                                        handleProductGroupClick(
                                           format.group_name
                                        );
@@ -658,7 +648,9 @@ const NavigationMenu = ({
                      onClick={() => onCollapseNavbar?.()}
                      sx={{ mb: 2 }}
                   >
-                     <Typography variant="navViewAllText">View All Tutorials</Typography>
+                     <Typography variant="navViewAllText">
+                        View All Tutorials
+                     </Typography>
                      <NavigateNextIcon />
                   </Button>
                </Grid>
@@ -673,7 +665,9 @@ const NavigationMenu = ({
                to="/apprenticeships"
                sx={{ mx: { xl: 2 } }}
             >
-               <Typography variant="mega-nav-heading">Apprenticeships</Typography>
+               <Typography variant="mega-nav-heading">
+                  Apprenticeships
+               </Typography>
             </Button>
          ) : null}
 
@@ -714,8 +708,7 @@ const NavigationMenu = ({
                   <MenuItem
                      component={NavLink}
                      to="admin/exam-sessions"
-                     onClick={() =>
-                     {
+                     onClick={() => {
                         handleAdminClose();
                         onCollapseNavbar?.();
                      }}
@@ -725,8 +718,7 @@ const NavigationMenu = ({
                   <MenuItem
                      component={NavLink}
                      to="admin/subjects"
-                     onClick={() =>
-                     {
+                     onClick={() => {
                         handleAdminClose();
                         onCollapseNavbar?.();
                      }}
@@ -736,8 +728,7 @@ const NavigationMenu = ({
                   <MenuItem
                      component={NavLink}
                      to="admin/products"
-                     onClick={() =>
-                     {
+                     onClick={() => {
                         handleAdminClose();
                         onCollapseNavbar?.();
                      }}

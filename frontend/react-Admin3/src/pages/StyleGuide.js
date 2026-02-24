@@ -36,8 +36,10 @@ const StyleGuide = () => {
 			maxWidth="xl"
 			disableGutters
 			sx={{
-				px: theme.spacingTokens.xl2,
-				py: theme.spacingTokens.lg,
+				my: theme.spacingTokens.lg,
+				px: theme.spacingTokens.lg,
+				py: theme.spacingTokens.md,
+				backgroundColor: theme.palette.md3.surfaceContainerLow,
 			}}>
 			<Typography variant="h2">
 				Style Guide
@@ -55,13 +57,15 @@ const StyleGuide = () => {
 			<Box
 				sx={{					
 					borderColor: "divider",
-					marginX: theme.spacingTokens.xl2
+					marginX: theme.spacingTokens.xl[2],
+					backgroundColor: theme.palette.md3.surfaceContainer,
 				}}>
 				<Tabs
 					defaultActiveKey="sanbox"
 					id="style-guide-tabs"
 					sx={{
-						justiftItems:"center"
+						justiftItems:"center",
+						backgroundColor: theme.palette.md3.surfaceContainer,
 					}}>
 					<Tab
 						eventKey="sanbox"

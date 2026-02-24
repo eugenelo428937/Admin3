@@ -84,6 +84,8 @@ export const navigationOverrides = {
           paddingLeft: spacing.xl[3],
           paddingRight: spacing.xl[3],
         },
+        alignContent:"center",
+        justifyContent:"sapce-between",
       }),
     },
   },
@@ -144,6 +146,7 @@ export const navigationOverrides = {
             backgroundColor: 'transparent',
             color: navigation.text.hover,
             opacity: 0.8,
+            borderBottom: 'red',
           },
           '& .MuiButton-endIcon ': {
             marginRight: 0,
@@ -243,7 +246,7 @@ export const navigationOverrides = {
           letterSpacing: important(letterSpacings.normal),
           textTransform: 'none',
           position: "static",
-          top: "6.235em",
+          //top: "6.235em",
           color: navigation.text.primary,
         }
       },

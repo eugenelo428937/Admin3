@@ -28,28 +28,38 @@
 import { forwardRef } from 'react';
 import { styled } from '@mui/material/styles';
 import { Button as MuiButton } from '@mui/material';
-import { borderRadius } from '../../tokens/borderRadius';
+import { formulatedSpacing } from '../../tokens/spacing';
 import { getButtonStateStyles } from '../buttons';
 
 // ---------------------------------------------------------------------------
 // Transient prop filter
 // Props prefixed with '$' are consumed by styled() and NOT passed to the DOM.
+// Exported so sibling styled components can share the same guard.
 // ---------------------------------------------------------------------------
-const shouldForwardProp = (prop) => {
+export const shouldForwardProp = (prop) => {
   if (!prop || typeof prop !== 'string') return false;
   return !prop.trim().startsWith('$');
 };
 
 // ---------------------------------------------------------------------------
 // Shape styles
+// round  → inherits theme border-radius (no override needed)
+// square → size-dependent radius that compresses on :active
 // ---------------------------------------------------------------------------
-const shapeStyles = {
-  round: { borderRadius: borderRadius[9] },
-  square: { borderRadius: borderRadius[2]},
+// Border-radius must stay below height÷2 or the corners merge into a pill shape.
+// Button heights (approx): small ≈ 26px, medium ≈ 33px, large ≈ 42px
+//   → safe limits:         small < 13px,  medium < 16.5px,  large < 21px
+// formulatedSpacing: (2)≈6px  (3)≈10px  (4)≈17px
+export const squareRadiusBySize = {
+  small:  { borderRadius: formulatedSpacing(3), '&:active': { borderRadius: formulatedSpacing(2) } },
+  medium: { borderRadius: formulatedSpacing(3), '&:active': { borderRadius: formulatedSpacing(2) } },
+  large:  { borderRadius: formulatedSpacing(4), '&:active': { borderRadius: formulatedSpacing(3) } },
 };
 
-/** Style function shared by all button variants */
-const withShape = ({ $shape = 'round' }) => shapeStyles[$shape] || {};
+const withShape = ({ $shape = 'round', size = 'medium' }) => {
+  if ($shape === 'square') return squareRadiusBySize[size] || squareRadiusBySize.medium;
+  return {};
+};
 
 // ---------------------------------------------------------------------------
 // Forced state styles

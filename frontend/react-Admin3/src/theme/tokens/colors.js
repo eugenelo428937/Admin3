@@ -38,10 +38,10 @@ export const md3 = {
   onTertiaryContainer: '#663B3A', // #663B3A
 
   // Error
-  error: '#904A43', // #904A43
+  error: '#B3261E', // #B3261E
   onError: '#FFFFFF', // #FFFFFF
-  errorContainer: '#FFDAD5', // #FFDAD5
-  onErrorContainer: '#73342D', // #73342D
+  errorContainer: '#F9DEDC', // #FFDAD5
+  onErrorContainer: '#8C1D18', // #73342D
 
   // Background
   background: '#FFF7FB', // #FFF7FB

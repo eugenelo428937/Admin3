@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Stack, Typography, useTheme } from '@mui/material';
 import { useNavigate } from "react-router-dom";
+import { mainNavBrandbox } from "../../theme/styles/boxes"
 
 const NavbarBrand = () =>
 {
@@ -11,14 +12,7 @@ const NavbarBrand = () =>
 			component="button"
 			onClick={() => navigate("/home")}
 			aria-label="Go to home page"
-			sx={{
-				cursor: "pointer",
-				background: 'none',
-				border: 'none',
-				padding: 0,
-				display: 'flex',
-				alignItems: 'center',
-			}}
+			sx={mainNavBrandbox}
 			className="navbar-brand order-1 order-md-0"
 		>
 			{/* Desktop logo - hidden on mobile */}
