@@ -54,7 +54,6 @@ class ClosingSalutationViewSetTest(TestCase):
             name='test_tmpl',
             display_name='Test Template',
             subject_template='Test',
-            content_template_name='test',
             closing_salutation=self.salutation,
         )
         response = self.client.get(f'/api/email/templates/{template.id}/signature-mjml/')
@@ -68,7 +67,6 @@ class ClosingSalutationViewSetTest(TestCase):
             name='no_sal_tmpl',
             display_name='No Salutation',
             subject_template='Test',
-            content_template_name='test',
         )
         response = self.client.get(f'/api/email/templates/{template.id}/signature-mjml/')
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)

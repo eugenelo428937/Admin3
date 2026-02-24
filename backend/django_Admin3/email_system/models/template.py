@@ -10,7 +10,6 @@ class EmailTemplate(models.Model):
         ('password_reset', 'Password Reset'),
         ('password_reset_completed', 'Password Reset Completed'),
         ('account_activation', 'Account Activation'),
-        ('newsletter', 'Newsletter'),
         ('welcome', 'Welcome Email'),
         ('reminder', 'Reminder Email'),
         ('notification', 'System Notification'),
@@ -33,7 +32,6 @@ class EmailTemplate(models.Model):
 
     # Template configuration
     subject_template = models.CharField(max_length=300, help_text="Email subject template with variables")
-    content_template_name = models.CharField(max_length=100, help_text="MJML content template filename")
     use_master_template = models.BooleanField(default=True, help_text="Use master template system")
 
     # Email settings
@@ -63,7 +61,6 @@ class EmailTemplate(models.Model):
 
     # MJML content storage (for admin editor)
     mjml_content = models.TextField(blank=True, default='', help_text="MJML source content for the template editor")
-    mjml_last_synced = models.DateTimeField(null=True, blank=True, help_text="When MJML content was last imported from file")
 
     # Metadata
     is_active = models.BooleanField(default=True)

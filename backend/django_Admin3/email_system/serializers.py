@@ -196,11 +196,11 @@ class EmailTemplateSerializer(serializers.ModelSerializer):
         model = EmailTemplate
         fields = [
             'id', 'name', 'template_type', 'display_name', 'description',
-            'subject_template', 'content_template_name', 'use_master_template',
+            'subject_template', 'use_master_template',
             'from_email', 'reply_to_email', 'default_priority',
             'enable_tracking', 'enable_queue', 'max_retry_attempts',
             'retry_delay_minutes', 'enhance_outlook_compatibility',
-            'is_master', 'mjml_content', 'mjml_last_synced',
+            'is_master', 'mjml_content',
             'closing_salutation', 'closing_salutation_detail',
             'is_active', 'created_at', 'updated_at', 'created_by',
             'attachments', 'template_content_rules',

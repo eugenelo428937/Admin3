@@ -185,7 +185,7 @@ const EmailTemplateForm: React.FC = () => {
                                 <Select
                                     value={vm.formData.closing_salutation ?? ''}
                                     label="Closing Salutation"
-                                    onChange={(e) => vm.handleChange('closing_salutation', e.target.value === '' ? null : Number(e.target.value))}
+                                    onChange={(e) => vm.handleChange('closing_salutation', String(e.target.value) === '' ? null : Number(e.target.value))}
                                 >
                                     <MenuItem value="">
                                         <em>None</em>

@@ -34,6 +34,7 @@ class BundleViewSet(viewsets.ModelViewSet):
     ).all()
 
     ordering = ['display_order', 'created_at']
+    pagination_class = None
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve', 'products']:

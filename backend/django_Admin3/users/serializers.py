@@ -21,23 +21,41 @@ class UserProfileAdminSerializer(serializers.ModelSerializer):
     """Admin serializer for UserProfile.
 
     Nested read-only user info, writable profile fields.
+    title and remarks use allow_null + default='' so the API always
+    returns strings (never null), matching the frontend pact contract.
     """
     user = UserSerializer(read_only=True)
+    title = serializers.CharField(allow_blank=True, allow_null=True, default='')
+    remarks = serializers.CharField(allow_blank=True, allow_null=True, default='')
 
     class Meta:
         model = UserProfile
         fields = ['id', 'user', 'title', 'send_invoices_to', 'send_study_material_to', 'remarks']
         read_only_fields = ['id']
 
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['title'] = rep['title'] or ''
+        rep['remarks'] = rep['remarks'] or ''
+        return rep
+
 
 class UserProfileAddressSerializer(serializers.ModelSerializer):
     """Serializer for UserProfileAddress."""
+    company = serializers.CharField(allow_blank=True, allow_null=True, default='')
+    department = serializers.CharField(allow_blank=True, allow_null=True, default='')
 
     class Meta:
         model = UserProfileAddress
         fields = ['id', 'user_profile', 'address_type', 'address_data', 'country',
                   'company', 'department']
         read_only_fields = ['id', 'user_profile']
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['company'] = rep['company'] or ''
+        rep['department'] = rep['department'] or ''
+        return rep
 
 
 class UserProfileContactSerializer(serializers.ModelSerializer):
