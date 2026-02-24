@@ -282,7 +282,6 @@ class GetPendingCountTest(TestCase):
             name='peq_count_tpl',
             display_name='PEQ Count Template',
             subject_template='PEQ Count Subject',
-            content_template_name='peq_count_content',
             is_active=True,
         )
 

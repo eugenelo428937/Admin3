@@ -21,6 +21,7 @@ class ProductBundleAdminViewSet(viewsets.ModelViewSet):
     """
     queryset = ProductBundle.objects.select_related('subject').all()
     serializer_class = ProductBundleAdminSerializer
+    pagination_class = None
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:

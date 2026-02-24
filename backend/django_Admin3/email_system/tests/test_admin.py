@@ -37,7 +37,6 @@ class AdminTestBase(TestCase):
             name='test_template',
             display_name='Test Template',
             subject_template='Test Subject',
-            content_template_name='test_content',
         )
 
 

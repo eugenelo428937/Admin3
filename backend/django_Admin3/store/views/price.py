@@ -17,7 +17,7 @@ class PriceViewSet(viewsets.ModelViewSet):
     Read operations: AllowAny (public access)
     Write operations: IsSuperUser
     """
-    pagination_class = AdminPagination
+    pagination_class = None
     queryset = Price.objects.select_related('product')
     serializer_class = PriceSerializer
 
