@@ -29,7 +29,6 @@ class EmailTemplateModelTest(TestCase):
             display_name='Order Confirmation',
             description='Test template',
             subject_template='Order #{{ order_number }}',
-            content_template_name='order_confirmation_content',
             use_master_template=True,
             from_email='test@example.com',
             reply_to_email='reply@example.com',
@@ -64,7 +63,6 @@ class EmailTemplateModelTest(TestCase):
             name='test_minimal',
             display_name='Test Minimal',
             subject_template='Test',
-            content_template_name='test_content',
         )
         self.assertTrue(t.use_master_template)
         self.assertEqual(t.default_priority, 'normal')
@@ -117,7 +115,6 @@ class EmailTemplateAttachmentModelTest(TestCase):
             name='test_template',
             display_name='Test Template',
             subject_template='Test Subject',
-            content_template_name='test_content',
         )
         self.attachment = EmailAttachment.objects.create(
             name='test_attachment',
@@ -154,7 +151,6 @@ class EmailQueueModelTest(TestCase):
             name='test_template',
             display_name='Test Template',
             subject_template='Test Subject',
-            content_template_name='test_content',
         )
         self.queue_item = EmailQueue.objects.create(
             template=self.template,
@@ -264,7 +260,6 @@ class EmailLogModelTest(TestCase):
             name='test_template',
             display_name='Test Template',
             subject_template='Test Subject',
-            content_template_name='test_content',
         )
         self.log = EmailLog.objects.create(
             template=self.template,
@@ -974,7 +969,6 @@ class EmailTemplateContentRuleModelTest(TestCase):
             name='order_confirmation',
             display_name='Order Confirmation',
             subject_template='Order Confirmation',
-            content_template_name='order_confirmation_content',
         )
         self.placeholder = EmailContentPlaceholder.objects.create(
             name='TUTORIAL_CONTENT',

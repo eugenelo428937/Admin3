@@ -419,7 +419,7 @@ class TestSendSingleEmail(SimpleTestCase):
         mock_log = MagicMock()
         service._create_email_log = MagicMock(return_value=mock_log)
         service._get_template_attachments = MagicMock(return_value=[])
-        service.email_service._send_mjml_email = MagicMock(return_value={
+        service.email_service._send_mjml_email_from_content = MagicMock(return_value={
             'success': True,
             'response_code': '200',
             'response_message': 'OK',
@@ -431,7 +431,6 @@ class TestSendSingleEmail(SimpleTestCase):
         queue_item = MagicMock()
         queue_item.template = MagicMock()
         queue_item.template.use_master_template = False
-        queue_item.template.content_template_name = 'test_template'
         queue_item.template.enhance_outlook_compatibility = True
         queue_item.reply_to_email = 'reply@test.com'
         queue_item.queue_id = 'q-456'
@@ -450,7 +449,7 @@ class TestSendSingleEmail(SimpleTestCase):
         mock_log = MagicMock()
         service._create_email_log = MagicMock(return_value=mock_log)
         service._get_template_attachments = MagicMock(return_value=[])
-        service.email_service._send_mjml_email = MagicMock(return_value={
+        service.email_service._send_mjml_email_from_content = MagicMock(return_value={
             'success': False,
             'response_code': '500',
             'response_message': 'Send failed',
@@ -462,7 +461,6 @@ class TestSendSingleEmail(SimpleTestCase):
         queue_item = MagicMock()
         queue_item.template = MagicMock()
         queue_item.template.use_master_template = False
-        queue_item.template.content_template_name = 'test'
         queue_item.template.enhance_outlook_compatibility = True
         queue_item.reply_to_email = None
         queue_item.queue_id = 'q-789'
@@ -482,14 +480,13 @@ class TestSendSingleEmail(SimpleTestCase):
         mock_log = MagicMock()
         service._create_email_log = MagicMock(return_value=mock_log)
         service._get_template_attachments = MagicMock(return_value=[])
-        service.email_service._send_mjml_email = MagicMock(
+        service.email_service._send_mjml_email_from_content = MagicMock(
             side_effect=Exception('SMTP error')
         )
 
         queue_item = MagicMock()
         queue_item.template = MagicMock()
         queue_item.template.use_master_template = False
-        queue_item.template.content_template_name = 'test'
         queue_item.template.enhance_outlook_compatibility = True
         queue_item.template.name = 'test_template'
         queue_item.reply_to_email = None
@@ -558,14 +555,13 @@ class TestSendWithMasterTemplate(SimpleTestCase):
     def test_unknown_template_uses_regular(self):
         """Unknown template names should fall back to regular sending."""
         service = self._get_service()
-        service.email_service._send_mjml_email = MagicMock(
+        service.email_service._send_mjml_email_from_content = MagicMock(
             return_value={'success': True}
         )
 
         queue_item = MagicMock()
         queue_item.template = MagicMock()
         queue_item.template.name = 'custom_notification'
-        queue_item.template.content_template_name = 'custom'
         queue_item.template.enhance_outlook_compatibility = True
         queue_item.email_context = {}
         queue_item.subject = 'Custom'

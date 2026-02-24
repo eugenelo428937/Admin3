@@ -309,10 +309,10 @@ class EmailQueueService:
                         queue_item, to_email, attachments
                     )
                 else:
-                    # Use regular template system
-                    template_name = queue_item.template.content_template_name if queue_item.template else 'default'
-                    response_data = self.email_service._send_mjml_email(
-                        template_name=template_name,
+                    # Use MJML content from database
+                    mjml = queue_item.template.mjml_content if queue_item.template else ''
+                    response_data = self.email_service._send_mjml_email_from_content(
+                        mjml_content=mjml,
                         context=queue_item.email_context,
                         to_emails=[to_email],
                         subject=queue_item.subject,
@@ -421,9 +421,9 @@ class EmailQueueService:
                     attachments=attachments
                 )
             else:
-                # Use regular template with detailed response
-                return self.email_service._send_mjml_email(
-                    template_name=queue_item.template.content_template_name,
+                # Use MJML content from database
+                return self.email_service._send_mjml_email_from_content(
+                    mjml_content=queue_item.template.mjml_content,
                     context=queue_item.email_context,
                     to_emails=[to_email],
                     subject=queue_item.subject,

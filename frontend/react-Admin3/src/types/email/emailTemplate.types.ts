@@ -11,7 +11,6 @@ export interface EmailTemplate {
   display_name: string;
   description: string;
   subject_template: string;
-  content_template_name: string;
   use_master_template: boolean;
   from_email: string;
   reply_to_email: string;
@@ -23,7 +22,6 @@ export interface EmailTemplate {
   enhance_outlook_compatibility: boolean;
   is_master: boolean;
   mjml_content: string;
-  mjml_last_synced: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -68,11 +66,6 @@ export interface EmailContentRuleSummary {
 export interface MjmlPreviewResponse {
   html: string;
   errors?: string[];
-}
-
-export interface MjmlImportResponse {
-  mjml_content: string;
-  mjml_last_synced: string;
 }
 
 export interface MjmlShellResponse {
