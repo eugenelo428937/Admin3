@@ -61,6 +61,11 @@ class EmailTemplate(models.Model):
 
     # MJML content storage (for admin editor)
     mjml_content = models.TextField(blank=True, default='', help_text="MJML source content for the template editor")
+    basic_mode_content = models.TextField(
+        blank=True,
+        default='',
+        help_text='Markdown source for Basic Mode editing. Empty = Advanced Mode only.'
+    )
 
     # Metadata
     is_active = models.BooleanField(default=True)
