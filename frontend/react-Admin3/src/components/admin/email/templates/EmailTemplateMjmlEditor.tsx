@@ -26,8 +26,8 @@ const EmailTemplateMjmlEditor: React.FC<EmailTemplateMjmlEditorProps> = ({
 }) => {
     const vm = useEmailTemplateMjmlEditorVM(templateId);
     const editorRef = useRef<HTMLDivElement>(null);
-    const viewRef = useRef<EditorView | null>(null);
     const initializedRef = useRef<boolean>(false);
+    const [editorView, setEditorView] = useState<EditorView | null>(null);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
     // Initialize VM state from props
@@ -42,9 +42,9 @@ const EmailTemplateMjmlEditor: React.FC<EmailTemplateMjmlEditorProps> = ({
     useEffect(() => {
         if (!editorRef.current || !initializedRef.current) return;
 
-        if (viewRef.current) {
-            viewRef.current.destroy();
-            viewRef.current = null;
+        if (editorView) {
+            editorView.destroy();
+            setEditorView(null);
         }
 
         const isBasic = vm.editorMode === 'basic';
@@ -69,11 +69,11 @@ const EmailTemplateMjmlEditor: React.FC<EmailTemplateMjmlEditorProps> = ({
         });
 
         const view = new EditorView({ state, parent: editorRef.current });
-        viewRef.current = view;
+        setEditorView(view);
 
         return () => {
             view.destroy();
-            viewRef.current = null;
+            setEditorView(null);
         };
     }, [vm.editorMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -99,7 +99,7 @@ const EmailTemplateMjmlEditor: React.FC<EmailTemplateMjmlEditorProps> = ({
                         size="small"
                         sx={{ minWidth: 150 }}
                     >
-                        <MenuItem value="basic">Basic Mode</MenuItem>
+                        <MenuItem value="basic" disabled={vm.editorMode === 'advanced'}>Basic Mode</MenuItem>
                         <MenuItem value="advanced">Advanced Mode</MenuItem>
                     </Select>
                     {vm.shellLoading && (
@@ -132,7 +132,7 @@ const EmailTemplateMjmlEditor: React.FC<EmailTemplateMjmlEditorProps> = ({
             </Box>
 
             {vm.editorMode === 'basic' && (
-                <BasicModeToolbar editorView={viewRef.current} />
+                <BasicModeToolbar editorView={editorView} />
             )}
 
             {/* Split pane: Editor + Preview */}
