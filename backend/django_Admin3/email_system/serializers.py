@@ -3,6 +3,7 @@ from email_system.models import (
     EmailSettings, EmailTemplate, EmailAttachment, EmailTemplateAttachment,
     EmailQueue, EmailContentPlaceholder, EmailContentRule, EmailTemplateContentRule,
     ClosingSalutation, ClosingSalutationStaff,
+    EmailMjmlElement,
 )
 
 
@@ -166,6 +167,20 @@ class ClosingSalutationSerializer(serializers.ModelSerializer):
 
 
 # ---------------------------------------------------------------------------
+# EmailMjmlElement
+# ---------------------------------------------------------------------------
+
+class EmailMjmlElementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmailMjmlElement
+        fields = [
+            'id', 'element_type', 'display_name', 'description',
+            'mjml_template', 'is_active', 'updated_at',
+        ]
+        read_only_fields = ['id', 'element_type', 'updated_at']
+
+
+# ---------------------------------------------------------------------------
 # EmailTemplate (list / detail)
 # ---------------------------------------------------------------------------
 
@@ -177,7 +192,7 @@ class EmailTemplateListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'template_type', 'display_name',
             'subject_template', 'default_priority', 'is_master',
-            'closing_salutation',
+            'closing_salutation', 'basic_mode_content',
             'is_active', 'created_at', 'updated_at',
         ]
 
@@ -200,7 +215,7 @@ class EmailTemplateSerializer(serializers.ModelSerializer):
             'from_email', 'reply_to_email', 'default_priority',
             'enable_tracking', 'enable_queue', 'max_retry_attempts',
             'retry_delay_minutes', 'enhance_outlook_compatibility',
-            'is_master', 'mjml_content',
+            'is_master', 'mjml_content', 'basic_mode_content',
             'closing_salutation', 'closing_salutation_detail',
             'is_active', 'created_at', 'updated_at', 'created_by',
             'attachments', 'template_content_rules',
