@@ -15,11 +15,12 @@ import
     lineHeights,
     letterSpacings,
   } from '../tokens/typography';
+  import { important } from '../utils'
 import { navigation } from '../semantic/navigation';
 // =============================================================================
 // Helper: Add !important to CSS values for MUI specificity
 // =============================================================================
-const important = (value) => `${value} !important`;
+
 
 /**
  * Typography configuration for MUI theme.
