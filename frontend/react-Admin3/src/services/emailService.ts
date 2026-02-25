@@ -15,6 +15,7 @@ import type {
     MjmlShellResponse,
     ClosingSalutation,
     SignatureMjmlResponse,
+    EmailMjmlElement,
 } from "../types/email";
 
 const BASE_URL = `${(config as any).emailUrl}`;
@@ -265,6 +266,17 @@ const emailService = {
 
     getSignatureMjml: async (templateId: number): Promise<SignatureMjmlResponse> => {
         const response = await httpService.get(`${BASE_URL}/templates/${templateId}/signature-mjml/`);
+        return response.data;
+    },
+
+    // ─── MJML Elements ──────────────────────────────────────────
+    getMjmlElements: async (): Promise<EmailMjmlElement[]> => {
+        const response = await httpService.get(`${BASE_URL}/mjml-elements/`);
+        return response.data;
+    },
+
+    updateMjmlElement: async (id: number, data: Partial<EmailMjmlElement>): Promise<EmailMjmlElement> => {
+        const response = await httpService.put(`${BASE_URL}/mjml-elements/${id}/`, data);
         return response.data;
     },
 };
