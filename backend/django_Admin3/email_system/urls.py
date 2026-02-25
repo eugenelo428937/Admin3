@@ -12,6 +12,7 @@ router.register(r'placeholders', views.EmailContentPlaceholderViewSet)
 router.register(r'content-rules', views.EmailContentRuleViewSet)
 router.register(r'template-content-rules', views.EmailTemplateContentRuleViewSet)
 router.register(r'closing-salutations', views.ClosingSalutationViewSet)
+router.register(r'mjml-elements', views.EmailMjmlElementViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
