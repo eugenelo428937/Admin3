@@ -6,6 +6,7 @@ from .settings import EmailSettings
 from .content_rule import EmailContentRule, EmailTemplateContentRule
 from .placeholder import EmailContentPlaceholder
 from .closing_salutation import ClosingSalutation, ClosingSalutationStaff
+from .email_mjml_element import EmailMjmlElement
 
 __all__ = [
     'EmailTemplate',
@@ -19,4 +20,5 @@ __all__ = [
     'EmailContentPlaceholder',
     'ClosingSalutation',
     'ClosingSalutationStaff',
+    'EmailMjmlElement',
 ]
