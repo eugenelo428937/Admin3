@@ -12,6 +12,7 @@ from email_system.models import (
     EmailSettings, EmailTemplate, EmailAttachment, EmailTemplateAttachment,
     EmailQueue, EmailContentPlaceholder, EmailContentRule, EmailTemplateContentRule,
     ClosingSalutation, ClosingSalutationStaff,
+    EmailMjmlElement,
 )
 from email_system.serializers import (
     EmailSettingsSerializer, EmailTemplateSerializer, EmailTemplateListSerializer,
@@ -20,6 +21,7 @@ from email_system.serializers import (
     EmailContentPlaceholderSerializer, EmailContentRuleSerializer,
     EmailTemplateContentRuleSerializer,
     ClosingSalutationSerializer, ClosingSalutationListSerializer,
+    EmailMjmlElementSerializer,
 )
 
 
@@ -288,3 +290,15 @@ class ClosingSalutationViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return ClosingSalutationListSerializer
         return ClosingSalutationSerializer
+
+
+class EmailMjmlElementViewSet(viewsets.ModelViewSet):
+    """
+    MJML element templates — list all and update individual templates.
+    No create/delete — elements are seeded via migration.
+    """
+    queryset = EmailMjmlElement.objects.filter(is_active=True)
+    serializer_class = EmailMjmlElementSerializer
+    permission_classes = [IsSuperUser]
+    http_method_names = ['get', 'put', 'patch', 'head', 'options']
+    pagination_class = None  # Always return all elements (max 9)
