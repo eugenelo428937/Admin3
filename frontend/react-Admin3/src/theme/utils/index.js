@@ -155,8 +155,11 @@ export const gradientColorSchemes = {
   },
 };
 
+const important = (value) => `${value} !important`;
+
 export default {
   // Style composition helpers
+  important,
   composeSx,
   productCardSx,
   // Gradient utilities
