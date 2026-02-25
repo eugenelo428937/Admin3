@@ -1,9 +1,13 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import mjml2html from 'mjml-browser';
 import emailService from '../../../../services/emailService';
+import { EmailMjmlElement } from '../../../../types/email/emailMjmlElement.types';
+import { markdownToMjml } from '../../../../utils/email/markdownToMjml';
 
 const CONTENT_PLACEHOLDER = '<!-- CONTENT_PLACEHOLDER -->';
 const SIGNATURE_PLACEHOLDER = '<!-- SIGNATURE_PLACEHOLDER -->';
+
+export type EditorMode = 'basic' | 'advanced';
 
 export interface EmailTemplateMjmlEditorVM {
     mjmlContent: string;
@@ -12,9 +16,14 @@ export interface EmailTemplateMjmlEditorVM {
     isDirty: boolean;
     isSaving: boolean;
     shellLoading: boolean;
+    editorMode: EditorMode;
+    basicModeContent: string;
+    elements: EmailMjmlElement[];
     handleContentChange: (content: string) => void;
+    handleBasicContentChange: (content: string) => void;
     handleSave: () => Promise<void>;
-    initContent: (content: string) => void;
+    initContent: (mjmlContent: string, basicModeContent: string) => void;
+    setEditorMode: (mode: EditorMode) => void;
     refreshSignature: () => Promise<void>;
 }
 
@@ -28,6 +37,9 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
     const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const shellRef = useRef<string | null>(null);
     const signatureRef = useRef<string>('');
+    const [editorMode, setEditorModeState] = useState<EditorMode>('advanced');
+    const [basicModeContent, setBasicModeContent] = useState<string>('');
+    const [elements, setElements] = useState<EmailMjmlElement[]>([]);
 
     // Fetch the MJML shell (master + banner + styles + footer) once on mount
     useEffect(() => {
@@ -61,6 +73,21 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
         fetchShell();
         return () => { cancelled = true; };
     }, [templateId]);
+
+    // Fetch MJML element templates on mount
+    useEffect(() => {
+        let cancelled = false;
+        const fetchElements = async () => {
+            try {
+                const data = await emailService.getMjmlElements();
+                if (!cancelled) setElements(data);
+            } catch (err) {
+                console.error('Error fetching MJML elements:', err);
+            }
+        };
+        fetchElements();
+        return () => { cancelled = true; };
+    }, []);
 
     const compileMjml = useCallback((content: string) => {
         if (!content.trim()) {
@@ -109,10 +136,35 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
         [compileMjml]
     );
 
+    const handleBasicContentChange = useCallback(
+        (content: string) => {
+            setBasicModeContent(content);
+            setIsDirty(true);
+
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
+            debounceTimerRef.current = setTimeout(() => {
+                const mjml = markdownToMjml(content, elements);
+                setMjmlContent(mjml);
+                compileMjml(mjml);
+            }, 500);
+        },
+        [compileMjml, elements]
+    );
+
     const handleSave = async () => {
         try {
             setIsSaving(true);
-            await emailService.patchTemplate(templateId, { mjml_content: mjmlContent });
+
+            const payload: Record<string, string> = { mjml_content: mjmlContent };
+            if (editorMode === 'basic') {
+                payload.basic_mode_content = basicModeContent;
+            } else {
+                payload.basic_mode_content = '';
+            }
+
+            await emailService.patchTemplate(templateId, payload);
             setIsDirty(false);
         } catch (err) {
             console.error('Error saving MJML content:', err);
@@ -123,12 +175,32 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
     };
 
     const initContent = useCallback(
-        (content: string) => {
-            setMjmlContent(content);
-            compileMjml(content);
+        (mjmlContentArg: string, basicModeContentArg: string) => {
+            setMjmlContent(mjmlContentArg);
+            setBasicModeContent(basicModeContentArg);
+
+            if (basicModeContentArg) {
+                setEditorModeState('basic');
+            } else {
+                setEditorModeState('advanced');
+                compileMjml(mjmlContentArg);
+            }
             setIsDirty(false);
         },
         [compileMjml]
+    );
+
+    const setEditorMode = useCallback(
+        (mode: EditorMode) => {
+            if (mode === 'advanced' && editorMode === 'basic') {
+                const mjml = markdownToMjml(basicModeContent, elements);
+                setMjmlContent(mjml);
+                setBasicModeContent('');
+                compileMjml(mjml);
+            }
+            setEditorModeState(mode);
+        },
+        [editorMode, basicModeContent, elements, compileMjml]
     );
 
     const refreshSignature = useCallback(async () => {
@@ -159,6 +231,15 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
         }
     }, [shellLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    // When elements load and we're in basic mode, compile the initial content
+    useEffect(() => {
+        if (elements.length > 0 && editorMode === 'basic' && basicModeContent) {
+            const mjml = markdownToMjml(basicModeContent, elements);
+            setMjmlContent(mjml);
+            compileMjml(mjml);
+        }
+    }, [elements.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
     return {
         mjmlContent,
         htmlPreview,
@@ -166,9 +247,14 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
         isDirty,
         isSaving,
         shellLoading,
+        editorMode,
+        basicModeContent,
+        elements,
         handleContentChange,
+        handleBasicContentChange,
         handleSave,
         initContent,
+        setEditorMode,
         refreshSignature,
     };
 };
