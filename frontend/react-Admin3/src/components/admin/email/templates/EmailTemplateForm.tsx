@@ -283,6 +283,7 @@ const EmailTemplateForm: React.FC = () => {
                         <EmailTemplateMjmlEditor
                             templateId={vm.formData.id}
                             initialContent={vm.formData.mjml_content || ''}
+                            initialBasicModeContent={vm.formData.basic_mode_content || ''}
                         />
                     ) : (
                         <Alert severity="info">
