@@ -40,6 +40,7 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
     const [editorMode, setEditorModeState] = useState<EditorMode>('advanced');
     const [basicModeContent, setBasicModeContent] = useState<string>('');
     const [elements, setElements] = useState<EmailMjmlElement[]>([]);
+    const elementsRef = useRef<EmailMjmlElement[]>([]);
 
     // Fetch the MJML shell (master + banner + styles + footer) once on mount
     useEffect(() => {
@@ -80,7 +81,10 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
         const fetchElements = async () => {
             try {
                 const data = await emailService.getMjmlElements();
-                if (!cancelled) setElements(data);
+                if (!cancelled) {
+                    setElements(data);
+                    elementsRef.current = data;
+                }
             } catch (err) {
                 console.error('Error fetching MJML elements:', err);
             }
@@ -145,12 +149,12 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
                 clearTimeout(debounceTimerRef.current);
             }
             debounceTimerRef.current = setTimeout(() => {
-                const mjml = markdownToMjml(content, elements);
+                const mjml = markdownToMjml(content, elementsRef.current);
                 setMjmlContent(mjml);
                 compileMjml(mjml);
             }, 500);
         },
-        [compileMjml, elements]
+        [compileMjml]
     );
 
     const handleSave = async () => {
