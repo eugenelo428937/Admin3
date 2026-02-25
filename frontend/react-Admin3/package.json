@@ -8,6 +8,7 @@
     "@carbon/react": "^1.97.0",
     "@chakra-ui/react": "^3.30.0",
     "@codemirror/lang-json": "^6.0.2",
+    "@codemirror/lang-markdown": "^6.5.0",
     "@codemirror/lang-xml": "^6.1.0",
     "@codemirror/state": "^6.5.4",
     "@codemirror/theme-one-dark": "^6.1.3",

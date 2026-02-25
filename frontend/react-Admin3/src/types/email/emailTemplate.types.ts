@@ -22,6 +22,7 @@ export interface EmailTemplate {
   enhance_outlook_compatibility: boolean;
   is_master: boolean;
   mjml_content: string;
+  basic_mode_content: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
