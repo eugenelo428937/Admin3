@@ -116,7 +116,11 @@ CSRF_COOKIE_SECURE = True
 # --- Static files (WhiteNoise) ---
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STORAGES = {
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 # --- Logging (console + file) ---
 LOG_DIR = os.environ.get('LOG_DIR', '/app/logs')
@@ -237,7 +241,9 @@ OPAYO_VENDOR_NAME = env('OPAYO_VENDOR_NAME', default='')
 FUZZY_SEARCH_MIN_SCORE = env.int('FUZZY_SEARCH_MIN_SCORE', default=45)
 
 # --- Startup diagnostic ---
+import re as _re
+_cache_url = _re.sub(r'://:[^@]+@', '://:*****@', CACHES['default']['LOCATION'])
 print(f"[STAGING] ALLOWED_HOSTS: {ALLOWED_HOSTS}")
 print(f"[STAGING] CORS_ALLOWED_ORIGINS: {CORS_ALLOWED_ORIGINS}")
 print(f"[STAGING] Database host: {DATABASES['default'].get('HOST', 'N/A')}")
-print(f"[STAGING] Cache: {CACHES['default']['LOCATION']}")
+print(f"[STAGING] Cache: {_cache_url}")
