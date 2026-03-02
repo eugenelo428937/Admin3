@@ -14,8 +14,8 @@ x-backend-env: &backend-env
   DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in .env}
   DB_HOST: db
   DB_PORT: "5432"
-  DB_NAME: ${POSTGRES_DB:-admin3_staging}
-  DB_USER: ${POSTGRES_USER:-admin3}
+  DB_NAME: ${POSTGRES_DB:-ACTEDDBSTAGE01}
+  DB_USER: ${POSTGRES_USER:-actedadmin}
   DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
   REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379/1
   ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
@@ -41,8 +41,8 @@ services:
     image: postgres:15-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-admin3_staging}
-      POSTGRES_USER: ${POSTGRES_USER:-admin3}
+      POSTGRES_DB: ${POSTGRES_DB:-ACTEDDBSTAGE01}
+      POSTGRES_USER: ${POSTGRES_USER:-actedadmin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -50,7 +50,7 @@ services:
     networks:
       - backend
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-admin3} -d ${POSTGRES_DB:-admin3_staging}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-actedadmin} -d ${POSTGRES_DB:-ACTEDDBSTAGE01}"]
       interval: 10s
       timeout: 5s
       start_period: 30s
@@ -79,7 +79,7 @@ services:
     restart: unless-stopped
     environment:
       <<: *backend-env
-      PORT: "8000"
+      PORT: "8888"
     depends_on:
       db:
         condition: service_healthy
@@ -89,7 +89,7 @@ services:
       - frontend
       - backend
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health/')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8888/api/health/')"]
       interval: 30s
       timeout: 10s
       start_period: 60s
