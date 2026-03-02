@@ -9,6 +9,10 @@ on:
     branches: [staging]
   workflow_dispatch:
 
+concurrency:
+  group: staging-deploy
+  cancel-in-progress: false
+
 env:
   DOCKER_COMPOSE_FILE: docker-compose.yml
 
@@ -84,7 +88,7 @@ jobs:
 
       - name: Build Docker images
         shell: bash
-        run: docker compose -f $DOCKER_COMPOSE_FILE build --no-cache
+        run: docker compose -f $DOCKER_COMPOSE_FILE build
 
       - name: Stop existing containers
         shell: bash
@@ -100,32 +104,41 @@ jobs:
           echo "Waiting for services to start..."
           sleep 30
 
-          # Check each service
-          HEALTHY=true
-
-          if ! docker compose -f $DOCKER_COMPOSE_FILE ps --format json | grep -q '"Health":"healthy"'; then
-            echo "Warning: Some services may not be healthy yet"
-          fi
-
           # Verify Nginx health endpoint
-          for i in 1 2 3 4 5; do
+          NGINX_OK=false
+          for i in 1 2 3 4 5 6; do
             if curl -k -s -o /dev/null -w "%{http_code}" http://localhost/health | grep -q "200"; then
               echo "Nginx health check passed"
+              NGINX_OK=true
               break
             fi
-            echo "Attempt $i: Nginx not ready, waiting 10s..."
+            echo "Attempt $i/6: Nginx not ready, waiting 10s..."
             sleep 10
           done
 
+          if [ "$NGINX_OK" != "true" ]; then
+            echo "::error::Nginx health check failed after 6 attempts"
+            exit 1
+          fi
+
           # Verify Django API health
-          for i in 1 2 3 4 5; do
+          DJANGO_OK=false
+          for i in 1 2 3 4 5 6; do
             if curl -k -s -o /dev/null -w "%{http_code}" https://localhost/api/health/ | grep -q "200"; then
               echo "Django API health check passed"
+              DJANGO_OK=true
               break
             fi
-            echo "Attempt $i: Django not ready, waiting 10s..."
+            echo "Attempt $i/6: Django not ready, waiting 10s..."
             sleep 10
           done
+
+          if [ "$DJANGO_OK" != "true" ]; then
+            echo "::error::Django API health check failed after 6 attempts"
+            exit 1
+          fi
+
+          echo "All health checks passed successfully"
 
       - name: Show deployment status
         if: always()
