@@ -108,6 +108,7 @@ backend/django_Admin3/misc/***
 # Pact contract JSON artifacts (generated, not committed)
 pacts/*.json
 .DS_Store
-acteddb_dev.dump
+*.dump
 *.pem
 *.log
+nginx/ssl/
