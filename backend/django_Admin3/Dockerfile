@@ -2,7 +2,7 @@
 # Django Backend Dockerfile for Railway
 # Uses multi-stage build and avoids sensitive data in ARG/ENV
 
-FROM python:3.14-slim as builder
+FROM python:3.14-slim AS builder
 
 # Set working directory
 WORKDIR /app
@@ -24,7 +24,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Production stage
-FROM python:3.14-slim as production
+FROM python:3.14-slim AS production
 
 # Install runtime dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -45,6 +45,9 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy application code
 COPY --chown=appuser:appuser . .
+
+# Fix Windows CRLF line endings in shell scripts (git on Windows may check out with \r\n)
+RUN find . -name "*.sh" -exec sed -i 's/\r$//' {} +
 
 # Set non-sensitive environment variables only
 # All sensitive variables are provided at RUNTIME by Railway
