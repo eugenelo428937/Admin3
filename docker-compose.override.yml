@@ -17,6 +17,8 @@ services:
       - "6379:6379"
 
   # ── Backend: dev server with hot reload ──
+  # NOTE: environment here merges with (and overrides) the base file's
+  # x-backend-env anchor. Only set values that differ for development.
   backend:
     build:
       context: ./backend/django_Admin3
@@ -28,9 +30,7 @@ services:
         python manage.py runserver 0.0.0.0:8000
       "
     environment:
-      DJANGO_SETTINGS_MODULE: django_Admin3.settings.staging
       DEBUG: "True"
-      PORT: "8000"
     volumes:
       - ./backend/django_Admin3:/app
     ports:
