@@ -108,3 +108,6 @@ backend/django_Admin3/misc/***
 # Pact contract JSON artifacts (generated, not committed)
 pacts/*.json
 .DS_Store
+
+# SSL certificates (generated at runtime)
+nginx/ssl/
