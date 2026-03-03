@@ -36,10 +36,10 @@
   /* Logo Text Styles */
   .logo-text-BPP {
     font-family: 'Poppins', Helvetica, Arial, sans-serif !important;
-    font-size: 22px !important;
+    font-size: 36px !important;
     font-weight: 700 !important;
     color: #ffffff !important;
-    line-height: 22px !important;
+    line-height: 1 !important;
     letter-spacing: -1px !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -47,15 +47,38 @@
   
   .logo-text-acted {
     font-family: 'Poppins', Helvetica, Arial, sans-serif !important;
-    font-size: 9px !important;
-    font-weight: 400 !important;
+    font-size: 16px !important;
+    font-weight: 200 !important;
     color: #ffffff !important;
-    line-height: 9px !important;
-    letter-spacing: 2px !important;
+    line-height: 1 !important;
+    letter-spacing: 66% !important;
     margin: 0 !important;
     padding: 0 !important;
   }
   
+  .logo-text-lyceum {
+    font-family: 'Poppins', Helvetica, Arial, sans-serif !important;
+    font-size: 8px !important;
+    font-weight: 400 !important;
+    color: #ffffff !important;
+    line-height: 1 !important;
+    letter-spacing: -2px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .logo-text-edu {
+    font-family: 'Poppins', Helvetica, Arial, sans-serif !important;
+    font-size: 8px !important;
+    font-weight: 400 !important;
+    color: #3c3c3c !important;
+    background: #ffffff;
+    line-height: 1 !important;
+    letter-spacing: 1px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
   /* Content Section Styles */
   .content-section {
     background-color: #ffffff !important; 

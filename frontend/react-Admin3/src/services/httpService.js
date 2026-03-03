@@ -110,6 +110,9 @@ httpService.interceptors.response.use(
 			try {
 				const refreshToken = localStorage.getItem("refreshToken");
                 if (!refreshToken) {
+                    // No refresh token — redirect to home with login modal
+                    sessionStorage.setItem('authExpired', 'true');
+                    window.location.href = '/';
                     return Promise.reject(error);
                 }
 				const response = await authService.refreshToken(refreshToken);
@@ -118,11 +121,13 @@ httpService.interceptors.response.use(
 				originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
 				return httpService(originalRequest);
 			} catch (refreshError) {
-				// If refresh fails, logout
+				// If refresh fails, logout and redirect to home with login modal
 				localStorage.removeItem("token");
 				localStorage.removeItem("refreshToken");
 				localStorage.removeItem("user");
-				localStorage.removeItem("isAuthenticated");					
+				localStorage.removeItem("isAuthenticated");
+				sessionStorage.setItem('authExpired', 'true');
+				window.location.href = '/';
 				return Promise.reject(refreshError);
 			}
 		}
