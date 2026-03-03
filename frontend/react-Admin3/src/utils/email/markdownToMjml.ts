@@ -15,7 +15,10 @@ export function markdownToMjml(
     const elementMap = new Map(elements.map((e) => [e.element_type, e]));
     const blocks = splitIntoBlocks(markdown);
 
-    return blocks.map((block) => convertBlock(block, elementMap)).join('\n');
+    const content = blocks.map((block) => convertBlock(block, elementMap)).join('\n');
+
+    // Wrap in section/column so the output is valid inside <mj-wrapper>
+    return `<mj-section><mj-column>\n${content}\n</mj-column></mj-section>`;
 }
 
 // --- Block Splitting ---

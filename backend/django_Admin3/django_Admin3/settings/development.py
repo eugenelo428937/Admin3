@@ -1,7 +1,16 @@
 # development.py
+from datetime import timedelta
+
 from .base import *
 
 DEBUG = True
+
+# JWT token lifetimes for development (base.py defaults: 60min / 1 day)
+SIMPLE_JWT = {
+    **SIMPLE_JWT,
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=8),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+}
 SECRET_KEY = env('DJANGO_SECRET_KEY')
 
 # Force-terminate lingering connections before dropping/creating the test DB
