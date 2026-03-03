@@ -3,6 +3,8 @@ import mjml2html from 'mjml-browser';
 import emailService from '../../../../services/emailService';
 import { EmailMjmlElement } from '../../../../types/email/emailMjmlElement.types';
 import { markdownToMjml } from '../../../../utils/email/markdownToMjml';
+import { mjmlToMarkdown } from '../../../../utils/email/mjmlToMarkdown';
+import { formatMjml } from '../../../../utils/email/formatMjml';
 
 const CONTENT_PLACEHOLDER = '<!-- CONTENT_PLACEHOLDER -->';
 const SIGNATURE_PLACEHOLDER = '<!-- SIGNATURE_PLACEHOLDER -->';
@@ -181,12 +183,14 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
     const initContent = useCallback(
         (mjmlContentArg: string, basicModeContentArg: string) => {
             setMjmlContent(mjmlContentArg);
-            setBasicModeContent(basicModeContentArg);
 
-            if (basicModeContentArg) {
-                setEditorModeState('basic');
-            } else {
-                setEditorModeState('advanced');
+            // Always default to basic mode
+            const basicContent = basicModeContentArg || mjmlToMarkdown(mjmlContentArg);
+            setBasicModeContent(basicContent);
+            setEditorModeState('basic');
+
+            // Compile for preview (will recompile once elements load)
+            if (mjmlContentArg) {
                 compileMjml(mjmlContentArg);
             }
             setIsDirty(false);
@@ -197,14 +201,24 @@ const useEmailTemplateMjmlEditorVM = (templateId: number): EmailTemplateMjmlEdit
     const setEditorMode = useCallback(
         (mode: EditorMode) => {
             if (mode === 'advanced' && editorMode === 'basic') {
-                const mjml = markdownToMjml(basicModeContent, elements);
+                // Forward escalation: convert markdown → MJML, format for readability
+                const mjml = formatMjml(markdownToMjml(basicModeContent, elements));
                 setMjmlContent(mjml);
                 setBasicModeContent('');
                 compileMjml(mjml);
+            } else if (mode === 'basic' && editorMode === 'advanced') {
+                // Switch to basic: reverse-translate MJML to markdown
+                const md = basicModeContent || mjmlToMarkdown(mjmlContent);
+                setBasicModeContent(md);
+                if (md) {
+                    const recompiled = markdownToMjml(md, elementsRef.current);
+                    setMjmlContent(recompiled);
+                    compileMjml(recompiled);
+                }
             }
             setEditorModeState(mode);
         },
-        [editorMode, basicModeContent, elements, compileMjml]
+        [editorMode, basicModeContent, mjmlContent, elements, compileMjml]
     );
 
     const refreshSignature = useCallback(async () => {

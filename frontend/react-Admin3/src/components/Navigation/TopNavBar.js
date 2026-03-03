@@ -55,6 +55,19 @@ const TopNavBar = ({ onOpenSearch }) =>
       // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [isAuthenticated]); // Only run when isAuthenticated changes, not when refreshCart changes
 
+   // Show login modal after 401 redirect (auth token expired)
+   useEffect(() =>
+   {
+      if (sessionStorage.getItem('authExpired'))
+      {
+         sessionStorage.removeItem('authExpired');
+         if (!isAuthenticated)
+         {
+            setShowAuthModal(true);
+         }
+      }
+   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
    // Listen for custom event to show auth modal (from CartPanel checkout)
    useEffect(() =>
    {

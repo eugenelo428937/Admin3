@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Box, Alert } from '@mui/material';
 
 interface MjmlPreviewPaneProps {
@@ -7,6 +7,15 @@ interface MjmlPreviewPaneProps {
 }
 
 const MjmlPreviewPane: React.FC<MjmlPreviewPaneProps> = ({ html, error }) => {
+    const iframeRef = useRef<HTMLIFrameElement>(null);
+
+    useEffect(() => {
+        if (iframeRef.current) {
+            iframeRef.current.srcdoc = html
+                || '<p style="color:#999;text-align:center;padding:2rem;">No preview available</p>';
+        }
+    }, [html]);
+
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             {error && (
@@ -26,9 +35,9 @@ const MjmlPreviewPane: React.FC<MjmlPreviewPaneProps> = ({ html, error }) => {
                 }}
             >
                 <iframe
+                    ref={iframeRef}
                     title="MJML Preview"
-                    srcDoc={html || '<p style="color:#999;text-align:center;padding:2rem;">No preview available</p>'}
-                    sandbox="allow-same-origin allow-scripts"
+                    sandbox=""
                     style={{
                         width: '100%',
                         height: '100%',
