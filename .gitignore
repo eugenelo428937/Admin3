@@ -111,3 +111,4 @@ pacts/*.json
 
 # SSL certificates (generated at runtime)
 nginx/ssl/
+backend/django_Admin3/.env.example
