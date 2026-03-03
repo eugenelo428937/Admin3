@@ -26,25 +26,27 @@ const EmailTemplateMjmlEditor: React.FC<EmailTemplateMjmlEditorProps> = ({
 }) => {
     const vm = useEmailTemplateMjmlEditorVM(templateId);
     const editorRef = useRef<HTMLDivElement>(null);
-    const initializedRef = useRef<boolean>(false);
-    const [editorView, setEditorView] = useState<EditorView | null>(null);
+    const editorViewRef = useRef<EditorView | null>(null);
+    const [isInitialized, setIsInitialized] = useState(false);
+    const [isEditorReady, setIsEditorReady] = useState(false);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
     // Initialize VM state from props
     useEffect(() => {
-        if (!initializedRef.current) {
+        if (!isInitialized) {
             vm.initContent(initialContent || '', initialBasicModeContent || '');
-            initializedRef.current = true;
+            setIsInitialized(true);
         }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Create/recreate CodeMirror when mode changes
+    // Create/recreate CodeMirror when mode changes or after initialization
     useEffect(() => {
-        if (!editorRef.current || !initializedRef.current) return;
+        if (!editorRef.current || !isInitialized) return;
 
-        if (editorView) {
-            editorView.destroy();
-            setEditorView(null);
+        if (editorViewRef.current) {
+            editorViewRef.current.destroy();
+            editorViewRef.current = null;
+            setIsEditorReady(false);
         }
 
         const isBasic = vm.editorMode === 'basic';
@@ -69,17 +71,22 @@ const EmailTemplateMjmlEditor: React.FC<EmailTemplateMjmlEditorProps> = ({
         });
 
         const view = new EditorView({ state, parent: editorRef.current });
-        setEditorView(view);
+        editorViewRef.current = view;
+        setIsEditorReady(true);
 
         return () => {
             view.destroy();
-            setEditorView(null);
+            editorViewRef.current = null;
+            setIsEditorReady(false);
         };
-    }, [vm.editorMode]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [vm.editorMode, isInitialized]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleModeChange = (newMode: string) => {
+        if (newMode === vm.editorMode) return;
         if (newMode === 'advanced' && vm.editorMode === 'basic') {
             setConfirmDialogOpen(true);
+        } else {
+            vm.setEditorMode(newMode as 'basic' | 'advanced');
         }
     };
 
@@ -99,7 +106,7 @@ const EmailTemplateMjmlEditor: React.FC<EmailTemplateMjmlEditorProps> = ({
                         size="small"
                         sx={{ minWidth: 150 }}
                     >
-                        <MenuItem value="basic" disabled={vm.editorMode === 'advanced'}>Basic Mode</MenuItem>
+                        <MenuItem value="basic">Basic Mode</MenuItem>
                         <MenuItem value="advanced">Advanced Mode</MenuItem>
                     </Select>
                     {vm.shellLoading && (
@@ -132,7 +139,7 @@ const EmailTemplateMjmlEditor: React.FC<EmailTemplateMjmlEditorProps> = ({
             </Box>
 
             {vm.editorMode === 'basic' && (
-                <BasicModeToolbar editorView={editorView} />
+                <BasicModeToolbar editorViewRef={editorViewRef} disabled={!isEditorReady} />
             )}
 
             {/* Split pane: Editor + Preview */}

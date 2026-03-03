@@ -11,7 +11,8 @@ import {
 import { EditorView } from 'codemirror';
 
 interface BasicModeToolbarProps {
-    editorView: EditorView | null;
+    editorViewRef: React.RefObject<EditorView | null>;
+    disabled?: boolean;
 }
 
 type InsertAction = (view: EditorView) => void;
@@ -138,7 +139,7 @@ const TOOLBAR_ACTIONS: { label: string; icon: React.ReactNode; action: InsertAct
     },
 ];
 
-const BasicModeToolbar: React.FC<BasicModeToolbarProps> = ({ editorView }) => {
+const BasicModeToolbar: React.FC<BasicModeToolbarProps> = ({ editorViewRef, disabled }) => {
     let lastGroup = '';
 
     return (
@@ -171,8 +172,11 @@ const BasicModeToolbar: React.FC<BasicModeToolbarProps> = ({ editorView }) => {
                             <span>
                                 <IconButton
                                     size="small"
-                                    disabled={!editorView}
-                                    onClick={() => editorView && item.action(editorView)}
+                                    disabled={disabled}
+                                    onClick={() => {
+                                        const view = editorViewRef.current;
+                                        if (view) item.action(view);
+                                    }}
                                 >
                                     {item.icon}
                                 </IconButton>
