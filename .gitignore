@@ -112,3 +112,4 @@ pacts/*.json
 *.pem
 *.log
 nginx/ssl/
+backend/django_Admin3/.env.example
