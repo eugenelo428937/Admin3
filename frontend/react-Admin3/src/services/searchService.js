@@ -4,7 +4,7 @@ import httpService from "./httpService";
 // Search endpoints are now on the catalog API (002-catalog-api-consolidation)
 const SEARCH_API_URL = config.catalogUrl;
 // Default search data endpoint is on the search API
-const SEARCH_DEFAULT_API_URL = `${config.apiBaseUrl || config.apiUrl}/api/search`;
+const SEARCH_DEFAULT_API_URL = `${config.apiBaseUrl ?? ''}/api/search`;
 
 const searchService = {
     // Fuzzy search for suggestions using our new FuzzyWuzzy backend

@@ -38,7 +38,7 @@ x-backend-env: &backend-env
 services:
   # ── PostgreSQL Database ──
   db:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-ACTEDDBSTAGE01}
@@ -130,14 +130,15 @@ services:
     environment:
       SERVER_NAME: ${SERVER_NAME:-staging.acted.local}
     volumes:
-      - nginx_ssl:/etc/nginx/ssl
+      - ./localhost+1.pem:/etc/nginx/ssl/server.crt:ro
+      - ./localhost+1-key.pem:/etc/nginx/ssl/server.key:ro
     depends_on:
       backend:
         condition: service_healthy
     networks:
       - frontend
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost/health"]
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/health"]
       interval: 30s
       timeout: 5s
       start_period: 15s
@@ -146,7 +147,6 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  nginx_ssl:
 
 networks:
   frontend:

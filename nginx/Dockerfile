@@ -40,4 +40,4 @@ COPY --from=frontend-build /app/build /usr/share/nginx/html
 EXPOSE 80 443
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget --no-check-certificate -q -O /dev/null http://localhost/health || exit 1
+    CMD wget -q -O /dev/null http://127.0.0.1/health || exit 1

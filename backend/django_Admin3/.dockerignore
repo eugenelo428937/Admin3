@@ -28,6 +28,7 @@ htmlcov
 # Local environment files (secrets - DO NOT include in image)
 .env
 .env.*
+!.env.staging
 *.local
 
 # Documentation
