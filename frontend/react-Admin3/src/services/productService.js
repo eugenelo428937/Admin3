@@ -10,7 +10,7 @@ const CATALOG_API_URL = config.catalogUrl || `${config.apiBaseUrl || config.apiU
 // Derive from productsUrl pattern: /api/products -> /api/store
 const STORE_API_URL = config.productsUrl ? config.productsUrl.replace('/products', '/store') : `${config.apiBaseUrl || config.apiUrl}/store`;
 const MARKING_API_URL = config.markingUrl;
-const MARKING_VOUCHERS_API_URL = `${config.apiBaseUrl || config.apiUrl}/api/marking-vouchers`;
+const MARKING_VOUCHERS_API_URL = `${config.apiBaseUrl ?? ''}/api/marking-vouchers`;
 
 const productService = {
 	// Get all products with optional filtering

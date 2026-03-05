@@ -124,7 +124,12 @@ STORAGES = {
 
 # --- Logging (console + file) ---
 LOG_DIR = os.environ.get('LOG_DIR', '/app/logs')
-os.makedirs(LOG_DIR, exist_ok=True)
+try:
+    os.makedirs(LOG_DIR, exist_ok=True)
+except PermissionError:
+    # Fall back to a writable directory if /app/logs is not accessible
+    LOG_DIR = os.path.join(BASE_DIR, 'logs')
+    os.makedirs(LOG_DIR, exist_ok=True)
 
 LOGGING = {
     'version': 1,
