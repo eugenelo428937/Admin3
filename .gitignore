@@ -109,6 +109,14 @@ backend/django_Admin3/misc/***
 pacts/*.json
 .DS_Store
 
-# SSL certificates (generated at runtime)
+# SSL certificates (generated at runtime, or mkcert local certs)
 nginx/ssl/
+*.pem
+
+# Database dumps
+*.dump
+
+# Runtime logs
+backend/django_Admin3/logs/
+
 backend/django_Admin3/.env.example
