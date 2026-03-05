@@ -116,9 +116,11 @@ nginx/ssl/
 
 # Database dumps
 *.dump
+acteddb_dev.dump
 
 # Runtime logs
 backend/django_Admin3/logs/
+*.log
 
 backend/django_Admin3/.env.example
 .DS_Store
