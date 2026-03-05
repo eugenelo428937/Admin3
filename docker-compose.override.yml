@@ -1,0 +1,70 @@
+# docker-compose.override.yml
+# Development overrides — auto-loaded by docker compose up.
+# Adds hot reload, exposed ports, and React dev server.
+#
+# For staging deployment, use: docker compose -f docker-compose.yml up -d
+# For infrastructure only:     docker compose up db redis
+
+services:
+  # ── Database: expose port for local tools (pgAdmin, DBeaver) ──
+  db:
+    ports:
+      - "${DB_EXTERNAL_PORT:-5433}:5432"
+
+  # ── Redis: expose port for local tools (RedisInsight) ──
+  redis:
+    ports:
+      - "6379:6379"
+
+  # ── Backend: dev server with hot reload ──
+  # NOTE: environment here merges with (and overrides) the base file's
+  # x-backend-env anchor. Only set values that differ for development.
+  backend:
+    build:
+      context: ./backend/django_Admin3
+      dockerfile: Dockerfile
+    command: >
+      bash -c "
+        python manage.py migrate --noinput &&
+        python manage.py createcachetable 2>/dev/null;
+        python manage.py runserver 0.0.0.0:8888
+      "
+    environment:
+      DEBUG: "True"
+    volumes:
+      - ./backend/django_Admin3:/app
+    ports:
+      - "8888:8888"
+    # Disable healthcheck for faster startup in dev
+    healthcheck:
+      disable: true
+
+  # ── Worker: same source mount ──
+  worker:
+    volumes:
+      - ./backend/django_Admin3:/app
+
+  # ── Nginx: disabled in dev (use backend + frontend directly) ──
+  nginx:
+    profiles:
+      - staging-only
+
+  # ── Frontend: React dev server with hot reload ──
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm start"
+    environment:
+      HOST: "0.0.0.0"
+      REACT_APP_API_BASE_URL: http://localhost:8888
+      REACT_APP_DISABLE_RECAPTCHA: "true"
+    volumes:
+      - ./frontend/react-Admin3:/app
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    networks:
+      - frontend
+
+volumes:
+  frontend_node_modules:
