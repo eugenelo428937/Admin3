@@ -10,7 +10,7 @@ import config from '../../config';
 
 // Base query with authentication and error handling
 const baseQuery = fetchBaseQuery({
-  baseUrl: `${config.apiBaseUrl || config.apiUrl}/api/`,
+  baseUrl: `${config.apiBaseUrl ?? ''}/api/`,
   prepareHeaders: (headers, { getState }) => {
     // Add authentication token if available
     const token = localStorage.getItem('access_token');

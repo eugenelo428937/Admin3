@@ -9,7 +9,7 @@ services:
   # ── Database: expose port for local tools (pgAdmin, DBeaver) ──
   db:
     ports:
-      - "5432:5432"
+      - "${DB_EXTERNAL_PORT:-5433}:5432"
 
   # ── Redis: expose port for local tools (RedisInsight) ──
   redis:

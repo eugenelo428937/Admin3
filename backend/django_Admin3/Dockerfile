@@ -46,6 +46,9 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy application code
 COPY --chown=appuser:appuser . .
 
+# Create logs directory writable by appuser (staging settings writes logs here)
+RUN mkdir -p /app/logs && chown appuser:appuser /app/logs
+
 # Fix Windows CRLF line endings in shell scripts (git on Windows may check out with \r\n)
 RUN find . -name "*.sh" -exec sed -i 's/\r$//' {} +
 
