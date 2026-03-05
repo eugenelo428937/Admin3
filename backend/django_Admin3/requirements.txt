@@ -72,3 +72,4 @@ django-anymail[sendgrid]==14.0
 jsonschema==4.26.0
 whitenoise==6.11.0
 pact-python==2.2.2
+django-redis==5.4.0
