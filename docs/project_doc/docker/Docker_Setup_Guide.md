@@ -32,7 +32,7 @@ The stack runs 5 containers on two isolated Docker networks:
 
 | Service    | Image               | Role                                      |
 |------------|----------------------|-------------------------------------------|
-| **db**     | postgres:15-alpine   | PostgreSQL with `acted` and `adm` schemas  |
+| **db**     | postgres:17-alpine   | PostgreSQL with `acted` and `adm` schemas  |
 | **redis**  | redis:7-alpine       | Cache backend (django-redis)               |
 | **backend**| Custom (Gunicorn)    | Django REST API on port 8888               |
 | **worker** | Custom (same image)  | Email queue processor                      |
@@ -170,12 +170,13 @@ docker compose -f docker-compose.yml ps
 curl http://localhost/health
 # Expected: OK
 
-# Django API health (HTTPS, self-signed cert)
-curl -k https://localhost/api/health/
+# Django API health (HTTPS)
+curl https://localhost/api/health/
 # Expected: {"status": "ok"}
+# (use -k flag if using self-signed certs instead of mkcert)
 
 # React SPA
-curl -k https://localhost/
+curl https://localhost/
 # Expected: HTML page
 ```
 
@@ -223,12 +224,12 @@ docker compose up db redis
 
 ### Development Ports
 
-| Service     | URL                          | Purpose                    |
-|-------------|------------------------------|----------------------------|
-| Backend     | http://localhost:8888        | Django API (runserver)     |
-| Frontend    | http://localhost:3000        | React dev server           |
-| PostgreSQL  | localhost:5432               | Direct DB access (pgAdmin) |
-| Redis       | localhost:6379               | Direct Redis access        |
+| Service    | URL                    | Purpose                                    |
+|------------|------------------------|--------------------------------------------|
+| Backend    | http://localhost:8888  | Django API (runserver)                     |
+| Frontend   | http://localhost:3000  | React dev server                           |
+| PostgreSQL | localhost:5433         | Direct DB access (pgAdmin, avoids local PG conflict) |
+| Redis      | localhost:6379         | Direct Redis access                        |
 
 ### Infrastructure-Only Mode
 
@@ -314,18 +315,43 @@ docker system df
 
 ## 5. SSL Certificates
 
-The nginx container auto-generates a **self-signed SSL certificate** on first boot using `nginx/generate-cert.sh`. The certificate is:
-- Stored in a named Docker volume (`nginx_ssl`) so it persists across container restarts
-- Valid for 365 days
-- Uses the `SERVER_NAME` environment variable as the Common Name (CN)
+### Local Development (mkcert — recommended)
 
-### Accept Self-Signed Certificate in Browser
+The stack uses [mkcert](https://github.com/FiloSottile/mkcert)
+locally-trusted certificates by default. These are bind-mounted
+into the nginx container from the project root:
 
-On first visit to `https://staging.acted.local`, the browser will show a security warning. Click "Advanced" and "Proceed" to accept the self-signed certificate.
+```yaml
+# docker-compose.yml nginx volumes:
+- ./localhost+1.pem:/etc/nginx/ssl/server.crt:ro
+- ./localhost+1-key.pem:/etc/nginx/ssl/server.key:ro
+```
+
+**Setup (one-time):**
+
+```bash
+# Install mkcert and create local CA
+brew install mkcert   # macOS
+mkcert -install       # trust the CA in your system/browsers
+
+# Generate cert for localhost + 127.0.0.1
+cd /path/to/Admin3
+mkcert localhost 127.0.0.1
+# Creates: localhost+1.pem and localhost+1-key.pem
+```
+
+Browsers will show a **trusted padlock** with no security warning.
+
+### Self-Signed Fallback (staging servers)
+
+If mkcert certs are not present, the nginx container
+auto-generates a self-signed certificate on first boot using
+`nginx/generate-cert.sh`. Browsers will show a security warning
+— click "Advanced" → "Proceed" to accept.
 
 ### Replace with Real Certificate
 
-To use a real certificate, mount your cert files into the nginx container:
+Mount your cert files into the nginx container:
 
 ```yaml
 # In docker-compose.yml, under nginx.volumes:
