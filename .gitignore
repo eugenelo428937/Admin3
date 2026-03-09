@@ -128,3 +128,5 @@ acteddb_dev.dump
 *.pem
 *.log
 env.*
+
+backend/.DS_Store
