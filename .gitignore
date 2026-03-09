@@ -127,3 +127,4 @@ backend/django_Admin3/.env.example
 acteddb_dev.dump
 *.pem
 *.log
+env.*
