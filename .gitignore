@@ -123,5 +123,6 @@ backend/django_Admin3/logs/
 *.log
 
 backend/django_Admin3/.env.example
+env.*
 .DS_Store
 */.DS_Store
