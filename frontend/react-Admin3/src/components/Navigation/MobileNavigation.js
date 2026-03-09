@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { useConfig } from "../../contexts/ConfigContext";
 import { useCart } from "../../contexts/CartContext";
 import { NavigateBefore, ExpandMore, Search, ShoppingCartOutlined, Login, AccountCircle } from "@mui/icons-material";
 import { IconButton, Badge, Drawer, List, ListItem, ListItemButton, ListItemText, Box, Typography, useTheme } from "@mui/material";
@@ -27,6 +28,7 @@ const MobileNavigation = ({
 	onOpenAuth,
 }) => {
 	const { isSuperuser, isApprentice, isStudyPlus, isAuthenticated } = useAuth();
+	const { isInternal } = useConfig();
 	const { cartCount } = useCart();
 	const navigate = useNavigate();
 	const theme = useTheme();
@@ -161,6 +163,7 @@ const MobileNavigation = ({
 						<ListItemText primary={<Typography variant="mainnavlink">Home</Typography>} />
 					</ListItemButton>
 				</ListItem>
+				{!isInternal && (<>
 				<ListItem disablePadding>
 					<ListItemButton onClick={() => navigateToPanel("subjects", "Subjects")}>
 						<ListItemText primary={<Typography variant="mainnavlink">Subjects</Typography>} />
@@ -201,6 +204,7 @@ const MobileNavigation = ({
 						</ListItemButton>
 					</ListItem>
 				)}
+				</>)}
 
 				{/* Admin section for superusers */}
 				{isSuperuser && (
