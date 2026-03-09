@@ -49,6 +49,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/init.sql:/docker-entrypoint-initdb.d/01-init-schemas.sql:ro
+    ports:
+      - "${DB_EXTERNAL_PORT:-5433}:5432"
     networks:
       - backend
     healthcheck:
