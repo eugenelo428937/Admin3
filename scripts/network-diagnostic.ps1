@@ -28,7 +28,7 @@ Write-Host " Email System - Network Diagnostic" -ForegroundColor Cyan
 Write-Host " $timestamp" -ForegroundColor Cyan
 Write-Host "========================================`n" -ForegroundColor Cyan
 
-# ── Section 1: System Requirements ──
+# -- Section 1: System Requirements --
 
 $os = Get-CimInstance Win32_OperatingSystem
 Log "System" "Windows Version" "INFO" "$($os.Caption) Build $($os.BuildNumber)"
@@ -46,13 +46,13 @@ else { Log "System" "Disk Free ($($freeGB)GB)" "FAIL" "Need 20GB+ (40GB recommen
 
 $hyperv = Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -ErrorAction SilentlyContinue
 if ($hyperv.State -eq 'Enabled') { Log "System" "Hyper-V" "PASS" "Enabled" }
-else { Log "System" "Hyper-V" "WARN" "Not enabled — required for Linux containers" }
+else { Log "System" "Hyper-V" "WARN" "Not enabled - required for Linux containers" }
 
 $containers = Get-WindowsOptionalFeature -Online -FeatureName Containers -ErrorAction SilentlyContinue
 if ($containers.State -eq 'Enabled') { Log "System" "Containers Feature" "PASS" "Enabled" }
 else { Log "System" "Containers Feature" "WARN" "Not enabled" }
 
-# ── Section 2: Network Egress (Outbound) ──
+# -- Section 2: Network Egress (Outbound) --
 
 $endpoints = @(
     @{ Name = "Docker Hub";     URL = "https://hub.docker.com";      Port = 443 },
@@ -81,10 +81,10 @@ foreach ($ep in $endpoints) {
 try {
     $tcp = New-Object System.Net.Sockets.TcpClient
     $tcp.Connect("10.20.3.4", 25)
-    if ($tcp.Connected) { Log "Egress" "SMTP Relay (10.20.3.4:25)" "PASS" "Connected" }
+    if ($tcp.Connected) { Log "Egress" 'SMTP Relay (10.20.3.4:25)' "PASS" "Connected" }
     $tcp.Close()
 } catch {
-    Log "Egress" "SMTP Relay (10.20.3.4:25)" "FAIL" $_.Exception.Message
+    Log "Egress" 'SMTP Relay (10.20.3.4:25)' "FAIL" $_.Exception.Message
 }
 
 # Proxy detection
@@ -131,7 +131,7 @@ if ($gitInstalled) {
     Log "Egress" "Git HTTPS" "WARN" "Git not installed"
 }
 
-# ── Section 3: Network Ingress (Inbound) ──
+# -- Section 3: Network Ingress (Inbound) --
 
 $ip = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -notmatch 'Loopback' }).IPAddress
 Log "Ingress" "Server IP(s)" "INFO" ($ip -join ", ")
@@ -155,8 +155,8 @@ try {
 
 # Test ports needed by Docker Compose stack
 $requiredPorts = @(
-    @{ Port = 80;   Name = "HTTP (Nginx)" },
-    @{ Port = 443;  Name = "HTTPS (Nginx)" },
+    @{ Port = 8080; Name = "HTTP (Nginx)" },
+    @{ Port = 8443; Name = "HTTPS (Nginx)" },
     @{ Port = 5432; Name = "PostgreSQL" },
     @{ Port = 6379; Name = "Redis" }
 )
@@ -172,7 +172,7 @@ foreach ($p in $requiredPorts) {
     }
 }
 
-# ── Section 4: Docker Status ──
+# -- Section 4: Docker Status --
 
 $docker = Get-Command docker -ErrorAction SilentlyContinue
 if ($docker) {
@@ -187,10 +187,10 @@ if ($docker) {
     if ($LASTEXITCODE -eq 0) { Log "Docker" "Container Run" "PASS" "hello-world succeeded" }
     else { Log "Docker" "Container Run" "FAIL" "hello-world failed: $hello" }
 
-    # Test container→host network (SMTP)
-    $smtpTest = docker run --rm alpine sh -c "nc -z -w5 host.docker.internal 25 && echo OK || echo FAIL" 2>&1
+    # Test container-to-host network (SMTP)
+    $smtpTest = docker run --rm alpine sh -c 'nc -z -w5 host.docker.internal 25 && echo OK || echo FAIL' 2>&1
     # Note: host.docker.internal may not work on all Docker setups
-    Log "Docker" "Container→SMTP" "INFO" "Result: $smtpTest (verify manually if FAIL)"
+    Log "Docker" "Container-to-SMTP" "INFO" "Result: $smtpTest (verify manually if FAIL)"
 
     # Linux container mode detection
     $dockerInfo = docker info --format '{{.OSType}}' 2>&1
@@ -239,7 +239,7 @@ if ($docker) {
     Log "Docker" "Installed" "FAIL" "Docker not found in PATH"
 }
 
-# ── Section 5: GitHub Actions Runner ──
+# -- Section 5: GitHub Actions Runner --
 
 $runnerService = Get-Service -Name "actions.runner.*" -ErrorAction SilentlyContinue
 if ($runnerService) {
@@ -247,13 +247,13 @@ if ($runnerService) {
     if ($runnerService.Status -eq 'Running') {
         Log "Runner" "Service Running" "PASS" "Status: Running"
     } else {
-        Log "Runner" "Service Running" "WARN" "Status: $($runnerService.Status) — start with: Start-Service '$($runnerService.Name)'"
+        Log "Runner" "Service Running" "WARN" "Status: $($runnerService.Status) - start with: Start-Service '$($runnerService.Name)'"
     }
 } else {
     Log "Runner" "Service Installed" "INFO" "Not installed yet. Run setup-runner.ps1 after Docker is configured."
 }
 
-# Runner → GitHub API connectivity
+# Runner - GitHub API connectivity
 try {
     $ghApi = Invoke-WebRequest -Uri "https://api.github.com/meta" -TimeoutSec 10 -UseBasicParsing
     Log "Runner" "GitHub API Access" "PASS" "HTTP $($ghApi.StatusCode)"
@@ -261,7 +261,7 @@ try {
     Log "Runner" "GitHub API Access" "FAIL" $_.Exception.Message
 }
 
-# ── Summary ──
+# -- Summary --
 
 Write-Host "`n========================================" -ForegroundColor Cyan
 Write-Host " RESULTS SUMMARY" -ForegroundColor Cyan
@@ -278,11 +278,11 @@ $hasDocker = ($results | Where-Object { $_.Section -eq 'Docker' -and $_.Test -eq
 
 Write-Host "`nRECOMMENDED DEPLOYMENT PATH:" -ForegroundColor Yellow
 if ($hasDocker -and $hasInternet) {
-    Write-Host "  ONLINE — Docker installed + internet access. Use docker-compose pull." -ForegroundColor Green
+    Write-Host "  ONLINE - Docker installed + internet access. Use docker-compose pull." -ForegroundColor Green
 } elseif ($hasDocker) {
-    Write-Host "  OFFLINE — Docker installed but no internet. Use docker save/load." -ForegroundColor Yellow
+    Write-Host "  OFFLINE - Docker installed but no internet. Use docker save/load." -ForegroundColor Yellow
 } else {
-    Write-Host "  INSTALL DOCKER FIRST — Then re-run this script." -ForegroundColor Red
+    Write-Host "  INSTALL DOCKER FIRST - Then re-run this script." -ForegroundColor Red
 }
 
 # Save results
