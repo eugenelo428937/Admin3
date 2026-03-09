@@ -22,6 +22,8 @@ x-backend-env: &backend-env
   CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://localhost}
   CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-https://localhost}
   FRONTEND_URL: ${FRONTEND_URL:-https://localhost}
+  # Site mode
+  INTERNAL: ${INTERNAL:-False}
   # Email
   USE_INTERNAL_SMTP: ${USE_INTERNAL_SMTP:-False}
   EMAIL_HOST: ${EMAIL_HOST:-host.docker.internal}
