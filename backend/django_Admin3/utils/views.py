@@ -578,6 +578,16 @@ def health_check(request):
     })
 
 
+@csrf_exempt
+@require_http_methods(["GET"])
+def site_config(request):
+    """Public endpoint returning site-wide configuration flags for the frontend."""
+    from django.conf import settings
+    return JsonResponse({
+        'internal': getattr(settings, 'INTERNAL', False),
+    })
+
+
 # ============================================================================
 # Postcoder.com Address Lookup (New separate method - see ARCHITECTURE.md)
 # ============================================================================
