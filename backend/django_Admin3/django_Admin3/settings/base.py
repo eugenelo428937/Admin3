@@ -93,6 +93,7 @@ if os.getenv('DJANGO_DEVELOPMENT') == 'true':
 
 # Environment-based settings
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'  # Default to True for development
+INTERNAL = os.environ.get('INTERNAL', 'False').lower() in ('true', '1')
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY', 'django-insecure-5rn#bj-51$-9c1fmwnn8yfguq#v@17a0z5-zi2a&+$u3&famf$')
 

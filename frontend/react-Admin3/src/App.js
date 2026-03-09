@@ -10,6 +10,7 @@ import theme from "./theme";
 import { bodyContainerStyles } from "./theme/styles";
 import { store } from './store';
 import { AuthProvider } from "./hooks/useAuth.js";
+import { ConfigProvider } from "./contexts/ConfigContext.js";
 import ErrorBoundary from "./components/ErrorBoundary.js";
 import Home from "./pages/Home.js";
 import ProfilePage from "./pages/ProfilePage.js";
@@ -183,6 +184,7 @@ function App() {
 	// App content wrapped conditionally with reCAPTCHA provider
 	const AppContent = () => (
 		<ErrorBoundary>
+			<ConfigProvider>
 			<CartProvider>
 				<AuthProvider>
 					<ProductProvider>
@@ -325,6 +327,7 @@ function App() {
 					</ProductProvider>
 				</AuthProvider>
 			</CartProvider>
+			</ConfigProvider>
 		</ErrorBoundary>
 	);
 

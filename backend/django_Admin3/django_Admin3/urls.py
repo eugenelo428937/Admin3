@@ -17,12 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from utils.health_check import health_check
-from utils.views import country_list
+from utils.views import country_list, site_config
 
 urlpatterns = [
     path('admin/doc/', include('django.contrib.admindocs.urls')),  # Must be before admin/
     path('admin/', admin.site.urls),
     path('api/health/', health_check, name='health_check'),
+    path('api/config/', site_config, name='site_config'),
     path('api/auth/', include('core_auth.urls')),
     path('api/users/', include('users.urls')),
     path('api/students/', include('students.urls')),
