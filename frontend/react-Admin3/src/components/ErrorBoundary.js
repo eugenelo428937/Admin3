@@ -1,6 +1,6 @@
 // src/components/ErrorBoundary.js
 import React from 'react';
-import logger from '../services/loggerService.js';
+import logger from '../services/loggerService';
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -25,7 +25,7 @@ class ErrorBoundary extends React.Component {
             return (
                 <div className="error-boundary">
                     <h1>Something went wrong.</h1>
-                    {import.meta.env?.DEV && (
+                    {import.meta.env.DEV && (
                         <details style={{ whiteSpace: 'pre-wrap' }}>
                             {this.state.error && this.state.error.toString()}
                             <br />
