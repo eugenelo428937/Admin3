@@ -97,6 +97,7 @@ claude-mcp-trello/
 node_modules/
 node_modules/*.mcp.json
 .env.*
+env.*
 *tmpclaude*
 *tmpclaude*
 # null - Removed due to Windows compatibility issues (nul is a reserved device name)
@@ -105,3 +106,4 @@ backend/django_Admin3/misc/***
 # Pact contract JSON artifacts (generated, not committed)
 pacts/*.json
 .DS_Store
+*.pem
