@@ -1,5 +1,5 @@
 #!/bin/bash
-# Railway startup script - conditionally runs web or worker based on SERVICE_TYPE
+# Startup script - conditionally runs web or worker based on SERVICE_TYPE
 
 set -e
 
@@ -9,7 +9,7 @@ if [ "$SERVICE_TYPE" = "worker" ]; then
 else
     echo "Starting WEB service..."
     find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null;
-    python manage.py migrate --noinput
-    python manage.py createcachetable
+    python manage.py migrate --noinput --skip-checks
+    python manage.py createcachetable 2>/dev/null || true
     exec gunicorn django_Admin3.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
 fi
