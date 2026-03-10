@@ -121,3 +121,5 @@ nginx/ssl/
 backend/django_Admin3/logs/
 
 backend/django_Admin3/.env.example
+.DS_Store
+*/.DS_Store
