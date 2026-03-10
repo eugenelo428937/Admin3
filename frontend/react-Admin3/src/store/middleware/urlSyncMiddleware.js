@@ -15,9 +15,9 @@
  */
 
 import { createListenerMiddleware } from '@reduxjs/toolkit';
-import { toUrlParams, fromUrlParams } from '../../utils/filterUrlManager.js';
-import PerformanceTracker from '../../utils/PerformanceTracker.js';
-import { URL_SYNC_BUDGET } from '../../config/performanceBudgets.js';
+import { toUrlParams, fromUrlParams } from '../../utils/filterUrlManager';
+import PerformanceTracker from '../../utils/PerformanceTracker';
+import { URL_SYNC_BUDGET } from '../../config/performanceBudgets';
 
 /**
  * URL Parameter Mapping Configuration
@@ -200,7 +200,7 @@ urlSyncMiddleware.startListening({
         urlLength: urlString.length
       });
 
-      if (metric && !import.meta.env?.PROD) {
+      if (metric && !import.meta.env.PROD) {
         PerformanceTracker.checkBudget('urlSync', metric.duration, URL_SYNC_BUDGET);
       }
     }
@@ -247,7 +247,7 @@ export const setupUrlToReduxSync = (dispatch) => {
     if (initialParams.toString()) {
       // Use require() for synchronous loading (needed for tests that check state immediately)
       try {
-        const { setMultipleFilters } = require('../slices/filtersSlice.js');
+        const { setMultipleFilters } = require('../slices/filtersSlice');
         const filters = parseUrlToFilters(initialParams);
         dispatch(setMultipleFilters(filters));
       } catch (error) {

@@ -7,7 +7,7 @@ const FilterDebugger = ({
     navbarFilters, 
     finalParams 
 }) => {
-    if (!import.meta.env?.DEV) {
+    if (!import.meta.env.DEV) {
         return null;
     }
 
