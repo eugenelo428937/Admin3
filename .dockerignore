@@ -1,0 +1,60 @@
+# .dockerignore
+# Prevents secrets and unnecessary files from entering Docker build context.
+# Critical for nginx build (context: project root).
+
+# Secrets — NEVER include in images
+.env
+.env.*
+!.env.example
+!.env.staging
+!**/.env.staging
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# IDE / editor
+.vscode
+.idea
+
+# Claude / AI tooling
+.claude
+.specify
+*tmpclaude*
+
+# Virtual environments
+.venv
+venv
+venv2
+myenv
+
+# Python build artifacts
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.egg-info
+dist
+build
+
+# Node modules (frontend uses its own in multi-stage build)
+node_modules
+
+# Documentation and plans
+docs
+*.md
+
+# Test artifacts
+pacts
+.playwrite-mcp
+
+# Generated SSL certificates
+nginx/ssl
+
+# Scripts not needed in containers
+scripts
+
+# OS files
+.DS_Store
+Thumbs.db
