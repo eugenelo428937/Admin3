@@ -92,7 +92,7 @@ export class FilterRegistry {
         found: result !== undefined
       });
 
-      if (metric && process.env.NODE_ENV !== 'production') {
+      if (metric && !import.meta.env.PROD) {
         PerformanceTracker.checkBudget('registry.lookup', metric.duration, REGISTRY_LOOKUP_BUDGET);
       }
     }
@@ -134,7 +134,7 @@ export class FilterRegistry {
         found: result !== undefined
       });
 
-      if (metric && process.env.NODE_ENV !== 'production') {
+      if (metric && !import.meta.env.PROD) {
         PerformanceTracker.checkBudget('registry.getByUrlParam', metric.duration, REGISTRY_LOOKUP_BUDGET);
       }
     }

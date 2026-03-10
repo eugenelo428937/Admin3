@@ -133,7 +133,7 @@ export const PERFORMANCE_MONITORING_CONFIG = Object.freeze({
    * Enabled in development and test environments.
    * @type {boolean}
    */
-  enabled: process.env.NODE_ENV !== 'production',
+  enabled: !import.meta.env.PROD,
 
   /**
    * Monitoring level (off, minimal, standard, verbose)
@@ -149,13 +149,13 @@ export const PERFORMANCE_MONITORING_CONFIG = Object.freeze({
    * Enable console logging of performance metrics
    * @type {boolean}
    */
-  consoleLogging: process.env.NODE_ENV !== 'production',
+  consoleLogging: !import.meta.env.PROD,
 
   /**
    * Enable Redux DevTools integration for performance data
    * @type {boolean}
    */
-  reduxDevTools: process.env.NODE_ENV !== 'production',
+  reduxDevTools: !import.meta.env.PROD,
 
   /**
    * Operation name patterns to include (empty array = all)

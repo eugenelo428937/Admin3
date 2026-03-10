@@ -106,9 +106,9 @@ const CheckoutSteps = ({ onComplete }) => {
 
   useEffect(() => {
     // Check if we're in development environment
-    setIsDevelopment(process.env.NODE_ENV === 'development' || config.API_BASE_URL?.includes('localhost'));
+    setIsDevelopment(import.meta.env.DEV || config.API_BASE_URL?.includes('localhost'));
     // Check if we're in UAT environment
-    setIsUAT(config.isUAT || process.env.REACT_APP_ENV === 'uat' || process.env.REACT_APP_ENVIRONMENT === 'uat');
+    setIsUAT(config.isUAT || import.meta.env.VITE_ENV === 'uat' || import.meta.env.VITE_ENVIRONMENT === 'uat');
   }, []);
 
   // Fetch user profile function (extracted for reuse)
@@ -326,7 +326,7 @@ const CheckoutSteps = ({ onComplete }) => {
         if (err.name === 'SchemaValidationError') {
           console.error('🚨 Schema validation failed for rules engine:', err.details);
           console.error('🔍 Schema errors:', err.schemaErrors);
-          if (process.env.NODE_ENV === 'development') {
+          if (import.meta.env.DEV) {
             setError(`Development Error: Schema validation failed - ${err.details}`);
           }
         }

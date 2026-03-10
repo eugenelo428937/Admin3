@@ -256,7 +256,7 @@ const ProductList = React.memo(() => {
                 // Handle any processing errors
                 if (!result.success && result.error) {
                     console.error('🚨 Rules processing error:', result.error);
-                    if (process.env.NODE_ENV === 'development') {
+                    if (import.meta.env.DEV) {
                         // Show error in development
                         setRulesMessages([{
                             title: 'Development Error',
@@ -274,7 +274,7 @@ const ProductList = React.memo(() => {
                     console.error('🚨 Schema validation failed for rules engine:', err.details);
                     console.error('🔍 Schema errors:', err.schemaErrors);
                     // For development, show schema validation errors to help debugging
-                    if (process.env.NODE_ENV === 'development') {
+                    if (import.meta.env.DEV) {
                         setRulesMessages([{
                             title: 'Development Error',
                             message: `Schema validation failed - ${err.details}`,
@@ -363,7 +363,7 @@ const ProductList = React.memo(() => {
 						/>
 
 							{/* Debug Information (Development Only) */}
-							{/* {process.env.NODE_ENV === 'development' && (
+							{/* {import.meta.env.DEV && (
                             <FilterDebugger 
                                 filters={filters}
                                 searchQuery={searchQuery}
