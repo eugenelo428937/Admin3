@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Contract Test: /api/cart/clear/
  *
@@ -12,10 +13,10 @@
  */
 
 // Remove global mocks from setupTests.js so we can test the real cartService
-jest.unmock('../../services/cartService');
+vi.unmock('../../services/cartService');
 
 // Mock config before cartService tries to use it
-jest.mock('../../config', () => ({
+vi.mock('../../config', () => ({
   __esModule: true,
   default: {
     cartUrl: '/api/cart'
@@ -23,13 +24,13 @@ jest.mock('../../config', () => ({
 }));
 
 // Mock httpService with our test-specific implementation
-jest.mock('../../services/httpService', () => ({
+vi.mock('../../services/httpService', () => ({
   __esModule: true,
   default: {
-    post: jest.fn(),
-    get: jest.fn(),
-    delete: jest.fn(),
-    patch: jest.fn(),
+    post: vi.fn(),
+    get: vi.fn(),
+    delete: vi.fn(),
+    patch: vi.fn(),
   }
 }));
 
@@ -40,7 +41,7 @@ import httpService from '../../services/httpService';
 
 describe('Contract Test: /api/cart/clear/', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   /**

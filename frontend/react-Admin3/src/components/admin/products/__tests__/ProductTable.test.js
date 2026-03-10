@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/admin/products/__tests__/ProductTable.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -6,7 +7,7 @@ import { BrowserRouter } from 'react-router-dom';
 import AdminProductTable from '../ProductTable';
 
 // Mock ProductVariationsPanel to avoid testing its internals here
-jest.mock('../ProductVariationsPanel', () => {
+vi.mock('../ProductVariationsPanel', () => {
   return function MockProductVariationsPanel({ productId }) {
     return <div data-testid={`expand-row-${productId}`}>Variations for {productId}</div>;
   };
@@ -38,7 +39,7 @@ const mockProducts = [
 const renderComponent = (props = {}) => {
   const defaultProps = {
     products: mockProducts,
-    onDelete: jest.fn(),
+    onDelete: vi.fn(),
   };
 
   return render(
@@ -127,7 +128,7 @@ describe('AdminProductTable', () => {
 
   describe('delete functionality', () => {
     test('calls onDelete with correct id when delete clicked', () => {
-      const mockOnDelete = jest.fn();
+      const mockOnDelete = vi.fn();
       renderComponent({ onDelete: mockOnDelete });
 
       const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
@@ -137,7 +138,7 @@ describe('AdminProductTable', () => {
     });
 
     test('calls onDelete with second product id', () => {
-      const mockOnDelete = jest.fn();
+      const mockOnDelete = vi.fn();
       renderComponent({ onDelete: mockOnDelete });
 
       const deleteButtons = screen.getAllByRole('button', { name: /delete/i });

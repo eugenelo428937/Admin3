@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/Navigation/__tests__/NavigationMenu.admin.test.js
 // T004 [US1] - MegaMenu navigation tests
 import React from 'react';
@@ -8,9 +9,9 @@ import NavigationMenu from '../NavigationMenu';
 import theme from '../../../theme';
 
 // Mock useAuth
-jest.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
 import { useAuth } from '../../../hooks/useAuth';
@@ -23,13 +24,13 @@ const defaultProps = {
   loadingProductGroups: false,
   loadingDistanceLearning: false,
   loadingTutorial: false,
-  handleSubjectClick: jest.fn(),
-  handleProductClick: jest.fn(),
-  handleProductGroupClick: jest.fn(),
-  handleSpecificProductClick: jest.fn(),
-  handleProductVariationClick: jest.fn(),
-  handleMarkingVouchersClick: jest.fn(),
-  onCollapseNavbar: jest.fn(),
+  handleSubjectClick: vi.fn(),
+  handleProductClick: vi.fn(),
+  handleProductGroupClick: vi.fn(),
+  handleSpecificProductClick: vi.fn(),
+  handleProductVariationClick: vi.fn(),
+  handleMarkingVouchersClick: vi.fn(),
+  onCollapseNavbar: vi.fn(),
 };
 
 const renderComponent = (props = {}) => {
@@ -44,7 +45,7 @@ const renderComponent = (props = {}) => {
 
 describe('Admin MegaMenu Navigation', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('superuser access', () => {

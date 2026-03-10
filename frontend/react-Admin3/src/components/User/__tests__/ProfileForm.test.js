@@ -1,32 +1,33 @@
+import { vi } from 'vitest';
 // src/components/User/__tests__/ProfileForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 // Mock config - BEFORE imports
-jest.mock('../../../config', () => ({
+vi.mock('../../../config', () => ({
   __esModule: true,
   default: { apiBaseUrl: 'http://localhost:8888' },
 }));
 
 // Mock authService
-jest.mock('../../../services/authService', () => ({
+vi.mock('../../../services/authService', () => ({
   __esModule: true,
   default: {
-    register: jest.fn(),
+    register: vi.fn(),
   },
 }));
 
 // Mock userService
-jest.mock('../../../services/userService', () => ({
+vi.mock('../../../services/userService', () => ({
   __esModule: true,
   default: {
-    updateProfile: jest.fn(),
+    updateProfile: vi.fn(),
   },
 }));
 
 // Mock CountryAutocomplete
-jest.mock('../CountryAutocomplete', () => {
+vi.mock('../CountryAutocomplete', () => {
   const React = require('react');
   return function MockCountryAutocomplete({ name, value, onChange, placeholder }) {
     return React.createElement('input', {
@@ -40,7 +41,7 @@ jest.mock('../CountryAutocomplete', () => {
 });
 
 // Mock PhoneCodeAutocomplete
-jest.mock('../PhoneCodeAutocomplete', () => {
+vi.mock('../PhoneCodeAutocomplete', () => {
   const React = require('react');
   return function MockPhoneCodeAutocomplete() {
     return React.createElement('span', { 'data-testid': 'phone-code-autocomplete' }, '+44');
@@ -48,7 +49,7 @@ jest.mock('../PhoneCodeAutocomplete', () => {
 });
 
 // Mock fetch for country list
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 import ProfileForm from '../ProfileForm';
@@ -70,7 +71,7 @@ const renderComponent = async (props = {}) => {
 
 describe('ProfileForm', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockFetch.mockResolvedValue({
       json: () => Promise.resolve([
         { name: 'United Kingdom', phone_code: '+44' },
@@ -275,7 +276,7 @@ describe('ProfileForm', () => {
     });
 
     test('shows switch to login button when provided', async () => {
-      const switchToLogin = jest.fn();
+      const switchToLogin = vi.fn();
       await renderComponent({ switchToLogin });
 
       expect(screen.getByText(/already have an account/i)).toBeInTheDocument();

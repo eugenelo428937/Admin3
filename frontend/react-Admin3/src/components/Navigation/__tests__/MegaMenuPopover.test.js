@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -122,7 +123,7 @@ describe('MegaMenuPopover', () => {
   });
 
   test('calls onOpen when menu opens', async () => {
-    const onOpen = jest.fn();
+    const onOpen = vi.fn();
     renderWithTheme(<MegaMenuPopover {...defaultProps} onOpen={onOpen} />);
 
     await userEvent.click(screen.getByRole('button', { name: /test menu/i }));
@@ -131,7 +132,7 @@ describe('MegaMenuPopover', () => {
   });
 
   test('calls onClose when menu closes', async () => {
-    const onClose = jest.fn();
+    const onClose = vi.fn();
     renderWithTheme(<MegaMenuPopover {...defaultProps} onClose={onClose} />);
 
     await userEvent.click(screen.getByRole('button', { name: /test menu/i }));

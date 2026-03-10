@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * useProductsSearch Hook - Validation Integration Tests (Story 1.12)
  *
@@ -16,8 +17,8 @@ import filtersReducer from '../../store/slices/filtersSlice';
 
 // Mock the catalogApi module
 // Note: Variables used in jest.mock factory must be prefixed with `mock` to avoid hoisting issues
-const mockTriggerSearchFn = jest.fn().mockReturnValue({
-  unwrap: jest.fn().mockResolvedValue({
+const mockTriggerSearchFn = vi.fn().mockReturnValue({
+  unwrap: vi.fn().mockResolvedValue({
     products: [],
     filterCounts: {},
     pagination: {
@@ -38,7 +39,7 @@ const mockSearchResultData = {
   error: null,
 };
 
-jest.mock('../../store/api/catalogApi', () => ({
+vi.mock('../../store/api/catalogApi', () => ({
   useLazyUnifiedSearchQuery: () => [mockTriggerSearchFn, mockSearchResultData],
 }));
 
@@ -100,7 +101,7 @@ describe('useProductsSearch - Validation Integration', () => {
   let consoleWarnSpy;
 
   beforeEach(() => {
-    consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation();
   });
 
   afterEach(() => {

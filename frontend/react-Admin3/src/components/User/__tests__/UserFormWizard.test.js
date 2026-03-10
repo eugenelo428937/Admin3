@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * UserFormWizard Component Tests (T056)
  * User Story: US5 - Form Validation
@@ -15,19 +16,19 @@ import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 // Mock react-router-dom
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
 }));
 
 // Mock config
-jest.mock('../../../config', () => ({
+vi.mock('../../../config', () => ({
   apiBaseUrl: 'http://localhost:8888',
 }));
 
 // Mock authService
-const mockRegister = jest.fn();
-jest.mock('../../../services/authService', () => ({
+const mockRegister = vi.fn();
+vi.mock('../../../services/authService', () => ({
   __esModule: true,
   default: {
     register: (...args) => mockRegister(...args),
@@ -35,11 +36,11 @@ jest.mock('../../../services/authService', () => ({
 }));
 
 // Mock userService
-jest.mock('../../../services/userService', () => ({
+vi.mock('../../../services/userService', () => ({
   __esModule: true,
   default: {
-    getUserProfile: jest.fn().mockResolvedValue({ status: 'error' }),
-    updateUserProfile: jest.fn().mockResolvedValue({ status: 'success' }),
+    getUserProfile: vi.fn().mockResolvedValue({ status: 'error' }),
+    updateUserProfile: vi.fn().mockResolvedValue({ status: 'success' }),
   },
 }));
 
@@ -47,9 +48,9 @@ jest.mock('../../../services/userService', () => ({
 // The component imports from ../../services/addressMetadataService
 // From /src/components/User/UserFormWizard.js -> /src/services/addressMetadataService
 // From test at /src/components/User/__tests__/ -> need ../../../services/addressMetadataService
-jest.mock('../../../services/addressMetadataService', () => {
-  const mockGetCountryCode = jest.fn(() => 'GB');
-  const mockGetAddressMetadata = jest.fn(() => ({
+vi.mock('../../../services/addressMetadataService', () => {
+  const mockGetCountryCode = vi.fn(() => 'GB');
+  const mockGetAddressMetadata = vi.fn(() => ({
     required: [],  // No required fields for easy test navigation
     fields: {
       address: { label: 'Street Address', placeholder: 'Enter address' },
@@ -58,7 +59,7 @@ jest.mock('../../../services/addressMetadataService', () => {
       country: { label: 'Country', placeholder: 'Enter country' },
     },
   }));
-  const mockValidateAddressField = jest.fn(() => ({ isValid: true }));
+  const mockValidateAddressField = vi.fn(() => ({ isValid: true }));
 
   return {
     __esModule: true,
@@ -74,7 +75,7 @@ jest.mock('../../../services/addressMetadataService', () => {
 });
 
 // Mock ValidatedPhoneInput
-jest.mock('../ValidatedPhoneInput', () => {
+vi.mock('../ValidatedPhoneInput', () => {
   return function MockValidatedPhoneInput({
     name,
     value,
@@ -111,7 +112,7 @@ jest.mock('../ValidatedPhoneInput', () => {
 });
 
 // Mock SmartAddressInput
-jest.mock('../../Address/SmartAddressInput', () => {
+vi.mock('../../Address/SmartAddressInput', () => {
   return function MockSmartAddressInput({ values, onChange, errors, fieldPrefix }) {
     return (
       <div data-testid={`smart-address-${fieldPrefix}`}>
@@ -145,7 +146,7 @@ jest.mock('../../Address/SmartAddressInput', () => {
 });
 
 // Mock DynamicAddressForm
-jest.mock('../../Address/DynamicAddressForm', () => {
+vi.mock('../../Address/DynamicAddressForm', () => {
   return function MockDynamicAddressForm({ values, onChange, errors, fieldPrefix, readonly }) {
     if (readonly) {
       return <div data-testid={`address-readonly-${fieldPrefix}`}>Address Display</div>;
@@ -166,7 +167,7 @@ jest.mock('../../Address/DynamicAddressForm', () => {
 import UserFormWizard from '../UserFormWizard';
 
 // Mock fetch for countries API - setup before tests
-const mockFetch = jest.fn(() =>
+const mockFetch = vi.fn(() =>
   Promise.resolve({
     json: () => Promise.resolve([
       { name: 'United Kingdom', phone_code: '44' },
@@ -203,7 +204,7 @@ describe('UserFormWizard', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     // Reset fetch mock for each test
     mockFetch.mockImplementation(() =>
       Promise.resolve({
@@ -461,7 +462,7 @@ describe('UserFormWizard', () => {
       const user = userEvent.setup();
       mockRegister.mockResolvedValue({ status: 'success' });
 
-      const mockOnSuccess = jest.fn();
+      const mockOnSuccess = vi.fn();
       renderWithTheme(
         <UserFormWizard mode="registration" onSuccess={mockOnSuccess} />
       );
@@ -597,7 +598,7 @@ describe('UserFormWizard', () => {
         message: 'Email already registered',
       });
 
-      const mockOnError = jest.fn();
+      const mockOnError = vi.fn();
       renderWithTheme(
         <UserFormWizard mode="registration" onError={mockOnError} />
       );
@@ -640,7 +641,7 @@ describe('UserFormWizard', () => {
       const user = userEvent.setup();
       mockRegister.mockRejectedValue(new Error('Network error'));
 
-      const mockOnError = jest.fn();
+      const mockOnError = vi.fn();
       renderWithTheme(
         <UserFormWizard mode="registration" onError={mockOnError} />
       );
@@ -754,7 +755,7 @@ describe('UserFormWizard', () => {
 
   describe('Switch to Login', () => {
     test('shows switch to login button when onSwitchToLogin provided', () => {
-      const mockSwitchToLogin = jest.fn();
+      const mockSwitchToLogin = vi.fn();
       renderWithTheme(
         <UserFormWizard mode="registration" onSwitchToLogin={mockSwitchToLogin} />
       );
@@ -764,7 +765,7 @@ describe('UserFormWizard', () => {
 
     test('calls onSwitchToLogin when login link clicked', async () => {
       const user = userEvent.setup();
-      const mockSwitchToLogin = jest.fn();
+      const mockSwitchToLogin = vi.fn();
       renderWithTheme(
         <UserFormWizard mode="registration" onSwitchToLogin={mockSwitchToLogin} />
       );
@@ -1056,7 +1057,7 @@ describe('UserFormWizard', () => {
     test('calls onSuccess when registration succeeds', async () => {
       const user = userEvent.setup();
       mockRegister.mockResolvedValue({ status: 'success', data: { id: 1 } });
-      const mockOnSuccess = jest.fn();
+      const mockOnSuccess = vi.fn();
 
       renderWithTheme(
         <UserFormWizard mode="registration" onSuccess={mockOnSuccess} />

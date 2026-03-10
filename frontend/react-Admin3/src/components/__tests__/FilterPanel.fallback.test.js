@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for US5/T047: FilterPanel shows "Filters unavailable" on API failure.
  *
@@ -18,21 +19,21 @@ import { FilterRegistry } from '../../store/filters/filterRegistry';
 const mockSessionStorage = {};
 Object.defineProperty(window, 'sessionStorage', {
   value: {
-    getItem: jest.fn((key) => mockSessionStorage[key] || null),
-    setItem: jest.fn((key, value) => { mockSessionStorage[key] = value; }),
-    removeItem: jest.fn((key) => { delete mockSessionStorage[key]; }),
+    getItem: vi.fn((key) => mockSessionStorage[key] || null),
+    setItem: vi.fn((key, value) => { mockSessionStorage[key] = value; }),
+    removeItem: vi.fn((key) => { delete mockSessionStorage[key]; }),
   },
   writable: true,
 });
 
 // Mock PerformanceTracker
-jest.mock('../../utils/PerformanceTracker', () => ({
+vi.mock('../../utils/PerformanceTracker', () => ({
   __esModule: true,
   default: {
     isSupported: () => false,
-    startMeasure: jest.fn(),
-    endMeasure: jest.fn(),
-    checkBudget: jest.fn(),
+    startMeasure: vi.fn(),
+    endMeasure: vi.fn(),
+    checkBudget: vi.fn(),
   },
 }));
 
@@ -85,7 +86,7 @@ function renderFilterPanel(store) {
 describe('FilterPanel fallback (T047, FR-012)', () => {
   afterEach(() => {
     FilterRegistry.clear();
-    jest.resetModules();
+    vi.resetModules();
   });
 
   test('displays error message when filters have error state', () => {

@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for httpService
  *
@@ -5,34 +6,34 @@
  */
 
 // MUST be before imports to override setupTests.js global mock
-jest.unmock('../httpService');
+vi.unmock('../httpService');
 
 // Create mock axios instance and direct get function - must use var for hoisting
-var mockAxiosGet = jest.fn();
-var mockAuthServiceRefreshToken = jest.fn();
+var mockAxiosGet = vi.fn();
+var mockAuthServiceRefreshToken = vi.fn();
 var mockAxiosInstance = {
-  get: jest.fn(),
-  post: jest.fn(),
-  put: jest.fn(),
-  delete: jest.fn(),
-  patch: jest.fn(),
+  get: vi.fn(),
+  post: vi.fn(),
+  put: vi.fn(),
+  delete: vi.fn(),
+  patch: vi.fn(),
   interceptors: {
-    request: { use: jest.fn() },
-    response: { use: jest.fn() },
+    request: { use: vi.fn() },
+    response: { use: vi.fn() },
   },
 };
 
 // Mock axios module - axios.get is used directly for CSRF token fetch
-jest.mock('axios', () => ({
+vi.mock('axios', () => ({
   __esModule: true,
   default: {
-    create: jest.fn(() => mockAxiosInstance),
+    create: vi.fn(() => mockAxiosInstance),
     get: mockAxiosGet,
   },
 }));
 
 // Mock authService
-jest.mock('../authService', () => ({
+vi.mock('../authService', () => ({
   __esModule: true,
   default: {
     refreshToken: mockAuthServiceRefreshToken,
@@ -40,18 +41,18 @@ jest.mock('../authService', () => ({
 }));
 
 // Mock loggerService
-jest.mock('../loggerService', () => ({
+vi.mock('../loggerService', () => ({
   __esModule: true,
   default: {
-    debug: jest.fn(),
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
   },
 }));
 
 // Mock config
-jest.mock('../../config', () => ({
+vi.mock('../../config', () => ({
   __esModule: true,
   default: {
     apiBaseUrl: 'http://localhost:8888',
@@ -84,7 +85,7 @@ describe('httpService', () => {
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     localStorage.clear();
     // Reset cookies
     Object.defineProperty(document, 'cookie', {
@@ -360,7 +361,7 @@ describe('httpService', () => {
     });
 
     test('should handle network errors (no response)', async () => {
-      jest.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const error = { message: 'Network Error' };
 

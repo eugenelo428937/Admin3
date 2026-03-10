@@ -1,10 +1,11 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CommunicationDetailsPanel from '../CommunicationDetailsPanel';
 
 // Mock the ValidatedPhoneInput component
-jest.mock('../../User/ValidatedPhoneInput', () => {
+vi.mock('../../User/ValidatedPhoneInput', () => {
   return function MockValidatedPhoneInput({ value, onChange, onValidationChange, error, ...props }) {
     return (
       <input
@@ -22,12 +23,12 @@ jest.mock('../../User/ValidatedPhoneInput', () => {
 });
 
 // Mock userService
-jest.mock('../../../services/userService', () => ({
-  updateUserProfile: jest.fn()
+vi.mock('../../../services/userService', () => ({
+  updateUserProfile: vi.fn()
 }));
 
 // Mock config
-jest.mock('../../../config', () => ({
+vi.mock('../../../config', () => ({
   default: {
     apiBaseUrl: 'http://localhost:8000'
   }
@@ -78,8 +79,8 @@ const mockUserProfileWithMultipleEmails = {
 
 describe('CommunicationDetailsPanel', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    global.fetch = jest.fn(() =>
+    vi.clearAllMocks();
+    global.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve([
@@ -290,7 +291,7 @@ describe('CommunicationDetailsPanel', () => {
       renderWithTheme(
         <CommunicationDetailsPanel
           userProfile={mockUserProfile}
-          onProfileUpdate={jest.fn()}
+          onProfileUpdate={vi.fn()}
         />
       );
 
@@ -304,7 +305,7 @@ describe('CommunicationDetailsPanel', () => {
     });
 
     test('calls onProfileUpdate callback when profile is successfully updated', async () => {
-      const mockOnProfileUpdate = jest.fn();
+      const mockOnProfileUpdate = vi.fn();
       const userService = require('../../../services/userService');
       userService.updateUserProfile.mockResolvedValue({ status: 'success' });
 
@@ -337,7 +338,7 @@ describe('CommunicationDetailsPanel', () => {
       renderWithTheme(
         <CommunicationDetailsPanel
           userProfile={mockUserProfile}
-          onProfileUpdate={jest.fn()}
+          onProfileUpdate={vi.fn()}
         />
       );
 
@@ -433,7 +434,7 @@ describe('CommunicationDetailsPanel', () => {
       renderWithTheme(
         <CommunicationDetailsPanel
           userProfile={mockUserProfile}
-          onProfileUpdate={jest.fn()}
+          onProfileUpdate={vi.fn()}
         />
       );
 

@@ -1,12 +1,13 @@
-const mockNavigate = jest.fn();
+import { vi } from 'vitest';
+const mockNavigate = vi.fn();
 const mockSearchParams = new URLSearchParams('uid=test-uid&token=test-token');
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
   useSearchParams: () => [mockSearchParams],
 }));
 
-const mockActivateAccount = jest.fn();
-jest.mock('../../../services/authService', () => ({
+const mockActivateAccount = vi.fn();
+vi.mock('../../../services/authService', () => ({
   __esModule: true,
   default: { activateAccount: (...args) => mockActivateAccount(...args) },
 }));
@@ -17,7 +18,7 @@ import AccountActivation from '../AccountActivation';
 
 describe('AccountActivation', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test('renders processing state', () => {

@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -7,10 +8,10 @@ import MarkingProductCard from '../MarkingProductCard';
 import productService from '../../../../services/productService';
 
 // Mock productService
-jest.mock('../../../../services/productService', () => ({
+vi.mock('../../../../services/productService', () => ({
   __esModule: true,
   default: {
-    getMarkingDeadlines: jest.fn()
+    getMarkingDeadlines: vi.fn()
   }
 }));
 
@@ -23,7 +24,7 @@ const mockCartData = {
   }
 };
 
-jest.mock('../../../../contexts/CartContext', () => ({
+vi.mock('../../../../contexts/CartContext', () => ({
   useCart: () => ({
     cartData: mockCartData
   })
@@ -98,7 +99,7 @@ describe('MarkingProductCard', () => {
     ]
   };
 
-  const mockOnAddToCart = jest.fn();
+  const mockOnAddToCart = vi.fn();
 
   // Helper to create deadline dates
   const createFutureDate = (daysFromNow) => {
@@ -161,7 +162,7 @@ describe('MarkingProductCard', () => {
   ];
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     productService.getMarkingDeadlines.mockResolvedValue([]);
   });
 

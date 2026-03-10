@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * SearchBox Performance Tests
  *
@@ -21,14 +22,14 @@ import SearchBox from '../SearchBox';
 import filtersReducer from '../../store/slices/filtersSlice';
 
 // Mock searchService to avoid API calls
-jest.mock('../../services/searchService', () => ({
-  getDefaultSearchData: jest.fn(() => Promise.resolve({
+vi.mock('../../services/searchService', () => ({
+  getDefaultSearchData: vi.fn(() => Promise.resolve({
     suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
     suggested_products: [],
     search_info: { query: '', type: 'default' },
     total_count: 0
   })),
-  fuzzySearch: jest.fn((query) => Promise.resolve({
+  fuzzySearch: vi.fn((query) => Promise.resolve({
     suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
     suggested_products: [],
     search_info: { query, type: 'fuzzy' },

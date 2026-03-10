@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for urlSyncMiddleware (Stories 1.1, 1.6)
  *
@@ -21,8 +22,8 @@ import filtersReducer, {
 import { urlSyncMiddleware, parseUrlToFilters } from '../urlSyncMiddleware';
 
 // Mock window.history for testing
-const mockReplaceState = jest.fn();
-const mockPushState = jest.fn();
+const mockReplaceState = vi.fn();
+const mockPushState = vi.fn();
 
 beforeAll(() => {
   Object.defineProperty(window, 'history', {

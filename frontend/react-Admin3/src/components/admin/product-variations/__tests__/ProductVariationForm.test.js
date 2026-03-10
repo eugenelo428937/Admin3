@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/admin/product-variations/__tests__/ProductVariationForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -5,18 +6,18 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import AdminProductVariationForm from '../ProductVariationForm';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
 import { useAuth } from '../../../../hooks/useAuth';
 
 // Mock navigate function
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 
 // Create mock for react-router-dom
-jest.mock('react-router-dom', () => {
+vi.mock('react-router-dom', () => {
   return {
     useNavigate: () => mockNavigate,
     useParams: () => ({}),
@@ -25,12 +26,12 @@ jest.mock('react-router-dom', () => {
 });
 
 // Mock productVariationService
-jest.mock('../../../../services/productVariationService', () => ({
+vi.mock('../../../../services/productVariationService', () => ({
   __esModule: true,
   default: {
-    getById: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
   },
 }));
 
@@ -40,7 +41,7 @@ const theme = createTheme();
 
 // Helper to set mock useParams
 const setMockParams = (params) => {
-  require('react-router-dom').useParams = jest.fn().mockReturnValue(params);
+  require('react-router-dom').useParams = vi.fn().mockReturnValue(params);
 };
 
 const mockEditData = {
@@ -67,7 +68,7 @@ const renderComponent = (isEditMode = false) => {
 
 describe('AdminProductVariationForm', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,

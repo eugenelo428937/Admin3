@@ -1,12 +1,13 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 // Remove global mocks from setupTests.js so we can test with real context
-jest.unmock('../../../../../contexts/TutorialChoiceContext');
+vi.unmock('../../../../../contexts/TutorialChoiceContext');
 
 // Mock useMediaQuery to return desktop mode (false = not mobile) by default
-jest.mock('@mui/material/useMediaQuery', () => jest.fn(() => false));
+vi.mock('@mui/material/useMediaQuery', () => vi.fn(() => false));
 
 // Now import the real context
 import TutorialSelectionSummaryBar from '../TutorialSelectionSummaryBar';
@@ -15,12 +16,12 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 
 describe('TutorialSelectionSummaryBar', () => {
   const mockSubjectCode = 'CS2';
-  const mockOnEdit = jest.fn();
-  const mockOnAddToCart = jest.fn();
-  const mockOnRemove = jest.fn();
+  const mockOnEdit = vi.fn();
+  const mockOnAddToCart = vi.fn();
+  const mockOnRemove = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     localStorage.clear();
     // Default to desktop mode
     useMediaQuery.mockReturnValue(false);

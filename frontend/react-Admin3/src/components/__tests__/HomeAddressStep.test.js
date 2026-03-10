@@ -1,15 +1,16 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import HomeAddressStep from '../User/steps/HomeAddressStep';
 
-jest.mock('../Address/SmartAddressInput', () => {
+vi.mock('../Address/SmartAddressInput', () => {
   return function MockSmartAddressInput({ fieldPrefix }) {
     return <div data-testid={`smart-address-${fieldPrefix}`}>SmartAddressInput</div>;
   };
 });
 
-jest.mock('../Address/DynamicAddressForm', () => {
+vi.mock('../Address/DynamicAddressForm', () => {
   return function MockDynamicAddressForm({ fieldPrefix, readonly }) {
     return <div data-testid={`dynamic-form-${fieldPrefix}`} data-readonly={readonly}>DynamicAddressForm</div>;
   };
@@ -22,7 +23,7 @@ const renderWithTheme = (ui) =>
 describe('HomeAddressStep', () => {
   const defaultProps = {
     initialData: { home_country: '', home_address: '', home_city: '', home_postal_code: '' },
-    onDataChange: jest.fn(),
+    onDataChange: vi.fn(),
     errors: {},
     mode: 'registration',
   };

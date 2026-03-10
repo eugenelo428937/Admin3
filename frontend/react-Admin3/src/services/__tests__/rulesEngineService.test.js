@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Rules Engine Service Tests
  * 
@@ -6,8 +7,8 @@
  */
 
 // Mock httpService before importing
-jest.mock('../httpService', () => ({
-    post: jest.fn()
+vi.mock('../httpService', () => ({
+    post: vi.fn()
 }));
 
 import rulesEngineService from '../rulesEngineService';
@@ -52,12 +53,12 @@ describe('rulesEngineService', () => {
     };
 
     beforeEach(() => {
-        jest.clearAllMocks();
-        jest.spyOn(console, 'error').mockImplementation(() => {});
+        vi.clearAllMocks();
+        vi.spyOn(console, 'error').mockImplementation(() => {});
     });
 
     afterEach(() => {
-        jest.restoreAllMocks();
+        vi.restoreAllMocks();
     });
 
     describe('ENTRY_POINTS', () => {

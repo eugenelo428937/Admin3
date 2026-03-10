@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * App Routing Tests (T062)
  *
@@ -15,44 +16,44 @@ import theme from '../theme/theme';
 import filtersReducer from '../store/slices/filtersSlice';
 
 // Mock all services before component imports
-jest.mock('../services/httpService', () => ({
+vi.mock('../services/httpService', () => ({
   __esModule: true,
   default: {
-    get: jest.fn(() => Promise.resolve({ data: {} })),
-    post: jest.fn(() => Promise.resolve({ data: {} })),
-    put: jest.fn(() => Promise.resolve({ data: {} })),
-    delete: jest.fn(() => Promise.resolve({ data: {} })),
+    get: vi.fn(() => Promise.resolve({ data: {} })),
+    post: vi.fn(() => Promise.resolve({ data: {} })),
+    put: vi.fn(() => Promise.resolve({ data: {} })),
+    delete: vi.fn(() => Promise.resolve({ data: {} })),
   },
 }));
 
-jest.mock('../services/cartService', () => ({
+vi.mock('../services/cartService', () => ({
   __esModule: true,
   default: {
-    getCart: jest.fn(() => Promise.resolve({ data: { items: [] } })),
-    fetchCart: jest.fn(() => Promise.resolve({ data: { items: [] } })),
-    addToCart: jest.fn(() => Promise.resolve({ data: {} })),
-    removeItem: jest.fn(() => Promise.resolve({ data: {} })),
-    clearCart: jest.fn(() => Promise.resolve({ data: {} })),
+    getCart: vi.fn(() => Promise.resolve({ data: { items: [] } })),
+    fetchCart: vi.fn(() => Promise.resolve({ data: { items: [] } })),
+    addToCart: vi.fn(() => Promise.resolve({ data: {} })),
+    removeItem: vi.fn(() => Promise.resolve({ data: {} })),
+    clearCart: vi.fn(() => Promise.resolve({ data: {} })),
   },
 }));
 
-jest.mock('../services/productService', () => ({
-  getNavbarProductGroups: jest.fn(() => Promise.resolve([])),
-  getDistanceLearningDropdown: jest.fn(() => Promise.resolve([])),
-  getTutorialDropdown: jest.fn(() => Promise.resolve(null)),
-  getProductById: jest.fn(() => Promise.resolve(null)),
-  searchProducts: jest.fn(() => Promise.resolve({ data: { results: [] } })),
+vi.mock('../services/productService', () => ({
+  getNavbarProductGroups: vi.fn(() => Promise.resolve([])),
+  getDistanceLearningDropdown: vi.fn(() => Promise.resolve([])),
+  getTutorialDropdown: vi.fn(() => Promise.resolve(null)),
+  getProductById: vi.fn(() => Promise.resolve(null)),
+  searchProducts: vi.fn(() => Promise.resolve({ data: { results: [] } })),
 }));
 
-jest.mock('../services/subjectService', () => ({
-  getSubjects: jest.fn(() => Promise.resolve([])),
+vi.mock('../services/subjectService', () => ({
+  getSubjects: vi.fn(() => Promise.resolve([])),
 }));
 
-jest.mock('../services/rulesEngineService', () => ({
+vi.mock('../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
-    executeRules: jest.fn(() => Promise.resolve({ messages: [], actions: [], blocked: false })),
-    acknowledgeRule: jest.fn(() => Promise.resolve({ success: true })),
+    executeRules: vi.fn(() => Promise.resolve({ messages: [], actions: [], blocked: false })),
+    acknowledgeRule: vi.fn(() => Promise.resolve({ success: true })),
     ENTRY_POINTS: {
       HOME_PAGE_MOUNT: 'home_page_mount',
       CHECKOUT_START: 'checkout_start',
@@ -60,103 +61,103 @@ jest.mock('../services/rulesEngineService', () => ({
   }
 }));
 
-jest.mock('../hooks/useAuth', () => ({
+vi.mock('../hooks/useAuth', () => ({
   useAuth: () => ({
     isAuthenticated: false,
     user: null,
-    logout: jest.fn(),
-    login: jest.fn(),
+    logout: vi.fn(),
+    login: vi.fn(),
     isSuperuser: false,
   }),
   AuthProvider: ({ children }) => children,
 }));
 
 // Mock page components to make routing tests fast and focused
-jest.mock('../pages/Home', () => {
+vi.mock('../pages/Home', () => {
   return function MockHome() {
     return <div data-testid="home-page">Home Page</div>;
   };
 });
 
-jest.mock('../components/Product/ProductList', () => {
+vi.mock('../components/Product/ProductList', () => {
   return function MockProductList() {
     return <div data-testid="product-list-page">Product List Page</div>;
   };
 });
 
-jest.mock('../components/Ordering/CheckoutPage', () => {
+vi.mock('../components/Ordering/CheckoutPage', () => {
   return function MockCheckoutPage() {
     return <div data-testid="checkout-page">Checkout Page</div>;
   };
 });
 
-jest.mock('../pages/ProfilePage', () => {
+vi.mock('../pages/ProfilePage', () => {
   return function MockProfilePage() {
     return <div data-testid="profile-page">Profile Page</div>;
   };
 });
 
-jest.mock('../components/User/OrderHistory', () => {
+vi.mock('../components/User/OrderHistory', () => {
   return function MockOrderHistory() {
     return <div data-testid="orders-page">Order History Page</div>;
   };
 });
 
-jest.mock('../components/NoMatch', () => {
+vi.mock('../components/NoMatch', () => {
   return function MockNoMatch() {
     return <div data-testid="no-match-page">404 - Not Found</div>;
   };
 });
 
-jest.mock('../pages/Registration', () => {
+vi.mock('../pages/Registration', () => {
   return function MockRegistration() {
     return <div data-testid="registration-page">Registration Page</div>;
   };
 });
 
-jest.mock('../components/StyleGuide', () => {
+vi.mock('../components/StyleGuide', () => {
   return function MockStyleGuide() {
     return <div data-testid="style-guide-page">Style Guide</div>;
   };
 });
 
-jest.mock('../components/User/ForgotPasswordForm', () => {
+vi.mock('../components/User/ForgotPasswordForm', () => {
   return function MockForgotPassword() {
     return <div data-testid="forgot-password-page">Forgot Password</div>;
   };
 });
 
-jest.mock('../components/User/ResetPasswordForm', () => {
+vi.mock('../components/User/ResetPasswordForm', () => {
   return function MockResetPassword() {
     return <div data-testid="reset-password-page">Reset Password</div>;
   };
 });
 
-jest.mock('../components/User/AccountActivation', () => {
+vi.mock('../components/User/AccountActivation', () => {
   return function MockAccountActivation() {
     return <div data-testid="account-activation-page">Account Activation</div>;
   };
 });
 
-jest.mock('../components/User/ResendActivation', () => {
+vi.mock('../components/User/ResendActivation', () => {
   return function MockResendActivation() {
     return <div data-testid="resend-activation-page">Resend Activation</div>;
   };
 });
 
-jest.mock('../components/User/EmailVerification', () => {
+vi.mock('../components/User/EmailVerification', () => {
   return function MockEmailVerification() {
     return <div data-testid="email-verification-page">Email Verification</div>;
   };
 });
 
-jest.mock('../components/Navigation/MainNavBar', () => {
+vi.mock('../components/Navigation/MainNavBar', () => {
   return function MockMainNavBar() {
     return <nav data-testid="main-navbar">Navigation</nav>;
   };
 });
 
-jest.mock('../components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer', () => {
+vi.mock('../components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer', () => {
   return function MockTutorialSummaryBar() {
     return null;
   };

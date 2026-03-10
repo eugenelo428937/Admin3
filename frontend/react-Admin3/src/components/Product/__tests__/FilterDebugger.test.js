@@ -22,15 +22,21 @@ const renderComponent = (props = {}) => {
 };
 
 describe('FilterDebugger', () => {
-  const originalNodeEnv = process.env.NODE_ENV;
+  const originalMode = import.meta.env.MODE;
+  const originalDev = import.meta.env.DEV;
+  const originalProd = import.meta.env.PROD;
 
   beforeEach(() => {
     // Set to development mode for tests
-    process.env.NODE_ENV = 'development';
+    import.meta.env.MODE = 'development';
+    import.meta.env.DEV = true;
+    import.meta.env.PROD = false;
   });
 
   afterEach(() => {
-    process.env.NODE_ENV = originalNodeEnv;
+    import.meta.env.MODE = originalMode;
+    import.meta.env.DEV = originalDev;
+    import.meta.env.PROD = originalProd;
   });
 
   describe('in development mode', () => {
@@ -156,7 +162,9 @@ describe('FilterDebugger', () => {
 
   describe('in production mode', () => {
     test('renders nothing in production', () => {
-      process.env.NODE_ENV = 'production';
+      import.meta.env.MODE = 'production';
+      import.meta.env.DEV = false;
+      import.meta.env.PROD = true;
 
       const { container } = renderComponent();
 

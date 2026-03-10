@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Mock catalogApi for tests (Story 1.16)
  *
@@ -12,7 +13,7 @@ export const catalogApi = {
   endpoints: {},
   injectEndpoints: () => catalogApi,
   useLazyUnifiedSearchQuery: () => [
-    jest.fn(() => Promise.resolve({ unwrap: () => Promise.resolve({}) })),
+    vi.fn(() => Promise.resolve({ unwrap: () => Promise.resolve({}) })),
     {
       data: null,
       isLoading: false,

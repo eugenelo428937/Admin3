@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -54,13 +55,13 @@ const usMetadata = {
 };
 
 // Mock services
-jest.mock('../../../services/addressMetadataService', () => ({
+vi.mock('../../../services/addressMetadataService', () => ({
   __esModule: true,
   default: {
-    getCountryCode: jest.fn(),
-    getAddressMetadata: jest.fn(),
-    fetchAddressMetadata: jest.fn(),
-    getAllFields: jest.fn()
+    getCountryCode: vi.fn(),
+    getAddressMetadata: vi.fn(),
+    fetchAddressMetadata: vi.fn(),
+    getAllFields: vi.fn()
   },
   ADDRESS_METADATA: {
     GB: true,
@@ -68,12 +69,12 @@ jest.mock('../../../services/addressMetadataService', () => ({
   }
 }));
 
-jest.mock('../../../config', () => ({
+vi.mock('../../../config', () => ({
   apiBaseUrl: 'http://test-api.com'
 }));
 
 // Mock child components
-jest.mock('../../User/CountryAutocomplete', () => {
+vi.mock('../../User/CountryAutocomplete', () => {
   return function MockCountryAutocomplete({ value, onChange, label, name }) {
     return (
       <div data-testid="country-autocomplete">
@@ -94,7 +95,7 @@ jest.mock('../../User/CountryAutocomplete', () => {
   };
 });
 
-jest.mock('../DynamicAddressForm', () => {
+vi.mock('../DynamicAddressForm', () => {
   return function MockDynamicAddressForm({ country, values, onChange, fieldPrefix }) {
     return (
       <div data-testid="dynamic-address-form">
@@ -121,7 +122,7 @@ import addressMetadataService from '../../../services/addressMetadataService';
 const renderComponent = async (props = {}) => {
   const defaultProps = {
     values: {},
-    onChange: jest.fn(),
+    onChange: vi.fn(),
     errors: {},
     fieldPrefix: '',
     className: ''
@@ -145,8 +146,8 @@ const renderComponent = async (props = {}) => {
 
 describe('SmartAddressInput', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    global.fetch = jest.fn();
+    vi.clearAllMocks();
+    global.fetch = vi.fn();
 
     // Setup default mock implementations
     addressMetadataService.getCountryCode.mockImplementation((country) => {
@@ -176,7 +177,7 @@ describe('SmartAddressInput', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Initial Rendering', () => {
@@ -203,7 +204,7 @@ describe('SmartAddressInput', () => {
 
   describe('Country Selection', () => {
     test('calls onChange when country is selected', async () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       await renderComponent({ onChange });
 
       const select = screen.getByTestId('country-select');
@@ -251,7 +252,7 @@ describe('SmartAddressInput', () => {
     });
 
     test('handles field prefix correctly', async () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       await renderComponent({ onChange, fieldPrefix: 'home' });
 
       const select = screen.getByTestId('country-select');
@@ -455,7 +456,7 @@ describe('SmartAddressInput', () => {
 
   describe('Address Selection', () => {
     test('populates form when suggestion is selected', async () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
 
       // Mock lookup response
       global.fetch.mockResolvedValueOnce({
@@ -637,7 +638,7 @@ describe('SmartAddressInput', () => {
 
   describe('Postcode Changes', () => {
     test('updates parent form when postcode changes', async () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       await renderComponent({ onChange });
 
       const select = screen.getByTestId('country-select');
@@ -667,7 +668,7 @@ describe('SmartAddressInput', () => {
     });
 
     test('handles postcode with field prefix', async () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       await renderComponent({ onChange, fieldPrefix: 'work' });
 
       const select = screen.getByTestId('country-select');
@@ -699,7 +700,7 @@ describe('SmartAddressInput', () => {
 
   describe('Address Line Changes', () => {
     test('updates parent form when address line changes', async () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       await renderComponent({ onChange });
 
       const select = screen.getByTestId('country-select');

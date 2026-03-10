@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for AuthModal Component
  * T019: Test open/close, form validation, submit with AuthContext/Router
@@ -9,8 +10,8 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import AuthModal from '../AuthModal';
 
 // Mock react-router-dom
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
   __esModule: true,
   useNavigate: () => mockNavigate,
   useLocation: () => ({ pathname: '/', search: '', hash: '', state: null }),
@@ -20,8 +21,8 @@ jest.mock('react-router-dom', () => ({
 }));
 
 // Mock useAuth hook
-const mockLogin = jest.fn();
-jest.mock('../../../hooks/useAuth', () => ({
+const mockLogin = vi.fn();
+vi.mock('../../../hooks/useAuth', () => ({
   useAuth: () => ({
     login: mockLogin,
     isLoading: false,
@@ -31,7 +32,7 @@ jest.mock('../../../hooks/useAuth', () => ({
 }));
 
 // Mock LoginFormContent
-jest.mock('../../User/LoginFormContent', () => {
+vi.mock('../../User/LoginFormContent', () => {
   return function MockLoginFormContent({
     formData,
     handleInputChange,
@@ -76,10 +77,10 @@ jest.mock('../../User/LoginFormContent', () => {
 const theme = createTheme();
 
 describe('AuthModal', () => {
-  const mockOnClose = jest.fn();
+  const mockOnClose = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     // Reset body overflow
     document.body.style.overflow = '';
     document.body.classList.remove('mui-fixed');

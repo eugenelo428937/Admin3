@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/Ordering/CheckoutSteps/__tests__/PreferenceStep.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -5,10 +6,10 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import PreferenceStep from '../PreferenceStep';
 
 // Mock rulesEngineService
-jest.mock('../../../../services/rulesEngineService', () => ({
+vi.mock('../../../../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
-    executeRules: jest.fn(),
+    executeRules: vi.fn(),
     ENTRY_POINTS: {
       CHECKOUT_PREFERENCE: 'checkout_preference',
     },
@@ -16,7 +17,7 @@ jest.mock('../../../../services/rulesEngineService', () => ({
 }));
 
 // Mock useCart
-jest.mock('../../../../contexts/CartContext', () => ({
+vi.mock('../../../../contexts/CartContext', () => ({
   useCart: () => ({
     cartData: {
       id: 'cart-123',
@@ -31,7 +32,7 @@ jest.mock('../../../../contexts/CartContext', () => ({
 }));
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth', () => ({
   useAuth: () => ({
     user: { id: 1, email: 'test@example.com' },
     isAuthenticated: true,
@@ -80,8 +81,8 @@ const mockPreferences = [
 const renderComponent = (props = {}) => {
   const defaultProps = {
     preferences: {},
-    setPreferences: jest.fn(),
-    onPreferencesSubmit: jest.fn(),
+    setPreferences: vi.fn(),
+    onPreferencesSubmit: vi.fn(),
   };
 
   return render(
@@ -93,7 +94,7 @@ const renderComponent = (props = {}) => {
 
 describe('PreferenceStep', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     rulesEngineService.executeRules.mockResolvedValue({
       success: true,
       preference_prompts: mockPreferences,
@@ -179,7 +180,7 @@ describe('PreferenceStep', () => {
 
   describe('checkbox interactions', () => {
     test('calls setPreferences when checkbox is clicked', async () => {
-      const mockSetPreferences = jest.fn();
+      const mockSetPreferences = vi.fn();
       renderComponent({ setPreferences: mockSetPreferences });
 
       await waitFor(() => {
@@ -195,7 +196,7 @@ describe('PreferenceStep', () => {
 
   describe('radio interactions', () => {
     test('calls setPreferences when radio option is selected', async () => {
-      const mockSetPreferences = jest.fn();
+      const mockSetPreferences = vi.fn();
       renderComponent({ setPreferences: mockSetPreferences });
 
       await waitFor(() => {
@@ -224,7 +225,7 @@ describe('PreferenceStep', () => {
 
   describe('combined checkbox textarea interactions', () => {
     test('calls setPreferences when special needs checkbox is clicked', async () => {
-      const mockSetPreferences = jest.fn();
+      const mockSetPreferences = vi.fn();
       renderComponent({ setPreferences: mockSetPreferences });
 
       await waitFor(() => {
@@ -238,7 +239,7 @@ describe('PreferenceStep', () => {
     });
 
     test('calls setPreferences when textarea is filled', async () => {
-      const mockSetPreferences = jest.fn();
+      const mockSetPreferences = vi.fn();
       renderComponent({ setPreferences: mockSetPreferences });
 
       await waitFor(() => {
@@ -334,7 +335,7 @@ describe('PreferenceStep', () => {
     });
 
     test('handles multiple checkbox selection', async () => {
-      const mockSetPreferences = jest.fn();
+      const mockSetPreferences = vi.fn();
       rulesEngineService.executeRules.mockResolvedValue({
         success: true,
         preference_prompts: [

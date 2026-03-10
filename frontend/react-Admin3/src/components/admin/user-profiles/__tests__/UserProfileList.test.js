@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/admin/user-profiles/__tests__/UserProfileList.test.js
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -6,19 +7,19 @@ import { BrowserRouter } from 'react-router-dom';
 import AdminUserProfileList from '../UserProfileList';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
 import { useAuth } from '../../../../hooks/useAuth';
 
 // Mock userProfileService
-jest.mock('../../../../services/userProfileService', () => ({
+vi.mock('../../../../services/userProfileService', () => ({
   __esModule: true,
   default: {
-    getAll: jest.fn(),
-    list: jest.fn(),
+    getAll: vi.fn(),
+    list: vi.fn(),
   },
 }));
 
@@ -51,7 +52,7 @@ const renderComponent = () => {
 
 describe('AdminUserProfileList', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,

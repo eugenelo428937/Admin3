@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for UserActions Component
  * T026: Test auth state display, logout with AuthContext
@@ -9,8 +10,8 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import UserActions from '../UserActions';
 
 // Mock react-router-dom
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
   __esModule: true,
   useNavigate: () => mockNavigate,
 }));
@@ -19,15 +20,15 @@ jest.mock('react-router-dom', () => ({
 let mockAuthState = {
   isAuthenticated: false,
   user: null,
-  logout: jest.fn(),
+  logout: vi.fn(),
 };
 
-jest.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth', () => ({
   useAuth: () => mockAuthState,
 }));
 
 // Mock useCart context
-jest.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext', () => ({
   useCart: () => ({
     cartCount: 5,
   }),
@@ -45,17 +46,17 @@ const theme = createTheme({
 });
 
 describe('UserActions', () => {
-  const mockOnOpenSearch = jest.fn();
-  const mockOnOpenAuth = jest.fn();
-  const mockOnOpenCart = jest.fn();
-  const mockOnToggleMobileMenu = jest.fn();
+  const mockOnOpenSearch = vi.fn();
+  const mockOnOpenAuth = vi.fn();
+  const mockOnOpenCart = vi.fn();
+  const mockOnToggleMobileMenu = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockAuthState = {
       isAuthenticated: false,
       user: null,
-      logout: jest.fn(),
+      logout: vi.fn(),
     };
   });
 
@@ -103,7 +104,7 @@ describe('UserActions', () => {
           first_name: 'John',
           last_name: 'Doe',
         },
-        logout: jest.fn(),
+        logout: vi.fn(),
       };
     });
 
@@ -272,7 +273,7 @@ describe('UserActions', () => {
           first_name: 'John',
           last_name: 'Doe',
         },
-        logout: jest.fn(),
+        logout: vi.fn(),
       };
 
       renderUserActions();
@@ -289,7 +290,7 @@ describe('UserActions', () => {
         user: {
           email: 'test@example.com',
         },
-        logout: jest.fn(),
+        logout: vi.fn(),
       };
 
       renderUserActions();

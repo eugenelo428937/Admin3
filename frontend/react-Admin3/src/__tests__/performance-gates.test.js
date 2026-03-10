@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Performance Gates Contract Test (T014)
  * 
@@ -37,7 +38,7 @@ To monitor performance:
 If tests start running slow:
 1. Check for setTimeout/setInterval without cleanup
 2. Verify async operations have timeouts
-3. Use jest.useFakeTimers() for time-dependent tests
+3. Use vi.useFakeTimers() for time-dependent tests
 4. Mock expensive operations
 
 This test passes as long as execution time < 5 minutes.

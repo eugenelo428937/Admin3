@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/User/__tests__/ResendActivation.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -5,16 +6,16 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ResendActivation from '../ResendActivation';
 
 // Mock react-router-dom
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
 }));
 
 // Mock authService
-jest.mock('../../../services/authService', () => ({
+vi.mock('../../../services/authService', () => ({
   __esModule: true,
   default: {
-    resendActivationEmail: jest.fn(),
+    resendActivationEmail: vi.fn(),
   },
 }));
 
@@ -32,7 +33,7 @@ const renderComponent = () => {
 
 describe('ResendActivation', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('rendering', () => {

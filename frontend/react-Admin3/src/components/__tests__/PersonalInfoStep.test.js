@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // frontend/react-Admin3/src/components/__tests__/PersonalInfoStep.test.js
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
@@ -5,7 +6,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import PersonalInfoStep from '../User/steps/PersonalInfoStep';
 
 // Mock ValidatedPhoneInput to avoid complex phone validation in tests
-jest.mock('../User/ValidatedPhoneInput', () => {
+vi.mock('../User/ValidatedPhoneInput', () => {
   return function MockValidatedPhoneInput({ name, value, onChange, label }) {
     return (
       <input
@@ -34,7 +35,7 @@ describe('PersonalInfoStep', () => {
       home_phone: '',
       mobile_phone: '',
     },
-    onDataChange: jest.fn(),
+    onDataChange: vi.fn(),
     errors: {},
     mode: 'registration',
   };

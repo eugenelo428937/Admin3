@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -6,10 +7,10 @@ import MarkingProductCard from '../MarkingProductCard';
 import productService from '../../../../services/productService';
 
 // Mock productService
-jest.mock('../../../../services/productService', () => ({
+vi.mock('../../../../services/productService', () => ({
   __esModule: true,
   default: {
-    getMarkingDeadlines: jest.fn()
+    getMarkingDeadlines: vi.fn()
   }
 }));
 
@@ -22,7 +23,7 @@ const mockCartData = {
   }
 };
 
-jest.mock('../../../../contexts/CartContext', () => ({
+vi.mock('../../../../contexts/CartContext', () => ({
   useCart: () => ({
     cartData: mockCartData
   })
@@ -64,10 +65,10 @@ const testTheme = createTheme({
 
 // NOTE: productService mock is defined at the top of the file for proper hoisting
 describe('MarkingProductCard - Recommended Products with SpeedDial', () => {
-  const mockOnAddToCart = jest.fn();
+  const mockOnAddToCart = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     productService.getMarkingDeadlines.mockResolvedValue([]);
   });
 

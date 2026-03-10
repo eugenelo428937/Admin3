@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/admin/recommendations/__tests__/RecommendationList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -6,20 +7,20 @@ import { BrowserRouter } from 'react-router-dom';
 import AdminRecommendationList from '../RecommendationList';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
 import { useAuth } from '../../../../hooks/useAuth';
 
 // Mock recommendationService
-jest.mock('../../../../services/recommendationService', () => ({
+vi.mock('../../../../services/recommendationService', () => ({
   __esModule: true,
   default: {
-    getAll: jest.fn(),
-    list: jest.fn(),
-    delete: jest.fn(),
+    getAll: vi.fn(),
+    list: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -60,7 +61,7 @@ const renderComponent = () => {
 
 describe('AdminRecommendationList', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,
@@ -130,7 +131,7 @@ describe('AdminRecommendationList', () => {
 
   describe('delete functionality', () => {
     test('calls delete when delete button clicked and confirmed', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       recommendationService.delete.mockResolvedValue({});
 
       renderComponent();
@@ -149,7 +150,7 @@ describe('AdminRecommendationList', () => {
     });
 
     test('does not delete when cancelled', async () => {
-      window.confirm = jest.fn().mockReturnValue(false);
+      window.confirm = vi.fn().mockReturnValue(false);
 
       renderComponent();
 
@@ -176,7 +177,7 @@ describe('AdminRecommendationList', () => {
     });
 
     test('displays error when delete fails', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       recommendationService.delete.mockRejectedValueOnce(new Error('Delete error'));
 
       renderComponent();

@@ -1,8 +1,9 @@
+import { vi } from 'vitest';
 // frontend/react-Admin3/src/services/__tests__/addressValidationService.test.js
 import addressValidationService from '../addressValidationService';
 
 // Mock fetch
-global.fetch = jest.fn();
+global.fetch = vi.fn();
 
 describe('addressValidationService', () => {
   beforeEach(() => {

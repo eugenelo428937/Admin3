@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/Address/__tests__/AddressSelectionPanel.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -6,7 +7,7 @@ import AddressSelectionPanel from '../AddressSelectionPanel';
 
 // Mock AddressEditModal - capture props for verification
 let capturedModalProps = {};
-jest.mock('../AddressEditModal', () => {
+vi.mock('../AddressEditModal', () => {
   return function MockAddressEditModal({ open, onClose, onAddressUpdate, selectedAddressType, addressType }) {
     // Capture props for test verification
     capturedModalProps = { selectedAddressType, addressType, open };
@@ -27,7 +28,7 @@ jest.mock('../AddressEditModal', () => {
 });
 
 // Mock DynamicAddressForm
-jest.mock('../DynamicAddressForm', () => {
+vi.mock('../DynamicAddressForm', () => {
   return function MockDynamicAddressForm({ address }) {
     return <div data-testid="dynamic-address-form">{JSON.stringify(address)}</div>;
   };
@@ -59,7 +60,7 @@ const renderComponent = (props = {}) => {
   const defaultProps = {
     addressType: 'delivery',
     userProfile: mockUserProfile,
-    onAddressChange: jest.fn(),
+    onAddressChange: vi.fn(),
   };
 
   return render(
@@ -152,7 +153,7 @@ describe('AddressSelectionPanel', () => {
     });
 
     test('calls onAddressChange when selection changes', async () => {
-      const mockOnAddressChange = jest.fn();
+      const mockOnAddressChange = vi.fn();
       renderComponent({ onAddressChange: mockOnAddressChange });
 
       const dropdown = screen.getByRole('combobox');
@@ -214,7 +215,7 @@ describe('AddressSelectionPanel', () => {
     });
 
     test('calls onAddressUpdate when saving to profile', async () => {
-      const mockOnAddressUpdate = jest.fn();
+      const mockOnAddressUpdate = vi.fn();
       renderComponent({ onAddressUpdate: mockOnAddressUpdate });
 
       fireEvent.click(screen.getByRole('button', { name: /edit address/i }));

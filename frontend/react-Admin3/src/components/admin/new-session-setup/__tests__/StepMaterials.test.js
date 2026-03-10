@@ -1,28 +1,29 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
 import StepMaterials from '../StepMaterials';
 
-jest.mock('../../../../services/sessionSetupService', () => ({
+vi.mock('../../../../services/sessionSetupService', () => ({
   __esModule: true,
   default: {
-    getPreviousSession: jest.fn(),
-    copyProducts: jest.fn(),
+    getPreviousSession: vi.fn(),
+    copyProducts: vi.fn(),
   },
 }));
 
-jest.mock('../../../../services/storeProductService', () => ({
+vi.mock('../../../../services/storeProductService', () => ({
   __esModule: true,
   default: {
-    adminList: jest.fn(),
+    adminList: vi.fn(),
   },
 }));
 
-jest.mock('../../../../services/storeBundleService', () => ({
+vi.mock('../../../../services/storeBundleService', () => ({
   __esModule: true,
   default: {
-    adminList: jest.fn(),
+    adminList: vi.fn(),
   },
 }));
 
@@ -40,10 +41,10 @@ const renderWithProviders = (ui) =>
   );
 
 describe('StepMaterials', () => {
-  const mockOnComplete = jest.fn();
+  const mockOnComplete = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     sessionSetupService.getPreviousSession.mockResolvedValue({
       id: 41, session_code: '2026-04',
     });

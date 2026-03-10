@@ -162,7 +162,7 @@ describe('Performance Budgets Configuration', () => {
     });
 
     it('should only enable in development', () => {
-      if (process.env.NODE_ENV === 'production') {
+      if (import.meta.env.PROD) {
         expect(PERFORMANCE_MONITORING_CONFIG.enabled).toBe(false);
       } else {
         expect(PERFORMANCE_MONITORING_CONFIG.enabled).toBe(true);

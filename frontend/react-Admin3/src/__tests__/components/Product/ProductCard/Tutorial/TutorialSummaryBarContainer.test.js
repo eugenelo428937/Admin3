@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * TutorialSummaryBarContainer Component Tests
  * Epic 4 - Story 3: Mobile Responsive Summary Bar
@@ -16,7 +17,7 @@ import { CartProvider } from '../../../../../contexts/CartContext';
 
 // Mock Material-UI useMediaQuery hook
 import useMediaQuery from '@mui/material/useMediaQuery';
-jest.mock('@mui/material/useMediaQuery', () => jest.fn());
+vi.mock('@mui/material/useMediaQuery', () => vi.fn());
 
 // Test helpers
 const theme = createTheme();
@@ -57,7 +58,7 @@ const renderWithProviders = (component, { isMobile = false } = {}) => {
 // Skip until Epic 4 - Story 3 mobile responsiveness is implemented
 describe.skip('TutorialSummaryBarContainer - Responsive Positioning', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Setup Phase', () => {

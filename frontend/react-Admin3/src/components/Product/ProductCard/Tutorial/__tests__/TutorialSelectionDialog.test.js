@@ -1,5 +1,6 @@
+import { vi } from 'vitest';
 // Remove global mocks from setupTests.js so we can test with real context
-jest.unmock('../../../../../contexts/TutorialChoiceContext');
+vi.unmock('../../../../../contexts/TutorialChoiceContext');
 
 import React from 'react';
 import { render, screen, fireEvent, within } from '@testing-library/react';
@@ -10,22 +11,22 @@ import TutorialSelectionDialog from '../TutorialSelectionDialog';
 import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceContext';
 
 // Mock CartContext - TutorialSelectionDialog uses useCart
-jest.mock('../../../../../contexts/CartContext', () => ({
+vi.mock('../../../../../contexts/CartContext', () => ({
   useCart: () => ({
     cartItems: [],
     cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
-    addToCart: jest.fn(() => Promise.resolve()),
-    updateCartItem: jest.fn(() => Promise.resolve()),
-    removeFromCart: jest.fn(() => Promise.resolve()),
-    clearCart: jest.fn(() => Promise.resolve()),
-    refreshCart: jest.fn(() => Promise.resolve()),
+    addToCart: vi.fn(() => Promise.resolve()),
+    updateCartItem: vi.fn(() => Promise.resolve()),
+    removeFromCart: vi.fn(() => Promise.resolve()),
+    clearCart: vi.fn(() => Promise.resolve()),
+    refreshCart: vi.fn(() => Promise.resolve()),
     cartCount: 0,
     loading: false,
   }),
 }));
 
 // Mock TutorialDetailCard to simplify testing
-jest.mock('../TutorialDetailCard', () => {
+vi.mock('../TutorialDetailCard', () => {
   return function MockTutorialDetailCard({ event, selectedChoiceLevel, onSelectChoice }) {
     return (
       <div data-testid={`tutorial-card-${event.eventId}`}>
@@ -79,10 +80,10 @@ describe('TutorialSelectionDialog', () => {
     },
   ];
 
-  const mockOnClose = jest.fn();
+  const mockOnClose = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     localStorage.clear();
   });
 

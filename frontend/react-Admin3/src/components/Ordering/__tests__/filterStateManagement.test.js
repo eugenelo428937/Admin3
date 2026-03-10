@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Integration Tests for Filter State Management (Stories 1.1-1.6)
  *
@@ -25,8 +26,8 @@ import FilterPanel from '../../Product/FilterPanel';
 import MainNavBar from '../../Navigation/MainNavBar';
 
 // Mock API calls
-jest.mock('../../../services/productService', () => ({
-  getProducts: jest.fn(() =>
+vi.mock('../../../services/productService', () => ({
+  getProducts: vi.fn(() =>
     Promise.resolve({
       data: {
         results: [
@@ -40,10 +41,10 @@ jest.mock('../../../services/productService', () => ({
 }));
 
 // Mock rulesEngineService
-jest.mock('../../../services/rulesEngineService', () => ({
+vi.mock('../../../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
-    executeRules: jest.fn().mockResolvedValue({
+    executeRules: vi.fn().mockResolvedValue({
       messages: [],
       effects: [],
       blocked: false
@@ -55,7 +56,7 @@ jest.mock('../../../services/rulesEngineService', () => ({
       CHECKOUT_PAYMENT: 'checkout_payment'
     }
   },
-  executeRules: jest.fn().mockResolvedValue({
+  executeRules: vi.fn().mockResolvedValue({
     messages: [],
     effects: [],
     blocked: false
@@ -69,9 +70,9 @@ jest.mock('../../../services/rulesEngineService', () => ({
 }));
 
 // Mock httpService
-jest.mock('../../../services/httpService', () => ({
-  get: jest.fn().mockResolvedValue({ data: {} }),
-  post: jest.fn().mockResolvedValue({ data: {} }),
+vi.mock('../../../services/httpService', () => ({
+  get: vi.fn().mockResolvedValue({ data: {} }),
+  post: vi.fn().mockResolvedValue({ data: {} }),
 }));
 
 // Helper to create test store with middleware
@@ -103,7 +104,7 @@ const renderWithProviders = (component, { store, ...renderOptions } = {}) => {
 };
 
 // Mock window.history
-const mockReplaceState = jest.fn();
+const mockReplaceState = vi.fn();
 beforeAll(() => {
   Object.defineProperty(window, 'history', {
     value: {

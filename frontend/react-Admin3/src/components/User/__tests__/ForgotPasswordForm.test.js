@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * ForgotPasswordForm Component Tests (T016)
  * User Story: US1 - Component Coverage Achievement
@@ -6,20 +7,20 @@
  */
 
 // Mock react-router-dom before importing
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
 }));
 
 // Mock react-google-recaptcha-v3
-const mockExecuteRecaptcha = jest.fn();
-jest.mock('react-google-recaptcha-v3', () => ({
+const mockExecuteRecaptcha = vi.fn();
+vi.mock('react-google-recaptcha-v3', () => ({
   useGoogleReCaptcha: () => ({ executeRecaptcha: mockExecuteRecaptcha }),
 }));
 
 // Mock authService
-const mockRequestPasswordReset = jest.fn();
-jest.mock('../../../services/authService', () => ({
+const mockRequestPasswordReset = vi.fn();
+vi.mock('../../../services/authService', () => ({
   __esModule: true,
   default: {
     requestPasswordReset: (...args) => mockRequestPasswordReset(...args),
@@ -56,10 +57,11 @@ describe('ForgotPasswordForm', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockExecuteRecaptcha.mockResolvedValue('test-recaptcha-token');
-    process.env.NODE_ENV = 'development';
-    process.env.REACT_APP_DISABLE_RECAPTCHA = 'true';
+    import.meta.env.MODE = 'development';
+    import.meta.env.DEV = true;
+    import.meta.env.VITE_DISABLE_RECAPTCHA = 'true';
   });
 
   describe('Rendering', () => {

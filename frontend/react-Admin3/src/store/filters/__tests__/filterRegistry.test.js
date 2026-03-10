@@ -598,7 +598,7 @@ describe('FilterRegistry', () => {
       FilterRegistry.clear();
 
       // Re-import the module to trigger registration code
-      jest.resetModules();
+      vi.resetModules();
       const { FilterRegistry: FreshRegistry } = require('../filterRegistry');
 
       // Verify all 6 default filters are registered

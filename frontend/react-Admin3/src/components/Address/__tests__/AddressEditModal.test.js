@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -8,10 +9,10 @@ import theme from '../../../theme/theme';
 import userService from '../../../services/userService';
 
 // Mock userService
-jest.mock('../../../services/userService', () => ({
+vi.mock('../../../services/userService', () => ({
   __esModule: true,
   default: {
-    updateUserProfile: jest.fn(() => Promise.resolve({
+    updateUserProfile: vi.fn(() => Promise.resolve({
       status: 'success',
       message: 'Profile updated successfully'
     }))
@@ -19,42 +20,42 @@ jest.mock('../../../services/userService', () => ({
 }));
 
 // Mock addressValidationService
-jest.mock('../../../services/addressValidationService', () => ({
+vi.mock('../../../services/addressValidationService', () => ({
   __esModule: true,
   default: {
-    validateAddress: jest.fn(() => Promise.resolve({
+    validateAddress: vi.fn(() => Promise.resolve({
       hasMatch: false,
       bestMatch: null,
       needsComparison: false
     })),
-    compareAddresses: jest.fn(() => true),
-    getDifferences: jest.fn(() => ({}))
+    compareAddresses: vi.fn(() => true),
+    getDifferences: vi.fn(() => ({}))
   }
 }));
 
 // Mock addressMetadataService
-jest.mock('../../../services/addressMetadataService', () => ({
+vi.mock('../../../services/addressMetadataService', () => ({
   __esModule: true,
   default: {
-    supportsAddressLookup: jest.fn(() => true),
-    getCountryCode: jest.fn((country) => {
+    supportsAddressLookup: vi.fn(() => true),
+    getCountryCode: vi.fn((country) => {
       const countryCodeMap = {
         'United Kingdom': 'GB',
         'United States': 'US'
       };
       return countryCodeMap[country] || country;
     }),
-    getAddressMetadata: jest.fn(() => ({
+    getAddressMetadata: vi.fn(() => ({
       addressLookupSupported: true
     })),
-    fetchAddressMetadata: jest.fn(() => Promise.resolve({
+    fetchAddressMetadata: vi.fn(() => Promise.resolve({
       addressLookupSupported: true
     }))
   }
 }));
 
 // Mock AddressComparisonModal
-jest.mock('../AddressComparisonModal', () => {
+vi.mock('../AddressComparisonModal', () => {
   return function MockAddressComparisonModal({ open, onAcceptSuggested, onKeepOriginal, onClose }) {
     if (!open) return null;
     return (
@@ -68,7 +69,7 @@ jest.mock('../AddressComparisonModal', () => {
 });
 
 // Mock SmartAddressInput and DynamicAddressForm
-jest.mock('../SmartAddressInput', () => {
+vi.mock('../SmartAddressInput', () => {
   return function MockSmartAddressInput({ values, onChange, fieldPrefix = '' }) {
     const handleCountryChange = (e) => {
       onChange({
@@ -95,7 +96,7 @@ jest.mock('../SmartAddressInput', () => {
   };
 });
 
-jest.mock('../DynamicAddressForm', () => {
+vi.mock('../DynamicAddressForm', () => {
   return function MockDynamicAddressForm({ country, values, onChange, fieldPrefix = '' }) {
     const handleAddressChange = (e) => {
       onChange({
@@ -179,15 +180,15 @@ describe('AddressEditModal', () => {
 
   const defaultProps = {
     open: true,
-    onClose: jest.fn(),
+    onClose: vi.fn(),
     addressType: 'delivery',
     selectedAddressType: 'WORK', // Default based on profile preference for delivery
     userProfile: mockUserProfile,
-    onAddressUpdate: jest.fn()
+    onAddressUpdate: vi.fn()
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     userService.updateUserProfile.mockResolvedValue({
       status: 'success',
       message: 'Profile updated successfully'
@@ -234,11 +235,11 @@ describe('AddressEditModal', () => {
       renderWithTheme(
         <AddressEditModal
           open={true}
-          onClose={jest.fn()}
+          onClose={vi.fn()}
           addressType="delivery"
           selectedAddressType="HOME"
           userProfile={mockUserProfile}
-          onAddressUpdate={jest.fn()}
+          onAddressUpdate={vi.fn()}
         />
       );
 
@@ -296,7 +297,7 @@ describe('AddressEditModal', () => {
 
     test('should call onClose when Cancel button is clicked', async () => {
       const user = userEvent.setup();
-      const onCloseMock = jest.fn();
+      const onCloseMock = vi.fn();
 
       renderWithTheme(<AddressEditModal {...defaultProps} onClose={onCloseMock} />);
 
@@ -379,7 +380,7 @@ describe('AddressEditModal', () => {
 
     test('should call onAddressUpdate callback after successful profile update', async () => {
       const user = userEvent.setup();
-      const onAddressUpdateMock = jest.fn();
+      const onAddressUpdateMock = vi.fn();
 
       renderWithTheme(
         <AddressEditModal
@@ -417,7 +418,7 @@ describe('AddressEditModal', () => {
 
     test('should close modal after successful profile update', async () => {
       const user = userEvent.setup();
-      const onCloseMock = jest.fn();
+      const onCloseMock = vi.fn();
 
       renderWithTheme(
         <AddressEditModal
@@ -483,7 +484,7 @@ describe('AddressEditModal', () => {
 
     test('should handle order-only address update correctly', async () => {
       const user = userEvent.setup();
-      const onAddressUpdateMock = jest.fn();
+      const onAddressUpdateMock = vi.fn();
 
       renderWithTheme(
         <AddressEditModal

@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -5,25 +6,25 @@ import { MemoryRouter } from 'react-router-dom';
 import StepSubjects from '../StepSubjects';
 
 // Mock services
-jest.mock('../../../../services/httpService', () => ({
+vi.mock('../../../../services/httpService', () => ({
   __esModule: true,
   default: {
-    get: jest.fn(),
-    post: jest.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
   },
 }));
 
-jest.mock('../../../../services/sessionSetupService', () => ({
+vi.mock('../../../../services/sessionSetupService', () => ({
   __esModule: true,
   default: {
-    getPreviousSession: jest.fn(),
-    getSessionSubjects: jest.fn(),
-    getSessionDataCounts: jest.fn(),
-    deactivateSessionData: jest.fn(),
+    getPreviousSession: vi.fn(),
+    getSessionSubjects: vi.fn(),
+    getSessionDataCounts: vi.fn(),
+    deactivateSessionData: vi.fn(),
   },
 }));
 
-jest.mock('../../../../config', () => ({
+vi.mock('../../../../config', () => ({
   __esModule: true,
   default: { catalogUrl: '/api/catalog' },
 }));
@@ -47,10 +48,10 @@ const mockSubjects = [
 ];
 
 describe('StepSubjects', () => {
-  const mockOnComplete = jest.fn();
+  const mockOnComplete = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     httpService.get.mockResolvedValue({ data: mockSubjects });
     httpService.post.mockResolvedValue({ data: { id: 1 } });
     sessionSetupService.getPreviousSession.mockResolvedValue({

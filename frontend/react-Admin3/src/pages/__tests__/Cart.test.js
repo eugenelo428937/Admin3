@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for Cart Page Component
  * T012: Test cart display, loading states, VAT calculations, checkout navigation
@@ -9,15 +10,15 @@ import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../theme/theme';
 
 // Create mockNavigate at module level
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 
 // Override useNavigate from the global mock in setupTests.js
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   __esModule: true,
   useNavigate: () => mockNavigate,
   useLocation: () => ({ pathname: '/cart', search: '', hash: '', state: null }),
   useParams: () => ({}),
-  useSearchParams: () => [new URLSearchParams(), jest.fn()],
+  useSearchParams: () => [new URLSearchParams(), vi.fn()],
   MemoryRouter: ({ children }) => children,
   BrowserRouter: ({ children }) => children,
   Link: ({ children, to }) => <a href={to}>{children}</a>,
@@ -29,16 +30,16 @@ jest.mock('react-router-dom', () => ({
 }));
 
 // Mock cartService - define mock functions first
-const mockFetchCart = jest.fn();
-const mockUpdateItem = jest.fn();
-const mockRemoveItem = jest.fn();
+const mockFetchCart = vi.fn();
+const mockUpdateItem = vi.fn();
+const mockRemoveItem = vi.fn();
 
-jest.mock('../../services/cartService', () => ({
+vi.mock('../../services/cartService', () => ({
   __esModule: true,
   default: {
-    fetchCart: jest.fn(),
-    updateItem: jest.fn(),
-    removeItem: jest.fn(),
+    fetchCart: vi.fn(),
+    updateItem: vi.fn(),
+    removeItem: vi.fn(),
   },
 }));
 
@@ -46,7 +47,7 @@ jest.mock('../../services/cartService', () => ({
 import cartService from '../../services/cartService';
 
 // Mock Cart subcomponents
-jest.mock('../../components/Cart/CartItemWithVAT', () => {
+vi.mock('../../components/Cart/CartItemWithVAT', () => {
   return function MockCartItemWithVAT({ item, onQuantityChange, onRemove }) {
     return (
       <div data-testid={`cart-item-${item.id}`}>
@@ -69,7 +70,7 @@ jest.mock('../../components/Cart/CartItemWithVAT', () => {
   };
 });
 
-jest.mock('../../components/Cart/CartTotals', () => {
+vi.mock('../../components/Cart/CartTotals', () => {
   return function MockCartTotals({ totals }) {
     return (
       <div data-testid="cart-totals">
@@ -81,7 +82,7 @@ jest.mock('../../components/Cart/CartTotals', () => {
   };
 });
 
-jest.mock('../../components/Cart/CartVATError', () => {
+vi.mock('../../components/Cart/CartVATError', () => {
   return function MockCartVATError({ error, errorMessage, onRetry }) {
     return (
       <div data-testid="vat-error">
@@ -112,7 +113,7 @@ describe('Cart Page', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     cartService.fetchCart.mockResolvedValue({ data: mockCartData });
     cartService.updateItem.mockResolvedValue({ data: { success: true } });
     cartService.removeItem.mockResolvedValue({ data: { success: true } });

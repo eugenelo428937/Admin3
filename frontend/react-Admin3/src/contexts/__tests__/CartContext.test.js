@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for CartContext
  *
@@ -8,28 +9,28 @@
 
 // Unmock CartContext to test the real implementation
 // This must be before any imports
-jest.unmock('../CartContext');
+vi.unmock('../CartContext');
 
 // Mock cartService - this will override the setupTests.js mock for this file
-jest.mock('../../services/cartService', () => ({
+vi.mock('../../services/cartService', () => ({
   __esModule: true,
   default: {
-    fetchCart: jest.fn(() => Promise.resolve({
+    fetchCart: vi.fn(() => Promise.resolve({
       data: {
         items: [],
         vat_calculations: { region_info: { region: 'UK' } }
       }
     })),
-    addToCart: jest.fn(() => Promise.resolve({
+    addToCart: vi.fn(() => Promise.resolve({
       data: { items: [{ id: 1, quantity: 1 }] }
     })),
-    updateItem: jest.fn(() => Promise.resolve({
+    updateItem: vi.fn(() => Promise.resolve({
       data: { items: [{ id: 1, quantity: 3 }] }
     })),
-    removeItem: jest.fn(() => Promise.resolve({
+    removeItem: vi.fn(() => Promise.resolve({
       data: { items: [] }
     })),
-    clearCart: jest.fn(() => Promise.resolve({
+    clearCart: vi.fn(() => Promise.resolve({
       data: { items: [] }
     })),
   },
@@ -62,7 +63,7 @@ const TestConsumer = () => {
 
 describe('CartContext', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     cartRef = null;
 
     // Reset default mock implementations
