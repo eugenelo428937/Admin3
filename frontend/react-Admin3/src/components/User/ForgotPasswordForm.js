@@ -43,8 +43,8 @@ const ForgotPasswordForm = () => {
 
    // Set to true to disable reCAPTCHA during development (to avoid signaling errors)
    const DISABLE_RECAPTCHA_IN_DEV =
-      process.env.NODE_ENV === "development" &&
-      process.env.REACT_APP_DISABLE_RECAPTCHA === "true";
+      import.meta.env.DEV &&
+      import.meta.env.VITE_DISABLE_RECAPTCHA === "true";
 
    // Handle automatic redirect after email is sent
    useEffect(() => {
