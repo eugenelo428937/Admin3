@@ -129,4 +129,5 @@ acteddb_dev.dump
 *.log
 env.*
 
-backend/.DS_Store
+.DS_Store
+*/*.DS_Store
