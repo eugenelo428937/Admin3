@@ -3,20 +3,28 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import {
-   AppBar,   
+   AppBar,
    Toolbar,
    Container,
    IconButton,
    Box,
+   Tooltip,
    useTheme,
 } from "@mui/material";
+import {
+   Search as SearchIcon,
+   MenuBook as KnowledgeBaseIcon,
+} from "@mui/icons-material";
 // import { useAuth } from "../../hooks/useAuth"; // Now used by child components
+import { useConfig } from "../../contexts/ConfigContext";
 import productService from "../../services/productService";
 import SearchModal from "./SearchModal";
 import MobileNavigation from "./MobileNavigation";
+import AdminMobileNavigation from "./AdminMobileNavigation";
 import TopNavBar from "./TopNavBar";
 import NavbarBrand from "./NavbarBrand";
 import NavigationMenu from "./NavigationMenu";
+import AdminNavigationMenu from "./AdminNavigationMenu";
 import MainNavActions from "./MainNavActions";
 import AuthModal from "./AuthModal";
 import CartPanel from "../Ordering/CartPanel";
@@ -34,6 +42,7 @@ const MainNavBar = () => {
    const navigate = useNavigate();
    const dispatch = useDispatch();
    const theme = useTheme();
+   const { isInternal } = useConfig();
    // State for navbar expansion
    const [expanded, setExpanded] = useState(false);
 
@@ -72,8 +81,12 @@ const MainNavBar = () => {
       };
    }, [showSearchModal]);
 
-   // Fetch all navigation data in a single API call
+   // Fetch all navigation data in a single API call (skip in internal mode)
    useEffect(() => {
+      if (isInternal) {
+         setLoadingNavigation(false);
+         return;
+      }
       const fetchNavigationData = async () => {
          try {
             const data = await productService.getNavigationData();
@@ -92,7 +105,7 @@ const MainNavBar = () => {
          }
       };
       fetchNavigationData();
-   }, []);
+   }, [isInternal]);
 
    // Handle navigating to product list with subject filter
    const handleSubjectClick = (subjectCode) => {
@@ -180,10 +193,12 @@ const MainNavBar = () => {
 
    return (
       <div className="sticky-top">
-         {/* TopNavBar hidden on mobile (sm and smaller) */}
-         <div className="d-none d-sm-block">
-            <TopNavBar onOpenSearch={handleOpenSearchModal}/>
-         </div>
+         {/* TopNavBar hidden on mobile (sm and smaller), hidden entirely in internal mode */}
+         {!isInternal && (
+            <div className="d-none d-sm-block">
+               <TopNavBar onOpenSearch={handleOpenSearchModal}/>
+            </div>
+         )}
          <AppBar
             position="sticky"
             component="nav"
@@ -204,14 +219,36 @@ const MainNavBar = () => {
                      px:"0 !Important",
                   }}
                >
-                  {/* Left Box - Cart/Login icons (mobile only, left-aligned) */}
+                  {/* Left Box - Action icons (mobile only, left-aligned) */}
                   <div className="d-flex justify-content-start align-items-center order-1 order-lg-3 d-md-none">
-                     <MainNavActions
-                        onOpenAuth={handleOpenAuthModal}
-                        onOpenCart={handleOpenCartPanel}
-                        onToggleMobileMenu={() => setExpanded(!expanded)}
-                        isMobile={false}
-                     />
+                     {isInternal ? (
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                           <Tooltip title="Knowledge Base">
+                              <IconButton
+                                 aria-label="knowledge base"
+                                 variant="navAction"
+                              >
+                                 <KnowledgeBaseIcon />
+                              </IconButton>
+                           </Tooltip>
+                           <Tooltip title="Search">
+                              <IconButton
+                                 onClick={handleOpenSearchModal}
+                                 aria-label="search"
+                                 variant="navAction"
+                              >
+                                 <SearchIcon />
+                              </IconButton>
+                           </Tooltip>
+                        </Box>
+                     ) : (
+                        <MainNavActions
+                           onOpenAuth={handleOpenAuthModal}
+                           onOpenCart={handleOpenCartPanel}
+                           onToggleMobileMenu={() => setExpanded(!expanded)}
+                           isMobile={false}
+                        />
+                     )}
                   </div>
 
                   {/* Center Box - Brand/Logo (centered on mobile, left on desktop) */}
@@ -231,71 +268,107 @@ const MainNavBar = () => {
                   >
                      {/* Desktop Navigation - Hidden on mobile */}
                      <Container disableGutters sx={{ display: { xs: "none", md: "flex" }, width:"auto" }}>
-                        <NavigationMenu
-                           subjects={subjects}
-                           navbarProductGroups={navbarProductGroups}
-                           distanceLearningData={distanceLearningData}
-                           tutorialData={tutorialData}
-                           loadingProductGroups={loadingNavigation}
-                           loadingDistanceLearning={loadingNavigation}
-                           loadingTutorial={loadingNavigation}
-                           handleSubjectClick={handleSubjectClick}
-                           handleProductClick={handleProductClick}
-                           handleProductGroupClick={handleProductGroupClick}
-                           handleSpecificProductClick={
-                              handleSpecificProductClick
-                           }
-                           handleProductVariationClick={
-                              handleProductVariationClick
-                           }
-                           handleMarkingVouchersClick={
-                              handleMarkingVouchersClick
-                           }
-                           onCollapseNavbar={() => setExpanded(false)}
-                        />
+                        {isInternal ? (
+                           <AdminNavigationMenu
+                              onCollapseNavbar={() => setExpanded(false)}
+                           />
+                        ) : (
+                           <NavigationMenu
+                              subjects={subjects}
+                              navbarProductGroups={navbarProductGroups}
+                              distanceLearningData={distanceLearningData}
+                              tutorialData={tutorialData}
+                              loadingProductGroups={loadingNavigation}
+                              loadingDistanceLearning={loadingNavigation}
+                              loadingTutorial={loadingNavigation}
+                              handleSubjectClick={handleSubjectClick}
+                              handleProductClick={handleProductClick}
+                              handleProductGroupClick={handleProductGroupClick}
+                              handleSpecificProductClick={
+                                 handleSpecificProductClick
+                              }
+                              handleProductVariationClick={
+                                 handleProductVariationClick
+                              }
+                              handleMarkingVouchersClick={
+                                 handleMarkingVouchersClick
+                              }
+                              onCollapseNavbar={() => setExpanded(false)}
+                           />
+                        )}
                      </Container>
 
                      {/* Mobile Navigation - Visible only on mobile (below md breakpoint) */}
                      <Box sx={{ display: { xs: "block", md: "none" } }}>
-                        <MobileNavigation
-                           open={expanded}
-                           onClose={() => setExpanded(false)}
-                           subjects={subjects}
-                           navbarProductGroups={navbarProductGroups}
-                           distanceLearningData={distanceLearningData}
-                           tutorialData={tutorialData}
-                           loadingProductGroups={loadingNavigation}
-                           loadingDistanceLearning={loadingNavigation}
-                           loadingTutorial={loadingNavigation}
-                           handleSubjectClick={handleSubjectClick}
-                           handleProductClick={handleProductClick}
-                           handleProductGroupClick={handleProductGroupClick}
-                           handleSpecificProductClick={
-                              handleSpecificProductClick
-                           }
-                           handleProductVariationClick={
-                              handleProductVariationClick
-                           }
-                           handleMarkingVouchersClick={
-                              handleMarkingVouchersClick
-                           }
-                           onOpenSearch={handleOpenSearchModal}
-                           onOpenCart={handleOpenCartPanel}
-                           onOpenAuth={handleOpenAuthModal}
-                        />
+                        {isInternal ? (
+                           <AdminMobileNavigation
+                              open={expanded}
+                              onClose={() => setExpanded(false)}
+                              onOpenSearch={handleOpenSearchModal}
+                           />
+                        ) : (
+                           <MobileNavigation
+                              open={expanded}
+                              onClose={() => setExpanded(false)}
+                              subjects={subjects}
+                              navbarProductGroups={navbarProductGroups}
+                              distanceLearningData={distanceLearningData}
+                              tutorialData={tutorialData}
+                              loadingProductGroups={loadingNavigation}
+                              loadingDistanceLearning={loadingNavigation}
+                              loadingTutorial={loadingNavigation}
+                              handleSubjectClick={handleSubjectClick}
+                              handleProductClick={handleProductClick}
+                              handleProductGroupClick={handleProductGroupClick}
+                              handleSpecificProductClick={
+                                 handleSpecificProductClick
+                              }
+                              handleProductVariationClick={
+                                 handleProductVariationClick
+                              }
+                              handleMarkingVouchersClick={
+                                 handleMarkingVouchersClick
+                              }
+                              onOpenSearch={handleOpenSearchModal}
+                              onOpenCart={handleOpenCartPanel}
+                              onOpenAuth={handleOpenAuthModal}
+                           />
+                        )}
                      </Box>
                   </Box>
 
-                  {/* Right Box - Cart/Login (desktop only) and Hamburger */}
+                  {/* Right Box - Actions (desktop only) and Hamburger */}
                   <div className="d-flex justify-content-end align-items-center gap-2 order-3 order-md-3">
                      {/* Desktop actions - hidden on mobile */}
                      <div className="d-none d-md-flex">
-                        <MainNavActions
-                           onOpenAuth={handleOpenAuthModal}
-                           onOpenCart={handleOpenCartPanel}
-                           onToggleMobileMenu={() => setExpanded(!expanded)}
-                           isMobile={false}
-                        />
+                        {isInternal ? (
+                           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                              <Tooltip title="Knowledge Base">
+                                 <IconButton
+                                    aria-label="knowledge base"
+                                    variant="navAction"
+                                 >
+                                    <KnowledgeBaseIcon />
+                                 </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Search">
+                                 <IconButton
+                                    onClick={handleOpenSearchModal}
+                                    aria-label="search"
+                                    variant="navAction"
+                                 >
+                                    <SearchIcon />
+                                 </IconButton>
+                              </Tooltip>
+                           </Box>
+                        ) : (
+                           <MainNavActions
+                              onOpenAuth={handleOpenAuthModal}
+                              onOpenCart={handleOpenCartPanel}
+                              onToggleMobileMenu={() => setExpanded(!expanded)}
+                              isMobile={false}
+                           />
+                        )}
                      </div>
 
                      {/* Hamburger menu toggle - visible on mobile (below md breakpoint) */}

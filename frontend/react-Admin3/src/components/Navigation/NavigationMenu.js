@@ -13,7 +13,6 @@ import
    } from "@mui/material";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { useConfig } from "../../contexts/ConfigContext";
 import MegaMenuPopover from "./MegaMenuPopover";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
@@ -36,7 +35,6 @@ const NavigationMenu = ({
 {
    const theme = useTheme();
    const { isSuperuser, isApprentice, isStudyPlus } = useAuth();
-   const { isInternal } = useConfig();
 
    // Admin MegaMenu category definitions
    const adminCategories = {
@@ -144,7 +142,6 @@ const NavigationMenu = ({
             <Typography variant="main_nav_text">Home</Typography>
          </Button>
 
-         {!isInternal && (<>
          {/* Subjects Menu */}
          <MegaMenuPopover
             id="subjects"
@@ -771,7 +768,6 @@ const NavigationMenu = ({
                <Typography variant="mega-nav-heading">Study Plus</Typography>
             </Button>
          ) : null}
-         </>)}
 
          {/* Admin MegaMenu */}
          {isSuperuser ? (
