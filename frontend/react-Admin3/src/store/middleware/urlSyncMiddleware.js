@@ -200,7 +200,7 @@ urlSyncMiddleware.startListening({
         urlLength: urlString.length
       });
 
-      if (metric && process.env.NODE_ENV !== 'production') {
+      if (metric && !import.meta.env.PROD) {
         PerformanceTracker.checkBudget('urlSync', metric.duration, URL_SYNC_BUDGET);
       }
     }

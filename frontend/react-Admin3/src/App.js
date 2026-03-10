@@ -82,7 +82,7 @@ function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 
 	// reCAPTCHA v3 configuration
-	const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
+	const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
 	// Validate reCAPTCHA configuration
 	useEffect(() => {

@@ -25,7 +25,7 @@ class ErrorBoundary extends React.Component {
             return (
                 <div className="error-boundary">
                     <h1>Something went wrong.</h1>
-                    {process.env.NODE_ENV === 'development' && (
+                    {import.meta.env.DEV && (
                         <details style={{ whiteSpace: 'pre-wrap' }}>
                             {this.state.error && this.state.error.toString()}
                             <br />

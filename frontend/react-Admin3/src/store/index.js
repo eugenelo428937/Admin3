@@ -44,7 +44,7 @@ export const store = configureStore({
   // Redux Toolkit's configureStore automatically connects to Redux DevTools Extension
   // No need for window.__REDUX_DEVTOOLS_EXTENSION__ - it's handled internally!
   // See: https://redux-toolkit.js.org/api/configureStore#devtools
-  devTools: process.env.NODE_ENV !== 'production',
+  devTools: !import.meta.env.PROD,
 });
 
 // Setup URL → Redux synchronization (Story 1.16)

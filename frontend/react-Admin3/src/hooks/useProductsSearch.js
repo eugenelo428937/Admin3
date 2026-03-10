@@ -164,7 +164,7 @@ export const useProductsSearch = (options = {}) => {
           totalCount: result.pagination?.total_count || 0
         });
 
-        if (metric && process.env.NODE_ENV !== 'production') {
+        if (metric && !import.meta.env.PROD) {
           PerformanceTracker.checkBudget('api.products', metric.duration, API_CALL_BUDGET);
         }
       }

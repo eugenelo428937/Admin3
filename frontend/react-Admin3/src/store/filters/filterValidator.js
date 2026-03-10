@@ -57,7 +57,7 @@ class FilterValidator {
         errorCount: errors.length
       });
 
-      if (metric && process.env.NODE_ENV !== 'production') {
+      if (metric && !import.meta.env.PROD) {
         PerformanceTracker.checkBudget('validation', metric.duration, VALIDATION_BUDGET);
       }
     }

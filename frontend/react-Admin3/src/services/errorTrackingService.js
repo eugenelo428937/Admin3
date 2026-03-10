@@ -2,10 +2,10 @@
 import * as Sentry from "@sentry/react";
 
 export const initializeErrorTracking = () => {
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.PROD) {
         Sentry.init({
             dsn: "your-sentry-dsn",
-            environment: process.env.NODE_ENV
+            environment: import.meta.env.MODE
         });
     }
 };
