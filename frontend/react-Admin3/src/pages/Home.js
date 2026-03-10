@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useId } from "react";
 import { Box, Card, CardContent, useTheme, Grid, Divider } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import SearchBox from "../components/SearchBox.js";
-import SearchResults from "../components/SearchResults.js";
-import RulesEngineInlineAlert from "../components/Common/RulesEngineInlineAlert.js";
+import SearchBox from "../components/SearchBox";
+import SearchResults from "../components/SearchResults";
+import RulesEngineInlineAlert from "../components/Common/RulesEngineInlineAlert";
 import { Typography, Container } from "@mui/material";
 import { heroContainerStyles, heroContentStyles } from "../theme/styles";
-import { rulesEngineHelpers } from "../utils/rulesEngineUtils.js";
-import rulesEngineService from "../services/rulesEngineService.js";
+import { rulesEngineHelpers } from "../utils/rulesEngineUtils";
+import rulesEngineService from "../services/rulesEngineService";
 import { useDispatch } from "react-redux";
-import { navSelectProductGroup } from "../store/slices/filtersSlice.js";
+import { navSelectProductGroup } from "../store/slices/filtersSlice";
 import
 {
    MenuBook,
@@ -17,13 +17,13 @@ import
    School,
    ArrowForward,
 } from "@mui/icons-material";
-import StripeWaveBackground from "../components/Effects/StripeWaveBackground.js";
-import AuroraBorealisBackground from '../components/Effects/AuroraBorealisBackground.js';
-import OceanDepthBackground from '../components/Effects/OceanDepthBackground.js';
-import NeonMeshBackground from '../components/Effects/NeonMeshBackground.js';
-import SunsetSilkBackground from "../components/Effects/SunsetSilkBackground.js";
-import IrisDawnBackground from "../components/Effects/IrisDawnBackground.js";
-import CopperRoseBackground from "../components/Effects/CopperRoseBackground.js";
+import StripeWaveBackground from "../components/Effects/StripeWaveBackground";
+import AuroraBorealisBackground from '../components/Effects/AuroraBorealisBackground';
+import OceanDepthBackground from '../components/Effects/OceanDepthBackground';
+import NeonMeshBackground from '../components/Effects/NeonMeshBackground';
+import SunsetSilkBackground from "../components/Effects/SunsetSilkBackground";
+import IrisDawnBackground from "../components/Effects/IrisDawnBackground";
+import CopperRoseBackground from "../components/Effects/CopperRoseBackground";
 // import NeonMeshBackground from './Effects/NeonMeshBackground';
 
 
@@ -81,7 +81,7 @@ const Home = () =>
             if (result.errors && result.errors.length > 0)
             {
                console.error("🚨 Rules processing errors:", result.errors);
-               if (import.meta.env?.DEV)
+               if (import.meta.env.DEV)
                {
                   setError(`Development Error: ${result.errors.join(", ")}`);
                }
@@ -99,7 +99,7 @@ const Home = () =>
                );
                console.error("🔍 Schema errors:", err.schemaErrors);
                // For development, show schema validation errors to help debugging
-               if (import.meta.env?.DEV)
+               if (import.meta.env.DEV)
                {
                   setError(
                      `Development Error: Schema validation failed - ${err.details}`
