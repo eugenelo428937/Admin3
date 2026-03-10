@@ -28,7 +28,6 @@ const MobileNavigation = ({
 	onOpenAuth,
 }) => {
 	const { isSuperuser, isApprentice, isStudyPlus, isAuthenticated } = useAuth();
-	const { isInternal } = useConfig();
 	const { cartCount } = useCart();
 	const navigate = useNavigate();
 	const theme = useTheme();
@@ -163,7 +162,6 @@ const MobileNavigation = ({
 						<ListItemText primary={<Typography variant="mainnavlink">Home</Typography>} />
 					</ListItemButton>
 				</ListItem>
-				{!isInternal && (<>
 				<ListItem disablePadding>
 					<ListItemButton onClick={() => navigateToPanel("subjects", "Subjects")}>
 						<ListItemText primary={<Typography variant="mainnavlink">Subjects</Typography>} />
@@ -204,7 +202,6 @@ const MobileNavigation = ({
 						</ListItemButton>
 					</ListItem>
 				)}
-				</>)}
 
 				{/* Admin section for superusers */}
 				{isSuperuser && (
