@@ -1,0 +1,171 @@
+# .github/workflows/deploy-staging.yml
+# Auto-deploy to Windows Server 2019 staging on push to staging branch.
+# Requires a self-hosted runner with labels: [self-hosted, windows, staging]
+
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+concurrency:
+  group: staging-deploy
+  cancel-in-progress: false
+
+env:
+  DOCKER_COMPOSE_FILE: docker-compose.yml
+
+jobs:
+  # ── Job 1: Run tests on GitHub-hosted runners ──
+  test-backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_admin3
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.14'
+      - name: Install dependencies
+        working-directory: ./backend/django_Admin3
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Create schemas
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d test_admin3 -c "CREATE SCHEMA IF NOT EXISTS acted;"
+          PGPASSWORD=postgres psql -h localhost -U postgres -d test_admin3 -c "CREATE SCHEMA IF NOT EXISTS adm;"
+      - name: Run migrations
+        working-directory: ./backend/django_Admin3
+        run: python manage.py migrate --skip-checks --settings=django_Admin3.settings.ci
+      - name: Run tests
+        working-directory: ./backend/django_Admin3
+        run: python manage.py test --settings=django_Admin3.settings.ci
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './frontend/react-Admin3/package-lock.json'
+      - name: Install dependencies
+        working-directory: ./frontend/react-Admin3
+        run: npm ci
+      - name: Run tests
+        working-directory: ./frontend/react-Admin3
+        run: npm test -- --coverage --watchAll=false
+      - name: Build
+        working-directory: ./frontend/react-Admin3
+        run: CI=false npm run build
+
+  # ── Job 2: Deploy on self-hosted runner (Windows Server) ──
+  deploy:
+    needs: [test-backend, test-frontend]
+    runs-on: [self-hosted, windows, staging]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify Docker is running
+        shell: bash
+        run: docker info > /dev/null 2>&1 || (echo "Docker is not running!" && exit 1)
+
+      - name: Build Docker images
+        shell: bash
+        run: docker compose -f $DOCKER_COMPOSE_FILE build
+
+      - name: Stop existing containers
+        shell: bash
+        run: docker compose -f $DOCKER_COMPOSE_FILE down --timeout 30
+
+      - name: Start new containers
+        shell: bash
+        run: docker compose -f $DOCKER_COMPOSE_FILE up -d
+
+      - name: Wait for services to be healthy
+        shell: bash
+        run: |
+          echo "Waiting for services to start..."
+          sleep 30
+
+          # Verify Nginx health endpoint
+          NGINX_OK=false
+          for i in 1 2 3 4 5 6; do
+            if curl -k -s -o /dev/null -w "%{http_code}" http://localhost/health | grep -q "200"; then
+              echo "Nginx health check passed"
+              NGINX_OK=true
+              break
+            fi
+            echo "Attempt $i/6: Nginx not ready, waiting 10s..."
+            sleep 10
+          done
+
+          if [ "$NGINX_OK" != "true" ]; then
+            echo "::error::Nginx health check failed after 6 attempts"
+            exit 1
+          fi
+
+          # Verify Django API health
+          DJANGO_OK=false
+          for i in 1 2 3 4 5 6; do
+            if curl -k -s -o /dev/null -w "%{http_code}" https://localhost/api/health/ | grep -q "200"; then
+              echo "Django API health check passed"
+              DJANGO_OK=true
+              break
+            fi
+            echo "Attempt $i/6: Django not ready, waiting 10s..."
+            sleep 10
+          done
+
+          if [ "$DJANGO_OK" != "true" ]; then
+            echo "::error::Django API health check failed after 6 attempts"
+            exit 1
+          fi
+
+          echo "All health checks passed successfully"
+
+      - name: Show deployment status
+        if: always()
+        shell: bash
+        run: |
+          echo "=== Container Status ==="
+          docker compose -f $DOCKER_COMPOSE_FILE ps
+          echo ""
+          echo "=== Recent Backend Logs ==="
+          docker compose -f $DOCKER_COMPOSE_FILE logs backend --tail 15
+          echo ""
+          echo "=== Recent Nginx Logs ==="
+          docker compose -f $DOCKER_COMPOSE_FILE logs nginx --tail 10
+
+      - name: Rollback on failure
+        if: failure()
+        shell: bash
+        run: |
+          echo "Deployment failed! Checking for previous images..."
+          docker compose -f $DOCKER_COMPOSE_FILE logs --tail 50
+          echo ""
+          echo "To manually rollback, run:"
+          echo "  docker compose -f $DOCKER_COMPOSE_FILE down"
+          echo "  git checkout HEAD~1"
+          echo "  docker compose -f $DOCKER_COMPOSE_FILE build"
+          echo "  docker compose -f $DOCKER_COMPOSE_FILE up -d"
+
+      - name: Clean up old Docker images
+        shell: bash
+        run: docker image prune -f --filter "until=168h"

@@ -40,6 +40,8 @@ if not os.getenv('DJANGO_ENV') and settings_module:
         os.environ.setdefault('DJANGO_ENV', 'production')
     elif 'development' in settings_module:
         os.environ.setdefault('DJANGO_ENV', 'development')
+    elif 'staging' in settings_module:
+        os.environ.setdefault('DJANGO_ENV', 'staging')
     elif 'ci' in settings_module:
         os.environ.setdefault('DJANGO_ENV', 'ci')
     elif 'test' in settings_module:
