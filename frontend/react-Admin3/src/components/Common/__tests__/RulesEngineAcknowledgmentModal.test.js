@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for RulesEngineAcknowledgmentModal Component
  * T016: Test open/close, acknowledgment, callbacks
@@ -11,8 +12,8 @@ import RulesEngineAcknowledgmentModal from '../RulesEngineAcknowledgmentModal';
 const theme = createTheme();
 
 describe('RulesEngineAcknowledgmentModal', () => {
-  const mockOnClose = jest.fn();
-  const mockOnAcknowledge = jest.fn();
+  const mockOnClose = vi.fn();
+  const mockOnAcknowledge = vi.fn();
 
   const defaultMessage = {
     template_id: 'test-template',
@@ -26,7 +27,7 @@ describe('RulesEngineAcknowledgmentModal', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const renderModal = (props = {}) => {

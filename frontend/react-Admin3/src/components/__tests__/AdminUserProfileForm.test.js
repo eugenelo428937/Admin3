@@ -1,32 +1,33 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import AdminUserProfileForm from '../admin/user-profiles/UserProfileForm';
 
-jest.mock('../../hooks/useAuth', () => ({
+vi.mock('../../hooks/useAuth', () => ({
   useAuth: () => ({ isSuperuser: true }),
 }));
 
-jest.mock('../../services/userProfileService', () => ({
+vi.mock('../../services/userProfileService', () => ({
   __esModule: true,
   default: {
-    getById: jest.fn().mockResolvedValue({
+    getById: vi.fn().mockResolvedValue({
       id: 1,
       title: 'Mr',
       user: { id: 5, email: 'test@test.com', first_name: 'John', last_name: 'Doe' },
       send_invoices_to: 'HOME',
       send_study_material_to: 'HOME',
     }),
-    getAddresses: jest.fn().mockResolvedValue([]),
-    getContacts: jest.fn().mockResolvedValue([]),
-    getEmails: jest.fn().mockResolvedValue([]),
-    update: jest.fn().mockResolvedValue({ id: 1 }),
+    getAddresses: vi.fn().mockResolvedValue([]),
+    getContacts: vi.fn().mockResolvedValue([]),
+    getEmails: vi.fn().mockResolvedValue([]),
+    update: vi.fn().mockResolvedValue({ id: 1 }),
   },
 }));
 
 // Mock all step components
-jest.mock('../User/steps', () => ({
+vi.mock('../User/steps', () => ({
   PersonalInfoStep: ({ mode }) => <div data-testid="personal-step" data-mode={mode}>PersonalInfoStep</div>,
   HomeAddressStep: ({ mode }) => <div data-testid="home-step" data-mode={mode}>HomeAddressStep</div>,
   WorkAddressStep: ({ mode }) => <div data-testid="work-step" data-mode={mode}>WorkAddressStep</div>,

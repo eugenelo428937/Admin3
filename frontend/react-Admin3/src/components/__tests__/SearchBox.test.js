@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * SearchBox Contract Tests
  *
@@ -17,14 +18,14 @@ import SearchBox from '../SearchBox';
 import filtersReducer from '../../store/slices/filtersSlice';
 
 // Mock searchService to avoid API calls during tests
-jest.mock('../../services/searchService', () => ({
-  getDefaultSearchData: jest.fn(() => Promise.resolve({
+vi.mock('../../services/searchService', () => ({
+  getDefaultSearchData: vi.fn(() => Promise.resolve({
     suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
     suggested_products: [],
     search_info: { query: '', type: 'default' },
     total_count: 0
   })),
-  fuzzySearch: jest.fn((query) => Promise.resolve({
+  fuzzySearch: vi.fn((query) => Promise.resolve({
     suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
     suggested_products: [],
     search_info: { query, type: 'fuzzy' },
@@ -198,7 +199,7 @@ describe('SearchBox Redux Integration (Search-Only)', () => {
    */
   test('T005: calls onSearchResults callback with results', async () => {
     // ARRANGE: Mock callback and searchService
-    const mockOnSearchResults = jest.fn();
+    const mockOnSearchResults = vi.fn();
 
     renderWithRedux(<SearchBox onSearchResults={mockOnSearchResults} />);
     const searchInput = screen.getByPlaceholderText(/search/i);
@@ -226,7 +227,7 @@ describe('SearchBox Redux Integration (Search-Only)', () => {
    */
   test('T006: does not call API for queries shorter than 3 characters', async () => {
     // ARRANGE
-    const mockOnSearchResults = jest.fn();
+    const mockOnSearchResults = vi.fn();
     const searchService = require('../../services/searchService');
     searchService.fuzzySearch.mockClear();
 
@@ -255,7 +256,7 @@ describe('SearchBox Redux Integration (Search-Only)', () => {
    */
   test('T007: handles search API error gracefully', async () => {
     // ARRANGE: Mock API error
-    const mockOnSearchResults = jest.fn();
+    const mockOnSearchResults = vi.fn();
     const searchService = require('../../services/searchService');
     searchService.fuzzySearch.mockRejectedValueOnce(new Error('Network error'));
 
@@ -286,8 +287,8 @@ describe('SearchBox Redux Integration (Search-Only)', () => {
    */
   test('T008: calls onShowMatchingProducts when Enter pressed with results', async () => {
     // ARRANGE
-    const mockOnShowMatchingProducts = jest.fn();
-    const mockOnSearchResults = jest.fn();
+    const mockOnShowMatchingProducts = vi.fn();
+    const mockOnSearchResults = vi.fn();
     const searchService = require('../../services/searchService');
     searchService.fuzzySearch.mockResolvedValueOnce({
       suggested_filters: { subjects: [], product_groups: [], variations: [], products: [] },
@@ -326,7 +327,7 @@ describe('SearchBox Redux Integration (Search-Only)', () => {
    */
   test('T009: does not call onShowMatchingProducts when Enter pressed without results', async () => {
     // ARRANGE
-    const mockOnShowMatchingProducts = jest.fn();
+    const mockOnShowMatchingProducts = vi.fn();
 
     renderWithRedux(<SearchBox onShowMatchingProducts={mockOnShowMatchingProducts} />);
     const searchInput = screen.getByPlaceholderText(/search/i);
@@ -367,7 +368,7 @@ describe('SearchBox Redux Integration (Search-Only)', () => {
    */
   test('T012: reloads search results on mount when query already exists in Redux', async () => {
     // ARRANGE
-    const mockOnSearchResults = jest.fn();
+    const mockOnSearchResults = vi.fn();
     const searchService = require('../../services/searchService');
     searchService.fuzzySearch.mockClear();
     searchService.fuzzySearch.mockResolvedValueOnce({

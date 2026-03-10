@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for errorTrackingService
  *
@@ -8,29 +9,35 @@
  */
 
 describe('errorTrackingService', () => {
-  const originalEnv = process.env.NODE_ENV;
+  const originalMode = import.meta.env.MODE;
+  const originalDev = import.meta.env.DEV;
+  const originalProd = import.meta.env.PROD;
   let mockSentryInit;
 
   beforeEach(() => {
-    jest.resetModules();
+    vi.resetModules();
 
     // Create mock for Sentry
-    mockSentryInit = jest.fn();
+    mockSentryInit = vi.fn();
 
     // Use doMock with virtual:true since @sentry/react may not be installed
-    jest.doMock('@sentry/react', () => ({
+    vi.doMock('@sentry/react', () => ({
       init: mockSentryInit,
     }), { virtual: true });
   });
 
   afterEach(() => {
-    process.env.NODE_ENV = originalEnv;
-    jest.clearAllMocks();
+    import.meta.env.MODE = originalMode;
+    import.meta.env.DEV = originalDev;
+    import.meta.env.PROD = originalProd;
+    vi.clearAllMocks();
   });
 
   describe('initializeErrorTracking', () => {
     test('should initialize Sentry in production environment', () => {
-      process.env.NODE_ENV = 'production';
+      import.meta.env.MODE = 'production';
+      import.meta.env.DEV = false;
+      import.meta.env.PROD = true;
       const { initializeErrorTracking } = require('../errorTrackingService');
 
       initializeErrorTracking();
@@ -42,7 +49,9 @@ describe('errorTrackingService', () => {
     });
 
     test('should not initialize Sentry in development environment', () => {
-      process.env.NODE_ENV = 'development';
+      import.meta.env.MODE = 'development';
+      import.meta.env.DEV = true;
+      import.meta.env.PROD = false;
       const { initializeErrorTracking } = require('../errorTrackingService');
 
       initializeErrorTracking();
@@ -51,7 +60,9 @@ describe('errorTrackingService', () => {
     });
 
     test('should not initialize Sentry in test environment', () => {
-      process.env.NODE_ENV = 'test';
+      import.meta.env.MODE = 'test';
+      import.meta.env.DEV = false;
+      import.meta.env.PROD = false;
       const { initializeErrorTracking } = require('../errorTrackingService');
 
       initializeErrorTracking();

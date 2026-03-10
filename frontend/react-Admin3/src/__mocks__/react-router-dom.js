@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Mock react-router-dom for Jest tests (Story 1.16)
  *
@@ -15,7 +16,7 @@ export const MemoryRouter = ({ children, initialEntries = ['/'], initialIndex = 
 
 // Mock useNavigate
 export const useNavigate = () => {
-  return jest.fn();
+  return vi.fn();
 };
 
 // Mock useLocation

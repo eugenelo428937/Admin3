@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * ActiveFilters Component Tests
  *
@@ -19,14 +20,17 @@ import filtersReducer from "../../store/slices/filtersSlice";
 import ActiveFilters from "./ActiveFilters";
 
 // Mock Material-UI's useMediaQuery
-jest.mock("@mui/material/useMediaQuery");
+vi.mock("@mui/material/useMediaQuery");
 
 // Mock Redux actions
-const mockDispatch = jest.fn();
-jest.mock("react-redux", () => ({
-   ...jest.requireActual("react-redux"),
-   useDispatch: () => mockDispatch,
-}));
+const mockDispatch = vi.fn();
+vi.mock("react-redux", async () => {
+   const actual = await vi.importActual("react-redux");
+   return {
+      ...actual,
+      useDispatch: () => mockDispatch,
+   };
+});
 
 // Test store setup
 const createTestStore = (initialState = {}) => {
@@ -99,9 +103,9 @@ const mockFilterCounts = {
 
 describe("ActiveFilters Component", () => {
    beforeEach(() => {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
       // Mock desktop view by default
-      require("@mui/material/useMediaQuery").default = jest.fn(() => false);
+      require("@mui/material/useMediaQuery").default = vi.fn(() => false);
    });
 
    describe("No Active Filters State", () => {
@@ -359,7 +363,7 @@ describe("ActiveFilters Component", () => {
    describe("Mobile Responsiveness", () => {
       beforeEach(() => {
          // Mock mobile view
-         require("@mui/material/useMediaQuery").default = jest.fn(() => true);
+         require("@mui/material/useMediaQuery").default = vi.fn(() => true);
       });
       test.skip("shows shortened labels on mobile", () => {
          test("shows shortened labels on mobile", () => {

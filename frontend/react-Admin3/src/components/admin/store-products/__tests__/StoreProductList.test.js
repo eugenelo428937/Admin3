@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/admin/store-products/__tests__/StoreProductList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -6,19 +7,19 @@ import { BrowserRouter } from 'react-router-dom';
 import AdminStoreProductList from '../StoreProductList';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
 import { useAuth } from '../../../../hooks/useAuth';
 
 // Mock storeProductService
-jest.mock('../../../../services/storeProductService', () => ({
+vi.mock('../../../../services/storeProductService', () => ({
   __esModule: true,
   default: {
-    adminList: jest.fn(),
-    delete: jest.fn(),
+    adminList: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -89,7 +90,7 @@ const expandSubject = (subjectCode) => {
 
 describe('AdminStoreProductList', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,

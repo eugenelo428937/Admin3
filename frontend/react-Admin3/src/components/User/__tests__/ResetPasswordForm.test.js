@@ -1,12 +1,13 @@
-const mockNavigate = jest.fn();
+import { vi } from 'vitest';
+const mockNavigate = vi.fn();
 const mockLocation = { search: '?uid=test-uid&token=test-token' };
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
   useLocation: () => mockLocation,
 }));
 
-const mockConfirmPasswordReset = jest.fn();
-jest.mock('../../../services/authService', () => ({
+const mockConfirmPasswordReset = vi.fn();
+vi.mock('../../../services/authService', () => ({
   __esModule: true,
   default: { confirmPasswordReset: (...args) => mockConfirmPasswordReset(...args) },
 }));
@@ -23,7 +24,7 @@ describe('ResetPasswordForm', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockLocation.search = '?uid=test-uid&token=test-token';
   });
 

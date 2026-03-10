@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/admin/product-bundles/__tests__/BundleProductsPanel.test.js
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
@@ -5,27 +6,27 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import BundleProductsPanel from '../BundleProductsPanel';
 
 // Mock services
-jest.mock('../../../../services/catalogBundleProductService', () => ({
+vi.mock('../../../../services/catalogBundleProductService', () => ({
   __esModule: true,
   default: {
-    getByBundleId: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
+    getByBundleId: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
-jest.mock('../../../../services/catalogProductService', () => ({
+vi.mock('../../../../services/catalogProductService', () => ({
   __esModule: true,
   default: {
-    getAll: jest.fn(),
+    getAll: vi.fn(),
   },
 }));
 
-jest.mock('../../../../services/productProductVariationService', () => ({
+vi.mock('../../../../services/productProductVariationService', () => ({
   __esModule: true,
   default: {
-    getByProduct: jest.fn(),
+    getByProduct: vi.fn(),
   },
 }));
 
@@ -85,7 +86,7 @@ const renderComponent = (props = {}) => {
 
 describe('BundleProductsPanel', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     catalogBundleProductService.getByBundleId.mockResolvedValue(mockBundleProducts);
     catalogProductService.getAll.mockResolvedValue(mockProducts);
     productProductVariationService.getByProduct.mockResolvedValue(mockPPVsForProduct);
@@ -128,7 +129,7 @@ describe('BundleProductsPanel', () => {
 
   describe('remove product', () => {
     test('calls delete and refreshes on remove', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       catalogBundleProductService.delete.mockResolvedValue({});
 
       renderComponent();
@@ -146,7 +147,7 @@ describe('BundleProductsPanel', () => {
     });
 
     test('does not delete when confirm cancelled', async () => {
-      window.confirm = jest.fn().mockReturnValue(false);
+      window.confirm = vi.fn().mockReturnValue(false);
 
       renderComponent();
       await waitFor(() => {

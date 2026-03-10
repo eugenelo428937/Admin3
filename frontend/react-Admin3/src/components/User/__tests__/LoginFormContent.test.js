@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * LoginFormContent Component Tests (T015)
  * User Story: US1 - Component Coverage Achievement
@@ -6,8 +7,8 @@
  */
 
 // Mock react-router-dom before importing
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
   BrowserRouter: ({ children }) => children
 }));
@@ -21,13 +22,13 @@ import { expectNoA11yViolations, wcag21AAConfig } from '../../../test-utils/acce
 
 describe('LoginFormContent', () => {
   const mockProps = {
-    onHide: jest.fn(),
+    onHide: vi.fn(),
     formData: { email: '', password: '' },
-    handleInputChange: jest.fn(),
-    handleLogin: jest.fn(),
+    handleInputChange: vi.fn(),
+    handleLogin: vi.fn(),
     loginError: null,
     isLoading: false,
-    switchToRegister: jest.fn(),
+    switchToRegister: vi.fn(),
   };
 
   const renderWithTheme = (component) => {
@@ -52,7 +53,7 @@ describe('LoginFormContent', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Rendering', () => {

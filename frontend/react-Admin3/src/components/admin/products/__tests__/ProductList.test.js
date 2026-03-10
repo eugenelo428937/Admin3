@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/admin/products/__tests__/ProductList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -6,25 +7,25 @@ import { BrowserRouter } from 'react-router-dom';
 import AdminProductList from '../ProductList';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
 import { useAuth } from '../../../../hooks/useAuth';
 
 // Mock catalogProductService
-jest.mock('../../../../services/catalogProductService', () => ({
+vi.mock('../../../../services/catalogProductService', () => ({
   __esModule: true,
   default: {
-    getAll: jest.fn(),
-    list: jest.fn(),
-    delete: jest.fn(),
+    getAll: vi.fn(),
+    list: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
 // Mock ProductTable
-jest.mock('../ProductTable', () => {
+vi.mock('../ProductTable', () => {
   return function MockProductTable({ products, onDelete }) {
     return (
       <div data-testid="product-table">
@@ -72,7 +73,7 @@ const renderComponent = () => {
 
 describe('AdminProductList', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,
@@ -150,7 +151,7 @@ describe('AdminProductList', () => {
 
   describe('delete functionality', () => {
     test('calls delete when delete action triggered', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       catalogProductService.delete.mockResolvedValue({});
 
       renderComponent();
@@ -168,7 +169,7 @@ describe('AdminProductList', () => {
     });
 
     test('does not delete when cancelled', async () => {
-      window.confirm = jest.fn().mockReturnValue(false);
+      window.confirm = vi.fn().mockReturnValue(false);
 
       renderComponent();
 
@@ -182,7 +183,7 @@ describe('AdminProductList', () => {
     });
 
     test('removes product from list after successful delete', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       catalogProductService.delete.mockResolvedValue({});
       // After delete, component re-fetches - mock the second list() call without deleted product
       const remainingProducts = [mockProducts[1]];
@@ -217,7 +218,7 @@ describe('AdminProductList', () => {
     });
 
     test('displays error when delete fails', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       catalogProductService.delete.mockRejectedValueOnce(new Error('Delete error'));
 
       renderComponent();

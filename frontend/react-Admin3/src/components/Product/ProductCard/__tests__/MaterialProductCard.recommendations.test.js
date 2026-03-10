@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -6,38 +7,38 @@ import MaterialProductCard from '../MaterialProductCard';
 import { useCart } from '../../../../contexts/CartContext';
 
 // Mock the CartContext
-jest.mock('../../../../contexts/CartContext', () => ({
-  useCart: jest.fn(),
+vi.mock('../../../../contexts/CartContext', () => ({
+  useCart: vi.fn(),
 }));
 
 // Mock child components that aren't being tested
-jest.mock('../Tutorial/TutorialProductCard', () => ({
+vi.mock('../Tutorial/TutorialProductCard', () => ({
   __esModule: true,
   default: () => <div data-testid="tutorial-product-card">Tutorial Product Card</div>,
 }));
 
-jest.mock('../MarkingProductCard', () => ({
+vi.mock('../MarkingProductCard', () => ({
   __esModule: true,
   default: () => <div data-testid="marking-product-card">Marking Product Card</div>,
 }));
 
-jest.mock('../MarkingVoucherProductCard', () => ({
+vi.mock('../MarkingVoucherProductCard', () => ({
   __esModule: true,
   default: () => <div data-testid="marking-voucher-product-card">Marking Voucher Product Card</div>,
 }));
 
-jest.mock('../OnlineClassroomProductCard', () => ({
+vi.mock('../OnlineClassroomProductCard', () => ({
   __esModule: true,
   default: () => <div data-testid="online-classroom-product-card">Online Classroom Product Card</div>,
 }));
 
-jest.mock('../BundleCard', () => ({
+vi.mock('../BundleCard', () => ({
   __esModule: true,
   default: () => <div data-testid="bundle-card">Bundle Card</div>,
 }));
 
 describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
-  const mockOnAddToCart = jest.fn();
+  const mockOnAddToCart = vi.fn();
   const mockCartData = {
     vat_calculations: {
       region_info: {
@@ -72,7 +73,7 @@ describe('MaterialProductCard - Recommended Products with SpeedDial', () => {
 
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useCart.mockReturnValue({ cartData: mockCartData });
   });
 

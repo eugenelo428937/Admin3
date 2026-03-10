@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -8,21 +9,21 @@ import theme from '../../../theme/theme';
 import cartService from '../../../services/cartService';
 
 // Mock react-router-dom
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate
 }));
 
 // Mock cart service
-jest.mock('../../../services/cartService', () => ({
+vi.mock('../../../services/cartService', () => ({
   __esModule: true,
   default: {
-    checkout: jest.fn()
+    checkout: vi.fn()
   }
 }));
 
 // Mock CartContext
-const mockClearCart = jest.fn();
+const mockClearCart = vi.fn();
 const mockCartItems = [
   {
     id: 1,
@@ -39,7 +40,7 @@ const mockCartItems = [
 
 let mockCartItemsValue = [...mockCartItems];
 
-jest.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext', () => ({
   useCart: () => ({
     cartItems: mockCartItemsValue,
     cartData: { id: 1, user: null, session_key: 'test-session' },
@@ -48,15 +49,15 @@ jest.mock('../../../contexts/CartContext', () => ({
 }));
 
 // Mock TutorialChoiceContext
-const mockRemoveAllChoices = jest.fn();
-jest.mock('../../../contexts/TutorialChoiceContext', () => ({
+const mockRemoveAllChoices = vi.fn();
+vi.mock('../../../contexts/TutorialChoiceContext', () => ({
   useTutorialChoice: () => ({
     removeAllChoices: mockRemoveAllChoices
   })
 }));
 
 // Mock CheckoutSteps component
-jest.mock('../CheckoutSteps', () => {
+vi.mock('../CheckoutSteps', () => {
   return function MockCheckoutSteps({ onComplete }) {
     return (
       <div data-testid="checkout-steps">
@@ -87,7 +88,7 @@ const renderWithTheme = (component) => {
 
 describe('CheckoutPage', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockCartItemsValue = [...mockCartItems];
     mockClearCart.mockResolvedValue();
     cartService.checkout.mockResolvedValue({

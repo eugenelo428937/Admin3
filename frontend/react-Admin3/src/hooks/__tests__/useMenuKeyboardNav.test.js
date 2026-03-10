@@ -1,13 +1,14 @@
+import { vi } from 'vitest';
 // frontend/react-Admin3/src/hooks/__tests__/useMenuKeyboardNav.test.js
 import { renderHook, act } from '@testing-library/react';
 import useMenuKeyboardNav from '../useMenuKeyboardNav';
 
 describe('useMenuKeyboardNav', () => {
-  const mockOnClose = jest.fn();
-  const mockOnSelect = jest.fn();
+  const mockOnClose = vi.fn();
+  const mockOnSelect = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test('initializes with focusedIndex 0', () => {
@@ -25,7 +26,7 @@ describe('useMenuKeyboardNav', () => {
     act(() => {
       result.current.handleKeyDown({
         key: 'ArrowDown',
-        preventDefault: jest.fn()
+        preventDefault: vi.fn()
       });
     });
 
@@ -45,7 +46,7 @@ describe('useMenuKeyboardNav', () => {
     act(() => {
       result.current.handleKeyDown({
         key: 'ArrowDown',
-        preventDefault: jest.fn()
+        preventDefault: vi.fn()
       });
     });
 
@@ -64,7 +65,7 @@ describe('useMenuKeyboardNav', () => {
     act(() => {
       result.current.handleKeyDown({
         key: 'ArrowUp',
-        preventDefault: jest.fn()
+        preventDefault: vi.fn()
       });
     });
 
@@ -79,7 +80,7 @@ describe('useMenuKeyboardNav', () => {
     act(() => {
       result.current.handleKeyDown({
         key: 'ArrowUp',
-        preventDefault: jest.fn()
+        preventDefault: vi.fn()
       });
     });
 
@@ -98,7 +99,7 @@ describe('useMenuKeyboardNav', () => {
     act(() => {
       result.current.handleKeyDown({
         key: 'Home',
-        preventDefault: jest.fn()
+        preventDefault: vi.fn()
       });
     });
 
@@ -113,7 +114,7 @@ describe('useMenuKeyboardNav', () => {
     act(() => {
       result.current.handleKeyDown({
         key: 'End',
-        preventDefault: jest.fn()
+        preventDefault: vi.fn()
       });
     });
 
@@ -128,7 +129,7 @@ describe('useMenuKeyboardNav', () => {
     act(() => {
       result.current.handleKeyDown({
         key: 'Escape',
-        preventDefault: jest.fn()
+        preventDefault: vi.fn()
       });
     });
 
@@ -147,7 +148,7 @@ describe('useMenuKeyboardNav', () => {
     act(() => {
       result.current.handleKeyDown({
         key: 'Enter',
-        preventDefault: jest.fn()
+        preventDefault: vi.fn()
       });
     });
 
@@ -162,7 +163,7 @@ describe('useMenuKeyboardNav', () => {
     act(() => {
       result.current.handleKeyDown({
         key: ' ',
-        preventDefault: jest.fn()
+        preventDefault: vi.fn()
       });
     });
 
@@ -203,7 +204,7 @@ describe('useMenuKeyboardNav', () => {
     );
 
     act(() => {
-      result.current.handleKeyDown({ key: 'ArrowDown', preventDefault: jest.fn() });
+      result.current.handleKeyDown({ key: 'ArrowDown', preventDefault: vi.fn() });
     });
 
     expect(result.current.focusedIndex).toBe(0);
@@ -216,7 +217,7 @@ describe('useMenuKeyboardNav', () => {
     );
 
     act(() => {
-      result.current.handleKeyDown({ key: 'Escape', preventDefault: jest.fn() });
+      result.current.handleKeyDown({ key: 'Escape', preventDefault: vi.fn() });
     });
 
     expect(mockOnClose).toHaveBeenCalledTimes(1);

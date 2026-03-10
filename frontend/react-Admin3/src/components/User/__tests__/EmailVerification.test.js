@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/User/__tests__/EmailVerification.test.js
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
@@ -5,29 +6,29 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import EmailVerification from '../EmailVerification';
 
 // Mock react-router-dom
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 let mockSearchParams = new URLSearchParams();
 
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
   useSearchParams: () => [mockSearchParams],
 }));
 
 // Mock authService
-jest.mock('../../../services/authService', () => ({
+vi.mock('../../../services/authService', () => ({
   __esModule: true,
   default: {
-    verifyEmailChange: jest.fn(),
+    verifyEmailChange: vi.fn(),
   },
 }));
 
 // Mock loggerService
-jest.mock('../../../services/loggerService', () => ({
+vi.mock('../../../services/loggerService', () => ({
   __esModule: true,
   default: {
-    debug: jest.fn(),
-    info: jest.fn(),
-    error: jest.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
@@ -45,7 +46,7 @@ const renderComponent = () => {
 
 describe('EmailVerification', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockSearchParams = new URLSearchParams();
   });
 

@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for App Component
  * T009: Test routing setup, provider hierarchy, navigation
@@ -9,62 +10,55 @@ import { MemoryRouter } from 'react-router-dom';
 import App from './App';
 
 // Mock all the heavy components to speed up tests
-jest.mock('./pages/Home', () => () => <div data-testid="home-page">Home Page</div>);
-jest.mock('./pages/ProfilePage', () => () => <div data-testid="profile-page">Profile Page</div>);
-jest.mock('./pages/Registration', () => () => <div data-testid="registration-page">Registration Page</div>);
-jest.mock('./components/Navigation/MainNavBar', () => () => <nav data-testid="main-nav">Navigation</nav>);
-jest.mock('./components/Product/ProductList', () => () => <div data-testid="product-list">Products</div>);
-jest.mock('./components/Ordering/CheckoutPage', () => () => <div data-testid="checkout-page">Checkout</div>);
-jest.mock('./components/User/OrderHistory', () => () => <div data-testid="order-history">Orders</div>);
-jest.mock('./components/User/ForgotPasswordForm', () => () => <div data-testid="forgot-password">Forgot Password</div>);
-jest.mock('./components/User/ResetPasswordForm', () => () => <div data-testid="reset-password">Reset Password</div>);
-jest.mock('./components/User/AccountActivation', () => () => <div data-testid="account-activation">Activation</div>);
-jest.mock('./components/User/ResendActivation', () => () => <div data-testid="resend-activation">Resend</div>);
-jest.mock('./components/User/EmailVerification', () => () => <div data-testid="email-verification">Email Verify</div>);
-jest.mock('./components/StyleGuide', () => () => <div data-testid="styleguide">Style Guide</div>);
-jest.mock('./components/NoMatch', () => () => <div data-testid="no-match">404 Not Found</div>);
-jest.mock('./components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer', () => () => null);
+vi.mock('./pages/Home', () => () => <div data-testid="home-page">Home Page</div>);
+vi.mock('./pages/ProfilePage', () => () => <div data-testid="profile-page">Profile Page</div>);
+vi.mock('./pages/Registration', () => () => <div data-testid="registration-page">Registration Page</div>);
+vi.mock('./components/Navigation/MainNavBar', () => () => <nav data-testid="main-nav">Navigation</nav>);
+vi.mock('./components/Product/ProductList', () => () => <div data-testid="product-list">Products</div>);
+vi.mock('./components/Ordering/CheckoutPage', () => () => <div data-testid="checkout-page">Checkout</div>);
+vi.mock('./components/User/OrderHistory', () => () => <div data-testid="order-history">Orders</div>);
+vi.mock('./components/User/ForgotPasswordForm', () => () => <div data-testid="forgot-password">Forgot Password</div>);
+vi.mock('./components/User/ResetPasswordForm', () => () => <div data-testid="reset-password">Reset Password</div>);
+vi.mock('./components/User/AccountActivation', () => () => <div data-testid="account-activation">Activation</div>);
+vi.mock('./components/User/ResendActivation', () => () => <div data-testid="resend-activation">Resend</div>);
+vi.mock('./components/User/EmailVerification', () => () => <div data-testid="email-verification">Email Verify</div>);
+vi.mock('./components/StyleGuide', () => () => <div data-testid="styleguide">Style Guide</div>);
+vi.mock('./components/NoMatch', () => () => <div data-testid="no-match">404 Not Found</div>);
+vi.mock('./components/Product/ProductCard/Tutorial/TutorialSummaryBarContainer', () => () => null);
 
 // Mock admin components
-jest.mock('./components/admin/exam-sessions/ExamSessionList', () => () => <div data-testid="admin-exam-sessions">Exam Sessions</div>);
-jest.mock('./components/admin/exam-sessions/ExamSessionForm', () => () => <div data-testid="admin-exam-session-form">Exam Session Form</div>);
-jest.mock('./components/admin/subjects/SubjectList', () => () => <div data-testid="admin-subjects">Subjects</div>);
-jest.mock('./components/admin/subjects/SubjectForm', () => () => <div data-testid="admin-subject-form">Subject Form</div>);
-jest.mock('./components/admin/subjects/SubjectDetail', () => () => <div data-testid="admin-subject-detail">Subject Detail</div>);
-jest.mock('./components/admin/subjects/SubjectImport', () => () => <div data-testid="admin-subject-import">Subject Import</div>);
-jest.mock('./components/admin/products/ProductList', () => () => <div data-testid="admin-products">Admin Products</div>);
-jest.mock('./components/admin/products/ProductDetail', () => () => <div data-testid="admin-product-detail">Product Detail</div>);
-jest.mock('./components/admin/products/ProductForm', () => () => <div data-testid="admin-product-form">Product Form</div>);
-jest.mock('./components/admin/products/ProductImport', () => () => <div data-testid="admin-product-import">Product Import</div>);
+vi.mock('./components/admin/exam-sessions/ExamSessionList', () => () => <div data-testid="admin-exam-sessions">Exam Sessions</div>);
+vi.mock('./components/admin/exam-sessions/ExamSessionForm', () => () => <div data-testid="admin-exam-session-form">Exam Session Form</div>);
+vi.mock('./components/admin/subjects/SubjectList', () => () => <div data-testid="admin-subjects">Subjects</div>);
+vi.mock('./components/admin/subjects/SubjectForm', () => () => <div data-testid="admin-subject-form">Subject Form</div>);
+vi.mock('./components/admin/subjects/SubjectDetail', () => () => <div data-testid="admin-subject-detail">Subject Detail</div>);
+vi.mock('./components/admin/subjects/SubjectImport', () => () => <div data-testid="admin-subject-import">Subject Import</div>);
+vi.mock('./components/admin/products/ProductList', () => () => <div data-testid="admin-products">Admin Products</div>);
+vi.mock('./components/admin/products/ProductDetail', () => () => <div data-testid="admin-product-detail">Product Detail</div>);
+vi.mock('./components/admin/products/ProductForm', () => () => <div data-testid="admin-product-form">Product Form</div>);
+vi.mock('./components/admin/products/ProductImport', () => () => <div data-testid="admin-product-import">Product Import</div>);
 
 // Mock ErrorBoundary
-jest.mock('./components/ErrorBoundary', () => ({ children }) => <>{children}</>);
+vi.mock('./components/ErrorBoundary', () => ({ children }) => <>{children}</>);
 
 // Mock reCAPTCHA provider
-jest.mock('react-google-recaptcha-v3', () => ({
+vi.mock('react-google-recaptcha-v3', () => ({
   GoogleReCaptchaProvider: ({ children }) => children,
-  useGoogleReCaptcha: () => ({ executeRecaptcha: jest.fn() }),
+  useGoogleReCaptcha: () => ({ executeRecaptcha: vi.fn() }),
 }));
 
 // Mock Chakra UI
-jest.mock('@chakra-ui/react', () => ({
+vi.mock('@chakra-ui/react', () => ({
   ChakraProvider: ({ children }) => children,
   createSystem: () => ({}),
   defaultConfig: {},
 }));
 
 describe('App Component', () => {
-  const originalEnv = process.env;
-
   beforeEach(() => {
-    jest.resetModules();
-    process.env = { ...originalEnv };
+    vi.resetModules();
     // Clear localStorage
     localStorage.clear();
-  });
-
-  afterEach(() => {
-    process.env = originalEnv;
   });
 
   describe('routing', () => {
@@ -269,7 +263,7 @@ describe('App Component', () => {
 
   describe('reCAPTCHA handling', () => {
     test('renders without reCAPTCHA key', async () => {
-      delete process.env.REACT_APP_RECAPTCHA_SITE_KEY;
+      delete import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
       render(
         <MemoryRouter initialEntries={['/home']}>
@@ -283,7 +277,7 @@ describe('App Component', () => {
     });
 
     test('renders with reCAPTCHA key', async () => {
-      process.env.REACT_APP_RECAPTCHA_SITE_KEY = 'test-site-key';
+      import.meta.env.VITE_RECAPTCHA_SITE_KEY = 'test-site-key';
 
       render(
         <MemoryRouter initialEntries={['/home']}>

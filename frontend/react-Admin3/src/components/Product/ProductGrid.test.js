@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * ProductGrid Component Tests
  * 
@@ -17,14 +18,14 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ProductGrid from './ProductGrid';
 
 // Mock MaterialProductCard component
-jest.mock('./ProductCard/MaterialProductCard', () => {
+vi.mock('./ProductCard/MaterialProductCard', () => {
     return function MockMaterialProductCard({ product }) {
         return <div data-testid="product-card">{product.product_name || product.name || product.id}</div>;
     };
 });
 
 // Mock Material-UI's useMediaQuery
-jest.mock('@mui/material/useMediaQuery');
+vi.mock('@mui/material/useMediaQuery');
 
 // Test store setup
 const createTestStore = () => {
@@ -65,9 +66,9 @@ const mockPagination = {
 
 describe('ProductGrid Component', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
         // Mock desktop view by default
-        require('@mui/material/useMediaQuery').default = jest.fn(() => false);
+        require('@mui/material/useMediaQuery').default = vi.fn(() => false);
     });
 
     describe('Loading State', () => {
@@ -87,7 +88,7 @@ describe('ProductGrid Component', () => {
 
         test('renders fewer skeletons on mobile', () => {
             // Mock mobile view
-            require('@mui/material/useMediaQuery').default = jest.fn(() => true);
+            require('@mui/material/useMediaQuery').default = vi.fn(() => true);
             
             renderWithProviders(
                 <ProductGrid
@@ -211,7 +212,7 @@ describe('ProductGrid Component', () => {
 
     describe('Load More Functionality', () => {
         test('renders load more button when has_next is true', () => {
-            const mockOnLoadMore = jest.fn();
+            const mockOnLoadMore = vi.fn();
             
             renderWithProviders(
                 <ProductGrid
@@ -229,7 +230,7 @@ describe('ProductGrid Component', () => {
 
         test('calls onLoadMore when load more button is clicked', async () => {
             const user = userEvent.setup();
-            const mockOnLoadMore = jest.fn();
+            const mockOnLoadMore = vi.fn();
             
             renderWithProviders(
                 <ProductGrid
@@ -275,7 +276,7 @@ describe('ProductGrid Component', () => {
 
     describe('Product Card Integration', () => {
         test('passes correct props to MaterialProductCard', () => {
-            const mockOnAddToCart = jest.fn();
+            const mockOnAddToCart = vi.fn();
             const mockAllEsspIds = [1, 2, 3];
             const mockBulkDeadlines = { essp_1: '2024-01-01' };
 
@@ -299,7 +300,7 @@ describe('ProductGrid Component', () => {
     describe('Responsive Behavior', () => {
         test('adapts grid layout for mobile', () => {
             // Mock mobile view
-            require('@mui/material/useMediaQuery').default = jest.fn(() => true);
+            require('@mui/material/useMediaQuery').default = vi.fn(() => true);
             
             renderWithProviders(
                 <ProductGrid
@@ -314,7 +315,7 @@ describe('ProductGrid Component', () => {
 
         test('adapts grid layout for tablet', () => {
             // Mock tablet view
-            require('@mui/material/useMediaQuery').default = jest.fn((query) => {
+            require('@mui/material/useMediaQuery').default = vi.fn((query) => {
                 return query.includes('md'); // Tablet breakpoint
             });
             

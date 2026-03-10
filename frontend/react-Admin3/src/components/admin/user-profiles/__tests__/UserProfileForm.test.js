@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/admin/user-profiles/__tests__/UserProfileForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -5,18 +6,18 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import AdminUserProfileForm from '../UserProfileForm';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
 import { useAuth } from '../../../../hooks/useAuth';
 
 // Mock navigate function
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 
 // Create mock for react-router-dom
-jest.mock('react-router-dom', () => {
+vi.mock('react-router-dom', () => {
   return {
     useNavigate: () => mockNavigate,
     useParams: () => ({}),
@@ -26,18 +27,18 @@ jest.mock('react-router-dom', () => {
 });
 
 // Mock userProfileService
-jest.mock('../../../../services/userProfileService', () => ({
+vi.mock('../../../../services/userProfileService', () => ({
   __esModule: true,
   default: {
-    getById: jest.fn(),
-    update: jest.fn(),
-    getAddresses: jest.fn(),
-    getContacts: jest.fn(),
+    getById: vi.fn(),
+    update: vi.fn(),
+    getAddresses: vi.fn(),
+    getContacts: vi.fn(),
   },
 }));
 
 // Mock ValidatedPhoneInput to avoid country API fetch
-jest.mock('../../../User/ValidatedPhoneInput', () => {
+vi.mock('../../../User/ValidatedPhoneInput', () => {
   return function MockValidatedPhoneInput({ label, name, value, onChange }) {
     return <input aria-label={label} name={name} value={value || ''} onChange={onChange} />;
   };
@@ -49,7 +50,7 @@ const theme = createTheme();
 
 // Helper to set mock useParams
 const setMockParams = (params) => {
-  require('react-router-dom').useParams = jest.fn().mockReturnValue(params);
+  require('react-router-dom').useParams = vi.fn().mockReturnValue(params);
 };
 
 const renderComponent = () => {
@@ -72,7 +73,7 @@ describe('AdminUserProfileForm', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,

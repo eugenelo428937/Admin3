@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for NavigationMenu Component
  * T024: Test menu rendering, navigation with Router
@@ -12,7 +13,7 @@ import NavigationMenu from '../NavigationMenu';
 expect.extend(toHaveNoViolations);
 
 // Mock react-router-dom
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   __esModule: true,
   NavLink: ({ children, to, onClick, className, disabled }) => (
     <a
@@ -33,7 +34,7 @@ const mockUseAuth = {
   isStudyPlus: false,
 };
 
-jest.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth', () => ({
   useAuth: () => mockUseAuth,
 }));
 
@@ -85,22 +86,25 @@ const mockTheme = {
   }
 };
 
-jest.mock('@mui/material', () => ({
-  ...jest.requireActual('@mui/material'),
-  useTheme: () => mockTheme,
-}));
+vi.mock('@mui/material', async () => {
+  const actual = await vi.importActual('@mui/material');
+  return {
+    ...actual,
+    useTheme: () => mockTheme,
+  };
+});
 
 
 const theme = createTheme();
 
 describe('NavigationMenu', () => {
-  const mockHandleSubjectClick = jest.fn();
-  const mockHandleProductClick = jest.fn();
-  const mockHandleProductGroupClick = jest.fn();
-  const mockHandleSpecificProductClick = jest.fn();
-  const mockHandleProductVariationClick = jest.fn();
-  const mockHandleMarkingVouchersClick = jest.fn();
-  const mockOnCollapseNavbar = jest.fn();
+  const mockHandleSubjectClick = vi.fn();
+  const mockHandleProductClick = vi.fn();
+  const mockHandleProductGroupClick = vi.fn();
+  const mockHandleSpecificProductClick = vi.fn();
+  const mockHandleProductVariationClick = vi.fn();
+  const mockHandleMarkingVouchersClick = vi.fn();
+  const mockOnCollapseNavbar = vi.fn();
 
   const defaultProps = {
     subjects: [
@@ -171,7 +175,7 @@ describe('NavigationMenu', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     // Reset mock auth state
     mockUseAuth.isSuperuser = false;
     mockUseAuth.isApprentice = false;

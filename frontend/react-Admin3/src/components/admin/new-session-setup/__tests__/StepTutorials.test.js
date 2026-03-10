@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -9,10 +10,10 @@ const renderWithTheme = (ui) =>
   render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
 
 describe('StepTutorials', () => {
-  const mockOnComplete = jest.fn();
+  const mockOnComplete = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders Upload button as disabled', () => {

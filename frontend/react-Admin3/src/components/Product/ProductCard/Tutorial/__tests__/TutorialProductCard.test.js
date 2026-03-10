@@ -1,22 +1,23 @@
+import { vi } from 'vitest';
 // Remove global mocks from setupTests.js so we can test with real context
-jest.unmock('../../../../../contexts/TutorialChoiceContext');
+vi.unmock('../../../../../contexts/TutorialChoiceContext');
 
 // Mock httpService before importing anything else
-jest.mock('../../../../../services/httpService', () => ({
-  get: jest.fn(),
-  post: jest.fn(),
+vi.mock('../../../../../services/httpService', () => ({
+  get: vi.fn(),
+  post: vi.fn(),
 }));
 
 // Mock CartContext - use module-level mocks that can be accessed/reset in tests
 const mockCartState = {
   items: [],
-  addToCart: jest.fn(),
-  updateCartItem: jest.fn(),
-  removeFromCart: jest.fn(),
-  refreshCart: jest.fn(),
+  addToCart: vi.fn(),
+  updateCartItem: vi.fn(),
+  removeFromCart: vi.fn(),
+  refreshCart: vi.fn(),
 };
 
-jest.mock('../../../../../contexts/CartContext', () => {
+vi.mock('../../../../../contexts/CartContext', () => {
   const React = require('react');
   return {
     __esModule: true,
@@ -27,7 +28,7 @@ jest.mock('../../../../../contexts/CartContext', () => {
       addToCart: mockCartState.addToCart,
       updateCartItem: mockCartState.updateCartItem,
       removeFromCart: mockCartState.removeFromCart,
-      clearCart: jest.fn(),
+      clearCart: vi.fn(),
       refreshCart: mockCartState.refreshCart,
       get cartCount() { return mockCartState.items.reduce((sum, item) => sum + (item.quantity || 1), 0); },
       loading: false,
@@ -66,7 +67,7 @@ const mockProps = {
       events: [{ id: 101, venue: 'Birmingham Centre' }]
     }
   ],
-  onAddToCart: jest.fn(),
+  onAddToCart: vi.fn(),
 };
 
 // Helper function to render component with context
@@ -99,7 +100,7 @@ describe('TutorialProductCard', () => {
   let localStorageData = {};
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     // Reset mock cart state
     mockCartState.items = [];
     mockCartState.addToCart.mockClear();
@@ -111,11 +112,11 @@ describe('TutorialProductCard', () => {
     localStorageData = {};
 
     // Mock localStorage with state tracking
-    Storage.prototype.getItem = jest.fn((key) => localStorageData[key] || null);
-    Storage.prototype.setItem = jest.fn((key, value) => {
+    Storage.prototype.getItem = vi.fn((key) => localStorageData[key] || null);
+    Storage.prototype.setItem = vi.fn((key, value) => {
       localStorageData[key] = value;
     });
-    Storage.prototype.removeItem = jest.fn((key) => {
+    Storage.prototype.removeItem = vi.fn((key) => {
       delete localStorageData[key];
     });
   });
@@ -203,7 +204,7 @@ describe('TutorialProductCard', () => {
           }
         }
       };
-      Storage.prototype.getItem = jest.fn((key) => {
+      Storage.prototype.getItem = vi.fn((key) => {
         if (key === 'tutorialChoices') {
           return JSON.stringify(mockChoices);
         }
@@ -356,7 +357,7 @@ describe('TutorialProductCard', () => {
       const mockChoices = {
         CS1: { '1st': { id: 123, location: 'Birmingham', choiceLevel: '1st' } }
       };
-      Storage.prototype.getItem = jest.fn((key) =>
+      Storage.prototype.getItem = vi.fn((key) =>
         key === 'tutorialChoices' ? JSON.stringify(mockChoices) : null
       );
 

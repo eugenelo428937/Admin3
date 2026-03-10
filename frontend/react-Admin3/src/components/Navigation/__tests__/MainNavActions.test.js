@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/Navigation/__tests__/MainNavActions.test.js
 import React from 'react';
 import { render, screen, within, waitFor } from '@testing-library/react';
@@ -7,14 +8,14 @@ import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../../theme/theme';
 
 // Mock react-router-dom
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
   __esModule: true,
   useNavigate: () => mockNavigate,
 }));
 
 // Create mock logout function that can be accessed in tests
-const mockLogout = jest.fn();
+const mockLogout = vi.fn();
 
 // Mock the useAuth hook - will be overridden in specific tests
 let mockAuthState = {
@@ -23,21 +24,21 @@ let mockAuthState = {
   logout: mockLogout,
 };
 
-jest.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth', () => ({
   useAuth: () => mockAuthState,
 }));
 
 // Mock the useCart hook
 let mockCartCount = 3;
-jest.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext', () => ({
   useCart: () => ({
     cartItems: [],
     cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
-    addToCart: jest.fn(() => Promise.resolve()),
-    updateCartItem: jest.fn(() => Promise.resolve()),
-    removeFromCart: jest.fn(() => Promise.resolve()),
-    clearCart: jest.fn(() => Promise.resolve()),
-    refreshCart: jest.fn(() => Promise.resolve()),
+    addToCart: vi.fn(() => Promise.resolve()),
+    updateCartItem: vi.fn(() => Promise.resolve()),
+    removeFromCart: vi.fn(() => Promise.resolve()),
+    clearCart: vi.fn(() => Promise.resolve()),
+    refreshCart: vi.fn(() => Promise.resolve()),
     cartCount: mockCartCount,
     loading: false,
   }),
@@ -52,12 +53,12 @@ const renderWithProviders = (component) => {
 };
 
 describe('MainNavActions Mobile Display', () => {
-  const mockOnOpenAuth = jest.fn();
-  const mockOnOpenCart = jest.fn();
-  const mockOnOpenSearch = jest.fn();
+  const mockOnOpenAuth = vi.fn();
+  const mockOnOpenCart = vi.fn();
+  const mockOnOpenSearch = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockCartCount = 3;
     mockAuthState = {
       isAuthenticated: false,
@@ -71,7 +72,7 @@ describe('MainNavActions Mobile Display', () => {
       <MainNavActions
         onOpenAuth={mockOnOpenAuth}
         onOpenCart={mockOnOpenCart}
-        onToggleMobileMenu={jest.fn()}
+        onToggleMobileMenu={vi.fn()}
         isMobile={false}
       />
     );
@@ -110,7 +111,7 @@ describe('MainNavActions Mobile Display', () => {
       <MainNavActions
         onOpenAuth={mockOnOpenAuth}
         onOpenCart={mockOnOpenCart}
-        onToggleMobileMenu={jest.fn()}
+        onToggleMobileMenu={vi.fn()}
         isMobile={true}
       />
     );
@@ -125,7 +126,7 @@ describe('MainNavActions Mobile Display', () => {
       <MainNavActions
         onOpenAuth={mockOnOpenAuth}
         onOpenCart={mockOnOpenCart}
-        onToggleMobileMenu={jest.fn()}
+        onToggleMobileMenu={vi.fn()}
         isMobile={false}
       />
     );
@@ -137,12 +138,12 @@ describe('MainNavActions Mobile Display', () => {
 });
 
 describe('MainNavActions Button Clicks', () => {
-  const mockOnOpenAuth = jest.fn();
-  const mockOnOpenCart = jest.fn();
-  const mockOnToggleMobileMenu = jest.fn();
+  const mockOnOpenAuth = vi.fn();
+  const mockOnOpenCart = vi.fn();
+  const mockOnToggleMobileMenu = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockCartCount = 3;
     mockAuthState = {
       isAuthenticated: false,
@@ -207,12 +208,12 @@ describe('MainNavActions Button Clicks', () => {
 });
 
 describe('MainNavActions Authenticated User', () => {
-  const mockOnOpenAuth = jest.fn();
-  const mockOnOpenCart = jest.fn();
-  const mockOnToggleMobileMenu = jest.fn();
+  const mockOnOpenAuth = vi.fn();
+  const mockOnOpenCart = vi.fn();
+  const mockOnToggleMobileMenu = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockNavigate.mockClear();
     mockLogout.mockClear();
     mockCartCount = 3;
@@ -384,11 +385,11 @@ describe('MainNavActions Authenticated User', () => {
 });
 
 describe('MainNavActions Cart Visibility', () => {
-  const mockOnOpenAuth = jest.fn();
-  const mockOnOpenCart = jest.fn();
+  const mockOnOpenAuth = vi.fn();
+  const mockOnOpenCart = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockAuthState = {
       isAuthenticated: false,
       user: null,

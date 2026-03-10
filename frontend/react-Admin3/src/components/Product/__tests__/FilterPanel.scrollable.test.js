@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * FilterPanel Scrollable Behavior Tests
  *
@@ -15,7 +16,7 @@ import FilterPanel from '../FilterPanel';
 
 // Mock scrollIntoView (not natively supported in jsdom)
 beforeEach(() => {
-  Element.prototype.scrollIntoView = jest.fn();
+  Element.prototype.scrollIntoView = vi.fn();
 
   // Mock products API with 20+ subjects for scrollable lists
   mockProductsApi({
@@ -42,7 +43,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  jest.restoreAllMocks();
+  vi.restoreAllMocks();
 });
 
 /**

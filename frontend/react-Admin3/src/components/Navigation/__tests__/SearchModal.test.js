@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for SearchModal Component
  * T022: Test open/close, search input, submit with Redux
@@ -9,15 +10,15 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import SearchModal from '../SearchModal';
 
 // Mock react-router-dom
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
   __esModule: true,
   useNavigate: () => mockNavigate,
   useLocation: () => ({ pathname: '/', search: '', hash: '', state: null }),
 }));
 
 // Mock SearchBox component
-jest.mock('../../SearchBox', () => {
+vi.mock('../../SearchBox', () => {
   return function MockSearchBox({ onSearchResults, onShowMatchingProducts, autoFocus, placeholder }) {
     return (
       <div data-testid="search-box">
@@ -40,7 +41,7 @@ jest.mock('../../SearchBox', () => {
 });
 
 // Mock SearchResults component
-jest.mock('../../SearchResults', () => {
+vi.mock('../../SearchResults', () => {
   return function MockSearchResults({ searchResults, onShowMatchingProducts, loading, error }) {
     return (
       <div data-testid="search-results">
@@ -64,10 +65,10 @@ jest.mock('../../SearchResults', () => {
 const theme = createTheme();
 
 describe('SearchModal', () => {
-  const mockOnClose = jest.fn();
+  const mockOnClose = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     document.body.style.overflow = '';
     document.body.classList.remove('mui-fixed');
   });
@@ -188,7 +189,7 @@ describe('SearchModal', () => {
 
   describe('keyboard shortcuts', () => {
     test('Escape listener added when modal opens', () => {
-      const addEventListenerSpy = jest.spyOn(document, 'addEventListener');
+      const addEventListenerSpy = vi.spyOn(document, 'addEventListener');
 
       renderModal();
 
@@ -198,7 +199,7 @@ describe('SearchModal', () => {
     });
 
     test('Escape listener removed on unmount', () => {
-      const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener');
+      const removeEventListenerSpy = vi.spyOn(document, 'removeEventListener');
 
       const { unmount } = renderModal();
       unmount();

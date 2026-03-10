@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/Product/ProductCard/__tests__/BundleCard.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
@@ -5,17 +6,17 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import BundleCard from '../BundleCard';
 
 // Mock bundleService
-jest.mock('../../../../services/bundleService', () => ({
+vi.mock('../../../../services/bundleService', () => ({
   __esModule: true,
   default: {
-    getBundleContents: jest.fn(),
-    processBundleForCart: jest.fn(),
+    getBundleContents: vi.fn(),
+    processBundleForCart: vi.fn(),
   },
 }));
 
 // Mock CartContext
-const mockAddToCart = jest.fn().mockResolvedValue({});
-jest.mock('../../../../contexts/CartContext', () => ({
+const mockAddToCart = vi.fn().mockResolvedValue({});
+vi.mock('../../../../contexts/CartContext', () => ({
   useCart: () => ({
     addToCart: mockAddToCart,
     cartItems: [],
@@ -78,7 +79,7 @@ const mockBundleContents = {
 const renderComponent = async (props = {}) => {
   const defaultProps = {
     bundle: mockBundle,
-    onAddToCart: jest.fn(),
+    onAddToCart: vi.fn(),
   };
 
   let result;
@@ -100,7 +101,7 @@ const renderComponent = async (props = {}) => {
 
 describe('BundleCard', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     bundleService.getBundleContents.mockResolvedValue({
       success: true,
       data: mockBundleContents,
@@ -170,7 +171,7 @@ describe('BundleCard', () => {
       await act(async () => {
         render(
           <ThemeProvider theme={theme}>
-            <BundleCard bundle={mockBundle} onAddToCart={jest.fn()} />
+            <BundleCard bundle={mockBundle} onAddToCart={vi.fn()} />
           </ThemeProvider>
         );
       });
@@ -369,7 +370,7 @@ describe('BundleCard', () => {
     });
 
     test('handles error when adding to cart fails', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       bundleService.processBundleForCart.mockRejectedValue(new Error('Cart error'));
 
       await renderComponent();

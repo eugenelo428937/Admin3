@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for searchService
  *
@@ -10,17 +11,17 @@
  * - debounce: Utility debounce function
  */
 
-jest.mock('../httpService', () => ({
+vi.mock('../httpService', () => ({
   __esModule: true,
   default: {
-    get: jest.fn(),
-    post: jest.fn(),
-    put: jest.fn(),
-    delete: jest.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
-jest.mock('../../config', () => ({
+vi.mock('../../config', () => ({
   __esModule: true,
   default: {
     productsUrl: 'http://test-api/products',
@@ -34,8 +35,8 @@ import httpService from '../httpService';
 
 describe('searchService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -586,79 +587,79 @@ describe('searchService', () => {
 
   describe('debounce', () => {
     beforeEach(() => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
     });
 
     afterEach(() => {
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     test('should delay function execution', () => {
-      const mockFn = jest.fn();
+      const mockFn = vi.fn();
       const debouncedFn = searchService.debounce(mockFn, 300);
 
       debouncedFn('arg1');
 
       expect(mockFn).not.toHaveBeenCalled();
 
-      jest.advanceTimersByTime(300);
+      vi.advanceTimersByTime(300);
 
       expect(mockFn).toHaveBeenCalledWith('arg1');
       expect(mockFn).toHaveBeenCalledTimes(1);
     });
 
     test('should cancel previous call when called again within wait period', () => {
-      const mockFn = jest.fn();
+      const mockFn = vi.fn();
       const debouncedFn = searchService.debounce(mockFn, 300);
 
       debouncedFn('first');
-      jest.advanceTimersByTime(100);
+      vi.advanceTimersByTime(100);
 
       debouncedFn('second');
-      jest.advanceTimersByTime(100);
+      vi.advanceTimersByTime(100);
 
       debouncedFn('third');
-      jest.advanceTimersByTime(300);
+      vi.advanceTimersByTime(300);
 
       expect(mockFn).toHaveBeenCalledTimes(1);
       expect(mockFn).toHaveBeenCalledWith('third');
     });
 
     test('should pass multiple arguments', () => {
-      const mockFn = jest.fn();
+      const mockFn = vi.fn();
       const debouncedFn = searchService.debounce(mockFn, 100);
 
       debouncedFn('arg1', 'arg2', { key: 'value' });
 
-      jest.advanceTimersByTime(100);
+      vi.advanceTimersByTime(100);
 
       expect(mockFn).toHaveBeenCalledWith('arg1', 'arg2', { key: 'value' });
     });
 
     test('should allow multiple executions with sufficient delay', () => {
-      const mockFn = jest.fn();
+      const mockFn = vi.fn();
       const debouncedFn = searchService.debounce(mockFn, 100);
 
       debouncedFn('first');
-      jest.advanceTimersByTime(100);
+      vi.advanceTimersByTime(100);
 
       expect(mockFn).toHaveBeenCalledTimes(1);
 
       debouncedFn('second');
-      jest.advanceTimersByTime(100);
+      vi.advanceTimersByTime(100);
 
       expect(mockFn).toHaveBeenCalledTimes(2);
       expect(mockFn).toHaveBeenLastCalledWith('second');
     });
 
     test('should handle zero wait time', () => {
-      const mockFn = jest.fn();
+      const mockFn = vi.fn();
       const debouncedFn = searchService.debounce(mockFn, 0);
 
       debouncedFn('test');
 
       // Even with 0 wait, setTimeout still runs asynchronously
-      jest.advanceTimersByTime(0);
+      vi.advanceTimersByTime(0);
 
       expect(mockFn).toHaveBeenCalledWith('test');
     });

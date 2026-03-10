@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for ProductContext
  *
@@ -5,13 +6,13 @@
  */
 
 // MUST be before imports to override setupTests.js global mock
-jest.unmock('../ProductContext');
+vi.unmock('../ProductContext');
 
 // Mock productService
-jest.mock('../../services/productService', () => ({
+vi.mock('../../services/productService', () => ({
   __esModule: true,
   default: {
-    getAvailableProducts: jest.fn(),
+    getAvailableProducts: vi.fn(),
   },
 }));
 
@@ -22,7 +23,7 @@ import productService from '../../services/productService';
 
 describe('ProductContext', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('ProductProvider', () => {
@@ -228,7 +229,7 @@ describe('ProductContext', () => {
   describe('useProduct hook', () => {
     test('should throw error when used outside ProductProvider', () => {
       // Suppress console.error for this test
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const TestComponent = () => {
         useProduct();
@@ -271,7 +272,7 @@ describe('ProductContext', () => {
   describe('useProducts hook', () => {
     test('should throw error when used outside ProductProvider', () => {
       // Suppress console.error for this test
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const TestComponent = () => {
         useProducts();

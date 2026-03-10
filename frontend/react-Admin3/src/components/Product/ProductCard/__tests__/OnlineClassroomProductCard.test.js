@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/Product/ProductCard/__tests__/OnlineClassroomProductCard.test.js
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
@@ -5,7 +6,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import OnlineClassroomProductCard from '../OnlineClassroomProductCard';
 
 // Mock useCart
-jest.mock('../../../../contexts/CartContext', () => ({
+vi.mock('../../../../contexts/CartContext', () => ({
   useCart: () => ({
     cartData: {
       id: 'cart-123',
@@ -52,7 +53,7 @@ const mockProduct = {
 const renderComponent = async (props = {}) => {
   const defaultProps = {
     product: mockProduct,
-    onAddToCart: jest.fn(),
+    onAddToCart: vi.fn(),
   };
 
   let result;
@@ -214,7 +215,7 @@ describe('OnlineClassroomProductCard', () => {
 
   describe('add to cart', () => {
     test('calls onAddToCart with correct context when clicked', async () => {
-      const mockOnAddToCart = jest.fn();
+      const mockOnAddToCart = vi.fn();
       await renderComponent({ onAddToCart: mockOnAddToCart });
 
       const addButton = screen.getByRole('button', { name: '' });
@@ -238,7 +239,7 @@ describe('OnlineClassroomProductCard', () => {
     });
 
     test('passes selected price type to onAddToCart', async () => {
-      const mockOnAddToCart = jest.fn();
+      const mockOnAddToCart = vi.fn();
       await renderComponent({ onAddToCart: mockOnAddToCart });
 
       // Select retaker discount
@@ -263,7 +264,7 @@ describe('OnlineClassroomProductCard', () => {
 
     test('does not call onAddToCart when no variation selected', async () => {
       const productNoVariations = { ...mockProduct, variations: [] };
-      const mockOnAddToCart = jest.fn();
+      const mockOnAddToCart = vi.fn();
       await renderComponent({ product: productNoVariations, onAddToCart: mockOnAddToCart });
 
       const addButton = screen.getByRole('button', { name: '' });

@@ -1,44 +1,45 @@
+import { vi } from 'vitest';
 // Mock httpService before importing anything else
-jest.mock('../../../services/httpService', () => ({
-  get: jest.fn(),
-  post: jest.fn(),
+vi.mock('../../../services/httpService', () => ({
+  get: vi.fn(),
+  post: vi.fn(),
 }));
 
 // Define mockNavigate before the mock
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 
 // Mock react-router-dom before importing
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
   BrowserRouter: ({ children }) => children,
   Link: ({ children }) => children,
-  useLocation: jest.fn(() => ({ pathname: '/', search: '', hash: '', state: null })),
-  useParams: jest.fn(() => ({}))
+  useLocation: vi.fn(() => ({ pathname: '/', search: '', hash: '', state: null })),
+  useParams: vi.fn(() => ({}))
 }));
 
 // Mock useAuth before importing
-jest.mock('../../../hooks/useAuth', () => ({
-  useAuth: jest.fn()
+vi.mock('../../../hooks/useAuth', () => ({
+  useAuth: vi.fn()
 }));
 
 // Mock cartService before importing
-jest.mock('../../../services/cartService', () => ({
+vi.mock('../../../services/cartService', () => ({
   __esModule: true,
   default: {
-    getCart: jest.fn(),
-    addToCart: jest.fn(),
-    updateCartItem: jest.fn(),
-    removeFromCart: jest.fn()
+    getCart: vi.fn(),
+    addToCart: vi.fn(),
+    updateCartItem: vi.fn(),
+    removeFromCart: vi.fn()
   }
 }));
 
 // Mock useCart hook
-const mockRemoveFromCart = jest.fn();
-const mockClearCart = jest.fn();
+const mockRemoveFromCart = vi.fn();
+const mockClearCart = vi.fn();
 let mockCartItems = [];
 let mockCartData = { fees: [], items: [] };
 
-jest.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext', () => ({
   useCart: () => ({
     cartItems: mockCartItems,
     cartData: mockCartData,
@@ -48,10 +49,10 @@ jest.mock('../../../contexts/CartContext', () => ({
 }));
 
 // Mock TutorialChoiceContext
-const mockRestoreChoicesToDraft = jest.fn();
-const mockRemoveAllChoices = jest.fn();
+const mockRestoreChoicesToDraft = vi.fn();
+const mockRemoveAllChoices = vi.fn();
 
-jest.mock('../../../contexts/TutorialChoiceContext', () => ({
+vi.mock('../../../contexts/TutorialChoiceContext', () => ({
   useTutorialChoice: () => ({
     removeAllChoices: mockRemoveAllChoices,
     restoreChoicesToDraft: mockRestoreChoicesToDraft,
@@ -66,11 +67,11 @@ import { useAuth } from '../../../hooks/useAuth';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock dependencies
-jest.mock('../../../utils/productCodeGenerator', () => ({
-  generateProductCode: jest.fn(() => 'MOCK-CODE')
+vi.mock('../../../utils/productCodeGenerator', () => ({
+  generateProductCode: vi.fn(() => 'MOCK-CODE')
 }));
-jest.mock('../../../utils/vatUtils', () => ({
-  formatVatLabel: jest.fn(() => 'VAT')
+vi.mock('../../../utils/vatUtils', () => ({
+  formatVatLabel: vi.fn(() => 'VAT')
 }));
 
 describe('CartPanel Tutorial Item Removal (T022)', () => {
@@ -85,7 +86,7 @@ describe('CartPanel Tutorial Item Removal (T022)', () => {
     mockCartItems = [];
     mockCartData = { fees: [], items: [] };
 
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const renderCartPanel = (cartItems = []) => {
@@ -96,7 +97,7 @@ describe('CartPanel Tutorial Item Removal (T022)', () => {
 
     return render(
       <BrowserRouter>
-        <CartPanel show={true} handleClose={jest.fn()} />
+        <CartPanel show={true} handleClose={vi.fn()} />
       </BrowserRouter>
     );
   };

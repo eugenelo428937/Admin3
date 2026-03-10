@@ -1,11 +1,12 @@
+import { vi } from 'vitest';
 // Remove global mocks from setupTests.js so we can test with real contexts
-jest.unmock('../../../../../contexts/TutorialChoiceContext');
-jest.unmock('../../../../../contexts/CartContext');
+vi.unmock('../../../../../contexts/TutorialChoiceContext');
+vi.unmock('../../../../../contexts/CartContext');
 
 // Mock httpService before importing anything else
-jest.mock('../../../../../services/httpService', () => ({
-  get: jest.fn(),
-  post: jest.fn(),
+vi.mock('../../../../../services/httpService', () => ({
+  get: vi.fn(),
+  post: vi.fn(),
 }));
 
 import React from 'react';
@@ -16,8 +17,8 @@ import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceCo
 import { CartProvider } from '../../../../../contexts/CartContext';
 
 // Mock tutorial service
-jest.mock('../../../../../services/tutorialService', () => ({
-  getTutorialVariations: jest.fn(() => Promise.resolve([]))
+vi.mock('../../../../../services/tutorialService', () => ({
+  getTutorialVariations: vi.fn(() => Promise.resolve([]))
 }));
 
 // Helper to get SpeedDialAction button by label (tooltipOpen creates duplicate labels)
@@ -71,7 +72,7 @@ describe('TutorialProductCard Integration with Epic 2 Components', () => {
   ];
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     localStorage.clear();
   });
 

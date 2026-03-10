@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * FilterPanel Component Tests
  * 
@@ -20,23 +21,26 @@ import FilterPanel from './FilterPanel';
 import { expectNoA11yViolations, wcag21AAConfig } from '../../test-utils/accessibilityHelpers';
 
 // Mock Material-UI's useMediaQuery
-jest.mock('@mui/material/useMediaQuery');
+vi.mock('@mui/material/useMediaQuery');
 
 // Mock react-router-dom
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 const mockLocation = { search: '' };
 
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockNavigate,
     useLocation: () => mockLocation,
 }));
 
 // Mock Redux actions
-const mockDispatch = jest.fn();
-jest.mock('react-redux', () => ({
-    ...jest.requireActual('react-redux'),
-    useDispatch: () => mockDispatch,
-}));
+const mockDispatch = vi.fn();
+vi.mock('react-redux', async () => {
+    const actual = await vi.importActual('react-redux');
+    return {
+        ...actual,
+        useDispatch: () => mockDispatch,
+    };
+});
 
 // Test store setup
 const createTestStore = (initialState = {}) => {
@@ -113,9 +117,9 @@ const mockFilterCounts = {
 
 describe('FilterPanel Component', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
         // Mock useMediaQuery to return desktop by default
-        require('@mui/material/useMediaQuery').default = jest.fn(() => false);
+        require('@mui/material/useMediaQuery').default = vi.fn(() => false);
     });
 
     describe('Rendering and Initial State', () => {
@@ -143,7 +147,7 @@ describe('FilterPanel Component', () => {
 
         test('renders mobile filter panel button when isMobile is true', () => {
             // Mock mobile view
-            require('@mui/material/useMediaQuery').default = jest.fn(() => true);
+            require('@mui/material/useMediaQuery').default = vi.fn(() => true);
             
             renderWithProviders(<FilterPanel />);
             
@@ -322,7 +326,7 @@ describe('FilterPanel Component', () => {
     describe('Mobile Drawer Functionality', () => {
         beforeEach(() => {
             // Mock mobile view
-            require('@mui/material/useMediaQuery').default = jest.fn(() => true);
+            require('@mui/material/useMediaQuery').default = vi.fn(() => true);
         });
 
         test('opens drawer when filter button is clicked on mobile', async () => {

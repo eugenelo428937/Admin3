@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
@@ -16,13 +17,13 @@ const renderWithTheme = (ui, options = {}) => {
 };
 
 // Mock the rules engine service
-jest.mock('../../../services/rulesEngineService', () => {
-  const mockExecuteRules = jest.fn().mockResolvedValue({
+vi.mock('../../../services/rulesEngineService', () => {
+  const mockExecuteRules = vi.fn().mockResolvedValue({
     messages: [],
     effects: [],
     blocked: false
   });
-  const mockAcknowledgeRule = jest.fn().mockResolvedValue({ success: true });
+  const mockAcknowledgeRule = vi.fn().mockResolvedValue({ success: true });
   const MOCK_ENTRY_POINTS = {
     CHECKOUT_START: 'checkout_start',
     CHECKOUT_TERMS: 'checkout_terms',
@@ -44,40 +45,40 @@ jest.mock('../../../services/rulesEngineService', () => {
 });
 
 // Mock useAuth hook
-jest.mock('../../../hooks/useAuth');
+vi.mock('../../../hooks/useAuth');
 
 // Mock httpService
-jest.mock('../../../services/httpService', () => ({
-  post: jest.fn(),
-  get: jest.fn(),
+vi.mock('../../../services/httpService', () => ({
+  post: vi.fn(),
+  get: vi.fn(),
 }));
 
 // Mock config
-jest.mock('../../../config', () => ({
+vi.mock('../../../config', () => ({
   API_BASE_URL: 'http://localhost:8888'
 }));
 
 // Mock useCart hook
-jest.mock('../../../contexts/CartContext', () => ({
-  useCart: jest.fn()
+vi.mock('../../../contexts/CartContext', () => ({
+  useCart: vi.fn()
 }));
 
 // Mock userService
-jest.mock('../../../services/userService', () => ({
+vi.mock('../../../services/userService', () => ({
   __esModule: true,
   default: {
-    getProfile: jest.fn().mockResolvedValue({ data: {} }),
-    updateProfile: jest.fn().mockResolvedValue({ data: {} })
+    getProfile: vi.fn().mockResolvedValue({ data: {} }),
+    updateProfile: vi.fn().mockResolvedValue({ data: {} })
   }
 }));
 
 // Mock useCheckoutValidation hook
-jest.mock('../../../hooks/useCheckoutValidation', () => ({
+vi.mock('../../../hooks/useCheckoutValidation', () => ({
   __esModule: true,
   default: () => ({
     isValid: true,
     errors: {},
-    validateStep: jest.fn().mockReturnValue(true)
+    validateStep: vi.fn().mockReturnValue(true)
   })
 }));
 
@@ -94,7 +95,7 @@ const mockCartItems = [
 
 describe('CheckoutSteps', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Mock useAuth hook
     useAuth.mockReturnValue({
@@ -118,7 +119,7 @@ describe('CheckoutSteps', () => {
   });
 
   it('should call rules engine with checkout_start entry point when component mounts', async () => {
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
 
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -181,7 +182,7 @@ describe('CheckoutSteps', () => {
       blocked: false
     });
 
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
     
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -225,7 +226,7 @@ describe('CheckoutSteps', () => {
       blocked: false
     });
 
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
     
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -279,7 +280,7 @@ describe('CheckoutSteps', () => {
       blocked: false
     });
 
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
     
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 
@@ -324,7 +325,7 @@ describe('CheckoutSteps', () => {
       blocked: false
     });
 
-    const mockOnComplete = jest.fn();
+    const mockOnComplete = vi.fn();
     
     renderWithTheme(<CheckoutSteps onComplete={mockOnComplete} />);
 

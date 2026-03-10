@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for useCheckoutRulesEngine hook
  */
@@ -6,14 +7,14 @@ import { renderHook, waitFor, act } from '@testing-library/react';
 import useCheckoutRulesEngine from '../useCheckoutRulesEngine';
 
 // Mock dependencies
-jest.mock('../../utils/rulesEngineUtils', () => ({
+vi.mock('../../utils/rulesEngineUtils', () => ({
   rulesEngineHelpers: {
-    executeCheckoutTerms: jest.fn()
+    executeCheckoutTerms: vi.fn()
   },
-  buildRulesContext: jest.fn()
+  buildRulesContext: vi.fn()
 }));
 
-jest.mock('../../services/rulesEngineService', () => ({
+vi.mock('../../services/rulesEngineService', () => ({
   __esModule: true,
   default: {}
 }));
@@ -25,12 +26,12 @@ describe('useCheckoutRulesEngine', () => {
   const mockCartItems = [{ id: 1, product_id: 72, quantity: 1 }];
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('initial state', () => {

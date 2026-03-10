@@ -1,20 +1,21 @@
+import { vi } from 'vitest';
 /**
  * Unit Tests for AccountActivation Redirect to Products
  * Tests that successful account activation redirects to /products page
  */
 
 // Mock react-router-dom before importing
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 const mockSearchParams = new URLSearchParams();
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
   useSearchParams: () => [mockSearchParams],
   BrowserRouter: ({ children }) => children
 }));
 
 // Mock authService
-const mockActivateAccount = jest.fn();
-jest.mock('../../../services/authService', () => ({
+const mockActivateAccount = vi.fn();
+vi.mock('../../../services/authService', () => ({
   __esModule: true,
   default: {
     activateAccount: (...args) => mockActivateAccount(...args)
@@ -28,7 +29,7 @@ import AccountActivation from '../AccountActivation';
 
 describe('AccountActivation Redirect to Products', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockSearchParams.set('uid', 'test-uid-123');
     mockSearchParams.set('token', 'test-token-456');
   });

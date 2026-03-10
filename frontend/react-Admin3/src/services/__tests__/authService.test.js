@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for authService
  *
@@ -5,30 +6,30 @@
  */
 
 // MUST be before imports to override setupTests.js global mock
-jest.unmock('../authService');
+vi.unmock('../authService');
 
 // Mock dependencies BEFORE imports
-jest.mock('../httpService', () => ({
+vi.mock('../httpService', () => ({
   __esModule: true,
   default: {
-    get: jest.fn(),
-    post: jest.fn(),
-    put: jest.fn(),
-    delete: jest.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
-jest.mock('../loggerService', () => ({
+vi.mock('../loggerService', () => ({
   __esModule: true,
   default: {
-    debug: jest.fn(),
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
   },
 }));
 
-jest.mock('../../config', () => ({
+vi.mock('../../config', () => ({
   __esModule: true,
   default: {
     authUrl: '/api/auth',
@@ -42,7 +43,7 @@ import logger from '../loggerService';
 
 describe('authService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     localStorage.clear();
   });
 
@@ -265,7 +266,7 @@ describe('authService', () => {
       // Catch block's removeItem calls should work normally
       const originalRemoveItem = localStorage.removeItem.bind(localStorage);
       let callCount = 0;
-      jest.spyOn(Storage.prototype, 'removeItem').mockImplementation((key) => {
+      vi.spyOn(Storage.prototype, 'removeItem').mockImplementation((key) => {
         callCount++;
         if (callCount === 1) {
           // First call (line 153) throws, triggering catch block

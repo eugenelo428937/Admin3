@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Phase 8 VAT Display - End-to-End Tests
  *
@@ -19,11 +20,11 @@ import MaterialProductCard from '../../components/Product/ProductCard/MaterialPr
 describe.skip('Phase 8 VAT Display - End-to-End', () => {
   beforeEach(() => {
     // Mock API responses
-    global.fetch = jest.fn();
+    global.fetch = vi.fn();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('CartSummaryPanel - VAT Display', () => {
@@ -312,7 +313,7 @@ describe.skip('Phase 8 VAT Display - End-to-End', () => {
       render(
         <MaterialProductCard
           product={mockProduct}
-          onAddToCart={jest.fn()}
+          onAddToCart={vi.fn()}
         />
       );
 
@@ -347,7 +348,7 @@ describe.skip('Phase 8 VAT Display - End-to-End', () => {
       render(
         <MaterialProductCard
           product={mockProduct}
-          onAddToCart={jest.fn()}
+          onAddToCart={vi.fn()}
         />
       );
 
@@ -379,7 +380,7 @@ describe.skip('Phase 8 VAT Display - End-to-End', () => {
       render(
         <MaterialProductCard
           product={mockProduct}
-          onAddToCart={jest.fn()}
+          onAddToCart={vi.fn()}
         />
       );
 

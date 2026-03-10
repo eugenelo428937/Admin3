@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Performance Test for URL Sync Middleware (Story 1.1)
  *
@@ -9,7 +10,7 @@ import filtersReducer, { setSubjects, setCategories, setProductTypes } from '../
 import { urlSyncMiddleware } from '../urlSyncMiddleware';
 
 // Mock window.history
-const mockReplaceState = jest.fn();
+const mockReplaceState = vi.fn();
 Object.defineProperty(window, 'history', {
   value: {
     replaceState: mockReplaceState,
@@ -21,7 +22,7 @@ describe('URL Sync Middleware - Performance (Story 1.1)', () => {
   let store;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Create store with middleware
     store = configureStore({

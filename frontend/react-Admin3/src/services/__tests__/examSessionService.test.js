@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for examSessionService
  *
@@ -16,10 +17,10 @@ describe('examSessionService', () => {
   let httpService;
 
   beforeEach(() => {
-    jest.resetModules();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.resetModules();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    jest.doMock('../../config', () => ({
+    vi.doMock('../../config', () => ({
       __esModule: true,
       default: {
         examSessionUrl: 'http://test-api/exam-sessions',
@@ -27,13 +28,13 @@ describe('examSessionService', () => {
       },
     }));
 
-    jest.doMock('../httpService', () => ({
+    vi.doMock('../httpService', () => ({
       __esModule: true,
       default: {
-        get: jest.fn(),
-        post: jest.fn(),
-        put: jest.fn(),
-        delete: jest.fn(),
+        get: vi.fn(),
+        post: vi.fn(),
+        put: vi.fn(),
+        delete: vi.fn(),
       },
     }));
 
@@ -42,8 +43,8 @@ describe('examSessionService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('getAll', () => {

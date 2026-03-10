@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/User/__tests__/OrderHistory.test.js
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -5,16 +6,16 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import OrderHistory from '../OrderHistory';
 
 // Mock cartService
-jest.mock('../../../services/cartService', () => ({
+vi.mock('../../../services/cartService', () => ({
   __esModule: true,
   default: {
-    fetchOrders: jest.fn(),
+    fetchOrders: vi.fn(),
   },
 }));
 
 // Mock productCodeGenerator
-jest.mock('../../../utils/productCodeGenerator', () => ({
-  generateProductCode: jest.fn((item) => `CODE-${item.id || '001'}`),
+vi.mock('../../../utils/productCodeGenerator', () => ({
+  generateProductCode: vi.fn((item) => `CODE-${item.id || '001'}`),
 }));
 
 import cartService from '../../../services/cartService';
@@ -31,7 +32,7 @@ const renderComponent = () => {
 
 describe('OrderHistory', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('loading state', () => {

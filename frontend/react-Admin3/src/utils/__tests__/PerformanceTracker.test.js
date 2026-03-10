@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Contract Tests for PerformanceTracker Utility Class (Story 1.15)
  *
@@ -350,7 +351,7 @@ describe('PerformanceTracker', () => {
     let consoleWarnSpy;
 
     beforeEach(() => {
-      consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation();
     });
 
     afterEach(() => {

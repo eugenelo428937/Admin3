@@ -1,13 +1,14 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
 import SessionBundlesSummary from '../SessionBundlesSummary';
 
-jest.mock('../../../../services/storeBundleService', () => ({
+vi.mock('../../../../services/storeBundleService', () => ({
   __esModule: true,
   default: {
-    adminList: jest.fn(),
+    adminList: vi.fn(),
   },
 }));
 
@@ -29,7 +30,7 @@ const mockBundles = [
 
 describe('SessionBundlesSummary', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('fetches bundles with session filter and renders table', async () => {

@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -30,9 +31,9 @@ const mockSuggestedAddress = {
 
 describe('AddressComparisonModal', () => {
   it('renders both addresses when open', () => {
-    const onAccept = jest.fn();
-    const onKeepOriginal = jest.fn();
-    const onClose = jest.fn();
+    const onAccept = vi.fn();
+    const onKeepOriginal = vi.fn();
+    const onClose = vi.fn();
 
     renderWithTheme(
       <AddressComparisonModal
@@ -53,9 +54,9 @@ describe('AddressComparisonModal', () => {
   });
 
   it('calls onAcceptSuggested when user clicks accept button', () => {
-    const onAccept = jest.fn();
-    const onKeepOriginal = jest.fn();
-    const onClose = jest.fn();
+    const onAccept = vi.fn();
+    const onKeepOriginal = vi.fn();
+    const onClose = vi.fn();
 
     renderWithTheme(
       <AddressComparisonModal
@@ -73,9 +74,9 @@ describe('AddressComparisonModal', () => {
   });
 
   it('calls onKeepOriginal when user clicks keep my address button', () => {
-    const onAccept = jest.fn();
-    const onKeepOriginal = jest.fn();
-    const onClose = jest.fn();
+    const onAccept = vi.fn();
+    const onKeepOriginal = vi.fn();
+    const onClose = vi.fn();
 
     renderWithTheme(
       <AddressComparisonModal
@@ -98,9 +99,9 @@ describe('AddressComparisonModal', () => {
         open={false}
         userAddress={mockUserAddress}
         suggestedAddress={mockSuggestedAddress}
-        onAcceptSuggested={jest.fn()}
-        onKeepOriginal={jest.fn()}
-        onClose={jest.fn()}
+        onAcceptSuggested={vi.fn()}
+        onKeepOriginal={vi.fn()}
+        onClose={vi.fn()}
       />
     );
 
@@ -113,9 +114,9 @@ describe('AddressComparisonModal', () => {
         open={true}
         userAddress={mockUserAddress}
         suggestedAddress={mockSuggestedAddress}
-        onAcceptSuggested={jest.fn()}
-        onKeepOriginal={jest.fn()}
-        onClose={jest.fn()}
+        onAcceptSuggested={vi.fn()}
+        onKeepOriginal={vi.fn()}
+        onClose={vi.fn()}
       />
     );
 

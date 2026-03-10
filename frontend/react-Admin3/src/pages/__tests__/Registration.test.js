@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for Registration Page Component
  * T014: Test form render, success/error states, authentication redirect
@@ -9,15 +10,15 @@ import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../theme/theme';
 
 // Create mockNavigate at module level
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 
 // Override useNavigate from the global mock in setupTests.js
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   __esModule: true,
   useNavigate: () => mockNavigate,
   useLocation: () => ({ pathname: '/register', search: '', hash: '', state: null }),
   useParams: () => ({}),
-  useSearchParams: () => [new URLSearchParams(), jest.fn()],
+  useSearchParams: () => [new URLSearchParams(), vi.fn()],
   MemoryRouter: ({ children }) => children,
   BrowserRouter: ({ children }) => children,
   Link: ({ children, to }) => <a href={to}>{children}</a>,
@@ -29,13 +30,13 @@ jest.mock('react-router-dom', () => ({
 }));
 
 // Mock useAuth hook
-const mockUseAuth = jest.fn();
-jest.mock('../../hooks/useAuth', () => ({
+const mockUseAuth = vi.fn();
+vi.mock('../../hooks/useAuth', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
 // Mock UserFormWizard
-jest.mock('../../components/User/UserFormWizard', () => {
+vi.mock('../../components/User/UserFormWizard', () => {
   return function MockUserFormWizard({ onSuccess, onError, onSwitchToLogin }) {
     return (
       <div data-testid="user-form-wizard">
@@ -66,7 +67,7 @@ import Registration from '../Registration';
 
 describe('Registration Page', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockUseAuth.mockReturnValue({ isAuthenticated: false });
   });
 
