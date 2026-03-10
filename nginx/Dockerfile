@@ -31,8 +31,10 @@ RUN apk add --no-cache openssl
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
 
 # Copy certificate generator (runs on container startup)
+# sed strips Windows CRLF line endings that break #!/bin/sh on Linux
 COPY nginx/generate-cert.sh /docker-entrypoint.d/40-generate-cert.sh
-RUN chmod +x /docker-entrypoint.d/40-generate-cert.sh
+RUN sed -i 's/\r$//' /docker-entrypoint.d/40-generate-cert.sh && \
+    chmod +x /docker-entrypoint.d/40-generate-cert.sh
 
 # Copy Vite build output (configured in vite.config.js: outDir: 'build')
 COPY --from=frontend-build /app/build /usr/share/nginx/html
