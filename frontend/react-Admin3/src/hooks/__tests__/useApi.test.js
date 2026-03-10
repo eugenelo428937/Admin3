@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for useApi hook
  *
@@ -16,7 +17,7 @@ import { useApi } from '../useApi';
 describe('useApi', () => {
   describe('initial state', () => {
     test('should return initial state with null data', () => {
-      const mockApiFunc = jest.fn();
+      const mockApiFunc = vi.fn();
       const { result } = renderHook(() => useApi(mockApiFunc));
 
       expect(result.current.data).toBeNull();
@@ -29,7 +30,7 @@ describe('useApi', () => {
   describe('execute', () => {
     test('should set loading to true while executing', async () => {
       let resolvePromise;
-      const mockApiFunc = jest.fn(() => new Promise(resolve => {
+      const mockApiFunc = vi.fn(() => new Promise(resolve => {
         resolvePromise = resolve;
       }));
 
@@ -49,7 +50,7 @@ describe('useApi', () => {
     });
 
     test('should call API function with provided arguments', async () => {
-      const mockApiFunc = jest.fn().mockResolvedValue({ data: 'result' });
+      const mockApiFunc = vi.fn().mockResolvedValue({ data: 'result' });
       const { result } = renderHook(() => useApi(mockApiFunc));
 
       await act(async () => {
@@ -61,7 +62,7 @@ describe('useApi', () => {
 
     test('should store response data on success', async () => {
       const mockData = { id: 1, name: 'Test' };
-      const mockApiFunc = jest.fn().mockResolvedValue({ data: mockData });
+      const mockApiFunc = vi.fn().mockResolvedValue({ data: mockData });
       const { result } = renderHook(() => useApi(mockApiFunc));
 
       await act(async () => {
@@ -74,7 +75,7 @@ describe('useApi', () => {
 
     test('should return response data from execute', async () => {
       const mockData = { id: 1, name: 'Test' };
-      const mockApiFunc = jest.fn().mockResolvedValue({ data: mockData });
+      const mockApiFunc = vi.fn().mockResolvedValue({ data: mockData });
       const { result } = renderHook(() => useApi(mockApiFunc));
 
       let returnedData;
@@ -86,7 +87,7 @@ describe('useApi', () => {
     });
 
     test('should clear previous error on new execution', async () => {
-      const mockApiFunc = jest.fn()
+      const mockApiFunc = vi.fn()
         .mockRejectedValueOnce({ response: { data: 'Error 1' } })
         .mockResolvedValueOnce({ data: 'success' });
 
@@ -116,7 +117,7 @@ describe('useApi', () => {
   describe('error handling', () => {
     test('should store error from response.data', async () => {
       const errorData = { message: 'Validation failed', code: 'INVALID' };
-      const mockApiFunc = jest.fn().mockRejectedValue({
+      const mockApiFunc = vi.fn().mockRejectedValue({
         response: { data: errorData }
       });
 
@@ -135,7 +136,7 @@ describe('useApi', () => {
     });
 
     test('should fall back to error message if no response data', async () => {
-      const mockApiFunc = jest.fn().mockRejectedValue(new Error('Network error'));
+      const mockApiFunc = vi.fn().mockRejectedValue(new Error('Network error'));
 
       const { result } = renderHook(() => useApi(mockApiFunc));
 
@@ -152,7 +153,7 @@ describe('useApi', () => {
 
     test('should rethrow error after storing it', async () => {
       const mockError = new Error('API failed');
-      const mockApiFunc = jest.fn().mockRejectedValue(mockError);
+      const mockApiFunc = vi.fn().mockRejectedValue(mockError);
 
       const { result } = renderHook(() => useApi(mockApiFunc));
 
@@ -164,7 +165,7 @@ describe('useApi', () => {
     });
 
     test('should set loading to false after error', async () => {
-      const mockApiFunc = jest.fn().mockRejectedValue(new Error('Failed'));
+      const mockApiFunc = vi.fn().mockRejectedValue(new Error('Failed'));
 
       const { result } = renderHook(() => useApi(mockApiFunc));
 
@@ -182,7 +183,7 @@ describe('useApi', () => {
 
   describe('memoization', () => {
     test('should maintain same execute function reference', () => {
-      const mockApiFunc = jest.fn();
+      const mockApiFunc = vi.fn();
       const { result, rerender } = renderHook(() => useApi(mockApiFunc));
 
       const firstExecute = result.current.execute;
@@ -193,8 +194,8 @@ describe('useApi', () => {
     });
 
     test('should update execute when apiFunc changes', () => {
-      const mockApiFunc1 = jest.fn();
-      const mockApiFunc2 = jest.fn();
+      const mockApiFunc1 = vi.fn();
+      const mockApiFunc2 = vi.fn();
 
       const { result, rerender } = renderHook(
         ({ apiFunc }) => useApi(apiFunc),
@@ -211,7 +212,7 @@ describe('useApi', () => {
 
   describe('multiple executions', () => {
     test('should handle sequential executions', async () => {
-      const mockApiFunc = jest.fn()
+      const mockApiFunc = vi.fn()
         .mockResolvedValueOnce({ data: 'first' })
         .mockResolvedValueOnce({ data: 'second' });
 

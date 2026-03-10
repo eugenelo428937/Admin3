@@ -1,13 +1,14 @@
+import { vi } from 'vitest';
 // src/components/Product/ProductCard/__tests__/MarkingVoucherProductCard.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 // Mock addVoucherToCart function
-const mockAddVoucherToCart = jest.fn().mockResolvedValue({});
+const mockAddVoucherToCart = vi.fn().mockResolvedValue({});
 
 // Mock CartContext
-jest.mock('../../../../contexts/CartContext', () => ({
+vi.mock('../../../../contexts/CartContext', () => ({
   __esModule: true,
   useCart: () => ({
     addVoucherToCart: mockAddVoucherToCart,
@@ -18,7 +19,7 @@ jest.mock('../../../../contexts/CartContext', () => ({
 }));
 
 // Mock Chakra UI components to avoid ESM module resolution issues
-jest.mock('@chakra-ui/react', () => {
+vi.mock('@chakra-ui/react', () => {
   const React = require('react');
   return {
     __esModule: true,
@@ -42,7 +43,7 @@ jest.mock('@chakra-ui/react', () => {
 });
 
 // Mock react-icons
-jest.mock('react-icons/lu', () => {
+vi.mock('react-icons/lu', () => {
   const React = require('react');
   return {
     __esModule: true,
@@ -358,7 +359,7 @@ describe('MarkingVoucherProductCard', () => {
     });
 
     test('handles add to cart error gracefully', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       mockAddVoucherToCart.mockRejectedValueOnce(new Error('Cart error'));
       await renderComponent();
 

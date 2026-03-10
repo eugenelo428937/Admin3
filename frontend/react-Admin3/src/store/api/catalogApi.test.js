@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Integration tests for catalogApi RTK Query service
  *
@@ -9,15 +10,15 @@ import { configureStore } from '@reduxjs/toolkit';
 import { catalogApi } from './catalogApi';
 
 // Mock fetch globally
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 // Mock localStorage
 const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
 };
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
@@ -517,7 +518,7 @@ describe('catalogApi', () => {
       window.location = { href: '' };
 
       // Mock console.error to suppress expected error log
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       // First call returns 401
       mockFetch.mockResolvedValueOnce(createMockResponse({ error: 'Unauthorized' }, 401));

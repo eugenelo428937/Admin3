@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for VATBreakdown Component
  * T018: Test render, calculations, formatting, variants
@@ -9,7 +10,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import VATBreakdown from '../VATBreakdown';
 
 // Mock vatUtils
-jest.mock('../../../utils/vatUtils', () => ({
+vi.mock('../../../utils/vatUtils', () => ({
   formatVatLabel: (rate) => {
     if (rate === 0 || rate === null || rate === undefined) return 'VAT (0%)';
     return `VAT (${rate}%)`;

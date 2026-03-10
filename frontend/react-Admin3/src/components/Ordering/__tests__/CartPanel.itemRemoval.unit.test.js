@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Unit Tests for CartPanel Tutorial Item Removal Logic
  * Tests the handleRemoveItem function's ability to extract subject code from cart items
@@ -7,11 +8,11 @@
 
 describe('CartPanel handleRemoveItem - Subject Code Extraction', () => {
   // Mock functions
-  const mockRestoreChoicesToDraft = jest.fn();
-  const mockRemoveFromCart = jest.fn();
+  const mockRestoreChoicesToDraft = vi.fn();
+  const mockRemoveFromCart = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   /**

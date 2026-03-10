@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -10,7 +11,7 @@ const renderWithTheme = (ui) =>
 describe('SecurityStep', () => {
   const defaultProps = {
     initialData: { password: '', confirmPassword: '' },
-    onDataChange: jest.fn(),
+    onDataChange: vi.fn(),
     errors: {},
     mode: 'registration',
   };

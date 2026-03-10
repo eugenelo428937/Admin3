@@ -1,18 +1,19 @@
+import { vi } from 'vitest';
 // Remove global mocks from setupTests.js so we can test with real context
-jest.unmock('../../../../../contexts/TutorialChoiceContext');
+vi.unmock('../../../../../contexts/TutorialChoiceContext');
 
 // Mock httpService before importing anything else
-jest.mock('../../../../../services/httpService', () => ({
-  get: jest.fn(),
-  post: jest.fn(),
+vi.mock('../../../../../services/httpService', () => ({
+  get: vi.fn(),
+  post: vi.fn(),
 }));
 
 // Mock CartContext
 const mockCartState = {
-  addToCart: jest.fn(),
+  addToCart: vi.fn(),
 };
 
-jest.mock('../../../../../contexts/CartContext', () => {
+vi.mock('../../../../../contexts/CartContext', () => {
   const React = require('react');
   return {
     __esModule: true,

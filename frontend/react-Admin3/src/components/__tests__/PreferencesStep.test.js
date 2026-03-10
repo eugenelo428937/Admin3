@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -10,7 +11,7 @@ const renderWithTheme = (ui) =>
 describe('PreferencesStep', () => {
   const defaultProps = {
     initialData: { send_invoices_to: 'HOME', send_study_material_to: 'HOME' },
-    onDataChange: jest.fn(),
+    onDataChange: vi.fn(),
     errors: {},
     mode: 'registration',
     hasWorkAddress: false,

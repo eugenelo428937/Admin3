@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for Redux Store Configuration
  * T003: Test store creation, middleware setup
@@ -6,37 +7,43 @@
 import { configureStore } from '@reduxjs/toolkit';
 
 // Mock the dependencies before importing the store
-jest.mock('../api/catalogApi', () => ({
+vi.mock('../api/catalogApi', () => ({
   catalogApi: {
     reducerPath: 'catalogApi',
     reducer: (state = {}) => state,
     middleware: () => (next) => (action) => next(action),
   },
-  useUnifiedSearchQuery: jest.fn(),
+  useUnifiedSearchQuery: vi.fn(),
 }));
 
-jest.mock('../middleware/urlSyncMiddleware', () => ({
+vi.mock('../middleware/urlSyncMiddleware', () => ({
   urlSyncMiddleware: {
     middleware: () => (next) => (action) => next(action),
   },
-  setupUrlToReduxSync: jest.fn(),
+  setupUrlToReduxSync: vi.fn(),
 }));
 
-jest.mock('../middleware/performanceMonitoring', () => {
+vi.mock('../middleware/performanceMonitoring', () => {
   return () => (next) => (action) => next(action);
 });
 
 describe('Redux Store Configuration', () => {
   let store;
   let originalEnv;
+  let originalDev;
+  let originalProd;
 
   beforeEach(() => {
-    jest.resetModules();
-    originalEnv = process.env.NODE_ENV;
+    vi.resetModules();
+    originalEnv = import.meta.env.MODE;
+    originalDev = import.meta.env.DEV;
+    originalProd = import.meta.env.PROD;
   });
 
   afterEach(() => {
-    process.env.NODE_ENV = originalEnv;
+    import.meta.env.MODE = originalEnv;
+    import.meta.env.DEV = originalDev;
+    import.meta.env.PROD = originalProd;
   });
 
   describe('store creation', () => {
@@ -149,10 +156,12 @@ describe('Redux Store Configuration', () => {
 
   describe('DevTools configuration', () => {
     test('DevTools are enabled in development', () => {
-      process.env.NODE_ENV = 'development';
-      jest.resetModules();
+      import.meta.env.MODE = 'development';
+      import.meta.env.DEV = true;
+      import.meta.env.PROD = false;
+      vi.resetModules();
 
-      // The devTools option is set based on NODE_ENV
+      // The devTools option is set based on import.meta.env
       // We can verify the store works correctly in development mode
       const { store: testStore } = require('../index');
 
@@ -161,8 +170,10 @@ describe('Redux Store Configuration', () => {
     });
 
     test('DevTools are disabled in production', () => {
-      process.env.NODE_ENV = 'production';
-      jest.resetModules();
+      import.meta.env.MODE = 'production';
+      import.meta.env.DEV = false;
+      import.meta.env.PROD = true;
+      vi.resetModules();
 
       // Store should still work in production mode
       const { store: testStore } = require('../index');

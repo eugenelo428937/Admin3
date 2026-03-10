@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * TutorialSelectionSummaryBar Component Tests
  * Epic 4 - Story 3: Mobile Responsive Summary Bar
@@ -15,16 +16,16 @@ import { TutorialChoiceProvider } from '../../../../../contexts/TutorialChoiceCo
 
 // Mock Material-UI useMediaQuery hook
 import useMediaQuery from '@mui/material/useMediaQuery';
-jest.mock('@mui/material/useMediaQuery', () => jest.fn());
+vi.mock('@mui/material/useMediaQuery', () => vi.fn());
 
 // Test helpers
 const theme = createTheme();
 
 const mockProps = {
   subjectCode: 'CM2',
-  onEdit: jest.fn(),
-  onAddToCart: jest.fn(),
-  onRemove: jest.fn(),
+  onEdit: vi.fn(),
+  onAddToCart: vi.fn(),
+  onRemove: vi.fn(),
 };
 
 const mockTutorialChoices = {
@@ -63,7 +64,7 @@ const renderWithProviders = (component, { isMobile = false } = {}) => {
 // Skip until Epic 4 - Story 3 mobile responsiveness is implemented
 describe.skip('TutorialSelectionSummaryBar - Responsive Behavior', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Setup Phase', () => {

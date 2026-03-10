@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/User/__tests__/PhoneCodeAutocomplete.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -17,7 +18,7 @@ const mockCountries = [
 const renderComponent = (props = {}) => {
   const defaultProps = {
     countries: mockCountries,
-    onSelect: jest.fn(),
+    onSelect: vi.fn(),
   };
 
   return render(
@@ -62,7 +63,7 @@ describe('PhoneCodeAutocomplete', () => {
 
   describe('selection', () => {
     test('calls onSelect when country is selected', async () => {
-      const mockOnSelect = jest.fn();
+      const mockOnSelect = vi.fn();
       renderComponent({ onSelect: mockOnSelect });
 
       // Click the Open button to open dropdown

@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for ProfilePage Component
  * T013: Test authentication redirect, breadcrumb navigation, UserFormWizard integration
@@ -9,15 +10,15 @@ import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../theme/theme';
 
 // Create mockNavigate at module level
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 
 // Override useNavigate from the global mock in setupTests.js
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   __esModule: true,
   useNavigate: () => mockNavigate,
   useLocation: () => ({ pathname: '/profile', search: '', hash: '', state: null }),
   useParams: () => ({}),
-  useSearchParams: () => [new URLSearchParams(), jest.fn()],
+  useSearchParams: () => [new URLSearchParams(), vi.fn()],
   MemoryRouter: ({ children }) => children,
   BrowserRouter: ({ children }) => children,
   Link: ({ children, to }) => <a href={to}>{children}</a>,
@@ -29,13 +30,13 @@ jest.mock('react-router-dom', () => ({
 }));
 
 // Mock useAuth hook
-const mockUseAuth = jest.fn();
-jest.mock('../../hooks/useAuth', () => ({
+const mockUseAuth = vi.fn();
+vi.mock('../../hooks/useAuth', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
 // Mock UserFormWizard
-jest.mock('../../components/User/UserFormWizard', () => {
+vi.mock('../../components/User/UserFormWizard', () => {
   return function MockUserFormWizard({ mode, onSuccess, onError }) {
     return (
       <div data-testid="user-form-wizard" data-mode={mode}>
@@ -61,7 +62,7 @@ import ProfilePage from '../ProfilePage';
 
 describe('ProfilePage', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockUseAuth.mockReturnValue({ isAuthenticated: true });
   });
 
@@ -178,7 +179,7 @@ describe('ProfilePage', () => {
 
   describe('success callback', () => {
     test('handles profile update success', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       renderProfilePage();
 
@@ -195,7 +196,7 @@ describe('ProfilePage', () => {
 
   describe('error callback', () => {
     test('handles profile update error', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       renderProfilePage();
 

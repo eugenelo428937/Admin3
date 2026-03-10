@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for cartService
  *
@@ -14,7 +15,7 @@
  */
 
 // Unmock cartService to test the actual implementation (global mock in setupTests.js)
-jest.unmock('../cartService');
+vi.unmock('../cartService');
 
 describe('cartService', () => {
   let cartService;
@@ -22,10 +23,10 @@ describe('cartService', () => {
 
   beforeEach(() => {
     // Reset modules to get fresh instances
-    jest.resetModules();
+    vi.resetModules();
 
     // Mock config
-    jest.doMock('../../config', () => ({
+    vi.doMock('../../config', () => ({
       __esModule: true,
       default: {
         cartUrl: 'http://test-api/cart',
@@ -33,13 +34,13 @@ describe('cartService', () => {
     }));
 
     // Mock httpService with controllable mocks
-    jest.doMock('../httpService', () => ({
+    vi.doMock('../httpService', () => ({
       __esModule: true,
       default: {
-        get: jest.fn(),
-        post: jest.fn(),
-        patch: jest.fn(),
-        delete: jest.fn(),
+        get: vi.fn(),
+        post: vi.fn(),
+        patch: vi.fn(),
+        delete: vi.fn(),
       },
     }));
 
@@ -49,7 +50,7 @@ describe('cartService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('fetchCart', () => {

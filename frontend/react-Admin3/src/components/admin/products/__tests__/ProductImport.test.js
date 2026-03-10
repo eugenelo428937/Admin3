@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/admin/products/__tests__/ProductImport.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -5,26 +6,26 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import AdminProductImport from '../ProductImport';
 
 // Mock navigate function
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 
 // Create mock for react-router-dom
-jest.mock('react-router-dom', () => {
+vi.mock('react-router-dom', () => {
   return {
     useNavigate: () => mockNavigate,
   };
 });
 
 // Mock catalogProductService
-jest.mock('../../../../services/catalogProductService', () => ({
+vi.mock('../../../../services/catalogProductService', () => ({
   __esModule: true,
   default: {
-    bulkImport: jest.fn(),
+    bulkImport: vi.fn(),
   },
 }));
 
 // Mock papaparse
-jest.mock('papaparse', () => ({
-  parse: jest.fn((file, options) => {
+vi.mock('papaparse', () => ({
+  parse: vi.fn((file, options) => {
     // Simulate async parsing
     const mockData = [
       { code: 'PRD001', fullname: 'Product One', shortname: 'Prod1', description: 'Test', active: 'true' },
@@ -53,7 +54,7 @@ const renderComponent = () => {
 
 describe('AdminProductImport', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('rendering', () => {

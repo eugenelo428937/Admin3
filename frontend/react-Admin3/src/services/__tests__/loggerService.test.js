@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for loggerService
  *
@@ -10,27 +11,33 @@
  */
 
 describe('loggerService', () => {
-  const originalEnv = process.env.NODE_ENV;
+  const originalMode = import.meta.env.MODE;
+  const originalDev = import.meta.env.DEV;
+  const originalProd = import.meta.env.PROD;
 
   beforeEach(() => {
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-    jest.spyOn(console, 'info').mockImplementation(() => {});
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
-    jest.resetModules();
-    process.env.NODE_ENV = originalEnv;
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    vi.resetModules();
+    import.meta.env.MODE = originalMode;
+    import.meta.env.DEV = originalDev;
+    import.meta.env.PROD = originalProd;
   });
 
   describe('in development environment', () => {
     let loggerService;
 
     beforeEach(() => {
-      jest.resetModules();
-      process.env.NODE_ENV = 'development';
+      vi.resetModules();
+      import.meta.env.MODE = 'development';
+      import.meta.env.DEV = true;
+      import.meta.env.PROD = false;
       loggerService = require('../loggerService').default;
     });
 
@@ -81,8 +88,10 @@ describe('loggerService', () => {
     let loggerService;
 
     beforeEach(() => {
-      jest.resetModules();
-      process.env.NODE_ENV = 'production';
+      vi.resetModules();
+      import.meta.env.MODE = 'production';
+      import.meta.env.DEV = false;
+      import.meta.env.PROD = true;
       loggerService = require('../loggerService').default;
     });
 
@@ -115,8 +124,10 @@ describe('loggerService', () => {
     let loggerService;
 
     beforeEach(() => {
-      jest.resetModules();
-      process.env.NODE_ENV = 'test';
+      vi.resetModules();
+      import.meta.env.MODE = 'test';
+      import.meta.env.DEV = false;
+      import.meta.env.PROD = false;
       loggerService = require('../loggerService').default;
     });
 

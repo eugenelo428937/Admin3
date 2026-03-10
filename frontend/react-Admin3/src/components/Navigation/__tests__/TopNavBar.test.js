@@ -1,20 +1,21 @@
+import { vi } from 'vitest';
 // src/components/Navigation/__tests__/TopNavBar.test.js
 
 // Mock services BEFORE any imports to prevent axios import errors
-jest.mock('../../../services/httpService', () => ({
+vi.mock('../../../services/httpService', () => ({
   __esModule: true,
   default: {
-    get: jest.fn(),
-    post: jest.fn(),
-    put: jest.fn(),
-    delete: jest.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
-jest.mock('../../../services/cartService', () => ({
+vi.mock('../../../services/cartService', () => ({
   __esModule: true,
   default: {
-    getCart: jest.fn(() => Promise.resolve({
+    getCart: vi.fn(() => Promise.resolve({
       data: {
         items: [],
         vat_calculations: {
@@ -22,9 +23,9 @@ jest.mock('../../../services/cartService', () => ({
         }
       }
     })),
-    addToCart: jest.fn(),
-    updateCartItem: jest.fn(),
-    removeFromCart: jest.fn(),
+    addToCart: vi.fn(),
+    updateCartItem: vi.fn(),
+    removeFromCart: vi.fn(),
   },
 }));
 
@@ -70,24 +71,24 @@ const theme = createTheme({
 });
 
 // Mock the useAuth hook
-jest.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth', () => ({
   useAuth: () => ({
     isAuthenticated: false,
     user: null,
-    logout: jest.fn(),
+    logout: vi.fn(),
   }),
 }));
 
 // Mock the useCart hook
-jest.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext', () => ({
   useCart: () => ({
     cartItems: [],
     cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
-    addToCart: jest.fn(() => Promise.resolve()),
-    updateCartItem: jest.fn(() => Promise.resolve()),
-    removeFromCart: jest.fn(() => Promise.resolve()),
-    clearCart: jest.fn(() => Promise.resolve()),
-    refreshCart: jest.fn(() => Promise.resolve()),
+    addToCart: vi.fn(() => Promise.resolve()),
+    updateCartItem: vi.fn(() => Promise.resolve()),
+    removeFromCart: vi.fn(() => Promise.resolve()),
+    clearCart: vi.fn(() => Promise.resolve()),
+    refreshCart: vi.fn(() => Promise.resolve()),
     cartCount: 0,
     loading: false,
   }),
@@ -103,10 +104,10 @@ const renderWithProviders = (component) => {
 };
 
 // Mock react-router-dom for navigation tests
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 let mockLocation = { pathname: '/', state: null };
 
-jest.mock('react-router-dom', () => {
+vi.mock('react-router-dom', () => {
   const React = require('react');
   return {
     __esModule: true,
@@ -117,7 +118,7 @@ jest.mock('react-router-dom', () => {
 });
 
 // Mock SearchModal
-jest.mock('../SearchModal', () => {
+vi.mock('../SearchModal', () => {
   return function MockSearchModal({ open, onClose }) {
     return open ? (
       <div data-testid="search-modal">
@@ -128,7 +129,7 @@ jest.mock('../SearchModal', () => {
 });
 
 // Mock AuthModal
-jest.mock('../AuthModal', () => {
+vi.mock('../AuthModal', () => {
   return function MockAuthModal({ open, onClose }) {
     return open ? (
       <div data-testid="auth-modal">
@@ -139,7 +140,7 @@ jest.mock('../AuthModal', () => {
 });
 
 // Mock CartPanel
-jest.mock('../../Ordering/CartPanel', () => {
+vi.mock('../../Ordering/CartPanel', () => {
   return function MockCartPanel({ show, handleClose }) {
     return show ? (
       <div data-testid="cart-panel">
@@ -151,7 +152,7 @@ jest.mock('../../Ordering/CartPanel', () => {
 
 describe('TopNavBar', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockNavigate.mockClear();
     mockLocation = { pathname: '/', state: null };
   });
@@ -222,7 +223,7 @@ describe('TopNavBar', () => {
     });
 
     test('should clean up event listener on unmount', () => {
-      const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener');
+      const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
       const { unmount } = renderWithProviders(<TopNavBar />);
 
       unmount();
@@ -239,7 +240,7 @@ describe('TopNavBar', () => {
   describe('Search Button', () => {
     test('should call onOpenSearch callback when search button is clicked', async () => {
       const user = userEvent.setup();
-      const mockOnOpenSearch = jest.fn();
+      const mockOnOpenSearch = vi.fn();
       renderWithProviders(<TopNavBar onOpenSearch={mockOnOpenSearch} />);
 
       // Click search button

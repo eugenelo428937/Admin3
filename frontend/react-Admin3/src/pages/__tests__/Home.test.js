@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for Home Page Component
  * T011: Test hero section, SearchBox integration, rules engine messages, navigation
@@ -12,8 +13,8 @@ import filtersReducer from '../../store/slices/filtersSlice';
 import theme from '../../theme/theme';
 
 // Create mockNavigate at module level
-const mockNavigate = jest.fn();
-const mockDispatch = jest.fn();
+const mockNavigate = vi.fn();
+const mockDispatch = vi.fn();
 
 // Create a mock store for tests
 const createTestStore = () => configureStore({
@@ -23,12 +24,12 @@ const createTestStore = () => configureStore({
 });
 
 // Override useNavigate from the global mock in setupTests.js
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   __esModule: true,
   useNavigate: () => mockNavigate,
   useLocation: () => ({ pathname: '/', search: '', hash: '', state: null }),
   useParams: () => ({}),
-  useSearchParams: () => [new URLSearchParams(), jest.fn()],
+  useSearchParams: () => [new URLSearchParams(), vi.fn()],
   MemoryRouter: ({ children }) => children,
   BrowserRouter: ({ children }) => children,
   Link: ({ children, to }) => <a href={to}>{children}</a>,
@@ -40,7 +41,7 @@ jest.mock('react-router-dom', () => ({
 }));
 
 // Mock SearchBox
-jest.mock('../../components/SearchBox', () => {
+vi.mock('../../components/SearchBox', () => {
   return function MockSearchBox({ onSearchResults, onShowMatchingProducts }) {
     return (
       <div data-testid="search-box">
@@ -65,7 +66,7 @@ jest.mock('../../components/SearchBox', () => {
 });
 
 // Mock SearchResults
-jest.mock('../../components/SearchResults', () => {
+vi.mock('../../components/SearchResults', () => {
   return function MockSearchResults({ searchResults, onShowMatchingProducts, loading, error }) {
     return (
       <div data-testid="search-results">
@@ -82,17 +83,17 @@ jest.mock('../../components/SearchResults', () => {
 });
 
 // Mock rulesEngineService
-jest.mock('../../services/rulesEngineService', () => ({
+vi.mock('../../services/rulesEngineService', () => ({
   __esModule: true,
   default: {
-    executeRules: jest.fn().mockResolvedValue({ success: true, messages: [] }),
+    executeRules: vi.fn().mockResolvedValue({ success: true, messages: [] }),
   },
 }));
 
 // Mock rulesEngineUtils
-jest.mock('../../utils/rulesEngineUtils', () => ({
+vi.mock('../../utils/rulesEngineUtils', () => ({
   rulesEngineHelpers: {
-    executeHomePage: jest.fn().mockResolvedValue({
+    executeHomePage: vi.fn().mockResolvedValue({
       success: true,
       messages: { processed: [] },
       errors: [],
@@ -105,7 +106,7 @@ import { rulesEngineHelpers } from '../../utils/rulesEngineUtils';
 
 describe('Home Page', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     rulesEngineHelpers.executeHomePage.mockResolvedValue({
       success: true,
       messages: { processed: [] },
@@ -340,7 +341,7 @@ describe('Home Page', () => {
     });
 
     test('handles rules engine errors gracefully', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       rulesEngineHelpers.executeHomePage.mockRejectedValue(new Error('API error'));
 
@@ -355,8 +356,12 @@ describe('Home Page', () => {
     });
 
     test('shows development errors when in development mode', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
+      const originalMode = import.meta.env.MODE;
+      const originalDev = import.meta.env.DEV;
+      const originalProd = import.meta.env.PROD;
+      import.meta.env.MODE = 'development';
+      import.meta.env.DEV = true;
+      import.meta.env.PROD = false;
 
       rulesEngineHelpers.executeHomePage.mockResolvedValue({
         success: true,
@@ -364,7 +369,7 @@ describe('Home Page', () => {
         errors: ['Test error message'],
       });
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       renderHome();
 
@@ -372,7 +377,9 @@ describe('Home Page', () => {
         expect(consoleSpy).toHaveBeenCalled();
       });
 
-      process.env.NODE_ENV = originalEnv;
+      import.meta.env.MODE = originalMode;
+      import.meta.env.DEV = originalDev;
+      import.meta.env.PROD = originalProd;
       consoleSpy.mockRestore();
     });
   });

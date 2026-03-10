@@ -1,6 +1,7 @@
+import { vi } from 'vitest';
 // Unmock TutorialChoiceContext to test the real implementation
 // This must be before any imports
-jest.unmock('../TutorialChoiceContext');
+vi.unmock('../TutorialChoiceContext');
 
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
@@ -32,8 +33,8 @@ const originalConsoleError = console.error;
 const originalConsoleLog = console.log;
 
 beforeAll(() => {
-  console.error = jest.fn();
-  console.log = jest.fn();
+  console.error = vi.fn();
+  console.log = vi.fn();
 });
 
 afterAll(() => {
@@ -47,7 +48,7 @@ afterAll(() => {
 describe('TutorialChoiceContext', () => {
   beforeEach(() => {
     localStorage.clear();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   // Test data
@@ -802,7 +803,7 @@ describe('TutorialChoiceContext', () => {
 describe.skip('TutorialChoiceContext - isDraft State Management (TDD Contract)', () => {
   beforeEach(() => {
     localStorage.clear();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   // Mock event data for testing

@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/admin/subjects/__tests__/SubjectDetail.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -5,18 +6,18 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import AdminSubjectDetail from '../SubjectDetail';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
 import { useAuth } from '../../../../hooks/useAuth';
 
 // Mock navigate function
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 
 // Create mock for react-router-dom
-jest.mock('react-router-dom', () => {
+vi.mock('react-router-dom', () => {
   return {
     useNavigate: () => mockNavigate,
     useParams: () => ({ id: '1' }),
@@ -26,11 +27,11 @@ jest.mock('react-router-dom', () => {
 });
 
 // Mock subjectService
-jest.mock('../../../../services/subjectService', () => ({
+vi.mock('../../../../services/subjectService', () => ({
   __esModule: true,
   default: {
-    getById: jest.fn(),
-    delete: jest.fn(),
+    getById: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -57,7 +58,7 @@ const renderComponent = () => {
 
 describe('AdminSubjectDetail', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,
@@ -149,7 +150,7 @@ describe('AdminSubjectDetail', () => {
 
   describe('delete functionality', () => {
     test('calls delete when delete button clicked and confirmed', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       subjectService.delete.mockResolvedValue({});
 
       renderComponent();
@@ -168,7 +169,7 @@ describe('AdminSubjectDetail', () => {
     });
 
     test('does not delete when cancelled', async () => {
-      window.confirm = jest.fn().mockReturnValue(false);
+      window.confirm = vi.fn().mockReturnValue(false);
 
       renderComponent();
 
@@ -208,7 +209,7 @@ describe('AdminSubjectDetail', () => {
     });
 
     test('displays error when delete fails', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       subjectService.delete.mockRejectedValueOnce(new Error('Delete error'));
 
       renderComponent();

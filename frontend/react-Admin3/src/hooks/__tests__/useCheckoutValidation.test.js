@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for useCheckoutValidation hook
  */
@@ -6,19 +7,19 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import useCheckoutValidation from '../useCheckoutValidation';
 
 // Mock dependencies
-jest.mock('../../services/acknowledgmentService', () => ({
+vi.mock('../../services/acknowledgmentService', () => ({
   __esModule: true,
   default: {
-    validateCheckoutReadiness: jest.fn(),
-    buildValidationContext: jest.fn(),
-    canProceedWithCheckout: jest.fn(),
-    getMissingAcknowledgments: jest.fn(),
-    collectAllRequiredAcknowledgments: jest.fn()
+    validateCheckoutReadiness: vi.fn(),
+    buildValidationContext: vi.fn(),
+    canProceedWithCheckout: vi.fn(),
+    getMissingAcknowledgments: vi.fn(),
+    collectAllRequiredAcknowledgments: vi.fn()
   }
 }));
 
-jest.mock('libphonenumber-js', () => ({
-  parsePhoneNumber: jest.fn()
+vi.mock('libphonenumber-js', () => ({
+  parsePhoneNumber: vi.fn()
 }));
 
 const acknowledgmentService = require('../../services/acknowledgmentService').default;
@@ -26,12 +27,12 @@ const { parsePhoneNumber } = require('libphonenumber-js');
 
 describe('useCheckoutValidation', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('initial state', () => {

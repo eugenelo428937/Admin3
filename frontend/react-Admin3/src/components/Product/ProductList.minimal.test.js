@@ -1,22 +1,23 @@
+import { vi } from 'vitest';
 /**
  * Minimal test for ProductList component - just verify it can be imported
  */
 
 // Mock services BEFORE any imports
-jest.mock("../../services/httpService", () => ({
+vi.mock("../../services/httpService", () => ({
    __esModule: true,
    default: {
-      get: jest.fn(),
-      post: jest.fn(),
-      put: jest.fn(),
-      delete: jest.fn(),
+      get: vi.fn(),
+      post: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn(),
    },
 }));
 
-jest.mock("../../services/cartService", () => ({
+vi.mock("../../services/cartService", () => ({
    __esModule: true,
    default: {
-      getCart: jest.fn(() => Promise.resolve({
+      getCart: vi.fn(() => Promise.resolve({
          data: {
             items: [],
             vat_calculations: {
@@ -24,22 +25,22 @@ jest.mock("../../services/cartService", () => ({
             }
          }
       })),
-      addToCart: jest.fn(),
-      updateCartItem: jest.fn(),
-      removeFromCart: jest.fn(),
+      addToCart: vi.fn(),
+      updateCartItem: vi.fn(),
+      removeFromCart: vi.fn(),
    },
 }));
 
 // Mock child components
-jest.mock("./FilterPanel", () => ({ __esModule: true, default: () => null }));
-jest.mock("./ActiveFilters", () => ({ __esModule: true, default: () => null }));
-jest.mock("./ProductGrid", () => ({ __esModule: true, default: () => null }));
-jest.mock("../SearchBox", () => ({ __esModule: true, default: () => null }));
-jest.mock("./FilterDebugger", () => ({ __esModule: true, default: () => null }));
-jest.mock("../Common/RulesEngineInlineAlert", () => ({ __esModule: true, default: () => null }));
+vi.mock("./FilterPanel", () => ({ __esModule: true, default: () => null }));
+vi.mock("./ActiveFilters", () => ({ __esModule: true, default: () => null }));
+vi.mock("./ProductGrid", () => ({ __esModule: true, default: () => null }));
+vi.mock("../SearchBox", () => ({ __esModule: true, default: () => null }));
+vi.mock("./FilterDebugger", () => ({ __esModule: true, default: () => null }));
+vi.mock("../Common/RulesEngineInlineAlert", () => ({ __esModule: true, default: () => null }));
 
 // Mock hooks
-jest.mock("../../hooks/useProductsSearch", () => ({
+vi.mock("../../hooks/useProductsSearch", () => ({
    __esModule: true,
    default: () => ({
       products: [],
@@ -47,15 +48,15 @@ jest.mock("../../hooks/useProductsSearch", () => ({
       pagination: {},
       isLoading: false,
       error: null,
-      search: jest.fn(),
-      refresh: jest.fn(),
+      search: vi.fn(),
+      refresh: vi.fn(),
    }),
 }));
 
-jest.mock("../../hooks/useProductCardHelpers", () => ({
+vi.mock("../../hooks/useProductCardHelpers", () => ({
    __esModule: true,
    default: () => ({
-      handleAddToCart: jest.fn(),
+      handleAddToCart: vi.fn(),
       allEsspIds: [],
       bulkDeadlines: {},
    }),

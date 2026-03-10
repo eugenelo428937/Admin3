@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/admin/product-variations/__tests__/ProductVariationList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -6,19 +7,19 @@ import { BrowserRouter } from 'react-router-dom';
 import AdminProductVariationList from '../ProductVariationList';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth', () => ({
   __esModule: true,
-  useAuth: jest.fn(),
+  useAuth: vi.fn(),
 }));
 
 import { useAuth } from '../../../../hooks/useAuth';
 
 // Mock productVariationService
-jest.mock('../../../../services/productVariationService', () => ({
+vi.mock('../../../../services/productVariationService', () => ({
   __esModule: true,
   default: {
-    getAll: jest.fn(),
-    delete: jest.fn(),
+    getAll: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -53,7 +54,7 @@ const renderComponent = () => {
 
 describe('AdminProductVariationList', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({
       isSuperuser: true,
       isApprentice: false,
@@ -133,7 +134,7 @@ describe('AdminProductVariationList', () => {
 
   describe('delete functionality', () => {
     test('calls delete when delete button clicked and confirmed', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       productVariationService.delete.mockResolvedValue({});
 
       renderComponent();
@@ -152,7 +153,7 @@ describe('AdminProductVariationList', () => {
     });
 
     test('does not delete when cancelled', async () => {
-      window.confirm = jest.fn().mockReturnValue(false);
+      window.confirm = vi.fn().mockReturnValue(false);
 
       renderComponent();
 
@@ -179,7 +180,7 @@ describe('AdminProductVariationList', () => {
     });
 
     test('displays error when delete fails', async () => {
-      window.confirm = jest.fn().mockReturnValue(true);
+      window.confirm = vi.fn().mockReturnValue(true);
       productVariationService.delete.mockRejectedValueOnce(new Error('Delete error'));
 
       renderComponent();

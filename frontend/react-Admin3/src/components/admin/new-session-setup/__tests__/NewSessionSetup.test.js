@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -5,12 +6,12 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import NewSessionSetup from '../NewSessionSetup';
 
 // Mock useAuth
-jest.mock('../../../../hooks/useAuth', () => ({
-  useAuth: jest.fn(),
+vi.mock('../../../../hooks/useAuth', () => ({
+  useAuth: vi.fn(),
 }));
 
 // Mock child components to isolate integration behavior
-jest.mock('../StepExamSession', () => {
+vi.mock('../StepExamSession', () => {
   return function MockStepExamSession({ onSessionCreated }) {
     return (
       <div data-testid="step-exam-session">
@@ -35,7 +36,7 @@ jest.mock('../StepExamSession', () => {
   };
 });
 
-jest.mock('../StepSubjects', () => {
+vi.mock('../StepSubjects', () => {
   return function MockStepSubjects({ onComplete, isExistingSession }) {
     return (
       <div data-testid="step-subjects">
@@ -46,7 +47,7 @@ jest.mock('../StepSubjects', () => {
   };
 });
 
-jest.mock('../StepMaterials', () => {
+vi.mock('../StepMaterials', () => {
   return function MockStepMaterials({ onComplete }) {
     return (
       <div data-testid="step-materials">
@@ -56,7 +57,7 @@ jest.mock('../StepMaterials', () => {
   };
 });
 
-jest.mock('../StepTutorials', () => {
+vi.mock('../StepTutorials', () => {
   return function MockStepTutorials({ onComplete }) {
     return (
       <div data-testid="step-tutorials">
@@ -86,7 +87,7 @@ const renderWithProviders = (initialPath = '/admin/new-session-setup') =>
 
 describe('NewSessionSetup - Integration', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     useAuth.mockReturnValue({ isSuperuser: true });
   });
 

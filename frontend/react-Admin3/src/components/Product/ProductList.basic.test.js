@@ -1,19 +1,20 @@
+import { vi } from 'vitest';
 /**
  * Basic test for ProductList component to verify rules engine integration
  */
-jest.mock("../../services/httpService", () => ({
+vi.mock("../../services/httpService", () => ({
    __esModule: true,
    default: {
-      get: jest.fn(),
-      post: jest.fn(),
-      put: jest.fn(),
-      delete: jest.fn(),
+      get: vi.fn(),
+      post: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn(),
    },
 }));
-jest.mock("../../services/cartService", () => ({
+vi.mock("../../services/cartService", () => ({
    __esModule: true,
    default: {
-      getCart: jest.fn(() =>
+      getCart: vi.fn(() =>
          Promise.resolve({
             data: {
                items: [],
@@ -23,17 +24,17 @@ jest.mock("../../services/cartService", () => ({
             },
          })
       ),
-      addToCart: jest.fn(),
-      updateCartItem: jest.fn(),
-      removeFromCart: jest.fn(),
+      addToCart: vi.fn(),
+      updateCartItem: vi.fn(),
+      removeFromCart: vi.fn(),
    },
 }));
 // Mock CartContext to prevent CartProvider from importing services
-jest.mock("../../contexts/CartContext", () => {
+vi.mock("../../contexts/CartContext", () => {
    return {
       __esModule: true,
       useCart: () => ({
-         addToCart: jest.fn(),
+         addToCart: vi.fn(),
          cartData: {
             items: [],
             vat_calculations: {
@@ -45,46 +46,46 @@ jest.mock("../../contexts/CartContext", () => {
    };
 });
 // Mock child components that ProductList imports
-jest.mock("./FilterPanel", () => ({
+vi.mock("./FilterPanel", () => ({
    __esModule: true,
    default: () => null,
 }));
 
-jest.mock("./ActiveFilters", () => ({
+vi.mock("./ActiveFilters", () => ({
    __esModule: true,
    default: () => null,
 }));
 
-jest.mock("./ProductGrid", () => ({
+vi.mock("./ProductGrid", () => ({
    __esModule: true,
    default: () => null,
 }));
 
-jest.mock("../SearchBox", () => ({
+vi.mock("../SearchBox", () => ({
    __esModule: true,
    default: () => null,
 }));
 
-jest.mock("./FilterDebugger", () => ({
+vi.mock("./FilterDebugger", () => ({
    __esModule: true,
    default: () => null,
 }));
 
-jest.mock("../Common/RulesEngineInlineAlert", () => ({
+vi.mock("../Common/RulesEngineInlineAlert", () => ({
    __esModule: true,
    default: () => null,
 }));
 
 // Mock rulesEngineUtils to prevent actual API calls
-jest.mock("../../utils/rulesEngineUtils", () => ({
+vi.mock("../../utils/rulesEngineUtils", () => ({
    __esModule: true,
    rulesEngineHelpers: {
-      executeProductListRules: jest.fn(() => Promise.resolve({ messages: [] })),
+      executeProductListRules: vi.fn(() => Promise.resolve({ messages: [] })),
    },
 }));
 
 // Mock URL sync middleware - must return function directly, not jest.fn wrapper
-jest.mock("../../store/middleware/urlSyncMiddleware", () => ({
+vi.mock("../../store/middleware/urlSyncMiddleware", () => ({
    __esModule: true,
    parseUrlToFilters: () => ({
       subjects: [],
@@ -106,11 +107,11 @@ import { CartProvider } from "../../contexts/CartContext";
 import { createMockStore } from "../../test-utils/reduxMockStore";
 
 // Mock the rules engine service to prevent actual API calls during tests
-jest.mock("../../services/rulesEngineService", () => ({
+vi.mock("../../services/rulesEngineService", () => ({
    ENTRY_POINTS: {
       PRODUCT_LIST_MOUNT: "product_list_mount",
    },
-   executeRules: jest.fn(() =>
+   executeRules: vi.fn(() =>
       Promise.resolve({
          success: true,
          messages: [
@@ -132,11 +133,11 @@ jest.mock("../../services/rulesEngineService", () => ({
 const mockProducts = [];
 const mockFilterCounts = {};
 const mockPagination = {};
-const mockSearch = jest.fn();
-const mockRefresh = jest.fn();
+const mockSearch = vi.fn();
+const mockRefresh = vi.fn();
 
 // Mock the hooks used in ProductList
-jest.mock("../../hooks/useProductsSearch", () => ({
+vi.mock("../../hooks/useProductsSearch", () => ({
    __esModule: true,
    default: () => ({
       products: mockProducts,
@@ -150,11 +151,11 @@ jest.mock("../../hooks/useProductsSearch", () => ({
 }));
 
 // Create stable references for useProductCardHelpers
-const mockHandleAddToCart = jest.fn();
+const mockHandleAddToCart = vi.fn();
 const mockAllEsspIds = [];
 const mockBulkDeadlines = {};
 
-jest.mock("../../hooks/useProductCardHelpers", () => ({
+vi.mock("../../hooks/useProductCardHelpers", () => ({
    __esModule: true,
    default: () => ({
       handleAddToCart: mockHandleAddToCart,
@@ -182,7 +183,7 @@ const renderWithProviders = (component) => {
 
 describe("ProductList Component - Rules Engine Integration", () => {
    beforeEach(() => {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
    });
 
    it("renders ProductList component without crashing", () => {

@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 // src/components/Product/ProductCard/__tests__/MaterialProductCard.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
@@ -18,7 +19,7 @@ const theme = createTheme({
 });
 
 // Mock useCart
-jest.mock('../../../../contexts/CartContext', () => ({
+vi.mock('../../../../contexts/CartContext', () => ({
   useCart: () => ({
     cartData: {
       vat_calculations: {
@@ -29,7 +30,7 @@ jest.mock('../../../../contexts/CartContext', () => ({
 }));
 
 // Mock BaseProductCard
-jest.mock('../../../Common/BaseProductCard', () => {
+vi.mock('../../../Common/BaseProductCard', () => {
   const React = require('react');
   return React.forwardRef(function MockBaseProductCard({ children, ...props }, ref) {
     return React.createElement('div', { 'data-testid': 'base-product-card', ref, ...props }, children);
@@ -37,35 +38,35 @@ jest.mock('../../../Common/BaseProductCard', () => {
 });
 
 // Mock specialized product cards
-jest.mock('../Tutorial/TutorialProductCard', () => {
+vi.mock('../Tutorial/TutorialProductCard', () => {
   const React = require('react');
   return function MockTutorialProductCard({ product }) {
     return React.createElement('div', { 'data-testid': 'tutorial-product-card' }, product.product_name);
   };
 });
 
-jest.mock('../MarkingProductCard', () => {
+vi.mock('../MarkingProductCard', () => {
   const React = require('react');
   return function MockMarkingProductCard({ product }) {
     return React.createElement('div', { 'data-testid': 'marking-product-card' }, product.product_name);
   };
 });
 
-jest.mock('../MarkingVoucherProductCard', () => {
+vi.mock('../MarkingVoucherProductCard', () => {
   const React = require('react');
   return function MockMarkingVoucherProductCard({ voucher }) {
     return React.createElement('div', { 'data-testid': 'marking-voucher-product-card' }, voucher.product_name);
   };
 });
 
-jest.mock('../OnlineClassroomProductCard', () => {
+vi.mock('../OnlineClassroomProductCard', () => {
   const React = require('react');
   return function MockOnlineClassroomProductCard({ product }) {
     return React.createElement('div', { 'data-testid': 'online-classroom-product-card' }, product.product_name);
   };
 });
 
-jest.mock('../BundleCard', () => {
+vi.mock('../BundleCard', () => {
   const React = require('react');
   return function MockBundleCard({ bundle }) {
     return React.createElement('div', { 'data-testid': 'bundle-card' }, bundle.product_name);
@@ -107,7 +108,7 @@ const createMockProduct = (overrides = {}) => ({
 const renderComponent = async (props = {}) => {
   const defaultProps = {
     product: createMockProduct(),
-    onAddToCart: jest.fn(),
+    onAddToCart: vi.fn(),
     allEsspIds: [],
     bulkDeadlines: {}
   };
@@ -450,7 +451,7 @@ describe('MaterialProductCard', () => {
 
   describe('Add to Cart', () => {
     test('calls onAddToCart with correct parameters', async () => {
-      const onAddToCart = jest.fn();
+      const onAddToCart = vi.fn();
       await renderComponent({ onAddToCart });
 
       const addButton = screen.getByRole('button', { name: /add to cart/i });
@@ -470,7 +471,7 @@ describe('MaterialProductCard', () => {
     });
 
     test('passes retaker price type when selected', async () => {
-      const onAddToCart = jest.fn();
+      const onAddToCart = vi.fn();
       await renderComponent({ onAddToCart });
 
       const retakerRadio = screen.getByRole('radio', { name: /retaker/i });

@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for useProductCardHelpers hook
  *
@@ -13,16 +14,16 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import useProductCardHelpers from '../useProductCardHelpers';
 
 // Mock CartContext
-const mockAddToCart = jest.fn();
-jest.mock('../../contexts/CartContext', () => ({
+const mockAddToCart = vi.fn();
+vi.mock('../../contexts/CartContext', () => ({
   useCart: () => ({
     addToCart: mockAddToCart,
   }),
 }));
 
 // Mock productService
-const mockGetBulkMarkingDeadlines = jest.fn();
-jest.mock('../../services/productService', () => ({
+const mockGetBulkMarkingDeadlines = vi.fn();
+vi.mock('../../services/productService', () => ({
   __esModule: true,
   default: {
     getBulkMarkingDeadlines: (...args) => mockGetBulkMarkingDeadlines(...args),
@@ -31,13 +32,13 @@ jest.mock('../../services/productService', () => ({
 
 describe('useProductCardHelpers', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     mockGetBulkMarkingDeadlines.mockResolvedValue({});
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('initialization', () => {

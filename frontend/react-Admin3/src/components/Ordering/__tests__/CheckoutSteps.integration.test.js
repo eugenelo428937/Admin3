@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * CheckoutSteps Integration Tests (Task T064)
  *
@@ -24,36 +25,36 @@ import CheckoutSteps from '../CheckoutSteps';
 import rulesEngineService from '../../../services/rulesEngineService';
 
 // Mock useAuth hook - configure in beforeEach
-jest.mock('../../../hooks/useAuth');
+vi.mock('../../../hooks/useAuth');
 
 // Mock useCart hook - configure in beforeEach (like the passing unit tests)
-jest.mock('../../../contexts/CartContext', () => ({
-  useCart: jest.fn()
+vi.mock('../../../contexts/CartContext', () => ({
+  useCart: vi.fn()
 }));
 
 // Mock useCheckoutValidation hook
-jest.mock('../../../hooks/useCheckoutValidation', () => ({
+vi.mock('../../../hooks/useCheckoutValidation', () => ({
   __esModule: true,
   default: () => ({
     isValid: true,
     errors: {},
-    validateStep: jest.fn().mockReturnValue(true)
+    validateStep: vi.fn().mockReturnValue(true)
   })
 }));
 
 // Mock productCodeGenerator
-jest.mock('../../../utils/productCodeGenerator', () => ({
-  generateProductCode: jest.fn(() => 'TEST-001'),
+vi.mock('../../../utils/productCodeGenerator', () => ({
+  generateProductCode: vi.fn(() => 'TEST-001'),
 }));
 
 // Mock services for integration tests
-jest.mock('../../../services/rulesEngineService', () => {
-  const mockExecuteRules = jest.fn().mockResolvedValue({
+vi.mock('../../../services/rulesEngineService', () => {
+  const mockExecuteRules = vi.fn().mockResolvedValue({
     messages: [],
     effects: [],
     blocked: false
   });
-  const mockAcknowledgeRule = jest.fn().mockResolvedValue({ success: true });
+  const mockAcknowledgeRule = vi.fn().mockResolvedValue({ success: true });
   const MOCK_ENTRY_POINTS = {
     CHECKOUT_START: 'checkout_start',
     CHECKOUT_TERMS: 'checkout_terms',
@@ -74,24 +75,24 @@ jest.mock('../../../services/rulesEngineService', () => {
   };
 });
 
-jest.mock('../../../services/httpService', () => ({
+vi.mock('../../../services/httpService', () => ({
   __esModule: true,
   default: {
-    post: jest.fn(),
-    get: jest.fn(),
-    put: jest.fn(),
+    post: vi.fn(),
+    get: vi.fn(),
+    put: vi.fn(),
   }
 }));
 
-jest.mock('../../../services/userService', () => ({
+vi.mock('../../../services/userService', () => ({
   __esModule: true,
   default: {
-    getUserProfile: jest.fn().mockResolvedValue({ data: {} }),
-    updateProfile: jest.fn().mockResolvedValue({ data: {} })
+    getUserProfile: vi.fn().mockResolvedValue({ data: {} }),
+    updateProfile: vi.fn().mockResolvedValue({ data: {} })
   }
 }));
 
-jest.mock('../../../config', () => ({
+vi.mock('../../../config', () => ({
   API_BASE_URL: 'http://localhost:8888',
   isUAT: false
 }));
@@ -272,7 +273,7 @@ describe('Checkout Flow VAT Display Integration (T004)', () => {
           cartItems={mockCartItems}
           vatCalculations={vatWith20Percent}
           isCollapsed={true}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
           paymentMethod="card"
         />
       );
@@ -298,7 +299,7 @@ describe('Checkout Flow VAT Display Integration (T004)', () => {
           cartItems={mockCartItems}
           vatCalculations={vatWith20Percent}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
           paymentMethod="card"
         />
       );
@@ -334,7 +335,7 @@ describe('Checkout Flow VAT Display Integration (T004)', () => {
           cartItems={mockCartItems}
           vatCalculations={vatWithFees}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
           paymentMethod="card"
         />,
         { wrapper: ThemeWrapper }
@@ -350,7 +351,7 @@ describe('Checkout Flow VAT Display Integration (T004)', () => {
           cartItems={mockCartItems}
           vatCalculations={vatWithFees}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
           paymentMethod="bank_transfer"
         />
       );
@@ -444,7 +445,7 @@ describe('Checkout Flow VAT Display Integration (T004)', () => {
           cartItems={mockCartItems}
           vatCalculations={sharedVatCalculations}
           isCollapsed={false}
-          onToggleCollapse={jest.fn()}
+          onToggleCollapse={vi.fn()}
           paymentMethod="card"
         />
       );
@@ -532,7 +533,7 @@ describe('CheckoutSteps Component Integration', () => {
   const mockCartData = createMockCartData();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Mock useAuth hook
     const { useAuth } = require('../../../hooks/useAuth');
@@ -562,7 +563,7 @@ describe('CheckoutSteps Component Integration', () => {
 
   describe('Initial Rendering', () => {
     it('should render checkout stepper with Order Summary', async () => {
-      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={vi.fn()} />);
 
       await waitFor(() => {
         expect(screen.getByText('Order Summary')).toBeInTheDocument();
@@ -577,7 +578,7 @@ describe('CheckoutSteps Component Integration', () => {
         cartData: mockCartData
       });
 
-      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={vi.fn()} />);
 
       await waitFor(() => {
         expect(screen.getByText('CM2 Core Reading')).toBeInTheDocument();
@@ -591,7 +592,7 @@ describe('CheckoutSteps Component Integration', () => {
         cartData: mockCartData
       });
 
-      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={vi.fn()} />);
 
       // Should still render without crashing
       await waitFor(() => {
@@ -602,7 +603,7 @@ describe('CheckoutSteps Component Integration', () => {
 
   describe('Rules Engine Integration', () => {
     it('should call rules engine on mount', async () => {
-      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={vi.fn()} />);
 
       await waitFor(() => {
         expect(rulesEngineService.executeRules).toHaveBeenCalled();
@@ -626,7 +627,7 @@ describe('CheckoutSteps Component Integration', () => {
         blocked: false
       });
 
-      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={vi.fn()} />);
 
       await waitFor(() => {
         expect(screen.getByText('Import Tax Notice')).toBeInTheDocument();
@@ -636,7 +637,7 @@ describe('CheckoutSteps Component Integration', () => {
     it('should handle rules engine errors gracefully', async () => {
       rulesEngineService.executeRules.mockRejectedValue(new Error('API Error'));
 
-      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={vi.fn()} />);
 
       // Component should still render
       await waitFor(() => {
@@ -647,7 +648,7 @@ describe('CheckoutSteps Component Integration', () => {
 
   describe('Step Navigation', () => {
     it('should start at step 1 (Cart Review)', async () => {
-      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={vi.fn()} />);
 
       await waitFor(() => {
         expect(screen.getByText('Order Summary')).toBeInTheDocument();
@@ -655,7 +656,7 @@ describe('CheckoutSteps Component Integration', () => {
     });
 
     it('should have Continue button on step 1', async () => {
-      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={vi.fn()} />);
 
       await waitFor(() => {
         const continueButton = screen.getByRole('button', { name: /continue|next/i });
@@ -680,7 +681,7 @@ describe('CheckoutSteps Component Integration', () => {
         cartData: cartDataWithVat
       });
 
-      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={vi.fn()} />);
 
       await waitFor(() => {
         expect(screen.getByText(/VAT/i)).toBeInTheDocument();
@@ -690,7 +691,7 @@ describe('CheckoutSteps Component Integration', () => {
 
   describe('Accessibility', () => {
     it('should have accessible buttons with proper labels', async () => {
-      renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+      renderCheckoutWithProviders(<CheckoutSteps onComplete={vi.fn()} />);
 
       await waitFor(() => {
         expect(screen.getByText('Order Summary')).toBeInTheDocument();
@@ -709,7 +710,7 @@ describe('CheckoutSteps Modal Interactions', () => {
   const mockCartData = createMockCartData();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Mock useAuth hook
     const { useAuth } = require('../../../hooks/useAuth');
@@ -745,7 +746,7 @@ describe('CheckoutSteps Modal Interactions', () => {
       blocked: false
     });
 
-    renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+    renderCheckoutWithProviders(<CheckoutSteps onComplete={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText('Import Tax Notice')).toBeInTheDocument();
@@ -784,7 +785,7 @@ describe('CheckoutSteps Modal Interactions', () => {
 
     rulesEngineService.acknowledgeRule.mockResolvedValue({ success: true });
 
-    renderCheckoutWithProviders(<CheckoutSteps onComplete={jest.fn()} />);
+    renderCheckoutWithProviders(<CheckoutSteps onComplete={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText('Terms Acknowledgment')).toBeInTheDocument();

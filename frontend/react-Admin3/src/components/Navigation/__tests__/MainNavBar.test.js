@@ -1,7 +1,8 @@
+import { vi } from 'vitest';
 // src/components/Navigation/__tests__/MainNavBar.test.js
 
 // Mock Chakra UI to prevent @ark-ui/react import errors
-jest.mock('@chakra-ui/react', () => {
+vi.mock('@chakra-ui/react', () => {
   const React = require('react');
   return {
     __esModule: true,
@@ -18,20 +19,20 @@ jest.mock('@chakra-ui/react', () => {
 });
 
 // Mock services BEFORE any imports to prevent axios import errors
-jest.mock('../../../services/httpService', () => ({
+vi.mock('../../../services/httpService', () => ({
   __esModule: true,
   default: {
-    get: jest.fn(),
-    post: jest.fn(),
-    put: jest.fn(),
-    delete: jest.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
-jest.mock('../../../services/cartService', () => ({
+vi.mock('../../../services/cartService', () => ({
   __esModule: true,
   default: {
-    getCart: jest.fn(() => Promise.resolve({
+    getCart: vi.fn(() => Promise.resolve({
       data: {
         items: [],
         vat_calculations: {
@@ -39,15 +40,15 @@ jest.mock('../../../services/cartService', () => ({
         }
       }
     })),
-    addToCart: jest.fn(),
-    updateCartItem: jest.fn(),
-    removeFromCart: jest.fn(),
+    addToCart: vi.fn(),
+    updateCartItem: vi.fn(),
+    removeFromCart: vi.fn(),
   },
 }));
 
 // Mock the services
-jest.mock('../../../services/productService', () => ({
-  getNavigationData: jest.fn(() => Promise.resolve({
+vi.mock('../../../services/productService', () => ({
+  getNavigationData: vi.fn(() => Promise.resolve({
     subjects: [],
     navbarProductGroups: [],
     distanceLearningData: [],
@@ -56,11 +57,11 @@ jest.mock('../../../services/productService', () => ({
 }));
 
 // Mock the useAuth hook
-jest.mock('../../../hooks/useAuth', () => ({
+vi.mock('../../../hooks/useAuth', () => ({
   useAuth: () => ({
     isAuthenticated: false,
     user: null,
-    logout: jest.fn(),
+    logout: vi.fn(),
     isSuperuser: false,
     isApprentice: false,
     isStudyPlus: false,
@@ -68,40 +69,40 @@ jest.mock('../../../hooks/useAuth', () => ({
 }));
 
 // Mock the useCart hook
-jest.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext', () => ({
   useCart: () => ({
     cartItems: [],
     cartData: { items: [], vat_calculations: { region_info: { region: 'UK' } } },
-    addToCart: jest.fn(() => Promise.resolve()),
-    updateCartItem: jest.fn(() => Promise.resolve()),
-    removeFromCart: jest.fn(() => Promise.resolve()),
-    clearCart: jest.fn(() => Promise.resolve()),
-    refreshCart: jest.fn(() => Promise.resolve()),
+    addToCart: vi.fn(() => Promise.resolve()),
+    updateCartItem: vi.fn(() => Promise.resolve()),
+    removeFromCart: vi.fn(() => Promise.resolve()),
+    clearCart: vi.fn(() => Promise.resolve()),
+    refreshCart: vi.fn(() => Promise.resolve()),
     cartCount: 0,
     loading: false,
   }),
 }));
 
 // Mock TutorialChoiceContext
-jest.mock('../../../contexts/TutorialChoiceContext', () => ({
+vi.mock('../../../contexts/TutorialChoiceContext', () => ({
   useTutorialChoice: () => ({
-    getTutorialChoice: jest.fn(),
-    addTutorialChoice: jest.fn(),
-    removeTutorialChoice: jest.fn(),
-    clearTutorialChoices: jest.fn(),
-    getSubjectChoices: jest.fn(() => ({})),
-    getAllChoices: jest.fn(() => ({})),
-    getDraftChoices: jest.fn(() => ({})),
-    hasDraftChoices: jest.fn(() => false),
-    markChoicesAsAdded: jest.fn(),
-    hasCartedChoices: jest.fn(() => false),
+    getTutorialChoice: vi.fn(),
+    addTutorialChoice: vi.fn(),
+    removeTutorialChoice: vi.fn(),
+    clearTutorialChoices: vi.fn(),
+    getSubjectChoices: vi.fn(() => ({})),
+    getAllChoices: vi.fn(() => ({})),
+    getDraftChoices: vi.fn(() => ({})),
+    hasDraftChoices: vi.fn(() => false),
+    markChoicesAsAdded: vi.fn(),
+    hasCartedChoices: vi.fn(() => false),
   }),
   TutorialChoiceProvider: ({ children }) => children,
 }));
 
 // Mock useNavigate for navigation tests
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => {
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => {
   const React = require('react');
   return {
     __esModule: true,
@@ -116,7 +117,7 @@ jest.mock('react-router-dom', () => {
     useNavigate: () => mockNavigate,
     useLocation: () => ({ pathname: '/', search: '', hash: '', state: null, key: 'default' }),
     useParams: () => ({}),
-    useSearchParams: () => [new URLSearchParams(), jest.fn()],
+    useSearchParams: () => [new URLSearchParams(), vi.fn()],
     useMatch: () => null,
   };
 });

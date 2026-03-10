@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for userService
  *
@@ -17,10 +18,10 @@ describe('userService', () => {
 
   beforeEach(() => {
     // Reset modules to get fresh instances
-    jest.resetModules();
+    vi.resetModules();
 
     // Mock config
-    jest.doMock('../../config', () => ({
+    vi.doMock('../../config', () => ({
       __esModule: true,
       default: {
         userUrl: 'http://test-api/users',
@@ -28,22 +29,22 @@ describe('userService', () => {
     }));
 
     // Mock httpService with controllable mocks
-    jest.doMock('../httpService', () => ({
+    vi.doMock('../httpService', () => ({
       __esModule: true,
       default: {
-        get: jest.fn(),
-        post: jest.fn(),
-        patch: jest.fn(),
+        get: vi.fn(),
+        post: vi.fn(),
+        patch: vi.fn(),
       },
     }));
 
     // Mock logger
-    jest.doMock('../loggerService', () => ({
+    vi.doMock('../loggerService', () => ({
       __esModule: true,
       default: {
-        debug: jest.fn(),
-        info: jest.fn(),
-        error: jest.fn(),
+        debug: vi.fn(),
+        info: vi.fn(),
+        error: vi.fn(),
       },
     }));
 
@@ -54,7 +55,7 @@ describe('userService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('getUserProfile', () => {

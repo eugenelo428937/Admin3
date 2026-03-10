@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 /**
  * Tests for useProductsSearch Hook (Story 1.4 - Hook Consolidation)
  *
@@ -15,8 +16,8 @@ import filtersReducer from '../../store/slices/filtersSlice';
 let mockTriggerSearch;
 let mockSearchResult;
 
-jest.mock('../../store/api/catalogApi', () => ({
-  useLazyUnifiedSearchQuery: jest.fn(),
+vi.mock('../../store/api/catalogApi', () => ({
+  useLazyUnifiedSearchQuery: vi.fn(),
 }));
 
 // Get the mocked module
@@ -70,12 +71,12 @@ const createWrapper = (store) => {
 
 describe('useProductsSearch - Navbar Filter Consolidation (Story 1.4)', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Initialize mock functions
     // RTK Query lazy mutations return an object with unwrap method directly (not a promise)
-    mockTriggerSearch = jest.fn().mockReturnValue({
-      unwrap: jest.fn().mockResolvedValue({
+    mockTriggerSearch = vi.fn().mockReturnValue({
+      unwrap: vi.fn().mockResolvedValue({
         products: [],
         filterCounts: {},
         pagination: {
@@ -306,12 +307,12 @@ describe('useProductsSearch - Navbar Filter Consolidation (Story 1.4)', () => {
 
 describe('useProductsSearch - Loading/Success/Error States (T051)', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Initialize mock functions with default success response
     // RTK Query lazy mutations return an object with unwrap method directly (not a promise)
-    mockTriggerSearch = jest.fn().mockReturnValue({
-      unwrap: jest.fn().mockResolvedValue({
+    mockTriggerSearch = vi.fn().mockReturnValue({
+      unwrap: vi.fn().mockResolvedValue({
         products: [
           { id: 1, name: 'Test Product', subject_code: 'CM2' }
         ],
@@ -535,8 +536,8 @@ describe('useProductsSearch - Loading/Success/Error States (T051)', () => {
     it('should handle API rejection gracefully', async () => {
       // Mock triggerSearch to reject
       // RTK Query lazy mutations return an object with unwrap method directly (not a promise)
-      mockTriggerSearch = jest.fn().mockReturnValue({
-        unwrap: jest.fn().mockRejectedValue(new Error('API Error')),
+      mockTriggerSearch = vi.fn().mockReturnValue({
+        unwrap: vi.fn().mockRejectedValue(new Error('API Error')),
       });
       useLazyUnifiedSearchQuery.mockReturnValue([mockTriggerSearch, mockSearchResult]);
 
@@ -725,8 +726,8 @@ describe('useProductsSearch - Loading/Success/Error States (T051)', () => {
 
   describe('Error Message Formatting', () => {
     it('should handle error with message property', async () => {
-      mockTriggerSearch = jest.fn().mockReturnValue({
-        unwrap: jest.fn().mockRejectedValue({ message: 'Custom error message' }),
+      mockTriggerSearch = vi.fn().mockReturnValue({
+        unwrap: vi.fn().mockRejectedValue({ message: 'Custom error message' }),
       });
       useLazyUnifiedSearchQuery.mockReturnValue([mockTriggerSearch, mockSearchResult]);
 
@@ -745,8 +746,8 @@ describe('useProductsSearch - Loading/Success/Error States (T051)', () => {
     });
 
     it('should handle error with error property', async () => {
-      mockTriggerSearch = jest.fn().mockReturnValue({
-        unwrap: jest.fn().mockRejectedValue({ error: 'Error string' }),
+      mockTriggerSearch = vi.fn().mockReturnValue({
+        unwrap: vi.fn().mockRejectedValue({ error: 'Error string' }),
       });
       useLazyUnifiedSearchQuery.mockReturnValue([mockTriggerSearch, mockSearchResult]);
 
@@ -765,8 +766,8 @@ describe('useProductsSearch - Loading/Success/Error States (T051)', () => {
     });
 
     it('should handle error with data.message property', async () => {
-      mockTriggerSearch = jest.fn().mockReturnValue({
-        unwrap: jest.fn().mockRejectedValue({ data: { message: 'Data message' } }),
+      mockTriggerSearch = vi.fn().mockReturnValue({
+        unwrap: vi.fn().mockRejectedValue({ data: { message: 'Data message' } }),
       });
       useLazyUnifiedSearchQuery.mockReturnValue([mockTriggerSearch, mockSearchResult]);
 
@@ -785,8 +786,8 @@ describe('useProductsSearch - Loading/Success/Error States (T051)', () => {
     });
 
     it('should handle string error', async () => {
-      mockTriggerSearch = jest.fn().mockReturnValue({
-        unwrap: jest.fn().mockRejectedValue('Simple string error'),
+      mockTriggerSearch = vi.fn().mockReturnValue({
+        unwrap: vi.fn().mockRejectedValue('Simple string error'),
       });
       useLazyUnifiedSearchQuery.mockReturnValue([mockTriggerSearch, mockSearchResult]);
 
@@ -886,11 +887,11 @@ describe('useProductsSearch - Loading/Success/Error States (T051)', () => {
 
   describe('Debounce Behavior', () => {
     beforeEach(() => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
     });
 
     afterEach(() => {
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     it('should clear previous debounce when new search is triggered', async () => {
@@ -905,19 +906,19 @@ describe('useProductsSearch - Loading/Success/Error States (T051)', () => {
       result.current.debouncedSearch(false);
 
       // Advance time partially
-      jest.advanceTimersByTime(100);
+      vi.advanceTimersByTime(100);
 
       // Start another debounced search (should clear previous)
       result.current.debouncedSearch(false);
 
       // Advance time to just before new timeout
-      jest.advanceTimersByTime(200);
+      vi.advanceTimersByTime(200);
 
       // Should not have been called yet
       expect(mockTriggerSearch).not.toHaveBeenCalled();
 
       // Complete the debounce
-      jest.advanceTimersByTime(100);
+      vi.advanceTimersByTime(100);
 
       // Now should be called once
       await waitFor(() => {
