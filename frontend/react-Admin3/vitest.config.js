@@ -2,8 +2,34 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+// Custom plugin to handle JSX in .js files (CRA convention)
+function jsxInJsPlugin() {
+  return {
+    name: 'jsx-in-js',
+    enforce: 'pre',
+    async transform(code, id) {
+      if (/\.js$/.test(id) && !id.includes('node_modules') && code.includes('<')) {
+        const esbuild = await import('esbuild');
+        const result = await esbuild.transform(code, {
+          loader: 'jsx',
+          jsx: 'automatic',
+          sourcefile: id,
+          sourcemap: true,
+        });
+        return {
+          code: result.code,
+          map: result.map,
+        };
+      }
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    jsxInJsPlugin(),
+    react(),
+  ],
   resolve: {
     alias: {
       src: path.resolve(__dirname, 'src'),
@@ -27,7 +53,7 @@ export default defineConfig({
         'src/test-utils/**',
         'src/misc/**',
         'src/**/*.examples.{js,jsx}',
-        'src/index.js',
+        'src/index.jsx',
         'src/reportWebVitals.js',
         'src/setupTests.js',
         'src/components/sandbox/**',
