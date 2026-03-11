@@ -2,20 +2,20 @@ import { vi } from 'vitest';
 // src/components/admin/staff/__tests__/StaffList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminStaffList from '../StaffList';
+import AdminStaffList from '../StaffList.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock staffService
-vi.mock('../../../../services/staffService', () => ({
+vi.mock('../../../../services/staffService.js', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
@@ -24,9 +24,10 @@ vi.mock('../../../../services/staffService', () => ({
   },
 }));
 
-import staffService from '../../../../services/staffService';
+import staffService from '../../../../services/staffService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockStaff = [
   {

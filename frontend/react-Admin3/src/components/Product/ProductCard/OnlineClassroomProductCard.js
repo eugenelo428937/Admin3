@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { formatVatLabel } from '../../../utils/vatUtils';
-import { formatPrice } from '../../../utils/priceFormatter';
-import { useCart } from "../../../contexts/CartContext";
+import { formatVatLabel } from '../../../utils/vatUtils.js';
+import { formatPrice } from '../../../utils/priceFormatter.js';
+import { useCart } from "../../../contexts/CartContext.js";
 import {
 	Button,
 	Card,

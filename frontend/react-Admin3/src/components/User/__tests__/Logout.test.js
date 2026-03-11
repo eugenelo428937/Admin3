@@ -2,7 +2,7 @@ import { vi } from 'vitest';
 // src/components/User/__tests__/Logout.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Logout from '../Logout';
+import Logout from '../Logout.js';
 
 // Mock fetch
 global.fetch = vi.fn();

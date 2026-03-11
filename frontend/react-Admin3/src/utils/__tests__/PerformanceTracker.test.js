@@ -17,7 +17,7 @@ import { vi } from 'vitest';
  * - isSupported()
  */
 
-import PerformanceTracker from '../PerformanceTracker';
+import PerformanceTracker from '../PerformanceTracker.js';
 
 // Mock Performance API for Jest/jsdom environment
 const mockPerformanceEntries = [];

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, Typography, Box, Divider } from '@mui/material';
-import { formatVatLabel, formatPrice } from '../../utils/vatUtils';
+import { formatVatLabel, formatPrice } from '../../utils/vatUtils.js';
 import PropTypes from 'prop-types';
 
 /**

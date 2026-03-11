@@ -17,12 +17,12 @@
 import {
   fetchGoogleAddressMetadata,
   transformGoogleMetadata
-} from './googleAddressMetadata';
+} from './googleAddressMetadata.js';
 
 import {
   ADDRESS_METADATA,
   COUNTRY_CODE_MAPPINGS
-} from './addressMetadataConfig';
+} from './addressMetadataConfig.js';
 
 // Re-export ADDRESS_METADATA for backward compatibility
 export { ADDRESS_METADATA };

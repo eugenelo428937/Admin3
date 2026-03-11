@@ -11,9 +11,9 @@ import { BrowserRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 
 // Mock components for E2E testing
-import CartSummaryPanel from '../../components/Ordering/CheckoutSteps/CartSummaryPanel';
-import CartReviewStep from '../../components/Ordering/CheckoutSteps/CartReviewStep';
-import MaterialProductCard from '../../components/Product/ProductCard/MaterialProductCard';
+import CartSummaryPanel from '../../components/Ordering/CheckoutSteps/CartSummaryPanel.js';
+import CartReviewStep from '../../components/Ordering/CheckoutSteps/CartReviewStep.js';
+import MaterialProductCard from '../../components/Product/ProductCard/MaterialProductCard.js';
 
 // TDD RED Phase: These E2E tests require complete Phase 8 VAT integration
 // Components need proper context providers and mocking to pass

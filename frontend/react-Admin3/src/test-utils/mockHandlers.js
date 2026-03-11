@@ -15,7 +15,7 @@ import {
   filterProducts,
   calculateFilterCounts,
   createMockApiResponse,
-} from './mockData';
+} from './mockData.js';
 
 /**
  * Parse filter parameters from URL search params

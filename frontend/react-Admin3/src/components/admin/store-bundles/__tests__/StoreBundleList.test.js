@@ -2,20 +2,20 @@ import { vi } from 'vitest';
 // src/components/admin/store-bundles/__tests__/StoreBundleList.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
-import AdminStoreBundleList from '../StoreBundleList';
+import AdminStoreBundleList from '../StoreBundleList.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock storeBundleService
-vi.mock('../../../../services/storeBundleService', () => ({
+vi.mock('../../../../services/storeBundleService.js', () => ({
   __esModule: true,
   default: {
     adminList: vi.fn(),
@@ -23,9 +23,10 @@ vi.mock('../../../../services/storeBundleService', () => ({
   },
 }));
 
-import storeBundleService from '../../../../services/storeBundleService';
+import storeBundleService from '../../../../services/storeBundleService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockStoreBundles = [
   {

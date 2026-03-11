@@ -2,16 +2,16 @@ import { vi } from 'vitest';
 // src/components/admin/product-variations/__tests__/ProductVariationForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import AdminProductVariationForm from '../ProductVariationForm';
+import { ThemeProvider } from '@mui/material/styles';
+import AdminProductVariationForm from '../ProductVariationForm.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock navigate function
 const mockNavigate = vi.fn();
@@ -19,14 +19,14 @@ const mockNavigate = vi.fn();
 // Create mock for react-router-dom
 vi.mock('react-router-dom', () => {
   return {
-    useNavigate: () => mockNavigate,
-    useParams: () => ({}),
+    useNavigate: vi.fn(() => mockNavigate),
+    useParams: vi.fn(() => ({})),
     Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
 // Mock productVariationService
-vi.mock('../../../../services/productVariationService', () => ({
+vi.mock('../../../../services/productVariationService.js', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -35,13 +35,15 @@ vi.mock('../../../../services/productVariationService', () => ({
   },
 }));
 
-import productVariationService from '../../../../services/productVariationService';
+import productVariationService from '../../../../services/productVariationService.js';
 
-const theme = createTheme();
+const theme = appTheme;
 
-// Helper to set mock useParams
+// import gets the mocked version since vi.mock is hoisted
+import { useParams } from 'react-router-dom';
+import appTheme from '../../../../theme';
 const setMockParams = (params) => {
-  require('react-router-dom').useParams = vi.fn().mockReturnValue(params);
+  useParams.mockReturnValue(params);
 };
 
 const mockEditData = {
@@ -121,7 +123,8 @@ describe('AdminProductVariationForm', () => {
     test('shows validation error when required fields are empty', async () => {
       renderComponent();
 
-      fireEvent.click(screen.getByRole('button', { name: /create product variation/i }));
+      const submitButton = screen.getByRole('button', { name: /create product variation/i });
+      fireEvent.submit(submitButton.closest('form'));
 
       await waitFor(() => {
         expect(screen.getByText(/please fill in all required fields/i)).toBeInTheDocument();

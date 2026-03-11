@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import authService from '../../services/authService';
+import authService from '../../services/authService.js';
 
 const ResetPasswordForm = () => {
   const theme = useTheme();

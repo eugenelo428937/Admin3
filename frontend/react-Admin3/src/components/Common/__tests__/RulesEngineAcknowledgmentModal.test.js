@@ -6,10 +6,11 @@ import { vi } from 'vitest';
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import RulesEngineAcknowledgmentModal from '../RulesEngineAcknowledgmentModal';
+import { ThemeProvider } from '@mui/material/styles';
+import RulesEngineAcknowledgmentModal from '../RulesEngineAcknowledgmentModal.js';
 
-const theme = createTheme();
+import appTheme from '../../../theme';
+const theme = appTheme;
 
 describe('RulesEngineAcknowledgmentModal', () => {
   const mockOnClose = vi.fn();

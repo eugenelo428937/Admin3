@@ -10,7 +10,7 @@
  * @see data-model.md for NavigationSemantics structure
  */
 
-import { md3, scales, staticColors } from '../tokens/colors';
+import { md3, scales, staticColors } from '../tokens/colors.js';
 
 // =============================================================================
 // Helper: Convert hex color + opacity to rgba string

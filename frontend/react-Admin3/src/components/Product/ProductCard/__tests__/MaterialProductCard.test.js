@@ -4,22 +4,14 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import '@testing-library/jest-dom';
-import MaterialProductCard from '../MaterialProductCard';
+import MaterialProductCard from '../MaterialProductCard.js';
+import appTheme from '../../../../theme';
 
 // Create theme with required palette
-const theme = createTheme({
-  palette: {
-    bpp: {
-      sky: {
-        '060': '#1976d2',
-        '070': '#1565c0'
-      }
-    }
-  }
-});
+const theme = appTheme;
 
 // Mock useCart
-vi.mock('../../../../contexts/CartContext', () => ({
+vi.mock('../../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartData: {
       vat_calculations: {
@@ -30,47 +22,41 @@ vi.mock('../../../../contexts/CartContext', () => ({
 }));
 
 // Mock BaseProductCard
-vi.mock('../../../Common/BaseProductCard', () => {
-  const React = require('react');
-  return React.forwardRef(function MockBaseProductCard({ children, ...props }, ref) {
+vi.mock('../../../Common/BaseProductCard.js', () => {
+  return { __esModule: true, default: React.forwardRef(function MockBaseProductCard({ children, ...props }, ref) {
     return React.createElement('div', { 'data-testid': 'base-product-card', ref, ...props }, children);
-  });
+  })};
 });
 
 // Mock specialized product cards
-vi.mock('../Tutorial/TutorialProductCard', () => {
-  const React = require('react');
-  return function MockTutorialProductCard({ product }) {
+vi.mock('../Tutorial/TutorialProductCard.js', () => {
+  return { __esModule: true, default: function MockTutorialProductCard({ product }) {
     return React.createElement('div', { 'data-testid': 'tutorial-product-card' }, product.product_name);
-  };
+  }};
 });
 
-vi.mock('../MarkingProductCard', () => {
-  const React = require('react');
-  return function MockMarkingProductCard({ product }) {
+vi.mock('../MarkingProductCard.js', () => {
+  return { __esModule: true, default: function MockMarkingProductCard({ product }) {
     return React.createElement('div', { 'data-testid': 'marking-product-card' }, product.product_name);
-  };
+  }};
 });
 
-vi.mock('../MarkingVoucherProductCard', () => {
-  const React = require('react');
-  return function MockMarkingVoucherProductCard({ voucher }) {
+vi.mock('../MarkingVoucherProductCard.js', () => {
+  return { __esModule: true, default: function MockMarkingVoucherProductCard({ voucher }) {
     return React.createElement('div', { 'data-testid': 'marking-voucher-product-card' }, voucher.product_name);
-  };
+  }};
 });
 
-vi.mock('../OnlineClassroomProductCard', () => {
-  const React = require('react');
-  return function MockOnlineClassroomProductCard({ product }) {
+vi.mock('../OnlineClassroomProductCard.js', () => {
+  return { __esModule: true, default: function MockOnlineClassroomProductCard({ product }) {
     return React.createElement('div', { 'data-testid': 'online-classroom-product-card' }, product.product_name);
-  };
+  }};
 });
 
-vi.mock('../BundleCard', () => {
-  const React = require('react');
-  return function MockBundleCard({ bundle }) {
+vi.mock('../BundleCard.js', () => {
+  return { __esModule: true, default: function MockBundleCard({ bundle }) {
     return React.createElement('div', { 'data-testid': 'bundle-card' }, bundle.product_name);
-  };
+  }};
 });
 
 // Helper to create mock product

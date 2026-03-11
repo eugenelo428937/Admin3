@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Card, Row, Col, Alert, Spinner, Button, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../hooks/useAuth.js";
 import ProfileForm from "../components/ProfileForm";
-import userService from "../services/userService";
-import logger from "../services/loggerService";
+import userService from "../services/userService.js";
+import logger from "../services/loggerService.js";
 
 const UserProfile = () => {
     const [profile, setProfile] = useState(null);

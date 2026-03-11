@@ -6,10 +6,10 @@ import { vi } from 'vitest';
  */
 
 // MUST be before imports to override setupTests.js global mock
-vi.unmock('../ProductContext');
+vi.unmock('../ProductContext.js');
 
 // Mock productService
-vi.mock('../../services/productService', () => ({
+vi.mock('../../services/productService.js', () => ({
   __esModule: true,
   default: {
     getAvailableProducts: vi.fn(),
@@ -18,8 +18,8 @@ vi.mock('../../services/productService', () => ({
 
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
-import { ProductProvider, useProduct, useProducts } from '../ProductContext';
-import productService from '../../services/productService';
+import { ProductProvider, useProduct, useProducts } from '../ProductContext.js';
+import productService from '../../services/productService.js';
 
 describe('ProductContext', () => {
   beforeEach(() => {

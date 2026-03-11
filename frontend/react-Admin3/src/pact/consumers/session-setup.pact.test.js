@@ -7,7 +7,7 @@
  * Verifies the data contract between frontend sessionSetupService
  * and backend SessionSetupViewSet.
  */
-const { createPactProvider } = require('../setup');
+const { createPactProvider } = require('../setup.js');
 const {
   like,
   eachLike,
@@ -15,7 +15,7 @@ const {
   integer,
   JSON_RESPONSE_HEADERS,
   JSON_REQUEST_HEADERS,
-} = require('../helpers');
+} = require('../helpers.js');
 const axios = require('axios');
 
 describe('Session Setup Service - Pact Consumer Tests', () => {

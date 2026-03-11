@@ -30,8 +30,8 @@
  * @note All alerts have maxWidth: 20rem and left-aligned text with pre-line wrapping
  */
 
-import { status } from '../semantic/common';
-import { spacing } from '../tokens/spacing';
+import { status } from '../semantic/common.js';
+import { spacing } from '../tokens/spacing.js';
 
 export const alertOverrides = {
   MuiAlert: {

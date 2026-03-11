@@ -9,9 +9,9 @@ import {
 import {
   Close as CloseIcon
 } from '@mui/icons-material';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth.js';
 import { useNavigate } from 'react-router-dom';
-import LoginFormContent from '../User/LoginFormContent';
+import LoginFormContent from '../User/LoginFormContent.js';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;

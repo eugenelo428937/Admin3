@@ -2,11 +2,12 @@ import { vi } from 'vitest';
 // src/components/User/__tests__/CountryAutocomplete.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CountryAutocomplete from '../CountryAutocomplete';
+import { ThemeProvider } from '@mui/material/styles';
+import CountryAutocomplete from '../CountryAutocomplete.js';
 
+import appTheme from '../../../theme';
 // Mock config
-vi.mock('../../../config', () => ({
+vi.mock('../../../config.js', () => ({
   __esModule: true,
   default: { apiBaseUrl: 'http://localhost:8888' },
 }));
@@ -23,7 +24,7 @@ const mockCountries = [
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-const theme = createTheme();
+const theme = appTheme;
 
 const renderComponent = (props = {}) => {
   const defaultProps = {

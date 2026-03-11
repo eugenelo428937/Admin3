@@ -34,7 +34,7 @@ import {
 	Assessment,
 	InfoOutline,
 } from "@mui/icons-material";
-import BaseProductCard from "../../Common/BaseProductCard";
+import BaseProductCard from "../../Common/BaseProductCard.js";
 const BundleProductCard = (
 	{ producttype = "bundle", buttonPage = 0, ...props }	
 ) => {

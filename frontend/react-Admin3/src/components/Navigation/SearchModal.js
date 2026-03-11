@@ -13,8 +13,8 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import SearchBox from '../SearchBox';
-import SearchResults from '../SearchResults';
+import SearchBox from '../SearchBox.js';
+import SearchResults from '../SearchResults.js';
 
 const SearchModal = ({ open, onClose }) => {
   const navigate = useNavigate();

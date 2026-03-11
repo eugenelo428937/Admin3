@@ -10,7 +10,7 @@
  * Write operations (POST, PUT, DELETE) require IsSuperUser and are
  * covered by backend integration tests (store.tests.test_admin_views).
  */
-const { createPactProvider } = require('../setup');
+const { createPactProvider } = require('../setup.js');
 const {
   like,
   eachLike,
@@ -19,7 +19,7 @@ const {
   decimal,
   boolean,
   JSON_RESPONSE_HEADERS,
-} = require('../helpers');
+} = require('../helpers.js');
 const axios = require('axios');
 
 describe('Store Admin Service - Pact Consumer Tests', () => {

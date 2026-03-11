@@ -1,22 +1,25 @@
 import { vi } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import HomeAddressStep from '../User/steps/HomeAddressStep';
+import { ThemeProvider } from '@mui/material/styles';
+import HomeAddressStep from '../User/steps/HomeAddressStep.js';
 
-vi.mock('../Address/SmartAddressInput', () => {
-  return function MockSmartAddressInput({ fieldPrefix }) {
+import appTheme from '../../theme';
+vi.mock('../Address/SmartAddressInput.js', () => ({
+  __esModule: true,
+  default: function MockSmartAddressInput({ fieldPrefix }) {
     return <div data-testid={`smart-address-${fieldPrefix}`}>SmartAddressInput</div>;
-  };
-});
+  },
+}));
 
-vi.mock('../Address/DynamicAddressForm', () => {
-  return function MockDynamicAddressForm({ fieldPrefix, readonly }) {
+vi.mock('../Address/DynamicAddressForm.js', () => ({
+  __esModule: true,
+  default: function MockDynamicAddressForm({ fieldPrefix, readonly }) {
     return <div data-testid={`dynamic-form-${fieldPrefix}`} data-readonly={readonly}>DynamicAddressForm</div>;
-  };
-});
+  },
+}));
 
-const theme = createTheme();
+const theme = appTheme;
 const renderWithTheme = (ui) =>
   render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
 

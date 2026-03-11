@@ -33,12 +33,13 @@ describe('loggerService', () => {
   describe('in development environment', () => {
     let loggerService;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       vi.resetModules();
       import.meta.env.MODE = 'development';
       import.meta.env.DEV = true;
       import.meta.env.PROD = false;
-      loggerService = require('../loggerService').default;
+      const mod = await import('../loggerService.js');
+      loggerService = mod.default;
     });
 
     describe('debug', () => {
@@ -87,12 +88,13 @@ describe('loggerService', () => {
   describe('in production environment', () => {
     let loggerService;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       vi.resetModules();
       import.meta.env.MODE = 'production';
       import.meta.env.DEV = false;
       import.meta.env.PROD = true;
-      loggerService = require('../loggerService').default;
+      const mod = await import('../loggerService.js');
+      loggerService = mod.default;
     });
 
     describe('debug', () => {
@@ -123,12 +125,13 @@ describe('loggerService', () => {
   describe('in test environment', () => {
     let loggerService;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       vi.resetModules();
       import.meta.env.MODE = 'test';
       import.meta.env.DEV = false;
       import.meta.env.PROD = false;
-      loggerService = require('../loggerService').default;
+      const mod = await import('../loggerService.js');
+      loggerService = mod.default;
     });
 
     test('should log debug in test environment', () => {

@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { Box, Snackbar, Alert } from '@mui/material';
-import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext';
-import { useCart } from '../../../../contexts/CartContext';
-import TutorialSelectionSummaryBar from './TutorialSelectionSummaryBar';
-import TutorialSelectionDialog from './TutorialSelectionDialog';
+import { useTutorialChoice } from '../../../../contexts/TutorialChoiceContext.js';
+import { useCart } from '../../../../contexts/CartContext.js';
+import TutorialSelectionSummaryBar from './TutorialSelectionSummaryBar.js';
+import TutorialSelectionDialog from './TutorialSelectionDialog.js';
 import {
   buildTutorialProductData,
   buildTutorialPriceData,
   buildTutorialMetadata,
-} from '../../../../utils/tutorialMetadataBuilder';
+} from '../../../../utils/tutorialMetadataBuilder.js';
 
 /**
  * TutorialSummaryBarContainer

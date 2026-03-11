@@ -2,11 +2,11 @@ import { vi } from 'vitest';
 // src/components/Ordering/CheckoutSteps/__tests__/PreferenceStep.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import PreferenceStep from '../PreferenceStep';
+import { ThemeProvider } from '@mui/material/styles';
+import PreferenceStep from '../PreferenceStep.js';
 
 // Mock rulesEngineService
-vi.mock('../../../../services/rulesEngineService', () => ({
+vi.mock('../../../../services/rulesEngineService.js', () => ({
   __esModule: true,
   default: {
     executeRules: vi.fn(),
@@ -17,7 +17,7 @@ vi.mock('../../../../services/rulesEngineService', () => ({
 }));
 
 // Mock useCart
-vi.mock('../../../../contexts/CartContext', () => ({
+vi.mock('../../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartData: {
       id: 'cart-123',
@@ -32,16 +32,17 @@ vi.mock('../../../../contexts/CartContext', () => ({
 }));
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   useAuth: () => ({
     user: { id: 1, email: 'test@example.com' },
     isAuthenticated: true,
   }),
 }));
 
-import rulesEngineService from '../../../../services/rulesEngineService';
+import rulesEngineService from '../../../../services/rulesEngineService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockPreferences = [
   {

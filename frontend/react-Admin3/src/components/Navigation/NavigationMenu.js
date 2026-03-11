@@ -12,8 +12,8 @@ import
       useTheme
    } from "@mui/material";
 import { NavLink } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import MegaMenuPopover from "./MegaMenuPopover";
+import { useAuth } from "../../hooks/useAuth.js";
+import MegaMenuPopover from "./MegaMenuPopover.js";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
 const NavigationMenu = ({

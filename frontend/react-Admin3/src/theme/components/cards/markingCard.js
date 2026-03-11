@@ -1,8 +1,8 @@
 // Marking Product Card Variant Styles
-import { spacing } from '../../tokens/spacing';
-import { fontSizes } from '../../tokens/typography';
-import { marking } from '../../semantic/productCards';
-import { semantic } from '../../semantic/common';
+import { spacing } from '../../tokens/spacing.js';
+import { fontSizes } from '../../tokens/typography.js';
+import { marking } from '../../semantic/productCards.js';
+import { semantic } from '../../semantic/common.js';
 
 /**
  * Marking card variant - Pink theme

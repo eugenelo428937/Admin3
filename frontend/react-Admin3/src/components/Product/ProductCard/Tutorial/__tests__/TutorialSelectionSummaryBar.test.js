@@ -4,14 +4,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 // Remove global mocks from setupTests.js so we can test with real context
-vi.unmock('../../../../../contexts/TutorialChoiceContext');
+vi.unmock('../../../../../contexts/TutorialChoiceContext.js');
 
 // Mock useMediaQuery to return desktop mode (false = not mobile) by default
-vi.mock('@mui/material/useMediaQuery', () => vi.fn(() => false));
+vi.mock('@mui/material/useMediaQuery', () => ({ __esModule: true, default: vi.fn(() => false) }));
 
 // Now import the real context
-import TutorialSelectionSummaryBar from '../TutorialSelectionSummaryBar';
-import { TutorialChoiceProvider, useTutorialChoice } from '../../../../../contexts/TutorialChoiceContext';
+import TutorialSelectionSummaryBar from '../TutorialSelectionSummaryBar.js';
+import { TutorialChoiceProvider, useTutorialChoice } from '../../../../../contexts/TutorialChoiceContext.js';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
 describe('TutorialSelectionSummaryBar', () => {
@@ -215,8 +215,6 @@ describe('TutorialSelectionSummaryBar', () => {
   // ========================================
   describe('T019: Expand/Collapse State', () => {
     test('shows expand button in collapsed state (mobile mode)', async () => {
-      // Set mobile mode - collapsed by default
-      useMediaQuery.mockReturnValue(true);
       setupCartedChoices();
 
       renderWithContext(
@@ -228,13 +226,19 @@ describe('TutorialSelectionSummaryBar', () => {
         />
       );
 
-      // Wait for context to load - should show collapsed view with expand button
+      // Wait for context to load and expanded state to render
       await waitFor(() => {
         expect(screen.getByText(/CS2.*Tutorial Choices/i)).toBeInTheDocument();
       });
 
-      // In collapsed state, should have Expand button
-      expect(screen.getByLabelText(/Expand/i)).toBeInTheDocument();
+      // Click Collapse to enter collapsed state
+      const collapseButton = screen.getByLabelText(/Collapse/i);
+      fireEvent.click(collapseButton);
+
+      // Now in collapsed state, should have Expand button
+      await waitFor(() => {
+        expect(screen.getByLabelText(/Expand/i)).toBeInTheDocument();
+      });
     });
 
     test('expands when draft choices exist (desktop mode)', async () => {
@@ -384,8 +388,6 @@ describe('TutorialSelectionSummaryBar', () => {
     });
 
     test('Edit button works in collapsed state (mobile)', async () => {
-      // Set mobile mode for collapsed state
-      useMediaQuery.mockReturnValue(true);
       setupCartedChoices();
 
       renderWithContext(
@@ -397,17 +399,26 @@ describe('TutorialSelectionSummaryBar', () => {
         />
       );
 
-      // Wait for context to load
+      // Wait for context to load and expanded state to render
       await waitFor(() => {
         expect(screen.getByText(/CS2.*Tutorial Choices/i)).toBeInTheDocument();
       });
 
-      // In collapsed state on mobile, click expand first
+      // Click Collapse to enter collapsed state
+      const collapseButton = screen.getByLabelText(/Collapse/i);
+      fireEvent.click(collapseButton);
+
+      // In collapsed state, click expand
+      await waitFor(() => {
+        expect(screen.getByLabelText(/Expand/i)).toBeInTheDocument();
+      });
       const expandButton = screen.getByLabelText(/Expand/i);
       fireEvent.click(expandButton);
 
       // Now should be expanded - verify Edit button is available
-      // Note: On mobile, expansion opens a Drawer, so this test validates the behavior
+      await waitFor(() => {
+        expect(screen.getByLabelText(/Edit tutorial choices/i)).toBeInTheDocument();
+      });
     });
 
     test('Collapse button only hides summary bar temporarily', async () => {

@@ -9,7 +9,7 @@
  * authenticated sessions that cannot be replayed by the Pact verifier.
  * Those operations are covered by integration tests instead.
  */
-const { createPactProvider } = require('../setup');
+const { createPactProvider } = require('../setup.js');
 const {
   like,
   eachLike,
@@ -18,7 +18,7 @@ const {
   decimal,
   boolean,
   JSON_RESPONSE_HEADERS,
-} = require('../helpers');
+} = require('../helpers.js');
 const axios = require('axios');
 
 describe('Cart Service - Pact Consumer Tests', () => {

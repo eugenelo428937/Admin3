@@ -2,16 +2,16 @@ import { vi } from 'vitest';
 // src/components/User/__tests__/ProfileForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 
 // Mock config - BEFORE imports
-vi.mock('../../../config', () => ({
+vi.mock('../../../config.js', () => ({
   __esModule: true,
   default: { apiBaseUrl: 'http://localhost:8888' },
 }));
 
 // Mock authService
-vi.mock('../../../services/authService', () => ({
+vi.mock('../../../services/authService.js', () => ({
   __esModule: true,
   default: {
     register: vi.fn(),
@@ -19,7 +19,7 @@ vi.mock('../../../services/authService', () => ({
 }));
 
 // Mock userService
-vi.mock('../../../services/userService', () => ({
+vi.mock('../../../services/userService.js', () => ({
   __esModule: true,
   default: {
     updateProfile: vi.fn(),
@@ -27,9 +27,9 @@ vi.mock('../../../services/userService', () => ({
 }));
 
 // Mock CountryAutocomplete
-vi.mock('../CountryAutocomplete', () => {
+vi.mock('../CountryAutocomplete.js', () => {
   const React = require('react');
-  return function MockCountryAutocomplete({ name, value, onChange, placeholder }) {
+  return { __esModule: true, default: function MockCountryAutocomplete({ name, value, onChange, placeholder }) {
     return React.createElement('input', {
       'data-testid': `country-autocomplete-${name}`,
       name: name,
@@ -37,25 +37,26 @@ vi.mock('../CountryAutocomplete', () => {
       onChange: onChange,
       placeholder: placeholder,
     });
-  };
+  }};
 });
 
 // Mock PhoneCodeAutocomplete
-vi.mock('../PhoneCodeAutocomplete', () => {
+vi.mock('../PhoneCodeAutocomplete.js', () => {
   const React = require('react');
-  return function MockPhoneCodeAutocomplete() {
+  return { __esModule: true, default: function MockPhoneCodeAutocomplete() {
     return React.createElement('span', { 'data-testid': 'phone-code-autocomplete' }, '+44');
-  };
+  }};
 });
 
 // Mock fetch for country list
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-import ProfileForm from '../ProfileForm';
-import authService from '../../../services/authService';
+import ProfileForm from '../ProfileForm.js';
+import authService from '../../../services/authService.js';
 
-const theme = createTheme();
+import appTheme from '../../../theme';
+const theme = appTheme;
 
 const renderComponent = async (props = {}) => {
   let result;

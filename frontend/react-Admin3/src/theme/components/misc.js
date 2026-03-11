@@ -40,8 +40,8 @@
  * @description List items with subtle gray hover background
  */
 
-import { scales, staticColors } from '../tokens/colors';
-import { spacing } from '../tokens/spacing';
+import { scales, staticColors } from '../tokens/colors.js';
+import { spacing } from '../tokens/spacing.js';
 
 export const miscOverrides = {
   MuiDivider: {

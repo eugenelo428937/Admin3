@@ -5,7 +5,7 @@ import React, {
    useRef,
    useCallback,
 } from "react";
-import { formatPrice } from "../../../utils/priceFormatter";
+import { formatPrice } from "../../../utils/priceFormatter.js";
 import {
    Button,
    Chip,   
@@ -44,13 +44,13 @@ import {
 } from "@mui/icons-material";
 import { ThemeProvider } from "@mui/material/styles";
 import { useTheme } from "@mui/material/styles";
-import { useCart } from "../../../contexts/CartContext";
-import BaseProductCard from "../../Common/BaseProductCard";
-import MarkingProductCard from "./MarkingProductCard";
-import MarkingVoucherProductCard from "./MarkingVoucherProductCard";
-import TutorialProductCard from "./Tutorial/TutorialProductCard";
-import OnlineClassroomProductCard from "./OnlineClassroomProductCard";
-import BundleCard from "./BundleCard";
+import { useCart } from "../../../contexts/CartContext.js";
+import BaseProductCard from "../../Common/BaseProductCard.js";
+import MarkingProductCard from "./MarkingProductCard.js";
+import MarkingVoucherProductCard from "./MarkingVoucherProductCard.js";
+import TutorialProductCard from "./Tutorial/TutorialProductCard.js";
+import OnlineClassroomProductCard from "./OnlineClassroomProductCard.js";
+import BundleCard from "./BundleCard.js";
 
 const MaterialProductCard = React.memo(
    ({ product, onAddToCart, allEsspIds, bulkDeadlines }) => {

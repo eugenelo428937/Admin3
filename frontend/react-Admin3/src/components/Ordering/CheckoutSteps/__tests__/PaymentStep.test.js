@@ -2,12 +2,13 @@ import { vi } from 'vitest';
 // src/components/Ordering/CheckoutSteps/__tests__/PaymentStep.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import '@testing-library/jest-dom';
-import PaymentStep from '../PaymentStep';
+import PaymentStep from '../PaymentStep.js';
 
+import appTheme from '../../../../theme';
 // Create theme
-const theme = createTheme();
+const theme = appTheme;
 
 // Mock cart data
 const mockCartData = {
@@ -28,7 +29,7 @@ const mockCartItems = [
 const mockRefreshCart = vi.fn(() => Promise.resolve());
 
 // Mock useCart
-vi.mock('../../../../contexts/CartContext', () => ({
+vi.mock('../../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartData: mockCartData,
     cartItems: mockCartItems,
@@ -40,7 +41,7 @@ vi.mock('../../../../contexts/CartContext', () => ({
 const mockExecuteRules = vi.fn();
 const mockAcknowledgeRule = vi.fn();
 
-vi.mock('../../../../services/rulesEngineService', () => ({
+vi.mock('../../../../services/rulesEngineService.js', () => ({
   __esModule: true,
   default: {
     executeRules: (...args) => mockExecuteRules(...args),
@@ -154,8 +155,10 @@ describe('PaymentStep', () => {
 
       expect(screen.getByText('Card Number')).toBeInTheDocument();
       expect(screen.getByText('Cardholder Name')).toBeInTheDocument();
-      expect(screen.getByText('Expiry Month')).toBeInTheDocument();
-      expect(screen.getByText('Expiry Year')).toBeInTheDocument();
+      // MUI Select with variant="standard" renders label differently than TextField
+      // Check for the placeholder text in the Select instead
+      expect(screen.getByText('Select Month')).toBeInTheDocument();
+      expect(screen.getByText('Select Year')).toBeInTheDocument();
       expect(screen.getByText('CVV')).toBeInTheDocument();
     });
 

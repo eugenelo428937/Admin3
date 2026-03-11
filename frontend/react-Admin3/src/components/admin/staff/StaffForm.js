@@ -5,8 +5,8 @@ import {
   FormControl, FormLabel, Checkbox, FormControlLabel, CircularProgress
 } from '@mui/material';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import staffService from '../../../services/staffService';
+import { useAuth } from '../../../hooks/useAuth.js';
+import staffService from '../../../services/staffService.js';
 
 const AdminStaffForm = () => {
   const { isSuperuser } = useAuth();

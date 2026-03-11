@@ -7,7 +7,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../theme/theme';
+import theme from '../../theme/theme.js';
 
 // Create mockNavigate at module level
 const mockNavigate = vi.fn();
@@ -15,10 +15,10 @@ const mockNavigate = vi.fn();
 // Override useNavigate from the global mock in setupTests.js
 vi.mock('react-router-dom', () => ({
   __esModule: true,
-  useNavigate: () => mockNavigate,
-  useLocation: () => ({ pathname: '/register', search: '', hash: '', state: null }),
-  useParams: () => ({}),
-  useSearchParams: () => [new URLSearchParams(), vi.fn()],
+  useNavigate: vi.fn(() => mockNavigate),
+  useLocation: vi.fn(() => ({ pathname: '/register', search: '', hash: '', state: null })),
+  useParams: vi.fn(() => ({})),
+  useSearchParams: vi.fn(() => [new URLSearchParams(), vi.fn()]),
   MemoryRouter: ({ children }) => children,
   BrowserRouter: ({ children }) => children,
   Link: ({ children, to }) => <a href={to}>{children}</a>,
@@ -31,13 +31,14 @@ vi.mock('react-router-dom', () => ({
 
 // Mock useAuth hook
 const mockUseAuth = vi.fn();
-vi.mock('../../hooks/useAuth', () => ({
+vi.mock('../../hooks/useAuth.js', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
 // Mock UserFormWizard
-vi.mock('../../components/User/UserFormWizard', () => {
-  return function MockUserFormWizard({ onSuccess, onError, onSwitchToLogin }) {
+vi.mock('../../components/User/UserFormWizard.js', () => ({
+  __esModule: true,
+  default: function MockUserFormWizard({ onSuccess, onError, onSwitchToLogin }) {
     return (
       <div data-testid="user-form-wizard">
         <button
@@ -60,10 +61,10 @@ vi.mock('../../components/User/UserFormWizard', () => {
         </button>
       </div>
     );
-  };
-});
+  },
+}));
 
-import Registration from '../Registration';
+import Registration from '../Registration.js';
 
 describe('Registration Page', () => {
   beforeEach(() => {

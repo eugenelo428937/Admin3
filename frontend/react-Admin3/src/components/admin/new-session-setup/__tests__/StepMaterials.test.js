@@ -1,11 +1,11 @@
 import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
-import StepMaterials from '../StepMaterials';
+import StepMaterials from '../StepMaterials.js';
 
-vi.mock('../../../../services/sessionSetupService', () => ({
+vi.mock('../../../../services/sessionSetupService.js', () => ({
   __esModule: true,
   default: {
     getPreviousSession: vi.fn(),
@@ -13,25 +13,26 @@ vi.mock('../../../../services/sessionSetupService', () => ({
   },
 }));
 
-vi.mock('../../../../services/storeProductService', () => ({
+vi.mock('../../../../services/storeProductService.js', () => ({
   __esModule: true,
   default: {
     adminList: vi.fn(),
   },
 }));
 
-vi.mock('../../../../services/storeBundleService', () => ({
+vi.mock('../../../../services/storeBundleService.js', () => ({
   __esModule: true,
   default: {
     adminList: vi.fn(),
   },
 }));
 
-import sessionSetupService from '../../../../services/sessionSetupService';
-import storeProductService from '../../../../services/storeProductService';
-import storeBundleService from '../../../../services/storeBundleService';
+import sessionSetupService from '../../../../services/sessionSetupService.js';
+import storeProductService from '../../../../services/storeProductService.js';
+import storeBundleService from '../../../../services/storeBundleService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const renderWithProviders = (ui) =>
   render(

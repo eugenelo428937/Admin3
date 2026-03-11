@@ -1,4 +1,4 @@
-import { useStripeWaveAnimation, WaveContainer } from "./stripeMeshGradient";
+import { useStripeWaveAnimation, WaveContainer } from "./stripeMeshGradient.js";
 
 /**
  * Stripe-style twisted wave — Iris Dawn palette.

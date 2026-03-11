@@ -6,7 +6,7 @@ import { vi } from 'vitest';
  */
 
 // MUST be before imports to override setupTests.js global mock
-vi.unmock('../httpService');
+vi.unmock('../httpService.js');
 
 // Create mock axios instance and direct get function - must use var for hoisting
 var mockAxiosGet = vi.fn();
@@ -33,7 +33,7 @@ vi.mock('axios', () => ({
 }));
 
 // Mock authService
-vi.mock('../authService', () => ({
+vi.mock('../authService.js', () => ({
   __esModule: true,
   default: {
     refreshToken: mockAuthServiceRefreshToken,
@@ -41,7 +41,7 @@ vi.mock('../authService', () => ({
 }));
 
 // Mock loggerService
-vi.mock('../loggerService', () => ({
+vi.mock('../loggerService.js', () => ({
   __esModule: true,
   default: {
     debug: vi.fn(),
@@ -52,7 +52,7 @@ vi.mock('../loggerService', () => ({
 }));
 
 // Mock config
-vi.mock('../../config', () => ({
+vi.mock('../../config.js', () => ({
   __esModule: true,
   default: {
     apiBaseUrl: 'http://localhost:8888',
@@ -61,7 +61,7 @@ vi.mock('../../config', () => ({
 }));
 
 import axios from 'axios';
-import authService from '../authService';
+import authService from '../authService.js';
 
 describe('httpService', () => {
   let requestInterceptorFn;
@@ -69,9 +69,9 @@ describe('httpService', () => {
   let responseSuccessFn;
   let responseErrorFn;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     // Import httpService to trigger axios.create and interceptor setup
-    require('../httpService');
+    await import('../httpService.js');
 
     // Capture the interceptor callbacks
     if (mockAxiosInstance.interceptors.request.use.mock.calls.length > 0) {
@@ -84,7 +84,7 @@ describe('httpService', () => {
     }
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     localStorage.clear();
     // Reset cookies
@@ -95,19 +95,19 @@ describe('httpService', () => {
   });
 
   describe('axios instance creation', () => {
-    test('should have request interceptor function available', () => {
+    test('should have request interceptor function available', async () => {
       // The interceptor function is captured and used by other tests
       // This verifies the module sets up interceptors correctly
       expect(requestInterceptorFn).toBeDefined();
       expect(typeof requestInterceptorFn).toBe('function');
     });
 
-    test('should have response success interceptor function available', () => {
+    test('should have response success interceptor function available', async () => {
       expect(responseSuccessFn).toBeDefined();
       expect(typeof responseSuccessFn).toBe('function');
     });
 
-    test('should have response error interceptor function available', () => {
+    test('should have response error interceptor function available', async () => {
       expect(responseErrorFn).toBeDefined();
       expect(typeof responseErrorFn).toBe('function');
     });
@@ -308,7 +308,7 @@ describe('httpService', () => {
       expect(result.method).toBe('PATCH');
     });
 
-    test('should have request interceptor error handler defined', () => {
+    test('should have request interceptor error handler defined', async () => {
       expect(requestInterceptorErrorFn).toBeDefined();
       expect(typeof requestInterceptorErrorFn).toBe('function');
     });
@@ -320,7 +320,7 @@ describe('httpService', () => {
   });
 
   describe('response interceptor', () => {
-    test('should pass through successful responses', () => {
+    test('should pass through successful responses', async () => {
       const response = { data: { test: 'data' }, status: 200 };
       const result = responseSuccessFn(response);
 

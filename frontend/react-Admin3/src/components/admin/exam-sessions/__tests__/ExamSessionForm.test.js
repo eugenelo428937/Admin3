@@ -2,16 +2,16 @@ import { vi } from 'vitest';
 // src/components/admin/exam-sessions/__tests__/ExamSessionForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import AdminExamSessionForm from '../ExamSessionForm';
+import { ThemeProvider } from '@mui/material/styles';
+import AdminExamSessionForm from '../ExamSessionForm.js';
 
 // Mock useAuth
-vi.mock('../../../../hooks/useAuth', () => ({
+vi.mock('../../../../hooks/useAuth.js', () => ({
   __esModule: true,
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../../hooks/useAuth.js';
 
 // Mock navigate function
 const mockNavigate = vi.fn();
@@ -19,14 +19,14 @@ const mockNavigate = vi.fn();
 // Create mock for react-router-dom
 vi.mock('react-router-dom', () => {
   return {
-    useNavigate: () => mockNavigate,
-    useParams: () => ({}),
+    useNavigate: vi.fn(() => mockNavigate),
+    useParams: vi.fn(() => ({})),
     Navigate: ({ to }) => <div data-testid="navigate" data-to={to} />,
   };
 });
 
 // Mock examSessionService
-vi.mock('../../../../services/examSessionService', () => ({
+vi.mock('../../../../services/examSessionService.js', () => ({
   __esModule: true,
   default: {
     getById: vi.fn(),
@@ -35,13 +35,15 @@ vi.mock('../../../../services/examSessionService', () => ({
   },
 }));
 
-import examSessionService from '../../../../services/examSessionService';
+import examSessionService from '../../../../services/examSessionService.js';
 
-const theme = createTheme();
+const theme = appTheme;
 
-// Helper to set mock useParams
+// import gets the mocked version since vi.mock is hoisted
+import { useParams } from 'react-router-dom';
+import appTheme from '../../../../theme';
 const setMockParams = (params) => {
-  require('react-router-dom').useParams = vi.fn().mockReturnValue(params);
+  useParams.mockReturnValue(params);
 };
 
 const renderComponent = (isEditMode = false) => {

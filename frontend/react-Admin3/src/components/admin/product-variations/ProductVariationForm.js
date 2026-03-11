@@ -5,8 +5,8 @@ import {
   FormControl, FormLabel, CircularProgress, Select, MenuItem
 } from '@mui/material';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import productVariationService from '../../../services/productVariationService';
+import { useAuth } from '../../../hooks/useAuth.js';
+import productVariationService from '../../../services/productVariationService.js';
 
 const VARIATION_TYPES = [
     { value: 'eBook', label: 'eBook' },

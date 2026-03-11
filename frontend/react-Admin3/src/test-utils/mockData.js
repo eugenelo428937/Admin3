@@ -102,12 +102,12 @@ export const mockAddress = (overrides = {}) => ({
 // Bulk data generators
 export const mockProductList = (count = 5, overrides = {}) =>
   Array.from({ length: count }, (_, i) =>
-    mockProduct({ id: i + 1, name: , ...overrides })
+    mockProduct({ id: i + 1, name: `Product ${i + 1}`, ...overrides })
   );
 
 export const mockCartItems = (count = 3, overrides = {}) =>
   Array.from({ length: count }, (_, i) =>
-    mockCartItem({ id: i + 1, productName: , ...overrides })
+    mockCartItem({ id: i + 1, productName: `Item ${i + 1}`, ...overrides })
   );
 
 // Pagination response helper

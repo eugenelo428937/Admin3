@@ -8,9 +8,9 @@ import {
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import storeProductService from '../../../services/storeProductService';
-import StoreProductVariationsPanel from './StoreProductVariationsPanel';
+import { useAuth } from '../../../hooks/useAuth.js';
+import storeProductService from '../../../services/storeProductService.js';
+import StoreProductVariationsPanel from './StoreProductVariationsPanel.js';
 
 /**
  * Groups a flat array of store products into a hierarchy:

@@ -9,10 +9,10 @@
  */
 
 import { configureStore } from '@reduxjs/toolkit';
-import { catalogApi } from './api/catalogApi';
-import filtersReducer from './slices/filtersSlice';
-import { urlSyncMiddleware, setupUrlToReduxSync } from './middleware/urlSyncMiddleware';
-import performanceMonitoringMiddleware from './middleware/performanceMonitoring';
+import { catalogApi } from './api/catalogApi.js';
+import filtersReducer from './slices/filtersSlice.js';
+import { urlSyncMiddleware, setupUrlToReduxSync } from './middleware/urlSyncMiddleware.js';
+import performanceMonitoringMiddleware from './middleware/performanceMonitoring.js';
 
 export const store = configureStore({
   reducer: {
@@ -44,7 +44,7 @@ export const store = configureStore({
   // Redux Toolkit's configureStore automatically connects to Redux DevTools Extension
   // No need for window.__REDUX_DEVTOOLS_EXTENSION__ - it's handled internally!
   // See: https://redux-toolkit.js.org/api/configureStore#devtools
-  devTools: !import.meta.env.PROD,
+  devTools: !import.meta.env?.PROD,
 });
 
 // Setup URL → Redux synchronization (Story 1.16)

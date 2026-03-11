@@ -13,7 +13,7 @@ import { vi } from 'vitest';
  * - determineProductType: Determine product type from component
  */
 
-vi.mock('../httpService', () => ({
+vi.mock('../httpService.js', () => ({
   __esModule: true,
   default: {
     get: vi.fn(),
@@ -23,7 +23,7 @@ vi.mock('../httpService', () => ({
   },
 }));
 
-vi.mock('../../config', () => ({
+vi.mock('../../config.js', () => ({
   __esModule: true,
   default: {
     productsUrl: 'http://test-api/products',
@@ -31,8 +31,8 @@ vi.mock('../../config', () => ({
   },
 }));
 
-import bundleService from '../bundleService';
-import httpService from '../httpService';
+import bundleService from '../bundleService.js';
+import httpService from '../httpService.js';
 
 describe('bundleService', () => {
   beforeEach(() => {

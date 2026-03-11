@@ -15,12 +15,12 @@ import { vi } from 'vitest';
  */
 
 import { configureStore } from '@reduxjs/toolkit';
-import filtersReducer from '../../slices/filtersSlice';
-import performanceMonitoringMiddleware from '../performanceMonitoring';
-import PerformanceTracker from '../../../utils/PerformanceTracker';
+import filtersReducer from '../../slices/filtersSlice.js';
+import performanceMonitoringMiddleware from '../performanceMonitoring.js';
+import PerformanceTracker from '../../../utils/PerformanceTracker.js';
 
 // Mock PerformanceTracker for middleware tests
-vi.mock('../../../utils/PerformanceTracker');
+vi.mock('../../../utils/PerformanceTracker.js');
 
 describe('Performance Monitoring Middleware', () => {
   let store;

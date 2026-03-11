@@ -4,18 +4,10 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import '@testing-library/jest-dom';
-import SmartAddressInput from '../SmartAddressInput';
+import SmartAddressInput from '../SmartAddressInput.js';
 
 // Create mock theme
-const theme = createTheme({
-  palette: {
-    liftkit: {
-      light: { background: '#fff' },
-      dark: { primary: '#000', onPrimary: '#fff' }
-    },
-    divider: '#e0e0e0'
-  }
-});
+const theme = appTheme;
 
 // Mock data for address metadata
 const ukMetadata = {
@@ -55,7 +47,7 @@ const usMetadata = {
 };
 
 // Mock services
-vi.mock('../../../services/addressMetadataService', () => ({
+vi.mock('../../../services/addressMetadataService.js', () => ({
   __esModule: true,
   default: {
     getCountryCode: vi.fn(),
@@ -69,13 +61,17 @@ vi.mock('../../../services/addressMetadataService', () => ({
   }
 }));
 
-vi.mock('../../../config', () => ({
-  apiBaseUrl: 'http://test-api.com'
+vi.mock('../../../config.js', () => ({
+  __esModule: true,
+  default: {
+    apiBaseUrl: 'http://test-api.com'
+  },
 }));
 
 // Mock child components
-vi.mock('../../User/CountryAutocomplete', () => {
-  return function MockCountryAutocomplete({ value, onChange, label, name }) {
+vi.mock('../../User/CountryAutocomplete.js', () => ({
+  __esModule: true,
+  default: function MockCountryAutocomplete({ value, onChange, label, name }) {
     return (
       <div data-testid="country-autocomplete">
         <label htmlFor="country-select">{label}</label>
@@ -92,11 +88,12 @@ vi.mock('../../User/CountryAutocomplete', () => {
         </select>
       </div>
     );
-  };
-});
+  },
+}));
 
-vi.mock('../DynamicAddressForm', () => {
-  return function MockDynamicAddressForm({ country, values, onChange, fieldPrefix }) {
+vi.mock('../DynamicAddressForm.js', () => ({
+  __esModule: true,
+  default: function MockDynamicAddressForm({ country, values, onChange, fieldPrefix }) {
     return (
       <div data-testid="dynamic-address-form">
         <span data-testid="form-country">{country}</span>
@@ -112,11 +109,12 @@ vi.mock('../DynamicAddressForm', () => {
         />
       </div>
     );
-  };
-});
+  },
+}));
 
 // Import mocked service
-import addressMetadataService from '../../../services/addressMetadataService';
+import addressMetadataService from '../../../services/addressMetadataService.js';
+import appTheme from '../../../theme';
 
 // Helper function to render component
 const renderComponent = async (props = {}) => {

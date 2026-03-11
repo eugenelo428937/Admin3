@@ -3,8 +3,8 @@ import {
   Box, Typography, TextField, Grid, Divider, Autocomplete,
 } from "@mui/material";
 import { Person } from "@mui/icons-material";
-import ValidatedPhoneInput from "../ValidatedPhoneInput";
-import config from "../../../config";
+import ValidatedPhoneInput from "../ValidatedPhoneInput.js";
+import config from "../../../config.js";
 import { useTheme } from "@mui/material/styles";
 
 const TITLE_OPTIONS = [

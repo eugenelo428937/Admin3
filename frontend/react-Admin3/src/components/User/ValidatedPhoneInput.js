@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { Check, Error } from "@mui/icons-material";
 import PropTypes from "prop-types";
-import phoneValidationService from "../../services/phoneValidationService";
+import phoneValidationService from "../../services/phoneValidationService.js";
 import { useTheme } from "@mui/material/styles";
 const ValidatedPhoneInput = ({
 	name,

@@ -2,11 +2,11 @@ import { vi } from 'vitest';
 // src/components/admin/products/__tests__/ProductVariationsPanel.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import ProductVariationsPanel from '../ProductVariationsPanel';
+import { ThemeProvider } from '@mui/material/styles';
+import ProductVariationsPanel from '../ProductVariationsPanel.js';
 
 // Mock productProductVariationService
-vi.mock('../../../../services/productProductVariationService', () => ({
+vi.mock('../../../../services/productProductVariationService.js', () => ({
   __esModule: true,
   default: {
     getByProduct: vi.fn(),
@@ -17,17 +17,18 @@ vi.mock('../../../../services/productProductVariationService', () => ({
 }));
 
 // Mock productVariationService
-vi.mock('../../../../services/productVariationService', () => ({
+vi.mock('../../../../services/productVariationService.js', () => ({
   __esModule: true,
   default: {
     getAll: vi.fn(),
   },
 }));
 
-import productProductVariationService from '../../../../services/productProductVariationService';
-import productVariationService from '../../../../services/productVariationService';
+import productProductVariationService from '../../../../services/productProductVariationService.js';
+import productVariationService from '../../../../services/productVariationService.js';
 
-const theme = createTheme();
+import appTheme from '../../../../theme';
+const theme = appTheme;
 
 const mockPPVs = [
   { id: 10, product: 1, product_variation: 1, variation_name: 'eBook', variation_code: 'EB', variation_type: 'eBook' },

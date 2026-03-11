@@ -1,15 +1,16 @@
 import { vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CartPanel from '../CartPanel';
-import { CartContext } from '../../../contexts/CartContext';
-import { useAuth } from '../../../hooks/useAuth';
+import { ThemeProvider } from '@mui/material/styles';
+import CartPanel from '../CartPanel.js';
+import { CartContext } from '../../../contexts/CartContext.js';
+import { useAuth } from '../../../hooks/useAuth.js';
 
+import appTheme from '../../../theme';
 // Mock dependencies
-vi.mock('../../../hooks/useAuth');
+vi.mock('../../../hooks/useAuth.js');
 vi.mock('react-router-dom', () => ({
-  useNavigate: () => vi.fn()
+  useNavigate: vi.fn(() => vi.fn())
 }));
 
 // Mock cart context values
@@ -20,7 +21,7 @@ const mockCartContextValue = {
   removeFromCart: vi.fn()
 };
 
-const theme = createTheme();
+const theme = appTheme;
 
 const renderCartPanel = (props = {}) => {
   return render(

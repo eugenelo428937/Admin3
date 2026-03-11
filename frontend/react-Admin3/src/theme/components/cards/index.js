@@ -1,13 +1,13 @@
 // Card Components Module
 // Aggregates all card variant styles and exports MuiCard overrides
 
-import baseProductCard from './baseProductCard';
-import tutorialCard from './tutorialCard';
-import materialCard from './materialCard';
-import bundleCard from './bundleCard';
-import onlineClassroomCard from './onlineClassroomCard';
-import markingCard from './markingCard';
-import markingVoucherCard from './markingVoucherCard';
+import baseProductCard from './baseProductCard.js';
+import tutorialCard from './tutorialCard.js';
+import materialCard from './materialCard.js';
+import bundleCard from './bundleCard.js';
+import onlineClassroomCard from './onlineClassroomCard.js';
+import markingCard from './markingCard.js';
+import markingVoucherCard from './markingVoucherCard.js';
 
 // Re-export individual card styles for selective use
 export {

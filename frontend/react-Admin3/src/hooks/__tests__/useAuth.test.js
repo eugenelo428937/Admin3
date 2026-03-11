@@ -18,13 +18,13 @@ vi.mock('react-router-dom', () => {
   return {
     __esModule: true,
     BrowserRouter: ({ children }) => React.createElement('div', { 'data-testid': 'browser-router' }, children),
-    useNavigate: () => mockNavigate,
-    useLocation: () => ({ pathname: '/', search: '', hash: '', state: null, key: 'default' }),
+    useNavigate: vi.fn(() => mockNavigate),
+    useLocation: vi.fn(() => ({ pathname: '/', search: '', hash: '', state: null, key: 'default' })),
   };
 });
 
 // Mock authService - using vi.fn() directly in the mock factory
-vi.mock('../../services/authService', () => ({
+vi.mock('../../services/authService.js', () => ({
   __esModule: true,
   default: {
     login: vi.fn(),
@@ -36,8 +36,8 @@ vi.mock('../../services/authService', () => ({
 
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { AuthProvider, useAuth } from '../useAuth';
-import authService from '../../services/authService';
+import { AuthProvider, useAuth } from '../useAuth.js';
+import authService from '../../services/authService.js';
 
 // Helper to render hook with AuthProvider
 const renderUseAuth = () => {

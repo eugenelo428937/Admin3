@@ -4,12 +4,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '@mui/material/styles';
 import '@testing-library/jest-dom';
-import AddressEditModal from '../AddressEditModal';
-import theme from '../../../theme/theme';
-import userService from '../../../services/userService';
+import AddressEditModal from '../AddressEditModal.js';
+import theme from '../../../theme/theme.js';
+import userService from '../../../services/userService.js';
+import addressValidationService from '../../../services/addressValidationService.js';
+import addressMetadataService from '../../../services/addressMetadataService.js';
 
 // Mock userService
-vi.mock('../../../services/userService', () => ({
+vi.mock('../../../services/userService.js', () => ({
   __esModule: true,
   default: {
     updateUserProfile: vi.fn(() => Promise.resolve({
@@ -20,7 +22,7 @@ vi.mock('../../../services/userService', () => ({
 }));
 
 // Mock addressValidationService
-vi.mock('../../../services/addressValidationService', () => ({
+vi.mock('../../../services/addressValidationService.js', () => ({
   __esModule: true,
   default: {
     validateAddress: vi.fn(() => Promise.resolve({
@@ -34,7 +36,7 @@ vi.mock('../../../services/addressValidationService', () => ({
 }));
 
 // Mock addressMetadataService
-vi.mock('../../../services/addressMetadataService', () => ({
+vi.mock('../../../services/addressMetadataService.js', () => ({
   __esModule: true,
   default: {
     supportsAddressLookup: vi.fn(() => true),
@@ -55,8 +57,9 @@ vi.mock('../../../services/addressMetadataService', () => ({
 }));
 
 // Mock AddressComparisonModal
-vi.mock('../AddressComparisonModal', () => {
-  return function MockAddressComparisonModal({ open, onAcceptSuggested, onKeepOriginal, onClose }) {
+vi.mock('../AddressComparisonModal.js', () => ({
+  __esModule: true,
+  default: function MockAddressComparisonModal({ open, onAcceptSuggested, onKeepOriginal, onClose }) {
     if (!open) return null;
     return (
       <div data-testid="address-comparison-modal">
@@ -65,12 +68,13 @@ vi.mock('../AddressComparisonModal', () => {
         <button onClick={onClose}>Close</button>
       </div>
     );
-  };
-});
+  },
+}));
 
 // Mock SmartAddressInput and DynamicAddressForm
-vi.mock('../SmartAddressInput', () => {
-  return function MockSmartAddressInput({ values, onChange, fieldPrefix = '' }) {
+vi.mock('../SmartAddressInput.js', () => ({
+  __esModule: true,
+  default: function MockSmartAddressInput({ values, onChange, fieldPrefix = '' }) {
     const handleCountryChange = (e) => {
       onChange({
         target: {
@@ -93,11 +97,12 @@ vi.mock('../SmartAddressInput', () => {
         </select>
       </div>
     );
-  };
-});
+  },
+}));
 
-vi.mock('../DynamicAddressForm', () => {
-  return function MockDynamicAddressForm({ country, values, onChange, fieldPrefix = '' }) {
+vi.mock('../DynamicAddressForm.js', () => ({
+  __esModule: true,
+  default: function MockDynamicAddressForm({ country, values, onChange, fieldPrefix = '' }) {
     const handleAddressChange = (e) => {
       onChange({
         target: {
@@ -136,8 +141,8 @@ vi.mock('../DynamicAddressForm', () => {
         />
       </div>
     );
-  };
-});
+  },
+}));
 
 const renderWithTheme = (component) => {
   return render(
@@ -187,15 +192,15 @@ describe('AddressEditModal', () => {
     onAddressUpdate: vi.fn()
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     userService.updateUserProfile.mockResolvedValue({
       status: 'success',
       message: 'Profile updated successfully'
     });
 
-    const addressValidationService = require('../../../services/addressValidationService').default;
-    const addressMetadataService = require('../../../services/addressMetadataService').default;
+    // addressValidationService already imported at top level
+    // addressMetadataService already imported at top level
 
     // Reset to default mocks
     addressValidationService.validateAddress.mockResolvedValue({
@@ -210,20 +215,20 @@ describe('AddressEditModal', () => {
   });
 
   describe('Modal Rendering', () => {
-    test('should render modal when open is true', () => {
+    test('should render modal when open is true', async () => {
       renderWithTheme(<AddressEditModal {...defaultProps} />);
 
       expect(screen.getByRole('dialog')).toBeInTheDocument();
       expect(screen.getByText('Edit Delivery Address')).toBeInTheDocument();
     });
 
-    test('should not render modal when open is false', () => {
+    test('should not render modal when open is false', async () => {
       renderWithTheme(<AddressEditModal {...defaultProps} open={false} />);
 
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
-    test('should display correct title for invoice address type', () => {
+    test('should display correct title for invoice address type', async () => {
       renderWithTheme(<AddressEditModal {...defaultProps} addressType="invoice" />);
 
       expect(screen.getByText('Edit Invoice Address')).toBeInTheDocument();
@@ -250,7 +255,7 @@ describe('AddressEditModal', () => {
       });
     });
 
-    test('should pre-fill country selection based on current address', () => {
+    test('should pre-fill country selection based on current address', async () => {
       renderWithTheme(<AddressEditModal {...defaultProps} />);
 
       // Should pre-fill with work address country (since delivery uses send_study_material_to: WORK)
@@ -267,7 +272,7 @@ describe('AddressEditModal', () => {
   });
 
   describe.skip('Manual Entry Option (complex async)', () => {
-    test('should show "Enter address manually" button', () => {
+    test('should show "Enter address manually" button', async () => {
       renderWithTheme(<AddressEditModal {...defaultProps} />);
 
       expect(screen.getByRole('button', { name: /enter address manually/i })).toBeInTheDocument();
@@ -288,7 +293,7 @@ describe('AddressEditModal', () => {
   });
 
   describe('Modal Footer Actions', () => {
-    test('should display Cancel and Update Address buttons', () => {
+    test('should display Cancel and Update Address buttons', async () => {
       renderWithTheme(<AddressEditModal {...defaultProps} />);
 
       expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
@@ -307,7 +312,7 @@ describe('AddressEditModal', () => {
       expect(onCloseMock).toHaveBeenCalledTimes(1);
     });
 
-    test('should disable Update Address button when form is invalid', () => {
+    test('should disable Update Address button when form is invalid', async () => {
       renderWithTheme(<AddressEditModal {...defaultProps} />);
 
       const updateButton = screen.getByRole('button', { name: /update address/i });
@@ -571,7 +576,7 @@ describe('AddressEditModal', () => {
   describe('Address Validation and Comparison Flow', () => {
     test('should show comparison modal when addresses differ', async () => {
       const user = userEvent.setup();
-      const addressValidationService = require('../../../services/addressValidationService').default;
+      // addressValidationService already imported at top level
 
       // Mock validation to return a different address
       addressValidationService.validateAddress.mockResolvedValueOnce({
@@ -608,7 +613,7 @@ describe('AddressEditModal', () => {
 
     test('should not show comparison modal when addresses match', async () => {
       const user = userEvent.setup();
-      const addressValidationService = require('../../../services/addressValidationService').default;
+      // addressValidationService already imported at top level
 
       // Mock validation to return matching address
       addressValidationService.validateAddress.mockResolvedValueOnce({
@@ -645,7 +650,7 @@ describe('AddressEditModal', () => {
 
     test('should proceed without validation for countries without lookup support', async () => {
       const user = userEvent.setup();
-      const addressMetadataService = require('../../../services/addressMetadataService').default;
+      // addressMetadataService already imported at top level
 
       // Mock metadata to indicate no lookup support
       addressMetadataService.fetchAddressMetadata.mockResolvedValueOnce({
@@ -668,7 +673,7 @@ describe('AddressEditModal', () => {
       await user.click(updateButton);
 
       // Should not call validateAddress
-      const addressValidationService = require('../../../services/addressValidationService').default;
+      // addressValidationService already imported at top level
       await waitFor(() => {
         expect(addressValidationService.validateAddress).not.toHaveBeenCalled();
       });
@@ -676,7 +681,7 @@ describe('AddressEditModal', () => {
   });
 
   describe('Address Type Handling', () => {
-    test('should update home_address for delivery when user preference is HOME', () => {
+    test('should update home_address for delivery when user preference is HOME', async () => {
       const homePreferenceProfile = {
         ...mockUserProfile,
         profile: {
@@ -698,7 +703,7 @@ describe('AddressEditModal', () => {
       expect(screen.getByTestId('country-select')).toHaveValue('United Kingdom');
     });
 
-    test('should update work_address for invoice when user preference is WORK', () => {
+    test('should update work_address for invoice when user preference is WORK', async () => {
       const workPreferenceProfile = {
         ...mockUserProfile,
         profile: {
@@ -725,7 +730,7 @@ describe('AddressEditModal', () => {
     // This test suite verifies the fix for the bug where the modal showed
     // stale address data when the user changed the dropdown selection
 
-    test('should use selectedAddressType prop to determine which address to show', () => {
+    test('should use selectedAddressType prop to determine which address to show', async () => {
       // User's profile preference is HOME, but they selected WORK in dropdown
       const profileWithHomePreference = {
         ...mockUserProfile,
@@ -749,7 +754,7 @@ describe('AddressEditModal', () => {
       expect(screen.getByTestId('country-select')).toHaveValue('United Kingdom');
     });
 
-    test('should show HOME address when selectedAddressType is HOME regardless of preference', () => {
+    test('should show HOME address when selectedAddressType is HOME regardless of preference', async () => {
       // User's profile preference is WORK, but they selected HOME in dropdown
       const profileWithWorkPreference = {
         ...mockUserProfile,
@@ -772,7 +777,7 @@ describe('AddressEditModal', () => {
       expect(screen.getByTestId('country-select')).toHaveValue('United Kingdom');
     });
 
-    test('should show WORK address when selectedAddressType is WORK for invoice', () => {
+    test('should show WORK address when selectedAddressType is WORK for invoice', async () => {
       // User's profile preference is HOME for invoices, but they selected WORK
       const profileWithHomeInvoicePreference = {
         ...mockUserProfile,
@@ -795,7 +800,7 @@ describe('AddressEditModal', () => {
       expect(screen.getByTestId('country-select')).toHaveValue('United Kingdom');
     });
 
-    test('should initialize form values based on selectedAddressType not preferences', () => {
+    test('should initialize form values based on selectedAddressType not preferences', async () => {
       // Create profile with distinctly different addresses
       const profileWithDistinctAddresses = {
         ...mockUserProfile,

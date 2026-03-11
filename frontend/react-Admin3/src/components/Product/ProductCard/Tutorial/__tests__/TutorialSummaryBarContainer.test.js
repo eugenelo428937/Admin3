@@ -1,8 +1,11 @@
 import { vi } from 'vitest';
 // Mock httpService before importing anything else
-vi.mock('../../../../../services/httpService', () => ({
-  get: vi.fn(),
-  post: vi.fn(),
+vi.mock('../../../../../services/httpService.js', () => ({
+  __esModule: true,
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+  },
 }));
 
 // Mock CartContext
@@ -12,8 +15,8 @@ const mockCartState = {
   removeFromCart: vi.fn(),
 };
 
-vi.mock('../../../../../contexts/CartContext', () => {
-  const React = require('react');
+vi.mock('../../../../../contexts/CartContext.js', async () => {
+  const React = await import('react');
   return {
     __esModule: true,
     useCart: () => ({
@@ -36,11 +39,12 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../../../../theme/theme';
-import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer';
+import theme from '../../../../../theme/theme.js';
+import TutorialSummaryBarContainer from '../TutorialSummaryBarContainer.js';
 
-// Import the mocked module to allow jest.spyOn
-import * as TutorialChoiceContextModule from '../../../../../contexts/TutorialChoiceContext';
+// Import the mocked modules to allow vi.spyOn
+import * as TutorialChoiceContextModule from '../../../../../contexts/TutorialChoiceContext.js';
+import * as CartContextModule from '../../../../../contexts/CartContext.js';
 
 // Helper to render with theme provider only (contexts are mocked globally)
 const renderWithProviders = (ui) => {
@@ -163,7 +167,7 @@ describe('TutorialSummaryBarContainer', () => {
       };
 
       // Mock TutorialChoiceContext
-      vi.spyOn(require('../../../../../contexts/TutorialChoiceContext'), 'useTutorialChoice')
+      vi.spyOn(TutorialChoiceContextModule, 'useTutorialChoice')
         .mockReturnValue({
           tutorialChoices: mockChoices,
           getSubjectChoices: vi.fn((code) => mockChoices[code] || {}),
@@ -230,7 +234,7 @@ describe('TutorialSummaryBarContainer', () => {
         return Object.values(choices).filter(c => c.isDraft);
       });
 
-      vi.spyOn(require('../../../../../contexts/TutorialChoiceContext'), 'useTutorialChoice')
+      vi.spyOn(TutorialChoiceContextModule, 'useTutorialChoice')
         .mockReturnValue({
           tutorialChoices: mockChoices,
           getSubjectChoices: vi.fn((code) => mockChoices[code] || {}),
@@ -298,7 +302,7 @@ describe('TutorialSummaryBarContainer', () => {
         return Object.values(choices).filter(c => c.isDraft);
       });
 
-      vi.spyOn(require('../../../../../contexts/TutorialChoiceContext'), 'useTutorialChoice')
+      vi.spyOn(TutorialChoiceContextModule, 'useTutorialChoice')
         .mockReturnValue({
           tutorialChoices: mockChoices,
           getSubjectChoices: vi.fn((code) => mockChoices[code] || {}),
@@ -311,7 +315,7 @@ describe('TutorialSummaryBarContainer', () => {
         });
 
       // Mock CartContext
-      vi.spyOn(require('../../../../../contexts/CartContext'), 'useCart')
+      vi.spyOn(CartContextModule, 'useCart')
         .mockReturnValue({
           addToCart: vi.fn(),
           removeFromCart: mockRemoveFromCart,

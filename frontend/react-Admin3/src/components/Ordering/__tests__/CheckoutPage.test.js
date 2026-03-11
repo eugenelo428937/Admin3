@@ -4,18 +4,18 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '@mui/material/styles';
 import '@testing-library/jest-dom';
-import CheckoutPage from '../CheckoutPage';
-import theme from '../../../theme/theme';
-import cartService from '../../../services/cartService';
+import CheckoutPage from '../CheckoutPage.js';
+import theme from '../../../theme/theme.js';
+import cartService from '../../../services/cartService.js';
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate
+  useNavigate: vi.fn(() => mockNavigate)
 }));
 
 // Mock cart service
-vi.mock('../../../services/cartService', () => ({
+vi.mock('../../../services/cartService.js', () => ({
   __esModule: true,
   default: {
     checkout: vi.fn()
@@ -40,7 +40,7 @@ const mockCartItems = [
 
 let mockCartItemsValue = [...mockCartItems];
 
-vi.mock('../../../contexts/CartContext', () => ({
+vi.mock('../../../contexts/CartContext.js', () => ({
   useCart: () => ({
     cartItems: mockCartItemsValue,
     cartData: { id: 1, user: null, session_key: 'test-session' },
@@ -50,15 +50,16 @@ vi.mock('../../../contexts/CartContext', () => ({
 
 // Mock TutorialChoiceContext
 const mockRemoveAllChoices = vi.fn();
-vi.mock('../../../contexts/TutorialChoiceContext', () => ({
+vi.mock('../../../contexts/TutorialChoiceContext.js', () => ({
   useTutorialChoice: () => ({
     removeAllChoices: mockRemoveAllChoices
   })
 }));
 
 // Mock CheckoutSteps component
-vi.mock('../CheckoutSteps', () => {
-  return function MockCheckoutSteps({ onComplete }) {
+vi.mock('../CheckoutSteps.js', () => ({
+  __esModule: true,
+  default: function MockCheckoutSteps({ onComplete }) {
     return (
       <div data-testid="checkout-steps">
         <button
@@ -75,8 +76,8 @@ vi.mock('../CheckoutSteps', () => {
         </button>
       </div>
     );
-  };
-});
+  },
+}));
 
 const renderWithTheme = (component) => {
   return render(

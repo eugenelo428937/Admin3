@@ -1,4 +1,4 @@
-import { spacing, formulatedSpacing } from "./spacing";
+import { spacing, formulatedSpacing } from "./spacing.js";
 
 export const borderRadius = {
     1 : formulatedSpacing(1),

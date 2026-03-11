@@ -16,7 +16,7 @@
 import { forwardRef } from 'react';
 import { styled } from '@mui/material/styles';
 import { IconButton as MuiIconButton } from '@mui/material';
-import { getButtonStateStyles } from '../buttons';
+import { getButtonStateStyles } from '../buttons.js';
 
 // ---------------------------------------------------------------------------
 // Transient prop filter
