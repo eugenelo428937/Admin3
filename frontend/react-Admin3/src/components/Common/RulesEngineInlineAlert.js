@@ -258,7 +258,7 @@ const RulesEngineInlineAlert = ({
                                 <>
                                     {/* Content Preview (First Line) - collapsed state */}
                                     {!isExpanded && (
-                                        <Container className="text-start" sx={{ textAlign: 'left', justifyContent: 'start', px: 0, width: '100%' }} disableGutters={true} maxWidth={false}>
+                                        <Container sx={{ textAlign: 'left', justifyContent: 'start', px: 0, width: '100%' }} disableGutters={true} maxWidth={false}>
                                             <Typography variant="body1" component="div" sx={{ px: 0 }}>
                                                 {firstLine}
                                             </Typography>
@@ -278,7 +278,7 @@ const RulesEngineInlineAlert = ({
                                     )}
 
                                     {/* Full Content (Expanded) */}
-                                    <Collapse in={isExpanded} timeout="auto" unmountOnExit className="text-start" sx={{ width: '100%' }}>
+                                    <Collapse in={isExpanded} timeout="auto" unmountOnExit sx={{ textAlign: 'left', width: '100%' }}>
                                         <Box>
                                             <div
                                                 dangerouslySetInnerHTML={{
@@ -303,7 +303,7 @@ const RulesEngineInlineAlert = ({
                                 </>
                             ) : (
                                 /* Full content always visible when showMoreLess is disabled */
-                                <Box className="text-start" sx={{ textAlign: 'left', width: '100%' }}>
+                                <Box sx={{ textAlign: 'left', width: '100%' }}>
                                     <div
                                         dangerouslySetInnerHTML={{
                                             __html: normalized.message || 'No message content'

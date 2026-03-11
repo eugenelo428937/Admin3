@@ -11,6 +11,13 @@ import { vi } from 'vitest';
 // This must be before any imports
 vi.unmock('../CartContext.js');
 
+// Mock ConfigContext - CartContext depends on useConfig
+vi.mock('../ConfigContext.js', () => ({
+  __esModule: true,
+  useConfig: () => ({ isInternal: false, configLoaded: true }),
+  ConfigProvider: ({ children }) => children,
+}));
+
 // Mock cartService - this will override the setupTests.js mock for this file
 vi.mock('../../services/cartService.js', () => ({
   __esModule: true,

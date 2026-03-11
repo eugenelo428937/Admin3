@@ -9,6 +9,13 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from './App.js';
 
+// Mock ConfigContext - App wraps content in ConfigProvider
+vi.mock('./contexts/ConfigContext.js', () => ({
+  __esModule: true,
+  useConfig: () => ({ isInternal: false, configLoaded: true }),
+  ConfigProvider: ({ children }) => children,
+}));
+
 // Mock all the heavy components to speed up tests
 vi.mock('./pages/Home.js', () => ({ __esModule: true, default: () => <div data-testid="home-page">Home Page</div> }));
 vi.mock('./pages/ProfilePage.js', () => ({ __esModule: true, default: () => <div data-testid="profile-page">Profile Page</div> }));

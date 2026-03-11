@@ -10,6 +10,8 @@ import {
 	DialogActions,
 	Button,
 	Paper,
+	Tab as MuiTab,
+	Tabs as MuiTabs,
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
@@ -24,11 +26,14 @@ import LayoutSection from "../components/styleguide/LayoutSection.js";
 import TablesSection from "../components/styleguide/TablesSection.js";
 import ProductCardsSection from "../components/styleguide/ProductCardsSection.js";
 import Sandbox from "../components/styleguide/Sandbox.js";
-import Tab from "react-bootstrap/Tab";
-import Tabs from "react-bootstrap/Tabs";
+
+function TabPanel({ children, value, index }) {
+	return value === index ? <Box sx={{ pt: 2 }}>{children}</Box> : null;
+}
 
 const StyleGuide = () => {
 	const [dialogOpen, setDialogOpen] = useState(false);
+	const [tabValue, setTabValue] = useState(0);
 	const theme = useTheme();
 
 	return (
@@ -53,112 +58,77 @@ const StyleGuide = () => {
 
 			{/* Tab Navigation - Styled via theme.js */}
 			<Box
-				sx={{					
+				sx={{
 					borderColor: "divider",
 					marginX: theme.spacingTokens.xl2
 				}}>
-				<Tabs
-					defaultActiveKey="sanbox"
-					id="style-guide-tabs"
-					sx={{
-						justiftItems:"center"
-					}}>
-					<Tab
-						eventKey="sanbox"
-						title={
-							<Typography variant="h6">
-								Sandbox
-							</Typography>
-						}>
-						<Grid container>
-							<Grid size={{ xs: 12, lg: 12 }}>
-								<Sandbox/>
-							</Grid>
-						</Grid>
-					</Tab>
-					
-					<Tab
-						eventKey="typography"
-						title={
-							<Typography
-								variant="heading"
-								className="p-2 color-light__onsurface_lkv">
-								Typography
-							</Typography>
-						}>
-						<Grid container>
-							<Grid size={{ xs: 12, lg: 12 }}>
-								<TypographySection />
-							</Grid>
-						</Grid>
-					</Tab>
-					<Tab
-						eventKey="colours"
-						title={
-							<Typography
-								variant="heading"
-								className="p-2 color-light__onsurface_lkv">
-								Colour palette
-							</Typography>
-						}>
+				<MuiTabs
+					value={tabValue}
+					onChange={(e, newValue) => setTabValue(newValue)}
+					variant="scrollable"
+					scrollButtons="auto"
+				>
+					<MuiTab label="Sandbox" />
+					<MuiTab label="Typography" />
+					<MuiTab label="Colour palette" />
+					<MuiTab label="Product Cards" />
+					<MuiTab label="Buttons, Forms & Feedback" />
+					<MuiTab label="Navigation, Layout & Tables" />
+				</MuiTabs>
+
+				<TabPanel value={tabValue} index={0}>
+					<Grid container>
 						<Grid size={{ xs: 12, lg: 12 }}>
-							<ColorSystemSection />
+							<Sandbox/>
 						</Grid>
-					</Tab>
-					<Tab
-						eventKey="product-cards"
-						title={
-							<Typography
-								variant="heading"
-								className="p-2 color-light__onsurface_lkv">
-								Product Cards
-							</Typography>
-						}>
-						<ProductCardsSection />						
-					</Tab>
-					<Tab
-						eventKey="buttons-forms-feedback"
-						title={
-							<Typography
-								variant="heading"
-								className="p-2 color-light__onsurface_lkv">
-								Buttons, Forms & Feedback
-							</Typography>
-						}>
-						<Grid container spacing={2}>
-							<Grid size={{ xs: 12, md: 4 }}>
-								<ButtonsSection />
-							</Grid>
-							<Grid size={{ xs: 12, md: 4 }}>
-								<FormElementsSection />
-							</Grid>
-							<Grid size={{ xs: 12, md: 4 }}>
-								<FeedbackSection />
-							</Grid>
+					</Grid>
+				</TabPanel>
+
+				<TabPanel value={tabValue} index={1}>
+					<Grid container>
+						<Grid size={{ xs: 12, lg: 12 }}>
+							<TypographySection />
 						</Grid>
-					</Tab>
-					<Tab
-						eventKey="navigation-layout-tables"
-						title={
-							<Typography
-								variant="heading"
-								className="p-2 color-light__onsurface_lkv">
-								Navigation, Layout & Tables
-							</Typography>
-						}>
-						<Grid container spacing={3}>
-							<Grid size={{ xs: 12, md: 4 }}>
-								<NavigationSection />
-							</Grid>
-							<Grid size={{ xs: 12, md: 4 }}>
-								<LayoutSection />
-							</Grid>
-							<Grid size={{ xs: 12, md: 4 }}>
-								<TablesSection />
-							</Grid>
+					</Grid>
+				</TabPanel>
+
+				<TabPanel value={tabValue} index={2}>
+					<Grid size={{ xs: 12, lg: 12 }}>
+						<ColorSystemSection />
+					</Grid>
+				</TabPanel>
+
+				<TabPanel value={tabValue} index={3}>
+					<ProductCardsSection />
+				</TabPanel>
+
+				<TabPanel value={tabValue} index={4}>
+					<Grid container spacing={2}>
+						<Grid size={{ xs: 12, md: 4 }}>
+							<ButtonsSection />
 						</Grid>
-					</Tab>
-				</Tabs>
+						<Grid size={{ xs: 12, md: 4 }}>
+							<FormElementsSection />
+						</Grid>
+						<Grid size={{ xs: 12, md: 4 }}>
+							<FeedbackSection />
+						</Grid>
+					</Grid>
+				</TabPanel>
+
+				<TabPanel value={tabValue} index={5}>
+					<Grid container spacing={3}>
+						<Grid size={{ xs: 12, md: 4 }}>
+							<NavigationSection />
+						</Grid>
+						<Grid size={{ xs: 12, md: 4 }}>
+							<LayoutSection />
+						</Grid>
+						<Grid size={{ xs: 12, md: 4 }}>
+							<TablesSection />
+						</Grid>
+					</Grid>
+				</TabPanel>
 			</Box>
 
 			{/* Sample Dialog for interaction */}
