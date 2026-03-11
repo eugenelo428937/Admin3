@@ -46,7 +46,7 @@ import {
 import { useTutorialChoice } from "../../../../contexts/TutorialChoiceContext.js";
 import { useCart } from "../../../../contexts/CartContext.js";
 import tutorialService from "../../../../services/tutorialService.js";
-import { formatPrice } from "../../../../utils/vatUtils.js";
+import { formatPrice, getVatStatusDisplay } from "../../../../utils/vatUtils.js";
 import {
    buildTutorialMetadata,
    buildTutorialProductData,
@@ -818,7 +818,7 @@ const TutorialProductCard = React.memo(
                               color="text.secondary"
                            >
                               {product.vat_status_display ||
-                                 "Price includes VAT"}
+                                 getVatStatusDisplay(product.vat_status)}
                            </Typography>
                         </Box>
                      </Box>

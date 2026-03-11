@@ -28,7 +28,8 @@ describe('CartSummaryPanel', () => {
     totals: {
       subtotal: 200.00,
       total_vat: 40.00,
-      total_gross: 240.00
+      total_gross: 240.00,
+      effective_vat_rate: 0.20
     },
     region_info: { region: 'UK' }
   };
